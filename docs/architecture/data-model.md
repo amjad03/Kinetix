@@ -36,12 +36,13 @@ devices ── pairing_codes (hash only, 120 s, single use)
            └── attendance_records (student, date, slot?, status)    ← upsert, latest occurred_at wins
 sync_ops (tenant_id, op_id) — idempotency ledger for the board outbox
 broadcasts ── broadcast_receipts (device, displayed_at, acknowledged_at)
+homework (section, subject, created_by, title, instructions, due_on, board_session?)  ← Teacher App
 ```
 
 ## Planned next (Phase 1)
 
 - Curriculum library (global): `curricula`, `curriculum_nodes` (a tree), `learning_outcomes`, `content_items` (lessons, quizzes, 3D models, labs), with per-tenant overrides.
 - Year plan and syllabus progress: `lesson_plans`, `coverage_events`.
-- Homework and assignments: `assignments`, `submissions`.
+- Homework submissions: `submissions` against `homework` (the `homework` table itself is built).
 - Recordings: `recordings` (event log + audio blobs in S3), `transcripts`.
 - Guardianship: `guardians` (guardian user ↔ student, relation, consent).

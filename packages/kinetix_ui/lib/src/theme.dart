@@ -30,7 +30,15 @@ abstract final class KinetixTheme {
       fontFamilyFallback: KxFonts.fallback,
       visualDensity: VisualDensity.standard,
     );
-    final text = base.textTheme.apply(fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback);
+    // ThemeData.textTheme carries colours only; sizes are added later by Theme.of. Merge the
+    // M3 geometry in here so styles stored in component themes have real font sizes.
+    final text = Typography.englishLike2021.merge(base.textTheme).apply(fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback);
+    // Filled text fields: rounded box, no outline, an underline only when focused or invalid.
+    // (A borderless OutlineInputBorder would float the label onto the top edge of the box.)
+    UnderlineInputBorder field([Color? color, double width = 2]) => UnderlineInputBorder(
+          borderRadius: Kx.radiusMd,
+          borderSide: color == null ? BorderSide.none : BorderSide(color: color, width: width),
+        );
     return base.copyWith(
       textTheme: text,
       scaffoldBackgroundColor: scheme.surface,
@@ -39,7 +47,7 @@ abstract final class KinetixTheme {
         foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        titleTextStyle: text.titleLarge?.copyWith(color: scheme.onSurface, fontWeight: FontWeight.w500),
+        // No titleTextStyle: Material 3 sizes collapsed and large (expanded) titles itself.
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -59,9 +67,12 @@ abstract final class KinetixTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: scheme.surfaceContainerHighest,
-        border: const OutlineInputBorder(borderRadius: Kx.radiusMd, borderSide: BorderSide.none),
-        enabledBorder: const OutlineInputBorder(borderRadius: Kx.radiusMd, borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: Kx.radiusMd, borderSide: BorderSide(color: scheme.primary, width: 2)),
+        border: field(),
+        enabledBorder: field(),
+        disabledBorder: field(),
+        focusedBorder: field(scheme.primary),
+        errorBorder: field(scheme.error, 1),
+        focusedErrorBorder: field(scheme.error),
       ),
       chipTheme: ChipThemeData(shape: const RoundedRectangleBorder(borderRadius: Kx.radiusSm)),
       dialogTheme: DialogThemeData(

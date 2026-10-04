@@ -7,6 +7,7 @@ import { PairingModule } from './pairing/pairing.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
 import { SessionsModule } from './sessions/sessions.module.js';
 import { SyncModule } from './sync/sync.module.js';
+import { TeacherModule } from './teacher/teacher.module.js';
 import { TimetableModule } from './timetable/timetable.module.js';
 
 @Controller()
@@ -28,6 +29,7 @@ class HealthController {
     PairingModule,
     BroadcastsModule,
     SyncModule,
+    TeacherModule,
   ],
   controllers: [HealthController],
 })

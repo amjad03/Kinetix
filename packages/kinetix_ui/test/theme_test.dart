@@ -10,6 +10,10 @@ void main() {
       expect(t.textTheme.bodyMedium?.fontFamilyFallback, KxFonts.fallback);
     }
     expect(KinetixTheme.boardChrome().colorScheme.brightness, Brightness.dark);
+    // Component themes are built from text styles that carry real sizes.
+    expect(KinetixTheme.light().textTheme.titleLarge?.fontSize, 22);
+    expect(KinetixTheme.light().appBarTheme.titleTextStyle, isNull);
+    expect(KinetixTheme.light().inputDecorationTheme.border, isA<UnderlineInputBorder>());
   });
 
   test('initials skip honorifics', () {

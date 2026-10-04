@@ -325,6 +325,29 @@ export const syncOps = pgTable(
 );
 
 // ---------------------------------------------------------------------------------------------
+// Homework (assigned from the Teacher App, optionally during a board session)
+// ---------------------------------------------------------------------------------------------
+
+export const homework = pgTable(
+  'homework',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    /** The board session it was set in, when assigned during class. */
+    boardSessionId: uuid('board_session_id').references(() => boardSessions.id),
+    title: text('title').notNull(),
+    instructions: text('instructions').notNull().default(''),
+    /** Local calendar date in the tenant timezone. */
+    dueOn: date('due_on').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('homework_section_due_idx').on(t.sectionId, t.dueOn), index('homework_created_by_idx').on(t.createdBy, t.createdAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
 // Broadcasts ("circulate" from the principal's dashboard)
 // ---------------------------------------------------------------------------------------------
 
@@ -403,5 +426,6 @@ export const TENANT_TABLES = [
   'sync_ops',
   'broadcasts',
   'broadcast_receipts',
+  'homework',
   'audit_log',
 ] as const;

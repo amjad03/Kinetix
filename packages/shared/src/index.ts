@@ -67,3 +67,103 @@ export type SyncOpResult =
   | { opId: string; status: 'applied' }
   | { opId: string; status: 'duplicate' }
   | { opId: string; status: 'rejected'; reason: string };
+
+// ---------------------------------------------------------------------------------------------
+// Teacher App
+// ---------------------------------------------------------------------------------------------
+
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant';
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
+
+/** GET /v1/me */
+export interface MeResponse {
+  id: string;
+  fullName: string;
+  email: string | null;
+  phone: string | null;
+  preferredLanguage: Language;
+  roles: RoleName[];
+  tenant: { name: string; slug: string };
+}
+
+export interface TeacherPeriod {
+  slotId: string;
+  startsAt: string;
+  endsAt: string;
+  section: { id: string; displayName: string };
+  subject: { id: string; code: string; name: string };
+  room: { id: string; name: string } | null;
+  /** The period is in progress right now (only ever true on today's date). */
+  isNow: boolean;
+  /** Attendance has been recorded for this period on this date. */
+  attendanceTaken: boolean;
+}
+
+/** GET /v1/teacher/timetable?date=YYYY-MM-DD */
+export interface TeacherTimetableResponse {
+  date: string;
+  /** Today in the tenant timezone. */
+  today: string;
+  /** ISO weekday of `date`, 1 = Monday … 7 = Sunday. */
+  isoWeekday: number;
+  periods: TeacherPeriod[];
+  /** The next date after `date` (within a week) on which the teacher has periods, or null. */
+  nextTeachingDate: string | null;
+}
+
+/** GET /v1/teacher/classes: the section + subject pairs a teacher is timetabled for. */
+export interface TeacherClass {
+  section: { id: string; displayName: string };
+  subject: { id: string; code: string; name: string };
+}
+
+export interface RosterStudent {
+  id: string;
+  rollNo: string;
+  fullName: string;
+}
+
+export type AttendanceCounts = Record<AttendanceStatus, number>;
+
+/** POST /v1/attendance */
+export interface SubmitAttendanceRequest {
+  slotId: string;
+  date: string;
+  records: { studentId: string; status: AttendanceStatus }[];
+}
+
+/** GET /v1/attendance?slotId&date */
+export interface AttendanceSheet {
+  slotId: string;
+  date: string;
+  taken: boolean;
+  records: { studentId: string; status: AttendanceStatus }[];
+  counts: AttendanceCounts;
+}
+
+/** GET /v1/teacher/session */
+export interface ActiveBoardSession {
+  active: { board: { id: string; name: string }; session: SessionContext } | null;
+}
+
+export interface Homework {
+  id: string;
+  title: string;
+  instructions: string;
+  dueOn: string;
+  createdAt: string;
+  section: { id: string; displayName: string };
+  subject: { id: string; code: string; name: string };
+  createdBy: { id: string; fullName: string };
+  boardSessionId: string | null;
+}
+
+/** POST /v1/homework */
+export interface CreateHomeworkRequest {
+  sectionId: string;
+  subjectId: string;
+  title: string;
+  instructions?: string;
+  dueOn: string;
+  boardSessionId?: string;
+}
