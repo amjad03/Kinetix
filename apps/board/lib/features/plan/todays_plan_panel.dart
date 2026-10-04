@@ -55,10 +55,18 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
     final id = widget.board.session?.sessionId;
     if (id == _sessionId && _plan != null) return;
     _sessionId = id;
-    setState(() => _plan = id == null || widget.board.api == null ? null : widget.board.api!.currentLessonPlan());
+    final plan = id == null || widget.board.api == null ? null : widget.board.api!.currentLessonPlan();
+    setState(() {
+      _plan = plan;
+    });
   }
 
-  void _reload() => setState(() => _plan = widget.board.api!.currentLessonPlan());
+  void _reload() {
+    final plan = widget.board.api!.currentLessonPlan();
+    setState(() {
+      _plan = plan;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

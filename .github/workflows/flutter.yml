@@ -1,0 +1,70 @@
+# Flutter apps and packages: analyze + test each, with one pinned SDK.
+name: Flutter
+
+on:
+  pull_request:
+    paths:
+      - 'apps/board/**'
+      - 'apps/teacher/**'
+      - 'apps/parent/**'
+      - 'apps/student/**'
+      - 'packages/kinetix_*/**'
+      - '.github/workflows/flutter.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/board/**'
+      - 'apps/teacher/**'
+      - 'apps/parent/**'
+      - 'apps/student/**'
+      - 'packages/kinetix_*/**'
+      - '.github/workflows/flutter.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  # Pin the SDK the apps are developed on (Dart ^3.13.5). Replace 3.47.x with the exact patch
+  # (e.g. 3.47.1) to make CI fully reproducible; bump it in one place.
+  FLUTTER_VERSION: '3.47.x'
+
+jobs:
+  test:
+    name: ${{ matrix.package }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - apps/board
+          - apps/teacher
+          - apps/parent
+          - apps/student
+          - packages/kinetix_ui
+          - packages/kinetix_ink
+          - packages/kinetix_lesson
+          - packages/kinetix_math
+          - packages/kinetix_3d
+          - packages/kinetix_labs
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter --version
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter analyze
+      # The Board's live-API integration test (tag `integration`, scripts/board-it.sh) needs a
+      # seeded API; it is not part of this job.
+      - run: flutter test --exclude-tags integration

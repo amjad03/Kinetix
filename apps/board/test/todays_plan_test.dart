@@ -167,10 +167,13 @@ void main() {
 
     // Reopened: still counting, from where it got to.
     await open(tester);
-    expect(find.text('07:55'), findsOneWidget);
+    // (Opening and closing panels takes a few animated moments of its own.)
+    String left() => tester.widget<Text>(find.byKey(const Key('plan-step-left'))).data!;
+    expect(left(), matches(RegExp(r'^07:5[0-5]$')));
     expect(find.text('Pause'), findsOneWidget);
+    final before = left();
     await tester.pump(const Duration(seconds: 1));
-    expect(find.text('07:54'), findsOneWidget);
+    expect(left(), isNot(before));
 
     // Past the first step while away: the second step is current on return.
     await tester.tap(find.byKey(const Key('panel-close')));

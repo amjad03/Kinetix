@@ -61,8 +61,9 @@ COPY services/api/content services/api/content
 COPY --chmod=0755 services/api/docker-entrypoint.sh /usr/local/bin/kinetix-api
 COPY infra/docker/db-bootstrap.mjs services/api/db-bootstrap.mjs
 # Amazon RDS CA bundle (ap-south-1), so database URLs can use sslmode=verify-full with
-# NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-ap-south-1-bundle.pem (set in the ECS task).
-ADD --chmod=0644 https://truststore.pki.rds.amazonaws.com/ap-south-1/ap-south-1-bundle.pem /etc/ssl/certs/rds-ap-south-1-bundle.pem
+# NODE_EXTRA_CA_CERTS=/app/certs/rds-ap-south-1-bundle.pem (set in the ECS task).
+RUN mkdir -p /app/certs
+ADD --chmod=0644 https://truststore.pki.rds.amazonaws.com/ap-south-1/ap-south-1-bundle.pem /app/certs/rds-ap-south-1-bundle.pem
 # Local recordings (STORAGE_DRIVER=local) are the only writes; production uses S3.
 RUN mkdir -p services/api/.data/objects && chown -R node:node services/api/.data
 WORKDIR /app/services/api

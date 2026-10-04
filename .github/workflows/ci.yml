@@ -1,0 +1,92 @@
+# Pull requests and main: the shared TS package, the API (with Postgres) and the ERP.
+# Flutter is in flutter.yml, images in docker.yml, the ERP's Playwright suite in erp-e2e.yml.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  shared:
+    name: packages/shared build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@kinetix/shared"
+      - run: pnpm --filter @kinetix/shared build
+
+  api:
+    name: API typecheck + tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          TZ: Asia/Kolkata
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      # For the multi-instance tests (two API instances sharing Redis; skipped without one).
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@kinetix/api..."
+      - run: pnpm --filter @kinetix/shared build
+      # The same DB setup as a developer machine: owner role, RLS-bound app role, kinetix + kinetix_test.
+      - name: Database roles and databases
+        run: |
+          .github/scripts/postgres-service-shim.sh
+          bash services/api/scripts/setup-local-db.sh kinetix
+      - run: pnpm --filter @kinetix/api typecheck
+      - run: pnpm --filter @kinetix/api test
+      - run: pnpm --filter @kinetix/api build
+
+  erp:
+    name: ERP lint, typecheck, unit tests, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@kinetix/erp..."
+      - run: pnpm --filter @kinetix/erp lint
+      - run: pnpm --filter @kinetix/erp typecheck
+      - run: pnpm --filter @kinetix/erp test
+      - name: next build (standalone output, as in the Docker image)
+        run: pnpm --filter @kinetix/erp build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'

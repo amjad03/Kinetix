@@ -357,7 +357,13 @@ class FakeStudentApi implements StudentApi {
   }
 
   @override
-  Future<Me> me() async => profile;
+  Future<Me> me() async {
+    if (rejectToken) throw ApiException(401, 'Invalid or expired token', code: 'AUTH_EXPIRED');
+    return profile;
+  }
+
+  /// Makes `GET /v1/me` answer 401 (the stored token expired).
+  bool rejectToken = false;
 
   /// Set to make `PATCH /v1/me` fail (offline).
   bool failLanguage = false;

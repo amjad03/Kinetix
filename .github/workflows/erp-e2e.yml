@@ -1,0 +1,69 @@
+# The ERP's Playwright suite against a real API + Postgres with a fresh demo seed. Nightly and
+# on demand (it takes several minutes and mutates the seed, so it is not on every PR).
+name: ERP e2e
+
+on:
+  schedule:
+    - cron: '30 20 * * *' # 02:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          TZ: Asia/Kolkata
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://kinetix_owner:kinetix_owner@localhost:5432/kinetix
+      APP_DATABASE_URL: postgres://kinetix_app:kinetix_app@localhost:5432/kinetix
+      JWT_SECRET: ci-only-jwt-secret-0123456789abcdef
+      PAIRING_HMAC_SECRET: ci-only-hmac-secret
+      PAYMENTS_PROVIDER: demo
+      PORT: '4000'
+      KINETIX_API_URL: http://localhost:4000
+      NEXT_TELEMETRY_DISABLED: '1'
+      TZ: Asia/Kolkata
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@kinetix/api..." --filter "@kinetix/erp..."
+      - run: pnpm --filter @kinetix/shared build
+      - name: Database, migrations, demo seed
+        run: |
+          .github/scripts/postgres-service-shim.sh
+          bash services/api/scripts/setup-local-db.sh kinetix
+          pnpm --filter @kinetix/api db:migrate
+          pnpm --filter @kinetix/api db:seed
+      - name: Start the API
+        working-directory: services/api
+        run: |
+          nohup node dist/main.js > "$RUNNER_TEMP/api.log" 2>&1 &
+          for _ in $(seq 1 60); do curl -sf http://localhost:4000/health && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/api.log"; exit 1
+      - name: Playwright browsers
+        run: pnpm --filter @kinetix/erp exec playwright install --with-deps chromium
+      - name: e2e (starts next dev on :3000)
+        run: pnpm --filter @kinetix/erp test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-e2e-results
+          path: |
+            apps/erp/test-results
+            ${{ runner.temp }}/api.log
+          retention-days: 7

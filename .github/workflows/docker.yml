@@ -1,0 +1,87 @@
+# Builds the API and ERP images on main (and on demand). Pushes to Amazon ECR in ap-south-1 only
+# when the GitHub environment has the AWS_ECR_ROLE_ARN secret (an IAM role trusted via GitHub
+# OIDC; infra/terraform creates it when github_repository is set). Without it the images are
+# built (and cached) but not pushed. See docs/operations/deploy.md.
+name: Docker images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/api/**'
+      - 'apps/erp/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+      - '.dockerignore'
+      - 'infra/docker/**'
+      - '.github/workflows/docker.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: ECR repositories to push to (kinetix-<environment>-api / -erp)
+        type: choice
+        options: [staging, prod]
+        default: staging
+
+permissions:
+  contents: read
+  id-token: write # GitHub OIDC -> AWS STS, no long-lived AWS keys
+
+concurrency:
+  group: docker-${{ github.ref }}-${{ inputs.environment || 'staging' }}
+
+jobs:
+  image:
+    name: ${{ matrix.name }} image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: ${{ inputs.environment || 'staging' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            dockerfile: services/api/Dockerfile
+          - name: erp
+            dockerfile: apps/erp/Dockerfile
+    env:
+      AWS_REGION: ap-south-1
+      AWS_ROLE_ARN: ${{ secrets.AWS_ECR_ROLE_ARN }}
+      KX_ENV: ${{ inputs.environment || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: AWS credentials (OIDC)
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: ECR login
+        id: ecr
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Tags
+        id: tags
+        run: |
+          repo="${{ steps.ecr.outputs.registry || 'local' }}/kinetix-${KX_ENV}-${{ matrix.name }}"
+          echo "tags=${repo}:${GITHUB_SHA::12},${repo}:main" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+          push: ${{ env.AWS_ROLE_ARN != '' }}
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max
+      - name: Summary
+        run: |
+          if [ -n "$AWS_ROLE_ARN" ]; then
+            echo "Pushed ${{ steps.tags.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Built ${{ matrix.name }} (not pushed: no AWS_ECR_ROLE_ARN secret in the ${KX_ENV} environment)" >> "$GITHUB_STEP_SUMMARY"
+          fi
