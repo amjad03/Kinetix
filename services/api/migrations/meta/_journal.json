@@ -85,6 +85,20 @@
       "when": 1791123718795,
       "tag": "0011_content_library_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791124074642,
+      "tag": "0012_push_devices",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791124075597,
+      "tag": "0013_push_devices_rls",
+      "breakpoints": true
     }
   ]
 }

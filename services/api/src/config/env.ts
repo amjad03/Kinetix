@@ -26,6 +26,8 @@ const EnvSchema = z.object({
   STORAGE_DIR: z.string().default('.data/objects'),
   S3_BUCKET: z.string().optional(),
   S3_REGION: z.string().default('ap-south-1'),
+  /** Firebase service account (JSON, or a path to it) for push notifications. Optional. */
+  FCM_SERVICE_ACCOUNT: z.string().optional(),
   /** How often the job runner looks for work; 0 turns it off (tests run jobs by hand). */
   JOBS_POLL_MS: z.coerce.number().int().min(0).default(2000),
 });

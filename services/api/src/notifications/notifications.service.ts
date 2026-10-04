@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { and, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
+import { PushService } from '../push/push.service.js';
 import {
   attendanceRecords,
   notifications,
@@ -23,11 +24,12 @@ const uuidList = (ids: string[]) => sql.join(ids.map((id) => sql`${id}::uuid`), 
 /**
  * Creates in-app notifications for parents and students. Every write is idempotent per
  * (recipient, event) through the dedupe key, so retries and re-submissions never double up.
- *
- * TODO: a worker sends a push (FCM/APNs) for each new row, carrying only its id.
+ * Each new (or revived) notification is also queued for a push to the recipient's phones.
  */
 @Injectable()
 export class NotificationsService {
+  constructor(private readonly push: PushService) {}
+
   /**
    * After attendance for a period is written: guardians of students whose final mark is
    * absent are told; if an absence was corrected, the earlier notification is withdrawn.
@@ -193,11 +195,13 @@ export class NotificationsService {
             set retracted_at = null, read_at = null, title = excluded.title, body = excluded.body, created_at = now()
             where notifications.retracted_at is not null`
       : sql`on conflict (user_id, dedupe_key) do nothing`;
-    await tx.execute(sql`
+    const { rows } = await tx.execute<{ id: string; tenant_id: string }>(sql`
       insert into notifications (tenant_id, user_id, kind, title, body, data, dedupe_key)
       select current_setting('app.tenant_id')::uuid, r.user_id, ${n.kind}::notification_kind, ${n.title}, ${n.body},
              ${JSON.stringify(n.data)}::jsonb, ${n.dedupeKey}
       from (${recipients}) r(user_id)
-      ${onConflict}`);
+      ${onConflict}
+      returning id, tenant_id`);
+    if (rows.length) await this.push.queue(tx, rows[0].tenant_id, rows.map((r) => r.id));
   }
 }

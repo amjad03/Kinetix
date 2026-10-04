@@ -2,6 +2,7 @@ import { Controller, Get, Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
+import { PushModule } from './push/push.module.js';
 import { RecordingsModule } from './recordings/recordings.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -32,6 +33,7 @@ class HealthController {
     DbModule,
     StorageModule,
     JobsModule,
+    PushModule,
     AuthModule,
     RealtimeModule,
     TimetableModule,

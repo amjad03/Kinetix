@@ -394,6 +394,29 @@ export const notifications = pgTable(
   (t) => [uniqueIndex('notifications_user_dedupe_uq').on(t.userId, t.dedupeKey), index('notifications_user_created_idx').on(t.userId, t.createdAt)],
 );
 
+export const pushPlatform = pgEnum('push_platform', ['android', 'ios', 'web']);
+
+/**
+ * Phones and browsers that receive push notifications for a user. Pushes carry only a
+ * notification id and kind; the app fetches the text from KINETIX Cloud, so no personal data
+ * passes through the push provider.
+ */
+export const pushDevices = pgTable(
+  'push_devices',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    token: text('token').notNull(),
+    platform: pushPlatform('platform').notNull(),
+    /** Which KINETIX app: parent, student, teacher. */
+    app: text('app').notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('push_devices_tenant_token_uq').on(t.tenantId, t.token), index('push_devices_user_idx').on(t.userId)],
+);
+
 export interface WhiteboardContent {
   /** Format version. */
   v: 1;
@@ -701,6 +724,7 @@ export const TENANT_TABLES = [
   'homework',
   'guardians',
   'notifications',
+  'push_devices',
   'whiteboards',
   'ai_usage',
   'ai_cache',
