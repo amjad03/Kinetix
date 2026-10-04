@@ -241,6 +241,7 @@ export class AdminController {
         // Live socket, or an HTTP call in the last 3 minutes.
         online: this.realtime.isOnline(r.id) || (r.lastSeenAt != null && now.getTime() - r.lastSeenAt.getTime() < 180_000),
         session: s ? { id: s.sessionId, teacher: s.teacher, section: s.section, subject: s.subject, startedAt: s.startedAt } : null,
+        viewers: this.realtime.viewerCount(r.id),
       };
     });
   }

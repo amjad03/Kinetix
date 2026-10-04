@@ -12,7 +12,41 @@ export const RealtimeEvents = {
   BroadcastNew: 'broadcast.new',
   /** Server → board: an emergency or other broadcast was cleared by the sender. */
   BroadcastCleared: 'broadcast.cleared',
+  /** Viewer → server: start watching a board (ack: {@link LiveWatchAck}). */
+  LiveWatch: 'live.watch',
+  /** Viewer → server: stop watching. */
+  LiveUnwatch: 'live.unwatch',
+  /** Server → board: how many people are watching (0 = stop streaming). */
+  LiveViewers: 'live.viewers',
+  /** Server → board: send a full snapshot (a viewer joined). */
+  LiveSnapshotRequest: 'live.snapshot.request',
+  /** Board → server → viewers: lesson events, optionally preceded by a snapshot. */
+  LiveFrame: 'live.frame',
+  /** Server → viewers: the board went offline or its class ended. */
+  LiveEnded: 'live.ended',
 } as const;
+
+/** Server → board. `indicator`: show "being viewed" on the board (an institution setting). */
+export interface LiveViewersEvent {
+  count: number;
+  indicator: boolean;
+}
+
+/**
+ * Board → viewers. `events` use the lesson-recording format (packages/kinetix_ink lesson.dart),
+ * with times relative to the start of the stream; a frame with `snapshot` resets the viewer.
+ */
+export interface LiveFrameEvent {
+  deviceId?: string;
+  snapshot?: { canvas: { w: number; h: number }; background: string; events: unknown[][] };
+  events: unknown[][];
+}
+
+export interface LiveWatchAck {
+  ok: boolean;
+  error?: string;
+  session?: { teacher: string; section: string | null; subject: string | null; startedAt: string };
+}
 
 export type Language = 'en' | 'hi' | 'kn';
 export type BroadcastPriority = 'info' | 'important' | 'emergency';
