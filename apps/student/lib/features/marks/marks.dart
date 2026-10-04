@@ -3,25 +3,27 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../core/study.dart';
 import '../../widgets/common.dart';
 
 /// "Above the class average" (green), "Around the class average" or "Below the class average" (amber).
 (String, Color, Color)? _comparison(BuildContext context, AssessmentResult a) {
   final c = context.colors;
-  if (a.absent) return ('Absent', c.errorContainer, c.onErrorContainer);
+  final l = context.l10n;
+  if (a.absent) return (l.statusAbsent, c.errorContainer, c.onErrorContainer);
   return switch (a.vsAverage) {
-    1 => ('Above class average', Tone.goodContainer(context), Tone.good(context)),
-    0 => ('At class average', c.secondaryContainer, c.onSecondaryContainer),
-    -1 => ('Below class average', Tone.warnContainer(context), Tone.warn(context)),
+    1 => (l.aboveAverage, Tone.goodContainer(context), Tone.good(context)),
+    0 => (l.atAverage, c.secondaryContainer, c.onSecondaryContainer),
+    -1 => (l.belowAverage, Tone.warnContainer(context), Tone.warn(context)),
     _ => null,
   };
 }
 
 /// "19 / 25", "Absent" or "Not entered".
-String scoreLine(AssessmentResult a) {
-  if (a.absent) return 'Absent';
-  if (a.marks == null) return 'Not entered';
+String scoreLine(AppLocalizations l, AssessmentResult a) {
+  if (a.absent) return l.statusAbsent;
+  if (a.marks == null) return l.notEntered;
   return '${Fmt.marks(a.marks!)} / ${Fmt.marks(a.maxMarks)}';
 }
 
@@ -49,7 +51,7 @@ class ResultsCard extends StatelessWidget {
       return SectionCard(
         key: const Key('resultsCard'),
         icon: Icons.grading_outlined,
-        title: 'Results',
+        title: context.l10n.results,
         child: error != null ? ErrorBanner(error, onRetry: study.loadMarks) : const LinearProgressIndicator(),
       );
     }
@@ -57,9 +59,9 @@ class ResultsCard extends StatelessWidget {
       return SectionCard(
         key: const Key('resultsCard'),
         icon: Icons.grading_outlined,
-        title: 'Results',
+        title: context.l10n.results,
         child: Text(
-          'No marks published yet. When your teachers publish test or exam marks, they show here with the class average.',
+          context.l10n.noMarksCard,
           style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
         ),
       );
@@ -67,10 +69,10 @@ class ResultsCard extends StatelessWidget {
     return SectionCard(
       key: const Key('resultsCard'),
       icon: Icons.grading_outlined,
-      title: 'Results',
-      caption: 'Published marks',
+      title: context.l10n.results,
+      caption: context.l10n.publishedMarks,
       onTap: open,
-      footer: CardLink('See all results', onTap: open),
+      footer: CardLink(context.l10n.seeAllResults, onTap: open),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -81,7 +83,7 @@ class ResultsCard extends StatelessWidget {
             ),
           if (marks.subjects.isNotEmpty) ...[
             const SizedBox(height: Kx.s12),
-            Text('By subject', style: context.text.titleSmall),
+            Text(context.l10n.bySubject, style: context.text.titleSmall),
             const SizedBox(height: Kx.s8),
             for (final s in marks.subjects) SubjectBar(result: s),
           ],
@@ -124,7 +126,11 @@ class AssessmentRow extends StatelessWidget {
                     style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                   ),
                   Text(
-                    '${a.kind.label} · ${Fmt.shortDay(a.heldOn)}${a.classAverage == null ? '' : ' · Class average ${Fmt.marks(a.classAverage!)}'}',
+                    [
+                      context.l10n.assessmentKind(a.kind),
+                      context.fmt.shortDay(a.heldOn),
+                      if (a.classAverage != null) context.l10n.classAverageValue(Fmt.marks(a.classAverage!)),
+                    ].join(' · '),
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                   if (cmp != null) ...[const SizedBox(height: Kx.s4), Pill(cmp.$1, background: cmp.$2, foreground: cmp.$3)],
@@ -138,7 +144,7 @@ class AssessmentRow extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  scoreLine(a),
+                  scoreLine(context.l10n, a),
                   style: (a.marks == null ? context.text.titleMedium : context.text.headlineSmall)?.copyWith(
                     fontWeight: FontWeight.w500,
                     color: a.absent ? c.error : null,
@@ -218,7 +224,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Widget build(BuildContext context) {
     final study = widget.study;
     return Scaffold(
-      appBar: AppBar(title: const Text('Results')),
+      appBar: AppBar(title: Text(context.l10n.results)),
       body: ListenableBuilder(
         listenable: study,
         builder: (context, _) {
@@ -245,14 +251,14 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       padding: const EdgeInsets.only(top: Kx.s48),
                       child: KxEmptyState(
                         icon: Icons.grading_outlined,
-                        message: 'No marks published yet.\nWhen your teachers publish marks, they show here.',
+                        message: context.l10n.noMarksScreen,
                       ),
                     ),
                   if (marks.subjects.isNotEmpty) ...[
-                    Text('By subject', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    Text(context.l10n.bySubject, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                     const SizedBox(height: Kx.s4),
                     Text(
-                      'Marks scored out of the total, across published assessments.',
+                      context.l10n.marksExplainer,
                       style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                     ),
                     const SizedBox(height: Kx.s8),
@@ -260,7 +266,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   ],
                   if (marks.assessments.isNotEmpty) ...[
                     const SizedBox(height: Kx.s24),
-                    Text('Assessments', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    Text(context.l10n.assessments, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                     const SizedBox(height: Kx.s4),
                     for (final (i, a) in marks.assessments.indexed) ...[
                       if (i > 0) const Divider(height: 1),
@@ -292,12 +298,13 @@ class AssessmentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final a = result;
     final cmp = _comparison(context, a);
     final bars = [
-      if (a.marks != null) ('You', a.marks!, c.primary),
-      if (a.classAverage != null) ('Class average', a.classAverage!, c.secondary),
-      if (a.classHighest != null) ('Highest in class', a.classHighest!, c.tertiary),
+      if (a.marks != null) (l.you, a.marks!, c.primary),
+      if (a.classAverage != null) (l.classAverage, a.classAverage!, c.secondary),
+      if (a.classHighest != null) (l.highestInClass, a.classHighest!, c.tertiary),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(a.subject)),
@@ -308,7 +315,7 @@ class AssessmentScreen extends StatelessWidget {
             Text(a.title, style: context.text.headlineSmall),
             const SizedBox(height: Kx.s4),
             Text(
-              '${a.kind.label} · ${Fmt.longDay(a.heldOn)} · out of ${Fmt.marks(a.maxMarks)}',
+              [l.assessmentKind(a.kind), context.fmt.longDay(a.heldOn), l.outOf(Fmt.marks(a.maxMarks))].join(' · '),
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
             const SizedBox(height: Kx.s24),
@@ -324,7 +331,7 @@ class AssessmentScreen extends StatelessWidget {
                       runSpacing: Kx.s4,
                       children: [
                         Text(
-                          a.absent ? 'Absent' : (a.marks == null ? 'Not entered' : Fmt.marks(a.marks!)),
+                          a.absent ? l.statusAbsent : (a.marks == null ? l.notEntered : Fmt.marks(a.marks!)),
                           key: const Key('assessmentScore'),
                           style: context.text.displayMedium?.copyWith(
                             fontWeight: FontWeight.w500,
@@ -336,7 +343,7 @@ class AssessmentScreen extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 4),
                             child: Text(
-                              'out of ${Fmt.marks(a.maxMarks)} · ${Fmt.percent(a.percent!)}',
+                              '${l.outOf(Fmt.marks(a.maxMarks))} · ${Fmt.percent(a.percent!)}',
                               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                             ),
                           ),
@@ -352,7 +359,7 @@ class AssessmentScreen extends StatelessWidget {
                     if (a.absent) ...[
                       const SizedBox(height: Kx.s8),
                       Text(
-                        'You were marked absent for this ${a.kind.label.toLowerCase()}.',
+                        l.markedAbsentFor(l.assessmentKind(a.kind).toLowerCase()),
                         style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                       ),
                     ],
@@ -373,7 +380,7 @@ class AssessmentScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Teacher's remark", style: context.text.titleSmall?.copyWith(color: c.onSecondaryContainer)),
+                      Text(l.teachersRemark, style: context.text.titleSmall?.copyWith(color: c.onSecondaryContainer)),
                       const SizedBox(height: Kx.s4),
                       Text(a.remark!, style: context.text.bodyLarge?.copyWith(color: c.onSecondaryContainer)),
                     ],

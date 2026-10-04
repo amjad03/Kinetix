@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import 'qr_scanner_view.dart';
 
@@ -31,7 +33,13 @@ class _ConnectScreenState extends State<ConnectScreen> {
   late _Mode _mode = _canScan ? _Mode.scan : _Mode.code;
   BoardConnection? _connection;
   bool _busy = false;
-  String? _error;
+
+  /// From the server, or [_localError] for a short code.
+  ApiException? _error;
+  bool _localError = false;
+
+  String? _errorText(BuildContext context) =>
+      _localError ? context.l10n.enterAllDigits : (_error == null ? null : context.l10n.errorText(_error!));
 
   /// Returns whether the board was claimed.
   Future<bool> _claim({String? code, String? qr}) async {
@@ -39,6 +47,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
     setState(() {
       _busy = true;
       _error = null;
+      _localError = false;
     });
     try {
       final c = await widget.api.claimBoard(code: code, qr: qr);
@@ -46,7 +55,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
       if (mounted) setState(() => (_connection = c, _mode = _Mode.connected));
       return true;
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
       return false;
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -61,7 +70,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
     } on ApiException catch (e) {
       if (mounted) {
         setState(() => _busy = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.errorText(e))));
       }
     }
   }
@@ -71,16 +80,16 @@ class _ConnectScreenState extends State<ConnectScreen> {
     return switch (_mode) {
       _Mode.scan => QrScannerView(
         busy: _busy,
-        error: _error,
+        error: _errorText(context),
         onScanned: (raw) => _claim(qr: raw),
-        onEnterCode: () => setState(() => (_mode = _Mode.code, _error = null)),
+        onEnterCode: () => setState(() => (_mode = _Mode.code, _error = null, _localError = false)),
       ),
       _Mode.code => CodeEntryView(
         busy: _busy,
-        error: _error,
+        error: _errorText(context),
         onSubmit: (code) => _claim(code: code),
-        onScanInstead: _canScan ? () => setState(() => (_mode = _Mode.scan, _error = null)) : null,
-        onLocalError: (msg) => setState(() => _error = msg),
+        onScanInstead: _canScan ? () => setState(() => (_mode = _Mode.scan, _error = null, _localError = false)) : null,
+        onLocalError: (short) => setState(() => (_error = null, _localError = short)),
       ),
       _Mode.connected => ConnectedView(
         connection: _connection!,
@@ -108,7 +117,9 @@ class CodeEntryView extends StatefulWidget {
 
   /// Claims the code; resolves to whether it worked.
   final Future<bool> Function(String code) onSubmit;
-  final ValueChanged<String?> onLocalError;
+
+  /// True when fewer than 6 digits were submitted; false clears the error.
+  final ValueChanged<bool> onLocalError;
   final VoidCallback? onScanInstead;
 
   @override
@@ -136,7 +147,7 @@ class _CodeEntryViewState extends State<CodeEntryView> {
   Future<void> _submit() async {
     final code = _text.text;
     if (code.length != 6) {
-      widget.onLocalError('Enter all 6 digits shown on the board');
+      widget.onLocalError(true);
       return;
     }
     // Rejected: clear the boxes so the new code on the board can be typed straight away.
@@ -144,41 +155,43 @@ class _CodeEntryViewState extends State<CodeEntryView> {
   }
 
   void _changed(String value) {
-    if (widget.error != null) widget.onLocalError(null);
+    if (widget.error != null) widget.onLocalError(false);
     if (value.length == 6) _submit();
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final code = _text.text;
     return Scaffold(
-      appBar: AppBar(leading: const CloseButton(), title: const Text('Connect to board')),
+      appBar: AppBar(leading: const CloseButton(), title: Text(l.connectToBoard)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s16, Kx.s24, Kx.s24),
           children: [
-            Text('Enter the code on the board', style: context.text.headlineSmall),
+            Text(l.enterCodeTitle, key: const Key('enterCodeTitle'), style: context.text.headlineSmall),
             const SizedBox(height: Kx.s8),
-            Text(
-              'It is the 6-digit number under the QR code. A new code appears every 2 minutes.',
-              style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
-            ),
+            Text(l.enterCodeBody, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
             const SizedBox(height: Kx.s32),
             Stack(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (var i = 0; i < 6; i++) ...[
-                      if (i == 3) const SizedBox(width: Kx.s16) else if (i > 0) const SizedBox(width: Kx.s8),
-                      _DigitBox(
-                        digit: i < code.length ? code[i] : '',
-                        active: _focus.hasFocus && (i == code.length || (i == 5 && code.length == 6)),
-                        error: widget.error != null,
-                      ),
+                // Scales down on narrow phones (six 46 px boxes need 324 px).
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var i = 0; i < 6; i++) ...[
+                        if (i == 3) const SizedBox(width: Kx.s16) else if (i > 0) const SizedBox(width: Kx.s8),
+                        _DigitBox(
+                          digit: i < code.length ? code[i] : '',
+                          active: _focus.hasFocus && (i == code.length || (i == 5 && code.length == 6)),
+                          error: widget.error != null,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
                 // The real input sits invisibly on top of the boxes so taps focus it.
                 Positioned.fill(
@@ -234,16 +247,15 @@ class _CodeEntryViewState extends State<CodeEntryView> {
             FilledButton(
               key: const Key('connectWithCode'),
               onPressed: widget.busy ? null : _submit,
-              child: widget.busy
-                  ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Connect'),
+              child: widget.busy ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)) : Text(l.connect),
             ),
             if (widget.onScanInstead != null) ...[
               const SizedBox(height: Kx.s8),
               TextButton.icon(
+                key: const Key('scanInstead'),
                 onPressed: widget.onScanInstead,
                 icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Scan QR code instead'),
+                label: Text(l.scanInstead),
               ),
             ],
           ],
@@ -290,6 +302,8 @@ class ConnectedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
+    final period = Fmt.of(context).period(connection);
     Widget row(IconData icon, String label, String value) => ListTile(
       leading: Icon(icon, color: c.onSurfaceVariant),
       title: Text(label, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
@@ -313,12 +327,10 @@ class ConnectedView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: Kx.s24),
-                  Text("You're connected", textAlign: TextAlign.center, style: context.text.headlineSmall),
+                  Text(l.youreConnected, key: const Key('youreConnected'), textAlign: TextAlign.center, style: context.text.headlineSmall),
                   const SizedBox(height: Kx.s8),
                   Text(
-                    connection.sectionName == null
-                        ? '${connection.boardName} is ready for you'
-                        : '${connection.boardName} is showing your class',
+                    connection.sectionName == null ? l.boardReady(connection.boardName) : l.boardShowingClass(connection.boardName),
                     textAlign: TextAlign.center,
                     style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                   ),
@@ -328,19 +340,16 @@ class ConnectedView extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: Kx.s8),
                       child: Column(
                         children: [
-                          row(Icons.co_present_outlined, 'Board', connection.boardName),
+                          row(Icons.co_present_outlined, l.labelBoard, connection.boardName),
                           if (connection.sectionName != null) ...[
-                            row(Icons.groups_outlined, 'Class', connection.sectionName!),
-                            if (connection.subjectName != null) row(Icons.menu_book_outlined, 'Subject', connection.subjectName!),
-                            if (connection.periodLabel != null) row(Icons.schedule, 'Period', connection.periodLabel!),
+                            row(Icons.groups_outlined, l.labelClass, connection.sectionName!),
+                            if (connection.subjectName != null) row(Icons.menu_book_outlined, l.labelSubject, connection.subjectName!),
+                            if (period != null) row(Icons.schedule, l.labelPeriod, period),
                           ] else
                             ListTile(
                               leading: Icon(Icons.info_outline, color: c.onSurfaceVariant),
-                              title: Text('Free session', style: context.text.titleMedium),
-                              subtitle: const Text(
-                                'You have no timetabled class right now, so the board opens without a class list. '
-                                'It signs you out after 2 hours.',
-                              ),
+                              title: Text(l.freeSession, style: context.text.titleMedium),
+                              subtitle: Text(l.freeSessionBody),
                             ),
                         ],
                       ),
@@ -358,12 +367,12 @@ class ConnectedView extends StatelessWidget {
                       key: const Key('endClass'),
                       onPressed: busy ? null : onEndClass,
                       icon: const Icon(Icons.stop_circle_outlined),
-                      label: const Text('End class'),
+                      label: Text(l.endClass),
                     ),
                   ),
                   const SizedBox(width: Kx.s12),
                   Expanded(
-                    child: FilledButton(onPressed: busy ? null : onDone, child: const Text('Done')),
+                    child: FilledButton(key: const Key('connectDone'), onPressed: busy ? null : onDone, child: Text(l.done)),
                   ),
                 ],
               ),

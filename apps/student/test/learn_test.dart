@@ -120,7 +120,8 @@ void main() {
           api.profile = Me(id: 'u1', fullName: 'Aarav Patel', roles: ['student'], preferredLanguage: 'hi', institution: 'Demo College'),
     );
     expect(state.aiLanguage, AiLanguage.hi);
-    await openLearn(tester);
+    // The app speaks the profile language too, so Learn is "सीखें".
+    await openTab(tester, 'सीखें');
     expect(tester.widget<ChoiceChip>(find.byKey(const Key('lang-hi'))).selected, isTrue);
   });
 

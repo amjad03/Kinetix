@@ -274,6 +274,24 @@ class FakeParentApi implements ParentApi {
   @override
   Future<Me> me() async => profile;
 
+  /// Set to make `PATCH /v1/me` fail (offline).
+  bool failLanguage = false;
+
+  @override
+  Future<Me> setPreferredLanguage(String language) async {
+    calls.add('language $language');
+    if (failLanguage) throw ApiException(0, 'offline');
+    return profile = Me(
+      id: profile.id,
+      fullName: profile.fullName,
+      roles: profile.roles,
+      preferredLanguage: language,
+      institution: profile.institution,
+      email: profile.email,
+      phone: profile.phone,
+    );
+  }
+
   @override
   Future<List<Child>> children() async => kids;
 
@@ -518,7 +536,7 @@ class FakeParentApi implements ParentApi {
     }),
     'c2': LibraryAccount.fromJson({
       'current': [
-        loanJson('l3', 'Discrete Mathematics and Its Applications', author: 'Kenneth H. Rosen', dueOn: '2026-09-30', overdue: true),
+        loanJson('l3', 'Discrete Mathematics and Its Applications', author: 'Kenneth H. Rosen', dueOn: '2026-09-30', overdue: true, fineSoFarPaise: 800),
       ],
       'history': [],
       'finesPaise': 0,
@@ -534,6 +552,7 @@ class FakeParentApi implements ParentApi {
     String? returnedAt,
     int finePaise = 0,
     bool overdue = false,
+    int fineSoFarPaise = 0,
   }) => {
     'id': id,
     'book': {'id': 'b-$id', 'title': title, 'author': author, 'callNo': '657.95 MAH'},
@@ -542,6 +561,7 @@ class FakeParentApi implements ParentApi {
     'returnedAt': returnedAt,
     'finePaise': finePaise,
     'overdue': overdue,
+    'fineSoFarPaise': fineSoFarPaise,
   };
 
   @override

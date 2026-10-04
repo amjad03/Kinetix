@@ -14,13 +14,6 @@ class ClockTime implements Comparable<ClockTime> {
 
   final int minutes;
 
-  /// "10:00 AM"
-  String get label {
-    final h = minutes ~/ 60, m = minutes % 60;
-    final h12 = h % 12 == 0 ? 12 : h % 12;
-    return '$h12:${m.toString().padLeft(2, '0')} ${h < 12 ? 'AM' : 'PM'}';
-  }
-
   @override
   int compareTo(ClockTime other) => minutes.compareTo(other.minutes);
 }
@@ -67,20 +60,6 @@ class Me {
     final parts = fullName.split(' ').where((p) => p.isNotEmpty && !p.endsWith('.')).toList();
     return parts.isEmpty ? fullName : parts.first;
   }
-
-  static const languageNames = {'en': 'English', 'hi': 'हिन्दी (Hindi)', 'kn': 'ಕನ್ನಡ (Kannada)'};
-  static const roleNames = {
-    'tenant_admin': 'Admin',
-    'principal': 'Principal',
-    'hod': 'Head of department',
-    'teacher': 'Teacher',
-    'student': 'Student',
-    'guardian': 'Parent',
-    'librarian': 'Librarian',
-    'accountant': 'Accountant',
-  };
-
-  String get languageName => languageNames[preferredLanguage] ?? preferredLanguage;
 }
 
 class Ref {
@@ -163,15 +142,8 @@ class Student {
   final String fullName;
 }
 
-enum AttendanceStatus {
-  present('Present'),
-  absent('Absent'),
-  late('Late'),
-  excused('Excused');
-
-  const AttendanceStatus(this.label);
-  final String label;
-}
+/// Shown with AppLocalizations.attendanceStatus.
+enum AttendanceStatus { present, absent, late, excused }
 
 class AttendanceSheet {
   AttendanceSheet({required this.taken, required this.records});
@@ -211,8 +183,6 @@ class BoardConnection {
   final String? subjectName;
   final ClockTime? startsAt;
   final ClockTime? endsAt;
-
-  String? get periodLabel => startsAt == null ? null : '${startsAt!.label} – ${endsAt!.label}';
 }
 
 class Homework {
@@ -251,16 +221,8 @@ String formatMarks(num n) {
   return n.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
 }
 
-enum AssessmentKind {
-  test('Test'),
-  assignment('Assignment'),
-  internal('Internal'),
-  exam('Exam'),
-  practical('Practical');
-
-  const AssessmentKind(this.label);
-  final String label;
-}
+/// Shown with AppLocalizations.assessmentKind.
+enum AssessmentKind { test, assignment, internal, exam, practical }
 
 /// Average, highest and lowest of the marks entered (absentees excluded).
 class MarkStats {
@@ -415,9 +377,6 @@ class Conversation {
   /// At colleges an adult student may write for themselves.
   bool get withStudent => family.name == student.name;
 
-  /// "Parent of Aarav Patel · BCom Sem 3 A"
-  String get about => withStudent ? 'Student · $className' : 'Parent of ${student.name} · $className';
-
   Conversation copyWith({int? unread, String? lastMessage, DateTime? lastMessageAt}) => Conversation(
     id: id,
     student: student,
@@ -473,8 +432,6 @@ class Guardian {
 
   /// "father", "mother", "guardian"…
   final String relation;
-
-  String get relationLabel => relation.isEmpty ? 'Parent' : relation[0].toUpperCase() + relation.substring(1);
 }
 
 /// A student in a class the teacher teaches, with the family members on record.

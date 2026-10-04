@@ -13,7 +13,7 @@ class UpdatesController extends ChangeNotifier {
   int unread = 0;
   bool loading = false;
   bool loaded = false;
-  String? error;
+  ApiException? error;
 
   Future<void> load() async {
     loading = true;
@@ -25,7 +25,7 @@ class UpdatesController extends ChangeNotifier {
       unread = inbox.unread;
       loaded = true;
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -55,7 +55,7 @@ class UpdatesController extends ChangeNotifier {
     try {
       await api.markAllRead();
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
       notifyListeners();
     }
   }

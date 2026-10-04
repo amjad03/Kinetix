@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/family.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// (background, foreground) for a book's due chip: overdue in red, due within two days in amber.
@@ -34,7 +35,7 @@ class LibraryCard extends StatelessWidget {
       return SectionCard(
         key: const Key('libraryCard'),
         icon: Icons.local_library_outlined,
-        title: 'Library',
+        title: context.l10n.library,
         child: error != null ? ErrorBanner(error, onRetry: () => family.loadLibrary(child.id)) : const LinearProgressIndicator(),
       );
     }
@@ -43,18 +44,18 @@ class LibraryCard extends StatelessWidget {
     return SectionCard(
       key: const Key('libraryCard'),
       icon: Icons.local_library_outlined,
-      title: 'Library',
-      caption: out.isEmpty ? null : '${out.length} out',
+      title: context.l10n.library,
+      caption: out.isEmpty ? null : context.l10n.nOut(out.length),
       onTap: open,
-      footer: account.history.isEmpty && out.isEmpty ? null : CardLink('See library history', onTap: open),
+      footer: account.history.isEmpty && out.isEmpty ? null : CardLink(context.l10n.seeLibraryHistory, onTap: open),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (out.isEmpty)
             Text(
               account.history.isEmpty
-                  ? 'No library books borrowed. Books ${child.firstName} borrows from the college library show here with their due dates.'
-                  : '${child.firstName} has no library books out right now.',
+                  ? context.l10n.noBooksBorrowed(child.firstName)
+                  : context.l10n.noBooksOutNow(child.firstName),
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
           if (overdue > 0) ...[
@@ -65,7 +66,7 @@ class LibraryCard extends StatelessWidget {
                 const SizedBox(width: Kx.s8),
                 Expanded(
                   child: Text(
-                    '${Fmt.plural(overdue, 'book')} overdue. Please return ${overdue == 1 ? 'it' : 'them'} to the library.',
+                    context.l10n.booksOverdue(overdue),
                     style: context.text.bodyMedium?.copyWith(color: c.error, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -74,11 +75,11 @@ class LibraryCard extends StatelessWidget {
             const SizedBox(height: Kx.s4),
           ],
           for (final l in out.take(3)) LoanRow(loan: l, today: today),
-          if (out.length > 3) Text('and ${out.length - 3} more', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+          if (out.length > 3) Text(context.l10n.andMore(out.length - 3), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
           if (account.finesPaise > 0) ...[
             const SizedBox(height: Kx.s8),
             Text(
-              'Fines for late returns: ${Fmt.rupees(account.finesPaise)}',
+              context.l10n.finesForLate(Fmt.rupees(account.finesPaise)),
               key: const Key('libraryFines'),
               style: context.text.bodyMedium?.copyWith(color: c.error),
             ),
@@ -99,6 +100,8 @@ class LoanRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final t = context.l10n;
+    final f = context.fmt;
     final l = loan;
     final (bg, fg) = _dueTone(context, l, today);
     return Padding(
@@ -129,9 +132,9 @@ class LoanRow extends StatelessWidget {
                 if (l.returned)
                   Text(
                     [
-                      'Borrowed ${Fmt.shortDay(l.issuedAt)}',
-                      'returned ${Fmt.shortDay(l.returnedAt!)}',
-                      if (l.finePaise > 0) 'fine ${Fmt.rupees(l.finePaise)}' else if (l.returnedLate) 'late',
+                      t.borrowedOn(f.shortDay(l.issuedAt)),
+                      t.returnedOn(f.shortDay(l.returnedAt!)),
+                      if (l.finePaise > 0) t.fineAmount(Fmt.rupees(l.finePaise)) else if (l.returnedLate) t.returnedLate,
                     ].join(' · '),
                     style: context.text.bodySmall?.copyWith(color: l.finePaise > 0 ? c.error : c.onSurfaceVariant),
                   )
@@ -142,12 +145,19 @@ class LoanRow extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Pill(
-                        Fmt.bookDue(l.dueOn, today),
+                        f.bookDue(l.dueOn, today),
                         icon: l.overdue ? Icons.warning_amber_rounded : Icons.event_outlined,
                         background: bg,
                         foreground: fg,
                       ),
-                      Text('Borrowed ${Fmt.shortDay(l.issuedAt)}', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                      // The fine if the book came back today (the server works it out).
+                      if (l.overdue && l.fineSoFarPaise > 0)
+                        Text(
+                          t.fineSoFar(Fmt.rupees(l.fineSoFarPaise)),
+                          key: Key('fineSoFar-${l.id}'),
+                          style: context.text.bodySmall?.copyWith(color: c.error, fontWeight: FontWeight.w500),
+                        ),
+                      Text(t.borrowedOn(f.shortDay(l.issuedAt)), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                     ],
                   ),
               ],
@@ -189,7 +199,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final family = widget.family;
     final child = widget.child;
     return Scaffold(
-      appBar: AppBar(title: Text("${child.firstName}'s library")),
+      appBar: AppBar(title: Text(context.l10n.childLibrary(child.firstName))),
       body: ListenableBuilder(
         listenable: family,
         builder: (context, _) {
@@ -223,7 +233,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           const SizedBox(width: Kx.s12),
                           Expanded(
                             child: Text(
-                              'Fines for late returns: ${Fmt.rupees(account.finesPaise)}. Pay at the library desk.',
+                              context.l10n.finesPayAtDesk(Fmt.rupees(account.finesPaise)),
                               style: context.text.bodyLarge?.copyWith(color: c.onErrorContainer),
                             ),
                           ),
@@ -231,20 +241,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       ),
                     ),
                   ),
-                _Heading('Books out (${account.current.length})'),
+                _Heading(context.l10n.booksOutHeading(account.current.length)),
                 if (account.current.isEmpty)
-                  Text('No books out right now.', style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant))
+                  Text(context.l10n.noBooksOut, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant))
                 else ...[
                   for (final l in account.currentByDue) LoanRow(loan: l, today: today),
                   const SizedBox(height: Kx.s8),
                   Text(
-                    'The library charges a fine for each day a book is returned late.',
+                    context.l10n.fineRule,
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],
-                _Heading('Returned (${account.history.length})'),
+                _Heading(context.l10n.returnedHeading(account.history.length)),
                 if (account.history.isEmpty)
-                  Text('Returned books will be listed here.', style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant))
+                  Text(context.l10n.returnedEmpty, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant))
                 else
                   for (final l in account.history) LoanRow(loan: l, today: today),
               ],

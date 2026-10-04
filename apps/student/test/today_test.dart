@@ -25,9 +25,9 @@ void main() {
   });
 
   test('attendance notes in plain language', () {
-    expect(AttendanceCard.note(92), 'Good attendance. Keep it up.');
-    expect(AttendanceCard.note(80), 'You missed a few classes recently.');
-    expect(AttendanceCard.note(60), 'Below 75%. Colleges usually need 75% for you to sit exams.');
+    expect(AttendanceCard.note(en, 92), 'Good attendance. Keep it up.');
+    expect(AttendanceCard.note(en, 80), 'You missed a few classes recently.');
+    expect(AttendanceCard.note(en, 60), 'Below 75%. Colleges usually need 75% for you to sit exams.');
   });
 
   testWidgets('works out the rate when the server has none; empty homework and boards explain themselves', (tester) async {

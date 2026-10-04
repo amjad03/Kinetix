@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/family.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'fees_screen.dart';
 import 'payment_gateway.dart';
@@ -19,6 +20,7 @@ class FeesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final fees = family.feesOf(child.id);
     final error = family.feesErrorOf(child.id);
     void view() => FeesScreen.open(context, family, child);
@@ -27,7 +29,7 @@ class FeesCard extends StatelessWidget {
       return SectionCard(
         key: const Key('feesCard'),
         icon: Icons.currency_rupee,
-        title: 'Fees',
+        title: l.fees,
         child: error != null ? ErrorBanner(error, onRetry: () => family.loadFees(child.id)) : const LinearProgressIndicator(),
       );
     }
@@ -41,7 +43,7 @@ class FeesCard extends StatelessWidget {
     final Widget body;
     if (fees.invoices.isEmpty) {
       body = Text(
-        'No fees have been issued for ${child.firstName} yet.',
+        l.noFeesIssued(child.firstName),
         style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
       );
     } else if (next == null) {
@@ -54,15 +56,15 @@ class FeesCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'All fees paid',
+                  l.allFeesPaid,
                   key: const Key('feesAllPaid'),
                   style: context.text.titleMedium?.copyWith(color: Tone.good(context)),
                 ),
                 if (lastPayment != null)
                   Text(
                     [
-                      'Last paid ${Fmt.rupees(lastPayment.amountPaise)}',
-                      if (lastPayment.paidAt != null) Fmt.shortDay(lastPayment.paidAt!),
+                      l.lastPaid(Fmt.rupees(lastPayment.amountPaise)),
+                      if (lastPayment.paidAt != null) context.fmt.shortDay(lastPayment.paidAt!),
                     ].join(' · '),
                     style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                   ),
@@ -98,7 +100,7 @@ class FeesCard extends StatelessWidget {
               const SizedBox(width: Kx.s8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
-                child: Text('due', style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
+                child: Text(l.dueSuffix, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
               ),
             ],
           ),
@@ -118,7 +120,7 @@ class FeesCard extends StatelessWidget {
           if (open.length > 1) ...[
             const SizedBox(height: Kx.s8),
             Text(
-              '${Fmt.plural(open.length, 'fee')} to pay${overdue.length > 1 ? ', ${overdue.length} overdue' : ''}',
+              [l.feesToPay(open.length), if (overdue.length > 1) l.nOverdue(overdue.length)].join(l.listSeparator),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
           ],
@@ -130,15 +132,15 @@ class FeesCard extends StatelessWidget {
                   key: const Key('feesPay'),
                   onPressed: () => FeesScreen.open(context, family, child, payInvoiceId: first.id),
                   icon: const Icon(Icons.currency_rupee, size: 18),
-                  label: const Text('Pay'),
+                  label: Text(l.pay),
                 ),
                 const SizedBox(width: Kx.s8),
-                TextButton(key: const Key('feesView'), onPressed: view, child: const Text('View fees')),
+                TextButton(key: const Key('feesView'), onPressed: view, child: Text(l.viewFees)),
               ],
             )
           else ...[
             Text(
-              'Please pay at the fees counter.',
+              l.payAtCounter,
               key: const Key('feesCounter'),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
@@ -150,9 +152,9 @@ class FeesCard extends StatelessWidget {
     return SectionCard(
       key: const Key('feesCard'),
       icon: Icons.currency_rupee,
-      title: 'Fees',
+      title: l.fees,
       onTap: view,
-      footer: canPay && next != null ? null : CardLink(fees.payments.isEmpty ? 'View fees' : 'View fees and receipts', onTap: view),
+      footer: canPay && next != null ? null : CardLink(fees.payments.isEmpty ? l.viewFees : l.viewFeesReceipts, onTap: view),
       child: body,
     );
   }

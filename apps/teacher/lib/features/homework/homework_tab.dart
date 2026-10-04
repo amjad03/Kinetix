@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import 'homework_form.dart';
@@ -13,7 +14,7 @@ class HomeworkController extends ChangeNotifier {
   final TeacherApi api;
   List<Homework>? items;
   bool loading = false;
-  String? error;
+  ApiException? error;
 
   Future<void> load() async {
     loading = true;
@@ -22,7 +23,7 @@ class HomeworkController extends ChangeNotifier {
     try {
       items = await api.myHomework();
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -48,7 +49,7 @@ class HomeworkTab extends StatelessWidget {
         .push<Homework>(MaterialPageRoute(fullscreenDialog: true, builder: (_) => HomeworkForm(api: controller.api)));
     if (created == null || !context.mounted) return;
     controller.added(created);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Homework assigned to ${created.section.name}')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.homeworkAssigned(created.section.name))));
   }
 
   @override
@@ -56,26 +57,24 @@ class HomeworkTab extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
+        final l = context.l10n;
         final items = controller.items;
         return RefreshIndicator(
           onRefresh: controller.load,
           child: CustomScrollView(
             slivers: [
-              SliverAppBar.large(title: const Text('Homework'), actions: [?profileButton]),
+              SliverAppBar.large(title: Text(l.navHomework), actions: [?profileButton]),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),
-                  sliver: SliverToBoxAdapter(child: ErrorBanner(controller.error!, onRetry: controller.load)),
+                  sliver: SliverToBoxAdapter(child: ErrorBanner.api(controller.error!, onRetry: controller.load)),
                 ),
               if (items == null && controller.loading)
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (items != null && items.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: KxEmptyState(
-                    icon: Icons.assignment_outlined,
-                    message: 'No homework yet.\nAssign work to a class and it will show up here.',
-                  ),
+                  child: KxEmptyState(icon: Icons.assignment_outlined, message: l.noHomework),
                 )
               else if (items != null)
                 SliverPadding(
@@ -103,27 +102,33 @@ class _HomeworkCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
+    final fmt = Fmt.of(context);
     final today = DateUtils.dateOnly(DateTime.now());
     final overdue = homework.dueOn.isBefore(today);
-    final due = Fmt.relativeDay(homework.dueOn, today);
+    final days = homework.dueOn.difference(today).inDays;
+    final due = switch (days) {
+      0 => l.dueToday,
+      1 => l.dueTomorrow,
+      -1 => l.wasDueYesterday,
+      _ => overdue ? l.wasDueOn(fmt.shortDay(homework.dueOn)) : l.dueOn(fmt.shortDay(homework.dueOn)),
+    };
     return Card(
+      key: Key('homework-${homework.id}'),
       child: Padding(
         padding: const EdgeInsets.all(Kx.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: Text(homework.title, style: context.text.titleMedium)),
-                const SizedBox(width: Kx.s8),
-                Pill(
-                  overdue ? 'Was due $due' : 'Due ${due == 'Today' || due == 'Tomorrow' ? due.toLowerCase() : due}',
-                  icon: Icons.event_outlined,
-                  background: overdue ? c.surfaceContainerHighest : c.secondaryContainer,
-                  foreground: overdue ? c.onSurfaceVariant : c.onSecondaryContainer,
-                ),
-              ],
+            Text(homework.title, style: context.text.titleMedium),
+            const SizedBox(height: Kx.s4),
+            // On its own line: "was due" labels are long in Hindi and Kannada.
+            Pill(
+              due,
+              key: const Key('dueLabel'),
+              icon: Icons.event_outlined,
+              background: overdue ? c.surfaceContainerHighest : c.secondaryContainer,
+              foreground: overdue ? c.onSurfaceVariant : c.onSecondaryContainer,
             ),
             const SizedBox(height: Kx.s4),
             Text(

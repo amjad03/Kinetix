@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
-import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'chat_screen.dart';
 import 'messages_controller.dart';
@@ -43,14 +43,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
             key: const Key('newMessage'),
             onPressed: () => NewMessageScreen.open(context, controller),
             icon: const Icon(Icons.edit_outlined),
-            label: const Text('New message'),
+            label: Text(context.l10n.newMessage),
           ),
           body: RefreshIndicator(
             onRefresh: controller.load,
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                const SliverAppBar.large(title: Text('Messages')),
+                SliverAppBar.large(title: Text(context.l10n.navMessages)),
                 if (controller.error != null)
                   CenteredSliver(
                     top: Kx.s8,
@@ -60,11 +60,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 if (!controller.loaded && controller.loading)
                   const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
                 else if (controller.loaded && threads.isEmpty)
-                  const SliverFillRemaining(
+                  SliverFillRemaining(
                     hasScrollBody: false,
                     child: KxEmptyState(
                       icon: Icons.forum_outlined,
-                      message: 'No messages yet.\nWrite to your teachers about a class, homework or a doubt.',
+                      message: context.l10n.noMessagesStudent,
                     ),
                   )
                 else ...[
@@ -131,7 +131,7 @@ class ThreadTile extends StatelessWidget {
                       ),
                       if (t.lastMessageAt != null)
                         Text(
-                          Fmt.messageDay(t.lastMessageAt!, now),
+                          context.fmt.messageDay(t.lastMessageAt!, now),
                           style: context.text.labelMedium?.copyWith(color: unread ? c.primary : c.onSurfaceVariant),
                         ),
                     ],
@@ -142,7 +142,7 @@ class ThreadTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          t.lastMessage ?? 'No messages yet',
+                          t.lastMessage ?? context.l10n.noMessagesYet,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: context.text.bodyMedium?.copyWith(
@@ -208,14 +208,14 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
       setState(() => _opening = null);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(e.message)));
+        ..showSnackBar(SnackBar(content: Text(context.errorText(e))));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New message')),
+      appBar: AppBar(title: Text(context.l10n.newMessage)),
       body: ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
@@ -231,7 +231,7 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
           }
           final me = all.firstOrNull;
           if (me == null || me.staff.isEmpty) {
-            return const KxEmptyState(icon: Icons.forum_outlined, message: 'No teachers are on your timetable yet.');
+            return KxEmptyState(icon: Icons.forum_outlined, message: context.l10n.noTeachersOnTimetable);
           }
           return LayoutBuilder(
             builder: (context, box) => ListView(
@@ -239,14 +239,14 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s4),
-                  child: Text('Your teachers · ${me.className}', style: context.text.titleSmall?.copyWith(color: c.primary)),
+                  child: Text(context.l10n.yourTeachers(me.className), style: context.text.titleSmall?.copyWith(color: c.primary)),
                 ),
                 for (final t in me.staff)
                   ListTile(
                     key: Key('pickTeacher-${t.id}'),
                     leading: KxAvatar(name: t.fullName),
                     title: Text(t.fullName),
-                    subtitle: Text(t.subjects.isEmpty ? 'Teacher' : t.subjects.join(' · ')),
+                    subtitle: Text(t.subjects.isEmpty ? context.l10n.teacher : t.subjects.join(' · ')),
                     trailing: _opening == t.id
                         ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.chevron_right),
@@ -277,13 +277,13 @@ class MessagesCard extends StatelessWidget {
     return SectionCard(
       key: const Key('messagesCard'),
       icon: Icons.forum_outlined,
-      title: 'Messages',
-      caption: unread > 0 ? '$unread unread' : null,
+      title: context.l10n.navMessages,
+      caption: unread > 0 ? context.l10n.nUnread(unread) : null,
       onTap: open,
-      footer: CardLink(controller.threads.isEmpty ? 'Write to a teacher' : 'Open messages', onTap: open),
+      footer: CardLink(controller.threads.isEmpty ? context.l10n.writeToTeacher : context.l10n.openMessages, onTap: open),
       child: latest == null
           ? Text(
-              'Ask your teachers about a class, homework or a doubt.',
+              context.l10n.askYourTeachers,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             )
           : Row(
@@ -297,7 +297,7 @@ class MessagesCard extends StatelessWidget {
                     children: [
                       Text(latest.staff.fullName, style: context.text.titleSmall),
                       Text(
-                        latest.lastMessage ?? 'No messages yet',
+                        latest.lastMessage ?? context.l10n.noMessagesYet,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: context.text.bodyMedium?.copyWith(

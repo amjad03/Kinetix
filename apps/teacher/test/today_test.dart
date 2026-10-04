@@ -33,8 +33,8 @@ void main() {
     expect(find.text("Monday's classes"), findsOneWidget);
     expect(find.text('Corporate Accounting'), findsOneWidget);
     // Monday is in the future, so attendance is not open yet.
-    expect(find.text('Take attendance'), findsNothing);
-    expect(find.text('Attendance opens on the day'), findsOneWidget);
+    expect(find.byKey(const Key('takeAttendance-slot1')), findsNothing);
+    expect(find.byKey(const Key('attendanceNotOpen')), findsOneWidget);
   });
 
   testWidgets('highlights the current period and shows the board connection', (tester) async {
@@ -51,10 +51,10 @@ void main() {
       );
     });
     expect(find.text("Today's classes"), findsOneWidget);
-    expect(find.text('Now'), findsOneWidget);
-    expect(find.text('Take attendance'), findsOneWidget);
+    expect(find.byKey(const Key('nowPill')), findsOneWidget);
+    expect(find.byKey(const Key('takeAttendance-slot1')), findsOneWidget);
     expect(find.text('Connected'), findsOneWidget);
     expect(find.text('Room 204 Board'), findsOneWidget);
-    expect(find.text('End class'), findsOneWidget);
+    expect(find.byKey(const Key('endClassCard')), findsOneWidget);
   });
 }

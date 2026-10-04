@@ -1,0 +1,896 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Hindi (`hi`).
+class AppLocalizationsHi extends AppLocalizations {
+  AppLocalizationsHi([String locale = 'hi']) : super(locale);
+
+  @override
+  String get appTitle => 'KINETIX Teacher';
+
+  @override
+  String get cancel => 'रद्द करें';
+
+  @override
+  String get save => 'सहेजें';
+
+  @override
+  String get send => 'भेजें';
+
+  @override
+  String get share => 'साझा करें';
+
+  @override
+  String get done => 'हो गया';
+
+  @override
+  String get retry => 'फिर से कोशिश करें';
+
+  @override
+  String get remove => 'हटाएँ';
+
+  @override
+  String get clear => 'साफ़ करें';
+
+  @override
+  String get profile => 'प्रोफ़ाइल';
+
+  @override
+  String get discardTitle => 'बदलाव छोड़ दें?';
+
+  @override
+  String get discardMarksBody => 'आपके कुछ अंक अभी सहेजे नहीं गए हैं।';
+
+  @override
+  String get keepEditing => 'बदलाव जारी रखें';
+
+  @override
+  String get discard => 'छोड़ दें';
+
+  @override
+  String get today => 'आज';
+
+  @override
+  String get tomorrow => 'कल';
+
+  @override
+  String get yesterday => 'कल';
+
+  @override
+  String greetingMorning(String name) {
+    return 'सुप्रभात, $name';
+  }
+
+  @override
+  String greetingAfternoon(String name) {
+    return 'नमस्ते, $name';
+  }
+
+  @override
+  String greetingEvening(String name) {
+    return 'शुभ संध्या, $name';
+  }
+
+  @override
+  String get navToday => 'आज';
+
+  @override
+  String get navHomework => 'होमवर्क';
+
+  @override
+  String get navMarks => 'अंक';
+
+  @override
+  String get navMessages => 'संदेश';
+
+  @override
+  String get navRecordings => 'रिकॉर्डिंग';
+
+  @override
+  String get assignHomework => 'होमवर्क दें';
+
+  @override
+  String get newAssessment => 'नया मूल्यांकन';
+
+  @override
+  String get newMessage => 'नया संदेश';
+
+  @override
+  String get signInTitle => 'साइन इन';
+
+  @override
+  String get signInButton => 'साइन इन करें';
+
+  @override
+  String get signInSubtitle => 'अपने संस्थान से मिला अकाउंट इस्तेमाल करें';
+
+  @override
+  String get institutionCode => 'संस्थान कोड';
+
+  @override
+  String get institutionCodeHint => 'उदा. demo-college';
+
+  @override
+  String get emailOrPhone => 'ईमेल या फ़ोन';
+
+  @override
+  String get password => 'पासवर्ड';
+
+  @override
+  String get showPassword => 'पासवर्ड दिखाएँ';
+
+  @override
+  String get hidePassword => 'पासवर्ड छिपाएँ';
+
+  @override
+  String get serverAddress => 'सर्वर का पता';
+
+  @override
+  String serverLabel(String address) {
+    return 'सर्वर: $address';
+  }
+
+  @override
+  String get enterInstitutionCode => 'अपना संस्थान कोड डालें';
+
+  @override
+  String get institutionCodeChars => 'केवल अंग्रेज़ी अक्षर, नंबर और हाइफ़न (-) इस्तेमाल करें';
+
+  @override
+  String get enterEmailOrPhone => 'अपना ईमेल या फ़ोन नंबर डालें';
+
+  @override
+  String get invalidEmail => 'सही ईमेल पता डालें';
+
+  @override
+  String get invalidEmailOrPhone => 'सही ईमेल या 10 अंकों का फ़ोन नंबर डालें';
+
+  @override
+  String get enterPassword => 'अपना पासवर्ड डालें';
+
+  @override
+  String get invalidServer => 'https://api.kinetix.in जैसा सर्वर पता डालें';
+
+  @override
+  String get errorNotTeacher => 'यह ऐप शिक्षकों के लिए है। आपके अकाउंट में शिक्षक की भूमिका नहीं है।';
+
+  @override
+  String get errorOffline => 'KINETIX से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
+
+  @override
+  String get errorTimeout => 'सर्वर जवाब देने में बहुत समय ले रहा है। फिर से कोशिश करें।';
+
+  @override
+  String get errorForbidden => 'आपको इसकी अनुमति नहीं है।';
+
+  @override
+  String get errorNotFound => 'नहीं मिला।';
+
+  @override
+  String get errorTooManyAttempts => 'बहुत ज़्यादा कोशिशें हो गईं। एक मिनट रुककर फिर से कोशिश करें।';
+
+  @override
+  String errorGeneric(int status) {
+    return 'कुछ गड़बड़ हो गई ($status)। फिर से कोशिश करें।';
+  }
+
+  @override
+  String get errorSessionExpired => 'आपका साइन इन समाप्त हो गया है। फिर से साइन इन करें।';
+
+  @override
+  String get errorWrongLogin => 'संस्थान कोड, लॉगिन या पासवर्ड गलत है';
+
+  @override
+  String get errorCodeExpired => 'यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। बोर्ड पर दिख रहा नया कोड डालें।';
+
+  @override
+  String get errorAccountInactive => 'आपका अकाउंट सक्रिय नहीं है';
+
+  @override
+  String get errorOtherCampus => 'आप उस कैंपस के शिक्षक नहीं हैं जिसका यह बोर्ड है';
+
+  @override
+  String get errorNotPairingQr => 'यह KINETIX बोर्ड का QR कोड नहीं है';
+
+  @override
+  String get errorFutureAttendance => 'आने वाली तारीख की उपस्थिति अभी नहीं ली जा सकती';
+
+  @override
+  String get errorNotYourClass => 'आप यह कक्षा नहीं पढ़ाते';
+
+  @override
+  String get errorSubjectNotInClass => 'यह विषय इस कक्षा में नहीं पढ़ाया जाता';
+
+  @override
+  String get errorDueDatePassed => 'जमा करने की तारीख निकल चुकी है';
+
+  @override
+  String get errorEnterMarksFirst => 'प्रकाशित करने से पहले अंक डालें';
+
+  @override
+  String get errorStudentsNotInClass => 'कुछ विद्यार्थी इस कक्षा में नहीं हैं';
+
+  @override
+  String get errorRecordingUploading => 'रिकॉर्डिंग अभी अपलोड हो रही है';
+
+  @override
+  String get errorRecordingNoClass => 'यह रिकॉर्डिंग किसी कक्षा के साथ नहीं बनी थी, इसलिए इसे किसी के साथ साझा नहीं किया जा सकता';
+
+  @override
+  String get recordingNotAvailable => 'यह रिकॉर्डिंग अभी उपलब्ध नहीं है। हो सकता है यह अभी बोर्ड से अपलोड हो रही हो।';
+
+  @override
+  String get connectToBoard => 'बोर्ड से कनेक्ट करें';
+
+  @override
+  String get connectToBoardBody => 'पढ़ाना शुरू करने के लिए कक्षा के बोर्ड पर दिख रहा QR कोड स्कैन करें';
+
+  @override
+  String get connect => 'कनेक्ट करें';
+
+  @override
+  String get connected => 'कनेक्टेड';
+
+  @override
+  String get endClass => 'कक्षा खत्म करें';
+
+  @override
+  String get endClassTitle => 'कक्षा खत्म करें?';
+
+  @override
+  String endClassBody(String board) {
+    return '$board आपको साइन आउट कर देगा और कनेक्ट करने वाली स्क्रीन पर लौट जाएगा।';
+  }
+
+  @override
+  String classEnded(String board) {
+    return '$board पर कक्षा खत्म हो गई';
+  }
+
+  @override
+  String noClassesOn(String weekday) {
+    return '$weekday को कोई कक्षा नहीं है';
+  }
+
+  @override
+  String showDay(String day) {
+    return '$day दिखाएँ';
+  }
+
+  @override
+  String get todaysClasses => 'आज की कक्षाएँ';
+
+  @override
+  String weekdayClasses(String weekday) {
+    return '$weekday की कक्षाएँ';
+  }
+
+  @override
+  String classesOn(String date) {
+    return '$date की कक्षाएँ';
+  }
+
+  @override
+  String get noClassesToday => 'आज कोई कक्षा नहीं है';
+
+  @override
+  String periodCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count पीरियड', one: '1 पीरियड');
+    return '$_temp0';
+  }
+
+  @override
+  String get attendanceTaken => 'उपस्थिति ली गई';
+
+  @override
+  String get attendanceOpensOnDay => 'उपस्थिति उसी दिन ली जा सकेगी';
+
+  @override
+  String get takeAttendance => 'उपस्थिति लें';
+
+  @override
+  String get now => 'अभी';
+
+  @override
+  String get teachOnBoard => 'बोर्ड पर पढ़ाएँ';
+
+  @override
+  String get attendance => 'उपस्थिति';
+
+  @override
+  String get statusPresent => 'उपस्थित';
+
+  @override
+  String get statusAbsent => 'अनुपस्थित';
+
+  @override
+  String get statusLate => 'देर से';
+
+  @override
+  String get statusExcused => 'छुट्टी';
+
+  @override
+  String countPresent(int count) {
+    return '$count उपस्थित';
+  }
+
+  @override
+  String countAbsent(int count) {
+    return '$count अनुपस्थित';
+  }
+
+  @override
+  String countLate(int count) {
+    return '$count देर से';
+  }
+
+  @override
+  String countExcused(int count) {
+    return '$count छुट्टी पर';
+  }
+
+  @override
+  String attendanceSaved(String summary) {
+    return 'उपस्थिति सहेजी गई · $summary';
+  }
+
+  @override
+  String attendanceUpdated(String summary) {
+    return 'उपस्थिति अपडेट हो गई · $summary';
+  }
+
+  @override
+  String get markAllPresent => 'सभी उपस्थित';
+
+  @override
+  String get noStudentsInClass => 'इस कक्षा में अभी कोई विद्यार्थी नहीं है';
+
+  @override
+  String get attendanceAlreadyTaken => 'उपस्थिति पहले ही ली जा चुकी है। बदलाव करने पर पहले वाली उपस्थिति बदल जाएगी।';
+
+  @override
+  String get attendanceHelp => 'सभी पहले से उपस्थित हैं। अनुपस्थित करने के लिए टैप करें, देर से आने के लिए दबाकर रखें।';
+
+  @override
+  String get update => 'अपडेट करें';
+
+  @override
+  String get submit => 'जमा करें';
+
+  @override
+  String get enterAllDigits => 'बोर्ड पर दिख रहे सभी 6 अंक डालें';
+
+  @override
+  String get enterCodeTitle => 'बोर्ड पर दिख रहा कोड डालें';
+
+  @override
+  String get enterCodeBody => 'यह QR कोड के नीचे लिखा 6 अंकों का नंबर है। हर 2 मिनट में नया कोड आता है।';
+
+  @override
+  String get scanInstead => 'इसके बजाय QR कोड स्कैन करें';
+
+  @override
+  String get youreConnected => 'आप कनेक्ट हो गए हैं';
+
+  @override
+  String boardReady(String board) {
+    return '$board आपके लिए तैयार है';
+  }
+
+  @override
+  String boardShowingClass(String board) {
+    return '$board पर आपकी कक्षा खुल गई है';
+  }
+
+  @override
+  String get labelBoard => 'बोर्ड';
+
+  @override
+  String get labelClass => 'कक्षा';
+
+  @override
+  String get labelSubject => 'विषय';
+
+  @override
+  String get labelPeriod => 'पीरियड';
+
+  @override
+  String get freeSession => 'खुला सेशन';
+
+  @override
+  String get freeSessionBody =>
+      'अभी टाइमटेबल में आपकी कोई कक्षा नहीं है, इसलिए बोर्ड बिना विद्यार्थियों की सूची के खुलेगा। 2 घंटे बाद आप अपने-आप साइन आउट हो जाएँगे।';
+
+  @override
+  String get qrNotOurs => 'यह KINETIX बोर्ड का कोड नहीं है। बोर्ड की स्क्रीन पर दिख रहा QR कोड स्कैन करें।';
+
+  @override
+  String get scanTitle => 'बोर्ड का QR कोड स्कैन करें';
+
+  @override
+  String get torch => 'टॉर्च';
+
+  @override
+  String get cameraDenied => 'स्कैन करने के लिए सेटिंग्स में कैमरे की अनुमति दें, या इसके बजाय कोड डालें।';
+
+  @override
+  String get cameraUnavailable => 'कैमरा उपलब्ध नहीं है। इसके बजाय कोड डालें।';
+
+  @override
+  String get pointCamera => 'कैमरे को बोर्ड पर दिख रहे QR कोड की ओर करें';
+
+  @override
+  String get enterCodeInstead => 'इसके बजाय कोड डालें';
+
+  @override
+  String get dueDate => 'जमा करने की तारीख';
+
+  @override
+  String get assign => 'दें';
+
+  @override
+  String get noClassesInTimetable => 'आपके टाइमटेबल में अभी कोई कक्षा नहीं है';
+
+  @override
+  String get chooseSubject => 'विषय चुनें';
+
+  @override
+  String get titleLabel => 'शीर्षक';
+
+  @override
+  String get homeworkTitleHint => 'उदा. अभ्यास 4.2, प्रश्न 1–5';
+
+  @override
+  String get homeworkTitleRequired => 'होमवर्क का शीर्षक लिखें';
+
+  @override
+  String get instructionsOptional => 'निर्देश (वैकल्पिक)';
+
+  @override
+  String homeworkAssigned(String className) {
+    return '$className को होमवर्क दिया गया';
+  }
+
+  @override
+  String get noHomework => 'अभी कोई होमवर्क नहीं है।\nकिसी कक्षा को होमवर्क दें, वह यहाँ दिखेगा।';
+
+  @override
+  String get dueToday => 'जमा: आज';
+
+  @override
+  String get dueTomorrow => 'जमा: कल';
+
+  @override
+  String dueOn(String date) {
+    return 'जमा: $date';
+  }
+
+  @override
+  String get wasDueYesterday => 'कल जमा होना था';
+
+  @override
+  String wasDueOn(String date) {
+    return '$date को जमा होना था';
+  }
+
+  @override
+  String get heldOn => 'तारीख';
+
+  @override
+  String get enterMaxMarks => 'अधिकतम अंक डालें';
+
+  @override
+  String get maxMustBePositive => '0 से ज़्यादा होना चाहिए';
+
+  @override
+  String get maxAtMost1000 => 'ज़्यादा से ज़्यादा 1000';
+
+  @override
+  String get create => 'बनाएँ';
+
+  @override
+  String get assessmentTitleHint => 'उदा. यूनिट टेस्ट 2: Redemption of shares';
+
+  @override
+  String get assessmentTitleRequired => 'शीर्षक लिखें';
+
+  @override
+  String get kind => 'प्रकार';
+
+  @override
+  String get outOf => 'कुल अंक';
+
+  @override
+  String get marksPrivateNote =>
+      'प्रकाशित करने तक अंक सिर्फ़ आपको दिखेंगे। उसके बाद विद्यार्थी और उनके अभिभावक अपने अंक और कक्षा का औसत देख सकेंगे।';
+
+  @override
+  String get kindTest => 'टेस्ट';
+
+  @override
+  String get kindAssignment => 'असाइनमेंट';
+
+  @override
+  String get kindInternal => 'आंतरिक';
+
+  @override
+  String get kindExam => 'परीक्षा';
+
+  @override
+  String get kindPractical => 'प्रैक्टिकल';
+
+  @override
+  String noAssessments(String className) {
+    return '$className के लिए अभी कोई टेस्ट या असाइनमेंट नहीं है।\nएक जोड़ें, अंक डालें और अभिभावकों के लिए प्रकाशित करें।';
+  }
+
+  @override
+  String get published => 'प्रकाशित';
+
+  @override
+  String get draft => 'ड्राफ़्ट';
+
+  @override
+  String get classAverage => 'कक्षा का औसत';
+
+  @override
+  String noMarksYet(String max) {
+    return 'अभी कोई अंक नहीं · कुल $max';
+  }
+
+  @override
+  String enteredOf(int entered, int total) {
+    return '$total में से $entered दर्ज';
+  }
+
+  @override
+  String enteredCount(int entered) {
+    return '$entered दर्ज';
+  }
+
+  @override
+  String get notANumber => 'नंबर नहीं है';
+
+  @override
+  String maxN(String max) {
+    return 'अधिकतम $max';
+  }
+
+  @override
+  String marksNeedFixing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count अंक ठीक करने हैं', one: 'एक अंक ठीक करना है');
+    return '$_temp0';
+  }
+
+  @override
+  String markedOf(int marked, int total) {
+    return '$total में से $marked के अंक दर्ज';
+  }
+
+  @override
+  String get marksSaved => 'अंक सहेजे गए';
+
+  @override
+  String savedClassAverage(String average, String max) {
+    return 'कक्षा का औसत $average / $max';
+  }
+
+  @override
+  String get familiesSeeUpdate => 'अभिभावकों को बदलाव दिखेगा';
+
+  @override
+  String get publishTitle => 'अंक प्रकाशित करें?';
+
+  @override
+  String get publishBody =>
+      'कक्षा के विद्यार्थियों और अभिभावकों को सूचना मिलेगी। वे अपने अंक, कक्षा का औसत और सबसे ज़्यादा अंक देख सकेंगे।';
+
+  @override
+  String publishBlank(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count विद्यार्थियों के अभी कोई अंक नहीं हैं।',
+      one: '1 विद्यार्थी के अभी कोई अंक नहीं हैं।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get publishCanCorrect => 'प्रकाशित करने के बाद भी आप अंक ठीक कर सकते हैं।';
+
+  @override
+  String get publish => 'प्रकाशित करें';
+
+  @override
+  String publishedNotified(String title) {
+    return '$title प्रकाशित · अभिभावकों को सूचना भेजी गई';
+  }
+
+  @override
+  String get statAverage => 'औसत';
+
+  @override
+  String get statHighest => 'सबसे ज़्यादा';
+
+  @override
+  String get statLowest => 'सबसे कम';
+
+  @override
+  String get statMarked => 'दर्ज';
+
+  @override
+  String typeMarksHint(String max) {
+    return '$max में से अंक लिखें। कीपैड का Next बटन अगले विद्यार्थी पर ले जाता है।';
+  }
+
+  @override
+  String get columnStudent => 'विद्यार्थी';
+
+  @override
+  String outOfN(String max) {
+    return 'कुल $max';
+  }
+
+  @override
+  String get editRemark => 'टिप्पणी बदलें';
+
+  @override
+  String get addRemark => 'टिप्पणी जोड़ें';
+
+  @override
+  String get absentShort => 'अनु';
+
+  @override
+  String marksOverMax(int count, String max) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count अंक $max से ज़्यादा हैं',
+      one: 'एक अंक $max से ज़्यादा है',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notSavedYet => 'अभी सहेजा नहीं गया';
+
+  @override
+  String get publishedFamiliesSee => 'प्रकाशित · अभिभावक ये अंक देख सकते हैं';
+
+  @override
+  String get typeMarksThenSave => 'अंक लिखें, फिर सहेजें';
+
+  @override
+  String get savedOnlyYou => 'सहेजा गया · ये अंक सिर्फ़ आपको दिखते हैं';
+
+  @override
+  String remarkFor(String name) {
+    return '$name के लिए टिप्पणी';
+  }
+
+  @override
+  String get remarkFamiliesSee => 'अभिभावक इसे अंकों के साथ देखेंगे।';
+
+  @override
+  String get remarkHint => 'उदा. साफ़-सुथरा काम; जर्नल एंट्री दोहराएँ';
+
+  @override
+  String get noMessages =>
+      'अभी कोई संदेश नहीं है।\n“नया संदेश” से किसी विद्यार्थी के अभिभावक को लिखें, या अभिभावकों के संदेश का इंतज़ार करें।';
+
+  @override
+  String get noMessagesPreview => 'अभी कोई संदेश नहीं';
+
+  @override
+  String aboutParent(String student, String className) {
+    return '$student के अभिभावक · $className';
+  }
+
+  @override
+  String aboutStudent(String className) {
+    return 'विद्यार्थी · $className';
+  }
+
+  @override
+  String get pullForEarlier => 'पुराने संदेशों के लिए नीचे खींचें';
+
+  @override
+  String chatTop(String student, String family) {
+    return '$student के बारे में $family के साथ संदेश';
+  }
+
+  @override
+  String get notSentRetry => 'नहीं भेजा गया · फिर से भेजने के लिए टैप करें';
+
+  @override
+  String get sending => 'भेजा जा रहा है…';
+
+  @override
+  String get messageCopied => 'संदेश कॉपी हो गया';
+
+  @override
+  String messageHint(String name) {
+    return '$name को संदेश लिखें';
+  }
+
+  @override
+  String writeToFamily(String student) {
+    return '$student के परिवार को लिखें';
+  }
+
+  @override
+  String get threadPrivacy => 'यह बातचीत आपके और आपके चुने हुए व्यक्ति के बीच है। स्कूल प्रबंधन इसे देख सकता है।';
+
+  @override
+  String get relationFather => 'पिता';
+
+  @override
+  String get relationMother => 'माता';
+
+  @override
+  String get relationGuardian => 'अभिभावक';
+
+  @override
+  String get relationParent => 'अभिभावक';
+
+  @override
+  String get searchStudents => 'नाम या रोल नंबर से खोजें';
+
+  @override
+  String get noStudentsTaught => 'आपकी कक्षाओं में अभी कोई विद्यार्थी नहीं है';
+
+  @override
+  String noStudentMatches(String query) {
+    return '“$query” से मिलता कोई विद्यार्थी नहीं';
+  }
+
+  @override
+  String get noGuardianOnRecord => 'कोई अभिभावक दर्ज नहीं है';
+
+  @override
+  String get shareTitle => 'कक्षा के साथ साझा करें?';
+
+  @override
+  String shareBody(String className, String title) {
+    return '$className के विद्यार्थी और उनके अभिभावक अपने ऐप में \"$title\" देख सकेंगे। अनुपस्थित विद्यार्थियों के अभिभावकों को सूचना मिलेगी।';
+  }
+
+  @override
+  String sharedWith(String className) {
+    return '$className के साथ साझा किया गया';
+  }
+
+  @override
+  String get noRecordings =>
+      'अभी कोई रिकॉर्डिंग नहीं है।\nकक्षा के दौरान बोर्ड पर रिकॉर्ड बटन दबाएँ। बोर्ड के अपलोड करते ही पाठ यहाँ दिखेगा।';
+
+  @override
+  String get uploading => 'अपलोड हो रही है';
+
+  @override
+  String get sharedWithClass => 'कक्षा के साथ साझा';
+
+  @override
+  String get noClass => 'कोई कक्षा नहीं';
+
+  @override
+  String get notShared => 'साझा नहीं';
+
+  @override
+  String get preparingTranscript => 'ट्रांसक्रिप्ट तैयार हो रही है';
+
+  @override
+  String get transcriptReady => 'ट्रांसक्रिप्ट तैयार';
+
+  @override
+  String get noTranscript => 'ट्रांसक्रिप्ट नहीं';
+
+  @override
+  String get noSound => 'आवाज़ नहीं';
+
+  @override
+  String get notLinkedToClass => 'किसी कक्षा से जुड़ी नहीं';
+
+  @override
+  String get play => 'चलाएँ';
+
+  @override
+  String get shareWithClass => 'कक्षा के साथ साझा करें';
+
+  @override
+  String get durationUnderMinute => 'एक मिनट से कम';
+
+  @override
+  String durationMinutes(int minutes) {
+    return '$minutes मिनट';
+  }
+
+  @override
+  String durationHours(int hours) {
+    return '$hours घंटा';
+  }
+
+  @override
+  String durationHoursMinutes(int hours, int minutes) {
+    return '$hours घंटा $minutes मिनट';
+  }
+
+  @override
+  String get signOutTitle => 'साइन आउट करें?';
+
+  @override
+  String get signOutBody => 'फिर से साइन इन करने के लिए आपको पासवर्ड चाहिए होगा।';
+
+  @override
+  String get signOut => 'साइन आउट करें';
+
+  @override
+  String comingLater(String feature) {
+    return '$feature अगले अपडेट में आएगा';
+  }
+
+  @override
+  String get account => 'अकाउंट';
+
+  @override
+  String get institution => 'संस्थान';
+
+  @override
+  String get language => 'भाषा';
+
+  @override
+  String get server => 'सर्वर';
+
+  @override
+  String get comingSoon => 'जल्द आ रहा है';
+
+  @override
+  String get announcements => 'घोषणाएँ';
+
+  @override
+  String get announcementsBody => 'अपनी कक्षाओं को सूचनाएँ भेजें';
+
+  @override
+  String get studentDoubts => 'विद्यार्थियों के संदेह';
+
+  @override
+  String get studentDoubtsBody => 'विद्यार्थियों के सवालों के जवाब दें';
+
+  @override
+  String get mcqTests => 'MCQ टेस्ट';
+
+  @override
+  String get mcqTestsBody => 'ऑनलाइन टेस्ट जो बोर्ड के क्विज़ से जुड़ते हैं';
+
+  @override
+  String get roleAdmin => 'एडमिन';
+
+  @override
+  String get rolePrincipal => 'प्रधानाचार्य';
+
+  @override
+  String get roleHod => 'विभागाध्यक्ष';
+
+  @override
+  String get roleTeacher => 'शिक्षक';
+
+  @override
+  String get roleStudent => 'विद्यार्थी';
+
+  @override
+  String get roleParent => 'अभिभावक';
+
+  @override
+  String get roleLibrarian => 'पुस्तकालयाध्यक्ष';
+
+  @override
+  String get roleAccountant => 'लेखाकार';
+
+  @override
+  String get languageSaveFailed => 'इस फ़ोन पर भाषा बदल गई है। अगली बार ऑनलाइन होने पर यह आपके अकाउंट में सहेज दी जाएगी।';
+}

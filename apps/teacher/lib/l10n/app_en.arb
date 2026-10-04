@@ -1,0 +1,1296 @@
+{
+  "@@locale": "en",
+  "appTitle": "KINETIX Teacher",
+  "@appTitle": {
+    "description": "App name (keep in English)."
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button."
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Button."
+  },
+  "send": "Send",
+  "@send": {
+    "description": "Button / tooltip."
+  },
+  "share": "Share",
+  "@share": {
+    "description": "Button."
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Button that closes a screen or sheet."
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button in an error banner (glossary: Try again)."
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Button: removes a remark."
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Tooltip: clears the search box."
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Screen title and avatar tooltip."
+  },
+  "discardTitle": "Discard changes?",
+  "@discardTitle": {
+    "description": "Dialog title when leaving with unsaved marks."
+  },
+  "discardMarksBody": "You have marks that are not saved yet.",
+  "@discardMarksBody": {
+    "description": "Dialog body."
+  },
+  "keepEditing": "Keep editing",
+  "@keepEditing": {
+    "description": "Dialog button: stay on the screen."
+  },
+  "discard": "Discard",
+  "@discard": {
+    "description": "Dialog button: leave without saving."
+  },
+  "today": "Today",
+  "@today": {
+    "description": "Relative day."
+  },
+  "tomorrow": "Tomorrow",
+  "@tomorrow": {
+    "description": "Relative day."
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Relative day (Hindi uses कल for both; context makes it clear)."
+  },
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "description": "Greeting on Today before 12:00. name is the first name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "description": "Greeting 12:00–17:00.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "description": "Greeting after 17:00.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "navToday": "Today",
+  "@navToday": {
+    "description": "Bottom navigation tab."
+  },
+  "navHomework": "Homework",
+  "@navHomework": {
+    "description": "Bottom navigation tab and screen title."
+  },
+  "navMarks": "Marks",
+  "@navMarks": {
+    "description": "Bottom navigation tab and screen title."
+  },
+  "navMessages": "Messages",
+  "@navMessages": {
+    "description": "Bottom navigation tab and screen title."
+  },
+  "navRecordings": "Recordings",
+  "@navRecordings": {
+    "description": "Bottom navigation tab and screen title (short: tab is narrow)."
+  },
+  "assignHomework": "Assign homework",
+  "@assignHomework": {
+    "description": "Floating button and form title."
+  },
+  "newAssessment": "New assessment",
+  "@newAssessment": {
+    "description": "Floating button and form title: a new test or assignment."
+  },
+  "newMessage": "New message",
+  "@newMessage": {
+    "description": "Floating button and screen title."
+  },
+  "signInTitle": "Sign in",
+  "@signInTitle": {
+    "description": "Sign-in screen heading."
+  },
+  "signInButton": "Sign in",
+  "@signInButton": {
+    "description": "Sign-in button."
+  },
+  "signInSubtitle": "Use the account your institution gave you",
+  "@signInSubtitle": {
+    "description": "Under the sign-in heading."
+  },
+  "institutionCode": "Institution code",
+  "@institutionCode": {
+    "description": "Field label."
+  },
+  "institutionCodeHint": "e.g. demo-college",
+  "@institutionCodeHint": {
+    "description": "Field hint; keep the example code in English."
+  },
+  "emailOrPhone": "Email or phone",
+  "@emailOrPhone": {
+    "description": "Field label."
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Field label."
+  },
+  "showPassword": "Show password",
+  "@showPassword": {
+    "description": "Tooltip."
+  },
+  "hidePassword": "Hide password",
+  "@hidePassword": {
+    "description": "Tooltip."
+  },
+  "serverAddress": "Server address",
+  "@serverAddress": {
+    "description": "Field label."
+  },
+  "serverLabel": "Server: {address}",
+  "@serverLabel": {
+    "description": "Button showing the API host.",
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "enterInstitutionCode": "Enter your institution code",
+  "@enterInstitutionCode": {
+    "description": "Validation."
+  },
+  "institutionCodeChars": "Use letters, numbers and hyphens only",
+  "@institutionCodeChars": {
+    "description": "Validation: only a-z, 0-9 and - are allowed."
+  },
+  "enterEmailOrPhone": "Enter your email or phone number",
+  "@enterEmailOrPhone": {
+    "description": "Validation."
+  },
+  "invalidEmail": "Enter a valid email address",
+  "@invalidEmail": {
+    "description": "Validation."
+  },
+  "invalidEmailOrPhone": "Enter a valid email or 10-digit phone number",
+  "@invalidEmailOrPhone": {
+    "description": "Validation."
+  },
+  "enterPassword": "Enter your password",
+  "@enterPassword": {
+    "description": "Validation."
+  },
+  "invalidServer": "Enter a server address like https://api.kinetix.in",
+  "@invalidServer": {
+    "description": "Validation."
+  },
+  "errorNotTeacher": "This app is for teachers. Your account does not have a teaching role.",
+  "@errorNotTeacher": {
+    "description": "Sign-in error."
+  },
+  "errorOffline": "Can't reach KINETIX. Check your internet connection and the server address.",
+  "@errorOffline": {
+    "description": "Network error."
+  },
+  "errorTimeout": "The server is taking too long to respond. Try again.",
+  "@errorTimeout": {
+    "description": "Network error."
+  },
+  "errorForbidden": "You don't have access to this.",
+  "@errorForbidden": {
+    "description": "HTTP 403."
+  },
+  "errorNotFound": "Not found.",
+  "@errorNotFound": {
+    "description": "HTTP 404."
+  },
+  "errorTooManyAttempts": "Too many attempts. Wait a minute and try again.",
+  "@errorTooManyAttempts": {
+    "description": "HTTP 429."
+  },
+  "errorGeneric": "Something went wrong ({status}). Try again.",
+  "@errorGeneric": {
+    "description": "Any other HTTP error; status is the HTTP code.",
+    "placeholders": {
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "errorSessionExpired": "Your sign-in has expired. Sign in again.",
+  "@errorSessionExpired": {
+    "description": "Server: invalid or expired token."
+  },
+  "errorWrongLogin": "Wrong institution, login or password",
+  "@errorWrongLogin": {
+    "description": "Server: sign-in failed."
+  },
+  "errorCodeExpired": "This code is invalid or has expired. Use the new code on the board.",
+  "@errorCodeExpired": {
+    "description": "Server: pairing code rejected."
+  },
+  "errorAccountInactive": "Your account is not active",
+  "@errorAccountInactive": {
+    "description": "Server."
+  },
+  "errorOtherCampus": "You are not a teacher at the campus this board belongs to",
+  "@errorOtherCampus": {
+    "description": "Server: pairing with another campus board."
+  },
+  "errorNotPairingQr": "Not a KINETIX pairing QR code",
+  "@errorNotPairingQr": {
+    "description": "Server."
+  },
+  "errorFutureAttendance": "Attendance cannot be taken for a future date",
+  "@errorFutureAttendance": {
+    "description": "Server."
+  },
+  "errorNotYourClass": "You do not teach this class",
+  "@errorNotYourClass": {
+    "description": "Server."
+  },
+  "errorSubjectNotInClass": "That subject is not taught in this class",
+  "@errorSubjectNotInClass": {
+    "description": "Server."
+  },
+  "errorDueDatePassed": "The due date has already passed",
+  "@errorDueDatePassed": {
+    "description": "Server."
+  },
+  "errorEnterMarksFirst": "Enter marks before publishing",
+  "@errorEnterMarksFirst": {
+    "description": "Server."
+  },
+  "errorStudentsNotInClass": "Some students are not in this class",
+  "@errorStudentsNotInClass": {
+    "description": "Server."
+  },
+  "errorRecordingUploading": "The recording is still uploading",
+  "@errorRecordingUploading": {
+    "description": "Server."
+  },
+  "errorRecordingNoClass": "This recording was not made with a class, so there is no one to share it with",
+  "@errorRecordingNoClass": {
+    "description": "Server."
+  },
+  "recordingNotAvailable": "This recording is not available yet. It may still be uploading from the board.",
+  "@recordingNotAvailable": {
+    "description": "Player error for a missing recording."
+  },
+  "connectToBoard": "Connect to board",
+  "@connectToBoard": {
+    "description": "Card title and screen title."
+  },
+  "connectToBoardBody": "Scan the QR code on the classroom board to start teaching",
+  "@connectToBoardBody": {
+    "description": "Card body."
+  },
+  "connect": "Connect",
+  "@connect": {
+    "description": "Button."
+  },
+  "connected": "Connected",
+  "@connected": {
+    "description": "Card label above the board name."
+  },
+  "endClass": "End class",
+  "@endClass": {
+    "description": "Button."
+  },
+  "endClassTitle": "End class?",
+  "@endClassTitle": {
+    "description": "Dialog title."
+  },
+  "endClassBody": "{board} will sign you out and return to its pairing screen.",
+  "@endClassBody": {
+    "description": "Dialog body; board is a board name like \"Room 204 Board\".",
+    "placeholders": {
+      "board": {
+        "type": "String"
+      }
+    }
+  },
+  "classEnded": "Class ended on {board}",
+  "@classEnded": {
+    "description": "Snackbar.",
+    "placeholders": {
+      "board": {
+        "type": "String"
+      }
+    }
+  },
+  "noClassesOn": "No classes on {weekday}",
+  "@noClassesOn": {
+    "description": "Empty state; weekday is a full localised weekday name.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "showDay": "Show {day}",
+  "@showDay": {
+    "description": "Button; day is \"Tomorrow\" or a short date.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "todaysClasses": "Today's classes",
+  "@todaysClasses": {
+    "description": "Section heading."
+  },
+  "weekdayClasses": "{weekday}'s classes",
+  "@weekdayClasses": {
+    "description": "Section heading for a day this week; weekday is a full localised weekday name.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "classesOn": "Classes on {date}",
+  "@classesOn": {
+    "description": "Section heading for a day further away; date is a short date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noClassesToday": "No classes today",
+  "@noClassesToday": {
+    "description": "Shown above the next teaching day."
+  },
+  "periodCount": "{count, plural, =1{1 period} other{{count} periods}}",
+  "@periodCount": {
+    "description": "Number of periods in the day.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendanceTaken": "Attendance taken",
+  "@attendanceTaken": {
+    "description": "Button once attendance is done."
+  },
+  "attendanceOpensOnDay": "Attendance opens on the day",
+  "@attendanceOpensOnDay": {
+    "description": "Shown on future periods."
+  },
+  "takeAttendance": "Take attendance",
+  "@takeAttendance": {
+    "description": "Button."
+  },
+  "now": "Now",
+  "@now": {
+    "description": "Badge on the current period."
+  },
+  "teachOnBoard": "Teach on board",
+  "@teachOnBoard": {
+    "description": "Button on the current period."
+  },
+  "attendance": "Attendance",
+  "@attendance": {
+    "description": "Screen title."
+  },
+  "statusPresent": "Present",
+  "@statusPresent": {
+    "description": "Attendance status."
+  },
+  "statusAbsent": "Absent",
+  "@statusAbsent": {
+    "description": "Attendance status, also the Absent chip in marks entry."
+  },
+  "statusLate": "Late",
+  "@statusLate": {
+    "description": "Attendance status."
+  },
+  "statusExcused": "Excused",
+  "@statusExcused": {
+    "description": "Attendance status: absent with permission (on leave)."
+  },
+  "countPresent": "{count} present",
+  "@countPresent": {
+    "description": "Summary part.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countAbsent": "{count} absent",
+  "@countAbsent": {
+    "description": "Summary part.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countLate": "{count} late",
+  "@countLate": {
+    "description": "Summary part.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countExcused": "{count} excused",
+  "@countExcused": {
+    "description": "Summary part.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendanceSaved": "Attendance saved · {summary}",
+  "@attendanceSaved": {
+    "description": "Snackbar; summary like \"10 present · 2 absent\".",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "attendanceUpdated": "Attendance updated · {summary}",
+  "@attendanceUpdated": {
+    "description": "Snackbar.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "markAllPresent": "Mark all present",
+  "@markAllPresent": {
+    "description": "App bar button."
+  },
+  "noStudentsInClass": "No students in this class yet",
+  "@noStudentsInClass": {
+    "description": "Empty state."
+  },
+  "attendanceAlreadyTaken": "Already taken. Changes replace the earlier marks.",
+  "@attendanceAlreadyTaken": {
+    "description": "Help text."
+  },
+  "attendanceHelp": "Everyone starts present. Tap to mark absent, long-press for late.",
+  "@attendanceHelp": {
+    "description": "Help text."
+  },
+  "update": "Update",
+  "@update": {
+    "description": "Button: resubmit attendance."
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Button."
+  },
+  "enterAllDigits": "Enter all 6 digits shown on the board",
+  "@enterAllDigits": {
+    "description": "Validation."
+  },
+  "enterCodeTitle": "Enter the code on the board",
+  "@enterCodeTitle": {
+    "description": "Heading."
+  },
+  "enterCodeBody": "It is the 6-digit number under the QR code. A new code appears every 2 minutes.",
+  "@enterCodeBody": {
+    "description": "Help text."
+  },
+  "scanInstead": "Scan QR code instead",
+  "@scanInstead": {
+    "description": "Button."
+  },
+  "youreConnected": "You're connected",
+  "@youreConnected": {
+    "description": "Heading."
+  },
+  "boardReady": "{board} is ready for you",
+  "@boardReady": {
+    "description": "Free session.",
+    "placeholders": {
+      "board": {
+        "type": "String"
+      }
+    }
+  },
+  "boardShowingClass": "{board} is showing your class",
+  "@boardShowingClass": {
+    "description": "Timetabled class.",
+    "placeholders": {
+      "board": {
+        "type": "String"
+      }
+    }
+  },
+  "labelBoard": "Board",
+  "@labelBoard": {
+    "description": "Row label."
+  },
+  "labelClass": "Class",
+  "@labelClass": {
+    "description": "Row and field label: a group of students."
+  },
+  "labelSubject": "Subject",
+  "@labelSubject": {
+    "description": "Row and field label."
+  },
+  "labelPeriod": "Period",
+  "@labelPeriod": {
+    "description": "Row label."
+  },
+  "freeSession": "Free session",
+  "@freeSession": {
+    "description": "A board session with no timetabled class."
+  },
+  "freeSessionBody": "You have no timetabled class right now, so the board opens without a class list. It signs you out after 2 hours.",
+  "@freeSessionBody": {
+    "description": "Explains a free session."
+  },
+  "qrNotOurs": "That isn't a KINETIX board code. Scan the QR code on the board's screen.",
+  "@qrNotOurs": {
+    "description": "Scanner error."
+  },
+  "scanTitle": "Scan board QR code",
+  "@scanTitle": {
+    "description": "Scanner title."
+  },
+  "torch": "Torch",
+  "@torch": {
+    "description": "Tooltip: camera flashlight."
+  },
+  "cameraDenied": "Allow camera access in Settings to scan, or enter the code instead.",
+  "@cameraDenied": {
+    "description": "Scanner error."
+  },
+  "cameraUnavailable": "The camera is not available. Enter the code instead.",
+  "@cameraUnavailable": {
+    "description": "Scanner error."
+  },
+  "pointCamera": "Point your camera at the QR code on the board",
+  "@pointCamera": {
+    "description": "Scanner hint."
+  },
+  "enterCodeInstead": "Enter code instead",
+  "@enterCodeInstead": {
+    "description": "Button."
+  },
+  "dueDate": "Due date",
+  "@dueDate": {
+    "description": "Field label and date picker title."
+  },
+  "assign": "Assign",
+  "@assign": {
+    "description": "App bar button: assigns the homework."
+  },
+  "noClassesInTimetable": "You have no classes in your timetable yet",
+  "@noClassesInTimetable": {
+    "description": "Empty state."
+  },
+  "chooseSubject": "Choose a subject",
+  "@chooseSubject": {
+    "description": "Validation."
+  },
+  "titleLabel": "Title",
+  "@titleLabel": {
+    "description": "Field label."
+  },
+  "homeworkTitleHint": "e.g. Exercise 4.2, questions 1–5",
+  "@homeworkTitleHint": {
+    "description": "Field hint."
+  },
+  "homeworkTitleRequired": "Give the homework a title",
+  "@homeworkTitleRequired": {
+    "description": "Validation."
+  },
+  "instructionsOptional": "Instructions (optional)",
+  "@instructionsOptional": {
+    "description": "Field label."
+  },
+  "homeworkAssigned": "Homework assigned to {className}",
+  "@homeworkAssigned": {
+    "description": "Snackbar; className like \"BCom Sem 3 A\".",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "noHomework": "No homework yet.\nAssign work to a class and it will show up here.",
+  "@noHomework": {
+    "description": "Empty state."
+  },
+  "dueToday": "Due today",
+  "@dueToday": {
+    "description": "Short label on a homework card."
+  },
+  "dueTomorrow": "Due tomorrow",
+  "@dueTomorrow": {
+    "description": "Short label on a homework card."
+  },
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "description": "Short label; date like \"Tue, 6 Oct\".",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wasDueYesterday": "Was due yesterday",
+  "@wasDueYesterday": {
+    "description": "Short label on an overdue homework card."
+  },
+  "wasDueOn": "Was due {date}",
+  "@wasDueOn": {
+    "description": "Short label on an overdue homework card.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "heldOn": "Held on",
+  "@heldOn": {
+    "description": "Field label and date picker title: the date of the test."
+  },
+  "enterMaxMarks": "Enter the maximum marks",
+  "@enterMaxMarks": {
+    "description": "Validation."
+  },
+  "maxMustBePositive": "Must be more than 0",
+  "@maxMustBePositive": {
+    "description": "Validation."
+  },
+  "maxAtMost1000": "At most 1000",
+  "@maxAtMost1000": {
+    "description": "Validation."
+  },
+  "create": "Create",
+  "@create": {
+    "description": "App bar button."
+  },
+  "assessmentTitleHint": "e.g. Unit test 2: Redemption of shares",
+  "@assessmentTitleHint": {
+    "description": "Field hint."
+  },
+  "assessmentTitleRequired": "Give it a title",
+  "@assessmentTitleRequired": {
+    "description": "Validation."
+  },
+  "kind": "Kind",
+  "@kind": {
+    "description": "Label above test / assignment / exam chips."
+  },
+  "outOf": "Out of",
+  "@outOf": {
+    "description": "Field label: maximum marks."
+  },
+  "marksPrivateNote": "Marks stay private until you publish them. Then students and their families see their own marks and the class average.",
+  "@marksPrivateNote": {
+    "description": "Help text."
+  },
+  "kindTest": "Test",
+  "@kindTest": {
+    "description": "Assessment kind (distinct from Exam)."
+  },
+  "kindAssignment": "Assignment",
+  "@kindAssignment": {
+    "description": "Assessment kind."
+  },
+  "kindInternal": "Internal",
+  "@kindInternal": {
+    "description": "Assessment kind: internal assessment."
+  },
+  "kindExam": "Exam",
+  "@kindExam": {
+    "description": "Assessment kind."
+  },
+  "kindPractical": "Practical",
+  "@kindPractical": {
+    "description": "Assessment kind."
+  },
+  "noAssessments": "No tests or assignments for {className} yet.\nAdd one, enter marks and publish them to families.",
+  "@noAssessments": {
+    "description": "Empty state.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "published": "Published",
+  "@published": {
+    "description": "Badge."
+  },
+  "draft": "Draft",
+  "@draft": {
+    "description": "Badge."
+  },
+  "classAverage": "Class average",
+  "@classAverage": {
+    "description": "Label before the average."
+  },
+  "noMarksYet": "No marks yet · out of {max}",
+  "@noMarksYet": {
+    "description": "Card line; max is the maximum marks.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enteredOf": "{entered} of {total} entered",
+  "@enteredOf": {
+    "description": "Card line.",
+    "placeholders": {
+      "entered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "enteredCount": "{entered} entered",
+  "@enteredCount": {
+    "description": "Card line.",
+    "placeholders": {
+      "entered": {
+        "type": "int"
+      }
+    }
+  },
+  "notANumber": "Not a number",
+  "@notANumber": {
+    "description": "Field error (very short)."
+  },
+  "maxN": "Max {max}",
+  "@maxN": {
+    "description": "Field error (very short).",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "marksNeedFixing": "{count, plural, =1{One mark needs fixing} other{{count} marks need fixing}}",
+  "@marksNeedFixing": {
+    "description": "Snackbar when saving with errors.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "markedOf": "{marked} of {total} marked",
+  "@markedOf": {
+    "description": "Bottom bar summary.",
+    "placeholders": {
+      "marked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "marksSaved": "Marks saved",
+  "@marksSaved": {
+    "description": "Snackbar."
+  },
+  "savedClassAverage": "class average {average} / {max}",
+  "@savedClassAverage": {
+    "description": "Snackbar part after \"Marks saved\".",
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "familiesSeeUpdate": "families see the update",
+  "@familiesSeeUpdate": {
+    "description": "Snackbar part."
+  },
+  "publishTitle": "Publish marks?",
+  "@publishTitle": {
+    "description": "Dialog title."
+  },
+  "publishBody": "Students and families of the class will be notified and can see their own marks with the class average and highest.",
+  "@publishBody": {
+    "description": "Dialog body."
+  },
+  "publishBlank": "{count, plural, =1{1 student has no marks yet.} other{{count} students have no marks yet.}}",
+  "@publishBlank": {
+    "description": "Dialog warning.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "publishCanCorrect": "You can still correct marks after publishing.",
+  "@publishCanCorrect": {
+    "description": "Dialog note."
+  },
+  "publish": "Publish",
+  "@publish": {
+    "description": "Button."
+  },
+  "publishedNotified": "{title} published · families notified",
+  "@publishedNotified": {
+    "description": "Snackbar; title is the test title.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "statAverage": "Average",
+  "@statAverage": {
+    "description": "Stat label (narrow column)."
+  },
+  "statHighest": "Highest",
+  "@statHighest": {
+    "description": "Stat label (narrow column)."
+  },
+  "statLowest": "Lowest",
+  "@statLowest": {
+    "description": "Stat label (narrow column)."
+  },
+  "statMarked": "Marked",
+  "@statMarked": {
+    "description": "Stat label (narrow column): students with marks."
+  },
+  "typeMarksHint": "Type marks out of {max}. Next on the keypad moves to the next student.",
+  "@typeMarksHint": {
+    "description": "Help text.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "columnStudent": "Student",
+  "@columnStudent": {
+    "description": "Column heading."
+  },
+  "outOfN": "Out of {max}",
+  "@outOfN": {
+    "description": "Column heading.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "editRemark": "Edit remark",
+  "@editRemark": {
+    "description": "Tooltip."
+  },
+  "addRemark": "Add remark",
+  "@addRemark": {
+    "description": "Tooltip."
+  },
+  "absentShort": "AB",
+  "@absentShort": {
+    "description": "Hint in the marks box of an absent student (2–4 characters)."
+  },
+  "marksOverMax": "{count, plural, =1{One mark is more than {max}} other{{count} marks are more than {max}}}",
+  "@marksOverMax": {
+    "description": "Bottom bar hint.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "notSavedYet": "Not saved yet",
+  "@notSavedYet": {
+    "description": "Bottom bar hint."
+  },
+  "publishedFamiliesSee": "Published · families can see these marks",
+  "@publishedFamiliesSee": {
+    "description": "Bottom bar hint."
+  },
+  "typeMarksThenSave": "Type marks, then Save",
+  "@typeMarksThenSave": {
+    "description": "Bottom bar hint."
+  },
+  "savedOnlyYou": "Saved · only you can see these marks",
+  "@savedOnlyYou": {
+    "description": "Bottom bar hint."
+  },
+  "remarkFor": "Remark for {name}",
+  "@remarkFor": {
+    "description": "Sheet title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "remarkFamiliesSee": "Families see it with the marks.",
+  "@remarkFamiliesSee": {
+    "description": "Sheet note."
+  },
+  "remarkHint": "e.g. Neat working; revise journal entries",
+  "@remarkHint": {
+    "description": "Field hint."
+  },
+  "noMessages": "No messages yet.\nWrite to a student’s parent with New message, or wait for families to write to you.",
+  "@noMessages": {
+    "description": "Empty inbox."
+  },
+  "noMessagesPreview": "No messages yet",
+  "@noMessagesPreview": {
+    "description": "Thread preview with no messages."
+  },
+  "aboutParent": "Parent of {student} · {className}",
+  "@aboutParent": {
+    "description": "Under a parent’s name in a thread.",
+    "placeholders": {
+      "student": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutStudent": "Student · {className}",
+  "@aboutStudent": {
+    "description": "Under an adult student’s name in a thread.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "pullForEarlier": "Pull down for earlier messages",
+  "@pullForEarlier": {
+    "description": "Top of a chat."
+  },
+  "chatTop": "Messages about {student} with {family}",
+  "@chatTop": {
+    "description": "Start of a chat.",
+    "placeholders": {
+      "student": {
+        "type": "String"
+      },
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "notSentRetry": "Not sent · tap to retry",
+  "@notSentRetry": {
+    "description": "Message status."
+  },
+  "sending": "Sending…",
+  "@sending": {
+    "description": "Message status."
+  },
+  "messageCopied": "Message copied",
+  "@messageCopied": {
+    "description": "Snackbar."
+  },
+  "messageHint": "Message {name}",
+  "@messageHint": {
+    "description": "Composer hint.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "writeToFamily": "Write to {student}’s family",
+  "@writeToFamily": {
+    "description": "Sheet title.",
+    "placeholders": {
+      "student": {
+        "type": "String"
+      }
+    }
+  },
+  "threadPrivacy": "The thread is between you and the person you choose. School leaders can review it.",
+  "@threadPrivacy": {
+    "description": "Sheet note."
+  },
+  "relationFather": "Father",
+  "@relationFather": {
+    "description": "Guardian relation."
+  },
+  "relationMother": "Mother",
+  "@relationMother": {
+    "description": "Guardian relation."
+  },
+  "relationGuardian": "Guardian",
+  "@relationGuardian": {
+    "description": "Guardian relation."
+  },
+  "relationParent": "Parent",
+  "@relationParent": {
+    "description": "Guardian relation when none is recorded."
+  },
+  "searchStudents": "Search by name or roll number",
+  "@searchStudents": {
+    "description": "Search hint."
+  },
+  "noStudentsTaught": "No students in the classes you teach yet",
+  "@noStudentsTaught": {
+    "description": "Empty state."
+  },
+  "noStudentMatches": "No student matches “{query}”",
+  "@noStudentMatches": {
+    "description": "Empty search.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noGuardianOnRecord": "No parent or guardian on record",
+  "@noGuardianOnRecord": {
+    "description": "Student without a guardian."
+  },
+  "shareTitle": "Share with the class?",
+  "@shareTitle": {
+    "description": "Dialog title."
+  },
+  "shareBody": "Students of {className} and their families can watch \"{title}\" in their apps. Families of students who were absent get a notification.",
+  "@shareBody": {
+    "description": "Dialog body.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedWith": "Shared with {className}",
+  "@sharedWith": {
+    "description": "Snackbar.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "noRecordings": "No recordings yet.\nTap Record on the board during class. The lesson shows up here once the board uploads it.",
+  "@noRecordings": {
+    "description": "Empty state."
+  },
+  "uploading": "Uploading",
+  "@uploading": {
+    "description": "Badge."
+  },
+  "sharedWithClass": "Shared with class",
+  "@sharedWithClass": {
+    "description": "Badge."
+  },
+  "noClass": "No class",
+  "@noClass": {
+    "description": "Badge."
+  },
+  "notShared": "Not shared",
+  "@notShared": {
+    "description": "Badge."
+  },
+  "preparingTranscript": "Preparing transcript",
+  "@preparingTranscript": {
+    "description": "Badge."
+  },
+  "transcriptReady": "Transcript ready",
+  "@transcriptReady": {
+    "description": "Badge."
+  },
+  "noTranscript": "No transcript",
+  "@noTranscript": {
+    "description": "Badge."
+  },
+  "noSound": "No sound",
+  "@noSound": {
+    "description": "Badge."
+  },
+  "notLinkedToClass": "Not linked to a class",
+  "@notLinkedToClass": {
+    "description": "Card line."
+  },
+  "play": "Play",
+  "@play": {
+    "description": "Tooltip."
+  },
+  "shareWithClass": "Share with class",
+  "@shareWithClass": {
+    "description": "Button."
+  },
+  "durationUnderMinute": "Under a minute",
+  "@durationUnderMinute": {
+    "description": "Recording length."
+  },
+  "durationMinutes": "{minutes} min",
+  "@durationMinutes": {
+    "description": "Recording length.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHours": "{hours} h",
+  "@durationHours": {
+    "description": "Recording length.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHoursMinutes": "{hours} h {minutes} min",
+  "@durationHoursMinutes": {
+    "description": "Recording length.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutTitle": "Sign out?",
+  "@signOutTitle": {
+    "description": "Dialog title."
+  },
+  "signOutBody": "You will need your password to sign in again.",
+  "@signOutBody": {
+    "description": "Dialog body."
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button."
+  },
+  "comingLater": "{feature} is coming in a later update",
+  "@comingLater": {
+    "description": "Snackbar; feature is one of the titles below.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "account": "Account",
+  "@account": {
+    "description": "Section heading."
+  },
+  "institution": "Institution",
+  "@institution": {
+    "description": "Row label."
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Row label and dialog title."
+  },
+  "server": "Server",
+  "@server": {
+    "description": "Row label."
+  },
+  "comingSoon": "Coming soon",
+  "@comingSoon": {
+    "description": "Section heading."
+  },
+  "announcements": "Announcements",
+  "@announcements": {
+    "description": "Feature."
+  },
+  "announcementsBody": "Send notices to your classes",
+  "@announcementsBody": {
+    "description": "Feature description."
+  },
+  "studentDoubts": "Student doubts",
+  "@studentDoubts": {
+    "description": "Feature."
+  },
+  "studentDoubtsBody": "Answer questions from students",
+  "@studentDoubtsBody": {
+    "description": "Feature description."
+  },
+  "mcqTests": "MCQ tests",
+  "@mcqTests": {
+    "description": "Feature."
+  },
+  "mcqTestsBody": "Online tests that sync to board quizzes",
+  "@mcqTestsBody": {
+    "description": "Feature description."
+  },
+  "roleAdmin": "Admin",
+  "@roleAdmin": {
+    "description": "Role."
+  },
+  "rolePrincipal": "Principal",
+  "@rolePrincipal": {
+    "description": "Role."
+  },
+  "roleHod": "Head of department",
+  "@roleHod": {
+    "description": "Role."
+  },
+  "roleTeacher": "Teacher",
+  "@roleTeacher": {
+    "description": "Role."
+  },
+  "roleStudent": "Student",
+  "@roleStudent": {
+    "description": "Role."
+  },
+  "roleParent": "Parent",
+  "@roleParent": {
+    "description": "Role."
+  },
+  "roleLibrarian": "Librarian",
+  "@roleLibrarian": {
+    "description": "Role."
+  },
+  "roleAccountant": "Accountant",
+  "@roleAccountant": {
+    "description": "Role."
+  },
+  "languageSaveFailed": "Language changed on this phone. It will be saved to your account next time you are online.",
+  "@languageSaveFailed": {
+    "description": "Snackbar when saving the language to the server failed."
+  }
+}

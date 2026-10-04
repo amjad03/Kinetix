@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 
@@ -29,7 +30,7 @@ class ChatController extends ChangeNotifier {
   bool loading = false;
   bool loadingOlder = false;
   bool hasMore = false;
-  String? error;
+  ApiException? error;
   int _localId = 0;
 
   Future<void> load() async {
@@ -45,7 +46,7 @@ class ChatController extends ChangeNotifier {
       hasMore = page.messages.length >= ChatPage.pageSize;
       await _markRead();
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -69,7 +70,7 @@ class ChatController extends ChangeNotifier {
       bubbles.insertAll(0, page.messages.map(ChatBubble.new));
       hasMore = page.messages.length >= ChatPage.pageSize;
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loadingOlder = false;
       notifyListeners();
@@ -170,7 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Text(conv.family.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
                   Text(
-                    conv.about,
+                    context.l10n.conversationAbout(conv),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
@@ -191,7 +192,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (controller.error != null && controller.bubbles.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.all(Kx.s16),
-                    child: Align(alignment: Alignment.topCenter, child: ErrorBanner(controller.error!, onRetry: controller.load)),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ErrorBanner.api(controller.error!, onRetry: controller.load),
+                    ),
                   );
                 }
                 return _Messages(controller: controller, scroll: _scroll, bottomKey: _bottom);
@@ -217,6 +221,7 @@ class _Messages extends StatelessWidget {
     final c = context.colors;
     final items = controller.bubbles;
     final now = DateTime.now();
+    final fmt = Fmt.of(context);
     // Messages grow upward from the bottom (the centre sliver), so earlier pages are added above
     // without moving what the teacher is reading, and a short thread sits at the bottom like a chat.
     return RefreshIndicator(
@@ -251,15 +256,10 @@ class _Messages extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: Kx.s12),
                         child: Center(
-                          child: Pill(Fmt.chatDay(m.createdAt, now), background: c.surfaceContainerHigh, foreground: c.onSurfaceVariant),
+                          child: Pill(fmt.chatDay(m.createdAt, now), background: c.surfaceContainerHigh, foreground: c.onSurfaceVariant),
                         ),
                       ),
-                    _BubbleView(
-                      bubble: b,
-                      mine: mine,
-                      grouped: grouped,
-                      onRetry: b.failed ? () => controller.retry(b) : null,
-                    ),
+                    _BubbleView(bubble: b, mine: mine, grouped: grouped, onRetry: b.failed ? () => controller.retry(b) : null),
                   ],
                 );
               },
@@ -290,17 +290,20 @@ class _Top extends StatelessWidget {
         children: [
           Icon(Icons.arrow_downward, size: 14, color: c.onSurfaceVariant),
           const SizedBox(width: Kx.s4),
-          Flexible(child: Text('Pull down for earlier messages', style: style)),
+          Flexible(child: Text(context.l10n.pullForEarlier, style: style)),
         ],
       );
     } else {
       child = Text(
-        'Messages about ${controller.conversation.student.name} with ${controller.conversation.family.name}',
+        context.l10n.chatTop(controller.conversation.student.name, controller.conversation.family.name),
         textAlign: TextAlign.center,
         style: style,
       );
     }
-    return Padding(padding: const EdgeInsets.symmetric(vertical: Kx.s16, horizontal: Kx.s24), child: Center(child: child));
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Kx.s16, horizontal: Kx.s24),
+      child: Center(child: child),
+    );
   }
 }
 
@@ -322,11 +325,12 @@ class _BubbleView extends StatelessWidget {
     final fg = mine ? c.onPrimary : c.onSurface;
     const r = Radius.circular(Kx.rLg);
     const tight = Radius.circular(Kx.rXs);
+    final l = context.l10n;
     final status = bubble.failed
-        ? 'Not sent · tap to retry'
+        ? l.notSentRetry
         : bubble.sending
-        ? 'Sending…'
-        : Fmt.time(m.createdAt);
+        ? l.sending
+        : Fmt.of(context).time(m.createdAt);
     return Padding(
       padding: EdgeInsets.only(bottom: grouped ? 2 : Kx.s8),
       child: Align(
@@ -339,7 +343,7 @@ class _BubbleView extends StatelessWidget {
               Clipboard.setData(ClipboardData(text: m.body));
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('Message copied')));
+                ..showSnackBar(SnackBar(content: Text(l.messageCopied)));
             },
             child: Container(
               key: Key('message-${m.id}'),
@@ -359,20 +363,18 @@ class _BubbleView extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     widthFactor: 1,
-                    child: Text(
-                      m.body,
-                      style: context.text.bodyLarge?.copyWith(color: bubble.failed ? c.onErrorContainer : fg),
-                    ),
+                    child: Text(m.body, style: context.text.bodyLarge?.copyWith(color: bubble.failed ? c.onErrorContainer : fg)),
                   ),
                   const SizedBox(height: 2),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (bubble.failed) ...[Icon(Icons.error_outline, size: 12, color: c.onErrorContainer), const SizedBox(width: 2)],
-                      Text(
-                        status,
-                        style: context.text.labelSmall?.copyWith(
-                          color: bubble.failed ? c.onErrorContainer : fg.withValues(alpha: 0.72),
+                      Flexible(
+                        child: Text(
+                          status,
+                          key: Key('status-${m.id}'),
+                          style: context.text.labelSmall?.copyWith(color: bubble.failed ? c.onErrorContainer : fg.withValues(alpha: 0.72)),
                         ),
                       ),
                     ],
@@ -416,7 +418,7 @@ class _Composer extends StatelessWidget {
                   textCapitalization: TextCapitalization.sentences,
                   inputFormatters: [LengthLimitingTextInputFormatter(2000)],
                   decoration: InputDecoration(
-                    hintText: 'Message $recipient',
+                    hintText: context.l10n.messageHint(recipient),
                     filled: true,
                     fillColor: c.surfaceContainerHighest,
                     isDense: true,
@@ -430,7 +432,7 @@ class _Composer extends StatelessWidget {
               const SizedBox(width: Kx.s8),
               IconButton.filled(
                 key: const Key('sendMessage'),
-                tooltip: 'Send',
+                tooltip: context.l10n.send,
                 onPressed: canSend ? onSend : null,
                 icon: const Icon(Icons.send),
               ),

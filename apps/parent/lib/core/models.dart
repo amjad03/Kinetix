@@ -630,6 +630,7 @@ class LibraryLoan {
     required this.dueOn,
     required this.finePaise,
     required this.overdue,
+    this.fineSoFarPaise = 0,
     this.callNo,
     this.returnedAt,
   });
@@ -646,6 +647,7 @@ class LibraryLoan {
       returnedAt: _instant(j['returnedAt']),
       finePaise: _paise(j['finePaise'] ?? 0),
       overdue: j['overdue'] as bool? ?? false,
+      fineSoFarPaise: _paise(j['fineSoFarPaise'] ?? 0),
     );
   }
 
@@ -659,6 +661,9 @@ class LibraryLoan {
 
   /// Charged when a late book comes back.
   final int finePaise;
+
+  /// For a book still out: the fine if it came back today (0 when not late).
+  final int fineSoFarPaise;
 
   /// Still out and past its due date (the server decides, in the institution's time zone).
   final bool overdue;

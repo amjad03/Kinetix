@@ -3,11 +3,16 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import 'attendance_controller.dart';
 
 /// Roster for one period. Tap a student to mark them absent; long-press for late or excused.
+/// "10 present · 2 absent · 1 late"
+String attendanceSummary(AppLocalizations l, AttendanceController c) =>
+    [for (final (s, n) in c.summary) l.attendanceCount(s, n)].join(' · ');
+
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key, required this.api, required this.period, required this.date});
 
@@ -35,39 +40,45 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future<void> _submit() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     final wasTaken = controller.alreadyTaken;
     final error = await controller.submit();
     if (!mounted) return;
     if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(error))));
       return;
     }
-    messenger.showSnackBar(SnackBar(content: Text('${wasTaken ? 'Attendance updated' : 'Attendance saved'} · ${controller.summary}')));
+    final summary = attendanceSummary(l, controller);
+    messenger.showSnackBar(SnackBar(content: Text(wasTaken ? l.attendanceUpdated(summary) : l.attendanceSaved(summary))));
     Navigator.of(context).pop(true);
   }
 
   Future<void> _chooseStatus(Student s) async {
     final chosen = await showModalBottomSheet<AttendanceStatus>(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, Kx.s8),
-              child: Text(s.fullName, style: context.text.titleMedium),
-            ),
-            for (final status in AttendanceStatus.values)
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s24),
-                leading: Icon(_icon(status)),
-                title: Text(status.label),
-                trailing: controller.marks[s.id] == status ? Icon(Icons.check, color: ctx.colors.primary) : null,
-                onTap: () => Navigator.pop(ctx, status),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, Kx.s8),
+                child: Text(s.fullName, style: context.text.titleMedium),
               ),
-            const SizedBox(height: Kx.s8),
-          ],
+              for (final status in AttendanceStatus.values)
+                ListTile(
+                  key: Key('status-${status.name}'),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s24),
+                  leading: Icon(_icon(status)),
+                  title: Text(ctx.l10n.attendanceStatus(status)),
+                  trailing: controller.marks[s.id] == status ? Icon(Icons.check, color: ctx.colors.primary) : null,
+                  onTap: () => Navigator.pop(ctx, status),
+                ),
+              const SizedBox(height: Kx.s8),
+            ],
+          ),
         ),
       ),
     );
@@ -88,16 +99,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       listenable: controller,
       builder: (context, _) {
         final c = context.colors;
+        final l = context.l10n;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Attendance'),
+            title: Text(l.attendance),
             actions: [
               if (controller.students.isNotEmpty)
                 TextButton.icon(
                   key: const Key('markAllPresent'),
                   onPressed: controller.markAllPresent,
                   icon: const Icon(Icons.done_all, size: 18),
-                  label: const Text('Mark all present'),
+                  label: Text(l.markAllPresent),
                 ),
               const SizedBox(width: Kx.s8),
             ],
@@ -107,10 +119,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               : controller.error != null
               ? Padding(
                   padding: const EdgeInsets.all(Kx.s16),
-                  child: ErrorBanner(controller.error!, onRetry: controller.load),
+                  child: ErrorBanner.api(controller.error!, onRetry: controller.load),
                 )
               : controller.students.isEmpty
-              ? const KxEmptyState(icon: Icons.groups_outlined, message: 'No students in this class yet')
+              ? KxEmptyState(icon: Icons.groups_outlined, message: l.noStudentsInClass)
               : ListView(
                   padding: const EdgeInsets.only(bottom: Kx.s24),
                   children: [
@@ -122,14 +134,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           Text(p.subject.name, style: context.text.titleLarge),
                           const SizedBox(height: Kx.s4),
                           Text(
-                            '${p.section.name} · ${Fmt.shortDay(parseIsoDate(widget.date))} · ${p.startsAt.label}',
+                            '${p.section.name} · ${Fmt.of(context).shortDay(parseIsoDate(widget.date))} · ${Fmt.of(context).clock(p.startsAt)}',
                             style: context.text.bodyLarge,
                           ),
                           const SizedBox(height: Kx.s12),
                           Text(
-                            controller.alreadyTaken
-                                ? 'Already taken. Changes replace the earlier marks.'
-                                : 'Everyone starts present. Tap to mark absent, long-press for late.',
+                            controller.alreadyTaken ? l.attendanceAlreadyTaken : l.attendanceHelp,
+                            key: const Key('attendanceHelp'),
                             style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                           ),
                         ],
@@ -178,7 +189,7 @@ class _StudentTile extends StatelessWidget {
       subtitle: Text(student.rollNo),
       onTap: onTap,
       onLongPress: onLongPress,
-      trailing: Pill(status.label, background: bg, foreground: fg),
+      trailing: Pill(context.l10n.attendanceStatus(status), key: ValueKey('status-${student.id}'), background: bg, foreground: fg),
     );
   }
 }
@@ -201,14 +212,18 @@ class _SummaryBar extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(controller.summary, key: const Key('attendanceSummary'), style: context.text.titleSmall),
+                child: Text(
+                  attendanceSummary(context.l10n, controller),
+                  key: const Key('attendanceSummary'),
+                  style: context.text.titleSmall,
+                ),
               ),
               FilledButton(
                 key: const Key('submitAttendance'),
                 onPressed: controller.submitting ? null : onSubmit,
                 child: controller.submitting
                     ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(controller.alreadyTaken ? 'Update' : 'Submit'),
+                    : Text(controller.alreadyTaken ? context.l10n.update : context.l10n.submit),
               ),
             ],
           ),

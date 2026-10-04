@@ -6,6 +6,7 @@ import '../../core/app_state.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../fees/fees_screen.dart';
@@ -37,7 +38,7 @@ class ProfileTab extends StatefulWidget {
 
 class ProfileTabState extends State<ProfileTab> {
   FeeAccount? _fees;
-  String? _feesError;
+  ApiException? _feesError;
   bool _feesLoading = false;
 
   @override
@@ -55,21 +56,22 @@ class ProfileTabState extends State<ProfileTab> {
       final f = await widget.study.api.fees(widget.study.student.id);
       if (mounted) setState(() => _fees = f);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _feesError = e.message);
+      if (mounted) setState(() => _feesError = e);
     } finally {
       if (mounted) setState(() => _feesLoading = false);
     }
   }
 
   Future<void> _signOut() async {
+    final l = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('You will need your password to sign in again.'),
+        title: Text(l.signOutQuestion),
+        content: Text(l.signOutBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(key: const Key('confirmSignOut'), onPressed: () => Navigator.pop(ctx, true), child: const Text('Sign out')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          FilledButton(key: const Key('confirmSignOut'), onPressed: () => Navigator.pop(ctx, true), child: Text(l.signOut)),
         ],
       ),
     );
@@ -81,7 +83,7 @@ class ProfileTabState extends State<ProfileTab> {
     final picked = await showDialog<AiLanguage>(
       context: context,
       builder: (ctx) => SimpleDialog(
-        title: const Text('KINETIX AI answers in'),
+        title: Text(context.l10n.aiAnswersIn),
         children: [
           RadioGroup<AiLanguage>(
             groupValue: current,
@@ -107,7 +109,7 @@ class ProfileTabState extends State<ProfileTab> {
   void _soon(String what) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$what is coming in a later update')));
+      ..showSnackBar(SnackBar(content: Text(context.l10n.comingLater(what))));
   }
 
   @override
@@ -116,6 +118,7 @@ class ProfileTabState extends State<ProfileTab> {
     final me = state.me!;
     final st = widget.study.student;
     final c = context.colors;
+    final l = context.l10n;
     final today = widget.study.today;
 
     Widget soonTile(IconData icon, String title, String subtitle) =>
@@ -127,7 +130,7 @@ class ProfileTabState extends State<ProfileTab> {
       listenable: Listenable.merge([state, widget.study, ?widget.messages]),
       builder: (context, _) => CustomScrollView(
         slivers: [
-          const SliverAppBar.large(title: Text('Profile')),
+          SliverAppBar.large(title: Text(l.profile)),
           CenteredSliver(
             flush: true,
             sliver: SliverList.list(
@@ -153,34 +156,47 @@ class ProfileTabState extends State<ProfileTab> {
                     ],
                   ),
                 ),
-                const KxSectionHeader('Your class'),
-                ListTile(leading: const Icon(Icons.groups_outlined), title: const Text('Class'), subtitle: Text(st.sectionName)),
-                ListTile(leading: const Icon(Icons.badge_outlined), title: const Text('Roll no.'), subtitle: Text(st.rollNo)),
-                if (st.programLine != null)
-                  ListTile(leading: const Icon(Icons.school_outlined), title: const Text('Program'), subtitle: Text(st.programLine!)),
-                ListTile(leading: const Icon(Icons.apartment_outlined), title: const Text('College'), subtitle: Text(me.institution)),
+                KxSectionHeader(l.yourClass),
+                ListTile(leading: const Icon(Icons.groups_outlined), title: Text(l.classLabel), subtitle: Text(st.sectionName)),
+                ListTile(leading: const Icon(Icons.badge_outlined), title: Text(l.rollNoLabel), subtitle: Text(st.rollNo)),
+                if (st.programName != null)
+                  ListTile(
+                    leading: const Icon(Icons.school_outlined),
+                    title: Text(l.program),
+                    subtitle: Text(
+                      [
+                        st.programName!,
+                        ?switch (st.programLevel) {
+                          'ug' => l.undergraduate,
+                          'pg' => l.postgraduate,
+                          _ => null,
+                        },
+                      ].join(' · '),
+                    ),
+                  ),
+                ListTile(leading: const Icon(Icons.apartment_outlined), title: Text(l.college), subtitle: Text(me.institution)),
                 ListTile(
                   key: const Key('attendanceHistory'),
                   leading: const Icon(Icons.fact_check_outlined),
-                  title: const Text('Attendance history'),
-                  subtitle: Text(_attendanceLine(widget.study.summary)),
+                  title: Text(l.attendanceHistory),
+                  subtitle: Text(_attendanceLine(l, widget.study.summary)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => AttendanceScreen.open(context, widget.study.api, st),
                 ),
-                const KxSectionHeader('Results & library'),
+                KxSectionHeader(l.resultsLibraryHeader),
                 ListTile(
                   key: const Key('openResults'),
                   leading: const Icon(Icons.grading_outlined),
-                  title: const Text('Results'),
-                  subtitle: Text(_resultsLine(widget.study.marks)),
+                  title: Text(l.results),
+                  subtitle: Text(_resultsLine(l, widget.study.marks)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => ResultsScreen.open(context, widget.study),
                 ),
                 ListTile(
                   key: const Key('openLibrary'),
                   leading: const Icon(Icons.local_library_outlined),
-                  title: const Text('Library books'),
-                  subtitle: Text(_libraryLine(widget.study.library)),
+                  title: Text(l.libraryBooks),
+                  subtitle: Text(_libraryLine(l, widget.study.library)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, widget.study),
                 ),
@@ -188,12 +204,12 @@ class ProfileTabState extends State<ProfileTab> {
                   ListTile(
                     key: const Key('openMessages'),
                     leading: const Icon(Icons.forum_outlined),
-                    title: const Text('Messages'),
-                    subtitle: Text(widget.messages!.unread > 0 ? '${widget.messages!.unread} unread' : 'Write to your teachers'),
+                    title: Text(l.navMessages),
+                    subtitle: Text(widget.messages!.unread > 0 ? l.nUnread(widget.messages!.unread) : l.writeToYourTeachers),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => MessagesScreen.open(context, widget.messages!),
                   ),
-                const KxSectionHeader('Fees'),
+                KxSectionHeader(l.fees),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Kx.s12),
                   child: _feesError != null
@@ -211,35 +227,37 @@ class ProfileTabState extends State<ProfileTab> {
                 ListTile(
                   key: const Key('openFees'),
                   leading: const Icon(Icons.receipt_long_outlined),
-                  title: const Text('Fees and receipts'),
-                  subtitle: _fees == null ? null : Text(_feesLine(_fees!)),
+                  title: Text(l.feesAndReceipts),
+                  subtitle: _fees == null ? null : Text(_feesLine(l, _fees!)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: openFees,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
-                  child: Text(feesNote, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                  child: Text(feesNote(l), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                 ),
+                KxSectionHeader(l.settings),
+                LanguageTile(onChanged: state.setLanguage),
                 const KxSectionHeader('KINETIX AI'),
                 ListTile(
                   key: const Key('aiLanguage'),
-                  leading: const Icon(Icons.translate),
-                  title: const Text('Answers in'),
+                  leading: const Icon(Icons.auto_awesome_outlined),
+                  title: Text(l.answersIn),
                   subtitle: Text(state.aiLanguage.label),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _chooseLanguage,
                 ),
-                const KxSectionHeader('Coming soon'),
-                soonTile(Icons.calendar_view_week_outlined, 'Timetable', 'Your classes for the week'),
-                const KxSectionHeader('Account'),
-                ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Server'), subtitle: Text(state.serverUrl)),
+                KxSectionHeader(l.comingSoon),
+                soonTile(Icons.calendar_view_week_outlined, l.timetable, l.timetableSubtitle),
+                KxSectionHeader(l.account),
+                ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, Kx.s32),
                   child: OutlinedButton.icon(
                     key: const Key('signOut'),
                     onPressed: _signOut,
                     icon: const Icon(Icons.logout),
-                    label: const Text('Sign out'),
+                    label: Text(l.signOut),
                   ),
                 ),
               ],
@@ -250,26 +268,26 @@ class ProfileTabState extends State<ProfileTab> {
     );
   }
 
-  static String _attendanceLine(StudentSummary? s) {
+  static String _attendanceLine(AppLocalizations l, StudentSummary? s) {
     final rate = s?.attendance.effectiveRate;
-    if (s == null) return 'Every class in the last 30 days';
-    if (rate == null) return 'No attendance taken in the last ${s.days} days';
-    return '${Fmt.percent(rate)} attended in the last ${s.days} days';
+    if (s == null) return l.everyClass30;
+    if (rate == null) return l.noAttendanceDays(s.days);
+    return l.attendedPercent(Fmt.percent(rate), s.days);
   }
 
-  static String _resultsLine(StudentMarks? m) {
-    if (m == null) return 'Published marks and class averages';
-    if (m.assessments.isEmpty) return 'No marks published yet';
-    return '${Fmt.plural(m.assessments.length, 'assessment')} published';
+  static String _resultsLine(AppLocalizations l, StudentMarks? m) {
+    if (m == null) return l.resultsSubtitle;
+    if (m.assessments.isEmpty) return l.noMarksYet;
+    return l.assessmentsPublished(m.assessments.length);
   }
 
-  static String _libraryLine(LibraryAccount? l) {
-    if (l == null) return 'Books borrowed, due dates and fines';
-    if (l.current.isEmpty) return 'No books out';
-    final overdue = l.overdue.length;
-    return '${Fmt.plural(l.current.length, 'book')} out${overdue > 0 ? ', $overdue overdue' : ''}';
+  static String _libraryLine(AppLocalizations l, LibraryAccount? lib) {
+    if (lib == null) return l.librarySubtitle;
+    if (lib.current.isEmpty) return l.noBooksOutShort;
+    final overdue = lib.overdue.length;
+    return [l.booksOut(lib.current.length), if (overdue > 0) l.nOverdue(overdue)].join(l.listSeparator);
   }
 
-  static String _feesLine(FeeAccount f) =>
-      [if (f.invoices.isNotEmpty) Fmt.plural(f.invoices.length, 'fee'), Fmt.plural(f.payments.length, 'receipt')].join(' · ');
+  static String _feesLine(AppLocalizations l, FeeAccount f) =>
+      [if (f.invoices.isNotEmpty) l.feesCount(f.invoices.length), l.receiptsCount(f.payments.length)].join(' · ');
 }

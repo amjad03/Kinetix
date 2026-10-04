@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
@@ -78,13 +79,13 @@ class TodayTab extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${Fmt.greeting((now ?? DateTime.now)())}, ${me.firstName}',
+                                context.l10n.greetingName(context.fmt.greeting((now ?? DateTime.now)()), me.firstName),
                                 key: const Key('greeting'),
                                 style: context.text.headlineSmall,
                               ),
                               const SizedBox(height: Kx.s4),
                               Text(
-                                '${student.sectionName} · Roll no. ${student.rollNo}',
+                                '${student.sectionName} · ${context.l10n.rollNo(student.rollNo)}',
                                 style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant),
                               ),
                             ],
@@ -122,16 +123,17 @@ class AttendanceCard extends StatelessWidget {
   final VoidCallback onOpen;
 
   /// A plain note for the rate: good (85%+), a few missed, or below the usual 75% exam line.
-  static String note(double rate) => rate >= 85
-      ? 'Good attendance. Keep it up.'
+  static String note(AppLocalizations l, double rate) => rate >= 85
+      ? l.attendanceGood
       : rate >= 75
-      ? 'You missed a few classes recently.'
-      : 'Below 75%. Colleges usually need 75% for you to sit exams.';
+      ? l.attendanceFewMissed
+      : l.attendanceBelow75;
 
   @override
   Widget build(BuildContext context) {
     final a = summary.attendance;
     final c = context.colors;
+    final l = context.l10n;
     final rate = a.effectiveRate;
     final tone = rate == null
         ? c.onSurface
@@ -144,13 +146,13 @@ class AttendanceCard extends StatelessWidget {
     return SectionCard(
       key: const Key('attendanceCard'),
       icon: Icons.fact_check_outlined,
-      title: 'Attendance',
-      caption: 'Last ${summary.days} days',
+      title: l.attendance,
+      caption: l.lastDays(summary.days),
       onTap: onOpen,
-      footer: CardLink('See attendance history', onTap: onOpen),
+      footer: CardLink(l.seeAttendanceHistory, onTap: onOpen),
       child: rate == null
           ? Text(
-              'No attendance has been taken for you in the last ${summary.days} days.',
+              l.noAttendanceForYou(summary.days),
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             )
           : Column(
@@ -169,7 +171,7 @@ class AttendanceCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
-                        'Attended ${a.attended} of ${Fmt.plural(a.periods, 'class', 'classes')}',
+                        l.attendedOf(a.attended, a.periods),
                         style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                       ),
                     ),
@@ -181,24 +183,24 @@ class AttendanceCard extends StatelessWidget {
                   child: LinearProgressIndicator(value: rate / 100, minHeight: 8, color: tone, backgroundColor: c.surfaceContainerHighest),
                 ),
                 const SizedBox(height: Kx.s8),
-                Text(note(rate), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+                Text(note(l, rate), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                 const SizedBox(height: Kx.s16),
                 Row(
                   children: [
-                    _Stat(key: const Key('presentCount'), label: 'Present', value: a.present, tone: AttendanceStatus.present),
+                    _Stat(key: const Key('presentCount'), label: l.statusPresent, value: a.present, tone: AttendanceStatus.present),
                     const SizedBox(width: Kx.s8),
-                    _Stat(key: const Key('absentCount'), label: 'Absent', value: a.absent, tone: AttendanceStatus.absent),
+                    _Stat(key: const Key('absentCount'), label: l.statusAbsent, value: a.absent, tone: AttendanceStatus.absent),
                     const SizedBox(width: Kx.s8),
-                    _Stat(key: const Key('lateCount'), label: 'Late', value: a.late, tone: AttendanceStatus.late),
+                    _Stat(key: const Key('lateCount'), label: l.statusLate, value: a.late, tone: AttendanceStatus.late),
                   ],
                 ),
                 if (a.excused > 0) ...[
                   const SizedBox(height: Kx.s8),
-                  Text('${a.excused} excused (counted as attended)', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                  Text(l.excusedNote(a.excused), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                 ],
                 if (a.recentAbsences.isNotEmpty) ...[
                   const SizedBox(height: Kx.s16),
-                  Text('Recent absences', style: context.text.titleSmall),
+                  Text(l.recentAbsences, style: context.text.titleSmall),
                   const SizedBox(height: Kx.s4),
                   for (final m in a.recentAbsences.take(3))
                     Padding(
@@ -211,7 +213,7 @@ class AttendanceCard extends StatelessWidget {
                             child: Icon(Icons.person_off_outlined, size: 18, color: c.error),
                           ),
                           const SizedBox(width: Kx.s8),
-                          Expanded(child: Text(absenceLine(m), style: context.text.bodyMedium)),
+                          Expanded(child: Text(absenceLine(context.fmt, m), style: context.text.bodyMedium)),
                         ],
                       ),
                     ),
@@ -222,12 +224,12 @@ class AttendanceCard extends StatelessWidget {
   }
 
   /// "Absent · Corporate Accounting · Thu 1 Oct, 10:00"
-  static String absenceLine(ClassMark m) =>
+  static String absenceLine(Fmt f, ClassMark m) =>
       // Non-breaking spaces keep the date and time together when the line wraps on a phone.
       [
-        'Absent',
+        f.l.statusAbsent,
         ?m.subject,
-        '${Fmt.shortDay(m.date)}${m.startsAt == null ? '' : ', ${m.startsAt!.label}'}'.replaceAll(' ', ' '),
+        '${f.shortDay(m.date)}${m.startsAt == null ? '' : ', ${m.startsAt!.label}'}'.replaceAll(' ', ' '),
       ].join(' · ');
 }
 
@@ -278,14 +280,14 @@ class HomeworkCard extends StatelessWidget {
     return SectionCard(
       key: const Key('homeworkCard'),
       icon: Icons.assignment_outlined,
-      title: 'Homework',
-      caption: summary.upcoming.isEmpty ? null : '${summary.upcoming.length} due',
+      title: context.l10n.homework,
+      caption: summary.upcoming.isEmpty ? null : context.l10n.dueCount(summary.upcoming.length),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (summary.upcoming.isEmpty)
             Text(
-              'Nothing due right now. New homework from your teachers will show here.',
+              context.l10n.nothingDue,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
           for (final hw in summary.upcoming) HomeworkRow(homework: hw, today: summary.today, sectionName: sectionName),
@@ -298,7 +300,7 @@ class HomeworkCard extends StatelessWidget {
                 childrenPadding: EdgeInsets.zero,
                 shape: const Border(),
                 title: Text(
-                  'Past homework (${summary.pastHomework.length})',
+                  context.l10n.pastHomework(summary.pastHomework.length),
                   style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant),
                 ),
                 children: [
@@ -358,7 +360,7 @@ class HomeworkRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: Kx.s4),
-                  Pill(Fmt.due(homework.dueOn, today), background: bg, foreground: fg),
+                  Pill(context.fmt.due(homework.dueOn, today), background: bg, foreground: fg),
                 ],
               ),
             ),
@@ -398,10 +400,10 @@ class _AskCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Stuck on something?', style: context.text.titleMedium?.copyWith(color: c.onPrimaryContainer)),
+                    Text(context.l10n.stuckTitle, style: context.text.titleMedium?.copyWith(color: c.onPrimaryContainer)),
                     const SizedBox(height: 2),
                     Text(
-                      'Ask KINETIX AI to explain it, in English, हिन्दी or ಕನ್ನಡ.',
+                      context.l10n.stuckBody,
                       style: context.text.bodyMedium?.copyWith(color: c.onPrimaryContainer),
                     ),
                   ],
@@ -428,13 +430,13 @@ class BoardsCard extends StatelessWidget {
     return SectionCard(
       key: const Key('boardsCard'),
       icon: Icons.co_present_outlined,
-      title: 'Class boards',
+      title: context.l10n.classBoards,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (summary.boards.isEmpty)
             Text(
-              'When a teacher shares the class board after a lesson, it appears here so you can revise.',
+              context.l10n.boardsEmpty,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
           for (final b in summary.boards)
@@ -452,7 +454,7 @@ class BoardsCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(boardHeadline(b, summary.today), style: context.text.titleSmall),
+                          Text(boardHeadline(context.l10n, b, summary.today), style: context.text.titleSmall),
                           const SizedBox(height: 2),
                           Text(
                             b.title,
@@ -463,8 +465,8 @@ class BoardsCard extends StatelessWidget {
                           Text(
                             [
                               ?b.teacherName,
-                              if (b.sharedAt != null) Fmt.relativeDay(b.sharedAt!, summary.today),
-                              Fmt.plural(b.pageCount, 'page'),
+                              if (b.sharedAt != null) context.fmt.relativeDay(b.sharedAt!, summary.today),
+                              context.l10n.pages(b.pageCount),
                             ].join(' · '),
                             style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                           ),
@@ -482,9 +484,9 @@ class BoardsCard extends StatelessWidget {
   }
 
   /// "Today's board: Corporate Accounting", or "Corporate Accounting" for older ones.
-  static String boardHeadline(BoardSummary b, DateTime today) {
+  static String boardHeadline(AppLocalizations l, BoardSummary b, DateTime today) {
     final subject = b.subjectName ?? b.title;
     final isToday = b.sharedAt != null && Fmt.daysBetween(today, b.sharedAt!) == 0;
-    return isToday ? "Today's board: $subject" : subject;
+    return isToday ? l.todaysBoard(subject) : subject;
   }
 }

@@ -38,6 +38,9 @@ void main() {
     expect(tester.getTopLeft(find.text('Overdue by 3 days')).dy, lessThan(tester.getTopLeft(find.text('Due Fri 9 Oct')).dy));
     final chip = tester.widget<Text>(find.text('Overdue by 3 days'));
     expect(chip.style?.color, Theme.of(tester.element(card)).colorScheme.onErrorContainer);
+    // The fine if the book came back today (from the server's fineSoFarPaise); none on the book not yet due.
+    expect(find.descendant(of: card, matching: find.text('₹6 fine so far')), findsOneWidget);
+    expect(find.byKey(const Key('fineSoFar-l1')), findsNothing);
     expect(find.text('Fines for late returns: ₹6'), findsOneWidget);
 
     await tester.ensureVisible(find.text('See library history'));
@@ -46,7 +49,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Library books'), findsOneWidget);
     expect(find.text('Returned (1)'), findsOneWidget);
-    expect(find.text('Borrowed Sat 5 Sep · returned Wed 23 Sep · fine ₹6'), findsOneWidget);
+    expect(find.text('Borrowed Sat 5 Sept · returned Wed 23 Sept · fine ₹6'), findsOneWidget);
   });
 
   testWidgets('Profile lists results and library instead of Soon entries', (tester) async {

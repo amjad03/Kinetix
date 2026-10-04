@@ -22,7 +22,7 @@ void main() {
     await state.restore();
     await tester.pumpAndSettle();
     expect(api.calls, isNot(contains('recordings')));
-    await tester.tap(find.text('Recordings'));
+    await tester.tap(find.byKey(const Key('navRecordings')));
     await tester.pumpAndSettle();
     return api;
   }

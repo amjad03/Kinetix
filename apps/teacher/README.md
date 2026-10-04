@@ -47,18 +47,26 @@ Codes last 120 seconds. Outside a timetabled period the board opens a "free sess
 | Connect to board | Full-screen QR scanner on Android/iOS with **Enter code instead**. Six large digit boxes on every platform. Errors from the server are shown inline. Success shows the board, class, subject and period, with **Done** and **End class**. |
 | Attendance | Roster with everyone Present. Tap toggles Absent. Long-press for Late or Excused. **Mark all present**. Summary bar ("10 present · 2 absent") and **Submit**. Marks already taken are reloaded and the button becomes **Update**. |
 | Homework | Recent homework you set, with due dates. **Assign homework**: class and subject (from your timetable), title, instructions (2000-character counter), due date. |
-| Profile | Name, roles, institution, preferred language, server, sign out. Entry points for later phases (announcements, student doubts, tests) show "coming soon". |
+| Profile | Name, roles, institution, **Language** (English / हिन्दी / ಕನ್ನಡ), server, sign out. Entry points for later phases (announcements, student doubts, tests) show "coming soon". |
 
 ## Code layout
 
 ```
 lib/
   core/        api.dart (TeacherApi interface + HttpTeacherApi), models.dart, app_state.dart (sign-in, prefs),
-               format.dart (dates), theme.dart (local fixes on top of kinetix_ui)
+               format.dart (dates and times per language), l10n.dart (AppLocalizations helpers)
+  l10n/        app_en.arb (template), app_hi.arb, app_kn.arb → generated AppLocalizations
   features/    sign_in, home (NavigationBar shell), today, attendance, board (connect + QR scanner), homework, profile
   widgets/     shared bits (ErrorBanner, Pill)
 test/          widget tests against FakeTeacherApi
 ```
+
+## Languages
+
+English, Hindi and Kannada via Flutter gen-l10n. The app follows the teacher's
+`preferredLanguage` from `GET /v1/me`; **Profile → Language** overrides it on this phone and saves
+it to the account (`PATCH /v1/me`). Before sign-in it follows the device (hi or kn, else English).
+See [docs/i18n/teacher.md](../../docs/i18n/teacher.md) for adding strings and what needs review.
 
 State is plain `ChangeNotifier` controllers rendered with `ListenableBuilder`. The design
 system is [`packages/kinetix_ui`](../../packages/kinetix_ui) (light and dark, follows the system setting).
@@ -67,5 +75,5 @@ system is [`packages/kinetix_ui`](../../packages/kinetix_ui) (light and dark, fo
 
 - The token is in `shared_preferences`. It should move to secure storage (Keystore/Keychain), with an app lock.
 - No offline pairing (BLE/LAN credential) and no offline queue for attendance yet.
-- The app is English only. The preferred language (hi/kn) is shown but not applied yet.
+- The lesson player (`packages/kinetix_lesson`) is still English only; the rest of the app is in English, Hindi and Kannada ([docs/i18n/teacher.md](../../docs/i18n/teacher.md)).
 - No live updates: the Today screen refreshes on pull-to-refresh and after actions, not when the board ends a session.

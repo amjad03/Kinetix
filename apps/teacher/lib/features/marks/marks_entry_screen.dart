@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 
@@ -42,6 +43,9 @@ class MarkDraft {
   }
 }
 
+/// What is wrong with the marks typed for one student.
+enum MarkProblem { notANumber, overMax }
+
 /// State for entering one assessment's marks: the roster, edits, validation, save and publish.
 class MarksEntryController extends ChangeNotifier {
   MarksEntryController({required this.api, required Assessment assessment}) : a = assessment;
@@ -52,7 +56,7 @@ class MarksEntryController extends ChangeNotifier {
   bool loading = false;
   bool saving = false;
   bool publishing = false;
-  String? error;
+  ApiException? error;
 
   Future<void> load() async {
     loading = true;
@@ -61,7 +65,7 @@ class MarksEntryController extends ChangeNotifier {
     try {
       _apply(await api.assessment(a.id));
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -89,27 +93,22 @@ class MarksEntryController extends ChangeNotifier {
       ..addAll(next);
   }
 
-  /// A plain-language problem with what was typed for [r], or null.
-  String? errorFor(MarkDraft r) {
+  /// The problem with what was typed for [r], or null.
+  MarkProblem? problemFor(MarkDraft r) {
     if (r.absent) return null;
     final t = r.text.text.trim();
     if (t.isEmpty) return null;
     final n = double.tryParse(t);
-    if (n == null) return 'Not a number';
-    if (n > a.maxMarks) return 'Max ${formatMarks(a.maxMarks)}';
+    if (n == null) return MarkProblem.notANumber;
+    if (n > a.maxMarks) return MarkProblem.overMax;
     return null;
   }
 
   bool get dirty => rows.any((r) => r.changed);
-  int get invalid => rows.where((r) => errorFor(r) != null).length;
+  int get invalid => rows.where((r) => problemFor(r) != null).length;
   int get marked => rows.where((r) => !r.absent && r.marks != null).length;
   int get absentCount => rows.where((r) => r.absent).length;
   int get blankCount => rows.where((r) => r.blank).length;
-
-  String get summary => [
-    '$marked of ${rows.length} marked',
-    if (absentCount > 0) '$absentCount absent',
-  ].join(' · ');
 
   void setAbsent(MarkDraft r, bool absent) {
     r.absent = absent;
@@ -122,9 +121,8 @@ class MarksEntryController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Saves the rows that changed. Returns an error message, or null.
-  Future<String?> save() async {
-    if (invalid > 0) return invalid == 1 ? 'One mark needs fixing' : '$invalid marks need fixing';
+  /// Saves the rows that changed (call only when [invalid] is 0). Returns the error, or null.
+  Future<ApiException?> save() async {
     final changed = rows.where((r) => r.changed).toList();
     if (changed.isEmpty) return null;
     saving = true;
@@ -138,21 +136,21 @@ class MarksEntryController extends ChangeNotifier {
       );
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     } finally {
       saving = false;
       notifyListeners();
     }
   }
 
-  Future<String?> publish() async {
+  Future<ApiException?> publish() async {
     publishing = true;
     notifyListeners();
     try {
       _apply(await api.publishAssessment(a.id));
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     } finally {
       publishing = false;
       notifyListeners();
@@ -167,6 +165,10 @@ class MarksEntryController extends ChangeNotifier {
     super.dispose();
   }
 }
+
+/// "2 of 3 marked · 1 absent"
+String marksSummary(AppLocalizations l, MarksEntryController c) =>
+    [l.markedOf(c.marked, c.rows.length), if (c.absentCount > 0) l.countAbsent(c.absentCount)].join(' · ');
 
 /// Lets through digits and one decimal point with up to two places ("22.5"); a comma counts as the point.
 class _MarksFormatter extends TextInputFormatter {
@@ -219,21 +221,28 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
   Future<void> _save() async {
     FocusScope.of(context).unfocus();
     final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final l = context.l10n;
+    if (controller.invalid > 0) {
+      messenger.showSnackBar(SnackBar(content: Text(l.marksNeedFixing(controller.invalid))));
+      return;
+    }
     final error = await controller.save();
     if (!mounted) return;
     if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(error))));
       return;
     }
     widget.onChanged?.call(controller.a);
     final avg = controller.a.stats?.average;
     messenger.showSnackBar(
       SnackBar(
-        content: Text([
-          'Marks saved',
-          if (avg != null) 'class average ${formatMarks(avg)} / ${formatMarks(controller.a.maxMarks)}',
-          if (controller.a.isPublished) 'families see the update',
-        ].join(' · ')),
+        content: Text(
+          [
+            l.marksSaved,
+            if (avg != null) l.savedClassAverage(formatMarks(avg), formatMarks(controller.a.maxMarks)),
+            if (controller.a.isPublished) l.familiesSeeUpdate,
+          ].join(' · '),
+        ),
       ),
     );
   }
@@ -244,28 +253,25 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Publish marks?'),
-        content: Text(
-          'Students and families of the class will be notified and can see their own marks with the class average and highest.'
-          '${blank > 0 ? '\n\n${blank == 1 ? '1 student has' : '$blank students have'} no marks yet.' : ''}'
-          '\n\nYou can still correct marks after publishing.',
-        ),
+        title: Text(ctx.l10n.publishTitle),
+        content: Text([ctx.l10n.publishBody, if (blank > 0) ctx.l10n.publishBlank(blank), ctx.l10n.publishCanCorrect].join('\n\n')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(key: const Key('confirmPublish'), onPressed: () => Navigator.pop(ctx, true), child: const Text('Publish')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ctx.l10n.cancel)),
+          FilledButton(key: const Key('confirmPublish'), onPressed: () => Navigator.pop(ctx, true), child: Text(ctx.l10n.publish)),
         ],
       ),
     );
     if (ok != true || !mounted) return;
     final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final l = context.l10n;
     final error = await controller.publish();
     if (!mounted) return;
     if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(error))));
       return;
     }
     widget.onChanged?.call(controller.a);
-    messenger.showSnackBar(SnackBar(content: Text('${a.title} published · families notified')));
+    messenger.showSnackBar(SnackBar(content: Text(l.publishedNotified(a.title))));
   }
 
   Future<void> _editRemark(MarkDraft r) async {
@@ -306,7 +312,7 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
                       style: FilledButton.styleFrom(minimumSize: const Size(64, 40)),
                       child: controller.saving
                           ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Text('Save'),
+                          : Text(context.l10n.save),
                     ),
                   ),
               ],
@@ -316,10 +322,10 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
                 : controller.error != null && controller.rows.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(Kx.s16),
-                    child: ErrorBanner(controller.error!, onRetry: controller.load),
+                    child: ErrorBanner.api(controller.error!, onRetry: controller.load),
                   )
                 : controller.rows.isEmpty
-                ? const KxEmptyState(icon: Icons.groups_outlined, message: 'No students in this class yet')
+                ? KxEmptyState(icon: Icons.groups_outlined, message: context.l10n.noStudentsInClass)
                 // Every row is built (not lazily) so Next on the keypad can always reach the next field.
                 : SingleChildScrollView(
                     keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
@@ -332,7 +338,11 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
                           _MarkRow(
                             row: controller.rows[i],
                             maxMarks: a.maxMarks,
-                            error: controller.errorFor(controller.rows[i]),
+                            error: switch (controller.problemFor(controller.rows[i])) {
+                              MarkProblem.notANumber => context.l10n.notANumber,
+                              MarkProblem.overMax => context.l10n.maxN(formatMarks(a.maxMarks)),
+                              null => null,
+                            },
                             last: i == controller.rows.length - 1,
                             onNext: () => _next(i),
                             onAbsent: (v) => controller.setAbsent(controller.rows[i], v),
@@ -357,6 +367,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final a = controller.a;
     final s = a.stats;
     final (goodBg, good) = goodColors(context);
@@ -370,13 +381,20 @@ class _Header extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${a.subject.name} · ${a.kind.label} · ${Fmt.shortDay(a.heldOn)}',
+                  '${a.subject.name} · ${l.assessmentKind(a.kind)} · ${Fmt.of(context).shortDay(a.heldOn)}',
                   style: context.text.bodyLarge,
                 ),
               ),
+              const SizedBox(width: Kx.s8),
               a.isPublished
-                  ? Pill('Published', icon: Icons.check, background: goodBg, foreground: good)
-                  : Pill('Draft', icon: Icons.edit_outlined, background: c.surfaceContainerHighest, foreground: c.onSurfaceVariant),
+                  ? Pill(l.published, key: const Key('statePill'), icon: Icons.check, background: goodBg, foreground: good)
+                  : Pill(
+                      l.draft,
+                      key: const Key('statePill'),
+                      icon: Icons.edit_outlined,
+                      background: c.surfaceContainerHighest,
+                      foreground: c.onSurfaceVariant,
+                    ),
             ],
           ),
           const SizedBox(height: Kx.s12),
@@ -388,24 +406,27 @@ class _Header extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: Kx.s12),
                 child: Row(
                   children: [
-                    _Stat('Average', '${formatMarks(s.average!)}/$out'),
-                    _Stat('Highest', formatMarks(s.highest!)),
-                    _Stat('Lowest', formatMarks(s.lowest!)),
-                    _Stat('Marked', '${s.count}/${controller.rows.length}'),
+                    _Stat(l.statAverage, '${formatMarks(s.average!)}/$out'),
+                    _Stat(l.statHighest, formatMarks(s.highest!)),
+                    _Stat(l.statLowest, formatMarks(s.lowest!)),
+                    _Stat(l.statMarked, '${s.count}/${controller.rows.length}'),
                   ],
                 ),
               ),
             )
           else
-            Text(
-              'Type marks out of $out. Next on the keypad moves to the next student.',
-              style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-            ),
+            Text(l.typeMarksHint(out), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
           const SizedBox(height: Kx.s8),
           Row(
             children: [
-              Expanded(child: Text('Student', style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant))),
-              Text('Out of $out', style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+              Expanded(
+                child: Text(l.columnStudent, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+              ),
+              Text(
+                l.outOfN(out),
+                key: const Key('outOfColumn'),
+                style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant),
+              ),
               const SizedBox(width: Kx.s12),
             ],
           ),
@@ -427,7 +448,13 @@ class _Stat extends StatelessWidget {
       children: [
         Text(value, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
         const SizedBox(height: 2),
-        Text(label, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant),
+        ),
       ],
     ),
   );
@@ -455,6 +482,7 @@ class _MarkRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final s = row.student;
     final hasRemark = row.remark.isNotEmpty;
     return Container(
@@ -480,13 +508,13 @@ class _MarkRow extends StatelessWidget {
           ),
           IconButton(
             key: ValueKey('remark-${s.id}'),
-            tooltip: hasRemark ? 'Edit remark' : 'Add remark',
+            tooltip: hasRemark ? l.editRemark : l.addRemark,
             onPressed: onRemark,
             icon: Icon(hasRemark ? Icons.comment : Icons.add_comment_outlined, size: 20, color: hasRemark ? c.primary : c.onSurfaceVariant),
           ),
           FilterChip(
             key: ValueKey('absent-${s.id}'),
-            label: const Text('Absent'),
+            label: Text(l.statusAbsent),
             selected: row.absent,
             showCheckmark: false,
             visualDensity: VisualDensity.compact,
@@ -513,7 +541,7 @@ class _MarkRow extends StatelessWidget {
               scrollPadding: const EdgeInsets.only(bottom: 120),
               decoration: InputDecoration(
                 isDense: true,
-                hintText: row.absent ? 'AB' : '–',
+                hintText: row.absent ? l.absentShort : '–',
                 contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: Kx.s12),
                 errorText: error,
                 errorMaxLines: 1,
@@ -536,20 +564,21 @@ class _Bar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final a = controller.a;
     final dirty = controller.dirty;
     final invalid = controller.invalid;
     final String hint;
     if (invalid > 0) {
-      hint = invalid == 1 ? 'One mark is more than ${formatMarks(a.maxMarks)}' : '$invalid marks are more than ${formatMarks(a.maxMarks)}';
+      hint = l.marksOverMax(invalid, formatMarks(a.maxMarks));
     } else if (dirty) {
-      hint = 'Not saved yet';
+      hint = l.notSavedYet;
     } else if (a.isPublished) {
-      hint = 'Published · families can see these marks';
+      hint = l.publishedFamiliesSee;
     } else if (a.entered == 0) {
-      hint = 'Type marks, then Save';
+      hint = l.typeMarksThenSave;
     } else {
-      hint = 'Saved · only you can see these marks';
+      hint = l.savedOnlyYou;
     }
     return Material(
       color: c.surfaceContainer,
@@ -564,7 +593,7 @@ class _Bar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(controller.summary, key: const Key('marksSummary'), style: context.text.titleSmall),
+                    Text(marksSummary(l, controller), key: const Key('marksSummary'), style: context.text.titleSmall),
                     Text(
                       hint,
                       key: const Key('marksHint'),
@@ -573,15 +602,17 @@ class _Bar extends StatelessWidget {
                   ],
                 ),
               ),
-              if (!a.isPublished)
+              if (!a.isPublished) ...[
+                const SizedBox(width: Kx.s8),
                 FilledButton.icon(
                   key: const Key('publishMarks'),
                   onPressed: dirty || controller.publishing || a.entered == 0 ? null : onPublish,
                   icon: controller.publishing
                       ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.send_outlined, size: 18),
-                  label: const Text('Publish'),
+                  label: Text(l.publish),
                 ),
+              ],
             ],
           ),
         ),
@@ -612,15 +643,16 @@ class _RemarkSheetState extends State<_RemarkSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Padding(
       padding: EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, MediaQuery.viewInsetsOf(context).bottom + Kx.s16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Remark for ${widget.name}', style: context.text.titleMedium),
+          Text(l.remarkFor(widget.name), style: context.text.titleMedium),
           const SizedBox(height: Kx.s4),
-          Text('Families see it with the marks.', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+          Text(l.remarkFamiliesSee, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
           const SizedBox(height: Kx.s16),
           TextField(
             key: const Key('remarkField'),
@@ -630,16 +662,18 @@ class _RemarkSheetState extends State<_RemarkSheet> {
             minLines: 2,
             maxLines: 4,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'e.g. Neat working; revise journal entries'),
+            decoration: InputDecoration(hintText: l.remarkHint),
           ),
           const SizedBox(height: Kx.s8),
-          Row(
+          // Wraps onto two lines when the labels are long (Kannada at large text sizes).
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: Kx.s8,
             children: [
-              if (widget.initial.isNotEmpty) TextButton(onPressed: () => Navigator.pop(context, ''), child: const Text('Remove')),
-              const Spacer(),
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-              const SizedBox(width: Kx.s8),
-              FilledButton(key: const Key('saveRemark'), onPressed: () => Navigator.pop(context, _text.text), child: const Text('Done')),
+              if (widget.initial.isNotEmpty)
+                TextButton(key: const Key('removeRemark'), onPressed: () => Navigator.pop(context, ''), child: Text(l.remove)),
+              TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+              FilledButton(key: const Key('saveRemark'), onPressed: () => Navigator.pop(context, _text.text), child: Text(l.done)),
             ],
           ),
         ],

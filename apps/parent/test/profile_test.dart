@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'helpers.dart';
 
 void main() {
-  testWidgets('profile lists the children, opens fees, results and library, marks unbuilt features Soon and signs out', (tester) async {
+  testWidgets('profile lists the children, opens fees, results and library, shows the language setting and signs out', (tester) async {
     final (_, state) = await pumpApp(tester);
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
@@ -21,13 +21,9 @@ void main() {
       expect(find.text(f), findsOneWidget);
     }
     await tester.scrollUntilVisible(find.byKey(const Key('signOut')), 200, scrollable: list);
-    expect(find.text('Language'), findsOneWidget);
-    expect(find.text('Soon'), findsOneWidget);
-    await tester.tap(find.text('Language'));
-    await tester.pump();
-    expect(find.text('Language is coming in a later update'), findsOneWidget);
-    ScaffoldMessenger.of(tester.element(find.text('Language'))).hideCurrentSnackBar();
-    await tester.pumpAndSettle();
+    // Language is built now (see language_test.dart); nothing is marked Soon.
+    expect(find.descendant(of: find.byKey(const Key('languageSetting')), matching: find.text('English')), findsOneWidget);
+    expect(find.text('Soon'), findsNothing);
 
     await tester.scrollUntilVisible(find.text("Diya's library books"), -200, scrollable: list);
     await tester.tap(find.text("Diya's library books"));

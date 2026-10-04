@@ -3,8 +3,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/family.dart';
-import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'chat_screen.dart';
 import 'messages_controller.dart';
@@ -29,14 +29,14 @@ class MessagesTab extends StatelessWidget {
             key: const Key('newMessage'),
             onPressed: () => NewMessageScreen.open(context, controller, family),
             icon: const Icon(Icons.edit_outlined),
-            label: const Text('New message'),
+            label: Text(context.l10n.newMessage),
           ),
           body: RefreshIndicator(
             onRefresh: controller.load,
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                const SliverAppBar.large(title: Text('Messages')),
+                SliverAppBar.large(title: Text(context.l10n.navMessages)),
                 if (controller.error != null)
                   SliverPadding(
                     padding: const EdgeInsets.all(Kx.s16),
@@ -50,8 +50,8 @@ class MessagesTab extends StatelessWidget {
                     child: KxEmptyState(
                       icon: Icons.forum_outlined,
                       message: family.children.length == 1
-                          ? "No messages yet.\nWrite to ${family.children.single.firstName}'s teachers about homework, absences or progress."
-                          : "No messages yet.\nWrite to your children's teachers about homework, absences or progress.",
+                          ? context.l10n.noMessagesOneChild(family.children.single.firstName)
+                          : context.l10n.noMessagesChildren,
                     ),
                   )
                 else ...[
@@ -116,13 +116,13 @@ class ThreadTile extends StatelessWidget {
                       ),
                       if (t.lastMessageAt != null)
                         Text(
-                          Fmt.messageDay(t.lastMessageAt!, now),
+                          context.fmt.messageDay(t.lastMessageAt!, now),
                           style: context.text.labelMedium?.copyWith(color: unread ? c.primary : c.onSurfaceVariant),
                         ),
                     ],
                   ),
                   Text(
-                    'About ${t.student.fullName.split(' ').first} · ${t.className}',
+                    '${context.l10n.aboutName(t.student.fullName.split(' ').first)} · ${t.className}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant),
@@ -133,7 +133,7 @@ class ThreadTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          t.lastMessage ?? 'No messages yet',
+                          t.lastMessage ?? context.l10n.noMessagesYet,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: context.text.bodyMedium?.copyWith(
@@ -205,14 +205,14 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
       setState(() => _opening = null);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(e.message)));
+        ..showSnackBar(SnackBar(content: Text(context.errorText(e))));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New message')),
+      appBar: AppBar(title: Text(context.l10n.newMessage)),
       body: ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
@@ -227,10 +227,7 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
                   );
           }
           if (all.isEmpty) {
-            return const KxEmptyState(
-              icon: Icons.forum_outlined,
-              message: "No children are linked to your account yet.\nAsk your child's college.",
-            );
+            return KxEmptyState(icon: Icons.forum_outlined, message: context.l10n.noChildrenLinkedShort);
           }
           final child = all.where((k) => k.studentId == _childId).firstOrNull ?? all.first;
           return ListView(
@@ -239,7 +236,7 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
               if (all.length > 1) ...[
                 Padding(
                   padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s4),
-                  child: Text('About', style: context.text.titleSmall?.copyWith(color: c.primary)),
+                  child: Text(context.l10n.aboutHeader, style: context.text.titleSmall?.copyWith(color: c.primary)),
                 ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -266,7 +263,7 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, Kx.s4),
                 child: Text(
-                  "${child.studentName.split(' ').first}'s teachers · ${child.className}",
+                  '${context.l10n.childTeachers(child.studentName.split(' ').first)} · ${child.className}',
                   style: context.text.titleSmall?.copyWith(color: c.primary),
                 ),
               ),
@@ -274,7 +271,7 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
                 Padding(
                   padding: const EdgeInsets.all(Kx.s16),
                   child: Text(
-                    "No teachers are on ${child.studentName.split(' ').first}'s timetable yet.",
+                    context.l10n.noTeachersOnTimetable(child.studentName.split(' ').first),
                     style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ),
@@ -283,7 +280,7 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
                   key: Key('pickTeacher-${t.id}'),
                   leading: KxAvatar(name: t.fullName),
                   title: Text(t.fullName),
-                  subtitle: Text(t.subjects.isEmpty ? 'Teacher' : t.subjects.join(' · ')),
+                  subtitle: Text(t.subjects.isEmpty ? context.l10n.teacher : t.subjects.join(' · ')),
                   trailing: _opening == t.id
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.chevron_right),

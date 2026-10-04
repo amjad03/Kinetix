@@ -1,0 +1,1917 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_kn.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get tomorrow;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @dueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get dueToday;
+
+  /// No description provided for @dueTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due tomorrow'**
+  String get dueTomorrow;
+
+  /// No description provided for @dueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String dueOn(Object date);
+
+  /// No description provided for @wasDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {date}'**
+  String wasDue(Object date);
+
+  /// No description provided for @overdueBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue by {days, plural, =1{1 day} other{{days} days}}'**
+  String overdueBy(int days);
+
+  /// No description provided for @bookDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get bookDueToday;
+
+  /// No description provided for @bookDueTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due tomorrow'**
+  String get bookDueTomorrow;
+
+  /// No description provided for @bookDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String bookDueOn(Object date);
+
+  /// No description provided for @greetingMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get greetingMorning;
+
+  /// No description provided for @greetingAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get greetingAfternoon;
+
+  /// No description provided for @greetingEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get greetingEvening;
+
+  /// No description provided for @greetingName.
+  ///
+  /// In en, this message translates to:
+  /// **'{greeting}, {name}'**
+  String greetingName(Object greeting, Object name);
+
+  /// No description provided for @dateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}, {time}'**
+  String dateTime(Object date, Object time);
+
+  /// No description provided for @listSeparator.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get listSeparator;
+
+  /// No description provided for @listAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} and {last}'**
+  String listAnd(Object items, Object last);
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @soon.
+  ///
+  /// In en, this message translates to:
+  /// **'Soon'**
+  String get soon;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// No description provided for @comingLater.
+  ///
+  /// In en, this message translates to:
+  /// **'{feature} is coming in a later update'**
+  String comingLater(Object feature);
+
+  /// No description provided for @statusPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get statusPresent;
+
+  /// No description provided for @statusAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get statusAbsent;
+
+  /// No description provided for @statusLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get statusLate;
+
+  /// No description provided for @statusExcused.
+  ///
+  /// In en, this message translates to:
+  /// **'Excused'**
+  String get statusExcused;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @pages.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 page} other{{count} pages}}'**
+  String pages(int count);
+
+  /// No description provided for @lastDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {days} days'**
+  String lastDays(Object days);
+
+  /// No description provided for @rollNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Roll no. {rollNo}'**
+  String rollNo(Object rollNo);
+
+  /// No description provided for @errTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The server is taking too long to respond. Try again.'**
+  String get errTimeout;
+
+  /// No description provided for @errUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach KINETIX. Check your internet connection and the server address.'**
+  String get errUnreachable;
+
+  /// No description provided for @errForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have access to this.'**
+  String get errForbidden;
+
+  /// No description provided for @errNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found.'**
+  String get errNotFound;
+
+  /// No description provided for @errTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a minute and try again.'**
+  String get errTooMany;
+
+  /// No description provided for @errGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong ({status}). Try again.'**
+  String errGeneric(Object status);
+
+  /// No description provided for @errWrongLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong institution, login or password'**
+  String get errWrongLogin;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @signOutQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get signOutQuestion;
+
+  /// No description provided for @signOutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will need your password to sign in again.'**
+  String get signOutBody;
+
+  /// No description provided for @institutionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Institution code'**
+  String get institutionCode;
+
+  /// No description provided for @institutionCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. demo-college'**
+  String get institutionCodeHint;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @serverAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Server address'**
+  String get serverAddress;
+
+  /// No description provided for @serverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Server: {server}'**
+  String serverLabel(Object server);
+
+  /// No description provided for @enterInstitutionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your institution code'**
+  String get enterInstitutionCode;
+
+  /// No description provided for @institutionCodeChars.
+  ///
+  /// In en, this message translates to:
+  /// **'Use letters, numbers and hyphens only'**
+  String get institutionCodeChars;
+
+  /// No description provided for @enterValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get enterValidEmail;
+
+  /// No description provided for @enterValidPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a 10-digit phone number or a valid email'**
+  String get enterValidPhone;
+
+  /// No description provided for @enterPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get enterPassword;
+
+  /// No description provided for @enterServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a server address like https://api.kinetix.in'**
+  String get enterServer;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for the app and for updates sent to you'**
+  String get languageHelp;
+
+  /// No description provided for @chooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose language'**
+  String get chooseLanguage;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @server.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get server;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get navMessages;
+
+  /// No description provided for @navUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get navUpdates;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @attendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attendance;
+
+  /// No description provided for @homework.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get homework;
+
+  /// No description provided for @sectionLastDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{section} · last {days} days'**
+  String sectionLastDays(Object section, Object days);
+
+  /// No description provided for @allClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'All classes'**
+  String get allClasses;
+
+  /// No description provided for @absentOrLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent or late'**
+  String get absentOrLate;
+
+  /// No description provided for @noAttendanceTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'No attendance has been taken in the last {days} days.'**
+  String noAttendanceTaken(Object days);
+
+  /// No description provided for @attendedAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended all'**
+  String get attendedAll;
+
+  /// No description provided for @attendedNofM.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended {attended} of {total}'**
+  String attendedNofM(Object attended, Object total);
+
+  /// No description provided for @wholeDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole day'**
+  String get wholeDay;
+
+  /// No description provided for @instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions'**
+  String get instructions;
+
+  /// No description provided for @noInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'No instructions were added.'**
+  String get noInstructions;
+
+  /// No description provided for @factDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due'**
+  String get factDue;
+
+  /// No description provided for @setBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Set by'**
+  String get setBy;
+
+  /// No description provided for @givenOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Given on'**
+  String get givenOn;
+
+  /// No description provided for @library.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get library;
+
+  /// No description provided for @nOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} out'**
+  String nOut(Object count);
+
+  /// No description provided for @seeLibraryHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'See library history'**
+  String get seeLibraryHistory;
+
+  /// No description provided for @booksOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 book overdue. Please return it to the library.} other{{count} books overdue. Please return them to the library.}}'**
+  String booksOverdue(int count);
+
+  /// No description provided for @andMore.
+  ///
+  /// In en, this message translates to:
+  /// **'and {count} more'**
+  String andMore(Object count);
+
+  /// No description provided for @finesForLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Fines for late returns: {amount}'**
+  String finesForLate(Object amount);
+
+  /// No description provided for @finesPayAtDesk.
+  ///
+  /// In en, this message translates to:
+  /// **'Fines for late returns: {amount}. Pay at the library desk.'**
+  String finesPayAtDesk(Object amount);
+
+  /// No description provided for @borrowedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed {date}'**
+  String borrowedOn(Object date);
+
+  /// No description provided for @returnedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'returned {date}'**
+  String returnedOn(Object date);
+
+  /// No description provided for @fineAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'fine {amount}'**
+  String fineAmount(Object amount);
+
+  /// No description provided for @returnedLate.
+  ///
+  /// In en, this message translates to:
+  /// **'late'**
+  String get returnedLate;
+
+  /// No description provided for @fineSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} fine so far'**
+  String fineSoFar(Object amount);
+
+  /// No description provided for @booksOutHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Books out ({count})'**
+  String booksOutHeading(Object count);
+
+  /// No description provided for @noBooksOut.
+  ///
+  /// In en, this message translates to:
+  /// **'No books out right now.'**
+  String get noBooksOut;
+
+  /// No description provided for @fineRule.
+  ///
+  /// In en, this message translates to:
+  /// **'The library charges a fine for each day a book is returned late.'**
+  String get fineRule;
+
+  /// No description provided for @returnedHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned ({count})'**
+  String returnedHeading(Object count);
+
+  /// No description provided for @returnedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned books will be listed here.'**
+  String get returnedEmpty;
+
+  /// No description provided for @libraryBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Library books'**
+  String get libraryBooks;
+
+  /// No description provided for @results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get results;
+
+  /// No description provided for @aboveAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Above class average'**
+  String get aboveAverage;
+
+  /// No description provided for @atAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'At class average'**
+  String get atAverage;
+
+  /// No description provided for @belowAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Below class average'**
+  String get belowAverage;
+
+  /// No description provided for @notEntered.
+  ///
+  /// In en, this message translates to:
+  /// **'Not entered'**
+  String get notEntered;
+
+  /// No description provided for @publishedMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Published marks'**
+  String get publishedMarks;
+
+  /// No description provided for @seeAllResults.
+  ///
+  /// In en, this message translates to:
+  /// **'See all results'**
+  String get seeAllResults;
+
+  /// No description provided for @bySubject.
+  ///
+  /// In en, this message translates to:
+  /// **'By subject'**
+  String get bySubject;
+
+  /// No description provided for @classAverageValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Class average {value}'**
+  String classAverageValue(Object value);
+
+  /// No description provided for @marksExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks scored out of the total, across published assessments.'**
+  String get marksExplainer;
+
+  /// No description provided for @assessments.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get assessments;
+
+  /// No description provided for @classAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Class average'**
+  String get classAverage;
+
+  /// No description provided for @highestInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest in class'**
+  String get highestInClass;
+
+  /// No description provided for @outOf.
+  ///
+  /// In en, this message translates to:
+  /// **'out of {max}'**
+  String outOf(Object max);
+
+  /// No description provided for @teachersRemark.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s remark'**
+  String get teachersRemark;
+
+  /// No description provided for @kindTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get kindTest;
+
+  /// No description provided for @kindAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment'**
+  String get kindAssignment;
+
+  /// No description provided for @kindInternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal assessment'**
+  String get kindInternal;
+
+  /// No description provided for @kindExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam'**
+  String get kindExam;
+
+  /// No description provided for @kindPractical.
+  ///
+  /// In en, this message translates to:
+  /// **'Practical'**
+  String get kindPractical;
+
+  /// No description provided for @lessonRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson recordings'**
+  String get lessonRecordings;
+
+  /// No description provided for @nMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} missed'**
+  String nMissed(Object count);
+
+  /// No description provided for @seeAllRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'See all {count} recordings'**
+  String seeAllRecordings(Object count);
+
+  /// No description provided for @recordingNotShared.
+  ///
+  /// In en, this message translates to:
+  /// **'This recording is no longer shared with the class.'**
+  String get recordingNotShared;
+
+  /// No description provided for @classBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Class board'**
+  String get classBoard;
+
+  /// No description provided for @previousPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous page'**
+  String get previousPage;
+
+  /// No description provided for @nextPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Next page'**
+  String get nextPage;
+
+  /// No description provided for @pageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String pageOf(Object page, Object total);
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Double-tap to zoom out'**
+  String get zoomOut;
+
+  /// No description provided for @zoomSideways.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch to zoom, or turn your phone sideways'**
+  String get zoomSideways;
+
+  /// No description provided for @zoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch or double-tap to zoom'**
+  String get zoomHint;
+
+  /// No description provided for @fees.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees'**
+  String get fees;
+
+  /// No description provided for @allFeesPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'All fees paid'**
+  String get allFeesPaid;
+
+  /// No description provided for @lastPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Last paid {amount}'**
+  String lastPaid(Object amount);
+
+  /// No description provided for @dueSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'due'**
+  String get dueSuffix;
+
+  /// No description provided for @feesToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 fee to pay} other{{count} fees to pay}}'**
+  String feesToPay(int count);
+
+  /// No description provided for @nOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} overdue'**
+  String nOverdue(Object count);
+
+  /// No description provided for @viewFees.
+  ///
+  /// In en, this message translates to:
+  /// **'View fees'**
+  String get viewFees;
+
+  /// No description provided for @viewFeesReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'View fees and receipts'**
+  String get viewFeesReceipts;
+
+  /// No description provided for @payAtCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Please pay at the fees counter.'**
+  String get payAtCounter;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @feesNothingDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing due'**
+  String get feesNothingDue;
+
+  /// No description provided for @totalDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total due'**
+  String get totalDue;
+
+  /// No description provided for @toPay.
+  ///
+  /// In en, this message translates to:
+  /// **'To pay'**
+  String get toPay;
+
+  /// No description provided for @paidHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paidHeader;
+
+  /// No description provided for @paidLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} · was due {date}'**
+  String paidLine(Object amount, Object date);
+
+  /// No description provided for @paidPill.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paidPill;
+
+  /// No description provided for @paymentsReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments and receipts'**
+  String get paymentsReceipts;
+
+  /// No description provided for @feeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee'**
+  String get feeLabel;
+
+  /// No description provided for @overdueWasDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue · was due {date}'**
+  String overdueWasDue(Object date);
+
+  /// No description provided for @paidOfLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{paid} of {total} paid · {left} left'**
+  String paidOfLeft(Object paid, Object total, Object left);
+
+  /// No description provided for @receiptNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This receipt was not found.'**
+  String get receiptNotFound;
+
+  /// No description provided for @receiptCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt copied. Paste it into a message or email.'**
+  String get receiptCopied;
+
+  /// No description provided for @receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receipt;
+
+  /// No description provided for @copyReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy receipt'**
+  String get copyReceipt;
+
+  /// No description provided for @feeReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee receipt'**
+  String get feeReceipt;
+
+  /// No description provided for @receiptNoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt no.'**
+  String get receiptNoLabel;
+
+  /// No description provided for @dateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get dateLabel;
+
+  /// No description provided for @studentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get studentLabel;
+
+  /// No description provided for @classLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get classLabel;
+
+  /// No description provided for @paidBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by'**
+  String get paidBy;
+
+  /// No description provided for @reference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get reference;
+
+  /// No description provided for @amountPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount paid'**
+  String get amountPaid;
+
+  /// No description provided for @balanceLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance left'**
+  String get balanceLeft;
+
+  /// No description provided for @nilFullyPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Nil · fully paid'**
+  String get nilFullyPaid;
+
+  /// No description provided for @demoNoMoneyMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo payment: no money moved.'**
+  String get demoNoMoneyMoved;
+
+  /// No description provided for @demoNoMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo payment: no money moves'**
+  String get demoNoMoney;
+
+  /// No description provided for @methodOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get methodOnline;
+
+  /// No description provided for @methodCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get methodCash;
+
+  /// No description provided for @methodCheque.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheque'**
+  String get methodCheque;
+
+  /// No description provided for @methodBankTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer'**
+  String get methodBankTransfer;
+
+  /// No description provided for @methodPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get methodPayment;
+
+  /// No description provided for @newMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New message'**
+  String get newMessage;
+
+  /// No description provided for @aboutName.
+  ///
+  /// In en, this message translates to:
+  /// **'About {name}'**
+  String aboutName(Object name);
+
+  /// No description provided for @noMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get noMessagesYet;
+
+  /// No description provided for @couldNotSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send: {reason}'**
+  String couldNotSend(Object reason);
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @pullForEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull down for earlier messages'**
+  String get pullForEarlier;
+
+  /// No description provided for @teachersReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers reply when they can, usually during college hours.'**
+  String get teachersReply;
+
+  /// No description provided for @messageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get messageCopied;
+
+  /// No description provided for @teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get teacher;
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get markAllRead;
+
+  /// No description provided for @earlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get earlier;
+
+  /// No description provided for @fromCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'Message from the college'**
+  String get fromCollege;
+
+  /// No description provided for @update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// No description provided for @signInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the phone number or email you gave your child\'s college'**
+  String get signInHint;
+
+  /// No description provided for @errNotGuardian.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is for parents and guardians. Ask your institution to link your account to your child.'**
+  String get errNotGuardian;
+
+  /// No description provided for @errTeacherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.'**
+  String get errTeacherAccount;
+
+  /// No description provided for @homeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s how {name} is doing'**
+  String homeSubtitle(Object name);
+
+  /// No description provided for @noChildrenLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'No children are linked to your account yet.\nAsk your child\'s college to add you as their parent.'**
+  String get noChildrenLinked;
+
+  /// No description provided for @attendanceGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good attendance. Keep it up.'**
+  String get attendanceGood;
+
+  /// No description provided for @attendanceFewMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed a few classes recently.'**
+  String get attendanceFewMissed;
+
+  /// No description provided for @attendanceBelow75.
+  ///
+  /// In en, this message translates to:
+  /// **'Below 75%. Colleges usually need 75% to sit exams.'**
+  String get attendanceBelow75;
+
+  /// No description provided for @seeAttendanceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'See attendance history'**
+  String get seeAttendanceHistory;
+
+  /// No description provided for @noAttendanceFor.
+  ///
+  /// In en, this message translates to:
+  /// **'No attendance has been taken for {name} in the last {days} days.'**
+  String noAttendanceFor(Object name, Object days);
+
+  /// No description provided for @attendedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended {attended} of {count, plural, =1{1 class} other{{count} classes}}'**
+  String attendedOf(Object attended, int count);
+
+  /// No description provided for @excusedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} excused (counted as attended)'**
+  String excusedNote(Object count);
+
+  /// No description provided for @recentAbsences.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent absences'**
+  String get recentAbsences;
+
+  /// No description provided for @dueCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} due'**
+  String dueCount(Object count);
+
+  /// No description provided for @nothingDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing due right now. New homework from teachers will show here.'**
+  String get nothingDue;
+
+  /// No description provided for @pastHomework.
+  ///
+  /// In en, this message translates to:
+  /// **'Past homework ({count})'**
+  String pastHomework(Object count);
+
+  /// No description provided for @inClass.
+  ///
+  /// In en, this message translates to:
+  /// **'In class'**
+  String get inClass;
+
+  /// No description provided for @inClassIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers when the teacher picked {name} to answer a question in class.'**
+  String inClassIntro(Object name);
+
+  /// No description provided for @notPickedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was not picked to answer in class yet.'**
+  String notPickedYet(Object name);
+
+  /// No description provided for @legendCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get legendCorrect;
+
+  /// No description provided for @legendPartly.
+  ///
+  /// In en, this message translates to:
+  /// **'Partly correct'**
+  String get legendPartly;
+
+  /// No description provided for @legendNotCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Not correct'**
+  String get legendNotCorrect;
+
+  /// No description provided for @legendNoAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'No answer'**
+  String get legendNoAnswer;
+
+  /// No description provided for @askedNoAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Was asked {count, plural, =1{1 question} other{{count} questions}} in {subject} but did not answer.'**
+  String askedNoAnswer(int count, Object subject);
+
+  /// No description provided for @answeredOneCorrectly.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered 1 question in {subject} correctly.'**
+  String answeredOneCorrectly(Object subject);
+
+  /// No description provided for @answeredAllCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered {count} questions in {subject}, all correct.'**
+  String answeredAllCorrect(Object count, Object subject);
+
+  /// No description provided for @answeredDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered {count, plural, =1{1 question} other{{count} questions}} in {subject}, {detail}.'**
+  String answeredDetail(int count, Object subject, Object detail);
+
+  /// No description provided for @nCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} correct'**
+  String nCorrect(Object count);
+
+  /// No description provided for @nPartly.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} partly correct'**
+  String nPartly(Object count);
+
+  /// No description provided for @nNotCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} not correct'**
+  String nNotCorrect(Object count);
+
+  /// No description provided for @didNotAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Did not answer {count}.'**
+  String didNotAnswer(Object count);
+
+  /// No description provided for @classBoards.
+  ///
+  /// In en, this message translates to:
+  /// **'Class boards'**
+  String get classBoards;
+
+  /// No description provided for @boardsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'When a teacher shares the class board after a lesson, it appears here so {name} can revise.'**
+  String boardsEmpty(Object name);
+
+  /// No description provided for @todaysBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s board: {subject}'**
+  String todaysBoard(Object subject);
+
+  /// No description provided for @childAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s attendance'**
+  String childAttendance(Object name);
+
+  /// No description provided for @notMissedAny.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has not missed a class in the last {days} days.'**
+  String notMissedAny(Object name, Object days);
+
+  /// No description provided for @homeworkFor.
+  ///
+  /// In en, this message translates to:
+  /// **'For'**
+  String get homeworkFor;
+
+  /// No description provided for @yourChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Your child'**
+  String get yourChild;
+
+  /// No description provided for @yourChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'Your children'**
+  String get yourChildren;
+
+  /// No description provided for @shownOnHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown on Home'**
+  String get shownOnHome;
+
+  /// No description provided for @noChildrenYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No children are linked yet. Ask your child\'s college.'**
+  String get noChildrenYet;
+
+  /// No description provided for @feesReceiptsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees & receipts'**
+  String get feesReceiptsHeader;
+
+  /// No description provided for @feesAndReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees and receipts'**
+  String get feesAndReceipts;
+
+  /// No description provided for @childFees.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s fees'**
+  String childFees(Object name);
+
+  /// No description provided for @feesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dues, payments and receipts'**
+  String get feesSubtitle;
+
+  /// No description provided for @resultsLibraryHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Results & library'**
+  String get resultsLibraryHeader;
+
+  /// No description provided for @childResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s results'**
+  String childResults(Object name);
+
+  /// No description provided for @resultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Published marks and class averages'**
+  String get resultsSubtitle;
+
+  /// No description provided for @childLibraryBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s library books'**
+  String childLibraryBooks(Object name);
+
+  /// No description provided for @librarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Books borrowed, due dates and fines'**
+  String get librarySubtitle;
+
+  /// No description provided for @college.
+  ///
+  /// In en, this message translates to:
+  /// **'College'**
+  String get college;
+
+  /// No description provided for @noBooksBorrowed.
+  ///
+  /// In en, this message translates to:
+  /// **'No library books borrowed. Books {name} borrows from the college library show here with their due dates.'**
+  String noBooksBorrowed(Object name);
+
+  /// No description provided for @noBooksOutNow.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has no library books out right now.'**
+  String noBooksOutNow(Object name);
+
+  /// No description provided for @childLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s library'**
+  String childLibrary(Object name);
+
+  /// No description provided for @markedAbsentFor.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was marked absent for this {kind}.'**
+  String markedAbsentFor(Object name, Object kind);
+
+  /// No description provided for @noMarksCard.
+  ///
+  /// In en, this message translates to:
+  /// **'No marks published yet. When {name}\'s teachers publish test or exam marks, they show here with the class average.'**
+  String noMarksCard(Object name);
+
+  /// No description provided for @noMarksScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'No marks published yet.\nWhen {name}\'s teachers publish marks, they show here.'**
+  String noMarksScreen(Object name);
+
+  /// No description provided for @recordingsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'When a teacher records a lesson on the board and shares it, it appears here so {name} can watch it again.'**
+  String recordingsEmpty(Object name);
+
+  /// No description provided for @missedThisClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed this class'**
+  String get missedThisClass;
+
+  /// No description provided for @childLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s lessons'**
+  String childLessons(Object name);
+
+  /// No description provided for @noRecordingsShared.
+  ///
+  /// In en, this message translates to:
+  /// **'No lesson recordings have been shared with the class yet.'**
+  String get noRecordingsShared;
+
+  /// No description provided for @boardNotShared.
+  ///
+  /// In en, this message translates to:
+  /// **'This board is no longer shared with the class.'**
+  String get boardNotShared;
+
+  /// No description provided for @noFeesIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'No fees have been issued for {name} yet.'**
+  String noFeesIssued(Object name);
+
+  /// No description provided for @noFeesIssuedLong.
+  ///
+  /// In en, this message translates to:
+  /// **'No fees have been issued for {name} yet.\nNew fees from the college will show here.'**
+  String noFeesIssuedLong(Object name);
+
+  /// No description provided for @pay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get pay;
+
+  /// No description provided for @payNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay now'**
+  String get payNow;
+
+  /// No description provided for @startingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting payment…'**
+  String get startingPayment;
+
+  /// No description provided for @confirmingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming payment…'**
+  String get confirmingPayment;
+
+  /// No description provided for @paymentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cancelled. Nothing was paid.'**
+  String get paymentCancelled;
+
+  /// No description provided for @paymentFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment didn\'t go through'**
+  String get paymentFailedTitle;
+
+  /// No description provided for @finishInWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish paying in {wallet}'**
+  String finishInWallet(Object wallet);
+
+  /// No description provided for @walletBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When {wallet} confirms the payment, the fee updates here and the receipt arrives in Updates.'**
+  String walletBody(Object wallet);
+
+  /// No description provided for @yourWalletApp.
+  ///
+  /// In en, this message translates to:
+  /// **'your wallet app'**
+  String get yourWalletApp;
+
+  /// No description provided for @couldNotConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm this payment'**
+  String get couldNotConfirmTitle;
+
+  /// No description provided for @couldNotConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} If money left your account, the college will get the confirmation from the payment gateway and this fee will update shortly. Otherwise, try again.'**
+  String couldNotConfirmBody(Object reason);
+
+  /// No description provided for @onlineNotAvailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment is not available'**
+  String get onlineNotAvailableTitle;
+
+  /// No description provided for @enterAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get enterAmount;
+
+  /// No description provided for @enterAmountRupees.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount in rupees, like 2500 or 2500.50'**
+  String get enterAmountRupees;
+
+  /// No description provided for @smallestPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'The smallest payment is ₹1'**
+  String get smallestPayment;
+
+  /// No description provided for @moreThanDue.
+  ///
+  /// In en, this message translates to:
+  /// **'That is more than the {amount} due'**
+  String moreThanDue(Object amount);
+
+  /// No description provided for @payTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay {title}'**
+  String payTitle(Object title);
+
+  /// No description provided for @amountDue.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} due'**
+  String amountDue(Object amount);
+
+  /// No description provided for @fullAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Full {amount}'**
+  String fullAmount(Object amount);
+
+  /// No description provided for @partAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Part amount'**
+  String get partAmount;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @amountRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Between ₹1 and {amount}'**
+  String amountRange(Object amount);
+
+  /// No description provided for @payAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay {amount}'**
+  String payAmount(Object amount);
+
+  /// No description provided for @paymentNotSetUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment isn\'t set up by the college yet. Please pay at the fees counter.'**
+  String get paymentNotSetUp;
+
+  /// No description provided for @paymentPhonesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment works in the KINETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.'**
+  String get paymentPhonesOnly;
+
+  /// No description provided for @demoPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo payment'**
+  String get demoPayment;
+
+  /// No description provided for @demoTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get demoTo;
+
+  /// No description provided for @demoFor.
+  ///
+  /// In en, this message translates to:
+  /// **'For'**
+  String get demoFor;
+
+  /// No description provided for @demoOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get demoOrder;
+
+  /// No description provided for @demoPayAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay {amount} (demo)'**
+  String demoPayAmount(Object amount);
+
+  /// No description provided for @failNoConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'The payment app did not return a confirmation. If money left your account, the fee will update shortly.'**
+  String get failNoConfirmation;
+
+  /// No description provided for @failCouldNotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the payment screen. Try again.'**
+  String get failCouldNotOpen;
+
+  /// No description provided for @failNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Check it and try again.'**
+  String get failNetwork;
+
+  /// No description provided for @failGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'The payment did not go through. Try again.'**
+  String get failGeneric;
+
+  /// No description provided for @paymentSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment successful'**
+  String get paymentSuccessful;
+
+  /// No description provided for @paidFor.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} paid for {name}'**
+  String paidFor(Object amount, Object name);
+
+  /// No description provided for @writeToAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Write to {teacher} about {name}.'**
+  String writeToAbout(Object teacher, Object name);
+
+  /// No description provided for @noMessagesOneChild.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet.\nWrite to {name}\'s teachers about homework, absences or progress.'**
+  String noMessagesOneChild(Object name);
+
+  /// No description provided for @noMessagesChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet.\nWrite to your children\'s teachers about homework, absences or progress.'**
+  String get noMessagesChildren;
+
+  /// No description provided for @noChildrenLinkedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'No children are linked to your account yet.\nAsk your child\'s college.'**
+  String get noChildrenLinkedShort;
+
+  /// No description provided for @aboutHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutHeader;
+
+  /// No description provided for @childTeachers.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s teachers'**
+  String childTeachers(Object name);
+
+  /// No description provided for @noTeachersOnTimetable.
+  ///
+  /// In en, this message translates to:
+  /// **'No teachers are on {name}\'s timetable yet.'**
+  String noTeachersOnTimetable(Object name);
+
+  /// No description provided for @noUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'No updates yet.\nAbsences, homework and messages from the college will appear here.'**
+  String get noUpdates;
+
+  /// No description provided for @phoneOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone or email'**
+  String get phoneOrEmail;
+
+  /// No description provided for @enterPhoneOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your phone number or email'**
+  String get enterPhoneOrEmail;
+}
+
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'kn':
+      return AppLocalizationsKn();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

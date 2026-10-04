@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../core/api.dart';
+import '../core/l10n.dart';
+
 /// An inline, plain-language error in the error container colour.
 class ErrorBanner extends StatelessWidget {
   const ErrorBanner(this.message, {super.key, this.onRetry});
+
+  /// The banner for a failed request, in the app's language.
+  static Widget api(ApiException error, {Key? key, VoidCallback? onRetry}) => Builder(
+    key: key,
+    builder: (context) => ErrorBanner(context.l10n.errorText(error), onRetry: onRetry),
+  );
 
   final String message;
   final VoidCallback? onRetry;
@@ -25,7 +34,7 @@ class ErrorBanner extends StatelessWidget {
             TextButton(
               onPressed: onRetry,
               style: TextButton.styleFrom(foregroundColor: c.onErrorContainer),
-              child: const Text('Retry'),
+              child: Text(context.l10n.retry),
             ),
         ],
       ),
@@ -80,20 +89,25 @@ class ProfileButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(right: Kx.s8),
-    child: IconButton(onPressed: onPressed, tooltip: 'Profile', icon: KxAvatar(name: name, size: 32)),
+    child: IconButton(
+      key: const Key('profileButton'),
+      onPressed: onPressed,
+      tooltip: context.l10n.profile,
+      icon: KxAvatar(name: name, size: 32),
+    ),
   );
 }
 
-/// Asks before leaving a screen with unsaved changes. True when the teacher chose to discard.
-Future<bool> confirmDiscard(BuildContext context, {String what = 'marks'}) async =>
+/// Asks before leaving the marks screen with unsaved changes. True when the teacher chose to discard.
+Future<bool> confirmDiscard(BuildContext context) async =>
     await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Discard changes?'),
-        content: Text('You have $what that are not saved yet.'),
+        title: Text(ctx.l10n.discardTitle),
+        content: Text(ctx.l10n.discardMarksBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Keep editing')),
-          FilledButton(key: const Key('discardChanges'), onPressed: () => Navigator.pop(ctx, true), child: const Text('Discard')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ctx.l10n.keepEditing)),
+          FilledButton(key: const Key('discardChanges'), onPressed: () => Navigator.pop(ctx, true), child: Text(ctx.l10n.discard)),
         ],
       ),
     ) ??

@@ -3,8 +3,8 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
-import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// A class board the teacher shared, read-only: swipe between pages, pinch to zoom.
@@ -29,7 +29,7 @@ class BoardScreen extends StatefulWidget {
 
 class _BoardScreenState extends State<BoardScreen> {
   SharedBoard? _board;
-  String? _error;
+  ApiException? _error;
   int _page = 0;
   bool _zoomed = false;
   final _pages = PageController();
@@ -56,7 +56,7 @@ class _BoardScreenState extends State<BoardScreen> {
       final b = await widget.api.whiteboard(widget.boardId);
       if (mounted) setState(() => _board = b);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.status == 404 ? 'This board is no longer shared with the class.' : e.message);
+      if (mounted) setState(() => _error = e);
     }
   }
 
@@ -94,7 +94,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final s = _board?.summary ?? widget.summary;
     final board = _board?.board;
     final pageCount = board?.pageCount ?? 0;
-    final subtitle = [?s?.teacherName, if (s?.sharedAt != null) Fmt.shortDay(s!.sharedAt!)].join(' · ');
+    final subtitle = [?s?.teacherName, if (s?.sharedAt != null) context.fmt.shortDay(s!.sharedAt!)].join(' · ');
 
     return Scaffold(
       backgroundColor: c.surfaceContainer,
@@ -104,7 +104,7 @@ class _BoardScreenState extends State<BoardScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s?.title ?? 'Class board', maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
+            Text(s?.title ?? context.l10n.classBoard, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
             if (subtitle.isNotEmpty || s?.subjectName != null)
               Text(
                 [?s?.subjectName, if (subtitle.isNotEmpty) subtitle].join(' · '),
@@ -120,7 +120,7 @@ class _BoardScreenState extends State<BoardScreen> {
               padding: const EdgeInsets.all(Kx.s16),
               child: Align(
                 alignment: Alignment.topCenter,
-                child: ErrorBanner(_error!, onRetry: _load),
+                child: ErrorBanner(_error!.status == 404 ? context.l10n.boardNotShared : _error!, onRetry: _load),
               ),
             )
           : board == null
@@ -178,7 +178,7 @@ class _BoardScreenState extends State<BoardScreen> {
                     child: Row(
                       children: [
                         IconButton(
-                          tooltip: 'Previous page',
+                          tooltip: context.l10n.previousPage,
                           onPressed: _page > 0 ? () => _goTo(_page - 1) : null,
                           icon: const Icon(Icons.chevron_left),
                         ),
@@ -186,13 +186,13 @@ class _BoardScreenState extends State<BoardScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Page ${_page + 1} of $pageCount', key: const Key('pageLabel'), style: context.text.labelLarge),
+                              Text(context.l10n.pageOf(_page + 1, pageCount), key: const Key('pageLabel'), style: context.text.labelLarge),
                               Text(
                                 _zoomed
-                                    ? 'Double-tap to zoom out'
+                                    ? context.l10n.zoomOut
                                     : MediaQuery.orientationOf(context) == Orientation.portrait && board.canvas.aspectRatio > 1
-                                    ? 'Pinch to zoom, or turn your phone sideways'
-                                    : 'Pinch or double-tap to zoom',
+                                    ? context.l10n.zoomSideways
+                                    : context.l10n.zoomHint,
                                 style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                               ),
                             ],
@@ -200,7 +200,7 @@ class _BoardScreenState extends State<BoardScreen> {
                         ),
                         IconButton(
                           key: const Key('nextPage'),
-                          tooltip: 'Next page',
+                          tooltip: context.l10n.nextPage,
                           onPressed: _page < pageCount - 1 ? () => _goTo(_page + 1) : null,
                           icon: const Icon(Icons.chevron_right),
                         ),

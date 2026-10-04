@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_teacher/features/board/connect_screen.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'fake_api.dart';
+import 'helpers.dart';
 
 void main() {
   late FakeTeacherApi api;
 
   Future<void> pumpConnect(WidgetTester tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: KinetixTheme.light(),
-        home: ConnectScreen(api: api, canScan: false),
-      ),
-    );
+    await tester.pumpWidget(localizedApp(home: ConnectScreen(api: api, canScan: false)));
     await tester.pumpAndSettle();
   }
 
@@ -24,8 +19,8 @@ void main() {
 
   testWidgets('without a camera it opens straight on code entry', (tester) async {
     await pumpConnect(tester);
-    expect(find.text('Enter the code on the board'), findsOneWidget);
-    expect(find.text('Scan QR code instead'), findsNothing);
+    expect(find.byKey(const Key('enterCodeTitle')), findsOneWidget);
+    expect(find.byKey(const Key('scanInstead')), findsNothing);
   });
 
   testWidgets('asks for all 6 digits and ignores letters', (tester) async {
@@ -54,14 +49,14 @@ void main() {
 
     await tester.enterText(find.byKey(const Key('codeField')), '482913');
     await tester.pumpAndSettle();
-    expect(find.text("You're connected"), findsOneWidget);
+    expect(find.byKey(const Key('youreConnected')), findsOneWidget);
   });
 
   testWidgets('a right code connects and shows the class; End class ends the session', (tester) async {
     await pumpConnect(tester);
     await tester.enterText(find.byKey(const Key('codeField')), '482913');
     await tester.pumpAndSettle();
-    expect(find.text("You're connected"), findsOneWidget);
+    expect(find.byKey(const Key('youreConnected')), findsOneWidget);
     expect(find.text('BCom Sem 3 A'), findsOneWidget);
     expect(find.text('Corporate Accounting'), findsOneWidget);
     expect(find.text('10:00 AM – 10:55 AM'), findsOneWidget);

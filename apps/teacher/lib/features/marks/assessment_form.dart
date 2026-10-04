@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 
@@ -33,7 +34,7 @@ class _AssessmentFormState extends State<AssessmentForm> {
   AssessmentKind _kind = AssessmentKind.test;
   DateTime _heldOn = DateUtils.dateOnly(DateTime.now());
   bool _saving = false;
-  String? _error;
+  ApiException? _error;
 
   @override
   void initState() {
@@ -64,7 +65,7 @@ class _AssessmentFormState extends State<AssessmentForm> {
       final classes = await widget.api.classes();
       setState(() => _setClasses(classes));
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _error = e);
     }
   }
 
@@ -81,16 +82,16 @@ class _AssessmentFormState extends State<AssessmentForm> {
       initialDate: _heldOn,
       firstDate: today.subtract(const Duration(days: 365)),
       lastDate: today.add(const Duration(days: 180)),
-      helpText: 'Held on',
+      helpText: context.l10n.heldOn,
     );
     if (picked != null) setState(() => _heldOn = picked);
   }
 
-  static String? validateMax(String? v) {
+  static String? validateMax(AppLocalizations l, String? v) {
     final n = double.tryParse((v ?? '').trim());
-    if (n == null) return 'Enter the maximum marks';
-    if (n <= 0) return 'Must be more than 0';
-    if (n > 1000) return 'At most 1000';
+    if (n == null) return l.enterMaxMarks;
+    if (n <= 0) return l.maxMustBePositive;
+    if (n > 1000) return l.maxAtMost1000;
     return null;
   }
 
@@ -111,17 +112,18 @@ class _AssessmentFormState extends State<AssessmentForm> {
       );
       if (mounted) Navigator.of(context).pop(a);
     } on ApiException catch (e) {
-      if (mounted) setState(() => (_error = e.message, _saving = false));
+      if (mounted) setState(() => (_error = e, _saving = false));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
         leading: const CloseButton(),
-        title: const Text('New assessment'),
+        title: Text(l.newAssessment),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: Kx.s12),
@@ -129,9 +131,7 @@ class _AssessmentFormState extends State<AssessmentForm> {
               key: const Key('createAssessment'),
               onPressed: _saving || _classes == null || _classes!.isEmpty ? null : _save,
               style: FilledButton.styleFrom(minimumSize: const Size(64, 40)),
-              child: _saving
-                  ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Create'),
+              child: _saving ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text(l.create),
             ),
           ),
         ],
@@ -139,14 +139,14 @@ class _AssessmentFormState extends State<AssessmentForm> {
       body: _classes == null && _error == null
           ? const Center(child: CircularProgressIndicator())
           : _classes != null && _classes!.isEmpty
-          ? const KxEmptyState(icon: Icons.event_busy_outlined, message: 'You have no classes in your timetable yet')
+          ? KxEmptyState(icon: Icons.event_busy_outlined, message: l.noClassesInTimetable)
           : Form(
               key: _form,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s32),
                 children: [
                   if (_error != null) ...[
-                    ErrorBanner(_error!, onRetry: _classes == null ? _loadClasses : null),
+                    ErrorBanner.api(_error!, onRetry: _classes == null ? _loadClasses : null),
                     const SizedBox(height: Kx.s16),
                   ],
                   if (_classes != null) ...[
@@ -154,8 +154,14 @@ class _AssessmentFormState extends State<AssessmentForm> {
                       key: const Key('assessmentClassField'),
                       initialValue: _section,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Class', prefixIcon: Icon(Icons.groups_outlined)),
-                      items: [for (final s in _sections) DropdownMenuItem(value: s, child: Text(s.name, overflow: TextOverflow.ellipsis))],
+                      decoration: InputDecoration(labelText: l.labelClass, prefixIcon: const Icon(Icons.groups_outlined)),
+                      items: [
+                        for (final s in _sections)
+                          DropdownMenuItem(
+                            value: s,
+                            child: Text(s.name, overflow: TextOverflow.ellipsis),
+                          ),
+                      ],
                       onChanged: (s) => setState(() {
                         _section = s;
                         _subject = _subjects.firstOrNull;
@@ -166,10 +172,16 @@ class _AssessmentFormState extends State<AssessmentForm> {
                       key: ValueKey('assessmentSubject-${_section?.id}'),
                       initialValue: _subject,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Subject', prefixIcon: Icon(Icons.menu_book_outlined)),
-                      items: [for (final s in _subjects) DropdownMenuItem(value: s, child: Text(s.name, overflow: TextOverflow.ellipsis))],
+                      decoration: InputDecoration(labelText: l.labelSubject, prefixIcon: const Icon(Icons.menu_book_outlined)),
+                      items: [
+                        for (final s in _subjects)
+                          DropdownMenuItem(
+                            value: s,
+                            child: Text(s.name, overflow: TextOverflow.ellipsis),
+                          ),
+                      ],
                       onChanged: (s) => setState(() => _subject = s),
-                      validator: (s) => s == null ? 'Choose a subject' : null,
+                      validator: (s) => s == null ? l.chooseSubject : null,
                     ),
                     const SizedBox(height: Kx.s16),
                     TextFormField(
@@ -177,11 +189,11 @@ class _AssessmentFormState extends State<AssessmentForm> {
                       controller: _title,
                       maxLength: maxTitle,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g. Unit test 2: Redemption of shares'),
-                      validator: (v) => (v ?? '').trim().isEmpty ? 'Give it a title' : null,
+                      decoration: InputDecoration(labelText: l.titleLabel, hintText: l.assessmentTitleHint),
+                      validator: (v) => (v ?? '').trim().isEmpty ? l.assessmentTitleRequired : null,
                     ),
                     const SizedBox(height: Kx.s8),
-                    Text('Kind', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+                    Text(l.kind, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
                     const SizedBox(height: Kx.s8),
                     Wrap(
                       spacing: Kx.s8,
@@ -190,7 +202,7 @@ class _AssessmentFormState extends State<AssessmentForm> {
                         for (final k in AssessmentKind.values)
                           ChoiceChip(
                             key: Key('kind-${k.name}'),
-                            label: Text(k.label),
+                            label: Text(l.assessmentKind(k)),
                             selected: _kind == k,
                             onSelected: (_) => setState(() => _kind = k),
                           ),
@@ -207,8 +219,8 @@ class _AssessmentFormState extends State<AssessmentForm> {
                             controller: _max,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                            decoration: const InputDecoration(labelText: 'Out of', prefixIcon: Icon(Icons.grading_outlined)),
-                            validator: validateMax,
+                            decoration: InputDecoration(labelText: l.outOf, prefixIcon: const Icon(Icons.grading_outlined)),
+                            validator: (v) => validateMax(l, v),
                           ),
                         ),
                         const SizedBox(width: Kx.s12),
@@ -218,18 +230,20 @@ class _AssessmentFormState extends State<AssessmentForm> {
                             borderRadius: Kx.radiusMd,
                             onTap: _pickDate,
                             child: InputDecorator(
-                              decoration: const InputDecoration(labelText: 'Held on', prefixIcon: Icon(Icons.event_outlined)),
-                              child: Text(Fmt.shortDay(_heldOn), style: context.text.bodyLarge, maxLines: 1),
+                              decoration: InputDecoration(labelText: l.heldOn, prefixIcon: const Icon(Icons.event_outlined)),
+                              child: Text(
+                                Fmt.of(context).shortDay(_heldOn),
+                                style: context.text.bodyLarge,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: Kx.s16),
-                    Text(
-                      'Marks stay private until you publish them. Then students and their families see their own marks and the class average.',
-                      style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-                    ),
+                    Text(l.marksPrivateNote, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                   ],
                 ],
               ),

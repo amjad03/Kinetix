@@ -99,12 +99,12 @@ void main() {
   test('participation in plain language', () {
     Participation p(int c, int pa, int i, [int s = 0]) =>
         Participation(subject: 'Accounts', correct: c, partial: pa, incorrect: i, skipped: s);
-    expect(ParticipationRow.sentence(p(5, 0, 0)), 'Answered 5 questions in Accounts, all correct.');
-    expect(ParticipationRow.sentence(p(1, 0, 0)), 'Answered 1 question in Accounts correctly.');
-    expect(ParticipationRow.sentence(p(4, 1, 0)), 'Answered 5 questions in Accounts, 4 correct and 1 partly correct.');
-    expect(ParticipationRow.sentence(p(3, 1, 1)), 'Answered 5 questions in Accounts, 3 correct, 1 partly correct and 1 not correct.');
-    expect(ParticipationRow.sentence(p(0, 0, 2, 1)), 'Answered 2 questions in Accounts, 2 not correct. Did not answer 1.');
-    expect(ParticipationRow.sentence(p(0, 0, 0, 2)), 'Was asked 2 questions in Accounts but did not answer.');
+    expect(ParticipationRow.sentence(en, p(5, 0, 0)), 'Answered 5 questions in Accounts, all correct.');
+    expect(ParticipationRow.sentence(en, p(1, 0, 0)), 'Answered 1 question in Accounts correctly.');
+    expect(ParticipationRow.sentence(en, p(4, 1, 0)), 'Answered 5 questions in Accounts, 4 correct and 1 partly correct.');
+    expect(ParticipationRow.sentence(en, p(3, 1, 1)), 'Answered 5 questions in Accounts, 3 correct, 1 partly correct and 1 not correct.');
+    expect(ParticipationRow.sentence(en, p(0, 0, 2, 1)), 'Answered 2 questions in Accounts, 2 not correct. Did not answer 1.');
+    expect(ParticipationRow.sentence(en, p(0, 0, 0, 2)), 'Was asked 2 questions in Accounts but did not answer.');
   });
 
   testWidgets('the in-class card shows a sentence and a stacked bar', (tester) async {

@@ -4,10 +4,14 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_student/app.dart';
 import 'package:kinetix_student/core/app_state.dart';
 import 'package:kinetix_student/core/push.dart';
+import 'package:kinetix_student/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
 import 'fake_live.dart';
+
+/// The app's English words, for tests of helpers that take them.
+final en = lookupAppLocalizations(const Locale('en'));
 
 /// Pumps the app at phone size (or [size]). With [signedIn], a stored token restores the session.
 Future<(FakeStudentApi, AppState)> pumpApp(

@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
@@ -30,21 +31,22 @@ class TodayTab extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('End class?'),
-        content: Text('${c.boardName} will sign you out and return to its pairing screen.'),
+        title: Text(ctx.l10n.endClassTitle),
+        content: Text(ctx.l10n.endClassBody(c.boardName)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('End class')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ctx.l10n.cancel)),
+          FilledButton(key: const Key('confirmEndClass'), onPressed: () => Navigator.pop(ctx, true), child: Text(ctx.l10n.endClass)),
         ],
       ),
     );
     if (ok != true || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     try {
       await controller.endClass();
-      messenger.showSnackBar(SnackBar(content: Text('Class ended on ${c.boardName}')));
+      messenger.showSnackBar(SnackBar(content: Text(l.classEnded(c.boardName))));
     } on ApiException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
     }
   }
 
@@ -62,6 +64,8 @@ class TodayTab extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
+        final l = context.l10n;
+        final fmt = Fmt.of(context);
         final day = controller.day;
         final today = controller.today != null ? parseIsoDate(controller.today!) : DateTime.now();
         final selected = controller.selectedDate != null ? parseIsoDate(controller.selectedDate!) : today;
@@ -93,7 +97,7 @@ class TodayTab extends StatelessWidget {
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s12),
-                  sliver: SliverToBoxAdapter(child: ErrorBanner(controller.error!, onRetry: controller.reload)),
+                  sliver: SliverToBoxAdapter(child: ErrorBanner.api(controller.error!, onRetry: controller.reload)),
                 ),
               if (day == null && controller.loading)
                 const SliverToBoxAdapter(
@@ -106,12 +110,12 @@ class TodayTab extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: KxEmptyState(
                     icon: Icons.event_available_outlined,
-                    message: 'No classes on ${Fmt.weekday(selected)}',
+                    message: l.noClassesOn(fmt.weekday(selected)),
                     action: day.nextTeachingDate == null
                         ? null
                         : FilledButton.tonal(
                             onPressed: () => controller.select(day.nextTeachingDate!),
-                            child: Text('Show ${Fmt.relativeDay(parseIsoDate(day.nextTeachingDate!), today)}'),
+                            child: Text(l.showDay(fmt.relativeDay(parseIsoDate(day.nextTeachingDate!), today))),
                           ),
                   ),
                 )
@@ -149,6 +153,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fmt = Fmt.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s8, Kx.s20),
       child: Row(
@@ -157,15 +162,16 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${Fmt.greeting(DateTime.now())}, ${me.firstName}', style: context.text.headlineSmall),
+                Text(fmt.greeting(DateTime.now(), me.firstName), key: const Key('greeting'), style: context.text.headlineSmall),
                 const SizedBox(height: Kx.s4),
-                Text(Fmt.longDay(today), style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+                Text(fmt.longDay(today), style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant)),
               ],
             ),
           ),
           IconButton(
             onPressed: onAvatar,
-            tooltip: 'Profile',
+            key: const Key('profileButton'),
+            tooltip: context.l10n.profile,
             icon: KxAvatar(name: me.fullName, size: 36),
           ),
         ],
@@ -203,12 +209,9 @@ class _ConnectCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Connect to board', style: context.text.titleMedium),
+                        Text(context.l10n.connectToBoard, style: context.text.titleMedium),
                         const SizedBox(height: 2),
-                        Text(
-                          'Scan the QR code on the classroom board to start teaching',
-                          style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-                        ),
+                        Text(context.l10n.connectToBoardBody, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                       ],
                     ),
                   ),
@@ -221,7 +224,7 @@ class _ConnectCard extends StatelessWidget {
                   key: const Key('connectBoard'),
                   onPressed: onConnect,
                   icon: const Icon(Icons.qr_code_scanner, size: 18),
-                  label: const Text('Connect'),
+                  label: Text(context.l10n.connect),
                 ),
               ),
             ],
@@ -242,6 +245,7 @@ class _ConnectedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final details = [connection.sectionName, connection.subjectName].whereType<String>().join(' · ');
+    final period = Fmt.of(context).period(connection);
     return Card(
       color: c.secondaryContainer,
       child: Padding(
@@ -261,7 +265,7 @@ class _ConnectedCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Connected', style: context.text.labelLarge?.copyWith(color: c.onSecondaryContainer)),
+                      Text(context.l10n.connected, style: context.text.labelLarge?.copyWith(color: c.onSecondaryContainer)),
                       Text(connection.boardName, style: context.text.titleMedium?.copyWith(color: c.onSecondaryContainer)),
                       if (details.isNotEmpty) Text(details, style: context.text.bodyMedium?.copyWith(color: c.onSecondaryContainer)),
                     ],
@@ -272,13 +276,18 @@ class _ConnectedCard extends StatelessWidget {
             const SizedBox(height: Kx.s12),
             Row(
               children: [
-                if (connection.periodLabel != null)
+                if (period != null)
                   Expanded(
-                    child: Text(connection.periodLabel!, style: context.text.bodyMedium?.copyWith(color: c.onSecondaryContainer)),
+                    child: Text(period, style: context.text.bodyMedium?.copyWith(color: c.onSecondaryContainer)),
                   )
                 else
                   const Spacer(),
-                FilledButton.icon(onPressed: onEnd, icon: const Icon(Icons.stop_circle_outlined, size: 18), label: const Text('End class')),
+                FilledButton.icon(
+                  key: const Key('endClassCard'),
+                  onPressed: onEnd,
+                  icon: const Icon(Icons.stop_circle_outlined, size: 18),
+                  label: Text(context.l10n.endClass),
+                ),
               ],
             ),
           ],
@@ -354,17 +363,24 @@ class _DayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final fg = isSelected ? c.onPrimary : (isToday ? c.primary : c.onSurface);
+    final fmt = Fmt.of(context);
     return Semantics(
       selected: isSelected,
       button: true,
-      label: Fmt.longDay(date),
+      label: fmt.longDay(date),
       child: InkWell(
         onTap: onTap,
         borderRadius: Kx.radiusLg,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(Fmt.weekdayShort(date), style: context.text.labelMedium?.copyWith(color: isToday ? c.primary : c.onSurfaceVariant)),
+            Text(
+              fmt.weekdayShort(date),
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: context.text.labelMedium?.copyWith(color: isToday ? c.primary : c.onSurfaceVariant),
+            ),
             const SizedBox(height: Kx.s4),
             Container(
               width: 36,
@@ -396,13 +412,15 @@ class _DayHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
+    final fmt = Fmt.of(context);
     final count = controller.day?.periods.length ?? 0;
     final distance = selected.difference(today).inDays.abs();
     final title = DateUtils.isSameDay(selected, today)
-        ? "Today's classes"
+        ? l.todaysClasses
         : distance < 7
-        ? "${Fmt.weekday(selected)}'s classes"
-        : 'Classes on ${Fmt.shortDay(selected)}';
+        ? l.weekdayClasses(fmt.weekday(selected))
+        : l.classesOn(fmt.shortDay(selected));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -413,18 +431,18 @@ class _DayHeading extends StatelessWidget {
               children: [
                 Icon(Icons.weekend_outlined, size: 18, color: context.colors.onSurfaceVariant),
                 const SizedBox(width: Kx.s8),
-                Text('No classes today', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+                Expanded(
+                  child: Text(l.noClassesToday, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+                ),
               ],
             ),
           ),
         KxSectionHeader(
+          key: const Key('dayHeading'),
           title,
           trailing: count == 0
               ? null
-              : Text(
-                  '$count ${count == 1 ? 'period' : 'periods'}',
-                  style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
-                ),
+              : Text(l.periodCount(count), style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
         ),
       ],
     );
@@ -442,6 +460,8 @@ class _PeriodCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
+    final fmt = Fmt.of(context);
     final now = period.isNow;
     final onCard = now ? c.onPrimaryContainer : c.onSurface;
     final muted = now ? c.onPrimaryContainer : c.onSurfaceVariant;
@@ -452,21 +472,27 @@ class _PeriodCard extends StatelessWidget {
       attendance = OutlinedButton.icon(
         onPressed: onAttendance,
         icon: Icon(Icons.check_circle, size: 18, color: c.primary),
-        label: const Text('Attendance taken'),
+        label: Text(l.attendanceTaken),
       );
     } else if (!canTakeAttendance) {
-      attendance = Text('Attendance opens on the day', style: context.text.bodySmall?.copyWith(color: muted));
+      attendance = Text(
+        l.attendanceOpensOnDay,
+        key: const Key('attendanceNotOpen'),
+        style: context.text.bodySmall?.copyWith(color: muted),
+      );
     } else if (now) {
       attendance = FilledButton.icon(
+        key: Key('takeAttendance-${period.slotId}'),
         onPressed: onAttendance,
         icon: const Icon(Icons.fact_check_outlined, size: 18),
-        label: const Text('Take attendance'),
+        label: Text(l.takeAttendance),
       );
     } else {
       attendance = FilledButton.tonalIcon(
+        key: Key('takeAttendance-${period.slotId}'),
         onPressed: onAttendance,
         icon: const Icon(Icons.fact_check_outlined, size: 18),
-        label: const Text('Take attendance'),
+        label: Text(l.takeAttendance),
       );
     }
 
@@ -486,10 +512,10 @@ class _PeriodCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        period.startsAt.label,
+                        fmt.clock(period.startsAt),
                         style: context.text.titleSmall?.copyWith(color: onCard, fontWeight: FontWeight.w500),
                       ),
-                      Text(period.endsAt.label, style: context.text.bodySmall?.copyWith(color: muted)),
+                      Text(fmt.clock(period.endsAt), style: context.text.bodySmall?.copyWith(color: muted)),
                     ],
                   ),
                 ),
@@ -503,7 +529,7 @@ class _PeriodCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (now) Pill('Now', background: c.primary, foreground: c.onPrimary),
+                if (now) Pill(l.now, key: const Key('nowPill'), background: c.primary, foreground: c.onPrimary),
               ],
             ),
             const SizedBox(height: Kx.s12),
@@ -515,7 +541,7 @@ class _PeriodCard extends StatelessWidget {
                 runSpacing: Kx.s8,
                 children: [
                   if (onTeach != null)
-                    TextButton.icon(onPressed: onTeach, icon: const Icon(Icons.cast, size: 18), label: const Text('Teach on board')),
+                    TextButton.icon(onPressed: onTeach, icon: const Icon(Icons.cast, size: 18), label: Text(l.teachOnBoard)),
                   attendance,
                 ],
               ),

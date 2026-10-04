@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'core/app_state.dart';
+import 'core/l10n.dart';
 import 'features/home/home_screen.dart';
 import 'features/sign_in/sign_in_screen.dart';
 
@@ -12,10 +14,29 @@ class TeacherApp extends StatelessWidget {
 
   static final navigatorKey = GlobalKey<NavigatorState>();
 
+  /// Before sign-in (no [AppState.language]): Hindi or Kannada when the device asks for it, else English.
+  static Locale resolveDeviceLocale(List<Locale>? device, Iterable<Locale> supported) {
+    for (final l in device ?? const <Locale>[]) {
+      if (supportedLanguages.contains(l.languageCode)) return Locale(l.languageCode);
+    }
+    return const Locale('en');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: state, builder: (context, _) => _app(state.language));
+
+  Widget _app(String? language) {
     return MaterialApp(
-      title: 'KINETIX Teacher',
+      onGenerateTitle: (context) => context.l10n.appTitle,
+      locale: language == null ? null : Locale(language),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      localeListResolutionCallback: resolveDeviceLocale,
       debugShowCheckedModeBanner: false,
       theme: KinetixTheme.light(),
       darkTheme: KinetixTheme.dark(),

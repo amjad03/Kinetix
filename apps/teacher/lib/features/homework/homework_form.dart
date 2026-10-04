@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 
@@ -27,7 +28,7 @@ class _HomeworkFormState extends State<HomeworkForm> {
   Ref? _subject;
   DateTime _due = DateUtils.dateOnly(DateTime.now()).add(const Duration(days: 1));
   bool _saving = false;
-  String? _error;
+  ApiException? _error;
 
   @override
   void initState() {
@@ -55,7 +56,7 @@ class _HomeworkFormState extends State<HomeworkForm> {
         }
       });
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _error = e);
     }
   }
 
@@ -72,7 +73,7 @@ class _HomeworkFormState extends State<HomeworkForm> {
       initialDate: _due,
       firstDate: today,
       lastDate: today.add(const Duration(days: 180)),
-      helpText: 'Due date',
+      helpText: context.l10n.dueDate,
     );
     if (picked != null) setState(() => _due = picked);
   }
@@ -93,17 +94,19 @@ class _HomeworkFormState extends State<HomeworkForm> {
       );
       if (mounted) Navigator.of(context).pop(hw);
     } on ApiException catch (e) {
-      if (mounted) setState(() => (_error = e.message, _saving = false));
+      if (mounted) setState(() => (_error = e, _saving = false));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
+    final fmt = Fmt.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: const CloseButton(),
-        title: const Text('Assign homework'),
+        title: Text(l.assignHomework),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: Kx.s12),
@@ -111,9 +114,7 @@ class _HomeworkFormState extends State<HomeworkForm> {
               key: const Key('assignHomework'),
               onPressed: _saving || _classes == null || _classes!.isEmpty ? null : _save,
               style: FilledButton.styleFrom(minimumSize: const Size(64, 40)),
-              child: _saving
-                  ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Assign'),
+              child: _saving ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text(l.assign),
             ),
           ),
         ],
@@ -121,22 +122,29 @@ class _HomeworkFormState extends State<HomeworkForm> {
       body: _classes == null && _error == null
           ? const Center(child: CircularProgressIndicator())
           : _classes != null && _classes!.isEmpty
-          ? const KxEmptyState(icon: Icons.event_busy_outlined, message: 'You have no classes in your timetable yet')
+          ? KxEmptyState(icon: Icons.event_busy_outlined, message: l.noClassesInTimetable)
           : Form(
               key: _form,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s32),
                 children: [
                   if (_error != null) ...[
-                    ErrorBanner(_error!, onRetry: _classes == null ? _loadClasses : null),
+                    ErrorBanner.api(_error!, onRetry: _classes == null ? _loadClasses : null),
                     const SizedBox(height: Kx.s16),
                   ],
                   if (_classes != null) ...[
                     DropdownButtonFormField<Ref>(
                       key: const Key('classField'),
                       initialValue: _section,
-                      decoration: const InputDecoration(labelText: 'Class', prefixIcon: Icon(Icons.groups_outlined)),
-                      items: [for (final s in _sections) DropdownMenuItem(value: s, child: Text(s.name))],
+                      isExpanded: true,
+                      decoration: InputDecoration(labelText: l.labelClass, prefixIcon: const Icon(Icons.groups_outlined)),
+                      items: [
+                        for (final s in _sections)
+                          DropdownMenuItem(
+                            value: s,
+                            child: Text(s.name, overflow: TextOverflow.ellipsis),
+                          ),
+                      ],
                       onChanged: (s) => setState(() {
                         _section = s;
                         _subject = _subjects.firstOrNull;
@@ -146,10 +154,17 @@ class _HomeworkFormState extends State<HomeworkForm> {
                     DropdownButtonFormField<Ref>(
                       key: ValueKey('subject-${_section?.id}'),
                       initialValue: _subject,
-                      decoration: const InputDecoration(labelText: 'Subject', prefixIcon: Icon(Icons.menu_book_outlined)),
-                      items: [for (final s in _subjects) DropdownMenuItem(value: s, child: Text(s.name))],
+                      isExpanded: true,
+                      decoration: InputDecoration(labelText: l.labelSubject, prefixIcon: const Icon(Icons.menu_book_outlined)),
+                      items: [
+                        for (final s in _subjects)
+                          DropdownMenuItem(
+                            value: s,
+                            child: Text(s.name, overflow: TextOverflow.ellipsis),
+                          ),
+                      ],
                       onChanged: (s) => setState(() => _subject = s),
-                      validator: (s) => s == null ? 'Choose a subject' : null,
+                      validator: (s) => s == null ? l.chooseSubject : null,
                     ),
                     const SizedBox(height: Kx.s16),
                     TextFormField(
@@ -157,8 +172,8 @@ class _HomeworkFormState extends State<HomeworkForm> {
                       controller: _title,
                       maxLength: maxTitle,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g. Exercise 4.2, questions 1–5'),
-                      validator: (v) => (v ?? '').trim().isEmpty ? 'Give the homework a title' : null,
+                      decoration: InputDecoration(labelText: l.titleLabel, hintText: l.homeworkTitleHint),
+                      validator: (v) => (v ?? '').trim().isEmpty ? l.homeworkTitleRequired : null,
                     ),
                     const SizedBox(height: Kx.s8),
                     TextFormField(
@@ -168,19 +183,20 @@ class _HomeworkFormState extends State<HomeworkForm> {
                       maxLines: 10,
                       maxLength: maxInstructions,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(labelText: 'Instructions (optional)', alignLabelWithHint: true),
+                      decoration: InputDecoration(labelText: l.instructionsOptional, alignLabelWithHint: true),
                     ),
                     const SizedBox(height: Kx.s8),
                     InkWell(
                       borderRadius: Kx.radiusMd,
                       onTap: _pickDate,
                       child: InputDecorator(
-                        decoration: const InputDecoration(labelText: 'Due date', prefixIcon: Icon(Icons.event_outlined)),
+                        decoration: InputDecoration(labelText: l.dueDate, prefixIcon: const Icon(Icons.event_outlined)),
                         child: Row(
                           children: [
-                            Expanded(child: Text(Fmt.longDay(_due), style: context.text.bodyLarge)),
+                            Expanded(child: Text(fmt.longDay(_due), style: context.text.bodyLarge)),
+                            const SizedBox(width: Kx.s8),
                             Text(
-                              Fmt.relativeDay(_due, DateTime.now()),
+                              fmt.relativeDay(_due, DateTime.now()),
                               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                             ),
                           ],

@@ -119,7 +119,7 @@ class LiveClassController extends ChangeNotifier {
       return;
     }
     // Why the server said no, in the words the student sees.
-    final message = ack.error ?? "Couldn't join the class.";
+    final message = ack.error ?? LiveErrors.couldNotJoin;
     if (message.contains('offline')) {
       endedReason = 'offline';
       _set(LivePhase.ended);

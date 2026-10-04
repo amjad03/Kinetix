@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
+import '../../core/l10n.dart';
 import '../../widgets/common.dart';
 import '../homework/homework_tab.dart';
 import '../marks/marks_tab.dart';
@@ -67,11 +68,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openProfile() => Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => Scaffold(body: ProfileTab(state: widget.state))),
+    MaterialPageRoute<void>(
+      builder: (_) => Scaffold(body: ProfileTab(state: widget.state)),
+    ),
   );
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final profile = ProfileButton(name: widget.state.me!.fullName, onPressed: _openProfile);
     return Scaffold(
       body: IndexedStack(
@@ -89,19 +93,19 @@ class _HomeScreenState extends State<HomeScreen> {
           key: const Key('assignHomeworkFab'),
           onPressed: () => HomeworkTab.assign(context, homework),
           icon: const Icon(Icons.add),
-          label: const Text('Assign homework'),
+          label: Text(l.assignHomework),
         ),
         _marksTab => FloatingActionButton.extended(
           key: const Key('newAssessmentFab'),
           onPressed: () => MarksTab.create(context, marks),
           icon: const Icon(Icons.add),
-          label: const Text('New assessment'),
+          label: Text(l.newAssessment),
         ),
         _messagesTab => FloatingActionButton.extended(
           key: const Key('newMessageFab'),
           onPressed: () => MessagesTab.compose(context, messages, widget.state.me!.id),
           icon: const Icon(Icons.edit_outlined),
-          label: const Text('New message'),
+          label: Text(l.newMessage),
         ),
         _ => null,
       },
@@ -113,10 +117,26 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _tab,
             onDestinationSelected: _go,
             destinations: [
-              const NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'Today'),
-              const NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Homework'),
-              const NavigationDestination(icon: Icon(Icons.grading_outlined), selectedIcon: Icon(Icons.grading), label: 'Marks'),
               NavigationDestination(
+                key: const Key('navToday'),
+                icon: const Icon(Icons.today_outlined),
+                selectedIcon: const Icon(Icons.today),
+                label: l.navToday,
+              ),
+              NavigationDestination(
+                key: const Key('navHomework'),
+                icon: const Icon(Icons.assignment_outlined),
+                selectedIcon: const Icon(Icons.assignment),
+                label: l.navHomework,
+              ),
+              NavigationDestination(
+                key: const Key('navMarks'),
+                icon: const Icon(Icons.grading_outlined),
+                selectedIcon: const Icon(Icons.grading),
+                label: l.navMarks,
+              ),
+              NavigationDestination(
+                key: const Key('navMessages'),
                 icon: Badge(
                   key: const Key('messagesBadge'),
                   isLabelVisible: unread > 0,
@@ -124,12 +144,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Icon(Icons.forum_outlined),
                 ),
                 selectedIcon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.forum)),
-                label: 'Messages',
+                label: l.navMessages,
               ),
-              const NavigationDestination(
-                icon: Icon(Icons.video_library_outlined),
-                selectedIcon: Icon(Icons.video_library),
-                label: 'Recordings',
+              NavigationDestination(
+                key: const Key('navRecordings'),
+                icon: const Icon(Icons.video_library_outlined),
+                selectedIcon: const Icon(Icons.video_library),
+                label: l.navRecordings,
               ),
             ],
           );

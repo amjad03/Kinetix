@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import 'razorpay_gateway.dart';
 
 /// What happened in the gateway's checkout. Only [PaymentSucceeded] is confirmed with the server.
@@ -29,10 +30,25 @@ class PaymentCancelled extends PaymentResult {
   const PaymentCancelled();
 }
 
-class PaymentFailed extends PaymentResult {
-  const PaymentFailed(this.message);
+/// Why a payment failed, when the app words it itself (else [PaymentFailed.message] is shown).
+enum PaymentFailure { provider, noConfirmation, couldNotOpen, network, generic, unavailable }
 
+class PaymentFailed extends PaymentResult {
+  const PaymentFailed(this.message, {this.reason = PaymentFailure.provider});
+
+  /// The gateway's own words (or an English fallback).
   final String message;
+  final PaymentFailure reason;
+
+  /// In the app's language; the gateway's own description is shown as it sent it.
+  String describe(AppLocalizations l) => switch (reason) {
+    PaymentFailure.provider => message,
+    PaymentFailure.noConfirmation => l.failNoConfirmation,
+    PaymentFailure.couldNotOpen => l.failCouldNotOpen,
+    PaymentFailure.network => l.failNetwork,
+    PaymentFailure.generic => l.failGeneric,
+    PaymentFailure.unavailable => l.paymentPhonesOnly,
+  };
 }
 
 /// The parent chose a wallet app that finishes the payment outside the checkout. The gateway tells
@@ -64,10 +80,10 @@ abstract class PaymentGateway {
   };
 
   /// Why the parent can't pay online here, in plain words; null when they can.
-  static String? unavailableReason(OnlinePayments? mode) {
+  static String? unavailableReason(AppLocalizations l, OnlinePayments? mode) {
     if (available(mode)) return null;
-    if (mode == null) return "Online payment isn't set up by the college yet. Please pay at the fees counter.";
-    return 'Online payment works in the KINETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.';
+    if (mode == null) return l.paymentNotSetUp;
+    return l.paymentPhonesOnly;
   }
 
   static PaymentGateway forProvider(String provider) {
@@ -86,7 +102,10 @@ class UnavailableGateway implements PaymentGateway {
 
   @override
   Future<PaymentResult> pay(BuildContext context, FeeCheckout checkout) async =>
-      PaymentFailed(PaymentGateway.unavailableReason(OnlinePayments.razorpay)!);
+      const PaymentFailed(
+        'Online payment works in the KINETIX Parent app on Android phones and iPhones.',
+        reason: PaymentFailure.unavailable,
+      );
 }
 
 /// Development and demos: the server's demo provider makes up orders and accepts payments signed
@@ -130,6 +149,7 @@ class DemoCheckoutSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, Kx.s24),
@@ -137,33 +157,33 @@ class DemoCheckoutSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Demo payment', style: context.text.headlineSmall),
+            Text(l.demoPayment, style: context.text.headlineSmall),
             const SizedBox(height: Kx.s12),
             const DemoBanner(),
             const SizedBox(height: Kx.s24),
-            Text('Amount', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+            Text(l.amount, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
             Text(
               Fmt.rupees(checkout.amountPaise),
               key: const Key('demoAmount'),
               style: context.text.displaySmall?.copyWith(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: Kx.s16),
-            _Line(label: 'To', value: checkout.name),
-            _Line(label: 'For', value: checkout.description),
-            _Line(label: 'Order', value: checkout.orderId),
+            _Line(label: l.demoTo, value: checkout.name),
+            _Line(label: l.demoFor, value: checkout.description),
+            _Line(label: l.demoOrder, value: checkout.orderId),
             const SizedBox(height: Kx.s24),
             FilledButton(
               key: const Key('demoPay'),
               onPressed: () => Navigator.pop(context, true),
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)),
-              child: Text('Pay ${Fmt.rupees(checkout.amountPaise)} (demo)'),
+              child: Text(l.demoPayAmount(Fmt.rupees(checkout.amountPaise))),
             ),
             const SizedBox(height: Kx.s8),
             TextButton(
               key: const Key('demoCancel'),
               onPressed: () => Navigator.pop(context, false),
               style: TextButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)),
-              child: const Text('Cancel'),
+              child: Text(l.cancel),
             ),
           ],
         ),
@@ -188,7 +208,7 @@ class DemoBanner extends StatelessWidget {
           Icon(Icons.science_outlined, color: c.onTertiaryContainer),
           const SizedBox(width: Kx.s12),
           Expanded(
-            child: Text('Demo payment: no money moves', style: context.text.titleSmall?.copyWith(color: c.onTertiaryContainer)),
+            child: Text(context.l10n.demoNoMoney, style: context.text.titleSmall?.copyWith(color: c.onTertiaryContainer)),
           ),
         ],
       ),
@@ -209,7 +229,7 @@ class _Line extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 64,
+          width: 88,
           child: Text(label, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
         ),
         Expanded(child: Text(value, style: context.text.bodyLarge)),

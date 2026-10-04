@@ -1,0 +1,775 @@
+{
+  "@@locale": "en",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "yesterday": "Yesterday",
+  "dueToday": "Due today",
+  "dueTomorrow": "Due tomorrow",
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "wasDue": "Was due {date}",
+  "@wasDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "overdueBy": "Overdue by {days, plural, =1{1 day} other{{days} days}}",
+  "@overdueBy": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bookDueToday": "Due today",
+  "bookDueTomorrow": "Due tomorrow",
+  "bookDueOn": "Due {date}",
+  "@bookDueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "greetingMorning": "Good morning",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "greetingName": "{greeting}, {name}",
+  "@greetingName": {
+    "placeholders": {
+      "greeting": {},
+      "name": {}
+    }
+  },
+  "dateTime": "{date}, {time}",
+  "@dateTime": {
+    "placeholders": {
+      "date": {},
+      "time": {}
+    }
+  },
+  "listSeparator": ", ",
+  "listAnd": "{items} and {last}",
+  "@listAnd": {
+    "placeholders": {
+      "items": {},
+      "last": {}
+    }
+  },
+  "retry": "Retry",
+  "soon": "Soon",
+  "comingSoon": "Coming soon",
+  "comingLater": "{feature} is coming in a later update",
+  "@comingLater": {
+    "placeholders": {
+      "feature": {}
+    }
+  },
+  "statusPresent": "Present",
+  "statusAbsent": "Absent",
+  "statusLate": "Late",
+  "statusExcused": "Excused",
+  "cancel": "Cancel",
+  "save": "Save",
+  "send": "Send",
+  "share": "Share",
+  "close": "Close",
+  "done": "Done",
+  "seeAll": "See all",
+  "pages": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lastDays": "Last {days} days",
+  "@lastDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "rollNo": "Roll no. {rollNo}",
+  "@rollNo": {
+    "placeholders": {
+      "rollNo": {}
+    }
+  },
+  "errTimeout": "The server is taking too long to respond. Try again.",
+  "errUnreachable": "Can't reach KINETIX. Check your internet connection and the server address.",
+  "errForbidden": "You don't have access to this.",
+  "errNotFound": "Not found.",
+  "errTooMany": "Too many attempts. Wait a minute and try again.",
+  "errGeneric": "Something went wrong ({status}). Try again.",
+  "@errGeneric": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "errWrongLogin": "Wrong institution, login or password",
+  "signIn": "Sign in",
+  "signOut": "Sign out",
+  "signOutQuestion": "Sign out?",
+  "signOutBody": "You will need your password to sign in again.",
+  "institutionCode": "Institution code",
+  "institutionCodeHint": "e.g. demo-college",
+  "password": "Password",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "serverAddress": "Server address",
+  "serverLabel": "Server: {server}",
+  "@serverLabel": {
+    "placeholders": {
+      "server": {}
+    }
+  },
+  "enterInstitutionCode": "Enter your institution code",
+  "institutionCodeChars": "Use letters, numbers and hyphens only",
+  "enterValidEmail": "Enter a valid email address",
+  "enterValidPhone": "Enter a 10-digit phone number or a valid email",
+  "enterPassword": "Enter your password",
+  "enterServer": "Enter a server address like https://api.kinetix.in",
+  "language": "Language",
+  "languageHelp": "Used for the app and for updates sent to you",
+  "chooseLanguage": "Choose language",
+  "profile": "Profile",
+  "account": "Account",
+  "server": "Server",
+  "settings": "Settings",
+  "navHome": "Home",
+  "navMessages": "Messages",
+  "navUpdates": "Updates",
+  "navProfile": "Profile",
+  "attendance": "Attendance",
+  "homework": "Homework",
+  "sectionLastDays": "{section} · last {days} days",
+  "@sectionLastDays": {
+    "placeholders": {
+      "section": {},
+      "days": {}
+    }
+  },
+  "allClasses": "All classes",
+  "absentOrLate": "Absent or late",
+  "noAttendanceTaken": "No attendance has been taken in the last {days} days.",
+  "@noAttendanceTaken": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "attendedAll": "Attended all",
+  "attendedNofM": "Attended {attended} of {total}",
+  "@attendedNofM": {
+    "placeholders": {
+      "attended": {},
+      "total": {}
+    }
+  },
+  "wholeDay": "Whole day",
+  "instructions": "Instructions",
+  "noInstructions": "No instructions were added.",
+  "factDue": "Due",
+  "setBy": "Set by",
+  "givenOn": "Given on",
+  "library": "Library",
+  "nOut": "{count} out",
+  "@nOut": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "seeLibraryHistory": "See library history",
+  "booksOverdue": "{count, plural, =1{1 book overdue. Please return it to the library.} other{{count} books overdue. Please return them to the library.}}",
+  "@booksOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "andMore": "and {count} more",
+  "@andMore": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "finesForLate": "Fines for late returns: {amount}",
+  "@finesForLate": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "finesPayAtDesk": "Fines for late returns: {amount}. Pay at the library desk.",
+  "@finesPayAtDesk": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "borrowedOn": "Borrowed {date}",
+  "@borrowedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "returnedOn": "returned {date}",
+  "@returnedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "fineAmount": "fine {amount}",
+  "@fineAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "returnedLate": "late",
+  "fineSoFar": "{amount} fine so far",
+  "@fineSoFar": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "booksOutHeading": "Books out ({count})",
+  "@booksOutHeading": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "noBooksOut": "No books out right now.",
+  "fineRule": "The library charges a fine for each day a book is returned late.",
+  "returnedHeading": "Returned ({count})",
+  "@returnedHeading": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "returnedEmpty": "Returned books will be listed here.",
+  "libraryBooks": "Library books",
+  "results": "Results",
+  "aboveAverage": "Above class average",
+  "atAverage": "At class average",
+  "belowAverage": "Below class average",
+  "notEntered": "Not entered",
+  "publishedMarks": "Published marks",
+  "seeAllResults": "See all results",
+  "bySubject": "By subject",
+  "classAverageValue": "Class average {value}",
+  "@classAverageValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "marksExplainer": "Marks scored out of the total, across published assessments.",
+  "assessments": "Assessments",
+  "classAverage": "Class average",
+  "highestInClass": "Highest in class",
+  "outOf": "out of {max}",
+  "@outOf": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "teachersRemark": "Teacher's remark",
+  "kindTest": "Test",
+  "kindAssignment": "Assignment",
+  "kindInternal": "Internal assessment",
+  "kindExam": "Exam",
+  "kindPractical": "Practical",
+  "lessonRecordings": "Lesson recordings",
+  "nMissed": "{count} missed",
+  "@nMissed": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "seeAllRecordings": "See all {count} recordings",
+  "@seeAllRecordings": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "recordingNotShared": "This recording is no longer shared with the class.",
+  "classBoard": "Class board",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "pageOf": "Page {page} of {total}",
+  "@pageOf": {
+    "placeholders": {
+      "page": {},
+      "total": {}
+    }
+  },
+  "zoomOut": "Double-tap to zoom out",
+  "zoomSideways": "Pinch to zoom, or turn your phone sideways",
+  "zoomHint": "Pinch or double-tap to zoom",
+  "fees": "Fees",
+  "allFeesPaid": "All fees paid",
+  "lastPaid": "Last paid {amount}",
+  "@lastPaid": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dueSuffix": "due",
+  "feesToPay": "{count, plural, =1{1 fee to pay} other{{count} fees to pay}}",
+  "@feesToPay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nOverdue": "{count} overdue",
+  "@nOverdue": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "viewFees": "View fees",
+  "viewFeesReceipts": "View fees and receipts",
+  "payAtCounter": "Please pay at the fees counter.",
+  "ok": "OK",
+  "feesNothingDue": "Nothing due",
+  "totalDue": "Total due",
+  "toPay": "To pay",
+  "paidHeader": "Paid",
+  "paidLine": "{amount} · was due {date}",
+  "@paidLine": {
+    "placeholders": {
+      "amount": {},
+      "date": {}
+    }
+  },
+  "paidPill": "Paid",
+  "paymentsReceipts": "Payments and receipts",
+  "feeLabel": "Fee",
+  "overdueWasDue": "Overdue · was due {date}",
+  "@overdueWasDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "paidOfLeft": "{paid} of {total} paid · {left} left",
+  "@paidOfLeft": {
+    "placeholders": {
+      "paid": {},
+      "total": {},
+      "left": {}
+    }
+  },
+  "receiptNotFound": "This receipt was not found.",
+  "receiptCopied": "Receipt copied. Paste it into a message or email.",
+  "receipt": "Receipt",
+  "copyReceipt": "Copy receipt",
+  "feeReceipt": "Fee receipt",
+  "receiptNoLabel": "Receipt no.",
+  "dateLabel": "Date",
+  "studentLabel": "Student",
+  "classLabel": "Class",
+  "paidBy": "Paid by",
+  "reference": "Reference",
+  "amountPaid": "Amount paid",
+  "balanceLeft": "Balance left",
+  "nilFullyPaid": "Nil · fully paid",
+  "demoNoMoneyMoved": "Demo payment: no money moved.",
+  "demoNoMoney": "Demo payment: no money moves",
+  "methodOnline": "Online",
+  "methodCash": "Cash",
+  "methodCheque": "Cheque",
+  "methodBankTransfer": "Bank transfer",
+  "methodPayment": "Payment",
+  "newMessage": "New message",
+  "aboutName": "About {name}",
+  "@aboutName": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noMessagesYet": "No messages yet",
+  "couldNotSend": "Couldn't send: {reason}",
+  "@couldNotSend": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "message": "Message",
+  "pullForEarlier": "Pull down for earlier messages",
+  "teachersReply": "Teachers reply when they can, usually during college hours.",
+  "messageCopied": "Message copied",
+  "teacher": "Teacher",
+  "markAllRead": "Mark all as read",
+  "earlier": "Earlier",
+  "fromCollege": "Message from the college",
+  "update": "Update",
+  "attendanceGood": "Good attendance. Keep it up.",
+  "seeAttendanceHistory": "See attendance history",
+  "attendedOf": "Attended {attended} of {count, plural, =1{1 class} other{{count} classes}}",
+  "@attendedOf": {
+    "placeholders": {
+      "attended": {},
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "excusedNote": "{count} excused (counted as attended)",
+  "@excusedNote": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "recentAbsences": "Recent absences",
+  "dueCount": "{count} due",
+  "@dueCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "pastHomework": "Past homework ({count})",
+  "@pastHomework": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "classBoards": "Class boards",
+  "todaysBoard": "Today's board: {subject}",
+  "@todaysBoard": {
+    "placeholders": {
+      "subject": {}
+    }
+  },
+  "resultsSubtitle": "Published marks and class averages",
+  "librarySubtitle": "Books borrowed, due dates and fines",
+  "college": "College",
+  "resultsLibraryHeader": "Results & library",
+  "feesAndReceipts": "Fees and receipts",
+  "tryAgain": "Try again",
+  "signInHint": "Use the phone number or email you gave your child's college",
+  "errNotGuardian": "This app is for parents and guardians. Ask your institution to link your account to your child.",
+  "errTeacherAccount": "This app is for parents and guardians. Teachers can use the KINETIX Teacher app.",
+  "homeSubtitle": "Here's how {name} is doing",
+  "@homeSubtitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noChildrenLinked": "No children are linked to your account yet.\nAsk your child's college to add you as their parent.",
+  "attendanceFewMissed": "Missed a few classes recently.",
+  "attendanceBelow75": "Below 75%. Colleges usually need 75% to sit exams.",
+  "noAttendanceFor": "No attendance has been taken for {name} in the last {days} days.",
+  "@noAttendanceFor": {
+    "placeholders": {
+      "name": {},
+      "days": {}
+    }
+  },
+  "nothingDue": "Nothing due right now. New homework from teachers will show here.",
+  "inClass": "In class",
+  "inClassIntro": "Answers when the teacher picked {name} to answer a question in class.",
+  "@inClassIntro": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "notPickedYet": "{name} was not picked to answer in class yet.",
+  "@notPickedYet": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "legendCorrect": "Correct",
+  "legendPartly": "Partly correct",
+  "legendNotCorrect": "Not correct",
+  "legendNoAnswer": "No answer",
+  "askedNoAnswer": "Was asked {count, plural, =1{1 question} other{{count} questions}} in {subject} but did not answer.",
+  "@askedNoAnswer": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "subject": {}
+    }
+  },
+  "answeredOneCorrectly": "Answered 1 question in {subject} correctly.",
+  "@answeredOneCorrectly": {
+    "placeholders": {
+      "subject": {}
+    }
+  },
+  "answeredAllCorrect": "Answered {count} questions in {subject}, all correct.",
+  "@answeredAllCorrect": {
+    "placeholders": {
+      "count": {},
+      "subject": {}
+    }
+  },
+  "answeredDetail": "Answered {count, plural, =1{1 question} other{{count} questions}} in {subject}, {detail}.",
+  "@answeredDetail": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "subject": {},
+      "detail": {}
+    }
+  },
+  "nCorrect": "{count} correct",
+  "@nCorrect": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "nPartly": "{count} partly correct",
+  "@nPartly": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "nNotCorrect": "{count} not correct",
+  "@nNotCorrect": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "didNotAnswer": "Did not answer {count}.",
+  "@didNotAnswer": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "boardsEmpty": "When a teacher shares the class board after a lesson, it appears here so {name} can revise.",
+  "@boardsEmpty": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "childAttendance": "{name}'s attendance",
+  "@childAttendance": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "notMissedAny": "{name} has not missed a class in the last {days} days.",
+  "@notMissedAny": {
+    "placeholders": {
+      "name": {},
+      "days": {}
+    }
+  },
+  "homeworkFor": "For",
+  "yourChild": "Your child",
+  "yourChildren": "Your children",
+  "shownOnHome": "Shown on Home",
+  "noChildrenYet": "No children are linked yet. Ask your child's college.",
+  "feesReceiptsHeader": "Fees & receipts",
+  "childFees": "{name}'s fees",
+  "@childFees": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "feesSubtitle": "Dues, payments and receipts",
+  "childResults": "{name}'s results",
+  "@childResults": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "childLibraryBooks": "{name}'s library books",
+  "@childLibraryBooks": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noBooksBorrowed": "No library books borrowed. Books {name} borrows from the college library show here with their due dates.",
+  "@noBooksBorrowed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noBooksOutNow": "{name} has no library books out right now.",
+  "@noBooksOutNow": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "childLibrary": "{name}'s library",
+  "@childLibrary": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "markedAbsentFor": "{name} was marked absent for this {kind}.",
+  "@markedAbsentFor": {
+    "placeholders": {
+      "name": {},
+      "kind": {}
+    }
+  },
+  "noMarksCard": "No marks published yet. When {name}'s teachers publish test or exam marks, they show here with the class average.",
+  "@noMarksCard": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noMarksScreen": "No marks published yet.\nWhen {name}'s teachers publish marks, they show here.",
+  "@noMarksScreen": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "recordingsEmpty": "When a teacher records a lesson on the board and shares it, it appears here so {name} can watch it again.",
+  "@recordingsEmpty": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "missedThisClass": "Missed this class",
+  "childLessons": "{name}'s lessons",
+  "@childLessons": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noRecordingsShared": "No lesson recordings have been shared with the class yet.",
+  "boardNotShared": "This board is no longer shared with the class.",
+  "noFeesIssued": "No fees have been issued for {name} yet.",
+  "@noFeesIssued": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noFeesIssuedLong": "No fees have been issued for {name} yet.\nNew fees from the college will show here.",
+  "@noFeesIssuedLong": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "pay": "Pay",
+  "payNow": "Pay now",
+  "startingPayment": "Starting payment…",
+  "confirmingPayment": "Confirming payment…",
+  "paymentCancelled": "Payment cancelled. Nothing was paid.",
+  "paymentFailedTitle": "Payment didn't go through",
+  "finishInWallet": "Finish paying in {wallet}",
+  "@finishInWallet": {
+    "placeholders": {
+      "wallet": {}
+    }
+  },
+  "walletBody": "When {wallet} confirms the payment, the fee updates here and the receipt arrives in Updates.",
+  "@walletBody": {
+    "placeholders": {
+      "wallet": {}
+    }
+  },
+  "yourWalletApp": "your wallet app",
+  "couldNotConfirmTitle": "We couldn't confirm this payment",
+  "couldNotConfirmBody": "{reason} If money left your account, the college will get the confirmation from the payment gateway and this fee will update shortly. Otherwise, try again.",
+  "@couldNotConfirmBody": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "onlineNotAvailableTitle": "Online payment is not available",
+  "enterAmount": "Enter an amount",
+  "enterAmountRupees": "Enter an amount in rupees, like 2500 or 2500.50",
+  "smallestPayment": "The smallest payment is ₹1",
+  "moreThanDue": "That is more than the {amount} due",
+  "@moreThanDue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "payTitle": "Pay {title}",
+  "@payTitle": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "amountDue": "{amount} due",
+  "@amountDue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "fullAmount": "Full {amount}",
+  "@fullAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "partAmount": "Part amount",
+  "amount": "Amount",
+  "amountRange": "Between ₹1 and {amount}",
+  "@amountRange": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "payAmount": "Pay {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "paymentNotSetUp": "Online payment isn't set up by the college yet. Please pay at the fees counter.",
+  "paymentPhonesOnly": "Online payment works in the KINETIX Parent app on Android phones and iPhones. On this device, please pay at the fees counter.",
+  "demoPayment": "Demo payment",
+  "demoTo": "To",
+  "demoFor": "For",
+  "demoOrder": "Order",
+  "demoPayAmount": "Pay {amount} (demo)",
+  "@demoPayAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "failNoConfirmation": "The payment app did not return a confirmation. If money left your account, the fee will update shortly.",
+  "failCouldNotOpen": "Couldn't open the payment screen. Try again.",
+  "failNetwork": "No internet connection. Check it and try again.",
+  "failGeneric": "The payment did not go through. Try again.",
+  "paymentSuccessful": "Payment successful",
+  "paidFor": "{amount} paid for {name}",
+  "@paidFor": {
+    "placeholders": {
+      "amount": {},
+      "name": {}
+    }
+  },
+  "writeToAbout": "Write to {teacher} about {name}.",
+  "@writeToAbout": {
+    "placeholders": {
+      "teacher": {},
+      "name": {}
+    }
+  },
+  "noMessagesOneChild": "No messages yet.\nWrite to {name}'s teachers about homework, absences or progress.",
+  "@noMessagesOneChild": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noMessagesChildren": "No messages yet.\nWrite to your children's teachers about homework, absences or progress.",
+  "noChildrenLinkedShort": "No children are linked to your account yet.\nAsk your child's college.",
+  "aboutHeader": "About",
+  "childTeachers": "{name}'s teachers",
+  "@childTeachers": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noTeachersOnTimetable": "No teachers are on {name}'s timetable yet.",
+  "@noTeachersOnTimetable": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noUpdates": "No updates yet.\nAbsences, homework and messages from the college will appear here.",
+  "phoneOrEmail": "Phone or email",
+  "enterPhoneOrEmail": "Enter your phone number or email"
+}

@@ -15,7 +15,7 @@ class TodayController extends ChangeNotifier {
   DayTimetable? day;
   BoardConnection? connection;
   bool loading = false;
-  String? error;
+  ApiException? error;
 
   /// True when today has no classes and we are showing the next teaching day instead.
   bool showingNextDay = false;
@@ -91,7 +91,7 @@ class TodayController extends ChangeNotifier {
     try {
       await body();
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();

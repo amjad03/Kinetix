@@ -43,25 +43,28 @@ class RazorpayGateway implements PaymentGateway {
       final id = r.paymentId, signature = r.signature;
       finish(
         id == null || signature == null
-            ? const PaymentFailed('The payment app did not return a confirmation. If money left your account, the fee will update shortly.')
+            ? const PaymentFailed(
+                'The payment app did not return a confirmation. If money left your account, the fee will update shortly.',
+                reason: PaymentFailure.noConfirmation,
+              )
             : PaymentSucceeded(providerPaymentId: id, signature: signature),
       );
     });
     razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse r) {
-      finish(r.code == Razorpay.PAYMENT_CANCELLED ? const PaymentCancelled() : PaymentFailed(failureMessage(r.code, r.message)));
+      finish(r.code == Razorpay.PAYMENT_CANCELLED ? const PaymentCancelled() : failure(r.code, r.message));
     });
     razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, (ExternalWalletResponse r) => finish(PaymentInWallet(r.walletName)));
     try {
       razorpay.open(options(checkout));
     } catch (_) {
-      finish(const PaymentFailed("Couldn't open the payment screen. Try again."));
+      finish(const PaymentFailed("Couldn't open the payment screen. Try again.", reason: PaymentFailure.couldNotOpen));
     }
     return done.future.whenComplete(razorpay.clear);
   }
 
   /// Razorpay's failure message is often JSON ({"error": {"description": ...}}); show the
-  /// description, or a plain sentence.
-  static String failureMessage(int? code, String? raw) {
+  /// description (in the gateway's words), or a plain sentence in the app's language.
+  static PaymentFailed failure(int? code, String? raw) {
     String? description;
     if (raw != null) {
       try {
@@ -71,7 +74,11 @@ class RazorpayGateway implements PaymentGateway {
         if (!raw.trimLeft().startsWith('{')) description = raw;
       }
     }
-    if (code == Razorpay.NETWORK_ERROR) return 'No internet connection. Check it and try again.';
-    return description == null || description.isEmpty ? 'The payment did not go through. Try again.' : description;
+    if (code == Razorpay.NETWORK_ERROR) {
+      return const PaymentFailed('No internet connection. Check it and try again.', reason: PaymentFailure.network);
+    }
+    return description == null || description.isEmpty
+        ? const PaymentFailed('The payment did not go through. Try again.', reason: PaymentFailure.generic)
+        : PaymentFailed(description);
   }
 }

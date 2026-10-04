@@ -4,17 +4,26 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
+import '../l10n/l10n.dart';
 import 'models.dart';
 
+/// Problems the app words itself (in the app's language, see l10n/l10n.dart).
+enum ApiProblem { timeout, unreachable, wrongLogin, notGuardian, teacherAccount }
+
 class ApiException implements Exception {
-  ApiException(this.status, this.message);
+  ApiException(this.status, this.message, {this.problem});
 
   /// HTTP status, or 0 when the server could not be reached.
   final int status;
+
+  /// What the server said, or an English fallback; empty when the server said nothing useful.
   final String message;
 
+  /// Set when the app knows what went wrong and words it itself.
+  final ApiProblem? problem;
+
   @override
-  String toString() => message;
+  String toString() => message.isEmpty ? 'HTTP $status' : message;
 }
 
 /// Everything the Parent App asks of the KINETIX Cloud API. Tests use a fake.
@@ -29,6 +38,9 @@ abstract class ParentApi {
   /// Signs in and stores the token on this client.
   Future<void> login({required String tenant, required String login, required String password});
   Future<Me> me();
+
+  /// Saves the language for the app and for notifications (`PATCH /v1/me`).
+  Future<Me> setPreferredLanguage(String language);
   Future<List<Child>> children();
 
   /// Attendance, homework, class participation and shared boards over the last [days] days.
@@ -92,7 +104,10 @@ class ParentLessonSource implements LessonSource {
     try {
       return await f();
     } on ApiException catch (e) {
-      throw LessonLoadException(e.status == 404 ? 'This recording is no longer shared with the class.' : e.message);
+      throw LessonLoadException(
+        e.status == 404 ? 'This recording is no longer shared with the class.' : e.message,
+        describe: (context) => e.status == 404 ? context.l10n.recordingNotShared : context.errorText(e),
+      );
     }
   }
 
@@ -123,12 +138,22 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
-    final j = await _send('POST', '/v1/auth/login', body: {'tenant': tenant, 'login': login, 'password': password}, auth: false);
+    final dynamic j;
+    try {
+      j = await _send('POST', '/v1/auth/login', body: {'tenant': tenant, 'login': login, 'password': password}, auth: false);
+    } on ApiException catch (e) {
+      if (e.status == 401) throw ApiException(401, e.message, problem: ApiProblem.wrongLogin);
+      rethrow;
+    }
     token = j['accessToken'] as String;
   }
 
   @override
   Future<Me> me() async => Me.fromJson(await _send('GET', '/v1/me'));
+
+  @override
+  Future<Me> setPreferredLanguage(String language) async =>
+      Me.fromJson(await _send('PATCH', '/v1/me', body: {'preferredLanguage': language}));
 
   @override
   Future<List<Child>> children() async => [
@@ -246,9 +271,9 @@ class HttpParentApi implements ParentApi {
     try {
       res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 20));
     } on TimeoutException {
-      throw ApiException(0, 'The server is taking too long to respond. Try again.');
+      throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.");
+      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
     }
 
     if (res.statusCode >= 400) {
@@ -268,11 +293,7 @@ class HttpParentApi implements ParentApi {
         if (first != null) return '${first.key}: ${(first.value as List).first}';
       }
     } catch (_) {}
-    return switch (res.statusCode) {
-      403 => "You don't have access to this.",
-      404 => 'Not found.',
-      429 => 'Too many attempts. Wait a minute and try again.',
-      _ => 'Something went wrong (${res.statusCode}). Try again.',
-    };
+    // Nothing useful from the server: the app words it from the status (l10n/l10n.dart).
+    return '';
   }
 }

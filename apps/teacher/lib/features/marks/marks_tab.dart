@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import 'assessment_form.dart';
@@ -18,7 +19,7 @@ class MarksController extends ChangeNotifier {
   List<Assessment>? items;
 
   bool loading = false;
-  String? error;
+  ApiException? error;
 
   List<Ref> get sections => {for (final c in classes ?? const <TeacherClass>[]) c.section}.toList();
 
@@ -39,7 +40,7 @@ class MarksController extends ChangeNotifier {
       final list = await api.assessments(s.id);
       if (section == s) items = list;
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -105,6 +106,7 @@ class MarksTab extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
+        final l = context.l10n;
         final items = controller.items;
         final sections = controller.sections;
         return RefreshIndicator(
@@ -112,7 +114,7 @@ class MarksTab extends StatelessWidget {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              SliverAppBar.large(title: const Text('Marks'), actions: [?profileButton]),
+              SliverAppBar.large(title: Text(l.navMarks), actions: [?profileButton]),
               if (sections.length > 1)
                 SliverToBoxAdapter(
                   child: SingleChildScrollView(
@@ -137,32 +139,25 @@ class MarksTab extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s8),
-                    child: Text(
-                      controller.section!.name,
-                      style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant),
-                    ),
+                    child: Text(controller.section!.name, style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant)),
                   ),
                 ),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),
-                  sliver: SliverToBoxAdapter(child: ErrorBanner(controller.error!, onRetry: controller.load)),
+                  sliver: SliverToBoxAdapter(child: ErrorBanner.api(controller.error!, onRetry: controller.load)),
                 ),
               if (items == null && controller.loading)
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (controller.classes != null && controller.classes!.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: KxEmptyState(icon: Icons.event_busy_outlined, message: 'You have no classes in your timetable yet'),
+                  child: KxEmptyState(icon: Icons.event_busy_outlined, message: l.noClassesInTimetable),
                 )
               else if (items != null && items.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: KxEmptyState(
-                    icon: Icons.grading_outlined,
-                    message: 'No tests or assignments for ${controller.section?.name ?? 'this class'} yet.\n'
-                        'Add one, enter marks and publish them to families.',
-                  ),
+                  child: KxEmptyState(icon: Icons.grading_outlined, message: l.noAssessments(controller.section?.name ?? '')),
                 )
               else if (items != null)
                 SliverPadding(
@@ -171,10 +166,7 @@ class MarksTab extends StatelessWidget {
                   sliver: SliverList.separated(
                     itemCount: items.length,
                     separatorBuilder: (_, _) => const SizedBox(height: Kx.s12),
-                    itemBuilder: (context, i) => AssessmentCard(
-                      assessment: items[i],
-                      onTap: () => open(context, controller, items[i]),
-                    ),
+                    itemBuilder: (context, i) => AssessmentCard(assessment: items[i], onTap: () => open(context, controller, items[i])),
                   ),
                 ),
             ],
@@ -195,6 +187,7 @@ class AssessmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final a = assessment;
     final average = a.average;
     final total = a.classSize;
@@ -217,12 +210,21 @@ class AssessmentCard extends StatelessWidget {
                   Expanded(child: Text(a.title, style: context.text.titleMedium)),
                   const SizedBox(width: Kx.s8),
                   a.isPublished
-                      ? Pill('Published', icon: Icons.check, background: goodBg, foreground: good)
-                      : Pill('Draft', icon: Icons.edit_outlined, background: c.surfaceContainerHighest, foreground: c.onSurfaceVariant),
+                      ? Flexible(
+                          child: Pill(l.published, icon: Icons.check, background: goodBg, foreground: good),
+                        )
+                      : Flexible(
+                          child: Pill(
+                            l.draft,
+                            icon: Icons.edit_outlined,
+                            background: c.surfaceContainerHighest,
+                            foreground: c.onSurfaceVariant,
+                          ),
+                        ),
                 ],
               ),
               const SizedBox(height: Kx.s4),
-              Text('${a.subject.name} · ${a.kind.label} · ${Fmt.shortDay(a.heldOn)}', style: muted),
+              Text('${a.subject.name} · ${l.assessmentKind(a.kind)} · ${Fmt.of(context).shortDay(a.heldOn)}', style: muted),
               const SizedBox(height: Kx.s12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -232,7 +234,7 @@ class AssessmentCard extends StatelessWidget {
                         ? Text.rich(
                             TextSpan(
                               children: [
-                                TextSpan(text: 'Class average  ', style: muted),
+                                TextSpan(text: '${l.classAverage}  ', style: muted),
                                 TextSpan(
                                   text: formatMarks(average),
                                   style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500),
@@ -241,10 +243,11 @@ class AssessmentCard extends StatelessWidget {
                               ],
                             ),
                           )
-                        : Text('No marks yet · out of ${formatMarks(a.maxMarks)}', style: muted),
+                        : Text(l.noMarksYet(formatMarks(a.maxMarks)), style: muted),
                   ),
+                  const SizedBox(width: Kx.s8),
                   Text(
-                    total == null ? '${a.entered} entered' : '${a.entered} of $total entered',
+                    total == null ? l.enteredCount(a.entered) : l.enteredOf(a.entered, total),
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],

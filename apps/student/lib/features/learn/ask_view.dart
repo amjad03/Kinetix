@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'ask_controller.dart';
 import 'topic_screen.dart';
@@ -94,7 +95,7 @@ class _AskViewState extends State<AskView> {
                 ),
               if (controller.history.isNotEmpty) ...[
                 const SizedBox(height: Kx.s24),
-                Text('Earlier questions', style: context.text.titleSmall?.copyWith(color: context.colors.primary)),
+                Text(context.l10n.earlierQuestions, style: context.text.titleSmall?.copyWith(color: context.colors.primary)),
                 const SizedBox(height: Kx.s4),
                 for (final (i, t) in controller.history.indexed)
                   ListTile(
@@ -135,13 +136,13 @@ class _Composer extends StatelessWidget {
                 Icon(Icons.auto_awesome, color: c.primary, size: 20),
                 const SizedBox(width: Kx.s8),
                 Expanded(
-                  child: Text('Ask a doubt', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                  child: Text(context.l10n.askADoubt, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                 ),
               ],
             ),
             const SizedBox(height: Kx.s4),
             Text(
-              'KINETIX AI explains it step by step, following your syllabus.',
+              context.l10n.askIntro,
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
             const SizedBox(height: Kx.s12),
@@ -151,9 +152,9 @@ class _Composer extends StatelessWidget {
                 child: InputChip(
                   key: const Key('topicContext'),
                   avatar: const Icon(Icons.menu_book_outlined, size: 18),
-                  label: Text('About: ${topic.title}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: Text(context.l10n.aboutTopic(topic.title), maxLines: 1, overflow: TextOverflow.ellipsis),
                   onDeleted: controller.clearTopic,
-                  deleteButtonTooltipMessage: 'Ask about anything',
+                  deleteButtonTooltipMessage: context.l10n.askAboutAnything,
                 ),
               ),
               const SizedBox(height: Kx.s8),
@@ -166,10 +167,10 @@ class _Composer extends StatelessWidget {
               maxLength: 1000,
               textInputAction: TextInputAction.newline,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(hintText: 'e.g. What is forfeiture of shares?', counterText: ''),
+              decoration: InputDecoration(hintText: context.l10n.questionHint, counterText: ''),
             ),
             const SizedBox(height: Kx.s12),
-            Text('Answer in', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+            Text(context.l10n.answerIn, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
             const SizedBox(height: Kx.s4),
             Wrap(
               spacing: Kx.s8,
@@ -187,7 +188,7 @@ class _Composer extends StatelessWidget {
             ),
             if (topic == null && (subjects?.isNotEmpty ?? false)) ...[
               const SizedBox(height: Kx.s12),
-              Text('Subject', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+              Text(context.l10n.subject, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
               const SizedBox(height: Kx.s4),
               Wrap(
                 spacing: Kx.s8,
@@ -195,7 +196,7 @@ class _Composer extends StatelessWidget {
                 children: [
                   ChoiceChip(
                     key: const Key('subject-any'),
-                    label: const Text('Any'),
+                    label: Text(context.l10n.anySubject),
                     selected: controller.subject == null,
                     onSelected: (_) => controller.setSubject(null),
                   ),
@@ -218,7 +219,7 @@ class _Composer extends StatelessWidget {
                   key: const Key('askButton'),
                   onPressed: controller.busy || value.text.trim().length < 2 ? null : () => controller.ask(),
                   icon: const Icon(Icons.send),
-                  label: const Text('Ask'),
+                  label: Text(context.l10n.ask),
                 ),
               ),
             ),
@@ -248,7 +249,7 @@ class AnswerCard extends StatelessWidget {
     final question = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('You asked', style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+        Text(context.l10n.youAsked, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
         const SizedBox(height: 2),
         Text(q.question, key: const Key('askedQuestion'), style: context.text.titleMedium),
         const SizedBox(height: Kx.s4),
@@ -268,7 +269,7 @@ class AnswerCard extends StatelessWidget {
 
     final List<Widget> body;
     if (error != null) {
-      final e = describeAiError(error);
+      final e = describeAiError(context.l10n, error);
       final soft = !e.retry;
       final (bg, fg) = soft ? (Tone.warnContainer(context), Tone.warn(context)) : (c.errorContainer, c.onErrorContainer);
       body = [
@@ -303,7 +304,7 @@ class AnswerCard extends StatelessWidget {
                 key: const Key('aiRetry'),
                 onPressed: controller.retry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try again'),
+                label: Text(context.l10n.tryAgain),
               ),
             ),
           ),
@@ -315,7 +316,7 @@ class AnswerCard extends StatelessWidget {
           child: LinearProgressIndicator(key: Key('aiThinking')),
         ),
         const SizedBox(height: Kx.s8),
-        Text('KINETIX AI is thinking…', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+        Text(context.l10n.aiThinking, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
       ];
     } else {
       body = [
@@ -323,13 +324,13 @@ class AnswerCard extends StatelessWidget {
         SelectableText(answer.answer, key: const Key('answerText'), style: context.text.bodyLarge?.copyWith(height: 1.5)),
         if (answer.keyPoints.isNotEmpty) ...[
           const SizedBox(height: Kx.s16),
-          Text('Key points', style: context.text.titleSmall),
+          Text(context.l10n.keyPoints, style: context.text.titleSmall),
           const SizedBox(height: Kx.s4),
           for (final p in answer.keyPoints) BulletLine(p, icon: Icons.check_circle_outline),
         ],
         if (answer.sources.isNotEmpty) ...[
           const SizedBox(height: Kx.s16),
-          Text('Based on', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+          Text(context.l10n.basedOn, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
           const SizedBox(height: Kx.s4),
           Wrap(
             spacing: Kx.s8,
@@ -340,7 +341,7 @@ class AnswerCard extends StatelessWidget {
                   key: Key('source-${s.id}'),
                   avatar: Icon(Icons.menu_book_outlined, size: 18, color: c.primary),
                   label: Text(s.title),
-                  tooltip: 'Open the topic notes',
+                  tooltip: context.l10n.openTopicNotes,
                   onPressed: () => TopicScreen.open(context, controller.api, s.id, controller: controller),
                 ),
             ],
@@ -348,7 +349,7 @@ class AnswerCard extends StatelessWidget {
         ],
         if (answer.followUps.isNotEmpty) ...[
           const SizedBox(height: Kx.s16),
-          Text('Ask next', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+          Text(context.l10n.askNext, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
           const SizedBox(height: Kx.s4),
           // Rows rather than chips: follow-up questions are often long and should wrap.
           for (final (i, f) in answer.followUps.indexed)
@@ -424,10 +425,10 @@ class _PreviewNotice extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Preview answer', style: context.text.titleSmall?.copyWith(color: fg)),
+                Text(context.l10n.previewAnswer, style: context.text.titleSmall?.copyWith(color: fg)),
                 const SizedBox(height: 2),
                 Text(
-                  "KINETIX AI isn't connected at your college yet, so this is a sample, not a real explanation.",
+                  context.l10n.previewNote,
                   style: context.text.bodyMedium,
                 ),
               ],

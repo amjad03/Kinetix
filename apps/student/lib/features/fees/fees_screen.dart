@@ -4,21 +4,21 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// "Fees are paid by your parent…": students see their fees but do not pay in this app.
-const feesNote =
-    'Fees are paid by your parent or guardian in the KINETIX Parent app, or at the college fees counter. '
-    'Here you can see what is due and open your receipts.';
+String feesNote(AppLocalizations l) => l.feesNote;
 
 /// How an invoice reads: (label, background, foreground).
 (String, Color, Color) invoiceStatus(BuildContext context, FeeInvoice inv, DateTime today) {
   final c = context.colors;
-  if (inv.status == InvoiceStatus.paid) return ('Paid', Tone.goodContainer(context), Tone.good(context));
-  if (inv.status == InvoiceStatus.cancelled) return ('Cancelled', c.surfaceContainerHighest, c.onSurfaceVariant);
-  if (Fmt.daysBetween(today, inv.dueOn) < 0) return ('Overdue', c.errorContainer, c.onErrorContainer);
-  if (inv.paidPaise > 0) return ('Part paid', Tone.warnContainer(context), Tone.warn(context));
-  return ('Due', Tone.warnContainer(context), Tone.warn(context));
+  final l = context.l10n;
+  if (inv.status == InvoiceStatus.paid) return (l.invoicePaid, Tone.goodContainer(context), Tone.good(context));
+  if (inv.status == InvoiceStatus.cancelled) return (l.invoiceCancelled, c.surfaceContainerHighest, c.onSurfaceVariant);
+  if (Fmt.daysBetween(today, inv.dueOn) < 0) return (l.invoiceOverdue, c.errorContainer, c.onErrorContainer);
+  if (inv.paidPaise > 0) return (l.invoicePartPaid, Tone.warnContainer(context), Tone.warn(context));
+  return (l.invoiceDue, Tone.warnContainer(context), Tone.warn(context));
 }
 
 /// The student's invoices and payments, read-only, with receipts.
@@ -41,7 +41,7 @@ class FeesScreen extends StatefulWidget {
 
 class _FeesScreenState extends State<FeesScreen> {
   FeeAccount? _account;
-  String? _error;
+  ApiException? _error;
 
   @override
   void initState() {
@@ -55,7 +55,7 @@ class _FeesScreenState extends State<FeesScreen> {
       final a = await widget.api.fees(widget.studentId);
       if (mounted) setState(() => _account = a);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
     }
   }
 
@@ -69,7 +69,7 @@ class _FeesScreenState extends State<FeesScreen> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            const SliverAppBar.large(title: Text('Fees')),
+            SliverAppBar.large(title: Text(context.l10n.fees)),
             if (_error != null)
               CenteredSliver(
                 sliver: SliverToBoxAdapter(child: ErrorBanner(_error!, onRetry: _load)),
@@ -84,14 +84,14 @@ class _FeesScreenState extends State<FeesScreen> {
                     FeesTotalCard(account: a, today: widget.today),
                     const SizedBox(height: Kx.s12),
                     _Note(),
-                    const SectionTitle('Fees'),
+                    SectionTitle(context.l10n.fees),
                     if (a.invoices.isEmpty)
-                      Text('No fees have been issued to you.', style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
+                      Text(context.l10n.noFeesIssued, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
                     for (final inv in a.invoices) _InvoiceTile(invoice: inv, today: widget.today),
-                    const SectionTitle('Payments'),
+                    SectionTitle(context.l10n.payments),
                     if (a.payments.isEmpty)
                       Text(
-                        'No payments yet. Receipts appear here once a payment goes through.',
+                        context.l10n.noPayments,
                         key: const Key('noPayments'),
                         style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                       ),
@@ -108,7 +108,7 @@ class _FeesScreenState extends State<FeesScreen> {
                           subtitle: Text(
                             [
                               ?a.invoiceOf(p)?.title,
-                              [Fmt.paymentMethod(p.method), if (p.paidAt != null) Fmt.date(p.paidAt!)].join(' · '),
+                              [context.fmt.paymentMethod(p.method), if (p.paidAt != null) context.fmt.date(p.paidAt!)].join(' · '),
                             ].join('\n'),
                           ),
                           isThreeLine: a.invoiceOf(p) != null,
@@ -135,7 +135,7 @@ class _Note extends StatelessWidget {
       const SizedBox(width: Kx.s8),
       Expanded(
         child: Text(
-          feesNote,
+          feesNote(context.l10n),
           key: const Key('feesNote'),
           style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
         ),
@@ -169,10 +169,10 @@ class FeesTotalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(allPaid ? 'Nothing due' : 'Total due', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+              Text(allPaid ? context.l10n.feesNothingDue : context.l10n.totalDue, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
               const SizedBox(height: Kx.s4),
               Text(
-                allPaid ? 'All paid' : Fmt.rupees(account.duePaise),
+                allPaid ? context.l10n.allPaid : Fmt.rupees(account.duePaise),
                 key: const Key('feesDue'),
                 style: context.text.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w500,
@@ -183,8 +183,8 @@ class FeesTotalCard extends StatelessWidget {
                 const SizedBox(height: Kx.s4),
                 Text(
                   overdue > 0
-                      ? '${Fmt.plural(overdue, 'fee')} overdue · next: ${due.first.title}'
-                      : 'Next: ${due.first.title}, due ${Fmt.shortDay(due.first.dueOn)}',
+                      ? context.l10n.feesOverdueNext(overdue, due.first.title)
+                      : context.l10n.nextFeeDue(due.first.title, context.fmt.shortDay(due.first.dueOn)),
                   style: context.text.bodyMedium?.copyWith(color: overdue > 0 ? c.error : c.onSurfaceVariant),
                 ),
               ],
@@ -225,8 +225,8 @@ class _InvoiceTile extends StatelessWidget {
             Text(
               [
                 Fmt.rupees(invoice.amountPaise),
-                if (invoice.paidPaise > 0 && invoice.status != InvoiceStatus.paid) '${Fmt.rupees(invoice.paidPaise)} paid',
-                if (invoice.status == InvoiceStatus.due) 'due ${Fmt.shortDay(invoice.dueOn)}',
+                if (invoice.paidPaise > 0 && invoice.status != InvoiceStatus.paid) context.l10n.amountPaidShort(Fmt.rupees(invoice.paidPaise)),
+                if (invoice.status == InvoiceStatus.due) context.l10n.dueOnShort(context.fmt.shortDay(invoice.dueOn)),
               ].join(' · '),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
@@ -256,7 +256,7 @@ class ReceiptScreen extends StatefulWidget {
 
 class _ReceiptScreenState extends State<ReceiptScreen> {
   FeeReceipt? _r;
-  String? _error;
+  ApiException? _error;
 
   @override
   void initState() {
@@ -270,7 +270,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
       final r = await widget.api.receipt(widget.paymentId);
       if (mounted) setState(() => _r = r);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
     }
   }
 
@@ -278,6 +278,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final r = _r;
+    final l = context.l10n;
     Widget row(String label, String value, {bool strong = false}) => Padding(
       padding: const EdgeInsets.symmetric(vertical: Kx.s8),
       child: Row(
@@ -301,7 +302,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Receipt')),
+      appBar: AppBar(title: Text(l.receipt)),
       body: _error != null
           ? Padding(
               padding: const EdgeInsets.all(Kx.s16),
@@ -327,7 +328,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                           const SizedBox(height: Kx.s8),
                           Text(r.institution, textAlign: TextAlign.center, style: context.text.titleMedium),
                           Text(
-                            'Fee receipt',
+                            l.feeReceipt,
                             textAlign: TextAlign.center,
                             style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                           ),
@@ -339,24 +340,24 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                             style: context.text.displaySmall?.copyWith(fontWeight: FontWeight.w500),
                           ),
                           const Divider(height: Kx.s32),
-                          row('Receipt no.', r.receiptNo),
-                          if (r.paidAt != null) row('Paid on', '${Fmt.date(r.paidAt!)}, ${Fmt.time(r.paidAt!)}'),
-                          row('Student', r.studentName),
-                          row('Roll no.', r.rollNo),
-                          row('Class', r.className),
-                          row('For', r.invoiceTitle),
-                          row('Method', Fmt.paymentMethod(r.method)),
-                          if (r.reference != null && r.reference!.isNotEmpty) row('Reference', r.reference!),
+                          row(l.receiptNoLabel, r.receiptNo),
+                          if (r.paidAt != null) row(l.paidOn, context.fmt.dateTime(r.paidAt!)),
+                          row(l.studentLabel, r.studentName),
+                          row(l.rollNoLabel, r.rollNo),
+                          row(l.classLabel, r.className),
+                          row(l.forLabel, r.invoiceTitle),
+                          row(l.method, context.fmt.paymentMethod(r.method)),
+                          if (r.reference != null && r.reference!.isNotEmpty) row(l.reference, r.reference!),
                           const Divider(height: Kx.s24),
-                          row('Fee amount', Fmt.rupees(r.invoiceAmountPaise)),
-                          row('Balance', r.balancePaise == 0 ? 'Nil' : Fmt.rupees(r.balancePaise), strong: true),
+                          row(l.feeAmount, Fmt.rupees(r.invoiceAmountPaise)),
+                          row(l.balance, r.balancePaise == 0 ? l.nil : Fmt.rupees(r.balancePaise), strong: true),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: Kx.s12),
                   Text(
-                    'Keep this for your records. Show it at the fees counter if anyone asks for proof of payment.',
+                    l.keepReceipt,
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],

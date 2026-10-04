@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../core/study.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
@@ -82,7 +83,7 @@ class UpdatesTab extends StatelessWidget {
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text(live == null ? 'This class is no longer live.' : 'That class has ended. Another class is live now on Today.'),
+              content: Text(live == null ? context.l10n.noLongerLive : context.l10n.otherClassLive(context.l10n.today)),
             ),
           );
         return;
@@ -119,12 +120,12 @@ class UpdatesTab extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar.large(
-                title: const Text('Updates'),
+                title: Text(context.l10n.navUpdates),
                 actions: [
                   if (controller.unread > 0)
                     IconButton(
                       key: const Key('markAllRead'),
-                      tooltip: 'Mark all as read',
+                      tooltip: context.l10n.markAllRead,
                       onPressed: controller.markAllRead,
                       icon: const Icon(Icons.done_all),
                     ),
@@ -140,16 +141,16 @@ class UpdatesTab extends StatelessWidget {
               if (!controller.loaded && controller.loading)
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (controller.loaded && items.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
                   child: KxEmptyState(
                     icon: Icons.notifications_none,
-                    message: "You're all caught up.\nNew homework, shared boards, lesson recordings and messages from your college will appear here.",
+                    message: context.l10n.noUpdates,
                   ),
                 )
               else ...[
-                if (todays.isNotEmpty) group('Today', todays),
-                if (earlier.isNotEmpty) group('Earlier', earlier),
+                if (todays.isNotEmpty) group(context.l10n.today, todays),
+                if (earlier.isNotEmpty) group(context.l10n.earlier, earlier),
                 const SliverToBoxAdapter(child: SizedBox(height: Kx.s24)),
               ],
             ],
@@ -191,7 +192,8 @@ class NotificationTile extends StatelessWidget {
       NotificationKind.live => (Kx.live, Colors.white),
       _ => (c.primaryContainer, c.onPrimaryContainer),
     };
-    final when = Fmt.daysBetween(n.createdAt, today) == 0 ? Fmt.time(n.createdAt) : Fmt.relativeDay(n.createdAt, today);
+    final f = context.fmt;
+    final when = Fmt.daysBetween(n.createdAt, today) == 0 ? f.time(n.createdAt) : f.relativeDay(n.createdAt, today);
     return InkWell(
       key: Key('notification-${n.id}'),
       borderRadius: Kx.radiusMd,

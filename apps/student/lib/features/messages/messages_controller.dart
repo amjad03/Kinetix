@@ -17,10 +17,10 @@ class MessagesController extends ChangeNotifier {
   List<Conversation> threads = [];
   bool loading = false;
   bool loaded = false;
-  String? error;
+  ApiException? error;
 
   List<ContactGroup>? contacts;
-  String? contactsError;
+  ApiException? contactsError;
 
   int get unread => threads.fold(0, (s, t) => s + t.unread);
 
@@ -43,7 +43,7 @@ class MessagesController extends ChangeNotifier {
       threads = await api.conversations();
       loaded = true;
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -55,7 +55,7 @@ class MessagesController extends ChangeNotifier {
     try {
       contacts = await api.contacts();
     } on ApiException catch (e) {
-      contactsError = e.message;
+      contactsError = e;
     } finally {
       notifyListeners();
     }

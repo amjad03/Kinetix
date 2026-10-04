@@ -6,12 +6,31 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'models.dart';
 
+/// Where an [ApiException] came from; the UI turns it into words with AppLocalizations.errorText.
+enum ApiErrorKind {
+  /// The server could not be reached.
+  offline,
+  timeout,
+
+  /// Signed in, but the account has no teaching role.
+  notTeacher,
+
+  /// The server explained the problem in [ApiException.message] (in English).
+  server,
+
+  /// The server gave only an HTTP status.
+  http,
+}
+
 class ApiException implements Exception {
-  ApiException(this.status, this.message);
+  ApiException(this.status, this.message, {this.kind = ApiErrorKind.server});
 
   /// HTTP status, or 0 when the server could not be reached.
   final int status;
+
+  /// English, for logs; show AppLocalizations.errorText instead.
   final String message;
+  final ApiErrorKind kind;
 
   @override
   String toString() => message;
@@ -29,6 +48,9 @@ abstract class TeacherApi {
   /// Signs in and stores the token on this client.
   Future<void> login({required String tenant, required String login, required String password});
   Future<Me> me();
+
+  /// Saves the teacher's language on the server (notifications and pushes use it).
+  Future<Me> updatePreferredLanguage(String language);
   Future<DayTimetable> timetable({String? date});
   Future<List<TeacherClass>> classes();
   Future<List<Student>> roster(String sectionId);
@@ -97,17 +119,21 @@ abstract class TeacherApi {
 
 /// Lets the lesson player load recordings through a [TeacherApi].
 class TeacherLessonSource implements LessonSource {
-  TeacherLessonSource(this.api);
+  TeacherLessonSource(this.api, {required this.notAvailable, required this.describe});
 
   final TeacherApi api;
+
+  /// Shown by the player when the recording is not there yet (404).
+  final String notAvailable;
+
+  /// Turns any other failure into words.
+  final String Function(ApiException) describe;
 
   Future<T> _guard<T>(Future<T> Function() f) async {
     try {
       return await f();
     } on ApiException catch (e) {
-      throw LessonLoadException(
-        e.status == 404 ? 'This recording is not available yet. It may still be uploading from the board.' : e.message,
-      );
+      throw LessonLoadException(e.status == 404 ? notAvailable : describe(e));
     }
   }
 
@@ -144,6 +170,10 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<Me> me() async => Me.fromJson(await _send('GET', '/v1/me'));
+
+  @override
+  Future<Me> updatePreferredLanguage(String language) async =>
+      Me.fromJson(await _send('PATCH', '/v1/me', body: {'preferredLanguage': language}));
 
   @override
   Future<DayTimetable> timetable({String? date}) async =>
@@ -229,8 +259,9 @@ class HttpTeacherApi implements TeacherApi {
       RecordingInfo.fromJson(await _send('POST', '/v1/recordings/$id/share') as Map<String, dynamic>);
 
   @override
-  Future<List<Assessment>> assessments(String sectionId) async =>
-      (await _send('GET', '/v1/assessments?sectionId=$sectionId') as List).map((e) => Assessment.fromJson(e as Map<String, dynamic>)).toList();
+  Future<List<Assessment>> assessments(String sectionId) async => (await _send('GET', '/v1/assessments?sectionId=$sectionId') as List)
+      .map((e) => Assessment.fromJson(e as Map<String, dynamic>))
+      .toList();
 
   @override
   Future<Assessment> assessment(String id) async => Assessment.fromJson(await _send('GET', '/v1/assessments/$id') as Map<String, dynamic>);
@@ -253,7 +284,13 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<Assessment> saveMarks(String assessmentId, List<MarkInput> entries) async => Assessment.fromJson(
-    await _send('PUT', '/v1/assessments/$assessmentId/marks', body: {'entries': [for (final e in entries) e.toJson()]}),
+    await _send(
+      'PUT',
+      '/v1/assessments/$assessmentId/marks',
+      body: {
+        'entries': [for (final e in entries) e.toJson()],
+      },
+    ),
   );
 
   @override
@@ -300,19 +337,21 @@ class HttpTeacherApi implements TeacherApi {
     try {
       res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 20));
     } on TimeoutException {
-      throw ApiException(0, 'The server is taking too long to respond. Try again.');
+      throw ApiException(0, 'The server is taking too long to respond. Try again.', kind: ApiErrorKind.timeout);
     } catch (_) {
-      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.");
+      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
     }
 
     if (res.statusCode >= 400) {
       if (res.statusCode == 401 && auth) onUnauthorized?.call();
-      throw ApiException(res.statusCode, _message(res));
+      final m = _message(res);
+      throw m == null ? ApiException(res.statusCode, 'HTTP ${res.statusCode}', kind: ApiErrorKind.http) : ApiException(res.statusCode, m);
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
   }
 
-  static String _message(http.Response res) {
+  /// The server's explanation, or null when it only sent a status.
+  static String? _message(http.Response res) {
     try {
       final m = (jsonDecode(res.body) as Map)['message'];
       if (m is String) return m;
@@ -323,11 +362,6 @@ class HttpTeacherApi implements TeacherApi {
         if (first != null) return '${first.key}: ${(first.value as List).first}';
       }
     } catch (_) {}
-    return switch (res.statusCode) {
-      403 => "You don't have access to this.",
-      404 => 'Not found.',
-      429 => 'Too many attempts. Wait a minute and try again.',
-      _ => 'Something went wrong (${res.statusCode}). Try again.',
-    };
+    return null;
   }
 }

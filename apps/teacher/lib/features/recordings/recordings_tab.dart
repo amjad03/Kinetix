@@ -3,6 +3,8 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/format.dart';
+import '../../core/l10n.dart';
 import '../../widgets/common.dart';
 
 /// The teacher's lesson recordings.
@@ -12,7 +14,7 @@ class RecordingsController extends ChangeNotifier {
   final TeacherApi api;
   List<RecordingInfo>? items;
   bool loading = false;
-  String? error;
+  ApiException? error;
 
   /// Recordings being shared right now (their buttons show progress).
   final sharing = <String>{};
@@ -24,7 +26,7 @@ class RecordingsController extends ChangeNotifier {
     try {
       items = await api.myRecordings();
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -54,18 +56,17 @@ class RecordingsTab extends StatelessWidget {
   final Widget? profileButton;
 
   Future<void> _share(BuildContext context, RecordingInfo r) async {
-    final cls = r.sectionName ?? 'the class';
+    // Only recordings made with a class can be shared, so the class name is there.
+    final cls = r.sectionName ?? '';
+    final l = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Share with the class?'),
-        content: Text(
-          'Students of $cls and their families can watch "${r.title}" in their apps. '
-          'Families of students who were absent get a notification.',
-        ),
+        title: Text(l.shareTitle),
+        content: Text(l.shareBody(cls, r.title)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(key: const Key('confirmShare'), onPressed: () => Navigator.pop(ctx, true), child: const Text('Share')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          FilledButton(key: const Key('confirmShare'), onPressed: () => Navigator.pop(ctx, true), child: Text(l.share)),
         ],
       ),
     );
@@ -73,42 +74,47 @@ class RecordingsTab extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await controller.share(r);
-      messenger.showSnackBar(SnackBar(content: Text('Shared with $cls')));
+      messenger.showSnackBar(SnackBar(content: Text(l.sharedWith(cls))));
     } on ApiException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
     }
   }
 
-  void _play(BuildContext context, RecordingInfo r) =>
-      LessonPlayerScreen.open(context, source: TeacherLessonSource(controller.api), recordingId: r.id, initial: r);
+  /// The player itself (packages/kinetix_lesson) is not localised yet; its load errors are.
+  void _play(BuildContext context, RecordingInfo r) {
+    final l = context.l10n;
+    LessonPlayerScreen.open(
+      context,
+      source: TeacherLessonSource(controller.api, notAvailable: l.recordingNotAvailable, describe: l.errorText),
+      recordingId: r.id,
+      initial: r,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
+        final l = context.l10n;
         final items = controller.items;
         return RefreshIndicator(
           onRefresh: controller.load,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              SliverAppBar.large(title: const Text('Recordings'), actions: [?profileButton]),
+              SliverAppBar.large(title: Text(l.navRecordings), actions: [?profileButton]),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),
-                  sliver: SliverToBoxAdapter(child: ErrorBanner(controller.error!, onRetry: controller.load)),
+                  sliver: SliverToBoxAdapter(child: ErrorBanner.api(controller.error!, onRetry: controller.load)),
                 ),
               if (items == null && controller.loading)
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (items != null && items.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: KxEmptyState(
-                    icon: Icons.mic_none,
-                    message:
-                        'No recordings yet.\nTap Record on the board during class. The lesson shows up here once the board uploads it.',
-                  ),
+                  child: KxEmptyState(icon: Icons.mic_none, message: l.noRecordings),
                 )
               else if (items != null)
                 SliverPadding(
@@ -147,6 +153,8 @@ class RecordingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
+    final fmt = Fmt.of(context);
     final r = recording;
     final good = Theme.of(context).brightness == Brightness.dark ? const Color(0xFF81C995) : const Color(0xFF137333);
     final goodBg = Theme.of(context).brightness == Brightness.dark ? const Color(0xFF0D3B1E) : const Color(0xFFE6F4EA);
@@ -154,30 +162,25 @@ class RecordingCard extends StatelessWidget {
 
     final pills = <Widget>[
       if (!r.isFinished)
-        Pill('Uploading', icon: Icons.cloud_upload_outlined, background: c.secondaryContainer, foreground: c.onSecondaryContainer)
+        Pill(l.uploading, icon: Icons.cloud_upload_outlined, background: c.secondaryContainer, foreground: c.onSecondaryContainer)
       else if (r.isShared)
-        Pill('Shared with class', icon: Icons.check, background: goodBg, foreground: good)
+        Pill(l.sharedWithClass, icon: Icons.check, background: goodBg, foreground: good)
       else if (r.sectionId == null)
-        Pill('No class', icon: Icons.block, background: neutral.$1, foreground: neutral.$2)
+        Pill(l.noClass, icon: Icons.block, background: neutral.$1, foreground: neutral.$2)
       else
-        Pill('Not shared', icon: Icons.lock_outline, background: neutral.$1, foreground: neutral.$2),
+        Pill(l.notShared, icon: Icons.lock_outline, background: neutral.$1, foreground: neutral.$2),
       switch (r.transcriptState) {
         Processing.queued => Pill(
-          'Preparing transcript',
+          l.preparingTranscript,
           icon: Icons.hourglass_top,
           background: c.tertiaryContainer,
           foreground: c.onTertiaryContainer,
         ),
-        Processing.done => Pill(
-          'Transcript ready',
-          icon: Icons.subject,
-          background: c.tertiaryContainer,
-          foreground: c.onTertiaryContainer,
-        ),
-        Processing.failed => Pill('No transcript', icon: Icons.error_outline, background: c.errorContainer, foreground: c.onErrorContainer),
+        Processing.done => Pill(l.transcriptReady, icon: Icons.subject, background: c.tertiaryContainer, foreground: c.onTertiaryContainer),
+        Processing.failed => Pill(l.noTranscript, icon: Icons.error_outline, background: c.errorContainer, foreground: c.onErrorContainer),
         Processing.none => const SizedBox.shrink(),
       },
-      if (!r.hasAudio && r.isFinished) Pill('No sound', icon: Icons.volume_off_outlined, background: neutral.$1, foreground: neutral.$2),
+      if (!r.hasAudio && r.isFinished) Pill(l.noSound, icon: Icons.volume_off_outlined, background: neutral.$1, foreground: neutral.$2),
     ];
 
     return Card(
@@ -200,11 +203,11 @@ class RecordingCard extends StatelessWidget {
                         Text(r.title, style: context.text.titleMedium),
                         const SizedBox(height: 2),
                         Text(
-                          [?r.sectionName, ?r.subjectName].join(' · ').ifEmpty('Not linked to a class'),
+                          [?r.sectionName, ?r.subjectName].join(' · ').ifEmpty(l.notLinkedToClass),
                           style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                         ),
                         Text(
-                          '${LessonFmt.when(r.startedAt)} · ${LessonFmt.length(r.duration)}',
+                          '${fmt.when(r.startedAt)} · ${fmt.duration(r.duration)}',
                           style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                         ),
                       ],
@@ -213,7 +216,7 @@ class RecordingCard extends StatelessWidget {
                   if (onPlay != null)
                     IconButton.filledTonal(
                       key: Key('play-${r.id}'),
-                      tooltip: 'Play',
+                      tooltip: l.play,
                       onPressed: onPlay,
                       icon: const Icon(Icons.play_arrow),
                     ),
@@ -233,7 +236,7 @@ class RecordingCard extends StatelessWidget {
                     icon: sharing
                         ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.share_outlined),
-                    label: const Text('Share with class'),
+                    label: Text(l.shareWithClass),
                   ),
                 ),
             ],

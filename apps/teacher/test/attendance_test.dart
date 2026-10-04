@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_teacher/core/models.dart';
 import 'package:kinetix_teacher/features/attendance/attendance_screen.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'fake_api.dart';
+import 'helpers.dart';
 
 void main() {
   late FakeTeacherApi api;
 
   Future<void> pumpSheet(WidgetTester tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: KinetixTheme.light(),
+      localizedApp(
         home: AttendanceScreen(api: api, period: api.period(), date: '2026-10-03'),
       ),
     );
@@ -41,7 +40,7 @@ void main() {
     await tester.tap(find.text('Ananya Gowda'));
     await tester.longPress(find.text('Bhavya Reddy'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ListTile, 'Late'));
+    await tester.tap(find.byKey(const Key('status-late')));
     await tester.pumpAndSettle();
     expect(summary(tester), '1 present · 1 absent · 1 late');
 
@@ -64,6 +63,6 @@ void main() {
     await pumpSheet(tester);
     expect(summary(tester), '1 present · 1 absent · 1 late');
     expect(find.text('Update'), findsOneWidget);
-    expect(find.textContaining('Already taken'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('attendanceHelp'))).data, startsWith('Already taken'));
   });
 }

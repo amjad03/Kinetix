@@ -4,7 +4,9 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../core/study.dart';
+import '../../core/live.dart' show LiveErrors;
 import 'live_controller.dart';
 
 /// The teacher's board, live, full screen. Fits any screen (turn the phone sideways for a bigger
@@ -115,7 +117,7 @@ class _LiveClassScreenState extends State<LiveClassScreen> {
                         const CircularProgressIndicator(color: _onSurround),
                         const SizedBox(height: Kx.s16),
                         Text(
-                          phase == LivePhase.connecting ? 'Joining the class…' : 'Waiting for the board…',
+                          phase == LivePhase.connecting ? context.l10n.joiningClass : context.l10n.waitingForBoard,
                           style: context.text.titleMedium?.copyWith(color: _onSurround),
                         ),
                       ],
@@ -151,7 +153,7 @@ class _TopBar extends StatelessWidget {
             children: [
               IconButton(
                 key: const Key('leaveLive'),
-                tooltip: 'Leave',
+                tooltip: context.l10n.leave,
                 color: Colors.white,
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const BackButtonIcon(),
@@ -164,7 +166,7 @@ class _TopBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      controller.subject ?? 'Live class',
+                      controller.subject ?? context.l10n.liveClass,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.text.titleMedium?.copyWith(color: Colors.white),
@@ -208,9 +210,9 @@ class _BottomBar extends StatelessWidget {
             spacing: Kx.s8,
             runSpacing: Kx.s8,
             children: [
-              _DarkChip(icon: Icons.volume_off_outlined, label: 'Board only: no sound yet', key: const Key('liveNoSound')),
+              _DarkChip(icon: Icons.volume_off_outlined, label: context.l10n.boardOnlyNoSound, key: const Key('liveNoSound')),
               if (controller.phase == LivePhase.live || controller.phase == LivePhase.reconnecting)
-                _DarkChip(icon: Icons.description_outlined, label: 'Page ${p.pageIndex + 1} of ${p.pageCount}', key: const Key('livePage')),
+                _DarkChip(icon: Icons.description_outlined, label: context.l10n.pageOf(p.pageIndex + 1, p.pageCount), key: const Key('livePage')),
             ],
           ),
         ),
@@ -260,7 +262,7 @@ class LivePill extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          'LIVE',
+          context.l10n.liveBadge,
           style: context.text.labelMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 0.8),
         ),
       ],
@@ -282,7 +284,7 @@ class _Reconnecting extends StatelessWidget {
         const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
         const SizedBox(width: Kx.s12),
         Flexible(
-          child: Text('Connection lost. Reconnecting…', style: context.text.bodyMedium?.copyWith(color: Colors.white)),
+          child: Text(context.l10n.reconnecting, style: context.text.bodyMedium?.copyWith(color: Colors.white)),
         ),
       ],
     ),
@@ -295,34 +297,30 @@ class _EndedCard extends StatelessWidget {
   final LiveClassController controller;
 
   /// (icon, title, message, can try again)
-  static (IconData, String, String, bool) describe(LiveClassController c) {
-    if (c.phase == LivePhase.failed) return (Icons.error_outline, "Couldn't join the class", c.error ?? 'Try again in a moment.', true);
+  static (IconData, String, String, bool) describe(AppLocalizations l, LiveClassController c) {
+    if (c.phase == LivePhase.failed) {
+      return (Icons.error_outline, l.couldNotJoin, c.error == null ? l.tryInAMoment : liveErrorText(l, c.error!), true);
+    }
     return switch (c.endedReason) {
-      'live_off' => (
-        Icons.cast_connected_outlined,
-        'Your teacher stopped the live class',
-        'The board is no longer being shared. If your teacher shares a recording of the lesson, it will appear on Today.',
-        false,
-      ),
-      'offline' => (
-        Icons.wifi_off_outlined,
-        'The board went offline',
-        'The classroom board lost its connection. Stay here: the board comes back on its own when it reconnects.',
-        true,
-      ),
-      _ => (
-        Icons.check_circle_outline,
-        'The class has ended',
-        'Thanks for joining. If your teacher shares a recording of the lesson, it will appear on Today.',
-        false,
-      ),
+      'live_off' => (Icons.cast_connected_outlined, l.liveOffTitle, l.liveOffBody(l.today), false),
+      'offline' => (Icons.wifi_off_outlined, l.boardOfflineTitle, l.boardOfflineBody, true),
+      _ => (Icons.check_circle_outline, l.classEndedTitle, l.classEndedBody(l.today), false),
     };
   }
+
+  /// The app's own live-class problems in the app's language; anything the server said, as sent.
+  static String liveErrorText(AppLocalizations l, String message) => switch (message) {
+    LiveErrors.signInAgain => l.liveSignInAgain,
+    LiveErrors.notConnected => l.liveNotConnected,
+    LiveErrors.timeout => l.liveTimeout,
+    LiveErrors.couldNotJoin => l.liveCouldNotJoin,
+    _ => message,
+  };
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final (icon, title, message, canRetry) = describe(controller);
+    final (icon, title, message, canRetry) = describe(context.l10n, controller);
     return SingleChildScrollView(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
@@ -349,8 +347,8 @@ class _EndedCard extends StatelessWidget {
                   spacing: Kx.s8,
                   runSpacing: Kx.s8,
                   children: [
-                    if (canRetry) FilledButton(key: const Key('liveRetry'), onPressed: controller.retry, child: const Text('Try again')),
-                    OutlinedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Back to Today')),
+                    if (canRetry) FilledButton(key: const Key('liveRetry'), onPressed: controller.retry, child: Text(context.l10n.tryAgain)),
+                    OutlinedButton(onPressed: () => Navigator.of(context).maybePop(), child: Text(context.l10n.backToToday(context.l10n.today))),
                   ],
                 ),
               ],
@@ -397,11 +395,11 @@ class LiveNowBanner extends StatelessWidget {
                     const LivePill(),
                     const SizedBox(height: Kx.s4),
                     Text(
-                      'Live now: ${live.subject ?? 'class'}',
+                      context.l10n.liveNow(live.subject ?? context.l10n.classFallback),
                       style: context.text.titleMedium?.copyWith(color: c.onInverseSurface, fontWeight: FontWeight.w500),
                     ),
                     Text(
-                      '${live.teacher} is teaching. Watch the board.',
+                      context.l10n.teacherTeaching(live.teacher),
                       style: context.text.bodyMedium?.copyWith(color: c.onInverseSurface.withValues(alpha: 0.8)),
                     ),
                     const SizedBox(height: Kx.s12),
@@ -410,7 +408,7 @@ class LiveNowBanner extends StatelessWidget {
                       style: FilledButton.styleFrom(backgroundColor: Kx.live, foregroundColor: Colors.white),
                       onPressed: onWatch,
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Watch'),
+                      label: Text(context.l10n.watch),
                     ),
                   ],
                 ),

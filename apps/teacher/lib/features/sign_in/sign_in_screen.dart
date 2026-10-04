@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/app_state.dart';
+import '../../core/l10n.dart';
 import '../../widgets/common.dart';
 
 /// Institution code + email or phone + password. The institution and server are remembered.
@@ -24,7 +25,7 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _showPassword = false;
   bool _showServer = false;
   bool _busy = false;
-  String? _error;
+  ApiException? _error;
 
   @override
   void dispose() {
@@ -34,35 +35,33 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  static String? validateTenant(String? v) {
+  static String? validateTenant(AppLocalizations l, String? v) {
     final t = v?.trim() ?? '';
-    if (t.isEmpty) return 'Enter your institution code';
-    if (!RegExp(r'^[a-z0-9][a-z0-9-]*$').hasMatch(t.toLowerCase())) return 'Use letters, numbers and hyphens only';
+    if (t.isEmpty) return l.enterInstitutionCode;
+    if (!RegExp(r'^[a-z0-9][a-z0-9-]*$').hasMatch(t.toLowerCase())) return l.institutionCodeChars;
     return null;
   }
 
-  static String? validateLogin(String? v) {
+  static String? validateLogin(AppLocalizations l, String? v) {
     final t = v?.trim() ?? '';
-    if (t.isEmpty) return 'Enter your email or phone number';
+    if (t.isEmpty) return l.enterEmailOrPhone;
     if (t.contains('@')) {
-      return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t) ? null : 'Enter a valid email address';
+      return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t) ? null : l.invalidEmail;
     }
     final digits = t.replaceAll(RegExp(r'[\s-]'), '');
-    return RegExp(r'^\+?\d{10,13}$').hasMatch(digits) ? null : 'Enter a valid email or 10-digit phone number';
+    return RegExp(r'^\+?\d{10,13}$').hasMatch(digits) ? null : l.invalidEmailOrPhone;
   }
 
-  static String? validateServer(String? v) {
+  static String? validateServer(AppLocalizations l, String? v) {
     final uri = Uri.tryParse(v?.trim() ?? '');
-    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty
-        ? null
-        : 'Enter a server address like https://api.kinetix.in';
+    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty ? null : l.invalidServer;
   }
 
   Future<void> _submit() async {
     setState(() => _error = null);
     if (!_form.currentState!.validate()) {
       // The server field may be the invalid one while collapsed.
-      if (validateServer(_server.text) != null) setState(() => _showServer = true);
+      if (validateServer(context.l10n, _server.text) != null) setState(() => _showServer = true);
       return;
     }
     setState(() => _busy = true);
@@ -75,7 +74,7 @@ class _SignInScreenState extends State<SignInScreen> {
         password: _password.text,
       );
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -84,6 +83,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l = context.l10n;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -110,35 +110,32 @@ class _SignInScreenState extends State<SignInScreen> {
                         ],
                       ),
                       const SizedBox(height: Kx.s32),
-                      Text('Sign in', style: context.text.headlineMedium),
+                      Text(l.signInTitle, style: context.text.headlineMedium),
                       const SizedBox(height: Kx.s8),
-                      Text(
-                        'Use the account your institution gave you',
-                        style: context.text.bodyLarge?.copyWith(color: colors.onSurfaceVariant),
-                      ),
+                      Text(l.signInSubtitle, style: context.text.bodyLarge?.copyWith(color: colors.onSurfaceVariant)),
                       const SizedBox(height: Kx.s32),
                       TextFormField(
                         key: const Key('tenant'),
                         controller: _tenant,
-                        decoration: const InputDecoration(
-                          labelText: 'Institution code',
-                          hintText: 'e.g. demo-college',
-                          prefixIcon: Icon(Icons.apartment_outlined),
+                        decoration: InputDecoration(
+                          labelText: l.institutionCode,
+                          hintText: l.institutionCodeHint,
+                          prefixIcon: const Icon(Icons.apartment_outlined),
                         ),
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
-                        validator: validateTenant,
+                        validator: (v) => validateTenant(l, v),
                       ),
                       const SizedBox(height: Kx.s16),
                       TextFormField(
                         key: const Key('login'),
                         controller: _login,
-                        decoration: const InputDecoration(labelText: 'Email or phone', prefixIcon: Icon(Icons.person_outline)),
+                        decoration: InputDecoration(labelText: l.emailOrPhone, prefixIcon: const Icon(Icons.person_outline)),
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
                         autofillHints: const [AutofillHints.username, AutofillHints.email],
-                        validator: validateLogin,
+                        validator: (v) => validateLogin(l, v),
                       ),
                       const SizedBox(height: Kx.s16),
                       TextFormField(
@@ -146,45 +143,46 @@ class _SignInScreenState extends State<SignInScreen> {
                         controller: _password,
                         obscureText: !_showPassword,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: l.password,
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
-                            tooltip: _showPassword ? 'Hide password' : 'Show password',
+                            tooltip: _showPassword ? l.hidePassword : l.showPassword,
                             icon: Icon(_showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                             onPressed: () => setState(() => _showPassword = !_showPassword),
                           ),
                         ),
                         autofillHints: const [AutofillHints.password],
                         onFieldSubmitted: (_) => _submit(),
-                        validator: (v) => (v ?? '').isEmpty ? 'Enter your password' : null,
+                        validator: (v) => (v ?? '').isEmpty ? l.enterPassword : null,
                       ),
                       if (_showServer) ...[
                         const SizedBox(height: Kx.s16),
                         TextFormField(
                           key: const Key('server'),
                           controller: _server,
-                          decoration: const InputDecoration(labelText: 'Server address', prefixIcon: Icon(Icons.dns_outlined)),
+                          decoration: InputDecoration(labelText: l.serverAddress, prefixIcon: const Icon(Icons.dns_outlined)),
                           keyboardType: TextInputType.url,
                           autocorrect: false,
-                          validator: validateServer,
+                          validator: (v) => validateServer(l, v),
                         ),
                       ],
-                      if (_error != null) ...[const SizedBox(height: Kx.s16), ErrorBanner(_error!)],
+                      if (_error != null) ...[const SizedBox(height: Kx.s16), ErrorBanner.api(_error!, key: const Key('signInError'))],
                       const SizedBox(height: Kx.s24),
                       FilledButton(
                         key: const Key('signIn'),
                         onPressed: _busy ? null : _submit,
                         child: _busy
                             ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Sign in'),
+                            : Text(l.signInButton),
                       ),
                       const SizedBox(height: Kx.s8),
                       if (!_showServer)
                         Align(
                           child: TextButton.icon(
+                            key: const Key('showServer'),
                             onPressed: () => setState(() => _showServer = true),
                             icon: const Icon(Icons.dns_outlined, size: 18),
-                            label: Text('Server: ${Uri.tryParse(_server.text)?.authority ?? _server.text}'),
+                            label: Text(l.serverLabel(Uri.tryParse(_server.text)?.authority ?? _server.text)),
                           ),
                         ),
                     ],

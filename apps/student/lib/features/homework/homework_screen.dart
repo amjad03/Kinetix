@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// One piece of homework: what to do, by when, and who set it.
@@ -51,14 +52,14 @@ class HomeworkScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Homework')),
+      appBar: AppBar(title: Text(context.l10n.homework)),
       body: LayoutBuilder(
         builder: (context, box) => ListView(
           padding: EdgeInsets.fromLTRB(sideGutter(box.maxWidth), Kx.s8, sideGutter(box.maxWidth), Kx.s32),
           children: [
             Align(
               alignment: Alignment.centerLeft,
-              child: Pill(Fmt.due(hw.dueOn, today), icon: Icons.event_outlined, background: bg, foreground: fg),
+              child: Pill(context.fmt.due(hw.dueOn, today), icon: Icons.event_outlined, background: bg, foreground: fg),
             ),
             const SizedBox(height: Kx.s12),
             Text(hw.title, style: context.text.headlineSmall),
@@ -71,10 +72,10 @@ class HomeworkScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Instructions', style: context.text.titleSmall),
+                    Text(context.l10n.instructions, style: context.text.titleSmall),
                     const SizedBox(height: Kx.s8),
                     SelectableText(
-                      hw.instructions.isEmpty ? 'No instructions were added.' : hw.instructions,
+                      hw.instructions.isEmpty ? context.l10n.noInstructions : hw.instructions,
                       style: context.text.bodyLarge?.copyWith(height: 1.5),
                     ),
                   ],
@@ -82,12 +83,12 @@ class HomeworkScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Kx.s16),
-            fact(Icons.event_outlined, 'Due', Fmt.longDay(hw.dueOn)),
-            fact(Icons.person_outline, 'Set by', hw.teacher),
-            if (hw.createdAt != null) fact(Icons.schedule_outlined, 'Given on', Fmt.longDay(hw.createdAt!)),
+            fact(Icons.event_outlined, context.l10n.factDue, context.fmt.longDay(hw.dueOn)),
+            fact(Icons.person_outline, context.l10n.setBy, hw.teacher),
+            if (hw.createdAt != null) fact(Icons.schedule_outlined, context.l10n.givenOn, context.fmt.longDay(hw.createdAt!)),
             const SizedBox(height: Kx.s16),
             Text(
-              'Hand it in the way your teacher asked. Stuck? Ask KINETIX AI in the Learn tab.',
+              context.l10n.homeworkHandIn(context.l10n.navLearn),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
           ],

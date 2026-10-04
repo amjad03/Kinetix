@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
+import '../../l10n/l10n.dart';
 import '../learn/learn_tab.dart';
 import '../messages/messages_controller.dart';
 import '../profile/profile_tab.dart';
@@ -101,6 +102,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     return ListenableBuilder(
       listenable: updates,
       builder: (context, _) {
+        final l = context.l10n;
         if (wide) {
           return Scaffold(
             body: Row(
@@ -114,25 +116,25 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
                     labelType: NavigationRailLabelType.all,
                     groupAlignment: -0.85,
                     destinations: [
-                      const NavigationRailDestination(
-                        icon: Icon(Icons.today_outlined),
-                        selectedIcon: Icon(Icons.today),
-                        label: Text('Today'),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.today_outlined),
+                        selectedIcon: const Icon(Icons.today),
+                        label: Text(l.today),
                       ),
-                      const NavigationRailDestination(
-                        icon: Icon(Icons.auto_awesome_outlined),
-                        selectedIcon: Icon(Icons.auto_awesome),
-                        label: Text('Learn'),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.auto_awesome_outlined),
+                        selectedIcon: const Icon(Icons.auto_awesome),
+                        label: Text(l.navLearn),
                       ),
                       NavigationRailDestination(
                         icon: _badge(Icons.notifications_outlined),
                         selectedIcon: _badge(Icons.notifications),
-                        label: const Text('Updates'),
+                        label: Text(l.navUpdates),
                       ),
-                      const NavigationRailDestination(
-                        icon: Icon(Icons.person_outline),
-                        selectedIcon: Icon(Icons.person),
-                        label: Text('Profile'),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.person_outline),
+                        selectedIcon: const Icon(Icons.person),
+                        label: Text(l.navProfile),
                       ),
                     ],
                   ),
@@ -149,15 +151,15 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
             selectedIndex: _tab,
             onDestinationSelected: _go,
             destinations: [
-              const NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'Today'),
-              const NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Learn'),
+              NavigationDestination(icon: const Icon(Icons.today_outlined), selectedIcon: const Icon(Icons.today), label: l.today),
+              NavigationDestination(icon: const Icon(Icons.auto_awesome_outlined), selectedIcon: const Icon(Icons.auto_awesome), label: l.navLearn),
               NavigationDestination(
                 key: const Key('updatesDestination'),
                 icon: _badge(Icons.notifications_outlined),
                 selectedIcon: _badge(Icons.notifications),
-                label: 'Updates',
+                label: l.navUpdates,
               ),
-              const NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
+              NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: l.navProfile),
             ],
           ),
         );

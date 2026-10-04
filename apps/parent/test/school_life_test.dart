@@ -28,7 +28,7 @@ void main() {
       expect(find.text('Books out (1)'), findsOneWidget);
       expect(find.text('Returned (1)'), findsOneWidget);
       expect(find.text('Wings of Fire'), findsOneWidget);
-      expect(find.text('Borrowed Sat 5 Sep · returned Wed 23 Sep · fine ₹6'), findsOneWidget);
+      expect(find.text('Borrowed Sat 5 Sept · returned Wed 23 Sept · fine ₹6'), findsOneWidget);
     });
 
     testWidgets('an overdue book is flagged in red', (tester) async {
@@ -39,6 +39,8 @@ void main() {
       final chip = tester.widget<Text>(find.text('Overdue by 4 days'));
       final context = tester.element(find.text('Overdue by 4 days'));
       expect(chip.style?.color, Theme.of(context).colorScheme.onErrorContainer);
+      // The fine if the book came back today (from the server's fineSoFarPaise).
+      expect(tester.widget<Text>(find.byKey(const Key('fineSoFar-l3'))).data, '₹8 fine so far');
     });
 
     testWidgets('a "book borrowed" update opens that child\'s library', (tester) async {
@@ -50,7 +52,7 @@ void main() {
             id: 'n9',
             kind: NotificationKind.library,
             title: 'Library book borrowed: Discrete Mathematics',
-            body: 'Diya borrowed "Discrete Mathematics". Please return it by Wed 30 Sep.',
+            body: 'Diya borrowed "Discrete Mathematics". Please return it by Wed 30 Sept.',
             data: {'loanId': 'l3', 'studentId': 'c2'},
             createdAt: DateTime.now(),
           ),
@@ -74,7 +76,7 @@ void main() {
       expect(find.descendant(of: card, matching: find.text('22.5 / 25')), findsOneWidget);
       expect(find.descendant(of: card, matching: find.text('Above class average')), findsOneWidget);
       expect(find.descendant(of: card, matching: find.text('Below class average')), findsOneWidget);
-      expect(find.descendant(of: card, matching: find.text('Test · Mon 28 Sep · Class average 18.7')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Test · Mon 28 Sept · Class average 18.7')), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('subject-Corporate Accounting')), matching: find.text('90%')), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('subject-Cost Accounting')), matching: find.text('50%')), findsOneWidget);
 

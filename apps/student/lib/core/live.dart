@@ -44,6 +44,14 @@ class LiveDisconnected extends LiveSignal {
 }
 
 /// The server refused the connection (signed out, or this account cannot watch classes).
+/// The app's own words for live-class problems (translated by the screen; see [LiveClassScreen]).
+abstract final class LiveErrors {
+  static const signInAgain = 'Sign in again to watch the class.';
+  static const notConnected = 'Not connected';
+  static const timeout = 'The class is taking too long to answer. Try again.';
+  static const couldNotJoin = "Couldn't join the class.";
+}
+
 class LiveRejected extends LiveSignal {
   const LiveRejected(this.message);
 
@@ -132,7 +140,7 @@ class SocketLiveConnection implements LiveConnection {
     });
     socket.on('error', (d) {
       final message = d is Map ? '${d['message']}' : '$d';
-      if (message == 'unauthorized') _add(const LiveRejected('Sign in again to watch the class.'));
+      if (message == 'unauthorized') _add(const LiveRejected(LiveErrors.signInAgain));
     });
     socket.onDisconnect((_) => _add(const LiveDisconnected()));
     socket.onConnectError((_) => _add(const LiveDisconnected()));
@@ -143,7 +151,7 @@ class SocketLiveConnection implements LiveConnection {
   @override
   Future<LiveWatchAck> watch(String deviceId) {
     final socket = _socket;
-    if (socket == null) return Future.value(const LiveWatchAck(ok: false, error: 'Not connected'));
+    if (socket == null) return Future.value(const LiveWatchAck(ok: false, error: LiveErrors.notConnected));
     final done = Completer<LiveWatchAck>();
     socket.emitWithAck(
       LiveEvents.watch,
@@ -155,7 +163,7 @@ class SocketLiveConnection implements LiveConnection {
     );
     return done.future.timeout(
       const Duration(seconds: 15),
-      onTimeout: () => const LiveWatchAck(ok: false, error: 'The class is taking too long to answer. Try again.'),
+      onTimeout: () => const LiveWatchAck(ok: false, error: LiveErrors.timeout),
     );
   }
 

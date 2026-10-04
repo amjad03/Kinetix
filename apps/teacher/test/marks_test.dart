@@ -4,21 +4,15 @@ import 'package:kinetix_teacher/app.dart';
 import 'package:kinetix_teacher/core/app_state.dart';
 import 'package:kinetix_teacher/core/models.dart';
 import 'package:kinetix_teacher/features/marks/marks_entry_screen.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
+import 'helpers.dart';
 
 void main() {
   late FakeTeacherApi api;
 
   setUp(() => api = FakeTeacherApi());
-
-  void phone(WidgetTester tester) {
-    tester.view.physicalSize = const Size(412, 892);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-  }
 
   Future<void> pumpApp(WidgetTester tester) async {
     phone(tester);
@@ -27,7 +21,7 @@ void main() {
     await tester.pumpWidget(TeacherApp(state: state));
     await state.restore();
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Marks'));
+    await tester.tap(find.byKey(const Key('navMarks')));
     await tester.pumpAndSettle();
   }
 
@@ -36,13 +30,16 @@ void main() {
     phone(tester);
     final a = await api.assessment(id);
     await tester.pumpWidget(
-      MaterialApp(
-        theme: KinetixTheme.light(),
+      localizedApp(
         home: Builder(
           builder: (context) => Scaffold(
             body: Center(
               child: TextButton(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => MarksEntryScreen(api: api, assessment: a))),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => MarksEntryScreen(api: api, assessment: a),
+                  ),
+                ),
                 child: const Text('open'),
               ),
             ),
@@ -107,7 +104,10 @@ void main() {
     await tester.tap(find.byKey(const Key('createAssessment')));
     await tester.pumpAndSettle();
 
-    expect(api.calls.where((c) => c.startsWith('createAssessment')).single, startsWith('createAssessment Journal entries quiz assignment 20 '));
+    expect(
+      api.calls.where((c) => c.startsWith('createAssessment')).single,
+      startsWith('createAssessment Journal entries quiz assignment 20 '),
+    );
     // Now on the entry screen with the class in roll order.
     expect(find.text('Journal entries quiz'), findsOneWidget);
     expect(find.text('Out of 20'), findsOneWidget);
@@ -158,11 +158,10 @@ void main() {
 
     await tester.tap(find.byKey(const Key('saveMarks')));
     await tester.pumpAndSettle();
-    expect({for (final e in api.lastSaved!) e.studentId: (e.marks, e.absent)}, {
-      's1': (22.5, false),
-      's2': (null, true),
-      's3': (18.0, false),
-    });
+    expect(
+      {for (final e in api.lastSaved!) e.studentId: (e.marks, e.absent)},
+      {'s1': (22.5, false), 's2': (null, true), 's3': (18.0, false)},
+    );
     expect(find.textContaining('Marks saved'), findsOneWidget);
     final stats = find.byKey(const Key('marksStats'));
     expect(find.descendant(of: stats, matching: find.text('20.3/25')), findsOneWidget);
@@ -216,7 +215,7 @@ void main() {
   testWidgets('publishes after a confirmation that families will be notified', (tester) async {
     final id = api.addAssessment(marks: {'s1': const MarkInput(studentId: 's1', marks: 20)});
     await pumpEntry(tester, id);
-    expect(find.text('Draft'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('statePill')), matching: find.text('Draft')), findsOneWidget);
 
     // Unsaved edits must be saved before publishing.
     await tester.enterText(field('s2'), '15');

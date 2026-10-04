@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../../core/family.dart';
+import '../../l10n/l10n.dart';
 import '../home/home_tab.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
@@ -46,6 +47,7 @@ class _ParentShellState extends State<ParentShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
       body: IndexedStack(
         index: _tab,
@@ -62,18 +64,18 @@ class _ParentShellState extends State<ParentShell> {
           selectedIndex: _tab,
           onDestinationSelected: _go,
           destinations: [
-            const NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
+            NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l.navHome),
             NavigationDestination(
               icon: _badge(const Key('messagesBadge'), messages.unread, Icons.forum_outlined),
               selectedIcon: _badge(null, messages.unread, Icons.forum),
-              label: 'Messages',
+              label: l.navMessages,
             ),
             NavigationDestination(
               icon: _badge(const Key('updatesBadge'), updates.unread, Icons.notifications_outlined),
               selectedIcon: _badge(null, updates.unread, Icons.notifications),
-              label: 'Updates',
+              label: l.navUpdates,
             ),
-            const NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
+            NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: l.navProfile),
           ],
         ),
       ),

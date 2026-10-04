@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
-import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../core/study.dart';
 import '../../widgets/common.dart';
 import 'ask_controller.dart';
@@ -28,7 +28,7 @@ class _SyllabusViewState extends State<SyllabusView> {
   String _searched = '';
   List<TopicHit>? _hits;
   bool _searching = false;
-  String? _error;
+  ApiException? _error;
 
   StudentApi get api => widget.study.api;
 
@@ -67,7 +67,7 @@ class _SyllabusViewState extends State<SyllabusView> {
         _hits = hits;
       });
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
     } finally {
       if (mounted) setState(() => _searching = false);
     }
@@ -90,14 +90,14 @@ class _SyllabusViewState extends State<SyllabusView> {
               onChanged: _changed,
               onSubmitted: _search,
               textInputAction: TextInputAction.search,
-              hintText: 'Search topics, e.g. goodwill',
+              hintText: context.l10n.searchTopicsHint,
               elevation: const WidgetStatePropertyAll(0),
               padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: Kx.s16)),
               leading: const Icon(Icons.search),
               trailing: [
                 if (_query.text.isNotEmpty)
                   IconButton(
-                    tooltip: 'Clear',
+                    tooltip: context.l10n.clear,
                     icon: const Icon(Icons.close),
                     onPressed: () {
                       _query.clear();
@@ -114,7 +114,7 @@ class _SyllabusViewState extends State<SyllabusView> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: Kx.s24),
                   child: Text(
-                    'No topics match “$_searched”. Try a shorter word, or ask KINETIX AI.',
+                    context.l10n.noTopicsMatch(_searched),
                     key: const Key('noHits'),
                     textAlign: TextAlign.center,
                     style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
@@ -123,7 +123,7 @@ class _SyllabusViewState extends State<SyllabusView> {
               else ...[
                 Padding(
                   padding: const EdgeInsets.only(top: Kx.s8, bottom: Kx.s4),
-                  child: Text(Fmt.plural(_hits!.length, 'topic'), style: context.text.titleSmall?.copyWith(color: c.primary)),
+                  child: Text(context.l10n.topicsCount(_hits!.length), style: context.text.titleSmall?.copyWith(color: c.primary)),
                 ),
                 for (final h in _hits!)
                   ListTile(
@@ -162,7 +162,7 @@ class _Subjects extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: Kx.s16, bottom: Kx.s4),
-              child: Text('Your subjects', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+              child: Text(context.l10n.yourSubjects, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
             ),
             if (study.subjectsError != null)
               ErrorBanner(study.subjectsError!, onRetry: study.loadSubjects)
@@ -173,7 +173,7 @@ class _Subjects extends StatelessWidget {
               )
             else if (subjects.isEmpty)
               Text(
-                'Your subjects appear here once your teachers set homework. Meanwhile, search for any topic above.',
+                context.l10n.subjectsEmpty,
                 key: const Key('noSubjects'),
                 style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
               )
@@ -218,7 +218,7 @@ class SubjectScreen extends StatefulWidget {
 class _SubjectScreenState extends State<SubjectScreen> {
   CourseOutline? _outline;
   bool _loaded = false;
-  String? _error;
+  ApiException? _error;
 
   @override
   void initState() {
@@ -237,7 +237,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
         });
       }
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
     }
   }
 
@@ -262,7 +262,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
                 key: const Key('noSyllabus'),
                 icon: Icons.menu_book_outlined,
                 message:
-                    "The syllabus for ${widget.subject.name} isn't in the KINETIX library yet.\nSearch for a topic, or ask KINETIX AI.",
+                    context.l10n.syllabusMissing(widget.subject.name),
               ),
             )
           else ...[
@@ -270,7 +270,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
               bottom: Kx.s8,
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  '${o.title} · ${Fmt.plural(o.chapters.length, 'chapter')} · ${Fmt.plural(o.topicCount, 'topic')}'.replaceAll(
+                  '${o.title} · ${context.l10n.chaptersCount(o.chapters.length)} · ${context.l10n.topicsCount(o.topicCount)}'.replaceAll(
                     RegExp(r'(?<=\d) '),
                     '\u00a0',
                   ),
@@ -298,7 +298,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
                         if (ch.topics.isEmpty)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s16),
-                            child: Text('No topics yet.', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+                            child: Text(context.l10n.noTopicsYet, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                           ),
                         for (final t in ch.topics)
                           ListTile(

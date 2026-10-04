@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/app_state.dart';
-import '../../core/models.dart';
+import '../../core/l10n.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state});
@@ -13,26 +13,59 @@ class ProfileTab extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('You will need your password to sign in again.'),
+        title: Text(ctx.l10n.signOutTitle),
+        content: Text(ctx.l10n.signOutBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sign out')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ctx.l10n.cancel)),
+          FilledButton(key: const Key('confirmSignOut'), onPressed: () => Navigator.pop(ctx, true), child: Text(ctx.l10n.signOut)),
         ],
       ),
     );
     if (ok == true) await state.signOut();
   }
 
+  /// English / हिन्दी / ಕನ್ನಡ. The app switches straight away; the account is updated too.
+  Future<void> _chooseLanguage(BuildContext context) async {
+    final current = state.language ?? Localizations.localeOf(context).languageCode;
+    final chosen = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(ctx.l10n.language),
+        children: [
+          RadioGroup<String>(
+            groupValue: current,
+            onChanged: (v) => Navigator.pop(ctx, v),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final code in supportedLanguages)
+                  RadioListTile<String>(key: Key('language-$code'), value: code, title: Text(languageEndonyms[code]!)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (chosen == null || chosen == current || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = await state.setLanguage(chosen);
+    if (!saved && context.mounted) {
+      // Rebuilt in the new language by now.
+      messenger.showSnackBar(SnackBar(content: Text(lookupAppLocalizations(Locale(chosen)).languageSaveFailed)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final me = state.me!;
     final c = context.colors;
-    void soon(String what) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$what is coming in a later update')));
+    final l = context.l10n;
+    void soon(String what) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.comingLater(what))));
+    final language = state.language ?? Localizations.localeOf(context).languageCode;
 
     return CustomScrollView(
       slivers: [
-        const SliverAppBar.large(title: Text('Profile')),
+        SliverAppBar.large(title: Text(l.profile)),
         SliverList.list(
           children: [
             Padding(
@@ -60,39 +93,41 @@ class ProfileTab extends StatelessWidget {
               child: Wrap(
                 spacing: Kx.s8,
                 runSpacing: Kx.s8,
-                children: [for (final r in me.roles) Chip(label: Text(Me.roleNames[r] ?? r), visualDensity: VisualDensity.compact)],
+                children: [for (final r in me.roles) Chip(label: Text(l.role(r)), visualDensity: VisualDensity.compact)],
               ),
             ),
-            const KxSectionHeader('Account'),
-            ListTile(leading: const Icon(Icons.apartment_outlined), title: const Text('Institution'), subtitle: Text(me.institution)),
+            KxSectionHeader(l.account),
+            ListTile(leading: const Icon(Icons.apartment_outlined), title: Text(l.institution), subtitle: Text(me.institution)),
             ListTile(
+              key: const Key('languageSetting'),
               leading: const Icon(Icons.translate),
-              title: const Text('Language'),
-              subtitle: Text(me.languageName),
-              // TODO: change language here once the app is localised (en / hi / kn).
+              title: Text(l.language),
+              subtitle: Text(languageEndonyms[language] ?? language),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _chooseLanguage(context),
             ),
-            ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Server'), subtitle: Text(state.serverUrl)),
-            const KxSectionHeader('Coming soon'),
+            ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
+            KxSectionHeader(l.comingSoon),
             ListTile(
               leading: const Icon(Icons.campaign_outlined),
-              title: const Text('Announcements'),
-              subtitle: const Text('Send notices to your classes'),
+              title: Text(l.announcements),
+              subtitle: Text(l.announcementsBody),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => soon('Announcements'),
+              onTap: () => soon(l.announcements),
             ),
             ListTile(
               leading: const Icon(Icons.forum_outlined),
-              title: const Text('Student doubts'),
-              subtitle: const Text('Answer questions from students'),
+              title: Text(l.studentDoubts),
+              subtitle: Text(l.studentDoubtsBody),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => soon('Student doubts'),
+              onTap: () => soon(l.studentDoubts),
             ),
             ListTile(
               leading: const Icon(Icons.quiz_outlined),
-              title: const Text('MCQ tests'),
-              subtitle: const Text('Online tests that sync to board quizzes'),
+              title: Text(l.mcqTests),
+              subtitle: Text(l.mcqTestsBody),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => soon('MCQ tests'),
+              onTap: () => soon(l.mcqTests),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s32),
@@ -100,7 +135,7 @@ class ProfileTab extends StatelessWidget {
                 key: const Key('signOut'),
                 onPressed: () => _signOut(context),
                 icon: const Icon(Icons.logout),
-                label: const Text('Sign out'),
+                label: Text(l.signOut),
               ),
             ),
           ],

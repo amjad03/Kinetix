@@ -121,6 +121,6 @@ void main() {
     expect(Fmt.rupees(4250000), '₹42,500');
     expect(Fmt.rupees(1234567800), '₹1,23,45,678');
     expect(Fmt.rupees(12350), '₹123.50');
-    expect(Fmt.paymentMethod('bank_transfer'), 'Bank transfer');
+    expect(Fmt(en).paymentMethod('bank_transfer'), 'Bank transfer');
   });
 }

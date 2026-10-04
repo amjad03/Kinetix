@@ -1,0 +1,6 @@
+# Flutter gen-l10n: English is the template; Hindi and Kannada follow docs/i18n/glossary.md.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false

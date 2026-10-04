@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/api.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 
 /// One question to KINETIX AI and how it went.
 class AskTurn {
@@ -118,26 +119,12 @@ class AskController extends ChangeNotifier {
   }
 }
 
-/// How an AI error reads to a student, and whether trying again can help.
-({String title, String message, bool retry, IconData icon}) describeAiError(ApiException e) => switch (e.status) {
-  422 => (
-    title: "KINETIX AI can't answer that",
-    message: e.message.isEmpty ? 'Try rephrasing it as a question about your studies.' : e.message,
-    retry: false,
-    icon: Icons.block,
-  ),
-  429 => (
-    title: "Today's KINETIX AI allowance is used up",
-    message: e.message.isEmpty ? 'Your college has used today’s allowance. It resets tomorrow.' : e.message,
-    retry: false,
-    icon: Icons.hourglass_empty,
-  ),
-  503 => (
-    title: 'KINETIX AI is not reachable',
-    message: 'It is not reachable right now. Try again in a minute.',
-    retry: true,
-    icon: Icons.cloud_off,
-  ),
-  0 => (title: 'No connection', message: e.message, retry: true, icon: Icons.wifi_off),
-  _ => (title: 'Something went wrong', message: e.message, retry: true, icon: Icons.error_outline),
+/// How an AI error reads to a student, and whether trying again can help. What the server says
+/// about a refused question or the allowance is shown as sent.
+({String title, String message, bool retry, IconData icon}) describeAiError(AppLocalizations l, ApiException e) => switch (e.status) {
+  422 => (title: l.aiCantAnswer, message: e.message.isEmpty ? l.aiRephrase : e.message, retry: false, icon: Icons.block),
+  429 => (title: l.aiAllowanceUsed, message: e.message.isEmpty ? l.aiAllowanceBody : e.message, retry: false, icon: Icons.hourglass_empty),
+  503 => (title: l.aiUnreachable, message: l.aiUnreachableBody, retry: true, icon: Icons.cloud_off),
+  0 => (title: l.noConnection, message: describeError(l, e), retry: true, icon: Icons.wifi_off),
+  _ => (title: l.somethingWrong, message: describeError(l, e), retry: true, icon: Icons.error_outline),
 };

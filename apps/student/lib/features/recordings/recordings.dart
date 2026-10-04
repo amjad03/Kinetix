@@ -3,8 +3,8 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
-import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// Opens the lesson player for one of the class's recordings.
@@ -29,15 +29,15 @@ class RecordingsCard extends StatelessWidget {
     return SectionCard(
       key: const Key('recordingsCard'),
       icon: Icons.play_circle_outline,
-      title: 'Lesson recordings',
-      caption: missed > 0 ? '$missed missed' : null,
-      footer: all.length > shown ? CardLink('See all ${all.length} recordings', onTap: seeAll) : null,
+      title: context.l10n.lessonRecordings,
+      caption: missed > 0 ? context.l10n.nMissed(missed) : null,
+      footer: all.length > shown ? CardLink(context.l10n.seeAllRecordings(all.length), onTap: seeAll) : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (all.isEmpty)
             Text(
-              'When a teacher records a lesson on the board and shares it, you can watch it again here.',
+              context.l10n.recordingsEmpty,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
           for (final r in all.take(shown))
@@ -85,7 +85,7 @@ class RecordingRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (r.missed) ...[
-                    Pill('You missed this class', icon: Icons.event_busy, background: c.errorContainer, foreground: c.onErrorContainer),
+                    Pill(context.l10n.missedThisClass, icon: Icons.event_busy, background: c.errorContainer, foreground: c.onErrorContainer),
                     const SizedBox(height: Kx.s4),
                   ],
                   Text(headline, style: context.text.titleSmall),
@@ -99,7 +99,7 @@ class RecordingRow extends StatelessWidget {
                     ),
                   ],
                   Text(
-                    [?r.teacherName, Fmt.relativeDay(r.startedAt, today), LessonFmt.length(r.duration)].join(' · '),
+                    [?r.teacherName, context.fmt.relativeDay(r.startedAt, today), LessonFmt.length(r.duration, LessonStrings.of(context))].join(' · '),
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],
@@ -132,11 +132,11 @@ class RecordingsScreen extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar.large(title: Text('Lesson recordings')),
+          SliverAppBar.large(title: Text(context.l10n.lessonRecordings)),
           if (all.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
-              child: KxEmptyState(icon: Icons.play_circle_outline, message: 'No lesson recordings have been shared with your class yet.'),
+              child: KxEmptyState(icon: Icons.play_circle_outline, message: context.l10n.noRecordingsShared),
             )
           else
             CenteredSliver(

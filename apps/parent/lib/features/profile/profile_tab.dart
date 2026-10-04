@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/app_state.dart';
 import '../../core/family.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
@@ -21,14 +22,15 @@ class ProfileTab extends StatelessWidget {
   }
 
   Future<void> _signOut(BuildContext context) async {
+    final l = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('You will need your password to sign in again.'),
+        title: Text(l.signOutQuestion),
+        content: Text(l.signOutBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sign out')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.signOut)),
         ],
       ),
     );
@@ -39,20 +41,13 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final me = state.me!;
     final c = context.colors;
-    void soon(String what) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('$what is coming in a later update')));
-    }
-
-    Widget soonTile(IconData icon, String title, String subtitle) =>
-        ListTile(leading: Icon(icon), title: Text(title), subtitle: Text(subtitle), trailing: const SoonPill(), onTap: () => soon(title));
+    final l = context.l10n;
 
     return ListenableBuilder(
       listenable: family,
       builder: (context, _) => CustomScrollView(
         slivers: [
-          const SliverAppBar.large(title: Text('Profile')),
+          SliverAppBar.large(title: Text(l.profile)),
           SliverList.list(
             children: [
               Padding(
@@ -74,16 +69,16 @@ class ProfileTab extends StatelessWidget {
                   ],
                 ),
               ),
-              KxSectionHeader(family.children.length == 1 ? 'Your child' : 'Your children'),
+              KxSectionHeader(family.children.length == 1 ? l.yourChild : l.yourChildren),
               for (final child in family.children)
                 ListTile(
                   key: Key('profile-child-${child.id}'),
                   leading: KxAvatar(name: child.fullName),
                   title: Text(child.fullName),
-                  subtitle: Text('${child.sectionName} · Roll no. ${child.rollNo}'),
+                  subtitle: Text('${child.sectionName} · ${l.rollNo(child.rollNo)}'),
                   trailing: family.children.length > 1 && child.id == family.selected?.id
                       ? Tooltip(
-                          message: 'Shown on Home',
+                          message: l.shownOnHome,
                           child: Icon(Icons.check_circle, color: c.primary),
                         )
                       : null,
@@ -91,48 +86,48 @@ class ProfileTab extends StatelessWidget {
                   onTap: family.children.length > 1 ? () => family.select(child.id) : null,
                 ),
               if (family.children.isEmpty && !family.loading)
-                const ListTile(leading: Icon(Icons.info_outline), title: Text("No children are linked yet. Ask your child's college.")),
-              if (family.children.isNotEmpty) const KxSectionHeader('Fees & receipts'),
+                ListTile(leading: const Icon(Icons.info_outline), title: Text(l.noChildrenYet)),
+              if (family.children.isNotEmpty) KxSectionHeader(l.feesReceiptsHeader),
               for (final child in family.children)
                 ListTile(
                   key: Key('profile-fees-${child.id}'),
                   leading: const Icon(Icons.receipt_long_outlined),
-                  title: Text(family.children.length == 1 ? 'Fees and receipts' : "${child.firstName}'s fees"),
-                  subtitle: const Text('Dues, payments and receipts'),
+                  title: Text(family.children.length == 1 ? l.feesAndReceipts : l.childFees(child.firstName)),
+                  subtitle: Text(l.feesSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => FeesScreen.open(context, family, child),
                 ),
-              if (family.children.isNotEmpty) const KxSectionHeader('Results & library'),
+              if (family.children.isNotEmpty) KxSectionHeader(l.resultsLibraryHeader),
               for (final child in family.children) ...[
                 ListTile(
                   key: Key('profile-results-${child.id}'),
                   leading: const Icon(Icons.grading_outlined),
-                  title: Text(family.children.length == 1 ? 'Results' : "${child.firstName}'s results"),
-                  subtitle: const Text('Published marks and class averages'),
+                  title: Text(family.children.length == 1 ? l.results : l.childResults(child.firstName)),
+                  subtitle: Text(l.resultsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => ResultsScreen.open(context, family, child),
                 ),
                 ListTile(
                   key: Key('profile-library-${child.id}'),
                   leading: const Icon(Icons.local_library_outlined),
-                  title: Text(family.children.length == 1 ? 'Library books' : "${child.firstName}'s library books"),
-                  subtitle: const Text('Books borrowed, due dates and fines'),
+                  title: Text(family.children.length == 1 ? l.libraryBooks : l.childLibraryBooks(child.firstName)),
+                  subtitle: Text(l.librarySubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, family, child),
                 ),
               ],
-              const KxSectionHeader('Account'),
-              ListTile(leading: const Icon(Icons.apartment_outlined), title: const Text('College'), subtitle: Text(me.institution)),
-              ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Server'), subtitle: Text(state.serverUrl)),
-              const KxSectionHeader('Coming soon'),
-              soonTile(Icons.translate, 'Language', 'English · हिन्दी · ಕನ್ನಡ'),
+              KxSectionHeader(l.settings),
+              LanguageTile(onChanged: state.setLanguage),
+              KxSectionHeader(l.account),
+              ListTile(leading: const Icon(Icons.apartment_outlined), title: Text(l.college), subtitle: Text(me.institution)),
+              ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s32),
                 child: OutlinedButton.icon(
                   key: const Key('signOut'),
                   onPressed: () => _signOut(context),
                   icon: const Icon(Icons.logout),
-                  label: const Text('Sign out'),
+                  label: Text(l.signOut),
                 ),
               ),
             ],

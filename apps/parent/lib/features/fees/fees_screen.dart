@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/family.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'payment_gateway.dart';
 import 'receipt_screen.dart';
@@ -60,7 +61,7 @@ class _FeesScreenState extends State<FeesScreen> {
     builder: (ctx) => AlertDialog(
       title: Text(title),
       content: Text(message),
-      actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+      actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(context.l10n.ok))],
     ),
   );
 
@@ -68,9 +69,10 @@ class _FeesScreenState extends State<FeesScreen> {
   Future<void> _pay(FeeInvoice invoice, StudentFees fees) async {
     final amount = await PaySheet.show(context, invoice: invoice, demo: fees.onlinePayments == OnlinePayments.demo);
     if (amount == null || !mounted) return;
+    final l = context.l10n;
     var confirming = false;
     try {
-      setState(() => _busy = 'Starting payment…');
+      setState(() => _busy = l.startingPayment);
       final checkout = await api.checkout(invoice.id, amountPaise: amount);
       if (!mounted) return;
       setState(() => _busy = null);
@@ -80,19 +82,16 @@ class _FeesScreenState extends State<FeesScreen> {
         case PaymentCancelled():
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(const SnackBar(content: Text('Payment cancelled. Nothing was paid.')));
-        case PaymentFailed(:final message):
-          await _problem("Payment didn't go through", message);
+            ..showSnackBar(SnackBar(content: Text(l.paymentCancelled)));
+        case PaymentFailed failed:
+          await _problem(l.paymentFailedTitle, failed.describe(l));
         case PaymentInWallet(:final walletName):
-          final wallet = walletName ?? 'your wallet app';
-          await _problem(
-            'Finish paying in $wallet',
-            'When $wallet confirms the payment, the fee updates here and the receipt arrives in Updates.',
-          );
+          final wallet = walletName ?? l.yourWalletApp;
+          await _problem(l.finishInWallet(wallet), l.walletBody(wallet));
           await _load();
         case PaymentSucceeded(:final providerPaymentId, :final signature):
           confirming = true;
-          setState(() => _busy = 'Confirming payment…');
+          setState(() => _busy = l.confirmingPayment);
           final receipt = await api.confirmPayment(checkout.paymentId, providerPaymentId: providerPaymentId, signature: signature);
           if (!mounted) return;
           setState(() => _busy = null);
@@ -103,15 +102,12 @@ class _FeesScreenState extends State<FeesScreen> {
       if (!mounted) return;
       setState(() => _busy = null);
       if (confirming) {
-        await _problem(
-          "We couldn't confirm this payment",
-          '${e.message}. If money left your account, the college will get the confirmation from the payment '
-              'gateway and this fee will update shortly. Otherwise, try again.',
-        );
+        final reason = describeError(l, e);
+        await _problem(l.couldNotConfirmTitle, l.couldNotConfirmBody(reason.endsWith('.') || reason.endsWith('।') ? reason : '$reason.'));
       } else if (e.status == 503) {
-        await _problem('Online payment is not available', e.message);
+        await _problem(l.onlineNotAvailableTitle, describeError(l, e));
       } else {
-        await _problem("Payment didn't go through", e.message);
+        await _problem(l.paymentFailedTitle, describeError(l, e));
       }
       await _load();
     }
@@ -127,7 +123,7 @@ class _FeesScreenState extends State<FeesScreen> {
         return Stack(
           children: [
             Scaffold(
-              appBar: AppBar(title: Text("${widget.child.firstName}'s fees")),
+              appBar: AppBar(title: Text(context.l10n.childFees(widget.child.firstName))),
               body: RefreshIndicator(
                 onRefresh: _load,
                 child: fees == null
@@ -170,14 +166,15 @@ class _FeesScreenState extends State<FeesScreen> {
     );
   }
 
-  Widget _body(BuildContext context, StudentFees fees, String? error) {
+  Widget _body(BuildContext context, StudentFees fees, Object? error) {
     final c = context.colors;
+    final l = context.l10n;
     final today = _today;
     final open = fees.open;
     final paid = fees.paid;
     final overdue = open.where((i) => i.isOverdue(today)).length;
     final canPay = PaymentGateway.available(fees.onlinePayments);
-    final reason = PaymentGateway.unavailableReason(fees.onlinePayments);
+    final reason = PaymentGateway.unavailableReason(l, fees.onlinePayments);
     final titles = {for (final i in fees.invoices) i.id: i.title};
 
     return ListView(
@@ -189,7 +186,7 @@ class _FeesScreenState extends State<FeesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (error != null) ...[ErrorBanner(error, onRetry: _load), const SizedBox(height: Kx.s12)],
-              Text(fees.duePaise == 0 ? 'Nothing due' : 'Total due', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
+              Text(fees.duePaise == 0 ? l.feesNothingDue : l.totalDue, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
               Text(
                 Fmt.rupees(fees.duePaise),
                 key: const Key('totalDue'),
@@ -207,7 +204,7 @@ class _FeesScreenState extends State<FeesScreen> {
                   Text(widget.child.sectionName, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
                   if (overdue > 0)
                     Pill(
-                      '$overdue overdue',
+                      l.nOverdue(overdue),
                       icon: Icons.warning_amber_rounded,
                       background: c.errorContainer,
                       foreground: c.onErrorContainer,
@@ -224,11 +221,11 @@ class _FeesScreenState extends State<FeesScreen> {
             padding: const EdgeInsets.only(top: Kx.s24),
             child: KxEmptyState(
               icon: Icons.receipt_long_outlined,
-              message: 'No fees have been issued for ${widget.child.firstName} yet.\nNew fees from the college will show here.',
+              message: l.noFeesIssuedLong(widget.child.firstName),
             ),
           ),
         if (open.isNotEmpty) ...[
-          const KxSectionHeader('To pay'),
+          KxSectionHeader(l.toPay),
           for (final inv in open)
             Padding(
               padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s12),
@@ -236,25 +233,25 @@ class _FeesScreenState extends State<FeesScreen> {
             ),
         ],
         if (paid.isNotEmpty) ...[
-          const KxSectionHeader('Paid'),
+          KxSectionHeader(l.paidHeader),
           for (final inv in paid)
             ListTile(
               key: Key('paid-${inv.id}'),
               leading: IconBadge(Icons.check_rounded, background: Tone.goodContainer(context), foreground: Tone.good(context)),
               title: Text(inv.title),
-              subtitle: Text('${Fmt.rupees(inv.amountPaise)} · was due ${Fmt.shortDay(inv.dueOn)}'),
-              trailing: Pill('Paid', background: Tone.goodContainer(context), foreground: Tone.good(context)),
+              subtitle: Text(l.paidLine(Fmt.rupees(inv.amountPaise), context.fmt.shortDay(inv.dueOn))),
+              trailing: Pill(l.paidPill, background: Tone.goodContainer(context), foreground: Tone.good(context)),
             ),
         ],
         if (fees.payments.isNotEmpty) ...[
-          const KxSectionHeader('Payments and receipts'),
+          KxSectionHeader(l.paymentsReceipts),
           for (final p in fees.payments)
             ListTile(
               key: Key('payment-${p.id}'),
               leading: const IconBadge(Icons.receipt_long_outlined),
-              title: Text('${Fmt.rupees(p.amountPaise)} · ${titles[p.invoiceId] ?? 'Fee'}', maxLines: 1, overflow: TextOverflow.ellipsis),
+              title: Text('${Fmt.rupees(p.amountPaise)} · ${titles[p.invoiceId] ?? l.feeLabel}', maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: Text(
-                [if (p.paidAt != null) Fmt.shortDay(p.paidAt!), p.method.label, if (p.receiptNo != null) p.receiptNo!].join(' · '),
+                [if (p.paidAt != null) context.fmt.shortDay(p.paidAt!), l.paymentMethod(p.method), if (p.receiptNo != null) p.receiptNo!].join(' · '),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => ReceiptScreen.open(context, api, paymentId: p.id),
@@ -302,9 +299,10 @@ class InvoiceCard extends StatelessWidget {
   static (String, Color, Color) dueChip(BuildContext context, FeeInvoice inv, DateTime today) {
     final c = context.colors;
     final days = Fmt.daysBetween(today, inv.dueOn);
-    if (days < 0) return ('Overdue · was due ${Fmt.shortDay(inv.dueOn)}', c.errorContainer, c.onErrorContainer);
-    if (days <= 7) return (Fmt.due(inv.dueOn, today), Tone.warnContainer(context), Tone.warn(context));
-    return (Fmt.due(inv.dueOn, today), c.secondaryContainer, c.onSecondaryContainer);
+    final f = context.fmt;
+    if (days < 0) return (f.l.overdueWasDue(f.shortDay(inv.dueOn)), c.errorContainer, c.onErrorContainer);
+    if (days <= 7) return (f.due(inv.dueOn, today), Tone.warnContainer(context), Tone.warn(context));
+    return (f.due(inv.dueOn, today), c.secondaryContainer, c.onSecondaryContainer);
   }
 
   @override
@@ -349,7 +347,7 @@ class InvoiceCard extends StatelessWidget {
               ),
               const SizedBox(height: Kx.s4),
               Text(
-                '${Fmt.rupees(inv.paidPaise)} of ${Fmt.rupees(inv.amountPaise)} paid · ${Fmt.rupees(inv.balancePaise)} left',
+                context.l10n.paidOfLeft(Fmt.rupees(inv.paidPaise), Fmt.rupees(inv.amountPaise), Fmt.rupees(inv.balancePaise)),
                 key: Key('progress-${inv.id}'),
                 style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
               ),
@@ -362,7 +360,7 @@ class InvoiceCard extends StatelessWidget {
                   key: Key('pay-${inv.id}'),
                   onPressed: onPay,
                   icon: const Icon(Icons.currency_rupee, size: 18),
-                  label: const Text('Pay now'),
+                  label: Text(context.l10n.payNow),
                 ),
               ),
             ],
@@ -389,12 +387,12 @@ class PaySheet extends StatefulWidget {
   );
 
   /// Null when [text] is a payable amount against [balancePaise]; otherwise what is wrong.
-  static String? validate(String text, int balancePaise) {
-    if (text.trim().isEmpty) return 'Enter an amount';
+  static String? validate(AppLocalizations l, String text, int balancePaise) {
+    if (text.trim().isEmpty) return l.enterAmount;
     final paise = Fmt.parseRupees(text);
-    if (paise == null) return 'Enter an amount in rupees, like 2500 or 2500.50';
-    if (paise < 100) return 'The smallest payment is ₹1';
-    if (paise > balancePaise) return 'That is more than the ${Fmt.rupees(balancePaise)} due';
+    if (paise == null) return l.enterAmountRupees;
+    if (paise < 100) return l.smallestPayment;
+    if (paise > balancePaise) return l.moreThanDue(Fmt.rupees(balancePaise));
     return null;
   }
 
@@ -411,7 +409,8 @@ class _PaySheetState extends State<PaySheet> {
 
   int get _balance => widget.invoice.balancePaise;
 
-  int? get _paise => _part ? (PaySheet.validate(_amount.text, _balance) == null ? Fmt.parseRupees(_amount.text) : null) : _balance;
+  int? get _paise =>
+      _part ? (PaySheet.validate(context.l10n, _amount.text, _balance) == null ? Fmt.parseRupees(_amount.text) : null) : _balance;
 
   @override
   void dispose() {
@@ -422,7 +421,7 @@ class _PaySheetState extends State<PaySheet> {
 
   void _submit() {
     if (_part) {
-      final err = PaySheet.validate(_amount.text, _balance);
+      final err = PaySheet.validate(context.l10n, _amount.text, _balance);
       setState(() {
         _tried = true;
         _error = err;
@@ -435,6 +434,7 @@ class _PaySheetState extends State<PaySheet> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final paise = _paise;
     return SafeArea(
       child: SingleChildScrollView(
@@ -443,18 +443,18 @@ class _PaySheetState extends State<PaySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Pay ${widget.invoice.title}', style: context.text.headlineSmall),
+            Text(l.payTitle(widget.invoice.title), style: context.text.headlineSmall),
             const SizedBox(height: Kx.s4),
             Text(
-              '${Fmt.rupees(_balance)} due',
+              l.amountDue(Fmt.rupees(_balance)),
               key: const Key('payBalance'),
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
             const SizedBox(height: Kx.s20),
             SegmentedButton<bool>(
               segments: [
-                ButtonSegment(value: false, label: Text('Full ${Fmt.rupees(_balance)}', key: const Key('payFull'))),
-                const ButtonSegment(value: true, label: Text('Part amount', key: Key('payPart'))),
+                ButtonSegment(value: false, label: Text(l.fullAmount(Fmt.rupees(_balance)), key: const Key('payFull'))),
+                ButtonSegment(value: true, label: Text(l.partAmount, key: const Key('payPart'))),
               ],
               selected: {_part},
               showSelectedIcon: false,
@@ -474,13 +474,13 @@ class _PaySheetState extends State<PaySheet> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,9}(\.\d{0,2})?'))],
                 decoration: InputDecoration(
-                  labelText: 'Amount',
+                  labelText: l.amount,
                   prefixText: '₹ ',
-                  helperText: 'Between ₹1 and ${Fmt.rupees(_balance)}',
+                  helperText: l.amountRange(Fmt.rupees(_balance)),
                   errorText: _error,
                   border: const OutlineInputBorder(),
                 ),
-                onChanged: (_) => setState(() => _error = _tried ? PaySheet.validate(_amount.text, _balance) : null),
+                onChanged: (_) => setState(() => _error = _tried ? PaySheet.validate(l, _amount.text, _balance) : null),
                 onSubmitted: (_) => _submit(),
               ),
             ],
@@ -490,7 +490,7 @@ class _PaySheetState extends State<PaySheet> {
               key: const Key('payContinue'),
               onPressed: _submit,
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)),
-              child: Text(paise == null ? 'Pay' : 'Pay ${Fmt.rupees(paise)}'),
+              child: Text(paise == null ? l.pay : l.payAmount(Fmt.rupees(paise))),
             ),
           ],
         ),

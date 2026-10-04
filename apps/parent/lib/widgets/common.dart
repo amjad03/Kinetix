@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../core/models.dart';
+import '../l10n/l10n.dart';
 
-/// An inline, plain-language error in the error container colour.
+/// An inline, plain-language error in the error container colour. [message] is an
+/// [ApiException] (worded in the app's language) or text.
 class ErrorBanner extends StatelessWidget {
   const ErrorBanner(this.message, {super.key, this.onRetry});
 
-  final String message;
+  final Object message;
   final VoidCallback? onRetry;
 
   @override
@@ -21,13 +23,13 @@ class ErrorBanner extends StatelessWidget {
           Icon(Icons.error_outline, color: c.onErrorContainer, size: 20),
           const SizedBox(width: Kx.s12),
           Expanded(
-            child: Text(message, style: context.text.bodyMedium?.copyWith(color: c.onErrorContainer)),
+            child: Text(context.errorText(message), style: context.text.bodyMedium?.copyWith(color: c.onErrorContainer)),
           ),
           if (onRetry != null)
             TextButton(
               onPressed: onRetry,
               style: TextButton.styleFrom(foregroundColor: c.onErrorContainer),
-              child: const Text('Retry'),
+              child: Text(context.l10n.retry),
             ),
         ],
       ),
@@ -73,7 +75,7 @@ class SoonPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Pill('Soon', background: context.colors.tertiaryContainer, foreground: context.colors.onTertiaryContainer);
+      Pill(context.l10n.soon, background: context.colors.tertiaryContainer, foreground: context.colors.onTertiaryContainer);
 }
 
 /// Google-palette semantic colours that read well in light and dark themes.
@@ -107,7 +109,7 @@ class StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg) = Tone.status(context, status);
-    return Pill(status.label, background: bg, foreground: fg);
+    return Pill(context.l10n.attendanceStatus(status), background: bg, foreground: fg);
   }
 }
 
@@ -202,4 +204,48 @@ class IconBadge extends StatelessWidget {
     decoration: BoxDecoration(color: background ?? context.colors.secondaryContainer, shape: BoxShape.circle),
     child: Icon(icon, size: size * 0.5, color: foreground ?? context.colors.onSecondaryContainer),
   );
+}
+
+/// Profile's Language setting: English / हिन्दी / ಕನ್ನಡ, each named in itself.
+class LanguageTile extends StatelessWidget {
+  const LanguageTile({super.key, required this.onChanged});
+
+  final ValueChanged<AppLanguage> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final current = AppLanguage.tryParse(Localizations.localeOf(context).languageCode) ?? AppLanguage.en;
+    return ListTile(
+      key: const Key('languageSetting'),
+      leading: const Icon(Icons.translate),
+      title: Text(l.language),
+      subtitle: Text(current.nativeName),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final picked = await showDialog<AppLanguage>(
+          context: context,
+          builder: (ctx) => SimpleDialog(
+            title: Text(l.chooseLanguage),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, Kx.s8),
+                child: Text(l.languageHelp, style: ctx.text.bodyMedium?.copyWith(color: ctx.colors.onSurfaceVariant)),
+              ),
+              for (final lang in AppLanguage.values)
+                ListTile(
+                  key: Key('language-${lang.name}'),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s24),
+                  title: Text(lang.nativeName),
+                  trailing: lang == current ? Icon(Icons.check, color: ctx.colors.primary) : null,
+                  selected: lang == current,
+                  onTap: () => Navigator.pop(ctx, lang),
+                ),
+            ],
+          ),
+        );
+        if (picked != null && picked != current) onChanged(picked);
+      },
+    );
+  }
 }

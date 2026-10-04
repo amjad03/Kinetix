@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../core/l10n.dart';
+
 /// Full-screen camera that looks for a KINETIX pairing QR code (kinetix://pair?...).
 /// Only used on Android and iOS.
 class QrScannerView extends StatefulWidget {
@@ -18,7 +20,7 @@ class QrScannerView extends StatefulWidget {
 
 class _QrScannerViewState extends State<QrScannerView> {
   final _controller = MobileScannerController(formats: const [BarcodeFormat.qrCode], detectionSpeed: DetectionSpeed.noDuplicates);
-  String? _notOurs;
+  bool _notOurs = false;
 
   @override
   void dispose() {
@@ -32,17 +34,18 @@ class _QrScannerViewState extends State<QrScannerView> {
       final raw = b.rawValue;
       if (raw == null) continue;
       if (raw.startsWith('kinetix://pair')) {
-        setState(() => _notOurs = null);
+        setState(() => _notOurs = false);
         widget.onScanned(raw);
         return;
       }
-      setState(() => _notOurs = "That isn't a KINETIX board code. Scan the QR code on the board's screen.");
+      setState(() => _notOurs = true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final message = widget.error ?? _notOurs;
+    final l = context.l10n;
+    final message = widget.error ?? (_notOurs ? l.qrNotOurs : null);
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -50,8 +53,8 @@ class _QrScannerViewState extends State<QrScannerView> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const CloseButton(),
-        title: const Text('Scan board QR code'),
-        actions: [IconButton(tooltip: 'Torch', onPressed: _controller.toggleTorch, icon: const Icon(Icons.flashlight_on_outlined))],
+        title: Text(l.scanTitle),
+        actions: [IconButton(tooltip: l.torch, onPressed: _controller.toggleTorch, icon: const Icon(Icons.flashlight_on_outlined))],
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -63,9 +66,7 @@ class _QrScannerViewState extends State<QrScannerView> {
               child: Padding(
                 padding: const EdgeInsets.all(Kx.s32),
                 child: Text(
-                  error.errorCode == MobileScannerErrorCode.permissionDenied
-                      ? 'Allow camera access in Settings to scan, or enter the code instead.'
-                      : 'The camera is not available. Enter the code instead.',
+                  error.errorCode == MobileScannerErrorCode.permissionDenied ? l.cameraDenied : l.cameraUnavailable,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white),
                 ),
@@ -100,19 +101,15 @@ class _QrScannerViewState extends State<QrScannerView> {
                       child: Text(message, style: TextStyle(color: context.colors.onErrorContainer)),
                     )
                   else
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: Kx.s16),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: Kx.s16),
                       child: Text(
-                        'Point your camera at the QR code on the board',
+                        l.pointCamera,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ),
-                  FilledButton.tonalIcon(
-                    onPressed: widget.onEnterCode,
-                    icon: const Icon(Icons.dialpad),
-                    label: const Text('Enter code instead'),
-                  ),
+                  FilledButton.tonalIcon(onPressed: widget.onEnterCode, icon: const Icon(Icons.dialpad), label: Text(l.enterCodeInstead)),
                 ],
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/family.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
@@ -28,6 +29,7 @@ class HomeTab extends StatelessWidget {
       listenable: family,
       builder: (context, _) {
         final child = family.selected;
+        final l = context.l10n;
         return RefreshIndicator(
           onRefresh: family.refresh,
           child: CustomScrollView(
@@ -41,10 +43,10 @@ class HomeTab extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${Fmt.greeting(DateTime.now())}, ${me.firstName}', style: context.text.headlineSmall),
+                        Text(l.greetingName(context.fmt.greeting(DateTime.now()), me.firstName), style: context.text.headlineSmall),
                         const SizedBox(height: Kx.s4),
                         Text(
-                          child == null ? me.institution : "Here's how ${child.firstName} is doing",
+                          child == null ? me.institution : l.homeSubtitle(child.firstName),
                           style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant),
                         ),
                       ],
@@ -77,12 +79,9 @@ class HomeTab extends StatelessWidget {
         ];
       }
       return [
-        const SliverFillRemaining(
+        SliverFillRemaining(
           hasScrollBody: false,
-          child: KxEmptyState(
-            icon: Icons.family_restroom,
-            message: "No children are linked to your account yet.\nAsk your child's college to add you as their parent.",
-          ),
+          child: KxEmptyState(icon: Icons.family_restroom, message: context.l10n.noChildrenLinked),
         ),
       ];
     }
@@ -150,7 +149,7 @@ class _ChildCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(child.sectionName, style: context.text.bodyLarge?.copyWith(color: c.onPrimaryContainer)),
                   Text(
-                    'Roll no. ${child.rollNo}',
+                    context.l10n.rollNo(child.rollNo),
                     style: context.text.bodyMedium?.copyWith(color: c.onPrimaryContainer.withValues(alpha: 0.8)),
                   ),
                 ],
@@ -175,6 +174,7 @@ class AttendanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final a = summary.attendance;
     final c = context.colors;
+    final l = context.l10n;
     final rate = a.rate ?? (a.periods == 0 ? null : a.attended * 100 / a.periods);
     final tone = rate == null
         ? c.onSurface
@@ -186,21 +186,21 @@ class AttendanceCard extends StatelessWidget {
     final note = rate == null
         ? null
         : rate >= 85
-        ? 'Good attendance. Keep it up.'
+        ? l.attendanceGood
         : rate >= 75
-        ? 'Missed a few classes recently.'
-        : 'Below 75%. Colleges usually need 75% to sit exams.';
+        ? l.attendanceFewMissed
+        : l.attendanceBelow75;
 
     return SectionCard(
       key: const Key('attendanceCard'),
       icon: Icons.fact_check_outlined,
-      title: 'Attendance',
-      caption: 'Last ${summary.days} days',
+      title: l.attendance,
+      caption: l.lastDays(summary.days),
       onTap: onOpen,
-      footer: CardLink('See attendance history', onTap: onOpen),
+      footer: CardLink(l.seeAttendanceHistory, onTap: onOpen),
       child: a.periods == 0
           ? Text(
-              'No attendance has been taken for ${child.firstName} in the last ${summary.days} days.',
+              l.noAttendanceFor(child.firstName, summary.days),
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             )
           : Column(
@@ -219,7 +219,7 @@ class AttendanceCard extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
-                          'Attended ${a.attended} of ${Fmt.plural(a.periods, 'class', 'classes')}',
+                          l.attendedOf(a.attended, a.periods),
                           style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                         ),
                       ),
@@ -238,20 +238,20 @@ class AttendanceCard extends StatelessWidget {
                 const SizedBox(height: Kx.s16),
                 Row(
                   children: [
-                    _Stat(key: const Key('presentCount'), label: 'Present', value: a.present, tone: AttendanceStatus.present),
+                    _Stat(key: const Key('presentCount'), label: l.statusPresent, value: a.present, tone: AttendanceStatus.present),
                     const SizedBox(width: Kx.s8),
-                    _Stat(key: const Key('absentCount'), label: 'Absent', value: a.absent, tone: AttendanceStatus.absent),
+                    _Stat(key: const Key('absentCount'), label: l.statusAbsent, value: a.absent, tone: AttendanceStatus.absent),
                     const SizedBox(width: Kx.s8),
-                    _Stat(key: const Key('lateCount'), label: 'Late', value: a.late, tone: AttendanceStatus.late),
+                    _Stat(key: const Key('lateCount'), label: l.statusLate, value: a.late, tone: AttendanceStatus.late),
                   ],
                 ),
                 if (a.excused > 0) ...[
                   const SizedBox(height: Kx.s8),
-                  Text('${a.excused} excused (counted as attended)', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                  Text(l.excusedNote(a.excused), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                 ],
                 if (a.recentAbsences.isNotEmpty) ...[
                   const SizedBox(height: Kx.s16),
-                  Text('Recent absences', style: context.text.titleSmall),
+                  Text(l.recentAbsences, style: context.text.titleSmall),
                   const SizedBox(height: Kx.s4),
                   for (final m in a.recentAbsences.take(3))
                     Padding(
@@ -264,7 +264,7 @@ class AttendanceCard extends StatelessWidget {
                             child: Icon(Icons.person_off_outlined, size: 18, color: c.error),
                           ),
                           const SizedBox(width: Kx.s8),
-                          Expanded(child: Text(absenceLine(m), style: context.text.bodyMedium)),
+                          Expanded(child: Text(absenceLine(context.fmt, m), style: context.text.bodyMedium)),
                         ],
                       ),
                     ),
@@ -275,12 +275,12 @@ class AttendanceCard extends StatelessWidget {
   }
 
   /// "Absent · Corporate Accounting · Thu 1 Oct, 10:00"
-  static String absenceLine(ClassMark m) =>
+  static String absenceLine(Fmt f, ClassMark m) =>
       // Non-breaking spaces keep the date and time together when the line wraps on a phone.
       [
-        'Absent',
+        f.l.statusAbsent,
         ?m.subject,
-        '${Fmt.shortDay(m.date)}${m.startsAt == null ? '' : ', ${m.startsAt!.label}'}'.replaceAll(' ', '\u00a0'),
+        '${f.shortDay(m.date)}${m.startsAt == null ? '' : ', ${m.startsAt!.label}'}'.replaceAll(' ', '\u00a0'),
       ].join(' · ');
 }
 
@@ -326,14 +326,14 @@ class _HomeworkCard extends StatelessWidget {
     return SectionCard(
       key: const Key('homeworkCard'),
       icon: Icons.assignment_outlined,
-      title: 'Homework',
-      caption: summary.upcoming.isEmpty ? null : '${summary.upcoming.length} due',
+      title: context.l10n.homework,
+      caption: summary.upcoming.isEmpty ? null : context.l10n.dueCount(summary.upcoming.length),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (summary.upcoming.isEmpty)
             Text(
-              'Nothing due right now. New homework from teachers will show here.',
+              context.l10n.nothingDue,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
           for (final hw in summary.upcoming) HomeworkRow(homework: hw, today: summary.today, child: child),
@@ -346,7 +346,7 @@ class _HomeworkCard extends StatelessWidget {
                 childrenPadding: EdgeInsets.zero,
                 shape: const Border(),
                 title: Text(
-                  'Past homework (${summary.pastHomework.length})',
+                  context.l10n.pastHomework(summary.pastHomework.length),
                   style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant),
                 ),
                 children: [
@@ -404,7 +404,7 @@ class HomeworkRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: Kx.s4),
-                  Pill(Fmt.due(homework.dueOn, today), background: bg, foreground: fg),
+                  Pill(context.fmt.due(homework.dueOn, today), background: bg, foreground: fg),
                 ],
               ),
             ),
@@ -429,31 +429,32 @@ class _InClassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final hasSkipped = summary.participation.any((p) => p.skipped > 0);
+    final l = context.l10n;
     return SectionCard(
       key: const Key('inClassCard'),
       icon: Icons.record_voice_over_outlined,
-      title: 'In class',
-      caption: 'Last ${summary.days} days',
+      title: l.inClass,
+      caption: l.lastDays(summary.days),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Answers when the teacher picked ${child.firstName} to answer a question in class.',
+            l.inClassIntro(child.firstName),
             style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
           ),
           const SizedBox(height: Kx.s12),
           if (summary.participation.isEmpty)
-            Text('${child.firstName} was not picked to answer in class yet.', style: context.text.bodyLarge),
+            Text(l.notPickedYet(child.firstName), style: context.text.bodyLarge),
           for (final p in summary.participation) ...[ParticipationRow(p), const SizedBox(height: Kx.s12)],
           if (summary.participation.isNotEmpty)
             Wrap(
               spacing: Kx.s16,
               runSpacing: Kx.s4,
               children: [
-                _Legend('Correct', Tone.goodBar(context)),
-                _Legend('Partly correct', Tone.warnBar(context)),
-                _Legend('Not correct', c.error),
-                if (hasSkipped) _Legend('No answer', c.outline),
+                _Legend(l.legendCorrect, Tone.goodBar(context)),
+                _Legend(l.legendPartly, Tone.warnBar(context)),
+                _Legend(l.legendNotCorrect, c.error),
+                if (hasSkipped) _Legend(l.legendNoAnswer, c.outline),
               ],
             ),
         ],
@@ -468,21 +469,20 @@ class ParticipationRow extends StatelessWidget {
   final Participation p;
 
   /// "Answered 5 questions in Corporate Accounting, 4 correct and 1 partly correct."
-  static String sentence(Participation p) {
-    if (p.answered == 0) return 'Was asked ${Fmt.plural(p.skipped, 'question')} in ${p.subject} but did not answer.';
-    final String detail;
+  static String sentence(AppLocalizations l, Participation p) {
+    if (p.answered == 0) return l.askedNoAnswer(p.skipped, p.subject);
+    final String answered;
     if (p.correct == p.answered) {
-      detail = p.answered == 1 ? 'correctly' : 'all correct';
+      answered = p.answered == 1 ? l.answeredOneCorrectly(p.subject) : l.answeredAllCorrect(p.answered, p.subject);
     } else {
       final parts = [
-        if (p.correct > 0) '${p.correct} correct',
-        if (p.partial > 0) '${p.partial} partly correct',
-        if (p.incorrect > 0) '${p.incorrect} not correct',
+        if (p.correct > 0) l.nCorrect(p.correct),
+        if (p.partial > 0) l.nPartly(p.partial),
+        if (p.incorrect > 0) l.nNotCorrect(p.incorrect),
       ];
-      detail = parts.length == 1 ? parts.single : '${parts.sublist(0, parts.length - 1).join(', ')} and ${parts.last}';
+      answered = l.answeredDetail(p.answered, p.subject, Fmt(l).list(parts));
     }
-    final answered = 'Answered ${Fmt.plural(p.answered, 'question')} in ${p.subject}${detail == 'correctly' ? ' ' : ', '}$detail.';
-    return p.skipped == 0 ? answered : '$answered Did not answer ${p.skipped}.';
+    return p.skipped == 0 ? answered : '$answered ${l.didNotAnswer(p.skipped)}';
   }
 
   @override
@@ -500,7 +500,7 @@ class ParticipationRow extends StatelessWidget {
         // The subject is bold inside the sentence instead of repeated as a heading.
         Builder(
           builder: (context) {
-            final text = sentence(p);
+            final text = sentence(context.l10n, p);
             final at = text.indexOf(p.subject);
             if (at < 0) return Text(text, style: context.text.bodyLarge);
             return Text.rich(
@@ -576,13 +576,13 @@ class _BoardsCard extends StatelessWidget {
     return SectionCard(
       key: const Key('boardsCard'),
       icon: Icons.co_present_outlined,
-      title: 'Class boards',
+      title: context.l10n.classBoards,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (summary.boards.isEmpty)
             Text(
-              'When a teacher shares the class board after a lesson, it appears here so ${child.firstName} can revise.',
+              context.l10n.boardsEmpty(child.firstName),
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
           for (final b in summary.boards)
@@ -599,7 +599,7 @@ class _BoardsCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(boardHeadline(b, summary.today), style: context.text.titleSmall),
+                          Text(boardHeadline(context.l10n, b, summary.today), style: context.text.titleSmall),
                           const SizedBox(height: 2),
                           Text(
                             b.title,
@@ -610,8 +610,8 @@ class _BoardsCard extends StatelessWidget {
                           Text(
                             [
                               ?b.teacherName,
-                              if (b.sharedAt != null) Fmt.relativeDay(b.sharedAt!, summary.today),
-                              Fmt.plural(b.pageCount, 'page'),
+                              if (b.sharedAt != null) context.fmt.relativeDay(b.sharedAt!, summary.today),
+                              context.l10n.pages(b.pageCount),
                             ].join(' · '),
                             style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                           ),
@@ -629,9 +629,9 @@ class _BoardsCard extends StatelessWidget {
   }
 
   /// "Today's board: Corporate Accounting", or "Corporate Accounting" for older ones.
-  static String boardHeadline(BoardSummary b, DateTime today) {
+  static String boardHeadline(AppLocalizations l, BoardSummary b, DateTime today) {
     final subject = b.subjectName ?? b.title;
     final isToday = b.sharedAt != null && Fmt.daysBetween(today, b.sharedAt!) == 0;
-    return isToday ? "Today's board: $subject" : subject;
+    return isToday ? l.todaysBoard(subject) : subject;
   }
 }

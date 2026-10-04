@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../../core/study.dart';
+import '../../l10n/l10n.dart';
 import 'ask_controller.dart';
 import 'ask_view.dart';
 import 'syllabus_view.dart';
@@ -49,12 +50,12 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learn'),
+        title: Text(context.l10n.navLearn),
         bottom: TabBar(
           controller: tabs,
-          tabs: const [
-            Tab(key: Key('tabAsk'), icon: Icon(Icons.auto_awesome_outlined), text: 'Ask a doubt'),
-            Tab(key: Key('tabSyllabus'), icon: Icon(Icons.menu_book_outlined), text: 'Syllabus'),
+          tabs: [
+            Tab(key: const Key('tabAsk'), icon: const Icon(Icons.auto_awesome_outlined), text: context.l10n.askADoubt),
+            Tab(key: const Key('tabSyllabus'), icon: const Icon(Icons.menu_book_outlined), text: context.l10n.syllabus),
           ],
         ),
       ),

@@ -1,0 +1,757 @@
+{
+  "@@locale": "en",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "yesterday": "Yesterday",
+  "dueToday": "Due today",
+  "dueTomorrow": "Due tomorrow",
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "wasDue": "Was due {date}",
+  "@wasDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "overdueBy": "Overdue by {days, plural, =1{1 day} other{{days} days}}",
+  "@overdueBy": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bookDueToday": "Due today",
+  "bookDueTomorrow": "Due tomorrow",
+  "bookDueOn": "Due {date}",
+  "@bookDueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "greetingMorning": "Good morning",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "greetingName": "{greeting}, {name}",
+  "@greetingName": {
+    "placeholders": {
+      "greeting": {},
+      "name": {}
+    }
+  },
+  "dateTime": "{date}, {time}",
+  "@dateTime": {
+    "placeholders": {
+      "date": {},
+      "time": {}
+    }
+  },
+  "listSeparator": ", ",
+  "listAnd": "{items} and {last}",
+  "@listAnd": {
+    "placeholders": {
+      "items": {},
+      "last": {}
+    }
+  },
+  "retry": "Retry",
+  "soon": "Soon",
+  "comingSoon": "Coming soon",
+  "comingLater": "{feature} is coming in a later update",
+  "@comingLater": {
+    "placeholders": {
+      "feature": {}
+    }
+  },
+  "statusPresent": "Present",
+  "statusAbsent": "Absent",
+  "statusLate": "Late",
+  "statusExcused": "Excused",
+  "cancel": "Cancel",
+  "save": "Save",
+  "send": "Send",
+  "share": "Share",
+  "close": "Close",
+  "done": "Done",
+  "seeAll": "See all",
+  "pages": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lastDays": "Last {days} days",
+  "@lastDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "rollNo": "Roll no. {rollNo}",
+  "@rollNo": {
+    "placeholders": {
+      "rollNo": {}
+    }
+  },
+  "errTimeout": "The server is taking too long to respond. Try again.",
+  "errUnreachable": "Can't reach KINETIX. Check your internet connection and the server address.",
+  "errForbidden": "You don't have access to this.",
+  "errNotFound": "Not found.",
+  "errTooMany": "Too many attempts. Wait a minute and try again.",
+  "errGeneric": "Something went wrong ({status}). Try again.",
+  "@errGeneric": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "errWrongLogin": "Wrong institution, login or password",
+  "signIn": "Sign in",
+  "signOut": "Sign out",
+  "signOutQuestion": "Sign out?",
+  "signOutBody": "You will need your password to sign in again.",
+  "institutionCode": "Institution code",
+  "institutionCodeHint": "e.g. demo-college",
+  "password": "Password",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "serverAddress": "Server address",
+  "serverLabel": "Server: {server}",
+  "@serverLabel": {
+    "placeholders": {
+      "server": {}
+    }
+  },
+  "enterInstitutionCode": "Enter your institution code",
+  "institutionCodeChars": "Use letters, numbers and hyphens only",
+  "enterValidEmail": "Enter a valid email address",
+  "enterValidPhone": "Enter a 10-digit phone number or a valid email",
+  "enterPassword": "Enter your password",
+  "enterServer": "Enter a server address like https://api.kinetix.in",
+  "language": "Language",
+  "languageHelp": "Used for the app and for updates sent to you",
+  "chooseLanguage": "Choose language",
+  "profile": "Profile",
+  "account": "Account",
+  "server": "Server",
+  "settings": "Settings",
+  "navHome": "Home",
+  "navMessages": "Messages",
+  "navUpdates": "Updates",
+  "navProfile": "Profile",
+  "attendance": "Attendance",
+  "homework": "Homework",
+  "sectionLastDays": "{section} · last {days} days",
+  "@sectionLastDays": {
+    "placeholders": {
+      "section": {},
+      "days": {}
+    }
+  },
+  "allClasses": "All classes",
+  "absentOrLate": "Absent or late",
+  "noAttendanceTaken": "No attendance has been taken in the last {days} days.",
+  "@noAttendanceTaken": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "attendedAll": "Attended all",
+  "attendedNofM": "Attended {attended} of {total}",
+  "@attendedNofM": {
+    "placeholders": {
+      "attended": {},
+      "total": {}
+    }
+  },
+  "wholeDay": "Whole day",
+  "instructions": "Instructions",
+  "noInstructions": "No instructions were added.",
+  "factDue": "Due",
+  "setBy": "Set by",
+  "givenOn": "Given on",
+  "library": "Library",
+  "nOut": "{count} out",
+  "@nOut": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "seeLibraryHistory": "See library history",
+  "booksOverdue": "{count, plural, =1{1 book overdue. Please return it to the library.} other{{count} books overdue. Please return them to the library.}}",
+  "@booksOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "andMore": "and {count} more",
+  "@andMore": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "finesForLate": "Fines for late returns: {amount}",
+  "@finesForLate": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "finesPayAtDesk": "Fines for late returns: {amount}. Pay at the library desk.",
+  "@finesPayAtDesk": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "borrowedOn": "Borrowed {date}",
+  "@borrowedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "returnedOn": "returned {date}",
+  "@returnedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "fineAmount": "fine {amount}",
+  "@fineAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "returnedLate": "late",
+  "fineSoFar": "{amount} fine so far",
+  "@fineSoFar": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "booksOutHeading": "Books out ({count})",
+  "@booksOutHeading": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "noBooksOut": "No books out right now.",
+  "fineRule": "The library charges a fine for each day a book is returned late.",
+  "returnedHeading": "Returned ({count})",
+  "@returnedHeading": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "returnedEmpty": "Returned books will be listed here.",
+  "libraryBooks": "Library books",
+  "results": "Results",
+  "aboveAverage": "Above class average",
+  "atAverage": "At class average",
+  "belowAverage": "Below class average",
+  "notEntered": "Not entered",
+  "publishedMarks": "Published marks",
+  "seeAllResults": "See all results",
+  "bySubject": "By subject",
+  "classAverageValue": "Class average {value}",
+  "@classAverageValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "marksExplainer": "Marks scored out of the total, across published assessments.",
+  "assessments": "Assessments",
+  "classAverage": "Class average",
+  "highestInClass": "Highest in class",
+  "outOf": "out of {max}",
+  "@outOf": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "teachersRemark": "Teacher's remark",
+  "kindTest": "Test",
+  "kindAssignment": "Assignment",
+  "kindInternal": "Internal assessment",
+  "kindExam": "Exam",
+  "kindPractical": "Practical",
+  "lessonRecordings": "Lesson recordings",
+  "nMissed": "{count} missed",
+  "@nMissed": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "seeAllRecordings": "See all {count} recordings",
+  "@seeAllRecordings": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "recordingNotShared": "This recording is no longer shared with the class.",
+  "classBoard": "Class board",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "pageOf": "Page {page} of {total}",
+  "@pageOf": {
+    "placeholders": {
+      "page": {},
+      "total": {}
+    }
+  },
+  "zoomOut": "Double-tap to zoom out",
+  "zoomSideways": "Pinch to zoom, or turn your phone sideways",
+  "zoomHint": "Pinch or double-tap to zoom",
+  "fees": "Fees",
+  "allFeesPaid": "All fees paid",
+  "lastPaid": "Last paid {amount}",
+  "@lastPaid": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dueSuffix": "due",
+  "feesToPay": "{count, plural, =1{1 fee to pay} other{{count} fees to pay}}",
+  "@feesToPay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nOverdue": "{count} overdue",
+  "@nOverdue": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "viewFees": "View fees",
+  "viewFeesReceipts": "View fees and receipts",
+  "payAtCounter": "Please pay at the fees counter.",
+  "ok": "OK",
+  "feesNothingDue": "Nothing due",
+  "totalDue": "Total due",
+  "toPay": "To pay",
+  "paidHeader": "Paid",
+  "paidLine": "{amount} · was due {date}",
+  "@paidLine": {
+    "placeholders": {
+      "amount": {},
+      "date": {}
+    }
+  },
+  "paidPill": "Paid",
+  "paymentsReceipts": "Payments and receipts",
+  "feeLabel": "Fee",
+  "overdueWasDue": "Overdue · was due {date}",
+  "@overdueWasDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "paidOfLeft": "{paid} of {total} paid · {left} left",
+  "@paidOfLeft": {
+    "placeholders": {
+      "paid": {},
+      "total": {},
+      "left": {}
+    }
+  },
+  "receiptNotFound": "This receipt was not found.",
+  "receiptCopied": "Receipt copied. Paste it into a message or email.",
+  "receipt": "Receipt",
+  "copyReceipt": "Copy receipt",
+  "feeReceipt": "Fee receipt",
+  "receiptNoLabel": "Receipt no.",
+  "dateLabel": "Date",
+  "studentLabel": "Student",
+  "classLabel": "Class",
+  "paidBy": "Paid by",
+  "reference": "Reference",
+  "amountPaid": "Amount paid",
+  "balanceLeft": "Balance left",
+  "nilFullyPaid": "Nil · fully paid",
+  "demoNoMoneyMoved": "Demo payment: no money moved.",
+  "demoNoMoney": "Demo payment: no money moves",
+  "methodOnline": "Online",
+  "methodCash": "Cash",
+  "methodCheque": "Cheque",
+  "methodBankTransfer": "Bank transfer",
+  "methodPayment": "Payment",
+  "newMessage": "New message",
+  "aboutName": "About {name}",
+  "@aboutName": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "noMessagesYet": "No messages yet",
+  "couldNotSend": "Couldn't send: {reason}",
+  "@couldNotSend": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "message": "Message",
+  "pullForEarlier": "Pull down for earlier messages",
+  "teachersReply": "Teachers reply when they can, usually during college hours.",
+  "messageCopied": "Message copied",
+  "teacher": "Teacher",
+  "markAllRead": "Mark all as read",
+  "earlier": "Earlier",
+  "fromCollege": "Message from the college",
+  "update": "Update",
+  "attendanceGood": "Good attendance. Keep it up.",
+  "seeAttendanceHistory": "See attendance history",
+  "attendedOf": "Attended {attended} of {count, plural, =1{1 class} other{{count} classes}}",
+  "@attendedOf": {
+    "placeholders": {
+      "attended": {},
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "excusedNote": "{count} excused (counted as attended)",
+  "@excusedNote": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "recentAbsences": "Recent absences",
+  "dueCount": "{count} due",
+  "@dueCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "pastHomework": "Past homework ({count})",
+  "@pastHomework": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "classBoards": "Class boards",
+  "todaysBoard": "Today's board: {subject}",
+  "@todaysBoard": {
+    "placeholders": {
+      "subject": {}
+    }
+  },
+  "resultsSubtitle": "Published marks and class averages",
+  "librarySubtitle": "Books borrowed, due dates and fines",
+  "college": "College",
+  "resultsLibraryHeader": "Results & library",
+  "feesAndReceipts": "Fees and receipts",
+  "tryAgain": "Try again",
+  "yourAttendance": "Your attendance",
+  "notMissedAny": "You have not missed a class in the last {days} days. Well done!",
+  "@notMissedAny": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "homeworkHandIn": "Hand it in the way your teacher asked. Stuck? Ask KINETIX AI in the {learn} tab.",
+  "@homeworkHandIn": {
+    "placeholders": {
+      "learn": {}
+    }
+  },
+  "noBooksBorrowed": "No library books borrowed. Books you borrow from the college library show here with their due dates.",
+  "noBooksOutNow": "You have no library books out right now.",
+  "markedAbsentFor": "You were marked absent for this {kind}.",
+  "@markedAbsentFor": {
+    "placeholders": {
+      "kind": {}
+    }
+  },
+  "noMarksCard": "No marks published yet. When your teachers publish test or exam marks, they show here with the class average.",
+  "noMarksScreen": "No marks published yet.\nWhen your teachers publish marks, they show here.",
+  "you": "You",
+  "recordingsEmpty": "When a teacher records a lesson on the board and shares it, you can watch it again here.",
+  "missedThisClass": "You missed this class",
+  "noRecordingsShared": "No lesson recordings have been shared with your class yet.",
+  "recordingNotSharedYours": "This recording is no longer shared with your class.",
+  "boardNotShared": "This board is no longer shared with your class.",
+  "writeToAbout": "Write to {teacher} about a class, homework or a doubt.",
+  "@writeToAbout": {
+    "placeholders": {
+      "teacher": {}
+    }
+  },
+  "noMessagesStudent": "No messages yet.\nWrite to your teachers about a class, homework or a doubt.",
+  "noTeachersOnTimetable": "No teachers are on your timetable yet.",
+  "yourTeachers": "Your teachers · {className}",
+  "@yourTeachers": {
+    "placeholders": {
+      "className": {}
+    }
+  },
+  "nUnread": "{count} unread",
+  "@nUnread": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "writeToTeacher": "Write to a teacher",
+  "openMessages": "Open messages",
+  "askYourTeachers": "Ask your teachers about a class, homework or a doubt.",
+  "noUpdates": "You're all caught up.\nNew homework, shared boards, lesson recordings and messages from your college will appear here.",
+  "noLongerLive": "This class is no longer live.",
+  "otherClassLive": "That class has ended. Another class is live now on {today}.",
+  "@otherClassLive": {
+    "placeholders": {
+      "today": {}
+    }
+  },
+  "liveClass": "Live class",
+  "signInHint": "Use the email or phone number your college gave you",
+  "emailOrPhone": "Email or phone",
+  "enterEmailOrPhone": "Enter your email or phone number",
+  "navLearn": "Learn",
+  "attendanceFewMissed": "You missed a few classes recently.",
+  "attendanceBelow75": "Below 75%. Colleges usually need 75% for you to sit exams.",
+  "noAttendanceForYou": "No attendance has been taken for you in the last {days} days.",
+  "@noAttendanceForYou": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "nothingDue": "Nothing due right now. New homework from your teachers will show here.",
+  "stuckTitle": "Stuck on something?",
+  "stuckBody": "Ask KINETIX AI to explain it, in English, हिन्दी or ಕನ್ನಡ.",
+  "boardsEmpty": "When a teacher shares the class board after a lesson, it appears here so you can revise.",
+  "feesNote": "Fees are paid by your parent or guardian in the KINETIX Parent app, or at the college fees counter. Here you can see what is due and open your receipts.",
+  "invoicePaid": "Paid",
+  "invoiceCancelled": "Cancelled",
+  "invoiceOverdue": "Overdue",
+  "invoicePartPaid": "Part paid",
+  "invoiceDue": "Due",
+  "payments": "Payments",
+  "noFeesIssued": "No fees have been issued to you.",
+  "noPayments": "No payments yet. Receipts appear here once a payment goes through.",
+  "allPaid": "All paid",
+  "feesOverdueNext": "{count, plural, =1{1 fee overdue} other{{count} fees overdue}} · next: {title}",
+  "@feesOverdueNext": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "title": {}
+    }
+  },
+  "nextFeeDue": "Next: {title}, due {date}",
+  "@nextFeeDue": {
+    "placeholders": {
+      "title": {},
+      "date": {}
+    }
+  },
+  "amountPaidShort": "{amount} paid",
+  "@amountPaidShort": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dueOnShort": "due {date}",
+  "@dueOnShort": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "paidOn": "Paid on",
+  "rollNoLabel": "Roll no.",
+  "forLabel": "For",
+  "method": "Method",
+  "feeAmount": "Fee amount",
+  "balance": "Balance",
+  "nil": "Nil",
+  "keepReceipt": "Keep this for your records. Show it at the fees counter if anyone asks for proof of payment.",
+  "yourClass": "Your class",
+  "program": "Program",
+  "attendanceHistory": "Attendance history",
+  "writeToYourTeachers": "Write to your teachers",
+  "aiAnswersIn": "KINETIX AI answers in",
+  "answersIn": "Answers in",
+  "timetable": "Timetable",
+  "timetableSubtitle": "Your classes for the week",
+  "everyClass30": "Every class in the last 30 days",
+  "noAttendanceDays": "No attendance taken in the last {days} days",
+  "@noAttendanceDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "attendedPercent": "{percent} attended in the last {days} days",
+  "@attendedPercent": {
+    "placeholders": {
+      "percent": {},
+      "days": {}
+    }
+  },
+  "noMarksYet": "No marks published yet",
+  "assessmentsPublished": "{count, plural, =1{1 assessment published} other{{count} assessments published}}",
+  "@assessmentsPublished": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noBooksOutShort": "No books out",
+  "booksOut": "{count, plural, =1{1 book out} other{{count} books out}}",
+  "@booksOut": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feesCount": "{count, plural, =1{1 fee} other{{count} fees}}",
+  "@feesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptsCount": "{count, plural, =1{1 receipt} other{{count} receipts}}",
+  "@receiptsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "askADoubt": "Ask a doubt",
+  "syllabus": "Syllabus",
+  "earlierQuestions": "Earlier questions",
+  "askIntro": "KINETIX AI explains it step by step, following your syllabus.",
+  "aboutTopic": "About: {topic}",
+  "@aboutTopic": {
+    "placeholders": {
+      "topic": {}
+    }
+  },
+  "askAboutAnything": "Ask about anything",
+  "questionHint": "e.g. What is forfeiture of shares?",
+  "answerIn": "Answer in",
+  "subject": "Subject",
+  "anySubject": "Any",
+  "ask": "Ask",
+  "youAsked": "You asked",
+  "aiThinking": "KINETIX AI is thinking…",
+  "keyPoints": "Key points",
+  "basedOn": "Based on",
+  "openTopicNotes": "Open the topic notes",
+  "askNext": "Ask next",
+  "previewAnswer": "Preview answer",
+  "previewNote": "KINETIX AI isn't connected at your college yet, so this is a sample, not a real explanation.",
+  "aiCantAnswer": "KINETIX AI can't answer that",
+  "aiRephrase": "Try rephrasing it as a question about your studies.",
+  "aiAllowanceUsed": "Today's KINETIX AI allowance is used up",
+  "aiAllowanceBody": "Your college has used today’s allowance. It resets tomorrow.",
+  "aiUnreachable": "KINETIX AI is not reachable",
+  "aiUnreachableBody": "It is not reachable right now. Try again in a minute.",
+  "noConnection": "No connection",
+  "somethingWrong": "Something went wrong",
+  "topicNotInLibrary": "This topic is no longer in the library.",
+  "topic": "Topic",
+  "askAboutThis": "Ask KINETIX AI about this",
+  "notes": "Notes",
+  "outcomes": "After this topic you should be able to",
+  "noNotes": "No notes have been added for this topic yet.",
+  "notReviewed": "These notes have not been reviewed by the curriculum team yet. Your textbook and teacher come first.",
+  "askKinetixAi": "Ask KINETIX AI",
+  "searchTopicsHint": "Search topics, e.g. goodwill",
+  "clear": "Clear",
+  "noTopicsMatch": "No topics match “{query}”. Try a shorter word, or ask KINETIX AI.",
+  "@noTopicsMatch": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "topicsCount": "{count, plural, =1{1 topic} other{{count} topics}}",
+  "@topicsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chaptersCount": "{count, plural, =1{1 chapter} other{{count} chapters}}",
+  "@chaptersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yourSubjects": "Your subjects",
+  "subjectsEmpty": "Your subjects appear here once your teachers set homework. Meanwhile, search for any topic above.",
+  "syllabusMissing": "The syllabus for {subject} isn't in the KINETIX library yet.\nSearch for a topic, or ask KINETIX AI.",
+  "@syllabusMissing": {
+    "placeholders": {
+      "subject": {}
+    }
+  },
+  "noTopicsYet": "No topics yet.",
+  "joiningClass": "Joining the class…",
+  "waitingForBoard": "Waiting for the board…",
+  "leave": "Leave",
+  "liveBadge": "LIVE",
+  "reconnecting": "Connection lost. Reconnecting…",
+  "couldNotJoin": "Couldn't join the class",
+  "tryInAMoment": "Try again in a moment.",
+  "liveOffTitle": "Your teacher stopped the live class",
+  "liveOffBody": "The board is no longer being shared. If your teacher shares a recording of the lesson, it will appear on {today}.",
+  "@liveOffBody": {
+    "placeholders": {
+      "today": {}
+    }
+  },
+  "boardOfflineTitle": "The board went offline",
+  "boardOfflineBody": "The classroom board lost its connection. Stay here: the board comes back on its own when it reconnects.",
+  "classEndedTitle": "The class has ended",
+  "classEndedBody": "Thanks for joining. If your teacher shares a recording of the lesson, it will appear on {today}.",
+  "@classEndedBody": {
+    "placeholders": {
+      "today": {}
+    }
+  },
+  "backToToday": "Back to {today}",
+  "@backToToday": {
+    "placeholders": {
+      "today": {}
+    }
+  },
+  "liveNow": "Live now: {subject}",
+  "@liveNow": {
+    "placeholders": {
+      "subject": {}
+    }
+  },
+  "classFallback": "class",
+  "teacherTeaching": "{teacher} is teaching. Watch the board.",
+  "@teacherTeaching": {
+    "placeholders": {
+      "teacher": {}
+    }
+  },
+  "watch": "Watch",
+  "liveSignInAgain": "Sign in again to watch the class.",
+  "liveNotConnected": "Not connected",
+  "liveTimeout": "The class is taking too long to answer. Try again.",
+  "liveCouldNotJoin": "Couldn't join the class.",
+  "undergraduate": "Undergraduate",
+  "postgraduate": "Postgraduate",
+  "boardOnlyNoSound": "Board only: no sound yet",
+  "errNotStudent": "This app is for students. Ask your college office to set up your student login.",
+  "errGuardianAccount": "This app is for students. Parents and guardians can use the KINETIX Parent app.",
+  "errTeacherAccount": "This app is for students. Teachers can use the KINETIX Teacher app.",
+  "errNotLinked": "Your login is not linked to a student record yet. Ask your college office to link it."
+}

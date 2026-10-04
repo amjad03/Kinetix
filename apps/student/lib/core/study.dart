@@ -18,7 +18,7 @@ class StudyController extends ChangeNotifier {
 
   StudentSummary? summary;
   bool loading = false;
-  String? error;
+  ApiException? error;
 
   /// The institution's today once the summary is in, else the device's.
   DateTime get today => summary?.today ?? DateTime.now();
@@ -33,7 +33,7 @@ class StudyController extends ChangeNotifier {
     try {
       summary = await api.summary(student.id);
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -63,16 +63,16 @@ class StudyController extends ChangeNotifier {
   // -- Results and library ----------------------------------------------------------------------
 
   StudentMarks? marks;
-  String? marksError;
+  ApiException? marksError;
   LibraryAccount? library;
-  String? libraryError;
+  ApiException? libraryError;
 
   Future<StudentMarks?> loadMarks() async {
     marksError = null;
     try {
       marks = await api.marks(student.id);
     } on ApiException catch (e) {
-      marksError = e.message;
+      marksError = e;
     } finally {
       notifyListeners();
     }
@@ -84,7 +84,7 @@ class StudyController extends ChangeNotifier {
     try {
       library = await api.library(student.id);
     } on ApiException catch (e) {
-      libraryError = e.message;
+      libraryError = e;
     } finally {
       notifyListeners();
     }
@@ -95,7 +95,7 @@ class StudyController extends ChangeNotifier {
 
   List<Subject>? subjects;
   bool subjectsLoading = false;
-  String? subjectsError;
+  ApiException? subjectsError;
   Future<void>? _subjectsLoad;
 
   Future<void> loadSubjects() => _subjectsLoad ??= _loadSubjects().whenComplete(() => _subjectsLoad = null);
@@ -107,7 +107,7 @@ class StudyController extends ChangeNotifier {
     try {
       subjects = [...await api.subjects()]..sort((a, b) => a.name.compareTo(b.name));
     } on ApiException catch (e) {
-      subjectsError = e.message;
+      subjectsError = e;
     } finally {
       subjectsLoading = false;
       notifyListeners();

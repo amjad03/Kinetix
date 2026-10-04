@@ -46,11 +46,11 @@ void main() {
     });
 
     test('part payments: at least ₹1 and no more than the balance', () {
-      expect(PaySheet.validate('', 250000), 'Enter an amount');
-      expect(PaySheet.validate('0.99', 250000), 'The smallest payment is ₹1');
-      expect(PaySheet.validate('2500.01', 250000), 'That is more than the ₹2,500 due');
-      expect(PaySheet.validate('1', 250000), isNull);
-      expect(PaySheet.validate('2500', 250000), isNull);
+      expect(PaySheet.validate(en, '', 250000), 'Enter an amount');
+      expect(PaySheet.validate(en, '0.99', 250000), 'The smallest payment is ₹1');
+      expect(PaySheet.validate(en, '2500.01', 250000), 'That is more than the ₹2,500 due');
+      expect(PaySheet.validate(en, '1', 250000), isNull);
+      expect(PaySheet.validate(en, '2500', 250000), isNull);
     });
   });
 
@@ -71,7 +71,7 @@ void main() {
     await tester.pumpAndSettle();
     await scrollTo(tester, find.byKey(const Key('feesCard')));
     expect(inCard('All fees paid'), findsOneWidget);
-    expect(inCard('Last paid ₹38,000 · Fri 18 Sep'), findsOneWidget);
+    expect(inCard('Last paid ₹38,000 · Fri 18 Sept'), findsOneWidget);
     expect(find.byKey(const Key('feesPay')), findsNothing);
     expect(inCard('View fees and receipts'), findsOneWidget);
   });
@@ -97,7 +97,7 @@ void main() {
 
     await tester.scrollUntilVisible(find.byKey(const Key('payment-p1')), 200, scrollable: find.byType(Scrollable).last);
     expect(find.text('₹10,000 · Semester 3 tuition'), findsOneWidget);
-    expect(find.text('Mon 28 Sep · Cash · RCPT/2026-27/00001'), findsOneWidget);
+    expect(find.text('Mon 28 Sept · Cash · RCPT/2026-27/00001'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('payment-p1')));
     await tester.pumpAndSettle();
@@ -344,7 +344,7 @@ void main() {
       id: 'f2',
       kind: NotificationKind.fee,
       title: 'Fee due: Semester 1 tuition',
-      body: '₹38,000 due by Sun 20 Sep. Pay in the app or at the fees counter.',
+      body: '₹38,000 due by Sun 20 Sept. Pay in the app or at the fees counter.',
       data: {'batchId': 'b9'},
       createdAt: DateTime.now(),
     );

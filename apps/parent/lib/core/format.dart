@@ -1,43 +1,56 @@
 import 'package:intl/intl.dart';
+import 'package:kinetix_lesson/kinetix_lesson.dart' show LessonFmt;
 
-/// Date labels in the style Indian families expect: "Thu 1 Oct", "Tuesday, 29 September".
-abstract final class Fmt {
-  static String longDay(DateTime d) => DateFormat('EEEE, d MMMM').format(d);
-  static String shortDay(DateTime d) => DateFormat('EEE d MMM').format(d);
+import '../l10n/app_localizations.dart';
+
+/// Date and money labels in the style Indian families expect, in the app's language:
+/// "Thu 1 Oct", "गुरु 1 अक्टू॰", "₹1,23,456". Digits stay Western and money uses Indian grouping
+/// in every language (docs/i18n/glossary.md).
+class Fmt {
+  Fmt(this.l) : _locale = LessonFmt.dateLocale(intlLocale(l.localeName));
+
+  final AppLocalizations l;
+  final String? _locale;
+
+  /// "en" → "en_IN", "hi" → "hi_IN", "kn" → "kn_IN".
+  static String intlLocale(String language) => '${language.split(RegExp('[_-]')).first}_IN';
+
+  String longDay(DateTime d) => DateFormat('EEEE, d MMMM', _locale).format(d);
+  String shortDay(DateTime d) => DateFormat('EEE d MMM', _locale).format(d);
+
+  /// "4 Oct 2026"
+  String date(DateTime d) => DateFormat('d MMM y', _locale).format(d);
 
   /// "2:05 pm"
-  static String time(DateTime d) => DateFormat('h:mm a').format(d).toLowerCase();
+  String time(DateTime d) => LessonFmt.time(d, _locale);
 
   static int daysBetween(DateTime from, DateTime to) =>
       DateTime(to.year, to.month, to.day).difference(DateTime(from.year, from.month, from.day)).inDays;
 
   /// "Today", "Yesterday", "Tomorrow" or "Thu 1 Oct".
-  static String relativeDay(DateTime d, DateTime today) => switch (daysBetween(today, d)) {
-    0 => 'Today',
-    1 => 'Tomorrow',
-    -1 => 'Yesterday',
+  String relativeDay(DateTime d, DateTime today) => switch (daysBetween(today, d)) {
+    0 => l.today,
+    1 => l.tomorrow,
+    -1 => l.yesterday,
     _ => shortDay(d),
   };
 
   /// "Due today", "Due tomorrow", "Due Fri 9 Oct", "Was due Thu 1 Oct".
-  static String due(DateTime dueOn, DateTime today) {
+  String due(DateTime dueOn, DateTime today) {
     final diff = daysBetween(today, dueOn);
-    if (diff < 0) return 'Was due ${shortDay(dueOn)}';
+    if (diff < 0) return l.wasDue(shortDay(dueOn));
     return switch (diff) {
-      0 => 'Due today',
-      1 => 'Due tomorrow',
-      _ => 'Due ${shortDay(dueOn)}',
+      0 => l.dueToday,
+      1 => l.dueTomorrow,
+      _ => l.dueOn(shortDay(dueOn)),
     };
   }
 
-  /// "3 questions", "1 question"
-  static String plural(int n, String one, [String? many]) => '$n ${n == 1 ? one : (many ?? '${one}s')}';
-
-  static String greeting(DateTime now) => now.hour < 12
-      ? 'Good morning'
+  String greeting(DateTime now) => now.hour < 12
+      ? l.greetingMorning
       : now.hour < 17
-      ? 'Good afternoon'
-      : 'Good evening';
+      ? l.greetingAfternoon
+      : l.greetingEvening;
 
   /// 80.0 → "80%", 83.3 → "83%"
   static String percent(double v) => '${v.round()}%';
@@ -74,7 +87,7 @@ abstract final class Fmt {
   }
 
   /// "4 Oct 2026, 2:05 pm"
-  static String dateTime(DateTime d) => '${DateFormat('d MMM yyyy').format(d)}, ${time(d)}';
+  String dateTime(DateTime d) => l.dateTime(date(d), time(d));
 
   /// 19.0 → "19", 22.5 → "22.5", 18.75 → "18.8" (marks and averages).
   static String marks(double v) {
@@ -82,19 +95,30 @@ abstract final class Fmt {
     return r == r.roundToDouble() ? r.round().toString() : r.toStringAsFixed(1);
   }
 
-  /// A library book's due date: "Due today", "Due Fri 9 Oct", or "Overdue by 4 days".
-  static String bookDue(DateTime dueOn, DateTime today) {
+  /// A library book's due date: "Due back today", "Due back Fri 9 Oct", or "Overdue by 4 days".
+  String bookDue(DateTime dueOn, DateTime today) {
     final diff = daysBetween(today, dueOn);
-    if (diff < 0) return 'Overdue by ${plural(-diff, 'day')}';
-    return due(dueOn, today);
+    if (diff < 0) return l.overdueBy(-diff);
+    return switch (diff) {
+      0 => l.bookDueToday,
+      1 => l.bookDueTomorrow,
+      _ => l.bookDueOn(shortDay(dueOn)),
+    };
   }
 
-  /// "Today", "Yesterday", "Mon", "Thu 1 Oct" for message lists.
-  static String messageDay(DateTime d, DateTime now) {
+  /// "2:05 pm" today, "Yesterday", "Mon" this week, else "1 Oct" (message lists).
+  String messageDay(DateTime d, DateTime now) {
     final diff = daysBetween(d, now);
     if (diff == 0) return time(d);
-    if (diff == 1) return 'Yesterday';
-    if (diff < 7) return DateFormat('EEE').format(d);
-    return DateFormat('d MMM').format(d);
+    if (diff == 1) return l.yesterday;
+    if (diff < 7) return DateFormat('EEE', _locale).format(d);
+    return DateFormat('d MMM', _locale).format(d);
   }
+
+  /// "a, b and c" in the app's language.
+  String list(List<String> items) => switch (items.length) {
+    0 => '',
+    1 => items.single,
+    _ => l.listAnd(items.sublist(0, items.length - 1).join(l.listSeparator), items.last),
+  };
 }

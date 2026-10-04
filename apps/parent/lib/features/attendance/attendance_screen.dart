@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// Every period's mark over the last 30 days, grouped by day, newest first.
@@ -29,7 +30,7 @@ class AttendanceScreen extends StatefulWidget {
 class _AttendanceScreenState extends State<AttendanceScreen> {
   static const _days = 30;
   List<ClassMark>? _marks;
-  String? _error;
+  ApiException? _error;
   bool _onlyMissed = false;
 
   @override
@@ -44,7 +45,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       final marks = await widget.api.attendance(widget.child.id, days: _days);
       if (mounted) setState(() => _marks = marks);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e);
     }
   }
 
@@ -63,7 +64,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final dates = days.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.child.firstName}'s attendance")),
+      appBar: AppBar(title: Text(context.l10n.childAttendance(widget.child.firstName))),
       body: RefreshIndicator(
         onRefresh: _load,
         child: CustomScrollView(
@@ -76,7 +77,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${widget.child.sectionName} · last $_days days',
+                      context.l10n.sectionLastDays(widget.child.sectionName, _days),
                       style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                     ),
                     const SizedBox(height: Kx.s12),
@@ -84,13 +85,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       spacing: Kx.s8,
                       children: [
                         ChoiceChip(
-                          label: const Text('All classes'),
+                          label: Text(context.l10n.allClasses),
                           selected: !_onlyMissed,
                           onSelected: (_) => setState(() => _onlyMissed = false),
                         ),
                         ChoiceChip(
                           key: const Key('onlyMissed'),
-                          label: const Text('Absent or late'),
+                          label: Text(context.l10n.absentOrLate),
                           selected: _onlyMissed,
                           onSelected: (_) => setState(() => _onlyMissed = true),
                         ),
@@ -113,8 +114,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 child: KxEmptyState(
                   icon: _onlyMissed ? Icons.celebration_outlined : Icons.event_available_outlined,
                   message: _onlyMissed
-                      ? '${widget.child.firstName} has not missed a class in the last $_days days.'
-                      : 'No attendance has been taken in the last $_days days.',
+                      ? context.l10n.notMissedAny(widget.child.firstName, _days)
+                      : context.l10n.noAttendanceTaken(_days),
                 ),
               )
             else
@@ -167,9 +168,9 @@ class _DayCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s4),
               child: Row(
                 children: [
-                  Expanded(child: Text(Fmt.longDay(date), style: context.text.titleSmall)),
+                  Expanded(child: Text(context.fmt.longDay(date), style: context.text.titleSmall)),
                   Text(
-                    allThere ? 'Attended all' : 'Attended $attended of ${allMarks.length}',
+                    allThere ? context.l10n.attendedAll : context.l10n.attendedNofM(attended, allMarks.length),
                     style: context.text.labelMedium?.copyWith(color: allThere ? Tone.good(context) : c.onSurfaceVariant),
                   ),
                 ],
@@ -184,7 +185,7 @@ class _DayCard extends StatelessWidget {
                       width: 52,
                       child: Text(m.startsAt?.label ?? '–', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                     ),
-                    Expanded(child: Text(m.subject ?? 'Whole day', style: context.text.bodyLarge)),
+                    Expanded(child: Text(m.subject ?? context.l10n.wholeDay, style: context.text.bodyLarge)),
                     const SizedBox(width: Kx.s8),
                     StatusPill(m.status),
                   ],

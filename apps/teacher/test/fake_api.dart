@@ -15,7 +15,8 @@ class FakeTeacherApi implements TeacherApi {
     id: 'u1',
     fullName: 'Anita Sharma',
     roles: ['teacher'],
-    preferredLanguage: 'hi',
+    // English so most tests read like the spec; the i18n tests switch this to hi or kn.
+    preferredLanguage: 'en',
     institution: 'Demo College',
     email: 'anita@demo.kinetix.in',
   );
@@ -56,6 +57,23 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<Me> me() async => profile;
+
+  /// When set, PATCH /v1/me fails as if offline.
+  bool languageSaveFails = false;
+
+  @override
+  Future<Me> updatePreferredLanguage(String language) async {
+    calls.add('language $language');
+    if (languageSaveFails) throw ApiException(0, 'offline', kind: ApiErrorKind.offline);
+    return profile = Me(
+      id: profile.id,
+      fullName: profile.fullName,
+      roles: profile.roles,
+      preferredLanguage: language,
+      institution: profile.institution,
+      email: profile.email,
+    );
+  }
 
   @override
   Future<DayTimetable> timetable({String? date}) async {
@@ -112,8 +130,10 @@ class FakeTeacherApi implements TeacherApi {
     active = null;
   }
 
+  List<Homework> homework = [];
+
   @override
-  Future<List<Homework>> myHomework() async => [];
+  Future<List<Homework>> myHomework() async => homework;
 
   @override
   Future<Homework> createHomework({
@@ -229,7 +249,10 @@ class FakeTeacherApi implements TeacherApi {
     final row = assessmentRows[id];
     if (row == null) throw ApiException(404, 'Assessment not found');
     final m = savedMarks[id]!;
-    final values = [for (final e in m.values) if (!e.absent && e.marks != null) e.marks!];
+    final values = [
+      for (final e in m.values)
+        if (!e.absent && e.marks != null) e.marks!,
+    ];
     return Assessment.fromJson({
       ...row,
       'entered': m.length,
@@ -258,9 +281,7 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<List<Assessment>> assessments(String sectionId) async {
     calls.add('assessments $sectionId');
-    return [
-      for (final r in assessmentRows.values.toList().reversed) _summary(r['id'] as String),
-    ];
+    return [for (final r in assessmentRows.values.toList().reversed) _summary(r['id'] as String)];
   }
 
   /// What the list returns: no roster or stats, but the class size and average.
@@ -363,7 +384,10 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<ChatPage> conversationMessages(String id, {DateTime? before}) async {
     calls.add('messages $id${before == null ? '' : ' before'}');
-    final all = [for (final m in chat[id]!) if (before == null || m.createdAt.isBefore(before)) m];
+    final all = [
+      for (final m in chat[id]!)
+        if (before == null || m.createdAt.isBefore(before)) m,
+    ];
     final page = all.length > ChatPage.pageSize ? all.sublist(all.length - ChatPage.pageSize) : all;
     return ChatPage(threads.firstWhere((t) => t.id == id), page);
   }
@@ -372,7 +396,12 @@ class FakeTeacherApi implements TeacherApi {
   Future<ChatMessage> sendMessage(String conversationId, String body) async {
     calls.add('send $conversationId $body');
     if (sendFails) throw ApiException(0, "Can't reach KINETIX.");
-    final m = ChatMessage(id: 'm${chat[conversationId]!.length + 100}', senderId: profile.id, body: body, createdAt: DateTime(2026, 10, 4, 12));
+    final m = ChatMessage(
+      id: 'm${chat[conversationId]!.length + 100}',
+      senderId: profile.id,
+      body: body,
+      createdAt: DateTime(2026, 10, 4, 12),
+    );
     chat[conversationId]!.add(m);
     return m;
   }

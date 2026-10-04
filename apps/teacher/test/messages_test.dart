@@ -26,7 +26,7 @@ void main() {
   Finder navBadge() => find.descendant(of: find.byType(NavigationBar), matching: find.text('2'));
 
   Future<void> openInbox(WidgetTester tester) async {
-    await tester.tap(find.text('Messages'));
+    await tester.tap(find.byKey(const Key('navMessages')));
     await tester.pumpAndSettle();
   }
 
@@ -71,7 +71,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('unread-c1')), findsNothing);
     expect(navBadge(), findsNothing);
-    expect(find.descendant(of: find.byKey(const Key('conversation-c1')), matching: find.text('Good to hear. See you on Monday.')), findsOneWidget);
+    expect(
+      find.descendant(of: find.byKey(const Key('conversation-c1')), matching: find.text('Good to hear. See you on Monday.')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a message that fails to send can be retried', (tester) async {
@@ -97,7 +100,12 @@ void main() {
   testWidgets('pulling down loads earlier messages', (tester) async {
     api.chat['c1'] = [
       for (var i = 0; i < 60; i++)
-        ChatMessage(id: 'old$i', senderId: i.isEven ? 'g1' : 'u1', body: 'Message $i', createdAt: DateTime(2026, 9, 1, 8).add(Duration(hours: i))),
+        ChatMessage(
+          id: 'old$i',
+          senderId: i.isEven ? 'g1' : 'u1',
+          body: 'Message $i',
+          createdAt: DateTime(2026, 9, 1, 8).add(Duration(hours: i)),
+        ),
     ];
     await pumpApp(tester);
     await openInbox(tester);
@@ -167,7 +175,10 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.descendant(of: find.byKey(const Key('conversation-c3')), matching: find.text('Mahesh Gowda')), findsOneWidget);
-    expect(tester.getTopLeft(find.byKey(const Key('conversation-c3'))).dy, lessThan(tester.getTopLeft(find.byKey(const Key('conversation-c1'))).dy));
+    expect(
+      tester.getTopLeft(find.byKey(const Key('conversation-c3'))).dy,
+      lessThan(tester.getTopLeft(find.byKey(const Key('conversation-c1'))).dy),
+    );
   });
 
   testWidgets('writing to a family with a thread already open goes to that thread', (tester) async {

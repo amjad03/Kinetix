@@ -7,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/family.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
@@ -73,8 +74,9 @@ class UpdatesTab extends StatelessWidget {
       case NotificationKind.fee:
         // "Payment received" → its receipt; "Fee due" → that child's fees.
         if (n.paymentId != null && context.mounted) return ReceiptScreen.open(context, api, paymentId: n.paymentId!);
-        const prefix = 'Fee due: ';
-        final child = await family.findFeeChild(title: n.title.startsWith(prefix) ? n.title.substring(prefix.length) : null);
+        // The title is "Fee due: <fee>" in the parent's language (see services/api notifications/texts.ts).
+        final prefix = const ['Fee due: ', 'फ़ीस देय: ', 'ಶುಲ್ಕ ಬಾಕಿ: '].where(n.title.startsWith).firstOrNull;
+        final child = await family.findFeeChild(title: prefix == null ? null : n.title.substring(prefix.length));
         if (child != null && context.mounted) return FeesScreen.open(context, family, child);
       case NotificationKind.library:
         if (family.children.isEmpty) await family.load();
@@ -118,10 +120,10 @@ class UpdatesTab extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar.large(
-                title: const Text('Updates'),
+                title: Text(context.l10n.navUpdates),
                 actions: [
                   if (controller.unread > 0)
-                    TextButton(key: const Key('markAllRead'), onPressed: controller.markAllRead, child: const Text('Mark all as read')),
+                    TextButton(key: const Key('markAllRead'), onPressed: controller.markAllRead, child: Text(context.l10n.markAllRead)),
                   const SizedBox(width: Kx.s8),
                 ],
               ),
@@ -133,20 +135,17 @@ class UpdatesTab extends StatelessWidget {
               if (!controller.loaded && controller.loading)
                 const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
               else if (controller.loaded && items.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: KxEmptyState(
-                    icon: Icons.notifications_none,
-                    message: 'No updates yet.\nAbsences, homework and messages from the college will appear here.',
-                  ),
+                  child: KxEmptyState(icon: Icons.notifications_none, message: context.l10n.noUpdates),
                 )
               else ...[
                 if (todays.isNotEmpty) ...[
-                  const SliverToBoxAdapter(child: _GroupHeader('Today')),
+                  SliverToBoxAdapter(child: _GroupHeader(context.l10n.today)),
                   SliverList.list(children: [for (final n in todays) tile(n)]),
                 ],
                 if (earlier.isNotEmpty) ...[
-                  const SliverToBoxAdapter(child: _GroupHeader('Earlier')),
+                  SliverToBoxAdapter(child: _GroupHeader(context.l10n.earlier)),
                   SliverList.list(children: [for (final n in earlier) tile(n)]),
                 ],
                 const SliverToBoxAdapter(child: SizedBox(height: Kx.s24)),
@@ -197,7 +196,8 @@ class NotificationTile extends StatelessWidget {
       NotificationKind.recording => (c.tertiaryContainer, c.onTertiaryContainer),
       _ => (c.primaryContainer, c.onPrimaryContainer),
     };
-    final when = Fmt.daysBetween(n.createdAt, today) == 0 ? Fmt.time(n.createdAt) : Fmt.relativeDay(n.createdAt, today);
+    final f = context.fmt;
+    final when = Fmt.daysBetween(n.createdAt, today) == 0 ? f.time(n.createdAt) : f.relativeDay(n.createdAt, today);
     return InkWell(
       key: Key('notification-${n.id}'),
       onTap: onTap,

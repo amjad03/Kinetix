@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kinetix_lesson/kinetix_lesson.dart' show LessonStrings;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
-import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'updates_tab.dart';
 
@@ -19,18 +20,19 @@ class MessageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final n = notification;
+    final l = context.l10n;
     final from = switch (n.kind) {
-      NotificationKind.broadcast => 'Message from the college',
-      NotificationKind.absence => 'Attendance',
-      NotificationKind.homework => 'Homework',
-      NotificationKind.boardShared => 'Class board',
-      NotificationKind.recording => 'Lesson recording',
-      NotificationKind.fee => 'Fees',
-      NotificationKind.library => 'Library',
-      NotificationKind.marks => 'Results',
-      NotificationKind.message => 'Message',
-      NotificationKind.live => 'Live class',
-      NotificationKind.other => 'Update',
+      NotificationKind.broadcast => l.fromCollege,
+      NotificationKind.absence => l.attendance,
+      NotificationKind.homework => l.homework,
+      NotificationKind.boardShared => l.classBoard,
+      NotificationKind.recording => LessonStrings.of(context).lessonRecording,
+      NotificationKind.fee => l.fees,
+      NotificationKind.library => l.library,
+      NotificationKind.marks => l.results,
+      NotificationKind.message => l.message,
+      NotificationKind.live => l.liveClass,
+      NotificationKind.other => l.update,
     };
     return Scaffold(
       appBar: AppBar(title: Text(from)),
@@ -44,7 +46,7 @@ class MessageScreen extends StatelessWidget {
                 const SizedBox(width: Kx.s8),
                 Expanded(
                   child: Text(
-                    '${Fmt.longDay(n.createdAt)} · ${Fmt.time(n.createdAt)}',
+                    '${context.fmt.longDay(n.createdAt)} · ${context.fmt.time(n.createdAt)}',
                     style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ),

@@ -16,29 +16,29 @@ class FamilyController extends ChangeNotifier {
 
   List<Child> children = [];
   bool loading = false;
-  String? error;
+  ApiException? error;
   String? _selectedId;
 
   final _summaries = <String, ChildSummary>{};
-  final _summaryErrors = <String, String>{};
+  final _summaryErrors = <String, ApiException>{};
   final _summaryLoading = <String>{};
   final _fees = <String, StudentFees>{};
-  final _feesErrors = <String, String>{};
+  final _feesErrors = <String, ApiException>{};
   final _library = <String, LibraryAccount>{};
-  final _libraryErrors = <String, String>{};
+  final _libraryErrors = <String, ApiException>{};
   final _marks = <String, ChildMarks>{};
-  final _marksErrors = <String, String>{};
+  final _marksErrors = <String, ApiException>{};
 
   Child? get selected => children.where((c) => c.id == _selectedId).firstOrNull ?? children.firstOrNull;
   ChildSummary? summaryOf(String childId) => _summaries[childId];
-  String? summaryErrorOf(String childId) => _summaryErrors[childId];
+  ApiException? summaryErrorOf(String childId) => _summaryErrors[childId];
   bool summaryLoading(String childId) => _summaryLoading.contains(childId);
   StudentFees? feesOf(String childId) => _fees[childId];
-  String? feesErrorOf(String childId) => _feesErrors[childId];
+  ApiException? feesErrorOf(String childId) => _feesErrors[childId];
   LibraryAccount? libraryOf(String childId) => _library[childId];
-  String? libraryErrorOf(String childId) => _libraryErrors[childId];
+  ApiException? libraryErrorOf(String childId) => _libraryErrors[childId];
   ChildMarks? marksOf(String childId) => _marks[childId];
-  String? marksErrorOf(String childId) => _marksErrors[childId];
+  ApiException? marksErrorOf(String childId) => _marksErrors[childId];
   Child? byId(String? id) => children.where((c) => c.id == id).firstOrNull;
   Iterable<Child> inSection(String? sectionId) => children.where((c) => c.sectionId == sectionId);
 
@@ -52,7 +52,7 @@ class FamilyController extends ChangeNotifier {
       _selectedId = _prefs.getString(_kChild);
       if (byId(_selectedId) == null) _selectedId = children.firstOrNull?.id;
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -84,7 +84,7 @@ class FamilyController extends ChangeNotifier {
     try {
       _summaries[childId] = await api.summary(childId);
     } on ApiException catch (e) {
-      _summaryErrors[childId] = e.message;
+      _summaryErrors[childId] = e;
     } finally {
       _summaryLoading.remove(childId);
       notifyListeners();
@@ -98,7 +98,7 @@ class FamilyController extends ChangeNotifier {
     try {
       return _fees[childId] = await api.fees(childId);
     } on ApiException catch (e) {
-      _feesErrors[childId] = e.message;
+      _feesErrors[childId] = e;
       return null;
     } finally {
       notifyListeners();
@@ -110,7 +110,7 @@ class FamilyController extends ChangeNotifier {
     try {
       return _library[childId] = await api.library(childId);
     } on ApiException catch (e) {
-      _libraryErrors[childId] = e.message;
+      _libraryErrors[childId] = e;
       return null;
     } finally {
       notifyListeners();
@@ -122,7 +122,7 @@ class FamilyController extends ChangeNotifier {
     try {
       return _marks[childId] = await api.marks(childId);
     } on ApiException catch (e) {
-      _marksErrors[childId] = e.message;
+      _marksErrors[childId] = e;
       return null;
     } finally {
       notifyListeners();

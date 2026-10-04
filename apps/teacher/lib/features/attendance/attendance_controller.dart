@@ -18,18 +18,15 @@ class AttendanceController extends ChangeNotifier {
   bool submitting = false;
   bool alreadyTaken = false;
   bool dirty = false;
-  String? error;
+  ApiException? error;
 
   int count(AttendanceStatus s) => marks.values.where((m) => m == s).length;
 
-  /// "10 present · 2 absent · 1 late"
-  String get summary {
-    final parts = [
-      for (final s in AttendanceStatus.values)
-        if (count(s) > 0 || s == AttendanceStatus.present || s == AttendanceStatus.absent) '${count(s)} ${s.label.toLowerCase()}',
-    ];
-    return parts.join(' · ');
-  }
+  /// What the summary shows: present and absent always, late and excused when there are any.
+  List<(AttendanceStatus, int)> get summary => [
+    for (final s in AttendanceStatus.values)
+      if (count(s) > 0 || s == AttendanceStatus.present || s == AttendanceStatus.absent) (s, count(s)),
+  ];
 
   Future<void> load() async {
     loading = true;
@@ -45,7 +42,7 @@ class AttendanceController extends ChangeNotifier {
         ..addEntries(students.map((s) => MapEntry(s.id, sheet.records[s.id] ?? AttendanceStatus.present)));
       dirty = false;
     } on ApiException catch (e) {
-      error = e.message;
+      error = e;
     } finally {
       loading = false;
       notifyListeners();
@@ -72,8 +69,8 @@ class AttendanceController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Returns null on success, or a message to show.
-  Future<String?> submit() async {
+  /// Returns null on success, or the error to show.
+  Future<ApiException?> submit() async {
     submitting = true;
     notifyListeners();
     try {
@@ -82,7 +79,7 @@ class AttendanceController extends ChangeNotifier {
       dirty = false;
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     } finally {
       submitting = false;
       notifyListeners();

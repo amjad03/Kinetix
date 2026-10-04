@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'ask_controller.dart';
 import 'ask_view.dart';
@@ -31,7 +32,7 @@ class TopicScreen extends StatefulWidget {
 
 class _TopicScreenState extends State<TopicScreen> {
   TopicDetail? _topic;
-  String? _error;
+  ApiException? _error;
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _TopicScreenState extends State<TopicScreen> {
       final t = await widget.api.topic(widget.topicId);
       if (mounted) setState(() => _topic = t);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.status == 404 ? 'This topic is no longer in the library.' : e.message);
+      if (mounted) setState(() => _error = e);
     }
   }
 
@@ -54,13 +55,13 @@ class _TopicScreenState extends State<TopicScreen> {
     final c = context.colors;
     final t = _topic;
     return Scaffold(
-      appBar: AppBar(title: Text(t?.chapterTitle ?? 'Topic', maxLines: 1, overflow: TextOverflow.ellipsis)),
+      appBar: AppBar(title: Text(t?.chapterTitle ?? context.l10n.topic, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: _error != null
           ? Padding(
               padding: const EdgeInsets.all(Kx.s16),
               child: Align(
                 alignment: Alignment.topCenter,
-                child: ErrorBanner(_error!, onRetry: _load),
+                child: ErrorBanner(_error!.status == 404 ? context.l10n.topicNotInLibrary : _error!, onRetry: _load),
               ),
             )
           : t == null
@@ -83,7 +84,7 @@ class _TopicScreenState extends State<TopicScreen> {
                       key: const Key('askAboutTopic'),
                       onPressed: () => AskScreen.open(context, template: widget.controller, topic: t.ref),
                       icon: const Icon(Icons.auto_awesome),
-                      label: const Text('Ask KINETIX AI about this'),
+                      label: Text(context.l10n.askAboutThis),
                     ),
                   ),
                   const SizedBox(height: Kx.s16),
@@ -91,7 +92,7 @@ class _TopicScreenState extends State<TopicScreen> {
                     _Block(
                       key: const Key('topicNotes'),
                       icon: Icons.notes,
-                      title: 'Notes',
+                      title: context.l10n.notes,
                       children: [for (final n in t.notes) BulletLine(n)],
                     ),
                   if (t.outcomes.isNotEmpty) ...[
@@ -99,13 +100,13 @@ class _TopicScreenState extends State<TopicScreen> {
                     _Block(
                       key: const Key('topicOutcomes'),
                       icon: Icons.flag_outlined,
-                      title: 'After this topic you should be able to',
+                      title: context.l10n.outcomes,
                       children: [for (final o in t.outcomes) BulletLine(o, icon: Icons.check_circle_outline)],
                     ),
                   ],
                   if (t.notes.isEmpty && t.outcomes.isEmpty)
                     Text(
-                      'No notes have been added for this topic yet.',
+                      context.l10n.noNotes,
                       style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                     ),
                   if (!t.reviewed) ...[
@@ -117,7 +118,7 @@ class _TopicScreenState extends State<TopicScreen> {
                         const SizedBox(width: Kx.s8),
                         Expanded(
                           child: Text(
-                            'These notes have not been reviewed by the curriculum team yet. Your textbook and teacher come first.',
+                            context.l10n.notReviewed,
                             style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                           ),
                         ),
@@ -196,7 +197,7 @@ class _AskScreenState extends State<AskScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Ask KINETIX AI')),
+    appBar: AppBar(title: Text(context.l10n.askKinetixAi)),
     body: AskView(controller: controller),
   );
 }

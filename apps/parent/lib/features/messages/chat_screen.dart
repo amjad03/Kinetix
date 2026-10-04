@@ -7,6 +7,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'messages_controller.dart';
 
@@ -48,7 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late Conversation? _conversation = widget.initial;
   final _items = <ChatMessage>[];
   bool _loading = true;
-  String? _error;
+  ApiException? _error;
   bool _hasOlder = false;
   bool _sending = false;
   final _text = TextEditingController();
@@ -107,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (first || _items.isEmpty) {
         setState(() {
           _loading = false;
-          _error = e.message;
+          _error = e;
         });
       }
     }
@@ -132,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _hasOlder = page.messages.length >= _pageSize;
       });
     } on ApiException catch (e) {
-      if (mounted) _snack(e.message);
+      if (mounted) _snack(context.errorText(e));
     }
   }
 
@@ -151,7 +152,7 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() => _merge([m]));
       _toBottom();
     } on ApiException catch (e) {
-      if (mounted) _snack("Couldn't send: ${e.message}");
+      if (mounted) _snack(context.l10n.couldNotSend(context.errorText(e)));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -172,10 +173,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(conv?.staff.fullName ?? 'Message', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(conv?.staff.fullName ?? context.l10n.message, maxLines: 1, overflow: TextOverflow.ellipsis),
                   if (conv != null)
                     Text(
-                      'About ${conv.student.fullName.split(' ').first} · ${conv.className}',
+                      '${context.l10n.aboutName(conv.student.fullName.split(' ').first)} · ${conv.className}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
@@ -217,7 +218,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           Padding(
                             padding: const EdgeInsets.all(Kx.s8),
                             child: Text(
-                              'Pull down for earlier messages',
+                              context.l10n.pullForEarlier,
                               textAlign: TextAlign.center,
                               style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant),
                             ),
@@ -226,15 +227,15 @@ class _ChatScreenState extends State<ChatScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: Kx.s32, horizontal: Kx.s16),
                             child: Text(
-                              'Write to ${conv.staff.fullName} about ${conv.student.fullName.split(' ').first}. '
-                              'Teachers reply when they can, usually during college hours.',
+                              '${context.l10n.writeToAbout(conv.staff.fullName, conv.student.fullName.split(' ').first)} '
+                              '${context.l10n.teachersReply}',
                               textAlign: TextAlign.center,
                               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                             ),
                           ),
                         for (final (i, m) in _items.indexed) ...[
                           if (i == 0 || Fmt.daysBetween(_items[i - 1].createdAt, m.createdAt) != 0)
-                            _DayChip(Fmt.relativeDay(m.createdAt, now)),
+                            _DayChip(context.fmt.relativeDay(m.createdAt, now)),
                           MessageBubble(message: m, mine: m.senderId == meId),
                         ],
                       ],
@@ -261,7 +262,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       buildCounter: (context, {required currentLength, required isFocused, maxLength}) =>
                           currentLength > 1800 ? Text('$currentLength / $maxLength') : null,
                       decoration: InputDecoration(
-                        hintText: 'Message',
+                        hintText: context.l10n.message,
                         filled: true,
                         fillColor: c.surfaceContainerHigh,
                         border: const OutlineInputBorder(borderRadius: Kx.radiusXl, borderSide: BorderSide.none),
@@ -280,7 +281,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     listenable: _text,
                     builder: (context, _) => IconButton.filled(
                       key: const Key('sendMessage'),
-                      tooltip: 'Send',
+                      tooltip: context.l10n.send,
                       onPressed: _text.text.trim().isEmpty || _sending ? null : _send,
                       icon: _sending
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
@@ -330,7 +331,7 @@ class MessageBubble extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Message copied')));
+        ..showSnackBar(SnackBar(content: Text(context.l10n.messageCopied)));
     }
 
     return Align(
@@ -352,7 +353,7 @@ class MessageBubble extends StatelessWidget {
               children: [
                 Text(message.body, style: context.text.bodyLarge?.copyWith(color: fg)),
                 const SizedBox(height: 2),
-                Text(Fmt.time(message.createdAt), style: context.text.labelSmall?.copyWith(color: fg.withValues(alpha: 0.75))),
+                Text(context.fmt.time(message.createdAt), style: context.text.labelSmall?.copyWith(color: fg.withValues(alpha: 0.75))),
               ],
             ),
           ),
