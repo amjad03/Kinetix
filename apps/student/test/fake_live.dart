@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:kinetix_student/core/live.dart';
+import 'package:kinetix_student/core/live_audio_player.dart';
 
 /// An in-memory realtime connection: tests play the server, sending ready, frames and ended.
 class FakeLiveConnection implements LiveConnection {
@@ -63,5 +65,32 @@ class FakeLiveServer {
     if (ack != null) c.ack = ack!;
     connections.add(c);
     return c;
+  }
+}
+
+/// Records what the live class would play.
+class FakeLiveAudioPlayer implements LiveAudioPlayer {
+  bool playing = false;
+  int starts = 0, stops = 0;
+  final fed = <Int16List>[];
+
+  /// The most recent player made by the app.
+  static FakeLiveAudioPlayer? last;
+
+  @override
+  Future<void> start() async {
+    playing = true;
+    starts++;
+  }
+
+  @override
+  void feed(Int16List samples) {
+    if (playing) fed.add(samples);
+  }
+
+  @override
+  Future<void> stop() async {
+    playing = false;
+    stops++;
   }
 }

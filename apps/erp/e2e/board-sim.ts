@@ -30,6 +30,10 @@ export interface SimBoard {
   events: unknown[][];
   /** Sends more ink to whoever is watching. */
   draw(events: unknown[][]): void;
+  /** Turns class audio on or off, as the teacher does on the board. */
+  setAudio(on: boolean): Promise<void>;
+  /** Sends one chunk of class audio (base64 IMA ADPCM, `LiveAudioChunk`). */
+  sendAudio(seq: number, data: string): void;
   /** Ends the class from the board. */
   endClass(): Promise<void>;
   close(): void;
@@ -55,6 +59,10 @@ export async function startBoard(opts: { name: string; adminToken: string; teach
     snapshot: opts.snapshot ?? [[0, 'L', [[]], 0]],
     events: opts.events ?? [],
     draw: (events) => socket.emit('live.frame', { events }),
+    setAudio: async (on) => {
+      await socket.timeout(5000).emitWithAck('live.audio.state', { on });
+    },
+    sendAudio: (seq, data) => socket.emit('live.audio', { seq, rate: 16000, codec: 'ima-adpcm', data }),
     endClass: async () => {
       await call('/v1/sessions/current/end', { token: sessionToken, body: {} });
     },

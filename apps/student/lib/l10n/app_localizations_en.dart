@@ -1216,7 +1216,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get postgraduate => 'Postgraduate';
 
   @override
-  String get boardOnlyNoSound => 'Board only: no sound yet';
+  String get boardOnlyNoSound => 'Board only: no sound';
+
+  @override
+  String get teacherMicOn => 'Teacher\'s mic is on';
+
+  @override
+  String get teacherMicOff => 'Teacher\'s mic is off';
+
+  @override
+  String get muteClass => 'Mute the class';
+
+  @override
+  String get unmuteClass => 'Unmute the class';
 
   @override
   String get errNotStudent => 'This app is for students. Ask your college office to set up your student login.';

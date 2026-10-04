@@ -210,10 +210,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveStarted =>
-      'Live: students of this class can watch the board in the Student app. Sound is not included yet.';
+      'Live: students of this class can watch the board in the Student app. Turn on Class audio to let them hear you.';
 
   @override
   String get liveEnded => 'The live class has ended.';
+
+  @override
+  String get classAudio => 'Class audio';
+
+  @override
+  String get classAudioOn => 'Class audio on';
+
+  @override
+  String get classAudioTurnOnTooltip =>
+      'Let students in the live class hear you through the board\'s microphone';
+
+  @override
+  String get classAudioTurnOffTooltip => 'Turn off class audio';
+
+  @override
+  String get micOn => 'Mic on';
+
+  @override
+  String get micOnTooltip =>
+      'The board\'s microphone is on: students in the live class can hear the classroom';
+
+  @override
+  String get classAudioStarted =>
+      'Class audio is on. Students in the live class can hear you; \"Mic on\" shows while they are listening.';
+
+  @override
+  String get classAudioStopped => 'Class audio is off.';
+
+  @override
+  String classAudioUnavailable(String reason) {
+    return 'Class audio isn\'t available: $reason';
+  }
 
   @override
   String get cloudUnreachableCheckOnline =>

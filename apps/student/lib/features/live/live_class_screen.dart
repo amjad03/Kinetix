@@ -10,8 +10,9 @@ import '../../core/live.dart' show LiveErrors;
 import 'live_controller.dart';
 
 /// The teacher's board, live, full screen. Fits any screen (turn the phone sideways for a bigger
-/// board), shows the page the teacher is on, and says plainly that there is no sound yet. Survives
-/// a dropped connection and explains when the class stops.
+/// board), shows the page the teacher is on, and plays the teacher's class audio when the teacher
+/// has the board's mic on (with a mute button); otherwise it says plainly there is no sound.
+/// Survives a dropped connection and explains when the class stops.
 class LiveClassScreen extends StatefulWidget {
   const LiveClassScreen({super.key, required this.study, required this.live});
 
@@ -220,7 +221,7 @@ class _BottomBar extends StatelessWidget {
             spacing: Kx.s8,
             runSpacing: Kx.s8,
             children: [
-              _DarkChip(icon: Icons.volume_off_outlined, label: context.l10n.boardOnlyNoSound, key: const Key('liveNoSound')),
+              ..._audio(context),
               if (controller.phase == LivePhase.live || controller.phase == LivePhase.reconnecting)
                 _DarkChip(icon: Icons.description_outlined, label: context.l10n.pageOf(p.pageIndex + 1, p.pageCount), key: const Key('livePage')),
             ],
@@ -228,6 +229,41 @@ class _BottomBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// The teacher's mic: a mute button and "mic is on" while the class can be heard; quiet
+  /// notes otherwise.
+  List<Widget> _audio(BuildContext context) {
+    final l = context.l10n;
+    if (!controller.audioAllowed) {
+      return [_DarkChip(icon: Icons.volume_off_outlined, label: l.boardOnlyNoSound, key: const Key('liveNoSound'))];
+    }
+    if (!controller.audioOn || controller.phase == LivePhase.ended || controller.phase == LivePhase.failed) {
+      return [_DarkChip(icon: Icons.mic_off_outlined, label: l.teacherMicOff, key: const Key('liveMicOff'))];
+    }
+    final muted = controller.muted;
+    return [
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
+            color: const Color(0x99000000),
+            shape: const CircleBorder(),
+            child: IconButton(
+              key: const Key('liveMute'),
+              tooltip: muted ? l.unmuteClass : l.muteClass,
+              color: Colors.white,
+              onPressed: controller.toggleMute,
+              icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
+            ),
+          ),
+          const SizedBox(width: Kx.s8),
+          Flexible(
+            child: _DarkChip(icon: Icons.mic, label: l.teacherMicOn, key: const Key('liveMicOn')),
+          ),
+        ],
+      ),
+    ];
   }
 }
 

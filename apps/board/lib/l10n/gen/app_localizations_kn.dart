@@ -210,10 +210,42 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get liveStarted =>
-      'ಲೈವ್: ಈ ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು Student App‌ನಲ್ಲಿ ಬೋರ್ಡ್ ನೋಡಬಹುದು. ಧ್ವನಿ ಇನ್ನೂ ಸೇರಿಲ್ಲ.';
+      'ಲೈವ್: ಈ ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು Student App‌ನಲ್ಲಿ ಬೋರ್ಡ್ ನೋಡಬಹುದು. ಅವರು ನಿಮ್ಮನ್ನು ಕೇಳಲು \"ತರಗತಿ ಧ್ವನಿ\" ಆನ್ ಮಾಡಿ.';
 
   @override
   String get liveEnded => 'ಲೈವ್ ತರಗತಿ ಮುಗಿದಿದೆ.';
+
+  @override
+  String get classAudio => 'ತರಗತಿ ಧ್ವನಿ';
+
+  @override
+  String get classAudioOn => 'ತರಗತಿ ಧ್ವನಿ ಆನ್';
+
+  @override
+  String get classAudioTurnOnTooltip =>
+      'ಲೈವ್ ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್‌ನ ಮೈಕ್ರೋಫೋನ್ ಮೂಲಕ ನಿಮ್ಮನ್ನು ಕೇಳಲಿ';
+
+  @override
+  String get classAudioTurnOffTooltip => 'ತರಗತಿ ಧ್ವನಿಯನ್ನು ಆಫ್ ಮಾಡಿ';
+
+  @override
+  String get micOn => 'ಮೈಕ್ ಆನ್';
+
+  @override
+  String get micOnTooltip =>
+      'ಬೋರ್ಡ್‌ನ ಮೈಕ್ರೋಫೋನ್ ಆನ್ ಆಗಿದೆ: ಲೈವ್ ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು ತರಗತಿಯನ್ನು ಕೇಳಬಹುದು';
+
+  @override
+  String get classAudioStarted =>
+      'ತರಗತಿ ಧ್ವನಿ ಆನ್ ಆಗಿದೆ. ಲೈವ್ ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು ನಿಮ್ಮನ್ನು ಕೇಳಬಹುದು; ಅವರು ಕೇಳುತ್ತಿರುವಾಗ \"ಮೈಕ್ ಆನ್\" ತೋರಿಸುತ್ತದೆ.';
+
+  @override
+  String get classAudioStopped => 'ತರಗತಿ ಧ್ವನಿ ಆಫ್ ಆಗಿದೆ.';
+
+  @override
+  String classAudioUnavailable(String reason) {
+    return 'ತರಗತಿ ಧ್ವನಿ ಲಭ್ಯವಿಲ್ಲ: $reason';
+  }
 
   @override
   String get cloudUnreachableCheckOnline =>

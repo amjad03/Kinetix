@@ -445,7 +445,7 @@ abstract class AppLocalizations {
   /// No description provided for @liveStarted.
   ///
   /// In en, this message translates to:
-  /// **'Live: students of this class can watch the board in the Student app. Sound is not included yet.'**
+  /// **'Live: students of this class can watch the board in the Student app. Turn on Class audio to let them hear you.'**
   String get liveStarted;
 
   /// No description provided for @liveEnded.
@@ -453,6 +453,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The live class has ended.'**
   String get liveEnded;
+
+  /// No description provided for @classAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Class audio'**
+  String get classAudio;
+
+  /// No description provided for @classAudioOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Class audio on'**
+  String get classAudioOn;
+
+  /// No description provided for @classAudioTurnOnTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Let students in the live class hear you through the board\'s microphone'**
+  String get classAudioTurnOnTooltip;
+
+  /// No description provided for @classAudioTurnOffTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off class audio'**
+  String get classAudioTurnOffTooltip;
+
+  /// No description provided for @micOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Mic on'**
+  String get micOn;
+
+  /// No description provided for @micOnTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'The board\'s microphone is on: students in the live class can hear the classroom'**
+  String get micOnTooltip;
+
+  /// No description provided for @classAudioStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Class audio is on. Students in the live class can hear you; \"Mic on\" shows while they are listening.'**
+  String get classAudioStarted;
+
+  /// No description provided for @classAudioStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Class audio is off.'**
+  String get classAudioStopped;
+
+  /// Why the microphone could not be used for class audio; reason is voiceNoMicrophone etc.
+  ///
+  /// In en, this message translates to:
+  /// **'Class audio isn\'t available: {reason}'**
+  String classAudioUnavailable(String reason);
 
   /// No description provided for @cloudUnreachableCheckOnline.
   ///

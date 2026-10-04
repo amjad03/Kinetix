@@ -8,6 +8,8 @@ abstract final class LiveEvents {
   static const unwatch = 'live.unwatch';
   static const frame = 'live.frame';
   static const ended = 'live.ended';
+  static const audioState = 'live.audio.state';
+  static const audio = 'live.audio';
 }
 
 /// What arrives on a live-class connection.
@@ -38,6 +40,23 @@ class LiveEnded extends LiveSignal {
   final String reason;
 }
 
+/// The teacher turned class audio on or off.
+class LiveAudioState extends LiveSignal {
+  const LiveAudioState(this.deviceId, this.on);
+
+  final String deviceId;
+  final bool on;
+}
+
+/// About 200 ms of class audio: base64 IMA ADPCM, 16 kHz mono (`LiveAudioCodec`).
+class LiveAudioChunk extends LiveSignal {
+  const LiveAudioChunk(this.deviceId, this.seq, this.data);
+
+  final String deviceId;
+  final int seq;
+  final String data;
+}
+
 /// The connection dropped; the client keeps trying to reconnect on its own.
 class LiveDisconnected extends LiveSignal {
   const LiveDisconnected();
@@ -60,16 +79,27 @@ class LiveRejected extends LiveSignal {
 
 /// The answer to `live.watch`.
 class LiveWatchAck {
-  const LiveWatchAck({required this.ok, this.error, this.teacher, this.subject, this.section});
+  const LiveWatchAck({
+    required this.ok,
+    this.error,
+    this.teacher,
+    this.subject,
+    this.section,
+    this.audioAllowed = false,
+    this.audioOn = false,
+  });
 
   factory LiveWatchAck.fromJson(Map<String, dynamic> j) {
     final s = (j['session'] as Map?)?.cast<String, dynamic>();
+    final audio = j['audio'] is Map ? j['audio'] as Map : const {};
     return LiveWatchAck(
       ok: j['ok'] == true,
       error: j['error'] as String?,
       teacher: s?['teacher'] as String?,
       subject: s?['subject'] as String?,
       section: s?['section'] as String?,
+      audioAllowed: audio['allowed'] == true,
+      audioOn: audio['on'] == true,
     );
   }
 
@@ -78,6 +108,10 @@ class LiveWatchAck {
   final String? teacher;
   final String? subject;
   final String? section;
+
+  /// Whether this student may hear the class audio, and whether the teacher has it on now.
+  final bool audioAllowed;
+  final bool audioOn;
 }
 
 /// A connection to the realtime namespace for watching a live class. Tests use a fake.
@@ -137,6 +171,14 @@ class SocketLiveConnection implements LiveConnection {
     });
     socket.on(LiveEvents.ended, (d) {
       if (d is Map) _add(LiveEnded('${d['deviceId']}', '${d['reason']}'));
+    });
+    socket.on(LiveEvents.audioState, (d) {
+      if (d is Map) _add(LiveAudioState('${d['deviceId']}', d['on'] == true));
+    });
+    socket.on(LiveEvents.audio, (d) {
+      if (d is Map && d['data'] is String && d['codec'] == 'ima-adpcm') {
+        _add(LiveAudioChunk('${d['deviceId']}', (d['seq'] as num?)?.toInt() ?? 0, d['data'] as String));
+      }
     });
     socket.on('error', (d) {
       final message = d is Map ? '${d['message']}' : '$d';

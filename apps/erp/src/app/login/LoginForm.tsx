@@ -56,7 +56,7 @@ export function LoginForm({
         </Box>
 
         <Box component="form" action={action} noValidate>
-          <input type="hidden" name="next" value={next ?? '/'} />
+          <input type="hidden" name="next" value={next ?? ''} />
           <Stack spacing={2.5}>
             {notice && !state.error && <Alert severity={notice.severity}>{notice.text}</Alert>}
             {state.error && (

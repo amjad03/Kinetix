@@ -1217,7 +1217,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get postgraduate => 'स्नातकोत्तर';
 
   @override
-  String get boardOnlyNoSound => 'सिर्फ़ बोर्ड: अभी आवाज़ नहीं';
+  String get boardOnlyNoSound => 'सिर्फ़ बोर्ड: आवाज़ नहीं';
+
+  @override
+  String get teacherMicOn => 'शिक्षक का माइक चालू है';
+
+  @override
+  String get teacherMicOff => 'शिक्षक का माइक बंद है';
+
+  @override
+  String get muteClass => 'कक्षा की आवाज़ बंद करें';
+
+  @override
+  String get unmuteClass => 'कक्षा की आवाज़ चालू करें';
 
   @override
   String get errNotStudent => 'यह ऐप विद्यार्थियों के लिए है। अपना विद्यार्थी लॉगिन बनवाने के लिए कॉलेज ऑफ़िस से कहें।';

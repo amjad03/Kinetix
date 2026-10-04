@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_student/app.dart';
 import 'package:kinetix_student/core/app_state.dart';
+import 'package:kinetix_student/core/live_audio_player.dart';
 import 'package:kinetix_student/core/push.dart';
 import 'package:kinetix_student/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,6 +33,9 @@ Future<(FakeStudentApi, AppState)> pumpApp(
   // Lessons play on a silent clock in tests (there is no audio backend).
   LessonAudio.debugFactory = (_, _, length) async => SilentLessonAudio(length, audible: true);
   addTearDown(() => LessonAudio.debugFactory = null);
+  // Class audio in live classes plays into a recorder.
+  LiveAudioPlayer.debugFactory = () => FakeLiveAudioPlayer.last = FakeLiveAudioPlayer();
+  addTearDown(() => LiveAudioPlayer.debugFactory = null);
   SharedPreferences.setMockInitialValues({if (signedIn) 'token': 'tok', ...prefs});
   final api = FakeStudentApi();
   setup?.call(api);

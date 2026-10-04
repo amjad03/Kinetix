@@ -1,5 +1,7 @@
 'use client';
 
+import AccountTree from '@mui/icons-material/AccountTree';
+import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
 import Assignment from '@mui/icons-material/Assignment';
 import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
@@ -18,6 +20,8 @@ import Forum from '@mui/icons-material/Forum';
 import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import Grading from '@mui/icons-material/Grading';
 import GradingOutlined from '@mui/icons-material/GradingOutlined';
+import Insights from '@mui/icons-material/Insights';
+import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
 import LocalLibrary from '@mui/icons-material/LocalLibrary';
 import LocalLibraryOutlined from '@mui/icons-material/LocalLibraryOutlined';
 import LiveTv from '@mui/icons-material/LiveTv';
@@ -49,6 +53,7 @@ import { Logo, LogoMark } from './Logo';
 
 const NAV: { href: string; label: string; section: Section; icon: typeof TodayOutlined; active: typeof Today }[] = [
   { href: '/', label: 'Today', section: 'school', icon: TodayOutlined, active: Today },
+  { href: '/department', label: 'Department', section: 'department', icon: InsightsOutlined, active: Insights },
   { href: '/classes', label: 'Classes', section: 'school', icon: ClassOutlined, active: Class },
   { href: '/timetable', label: 'Timetable', section: 'timetable', icon: CalendarMonthOutlined, active: CalendarMonth },
   { href: '/attendance', label: 'Attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
@@ -62,6 +67,7 @@ const NAV: { href: string; label: string; section: Section; icon: typeof TodayOu
   { href: '/library', label: 'Library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/syllabus', label: 'Syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/ai', label: 'AI usage', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
+  { href: '/departments', label: 'Departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
 ];
 
 const ROLE_LABEL: Record<string, string> = {

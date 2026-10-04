@@ -71,3 +71,4 @@ Please check in particular:
 - Greetings: "नमस्ते" for good afternoon; "शुभ संध्या", "ಶುಭ ಮಧ್ಯಾಹ್ನ".
 - Kannada date suffixes written apart from the date ("ಶುಕ್ರ 9 ಅಕ್ಟೋ ರೊಳಗೆ").
 - "LIVE" badge: "लाइव" / "ಲೈವ್"; "Learn" tab: "सीखें" / "ಕಲಿಯಿರಿ".
+- Live class audio: "Teacher's mic is on/off" ("शिक्षक का माइक चालू/बंद है" / "ಶಿಕ್ಷಕರ ಮೈಕ್ ಆನ್/ಆಫ್ ಆಗಿದೆ"); Mute: "कक्षा की आवाज़ बंद करें" / "ತರಗತಿಯ ಧ್ವನಿ ಮ್ಯೂಟ್ ಮಾಡಿ".

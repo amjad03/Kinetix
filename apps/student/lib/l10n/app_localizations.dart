@@ -2178,8 +2178,32 @@ abstract class AppLocalizations {
   /// No description provided for @boardOnlyNoSound.
   ///
   /// In en, this message translates to:
-  /// **'Board only: no sound yet'**
+  /// **'Board only: no sound'**
   String get boardOnlyNoSound;
+
+  /// No description provided for @teacherMicOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s mic is on'**
+  String get teacherMicOn;
+
+  /// No description provided for @teacherMicOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s mic is off'**
+  String get teacherMicOff;
+
+  /// No description provided for @muteClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute the class'**
+  String get muteClass;
+
+  /// No description provided for @unmuteClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute the class'**
+  String get unmuteClass;
 
   /// No description provided for @errNotStudent.
   ///

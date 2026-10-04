@@ -82,6 +82,7 @@ class _BoardScreenState extends State<BoardScreen> {
     super.initState();
     board.addListener(_onBoardChanged);
     board.onLiveSnapshotRequest = _startLive;
+    board.classAudio.onUnavailable = _classAudioUnavailable;
     _ai = AiController(board)
       ..captureBoard = (() async => base64Encode(await renderPagePng(ink.strokes, _background, _canvasSize)))
       ..openSplit = _openSplit;
@@ -92,6 +93,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void dispose() {
     board.removeListener(_onBoardChanged);
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
+    if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
     _live.stop();
     _capture?.dispose();
     _pages.dispose();
@@ -107,6 +109,13 @@ class _BoardScreenState extends State<BoardScreen> {
     _splitItem = id;
     _splitPreset = preset;
   });
+
+  /// Class audio could not start (no microphone, permission, the microphone busy) or stopped.
+  void _classAudioUnavailable(String reason) {
+    if (!mounted) return;
+    final l = context.l10n;
+    showBoardMessage(context, reason == 'offline' ? l.cloudUnreachableCheckOnline : l.classAudioUnavailable(voiceReason(l, reason)));
+  }
 
   void _startLive() => _live.start(background: _background, canvas: _canvasSize);
 
@@ -927,6 +936,16 @@ class _TopBarState extends State<_TopBar> {
     }
   }
 
+  Future<void> _toggleAudio(BuildContext context) async {
+    final audio = widget.board.classAudio;
+    if (audio.enabled) {
+      await audio.turnOff();
+      if (context.mounted) showBoardMessage(context, context.l10n.classAudioStopped);
+    } else if (await audio.turnOn() && context.mounted) {
+      showBoardMessage(context, context.l10n.classAudioStarted);
+    }
+  }
+
   @override
   void dispose() {
     _clock.cancel();
@@ -990,6 +1009,14 @@ class _TopBarState extends State<_TopBar> {
                     ),
                     const SizedBox(width: Kx.s8),
                     ActionChip(
+                      key: const Key('class-audio'),
+                      avatar: Icon(board.classAudio.enabled ? Icons.mic : Icons.mic_off_outlined, size: 18),
+                      label: Text(board.classAudio.enabled ? l.classAudioOn : l.classAudio),
+                      tooltip: board.classAudio.enabled ? l.classAudioTurnOffTooltip : l.classAudioTurnOnTooltip,
+                      onPressed: () => _toggleAudio(context),
+                    ),
+                    const SizedBox(width: Kx.s8),
+                    ActionChip(
                       key: const Key('attendance-chip'),
                       avatar: const Icon(Icons.groups_outlined, size: 18),
                       label: Text(
@@ -1007,6 +1034,21 @@ class _TopBarState extends State<_TopBar> {
             ),
           ),
           const SizedBox(width: Kx.s8),
+          // Privacy: whenever the microphone is going out to the class, the teacher sees it.
+          // Kept outside the scrolling chips so it can never scroll out of view.
+          if (board.classAudio.sending) ...[
+            Tooltip(
+              message: l.micOnTooltip,
+              child: Chip(
+                key: const Key('mic-on'),
+                backgroundColor: Kx.record,
+                side: BorderSide.none,
+                avatar: const Icon(Icons.mic, size: 18, color: Colors.white),
+                label: Text(l.micOn, style: context.text.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            const SizedBox(width: Kx.s8),
+          ],
           if (widget.recording != null) ...[widget.recording!, const SizedBox(width: Kx.s8)],
           ChromeSurface(
             radius: Kx.rSm,

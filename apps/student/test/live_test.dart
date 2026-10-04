@@ -89,7 +89,7 @@ void main() {
     expect(conn.baseUrl, api.baseUrl);
     expect(conn.watched, [device]);
     expect(find.text('Waiting for the board…'), findsOneWidget);
-    expect(find.text('Board only: no sound yet'), findsOneWidget);
+    expect(find.text('Board only: no sound'), findsOneWidget);
 
     conn.send(LiveFrame(device, snapshot()));
     await settle(tester);

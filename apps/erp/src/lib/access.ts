@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -20,12 +20,16 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   ai: ['principal', 'tenant_admin'],
   // library.controller.ts LIBRARY_ROLES
   library: ['librarian', 'principal', 'tenant_admin'],
-  // marks.controller.ts: staff who teach the class, principal and admin. HODs see the classes they teach.
+  // marks.controller.ts: staff who teach the class, principal and admin. HODs also see their department's classes.
   results: ['principal', 'tenant_admin', 'hod'],
   // timetable-admin.controller.ts: STAFF_ADMIN_ROLES
   timetable: ['principal', 'tenant_admin'],
   // messages.controller.ts: GET /v1/conversations?all=true is for isSchoolAdmin (principal, admin)
   conversations: ['principal', 'tenant_admin'],
+  // departments.controller.ts: a head of department's view (the principal and admin see any)
+  department: ['hod', 'principal', 'tenant_admin'],
+  // departments.controller.ts DepartmentsAdminController: STAFF_ADMIN_ROLES
+  departments: ['principal', 'tenant_admin'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -82,13 +86,26 @@ export function sectionOf(pathname: string): Section | null {
       return 'timetable';
     case 'conversations':
       return 'conversations';
+    case 'department':
+      return 'department';
+    case 'departments':
+      return 'departments';
     default:
       return null;
   }
 }
 
-/** Where a role lands after signing in: Today for school leaders, Fees for the accounts office, Library for the librarian. */
+/** A head of department who is not also the principal or an administrator. */
+export function isOnlyHod(roles: readonly RoleName[]): boolean {
+  return roles.includes('hod') && !roles.some((r) => r === 'principal' || r === 'tenant_admin');
+}
+
+/**
+ * Where a role lands after signing in: Department for a head of department, Today for the
+ * principal and administrator, Fees for the accounts office, Library for the librarian.
+ */
 export function homeFor(roles: readonly RoleName[]): string {
+  if (isOnlyHod(roles)) return '/department';
   if (canSee(roles, 'school')) return '/';
   if (canSee(roles, 'fees')) return '/fees';
   if (canSee(roles, 'library')) return '/library';

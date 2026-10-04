@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../../core/live.dart';
+import '../../core/live_audio_player.dart';
 import '../../core/models.dart';
 
 enum LivePhase {
@@ -29,8 +30,12 @@ enum LivePhase {
 /// Watches one live class: connects, joins with `live.watch`, applies the board's frames to a
 /// [LessonPlayer], rejoins after a reconnect (the board then sends a fresh snapshot), and stops
 /// when the class ends.
+///
+/// Class audio: when the join answer says the student may listen and the teacher's mic is on,
+/// the `live.audio` chunks are decoded and played through [LiveAudioPlayer] (unless muted).
+/// Playback stops when the mic goes off, the class ends, or the student leaves.
 class LiveClassController extends ChangeNotifier {
-  LiveClassController({required this.connector, required this.baseUrl, required this.token, required this.live});
+  LiveClassController({required this.connector, required this.baseUrl, required this.token, required this.live, this.audioPlayer});
 
   final LiveConnector connector;
   final String baseUrl;
@@ -48,6 +53,22 @@ class LiveClassController extends ChangeNotifier {
   /// From the join answer, else what `/v1/student/live` said.
   late String teacher = live.teacher;
   late String? subject = live.subject;
+
+  /// This student may hear the class audio (from the join answer).
+  bool audioAllowed = false;
+
+  /// The teacher's microphone is on.
+  bool audioOn = false;
+
+  /// The student muted the class (unmuted each time the class is opened).
+  bool muted = false;
+
+  /// The class audio is being played now.
+  bool get audioPlaying => _playing;
+
+  /// Plays the class audio; made on first use when not given ([LiveAudioPlayer.create]).
+  LiveAudioPlayer? audioPlayer;
+  bool _playing = false;
 
   LiveConnection? _conn;
   StreamSubscription<LiveSignal>? _sub;
@@ -67,6 +88,7 @@ class LiveClassController extends ChangeNotifier {
   void _set(LivePhase p) {
     if (_disposed) return;
     phase = p;
+    _syncAudio();
     notifyListeners();
   }
 
@@ -94,7 +116,17 @@ class LiveClassController extends ChangeNotifier {
       case LiveEnded(:final deviceId, :final reason):
         if (deviceId != live.deviceId) return;
         endedReason = reason;
+        audioOn = false;
+        _syncAudio();
         _set(LivePhase.ended);
+      case LiveAudioState(:final deviceId, :final on):
+        if (deviceId != live.deviceId) return;
+        audioOn = on;
+        _syncAudio();
+        notifyListeners();
+      case LiveAudioChunk(:final deviceId, :final data):
+        if (deviceId != live.deviceId || !_playing) return;
+        audioPlayer?.feed(LiveAudioCodec.decodeBase64(data));
       case LiveDisconnected():
         _connected = false;
         if (phase == LivePhase.live || phase == LivePhase.joining) _set(LivePhase.reconnecting);
@@ -115,6 +147,9 @@ class LiveClassController extends ChangeNotifier {
       subject = ack.subject ?? subject;
       endedReason = null;
       error = null;
+      audioAllowed = ack.audioAllowed;
+      audioOn = ack.audioOn;
+      _syncAudio();
       notifyListeners();
       return;
     }
@@ -135,6 +170,22 @@ class LiveClassController extends ChangeNotifier {
     }
   }
 
+  /// Mutes or unmutes the class audio.
+  void toggleMute() {
+    muted = !muted;
+    _syncAudio();
+    notifyListeners();
+  }
+
+  /// Plays while the student may listen, the mic is on, the class is on and not muted.
+  void _syncAudio() {
+    final want = !_disposed && audioAllowed && audioOn && !muted && phase != LivePhase.failed && phase != LivePhase.ended;
+    if (want == _playing) return;
+    _playing = want;
+    final player = audioPlayer ??= LiveAudioPlayer.create();
+    unawaited(want ? player.start() : player.stop());
+  }
+
   /// "Try again" after the board went offline or joining failed.
   void retry() {
     endedReason = null;
@@ -149,6 +200,7 @@ class LiveClassController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _syncAudio();
     _conn?.unwatch(live.deviceId);
     _sub?.cancel();
     _conn?.dispose();

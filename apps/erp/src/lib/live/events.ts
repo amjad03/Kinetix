@@ -8,7 +8,24 @@ export const LiveEvents = {
   Unwatch: 'live.unwatch',
   Frame: 'live.frame',
   Ended: 'live.ended',
+  AudioState: 'live.audio.state',
+  Audio: 'live.audio',
 } as const;
+
+/** Whether this viewer may hear class audio, and whether the teacher has it on (`LiveWatchAck.audio`). */
+export interface LiveAudioInfo {
+  allowed: boolean;
+  on: boolean;
+}
+
+/** `LiveAudioChunk`: about 200 ms of 16 kHz IMA ADPCM, base64. */
+export interface LiveAudioChunk {
+  deviceId?: string;
+  seq: number;
+  rate: number;
+  codec: string;
+  data: string;
+}
 
 export interface LiveSession {
   teacher: string;
@@ -21,6 +38,7 @@ export interface LiveWatchAck {
   ok: boolean;
   error?: string;
   session?: LiveSession;
+  audio?: LiveAudioInfo;
 }
 
 export interface LiveFrame {
@@ -35,6 +53,8 @@ export interface LiveFrame {
  * - `frame`: ink from the board.
  * - `offline`: the board dropped off; frames resume (with a snapshot) when it reconnects.
  * - `reconnecting`: the ERP server lost KINETIX Cloud for a moment.
+ * - `audio-state`: whether this viewer may hear class audio and whether the teacher's mic is on.
+ * - `audio`: a chunk of class audio (only sent when allowed).
  * - `ended` / `refused`: final; the stream closes.
  */
 export type StreamMessage =
@@ -42,6 +62,8 @@ export type StreamMessage =
   | { type: 'frame'; frame: LiveFrame }
   | { type: 'offline' }
   | { type: 'reconnecting' }
+  | { type: 'audio-state'; audio: LiveAudioInfo }
+  | { type: 'audio'; seq: number; data: string }
   | { type: 'ended'; reason: string }
   | { type: 'refused'; error: string; code: RefusalCode };
 

@@ -55,3 +55,13 @@ export function resultCounts(students: AssessmentDetail['students']): ResultCoun
   const entered = students.filter((s) => s.marks !== null).length;
   return { students: students.length, entered, absent, missing: students.length - entered - absent };
 }
+
+/**
+ * Which classes a head of department sees on Results. The API answers a head of department
+ * with the department's assessments for any class (an empty list where there are none), so
+ * every class would come back; keep the classes they teach, the department's classes, and any
+ * other class that has assessments they may read.
+ */
+export function hodResultClass(sectionId: string, assessments: number, taught: ReadonlySet<string>, department: ReadonlySet<string>): boolean {
+  return taught.has(sectionId) || department.has(sectionId) || assessments > 0;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, landingFor, sectionOf } from './access';
+import { canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
 
 describe('access', () => {
   it('lets the accounts office into Fees only', () => {
@@ -43,8 +43,32 @@ describe('access', () => {
     expect(canSee(r, 'library')).toBe(false);
     expect(canSee(r, 'timetable')).toBe(false);
     expect(canSee(r, 'conversations')).toBe(false);
-    expect(landingFor(r, '/fees')).toBe('/');
-    expect(landingFor(r, '/conversations/abc')).toBe('/');
+    expect(landingFor(r, '/fees')).toBe('/department');
+    expect(landingFor(r, '/conversations/abc')).toBe('/department');
+  });
+
+  it('lands a head of department on Department, and keeps Today for a principal who is also HOD', () => {
+    const hod = ['teacher', 'hod'];
+    expect(isOnlyHod(hod)).toBe(true);
+    expect(homeFor(hod)).toBe('/department');
+    expect(landingFor(hod, '')).toBe('/department');
+    expect(landingFor(hod, '/')).toBe('/');
+    expect(canSee(hod, 'school')).toBe(true);
+    expect(canSee(hod, 'department')).toBe(true);
+    expect(canSee(hod, 'departments')).toBe(false);
+    expect(landingFor(hod, '/departments')).toBe('/department');
+    for (const r of [['principal', 'hod'], ['tenant_admin'], ['principal']]) {
+      expect(isOnlyHod(r)).toBe(false);
+      expect(homeFor(r)).toBe('/');
+      expect(canSee(r, 'department')).toBe(true);
+      expect(canSee(r, 'departments')).toBe(true);
+    }
+    for (const r of [['accountant'], ['librarian'], ['teacher']]) {
+      expect(canSee(r, 'department')).toBe(false);
+      expect(canSee(r, 'departments')).toBe(false);
+    }
+    expect(sectionOf('/department')).toBe('department');
+    expect(sectionOf('/departments')).toBe('departments');
   });
 
   it('refuses teachers, students and parents', () => {

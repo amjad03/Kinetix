@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distribution, formatMarks, percent, resultCounts } from './results';
+import { distribution, formatMarks, hodResultClass, percent, resultCounts } from './results';
 
 describe('results', () => {
   it('works out percentages and shows marks plainly', () => {
@@ -33,5 +33,16 @@ describe('results', () => {
       { id: '4', fullName: 'D', rollNo: '4', marks: 0, absent: false, remark: null },
     ]);
     expect(c).toEqual({ students: 4, entered: 2, absent: 1, missing: 1 });
+  });
+});
+
+describe('hodResultClass', () => {
+  const taught = new Set(['bca']);
+  const dept = new Set(['bcom']);
+  it('keeps taught and department classes even without assessments, and other classes only with some', () => {
+    expect(hodResultClass('bca', 0, taught, dept)).toBe(true);
+    expect(hodResultClass('bcom', 0, taught, dept)).toBe(true);
+    expect(hodResultClass('mcom', 0, taught, dept)).toBe(false);
+    expect(hodResultClass('mcom', 2, taught, dept)).toBe(true);
   });
 });

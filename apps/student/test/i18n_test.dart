@@ -75,6 +75,13 @@ void main() {
       ]),
     );
     await settle(tester);
+    // The teacher's mic is on: the mute button and "mic is on" fit too, muted or not.
+    expect(find.byKey(const Key('liveMicOn')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('liveMute')));
+    await settle(tester);
+    server.last.send(const LiveAudioState(device, false));
+    await settle(tester);
+    expect(find.byKey(const Key('liveMicOff')), findsOneWidget);
     server.last.send(const LiveEnded(device, 'live_off'));
     await settle(tester);
     expect(find.byKey(const Key('liveEnded')), findsOneWidget);
@@ -167,7 +174,15 @@ void main() {
     for (final MapEntry(key: name, value: size) in sizes.entries) {
       for (final scale in [1.0, 1.3]) {
         testWidgets('$lang at $name, text ×$scale: every main screen lays out', (tester) async {
-          final server = FakeLiveServer();
+          final server = FakeLiveServer()
+            ..ack = const LiveWatchAck(
+              ok: true,
+              teacher: 'Anita Sharma',
+              subject: 'Corporate Accounting',
+              section: 'BCom Sem 3 A',
+              audioAllowed: true,
+              audioOn: true,
+            );
           await pumpApp(
             tester,
             size: size,

@@ -43,6 +43,7 @@ them.
 
 ## Strings to check first
 
+- Class audio (कक्षा की आवाज़, ತರಗತಿ ಧ್ವನಿ) and the Mic on chip (माइक चालू, ಮೈಕ್ ಆನ್).
 - Undo / Redo: short loan words अनडू / रीडू and ಅನ್‌ಡು / ರೀಡು fit the toolbar; teachers may
   prefer पहले जैसा करें / ರದ್ದುಗೊಳಿಸಿ.
 - Random pick (रैंडम चुनाव, ರ್ಯಾಂಡಮ್ ಆಯ್ಕೆ), Acknowledge on emergencies (पढ़ लिया, ಓದಿದೆ),

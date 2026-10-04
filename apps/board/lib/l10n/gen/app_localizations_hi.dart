@@ -210,10 +210,42 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get liveStarted =>
-      'लाइव: इस कक्षा के विद्यार्थी Student App में बोर्ड देख सकते हैं। अभी आवाज़ शामिल नहीं है।';
+      'लाइव: इस कक्षा के विद्यार्थी Student App में बोर्ड देख सकते हैं। उन्हें अपनी आवाज़ सुनाने के लिए \"कक्षा की आवाज़\" चालू करें।';
 
   @override
   String get liveEnded => 'लाइव कक्षा समाप्त हो गई।';
+
+  @override
+  String get classAudio => 'कक्षा की आवाज़';
+
+  @override
+  String get classAudioOn => 'कक्षा की आवाज़ चालू';
+
+  @override
+  String get classAudioTurnOnTooltip =>
+      'लाइव कक्षा के विद्यार्थियों को बोर्ड के माइक्रोफ़ोन से अपनी आवाज़ सुनने दें';
+
+  @override
+  String get classAudioTurnOffTooltip => 'कक्षा की आवाज़ बंद करें';
+
+  @override
+  String get micOn => 'माइक चालू';
+
+  @override
+  String get micOnTooltip =>
+      'बोर्ड का माइक्रोफ़ोन चालू है: लाइव कक्षा के विद्यार्थी कक्षा की आवाज़ सुन सकते हैं';
+
+  @override
+  String get classAudioStarted =>
+      'कक्षा की आवाज़ चालू है। लाइव कक्षा के विद्यार्थी आपको सुन सकते हैं; जब वे सुन रहे हों तब \"माइक चालू\" दिखता है।';
+
+  @override
+  String get classAudioStopped => 'कक्षा की आवाज़ बंद है।';
+
+  @override
+  String classAudioUnavailable(String reason) {
+    return 'कक्षा की आवाज़ उपलब्ध नहीं है: $reason';
+  }
 
   @override
   String get cloudUnreachableCheckOnline =>

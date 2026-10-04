@@ -11,6 +11,8 @@ import '../l10n/l10n.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import 'api_client.dart';
+import 'class_audio/class_audio.dart';
+import 'class_audio/mic_capture.dart';
 import 'device_store.dart';
 import 'models.dart';
 import 'outbox_store.dart';
@@ -38,13 +40,22 @@ class BoardController extends ChangeNotifier {
     Realtime Function(String)? realtimeFactory,
     Recordings? recordings,
     OutboxStore? outboxStore,
+    MicCapture Function()? micFactory,
   }) : _store = store ?? DeviceStore(),
       _outboxStore = outboxStore ?? FileOutboxStore(),
       _apiFactory = apiFactory ?? ((url) => ApiClient(baseUrl: url)),
       _realtimeFactory = realtimeFactory ?? Realtime.new,
       recordings = recordings ?? Recordings() {
     this.recordings.attach(api: () => api, session: () => session);
+    classAudio = ClassAudio(
+      mic: micFactory ?? RecordMicCapture.new,
+      request: (event, data) => _realtime?.request(event, data) ?? Future.value(),
+      emit: (event, data) => _realtime?.emit(event, data),
+    )..addListener(notifyListeners);
   }
+
+  /// Class audio: the teacher's microphone to the live class (off at the start of every class).
+  late final ClassAudio classAudio;
 
   final DeviceStore _store;
   final OutboxStore _outboxStore;
@@ -98,6 +109,7 @@ class BoardController extends ChangeNotifier {
     if (api == null || session == null) throw StateError('Sign in to go live');
     await api!.setClassLive(on);
     classLive = on;
+    if (!on) unawaited(classAudio.turnOff());
     notifyListeners();
   }
 
@@ -325,11 +337,13 @@ class BoardController extends ChangeNotifier {
       liveLeaders = (e['leaders'] as num?)?.toInt() ?? liveViewers;
       liveStudents = (e['students'] as num?)?.toInt() ?? 0;
       liveIndicator = e['indicator'] as bool? ?? true;
+      classAudio.setListeners((e['listeners'] as num?)?.toInt() ?? 0);
       notifyListeners();
     });
     rt.on(RealtimeEvents.liveSnapshotRequest, (_) => onLiveSnapshotRequest?.call());
     rt.onReady = () {
       online = true;
+      classAudio.reconnected();
       notifyListeners();
       unawaited(_fetchPendingBroadcasts());
       unawaited(flushOutbox());
@@ -365,6 +379,8 @@ class BoardController extends ChangeNotifier {
     _sessionTimer?.cancel();
     liveViewers = liveLeaders = liveStudents = 0;
     classLive = false;
+    unawaited(classAudio.turnOff());
+    classAudio.setListeners(0);
     api?.sessionToken = null;
     session = null;
     _teacherLanguage = null;
@@ -425,6 +441,8 @@ class BoardController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _sessionTimer?.cancel();
+    classAudio.removeListener(notifyListeners);
+    classAudio.dispose();
     _realtime?.dispose();
     recordings.dispose();
     super.dispose();

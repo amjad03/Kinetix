@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { io } from 'socket.io-client';
 import { canSee } from '@/lib/access';
 import { API_URL, SESSION_COOKIE } from '@/lib/config';
-import { LiveEvents, refusalCode, type LiveFrame, type LiveWatchAck, type StreamMessage } from '@/lib/live/events';
+import { LiveEvents, refusalCode, type LiveAudioChunk, type LiveAudioInfo, type LiveFrame, type LiveWatchAck, type StreamMessage } from '@/lib/live/events';
 import type { Me } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -73,11 +73,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
         }
       };
       cleanup = () => close();
+      // Class audio: the API only relays it to viewers allowed to hear it (an institution setting for leaders).
+      const audio: LiveAudioInfo = { allowed: false, on: false };
 
       socket.on('connect', async () => {
         try {
           const ack = (await socket.timeout(10_000).emitWithAck(LiveEvents.Watch, { deviceId })) as LiveWatchAck;
-          if (ack?.ok) send({ type: 'watching', session: ack.session ?? null });
+          if (ack?.ok) {
+            send({ type: 'watching', session: ack.session ?? null });
+            audio.allowed = ack.audio?.allowed === true;
+            audio.on = ack.audio?.on === true;
+            send({ type: 'audio-state', audio: { ...audio } });
+          }
           else close({ type: 'refused', error: ack?.error ?? 'This class cannot be watched right now', code: refusalCode(ack?.error) });
         } catch {
           close({ type: 'refused', error: 'KINETIX Cloud did not answer. Try again.', code: 'unavailable' });
@@ -95,6 +102,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
       });
       socket.on(LiveEvents.Frame, (frame: LiveFrame) => {
         if (frame?.deviceId === deviceId) send({ type: 'frame', frame });
+      });
+      socket.on(LiveEvents.AudioState, (e: { deviceId?: string; on?: boolean }) => {
+        if (e?.deviceId !== deviceId || typeof e.on !== 'boolean') return;
+        audio.on = e.on;
+        send({ type: 'audio-state', audio: { ...audio } });
+      });
+      socket.on(LiveEvents.Audio, (c: LiveAudioChunk) => {
+        if (c?.deviceId === deviceId && audio.allowed && typeof c.data === 'string' && c.codec === 'ima-adpcm') send({ type: 'audio', seq: c.seq, data: c.data });
       });
       socket.on(LiveEvents.Ended, (e: { deviceId?: string; reason?: string }) => {
         if (e?.deviceId !== deviceId) return;

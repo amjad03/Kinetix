@@ -24,10 +24,12 @@ export default defineConfig({
     { name: 'auth', testMatch: /auth\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     {
       name: 'dashboard',
-      testMatch: /(dashboard|live|syllabus|ai|results|timetable|library-principal|conversations)\.spec\.ts/,
+      testMatch: /(dashboard|live|syllabus|ai|results|timetable|library-principal|conversations|departments)\.spec\.ts/,
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
     },
+    // Signs in itself, to check where a head of department lands.
+    { name: 'hod', testMatch: /department\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     {
       name: 'fees',
       testMatch: /fees\.spec\.ts/,

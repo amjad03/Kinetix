@@ -377,3 +377,73 @@ export interface ConversationThread {
 }
 
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
+
+// ---- Departments (v1/departments, v1/admin/departments) ----
+
+export interface DepartmentRef {
+  id: string;
+  name: string;
+  head: { id: string; fullName: string } | null;
+}
+
+export interface DeptCounts {
+  scheduled: number;
+  taught: number;
+  attendanceTaken: number;
+  homework: number;
+  recordings: number;
+  taughtPercent: number | null;
+  attendancePercent: number | null;
+  attendanceTakenPercent: number | null;
+}
+
+export interface DeptTeacher extends DeptCounts {
+  id: string;
+  fullName: string;
+}
+
+export interface DeptClass extends DeptCounts {
+  sectionId: string;
+  section: string;
+  subjectId: string;
+  subject: string;
+  teacherId: string;
+  teacher: string;
+  latestAssessment: { id: string; title: string; heldOn: string; averagePercent: number | null } | null;
+}
+
+export interface DeptAssessment {
+  id: string;
+  title: string;
+  kind: AssessmentKind;
+  heldOn: string;
+  maxMarks: number;
+  publishedAt: string | null;
+  sectionId: string;
+  section: string;
+  subjectId: string;
+  subject: string;
+  createdBy: string;
+  entered: number;
+  averagePercent: number | null;
+}
+
+export interface DepartmentOverview {
+  department: { id: string; name: string; head: string | null };
+  range: { from: string; to: string };
+  /** Null when the department has no subjects yet. */
+  totals: (DeptCounts & { assessments: number; published: number }) | null;
+  subjects: { id: string; code: string; name: string; term: number; program: string }[];
+  teachers: DeptTeacher[];
+  classes: DeptClass[];
+  assessments: DeptAssessment[];
+}
+
+export interface AdminDepartment {
+  id: string;
+  name: string;
+  headUserId: string | null;
+  head: string | null;
+  staff: { id: string; fullName: string }[];
+  subjects: { id: string; code: string; name: string }[];
+}

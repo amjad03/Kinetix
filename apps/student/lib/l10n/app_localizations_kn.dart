@@ -1224,7 +1224,19 @@ class AppLocalizationsKn extends AppLocalizations {
   String get postgraduate => 'ಸ್ನಾತಕೋತ್ತರ';
 
   @override
-  String get boardOnlyNoSound => 'ಬೋರ್ಡ್ ಮಾತ್ರ: ಇನ್ನೂ ಧ್ವನಿ ಇಲ್ಲ';
+  String get boardOnlyNoSound => 'ಬೋರ್ಡ್ ಮಾತ್ರ: ಧ್ವನಿ ಇಲ್ಲ';
+
+  @override
+  String get teacherMicOn => 'ಶಿಕ್ಷಕರ ಮೈಕ್ ಆನ್ ಆಗಿದೆ';
+
+  @override
+  String get teacherMicOff => 'ಶಿಕ್ಷಕರ ಮೈಕ್ ಆಫ್ ಆಗಿದೆ';
+
+  @override
+  String get muteClass => 'ತರಗತಿಯ ಧ್ವನಿ ಮ್ಯೂಟ್ ಮಾಡಿ';
+
+  @override
+  String get unmuteClass => 'ತರಗತಿಯ ಧ್ವನಿ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
   String get errNotStudent => 'ಈ ಆ್ಯಪ್ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ. ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಲಾಗಿನ್ ಸಿದ್ಧಪಡಿಸಲು ಕಾಲೇಜು ಕಚೇರಿಯನ್ನು ಕೇಳಿ.';

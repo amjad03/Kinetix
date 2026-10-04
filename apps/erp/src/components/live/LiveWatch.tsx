@@ -19,8 +19,10 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { formatTime } from '@/lib/dates';
-import { endedText, type LiveSession, type RefusalCode, type StreamMessage } from '@/lib/live/events';
+import { endedText, type LiveAudioInfo, type LiveSession, type RefusalCode, type StreamMessage } from '@/lib/live/events';
 import { LivePlayer } from '@/lib/live/player';
+import { LiveAudioPlayer } from './audio-player';
+import { LiveAudioControls } from './LiveAudioControls';
 import { LiveBoard } from './LiveBoard';
 import { LiveChip } from './LiveChip';
 
@@ -62,6 +64,19 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
   const stage = useRef<HTMLDivElement>(null);
 
   const [slow, setSlow] = useState(false);
+  // Class audio: what the API allows and whether the mic is on; the player exists for the page's lifetime.
+  const [audio, setAudio] = useState<LiveAudioInfo | null>(null);
+  const [listening, setListening] = useState(false);
+  const [player] = useState(() => new LiveAudioPlayer());
+  const stopListening = useCallback(() => {
+    player.stop();
+    setListening(false);
+  }, [player]);
+  const listen = useCallback(() => {
+    void player.start().then(() => setListening(true));
+  }, [player]);
+  // Stop when leaving the page.
+  useEffect(() => () => player.stop(), [player]);
 
   useEffect(() => {
     p.reset();
@@ -86,6 +101,13 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
           setStatus((s) => (s.kind === 'offline' || s.kind === 'reconnecting' || s.kind === 'connecting' ? { kind: 'watching' } : s));
           setVersion(p.version);
           break;
+        case 'audio-state':
+          setAudio(m.audio);
+          if (!m.audio.allowed || !m.audio.on) stopListening();
+          break;
+        case 'audio':
+          player.push(m.data);
+          break;
         case 'offline':
           setStatus({ kind: 'offline' });
           break;
@@ -95,11 +117,15 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
         case 'ended':
           final = true;
           es.close();
+          stopListening();
+          setAudio(null);
           setStatus({ kind: 'ended', reason: m.reason });
           break;
         case 'refused':
           final = true;
           es.close();
+          stopListening();
+          setAudio(null);
           setStatus({ kind: 'refused', code: m.code, error: m.error });
           break;
       }
@@ -110,8 +136,11 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
       if (es.readyState === EventSource.CLOSED) setStatus({ kind: 'refused', code: 'failed', error: 'Sign in again, or try again in a moment.' });
       else setStatus((s) => (s.kind === 'watching' ? { kind: 'reconnecting' } : s));
     };
-    return () => es.close();
-  }, [board.id, attempt, p]);
+    return () => {
+      es.close();
+      stopListening();
+    };
+  }, [board.id, attempt, p, player, stopListening]);
 
   // A board that has not answered in a while may be on an older app without live view.
   useEffect(() => {
@@ -152,7 +181,10 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
             {board.room ? ` · ${board.room}` : ''}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          {audio?.allowed && audio.on && status.kind !== 'ended' && status.kind !== 'refused' && (
+            <LiveAudioControls player={player} listening={listening} onListen={listen} onStop={stopListening} />
+          )}
           {hasFrame && (
             <Chip variant="outlined" label={`Page ${p.index + 1} of ${p.pageCount}`} data-testid="live-page" sx={{ fontVariantNumeric: 'tabular-nums' }} />
           )}
@@ -183,7 +215,8 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
         data-testid="live-notes"
       >
         <Note icon={<VisibilityOutlined />}>Viewing is recorded in the audit log.</Note>
-        <Note icon={<MicOffOutlined />}>Board only: classroom sound is not part of live view yet.</Note>
+        {audio && !audio.allowed && <Note icon={<MicOffOutlined />}>Class audio is off for leaders.</Note>}
+        {audio?.allowed && !audio.on && <Note icon={<MicOffOutlined />}>The teacher&apos;s mic is off.</Note>}
       </Box>
     </>
   );
