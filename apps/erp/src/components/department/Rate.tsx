@@ -28,7 +28,7 @@ export function Rate({ value, kind, detail, testId }: { value: number | null; ki
           {formatPercent(value)}
         </Typography>
         {detail && (
-          <Typography variant="caption" color="text.secondary" component="div" sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: '16px' }}>
+          <Typography variant="caption" color="text.secondary" component="div" sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: '16px', whiteSpace: 'nowrap' }}>
             {detail}
           </Typography>
         )}

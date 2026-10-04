@@ -282,6 +282,7 @@ function EditDialog({
             <HeadSelect staff={headOptions} value={head} onChange={setHead} />
             <Autocomplete
               multiple
+              disableCloseOnSelect
               options={subjects}
               value={subjects.filter((s) => subjectIds.includes(s.id))}
               onChange={(_, v) => setSubjectIds(v.map((s) => s.id))}
@@ -313,6 +314,7 @@ function EditDialog({
             )}
             <Autocomplete
               multiple
+              disableCloseOnSelect
               options={people}
               value={people.filter((s) => staffIds.includes(s.id))}
               onChange={(_, v) => setStaffIds(v.map((s) => s.id))}

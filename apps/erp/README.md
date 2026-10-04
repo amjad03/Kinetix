@@ -2,7 +2,7 @@
 
 The web dashboard for principals, administrators, heads of department and the accounts office:
 the whole school's day at a glance, classes, the timetable editor, attendance, homework, results,
-messages to every classroom ("Circulate"), a read-only safeguarding view of parent–teacher
+messages to every classroom ("Circulate"), the head of department's view of their department, departments set-up, a read-only safeguarding view of parent–teacher
 messages, the boards, live classroom view, fees, the library desk,
 the syllabus library and KINETIX AI usage. Spec: [docs/product/erp-dashboard.md](../../docs/product/erp-dashboard.md).
 
@@ -33,7 +33,7 @@ only) or `library@demo.kinetix.in` (library desk: Library only). Teachers such a
 | `pnpm dev` / `pnpm build` / `pnpm start` | Next.js on port 3000 |
 | `pnpm lint` | ESLint (next/core-web-vitals + TypeScript) |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | Unit tests (Vitest): M3 colour-scheme mapping, dates, role access, rupees, the live-view player and renderer, AI usage, library fines, results bands, the timetable grid, conversation search |
+| `pnpm test` | Unit tests (Vitest): M3 colour-scheme mapping, dates, role access, rupees, the live-view player and renderer, class audio (IMA ADPCM decoder checked against the boards' Dart codec, playback timing), department ranges and flags, AI usage, library fines, results bands, the timetable grid, conversation search |
 | `pnpm test:e2e` | Playwright against a running API with a **fresh** demo seed; starts `pnpm dev` unless `ERP_URL` is set |
 
 ```bash
@@ -48,7 +48,10 @@ database you can reseed. They sign in once per run because the API allows 10 log
 account. The live-view tests enrol a pretend board through the API and stream ink to the page
 (`e2e/board-sim.ts`). `ERP_URL`'s port is the port `next dev` is started on. Set
 `PW_CHROMIUM_PATH` to use a specific Chromium binary, and `E2E_SHOTS=<dir>` to save screenshots
-of the pages.
+of the pages. Leaders hear class audio only when the institution setting `classroomAudioToViewers` is
+on, which has no API yet: set `E2E_DATABASE_URL` (the API's owner connection, needs `psql`) to run the
+class-audio test, which turns it on for the test and off again. The departments test adds a department
+and deletes it again; the head-of-department tests sign in as `ravi@demo.kinetix.in` themselves.
 
 ## Environment
 
@@ -68,18 +71,24 @@ of the pages.
 - **Roles** (`src/lib/access.ts`): school leaders see the school pages, Live, Results and Syllabus;
   Fees is for the principal, administrator and accounts office; Library for the principal,
   administrator and library desk; the timetable editor, Parent messages and AI usage for the
-  principal and administrator. Heads of department see results for the classes they teach. The navigation shows only what the role may open, and every page checks again
+  principal and administrator; Departments (set-up) for the principal and administrator. Heads of
+  department land on Department (their department's classes, teachers and marks) and see results for
+  the classes they teach and their department's classes. The navigation shows only what the role may open, and every page checks again
   (`requireSection`), sending others to their own home page.
-- **Pages** (`src/app/(dashboard)`): Today, Classes, Timetable, Attendance, Homework, Results
+- **Pages** (`src/app/(dashboard)`): Today, Department, Classes, Timetable, Attendance, Homework, Results
   (and each assessment), Messages, Parent messages, Boards, Live, Fees (invoices, printable receipts), Library,
-  Syllabus, AI usage. Dates and filters live in the URL
+  Syllabus, AI usage, Departments. Dates and filters live in the URL
   (`?date=YYYY-MM-DD`, `?status=`), so every view can be bookmarked and shared.
 - **Live view.** `src/app/api/live/[deviceId]/route.ts` watches the board on the API's
   `/realtime` socket from the server, with the session token, and relays frames to the page as
   server-sent events, so the token stays in its httpOnly cookie. `src/lib/live/player.ts` is a
   port of the board's `LessonPlayer` (lesson events → pages of strokes) and `render.ts` paints
   them on a canvas the way the board does (backgrounds, highlighter, arrows, chalk-white ink on
-  the chalkboard).
+  the chalkboard). Class audio (when the API allows it for leaders and the teacher's mic is on) is
+  relayed the same way; Listen starts Web Audio (`src/lib/live/audio.ts` decodes the 16 kHz IMA ADPCM
+  chunks, a port of `LiveAudioCodec` in packages/kinetix_ink, and schedules them back to back with a
+  300 ms lead). `scripts/live-audio-fixture.dart` regenerates the cross-language test fixture
+  (`dart run scripts/live-audio-fixture.dart`).
 - **Money** is integer paise from the API, shown as Indian rupees (`src/lib/money.ts`).
 - **Theme** (`src/theme`): `scheme.ts` generates M3 roles; `palette.ts` maps them onto MUI
   (`primary`, `background`, `text`, `divider`, state layers) and exposes the full scheme as

@@ -160,7 +160,13 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
       </Box>
 
       {/* Navigation: M3 drawer on wide screens, rail on tablets */}
-      <Box component="nav" aria-label="Main" className="kx-chrome" sx={{ position: 'sticky', top: 64, alignSelf: 'start', px: { xs: 0, lg: 1.5 }, pt: { xs: 0.5, lg: 1 } }}>
+      <Box
+        component="nav"
+        aria-label="Main"
+        className="kx-chrome"
+        // Scrolls on its own when the list is taller than the window (the principal sees every page).
+        sx={{ position: 'sticky', top: 64, alignSelf: 'start', maxHeight: 'calc(100dvh - 64px)', overflowY: 'auto', scrollbarWidth: 'thin', px: { xs: 0, lg: 1.5 }, pt: { xs: 0.5, lg: 1 }, pb: 1 }}
+      >
         {nav.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = active ? item.active : item.icon;

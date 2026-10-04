@@ -293,7 +293,7 @@ function ClassesTable({ rows }: { rows: DeptClass[] }) {
                     {c.subject}
                   </Typography>
                 </TableCell>
-                <TableCell>{c.teacher}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{c.teacher}</TableCell>
                 <TableCell align="right">
                   <Rate value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled)} />
                 </TableCell>
