@@ -26,7 +26,8 @@ import Typography from '@mui/material/Typography';
 import { useMemo, useState, useTransition } from 'react';
 import { sendBroadcast } from '@/app/(dashboard)/messages/actions';
 import type { Priority, Structure } from '@/lib/types';
-import { EXPIRY_OPTIONS, PRIORITIES } from './priorities';
+import { useI18n } from '@/i18n/client';
+import { EXPIRY_OPTIONS, PRIORITIES, priorityKey } from './priorities';
 
 type Mode = 'all' | 'programs' | 'classes';
 
@@ -37,6 +38,7 @@ interface Option {
 }
 
 export function ComposeMessage({ structure }: { structure: Structure }) {
+  const { t } = useI18n();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [priority, setPriority] = useState<Priority>('info');
@@ -52,24 +54,24 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
   const [pending, start] = useTransition();
 
   const programOptions = useMemo<Option[]>(
-    () => structure.programs.map((p) => ({ id: p.id, label: p.name, group: p.level === 'pg' ? 'Postgraduate' : p.level === 'ug' ? 'Undergraduate' : p.level })),
-    [structure.programs],
+    () => structure.programs.map((p) => ({ id: p.id, label: p.name, group: p.level === 'pg' ? t('msg.group.pg') : p.level === 'ug' ? t('msg.group.ug') : p.level })),
+    [structure.programs, t],
   );
   const programName = useMemo(() => new Map(structure.programs.map((p) => [p.id, p.name])), [structure.programs]);
   const classOptions = useMemo<Option[]>(
     () =>
       structure.sections
-        .map((s) => ({ id: s.id, label: s.displayName, group: programName.get(s.programId) ?? 'Other' }))
+        .map((s) => ({ id: s.id, label: s.displayName, group: programName.get(s.programId) ?? t('msg.group.other') }))
         .sort((a, b) => a.group.localeCompare(b.group) || a.label.localeCompare(b.label)),
-    [structure.sections, programName],
+    [structure.sections, programName, t],
   );
 
   const emergency = priority === 'emergency';
-  const titleError = touched && !title.trim() ? 'Add a title' : title.length > 120 ? 'Keep the title under 120 characters' : '';
-  const bodyError = touched && !body.trim() ? 'Write the message' : body.length > 2000 ? 'Keep the message under 2,000 characters' : '';
-  const audienceError = touched && ((mode === 'programs' && !programs.length) || (mode === 'classes' && !classes.length)) ? 'Choose at least one' : '';
+  const titleError = touched && !title.trim() ? t('msg.err.title') : title.length > 120 ? t('msg.err.titleLong') : '';
+  const bodyError = touched && !body.trim() ? t('msg.err.body') : body.length > 2000 ? t('msg.err.bodyLong') : '';
+  const audienceError = touched && ((mode === 'programs' && !programs.length) || (mode === 'classes' && !classes.length)) ? t('msg.err.audience') : '';
   const audienceText =
-    mode === 'all' ? 'the whole school' : (mode === 'programs' ? programs : classes).map((o) => o.label).join(', ') || 'nobody yet';
+    mode === 'all' ? t('msg.wholeSchool') : (mode === 'programs' ? programs : classes).map((o) => o.label).join(', ') || t('msg.nobodyYet');
 
   const valid = () => title.trim() && body.trim() && title.length <= 120 && body.length <= 2000 && (mode === 'all' || (mode === 'programs' ? programs.length : classes.length));
 
@@ -96,7 +98,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
         return;
       }
       const n = res.data.targetedBoards;
-      setDone(`Circulated to ${audienceText}${n ? ` · ${n} ${n === 1 ? 'board' : 'boards'}` : ''}`);
+      setDone(`${t('msg.circulated', { audience: audienceText })}${n ? ` · ${t.plural('msg.boards', n)}` : ''}`);
       setTitle('');
       setBody('');
       setPriority('info');
@@ -118,10 +120,10 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
       >
         <Box>
           <Typography variant="h5" component="h2" id="compose-title">
-            Circulate a message
+            {t('msg.compose.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Shows on classroom boards and reaches students and families in their apps.
+            {t('msg.compose.help')}
           </Typography>
         </Box>
 
@@ -132,7 +134,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
         )}
 
         <TextField
-          label="Title"
+          label={t('msg.title')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           error={!!titleError}
@@ -142,7 +144,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           required
         />
         <TextField
-          label="Message"
+          label={t('msg.body')}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           error={!!bodyError}
@@ -157,9 +159,9 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
 
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0 }}>
           <Typography component="legend" variant="subtitle2" sx={{ mb: 1 }}>
-            Priority
+            {t('msg.priority')}
           </Typography>
-          <Box role="radiogroup" aria-label="Priority" sx={{ display: 'grid', gap: 1, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+          <Box role="radiogroup" aria-label={t('msg.priority')} sx={{ display: 'grid', gap: 1, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
             {PRIORITIES.map((p) => {
               const on = p.value === priority;
               const danger = p.value === 'emergency';
@@ -168,7 +170,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
                   key={p.value}
                   role="radio"
                   aria-checked={on}
-                  title={`${p.board} ${p.families}`}
+                  title={`${t(priorityKey(p.value, 'board'))} ${t(priorityKey(p.value, 'families'))}`}
                   data-testid={`priority-${p.value}`}
                   onClick={() => setPriority(p.value)}
                   sx={{
@@ -189,9 +191,9 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
                   }}
                 >
                   <Box sx={{ display: 'flex', color: danger ? 'error.main' : on ? 'inherit' : 'text.secondary', '& svg': { fontSize: 22 } }}>{p.icon}</Box>
-                  <Typography variant="subtitle2">{p.label}</Typography>
+                  <Typography variant="subtitle2">{t(priorityKey(p.value))}</Typography>
                   <Typography variant="caption" sx={{ color: on ? 'inherit' : 'text.secondary' }}>
-                    {p.short}
+                    {t(priorityKey(p.value, 'short'))}
                   </Typography>
                   {on && <CheckCircle sx={{ position: 'absolute', top: 10, right: 10, color: danger ? 'error.main' : 'primary.main', fontSize: 18 }} />}
                 </ButtonBase>
@@ -199,10 +201,9 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
             })}
           </Box>
           {(() => {
-            const p = PRIORITIES.find((x) => x.value === priority)!;
             return (
               <Typography variant="body2" color={emergency ? 'error.main' : 'text.secondary'} sx={{ mt: 1 }} data-testid="priority-help">
-                <strong>On boards:</strong> {p.board} {p.families}
+                <strong>{t('msg.onBoards')}</strong> {t(priorityKey(priority, 'board'))} {t(priorityKey(priority, 'families'))}
               </Typography>
             );
           })()}
@@ -210,12 +211,12 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
 
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0 }}>
           <Typography component="legend" variant="subtitle2" sx={{ mb: 1 }}>
-            Send to
+            {t('msg.sendTo')}
           </Typography>
-          <ToggleButtonGroup exclusive value={mode} onChange={(_, v: Mode | null) => v && setMode(v)} aria-label="Audience" sx={{ bgcolor: 'kx.pane' }}>
-            <ToggleButton value="all">Whole school</ToggleButton>
-            <ToggleButton value="programs">Programs</ToggleButton>
-            <ToggleButton value="classes">Classes</ToggleButton>
+          <ToggleButtonGroup exclusive value={mode} onChange={(_, v: Mode | null) => v && setMode(v)} aria-label={t('msg.audience')} sx={{ bgcolor: 'kx.pane' }}>
+            <ToggleButton value="all">{t('msg.mode.all')}</ToggleButton>
+            <ToggleButton value="programs">{t('msg.mode.programs')}</ToggleButton>
+            <ToggleButton value="classes">{t('msg.mode.classes')}</ToggleButton>
           </ToggleButtonGroup>
           {mode !== 'all' && (
             <Autocomplete
@@ -236,7 +237,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label={mode === 'programs' ? 'Programs' : 'Classes'}
+                  label={mode === 'programs' ? t('msg.mode.programs') : t('msg.mode.classes')}
                   placeholder={(mode === 'programs' ? programs : classes).length ? undefined : mode === 'programs' ? 'BCom, BCA…' : 'BCom Sem 3 A…'}
                   error={!!audienceError}
                   helperText={audienceError || undefined}
@@ -246,24 +247,22 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
             />
           )}
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
-            {mode === 'all'
-              ? 'Every board in the school, and every student and family.'
-              : 'Boards where a teacher is teaching these classes right now, and the students and families of these classes.'}
+            {mode === 'all' ? t('msg.mode.allHelp') : t('msg.mode.someHelp')}
           </Typography>
         </Box>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, alignItems: 'start' }}>
           <TextField
             select
-            label="Expires after"
+            label={t('msg.expires')}
             value={ttl}
             onChange={(e) => setTtl(Number(e.target.value))}
-            helperText="Boards that come online later still show it until then"
+            helperText={t('msg.expiresHelp')}
             sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
           >
             {EXPIRY_OPTIONS.map((o) => (
               <MenuItem key={o.minutes} value={o.minutes}>
-                {o.label}
+                {t(o.label)}
               </MenuItem>
             ))}
           </TextField>
@@ -271,10 +270,10 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
             <FormControlLabel
               sx={{ ml: -1 }}
               control={<Switch checked={requiresAck || emergency} disabled={emergency} onChange={(e) => setRequiresAck(e.target.checked)} />}
-              label="Require acknowledgement"
+              label={t('msg.ack')}
             />
             <Typography variant="caption" color="text.secondary" component="p" sx={{ ml: 0.5 }}>
-              {emergency ? 'Emergencies always stay on screen until you clear them.' : 'Boards keep it on screen until a teacher taps Acknowledge.'}
+              {emergency ? t('msg.ackEmergency') : t('msg.ackHelp')}
             </Typography>
           </Box>
         </Box>
@@ -287,7 +286,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
             startIcon={pending ? <CircularProgress size={18} color="inherit" /> : emergency ? <ReportOutlined /> : <Send />}
             disabled={pending}
           >
-            {emergency ? 'Circulate emergency' : 'Circulate'}
+            {emergency ? t('msg.circulateEmergency') : t('msg.circulate')}
           </Button>
         </Box>
       </Box>
@@ -297,12 +296,11 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           <ReportOutlined sx={{ fontSize: 28 }} />
         </Box>
         <DialogTitle id="confirm-emergency" sx={{ textAlign: 'center' }}>
-          Send an emergency alert?
+          {t('msg.confirm.title')}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            Every board for <strong>{audienceText}</strong> will show a full-screen red alert with an alarm until you clear it. Students and families get a
-            critical alert.
+            {t('msg.confirm.body', { audience: audienceText })}
           </Typography>
           <Box sx={{ mt: 2, p: 1.5, borderRadius: '12px', bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }}>
             <Typography variant="subtitle2">{title}</Typography>
@@ -312,9 +310,9 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirm(false)}>Cancel</Button>
+          <Button onClick={() => setConfirm(false)}>{t('common.cancel')}</Button>
           <Button variant="contained" color="error" onClick={submit} data-testid="confirm-emergency">
-            Send emergency
+            {t('msg.confirm.send')}
           </Button>
         </DialogActions>
       </Dialog>

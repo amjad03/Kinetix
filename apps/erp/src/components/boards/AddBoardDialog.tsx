@@ -18,14 +18,15 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addBoard } from '@/app/(dashboard)/boards/actions';
-import { formatDateTime } from '@/lib/dates';
+import { useI18n } from '@/i18n/client';
 import type { CreatedDevice, Structure } from '@/lib/types';
 
 export function AddBoardButton({ structure, allowed, timeZone }: { structure: Structure; allowed: boolean; timeZone: string }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const button = (
     <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)} disabled={!allowed || structure.campuses.length === 0}>
-      Add board
+      {t('boards.add')}
     </Button>
   );
   return (
@@ -33,7 +34,7 @@ export function AddBoardButton({ structure, allowed, timeZone }: { structure: St
       {allowed ? (
         button
       ) : (
-        <Tooltip title="Only the principal or an administrator can add boards">
+        <Tooltip title={t('boards.addOnlyLeaders')}>
           <span>{button}</span>
         </Tooltip>
       )}
@@ -43,6 +44,7 @@ export function AddBoardButton({ structure, allowed, timeZone }: { structure: St
 }
 
 function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure; timeZone: string; onClose: () => void }) {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [campusId, setCampusId] = useState(structure.campuses[0]?.id ?? '');
   const [roomId, setRoomId] = useState('');
@@ -72,15 +74,15 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
           submit();
         }}
       >
-        <DialogTitle id="add-board-title">Add a board</DialogTitle>
+        <DialogTitle id="add-board-title">{t('boards.add.title')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-            Register a classroom board. You will get a one-time code to type on it.
+            {t('boards.add.help')}
           </Typography>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
-              label="Board name"
+              label={t('boards.add.name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Room 105 Board"
@@ -88,7 +90,7 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
               required
               slotProps={{ htmlInput: { maxLength: 80 } }}
             />
-            <TextField select label="Campus" value={campusId} onChange={(e) => (setCampusId(e.target.value), setRoomId(''))} required>
+            <TextField select label={t('boards.add.campus')} value={campusId} onChange={(e) => (setCampusId(e.target.value), setRoomId(''))} required>
               {structure.campuses.map((c) => (
                 <MenuItem key={c.id} value={c.id}>
                   {c.name}
@@ -97,15 +99,15 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
             </TextField>
             <TextField
               select
-              label="Room"
+              label={t('boards.add.room')}
               value={roomId}
               onChange={(e) => setRoomId(e.target.value)}
-              helperText="Optional. Used to show the board next to its classes."
+              helperText={t('boards.add.roomHelp')}
               slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
             >
               <MenuItem value="">
                 <Box component="em" sx={{ color: 'text.secondary', fontStyle: 'normal' }}>
-                  No room
+                  {t('boards.add.noRoom')}
                 </Box>
               </MenuItem>
               {rooms.map((r) => (
@@ -118,10 +120,10 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={pending || !name.trim() || !campusId} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            Get code
+            {t('boards.add.getCode')}
           </Button>
         </DialogActions>
       </Box>
@@ -131,13 +133,14 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
 
 /** Shows a one-time enrolment code with instructions. Used when adding a board and when re-enrolling one. */
 export function EnrollmentCodeDialog({ created, timeZone, onClose }: { created: CreatedDevice; timeZone: string; onClose: () => void }) {
+  const { t, fmt } = useI18n();
   const [copied, setCopied] = useState(false);
   return (
       <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="code-title">
-        <DialogTitle id="code-title">Enrol “{created.name}”</DialogTitle>
+        <DialogTitle id="code-title">{t('boards.code.title', { name: created.name })}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            Type this one-time code on the board to connect it to your school.
+            {t('boards.code.help')}
           </Typography>
           <Box
             sx={{
@@ -160,9 +163,9 @@ export function EnrollmentCodeDialog({ created, timeZone, onClose }: { created: 
               {created.enrollmentCode}
             </Typography>
             <Typography variant="caption" component="p" sx={{ mt: 1, opacity: 0.85 }}>
-              Works once · expires {formatDateTime(created.enrollmentExpiresAt, timeZone)}
+              {t('boards.code.expires', { date: fmt.dateTime(created.enrollmentExpiresAt, timeZone) })}
             </Typography>
-            <Tooltip title={copied ? 'Copied' : 'Copy code'}>
+            <Tooltip title={copied ? t('boards.code.copied') : t('boards.code.copyCode')}>
               <Button
                 size="small"
                 onClick={async () => {
@@ -176,25 +179,22 @@ export function EnrollmentCodeDialog({ created, timeZone, onClose }: { created: 
                 startIcon={copied ? <CheckOutlined /> : <ContentCopyOutlined />}
                 sx={{ position: 'absolute', top: 8, right: 8, color: 'inherit' }}
               >
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? t('boards.code.copied') : t('boards.code.copy')}
               </Button>
             </Tooltip>
           </Box>
           <Box component="ol" sx={{ pl: 2.5, my: 2, '& li': { mb: 1 }, typography: 'body2' }}>
-            <li>Install KINETIX Board on the tablet, panel or Windows PC, and connect it to the internet.</li>
-            <li>
-              Open the app. On the <strong>Set up this board</strong> screen, type the code and choose <strong>Register board</strong>.
-            </li>
-            <li>Type the code above. The board appears here as online within a few seconds.</li>
+            <li>{t('boards.code.step1')}</li>
+            <li>{t('boards.code.step2')}</li>
+            <li>{t('boards.code.step3')}</li>
           </Box>
           <Alert severity="info" variant="outlined" sx={{ borderColor: 'm3.outlineVariant' }}>
-            Keep the code private. Anyone with it can enrol a board into your school until it is used or expires. If it is lost, issue a new code from
-            the board&apos;s menu.
+            {t('boards.code.private')}
           </Alert>
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={onClose}>
-            Done
+            {t('common.done')}
           </Button>
         </DialogActions>
       </Dialog>

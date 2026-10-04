@@ -11,9 +11,12 @@ import { api, load, requireSection } from '@/lib/api';
 import { feeClasses } from '@/lib/fees';
 import { INVOICE_FILTERS, type InvoiceFilter } from '@/lib/invoices';
 import { schoolToday, TIMEZONE } from '@/lib/school';
+import { getI18n } from '@/i18n/server';
 import type { FeeInvoice, FeeSummary } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Invoices' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('fees.invoices') };
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -34,17 +37,18 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const list = (invoices.data ?? []).filter((i) => status !== 'overdue' || i.dueOn < today);
   const filterClasses = (summary.data?.classes ?? []).map((c) => ({ id: c.sectionId, name: c.className }));
   const className = filterClasses.find((c) => c.id === classId)?.name;
+  const { t } = await getI18n();
 
   return (
     <>
       <Box sx={{ ml: -1, mb: 0.5 }}>
         <LinkButton href="/fees" size="small" startIcon={<ArrowBack />}>
-          Fees
+          {t('nav.fees')}
         </LinkButton>
       </Box>
       <PageHeader
-        title={className ? `Invoices · ${className}` : 'Invoices'}
-        subtitle="Record payments at the counter, print receipts, and cancel fees issued by mistake"
+        title={className ? t('fees.invoicesTitle', { name: className }) : t('fees.invoices')}
+        subtitle={t('fees.invoicesSubtitle')}
         actions={<IssueFeeButton classes={classes.data ?? []} today={today} defaultClassId={classId || undefined} />}
       />
       <InvoiceFilters status={status} classId={classId} classes={filterClasses} />

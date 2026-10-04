@@ -12,6 +12,8 @@ import Typography from '@mui/material/Typography';
 export function ListEditor({
   label,
   itemLabel,
+  addLabel,
+  removeLabel,
   items,
   onChange,
   max,
@@ -20,6 +22,10 @@ export function ListEditor({
 }: {
   label: string;
   itemLabel: string;
+  /** "Add note". */
+  addLabel: string;
+  /** "Remove note 2". */
+  removeLabel: (n: number) => string;
   items: string[];
   onChange: (items: string[]) => void;
   max: number;
@@ -47,13 +53,13 @@ export function ListEditor({
             onChange={(e) => set(i, e.target.value)}
             slotProps={{ htmlInput: { maxLength, 'aria-label': `${itemLabel} ${i + 1}` } }}
           />
-          <IconButton aria-label={`Remove ${itemLabel.toLowerCase()} ${i + 1}`} onClick={() => onChange(items.filter((_, j) => j !== i))} size="small" sx={{ mt: 0.5 }}>
+          <IconButton aria-label={removeLabel(i + 1)} onClick={() => onChange(items.filter((_, j) => j !== i))} size="small" sx={{ mt: 0.5 }}>
             <Close fontSize="small" />
           </IconButton>
         </Box>
       ))}
       <Button size="small" startIcon={<Add />} onClick={() => onChange([...items, ''])} disabled={items.length >= max} sx={{ ml: 2.5 }}>
-        Add {itemLabel.toLowerCase()}
+        {addLabel}
       </Button>
     </Box>
   );

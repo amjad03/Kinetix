@@ -4,12 +4,14 @@ import Box from '@mui/material/Box';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { LivePlayer } from '@/lib/live/player';
 import { drawBoard, fitContain } from '@/lib/live/render';
+import { useI18n } from '@/i18n/client';
 
 /**
  * The board, scaled to fit its frame, redrawn whenever `version` changes. Read-only.
  * `children` are overlays (waiting, offline, ended).
  */
 export function LiveBoard({ player, version, children }: { player: LivePlayer; version: number; children?: ReactNode }) {
+  const { t } = useI18n();
   const frame = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -66,7 +68,7 @@ export function LiveBoard({ player, version, children }: { player: LivePlayer; v
         ':fullscreen': { border: 0, borderRadius: 0, aspectRatio: 'auto', height: '100%', bgcolor: '#000' },
       }}
     >
-      <canvas ref={canvas} role="img" aria-label="The classroom board" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
+      <canvas ref={canvas} role="img" aria-label={t('live.boardAria')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
       {children}
     </Box>
   );

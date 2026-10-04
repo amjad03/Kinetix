@@ -12,6 +12,7 @@ import Slider from '@mui/material/Slider';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
+import { useI18n } from '@/i18n/client';
 import type { LiveAudioPlayer } from './audio-player';
 
 /**
@@ -29,6 +30,7 @@ export function LiveAudioControls({
   onListen: () => void;
   onStop: () => void;
 }) {
+  const { t } = useI18n();
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [stats, setStats] = useState({ played: 0, resets: 0 });
@@ -75,15 +77,15 @@ export function LiveAudioControls({
           <Mic sx={{ fontSize: 18 }} />
         </Box>
         <Typography variant="body2" sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
-          Teacher&apos;s mic is on
+          {t('live.mic.on')}
         </Typography>
       </Box>
       {listening ? (
         <>
-          <Tooltip title={muted ? 'Unmute' : 'Mute'}>
+          <Tooltip title={muted ? t('live.mic.unmute') : t('live.mic.mute')}>
             <IconButton
               size="small"
-              aria-label={muted ? 'Unmute class audio' : 'Mute class audio'}
+              aria-label={muted ? t('live.mic.unmuteClass') : t('live.mic.muteClass')}
               aria-pressed={muted}
               onClick={() => {
                 player.setMuted(!muted);
@@ -96,7 +98,7 @@ export function LiveAudioControls({
           </Tooltip>
           <Slider
             size="small"
-            aria-label="Volume"
+            aria-label={t('live.mic.volume')}
             min={0}
             max={1}
             step={0.05}
@@ -113,12 +115,12 @@ export function LiveAudioControls({
             sx={{ width: { xs: 64, sm: 96 }, mx: 0.5, color: 'm3.onSecondaryContainer' }}
           />
           <Button size="small" variant="text" startIcon={<Stop />} onClick={onStop} sx={{ color: 'inherit', borderRadius: 20 }}>
-            Stop
+            {t('live.mic.stop')}
           </Button>
         </>
       ) : (
         <Button size="small" variant="contained" startIcon={<HeadphonesOutlined />} onClick={onListen} sx={{ borderRadius: 20 }}>
-          Listen
+          {t('live.mic.listen')}
         </Button>
       )}
     </Box>

@@ -35,6 +35,7 @@ class FakeParentApi implements ParentApi {
     sectionId: 'sec1',
     sectionName: 'BCom Sem 3 A',
     relation: 'father',
+    programName: 'BCom',
   );
   final diya = Child(
     id: 'c2',
@@ -43,6 +44,7 @@ class FakeParentApi implements ParentApi {
     sectionId: 'sec2',
     sectionName: 'BCA Sem 1 A',
     relation: 'father',
+    programName: 'BCA',
   );
   late List<Child> kids = [aarav, diya];
 

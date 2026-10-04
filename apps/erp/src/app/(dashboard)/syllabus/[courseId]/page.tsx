@@ -10,16 +10,20 @@ import { ReviewChip } from '@/components/syllabus/ReviewChip';
 import { canEditTopics } from '@/lib/access';
 import { api, load, requireSection } from '@/lib/api';
 import type { CourseOutline, Curriculum } from '@/lib/types';
+import { getI18n } from '@/i18n/server';
 
-export const metadata: Metadata = { title: 'Course' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('syl.course') };
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function CoursePage({ params }: { params: Promise<{ courseId: string }> }) {
   const me = await requireSection('syllabus');
   const { courseId } = await params;
+  const { t } = await getI18n();
   const [course, curricula] = await Promise.all([
-    UUID.test(courseId) ? load(() => api<CourseOutline>(`/v1/content/courses/${courseId}`)) : Promise.resolve({ error: 'Course not found.', data: undefined }),
+    UUID.test(courseId) ? load(() => api<CourseOutline>(`/v1/content/courses/${courseId}`)) : Promise.resolve({ error: t('syl.courseNotFound'), data: undefined }),
     load(() => api<Curriculum[]>('/v1/content/curricula')),
   ]);
   const c = course.data;
@@ -31,11 +35,11 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
     <>
       <Box sx={{ ml: -1, mb: 0.5 }}>
         <LinkButton href="/syllabus" size="small" startIcon={<ArrowBack />}>
-          Syllabus
+          {t('nav.syllabus')}
         </LinkButton>
       </Box>
       {course.error !== undefined ? (
-        <ErrorState title="Can't open this course" message={course.error} />
+        <ErrorState title={t('syl.cantOpen')} message={course.error} />
       ) : (
         <>
           <PageHeader
@@ -43,7 +47,8 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
             subtitle={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
                 <span>
-                  {curriculum} · {c!.chapters.length} chapters · {topics} topics{own ? ` (${own} yours)` : ''}
+                  {t('syl.counts', { curriculum: curriculum ?? '', chapters: c!.chapters.length, topics })}
+                  {own ? ` ${t('syl.yours', { n: own })}` : ''}
                 </span>
                 <ReviewChip reviewed={c!.reviewed} />
               </Box>
@@ -51,8 +56,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
           />
           {!c!.reviewed && (
             <Alert severity="info" variant="outlined" sx={{ mb: 3, borderColor: 'm3.outlineVariant' }}>
-              This course has not been checked by a subject expert yet. Compare it with your university syllabus, and add your own topics where something is
-              missing.
+              {t('syl.unreviewedAlert')}
             </Alert>
           )}
           <CourseOutlineView course={c!} canEdit={!!me && canEditTopics(me.roles)} />

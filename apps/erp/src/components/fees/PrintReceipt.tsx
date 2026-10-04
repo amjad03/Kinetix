@@ -3,6 +3,7 @@
 import PrintOutlined from '@mui/icons-material/PrintOutlined';
 import Button from '@mui/material/Button';
 import GlobalStyles from '@mui/material/GlobalStyles';
+import { useI18n } from '@/i18n/client';
 
 /** Prints only the receipt: no navigation, no buttons, black on white, A5-friendly margins. */
 export function ReceiptPrintStyles() {
@@ -24,9 +25,10 @@ export function ReceiptPrintStyles() {
 }
 
 export function PrintButton() {
+  const { t } = useI18n();
   return (
     <Button variant="contained" startIcon={<PrintOutlined />} onClick={() => window.print()}>
-      Print
+      {t('fees.print')}
     </Button>
   );
 }

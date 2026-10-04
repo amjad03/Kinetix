@@ -1,6 +1,8 @@
 // Live view contracts. Mirrors `RealtimeEvents.Live*`, `LiveFrameEvent` and `LiveWatchAck` in
 // packages/shared/src/index.ts (Socket.IO namespace `/realtime`).
 
+import type { MessageKey } from '@/i18n/messages';
+
 import type { LessonEvent, LiveSnapshot } from './player';
 
 export const LiveEvents = {
@@ -80,22 +82,18 @@ export function refusalCode(error: string | undefined): RefusalCode {
   return 'other';
 }
 
-/** Why a class stopped streaming, in words (`live.ended` reasons). */
-export function endedText(reason: string): string {
+/** Why a class stopped streaming (`live.ended` reasons), as a dictionary key. */
+export function endedText(reason: string): MessageKey {
   switch (reason) {
-    case 'class_ended':
-    case 'teacher_ended':
-    case 'period_over':
-      return 'The class has ended.';
     case 'idle':
-      return 'The board was idle, so the class was closed.';
+      return 'live.end.idle';
     case 'taken_over':
-      return 'Another teacher signed in on this board.';
+      return 'live.end.taken_over';
     case 'admin_revoked':
-      return 'The class was ended from the dashboard.';
+      return 'live.end.admin_revoked';
     case 'offline':
-      return 'The board went offline.';
+      return 'live.end.offline';
     default:
-      return 'The class has ended.';
+      return 'live.end.class';
   }
 }

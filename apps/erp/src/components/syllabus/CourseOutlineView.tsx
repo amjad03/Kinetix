@@ -22,15 +22,21 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { addTopic, deleteTopic, editTopic, getTopic, type TopicInput } from '@/app/(dashboard)/syllabus/actions';
 import type { CourseOutline, Topic } from '@/lib/types';
+import { useI18n } from '@/i18n/client';
 import { ListEditor } from './ListEditor';
 
 type Chapter = CourseOutline['chapters'][number];
 type TopicRow = Chapter['topics'][number];
 
-const ownChip = <Chip size="small" label="Your topic" sx={{ bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', height: 22 }} />;
+function OwnChip() {
+  const { t } = useI18n();
+  return <Chip size="small" label={t('syl.yourTopic')} sx={{ bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', height: 22 }} />;
+}
+const ownChip = <OwnChip />;
 
 /** A course's chapters and topics; the institution's own topics can be added, edited and deleted. */
 export function CourseOutlineView({ course, canEdit }: { course: CourseOutline; canEdit: boolean }) {
+  const { t } = useI18n();
   const [viewing, setViewing] = useState<TopicRow | null>(null);
   const [adding, setAdding] = useState<Chapter | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -49,32 +55,32 @@ export function CourseOutlineView({ course, canEdit }: { course: CourseOutline; 
               </Typography>
               {ch.own && ownChip}
               {canEdit && (
-                <Button size="small" startIcon={<Add />} onClick={() => setAdding(ch)} aria-label={`Add a topic to ${ch.title}`}>
-                  Add topic
+                <Button size="small" startIcon={<Add />} onClick={() => setAdding(ch)} aria-label={t('syl.addTopicTo', { title: ch.title })}>
+                  {t('syl.addTopic')}
                 </Button>
               )}
             </Box>
             {ch.topics.length === 0 ? (
               <Typography variant="body2" color="text.secondary" sx={{ px: 2.5, pb: 2, pl: 7.5 }}>
-                No topics yet.
+                {t('syl.noTopics')}
               </Typography>
             ) : (
               <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, pb: 1 }}>
-                {ch.topics.map((t) => (
-                  <li key={t.id}>
+                {ch.topics.map((tp) => (
+                  <li key={tp.id}>
                     <ButtonBase
-                      onClick={() => setViewing(t)}
+                      onClick={() => setViewing(tp)}
                       data-testid="topic"
                       sx={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 1.5, pl: 7.5, pr: 2, py: 1.25, '&:hover': { bgcolor: 'action.hover' } }}
                     >
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                          <Typography variant="body1">{t.title}</Typography>
-                          {t.own && ownChip}
+                          <Typography variant="body1">{tp.title}</Typography>
+                          {tp.own && ownChip}
                         </Box>
-                        {t.summary && (
+                        {tp.summary && (
                           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                            {t.summary}
+                            {tp.summary}
                           </Typography>
                         )}
                       </Box>
@@ -91,13 +97,13 @@ export function CourseOutlineView({ course, canEdit }: { course: CourseOutline; 
       {viewing && <TopicDialog courseId={course.id} row={viewing} canEdit={canEdit} onClose={(msg) => (setViewing(null), msg && setToast(msg))} />}
       {adding && (
         <TopicForm
-          title={`Add a topic to “${adding.title}”`}
+          title={t('syl.addTopicTitle', { title: adding.title })}
           initial={{ title: '', summary: '', notes: [''], outcomes: [] }}
-          submitLabel="Add topic"
+          submitLabel={t('syl.addTopic')}
           onSubmit={(input) => addTopic(course.id, adding.id, input)}
           onClose={(saved) => {
             setAdding(null);
-            if (saved) setToast(`Added “${saved.title}”`);
+            if (saved) setToast(t('syl.added', { title: saved.title }));
           }}
         />
       )}
@@ -108,6 +114,7 @@ export function CourseOutlineView({ course, canEdit }: { course: CourseOutline; 
 
 /** Reads a topic's notes and outcomes; own topics can be edited or deleted from here. */
 function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; row: TopicRow; canEdit: boolean; onClose: (message?: string) => void }) {
+  const { t } = useI18n();
   const [topic, setTopic] = useState<Topic | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'view' | 'edit' | 'delete'>('view');
@@ -128,11 +135,11 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
   if (mode === 'edit' && topic) {
     return (
       <TopicForm
-        title="Edit topic"
+        title={t('syl.editTopic')}
         initial={{ title: topic.title, summary: topic.summary, notes: topic.notes, outcomes: topic.outcomes }}
-        submitLabel="Save"
+        submitLabel={t('common.save')}
         onSubmit={(input) => editTopic(courseId, topic.id, input)}
-        onClose={(saved) => (saved ? onClose(`Saved “${saved.title}”`) : setMode('view'))}
+        onClose={(saved) => (saved ? onClose(t('syl.saved', { title: saved.title })) : setMode('view'))}
       />
     );
   }
@@ -148,7 +155,7 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
         {!topic && !error && <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 4 }} />}
         {topic && mode === 'delete' && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Delete “{topic.title}”? Teachers will no longer see it on the board, and KINETIX AI stops using it.
+            {t('syl.deleteConfirm', { title: topic.title })}
           </Alert>
         )}
         {topic && (
@@ -160,7 +167,7 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
             )}
             {topic.summary && <Typography variant="body1">{topic.summary}</Typography>}
             <Typography variant="subtitle2" sx={{ mt: 2.5, mb: 0.5 }}>
-              Notes
+              {t('syl.notes')}
             </Typography>
             {topic.notes.length ? (
               <Box component="ol" sx={{ m: 0, pl: 2.5, '& li': { mb: 0.75 }, typography: 'body2' }}>
@@ -170,11 +177,11 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                No notes.
+                {t('syl.noNotes')}
               </Typography>
             )}
             <Typography variant="subtitle2" sx={{ mt: 2.5, mb: 0.5 }}>
-              Learning outcomes
+              {t('syl.outcomes')}
             </Typography>
             {topic.outcomes.length ? (
               <Box component="ul" sx={{ m: 0, pl: 2.5, '& li': { mb: 0.75 }, typography: 'body2' }}>
@@ -184,12 +191,12 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                None listed.
+                {t('syl.noOutcomes')}
               </Typography>
             )}
             {!topic.own && (
               <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 3 }}>
-                From the KINETIX library. Library topics can&apos;t be edited; add your own topic to the chapter instead.
+                {t('syl.fromLibrary')}
               </Typography>
             )}
           </Box>
@@ -199,17 +206,17 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
         {topic?.own && canEdit && mode === 'view' && (
           <>
             <Button color="error" startIcon={<DeleteOutlined />} onClick={() => setMode('delete')} sx={{ mr: 'auto' }}>
-              Delete
+              {t('common.delete')}
             </Button>
             <Button startIcon={<EditOutlined />} onClick={() => setMode('edit')}>
-              Edit
+              {t('common.edit')}
             </Button>
           </>
         )}
         {mode === 'delete' && topic ? (
           <>
             <Button onClick={() => setMode('view')} disabled={pending}>
-              Keep it
+              {t('syl.keep')}
             </Button>
             <Button
               variant="contained"
@@ -218,17 +225,17 @@ function TopicDialog({ courseId, row, canEdit, onClose }: { courseId: string; ro
               onClick={() =>
                 start(async () => {
                   const res = await deleteTopic(courseId, topic.id);
-                  if (res.ok) onClose(`Deleted “${topic.title}”`);
+                  if (res.ok) onClose(t('syl.deleted', { title: topic.title }));
                   else setError(res.error);
                 })
               }
             >
-              Delete topic
+              {t('syl.deleteTopic')}
             </Button>
           </>
         ) : (
           <Button variant="contained" onClick={() => onClose()}>
-            Close
+            {t('common.close')}
           </Button>
         )}
       </DialogActions>
@@ -249,6 +256,7 @@ function TopicForm({
   onSubmit: (input: TopicInput) => Promise<{ ok: true; data: Topic } | { ok: false; error: string }>;
   onClose: (saved?: Topic) => void;
 }) {
+  const { t } = useI18n();
   const [value, setValue] = useState<TopicInput>(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -274,31 +282,43 @@ function TopicForm({
         <DialogContent dividers>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label="Title" value={value.title} onChange={(e) => set('title', e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 200 } }} />
+            <TextField label={t('syl.form.title')} value={value.title} onChange={(e) => set('title', e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 200 } }} />
             <TextField
-              label="Summary"
+              label={t('syl.form.summary')}
               value={value.summary}
               onChange={(e) => set('summary', e.target.value)}
               multiline
               minRows={2}
-              helperText="One or two lines: what the topic covers."
+              helperText={t('syl.form.summaryHelp')}
               slotProps={{ htmlInput: { maxLength: 2000 } }}
             />
-            <ListEditor label="Notes" itemLabel="Note" items={value.notes} onChange={(v) => set('notes', v)} max={30} maxLength={1000} placeholder="A point teachers and KINETIX AI can use" />
             <ListEditor
-              label="Learning outcomes"
-              itemLabel="Outcome"
+              label={t('syl.notes')}
+              itemLabel={t('syl.form.note')}
+              addLabel={t('syl.form.addNote')}
+              removeLabel={(n) => t('syl.form.remove', { item: t('syl.form.note'), n })}
+              items={value.notes}
+              onChange={(v) => set('notes', v)}
+              max={30}
+              maxLength={1000}
+              placeholder={t('syl.form.notePlaceholder')}
+            />
+            <ListEditor
+              label={t('syl.outcomes')}
+              itemLabel={t('syl.form.outcome')}
+              addLabel={t('syl.form.addOutcome')}
+              removeLabel={(n) => t('syl.form.remove', { item: t('syl.form.outcome'), n })}
               items={value.outcomes}
               onChange={(v) => set('outcomes', v)}
               max={15}
               maxLength={500}
-              placeholder="Students can…"
+              placeholder={t('syl.form.outcomePlaceholder')}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={pending || !value.title.trim()} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
             {submitLabel}

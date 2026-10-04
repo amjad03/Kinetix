@@ -35,7 +35,8 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
 import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
-import { addDays, formatDate, formatDateTime } from '@/lib/dates';
+import { useI18n } from '@/i18n/client';
+import { addDays } from '@/lib/dates';
 import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, LOAN_DAYS } from '@/lib/library';
 import { formatRupees } from '@/lib/money';
 import { withAlpha } from '@/theme/scheme';
@@ -61,6 +62,7 @@ export function LibraryDesk({
   initialTab: TabName;
 }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [tab, setTab] = useState<TabName>(initialTab);
   const [issuing, setIssuing] = useState<{ book?: LibraryBook } | null>(null);
   const [returning, setReturning] = useState<LibraryLoan | null>(null);
@@ -69,30 +71,26 @@ export function LibraryDesk({
   const [toast, setToast] = useState<string | null>(null);
   const overdue = loans.filter((l) => l.overdue).length;
 
-  const switchTab = (t: TabName) => {
-    setTab(t);
+  const switchTab = (next: TabName) => {
+    setTab(next);
     // Keep the tab in the URL without a server round trip.
-    window.history.replaceState(null, '', t === 'loans' ? pathname : `${pathname}?tab=${t}`);
+    window.history.replaceState(null, '', next === 'loans' ? pathname : `${pathname}?tab=${next}`);
   };
 
   return (
     <>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mt: 3, mb: 2, borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-        <Tabs value={tab} onChange={(_, v: TabName) => switchTab(v)} aria-label="Library" variant="scrollable" scrollButtons={false} sx={{ flex: '1 1 auto', minHeight: 48 }}>
-          <Tab value="loans" label={`On loan · ${loans.length}`} data-testid="tab-loans" />
-          <Tab value="catalogue" label={`Catalogue · ${books.length}`} data-testid="tab-catalogue" />
-          <Tab value="fines" label={`Unpaid fines · ${fines.length}`} data-testid="tab-fines" />
+        <Tabs value={tab} onChange={(_, v: TabName) => switchTab(v)} aria-label={t('lib.tabs')} variant="scrollable" scrollButtons={false} sx={{ flex: '1 1 auto', minHeight: 48 }}>
+          <Tab value="loans" label={t('lib.tab.loans', { n: loans.length })} data-testid="tab-loans" />
+          <Tab value="catalogue" label={t('lib.tab.catalogue', { n: books.length })} data-testid="tab-catalogue" />
+          <Tab value="fines" label={t('lib.tab.fines', { n: fines.length })} data-testid="tab-fines" />
         </Tabs>
         <Box sx={{ display: { xs: 'grid', sm: 'flex' }, gridTemplateColumns: '1fr 1fr', width: { xs: '100%', sm: 'auto' }, gap: 1, pb: 1, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>
           <Button variant="outlined" startIcon={<LibraryAddOutlined />} onClick={() => setAdding(true)}>
-            Add book
+            {t('lib.addBook')}
           </Button>
           <Button variant="contained" startIcon={<Add />} onClick={() => setIssuing({})} disabled={books.every((b) => availableCopies(b) === 0)} sx={{ whiteSpace: 'nowrap' }}>
-            Issue
-            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              &nbsp;a
-            </Box>
-            &nbsp;book
+            {t('lib.issueBook')}
           </Button>
         </Box>
       </Box>
@@ -146,48 +144,51 @@ export function LibraryDesk({
 // ---- On loan ---------------------------------------------------------------------------------
 
 function DueText({ loan, today }: { loan: LibraryLoan; today: string }) {
+  const { t, fmt } = useI18n();
   return (
     <Box>
       <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-        {formatDate(loan.dueOn, 'short')}
+        {fmt.date(loan.dueOn, 'short')}
       </Typography>
       <Typography variant="caption" sx={{ color: loan.overdue ? 'error.main' : 'text.secondary', whiteSpace: 'nowrap', fontWeight: loan.overdue ? 500 : 400 }}>
-        {dueLabel(loan.dueOn, today)}
+        {dueLabel(loan.dueOn, today, t)}
       </Typography>
     </Box>
   );
 }
 
 function OverdueChip() {
-  return <Chip size="small" label="Overdue" sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-status="overdue" />;
+  const { t } = useI18n();
+  return <Chip size="small" label={t('lib.overdueChip')} sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-status="overdue" />;
 }
 
 function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; overdue: number; today: string; onReturn: (l: LibraryLoan) => void }) {
+  const { t, fmt } = useI18n();
   const [only, setOnly] = useState(false);
   const [q, setQ] = useState('');
   const rows = useMemo(() => {
-    const t = q.trim().toLowerCase();
+    const s = q.trim().toLowerCase();
     return loans.filter(
       (l) =>
         (!only || l.overdue) &&
-        (!t || l.student.fullName.toLowerCase().includes(t) || (l.student.rollNo ?? '').toLowerCase().includes(t) || l.book.title.toLowerCase().includes(t)),
+        (!s || l.student.fullName.toLowerCase().includes(s) || (l.student.rollNo ?? '').toLowerCase().includes(s) || l.book.title.toLowerCase().includes(s)),
     );
   }, [loans, only, q]);
 
   if (loans.length === 0)
     return (
-      <EmptyState icon={<LocalLibraryOutlined />} title="No books are out" testId="no-loans">
-        Books you issue to students appear here with their due dates. Late returns are fined ₹2 a day.
+      <EmptyState icon={<LocalLibraryOutlined />} title={t('lib.noLoans')} testId="no-loans">
+        {t('lib.noLoansBody')}
       </EmptyState>
     );
 
   return (
     <>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Box role="group" aria-label="Filter loans" sx={{ display: 'flex', gap: 1 }}>
+        <Box role="group" aria-label={t('lib.filterLoans')} sx={{ display: 'flex', gap: 1 }}>
           {[
-            { on: !only, label: `All · ${loans.length}`, set: false, id: 'all' },
-            { on: only, label: `Overdue · ${overdue}`, set: true, id: 'overdue' },
+            { on: !only, label: t('lib.all', { n: loans.length }), set: false, id: 'all' },
+            { on: only, label: t('lib.overdueN', { n: overdue }), set: true, id: 'overdue' },
           ].map((c) => (
             <Chip
               key={c.id}
@@ -204,20 +205,20 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
         <Box sx={{ flex: 1 }} />
         <TextField
           size="small"
-          placeholder="Student, roll number or book"
+          placeholder={t('lib.searchLoans')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           sx={{ flex: '1 1 240px', maxWidth: 360 }}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
-            htmlInput: { 'aria-label': 'Search loans' },
+            htmlInput: { 'aria-label': t('lib.searchLoansLabel') },
           }}
         />
       </Box>
 
       {rows.length === 0 ? (
-        <EmptyState dense icon={<Search />} title="No loans match" testId="no-loan-match">
-          Try another name, roll number or title.
+        <EmptyState dense icon={<Search />} title={t('lib.noLoanMatch')} testId="no-loan-match">
+          {t('lib.noLoanMatchBody')}
         </EmptyState>
       ) : (
         <>
@@ -226,12 +227,12 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
               <Table sx={{ minWidth: 860 }} size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Book</TableCell>
-                    <TableCell>Student</TableCell>
-                    <TableCell>Issued</TableCell>
-                    <TableCell>Due</TableCell>
-                    <TableCell align="right">Fine today</TableCell>
-                    <TableCell aria-label="Actions" />
+                    <TableCell>{t('lib.col.book')}</TableCell>
+                    <TableCell>{t('lib.col.student')}</TableCell>
+                    <TableCell>{t('lib.col.issued')}</TableCell>
+                    <TableCell>{t('lib.col.due')}</TableCell>
+                    <TableCell align="right">{t('lib.col.fineToday')}</TableCell>
+                    <TableCell aria-label={t('lib.col.actions')} />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -251,7 +252,7 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                             {[l.student.rollNo, l.className].filter(Boolean).join(' · ')}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(l.issuedAt, undefined, false)}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.dateTime(l.issuedAt, undefined, false)}</TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <DueText loan={l} today={today} />
@@ -263,7 +264,7 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                         </TableCell>
                         <TableCell align="right" sx={{ pr: 1.5 }}>
                           <Button size="small" variant="outlined" startIcon={<AssignmentReturnOutlined />} onClick={() => onReturn(l)}>
-                            Return
+                            {t('lib.return')}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -299,12 +300,12 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
                       <DueText loan={l} today={today} />
                       {fine > 0 && (
                         <Typography variant="caption" component="p" sx={{ color: 'error.main', fontWeight: 500 }}>
-                          Fine {formatRupees(fine)}
+                          {t('lib.fine', { amount: formatRupees(fine) })}
                         </Typography>
                       )}
                     </Box>
                     <Button size="small" variant="outlined" startIcon={<AssignmentReturnOutlined />} onClick={() => onReturn(l)}>
-                      Return
+                      {t('lib.return')}
                     </Button>
                   </Box>
                 </Box>
@@ -320,28 +321,29 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
 // ---- Unpaid fines --------------------------------------------------------------------------
 
 function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: LibraryLoan) => void }) {
+  const { t, fmt } = useI18n();
   if (fines.length === 0)
     return (
-      <EmptyState icon={<CheckCircleOutlined />} title="No unpaid fines" testId="no-fines">
-        Books returned late are fined ₹2 a day. Fines waiting to be collected at the desk appear here.
+      <EmptyState icon={<CheckCircleOutlined />} title={t('lib.noFines')} testId="no-fines">
+        {t('lib.noFinesBody')}
       </EmptyState>
     );
   const total = fines.reduce((s, f) => s + f.finePaise, 0);
   return (
     <>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} data-testid="fines-summary">
-        {fines.length} fine{fines.length === 1 ? '' : 's'} to collect · {formatRupees(total)}
+        {t.plural('lib.finesSummary', fines.length, { amount: formatRupees(total) })}
       </Typography>
       <TableFrame testId="fines-table">
         <Table sx={{ minWidth: 720 }} size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Student</TableCell>
-              <TableCell>Book</TableCell>
-              <TableCell>Due</TableCell>
-              <TableCell>Returned</TableCell>
-              <TableCell align="right">Fine</TableCell>
-              <TableCell aria-label="Actions" />
+              <TableCell>{t('lib.col.student')}</TableCell>
+              <TableCell>{t('lib.col.book')}</TableCell>
+              <TableCell>{t('lib.col.due')}</TableCell>
+              <TableCell>{t('lib.col.returned')}</TableCell>
+              <TableCell align="right">{t('lib.col.fine')}</TableCell>
+              <TableCell aria-label={t('lib.col.actions')} />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -354,15 +356,15 @@ function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: Libr
                   </Typography>
                 </TableCell>
                 <TableCell>{f.book.title}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(f.dueOn, 'short')}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? formatDateTime(f.returnedAt, undefined, false) : '—'}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.date(f.dueOn, 'short')}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? fmt.dateTime(f.returnedAt, undefined, false) : '—'}</TableCell>
                 <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap', color: 'error.main', fontWeight: 500 }}>
                   {formatRupees(f.finePaise)}
-                  <Chip size="small" label="Unpaid" variant="outlined" sx={{ ml: 1, color: 'error.main', borderColor: 'error.main' }} data-status="unpaid" />
+                  <Chip size="small" label={t('lib.unpaid')} variant="outlined" sx={{ ml: 1, color: 'error.main', borderColor: 'error.main' }} data-status="unpaid" />
                 </TableCell>
                 <TableCell align="right" sx={{ pr: 1.5 }}>
                   <Button size="small" variant="outlined" onClick={() => onCollect(f)}>
-                    Mark paid
+                    {t('lib.markPaid')}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -375,11 +377,12 @@ function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: Libr
 }
 
 function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?: string) => void }) {
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="xs" fullWidth aria-labelledby="fine-paid-title">
-      <DialogTitle id="fine-paid-title">Mark this fine paid?</DialogTitle>
+      <DialogTitle id="fine-paid-title">{t('lib.finePaid.title')}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -392,16 +395,16 @@ function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?:
             {loan.student.fullName} · {[loan.student.rollNo, loan.className].filter(Boolean).join(' · ')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Late return of {loan.book.title}
+            {t('lib.finePaid.late', { title: loan.book.title })}
           </Typography>
         </Box>
         <Typography variant="body2" sx={{ mt: 2 }}>
-          Confirm you have received {formatRupees(loan.finePaise)} at the desk. This is recorded and can&apos;t be undone here.
+          {t('lib.finePaid.confirm', { amount: formatRupees(loan.finePaise) })}
         </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -410,12 +413,12 @@ function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?:
           onClick={() =>
             start(async () => {
               const res = await markFinePaid(loan.id);
-              if (res.ok) onClose(`${formatRupees(loan.finePaise)} fine from ${loan.student.fullName} marked paid`);
+              if (res.ok) onClose(t('lib.finePaid.done', { amount: formatRupees(loan.finePaise), name: loan.student.fullName }));
               else setError(res.error);
             })
           }
         >
-          Mark {formatRupees(loan.finePaise)} paid
+          {t('lib.markAmountPaid', { amount: formatRupees(loan.finePaise) })}
         </Button>
       </DialogActions>
     </Dialog>
@@ -425,23 +428,25 @@ function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?:
 // ---- Catalogue -------------------------------------------------------------------------------
 
 function Availability({ book }: { book: LibraryBook }) {
+  const { t } = useI18n();
   const free = availableCopies(book);
-  if (free === 0) return <Chip size="small" label="All out" variant="outlined" sx={{ color: 'text.secondary' }} data-available="0" />;
-  return <Chip size="small" label={`${free} of ${book.copies} available`} sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} data-available={free} />;
+  if (free === 0) return <Chip size="small" label={t('lib.allOut')} variant="outlined" sx={{ color: 'text.secondary' }} data-available="0" />;
+  return <Chip size="small" label={t('lib.available', { n: free, d: book.copies })} sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} data-available={free} />;
 }
 
 function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (b: LibraryBook) => void; onAdd: () => void }) {
+  const { t } = useI18n();
   const [q, setQ] = useState('');
   const rows = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    if (!t) return books;
-    return books.filter((b) => [b.title, b.author, b.callNo ?? '', b.isbn ?? ''].some((v) => v.toLowerCase().includes(t)));
+    const s = q.trim().toLowerCase();
+    if (!s) return books;
+    return books.filter((b) => [b.title, b.author, b.callNo ?? '', b.isbn ?? ''].some((v) => v.toLowerCase().includes(s)));
   }, [books, q]);
 
   if (books.length === 0)
     return (
-      <EmptyState icon={<LocalLibraryOutlined />} title="The catalogue is empty" actions={<Button variant="contained" startIcon={<LibraryAddOutlined />} onClick={onAdd}>Add book</Button>}>
-        Add the library&apos;s books with their call numbers and copies, then issue them to students.
+      <EmptyState icon={<LocalLibraryOutlined />} title={t('lib.emptyCatalogue')} actions={<Button variant="contained" startIcon={<LibraryAddOutlined />} onClick={onAdd}>{t('lib.addBook')}</Button>}>
+        {t('lib.emptyCatalogueBody')}
       </EmptyState>
     );
 
@@ -450,22 +455,22 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
         <TextField
           size="small"
-          placeholder="Search by title, author, call number or ISBN"
+          placeholder={t('lib.searchCatalogue')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           sx={{ flex: '1 1 260px', maxWidth: 440 }}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
-            htmlInput: { 'aria-label': 'Search the catalogue' },
+            htmlInput: { 'aria-label': t('lib.searchCatalogueLabel') },
           }}
         />
         <Typography variant="body2" color="text.secondary" data-testid="book-count">
-          {rows.length} title{rows.length === 1 ? '' : 's'}
+          {t.plural('lib.titles', rows.length)}
         </Typography>
       </Box>
       {rows.length === 0 ? (
-        <EmptyState dense icon={<Search />} title="No books match your search" testId="no-books">
-          Try part of the title, the author&apos;s surname or the call number.
+        <EmptyState dense icon={<Search />} title={t('lib.noBooks')} testId="no-books">
+          {t('lib.noBooksBody')}
         </EmptyState>
       ) : (
         <>
@@ -474,12 +479,12 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
               <Table sx={{ minWidth: 820 }} size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Call no.</TableCell>
-                    <TableCell>ISBN</TableCell>
-                    <TableCell align="right">Copies</TableCell>
-                    <TableCell>Availability</TableCell>
-                    <TableCell aria-label="Actions" />
+                    <TableCell>{t('lib.col.title')}</TableCell>
+                    <TableCell>{t('lib.col.callNo')}</TableCell>
+                    <TableCell>{t('lib.col.isbn')}</TableCell>
+                    <TableCell align="right">{t('lib.col.copies')}</TableCell>
+                    <TableCell>{t('lib.col.availability')}</TableCell>
+                    <TableCell aria-label={t('lib.col.actions')} />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -488,7 +493,7 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
                       <TableCell>
                         <Typography variant="subtitle2">{b.title}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {b.author || 'Author not recorded'}
+                          {b.author || t('lib.noAuthor')}
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.8125rem' }}>{b.callNo ?? '—'}</TableCell>
@@ -500,8 +505,8 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
                         <Availability book={b} />
                       </TableCell>
                       <TableCell align="right" sx={{ pr: 1.5 }}>
-                        <Button size="small" onClick={() => onIssue(b)} disabled={availableCopies(b) === 0} aria-label={`Issue ${b.title}`}>
-                          Issue
+                        <Button size="small" onClick={() => onIssue(b)} disabled={availableCopies(b) === 0} aria-label={t('lib.issueTitle', { title: b.title })}>
+                          {t('lib.issue')}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -522,7 +527,7 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
                   <Availability book={b} />
                   <Button size="small" onClick={() => onIssue(b)} disabled={availableCopies(b) === 0}>
-                    Issue
+                    {t('lib.issue')}
                   </Button>
                 </Box>
               </Box>
@@ -547,6 +552,7 @@ function IssueDialog({
   today: string;
   onClose: (done?: string) => void;
 }) {
+  const { t, fmt } = useI18n();
   const shelf = books.filter((b) => availableCopies(b) > 0);
   const [book, setBook] = useState<LibraryBook | null>(preset ?? null);
   const [student, setStudent] = useState<LibraryStudent | null>(null);
@@ -559,7 +565,7 @@ function IssueDialog({
   useEffect(() => {
     if (!searchable) return;
     let live = true;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       findStudents(query).then((res) => {
         if (!live) return;
         if (res.ok) {
@@ -570,7 +576,7 @@ function IssueDialog({
     }, 250);
     return () => {
       live = false;
-      clearTimeout(t);
+      clearTimeout(timer);
     };
   }, [query, searchable]);
   const options = searchable && found ? found.students : [];
@@ -585,7 +591,7 @@ function IssueDialog({
     setError(null);
     start(async () => {
       const res = await issueBook({ bookId: book.id, studentId: student.id, dueOn });
-      if (res.ok) onClose(`Issued “${book.title}” to ${student.fullName} · due ${formatDate(dueOn, 'short')}`);
+      if (res.ok) onClose(t('lib.issued', { title: book.title, name: student.fullName, date: fmt.date(dueOn, 'short') }));
       else setError(res.error);
     });
   };
@@ -600,10 +606,10 @@ function IssueDialog({
           submit();
         }}
       >
-        <DialogTitle id="issue-book-title">Issue a book</DialogTitle>
+        <DialogTitle id="issue-book-title">{t('lib.issueBook')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-            The student and their family see the book and its due date in their apps. Late returns are fined ₹2 a day.
+            {t('lib.issue.help')}
           </Typography>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
@@ -617,16 +623,16 @@ function IssueDialog({
                 <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
                   <Typography variant="body2">{b.title}</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {[b.author, b.callNo, `${availableCopies(b)} of ${b.copies} available`].filter(Boolean).join(' · ')}
+                    {[b.author, b.callNo, t('lib.available', { n: availableCopies(b), d: b.copies })].filter(Boolean).join(' · ')}
                   </Typography>
                 </Box>
               )}
-              renderInput={(params) => <TextField {...params} label="Book" required placeholder="Title, author or call number" />}
+              renderInput={(params) => <TextField {...params} label={t('lib.issue.book')} required placeholder={t('lib.issue.bookPlaceholder')} />}
               filterOptions={(opts, { inputValue }) => {
-                const t = inputValue.trim().toLowerCase();
-                return t ? opts.filter((b) => [b.title, b.author, b.callNo ?? ''].some((v) => v.toLowerCase().includes(t))) : opts;
+                const s = inputValue.trim().toLowerCase();
+                return s ? opts.filter((b) => [b.title, b.author, b.callNo ?? ''].some((v) => v.toLowerCase().includes(s))) : opts;
               }}
-              noOptionsText="No book on the shelf matches"
+              noOptionsText={t('lib.issue.noBook')}
             />
             <Autocomplete
               options={student && !options.some((o) => o.id === student.id) ? [student, ...options] : options}
@@ -641,7 +647,7 @@ function IssueDialog({
               isOptionEqualToValue={(a, b) => a.id === b.id}
               filterOptions={(opts) => opts}
               loading={searching}
-              loadingText="Searching…"
+              loadingText={t('lib.issue.searching')}
               renderOption={({ key, ...props }, s) => (
                 <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
                   <Typography variant="body2">{s.fullName}</Typography>
@@ -654,24 +660,24 @@ function IssueDialog({
                 <TextField
                   {...params}
                   error={!!searchError}
-                  label="Student"
+                  label={t('lib.issue.student')}
                   required
-                  placeholder="Name or roll number"
+                  placeholder={t('lib.issue.studentPlaceholder')}
                   helperText={
                     searchError ??
-                    (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : 'Type at least 2 letters of the name, roll number or class')
+                    (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : t('lib.issue.studentHelp'))
                   }
                 />
               )}
-              noOptionsText={searchable ? 'No student matches' : 'Type at least 2 letters'}
+              noOptionsText={searchable ? t('lib.issue.noStudent') : t('lib.issue.type2')}
             />
             <TextField
-              label="Due on"
+              label={t('lib.issue.dueOn')}
               type="date"
               value={dueOn}
               onChange={(e) => setDueOn(e.target.value)}
               required
-              helperText={dueOn >= today ? `${dueLabel(dueOn, today)} · ${formatDate(dueOn, 'long')}` : 'The due date has already passed'}
+              helperText={dueOn >= today ? `${dueLabel(dueOn, today, t)} · ${fmt.date(dueOn, 'long')}` : t('lib.issue.passed')}
               error={dueOn < today}
               slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
             />
@@ -679,10 +685,10 @@ function IssueDialog({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={pending || !ready} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            Issue
+            {t('lib.issue')}
           </Button>
         </DialogActions>
       </Box>
@@ -691,6 +697,7 @@ function IssueDialog({
 }
 
 function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: string; onClose: () => void }) {
+  const { t, fmt } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ finePaise: number; paid: boolean } | null>(null);
   const [pending, start] = useTransition();
@@ -702,26 +709,24 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
       <Dialog open onClose={onClose} maxWidth="xs" fullWidth aria-labelledby="returned-title">
         <DialogTitle id="returned-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <CheckCircleOutlined sx={{ color: 'kx.success' }} />
-          Book returned
+          {t('lib.returned.title')}
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body2">
-            <strong>{loan.book.title}</strong> is back on the shelf from {loan.student.fullName}.
-          </Typography>
+          <Typography variant="body2">{t('lib.returned.body', { title: loan.book.title, name: loan.student.fullName })}</Typography>
           {done.finePaise > 0 ? (
             <Box sx={{ mt: 2, p: 2, borderRadius: '12px', bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-testid="return-fine">
-              <Typography variant="body2">Late fine to collect</Typography>
+              <Typography variant="body2">{t('lib.returned.fineToCollect')}</Typography>
               <Typography sx={{ fontSize: '2rem', lineHeight: '40px', ...num }}>{formatRupees(done.finePaise)}</Typography>
               <Typography variant="caption">
-                {late} day{late === 1 ? '' : 's'} late at ₹2 a day ·{' '}
+                {t.plural('lib.returned.lateAt', late)}{' '}
                 <Box component="strong" data-testid="return-fine-status">
-                  {done.paid ? 'Paid' : 'Unpaid'}
+                  {done.paid ? t('lib.paid') : t('lib.unpaid')}
                 </Box>
               </Typography>
             </Box>
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }} data-testid="return-fine">
-              Returned on time · no fine.
+              {t('lib.returned.onTime')}
             </Typography>
           )}
         </DialogContent>
@@ -734,7 +739,7 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
           {done.finePaise > 0 && !done.paid ? (
             <>
               <Button onClick={onClose} disabled={pending}>
-                Collect later
+                {t('lib.returned.later')}
               </Button>
               <Button
                 variant="contained"
@@ -750,12 +755,12 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
                   })
                 }
               >
-                Mark {formatRupees(done.finePaise)} paid
+                {t('lib.markAmountPaid', { amount: formatRupees(done.finePaise) })}
               </Button>
             </>
           ) : (
             <Button variant="contained" onClick={onClose}>
-              Done
+              {t('common.done')}
             </Button>
           )}
         </DialogActions>
@@ -765,7 +770,7 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
 
   return (
     <Dialog open onClose={pending ? undefined : onClose} maxWidth="xs" fullWidth aria-labelledby="return-title">
-      <DialogTitle id="return-title">Return this book?</DialogTitle>
+      <DialogTitle id="return-title">{t('lib.return.title')}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -778,22 +783,16 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
             {loan.student.fullName} · {[loan.student.rollNo, loan.className].filter(Boolean).join(' · ')}
           </Typography>
           <Typography variant="body2" sx={{ mt: 0.5 }}>
-            Due {formatDate(loan.dueOn, 'short')} · <Box component="span" sx={{ color: late ? 'error.main' : 'inherit' }}>{dueLabel(loan.dueOn, today)}</Box>
+            {t('lib.return.due', { date: fmt.date(loan.dueOn, 'short') })} <Box component="span" sx={{ color: late ? 'error.main' : 'inherit' }}>{dueLabel(loan.dueOn, today, t)}</Box>
           </Typography>
         </Box>
         <Typography variant="body2" sx={{ mt: 2 }}>
-          {fine > 0 ? (
-            <>
-              A late fine of <strong>{formatRupees(fine)}</strong> will be recorded ({late} day{late === 1 ? '' : 's'} at ₹2 a day).
-            </>
-          ) : (
-            'No fine: it is back on time.'
-          )}
+          {fine > 0 ? t.plural('lib.return.fine', late, { amount: formatRupees(fine) }) : t('lib.return.noFine')}
         </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={pending}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -807,7 +806,7 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
             })
           }
         >
-          Mark returned
+          {t('lib.return.mark')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -815,6 +814,7 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
 }
 
 function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
+  const { t } = useI18n();
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [callNo, setCallNo] = useState('');
@@ -831,7 +831,7 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
     setError(null);
     start(async () => {
       const res = await addBook({ title, author, callNo, isbn, copies: n });
-      if (res.ok) onClose(`Added “${res.data.title}” · ${res.data.copies} cop${res.data.copies === 1 ? 'y' : 'ies'}`);
+      if (res.ok) onClose(t.plural('lib.added', res.data.copies, { title: res.data.title }));
       else setError(res.error);
     });
   };
@@ -846,33 +846,33 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
           submit();
         }}
       >
-        <DialogTitle id="add-book-title">Add a book</DialogTitle>
+        <DialogTitle id="add-book-title">{t('lib.add.title')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
-            <TextField label="Author" value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
+            <TextField label={t('lib.add.bookTitle')} value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
+            <TextField label={t('lib.add.author')} value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField label="Call number" value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
+              <TextField label={t('lib.add.callNo')} value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
               <TextField
-                label="Copies"
+                label={t('lib.add.copies')}
                 value={copies}
                 onChange={(e) => setCopies(e.target.value)}
                 required
                 error={!copiesOk}
-                helperText={copiesOk ? ' ' : '1 to 500'}
+                helperText={copiesOk ? ' ' : t('lib.add.copiesRange')}
                 slotProps={{ htmlInput: { inputMode: 'numeric' } }}
               />
             </Box>
-            <TextField label="ISBN (optional)" value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
+            <TextField label={t('lib.add.isbn')} value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={pending || !ready} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            Add book
+            {t('lib.addBook')}
           </Button>
         </DialogActions>
       </Box>

@@ -26,6 +26,9 @@ void main() {
     expect(find.text('Soon'), findsNothing);
 
     await tester.scrollUntilVisible(find.text("Diya's library books"), -200, scrollable: list);
+    // Clear of the collapsed app bar.
+    await Scrollable.ensureVisible(tester.element(find.text("Diya's library books")), alignment: 0.5);
+    await tester.pumpAndSettle();
     await tester.tap(find.text("Diya's library books"));
     await tester.pumpAndSettle();
     expect(find.text("Diya's library"), findsOneWidget);

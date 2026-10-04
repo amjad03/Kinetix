@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import type { ActionResult, Audience, DeliveryReport, Priority } from '@/lib/types';
 
@@ -16,16 +17,17 @@ export interface BroadcastInput {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function sendBroadcast(input: BroadcastInput): Promise<ActionResult<{ id: string; targetedBoards: number }>> {
+  const { t } = await getI18n();
   const title = input.title.trim();
   const body = input.body.trim();
-  if (!title || title.length > 120) return { ok: false, error: 'Give the message a title of up to 120 characters.' };
-  if (!body || body.length > 2000) return { ok: false, error: 'Write a message of up to 2,000 characters.' };
-  if (!['info', 'important', 'emergency'].includes(input.priority)) return { ok: false, error: 'Choose a priority.' };
+  if (!title || title.length > 120) return { ok: false, error: t('msg.err.titleServer') };
+  if (!body || body.length > 2000) return { ok: false, error: t('msg.err.bodyServer') };
+  if (!['info', 'important', 'emergency'].includes(input.priority)) return { ok: false, error: t('msg.err.priority') };
   const ids = (xs?: string[]) => (xs ?? []).filter((x) => UUID.test(x));
   const audience: Audience = input.audience.all
     ? { all: true }
     : { programIds: ids(input.audience.programIds), sectionIds: ids(input.audience.sectionIds) };
-  if (!audience.all && !audience.programIds?.length && !audience.sectionIds?.length) return { ok: false, error: 'Choose who receives the message.' };
+  if (!audience.all && !audience.programIds?.length && !audience.sectionIds?.length) return { ok: false, error: t('msg.err.who') };
 
   const res = await act(() =>
     api<{ id: string; targetedBoards: number }>('/v1/broadcasts', {
@@ -45,13 +47,13 @@ export async function sendBroadcast(input: BroadcastInput): Promise<ActionResult
 }
 
 export async function clearBroadcast(id: string): Promise<ActionResult<null>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Unknown message.' };
+  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('msg.err.unknown') };
   const res = await act(() => api(`/v1/broadcasts/${id}/clear`, { method: 'POST' }));
   if (res.ok) revalidatePath('/messages');
   return res.ok ? { ok: true, data: null } : res;
 }
 
 export async function deliveryReport(id: string): Promise<ActionResult<DeliveryReport>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Unknown message.' };
+  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('msg.err.unknown') };
   return act(() => api<DeliveryReport>(`/v1/broadcasts/${id}/delivery`));
 }

@@ -26,22 +26,23 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition, type ReactNode } from 'react';
 import { clearBroadcast, deliveryReport } from '@/app/(dashboard)/messages/actions';
-import { formatDateTime, formatTime, relativeTime } from '@/lib/dates';
+import { useI18n } from '@/i18n/client';
+import type { TFunction } from '@/i18n/translate';
 import type { DeliveryReport, SentBroadcast, Structure } from '@/lib/types';
 import { MiniBar } from '../Bars';
 import { EmptyState } from '../States';
 import { PriorityChip } from './priorities';
 
-function audienceLabel(b: SentBroadcast, s: Structure): string {
+function audienceLabel(b: SentBroadcast, s: Structure, t: TFunction): string {
   const a = b.audience;
-  if (a.all) return 'Whole school';
+  if (a.all) return t('msg.mode.all');
   const names = (ids: string[] | undefined, list: { id: string; name?: string; displayName?: string }[]) =>
     (ids ?? []).map((id) => {
       const x = list.find((l) => l.id === id);
-      return x?.name ?? x?.displayName ?? 'Removed';
+      return x?.name ?? x?.displayName ?? t('msg.removed');
     });
   const parts = [...names(a.campusIds, s.campuses), ...names(a.programIds, s.programs), ...names(a.sectionIds, s.sections)];
-  if (a.deviceIds?.length) parts.push(`${a.deviceIds.length} ${a.deviceIds.length === 1 ? 'board' : 'boards'}`);
+  if (a.deviceIds?.length) parts.push(t.plural('msg.boards', a.deviceIds.length));
   return parts.join(', ') || '—';
 }
 
@@ -72,6 +73,7 @@ export function SentMessages({
   /** Principal and admin can clear any message; others only their own. */
   isAdmin: boolean;
 }) {
+  const { t, fmt } = useI18n();
   const canClear = (b: SentBroadcast) => isAdmin || b.sender.id === userId;
   const [pending, start] = useTransition();
   const [clearing, setClearing] = useState<string | null>(null);
@@ -81,8 +83,8 @@ export function SentMessages({
 
   if (items.length === 0)
     return (
-      <EmptyState icon={<CampaignOutlined />} title="No messages yet" testId="no-messages">
-        Messages you circulate appear here, with how many boards showed them and how many families were notified.
+      <EmptyState icon={<CampaignOutlined />} title={t('msg.none')} testId="no-messages">
+        {t('msg.noneBody')}
       </EmptyState>
     );
 
@@ -91,7 +93,7 @@ export function SentMessages({
     start(async () => {
       const res = await clearBroadcast(b.id);
       setClearing(null);
-      setToast(res.ok ? (b.priority === 'emergency' ? `All clear sent for “${b.title}”` : `Cleared “${b.title}” from boards`) : res.error);
+      setToast(res.ok ? (b.priority === 'emergency' ? t('msg.allClearSent', { title: b.title }) : t('msg.cleared', { title: b.title })) : res.error);
     });
   };
 
@@ -115,18 +117,18 @@ export function SentMessages({
                   <Chip
                     size="small"
                     variant="outlined"
-                    label="Active"
+                    label={t('msg.state.active')}
                     icon={<Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'kx.success', ml: '8px !important' }} />}
                   />
                 ) : (
                   <Typography variant="caption" color="text.secondary">
-                    {state === 'cleared' ? `Cleared ${formatDateTime(b.clearedAt!, timeZone)}` : `Expired ${formatDateTime(b.expiresAt, timeZone)}`}
+                    {state === 'cleared' ? t('msg.state.cleared', { date: fmt.dateTime(b.clearedAt!, timeZone) }) : t('msg.state.expired', { date: fmt.dateTime(b.expiresAt, timeZone) })}
                   </Typography>
                 )}
                 <Box sx={{ flex: 1 }} />
-                <Tooltip title={formatDateTime(b.createdAt, timeZone)}>
-                  <Typography variant="caption" color="text.secondary">
-                    {relativeTime(b.createdAt, now, timeZone)}
+                <Tooltip title={fmt.dateTime(b.createdAt, timeZone)}>
+                  <Typography variant="caption" color="text.secondary" suppressHydrationWarning>
+                    {fmt.relative(b.createdAt, now, timeZone)}
                   </Typography>
                 </Tooltip>
               </Box>
@@ -141,8 +143,8 @@ export function SentMessages({
                 {b.body}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
-                To {audienceLabel(b, structure)} · by {b.sender.fullName}
-                {state === 'active' ? ` · until ${formatTime(b.expiresAt, timeZone)}${new Date(b.expiresAt).toDateString() !== now.toDateString() ? `, ${formatDateTime(b.expiresAt, timeZone, false)}` : ''}` : ''}
+                {t('msg.to', { audience: audienceLabel(b, structure, t), name: b.sender.fullName })}
+                {state === 'active' ? ` · ${t('msg.until', { time: `${fmt.time(b.expiresAt, timeZone)}${new Date(b.expiresAt).toDateString() !== now.toDateString() ? `, ${fmt.dateTime(b.expiresAt, timeZone, false)}` : ''}` })}` : ''}
               </Typography>
 
               <Box
@@ -159,27 +161,27 @@ export function SentMessages({
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', columnGap: 2.5, rowGap: 1, flexWrap: 'wrap' }} data-testid="delivery">
                   {d.boards > 0 ? (
-                    <Stat icon={<CastForEducationOutlined />} title="Boards that showed the message, of boards it was sent to">
-                      {d.displayed}/{d.boards} {d.boards === 1 ? 'board' : 'boards'} displayed
+                    <Stat icon={<CastForEducationOutlined />} title={t('msg.displayedTip')}>
+                      {t.plural('msg.displayed', d.boards, { n: d.displayed })}
                     </Stat>
                   ) : (
-                    <Stat icon={<CastForEducationOutlined />} title="Class and program messages reach boards only while a teacher is teaching that class">
-                      No board was in class
+                    <Stat icon={<CastForEducationOutlined />} title={t('msg.noBoardTip')}>
+                      {t('msg.noBoard')}
                     </Stat>
                   )}
-                  {d.boards > 0 && <MiniBar value={(d.displayed / d.boards) * 100} width={64} color="kx.success" label={`${d.displayed} of ${d.boards} displayed`} />}
+                  {d.boards > 0 && <MiniBar value={(d.displayed / d.boards) * 100} width={64} color="kx.success" label={t('msg.displayedBar', { n: d.displayed, d: d.boards })} />}
                   {b.requiresAck && (
-                    <Stat icon={<DoneAll />} title="Boards where a teacher acknowledged the message">
-                      {d.acknowledged} acknowledged
+                    <Stat icon={<DoneAll />} title={t('msg.ackTip')}>
+                      {t('msg.acknowledged', { n: d.acknowledged })}
                     </Stat>
                   )}
-                  <Stat icon={<FamilyRestroomOutlined />} title="Students and parents notified in their apps">
-                    {d.families} notified in apps
+                  <Stat icon={<FamilyRestroomOutlined />} title={t('msg.familiesTip')}>
+                    {t('msg.families', { n: d.families })}
                   </Stat>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   <Button size="small" startIcon={<VisibilityOutlined />} onClick={() => openReport(b)}>
-                    Delivery
+                    {t('msg.delivery')}
                   </Button>
                   {state === 'active' && canClear(b) && (
                     <Button
@@ -190,7 +192,7 @@ export function SentMessages({
                       disabled={pending && clearing === b.id}
                       startIcon={pending && clearing === b.id ? <CircularProgress size={14} color="inherit" /> : undefined}
                     >
-                      {b.priority === 'emergency' ? 'All clear' : 'Clear'}
+                      {b.priority === 'emergency' ? t('msg.allClear') : t('msg.clear')}
                     </Button>
                   )}
                 </Box>
@@ -201,11 +203,11 @@ export function SentMessages({
       })}
 
       <Dialog open={!!report} onClose={() => setReport(null)} fullWidth maxWidth="sm" aria-labelledby="delivery-title">
-        <DialogTitle id="delivery-title">Delivery</DialogTitle>
+        <DialogTitle id="delivery-title">{t('msg.delivery')}</DialogTitle>
         <DialogContent>
           {report && (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              “{report.b.title}” · sent {formatDateTime(report.b.createdAt, timeZone)}
+              {t('msg.sentAt', { title: report.b.title, date: fmt.dateTime(report.b.createdAt, timeZone) })}
             </Typography>
           )}
           {report?.error && <Alert severity="error">{report.error}</Alert>}
@@ -215,27 +217,25 @@ export function SentMessages({
             </Box>
           )}
           {report?.data && report.data.total === 0 && (
-            <EmptyState dense icon={<GroupsOutlined />} title="No boards were sent this message">
-              {report.b.audience.all
-                ? 'There were no enrolled boards when it was sent.'
-                : 'Class and program messages reach boards only while a teacher is teaching that class. Families were still notified.'}
+            <EmptyState dense icon={<GroupsOutlined />} title={t('msg.noBoardsSent')}>
+              {report.b.audience.all ? t('msg.noBoardsAll') : t('msg.noBoardsSome')}
             </EmptyState>
           )}
           {report?.data && report.data.total > 0 && (
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Board</TableCell>
-                  <TableCell>Displayed</TableCell>
-                  <TableCell>Acknowledged</TableCell>
+                  <TableCell>{t('msg.col.board')}</TableCell>
+                  <TableCell>{t('msg.col.displayed')}</TableCell>
+                  <TableCell>{t('msg.col.acknowledged')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {report.data.devices.map((r) => (
                   <TableRow key={r.deviceId}>
                     <TableCell>{r.deviceName}</TableCell>
-                    <TableCell>{r.displayedAt ? formatDateTime(r.displayedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>Not yet{r.lastSeenAt ? '' : ' · offline'}</Box>}</TableCell>
-                    <TableCell>{r.acknowledgedAt ? formatDateTime(r.acknowledgedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>}</TableCell>
+                    <TableCell>{r.displayedAt ? fmt.dateTime(r.displayedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>{t('msg.notYet')}{r.lastSeenAt ? '' : t('msg.offline')}</Box>}</TableCell>
+                    <TableCell>{r.acknowledgedAt ? fmt.dateTime(r.acknowledgedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -243,7 +243,7 @@ export function SentMessages({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setReport(null)}>Close</Button>
+          <Button onClick={() => setReport(null)}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>
 

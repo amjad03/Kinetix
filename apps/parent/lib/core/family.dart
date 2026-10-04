@@ -166,28 +166,9 @@ class FamilyController extends ChangeNotifier {
   List<Subject>? subjectsOf(String childId) => _subjects[childId];
   Coverage? coverageOf(String childId, String subjectId) => _coverage['$childId|$subjectId'];
 
-  /// The subjects of [child]'s class. There is no list of a class's subjects for families yet,
-  /// so they are worked out from the class's homework: one homework per subject name says the
-  /// subject's id (`GET /v1/homework/:id`).
+  /// The subjects of [child]'s class (`GET /v1/parent/children/:id/subjects`), by name.
   Future<List<Subject>> loadSubjects(Child child) async {
-    if (!_summaries.containsKey(child.id)) await loadSummary(child.id);
-    final s = _summaries[child.id];
-    final firstBySubject = <String, Homework>{};
-    for (final hw in [...?s?.upcoming, ...?s?.pastHomework]) {
-      firstBySubject.putIfAbsent(hw.subject, () => hw);
-    }
-    final subjects = <Subject>[];
-    ApiException? failed;
-    for (final hw in firstBySubject.values) {
-      try {
-        final found = await api.homeworkById(hw.id);
-        if (!subjects.any((x) => x.id == found.subject.id)) subjects.add(found.subject);
-      } on ApiException catch (e) {
-        failed = e;
-      }
-    }
-    if (subjects.isEmpty && failed != null) throw failed;
-    subjects.sort((a, b) => a.name.compareTo(b.name));
+    final subjects = [...await api.childSubjects(child.id)]..sort((a, b) => a.name.compareTo(b.name));
     _subjects[child.id] = subjects;
     notifyListeners();
     return subjects;

@@ -12,11 +12,12 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/States';
 import { filterThreads } from '@/lib/conversations';
-import { relativeTime } from '@/lib/dates';
+import { useI18n } from '@/i18n/client';
 import type { ConversationSummary } from '@/lib/types';
 
 /** Every parent–teacher thread, without message text; opening one is audited. */
 export function ThreadList({ threads, timeZone }: { threads: ConversationSummary[]; timeZone: string }) {
+  const { t, fmt } = useI18n();
   const [q, setQ] = useState('');
   const rows = useMemo(() => filterThreads(threads, q), [threads, q]);
   return (
@@ -24,22 +25,22 @@ export function ThreadList({ threads, timeZone }: { threads: ConversationSummary
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
         <TextField
           size="small"
-          placeholder="Student, class, teacher or parent"
+          placeholder={t('conv.search')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           sx={{ flex: '1 1 260px', maxWidth: 420 }}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
-            htmlInput: { 'aria-label': 'Search conversations' },
+            htmlInput: { 'aria-label': t('conv.searchLabel') },
           }}
         />
         <Typography variant="body2" color="text.secondary" data-testid="thread-count">
-          {rows.length} conversation{rows.length === 1 ? '' : 's'}
+          {t.plural('conv.count', rows.length)}
         </Typography>
       </Box>
       {rows.length === 0 ? (
-        <EmptyState dense icon={<ForumOutlined />} title="No conversations match" testId="no-thread-match">
-          Try a student, teacher or parent&apos;s name.
+        <EmptyState dense icon={<ForumOutlined />} title={t('conv.noMatch')} testId="no-thread-match">
+          {t('conv.noMatchBody')}
         </EmptyState>
       ) : (
         <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflow: 'hidden' }} data-testid="threads">
@@ -71,11 +72,11 @@ export function ThreadList({ threads, timeZone }: { threads: ConversationSummary
                   {c.family.fullName} ↔ {c.staff.fullName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" noWrap>
-                  About {c.student.fullName} · {c.className}
+                  {t('conv.about', { student: c.student.fullName, className: c.className })}
                 </Typography>
               </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                {c.lastMessageAt ? relativeTime(c.lastMessageAt, new Date(), timeZone) : 'No messages'}
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
+                {c.lastMessageAt ? fmt.relative(c.lastMessageAt, new Date(), timeZone) : t('conv.noMessages')}
               </Typography>
               <ChevronRight sx={{ color: 'text.secondary' }} />
             </ButtonBase>

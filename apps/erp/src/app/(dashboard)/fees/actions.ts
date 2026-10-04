@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import { isIsoDate } from '@/lib/dates';
 import { PAY_METHODS, type CounterMethod } from '@/lib/money';
@@ -17,11 +18,12 @@ const refresh = () => {
 };
 
 export async function issueFee(input: { sectionId: string; title: string; amountPaise: number; dueOn: string }): Promise<ActionResult<{ batchId: string; invoices: number }>> {
+  const { t } = await getI18n();
   const title = input.title.trim();
-  if (!UUID.test(input.sectionId)) return { ok: false, error: 'Choose a class.' };
-  if (!title || title.length > 120) return { ok: false, error: 'Give the fee a name (up to 120 characters), for example “Semester 3 tuition fee”.' };
-  if (!Number.isSafeInteger(input.amountPaise) || input.amountPaise < MIN_PAISE || input.amountPaise > MAX_PAISE) return { ok: false, error: 'Enter an amount between ₹1 and ₹10 crore.' };
-  if (!isIsoDate(input.dueOn)) return { ok: false, error: 'Choose a due date.' };
+  if (!UUID.test(input.sectionId)) return { ok: false, error: t('fees.err.class') };
+  if (!title || title.length > 120) return { ok: false, error: t('fees.err.title') };
+  if (!Number.isSafeInteger(input.amountPaise) || input.amountPaise < MIN_PAISE || input.amountPaise > MAX_PAISE) return { ok: false, error: t('fees.err.amount') };
+  if (!isIsoDate(input.dueOn)) return { ok: false, error: t('fees.err.due') };
   const res = await act(() => api<{ batchId: string; invoices: number }>('/v1/fees/invoices', { method: 'POST', body: { ...input, title } }));
   if (res.ok) refresh();
   return res;
@@ -31,12 +33,13 @@ export async function recordPayment(
   invoiceId: string,
   input: { amountPaise: number; method: CounterMethod; reference?: string },
 ): Promise<ActionResult<FeeReceipt>> {
-  if (!UUID.test(invoiceId)) return { ok: false, error: 'Unknown invoice.' };
-  if (!PAY_METHODS.includes(input.method)) return { ok: false, error: 'Choose how the money was paid.' };
-  if (!Number.isSafeInteger(input.amountPaise) || input.amountPaise < MIN_PAISE || input.amountPaise > MAX_PAISE) return { ok: false, error: 'Enter an amount of at least ₹1.' };
+  const { t } = await getI18n();
+  if (!UUID.test(invoiceId)) return { ok: false, error: t('fees.err.invoice') };
+  if (!PAY_METHODS.includes(input.method)) return { ok: false, error: t('fees.err.method') };
+  if (!Number.isSafeInteger(input.amountPaise) || input.amountPaise < MIN_PAISE || input.amountPaise > MAX_PAISE) return { ok: false, error: t('fees.err.amountMin') };
   const reference = input.reference?.trim() || undefined;
-  if (reference && reference.length > 100) return { ok: false, error: 'Keep the reference under 100 characters.' };
-  if (input.method !== 'cash' && !reference) return { ok: false, error: 'Add the reference so the payment can be traced.' };
+  if (reference && reference.length > 100) return { ok: false, error: t('fees.err.refLong') };
+  if (input.method !== 'cash' && !reference) return { ok: false, error: t('fees.err.ref') };
 
   const res = await act(() =>
     api<FeeReceipt>(`/v1/fees/invoices/${invoiceId}/payments`, { method: 'POST', body: { amountPaise: input.amountPaise, method: input.method, ...(reference ? { reference } : {}) } }),
@@ -46,7 +49,7 @@ export async function recordPayment(
 }
 
 export async function cancelInvoice(id: string): Promise<ActionResult<{ id: string; status: string }>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Unknown invoice.' };
+  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('fees.err.invoice') };
   const res = await act(() => api<{ id: string; status: string }>(`/v1/fees/invoices/${id}/cancel`, { method: 'POST' }));
   if (res.ok) refresh();
   return res;
@@ -54,7 +57,7 @@ export async function cancelInvoice(id: string): Promise<ActionResult<{ id: stri
 
 /** Payments made against one invoice, for its receipts. */
 export async function invoicePayments(studentId: string, invoiceId: string): Promise<ActionResult<StudentFees['payments']>> {
-  if (!UUID.test(studentId) || !UUID.test(invoiceId)) return { ok: false, error: 'Unknown invoice.' };
+  if (!UUID.test(studentId) || !UUID.test(invoiceId)) return { ok: false, error: (await getI18n()).t('fees.err.invoice') };
   const res = await act(() => api<StudentFees>(`/v1/fees/students/${studentId}`));
   return res.ok ? { ok: true, data: res.data.payments.filter((p) => p.invoiceId === invoiceId) } : res;
 }

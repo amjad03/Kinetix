@@ -19,6 +19,7 @@ import { useState, useTransition } from 'react';
 import { issueFee } from '@/app/(dashboard)/fees/actions';
 import { addDays, isIsoDate } from '@/lib/dates';
 import { formatRupees, rupeesToPaise } from '@/lib/money';
+import { useI18n } from '@/i18n/client';
 
 export interface FeeClass {
   id: string;
@@ -28,12 +29,13 @@ export interface FeeClass {
 }
 
 export function IssueFeeButton({ classes, today, defaultClassId }: { classes: FeeClass[]; today: string; defaultClassId?: string }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   return (
     <>
       <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)} disabled={classes.length === 0}>
-        Issue fee
+        {t('fees.issue')}
       </Button>
       {open && (
         <IssueFeeDialog
@@ -52,6 +54,7 @@ export function IssueFeeButton({ classes, today, defaultClassId }: { classes: Fe
 }
 
 function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: FeeClass[]; today: string; defaultClassId?: string; onClose: (done?: string) => void }) {
+  const { t } = useI18n();
   const [sectionId, setSectionId] = useState(defaultClassId && classes.some((c) => c.id === defaultClassId) ? defaultClassId : (classes[0]?.id ?? ''));
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
@@ -69,7 +72,7 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
     setError(null);
     start(async () => {
       const res = await issueFee({ sectionId, title, amountPaise: paise, dueOn });
-      if (res.ok) onClose(`Issued “${title.trim()}” to ${res.data.invoices} students of ${klass?.name ?? 'the class'}`);
+      if (res.ok) onClose(t('fees.issue.done', { title: title.trim(), n: res.data.invoices, className: klass?.name ?? t('fees.issue.theClass') }));
       else setError(res.error);
     });
   };
@@ -84,52 +87,52 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
           submit();
         }}
       >
-        <DialogTitle id="issue-fee-title">Issue a fee to a class</DialogTitle>
+        <DialogTitle id="issue-fee-title">{t('fees.issue.title')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-            Every student in the class gets an invoice, and their families are notified in the KINETIX Parent app.
+            {t('fees.issue.help')}
           </Typography>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField select label="Class" value={sectionId} onChange={(e) => setSectionId(e.target.value)} required>
+            <TextField select label={t('fees.class')} value={sectionId} onChange={(e) => setSectionId(e.target.value)} required>
               {classes.map((c) => (
                 <MenuItem key={c.id} value={c.id}>
                   {c.name}
                   {c.students !== null && (
                     <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                      · {c.students} students
+                      {t('fees.issue.students', { n: c.students })}
                     </Typography>
                   )}
                 </MenuItem>
               ))}
             </TextField>
             <TextField
-              label="Fee"
+              label={t('fees.issue.fee')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Semester 3 tuition fee"
+              placeholder={t('fees.issue.feePlaceholder')}
               required
               slotProps={{ htmlInput: { maxLength: 120 } }}
             />
             <TextField
-              label="Amount per student"
+              label={t('fees.issue.amount')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
               error={amountError}
               helperText={
                 amountError
-                  ? 'Enter rupees, for example 42500 or 1850.50'
+                  ? t('fees.issue.amountError')
                   : paise
                     ? klass?.students
-                      ? `${formatRupees(paise)} × ${klass.students} students = ${formatRupees(paise * klass.students)}`
+                      ? t('fees.issue.total', { amount: formatRupees(paise), n: klass.students, total: formatRupees(paise * klass.students) })
                       : formatRupees(paise)
                     : ' '
               }
               slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
             />
             <TextField
-              label="Due on"
+              label={t('fees.issue.dueOn')}
               type="date"
               value={dueOn}
               onChange={(e) => setDueOn(e.target.value)}
@@ -140,10 +143,10 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={pending || !ready} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            Issue
+            {t('fees.issue.submit')}
           </Button>
         </DialogActions>
       </Box>

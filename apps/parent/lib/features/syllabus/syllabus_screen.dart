@@ -72,7 +72,10 @@ class _SyllabusProgressScreenState extends State<SyllabusProgressScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    // After the first frame: loading may fetch the child's summary, which updates the family.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _load();
+    });
   }
 
   Future<void> _load() async {

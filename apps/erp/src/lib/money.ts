@@ -1,5 +1,7 @@
 // Money is integer paise in the API. Shown as Indian rupees with lakh grouping: ₹1,23,456.
 
+import type { MessageKey } from '@/i18n/messages';
+
 const WHOLE = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const EXACT = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -38,21 +40,15 @@ export function paiseToInput(paise: number): string {
 export const PAY_METHODS = ['cash', 'cheque', 'bank_transfer', 'upi'] as const;
 export type CounterMethod = (typeof PAY_METHODS)[number];
 
-export const METHOD_LABEL: Record<string, string> = {
-  cash: 'Cash',
-  cheque: 'Cheque',
-  bank_transfer: 'Bank transfer',
-  upi: 'UPI',
-  online: 'Online',
-};
+const METHODS = ['cash', 'cheque', 'bank_transfer', 'upi', 'online'];
 
-/** What the reference field asks for, per method. */
-export const REFERENCE_LABEL: Record<CounterMethod, string> = {
-  cash: 'Note (optional)',
-  cheque: 'Cheque number and bank',
-  bank_transfer: 'Transaction reference (UTR)',
-  upi: 'UPI transaction ID',
-};
+/** "Cash", "UPI"… in the ERP language (`fees.method.*`); an unknown method as the API sent it. */
+export function methodLabel(method: string, t: (key: MessageKey) => string): string {
+  return METHODS.includes(method) ? t(`fees.method.${method}` as MessageKey) : method;
+}
+
+/** What the reference field asks for, per method (`fees.ref.*`). */
+export const referenceKey = (m: CounterMethod): MessageKey => `fees.ref.${m}`;
 
 const ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
 const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];

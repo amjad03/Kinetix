@@ -10,7 +10,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
-import { INVOICE_FILTER_LABEL as LABEL, INVOICE_FILTERS, type InvoiceFilter } from '@/lib/invoices';
+import { useI18n } from '@/i18n/client';
+import { INVOICE_FILTERS, type InvoiceFilter } from '@/lib/invoices';
 
 /** Status chips and a class picker; both live in the URL. */
 export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFilter; classId: string; classes: { id: string; name: string }[] }) {
@@ -18,6 +19,7 @@ export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFi
   const pathname = usePathname();
   const params = useSearchParams();
   const [pending, start] = useTransition();
+  const { t } = useI18n();
 
   const set = (key: 'status' | 'class', value: string) => {
     const q = new URLSearchParams(params.toString());
@@ -29,14 +31,14 @@ export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFi
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', mb: 2 }}>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label="Loading" />}
-      <Box role="group" aria-label="Filter by status" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
+      <Box role="group" aria-label={t('fees.filterStatus')} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         {INVOICE_FILTERS.map((f) => {
           const on = status === f;
           return (
             <Chip
               key={f}
-              label={LABEL[f]}
+              label={t(`fees.filter.${f}`)}
               variant={on ? 'filled' : 'outlined'}
               onClick={() => set('status', f)}
               icon={on ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
@@ -50,10 +52,10 @@ export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFi
       <Box sx={{ flex: 1 }} />
       <FormControl size="small" sx={{ minWidth: 200 }}>
         <InputLabel id="f-fee-class" shrink>
-          Class
+          {t('fees.class')}
         </InputLabel>
-        <Select labelId="f-fee-class" label="Class" notched displayEmpty value={classId} onChange={(e) => set('class', e.target.value)} data-testid="invoice-class">
-          <MenuItem value="">All classes</MenuItem>
+        <Select labelId="f-fee-class" label={t('fees.class')} notched displayEmpty value={classId} onChange={(e) => set('class', e.target.value)} data-testid="invoice-class">
+          <MenuItem value="">{t('fees.allClasses')}</MenuItem>
           {classes.map((c) => (
             <MenuItem key={c.id} value={c.id}>
               {c.name}

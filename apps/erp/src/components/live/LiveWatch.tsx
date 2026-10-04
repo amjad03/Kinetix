@@ -18,7 +18,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { formatTime } from '@/lib/dates';
+import { useI18n } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/messages';
 import { endedText, type LiveAudioInfo, type LiveSession, type RefusalCode, type StreamMessage } from '@/lib/live/events';
 import { LivePlayer } from '@/lib/live/player';
 import { LiveAudioPlayer } from './audio-player';
@@ -41,19 +42,16 @@ export interface WatchBoard {
   session: LiveSession | null;
 }
 
-const REFUSAL_TITLE: Record<RefusalCode | 'failed', string> = {
-  turned_off: 'Live view is turned off',
-  no_class: 'No class on this board right now',
-  offline: 'This board is offline',
-  unknown_board: 'Board not found',
-  expired: 'Your session has ended',
-  forbidden: "You can't watch classes",
-  unavailable: "Can't reach KINETIX Cloud",
-  other: "Can't watch this class",
-  failed: "Couldn't open the live view",
+const REFUSAL_BODY: Partial<Record<RefusalCode | 'failed', MessageKey>> = {
+  no_class: 'live.refusedBody.no_class',
+  offline: 'live.refusedBody.offline',
+  expired: 'live.refusedBody.expired',
+  unavailable: 'live.refusedBody.unavailable',
+  failed: 'live.signInAgain',
 };
 
-export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: string }) {
+export function LiveWatch({ board, timeZone, canChangeSettings = false }: { board: WatchBoard; timeZone: string; canChangeSettings?: boolean }) {
+  const { t, fmt } = useI18n();
   // One player for the page's lifetime; it is mutated as frames arrive and `version` redraws.
   const [p] = useState(() => new LivePlayer());
   const [version, setVersion] = useState(0);
@@ -133,7 +131,7 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
     es.onerror = () => {
       if (final) return;
       // CLOSED: the stream was refused (signed out, no access). Otherwise the browser retries.
-      if (es.readyState === EventSource.CLOSED) setStatus({ kind: 'refused', code: 'failed', error: 'Sign in again, or try again in a moment.' });
+      if (es.readyState === EventSource.CLOSED) setStatus({ kind: 'refused', code: 'failed', error: '' });
       else setStatus((s) => (s.kind === 'watching' ? { kind: 'reconnecting' } : s));
     };
     return () => {
@@ -156,13 +154,13 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
     setAttempt((a) => a + 1);
   }, []);
 
-  const title = [session?.subject, session?.section].filter(Boolean).join(' · ') || 'Unscheduled class';
+  const title = [session?.subject, session?.section].filter(Boolean).join(' · ') || t('live.unscheduled');
 
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, ml: -1 }}>
         <Button component={Link} href="/live" startIcon={<ArrowBack />} size="small">
-          Live classrooms
+          {t('live.classrooms')}
         </Button>
       </Box>
 
@@ -176,7 +174,7 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
             <StatusChip status={status} />
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            {session ? `${session.teacher} · since ${formatTime(session.startedAt, timeZone)} · ` : ''}
+            {session ? t('live.since', { teacher: session.teacher, time: fmt.time(session.startedAt, timeZone) }) : ''}
             {board.name}
             {board.room ? ` · ${board.room}` : ''}
           </Typography>
@@ -186,10 +184,10 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
             <LiveAudioControls player={player} listening={listening} onListen={listen} onStop={stopListening} />
           )}
           {hasFrame && (
-            <Chip variant="outlined" label={`Page ${p.index + 1} of ${p.pageCount}`} data-testid="live-page" sx={{ fontVariantNumeric: 'tabular-nums' }} />
+            <Chip variant="outlined" label={t('live.page', { n: p.index + 1, d: p.pageCount })} data-testid="live-page" sx={{ fontVariantNumeric: 'tabular-nums' }} />
           )}
-          <Tooltip title="Full screen">
-            <IconButton aria-label="Full screen" onClick={() => stage.current?.requestFullscreen?.().catch(() => {})}>
+          <Tooltip title={t('live.fullScreen')}>
+            <IconButton aria-label={t('live.fullScreen')} onClick={() => stage.current?.requestFullscreen?.().catch(() => {})}>
               <Fullscreen />
             </IconButton>
           </Tooltip>
@@ -198,13 +196,13 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
 
       <Box ref={stage} sx={{ width: '100%', maxWidth: 'calc((100dvh - 250px) * 16 / 9)', minWidth: { xs: 0, sm: 480 }, mx: 'auto', ':fullscreen': { maxWidth: 'none', display: 'grid', placeItems: 'center', bgcolor: '#000' } }}>
         <LiveBoard player={p} version={version}>
-          <Overlay status={status} hasFrame={hasFrame} slow={slow} onRetry={retry} />
+          <Overlay status={status} hasFrame={hasFrame} slow={slow} onRetry={retry} canChangeSettings={canChangeSettings} />
           {status.kind === 'watching' && hasFrame && p.strokes.length === 0 && (
             <Box
               data-testid="live-empty"
               sx={{ position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', px: 2, py: 0.75, borderRadius: 16, bgcolor: 'rgba(32,33,36,.72)', color: '#fff', typography: 'body2', whiteSpace: 'nowrap' }}
             >
-              {p.pageCount > 1 ? 'This page is empty so far' : 'Nothing on the board yet'}
+              {p.pageCount > 1 ? t('live.pageEmpty') : t('live.boardEmpty')}
             </Box>
           )}
         </LiveBoard>
@@ -214,9 +212,21 @@ export function LiveWatch({ board, timeZone }: { board: WatchBoard; timeZone: st
         sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, md: 3 }, mt: 1.5, color: 'text.secondary', justifyContent: 'center' }}
         data-testid="live-notes"
       >
-        <Note icon={<VisibilityOutlined />}>Viewing is recorded in the audit log.</Note>
-        {audio && !audio.allowed && <Note icon={<MicOffOutlined />}>Class audio is off for leaders.</Note>}
-        {audio?.allowed && !audio.on && <Note icon={<MicOffOutlined />}>The teacher&apos;s mic is off.</Note>}
+        <Note icon={<VisibilityOutlined />}>{t('live.audited')}</Note>
+        {audio && !audio.allowed && (
+          <Note icon={<MicOffOutlined />}>
+            {t('live.audioOffLeaders')}
+            {canChangeSettings && (
+              <>
+                {' '}
+                <Box component={Link} href="/settings" sx={{ color: 'primary.main', fontWeight: 500 }} data-testid="live-audio-settings">
+                  {t('live.audioSettings')}
+                </Box>
+              </>
+            )}
+          </Note>
+        )}
+        {audio?.allowed && !audio.on && <Note icon={<MicOffOutlined />}>{t('live.micOff')}</Note>}
       </Box>
     </>
   );
@@ -234,35 +244,37 @@ function Note({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 }
 
 function StatusChip({ status }: { status: Status }) {
+  const { t } = useI18n();
   switch (status.kind) {
     case 'watching':
       return <LiveChip />;
     case 'connecting':
-      return <Chip size="small" variant="outlined" label="Connecting…" />;
+      return <Chip size="small" variant="outlined" label={t('live.connecting')} />;
     case 'reconnecting':
-      return <Chip size="small" variant="outlined" label="Reconnecting…" />;
+      return <Chip size="small" variant="outlined" label={t('live.reconnecting')} />;
     case 'offline':
-      return <Chip size="small" variant="outlined" label="Board offline" sx={{ color: 'text.secondary' }} />;
+      return <Chip size="small" variant="outlined" label={t('live.boardOffline')} sx={{ color: 'text.secondary' }} />;
     case 'ended':
-      return <Chip size="small" label="Ended" sx={{ bgcolor: 'm3.surfaceContainerHighest' }} />;
+      return <Chip size="small" label={t('live.ended')} sx={{ bgcolor: 'm3.surfaceContainerHighest' }} />;
     case 'refused':
-      return <Chip size="small" label="Not available" sx={{ bgcolor: 'm3.surfaceContainerHighest' }} />;
+      return <Chip size="small" label={t('live.notAvailable')} sx={{ bgcolor: 'm3.surfaceContainerHighest' }} />;
   }
 }
 
 /** What is shown over the board when it is not simply live. */
-function Overlay({ status, hasFrame, slow, onRetry }: { status: Status; hasFrame: boolean; slow: boolean; onRetry: () => void }) {
+function Overlay({ status, hasFrame, slow, onRetry, canChangeSettings }: { status: Status; hasFrame: boolean; slow: boolean; onRetry: () => void; canChangeSettings: boolean }) {
+  const { t } = useI18n();
   if (status.kind === 'watching' && hasFrame) return null;
   if (status.kind === 'watching' || status.kind === 'connecting') {
     return (
       <Center testId="live-waiting" scrim={false}>
         <CircularProgress size={28} />
         <Typography variant="body2" sx={{ mt: 1.5 }}>
-          {status.kind === 'connecting' ? 'Connecting to the board…' : 'Waiting for the board…'}
+          {status.kind === 'connecting' ? t('live.connectingBoard') : t('live.waitingBoard')}
         </Typography>
         {slow && (
           <Typography variant="caption" component="p" sx={{ mt: 0.5, maxWidth: 380 }}>
-            The board has not sent anything yet. It may need the latest KINETIX Board app.
+            {t('live.slow')}
           </Typography>
         )}
       </Center>
@@ -274,22 +286,25 @@ function Overlay({ status, hasFrame, slow, onRetry }: { status: Status; hasFrame
       <Center testId={offline ? 'live-offline' : 'live-reconnecting'} scrim={hasFrame}>
         {offline ? <WifiOffOutlined /> : <CircularProgress size={28} />}
         <Typography variant="subtitle1" sx={{ mt: 1.5 }}>
-          {offline ? 'The board went offline' : 'Reconnecting…'}
+          {offline ? t('live.wentOffline') : t('live.reconnecting')}
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.85 }}>
-          {offline ? 'The class carries on here when the board is back online.' : 'The board will appear again in a moment.'}
+          {offline ? t('live.offlineBody') : t('live.reconnectingBody')}
         </Typography>
       </Center>
     );
   }
   const ended = status.kind === 'ended';
   const icon = ended ? <EventBusyOutlined /> : status.code === 'turned_off' || status.code === 'forbidden' ? <LockOutlined /> : <CloudOffOutlined />;
-  const title = ended ? 'Class ended' : REFUSAL_TITLE[status.code];
+  const title = ended ? t('live.classEnded') : t(`live.refused.${status.code}`);
+  const bodyKey = ended ? undefined : REFUSAL_BODY[status.code];
   const text = ended
-    ? endedText(status.reason)
+    ? t(endedText(status.reason))
     : status.code === 'turned_off'
-      ? 'Your institution has turned live view off. An administrator can turn it on in the institution settings.'
-      : status.error;
+      ? t('live.turnedOffBody')
+      : bodyKey && (t.locale !== 'en' || !status.error)
+        ? t(bodyKey)
+        : status.error;
   const canRetry = !ended && status.code !== 'turned_off' && status.code !== 'forbidden' && status.code !== 'unknown_board';
   return (
     <Center testId={ended ? 'live-ended' : 'live-refused'} scrim={hasFrame}>
@@ -303,16 +318,21 @@ function Overlay({ status, hasFrame, slow, onRetry }: { status: Status; hasFrame
       <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
         {status.kind === 'refused' && status.code === 'expired' ? (
           <Button variant="contained" href="/auth/end?reason=expired">
-            Sign in
+            {t('live.signIn')}
           </Button>
         ) : (
           <>
             <Button variant="contained" component={Link} href="/live">
-              Back to Live
+              {t('live.back')}
             </Button>
+            {status.kind === 'refused' && status.code === 'turned_off' && canChangeSettings && (
+              <Button variant="outlined" component={Link} href="/settings">
+                {t('live.turnedOffSettings')}
+              </Button>
+            )}
             {canRetry && (
               <Button variant="outlined" startIcon={<Refresh />} onClick={onRetry}>
-                Try again
+                {t('common.tryAgain')}
               </Button>
             )}
           </>

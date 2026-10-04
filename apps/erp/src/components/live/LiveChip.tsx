@@ -2,13 +2,15 @@
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import { useI18n } from '@/i18n/client';
 
 /** "Live" with a pulsing dot, in the fixed live colour. */
-export function LiveChip({ label = 'Live' }: { label?: string }) {
+export function LiveChip({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <Chip
       size="small"
-      label={label}
+      label={label ?? t('live.live')}
       icon={
         <Box
           component="span"

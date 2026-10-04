@@ -2,6 +2,11 @@
 // See docs/i18n/erp.md for how to add strings.
 import type { Locale } from '../locales';
 import common from './common';
+import syllabus from './syllabus';
+import library from './library';
+import fees from './fees';
+import boards from './boards';
+import messages from './messages';
 import school from './school';
 import results from './results';
 import department from './department';
@@ -9,7 +14,7 @@ import settings from './settings';
 import calendar from './calendar';
 import today from './today';
 
-export const AREAS = { common, school, results, department, settings, calendar, today } as const;
+export const AREAS = { common, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today } as const;
 
 type Areas = typeof AREAS;
 type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;

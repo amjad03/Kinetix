@@ -1,6 +1,7 @@
 // Library desk helpers: availability, due dates and late fines, student search. Pure, so the
 // client components and tests can use them.
 
+import type { TFunction } from '@/i18n/translate';
 import { daysBetween } from './dates';
 import type { LibraryBook, LibraryLoan } from './types';
 
@@ -22,9 +23,10 @@ export function finePreview(dueOn: string, today: string): number {
   return daysLate(dueOn, today) * FINE_PAISE_PER_DAY;
 }
 
-/** "Due today", "Due in 3 days", "4 days late". */
-export function dueLabel(dueOn: string, today: string): string {
+/** "Due today", "Due in 3 days", "4 days late"; in the ERP language with `t`. */
+export function dueLabel(dueOn: string, today: string, t?: TFunction): string {
   const n = daysBetween(today, dueOn);
+  if (t) return n === 0 ? t('lib.dueToday') : n < 0 ? t.plural('lib.late', -n) : t.plural('lib.dueIn', n);
   if (n === 0) return 'Due today';
   if (n < 0) return `${-n} day${n === -1 ? '' : 's'} late`;
   return `Due in ${n} day${n === 1 ? '' : 's'}`;

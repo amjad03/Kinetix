@@ -9,11 +9,13 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, ApiError, load, requireSection } from '@/lib/api';
 import { senderSide } from '@/lib/conversations';
-import { formatDateTime } from '@/lib/dates';
+import { getI18n } from '@/i18n/server';
 import { TIMEZONE } from '@/lib/school';
 import type { ConversationThread } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Conversation' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('conv.title') };
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -31,10 +33,11 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
     }
   });
 
+  const { t, fmt } = await getI18n();
   const back = (
     <Box sx={{ ml: -1, mb: 0.5 }}>
       <LinkButton href="/conversations" size="small" startIcon={<ArrowBack />}>
-        Parent messages
+        {t('nav.conversations')}
       </LinkButton>
     </Box>
   );
@@ -50,11 +53,11 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
   return (
     <>
       {back}
-      <PageHeader title={`${c.family.fullName} and ${c.staff.fullName}`} subtitle={`About ${c.student.fullName} · ${c.className} · read-only`} />
-      <AuditNote>Your opening of this conversation has been recorded in the audit log. You can read it here but not reply.</AuditNote>
+      <PageHeader title={t('conv.pair', { family: c.family.fullName, staff: c.staff.fullName })} subtitle={t('conv.aboutReadOnly', { student: c.student.fullName, className: c.className })} />
+      <AuditNote>{t('conv.auditThread')}</AuditNote>
       {messages.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          No messages yet.
+          {t('conv.noMessagesYet')}
         </Typography>
       ) : (
         <Box sx={{ display: 'grid', gap: 1.5, maxWidth: 760 }} data-testid="thread">
@@ -74,13 +77,13 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
                   }}
                 >
                   <Typography variant="caption" sx={{ fontWeight: 500, display: 'block', mb: 0.25 }}>
-                    {side === 'staff' ? `${c.staff.fullName} · teacher` : side === 'family' ? `${c.family.fullName} · parent` : 'KINETIX'}
+                    {side === 'staff' ? t('conv.asTeacher', { name: c.staff.fullName }) : side === 'family' ? t('conv.asParent', { name: c.family.fullName }) : 'KINETIX'}
                   </Typography>
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                     {m.body}
                   </Typography>
                   <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7, textAlign: 'right' }}>
-                    {formatDateTime(m.createdAt, TIMEZONE)}
+                    {fmt.dateTime(m.createdAt, TIMEZONE)}
                   </Typography>
                 </Box>
               </Box>

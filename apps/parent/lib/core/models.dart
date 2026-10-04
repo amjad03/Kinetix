@@ -925,13 +925,17 @@ class MessagePage {
 
 /// A subject taught in a child's class.
 class Subject {
-  const Subject({required this.id, required this.name, this.code});
+  const Subject({required this.id, required this.name, this.code, this.courseId});
 
-  factory Subject.fromJson(Map<String, dynamic> j) => Subject(id: j['id'] as String, name: j['name'] as String, code: j['code'] as String?);
+  factory Subject.fromJson(Map<String, dynamic> j) =>
+      Subject(id: j['id'] as String, name: j['name'] as String, code: j['code'] as String?, courseId: j['courseId'] as String?);
 
   final String id;
   final String name;
   final String? code;
+
+  /// The library course the subject's syllabus comes from; null when not linked yet.
+  final String? courseId;
 }
 
 class OutlineTopic {

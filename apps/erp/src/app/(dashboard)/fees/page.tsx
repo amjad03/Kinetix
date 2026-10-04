@@ -19,31 +19,35 @@ import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { feeClasses } from '@/lib/fees';
-import { formatRupees, formatRupeesShort } from '@/lib/money';
+import { formatRupees } from '@/lib/money';
 import { schoolToday } from '@/lib/school';
+import { getI18n } from '@/i18n/server';
 import type { FeeSummary } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Fees' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.fees') };
+}
 
 const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
-/** The exact amount, when the tile shows it shortened (₹9.26 L). */
-const exact = (paise: number) => (formatRupeesShort(paise) === formatRupees(paise) ? '' : ` · ${formatRupees(paise)}`);
 
 export default async function FeesPage() {
   await requireSection('fees');
   const [summary, classes] = await Promise.all([load(() => api<FeeSummary>('/v1/fees/summary')), load(feeClasses)]);
   const today = schoolToday();
   const s = summary.data;
+  const { t, fmt } = await getI18n();
+  /** The exact amount, when the tile shows it shortened (₹9.26 L). */
+  const exact = (paise: number) => (fmt.rupeesShort(paise) === formatRupees(paise) ? '' : ` · ${formatRupees(paise)}`);
 
   return (
     <>
       <PageHeader
-        title="Fees"
-        subtitle="What has been billed, collected and is still due, class by class"
+        title={t('nav.fees')}
+        subtitle={t('fees.subtitle')}
         actions={
           <>
             <LinkButton href="/fees/invoices" variant="outlined" startIcon={<ReceiptLongOutlined />}>
-              Invoices
+              {t('fees.invoices')}
             </LinkButton>
             <IssueFeeButton classes={classes.data ?? []} today={today} />
           </>
@@ -52,31 +56,31 @@ export default async function FeesPage() {
       {summary.error !== undefined ? (
         <ErrorState message={summary.error} />
       ) : s!.classes.length === 0 ? (
-        <EmptyState icon={<PaymentsOutlined />} title="No fees issued yet" testId="no-fees">
-          Issue a fee to a class: every student gets an invoice, and families can see it in the KINETIX Parent app.
+        <EmptyState icon={<PaymentsOutlined />} title={t('fees.none')} testId="no-fees">
+          {t('fees.noneBody')}
         </EmptyState>
       ) : (
         <>
           <StatGrid min={200}>
-            <StatTile label="Billed" value={formatRupeesShort(s!.billedPaise)} caption={formatRupees(s!.billedPaise)} testId="fee-billed" />
+            <StatTile label={t('fees.billed')} value={fmt.rupeesShort(s!.billedPaise)} caption={formatRupees(s!.billedPaise)} testId="fee-billed" />
             <StatTile
-              label="Collected"
-              value={formatRupeesShort(s!.collectedPaise)}
-              caption={`${pct(s!.collectedPaise, s!.billedPaise).toFixed(1)}% of billed${exact(s!.collectedPaise)}`}
-              bar={<MiniBar value={pct(s!.collectedPaise, s!.billedPaise)} color="kx.success" label="Share of billed fees collected" />}
+              label={t('fees.collected')}
+              value={fmt.rupeesShort(s!.collectedPaise)}
+              caption={`${t('fees.collectedCaption', { p: pct(s!.collectedPaise, s!.billedPaise).toFixed(1) })}${exact(s!.collectedPaise)}`}
+              bar={<MiniBar value={pct(s!.collectedPaise, s!.billedPaise)} color="kx.success" label={t('fees.collectedBar')} />}
               testId="fee-collected"
             />
             <StatTile
-              label="Outstanding"
-              value={formatRupeesShort(s!.outstandingPaise)}
-              caption={`${s!.openInvoices} open invoices${exact(s!.outstandingPaise)}`}
+              label={t('fees.outstanding')}
+              value={fmt.rupeesShort(s!.outstandingPaise)}
+              caption={`${t('fees.openInvoices', { n: s!.openInvoices })}${exact(s!.outstandingPaise)}`}
               testId="fee-outstanding"
             />
             <StatTile
-              label="Overdue"
-              value={formatRupeesShort(s!.overduePaise)}
+              label={t('fees.overdue')}
+              value={fmt.rupeesShort(s!.overduePaise)}
               tone={s!.overduePaise > 0 ? 'warning' : 'default'}
-              caption={s!.overdueInvoices > 0 ? `${s!.overdueInvoices} invoices past the due date${exact(s!.overduePaise)}` : 'Nothing is overdue'}
+              caption={s!.overdueInvoices > 0 ? `${t('fees.overdueCaption', { n: s!.overdueInvoices })}${exact(s!.overduePaise)}` : t('fees.nothingOverdue')}
               testId="fee-overdue"
             />
           </StatGrid>
@@ -84,24 +88,24 @@ export default async function FeesPage() {
           <SectionTitle
             action={
               <LinkButton href="/fees/invoices" endIcon={<ArrowForward />} size="small">
-                All invoices
+                {t('fees.allInvoices')}
               </LinkButton>
             }
           >
-            By class
+            {t('fees.byClass')}
           </SectionTitle>
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>
             <TableFrame testId="fee-classes">
               <Table sx={{ minWidth: 760 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Class</TableCell>
-                    <TableCell align="right">Billed</TableCell>
-                    <TableCell align="right">Collected</TableCell>
-                    <TableCell align="right">Outstanding</TableCell>
-                    <TableCell align="right">Open</TableCell>
-                    <TableCell align="right">Overdue</TableCell>
-                    <TableCell aria-label="Invoices" />
+                    <TableCell>{t('fees.col.class')}</TableCell>
+                    <TableCell align="right">{t('fees.col.billed')}</TableCell>
+                    <TableCell align="right">{t('fees.col.collected')}</TableCell>
+                    <TableCell align="right">{t('fees.col.outstanding')}</TableCell>
+                    <TableCell align="right">{t('fees.col.open')}</TableCell>
+                    <TableCell align="right">{t('fees.col.overdue')}</TableCell>
+                    <TableCell aria-label={t('fees.invoices')} />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -118,7 +122,7 @@ export default async function FeesPage() {
                         <TableCell align="right">
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
                             <Box sx={{ width: 64 }}>
-                              <MiniBar value={share} color="kx.success" label={`${share.toFixed(0)}% collected`} />
+                              <MiniBar value={share} color="kx.success" label={t('fees.pctCollected', { p: share.toFixed(0) })} />
                             </Box>
                             <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 96 }}>
                               {formatRupees(c.collectedPaise)}
@@ -136,7 +140,7 @@ export default async function FeesPage() {
                                 {formatRupees(c.overduePaise)}
                               </Box>
                               <Typography component="span" variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                                {c.overdue} invoices
+                                {t('fees.nInvoices', { n: c.overdue })}
                               </Typography>
                             </>
                           ) : (
@@ -144,8 +148,8 @@ export default async function FeesPage() {
                           )}
                         </TableCell>
                         <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                          <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={`Invoices for ${c.className}`}>
-                            Invoices
+                          <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={t('fees.invoicesFor', { name: c.className })}>
+                            {t('fees.invoices')}
                           </LinkButton>
                         </TableCell>
                       </TableRow>
@@ -165,21 +169,21 @@ export default async function FeesPage() {
                   </Typography>
                   {c.overdue > 0 && (
                     <Typography variant="body2" sx={{ color: 'error.main', whiteSpace: 'nowrap' }}>
-                      {formatRupees(c.overduePaise)} overdue
+                      {t('fees.amountOverdue', { amount: formatRupees(c.overduePaise) })}
                     </Typography>
                   )}
                 </Box>
                 <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  {formatRupees(c.outstandingPaise)} outstanding
+                  {t('fees.amountOutstanding', { amount: formatRupees(c.outstandingPaise) })}
                 </Typography>
                 <Box sx={{ my: 1 }}>
-                  <MiniBar value={pct(c.collectedPaise, c.billedPaise)} color="kx.success" label={`${pct(c.collectedPaise, c.billedPaise).toFixed(0)}% collected`} />
+                  <MiniBar value={pct(c.collectedPaise, c.billedPaise)} color="kx.success" label={t('fees.pctCollected', { p: pct(c.collectedPaise, c.billedPaise).toFixed(0) })} />
                 </Box>
                 <Typography variant="caption" color="text.secondary" component="p">
-                  {formatRupees(c.collectedPaise)} collected of {formatRupees(c.billedPaise)} · {c.open} open
+                  {t('fees.collectedOf', { collected: formatRupees(c.collectedPaise), billed: formatRupees(c.billedPaise), open: c.open })}
                 </Typography>
                 <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} sx={{ mt: 1, ml: -1 }}>
-                  Invoices
+                  {t('fees.invoices')}
                 </LinkButton>
               </Box>
             ))}

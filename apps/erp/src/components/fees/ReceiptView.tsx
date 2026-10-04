@@ -1,8 +1,12 @@
+'use client';
+
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
-import { formatRupees, METHOD_LABEL, rupeesInWords } from '@/lib/money';
+import { useI18n } from '@/i18n/client';
+import { formatDateTime } from '@/lib/dates';
+import { formatRupees, methodLabel, rupeesInWords } from '@/lib/money';
 import type { FeeReceipt } from '@/lib/types';
 
 function Row({ label, children, strong }: { label: string; children: ReactNode; strong?: boolean }) {
@@ -20,6 +24,7 @@ function Row({ label, children, strong }: { label: string; children: ReactNode; 
 
 /** A fee receipt: on screen after a counter payment, and on the printable page. */
 export function ReceiptView({ r, timeZone, full }: { r: FeeReceipt; timeZone: string; full?: boolean }) {
+  const { t, locale } = useI18n();
   return (
     <Box data-testid="receipt">
       {full && (
@@ -28,7 +33,7 @@ export function ReceiptView({ r, timeZone, full }: { r: FeeReceipt; timeZone: st
             {r.institution}
           </Typography>
           <Typography variant="overline" component="h1" sx={{ letterSpacing: '0.2em', fontSize: '0.875rem', color: 'text.secondary' }}>
-            Fee receipt
+            {t('fees.receipt.title')}
           </Typography>
         </Box>
       )}
@@ -37,27 +42,29 @@ export function ReceiptView({ r, timeZone, full }: { r: FeeReceipt; timeZone: st
           {r.receiptNo}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {new Intl.DateTimeFormat('en-IN', { timeZone, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(r.paidAt))}
+          {locale === 'en'
+            ? new Intl.DateTimeFormat('en-IN', { timeZone, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(r.paidAt))
+            : `${formatDateTime(r.paidAt, timeZone, true, locale)} · ${new Intl.DateTimeFormat('en-IN', { timeZone, year: 'numeric' }).format(new Date(r.paidAt))}`}
         </Typography>
       </Box>
       <Divider sx={{ mb: 1 }} />
-      <Row label="Student">
+      <Row label={t('fees.receipt.student')}>
         {r.student.fullName}
         {r.student.rollNo ? ` · ${r.student.rollNo}` : ''}
       </Row>
-      <Row label="Class">{r.className}</Row>
-      <Row label="Towards">{r.invoice.title}</Row>
-      <Row label="Amount received" strong>
+      <Row label={t('fees.receipt.class')}>{r.className}</Row>
+      <Row label={t('fees.receipt.towards')}>{r.invoice.title}</Row>
+      <Row label={t('fees.receipt.amount')} strong>
         <span data-testid="receipt-amount">{formatRupees(r.amountPaise)}</span>
       </Row>
-      {full && <Row label="In words">{rupeesInWords(r.amountPaise)}</Row>}
-      <Row label="Paid by">
-        {METHOD_LABEL[r.method] ?? r.method}
+      {full && <Row label={t('fees.receipt.words')}>{rupeesInWords(r.amountPaise)}</Row>}
+      <Row label={t('fees.receipt.paidBy')}>
+        {methodLabel(r.method, t)}
         {r.reference ? ` · ${r.reference}` : ''}
       </Row>
       <Divider sx={{ my: 1 }} />
-      <Row label="Fee">{formatRupees(r.invoice.amountPaise)}</Row>
-      <Row label="Balance due">{r.invoice.balancePaise > 0 ? formatRupees(r.invoice.balancePaise) : 'Nil · fully paid'}</Row>
+      <Row label={t('fees.receipt.fee')}>{formatRupees(r.invoice.amountPaise)}</Row>
+      <Row label={t('fees.receipt.balance')}>{r.invoice.balancePaise > 0 ? formatRupees(r.invoice.balancePaise) : t('fees.receipt.nil')}</Row>
     </Box>
   );
 }

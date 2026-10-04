@@ -6,9 +6,12 @@ import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, getMe, load, requireSection } from '@/lib/api';
 import { TIMEZONE } from '@/lib/school';
+import { getI18n } from '@/i18n/server';
 import type { SentBroadcast, Structure } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Messages' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.messages') };
+}
 
 export default async function MessagesPage() {
   await requireSection('school');
@@ -18,10 +21,11 @@ export default async function MessagesPage() {
     load(() => api<SentBroadcast[]>('/v1/broadcasts')),
   ]);
   const active = sent.data?.filter((b) => b.active).length ?? 0;
+  const { t } = await getI18n();
 
   return (
     <>
-      <PageHeader title="Messages" subtitle="Circulate notices to classroom boards, students and families" />
+      <PageHeader title={t('nav.messages')} subtitle={t('msg.subtitle')} />
       {structure.error !== undefined ? (
         <ErrorState message={structure.error} />
       ) : (
@@ -29,8 +33,9 @@ export default async function MessagesPage() {
           <ComposeMessage structure={structure.data} />
           <Box component="section" aria-labelledby="sent-title">
             <SectionTitle id="sent-title" flush>
-              Sent{sent.data ? ` · ${sent.data.length}` : ''}
-              {active ? ` · ${active} active` : ''}
+              {t('msg.sent')}
+              {sent.data ? ` · ${sent.data.length}` : ''}
+              {active ? ` · ${t('msg.active', { n: active })}` : ''}
             </SectionTitle>
             {sent.error !== undefined ? (
               <ErrorState message={sent.error} />

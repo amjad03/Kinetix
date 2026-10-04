@@ -37,31 +37,34 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { cancelInvoice, invoicePayments, recordPayment } from '@/app/(dashboard)/fees/actions';
 import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
-import { daysBetween, formatDate, formatDateTime } from '@/lib/dates';
-import { formatRupees, METHOD_LABEL, paiseToInput, PAY_METHODS, REFERENCE_LABEL, rupeesToPaise, type CounterMethod } from '@/lib/money';
+import { useI18n } from '@/i18n/client';
+import { daysBetween } from '@/lib/dates';
+import { formatRupees, methodLabel, paiseToInput, PAY_METHODS, referenceKey, rupeesToPaise, type CounterMethod } from '@/lib/money';
 import type { FeeInvoice, FeeReceipt, StudentFees } from '@/lib/types';
 import { ReceiptView } from './ReceiptView';
 
 function StatusCell({ inv, today }: { inv: FeeInvoice; today: string }) {
+  const { t } = useI18n();
   if (inv.status === 'paid')
-    return <Chip size="small" label="Paid" sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} data-status="paid" />;
-  if (inv.status === 'cancelled') return <Chip size="small" label="Cancelled" variant="outlined" sx={{ color: 'text.secondary' }} data-status="cancelled" />;
+    return <Chip size="small" label={t('fees.status.paid')} sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} data-status="paid" />;
+  if (inv.status === 'cancelled') return <Chip size="small" label={t('fees.status.cancelled')} variant="outlined" sx={{ color: 'text.secondary' }} data-status="cancelled" />;
   const late = inv.dueOn < today;
-  if (late) return <Chip size="small" label="Overdue" sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-status="overdue" />;
-  return <Chip size="small" label={inv.paidPaise > 0 ? 'Part paid' : 'Due'} variant="outlined" data-status="due" />;
+  if (late) return <Chip size="small" label={t('fees.status.overdue')} sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-status="overdue" />;
+  return <Chip size="small" label={inv.paidPaise > 0 ? t('fees.status.partPaid') : t('fees.status.due')} variant="outlined" data-status="due" />;
 }
 
 function DueCell({ inv, today }: { inv: FeeInvoice; today: string }) {
+  const { t, fmt } = useI18n();
   const n = daysBetween(today, inv.dueOn);
   const open = inv.status === 'due';
   return (
     <Box>
       <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-        {formatDate(inv.dueOn, 'short')}
+        {fmt.date(inv.dueOn, 'short')}
       </Typography>
       {open && (
         <Typography variant="caption" sx={{ color: n < 0 ? 'error.main' : 'text.secondary', whiteSpace: 'nowrap' }}>
-          {n < 0 ? `${-n} day${n === -1 ? '' : 's'} late` : n === 0 ? 'Due today' : `In ${n} day${n === 1 ? '' : 's'}`}
+          {n < 0 ? t.plural('fees.late', -n) : n === 0 ? t('fees.dueToday') : t.plural('fees.inDays', n)}
         </Typography>
       )}
     </Box>
@@ -69,6 +72,7 @@ function DueCell({ inv, today }: { inv: FeeInvoice; today: string }) {
 }
 
 export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvoice[]; today: string; timeZone: string }) {
+  const { t } = useI18n();
   const [q, setQ] = useState('');
   const [paying, setPaying] = useState<FeeInvoice | null>(null);
   const [cancelling, setCancelling] = useState<FeeInvoice | null>(null);
@@ -77,9 +81,9 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
   const [toast, setToast] = useState<string | null>(null);
 
   const rows = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    if (!t) return invoices;
-    return invoices.filter((i) => i.student.fullName.toLowerCase().includes(t) || (i.student.rollNo ?? '').toLowerCase().includes(t) || i.title.toLowerCase().includes(t));
+    const s = q.trim().toLowerCase();
+    if (!s) return invoices;
+    return invoices.filter((i) => i.student.fullName.toLowerCase().includes(s) || (i.student.rollNo ?? '').toLowerCase().includes(s) || i.title.toLowerCase().includes(s));
   }, [invoices, q]);
   const balance = rows.reduce((s, i) => s + (i.status === 'due' ? i.amountPaise - i.paidPaise : 0), 0);
 
@@ -88,37 +92,37 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
         <TextField
           size="small"
-          placeholder="Search by student, roll number or fee"
+          placeholder={t('fees.search')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           sx={{ flex: '1 1 260px', maxWidth: 420 }}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
-            htmlInput: { 'aria-label': 'Search invoices' },
+            htmlInput: { 'aria-label': t('fees.searchLabel') },
           }}
         />
         <Typography variant="body2" color="text.secondary" data-testid="invoice-count">
-          {rows.length} invoice{rows.length === 1 ? '' : 's'}
-          {balance > 0 && ` · ${formatRupees(balance)} due`}
+          {t.plural('fees.count', rows.length)}
+          {balance > 0 && ` · ${t('fees.amountDue', { amount: formatRupees(balance) })}`}
         </Typography>
       </Box>
 
       {rows.length === 0 ? (
-        <EmptyState dense icon={<ReceiptLongOutlined />} title={invoices.length ? 'No invoices match your search' : 'No invoices here'} testId="no-invoices">
-          {invoices.length ? 'Try a different name or roll number.' : 'Try another status or class.'}
+        <EmptyState dense icon={<ReceiptLongOutlined />} title={invoices.length ? t('fees.noMatch') : t('fees.noInvoices')} testId="no-invoices">
+          {invoices.length ? t('fees.noMatchBody') : t('fees.noInvoicesBody')}
         </EmptyState>
       ) : (
         <TableFrame testId="invoices-table">
           <Table sx={{ minWidth: 900 }} size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Student</TableCell>
-                <TableCell>Fee</TableCell>
-                <TableCell align="right">Amount</TableCell>
-                <TableCell align="right">Balance</TableCell>
-                <TableCell>Due</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell aria-label="Actions" />
+                <TableCell>{t('fees.col.student')}</TableCell>
+                <TableCell>{t('fees.col.fee')}</TableCell>
+                <TableCell align="right">{t('fees.col.amount')}</TableCell>
+                <TableCell align="right">{t('fees.col.balance')}</TableCell>
+                <TableCell>{t('fees.col.due')}</TableCell>
+                <TableCell>{t('fees.col.status')}</TableCell>
+                <TableCell aria-label={t('fees.col.actions')} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -148,11 +152,11 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap', pr: 1 }}>
                       {inv.status === 'due' && (
                         <Button size="small" variant="outlined" onClick={() => setPaying(inv)} sx={{ mr: 0.5 }}>
-                          Record payment
+                          {t('fees.recordPayment')}
                         </Button>
                       )}
                       {(inv.paidPaise > 0 || inv.status === 'due') && (
-                        <IconButton size="small" aria-label={`More for ${inv.student.fullName}`} onClick={(e) => setMenu({ el: e.currentTarget, inv })} data-testid="invoice-menu">
+                        <IconButton size="small" aria-label={t('fees.moreFor', { name: inv.student.fullName })} onClick={(e) => setMenu({ el: e.currentTarget, inv })} data-testid="invoice-menu">
                           <MoreVert fontSize="small" />
                         </IconButton>
                       )}
@@ -173,7 +177,7 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
               setMenu(null);
             }}
           >
-            Payments and receipts
+            {t('fees.paymentsReceipts')}
           </MenuItem>
         )}
         {menu && menu.inv.status === 'due' && menu.inv.paidPaise === 0 && (
@@ -184,7 +188,7 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
             }}
             sx={{ color: 'error.main' }}
           >
-            Cancel invoice
+            {t('fees.cancelInvoice')}
           </MenuItem>
         )}
       </Menu>
@@ -195,7 +199,7 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
           inv={cancelling}
           onClose={(done) => {
             setCancelling(null);
-            if (done) setToast(`Cancelled ${cancelling.title} for ${cancelling.student.fullName}`);
+            if (done) setToast(t('fees.cancelled', { title: cancelling.title, name: cancelling.student.fullName }));
           }}
         />
       )}
@@ -206,6 +210,7 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
 }
 
 function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: string; onClose: () => void }) {
+  const { t } = useI18n();
   const balance = inv.amountPaise - inv.paidPaise;
   const [amount, setAmount] = useState(paiseToInput(balance));
   const [method, setMethod] = useState<CounterMethod>('cash');
@@ -234,22 +239,22 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
       <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="paid-title">
         <DialogTitle id="paid-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <CheckCircleOutlined sx={{ color: 'kx.success' }} />
-          Payment recorded
+          {t('fees.paid.title')}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2.5 }}>
             <ReceiptView r={done} timeZone={timeZone} />
           </Box>
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-            The family has been notified in the KINETIX Parent app, where the receipt is also available.
+            {t('fees.paid.notified')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button component={Link} href={`/fees/receipts/${done.paymentId}`} target="_blank" startIcon={<PrintOutlined />}>
-            Print receipt
+            {t('fees.printReceipt')}
           </Button>
           <Button variant="contained" onClick={onClose}>
-            Done
+            {t('common.done')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -266,7 +271,7 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
           submit();
         }}
       >
-        <DialogTitle id="pay-title">Record a payment</DialogTitle>
+        <DialogTitle id="pay-title">{t('fees.pay.title')}</DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2.5, p: 2, borderRadius: '12px', bgcolor: 'kx.tonal' }}>
             <Typography variant="subtitle2">{inv.student.fullName}</Typography>
@@ -274,36 +279,36 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
               {inv.title} · {inv.className}
             </Typography>
             <Typography variant="body2" sx={{ mt: 0.5 }}>
-              Balance due <strong>{formatRupees(balance)}</strong>
-              {inv.paidPaise > 0 && ` of ${formatRupees(inv.amountPaise)}`}
+              {t('fees.pay.balance')} <strong>{formatRupees(balance)}</strong>
+              {inv.paidPaise > 0 && ` ${t('fees.pay.ofAmount', { amount: formatRupees(inv.amountPaise) })}`}
             </Typography>
           </Box>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
-              label="Amount received"
+              label={t('fees.pay.received')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
               autoFocus
               error={amountError}
-              helperText={amountError ? (paise !== null && paise > balance ? 'That is more than the balance due' : 'Enter rupees, for example 42500') : paise && paise < balance ? `Part payment · ${formatRupees(balance - paise)} will remain due` : ' '}
+              helperText={amountError ? (paise !== null && paise > balance ? t('fees.pay.tooMuch') : t('fees.pay.enterRupees')) : paise && paise < balance ? t('fees.pay.part', { amount: formatRupees(balance - paise) }) : ' '}
               slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
             />
             <Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} id="pay-method">
-                Paid by
+                {t('fees.pay.paidBy')}
               </Typography>
               <ToggleButtonGroup exclusive value={method} onChange={(_, v: CounterMethod | null) => v && setMethod(v)} aria-labelledby="pay-method" size="small" sx={{ flexWrap: 'wrap' }}>
                 {PAY_METHODS.map((m) => (
                   <ToggleButton key={m} value={m} sx={{ px: 1.75 }}>
-                    {METHOD_LABEL[m]}
+                    {methodLabel(m, t)}
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
             </Box>
             <TextField
-              label={REFERENCE_LABEL[method]}
+              label={t(referenceKey(method))}
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               required={needsRef}
@@ -313,10 +318,10 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={pending || !ready} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            Record payment
+            {t('fees.recordPayment')}
           </Button>
         </DialogActions>
       </Box>
@@ -325,11 +330,12 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
 }
 
 function CancelDialog({ inv, onClose }: { inv: FeeInvoice; onClose: (done?: boolean) => void }) {
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   return (
     <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="xs" fullWidth aria-labelledby="cancel-inv-title">
-      <DialogTitle id="cancel-inv-title">Cancel this invoice?</DialogTitle>
+      <DialogTitle id="cancel-inv-title">{t('fees.cancel.title')}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -337,12 +343,12 @@ function CancelDialog({ inv, onClose }: { inv: FeeInvoice; onClose: (done?: bool
           </Alert>
         )}
         <Typography variant="body2">
-          {inv.title} ({formatRupees(inv.amountPaise)}) for <strong>{inv.student.fullName}</strong> will no longer be due. This cannot be undone; to bill again, issue a new fee.
+          {t('fees.cancel.body', { title: inv.title, amount: formatRupees(inv.amountPaise), name: inv.student.fullName })}
         </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} disabled={pending}>
-          Keep it
+          {t('fees.cancel.keep')}
         </Button>
         <Button
           variant="contained"
@@ -356,7 +362,7 @@ function CancelDialog({ inv, onClose }: { inv: FeeInvoice; onClose: (done?: bool
             })
           }
         >
-          Cancel invoice
+          {t('fees.cancelInvoice')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -364,6 +370,7 @@ function CancelDialog({ inv, onClose }: { inv: FeeInvoice; onClose: (done?: bool
 }
 
 function ReceiptsDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: string; onClose: () => void }) {
+  const { t, fmt } = useI18n();
   const [payments, setPayments] = useState<StudentFees['payments'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -380,14 +387,14 @@ function ReceiptsDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone:
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth aria-labelledby="receipts-title">
-      <DialogTitle id="receipts-title">Payments and receipts</DialogTitle>
+      <DialogTitle id="receipts-title">{t('fees.paymentsReceipts')}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {inv.student.fullName} · {inv.title}
         </Typography>
         {error && <Alert severity="error">{error}</Alert>}
         {!payments && !error && <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 3 }} />}
-        {payments && payments.length === 0 && <Typography variant="body2">No payments recorded yet.</Typography>}
+        {payments && payments.length === 0 && <Typography variant="body2">{t('fees.noPayments')}</Typography>}
         {payments && payments.length > 0 && (
           <List dense disablePadding>
             {payments.map((p) => (
@@ -396,13 +403,13 @@ function ReceiptsDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone:
                 disableGutters
                 secondaryAction={
                   <Button component={Link} href={`/fees/receipts/${p.id}`} size="small" startIcon={<PrintOutlined />}>
-                    Receipt
+                    {t('fees.receipt')}
                   </Button>
                 }
               >
                 <ListItemText
-                  primary={`${formatRupees(p.amountPaise)} · ${METHOD_LABEL[p.method] ?? p.method}${p.reference ? ` · ${p.reference}` : ''}`}
-                  secondary={`${p.receiptNo ?? ''}${p.paidAt ? ` · ${formatDateTime(p.paidAt, timeZone)}` : ''}`}
+                  primary={`${formatRupees(p.amountPaise)} · ${methodLabel(p.method, t)}${p.reference ? ` · ${p.reference}` : ''}`}
+                  secondary={`${p.receiptNo ?? ''}${p.paidAt ? ` · ${fmt.dateTime(p.paidAt, timeZone)}` : ''}`}
                 />
               </ListItem>
             ))}
@@ -410,7 +417,7 @@ function ReceiptsDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone:
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>{t('common.close')}</Button>
       </DialogActions>
     </Dialog>
   );

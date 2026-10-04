@@ -19,12 +19,14 @@ import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
 import { newEnrollmentCode, renameBoard } from '@/app/(dashboard)/boards/actions';
 import type { CreatedDevice } from '@/lib/types';
+import { useI18n } from '@/i18n/client';
 import { EnrollmentCodeDialog } from './AddBoardDialog';
 
 type Open = null | 'rename' | 'reenrol';
 
 /** Per-board actions: rename, or issue a new enrolment code (replacing a tablet, lost code). */
 export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: string; enrolled: boolean; timeZone: string }) {
+  const { t } = useI18n();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState<Open>(null);
   const [value, setValue] = useState(name);
@@ -39,7 +41,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
 
   return (
     <>
-      <IconButton aria-label={`Actions for ${name}`} data-testid="board-menu" onClick={(e) => setAnchor(e.currentTarget)}>
+      <IconButton aria-label={t('boards.menu', { name })} data-testid="board-menu" onClick={(e) => setAnchor(e.currentTarget)}>
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
@@ -53,7 +55,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           <ListItemIcon>
             <DriveFileRenameOutlineOutlined fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Rename</ListItemText>
+          <ListItemText>{t('boards.rename')}</ListItemText>
         </MenuItem>
         <MenuItem
           data-testid="board-new-code"
@@ -65,7 +67,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           <ListItemIcon>
             <KeyOutlined fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="New enrolment code" secondary={enrolled ? 'For a replacement device' : 'If the code was lost or expired'} />
+          <ListItemText primary={t('boards.newCode')} secondary={enrolled ? t('boards.newCode.replacement') : t('boards.newCode.lost')} />
         </MenuItem>
       </Menu>
 
@@ -80,9 +82,9 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
             });
           }}
         >
-          <DialogTitle>Rename board</DialogTitle>
+          <DialogTitle>{t('boards.rename.title')}</DialogTitle>
           <DialogContent>
-            <TextField autoFocus fullWidth label="Name" value={value} onChange={(e) => setValue(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} sx={{ mt: 1 }} />
+            <TextField autoFocus fullWidth label={t('boards.rename.name')} value={value} onChange={(e) => setValue(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} sx={{ mt: 1 }} />
             {error && (
               <Alert severity="error" sx={{ mt: 2 }}>
                 {error}
@@ -91,22 +93,20 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           </DialogContent>
           <DialogActions>
             <Button onClick={close} disabled={pending}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" variant="contained" disabled={pending}>
-              Save
+              {t('common.save')}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
 
       <Dialog open={open === 'reenrol'} onClose={pending ? undefined : close} maxWidth="xs" fullWidth>
-        <DialogTitle>New enrolment code for “{name}”?</DialogTitle>
+        <DialogTitle>{t('boards.newCode.title', { name })}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {enrolled
-              ? 'The board is signed out of your school straight away. Use the new code to set up the replacement device or reinstall the app.'
-              : 'The previous code stops working.'}
+            {enrolled ? t('boards.newCode.enrolled') : t('boards.newCode.notEnrolled')}
           </DialogContentText>
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
@@ -116,7 +116,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
         </DialogContent>
         <DialogActions>
           <Button onClick={close} disabled={pending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -133,7 +133,7 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
               })
             }
           >
-            Issue new code
+            {t('boards.newCode.issue')}
           </Button>
         </DialogActions>
       </Dialog>

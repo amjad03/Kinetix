@@ -103,6 +103,9 @@ abstract class ParentApi {
   /// and the next 90 days).
   Future<CalendarRange> calendar({DateTime? from, DateTime? to});
 
+  /// The subjects of [childId]'s class (`GET /v1/parent/children/:id/subjects`).
+  Future<List<Subject>> childSubjects(String childId);
+
   /// A subject's syllabus, or null when the subject is not linked to a library course yet.
   Future<CourseOutline?> syllabus(String subjectId);
 
@@ -211,6 +214,11 @@ class HttpParentApi implements ParentApi {
       subject: Subject.fromJson(j['subject'] as Map<String, dynamic>),
     );
   }
+
+  @override
+  Future<List<Subject>> childSubjects(String childId) async => [
+    for (final s in await _send('GET', '/v1/parent/children/$childId/subjects') as List) Subject.fromJson(s as Map<String, dynamic>),
+  ];
 
   @override
   Future<ChildSummary> summary(String childId, {int days = 30}) async =>

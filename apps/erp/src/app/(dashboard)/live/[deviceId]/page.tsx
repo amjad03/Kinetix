@@ -6,18 +6,23 @@ import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { TIMEZONE } from '@/lib/school';
+import { getI18n } from '@/i18n/server';
+import { canSee } from '@/lib/access';
 import type { Board } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Watch live' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('live.watchTitle') };
+}
 
 export default async function WatchPage({ params }: { params: Promise<{ deviceId: string }> }) {
-  await requireSection('live');
+  const me = await requireSection('live');
+  const { t } = await getI18n();
   const { deviceId } = await params;
   const boards = await load(() => api<Board[]>('/v1/admin/devices'));
   if (boards.error !== undefined) {
     return (
       <>
-        <PageHeader title="Live" />
+        <PageHeader title={t('nav.live')} />
         <ErrorState message={boards.error} />
       </>
     );
@@ -26,17 +31,17 @@ export default async function WatchPage({ params }: { params: Promise<{ deviceId
   if (!b) {
     return (
       <>
-        <PageHeader title="Live" />
+        <PageHeader title={t('nav.live')} />
         <EmptyState
           icon={<CastForEducationOutlined />}
-          title="Board not found"
+          title={t('live.boardNotFound')}
           actions={
             <LinkButton href="/live" variant="contained">
-              Back to Live
+              {t('live.back')}
             </LinkButton>
           }
         >
-          It may have been removed, or the link is wrong.
+          {t('live.boardNotFoundBody')}
         </EmptyState>
       </>
     );
@@ -45,6 +50,7 @@ export default async function WatchPage({ params }: { params: Promise<{ deviceId
     <LiveWatch
       key={b.id}
       timeZone={TIMEZONE}
+      canChangeSettings={!!me && canSee(me.roles, 'settings')}
       board={{
         id: b.id,
         name: b.name,

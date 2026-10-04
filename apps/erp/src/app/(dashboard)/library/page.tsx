@@ -8,9 +8,12 @@ import { availableCopies, unpaidFines } from '@/lib/library';
 import { formatRupees } from '@/lib/money';
 import { finePreview } from '@/lib/library';
 import { schoolToday } from '@/lib/school';
+import { getI18n } from '@/i18n/server';
 import type { LibraryBook, LibraryLoan } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Library' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.library') };
+}
 
 export default async function LibraryPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireSection('library');
@@ -30,30 +33,31 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
   const accruing = overdue.reduce((s, x) => s + finePreview(x.dueOn, today), 0);
   const f = fines.data ?? [];
   const unpaid = unpaidFines(f);
+  const { t } = await getI18n();
 
   return (
     <>
-      <PageHeader title="Library" subtitle="Lend books to students, take them back, and keep the catalogue" />
+      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} />
       {books.error !== undefined || loans.error !== undefined || fines.error !== undefined ? (
         <ErrorState message={(books.error ?? loans.error ?? fines.error)!} />
       ) : (
         <>
           <StatGrid min={120}>
-            <StatTile label="Titles" value={b.length} caption={`${copies} copies in the catalogue`} testId="lib-titles" />
-            <StatTile label="On the shelf" value={onShelf} caption={`of ${copies} copies`} testId="lib-shelf" />
-            <StatTile label="On loan" value={l.length} caption={l.length ? `${l.length - overdue.length} within their due date` : 'Nothing is out'} testId="lib-loans" />
+            <StatTile label={t('lib.titles')} value={b.length} caption={t('lib.copies', { n: copies })} testId="lib-titles" />
+            <StatTile label={t('lib.onShelf')} value={onShelf} caption={t('lib.ofCopies', { n: copies })} testId="lib-shelf" />
+            <StatTile label={t('lib.onLoan')} value={l.length} caption={l.length ? t('lib.withinDue', { n: l.length - overdue.length }) : t('lib.nothingOut')} testId="lib-loans" />
             <StatTile
-              label="Overdue"
+              label={t('lib.overdue')}
               value={overdue.length}
               tone={overdue.length ? 'warning' : 'default'}
-              caption={overdue.length ? `${formatRupees(accruing)} in fines if returned today` : 'Nothing is overdue'}
+              caption={overdue.length ? t('lib.finesIfToday', { amount: formatRupees(accruing) }) : t('lib.nothingOverdue')}
               testId="lib-overdue"
             />
             <StatTile
-              label="Unpaid fines"
+              label={t('lib.unpaidFines')}
               value={formatRupees(unpaid.paise)}
               tone={unpaid.count ? 'warning' : 'default'}
-              caption={unpaid.count ? `${unpaid.count} return${unpaid.count === 1 ? '' : 's'} to collect from` : 'All fines collected'}
+              caption={unpaid.count ? t.plural('lib.returnsToCollect', unpaid.count) : t('lib.allCollected')}
               testId="lib-fines"
             />
           </StatGrid>

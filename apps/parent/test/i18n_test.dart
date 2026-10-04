@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
+import 'package:kinetix_parent/core/attachments.dart';
 import 'package:kinetix_parent/core/models.dart';
-import 'package:kinetix_parent/features/home/home_tab.dart';
+import 'package:kinetix_parent/features/home/home_tab.dart' show HomeTab;
 import 'package:kinetix_parent/features/messages/messages_tab.dart';
 import 'package:kinetix_parent/features/profile/profile_tab.dart';
 import 'package:kinetix_parent/widgets/common.dart';
 
+import 'fake_api.dart';
 import 'helpers.dart';
 
 /// The app in English, Hindi and Kannada: every main screen at a small and a large phone with
@@ -67,10 +69,28 @@ void main() {
     await scrollDown(tester);
     await back(tester);
 
-    await show(tester, find.byType(HomeworkRow).first);
-    await tester.tap(find.byType(HomeworkRow).first);
+    // Homework: returned with a remark, then handing in for the child with a photo and a PDF.
+    // (The title, not `HomeworkRow.first`: a `.first` finder cannot be scrolled to before it is built.)
+    await show(tester, find.text('Exercise 4.2: Issue of shares'));
+    await tester.tap(find.text('Exercise 4.2: Issue of shares'));
     await tester.pumpAndSettle();
+    await scrollDown(tester);
+    await tapShown(tester, find.byKey(const Key('handIn')));
+    await tapShown(tester, find.byKey(const Key('addCamera')));
+    await tapShown(tester, find.byKey(const Key('addPdf')));
+    await scrollDown(tester);
     await back(tester);
+    await back(tester);
+
+    // The holiday banner and the calendar.
+    await tester.drag(home(), const Offset(0, 20000));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('holidayBanner')), findsOneWidget);
+    await openCardLink(tester, 'calendarCard');
+    await scrollDown(tester);
+    await back(tester);
+    await tester.drag(home(), const Offset(0, 20000));
+    await tester.pumpAndSettle();
 
     await show(tester, find.byKey(const Key('assessment-a1')));
     await tester.tap(find.byKey(const Key('assessment-a1')));
@@ -129,6 +149,24 @@ void main() {
     await tapShown(tester, find.byKey(const Key('languageSetting')));
     Navigator.of(tester.element(find.byType(SimpleDialog))).pop();
     await tester.pumpAndSettle();
+    // Syllabus progress for a child, a subject with its taught topics, privacy and the notice.
+    await tester.drag(profile, const Offset(0, 5000));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('profile-syllabus-c1')), 300, scrollable: profile);
+    await tapShown(tester, find.byKey(const Key('profile-syllabus-c1')));
+    await tapShown(tester, find.byKey(const Key('subjectProgress-sub1')));
+    await scrollDown(tester);
+    await back(tester);
+    await back(tester);
+    await tester.drag(profile, const Offset(0, 5000));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('profile-privacy-c1')), 300, scrollable: profile);
+    await tapShown(tester, find.byKey(const Key('profile-privacy-c1')));
+    await tester.scrollUntilVisible(find.byKey(const Key('readNotice')), 300, scrollable: find.byType(Scrollable).first);
+    await tapShown(tester, find.byKey(const Key('readNotice')));
+    await scrollDown(tester);
+    await back(tester);
+    await back(tester);
     await tester.drag(profile, const Offset(0, -3000));
     await tester.pumpAndSettle();
   }
@@ -145,8 +183,41 @@ void main() {
     for (final MapEntry(key: name, value: size) in sizes.entries) {
       for (final scale in [1.0, 1.3]) {
         testWidgets('$lang at $name, text ×$scale: every main screen lays out', (tester) async {
-          await pumpApp(tester, size: size, textScale: scale, prefs: {'language': lang});
+          AttachmentPicker.instance = FakeAttachmentPicker();
+          addTearDown(() => AttachmentPicker.instance = const DeviceAttachmentPicker());
+          await pumpApp(
+            tester,
+            size: size,
+            textScale: scale,
+            prefs: {'language': lang},
+            setup: (api) {
+              api.calendarEvents.insert(0, FakeParentApi.eventJson('e0', 'holiday', 'Gandhi Jayanti (observed)', '2026-10-05', '2026-10-06'));
+              (api.consentJson['c1']!['purposes'] as Map)['photos'] = null;
+              api.submissions['h1/c1'] = {
+                'status': 'returned',
+                'text': 'Journal entries for questions 1 to 5.',
+                'files': [
+                  {'index': 0, 'name': 'IMG_20261004_page_one_of_the_homework.jpg', 'mime': 'image/jpeg', 'bytes': 1245000},
+                ],
+                'submittedAt': '2026-10-06T05:00:00Z',
+                'late': true,
+                'remark': 'Show the working for question 3, and write the narration under each entry.',
+                'checkedBy': 'Anita Sharma',
+                'checkedAt': '2026-10-07T05:00:00Z',
+              };
+            },
+          );
+          // Asked for Aarav's undecided privacy choice first: the summary, the full notice, then "Not now".
+          await scrollDown(tester);
+          await tester.tap(find.byKey(const Key('readNotice')));
+          await tester.pumpAndSettle();
+          await scrollDown(tester);
+          await back(tester);
+          await tester.tap(find.byKey(const Key('consentLater')));
+          await tester.pumpAndSettle();
           for (final w in words[lang]!) {
+            // The holiday banner comes first: on a small phone the attendance card starts lower.
+            await tester.scrollUntilVisible(find.text(w), 100, scrollable: home());
             expect(find.text(w), findsWidgets, reason: w);
           }
           await visitEverything(tester);

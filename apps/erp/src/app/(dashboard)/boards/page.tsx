@@ -16,16 +16,19 @@ import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, getMe, load, requireSection } from '@/lib/api';
-import { formatDateTime, formatTime, relativeTime } from '@/lib/dates';
+import { getI18n } from '@/i18n/server';
+import type { TFunction } from '@/i18n/translate';
 import { TIMEZONE } from '@/lib/school';
 import { BOARD_ADMIN_ROLES, type Board, type Structure } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Boards' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.boards') };
+}
 
 const PLATFORM: Record<string, string> = { android: 'Android', windows: 'Windows', linux: 'Linux', web: 'Web' };
 
-function StatusDot({ b }: { b: Board }) {
-  const [color, label] = !b.enrolled ? ['m3.outline', 'Waiting to enrol'] : b.online ? ['kx.success', 'Online'] : ['m3.outlineVariant', 'Offline'];
+function StatusDot({ b, t }: { b: Board; t: TFunction }) {
+  const [color, label] = !b.enrolled ? ['m3.outline', t('boards.waiting')] : b.online ? ['kx.success', t('boards.online')] : ['m3.outlineVariant', t('boards.offline')];
   return (
     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
       <Box
@@ -56,39 +59,40 @@ export default async function BoardsPage() {
   const online = list.filter((b) => b.online).length;
   const inClass = list.filter((b) => b.session).length;
   const waiting = list.filter((b) => !b.enrolled).length;
+  const { t, fmt } = await getI18n();
 
   return (
     <>
       <PageHeader
-        title="Boards"
-        subtitle="Classroom boards: where they are, whether they are online, and who is teaching on them"
+        title={t('nav.boards')}
+        subtitle={t('boards.subtitle')}
         actions={structure.data ? <AddBoardButton structure={structure.data} allowed={allowed} timeZone={TIMEZONE} /> : undefined}
       />
       {boards.error !== undefined ? (
         <ErrorState message={boards.error} />
       ) : list.length === 0 ? (
-        <EmptyState icon={<CastForEducationOutlined />} title="No boards yet" testId="no-boards">
-          Add a board to get a one-time code, then type the code on the board to connect it to your school.
+        <EmptyState icon={<CastForEducationOutlined />} title={t('boards.none')} testId="no-boards">
+          {t('boards.noneBody')}
         </EmptyState>
       ) : (
         <>
           <StatGrid min={200}>
-            <StatTile label="Boards" value={list.length} caption={waiting ? `${waiting} waiting to enrol` : 'All enrolled'} />
-            <StatTile label="Online" value={online} unit={`of ${list.length - waiting}`} caption="Connected in the last 3 minutes" />
-            <StatTile label="In class now" value={inClass} tone={inClass ? 'live' : 'default'} caption={inClass ? 'A teacher is signed in' : 'No teacher signed in'} />
+            <StatTile label={t('boards.stat.boards')} value={list.length} caption={waiting ? t('boards.stat.waiting', { n: waiting }) : t('boards.stat.allEnrolled')} />
+            <StatTile label={t('boards.stat.online')} value={online} unit={t('boards.stat.of', { n: list.length - waiting })} caption={t('boards.stat.onlineCaption')} />
+            <StatTile label={t('boards.stat.inClass')} value={inClass} tone={inClass ? 'live' : 'default'} caption={inClass ? t('boards.stat.teacherIn') : t('boards.stat.noTeacher')} />
           </StatGrid>
           <Box sx={{ mt: 3 }} />
           <TableFrame testId="boards-table">
             <Table sx={{ minWidth: 820 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Board</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Room</TableCell>
-                  <TableCell>Now</TableCell>
-                  <TableCell>Platform</TableCell>
-                  <TableCell>Last seen</TableCell>
-                  {allowed && <TableCell aria-label="Actions" />}
+                  <TableCell>{t('boards.col.board')}</TableCell>
+                  <TableCell>{t('boards.col.status')}</TableCell>
+                  <TableCell>{t('boards.col.room')}</TableCell>
+                  <TableCell>{t('boards.col.now')}</TableCell>
+                  <TableCell>{t('boards.col.platform')}</TableCell>
+                  <TableCell>{t('boards.col.lastSeen')}</TableCell>
+                  {allowed && <TableCell aria-label={t('boards.col.actions')} />}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -98,34 +102,34 @@ export default async function BoardsPage() {
                       <Typography variant="subtitle2">{b.name}</Typography>
                       {b.enrolledAt && (
                         <Typography variant="caption" color="text.secondary">
-                          Enrolled {formatDateTime(b.enrolledAt, TIMEZONE, false)}
+                          {t('boards.enrolled', { date: fmt.dateTime(b.enrolledAt, TIMEZONE, false) })}
                         </Typography>
                       )}
                     </TableCell>
                     <TableCell>
-                      <StatusDot b={b} />
+                      <StatusDot b={b} t={t} />
                     </TableCell>
                     <TableCell>{b.room ?? <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>}</TableCell>
                     <TableCell>
                       {b.session ? (
                         <Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Chip size="small" label="In class" sx={{ bgcolor: 'kx.liveContainer', color: 'kx.onLiveContainer' }} />
-                            <Typography variant="subtitle2">{[b.session.subject, b.session.section].filter(Boolean).join(' · ') || 'Class'}</Typography>
+                            <Chip size="small" label={t('boards.inClass')} sx={{ bgcolor: 'kx.liveContainer', color: 'kx.onLiveContainer' }} />
+                            <Typography variant="subtitle2">{[b.session.subject, b.session.section].filter(Boolean).join(' · ') || t('boards.class')}</Typography>
                           </Box>
                           <Typography variant="caption" color="text.secondary">
-                            {b.session.teacher} · since {formatTime(b.session.startedAt, TIMEZONE)}
+                            {t('boards.since', { teacher: b.session.teacher, time: fmt.time(b.session.startedAt, TIMEZONE) })}
                           </Typography>
                         </Box>
                       ) : !b.enrolled ? (
                         <Typography variant="body2" color="text.secondary">
                           {b.enrollmentExpiresAt && new Date(b.enrollmentExpiresAt) > now
-                            ? `Code valid until ${formatDateTime(b.enrollmentExpiresAt, TIMEZONE, false)}`
-                            : 'Code expired · issue a new code from the menu'}
+                            ? t('boards.codeValid', { date: fmt.dateTime(b.enrollmentExpiresAt, TIMEZONE, false) })
+                            : t('boards.codeExpired')}
                         </Typography>
                       ) : (
                         <Typography variant="body2" color="text.secondary">
-                          Free
+                          {t('boards.free')}
                         </Typography>
                       )}
                     </TableCell>
@@ -146,11 +150,11 @@ export default async function BoardsPage() {
                     </TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
                       {b.lastSeenAt ? (
-                        <Tooltip title={formatDateTime(b.lastSeenAt, TIMEZONE)}>
-                          <span>{relativeTime(b.lastSeenAt, now, TIMEZONE)}</span>
+                        <Tooltip title={fmt.dateTime(b.lastSeenAt, TIMEZONE)}>
+                          <span>{fmt.relative(b.lastSeenAt, now, TIMEZONE)}</span>
                         </Tooltip>
                       ) : (
-                        <Box component="span" sx={{ color: 'text.secondary' }}>Never</Box>
+                        <Box component="span" sx={{ color: 'text.secondary' }}>{t('boards.never')}</Box>
                       )}
                     </TableCell>
                     {allowed && (

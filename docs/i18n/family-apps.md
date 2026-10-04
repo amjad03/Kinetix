@@ -72,3 +72,16 @@ Please check in particular:
 - Kannada date suffixes written apart from the date ("ಶುಕ್ರ 9 ಅಕ್ಟೋ ರೊಳಗೆ").
 - "LIVE" badge: "लाइव" / "ಲೈವ್"; "Learn" tab: "सीखें" / "ಕಲಿಯಿರಿ".
 - Live class audio: "Teacher's mic is on/off" ("शिक्षक का माइक चालू/बंद है" / "ಶಿಕ್ಷಕರ ಮೈಕ್ ಆನ್/ಆಫ್ ಆಗಿದೆ"); Mute: "कक्षा की आवाज़ बंद करें" / "ತರಗತಿಯ ಧ್ವನಿ ಮ್ಯೂಟ್ ಮಾಡಿ".
+- Privacy (consent) screens and the notice (docs/product/privacy-notice.md): the purpose
+  texts, "If you say no", "Who decides" and the grievance-officer line ("शिकायत अधिकारी" /
+  "ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ") are a first draft and need legal as well as native review.
+  "Privacy": "गोपनीयता" / "ಗೌಪ್ಯತೆ"; "Allow all": "सबकी अनुमति दें" / "ಎಲ್ಲವನ್ನೂ ಅನುಮತಿಸಿ".
+- Homework hand-in: "Hand in" "जमा करें" / "ಸಲ್ಲಿಸಿ"; "Returned to redo" "दोबारा करने के लिए
+  लौटाया" / "ಮತ್ತೆ ಮಾಡಲು ಹಿಂದಿರುಗಿಸಲಾಗಿದೆ"; "Checked" "जाँचा गया" / "ಪರಿಶೀಲಿಸಲಾಗಿದೆ".
+- Calendar: "Holiday" "छुट्टी" / "ರಜೆ"; "Event" "कार्यक्रम" / "ಕಾರ್ಯಕ್ರಮ"; "Coming up"
+  "आने वाले" / "ಮುಂಬರುವವು"; Hindi "कल छुट्टी है" (tomorrow) relies on context like the due chips.
+- Syllabus progress: "12 of 30 topics taught" uses "विषय-वस्तु" / "ವಿಷಯ" for topic, as in the
+  glossary (Kannada ವಿಷಯ is also "subject").
+- Error texts now come from the server's error `code` (services/api common/error-codes.ts) in
+  both apps (`describeErrorCode` in `lib/l10n/l10n.dart`); the server's English message is the
+  fallback for codes without words of their own (validation messages).

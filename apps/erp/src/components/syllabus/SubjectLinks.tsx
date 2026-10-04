@@ -17,12 +17,14 @@ import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { linkSubject } from '@/app/(dashboard)/syllabus/actions';
 import { TableFrame } from '@/components/DataTable';
+import { useI18n } from '@/i18n/client';
 import type { Course, Curriculum, SubjectLink } from '@/lib/types';
 
 const NONE = '';
 
 /** Each of the institution's subjects, and the library course its class uses (the board's Books panel, KINETIX AI). */
 export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjects: SubjectLink[]; courses: Course[]; curricula: Curriculum[]; canLink: boolean }) {
+  const { t } = useI18n();
   const [links, setLinks] = useState(() => new Map(subjects.map((s) => [s.id, s.courseId])));
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
     start(async () => {
       const res = await linkSubject(s.id, courseId);
       setBusy(null);
-      if (res.ok) setToast(courseId ? `${s.name} now uses “${byId.get(courseId)?.title ?? 'the course'}”` : `${s.name} is no longer linked to a course`);
+      if (res.ok) setToast(courseId ? t('syl.nowUses', { name: s.name, course: byId.get(courseId)?.title ?? t('syl.theCourse') }) : t('syl.unlinked', { name: s.name }));
       else {
         setLinks((m) => new Map(m).set(s.id, before));
         setToast(res.error);
@@ -50,9 +52,9 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
         <Table sx={{ minWidth: 720 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Subject</TableCell>
-              <TableCell>Classes</TableCell>
-              <TableCell sx={{ width: '48%' }}>Course in the library</TableCell>
+              <TableCell>{t('syl.col.subject')}</TableCell>
+              <TableCell>{t('syl.col.classes')}</TableCell>
+              <TableCell sx={{ width: '48%' }}>{t('syl.col.course')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -67,7 +69,7 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                       {s.code}
                     </Typography>
                   </TableCell>
-                  <TableCell>{s.classes.length ? s.classes.join(', ') : <Box component="span" sx={{ color: 'text.secondary' }}>No class yet</Box>}</TableCell>
+                  <TableCell>{s.classes.length ? s.classes.join(', ') : <Box component="span" sx={{ color: 'text.secondary' }}>{t('syl.noClass')}</Box>}</TableCell>
                   <TableCell>
                     {canLink ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -78,12 +80,12 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                           value={linked ?? NONE}
                           onChange={(e) => change(s, e.target.value || null)}
                           disabled={busy === s.id}
-                          inputProps={{ 'aria-label': `Course for ${s.name}` }}
+                          inputProps={{ 'aria-label': t('syl.courseFor', { name: s.name }) }}
                           data-testid="subject-course"
                         >
                           <MenuItem value={NONE}>
                             <Box component="span" sx={{ color: 'text.secondary', display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-                              <LinkOff fontSize="small" /> Not linked
+                              <LinkOff fontSize="small" /> {t('syl.notLinked')}
                             </Box>
                           </MenuItem>
                           {curricula.flatMap((cur) => {
@@ -100,7 +102,7 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                               : [];
                           })}
                         </Select>
-                        {busy === s.id && <CircularProgress size={18} aria-label="Saving" />}
+                        {busy === s.id && <CircularProgress size={18} aria-label={t('syl.saving')} />}
                       </Box>
                     ) : course ? (
                       <Typography component={Link} href={`/syllabus/${course.id}`} variant="body2" sx={{ color: 'primary.main' }}>
@@ -108,7 +110,7 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                       </Typography>
                     ) : (
                       <Typography variant="body2" color="text.secondary">
-                        Not linked
+                        {t('syl.notLinked')}
                       </Typography>
                     )}
                   </TableCell>

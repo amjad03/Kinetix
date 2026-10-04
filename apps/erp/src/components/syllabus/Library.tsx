@@ -10,17 +10,20 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { EmptyState } from '@/components/States';
 import type { Course, Curriculum } from '@/lib/types';
+import { useI18n } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/messages';
 import { ReviewChip } from './ReviewChip';
 
-const LEVEL: Record<string, string> = { ug: 'Undergraduate', pg: 'Postgraduate', k12: 'School' };
+const LEVEL: Record<string, MessageKey> = { ug: 'syl.level.ug', pg: 'syl.level.pg', k12: 'syl.level.k12' };
 
 /** Curricula as filter chips, then the courses as cards. */
 export function Library({ curricula, courses, selected, usedBy }: { curricula: Curriculum[]; courses: Course[]; selected: string; usedBy: Record<string, string[]> }) {
+  const { t } = useI18n();
   const byCode = new Map(curricula.map((c) => [c.code, c]));
   return (
     <>
-      <Box role="group" aria-label="Curriculum" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-        {[{ code: '', name: 'All' }, ...curricula].map((c) => {
+      <Box role="group" aria-label={t('syl.curriculum')} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+        {[{ code: '', name: t('syl.all') }, ...curricula].map((c) => {
           const on = selected === c.code;
           return (
             <Chip
@@ -40,7 +43,7 @@ export function Library({ curricula, courses, selected, usedBy }: { curricula: C
         })}
       </Box>
       {courses.length === 0 ? (
-        <EmptyState dense icon={<MenuBookOutlined />} title="No courses here yet" />
+        <EmptyState dense icon={<MenuBookOutlined />} title={t('syl.noCourses')} />
       ) : (
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))' }} data-testid="course-list">
           {courses.map((c) => {
@@ -55,14 +58,14 @@ export function Library({ curricula, courses, selected, usedBy }: { curricula: C
                 >
                   <Typography variant="caption" color="text.secondary">
                     {cur?.name ?? c.curriculumCode}
-                    {cur?.level && LEVEL[cur.level] ? ` · ${LEVEL[cur.level]}` : ''}
+                    {cur?.level && LEVEL[cur.level] ? ` · ${t(LEVEL[cur.level])}` : ''}
                   </Typography>
                   <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 500, lineHeight: 1.35 }}>
                     {c.title}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 'auto', pt: 1 }}>
                     <ReviewChip reviewed={c.reviewed} />
-                    {used && <Chip size="small" label={`Used by ${used.join(', ')}`} sx={{ bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer' }} />}
+                    {used && <Chip size="small" label={t('syl.usedBy', { names: used.join(', ') })} sx={{ bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer' }} />}
                   </Box>
                 </CardActionArea>
               </Card>
