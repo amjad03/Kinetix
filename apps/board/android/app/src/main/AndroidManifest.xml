@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The board talks to KINETIX Cloud in release builds too. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Lesson recording: the teacher's voice. Without it the board records ink only. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="kinetix_board"
         android:name="${applicationName}"
