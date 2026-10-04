@@ -348,6 +348,92 @@ export const homework = pgTable(
 );
 
 // ---------------------------------------------------------------------------------------------
+// Families, notifications and saved whiteboards
+// ---------------------------------------------------------------------------------------------
+
+/** A parent or guardian (a user with the guardian role) linked to a student. */
+export const guardians = pgTable(
+  'guardians',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    relation: text('relation').notNull().default('parent'), // mother, father, guardian…
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
+);
+
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared']);
+
+/**
+ * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
+ * fetch the text from here, so no personal data passes through push providers.
+ */
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    kind: notificationKind('kind').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    /** Ids the app needs to open the right screen: studentId, homeworkId, whiteboardId… */
+    data: jsonb('data').$type<Record<string, string>>().notNull().default({}),
+    /** One notification per (recipient, event): e.g. "absence:<student>:<date>:<slot>". */
+    dedupeKey: text('dedupe_key').notNull(),
+    createdAt: createdAt(),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    /** Set when the event was undone (an absence corrected to present). Apps hide these. */
+    retractedAt: timestamp('retracted_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('notifications_user_dedupe_uq').on(t.userId, t.dedupeKey), index('notifications_user_created_idx').on(t.userId, t.createdAt)],
+);
+
+export interface WhiteboardContent {
+  /** Format version. */
+  v: 1;
+  background: string;
+  pages: { strokes: SerializedStroke[] }[];
+}
+
+/** Compact stroke: tool, ARGB colour, width, optional shape, flat [x0, y0, x1, y1, …]. */
+export interface SerializedStroke {
+  t: 'pen' | 'highlighter' | 'shape';
+  c: number;
+  w: number;
+  s?: string;
+  p: number[];
+}
+
+/**
+ * A saved board. The id is chosen by the board, so repeated saves of the same lesson update
+ * one row. TODO: move content to S3 (ap-south-1) once boards carry images and PDFs.
+ */
+export const whiteboards = pgTable(
+  'whiteboards',
+  {
+    id: uuid('id').primaryKey(),
+    tenantId: tenantId(),
+    ownerId: uuid('owner_id').notNull().references(() => users.id),
+    boardSessionId: uuid('board_session_id').references(() => boardSessions.id),
+    sectionId: uuid('section_id').references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    title: text('title').notNull(),
+    pageCount: integer('page_count').notNull(),
+    content: jsonb('content').$type<WhiteboardContent>().notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    /** When it was shared with the class (students and parents can then open it). */
+    sharedAt: timestamp('shared_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('whiteboards_owner_idx').on(t.ownerId, t.updatedAt), index('whiteboards_section_idx').on(t.sectionId, t.sharedAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
 // Broadcasts ("circulate" from the principal's dashboard)
 // ---------------------------------------------------------------------------------------------
 
@@ -427,5 +513,8 @@ export const TENANT_TABLES = [
   'broadcasts',
   'broadcast_receipts',
   'homework',
+  'guardians',
+  'notifications',
+  'whiteboards',
   'audit_log',
 ] as const;

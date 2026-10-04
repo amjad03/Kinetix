@@ -2,9 +2,12 @@ import 'reflect-metadata';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import argon2 from 'argon2';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module.js';
+import { configureApp } from '../src/setup.js';
 import { Clock, zonedToInstant } from '../src/common/time.js';
 import { enrollmentCode, hmac } from '../src/common/crypto.js';
 import * as s from '../src/db/schema.js';
@@ -41,7 +44,8 @@ export async function createApp(clock: FixedClock): Promise<INestApplication> {
     .overrideProvider(Clock)
     .useValue(clock)
     .compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication<NestExpressApplication>();
+  configureApp(app);
   await app.init();
   await app.listen(0);
   return app;
@@ -85,6 +89,15 @@ export async function createTenant(pool: pg.Pool) {
   const principal = await user(`principal${n}@x.in`, 'principal');
   const studentUser = await user(`student${n}@x.in`, 'student');
 
+  // Families: a guardian for each of the first two students; student C has their own login.
+  const guardian = await user(`parent${n}@x.in`, 'guardian');
+  const guardian2 = await user(`parent2-${n}@x.in`, 'guardian');
+  await db.insert(s.guardians).values([
+    { tenantId, userId: guardian.id, studentId: studentRows[0].id, relation: 'father' },
+    { tenantId, userId: guardian2.id, studentId: studentRows[1].id, relation: 'mother' },
+  ]);
+  await db.update(s.students).set({ userId: studentUser.id }).where(eq(s.students.id, studentRows[2].id));
+
   const [slot] = await db
     .insert(s.timetableSlots)
     .values({ tenantId, academicYearId: year.id, sectionId: section.id, subjectId: subject.id, teacherId: teacher.id, roomId: room.id, dayOfWeek: 1, startsAt: '10:00', endsAt: '10:55' })
@@ -103,5 +116,5 @@ export async function createTenant(pool: pg.Pool) {
     })
     .returning();
 
-  return { slug, tenantId, campus, section, otherSection, subject, students: studentRows, room, teacher, teacher2, principal, studentUser, slot, device, enrollmentCode: code };
+  return { slug, tenantId, campus, program, section, otherSection, subject, students: studentRows, room, teacher, teacher2, principal, studentUser, guardian, guardian2, slot, device, enrollmentCode: code };
 }

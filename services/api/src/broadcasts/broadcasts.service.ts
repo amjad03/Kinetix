@@ -7,6 +7,7 @@ import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { boardSessions, broadcastReceipts, broadcasts, devices, sections, users, type BroadcastAudience } from '../db/schema.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
 export interface CreateBroadcast {
@@ -24,6 +25,7 @@ export class BroadcastsService {
   constructor(
     private readonly realtime: RealtimeGateway,
     private readonly clock: Clock,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(tx: Tx, p: UserPrincipal, input: CreateBroadcast) {
@@ -59,6 +61,8 @@ export class BroadcastsService {
       subjectId: b.id,
       data: { priority: b.priority, audience: input.audience, devices: deviceIds.length },
     });
+
+    await this.notifications.broadcastSent(tx, { id: b.id, title: b.title, body: b.body, audience: input.audience });
 
     const message = await this.message(tx, b.id);
     return { message, deviceIds };
@@ -143,6 +147,30 @@ export class BroadcastsService {
       .where(and(eq(broadcastReceipts.broadcastId, broadcastId), eq(broadcastReceipts.deviceId, deviceId)))
       .returning({ id: broadcastReceipts.id });
     if (!r) throw new NotFoundException('This board was not a recipient');
+  }
+
+  async recent(tx: Tx, limit = 50) {
+    const rows = await tx
+      .select({
+        b: broadcasts,
+        sender: users.fullName,
+        boards: sql<number>`(select count(*)::int from broadcast_receipts r where r.broadcast_id = ${broadcasts.id})`,
+        displayed: sql<number>`(select count(*)::int from broadcast_receipts r where r.broadcast_id = ${broadcasts.id} and r.displayed_at is not null)`,
+        acknowledged: sql<number>`(select count(*)::int from broadcast_receipts r where r.broadcast_id = ${broadcasts.id} and r.acknowledged_at is not null)`,
+        families: sql<number>`(select count(*)::int from notifications n where n.dedupe_key = 'broadcast:' || ${broadcasts.id}::text)`,
+      })
+      .from(broadcasts)
+      .innerJoin(users, eq(users.id, broadcasts.senderId))
+      .orderBy(desc(broadcasts.createdAt))
+      .limit(limit);
+    const now = this.clock.now();
+    return rows.map((r) => ({
+      ...toMessage(r.b, { id: r.b.senderId, fullName: r.sender }),
+      audience: r.b.audience,
+      active: !r.b.clearedAt && r.b.expiresAt > now,
+      clearedAt: r.b.clearedAt?.toISOString() ?? null,
+      delivery: { boards: r.boards, displayed: r.displayed, acknowledged: r.acknowledged, families: r.families },
+    }));
   }
 
   async deliveryReport(tx: Tx, broadcastId: string) {

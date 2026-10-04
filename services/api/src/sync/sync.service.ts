@@ -5,6 +5,7 @@ import type { BoardPrincipal } from '../auth/principal.js';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { attendanceRecords, boardSessions, participationEvents, students, syncOps } from '../db/schema.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
 export interface IncomingOp {
@@ -24,7 +25,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 @Injectable()
 export class SyncService {
-  constructor(private readonly timetable: TimetableService) {}
+  constructor(
+    private readonly timetable: TimetableService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async push(tx: Tx, p: BoardPrincipal, ops: IncomingOp[]): Promise<SyncOpResult[]> {
     const [session] = await tx.select().from(boardSessions).where(eq(boardSessions.id, p.sessionId));
@@ -93,7 +97,7 @@ export class SyncService {
             // Last writer wins by the time the mark was made, not the time it reached us.
             setWhere: sql`${attendanceRecords.occurredAt} <= excluded.occurred_at`,
           });
-        // TODO: enqueue parent notification for 'absent' once the notification worker exists.
+        await this.notifications.attendanceChanged(tx, session.timetableSlotId, localParts(occurredAt, tz).date, [studentId]);
         return;
       }
       case 'participation.recorded': {

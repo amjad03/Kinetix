@@ -42,6 +42,13 @@ export class BroadcastsController {
     return { ...message, targetedBoards: deviceIds.length };
   }
 
+  /** Recently sent messages with delivery counts, newest first. */
+  @Get()
+  @Auth('user', BROADCAST_ROLES)
+  recent(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.broadcasts.recent(tx));
+  }
+
   @Get(':id/delivery')
   @Auth('user', BROADCAST_ROLES)
   delivery(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {

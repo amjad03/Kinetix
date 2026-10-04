@@ -8,6 +8,7 @@ import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { attendanceRecords, boardSessions, devices, homework, sections, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
@@ -145,6 +146,7 @@ export class AttendanceController {
     private readonly db: DbService,
     private readonly teacher: TeacherService,
     private readonly clock: Clock,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Marks already recorded for a period on a date (to reload the sheet). */
@@ -192,7 +194,7 @@ export class AttendanceController {
             setWhere: sql`${attendanceRecords.occurredAt} <= excluded.occurred_at`,
           });
       }
-      // TODO: enqueue parent notifications for students marked 'absent' once the notification worker exists.
+      await this.notifications.attendanceChanged(tx, slot.id, day, [...marks.keys()]);
       await audit(tx, {
         tenantId: p.tenantId,
         actorType: 'user',
@@ -212,6 +214,7 @@ export class HomeworkController {
   constructor(
     private readonly db: DbService,
     private readonly teacher: TeacherService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   @Post()
@@ -249,7 +252,7 @@ export class HomeworkController {
         })
         .returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.created', subjectType: 'homework', subjectId: hw.id });
-      // TODO: notify students and guardians of the section once the notification worker exists.
+      await this.notifications.homeworkCreated(tx, { id: hw.id, sectionId: section.id, title: hw.title, dueOn: hw.dueOn, subjectName: subject.name });
       const [created] = await this.teacher.homeworkList(tx, eq(homework.id, hw.id), 'created');
       return created;
     });
