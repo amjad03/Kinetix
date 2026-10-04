@@ -75,6 +75,21 @@ class BoardController extends ChangeNotifier {
   int liveViewers = 0;
   bool liveIndicator = true;
 
+  /// Of [liveViewers]: school leaders looking in, and students at a live class.
+  int liveLeaders = 0;
+  int liveStudents = 0;
+
+  /// The teacher opened this class to its students ("Go live").
+  bool classLive = false;
+
+  /// Opens or closes the live class. Throws [ApiException] (e.g. no timetabled class).
+  Future<void> setClassLive(bool on) async {
+    if (api == null || session == null) throw StateError('Sign in to go live');
+    await api!.setClassLive(on);
+    classLive = on;
+    notifyListeners();
+  }
+
   /// Called when a new viewer needs a full picture of the board.
   VoidCallback? onLiveSnapshotRequest;
 
@@ -286,6 +301,8 @@ class BoardController extends ChangeNotifier {
     });
     rt.on(RealtimeEvents.liveViewers, (e) {
       liveViewers = (e['count'] as num?)?.toInt() ?? 0;
+      liveLeaders = (e['leaders'] as num?)?.toInt() ?? liveViewers;
+      liveStudents = (e['students'] as num?)?.toInt() ?? 0;
       liveIndicator = e['indicator'] as bool? ?? true;
       notifyListeners();
     });
@@ -324,7 +341,8 @@ class BoardController extends ChangeNotifier {
 
   void _signOut() {
     _sessionTimer?.cancel();
-    liveViewers = 0;
+    liveViewers = liveLeaders = liveStudents = 0;
+    classLive = false;
     api?.sessionToken = null;
     session = null;
     roster = [];

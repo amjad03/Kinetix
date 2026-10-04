@@ -13,12 +13,7 @@ const _booksAccent = Color(0xFF8AB4F8);
 /// A topic opens its notes in large type for the class, and can start an AI explanation or a
 /// quick quiz grounded in that topic.
 class BooksPanel extends StatefulWidget {
-  const BooksPanel({
-    super.key,
-    required this.board,
-    required this.ai,
-    required this.onOpenPanel,
-  });
+  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel});
 
   final BoardController board;
   final AiController ai;
@@ -57,9 +52,7 @@ class _BooksPanelState extends State<BooksPanel> {
     setState(() {
       _topic = null;
       _open.clear();
-      _syllabus = id == null || widget.board.api == null
-          ? null
-          : widget.board.api!.syllabus();
+      _syllabus = id == null || widget.board.api == null ? null : widget.board.api!.syllabus();
     });
   }
 
@@ -101,18 +94,15 @@ class _BooksPanelState extends State<BooksPanel> {
     return FutureBuilder<Syllabus?>(
       future: future,
       builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done)
+        if (snap.connectionState != ConnectionState.done) {
           return const AiLoading(label: 'Opening the syllabus…');
+        }
         if (snap.hasError) {
           return Padding(
             padding: const EdgeInsets.all(Kx.s24),
             child: Align(
               alignment: Alignment.topCenter,
-              child: AiError(
-                message:
-                    'Could not open the syllabus. Check the board is online.',
-                onRetry: _reload,
-              ),
+              child: AiError(message: 'Could not open the syllabus. Check the board is online.', onRetry: _reload),
             ),
           );
         }
@@ -141,9 +131,7 @@ class _BooksPanelState extends State<BooksPanel> {
             padding: const EdgeInsets.only(top: Kx.s4),
             child: Text(
               'Draft content: check against your textbook before teaching from it.',
-              style: context.text.bodySmall?.copyWith(
-                color: c.onSurfaceVariant,
-              ),
+              style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
             ),
           ),
         const SizedBox(height: Kx.s16),
@@ -166,42 +154,19 @@ class _BooksPanelState extends State<BooksPanel> {
                   subtitle: Text(
                     [
                       if (ch.own) 'Added by your institution',
-                      ch.topics.isEmpty
-                          ? 'Notes coming soon'
-                          : '${ch.topics.length} topic${ch.topics.length == 1 ? '' : 's'}',
+                      ch.topics.isEmpty ? 'Notes coming soon' : '${ch.topics.length} topic${ch.topics.length == 1 ? '' : 's'}',
                     ].join(' · '),
                   ),
-                  trailing: ch.topics.isEmpty
-                      ? null
-                      : Icon(
-                          _open.contains(ch.id)
-                              ? Icons.expand_less
-                              : Icons.expand_more,
-                        ),
-                  onTap: ch.topics.isEmpty
-                      ? null
-                      : () => setState(
-                          () => _open.contains(ch.id)
-                              ? _open.remove(ch.id)
-                              : _open.add(ch.id),
-                        ),
+                  trailing: ch.topics.isEmpty ? null : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
+                  onTap: ch.topics.isEmpty ? null : () => setState(() => _open.contains(ch.id) ? _open.remove(ch.id) : _open.add(ch.id)),
                 ),
                 if (_open.contains(ch.id))
                   for (final t in ch.topics)
                     ListTile(
                       key: Key('topic-${t.id}'),
-                      contentPadding: const EdgeInsets.only(
-                        left: 72,
-                        right: Kx.s16,
-                      ),
+                      contentPadding: const EdgeInsets.only(left: 72, right: Kx.s16),
                       title: Text(t.title),
-                      subtitle: t.summary.isEmpty
-                          ? null
-                          : Text(
-                              t.summary,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      subtitle: t.summary.isEmpty ? null : Text(t.summary, maxLines: 2, overflow: TextOverflow.ellipsis),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => setState(() {
                         _topic = widget.board.api!.topic(t.id);
@@ -218,8 +183,9 @@ class _BooksPanelState extends State<BooksPanel> {
     return FutureBuilder<TopicDetail>(
       future: future,
       builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done)
+        if (snap.connectionState != ConnectionState.done) {
           return const AiLoading(label: 'Opening the topic…');
+        }
         if (snap.hasError) {
           return Padding(
             padding: const EdgeInsets.all(Kx.s24),
@@ -252,13 +218,7 @@ class _BooksPanelState extends State<BooksPanel> {
                     ),
                     const SizedBox(width: Kx.s12),
                     Expanded(
-                      child: Text(
-                        n,
-                        style: const TextStyle(
-                          fontSize: ClassType.body,
-                          height: 1.45,
-                        ),
-                      ),
+                      child: Text(n, style: const TextStyle(fontSize: ClassType.body, height: 1.45)),
                     ),
                   ],
                 ),
@@ -269,23 +229,14 @@ class _BooksPanelState extends State<BooksPanel> {
           key: const Key('books-topic'),
           padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
           children: [
-            Text(
-              t.chapterTitle,
-              style: context.text.labelLarge?.copyWith(
-                color: c.onSurfaceVariant,
-              ),
-            ),
+            Text(t.chapterTitle, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
             const SizedBox(height: Kx.s4),
             Text(t.title, style: context.text.headlineSmall),
             if (t.summary.isNotEmpty) ...[
               const SizedBox(height: Kx.s12),
               Text(
                 t.summary,
-                style: TextStyle(
-                  fontSize: ClassType.lead,
-                  height: 1.4,
-                  color: c.onSurface,
-                ),
+                style: TextStyle(fontSize: ClassType.lead, height: 1.4, color: c.onSurface),
               ),
             ],
             const SizedBox(height: Kx.s16),
@@ -318,19 +269,12 @@ class _BooksPanelState extends State<BooksPanel> {
                 ),
               ],
             ),
-            if (t.notes.isNotEmpty)
-              list('Key facts', t.notes, Icons.check_circle_outline),
-            if (t.outcomes.isNotEmpty)
-              list('By the end, students can', t.outcomes, Icons.flag_outlined),
+            if (t.notes.isNotEmpty) list('Key facts', t.notes, Icons.check_circle_outline),
+            if (t.outcomes.isNotEmpty) list('By the end, students can', t.outcomes, Icons.flag_outlined),
             if (!t.reviewed)
               Padding(
                 padding: const EdgeInsets.only(top: Kx.s16),
-                child: Text(
-                  'Draft content: check against your textbook.',
-                  style: context.text.bodySmall?.copyWith(
-                    color: c.onSurfaceVariant,
-                  ),
-                ),
+                child: Text('Draft content: check against your textbook.', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
               ),
           ],
         );

@@ -17,6 +17,7 @@ import '../ai/ai_panel.dart';
 import '../ai/homework_panel.dart';
 import '../ai/quiz_panel.dart';
 import '../signin/sign_in_dialog.dart';
+import '../../core/api_client.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'popovers.dart';
@@ -868,6 +869,21 @@ class _TopBar extends StatefulWidget {
 class _TopBarState extends State<_TopBar> {
   late final Timer _clock = Timer.periodic(const Duration(seconds: 20), (_) => setState(() {}));
 
+  Future<void> _toggleLive(BuildContext context) async {
+    final board = widget.board;
+    final on = !board.classLive;
+    try {
+      await board.setClassLive(on);
+      if (context.mounted) {
+        showBoardMessage(context, on ? 'Live: students of this class can watch the board in the Student app. Sound is not included yet.' : 'The live class has ended.');
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) showBoardMessage(context, e.message);
+    } catch (_) {
+      if (context.mounted) showBoardMessage(context, 'Could not reach KINETIX Cloud. Check the board is online.');
+    }
+  }
+
   @override
   void dispose() {
     _clock.cancel();
@@ -903,22 +919,30 @@ class _TopBarState extends State<_TopBar> {
                       avatar: KxAvatar(name: s.teacherName, size: 24),
                       label: Text([s.teacherName, s.classLabel, s.periodLabel].whereType<String>().join('  ·  ')),
                     ),
-                    if (board.liveViewers > 0 && board.liveIndicator) ...[
+                    if (board.liveLeaders > 0 && board.liveIndicator) ...[
                       const SizedBox(width: Kx.s8),
                       Tooltip(
                         message: 'A school leader is watching this class live. Viewing is recorded in the audit log.',
                         child: Chip(
                           key: const Key('being-viewed'),
                           avatar: const Icon(Icons.visibility_outlined, size: 18),
-                          label: Text(board.liveViewers == 1 ? 'Being viewed' : 'Being viewed · ${board.liveViewers}'),
+                          label: Text(board.liveLeaders == 1 ? 'Being viewed' : 'Being viewed · ${board.liveLeaders}'),
                         ),
                       ),
                     ],
                     const SizedBox(width: Kx.s8),
                     ActionChip(
-                      avatar: const Icon(Icons.sensors, size: 18, color: Kx.live),
-                      label: const Text('Go live'),
-                      onPressed: () => showComingSoon(context, 'Live class'),
+                      key: const Key('go-live'),
+                      avatar: Icon(board.classLive ? Icons.stop_circle_outlined : Icons.sensors, size: 18, color: Kx.live),
+                      label: Text(
+                        !board.classLive
+                            ? 'Go live'
+                            : board.liveStudents == 0
+                            ? 'Live · waiting for students'
+                            : 'Live · ${board.liveStudents} student${board.liveStudents == 1 ? '' : 's'}',
+                      ),
+                      tooltip: board.classLive ? 'Stop the live class' : 'Let students of this class watch the board in the Student app',
+                      onPressed: () => _toggleLive(context),
                     ),
                     const SizedBox(width: Kx.s8),
                     ActionChip(

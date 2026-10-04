@@ -39,6 +39,9 @@ class ApiClient {
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
 
+  /// "Go live": opens (or closes) the board to the class's students in the Student App.
+  Future<void> setClassLive(bool on) async => _send('POST', '/v1/sessions/current/live', body: {'on': on});
+
   Future<WhiteboardSummary> saveWhiteboard(String id, {required String title, required SavedBoard board, required bool share}) async {
     final j = await _send('PUT', '/v1/whiteboards/$id', body: {...board.toJson(), 'title': title, 'share': share});
     return WhiteboardSummary.fromJson(j as Map<String, dynamic>);

@@ -37,13 +37,17 @@ class FakeRealtime extends Realtime {
 void main() {
   late FakeRealtime rt;
   late BoardController board;
+  late List<http.Request> requests;
 
   Future<void> pump(WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    requests = [];
     final client = MockClient((req) async {
+      requests.add(req);
+      if (req.url.path == '/v1/sessions/current/live') return http.Response(req.body, 200);
       if (req.url.path == '/v1/devices/enroll') return http.Response(jsonEncode({'deviceToken': 'dev', 'device': {'name': 'Room 204 Board'}}), 201);
       return http.Response('[]', 200);
     });
@@ -81,7 +85,7 @@ void main() {
     expect(rt.frames, isEmpty);
     expect(find.byKey(const Key('being-viewed')), findsNothing);
 
-    rt.server(RealtimeEvents.liveViewers, {'count': 1, 'indicator': true});
+    rt.server(RealtimeEvents.liveViewers, {'count': 1, 'leaders': 1, 'students': 0, 'indicator': true});
     rt.server(RealtimeEvents.liveSnapshotRequest);
     await tester.pump(const Duration(milliseconds: 200));
     expect(find.text('Being viewed'), findsOneWidget);
@@ -108,6 +112,29 @@ void main() {
     expect(find.byKey(const Key('being-viewed')), findsNothing);
     expect(rt.frames, isNotEmpty); // still streaming
     rt.server(RealtimeEvents.liveViewers, {'count': 0, 'indicator': false});
+    await tester.pump();
+    board.dispose();
+  });
+
+  testWidgets('goes live to the class and shows how many students are watching', (tester) async {
+    await pump(tester);
+    await tester.tap(find.byKey(const Key('go-live')));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(requests.lastWhere((r) => r.url.path == '/v1/sessions/current/live').body), {'on': true});
+    expect(find.text('Live · waiting for students'), findsOneWidget);
+
+    rt.server(RealtimeEvents.liveViewers, {'count': 3, 'leaders': 0, 'students': 3, 'indicator': true});
+    rt.server(RealtimeEvents.liveSnapshotRequest);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('Live · 3 students'), findsOneWidget);
+    expect(find.byKey(const Key('being-viewed')), findsNothing); // students are not "viewing" the teacher
+    expect(rt.frames, isNotEmpty);
+
+    await tester.tap(find.byKey(const Key('go-live')));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(requests.lastWhere((r) => r.url.path == '/v1/sessions/current/live').body), {'on': false});
+    expect(find.text('Go live'), findsOneWidget);
+    rt.server(RealtimeEvents.liveViewers, {'count': 0, 'leaders': 0, 'students': 0, 'indicator': true});
     await tester.pump();
     board.dispose();
   });
