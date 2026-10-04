@@ -153,8 +153,9 @@ class _AssessmentFormState extends State<AssessmentForm> {
                     DropdownButtonFormField<Ref>(
                       key: const Key('assessmentClassField'),
                       initialValue: _section,
+                      isExpanded: true,
                       decoration: const InputDecoration(labelText: 'Class', prefixIcon: Icon(Icons.groups_outlined)),
-                      items: [for (final s in _sections) DropdownMenuItem(value: s, child: Text(s.name))],
+                      items: [for (final s in _sections) DropdownMenuItem(value: s, child: Text(s.name, overflow: TextOverflow.ellipsis))],
                       onChanged: (s) => setState(() {
                         _section = s;
                         _subject = _subjects.firstOrNull;
@@ -164,8 +165,9 @@ class _AssessmentFormState extends State<AssessmentForm> {
                     DropdownButtonFormField<Ref>(
                       key: ValueKey('assessmentSubject-${_section?.id}'),
                       initialValue: _subject,
+                      isExpanded: true,
                       decoration: const InputDecoration(labelText: 'Subject', prefixIcon: Icon(Icons.menu_book_outlined)),
-                      items: [for (final s in _subjects) DropdownMenuItem(value: s, child: Text(s.name))],
+                      items: [for (final s in _subjects) DropdownMenuItem(value: s, child: Text(s.name, overflow: TextOverflow.ellipsis))],
                       onChanged: (s) => setState(() => _subject = s),
                       validator: (s) => s == null ? 'Choose a subject' : null,
                     ),

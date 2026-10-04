@@ -268,7 +268,7 @@ class AssessmentCard extends StatelessWidget {
                           ),
                   ),
                   Text(
-                    total == null ? '${a.entered} entered' : '${detail!.entered} of $total entered',
+                    total == null ? '${a.entered} entered' : '${detail!.students!.where((e) => e.marks != null).length} of $total marked',
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],

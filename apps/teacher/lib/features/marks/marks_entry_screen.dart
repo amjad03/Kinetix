@@ -8,8 +8,8 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 
 /// What the teacher has typed for one student, compared with what is saved.
-class _Row {
-  _Row(this.saved) : text = TextEditingController(text: saved.marks == null ? '' : formatMarks(saved.marks!));
+class MarkDraft {
+  MarkDraft(this.saved) : text = TextEditingController(text: saved.marks == null ? '' : formatMarks(saved.marks!));
 
   MarkEntry saved;
   final TextEditingController text;
@@ -48,7 +48,7 @@ class MarksEntryController extends ChangeNotifier {
 
   final TeacherApi api;
   Assessment a;
-  final rows = <_Row>[];
+  final rows = <MarkDraft>[];
   bool loading = false;
   bool saving = false;
   bool publishing = false;
@@ -71,14 +71,14 @@ class MarksEntryController extends ChangeNotifier {
   void _apply(Assessment detail) {
     a = detail;
     final byId = {for (final r in rows) r.student.id: r};
-    final next = <_Row>[];
+    final next = <MarkDraft>[];
     for (final e in detail.students ?? const <MarkEntry>[]) {
       final r = byId.remove(e.student.id);
       if (r != null) {
         r.reset(e);
         next.add(r);
       } else {
-        next.add(_Row(e)..text.addListener(notifyListeners));
+        next.add(MarkDraft(e)..text.addListener(notifyListeners));
       }
     }
     for (final r in byId.values) {
@@ -90,7 +90,7 @@ class MarksEntryController extends ChangeNotifier {
   }
 
   /// A plain-language problem with what was typed for [r], or null.
-  String? errorFor(_Row r) {
+  String? errorFor(MarkDraft r) {
     if (r.absent) return null;
     final t = r.text.text.trim();
     if (t.isEmpty) return null;
@@ -111,13 +111,13 @@ class MarksEntryController extends ChangeNotifier {
     if (absentCount > 0) '$absentCount absent',
   ].join(' · ');
 
-  void setAbsent(_Row r, bool absent) {
+  void setAbsent(MarkDraft r, bool absent) {
     r.absent = absent;
     if (absent) r.text.clear();
     notifyListeners();
   }
 
-  void setRemark(_Row r, String remark) {
+  void setRemark(MarkDraft r, String remark) {
     r.remark = remark.trim();
     notifyListeners();
   }
@@ -218,7 +218,7 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
 
   Future<void> _save() async {
     FocusScope.of(context).unfocus();
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
     final error = await controller.save();
     if (!mounted) return;
     if (error != null) {
@@ -257,7 +257,7 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
       ),
     );
     if (ok != true || !mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
     final error = await controller.publish();
     if (!mounted) return;
     if (error != null) {
@@ -268,47 +268,13 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
     messenger.showSnackBar(SnackBar(content: Text('${a.title} published · families notified')));
   }
 
-  Future<void> _editRemark(_Row r) async {
-    final text = TextEditingController(text: r.remark);
+  Future<void> _editRemark(MarkDraft r) async {
     final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, MediaQuery.viewInsetsOf(ctx).bottom + Kx.s16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Remark for ${r.student.fullName}', style: ctx.text.titleMedium),
-            const SizedBox(height: Kx.s4),
-            Text('Families see it with the marks.', style: ctx.text.bodyMedium?.copyWith(color: ctx.colors.onSurfaceVariant)),
-            const SizedBox(height: Kx.s16),
-            TextField(
-              key: const Key('remarkField'),
-              controller: text,
-              autofocus: true,
-              maxLength: 300,
-              minLines: 2,
-              maxLines: 4,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(hintText: 'e.g. Good working notes; revise journal entries'),
-            ),
-            const SizedBox(height: Kx.s8),
-            Row(
-              children: [
-                if (r.remark.isNotEmpty) TextButton(onPressed: () => Navigator.pop(ctx, ''), child: const Text('Remove')),
-                const Spacer(),
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                const SizedBox(width: Kx.s8),
-                FilledButton(key: const Key('saveRemark'), onPressed: () => Navigator.pop(ctx, text.text), child: const Text('Done')),
-              ],
-            ),
-          ],
-        ),
-      ),
+      builder: (_) => _RemarkSheet(name: r.student.fullName, initial: r.remark),
     );
-    text.dispose();
     if (result != null) controller.setRemark(r, result);
   }
 
@@ -440,7 +406,7 @@ class _Header extends StatelessWidget {
             children: [
               Expanded(child: Text('Student', style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant))),
               Text('Out of $out', style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
-              const SizedBox(width: Kx.s8),
+              const SizedBox(width: Kx.s12),
             ],
           ),
         ],
@@ -478,7 +444,7 @@ class _MarkRow extends StatelessWidget {
     required this.onRemark,
   });
 
-  final _Row row;
+  final MarkDraft row;
   final double maxMarks;
   final String? error;
   final bool last;
@@ -493,8 +459,9 @@ class _MarkRow extends StatelessWidget {
     final hasRemark = row.remark.isNotEmpty;
     return Container(
       key: ValueKey('markRow-${s.id}'),
-      color: row.changed ? c.primaryContainer.withValues(alpha: 0.25) : null,
-      padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s4, Kx.s8, Kx.s4),
+      // Always a colour (never null) so the tree, and the field's focus, survive the first keystroke.
+      color: row.changed ? c.primaryContainer.withValues(alpha: 0.25) : Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s4, Kx.s12, Kx.s4),
       child: Row(
         children: [
           Expanded(
@@ -525,6 +492,7 @@ class _MarkRow extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             materialTapTargetSize: MaterialTapTargetSize.padded,
             selectedColor: c.errorContainer,
+            side: BorderSide(color: row.absent ? c.errorContainer : c.outlineVariant),
             labelStyle: TextStyle(color: row.absent ? c.onErrorContainer : c.onSurfaceVariant),
             onSelected: onAbsent,
           ),
@@ -578,6 +546,8 @@ class _Bar extends StatelessWidget {
       hint = 'Not saved yet';
     } else if (a.isPublished) {
       hint = 'Published · families can see these marks';
+    } else if (a.entered == 0) {
+      hint = 'Type marks, then Save';
     } else {
       hint = 'Saved · only you can see these marks';
     }
@@ -615,6 +585,64 @@ class _Bar extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Remark for one student; pops with the text ('' removes it) or null when cancelled.
+class _RemarkSheet extends StatefulWidget {
+  const _RemarkSheet({required this.name, required this.initial});
+
+  final String name;
+  final String initial;
+
+  @override
+  State<_RemarkSheet> createState() => _RemarkSheetState();
+}
+
+class _RemarkSheetState extends State<_RemarkSheet> {
+  late final _text = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, MediaQuery.viewInsetsOf(context).bottom + Kx.s16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Remark for ${widget.name}', style: context.text.titleMedium),
+          const SizedBox(height: Kx.s4),
+          Text('Families see it with the marks.', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+          const SizedBox(height: Kx.s16),
+          TextField(
+            key: const Key('remarkField'),
+            controller: _text,
+            autofocus: true,
+            maxLength: 300,
+            minLines: 2,
+            maxLines: 4,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(hintText: 'e.g. Neat working; revise journal entries'),
+          ),
+          const SizedBox(height: Kx.s8),
+          Row(
+            children: [
+              if (widget.initial.isNotEmpty) TextButton(onPressed: () => Navigator.pop(context, ''), child: const Text('Remove')),
+              const Spacer(),
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+              const SizedBox(width: Kx.s8),
+              FilledButton(key: const Key('saveRemark'), onPressed: () => Navigator.pop(context, _text.text), child: const Text('Done')),
+            ],
+          ),
+        ],
       ),
     );
   }

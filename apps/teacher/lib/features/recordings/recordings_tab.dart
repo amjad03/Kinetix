@@ -46,9 +46,12 @@ class RecordingsController extends ChangeNotifier {
 }
 
 class RecordingsTab extends StatelessWidget {
-  const RecordingsTab({super.key, required this.controller});
+  const RecordingsTab({super.key, required this.controller, this.profileButton});
 
   final RecordingsController controller;
+
+  /// Opens Profile from the app bar.
+  final Widget? profileButton;
 
   Future<void> _share(BuildContext context, RecordingInfo r) async {
     final cls = r.sectionName ?? 'the class';
@@ -90,7 +93,7 @@ class RecordingsTab extends StatelessWidget {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              const SliverAppBar.large(title: Text('Recordings')),
+              SliverAppBar.large(title: const Text('Recordings'), actions: [?profileButton]),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),

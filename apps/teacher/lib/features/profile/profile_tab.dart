@@ -89,10 +89,10 @@ class ProfileTab extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.quiz_outlined),
-              title: const Text('Tests'),
-              subtitle: const Text('Create MCQ tests with sections and marks'),
+              title: const Text('MCQ tests'),
+              subtitle: const Text('Online tests that sync to board quizzes'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => soon('Tests'),
+              onTap: () => soon('MCQ tests'),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s32),

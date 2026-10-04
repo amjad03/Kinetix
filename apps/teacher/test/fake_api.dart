@@ -198,4 +198,177 @@ class FakeTeacherApi implements TeacherApi {
     j['sharedAt'] = '2026-10-04T06:00:00Z';
     return RecordingInfo.fromJson(j);
   }
+
+  // --- Marks -----------------------------------------------------------------------------------
+
+  /// Saved assessments by id; marks by student id.
+  final assessmentRows = <String, Map<String, dynamic>>{};
+  final savedMarks = <String, Map<String, MarkInput>>{};
+  List<MarkInput>? lastSaved;
+  int _ids = 0;
+
+  /// Adds a saved assessment for tests.
+  String addAssessment({String title = 'Unit test 1', double maxMarks = 25, bool published = false, Map<String, MarkInput>? marks}) {
+    final id = 'a${++_ids}';
+    assessmentRows[id] = {
+      'id': id,
+      'title': title,
+      'kind': 'test',
+      'maxMarks': maxMarks,
+      'heldOn': '2026-09-28',
+      'publishedAt': published ? '2026-10-01T10:00:00Z' : null,
+      'sectionId': section.id,
+      'subject': {'id': subject.id, 'name': subject.name},
+      'createdBy': 'Anita Sharma',
+    };
+    savedMarks[id] = {...?marks};
+    return id;
+  }
+
+  Assessment _detail(String id) {
+    final row = assessmentRows[id];
+    if (row == null) throw ApiException(404, 'Assessment not found');
+    final m = savedMarks[id]!;
+    final values = [for (final e in m.values) if (!e.absent && e.marks != null) e.marks!];
+    return Assessment.fromJson({
+      ...row,
+      'entered': m.length,
+      'stats': {
+        'count': values.length,
+        'average': values.isEmpty ? null : (values.reduce((a, b) => a + b) / values.length * 10).round() / 10,
+        'highest': values.isEmpty ? null : values.reduce((a, b) => a > b ? a : b),
+        'lowest': values.isEmpty ? null : values.reduce((a, b) => a < b ? a : b),
+      },
+      'students': [
+        for (final st in students)
+          {
+            'id': st.id,
+            'fullName': st.fullName,
+            'rollNo': st.rollNo,
+            'marks': m[st.id]?.absent ?? false ? null : m[st.id]?.marks,
+            'absent': m[st.id]?.absent ?? false,
+            'remark': m[st.id]?.remark,
+          },
+      ],
+    });
+  }
+
+  @override
+  Future<List<Assessment>> assessments(String sectionId) async {
+    calls.add('assessments $sectionId');
+    return [
+      for (final r in assessmentRows.values.toList().reversed) Assessment.fromJson({...r, 'entered': savedMarks[r['id']]!.length}),
+    ];
+  }
+
+  @override
+  Future<Assessment> assessment(String id) async => _detail(id);
+
+  @override
+  Future<Assessment> createAssessment({
+    required String sectionId,
+    required String subjectId,
+    required String title,
+    required AssessmentKind kind,
+    required double maxMarks,
+    required String heldOn,
+  }) async {
+    calls.add('createAssessment $title ${kind.name} ${formatMarks(maxMarks)} $heldOn');
+    final id = addAssessment(title: title, maxMarks: maxMarks);
+    assessmentRows[id]!
+      ..['kind'] = kind.name
+      ..['heldOn'] = heldOn;
+    return _detail(id);
+  }
+
+  @override
+  Future<Assessment> saveMarks(String assessmentId, List<MarkInput> entries) async {
+    calls.add('saveMarks $assessmentId');
+    lastSaved = entries;
+    final max = assessmentRows[assessmentId]!['maxMarks'] as double;
+    for (final e in entries) {
+      if ((e.marks ?? 0) > max) throw ApiException(400, 'Marks cannot be more than ${formatMarks(max)}');
+      savedMarks[assessmentId]![e.studentId] = e;
+    }
+    return _detail(assessmentId);
+  }
+
+  @override
+  Future<Assessment> publishAssessment(String id) async {
+    calls.add('publish $id');
+    if (savedMarks[id]!.isEmpty) throw ApiException(400, 'Enter marks before publishing');
+    assessmentRows[id]!['publishedAt'] = '2026-10-04T06:00:00Z';
+    return _detail(id);
+  }
+
+  // --- Messages --------------------------------------------------------------------------------
+
+  static const rajesh = Ref('g1', 'Rajesh Patel');
+
+  late List<Conversation> threads = [
+    Conversation(
+      id: 'c1',
+      student: const Ref('s1', 'Aarav Patel'),
+      className: 'BCom Sem 3 A',
+      staff: const Ref('u1', 'Anita Sharma'),
+      family: rajesh,
+      lastMessageAt: DateTime(2026, 10, 4, 9, 15),
+      lastMessage: 'Thank you, he will finish it tonight.',
+      unread: 2,
+    ),
+    Conversation(
+      id: 'c2',
+      student: const Ref('s2', 'Ananya Gowda'),
+      className: 'BCom Sem 3 A',
+      staff: const Ref('u1', 'Anita Sharma'),
+      family: const Ref('g2', 'Sunita Gowda'),
+      lastMessageAt: DateTime(2026, 9, 30, 18, 2),
+      lastMessage: 'Noted, ma’am.',
+    ),
+  ];
+
+  /// Messages per thread, oldest first.
+  late Map<String, List<ChatMessage>> chat = {
+    'c1': [
+      ChatMessage(id: 'm1', senderId: 'g1', body: 'Aarav had fever on Tuesday. What was covered?', createdAt: DateTime(2026, 10, 3, 9)),
+      ChatMessage(id: 'm2', senderId: 'u1', body: 'Hope he is better. Please try Exercise 4.2.', createdAt: DateTime(2026, 10, 3, 15)),
+      ChatMessage(id: 'm3', senderId: 'g1', body: 'Thank you, he will finish it tonight.', createdAt: DateTime(2026, 10, 4, 9, 15)),
+    ],
+    'c2': [ChatMessage(id: 'm4', senderId: 'g2', body: 'Noted, ma’am.', createdAt: DateTime(2026, 9, 30, 18, 2))],
+  };
+
+  int conversationLoads = 0;
+
+  /// Set to make sending fail.
+  bool sendFails = false;
+
+  @override
+  Future<List<Conversation>> conversations() async {
+    // Not logged in [calls]: the shell loads it at sign-in for the Messages badge.
+    conversationLoads++;
+    return threads;
+  }
+
+  @override
+  Future<ChatPage> conversationMessages(String id, {DateTime? before}) async {
+    calls.add('messages $id${before == null ? '' : ' before'}');
+    final all = [for (final m in chat[id]!) if (before == null || m.createdAt.isBefore(before)) m];
+    final page = all.length > ChatPage.pageSize ? all.sublist(all.length - ChatPage.pageSize) : all;
+    return ChatPage(threads.firstWhere((t) => t.id == id), page);
+  }
+
+  @override
+  Future<ChatMessage> sendMessage(String conversationId, String body) async {
+    calls.add('send $conversationId $body');
+    if (sendFails) throw ApiException(0, "Can't reach KINETIX.");
+    final m = ChatMessage(id: 'm${chat[conversationId]!.length + 100}', senderId: profile.id, body: body, createdAt: DateTime(2026, 10, 4, 12));
+    chat[conversationId]!.add(m);
+    return m;
+  }
+
+  @override
+  Future<void> markConversationRead(String id) async {
+    calls.add('read $id');
+    threads = [for (final t in threads) t.id == id ? t.copyWith(unread: 0) : t];
+  }
 }

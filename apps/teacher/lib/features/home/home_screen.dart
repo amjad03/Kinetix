@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
+import '../../widgets/common.dart';
 import '../homework/homework_tab.dart';
+import '../marks/marks_tab.dart';
+import '../messages/messages_tab.dart';
 import '../profile/profile_tab.dart';
 import '../recordings/recordings_tab.dart';
 import '../today/today_controller.dart';
 import '../today/today_tab.dart';
 
-/// The signed-in shell: Today, Homework, Recordings and Profile behind a bottom NavigationBar.
+/// The signed-in shell: Today, Homework, Marks, Messages and Recordings behind a bottom
+/// NavigationBar. Profile opens from the avatar at the top of every tab, as in Google's apps.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.state});
 
@@ -20,54 +24,110 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final today = TodayController(widget.state.api)..load();
   late final homework = HomeworkController(widget.state.api)..load();
+  late final marks = MarksController(widget.state.api);
+  // Loaded up front so the Messages badge shows unread threads.
+  late final messages = MessagesController(widget.state.api)..load();
   late final recordings = RecordingsController(widget.state.api);
+  // Families write any time: check for new messages when the app comes back to the front.
+  late final _lifecycle = AppLifecycleListener(onResume: _refreshMessages);
   int _tab = 0;
 
-  static const _recordingsTab = 2, _profileTab = 3;
+  static const _homeworkTab = 1, _marksTab = 2, _recordingsTab = 4;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle;
+  }
+
+  void _refreshMessages() {
+    if (!messages.loading) messages.load();
+  }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     today.dispose();
     homework.dispose();
+    marks.dispose();
+    messages.dispose();
     recordings.dispose();
     super.dispose();
   }
 
   void _go(int i) {
-    // Fresh on every visit: the board uploads recordings after class.
-    if (i == _recordingsTab && _tab != i && !recordings.loading) recordings.load();
+    if (_tab != i) {
+      // Fresh on every visit: the board uploads recordings after class. Messages refresh on any
+      // tab change so the badge stays current.
+      if (i == _recordingsTab && !recordings.loading) recordings.load();
+      _refreshMessages();
+      if (i == _marksTab && marks.items == null && !marks.loading) marks.load();
+    }
     setState(() => _tab = i);
   }
 
+  void _openProfile() => Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => Scaffold(body: ProfileTab(state: widget.state))),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final profile = ProfileButton(name: widget.state.me!.fullName, onPressed: _openProfile);
     return Scaffold(
       body: IndexedStack(
         index: _tab,
         children: [
-          TodayTab(controller: today, me: widget.state.me!, onOpenProfile: () => _go(_profileTab)),
-          HomeworkTab(controller: homework),
-          RecordingsTab(controller: recordings),
-          ProfileTab(state: widget.state),
+          TodayTab(controller: today, me: widget.state.me!, onOpenProfile: _openProfile),
+          HomeworkTab(controller: homework, profileButton: profile),
+          MarksTab(controller: marks, profileButton: profile),
+          MessagesTab(controller: messages, myId: widget.state.me!.id, profileButton: profile),
+          RecordingsTab(controller: recordings, profileButton: profile),
         ],
       ),
-      floatingActionButton: _tab == 1
-          ? FloatingActionButton.extended(
-              key: const Key('assignHomeworkFab'),
-              onPressed: () => HomeworkTab.assign(context, homework),
-              icon: const Icon(Icons.add),
-              label: const Text('Assign homework'),
-            )
-          : null,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: _go,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'Today'),
-          NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Homework'),
-          NavigationDestination(icon: Icon(Icons.video_library_outlined), selectedIcon: Icon(Icons.video_library), label: 'Recordings'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
-        ],
+      floatingActionButton: switch (_tab) {
+        _homeworkTab => FloatingActionButton.extended(
+          key: const Key('assignHomeworkFab'),
+          onPressed: () => HomeworkTab.assign(context, homework),
+          icon: const Icon(Icons.add),
+          label: const Text('Assign homework'),
+        ),
+        _marksTab => FloatingActionButton.extended(
+          key: const Key('newAssessmentFab'),
+          onPressed: () => MarksTab.create(context, marks),
+          icon: const Icon(Icons.add),
+          label: const Text('New assessment'),
+        ),
+        _ => null,
+      },
+      bottomNavigationBar: ListenableBuilder(
+        listenable: messages,
+        builder: (context, _) {
+          final unread = messages.unread;
+          return NavigationBar(
+            selectedIndex: _tab,
+            onDestinationSelected: _go,
+            destinations: [
+              const NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'Today'),
+              const NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Homework'),
+              const NavigationDestination(icon: Icon(Icons.grading_outlined), selectedIcon: Icon(Icons.grading), label: 'Marks'),
+              NavigationDestination(
+                icon: Badge(
+                  key: const Key('messagesBadge'),
+                  isLabelVisible: unread > 0,
+                  label: Text('$unread'),
+                  child: const Icon(Icons.forum_outlined),
+                ),
+                selectedIcon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.forum)),
+                label: 'Messages',
+              ),
+              const NavigationDestination(
+                icon: Icon(Icons.video_library_outlined),
+                selectedIcon: Icon(Icons.video_library),
+                label: 'Recordings',
+              ),
+            ],
+          );
+        },
       ),
     );
   }

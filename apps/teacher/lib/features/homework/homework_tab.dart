@@ -36,9 +36,12 @@ class HomeworkController extends ChangeNotifier {
 }
 
 class HomeworkTab extends StatelessWidget {
-  const HomeworkTab({super.key, required this.controller});
+  const HomeworkTab({super.key, required this.controller, this.profileButton});
 
   final HomeworkController controller;
+
+  /// Opens Profile from the app bar.
+  final Widget? profileButton;
 
   static Future<void> assign(BuildContext context, HomeworkController controller) async {
     final created = await Navigator.of(context)
@@ -58,7 +61,7 @@ class HomeworkTab extends StatelessWidget {
           onRefresh: controller.load,
           child: CustomScrollView(
             slivers: [
-              const SliverAppBar.large(title: Text('Homework')),
+              SliverAppBar.large(title: const Text('Homework'), actions: [?profileButton]),
               if (controller.error != null)
                 SliverPadding(
                   padding: const EdgeInsets.all(Kx.s16),
