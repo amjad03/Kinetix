@@ -24,6 +24,10 @@ export const RealtimeEvents = {
   LiveFrame: 'live.frame',
   /** Server → viewers: the board went offline or its class ended. */
   LiveEnded: 'live.ended',
+  /** Board → server → viewers: whether the teacher has class audio on ({@link LiveAudioState}). */
+  LiveAudioState: 'live.audio.state',
+  /** Board → server → listeners: a short piece of class audio ({@link LiveAudioChunk}). */
+  LiveAudio: 'live.audio',
 } as const;
 
 /**
@@ -36,6 +40,28 @@ export interface LiveViewersEvent {
   leaders: number;
   students: number;
   indicator: boolean;
+  /** Viewers who may hear class audio (students always; leaders when the institution allows). */
+  listeners: number;
+}
+
+/** Board → server: `{on}`; server → viewers: `{deviceId, on}` (also in the watch ack). */
+export interface LiveAudioState {
+  deviceId?: string;
+  on: boolean;
+}
+
+/**
+ * Class audio, about 200 ms per chunk: mono 16 kHz IMA ADPCM (4 bits a sample, 8 KB/s).
+ * `data` is base64 of a 4-byte header (predictor as int16 little-endian, step index, 0) and
+ * then two samples per byte, low nibble first, so each chunk decodes on its own and a lost
+ * chunk is only a short gap. `seq` counts up from 0 for each time audio is turned on.
+ */
+export interface LiveAudioChunk {
+  deviceId?: string;
+  seq: number;
+  rate: 16000;
+  codec: 'ima-adpcm';
+  data: string;
 }
 
 /**
@@ -52,6 +78,8 @@ export interface LiveWatchAck {
   ok: boolean;
   error?: string;
   session?: { teacher: string; section: string | null; subject: string | null; startedAt: string };
+  /** Whether this viewer may hear class audio, and whether the teacher has it on now. */
+  audio?: { allowed: boolean; on: boolean };
 }
 
 export type Language = 'en' | 'hi' | 'kn';

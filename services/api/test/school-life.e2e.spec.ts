@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { RealtimeEvents, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
+import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -206,8 +206,19 @@ describe('school life', () => {
       expect(await inbox('parent', 'live')).toEqual([]); // students only
 
       const viewers = next<LiveViewersEvent>(board, RealtimeEvents.LiveViewers);
-      expect((await watch()).ok).toBe(true);
-      expect(await viewers).toMatchObject({ count: 1, leaders: 0, students: 1 });
+      expect(await watch()).toMatchObject({ ok: true, audio: { allowed: true, on: false } });
+      expect(await viewers).toMatchObject({ count: 1, leaders: 0, students: 1, listeners: 1 });
+
+      // Class audio: the teacher turns it on, and students hear the board's chunks.
+      const audioOn = next<LiveAudioState>(student, RealtimeEvents.LiveAudioState);
+      expect(await board.emitWithAck(RealtimeEvents.LiveAudioState, { on: true })).toEqual({ ok: true });
+      expect(await audioOn).toEqual({ deviceId: t.device.id, on: true });
+      const chunk = next<LiveAudioChunk>(student, RealtimeEvents.LiveAudio);
+      board.emit(RealtimeEvents.LiveAudio, { seq: 0, rate: 16000, codec: 'ima-adpcm', data: 'AAAAAA==' });
+      expect(await chunk).toEqual({ deviceId: t.device.id, seq: 0, rate: 16000, codec: 'ima-adpcm', data: 'AAAAAA==' });
+      expect((await owner.query(`select actor_type from audit_log where tenant_id = $1 and action = 'live_audio.on'`, [t.tenantId])).rows).toEqual([{ actor_type: 'device' }]);
+      // A student cannot send audio into the class.
+      student.emit(RealtimeEvents.LiveAudio, { seq: 1, rate: 16000, codec: 'ima-adpcm', data: 'AAAAAA==' });
 
       const parentSocket = io(`${url}/realtime`, { auth: { token: tokens.parent }, transports: ['websocket'] });
       sockets.push(parentSocket);

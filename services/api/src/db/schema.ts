@@ -157,7 +157,32 @@ export const subjects = pgTable('subjects', {
   name: text('name').notNull(),
   /** The content-library course this subject follows (syllabus, notes, AI grounding). */
   courseId: uuid('course_id').references(() => courses.id),
+  /** The department that teaches it (null until the principal assigns one). */
+  departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
 });
+
+/**
+ * Academic departments (Commerce, Computer Science, Languages…). A department owns subjects and
+ * has staff; its head (a user with the `hod` role) sees the department view in the ERP.
+ */
+export const departments = pgTable('departments', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  headUserId: uuid('head_user_id').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+});
+
+/** Staff in a department. A teacher can belong to more than one (a language teacher, say). */
+export const departmentStaff = pgTable(
+  'department_staff',
+  {
+    tenantId: tenantId(),
+    departmentId: uuid('department_id').notNull().references(() => departments.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (t) => [primaryKey({ columns: [t.departmentId, t.userId] })],
+);
 
 export const students = pgTable(
   'students',
@@ -918,6 +943,8 @@ export const TENANT_TABLES = [
   'programs',
   'sections',
   'subjects',
+  'departments',
+  'department_staff',
   'students',
   'rooms',
   'timetable_slots',

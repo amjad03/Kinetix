@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { BroadcastsModule } from './broadcasts/broadcasts.module.js';
 import { ContentModule } from './content/content.module.js';
 import { DbModule } from './db/db.module.js';
+import { DepartmentsModule } from './departments/departments.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
@@ -41,6 +42,7 @@ class HealthController {
     AuthModule,
     RealtimeModule,
     TimetableModule,
+    DepartmentsModule,
     SessionsModule,
     DevicesModule,
     PairingModule,

@@ -3,7 +3,7 @@
  * Usage: pnpm db:seed   (prints the board enrolment code and staff logins)
  */
 import argon2 from 'argon2';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { enrollmentCode, hmac } from '../common/crypto.js';
@@ -59,6 +59,17 @@ async function main() {
   const librarian = await staff('Library Desk', 'library@demo.kinetix.in', ['librarian']);
   const anita = await staff('Anita Sharma', 'anita@demo.kinetix.in', ['teacher'], 'hi');
   const ravi = await staff('Ravi Kumar', 'ravi@demo.kinetix.in', ['teacher', 'hod'], 'kn');
+
+  // Departments: Ravi heads Commerce (Anita teaches there) and also teaches in Computer Science.
+  const [commerce] = await db.insert(s.departments).values({ tenantId, name: 'Commerce', headUserId: ravi.id }).returning();
+  const [compsci] = await db.insert(s.departments).values({ tenantId, name: 'Computer Science' }).returning();
+  await db.insert(s.departmentStaff).values([
+    { tenantId, departmentId: commerce.id, userId: anita.id },
+    { tenantId, departmentId: commerce.id, userId: ravi.id },
+    { tenantId, departmentId: compsci.id, userId: ravi.id },
+  ]);
+  await db.update(s.subjects).set({ departmentId: commerce.id }).where(inArray(s.subjects.id, [corpAcc.id, costing.id]));
+  await db.update(s.subjects).set({ departmentId: compsci.id }).where(eq(s.subjects.id, dmaths.id));
 
   const names = ['Aarav Patel', 'Ananya Gowda', 'Bhavya Reddy', 'Chetan Naik', 'Deepika Hegde', 'Farhan Khan', 'Gauri Shetty', 'Harsh Jain', 'Ishita Rao', 'Karthik Murthy', 'Lakshmi Iyer', 'Manoj Bhat'];
   await db.insert(s.students).values(names.map((fullName, i) => ({ tenantId, sectionId: bcom3a.id, rollNo: `U03BC${(i + 1).toString().padStart(3, '0')}`, fullName })));
@@ -277,7 +288,7 @@ Seeded tenant "demo-college".
     accounts@demo.kinetix.in    (accountant: fees)
     library@demo.kinetix.in     (librarian)
     anita@demo.kinetix.in       (teacher, BCom Sem 3 A)
-    ravi@demo.kinetix.in        (teacher + HOD, BCA Sem 1 A)
+    ravi@demo.kinetix.in        (teacher, BCA Sem 1 A; head of Commerce)
   Parent logins (same password):
     parent@demo.kinetix.in      (Rajesh Patel: Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A)
     sunita@demo.kinetix.in      (Sunita Gowda: Ananya, BCom Sem 3 A)

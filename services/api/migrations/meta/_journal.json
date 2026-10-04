@@ -141,6 +141,20 @@
       "when": 1791130808145,
       "tag": "0019_library_fines",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791141632677,
+      "tag": "0020_departments",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791141636730,
+      "tag": "0021_departments_rls",
+      "breakpoints": true
     }
   ]
 }
