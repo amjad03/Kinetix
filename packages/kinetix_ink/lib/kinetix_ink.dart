@@ -9,3 +9,4 @@ export 'src/lesson.dart';
 export 'src/render.dart';
 export 'src/serialization.dart';
 export 'src/whiteboard_view.dart';
+export 'src/live_audio.dart';
