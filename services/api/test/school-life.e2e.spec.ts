@@ -98,6 +98,7 @@ describe('school life', () => {
           .expect(200)
       ).body;
       expect(entered.stats).toEqual({ count: 2, average: 20.3, highest: 22, lowest: 18.5 });
+      expect((await http().get(`/v1/assessments?sectionId=${t.section.id}`).set(auth('teacher')).expect(200)).body[0]).toMatchObject({ entered: 3, classSize: 3, average: 20.3 });
 
       expect((await http().get(`/v1/marks/students/${t.students[0].id}`).set(auth('parent')).expect(200)).body.assessments).toEqual([]); // not published yet
       await http().post(`/v1/assessments/${a.id}/publish`).set(auth('teacher')).expect(200);
@@ -138,6 +139,13 @@ describe('school life', () => {
       await http().get(`/v1/conversations/${c.id}/messages`).set(auth('principal')).expect(200); // audited read
       const { rows } = await owner.query(`select count(*)::int as n from audit_log where action = 'conversation.read_by_leader' and tenant_id = $1`, [t.tenantId]);
       expect(rows[0].n).toBe(1);
+      // Staff find the families of their classes to start a thread.
+      const staffContacts = (await http().get(`/v1/conversations/contacts?sectionId=${t.section.id}`).set(auth('teacher')).expect(200)).body;
+      expect(staffContacts.asStaff.find((x: { student: { id: string } }) => x.student.id === t.students[1].id).guardians).toEqual([
+        { id: t.guardian2.id, fullName: t.guardian2.fullName, relation: 'mother' },
+      ]);
+      await http().post('/v1/conversations').set(auth('teacher')).send({ studentId: t.students[1].id, withUserId: t.guardian2.id }).expect(201);
+      expect((await http().get('/v1/conversations/contacts').set(auth('teacher2')).expect(200)).body.asStaff).toEqual([]);
       // An adult student at a college can write for themselves.
       const own = await http().post('/v1/conversations').set(auth('student')).send({ studentId: t.students[2].id, withUserId: t.teacher.id }).expect(201);
       expect(own.body.family.id).toBe(t.studentUser.id);

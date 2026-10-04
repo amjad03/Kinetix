@@ -141,6 +141,8 @@ export class AssessmentsController {
         subject: { id: subjects.id, name: subjects.name },
         createdBy: users.fullName,
         entered: sql<number>`(select count(*)::int from marks m where m.assessment_id = "assessments"."id")`,
+        classSize: sql<number>`(select count(*)::int from students s where s.section_id = "assessments"."section_id" and s.status = 'active')`,
+        average: sql<number | null>`(select round(avg(m.marks)::numeric, 1)::float from marks m where m.assessment_id = "assessments"."id" and m.marks is not null)`,
       })
       .from(assessments)
       .innerJoin(subjects, eq(subjects.id, assessments.subjectId))

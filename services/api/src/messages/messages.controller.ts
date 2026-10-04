@@ -1,5 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -29,10 +29,13 @@ export class ConversationsController {
     private readonly notifications: NotificationsService,
   ) {}
 
-  /** Who the caller can write to. Families: their children's teachers. Staff: families in their classes. */
+  /**
+   * Who the caller can write to. `asFamily`: their children's teachers. `asStaff`: the families
+   * of students in the classes they teach (narrow with `?sectionId=`).
+   */
   @Get('contacts')
   @Auth('user')
-  contacts(@CurrentPrincipal() p: UserPrincipal) {
+  contacts(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId') sectionId?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const kids = await this.familyStudents(tx, p);
       const forFamily = await Promise.all(
@@ -53,8 +56,43 @@ export class ConversationsController {
           return { student: { id: k.id, fullName: k.fullName, className: k.className }, staff: [...byId.values()] };
         }),
       );
-      return { asFamily: forFamily };
+      // Staff: the families of students in the classes they teach (or of one class: ?sectionId=).
+      const taught = await tx
+        .selectDistinct({ sectionId: timetableSlots.sectionId })
+        .from(timetableSlots)
+        .where(and(eq(timetableSlots.teacherId, p.userId), isNull(timetableSlots.archivedAt)));
+      const sectionIds = taught.map((t) => t.sectionId).filter((id) => !sectionId || id === sectionId);
+      const asStaff = sectionIds.length
+        ? await this.familiesOf(tx, sectionIds)
+        : [];
+      return { asFamily: forFamily, asStaff };
     });
+  }
+
+  private async familiesOf(tx: Tx, sectionIds: string[]) {
+    const rows = await tx
+      .select({
+        studentId: students.id,
+        fullName: students.fullName,
+        rollNo: students.rollNo,
+        className: sections.displayName,
+        guardianId: guardians.userId,
+        relation: guardians.relation,
+        guardianName: users.fullName,
+      })
+      .from(students)
+      .innerJoin(sections, eq(sections.id, students.sectionId))
+      .leftJoin(guardians, eq(guardians.studentId, students.id))
+      .leftJoin(users, eq(users.id, guardians.userId))
+      .where(and(inArray(students.sectionId, sectionIds), eq(students.status, 'active')))
+      .orderBy(asc(sections.displayName), asc(students.rollNo));
+    const byStudent = new Map<string, { student: { id: string; fullName: string; rollNo: string; className: string }; guardians: { id: string; fullName: string; relation: string }[] }>();
+    for (const r of rows) {
+      const e = byStudent.get(r.studentId) ?? { student: { id: r.studentId, fullName: r.fullName, rollNo: r.rollNo, className: r.className }, guardians: [] };
+      if (r.guardianId && r.guardianName) e.guardians.push({ id: r.guardianId, fullName: r.guardianName, relation: r.relation ?? 'parent' });
+      byStudent.set(r.studentId, e);
+    }
+    return [...byStudent.values()];
   }
 
   /** Opens (or returns) the thread between the caller and another person about a student. */
