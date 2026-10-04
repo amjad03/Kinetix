@@ -7,9 +7,14 @@ import { audit } from '../common/audit.js';
 import { Clock, localParts, zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { coverageCounts } from '../coverage/coverage.controller.js';
+import { planProgress } from '../plans/planner.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import {
   academicYears,
+  lessonPlans,
+  topicCoverage,
+  yearPlanItems,
+  yearPlans,
   assessments,
   attendanceRecords,
   boardSessions,
@@ -327,6 +332,27 @@ export class DepartmentsController {
         };
       };
       const syllabus = await coverageCounts(tx, [...classes.values()]);
+      // Year plan status (today) and lesson plans saved for the range's periods.
+      const planItems = await tx
+        .select({ sectionId: yearPlans.sectionId, subjectId: yearPlans.subjectId, topicId: yearPlanItems.topicId, weekOf: yearPlanItems.weekOf })
+        .from(yearPlans)
+        .innerJoin(yearPlanItems, eq(yearPlanItems.planId, yearPlans.id))
+        .where(inArray(yearPlans.subjectId, subjectIds));
+      const sectionIds = [...new Set(slots.map((x) => x.sectionId))];
+      const coveredRows = sectionIds.length
+        ? await tx.select({ sectionId: topicCoverage.sectionId, topicId: topicCoverage.topicId }).from(topicCoverage).where(inArray(topicCoverage.sectionId, sectionIds))
+        : [];
+      const lessonRows = slotIds.length
+        ? await tx
+            .select({ slotId: lessonPlans.timetableSlotId, n: sql<number>`count(*)::int` })
+            .from(lessonPlans)
+            .where(and(inArray(lessonPlans.timetableSlotId, slotIds), gte(lessonPlans.date, from), sql`${lessonPlans.date} <= ${to}`))
+            .groupBy(lessonPlans.timetableSlotId)
+        : [];
+      const lessonsBySlot = new Map(lessonRows.map((r) => [r.slotId, r.n]));
+      const classOf = (s: (typeof slots)[number]) => `${s.sectionId}|${s.subjectId}|${s.teacherId}`;
+      const lessonsByClass = new Map<string, number>();
+      for (const sl of slots) lessonsByClass.set(classOf(sl), (lessonsByClass.get(classOf(sl)) ?? 0) + (lessonsBySlot.get(sl.id) ?? 0));
       const classList = [...classes.values()]
         .sort((a, b) => a.section.localeCompare(b.section) || a.subject.localeCompare(b.subject))
         .map((c) => {
@@ -335,6 +361,13 @@ export class DepartmentsController {
           return {
             ...shape(c),
             syllabus: { ...sy, percent: pct(sy.covered, sy.total) },
+            lessonPlans: lessonsByClass.get(`${c.sectionId}|${c.subjectId}|${c.teacherId}`) ?? 0,
+            yearPlan: (() => {
+              const items = planItems.filter((i) => i.sectionId === c.sectionId && i.subjectId === c.subjectId);
+              if (items.length === 0) return null;
+              const covered = new Set(coveredRows.filter((r) => r.sectionId === c.sectionId).map((r) => r.topicId));
+              return planProgress(items, covered, now.date);
+            })(),
             latestAssessment: latest
               ? {
                   id: latest.id,

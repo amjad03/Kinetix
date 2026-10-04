@@ -15,6 +15,7 @@ import { ContentModule } from './content/content.module.js';
 import { DbModule } from './db/db.module.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { ConsentModule } from './consent/consent.module.js';
+import { PlansModule } from './plans/plans.module.js';
 import { CoverageModule } from './coverage/coverage.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
@@ -51,6 +52,7 @@ class HealthController {
     CoverageModule,
     HomeworkModule,
     ConsentModule,
+    PlansModule,
     SessionsModule,
     DevicesModule,
     PairingModule,

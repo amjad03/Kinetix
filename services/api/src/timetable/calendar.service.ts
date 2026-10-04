@@ -28,12 +28,13 @@ export class Holidays {
 
 @Injectable()
 export class CalendarService {
-  async holidays(tx: Tx, from: string, to: string): Promise<Holidays> {
+  /** Holidays (classes cancelled); with `exam` too, the days a plan should not count on. */
+  async holidays(tx: Tx, from: string, to: string, kinds: ('holiday' | 'exam')[] = ['holiday']): Promise<Holidays> {
     const rows = await tx
       .select({ title: calendarEvents.title, startsOn: calendarEvents.startsOn, endsOn: calendarEvents.endsOn, programIds: calendarEvents.programIds, kind: calendarEvents.kind })
       .from(calendarEvents)
       .where(and(lte(calendarEvents.startsOn, to), gte(calendarEvents.endsOn, from)))
       .orderBy(asc(calendarEvents.startsOn));
-    return new Holidays(rows.filter((r) => r.kind === 'holiday').map(({ kind: _k, ...h }) => h));
+    return new Holidays(rows.filter((r) => (kinds as string[]).includes(r.kind)).map(({ kind: _k, ...h }) => h));
   }
 }

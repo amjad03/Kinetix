@@ -1029,6 +1029,77 @@ export const consents = pgTable(
   (t) => [index('consents_student_idx').on(t.studentId, t.purpose, t.createdAt)],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Year plans and lesson plans
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * A class's plan for a subject across the term: each syllabus topic is given a week and a
+ * number of periods. Generated from the timetable and the calendar (holidays skipped), then
+ * adjusted by the teacher. Progress compares it with topic_coverage.
+ */
+export const yearPlans = pgTable(
+  'year_plans',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('year_plans_class_uq').on(t.sectionId, t.subjectId)],
+);
+
+export const yearPlanItems = pgTable(
+  'year_plan_items',
+  {
+    tenantId: tenantId(),
+    planId: uuid('plan_id').notNull().references(() => yearPlans.id, { onDelete: 'cascade' }),
+    topicId: uuid('topic_id').notNull().references(() => topics.id, { onDelete: 'cascade' }),
+    /** Monday of the week the topic is planned for. */
+    weekOf: date('week_of').notNull(),
+    periods: smallint('periods').notNull().default(1),
+  },
+  (t) => [primaryKey({ columns: [t.planId, t.topicId] })],
+);
+
+/** A lesson plan's content: the same shape KINETIX AI drafts (ai/tasks.ts lessonPlan). */
+export interface LessonPlanContent {
+  objectives: string[];
+  steps: { minutes: number; activity: string }[];
+  materials: string[];
+  assessment: string;
+  homework: string;
+}
+
+/** The plan for one period (a timetable slot on a date). */
+export const lessonPlans = pgTable(
+  'lesson_plans',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    timetableSlotId: uuid('timetable_slot_id').notNull().references(() => timetableSlots.id),
+    date: date('date').notNull(),
+    teacherId: uuid('teacher_id').notNull().references(() => users.id),
+    topicIds: uuid('topic_ids').array().notNull().default(sql`'{}'::uuid[]`),
+    content: jsonb('content').$type<LessonPlanContent>().notNull(),
+    /** Drafted with KINETIX AI (then edited or not). */
+    aiDrafted: boolean('ai_drafted').notNull().default(false),
+    reviewedBy: uuid('reviewed_by').references(() => users.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    reviewRemark: text('review_remark'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('lesson_plans_period_uq').on(t.timetableSlotId, t.date), index('lesson_plans_class_idx').on(t.sectionId, t.subjectId, t.date)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -1074,5 +1145,8 @@ export const TENANT_TABLES = [
   'topic_coverage',
   'homework_submissions',
   'consents',
+  'year_plans',
+  'year_plan_items',
+  'lesson_plans',
   'audit_log',
 ] as const;

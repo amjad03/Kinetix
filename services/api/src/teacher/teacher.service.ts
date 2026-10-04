@@ -4,7 +4,7 @@ import { and, asc, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm'
 import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { attendanceRecords, homework, rooms, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
+import { attendanceRecords, homework, lessonPlans, rooms, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
@@ -77,6 +77,15 @@ export class TeacherService {
       for (const m of marked) if (m.slotId) taken.add(m.slotId);
     }
 
+    const planned = new Set<string>();
+    if (rows.length) {
+      const lp = await tx
+        .select({ slotId: lessonPlans.timetableSlotId })
+        .from(lessonPlans)
+        .where(and(eq(lessonPlans.date, day), inArray(lessonPlans.timetableSlotId, rows.map((r) => r.slot.id))));
+      for (const r of lp) planned.add(r.slotId);
+    }
+
     const periods: TeacherPeriod[] = rows.map((r) => ({
       slotId: r.slot.id,
       startsAt: r.slot.startsAt,
@@ -86,6 +95,7 @@ export class TeacherService {
       room: r.room?.id ? { id: r.room.id, name: r.room.name } : null,
       isNow: day === now.date && r.slot.startsAt <= now.time && now.time < r.slot.endsAt,
       attendanceTaken: taken.has(r.slot.id),
+      lessonPlanned: planned.has(r.slot.id),
     }));
 
     // The next day with classes (not cancelled by a holiday), so an empty Sunday can point at Monday.

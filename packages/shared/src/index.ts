@@ -175,6 +175,8 @@ export interface TeacherPeriod {
   isNow: boolean;
   /** Attendance has been recorded for this period on this date. */
   attendanceTaken: boolean;
+  /** A lesson plan is saved for this period on this date. */
+  lessonPlanned?: boolean;
 }
 
 /** GET /v1/teacher/timetable?date=YYYY-MM-DD */

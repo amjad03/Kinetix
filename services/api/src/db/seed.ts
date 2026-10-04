@@ -10,6 +10,8 @@ import { enrollmentCode, hmac } from '../common/crypto.js';
 import { importContent } from '../content/import.js';
 import { shortDate } from '../notifications/notifications.service.js';
 import { loadEnv } from '../config/env.js';
+import { mondayOf, periodDates, spreadTopics } from '../plans/planner.js';
+import { addDays, isoWeekday } from '../teacher/teacher.service.js';
 import * as s from './schema.js';
 
 const env = loadEnv();
@@ -249,6 +251,57 @@ async function main() {
       .limit(4);
     if (firstTopics.length) {
       await db.insert(s.topicCoverage).values(firstTopics.map((t, i) => ({ tenantId, sectionId: bcom3a.id, topicId: t.id, coveredOn: inDays(-14 + i * 3), coveredBy: anita.id })));
+    }
+  }
+
+  // Year plan: Corporate Accounting for BCom 3A over 16 weeks from three weeks ago, holidays skipped.
+  if (corpAcc.courseId) {
+    const caTopics = await db
+      .select({ id: s.topics.id, title: s.topics.title })
+      .from(s.topics)
+      .innerJoin(s.chapters, eq(s.chapters.id, s.topics.chapterId))
+      .where(eq(s.chapters.courseId, corpAcc.courseId))
+      .orderBy(s.chapters.position, s.topics.position);
+    const caSlots = await db.select().from(s.timetableSlots).where(eq(s.timetableSlots.subjectId, corpAcc.id));
+    const planStart = mondayOf(inDays(-21));
+    const planEnd = addDays(planStart, 16 * 7 - 1);
+    const holidayDays = new Set<string>();
+    for (const h of await db.select().from(s.calendarEvents).where(eq(s.calendarEvents.tenantId, tenantId))) {
+      if (h.kind === 'event') continue;
+      for (let d = h.startsOn; d <= h.endsOn; d = addDays(d, 1)) holidayDays.add(d);
+    }
+    const dates = periodDates(caSlots.map((x) => x.dayOfWeek), planStart, planEnd, (d) => holidayDays.has(d));
+    const [plan] = await db.insert(s.yearPlans).values({ tenantId, sectionId: bcom3a.id, subjectId: corpAcc.id, startsOn: planStart, endsOn: planEnd, createdBy: anita.id }).returning();
+    await db.insert(s.yearPlanItems).values(spreadTopics(caTopics.map((x) => x.id), dates).map((i) => ({ tenantId, planId: plan.id, ...i })));
+
+    // Anita's lesson plan for her next Corporate Accounting period.
+    for (let d = 0; d < 7; d++) {
+      const date = inDays(d);
+      const slot = caSlots.find((x) => x.dayOfWeek === isoWeekday(date));
+      if (!slot || holidayDays.has(date)) continue;
+      const topic = caTopics[4] ?? caTopics[0];
+      await db.insert(s.lessonPlans).values({
+        tenantId,
+        sectionId: bcom3a.id,
+        subjectId: corpAcc.id,
+        timetableSlotId: slot.id,
+        date,
+        teacherId: anita.id,
+        topicIds: [topic.id],
+        content: {
+          objectives: [`Explain ${topic.title.toLowerCase()} with journal entries`, 'Solve one textbook problem in class'],
+          steps: [
+            { minutes: 5, activity: 'Recap of the last class with two quick questions' },
+            { minutes: 20, activity: `Explain ${topic.title} on the board with a worked example` },
+            { minutes: 20, activity: 'Students solve Exercise 4.2 Q1 in pairs; discuss answers' },
+            { minutes: 10, activity: 'Quick quiz from KINETIX AI and summary' },
+          ],
+          materials: ['Textbook chapter 4', 'Board: worked example'],
+          assessment: 'Exit question: pass the journal entry for one case.',
+          homework: 'Exercise 4.2 questions 2 to 5',
+        },
+      });
+      break;
     }
   }
 
