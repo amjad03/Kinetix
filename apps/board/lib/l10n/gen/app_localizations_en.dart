@@ -1427,6 +1427,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get booksOutcomes => 'By the end, students can';
 
   @override
+  String booksTaughtCount(int covered, int total) {
+    return '$covered of $total topics taught';
+  }
+
+  @override
+  String booksChapterTaught(int covered, int total) {
+    return '$covered/$total taught';
+  }
+
+  @override
+  String booksTaughtOn(String date) {
+    return 'Taught on $date';
+  }
+
+  @override
+  String get booksMarkTaught => 'Mark as taught';
+
+  @override
+  String get booksUndoTaught => 'Undo';
+
+  @override
+  String get booksMarked => 'Marked as taught';
+
+  @override
+  String get booksUnmarked => 'No longer marked as taught';
+
+  @override
+  String get booksMarkFailed => 'Could not save. Check the board is online.';
+
+  @override
   String get mathHint => 'Type a sum or an equation';
 
   @override

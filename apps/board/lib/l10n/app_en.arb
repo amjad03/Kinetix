@@ -888,6 +888,44 @@
   "booksOnTheBoard": "On the board",
   "booksKeyFacts": "Key facts",
   "booksOutcomes": "By the end, students can",
+  "booksTaughtCount": "{covered} of {total} topics taught",
+  "@booksTaughtCount": {
+    "description": "Syllabus progress of the open class.",
+    "placeholders": {
+      "covered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "booksChapterTaught": "{covered}/{total} taught",
+  "@booksChapterTaught": {
+    "description": "Under a chapter: topics taught.",
+    "placeholders": {
+      "covered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "booksTaughtOn": "Taught on {date}",
+  "@booksTaughtOn": {
+    "description": "Under a taught topic; date like '3 Oct'.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "booksMarkTaught": "Mark as taught",
+  "booksUndoTaught": "Undo",
+  "booksMarked": "Marked as taught",
+  "booksUnmarked": "No longer marked as taught",
+  "booksMarkFailed": "Could not save. Check the board is online.",
   "mathHint": "Type a sum or an equation",
   "mathOffline": "Solved on this board. Works offline, no sign-in needed.",
   "mathTryThese": "Try one of these",

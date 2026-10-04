@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+
+import '../../core/api_client.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../ai/ai_controller.dart';
 import '../ai/ai_widgets.dart';
+import '../board/chrome.dart' show showBoardMessage;
 import '../board/side_panel.dart';
 
 const _booksAccent = Color(0xFF8AB4F8);
 
 /// Books: the syllabus of the class open on the board, from the KINETIX content library.
 /// A topic opens its notes in large type for the class, and can start an AI explanation or a
-/// quick quiz grounded in that topic.
+/// quick quiz grounded in that topic. Topics taught to the open class are ticked, and the
+/// teacher marks a topic as taught (or undoes it) from the outline or the topic.
 class BooksPanel extends StatefulWidget {
   const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel, this.onOpenResource});
 
@@ -35,6 +40,12 @@ class _BooksPanelState extends State<BooksPanel> {
   Future<TopicDetail>? _topic;
   final Set<String> _open = {};
 
+  /// Taught topics of the open class; null while loading, in a free session, or offline.
+  Coverage? _coverage;
+
+  /// Topics being marked or unmarked.
+  final Set<String> _saving = {};
+
   @override
   void initState() {
     super.initState();
@@ -56,13 +67,83 @@ class _BooksPanelState extends State<BooksPanel> {
     setState(() {
       _topic = null;
       _open.clear();
+      _coverage = null;
+      _saving.clear();
       _syllabus = id == null || widget.board.api == null ? null : widget.board.api!.syllabus();
     });
+    if (id != null) _loadCoverage();
   }
 
-  void _reload() => setState(() {
-    _syllabus = widget.board.api!.syllabus();
-  });
+  void _reload() {
+    setState(() {
+      _syllabus = widget.board.api!.syllabus();
+    });
+    _loadCoverage();
+  }
+
+  Future<void> _loadCoverage() async {
+    final api = widget.board.api;
+    final session = _sessionId;
+    if (api == null || session == null) return;
+    try {
+      final c = await api.coverage();
+      if (mounted && session == _sessionId && _saving.isEmpty) setState(() => _coverage = c);
+    } catch (_) {
+      // Coverage is extra: the syllabus still opens without ticks.
+    }
+  }
+
+  /// Marks [topicId] as taught today, or undoes it. Shown at once; put back if the server says no.
+  Future<void> _toggleTaught(String topicId) async {
+    final api = widget.board.api;
+    final before = _coverage;
+    if (api == null || before == null || _saving.contains(topicId)) return;
+    final l = context.l10n;
+    final taught = before.topics.containsKey(topicId);
+    final topics = {...before.topics};
+    if (taught) {
+      topics.remove(topicId);
+    } else {
+      topics[topicId] = TopicCoverage(coveredOn: DateTime.now(), coveredBy: widget.board.session?.teacherName ?? '');
+    }
+    setState(() {
+      _saving.add(topicId);
+      _coverage = Coverage(total: before.total, topics: topics);
+    });
+    try {
+      taught ? await api.unmarkTopicTaught(topicId) : await api.markTopicTaught(topicId);
+      if (!mounted) return;
+      setState(() => _saving.remove(topicId));
+      showBoardMessage(context, taught ? l.booksUnmarked : l.booksMarked);
+      await _loadCoverage();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _saving.remove(topicId);
+        _coverage = before;
+      });
+      showBoardMessage(context, e is ApiException ? apiErrorText(l, e) : l.booksMarkFailed);
+    }
+  }
+
+  /// "Taught on 3 Oct · Anita Sharma".
+  String _taughtLine(TopicCoverage t) {
+    final day = DateFormat('d MMM', context.dateLocale).format(t.coveredOn);
+    return t.coveredBy.isEmpty ? context.l10n.booksTaughtOn(day) : '${context.l10n.booksTaughtOn(day)} · ${t.coveredBy}';
+  }
+
+  Widget _taughtButton(String topicId, {bool large = false}) {
+    final l = context.l10n;
+    final taught = _coverage!.topics.containsKey(topicId);
+    final busy = _saving.contains(topicId);
+    final onPressed = busy ? null : () => _toggleTaught(topicId);
+    if (taught) {
+      return TextButton.icon(key: Key('unmark-$topicId'), onPressed: onPressed, icon: const Icon(Icons.undo), label: Text(l.booksUndoTaught));
+    }
+    return large
+        ? FilledButton.icon(key: Key('mark-$topicId'), onPressed: onPressed, icon: const Icon(Icons.check), label: Text(l.booksMarkTaught))
+        : OutlinedButton.icon(key: Key('mark-$topicId'), onPressed: onPressed, icon: const Icon(Icons.check), label: Text(l.booksMarkTaught));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +210,19 @@ class _BooksPanelState extends State<BooksPanel> {
             padding: const EdgeInsets.only(top: Kx.s4),
             child: Text(l.booksDraft, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
           ),
+        if (_coverage != null && _coverage!.total > 0) ...[
+          const SizedBox(height: Kx.s12),
+          Text(
+            l.booksTaughtCount(_coverage!.covered, _coverage!.total),
+            key: const Key('books-coverage'),
+            style: context.text.titleSmall,
+          ),
+          const SizedBox(height: Kx.s8),
+          ClipRRect(
+            borderRadius: Kx.radiusSm,
+            child: LinearProgressIndicator(value: _coverage!.covered / _coverage!.total, minHeight: 8),
+          ),
+        ],
         const SizedBox(height: Kx.s16),
         for (final (i, ch) in s.chapters.indexed)
           Card(
@@ -147,7 +241,12 @@ class _BooksPanelState extends State<BooksPanel> {
                   ),
                   title: Text(ch.title, style: context.text.titleMedium),
                   subtitle: Text(
-                    [if (ch.own) l.booksAddedByInstitution, ch.topics.isEmpty ? l.booksNotesSoon : l.booksTopicCount(ch.topics.length)].join(' · '),
+                    [
+                      if (ch.own) l.booksAddedByInstitution,
+                      ch.topics.isEmpty ? l.booksNotesSoon : l.booksTopicCount(ch.topics.length),
+                      if (_coverage != null && ch.topics.isNotEmpty)
+                        l.booksChapterTaught(ch.topics.where((t) => _coverage!.topics.containsKey(t.id)).length, ch.topics.length),
+                    ].join(' · '),
                   ),
                   trailing: ch.topics.isEmpty ? null : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
                   onTap: ch.topics.isEmpty ? null : () => setState(() => _open.contains(ch.id) ? _open.remove(ch.id) : _open.add(ch.id)),
@@ -156,10 +255,25 @@ class _BooksPanelState extends State<BooksPanel> {
                   for (final t in ch.topics)
                     ListTile(
                       key: Key('topic-${t.id}'),
-                      contentPadding: const EdgeInsets.only(left: 72, right: Kx.s16),
+                      contentPadding: const EdgeInsets.only(left: 24, right: Kx.s16),
+                      leading: SizedBox(
+                        width: 32,
+                        child: _coverage?.topics.containsKey(t.id) ?? false
+                            ? Icon(Icons.check_circle, key: Key('taught-${t.id}'), color: const Color(0xFF34A853))
+                            : null,
+                      ),
                       title: Text(t.title),
-                      subtitle: t.summary.isEmpty ? null : Text(t.summary, maxLines: 2, overflow: TextOverflow.ellipsis),
-                      trailing: const Icon(Icons.chevron_right),
+                      subtitle: switch (_coverage?.topics[t.id]) {
+                        final TopicCoverage done => Text(_taughtLine(done), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        _ => t.summary.isEmpty ? null : Text(t.summary, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_coverage != null) _taughtButton(t.id),
+                          const Icon(Icons.chevron_right),
+                        ],
+                      ),
                       onTap: () => setState(() {
                         _topic = widget.board.api!.topic(t.id);
                       }),
@@ -260,8 +374,14 @@ class _BooksPanelState extends State<BooksPanel> {
                   icon: const Icon(Icons.quiz_outlined),
                   label: Text(l.booksQuiz),
                 ),
+                if (_coverage != null) _taughtButton(t.id, large: true),
               ],
             ),
+            if (_coverage?.topics[t.id] case final done?)
+              Padding(
+                padding: const EdgeInsets.only(top: Kx.s8),
+                child: Text(_taughtLine(done), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+              ),
             if (t.resources.isNotEmpty && widget.onOpenResource != null) ...[
               AiSectionLabel(l.booksOnTheBoard),
               Wrap(

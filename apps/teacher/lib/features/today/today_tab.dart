@@ -8,6 +8,7 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../board/connect_screen.dart';
+import '../syllabus/syllabus_screen.dart';
 import 'today_controller.dart';
 
 class TodayTab extends StatelessWidget {
@@ -106,6 +107,28 @@ class TodayTab extends StatelessWidget {
                     child: Center(child: CircularProgressIndicator()),
                   ),
                 )
+              else if (day != null && day.periods.isEmpty && day.holiday != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        HolidayCard(title: day.holiday!),
+                        if (day.nextTeachingDate != null) ...[
+                          const SizedBox(height: Kx.s12),
+                          Center(
+                            child: FilledButton.tonal(
+                              key: const Key('showNextTeachingDay'),
+                              onPressed: () => controller.select(day.nextTeachingDate!),
+                              child: Text(l.showDay(fmt.relativeDay(parseIsoDate(day.nextTeachingDate!), today))),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                )
               else if (day != null && day.periods.isEmpty)
                 SliverToBoxAdapter(
                   child: KxEmptyState(
@@ -132,6 +155,7 @@ class TodayTab extends StatelessWidget {
                         canTakeAttendance: !controller.isSelectedFuture,
                         onAttendance: () => _takeAttendance(context, p),
                         onTeach: p.isNow && controller.connection == null ? () => _connect(context) : null,
+                        onSyllabus: () => openSyllabus(context, api: api, section: p.section, subject: p.subject, teacherName: me.fullName),
                       );
                     },
                   ),
@@ -424,7 +448,12 @@ class _DayHeading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (controller.showingNextDay)
+        if (controller.showingNextDay && controller.todayHoliday != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, 0),
+            child: HolidayCard(title: controller.todayHoliday!),
+          )
+        else if (controller.showingNextDay)
           Padding(
             padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, 0),
             child: Row(
@@ -449,12 +478,48 @@ class _DayHeading extends StatelessWidget {
   }
 }
 
+/// "Holiday: Gandhi Jayanti. No classes."
+class HolidayCard extends StatelessWidget {
+  const HolidayCard({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Card(
+      key: const Key('holidayCard'),
+      margin: EdgeInsets.zero,
+      color: c.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s16),
+        child: Row(
+          children: [
+            Icon(Icons.beach_access_outlined, color: c.onTertiaryContainer),
+            const SizedBox(width: Kx.s16),
+            Expanded(
+              child: Text(context.l10n.holidayNoClasses(title), style: context.text.bodyLarge?.copyWith(color: c.onTertiaryContainer)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PeriodCard extends StatelessWidget {
-  const _PeriodCard({required this.period, required this.canTakeAttendance, required this.onAttendance, this.onTeach});
+  const _PeriodCard({
+    required this.period,
+    required this.canTakeAttendance,
+    required this.onAttendance,
+    required this.onSyllabus,
+    this.onTeach,
+  });
 
   final Period period;
   final bool canTakeAttendance;
   final VoidCallback onAttendance;
+  final VoidCallback onSyllabus;
   final VoidCallback? onTeach;
 
   @override
@@ -540,6 +605,12 @@ class _PeriodCard extends StatelessWidget {
                 spacing: Kx.s8,
                 runSpacing: Kx.s8,
                 children: [
+                  TextButton.icon(
+                    key: Key('syllabus-${period.slotId}'),
+                    onPressed: onSyllabus,
+                    icon: const Icon(Icons.menu_book_outlined, size: 18),
+                    label: Text(l.syllabus),
+                  ),
                   if (onTeach != null)
                     TextButton.icon(onPressed: onTeach, icon: const Icon(Icons.cast, size: 18), label: Text(l.teachOnBoard)),
                   attendance,

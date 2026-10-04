@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
+import 'homework_detail_screen.dart';
 import 'homework_form.dart';
 
 class HomeworkController extends ChangeNotifier {
@@ -83,7 +84,14 @@ class HomeworkTab extends StatelessWidget {
                   sliver: SliverList.separated(
                     itemCount: items.length,
                     separatorBuilder: (_, _) => const SizedBox(height: Kx.s12),
-                    itemBuilder: (context, i) => _HomeworkCard(items[i]),
+                    itemBuilder: (context, i) => _HomeworkCard(
+                      items[i],
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => HomeworkDetailScreen(api: controller.api, homework: items[i]),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
             ],
@@ -95,9 +103,12 @@ class HomeworkTab extends StatelessWidget {
 }
 
 class _HomeworkCard extends StatelessWidget {
-  const _HomeworkCard(this.homework);
+  const _HomeworkCard(this.homework, {required this.onTap});
 
   final Homework homework;
+
+  /// Opens the homework with its submissions.
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -115,31 +126,35 @@ class _HomeworkCard extends StatelessWidget {
     };
     return Card(
       key: Key('homework-${homework.id}'),
-      child: Padding(
-        padding: const EdgeInsets.all(Kx.s16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(homework.title, style: context.text.titleMedium),
-            const SizedBox(height: Kx.s4),
-            // On its own line: "was due" labels are long in Hindi and Kannada.
-            Pill(
-              due,
-              key: const Key('dueLabel'),
-              icon: Icons.event_outlined,
-              background: overdue ? c.surfaceContainerHighest : c.secondaryContainer,
-              foreground: overdue ? c.onSurfaceVariant : c.onSecondaryContainer,
-            ),
-            const SizedBox(height: Kx.s4),
-            Text(
-              '${homework.section.name} · ${homework.subject.name}',
-              style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-            ),
-            if (homework.instructions.isNotEmpty) ...[
-              const SizedBox(height: Kx.s8),
-              Text(homework.instructions, maxLines: 3, overflow: TextOverflow.ellipsis, style: context.text.bodyMedium),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(Kx.s16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(homework.title, style: context.text.titleMedium),
+              const SizedBox(height: Kx.s4),
+              // On its own line: "was due" labels are long in Hindi and Kannada.
+              Pill(
+                due,
+                key: const Key('dueLabel'),
+                icon: Icons.event_outlined,
+                background: overdue ? c.surfaceContainerHighest : c.secondaryContainer,
+                foreground: overdue ? c.onSurfaceVariant : c.onSecondaryContainer,
+              ),
+              const SizedBox(height: Kx.s4),
+              Text(
+                '${homework.section.name} · ${homework.subject.name}',
+                style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+              ),
+              if (homework.instructions.isNotEmpty) ...[
+                const SizedBox(height: Kx.s8),
+                Text(homework.instructions, maxLines: 3, overflow: TextOverflow.ellipsis, style: context.text.bodyMedium),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

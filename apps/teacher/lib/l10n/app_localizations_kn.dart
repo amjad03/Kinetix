@@ -898,4 +898,153 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get languageSaveFailed => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಭಾಷೆ ಬದಲಾಗಿದೆ. ಮುಂದಿನ ಬಾರಿ ಆನ್‌ಲೈನ್ ಆದಾಗ ಇದು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.';
+
+  @override
+  String holidayNoClasses(String title) {
+    return 'ರಜೆ: $title. ತರಗತಿಗಳಿಲ್ಲ.';
+  }
+
+  @override
+  String get teaching => 'ಬೋಧನೆ';
+
+  @override
+  String get calendar => 'ಕ್ಯಾಲೆಂಡರ್';
+
+  @override
+  String get calendarBody => 'ರಜೆಗಳು, ಪರೀಕ್ಷೆಗಳು ಮತ್ತು ಕಾರ್ಯಕ್ರಮಗಳು';
+
+  @override
+  String get calendarHoliday => 'ರಜೆ';
+
+  @override
+  String get calendarExam => 'ಪರೀಕ್ಷೆ';
+
+  @override
+  String get calendarEvent => 'ಕಾರ್ಯಕ್ರಮ';
+
+  @override
+  String get calendarEmpty => 'ಮುಂದಿನ ಆರು ತಿಂಗಳ ಕ್ಯಾಲೆಂಡರ್‌ನಲ್ಲಿ ಏನೂ ಇಲ್ಲ.';
+
+  @override
+  String calendarFor(String programs) {
+    return '$programs ಗಾಗಿ';
+  }
+
+  @override
+  String get syllabus => 'ಪಠ್ಯಕ್ರಮ';
+
+  @override
+  String get syllabusProgress => 'ಪಠ್ಯಕ್ರಮದ ಪ್ರಗತಿ';
+
+  @override
+  String get syllabusProgressBody => 'ಪ್ರತಿ ತರಗತಿಗೆ ಕಲಿಸಿದ ವಿಷಯಗಳನ್ನು ಗುರುತಿಸಿ';
+
+  @override
+  String get syllabusUnlinked => 'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿ KINETIX ERP → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
+
+  @override
+  String topicsTaught(int covered, int total) {
+    return '$total ರಲ್ಲಿ $covered ವಿಷಯಗಳನ್ನು ಕಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String chapterTaught(int covered, int total) {
+    return '$covered/$total';
+  }
+
+  @override
+  String taughtOn(String date) {
+    return '$date ರಂದು ಕಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String taughtOnBy(String date, String name) {
+    return '$date ರಂದು ಕಲಿಸಲಾಗಿದೆ · $name';
+  }
+
+  @override
+  String get taughtOnWhichDay => 'ಯಾವ ದಿನ ಕಲಿಸಲಾಯಿತು?';
+
+  @override
+  String get topicMarked => 'ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ';
+
+  @override
+  String get topicUnmarked => 'ಕಲಿಸಿಲ್ಲ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ';
+
+  @override
+  String get noClassesAssigned => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿಗೆ ಕಲಿಸುತ್ತಿಲ್ಲ.';
+
+  @override
+  String get submissions => 'ಸಲ್ಲಿಕೆಗಳು';
+
+  @override
+  String get statusHandedIn => 'ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get statusChecked => 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get statusReturned => 'ಹಿಂದಿರುಗಿಸಲಾಗಿದೆ';
+
+  @override
+  String get statusNotHandedIn => 'ಸಲ್ಲಿಸಿಲ್ಲ';
+
+  @override
+  String handedInAt(String when) {
+    return '$when ರಂದು ಸಲ್ಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get answer => 'ಉತ್ತರ';
+
+  @override
+  String get photosAndFiles => 'ಫೋಟೋಗಳು ಮತ್ತು ಫೈಲ್‌ಗಳು';
+
+  @override
+  String get openPdf => 'PDF ತೆರೆಯಿರಿ';
+
+  @override
+  String get couldNotOpenFile => 'ಈ ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ.';
+
+  @override
+  String get remarkOptional => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get reviewRemarkHint => 'ಉದಾ. ಉತ್ತಮ ಕೆಲಸ, ಅಥವಾ ಏನನ್ನು ಮತ್ತೆ ಮಾಡಬೇಕು';
+
+  @override
+  String get returnWork => 'ಮತ್ತೆ ಮಾಡಲು ಹಿಂದಿರುಗಿಸಿ';
+
+  @override
+  String get checkWork => 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ';
+
+  @override
+  String get reviewNotifies => 'ವಿದ್ಯಾರ್ಥಿ ಮತ್ತು ಅವರ ಪೋಷಕರಿಗೆ ನಿಮ್ಮ ಟಿಪ್ಪಣಿಯೊಂದಿಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String workChecked(String name) {
+    return '$name ಅವರ ಹೋಂವರ್ಕ್ ಪರಿಶೀಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String workReturned(String name) {
+    return '$name ಅವರ ಹೋಂವರ್ಕ್ ಮತ್ತೆ ಮಾಡಲು ಹಿಂದಿರುಗಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String photoOf(int index, int count) {
+    return 'ಫೋಟೋ $index / $count';
+  }
+
+  @override
+  String get errorNothingHandedIn => 'ಇನ್ನೂ ಏನನ್ನೂ ಸಲ್ಲಿಸಿಲ್ಲ';
+
+  @override
+  String get errorTopicNotInSyllabus => 'ಈ ವಿಷಯವು ಈ ಪಠ್ಯಕ್ರಮದಲ್ಲಿ ಇಲ್ಲ';
+
+  @override
+  String get errorFutureCoverage => 'ಮುಂದಿನ ದಿನಾಂಕಕ್ಕೆ ವಿಷಯವನ್ನು ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗದು';
+
+  @override
+  String get errorValidation => 'ಕೆಲವು ವಿವರಗಳು ಸರಿಯಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 }

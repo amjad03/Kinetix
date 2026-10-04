@@ -98,6 +98,14 @@ MockClient _server() => MockClient((req) async {
         {'id': 'ch2', 'title': 'Revision', 'own': true, 'topics': []},
       ],
     }),
+    '/v1/coverage' => _json({
+      'covered': 1,
+      'total': 1,
+      'percent': 100,
+      'topics': [
+        {'topicId': 't1', 'coveredOn': '2026-10-03', 'coveredBy': 'Anita Sharma'},
+      ],
+    }),
     '/v1/content/topics/t1' => _json({
       'id': 't1',
       'title': 'Methods of valuing goodwill',

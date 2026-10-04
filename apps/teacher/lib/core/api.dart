@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
@@ -23,7 +24,7 @@ enum ApiErrorKind {
 }
 
 class ApiException implements Exception {
-  ApiException(this.status, this.message, {this.kind = ApiErrorKind.server});
+  ApiException(this.status, this.message, {this.kind = ApiErrorKind.server, this.code});
 
   /// HTTP status, or 0 when the server could not be reached.
   final int status;
@@ -31,6 +32,10 @@ class ApiException implements Exception {
   /// English, for logs; show AppLocalizations.errorText instead.
   final String message;
   final ApiErrorKind kind;
+
+  /// The server's stable error code (services/api/src/common/error-codes.ts), such as
+  /// `NOT_YOUR_CLASS` or `NOT_FOUND`. Null from older servers and for network failures.
+  final String? code;
 
   @override
   String toString() => message;
@@ -115,6 +120,30 @@ abstract class TeacherApi {
 
   /// Opens (or returns) the thread with [guardianId] about [studentId].
   Future<Conversation> startConversation({required String studentId, required String guardianId});
+
+  /// Holidays, exams and events from [from] (default: today) to [to] (default: 90 days on).
+  Future<List<CalendarEvent>> calendar({String? from, String? to});
+
+  /// A subject's syllabus outline, or null when the subject is not linked to a course yet.
+  Future<Syllabus?> syllabus(String subjectId);
+
+  /// Which topics of [subjectId]'s syllabus a class has been taught.
+  Future<Coverage> coverage({required String sectionId, required String subjectId});
+
+  /// Marks a topic as taught on [coveredOn] (default: today); marking again changes the date.
+  Future<void> markTopic({required String sectionId, required String subjectId, required String topicId, String? coveredOn});
+
+  /// Undoes [markTopic].
+  Future<void> unmarkTopic({required String sectionId, required String subjectId, required String topicId});
+
+  /// The class list for a homework, with what each student handed in and the counts.
+  Future<SubmissionList> submissions(String homeworkId);
+
+  /// A photo or PDF from a submission.
+  Future<Uint8List> submissionFile(String homeworkId, String studentId, int index);
+
+  /// Checks the work, or returns it to be redone (the student and family are told).
+  Future<Submission> reviewSubmission(String homeworkId, Submission submission, {required SubmissionStatus status, String? remark});
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -326,7 +355,65 @@ class HttpTeacherApi implements TeacherApi {
   Future<Conversation> startConversation({required String studentId, required String guardianId}) async =>
       Conversation.fromJson(await _send('POST', '/v1/conversations', body: {'studentId': studentId, 'withUserId': guardianId}));
 
+  @override
+  Future<List<CalendarEvent>> calendar({String? from, String? to}) async {
+    final query = [if (from != null) 'from=$from', if (to != null) 'to=$to'].join('&');
+    final j = await _send('GET', '/v1/calendar${query.isEmpty ? '' : '?$query'}') as Map;
+    return (j['events'] as List).map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<Syllabus?> syllabus(String subjectId) async {
+    final j = await _send('GET', '/v1/content/syllabus?subjectId=$subjectId');
+    return j is Map<String, dynamic> ? Syllabus.fromJson(j) : null;
+  }
+
+  @override
+  Future<Coverage> coverage({required String sectionId, required String subjectId}) async =>
+      Coverage.fromJson(await _send('GET', '/v1/coverage?sectionId=$sectionId&subjectId=$subjectId') as Map<String, dynamic>);
+
+  @override
+  Future<void> markTopic({required String sectionId, required String subjectId, required String topicId, String? coveredOn}) async =>
+      _send('POST', '/v1/coverage', body: {'sectionId': sectionId, 'subjectId': subjectId, 'topicId': topicId, 'coveredOn': ?coveredOn});
+
+  @override
+  Future<void> unmarkTopic({required String sectionId, required String subjectId, required String topicId}) async =>
+      _send('DELETE', '/v1/coverage', body: {'sectionId': sectionId, 'subjectId': subjectId, 'topicId': topicId});
+
+  @override
+  Future<SubmissionList> submissions(String homeworkId) async =>
+      SubmissionList.fromJson(await _send('GET', '/v1/homework/$homeworkId/submissions') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> submissionFile(String homeworkId, String studentId, int index) async => (await _request(
+    'GET',
+    '/v1/homework/$homeworkId/submissions/$studentId/files/$index',
+    timeout: const Duration(seconds: 60),
+  )).bodyBytes;
+
+  @override
+  Future<Submission> reviewSubmission(String homeworkId, Submission submission, {required SubmissionStatus status, String? remark}) async =>
+      submission.reviewed(
+        await _send(
+          'POST',
+          '/v1/homework/$homeworkId/submissions/${submission.studentId}/review',
+          body: {'status': status.name, if (remark != null && remark.isNotEmpty) 'remark': remark},
+        ) as Map<String, dynamic>,
+      );
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
+    final res = await _request(method, path, body: body, auth: auth);
+    return res.body.isEmpty ? null : jsonDecode(res.body);
+  }
+
+  /// Sends a request; throws [ApiException] for network failures and error statuses.
+  Future<http.Response> _request(
+    String method,
+    String path, {
+    Object? body,
+    bool auth = true,
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';
@@ -335,7 +422,7 @@ class HttpTeacherApi implements TeacherApi {
 
     final http.Response res;
     try {
-      res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 20));
+      res = await http.Response.fromStream(await _http.send(req)).timeout(timeout);
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', kind: ApiErrorKind.timeout);
     } catch (_) {
@@ -345,9 +432,22 @@ class HttpTeacherApi implements TeacherApi {
     if (res.statusCode >= 400) {
       if (res.statusCode == 401 && auth) onUnauthorized?.call();
       final m = _message(res);
-      throw m == null ? ApiException(res.statusCode, 'HTTP ${res.statusCode}', kind: ApiErrorKind.http) : ApiException(res.statusCode, m);
+      final code = _code(res);
+      throw m == null
+          ? ApiException(res.statusCode, 'HTTP ${res.statusCode}', kind: ApiErrorKind.http, code: code)
+          : ApiException(res.statusCode, m, code: code);
     }
-    return res.body.isEmpty ? null : jsonDecode(res.body);
+    return res;
+  }
+
+  /// The stable error code the server adds to every error body, if it is new enough to send one.
+  static String? _code(http.Response res) {
+    try {
+      final c = (jsonDecode(res.body) as Map)['code'];
+      return c is String ? c : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// The server's explanation, or null when it only sent a status.

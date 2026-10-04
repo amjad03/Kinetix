@@ -44,6 +44,9 @@ void main() {
   http.Response json(Object body) => http.Response.bytes(utf8.encode(jsonEncode(body)), 200, headers: {'content-type': 'application/json; charset=utf-8'});
   late bool linked;
 
+  /// Taught topics of the open class (null: a free session with no class).
+  Map<String, String>? taught;
+
   Future<BoardController> pump(WidgetTester tester, {bool signedIn = true}) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1920, 1080);
@@ -55,6 +58,25 @@ void main() {
       final path = req.url.path;
       if (path == '/v1/devices/enroll') return http.Response(jsonEncode({'deviceToken': 'dev', 'device': {'name': 'Board'}}), 201);
       if (path == '/v1/content/syllabus') return linked ? json(_syllabus) : http.Response('', 200);
+      if (path == '/v1/coverage') {
+        if (taught == null) return http.Response(jsonEncode({'message': 'Open a class on the board first', 'code': 'BOARD_NO_CLASS'}), 400);
+        if (req.method == 'POST') {
+          taught![jsonDecode(req.body)['topicId'] as String] = '2026-10-05';
+          return json({'topicId': 't1', 'coveredOn': '2026-10-05'});
+        }
+        if (req.method == 'DELETE') {
+          taught!.remove(jsonDecode(req.body)['topicId']);
+          return http.Response('', 204);
+        }
+        return json({
+          'covered': taught!.length,
+          'total': 2,
+          'percent': taught!.length * 50,
+          'topics': [
+            for (final e in taught!.entries) {'topicId': e.key, 'coveredOn': e.value, 'coveredBy': 'Anita Sharma'},
+          ],
+        });
+      }
       if (path == '/v1/content/topics/t1') {
         return json({
             'id': 't1',
@@ -102,7 +124,10 @@ void main() {
     return board;
   }
 
-  setUp(() => linked = true);
+  setUp(() {
+    linked = true;
+    taught = {};
+  });
 
   testWidgets('opens the class syllabus, a topic in large type, and explains it grounded in that topic', (tester) async {
     final board = await pump(tester);
@@ -126,6 +151,55 @@ void main() {
     expect(jsonDecode(explain.body), containsPair('topicId', 't1'));
     expect(find.byKey(const Key('ai-explanation')), findsOneWidget);
     expect(find.text('Based on your syllabus: Methods of valuing goodwill'), findsOneWidget);
+    board.dispose();
+  });
+
+  testWidgets('shows what the class has been taught; marks a topic as taught and undoes it', (tester) async {
+    taught = {'t9': '2026-10-01'};
+    final board = await pump(tester);
+    await tester.tap(find.byKey(const Key('panel-books')));
+    await tester.pumpAndSettle();
+    expect(find.text('1 of 2 topics taught'), findsOneWidget);
+    expect(find.textContaining('0/1 taught'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('chapter-ch1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('taught-t1')), findsNothing);
+    await tester.tap(find.byKey(const Key('mark-t1')));
+    await tester.pumpAndSettle();
+    final mark = requests.lastWhere((r) => r.url.path == '/v1/coverage' && r.method == 'POST');
+    expect(jsonDecode(mark.body), {'topicId': 't1'});
+    expect(find.byKey(const Key('taught-t1')), findsOneWidget);
+    expect(find.text('2 of 2 topics taught'), findsOneWidget);
+    expect(find.textContaining('Taught on 5 Oct · Anita Sharma'), findsOneWidget);
+    expect(find.text('Marked as taught'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('unmark-t1')));
+    await tester.pumpAndSettle();
+    expect(requests.where((r) => r.url.path == '/v1/coverage' && r.method == 'DELETE'), hasLength(1));
+    expect(find.byKey(const Key('taught-t1')), findsNothing);
+    expect(find.text('1 of 2 topics taught'), findsOneWidget);
+
+    // From the topic itself.
+    await tester.tap(find.byKey(const Key('topic-t1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('mark-t1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('unmark-t1')), findsOneWidget);
+    expect(taught, contains('t1'));
+    board.dispose();
+  });
+
+  testWidgets('a free session (no class) shows the syllabus without coverage', (tester) async {
+    taught = null;
+    final board = await pump(tester);
+    await tester.tap(find.byKey(const Key('panel-books')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('chapter-ch1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('books-coverage')), findsNothing);
+    expect(find.byKey(const Key('mark-t1')), findsNothing);
+    expect(find.byKey(const Key('topic-t1')), findsOneWidget);
     board.dispose();
   });
 

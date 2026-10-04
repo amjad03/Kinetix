@@ -892,4 +892,153 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageSaveFailed => 'Language changed on this phone. It will be saved to your account next time you are online.';
+
+  @override
+  String holidayNoClasses(String title) {
+    return 'Holiday: $title. No classes.';
+  }
+
+  @override
+  String get teaching => 'Teaching';
+
+  @override
+  String get calendar => 'Calendar';
+
+  @override
+  String get calendarBody => 'Holidays, exams and events';
+
+  @override
+  String get calendarHoliday => 'Holiday';
+
+  @override
+  String get calendarExam => 'Exam';
+
+  @override
+  String get calendarEvent => 'Event';
+
+  @override
+  String get calendarEmpty => 'Nothing on the calendar for the next six months.';
+
+  @override
+  String calendarFor(String programs) {
+    return 'For $programs';
+  }
+
+  @override
+  String get syllabus => 'Syllabus';
+
+  @override
+  String get syllabusProgress => 'Syllabus progress';
+
+  @override
+  String get syllabusProgressBody => 'Mark topics as taught for each class';
+
+  @override
+  String get syllabusUnlinked => 'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.';
+
+  @override
+  String topicsTaught(int covered, int total) {
+    return '$covered of $total topics taught';
+  }
+
+  @override
+  String chapterTaught(int covered, int total) {
+    return '$covered/$total';
+  }
+
+  @override
+  String taughtOn(String date) {
+    return 'Taught $date';
+  }
+
+  @override
+  String taughtOnBy(String date, String name) {
+    return 'Taught $date · $name';
+  }
+
+  @override
+  String get taughtOnWhichDay => 'Taught on which day?';
+
+  @override
+  String get topicMarked => 'Marked as taught';
+
+  @override
+  String get topicUnmarked => 'Marked as not taught';
+
+  @override
+  String get noClassesAssigned => 'You don\'t teach any classes yet.';
+
+  @override
+  String get submissions => 'Submissions';
+
+  @override
+  String get statusHandedIn => 'Handed in';
+
+  @override
+  String get statusChecked => 'Checked';
+
+  @override
+  String get statusReturned => 'Returned';
+
+  @override
+  String get statusNotHandedIn => 'Not handed in';
+
+  @override
+  String handedInAt(String when) {
+    return 'Handed in $when';
+  }
+
+  @override
+  String get answer => 'Answer';
+
+  @override
+  String get photosAndFiles => 'Photos and files';
+
+  @override
+  String get openPdf => 'Open PDF';
+
+  @override
+  String get couldNotOpenFile => 'Couldn\'t open this file. Install an app that opens PDFs.';
+
+  @override
+  String get remarkOptional => 'Remark (optional)';
+
+  @override
+  String get reviewRemarkHint => 'e.g. Good work, or what to redo';
+
+  @override
+  String get returnWork => 'Return to redo';
+
+  @override
+  String get checkWork => 'Mark as checked';
+
+  @override
+  String get reviewNotifies => 'The student and their family are told, with your remark.';
+
+  @override
+  String workChecked(String name) {
+    return '$name\'s homework marked as checked';
+  }
+
+  @override
+  String workReturned(String name) {
+    return '$name\'s homework returned to redo';
+  }
+
+  @override
+  String photoOf(int index, int count) {
+    return 'Photo $index of $count';
+  }
+
+  @override
+  String get errorNothingHandedIn => 'Nothing has been handed in yet';
+
+  @override
+  String get errorTopicNotInSyllabus => 'That topic is not in this subject\'s syllabus';
+
+  @override
+  String get errorFutureCoverage => 'A topic cannot be marked as taught in the future';
+
+  @override
+  String get errorValidation => 'Some details are not right. Check them and try again.';
 }

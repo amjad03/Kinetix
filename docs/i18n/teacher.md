@@ -19,7 +19,7 @@ with Flutter gen-l10n. Terms and style follow the [glossary](glossary.md).
 | `apps/teacher/lib/core/l10n.dart` | `context.l10n`, the language list, and labels for API codes (attendance status, assessment kind, role, guardian relation) and errors |
 | `apps/teacher/lib/core/format.dart` | `Fmt.of(context)`: dates, times and durations with intl `en_IN` / `hi_IN` / `kn_IN` |
 
-There are 256 strings. Plurals use ICU (`{count, plural, =1{…} other{…}}`); every placeholder has a type.
+There are 299 strings. Plurals use ICU (`{count, plural, =1{…} other{…}}`); every placeholder has a type.
 
 To add a string: add it to `app_en.arb` with an `@key` description, add the Hindi and Kannada
 translations to the other two files, then run `flutter gen-l10n` (or `flutter pub get`).
@@ -37,10 +37,12 @@ translations to the other two files, then run `flutter gen-l10n` (or `flutter pu
 
 - Server content: names, class and subject names, homework, message and assessment text, board names.
 - Kept in English per the glossary: KINETIX, app names, QR, OTP, MCQ, roll numbers, class names.
-- Server error messages the app does not know. The API answers in English; `errorText` in
-  `core/l10n.dart` translates the messages the Teacher App can receive (wrong login, expired
-  pairing code, future attendance, …) and shows any other server text as is. Better: have the API
-  return error codes.
+- Server error messages the app does not know. Every API error carries a stable `code`
+  (`services/api/src/common/error-codes.ts`); `errorText` in `core/l10n.dart` words the codes the
+  Teacher App can receive (`NOT_YOUR_CLASS`, `PAIRING_CODE_INVALID`, `COVERAGE_FUTURE_DATE`,
+  `SUBMISSION_MISSING`, …, and the status codes `FORBIDDEN`, `NOT_FOUND`, `RATE_LIMITED`,
+  `VALIDATION`, `SERVER_ERROR`). Older servers send no code, so the English messages they are
+  known to send are still matched as a fallback; any other server text is shown as is.
 - The lesson player (`packages/kinetix_lesson`: player controls, transcript and summary panels)
   is shared with the Parent App and is not localised yet. The Teacher App passes it translated
   load errors only.
@@ -56,7 +58,8 @@ translations to the other two files, then run `flutter gen-l10n` (or `flutter pu
 
 `test/layout_test.dart` opens every screen (tabs, attendance, connect to board, homework and
 assessment forms, marks entry with errors and dialogs, chat, new message, profile, sign-in with all
-errors, empty states) in all three languages at 360×640 and 412×892 with text scale 1.0 and 1.3,
+errors, empty states, the holiday card, calendar, syllabus progress and its date picker, homework
+submissions, a student's work and the photo viewer) in all three languages at 360×640 and 412×892 with text scale 1.0 and 1.3,
 using the real bundled fonts; any overflow fails the test. `test/i18n_test.dart` checks each tab,
 marks entry and chat in Hindi and Kannada, and the Language setting.
 
@@ -79,3 +82,9 @@ marks entry and chat in Hindi and Kannada, and the Language setting.
 | `threadPrivacy` | स्कूल प्रबंधन | ಶಾಲೆಯ ಮುಖ್ಯಸ್ಥರು | "School leaders" at a college. |
 | `roleAdmin`, `roleAccountant`, `roleLibrarian` | एडमिन / लेखाकार / पुस्तकालयाध्यक्ष | ಆಡಳಿತಾಧಿಕಾರಿ / ಲೆಕ್ಕಿಗರು / ಗ್ರಂಥಪಾಲಕರು | |
 | `markAllPresent` | सभी उपस्थित | ಎಲ್ಲರೂ ಹಾಜರು | Button; reads as a statement. |
+| `topicsTaught`, `taughtOn`, `topicMarked` | पढ़ाई गई / पढ़ाया / पढ़ाया गया मार्क किया | ಕಲಿಸಲಾಗಿದೆ | "Taught" for syllabus topics; Kannada ವಿಷಯ is both topic and subject (`errorTopicNotInSyllabus`). |
+| `statusHandedIn`, `statusReturned`, `returnWork` | जमा किया / लौटाया गया / दोबारा करने के लिए लौटाएँ | ಸಲ್ಲಿಸಲಾಗಿದೆ / ಹಿಂದಿರುಗಿಸಲಾಗಿದೆ | Homework handed in / sent back to redo. |
+| `checkWork`, `statusChecked` | जाँचा गया मार्क करें | ಪರಿಶೀಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ | Long for a button; teachers may say "चेक किया". |
+| `submissions` | जमा किया गया काम | ಸಲ್ಲಿಕೆಗಳು | |
+| `holidayNoClasses`, `calendarEvent` | छुट्टी / कार्यक्रम | ರಜೆ / ಕಾರ್ಯಕ್ರಮ | |
+| `teaching` (Profile section) | पढ़ाई | ಬೋಧನೆ | |

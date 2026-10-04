@@ -1292,5 +1292,239 @@
   "languageSaveFailed": "Language changed on this phone. It will be saved to your account next time you are online.",
   "@languageSaveFailed": {
     "description": "Snackbar when saving the language to the server failed."
+  },
+  "holidayNoClasses": "Holiday: {title}. No classes.",
+  "@holidayNoClasses": {
+    "description": "Today/timetable card on a holiday; title from the academic calendar.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "teaching": "Teaching",
+  "@teaching": {
+    "description": "Profile section with Calendar and Syllabus progress."
+  },
+  "calendar": "Calendar",
+  "@calendar": {
+    "description": "Academic calendar screen title and Profile entry."
+  },
+  "calendarBody": "Holidays, exams and events",
+  "@calendarBody": {
+    "description": "Profile → Calendar subtitle."
+  },
+  "calendarHoliday": "Holiday",
+  "@calendarHoliday": {
+    "description": "Calendar entry kind."
+  },
+  "calendarExam": "Exam",
+  "@calendarExam": {
+    "description": "Calendar entry kind."
+  },
+  "calendarEvent": "Event",
+  "@calendarEvent": {
+    "description": "Calendar entry kind."
+  },
+  "calendarEmpty": "Nothing on the calendar for the next six months.",
+  "@calendarEmpty": {
+    "description": "Calendar empty state."
+  },
+  "calendarFor": "For {programs}",
+  "@calendarFor": {
+    "description": "Calendar entry for some programs only; programs are names like 'BCom, BBA'.",
+    "placeholders": {
+      "programs": {
+        "type": "String"
+      }
+    }
+  },
+  "syllabus": "Syllabus",
+  "@syllabus": {
+    "description": "Syllabus screen title; button on a class card."
+  },
+  "syllabusProgress": "Syllabus progress",
+  "@syllabusProgress": {
+    "description": "Profile entry and the class list for syllabus coverage."
+  },
+  "syllabusProgressBody": "Mark topics as taught for each class",
+  "@syllabusProgressBody": {
+    "description": "Profile → Syllabus progress subtitle."
+  },
+  "syllabusUnlinked": "This subject isn't linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.",
+  "@syllabusUnlinked": {
+    "description": "Syllabus screen when the subject has no course. Keep 'KINETIX ERP → Syllabus' in English."
+  },
+  "topicsTaught": "{covered} of {total} topics taught",
+  "@topicsTaught": {
+    "description": "Syllabus progress.",
+    "placeholders": {
+      "covered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterTaught": "{covered}/{total}",
+  "@chapterTaught": {
+    "description": "Next to a chapter: topics taught of all its topics (digits only).",
+    "placeholders": {
+      "covered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "taughtOn": "Taught {date}",
+  "@taughtOn": {
+    "description": "Under a taught topic; date like 'Sat, 3 Oct'.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "taughtOnBy": "Taught {date} · {name}",
+  "@taughtOnBy": {
+    "description": "Under a taught topic: when and by which teacher.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taughtOnWhichDay": "Taught on which day?",
+  "@taughtOnWhichDay": {
+    "description": "Date picker title and button tooltip for marking a topic as taught on an earlier day."
+  },
+  "topicMarked": "Marked as taught",
+  "@topicMarked": {
+    "description": "Snackbar."
+  },
+  "topicUnmarked": "Marked as not taught",
+  "@topicUnmarked": {
+    "description": "Snackbar after unticking a topic."
+  },
+  "noClassesAssigned": "You don't teach any classes yet.",
+  "@noClassesAssigned": {
+    "description": "Syllabus progress with no classes."
+  },
+  "submissions": "Submissions",
+  "@submissions": {
+    "description": "Homework detail: the class's handed-in work."
+  },
+  "statusHandedIn": "Handed in",
+  "@statusHandedIn": {
+    "description": "Homework submission status: waiting to be checked."
+  },
+  "statusChecked": "Checked",
+  "@statusChecked": {
+    "description": "Homework submission status."
+  },
+  "statusReturned": "Returned",
+  "@statusReturned": {
+    "description": "Homework submission status: sent back to be redone."
+  },
+  "statusNotHandedIn": "Not handed in",
+  "@statusNotHandedIn": {
+    "description": "Homework submission status."
+  },
+  "handedInAt": "Handed in {when}",
+  "@handedInAt": {
+    "description": "When a student handed in; when like 'Sun, 4 Oct · 10:02 AM'.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "answer": "Answer",
+  "@answer": {
+    "description": "Submission: the student's written answer."
+  },
+  "photosAndFiles": "Photos and files",
+  "@photosAndFiles": {
+    "description": "Submission: attached photos and PDFs."
+  },
+  "openPdf": "Open PDF",
+  "@openPdf": {
+    "description": "Submission file row."
+  },
+  "couldNotOpenFile": "Couldn't open this file. Install an app that opens PDFs.",
+  "@couldNotOpenFile": {
+    "description": "Snackbar when no app could open a submitted file."
+  },
+  "remarkOptional": "Remark (optional)",
+  "@remarkOptional": {
+    "description": "Label above the review remark field."
+  },
+  "reviewRemarkHint": "e.g. Good work, or what to redo",
+  "@reviewRemarkHint": {
+    "description": "Hint in the review remark field."
+  },
+  "returnWork": "Return to redo",
+  "@returnWork": {
+    "description": "Button: send the homework back to be redone."
+  },
+  "checkWork": "Mark as checked",
+  "@checkWork": {
+    "description": "Button: the homework has been checked."
+  },
+  "reviewNotifies": "The student and their family are told, with your remark.",
+  "@reviewNotifies": {
+    "description": "Under the review buttons."
+  },
+  "workChecked": "{name}'s homework marked as checked",
+  "@workChecked": {
+    "description": "Snackbar.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "workReturned": "{name}'s homework returned to redo",
+  "@workReturned": {
+    "description": "Snackbar.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "photoOf": "Photo {index} of {count}",
+  "@photoOf": {
+    "description": "Photo viewer title.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorNothingHandedIn": "Nothing has been handed in yet",
+  "@errorNothingHandedIn": {
+    "description": "Error (SUBMISSION_MISSING)."
+  },
+  "errorTopicNotInSyllabus": "That topic is not in this subject's syllabus",
+  "@errorTopicNotInSyllabus": {
+    "description": "Error (TOPIC_NOT_IN_SYLLABUS)."
+  },
+  "errorFutureCoverage": "A topic cannot be marked as taught in the future",
+  "@errorFutureCoverage": {
+    "description": "Error (COVERAGE_FUTURE_DATE)."
+  },
+  "errorValidation": "Some details are not right. Check them and try again.",
+  "@errorValidation": {
+    "description": "Error (VALIDATION): the server rejected the form's fields."
   }
 }

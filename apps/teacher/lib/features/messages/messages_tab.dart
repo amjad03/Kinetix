@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -5,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
+import '../../core/realtime.dart';
 import '../../widgets/common.dart';
 import 'chat_screen.dart';
 import 'new_message_screen.dart';
@@ -18,9 +21,37 @@ class MessagesController extends ChangeNotifier {
   bool loading = false;
   ApiException? error;
 
+  /// New messages as they arrive (from [TeacherRealtime]), for the open thread.
+  final _live = StreamController<MessageNew>.broadcast();
+  Stream<MessageNew> get live => _live.stream;
+  bool _reloadAgain = false;
+
   int get unread => (items ?? const <Conversation>[]).fold(0, (n, c) => n + c.unread);
 
+  /// A message was sent in one of the threads: refresh the list (previews, order, unread) and
+  /// tell the open thread.
+  void messageArrived(MessageNew m) {
+    _live.add(m);
+    refresh();
+  }
+
+  /// Loads the list again; a refresh asked for while one is running runs once it finishes.
+  void refresh() {
+    if (loading) {
+      _reloadAgain = true;
+    } else {
+      load();
+    }
+  }
+
+  @override
+  void dispose() {
+    _live.close();
+    super.dispose();
+  }
+
   Future<void> load() async {
+    _reloadAgain = false;
     loading = true;
     error = null;
     notifyListeners();
@@ -32,6 +63,7 @@ class MessagesController extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+    if (_reloadAgain) await load();
   }
 
   /// After opening a thread or sending in it: update its preview and unread count, move it to the top.
@@ -58,7 +90,7 @@ class MessagesTab extends StatelessWidget {
     controller.updated(c.copyWith(unread: 0));
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ChatScreen(api: controller.api, conversation: c, myId: myId, onChanged: controller.updated),
+        builder: (_) => ChatScreen(api: controller.api, conversation: c, myId: myId, onChanged: controller.updated, live: controller.live),
       ),
     );
   }

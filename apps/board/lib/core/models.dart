@@ -225,6 +225,33 @@ class Syllabus {
   final List<SyllabusChapter> chapters;
 }
 
+/// When and by whom a topic was taught to the open class.
+class TopicCoverage {
+  TopicCoverage({required this.coveredOn, required this.coveredBy});
+  factory TopicCoverage.fromJson(Map<String, dynamic> j) =>
+      TopicCoverage(coveredOn: DateTime.parse(j['coveredOn'] as String), coveredBy: j['coveredBy'] as String? ?? '');
+  final DateTime coveredOn;
+  final String coveredBy;
+}
+
+/// How much of the syllabus the open class has been taught (GET /v1/coverage).
+class Coverage {
+  Coverage({required this.total, required this.topics});
+  factory Coverage.fromJson(Map<String, dynamic> j) => Coverage(
+        total: j['total'] as int? ?? 0,
+        topics: {
+          for (final t in (j['topics'] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>())
+            t['topicId'] as String: TopicCoverage.fromJson(t),
+        },
+      );
+  final int total;
+
+  /// Taught topics by id.
+  final Map<String, TopicCoverage> topics;
+
+  int get covered => topics.length;
+}
+
 /// A 3D model or lab the content library links to a topic (catalogue ids in kinetix_3d/labs).
 class TopicResource {
   TopicResource({required this.kind, required this.id, required this.title});

@@ -163,6 +163,8 @@ describe('school year', () => {
       const again = (await http().post(`/v1/homework/${hwId}/submissions/${me}`).set(auth('student')).field('text', 'With entries').expect(200)).body;
       expect(again).toMatchObject({ status: 'submitted', late: true, files: [], remark: null });
       await http().post(`/v1/homework/${hwId}/submissions/${me}/review`).set(auth('teacher')).send({ status: 'checked' }).expect(200);
+      const row = (await http().get(`/v1/homework/${hwId}/submissions`).set(auth('teacher')).expect(200)).body.students.find((x: { studentId: string }) => x.studentId === me);
+      expect(row).toMatchObject({ status: 'checked', checkedBy: expect.any(String), checkedAt: expect.any(String) });
       const checked = await http().post(`/v1/homework/${hwId}/submissions/${me}`).set(auth('student')).field('text', 'again').expect(400);
       expect(checked.body.code).toBe('SUBMISSION_CHECKED');
       clock.at = nextMondayIst('10:30');

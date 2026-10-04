@@ -893,4 +893,153 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get languageSaveFailed => 'इस फ़ोन पर भाषा बदल गई है। अगली बार ऑनलाइन होने पर यह आपके अकाउंट में सहेज दी जाएगी।';
+
+  @override
+  String holidayNoClasses(String title) {
+    return 'छुट्टी: $title। कोई कक्षा नहीं।';
+  }
+
+  @override
+  String get teaching => 'पढ़ाई';
+
+  @override
+  String get calendar => 'कैलेंडर';
+
+  @override
+  String get calendarBody => 'छुट्टियाँ, परीक्षाएँ और कार्यक्रम';
+
+  @override
+  String get calendarHoliday => 'छुट्टी';
+
+  @override
+  String get calendarExam => 'परीक्षा';
+
+  @override
+  String get calendarEvent => 'कार्यक्रम';
+
+  @override
+  String get calendarEmpty => 'अगले छह महीनों के कैलेंडर में कुछ नहीं है।';
+
+  @override
+  String calendarFor(String programs) {
+    return '$programs के लिए';
+  }
+
+  @override
+  String get syllabus => 'पाठ्यक्रम';
+
+  @override
+  String get syllabusProgress => 'पाठ्यक्रम की प्रगति';
+
+  @override
+  String get syllabusProgressBody => 'हर कक्षा के लिए पढ़ाई गई विषय-वस्तु मार्क करें';
+
+  @override
+  String get syllabusUnlinked => 'यह विषय अभी किसी पाठ्यक्रम से नहीं जुड़ा है। आपके एडमिन इसे KINETIX ERP → Syllabus में जोड़ सकते हैं।';
+
+  @override
+  String topicsTaught(int covered, int total) {
+    return '$total में से $covered विषय-वस्तु पढ़ाई गई';
+  }
+
+  @override
+  String chapterTaught(int covered, int total) {
+    return '$covered/$total';
+  }
+
+  @override
+  String taughtOn(String date) {
+    return '$date को पढ़ाया';
+  }
+
+  @override
+  String taughtOnBy(String date, String name) {
+    return '$date को पढ़ाया · $name';
+  }
+
+  @override
+  String get taughtOnWhichDay => 'किस दिन पढ़ाया?';
+
+  @override
+  String get topicMarked => 'पढ़ाया गया मार्क किया';
+
+  @override
+  String get topicUnmarked => 'नहीं पढ़ाया गया मार्क किया';
+
+  @override
+  String get noClassesAssigned => 'आप अभी कोई कक्षा नहीं पढ़ाते हैं।';
+
+  @override
+  String get submissions => 'जमा किया गया काम';
+
+  @override
+  String get statusHandedIn => 'जमा किया';
+
+  @override
+  String get statusChecked => 'जाँचा गया';
+
+  @override
+  String get statusReturned => 'लौटाया गया';
+
+  @override
+  String get statusNotHandedIn => 'जमा नहीं किया';
+
+  @override
+  String handedInAt(String when) {
+    return '$when को जमा किया';
+  }
+
+  @override
+  String get answer => 'उत्तर';
+
+  @override
+  String get photosAndFiles => 'फ़ोटो और फ़ाइलें';
+
+  @override
+  String get openPdf => 'PDF खोलें';
+
+  @override
+  String get couldNotOpenFile => 'यह फ़ाइल नहीं खुल सकी। PDF खोलने वाला कोई ऐप इंस्टॉल करें।';
+
+  @override
+  String get remarkOptional => 'टिप्पणी (वैकल्पिक)';
+
+  @override
+  String get reviewRemarkHint => 'उदा. अच्छा काम, या क्या दोबारा करना है';
+
+  @override
+  String get returnWork => 'दोबारा करने के लिए लौटाएँ';
+
+  @override
+  String get checkWork => 'जाँचा गया मार्क करें';
+
+  @override
+  String get reviewNotifies => 'विद्यार्थी और उनके अभिभावकों को आपकी टिप्पणी के साथ बताया जाएगा।';
+
+  @override
+  String workChecked(String name) {
+    return '$name का होमवर्क जाँचा गया मार्क किया';
+  }
+
+  @override
+  String workReturned(String name) {
+    return '$name का होमवर्क दोबारा करने के लिए लौटाया';
+  }
+
+  @override
+  String photoOf(int index, int count) {
+    return 'फ़ोटो $index / $count';
+  }
+
+  @override
+  String get errorNothingHandedIn => 'अभी तक कुछ जमा नहीं किया गया है';
+
+  @override
+  String get errorTopicNotInSyllabus => 'यह विषय-वस्तु इस विषय के पाठ्यक्रम में नहीं है';
+
+  @override
+  String get errorFutureCoverage => 'आने वाली तारीख पर विषय-वस्तु को पढ़ाया गया मार्क नहीं कर सकते';
+
+  @override
+  String get errorValidation => 'कुछ जानकारी सही नहीं है। जाँचकर फिर से कोशिश करें।';
 }

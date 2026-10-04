@@ -1429,6 +1429,36 @@ class AppLocalizationsHi extends AppLocalizations {
   String get booksOutcomes => 'अंत तक विद्यार्थी ये कर पाएँगे';
 
   @override
+  String booksTaughtCount(int covered, int total) {
+    return '$total में से $covered विषय-वस्तु पढ़ाई गई';
+  }
+
+  @override
+  String booksChapterTaught(int covered, int total) {
+    return '$covered/$total पढ़ाई गई';
+  }
+
+  @override
+  String booksTaughtOn(String date) {
+    return '$date को पढ़ाया';
+  }
+
+  @override
+  String get booksMarkTaught => 'पढ़ाया गया मार्क करें';
+
+  @override
+  String get booksUndoTaught => 'अनडू';
+
+  @override
+  String get booksMarked => 'पढ़ाया गया मार्क किया';
+
+  @override
+  String get booksUnmarked => 'पढ़ाया गया का मार्क हटाया';
+
+  @override
+  String get booksMarkFailed => 'सहेजा नहीं जा सका। देखें कि बोर्ड ऑनलाइन है।';
+
+  @override
   String get mathHint => 'कोई सवाल या समीकरण लिखें';
 
   @override

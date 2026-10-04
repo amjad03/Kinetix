@@ -1,6 +1,34 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_teacher/core/api.dart';
 import 'package:kinetix_teacher/core/models.dart';
+import 'package:kinetix_teacher/core/realtime.dart';
+
+/// A [TeacherRealtime] the test drives: [send] delivers `message.new`.
+class FakeRealtime implements TeacherRealtime {
+  final _messages = StreamController<MessageNew>.broadcast();
+  final _reconnected = StreamController<void>.broadcast();
+  String? connectedWith;
+  int disconnects = 0;
+
+  @override
+  Stream<MessageNew> get messages => _messages.stream;
+  @override
+  Stream<void> get reconnected => _reconnected.stream;
+  @override
+  void connect({required String baseUrl, required String token}) => connectedWith = '$baseUrl $token';
+  @override
+  void disconnect() => disconnects++;
+
+  void send(MessageNew m) => _messages.add(m);
+  void reconnect() => _reconnected.add(null);
+}
+
+/// A 1×1 PNG.
+final onePixelPng = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
 
 /// In-memory [TeacherApi] for widget tests.
 class FakeTeacherApi implements TeacherApi {
@@ -58,6 +86,16 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<Me> me() async => profile;
 
+  /// The account's language (en, hi or kn).
+  void useLanguage(String language) => profile = Me(
+    id: profile.id,
+    fullName: profile.fullName,
+    roles: profile.roles,
+    preferredLanguage: language,
+    institution: profile.institution,
+    email: profile.email,
+  );
+
   /// When set, PATCH /v1/me fails as if offline.
   bool languageSaveFails = false;
 
@@ -75,15 +113,19 @@ class FakeTeacherApi implements TeacherApi {
     );
   }
 
+  /// Holidays by date (no classes on them).
+  Map<String, String> holidays = {};
+
   @override
   Future<DayTimetable> timetable({String? date}) async {
     final d = date ?? today;
-    final sorted = periodsByDate.keys.toList()..sort();
+    final sorted = periodsByDate.keys.where((k) => !holidays.containsKey(k)).toList()..sort();
     return DayTimetable(
       date: d,
       today: today,
-      periods: periodsByDate[d] ?? [],
+      periods: holidays.containsKey(d) ? [] : periodsByDate[d] ?? [],
       nextTeachingDate: sorted.where((k) => k.compareTo(d) > 0).firstOrNull,
+      holiday: holidays[d],
     );
   }
 
@@ -453,5 +495,164 @@ class FakeTeacherApi implements TeacherApi {
     threads = [...threads, c];
     chat[c.id] = [];
     return c;
+  }
+
+  // --- Calendar --------------------------------------------------------------------------------
+
+  List<CalendarEvent> calendarEvents = [
+    CalendarEvent(
+      id: 'e1',
+      kind: CalendarKind.holiday,
+      title: 'Gandhi Jayanti',
+      startsOn: DateTime(2026, 10, 2),
+      endsOn: DateTime(2026, 10, 2),
+    ),
+    CalendarEvent(
+      id: 'e2',
+      kind: CalendarKind.exam,
+      title: 'Mid-semester exams',
+      startsOn: DateTime(2026, 10, 12),
+      endsOn: DateTime(2026, 10, 16),
+      programs: const ['BCom', 'BBA'],
+    ),
+    CalendarEvent(
+      id: 'e3',
+      kind: CalendarKind.holiday,
+      title: 'Deepavali',
+      startsOn: DateTime(2026, 11, 8),
+      endsOn: DateTime(2026, 11, 10),
+    ),
+    CalendarEvent(
+      id: 'e4',
+      kind: CalendarKind.event,
+      title: 'Annual sports day',
+      startsOn: DateTime(2026, 12, 4),
+      endsOn: DateTime(2026, 12, 4),
+    ),
+  ];
+
+  @override
+  Future<List<CalendarEvent>> calendar({String? from, String? to}) async {
+    calls.add('calendar');
+    return calendarEvents;
+  }
+
+  // --- Syllabus coverage -----------------------------------------------------------------------
+
+  Syllabus? syllabusOutline = const Syllabus(
+    title: 'Corporate Accounting, BCom Semester 3',
+    chapters: [
+      SyllabusChapter(
+        id: 'ch1',
+        title: 'Valuation of Goodwill',
+        topics: [
+          SyllabusTopic(id: 't1', title: 'Meaning and need for valuation of goodwill'),
+          SyllabusTopic(id: 't2', title: 'Methods: average profit, super profit and capitalisation'),
+        ],
+      ),
+      SyllabusChapter(
+        id: 'ch2',
+        title: 'Valuation of Shares',
+        topics: [SyllabusTopic(id: 't3', title: 'Intrinsic value and yield methods')],
+      ),
+    ],
+  );
+
+  /// Taught topics of the class.
+  Map<String, TopicCoverage> covered = {'t1': TopicCoverage(coveredOn: DateTime(2026, 9, 28), coveredBy: 'Anita Sharma')};
+
+  /// Set to make marking fail with this error.
+  ApiException? markError;
+
+  @override
+  Future<Syllabus?> syllabus(String subjectId) async {
+    calls.add('syllabus $subjectId');
+    return syllabusOutline;
+  }
+
+  @override
+  Future<Coverage> coverage({required String sectionId, required String subjectId}) async {
+    calls.add('coverage $sectionId $subjectId');
+    final total = syllabusOutline?.chapters.fold<int>(0, (n, c) => n + c.topics.length) ?? 0;
+    return Coverage(total: total, topics: {...covered});
+  }
+
+  @override
+  Future<void> markTopic({required String sectionId, required String subjectId, required String topicId, String? coveredOn}) async {
+    calls.add('mark $sectionId $subjectId $topicId ${coveredOn ?? 'today'}');
+    if (markError != null) throw markError!;
+    covered[topicId] = TopicCoverage(
+      coveredOn: coveredOn == null ? parseIsoDate(today) : parseIsoDate(coveredOn),
+      coveredBy: profile.fullName,
+    );
+  }
+
+  @override
+  Future<void> unmarkTopic({required String sectionId, required String subjectId, required String topicId}) async {
+    calls.add('unmark $topicId');
+    if (markError != null) throw markError!;
+    covered.remove(topicId);
+  }
+
+  // --- Homework submissions --------------------------------------------------------------------
+
+  late List<Submission> handedIn = [
+    Submission(
+      studentId: 's1',
+      fullName: 'Aarav Patel',
+      rollNo: 'U03BC001',
+      status: SubmissionStatus.submitted,
+      submittedAt: DateTime(2026, 10, 4, 19, 30),
+      text: 'Q1. Goodwill = Average profit × 3 = ₹1,20,000.',
+      files: const [
+        SubmissionFile(index: 0, name: 'page1.jpg', mime: 'image/jpeg', bytes: 120000),
+        SubmissionFile(index: 1, name: 'page2.png', mime: 'image/png', bytes: 90000),
+        SubmissionFile(index: 2, name: 'workings.pdf', mime: 'application/pdf', bytes: 300000),
+      ],
+    ),
+    Submission(
+      studentId: 's2',
+      fullName: 'Ananya Gowda',
+      rollNo: 'U03BC002',
+      status: SubmissionStatus.checked,
+      submittedAt: DateTime(2026, 10, 6, 8),
+      text: 'Done.',
+      late: true,
+      remark: 'Neat working',
+    ),
+    Submission(studentId: 's3', fullName: 'Bhavya Reddy', rollNo: 'U03BC003'),
+  ];
+
+  /// Set to make reviewing fail with this error.
+  ApiException? reviewError;
+
+  @override
+  Future<SubmissionList> submissions(String homeworkId) async {
+    calls.add('submissions $homeworkId');
+    return SubmissionList(counts: SubmissionCounts.of(handedIn), students: [...handedIn]);
+  }
+
+  @override
+  Future<Uint8List> submissionFile(String homeworkId, String studentId, int index) async {
+    calls.add('file $studentId $index');
+    return index == 2 ? Uint8List.fromList(utf8.encode('%PDF-1.4')) : onePixelPng;
+  }
+
+  @override
+  Future<Submission> reviewSubmission(String homeworkId, Submission submission, {required SubmissionStatus status, String? remark}) async {
+    calls.add('review ${submission.studentId} ${status.name} ${remark ?? ''}'.trim());
+    if (reviewError != null) throw reviewError!;
+    final done = submission.reviewed({
+      'status': status.name,
+      'text': submission.text,
+      'files': [
+        for (final f in submission.files) {'index': f.index, 'name': f.name, 'mime': f.mime, 'bytes': f.bytes},
+      ],
+      'submittedAt': submission.submittedAt?.toUtc().toIso8601String(),
+      'late': submission.late,
+      'remark': remark == null || remark.isEmpty ? null : remark,
+    });
+    handedIn = [for (final x in handedIn) x.studentId == done.studentId ? done : x];
+    return done;
   }
 }

@@ -20,6 +20,9 @@ class TodayController extends ChangeNotifier {
   /// True when today has no classes and we are showing the next teaching day instead.
   bool showingNextDay = false;
 
+  /// Today's holiday, when today is one (shown above the next teaching day).
+  String? todayHoliday;
+
   bool get isSelectedPast => selectedDate != null && today != null && selectedDate!.compareTo(today!) < 0;
   bool get isSelectedFuture => selectedDate != null && today != null && selectedDate!.compareTo(today!) > 0;
 
@@ -28,6 +31,7 @@ class TodayController extends ChangeNotifier {
     await _run(() async {
       var t = await api.timetable();
       today = t.date;
+      todayHoliday = t.holiday;
       showingNextDay = false;
       if (t.periods.isEmpty && t.nextTeachingDate != null) {
         t = await api.timetable(date: t.nextTeachingDate);

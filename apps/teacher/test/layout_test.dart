@@ -2,9 +2,18 @@
 // with the real bundled fonts: no overflow anywhere (an overflow fails the test).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_teacher/core/api.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
+
+/// Scrolls the screen on top until [key] is built, then to the middle of the screen (clear of
+/// pinned app bars and the bottom edge).
+Future<void> reveal(WidgetTester tester, Key key) async {
+  await tester.scrollUntilVisible(find.byKey(key), 200, scrollable: find.byType(Scrollable).last);
+  await Scrollable.ensureVisible(tester.element(find.byKey(key)), alignment: 0.5);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   setUpAll(loadAppFonts);
@@ -21,6 +30,7 @@ void main() {
           phone(tester, size: size, textScale: scale);
           final api = FakeTeacherApi();
           seed(api, language: lang);
+          api.holidays = {'2026-10-07': 'Mahatma Gandhi Jayanti and Swachh Bharat Diwas (observed)'};
           await pumpApp(tester, api, prefs: {'token': 'tok'});
 
           // Today, then connected to a board.
@@ -48,15 +58,51 @@ void main() {
           await tapAndSettle(tester, find.byKey(const Key('endClassCard')));
           await tapAndSettle(tester, find.byKey(const Key('confirmEndClass')));
 
-          // A future day and a free day.
+          // A future day: a holiday.
           await tester.tap(find.text('7').hitTestable().first);
           await tester.pumpAndSettle();
+          expect(find.byKey(const Key('holidayCard')), findsOneWidget);
+
+          // A class's syllabus from today's class.
+          await clearSnackBars(tester);
+          await tester.tap(find.text('5').hitTestable().first);
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.byKey(const Key('syllabus-slot1')));
+          await tester.pumpAndSettle();
+          await tapAndSettle(tester, find.byKey(const Key('syllabus-slot1')));
+          await reveal(tester, const Key('topic-t2'));
+          await tapAndSettle(tester, find.byKey(const Key('topic-t2')));
+          await clearSnackBars(tester);
+          await reveal(tester, const Key('pickDate-t3'));
+          await tapAndSettle(tester, find.byKey(const Key('pickDate-t3')));
+          await pop(tester); // the date picker
+          await tester.drag(find.byType(CustomScrollView).last, const Offset(0, -600));
+          await tester.pumpAndSettle();
+          await pop(tester);
+          await clearSnackBars(tester);
 
           // Homework and its form.
           await tapAndSettle(tester, find.byKey(const Key('navHomework')));
           await tapAndSettle(tester, find.byKey(const Key('assignHomeworkFab')));
           await tapAndSettle(tester, find.byKey(const Key('assignHomework')));
           await pop(tester);
+
+          // A homework's submissions, one student's work, a photo, and a failed review.
+          await tapAndSettle(tester, find.byKey(const Key('homework-h1')));
+          await tester.drag(find.byType(CustomScrollView).last, const Offset(0, -600));
+          await tester.pumpAndSettle();
+          await tapAndSettle(tester, find.byKey(const Key('submission-s1')));
+          await tapAndSettle(tester, find.byKey(const Key('photo-0')));
+          await pop(tester);
+          await tester.enterText(find.byKey(const Key('reviewRemark')), 'Show the working for Q2 as well');
+          api.reviewError = ApiException(404, 'Nothing has been handed in yet', code: 'SUBMISSION_MISSING');
+          await reveal(tester, const Key('checkWork'));
+          await tapAndSettle(tester, find.byKey(const Key('checkWork')));
+          await clearSnackBars(tester);
+          api.reviewError = null;
+          await tapAndSettle(tester, find.byKey(const Key('returnWork')));
+          await pop(tester);
+          await clearSnackBars(tester);
 
           // Marks, the new-assessment form and marks entry with errors, stats and dialogs.
           await tapAndSettle(tester, find.byKey(const Key('navMarks')));
@@ -122,8 +168,16 @@ void main() {
           await tapAndSettle(tester, find.byKey(const Key('profileButton')));
           await tapAndSettle(tester, find.byKey(const Key('languageSetting')));
           await pop(tester);
+          await reveal(tester, const Key('openCalendar'));
+          await tapAndSettle(tester, find.byKey(const Key('openCalendar')));
           await tester.drag(find.byType(CustomScrollView).last, const Offset(0, -600));
           await tester.pumpAndSettle();
+          await pop(tester);
+          await tapAndSettle(tester, find.byKey(const Key('openSyllabus')));
+          await tapAndSettle(tester, find.byKey(const Key('syllabusClass-sec1-sub1')));
+          await pop(tester);
+          await pop(tester);
+          await reveal(tester, const Key('signOut'));
           await tapAndSettle(tester, find.byKey(const Key('signOut')));
           await pop(tester);
         }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
@@ -139,9 +193,23 @@ void main() {
             ..threads = [];
           api.assessmentRows.clear();
           await pumpApp(tester, api, prefs: {'token': 'tok'});
+          api
+            ..calendarEvents = []
+            ..syllabusOutline = null;
           for (final tab in ['navHomework', 'navMarks', 'navMessages', 'navRecordings']) {
             await tapAndSettle(tester, find.byKey(Key(tab)));
           }
+          await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+          await reveal(tester, const Key('openCalendar'));
+          await tapAndSettle(tester, find.byKey(const Key('openCalendar')));
+          expect(find.byKey(const Key('calendarEmpty')), findsOneWidget);
+          await pop(tester);
+          await tapAndSettle(tester, find.byKey(const Key('openSyllabus')));
+          await tapAndSettle(tester, find.byKey(const Key('syllabusClass-sec1-sub1')));
+          expect(find.byKey(const Key('syllabusUnlinked')), findsOneWidget);
+          await pop(tester);
+          await pop(tester);
+          await pop(tester);
 
           // Signed out: the sign-in screen in the device language, with every error showing.
           tester.platformDispatcher.localesTestValue = [Locale(lang)];

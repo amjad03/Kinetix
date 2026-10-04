@@ -88,16 +88,17 @@ export class TeacherService {
       attendanceTaken: taken.has(r.slot.id),
     }));
 
-    // The next day with classes, so an empty Sunday can point at Monday.
-    const days = await tx
-      .selectDistinct({ day: timetableSlots.dayOfWeek })
+    // The next day with classes (not cancelled by a holiday), so an empty Sunday can point at Monday.
+    const week = await tx
+      .select({ day: timetableSlots.dayOfWeek, programId: sections.programId })
       .from(timetableSlots)
+      .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
       .where(and(eq(timetableSlots.teacherId, teacherId), isNull(timetableSlots.archivedAt)));
-    const teachingDays = new Set(days.map((d) => d.day));
     let nextTeachingDate: string | null = null;
     for (let i = 1; i <= 7; i++) {
       const candidate = addDays(day, i);
-      if (teachingDays.has(isoWeekday(candidate)) && !holidays.forAll(candidate)) {
+      const wd = isoWeekday(candidate);
+      if (week.some((w) => w.day === wd && !holidays.on(candidate, w.programId))) {
         nextTeachingDate = candidate;
         break;
       }

@@ -1431,6 +1431,36 @@ class AppLocalizationsKn extends AppLocalizations {
   String get booksOutcomes => 'ಕೊನೆಗೆ ವಿದ್ಯಾರ್ಥಿಗಳು ಇದನ್ನು ಮಾಡಬಲ್ಲರು';
 
   @override
+  String booksTaughtCount(int covered, int total) {
+    return '$total ರಲ್ಲಿ $covered ವಿಷಯಗಳನ್ನು ಕಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String booksChapterTaught(int covered, int total) {
+    return '$covered/$total ಕಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String booksTaughtOn(String date) {
+    return '$date ರಂದು ಕಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get booksMarkTaught => 'ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ';
+
+  @override
+  String get booksUndoTaught => 'ಅನ್‌ಡು';
+
+  @override
+  String get booksMarked => 'ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ';
+
+  @override
+  String get booksUnmarked => 'ಕಲಿಸಲಾಗಿದೆ ಎಂಬ ಗುರುತು ತೆಗೆಯಲಾಗಿದೆ';
+
+  @override
+  String get booksMarkFailed => 'ಉಳಿಸಲಾಗಲಿಲ್ಲ. ಬೋರ್ಡ್ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿದೆಯೇ ನೋಡಿ.';
+
+  @override
   String get mathHint => 'ಲೆಕ್ಕ ಅಥವಾ ಸಮೀಕರಣ ಟೈಪ್ ಮಾಡಿ';
 
   @override

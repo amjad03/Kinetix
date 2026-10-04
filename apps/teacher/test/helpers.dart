@@ -108,9 +108,9 @@ void seed(FakeTeacherApi api, {String language = 'en'}) {
   api.addAssessment(title: 'Ledger assignment', maxMarks: 10);
 }
 
-Future<AppState> pumpApp(WidgetTester tester, FakeTeacherApi api, {Map<String, Object>? prefs}) async {
+Future<AppState> pumpApp(WidgetTester tester, FakeTeacherApi api, {Map<String, Object>? prefs, FakeRealtime? realtime}) async {
   if (prefs != null) SharedPreferences.setMockInitialValues(prefs);
-  final state = AppState(api, await SharedPreferences.getInstance());
+  final state = AppState(api, await SharedPreferences.getInstance(), realtime: realtime);
   await tester.pumpWidget(TeacherApp(state: state));
   await state.restore();
   await tester.pumpAndSettle();

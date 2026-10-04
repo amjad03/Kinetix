@@ -3,6 +3,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
+import '../calendar/calendar_screen.dart';
+import '../syllabus/syllabus_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state});
@@ -57,7 +59,9 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final me = state.me!;
+    final me = state.me;
+    // Signed out from here: the app returns to sign-in on the next frame.
+    if (me == null) return const SizedBox.shrink();
     final c = context.colors;
     final l = context.l10n;
     void soon(String what) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.comingLater(what))));
@@ -107,6 +111,27 @@ class ProfileTab extends StatelessWidget {
               onTap: () => _chooseLanguage(context),
             ),
             ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
+            KxSectionHeader(l.teaching),
+            ListTile(
+              key: const Key('openCalendar'),
+              leading: const Icon(Icons.event_outlined),
+              title: Text(l.calendar),
+              subtitle: Text(l.calendarBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CalendarScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openSyllabus'),
+              leading: const Icon(Icons.menu_book_outlined),
+              title: Text(l.syllabusProgress),
+              subtitle: Text(l.syllabusProgressBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => SyllabusClassesScreen(api: state.api, teacherName: me.fullName),
+                ),
+              ),
+            ),
             KxSectionHeader(l.comingSoon),
             ListTile(
               leading: const Icon(Icons.campaign_outlined),

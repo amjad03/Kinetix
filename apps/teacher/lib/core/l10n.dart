@@ -25,8 +25,9 @@ extension L10nContext on BuildContext {
 
 /// Labels for values that come from the API as codes.
 extension AppLocalizationsX on AppLocalizations {
-  /// A plain-language message for a failed request. Messages the server is known to send are
-  /// translated; anything else it says is shown as is (the API answers in English).
+  /// A plain-language message for a failed request. The server's error `code` decides the
+  /// words; older servers send no code, so the English messages they are known to send are
+  /// matched instead. Anything else the server says is shown as is (the API answers in English).
   String errorText(ApiException e) {
     switch (e.kind) {
       case ApiErrorKind.offline:
@@ -35,16 +36,31 @@ extension AppLocalizationsX on AppLocalizations {
         return errorTimeout;
       case ApiErrorKind.notTeacher:
         return errorNotTeacher;
-      case ApiErrorKind.http:
-        return switch (e.status) {
-          403 => errorForbidden,
-          404 => errorNotFound,
-          429 => errorTooManyAttempts,
-          _ => errorGeneric(e.status),
-        };
       case ApiErrorKind.server:
+      case ApiErrorKind.http:
         break;
     }
+    final byCode = switch (e.code) {
+      'AUTH_EXPIRED' || 'UNAUTHORIZED' => errorSessionExpired,
+      'AUTH_WRONG_LOGIN' => errorWrongLogin,
+      'AUTH_INACTIVE' => errorAccountInactive,
+      'PAIRING_CODE_INVALID' => errorCodeExpired,
+      'PAIRING_WRONG_CAMPUS' => errorOtherCampus,
+      'NOT_YOUR_CLASS' => errorNotYourClass,
+      'SUBJECT_NOT_IN_CLASS' => errorSubjectNotInClass,
+      'STUDENTS_NOT_IN_CLASS' => errorStudentsNotInClass,
+      'ATTENDANCE_FUTURE_DATE' => errorFutureAttendance,
+      'HOMEWORK_DUE_PASSED' => errorDueDatePassed,
+      'MARKS_EMPTY' => errorEnterMarksFirst,
+      'RECORDING_UPLOADING' => errorRecordingUploading,
+      'RECORDING_NO_CLASS' => errorRecordingNoClass,
+      'SUBMISSION_MISSING' => errorNothingHandedIn,
+      'TOPIC_NOT_IN_SYLLABUS' => errorTopicNotInSyllabus,
+      'COVERAGE_FUTURE_DATE' => errorFutureCoverage,
+      _ => null,
+    };
+    if (byCode != null) return byCode;
+    // Older servers (no code), and messages that have no code of their own.
     final known = switch (e.message) {
       'Invalid or expired token' => errorSessionExpired,
       'Wrong institution, login or password' => errorWrongLogin,
@@ -61,12 +77,47 @@ extension AppLocalizationsX on AppLocalizations {
       'Some students are not in this class' => errorStudentsNotInClass,
       'The recording is still uploading' => errorRecordingUploading,
       'This recording was not made with a class, so there is no one to share it with' => errorRecordingNoClass,
+      'Nothing has been handed in yet' => errorNothingHandedIn,
+      "That topic is not in this subject's syllabus" => errorTopicNotInSyllabus,
+      'A topic cannot be marked as taught in the future' => errorFutureCoverage,
       _ => null,
     };
     if (known != null) return known;
+    // Codes for the HTTP status: words for the ones a teacher can act on.
+    final byStatus = switch (e.code) {
+      'FORBIDDEN' => errorForbidden,
+      'NOT_FOUND' => errorNotFound,
+      'RATE_LIMITED' => errorTooManyAttempts,
+      'VALIDATION' => errorValidation,
+      'SERVER_ERROR' => errorGeneric(e.status),
+      _ => null,
+    };
+    if (byStatus != null) return byStatus;
+    if (e.kind == ApiErrorKind.http) {
+      return switch (e.status) {
+        403 => errorForbidden,
+        404 => errorNotFound,
+        429 => errorTooManyAttempts,
+        _ => errorGeneric(e.status),
+      };
+    }
     if (e.status == 429) return errorTooManyAttempts;
     return e.message;
   }
+
+  String calendarKind(CalendarKind k) => switch (k) {
+    CalendarKind.holiday => calendarHoliday,
+    CalendarKind.exam => calendarExam,
+    CalendarKind.event => calendarEvent,
+  };
+
+  /// "Handed in", "Checked", "Returned", or "Not handed in" for no status.
+  String submissionStatus(SubmissionStatus? s) => switch (s) {
+    SubmissionStatus.submitted => statusHandedIn,
+    SubmissionStatus.checked => statusChecked,
+    SubmissionStatus.returned => statusReturned,
+    null => statusNotHandedIn,
+  };
 
   String attendanceStatus(AttendanceStatus s) => switch (s) {
     AttendanceStatus.present => statusPresent,

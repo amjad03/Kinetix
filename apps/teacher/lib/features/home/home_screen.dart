@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
@@ -29,8 +31,11 @@ class _HomeScreenState extends State<HomeScreen> {
   // Loaded up front so the Messages badge shows unread threads.
   late final messages = MessagesController(widget.state.api)..load();
   late final recordings = RecordingsController(widget.state.api);
-  // Families write any time: check for new messages when the app comes back to the front.
+  // Families write any time: new messages arrive over the realtime connection; as a fallback
+  // (offline, or events missed while the app was in the background) the list is also refreshed
+  // when the app comes back to the front, after a reconnect, and on tab changes.
   late final _lifecycle = AppLifecycleListener(onResume: _refreshMessages);
+  final _subscriptions = <StreamSubscription<Object?>>[];
   int _tab = 0;
 
   static const _homeworkTab = 1, _marksTab = 2, _messagesTab = 3, _recordingsTab = 4;
@@ -39,14 +44,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _lifecycle;
+    final live = widget.state.realtime;
+    _subscriptions
+      ..add(live.messages.listen(messages.messageArrived))
+      ..add(live.reconnected.listen((_) => _refreshMessages()));
+    final token = widget.state.api.token;
+    if (token != null) live.connect(baseUrl: widget.state.api.baseUrl, token: token);
   }
 
-  void _refreshMessages() {
-    if (!messages.loading) messages.load();
-  }
+  void _refreshMessages() => messages.refresh();
 
   @override
   void dispose() {
+    for (final s in _subscriptions) {
+      s.cancel();
+    }
+    widget.state.realtime.disconnect();
     _lifecycle.dispose();
     today.dispose();
     homework.dispose();

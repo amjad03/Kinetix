@@ -155,6 +155,23 @@ class ApiClient {
     return j is Map<String, dynamic> && j.isNotEmpty ? Syllabus.fromJson(j) : null;
   }
 
+  /// Which topics the open class has been taught, or null in a free session (no class open).
+  Future<Coverage?> coverage() async {
+    try {
+      final j = await _send('GET', '/v1/coverage');
+      return j is Map<String, dynamic> ? Coverage.fromJson(j) : null;
+    } on ApiException catch (e) {
+      if (e.status == 400) return null;
+      rethrow;
+    }
+  }
+
+  /// Marks a topic as taught today to the open class (by the signed-in teacher).
+  Future<void> markTopicTaught(String topicId) async => _send('POST', '/v1/coverage', body: {'topicId': topicId});
+
+  /// Undoes [markTopicTaught].
+  Future<void> unmarkTopicTaught(String topicId) async => _send('DELETE', '/v1/coverage', body: {'topicId': topicId});
+
   Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id') as Map<String, dynamic>);
 
   Future<AiResult<HomeworkDraft>> homeworkDraft(

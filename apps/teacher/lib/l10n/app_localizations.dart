@@ -1628,6 +1628,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language changed on this phone. It will be saved to your account next time you are online.'**
   String get languageSaveFailed;
+
+  /// Today/timetable card on a holiday; title from the academic calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday: {title}. No classes.'**
+  String holidayNoClasses(String title);
+
+  /// Profile section with Calendar and Syllabus progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching'**
+  String get teaching;
+
+  /// Academic calendar screen title and Profile entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// Profile → Calendar subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays, exams and events'**
+  String get calendarBody;
+
+  /// Calendar entry kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get calendarHoliday;
+
+  /// Calendar entry kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam'**
+  String get calendarExam;
+
+  /// Calendar entry kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get calendarEvent;
+
+  /// Calendar empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on the calendar for the next six months.'**
+  String get calendarEmpty;
+
+  /// Calendar entry for some programs only; programs are names like 'BCom, BBA'.
+  ///
+  /// In en, this message translates to:
+  /// **'For {programs}'**
+  String calendarFor(String programs);
+
+  /// Syllabus screen title; button on a class card.
+  ///
+  /// In en, this message translates to:
+  /// **'Syllabus'**
+  String get syllabus;
+
+  /// Profile entry and the class list for syllabus coverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Syllabus progress'**
+  String get syllabusProgress;
+
+  /// Profile → Syllabus progress subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark topics as taught for each class'**
+  String get syllabusProgressBody;
+
+  /// Syllabus screen when the subject has no course. Keep 'KINETIX ERP → Syllabus' in English.
+  ///
+  /// In en, this message translates to:
+  /// **'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.'**
+  String get syllabusUnlinked;
+
+  /// Syllabus progress.
+  ///
+  /// In en, this message translates to:
+  /// **'{covered} of {total} topics taught'**
+  String topicsTaught(int covered, int total);
+
+  /// Next to a chapter: topics taught of all its topics (digits only).
+  ///
+  /// In en, this message translates to:
+  /// **'{covered}/{total}'**
+  String chapterTaught(int covered, int total);
+
+  /// Under a taught topic; date like 'Sat, 3 Oct'.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught {date}'**
+  String taughtOn(String date);
+
+  /// Under a taught topic: when and by which teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught {date} · {name}'**
+  String taughtOnBy(String date, String name);
+
+  /// Date picker title and button tooltip for marking a topic as taught on an earlier day.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught on which day?'**
+  String get taughtOnWhichDay;
+
+  /// Snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as taught'**
+  String get topicMarked;
+
+  /// Snackbar after unticking a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as not taught'**
+  String get topicUnmarked;
+
+  /// Syllabus progress with no classes.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t teach any classes yet.'**
+  String get noClassesAssigned;
+
+  /// Homework detail: the class's handed-in work.
+  ///
+  /// In en, this message translates to:
+  /// **'Submissions'**
+  String get submissions;
+
+  /// Homework submission status: waiting to be checked.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in'**
+  String get statusHandedIn;
+
+  /// Homework submission status.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked'**
+  String get statusChecked;
+
+  /// Homework submission status: sent back to be redone.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get statusReturned;
+
+  /// Homework submission status.
+  ///
+  /// In en, this message translates to:
+  /// **'Not handed in'**
+  String get statusNotHandedIn;
+
+  /// When a student handed in; when like 'Sun, 4 Oct · 10:02 AM'.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in {when}'**
+  String handedInAt(String when);
+
+  /// Submission: the student's written answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer'**
+  String get answer;
+
+  /// Submission: attached photos and PDFs.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and files'**
+  String get photosAndFiles;
+
+  /// Submission file row.
+  ///
+  /// In en, this message translates to:
+  /// **'Open PDF'**
+  String get openPdf;
+
+  /// Snackbar when no app could open a submitted file.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this file. Install an app that opens PDFs.'**
+  String get couldNotOpenFile;
+
+  /// Label above the review remark field.
+  ///
+  /// In en, this message translates to:
+  /// **'Remark (optional)'**
+  String get remarkOptional;
+
+  /// Hint in the review remark field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Good work, or what to redo'**
+  String get reviewRemarkHint;
+
+  /// Button: send the homework back to be redone.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to redo'**
+  String get returnWork;
+
+  /// Button: the homework has been checked.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as checked'**
+  String get checkWork;
+
+  /// Under the review buttons.
+  ///
+  /// In en, this message translates to:
+  /// **'The student and their family are told, with your remark.'**
+  String get reviewNotifies;
+
+  /// Snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s homework marked as checked'**
+  String workChecked(String name);
+
+  /// Snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s homework returned to redo'**
+  String workReturned(String name);
+
+  /// Photo viewer title.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo {index} of {count}'**
+  String photoOf(int index, int count);
+
+  /// Error (SUBMISSION_MISSING).
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been handed in yet'**
+  String get errorNothingHandedIn;
+
+  /// Error (TOPIC_NOT_IN_SYLLABUS).
+  ///
+  /// In en, this message translates to:
+  /// **'That topic is not in this subject\'s syllabus'**
+  String get errorTopicNotInSyllabus;
+
+  /// Error (COVERAGE_FUTURE_DATE).
+  ///
+  /// In en, this message translates to:
+  /// **'A topic cannot be marked as taught in the future'**
+  String get errorFutureCoverage;
+
+  /// Error (VALIDATION): the server rejected the form's fields.
+  ///
+  /// In en, this message translates to:
+  /// **'Some details are not right. Check them and try again.'**
+  String get errorValidation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

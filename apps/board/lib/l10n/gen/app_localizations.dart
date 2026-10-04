@@ -2458,6 +2458,54 @@ abstract class AppLocalizations {
   /// **'By the end, students can'**
   String get booksOutcomes;
 
+  /// Syllabus progress of the open class.
+  ///
+  /// In en, this message translates to:
+  /// **'{covered} of {total} topics taught'**
+  String booksTaughtCount(int covered, int total);
+
+  /// Under a chapter: topics taught.
+  ///
+  /// In en, this message translates to:
+  /// **'{covered}/{total} taught'**
+  String booksChapterTaught(int covered, int total);
+
+  /// Under a taught topic; date like '3 Oct'.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught on {date}'**
+  String booksTaughtOn(String date);
+
+  /// No description provided for @booksMarkTaught.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as taught'**
+  String get booksMarkTaught;
+
+  /// No description provided for @booksUndoTaught.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get booksUndoTaught;
+
+  /// No description provided for @booksMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as taught'**
+  String get booksMarked;
+
+  /// No description provided for @booksUnmarked.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer marked as taught'**
+  String get booksUnmarked;
+
+  /// No description provided for @booksMarkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Check the board is online.'**
+  String get booksMarkFailed;
+
   /// No description provided for @mathHint.
   ///
   /// In en, this message translates to:

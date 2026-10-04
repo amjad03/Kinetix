@@ -111,19 +111,233 @@ class Period {
 }
 
 class DayTimetable {
-  DayTimetable({required this.date, required this.today, required this.periods, this.nextTeachingDate});
+  DayTimetable({required this.date, required this.today, required this.periods, this.nextTeachingDate, this.holiday});
 
   factory DayTimetable.fromJson(Map<String, dynamic> j) => DayTimetable(
     date: j['date'] as String,
     today: j['today'] as String,
     periods: (j['periods'] as List).map((e) => Period.fromJson(e as Map<String, dynamic>)).toList(),
     nextTeachingDate: j['nextTeachingDate'] as String?,
+    holiday: (j['holiday'] as Map?)?['title'] as String?,
   );
 
   final String date;
   final String today;
   final List<Period> periods;
+
+  /// The next day with classes (holidays skipped).
   final String? nextTeachingDate;
+
+  /// The holiday's name when the day is a holiday (then there are no periods).
+  final String? holiday;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Academic calendar
+
+/// Shown with AppLocalizations.calendarKind.
+enum CalendarKind { holiday, exam, event }
+
+/// A holiday, exam days or an event from the academic calendar (GET /v1/calendar).
+class CalendarEvent {
+  CalendarEvent({required this.id, required this.kind, required this.title, required this.startsOn, required this.endsOn, this.programs});
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> j) => CalendarEvent(
+    id: j['id'] as String,
+    kind: CalendarKind.values.asNameMap()[j['kind']] ?? CalendarKind.event,
+    title: j['title'] as String,
+    startsOn: parseIsoDate(j['startsOn'] as String),
+    endsOn: parseIsoDate(j['endsOn'] as String),
+    programs: (j['programs'] as List?)?.cast<String>().where((p) => p.isNotEmpty).toList(),
+  );
+
+  final String id;
+  final CalendarKind kind;
+  final String title;
+  final DateTime startsOn;
+  final DateTime endsOn;
+
+  /// The programs it applies to; null for the whole institution.
+  final List<String>? programs;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Syllabus coverage
+
+class SyllabusTopic {
+  const SyllabusTopic({required this.id, required this.title, this.summary = ''});
+  factory SyllabusTopic.fromJson(Map<String, dynamic> j) =>
+      SyllabusTopic(id: j['id'] as String, title: j['title'] as String, summary: j['summary'] as String? ?? '');
+  final String id;
+  final String title;
+  final String summary;
+}
+
+class SyllabusChapter {
+  const SyllabusChapter({required this.id, required this.title, required this.topics});
+  factory SyllabusChapter.fromJson(Map<String, dynamic> j) => SyllabusChapter(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    topics: [for (final t in (j['topics'] as List? ?? const [])) SyllabusTopic.fromJson(t as Map<String, dynamic>)],
+  );
+  final String id;
+  final String title;
+  final List<SyllabusTopic> topics;
+}
+
+/// A subject's course outline from the content library (GET /v1/content/syllabus).
+class Syllabus {
+  const Syllabus({required this.title, required this.chapters});
+  factory Syllabus.fromJson(Map<String, dynamic> j) => Syllabus(
+    title: j['title'] as String,
+    chapters: [for (final c in (j['chapters'] as List? ?? const [])) SyllabusChapter.fromJson(c as Map<String, dynamic>)],
+  );
+  final String title;
+  final List<SyllabusChapter> chapters;
+}
+
+/// When a topic was taught to the class, and by whom.
+class TopicCoverage {
+  const TopicCoverage({required this.coveredOn, required this.coveredBy});
+  factory TopicCoverage.fromJson(Map<String, dynamic> j) =>
+      TopicCoverage(coveredOn: parseIsoDate(j['coveredOn'] as String), coveredBy: j['coveredBy'] as String? ?? '');
+  final DateTime coveredOn;
+  final String coveredBy;
+}
+
+/// Which topics of a class's syllabus have been taught (GET /v1/coverage).
+class Coverage {
+  const Coverage({required this.total, required this.topics});
+  factory Coverage.fromJson(Map<String, dynamic> j) => Coverage(
+    total: j['total'] as int? ?? 0,
+    topics: {
+      for (final t in (j['topics'] as List? ?? const []).cast<Map<String, dynamic>>()) t['topicId'] as String: TopicCoverage.fromJson(t),
+    },
+  );
+
+  final int total;
+
+  /// Taught topics by id.
+  final Map<String, TopicCoverage> topics;
+
+  int get covered => topics.length;
+  double get fraction => total == 0 ? 0 : (covered / total).clamp(0, 1);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Homework submissions
+
+/// Shown with AppLocalizations.submissionStatus. A student with no status has not handed in.
+enum SubmissionStatus { submitted, checked, returned }
+
+/// A photo or PDF handed in with the work.
+class SubmissionFile {
+  const SubmissionFile({required this.index, required this.name, required this.mime, required this.bytes});
+  factory SubmissionFile.fromJson(Map<String, dynamic> j) =>
+      SubmissionFile(index: j['index'] as int, name: j['name'] as String, mime: j['mime'] as String, bytes: j['bytes'] as int? ?? 0);
+  final int index;
+  final String name;
+  final String mime;
+  final int bytes;
+
+  bool get isImage => mime.startsWith('image/');
+  bool get isPdf => mime == 'application/pdf';
+}
+
+/// One student's row in a homework's submissions.
+class Submission {
+  Submission({
+    required this.studentId,
+    required this.fullName,
+    required this.rollNo,
+    this.status,
+    this.submittedAt,
+    this.text = '',
+    this.files = const [],
+    this.remark,
+    this.late = false,
+  });
+
+  factory Submission.fromJson(Map<String, dynamic> j) => Submission(
+    studentId: j['studentId'] as String,
+    fullName: j['fullName'] as String,
+    rollNo: j['rollNo'] as String? ?? '',
+    status: SubmissionStatus.values.asNameMap()[j['status']],
+    submittedAt: j['submittedAt'] == null ? null : DateTime.parse(j['submittedAt'] as String).toLocal(),
+    text: j['text'] as String? ?? '',
+    files: [for (final f in (j['files'] as List? ?? const [])) SubmissionFile.fromJson(f as Map<String, dynamic>)],
+    remark: j['remark'] as String?,
+    late: j['late'] as bool? ?? false,
+  );
+
+  final String studentId;
+  final String fullName;
+  final String rollNo;
+
+  /// Null when nothing has been handed in.
+  final SubmissionStatus? status;
+  final DateTime? submittedAt;
+  final String text;
+  final List<SubmissionFile> files;
+  final String? remark;
+
+  /// Handed in after the due date.
+  final bool late;
+
+  /// The same student after a review (POST …/review returns the submission without the name).
+  Submission reviewed(Map<String, dynamic> j) =>
+      Submission.fromJson({'studentId': studentId, 'fullName': fullName, 'rollNo': rollNo, ...j});
+}
+
+class SubmissionCounts {
+  const SubmissionCounts({
+    required this.students,
+    required this.submitted,
+    required this.checked,
+    required this.returned,
+    required this.missing,
+  });
+  factory SubmissionCounts.fromJson(Map<String, dynamic> j) => SubmissionCounts(
+    students: j['students'] as int? ?? 0,
+    submitted: j['submitted'] as int? ?? 0,
+    checked: j['checked'] as int? ?? 0,
+    returned: j['returned'] as int? ?? 0,
+    missing: j['missing'] as int? ?? 0,
+  );
+  factory SubmissionCounts.of(List<Submission> s) => SubmissionCounts(
+    students: s.length,
+    submitted: s.where((x) => x.status == SubmissionStatus.submitted).length,
+    checked: s.where((x) => x.status == SubmissionStatus.checked).length,
+    returned: s.where((x) => x.status == SubmissionStatus.returned).length,
+    missing: s.where((x) => x.status == null).length,
+  );
+  final int students;
+
+  /// Handed in and waiting to be checked.
+  final int submitted;
+  final int checked;
+  final int returned;
+
+  /// Not handed in.
+  final int missing;
+}
+
+/// The class list for a homework with who has handed in (GET /v1/homework/:id/submissions).
+class SubmissionList {
+  SubmissionList({required this.counts, required this.students});
+  factory SubmissionList.fromJson(Map<String, dynamic> j) => SubmissionList(
+    counts: SubmissionCounts.fromJson(j['counts'] as Map<String, dynamic>),
+    students: [for (final s in j['students'] as List) Submission.fromJson(s as Map<String, dynamic>)],
+  );
+  SubmissionCounts counts;
+  final List<Submission> students;
+
+  /// Puts a reviewed submission in place and recounts.
+  void replace(Submission s) {
+    final i = students.indexWhere((x) => x.studentId == s.studentId);
+    if (i >= 0) students[i] = s;
+    counts = SubmissionCounts.of(students);
+  }
 }
 
 class TeacherClass {

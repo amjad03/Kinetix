@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -6,6 +8,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
+import '../../core/realtime.dart';
 import '../../widgets/common.dart';
 
 /// A message on screen: sent, still sending, or failed to send.
@@ -50,6 +53,37 @@ class ChatController extends ChangeNotifier {
     } finally {
       loading = false;
       notifyListeners();
+    }
+  }
+
+  /// Fetches the newest page and adds messages not on screen yet (one just arrived). Messages
+  /// still sending or failed stay where they are, at the bottom.
+  Future<bool> refresh() async {
+    if (loading) return false;
+    try {
+      final page = await api.conversationMessages(conversation.id);
+      final have = {for (final b in bubbles) b.message.id};
+      final fresh = [
+        for (final m in page.messages)
+          if (!have.contains(m.id)) m,
+      ];
+      if (fresh.isEmpty) return false;
+      final pending = [
+        for (final b in bubbles)
+          if (b.sending || b.failed) b,
+      ];
+      bubbles
+        ..removeWhere(pending.contains)
+        ..addAll(fresh.map(ChatBubble.new))
+        ..addAll(pending);
+      conversation = page.conversation.copyWith(unread: 0);
+      error = null;
+      notifyListeners();
+      await _markRead();
+      return true;
+    } on ApiException {
+      // Offline: the message shows on the next refresh.
+      return false;
     }
   }
 
@@ -109,7 +143,7 @@ class ChatController extends ChangeNotifier {
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api, required this.conversation, required this.myId, this.onChanged});
+  const ChatScreen({super.key, required this.api, required this.conversation, required this.myId, this.onChanged, this.live});
 
   final TeacherApi api;
   final Conversation conversation;
@@ -117,6 +151,9 @@ class ChatScreen extends StatefulWidget {
 
   /// Called when the thread is read or a message is sent, so the inbox can update.
   final ValueChanged<Conversation>? onChanged;
+
+  /// New messages as they arrive; the thread fetches the ones sent in it.
+  final Stream<MessageNew>? live;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -127,16 +164,25 @@ class _ChatScreenState extends State<ChatScreen> {
   final _text = TextEditingController();
   final _scroll = ScrollController();
   final _bottom = GlobalKey();
+  StreamSubscription<MessageNew>? _live;
 
   @override
   void initState() {
     super.initState();
     _text.addListener(() => setState(() {}));
     controller.load().then((_) => _changed());
+    _live = widget.live?.listen(_arrived);
+  }
+
+  Future<void> _arrived(MessageNew m) async {
+    if (m.conversationId != controller.conversation.id) return;
+    if (controller.bubbles.any((b) => b.message.id == m.messageId)) return;
+    if (await controller.refresh() && mounted) _changed();
   }
 
   @override
   void dispose() {
+    _live?.cancel();
     controller.dispose();
     _text.dispose();
     _scroll.dispose();

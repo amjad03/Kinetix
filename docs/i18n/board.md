@@ -50,6 +50,9 @@ them.
   Eye comfort / Dimming (मद्धिम, ಮಂದತೆ), Chalkboard (ब्लैकबोर्ड, ಕಪ್ಪು ಹಲಗೆ).
 - Ruler as स्केल / ಸ್ಕೇಲ್ and protractor as चाँदा / ಕೋನಮಾಪಕ.
 - Topic: glossary has विषय-वस्तु / ವಿಷಯ; Kannada ವಿಷಯ is also "Subject".
+- Syllabus coverage in Books: Mark as taught (पढ़ाया गया मार्क करें, ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ),
+  "x of y topics taught" (`booksTaughtCount`), Taught on … (`booksTaughtOn`), Undo reuses
+  अनडू / ಅನ್‌ಡು from the toolbar.
 - Maths terms (विविक्तकर / ಶೋಧಕ for discriminant, ಸಮಾಸ for expression, ತ್ರಾಪಿಜ್ಯ, ವಜ್ರಾಕೃತಿ):
   check against the state textbooks.
 - Quiz option letters stay A–D in every language.

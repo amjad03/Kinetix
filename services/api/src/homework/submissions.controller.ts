@@ -132,9 +132,12 @@ export class SubmissionsController {
           text: homeworkSubmissions.text,
           files: homeworkSubmissions.files,
           remark: homeworkSubmissions.remark,
+          checkedAt: homeworkSubmissions.checkedAt,
+          checkedBy: users.fullName,
         })
         .from(students)
         .leftJoin(homeworkSubmissions, and(eq(homeworkSubmissions.studentId, students.id), eq(homeworkSubmissions.homeworkId, id)))
+        .leftJoin(users, eq(users.id, homeworkSubmissions.checkedBy))
         .where(and(eq(students.sectionId, hw.sectionId), eq(students.status, 'active')))
         .orderBy(asc(students.rollNo));
       const out = rows.map((r) => ({ ...r, files: (r.files ?? []).map(publicFile), late: r.submittedAt ? r.submittedAt > hw.dueEnd : false }));
