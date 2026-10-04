@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, eq, gt, lte } from 'drizzle-orm';
+import { and, asc, eq, gt, isNull, lte } from 'drizzle-orm';
 import { Clock, localParts, zonedToInstant } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { tenants, timetableSlots } from '../db/schema.js';
@@ -38,6 +38,7 @@ export class TimetableService {
         and(
           eq(timetableSlots.teacherId, teacherId),
           eq(timetableSlots.dayOfWeek, now.isoWeekday),
+          isNull(timetableSlots.archivedAt),
           lte(timetableSlots.startsAt, now.time),
           gt(timetableSlots.endsAt, now.time),
         ),

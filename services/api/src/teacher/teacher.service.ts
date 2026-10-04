@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { AttendanceCounts, AttendanceStatus, Homework, TeacherPeriod, TeacherTimetableResponse } from '@kinetix/shared';
-import { and, asc, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
@@ -58,7 +58,7 @@ export class TeacherService {
       .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
       .innerJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
       .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
-      .where(and(eq(timetableSlots.teacherId, teacherId), eq(timetableSlots.dayOfWeek, weekday)))
+      .where(and(eq(timetableSlots.teacherId, teacherId), eq(timetableSlots.dayOfWeek, weekday), isNull(timetableSlots.archivedAt)))
       .orderBy(asc(timetableSlots.startsAt));
 
     const taken = new Set<string>();
@@ -85,7 +85,7 @@ export class TeacherService {
     const days = await tx
       .selectDistinct({ day: timetableSlots.dayOfWeek })
       .from(timetableSlots)
-      .where(eq(timetableSlots.teacherId, teacherId));
+      .where(and(eq(timetableSlots.teacherId, teacherId), isNull(timetableSlots.archivedAt)));
     const teachingDays = new Set(days.map((d) => d.day));
     let nextTeachingDate: string | null = null;
     for (let i = 1; i <= 7; i++) {

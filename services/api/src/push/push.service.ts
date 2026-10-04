@@ -15,6 +15,10 @@ const LOCK_SCREEN: Record<string, string> = {
   recording: 'Lesson recording available',
   broadcast: 'Message from your institution',
   fee: 'Fees update',
+  library: 'Library update',
+  marks: 'Marks published',
+  message: 'New message',
+  live: 'Class is live',
 };
 
 /** Sends a push for each new notification to the recipient's registered phones. */

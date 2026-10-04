@@ -26,9 +26,15 @@ export const RealtimeEvents = {
   LiveEnded: 'live.ended',
 } as const;
 
-/** Server → board. `indicator`: show "being viewed" on the board (an institution setting). */
+/**
+ * Server → board. `count` = everyone watching (stream while > 0); `leaders` look in on the
+ * class (show "being viewed" when `indicator`, an institution setting); `students` joined a
+ * class the teacher took live.
+ */
 export interface LiveViewersEvent {
   count: number;
+  leaders: number;
+  students: number;
   indicator: boolean;
 }
 

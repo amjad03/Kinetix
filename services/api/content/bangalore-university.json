@@ -1,7 +1,15 @@
 {
   "curricula": [
-    { "code": "bu-ug", "name": "Bangalore University (UG)", "level": "ug" },
-    { "code": "bu-pg", "name": "Bangalore University (PG)", "level": "pg" }
+    {
+      "code": "bu-ug",
+      "name": "Bangalore University (UG)",
+      "level": "ug"
+    },
+    {
+      "code": "bu-pg",
+      "name": "Bangalore University (PG)",
+      "level": "pg"
+    }
   ],
   "courses": [
     {
@@ -24,7 +32,10 @@
                 "Marked applications carry the stamp of a particular underwriter and are credited to that underwriter; unmarked applications are shared among underwriters in the ratio of their gross liability.",
                 "Under the Companies Act, 2013 (section 40) and its rules, underwriting commission may not exceed 5% of the issue price of shares or 2.5% of the issue price of debentures, or the rate authorised by the articles, whichever is less."
               ],
-              "outcomes": ["Compute each underwriter's net liability with marked and unmarked applications", "Calculate underwriting commission and pass the journal entries"]
+              "outcomes": [
+                "Compute each underwriter's net liability with marked and unmarked applications",
+                "Calculate underwriting commission and pass the journal entries"
+              ]
             }
           ]
         },
@@ -42,7 +53,10 @@
                 "Capitalisation of super profit: Goodwill = Super profit × 100 ÷ Normal rate of return.",
                 "Annuity method: Goodwill = Super profit × present value of an annuity of ₹1 for the given years at the given rate."
               ],
-              "outcomes": ["Value goodwill by the average profit, super profit and capitalisation methods", "Adjust past profits to find maintainable profit"]
+              "outcomes": [
+                "Value goodwill by the average profit, super profit and capitalisation methods",
+                "Adjust past profits to find maintainable profit"
+              ]
             }
           ]
         },
@@ -58,7 +72,10 @@
                 "Yield method: Value per share = (Expected rate of return ÷ Normal rate of return) × Paid-up value per share.",
                 "Fair value = (Intrinsic value + Yield value) ÷ 2."
               ],
-              "outcomes": ["Value equity shares by the net assets and yield methods", "Find the fair value of a share"]
+              "outcomes": [
+                "Value equity shares by the net assets and yield methods",
+                "Find the fair value of a share"
+              ]
             }
           ]
         },
@@ -73,7 +90,9 @@
                 "The balance sheet has two parts: Equity and Liabilities (shareholders' funds, non-current liabilities, current liabilities) and Assets (non-current assets, current assets).",
                 "Details are given in notes to accounts, which are referred to by number on the face of the statements."
               ],
-              "outcomes": ["Prepare a company's statement of profit and loss and balance sheet with notes"]
+              "outcomes": [
+                "Prepare a company's statement of profit and loss and balance sheet with notes"
+              ]
             }
           ]
         }
@@ -87,7 +106,10 @@
       "source": "KINETIX draft based on common Bangalore University BCom Semester 3 units; to be checked against the current syllabus",
       "reviewed": false,
       "chapters": [
-        { "title": "Introduction to Cost Accounting and the Cost Sheet", "topics": [] },
+        {
+          "title": "Introduction to Cost Accounting and the Cost Sheet",
+          "topics": []
+        },
         {
           "title": "Materials",
           "topics": [
@@ -101,7 +123,9 @@
                 "Maximum level = Reorder level + Reorder quantity − (Minimum consumption × Minimum reorder period).",
                 "Average stock level = (Minimum level + Maximum level) ÷ 2, or Minimum level + ½ Reorder quantity."
               ],
-              "outcomes": ["Calculate EOQ and stock levels"]
+              "outcomes": [
+                "Calculate EOQ and stock levels"
+              ]
             }
           ]
         },
@@ -116,11 +140,41 @@
                 "Halsey plan: Bonus = 50% × Time saved × Rate per hour; Earnings = Time taken × Rate + Bonus.",
                 "Rowan plan: Bonus = (Time taken ÷ Time allowed) × Time saved × Rate per hour; Earnings = Time taken × Rate + Bonus."
               ],
-              "outcomes": ["Compute earnings under Halsey and Rowan plans"]
+              "outcomes": [
+                "Compute earnings under Halsey and Rowan plans"
+              ]
             }
           ]
         },
-        { "title": "Overheads", "topics": [] }
+        {
+          "title": "Overheads",
+          "topics": []
+        },
+        {
+          "title": "Marginal Costing",
+          "topics": [
+            {
+              "title": "Marginal costing and break-even analysis",
+              "summary": "Contribution, P/V ratio, break-even point and margin of safety.",
+              "notes": [
+                "Contribution = Sales − Variable cost.",
+                "P/V ratio = Contribution ÷ Sales × 100.",
+                "Break-even point (units) = Fixed cost ÷ Contribution per unit; break-even sales (₹) = Fixed cost ÷ P/V ratio.",
+                "Margin of safety = Actual sales − Break-even sales; also Profit ÷ P/V ratio."
+              ],
+              "outcomes": [
+                "Find the break-even point and margin of safety"
+              ],
+              "resources": [
+                {
+                  "kind": "lab",
+                  "id": "lab.break-even",
+                  "title": "Break-even chart"
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -142,7 +196,10 @@
                 "|A ∪ B| = |A| + |B| − |A ∩ B| for finite sets.",
                 "A relation R on a set A is reflexive if aRa for every a; symmetric if aRb implies bRa; transitive if aRb and bRc imply aRc. A relation with all three properties is an equivalence relation."
               ],
-              "outcomes": ["Apply set identities", "Decide whether a relation is an equivalence relation"]
+              "outcomes": [
+                "Apply set identities",
+                "Decide whether a relation is an equivalence relation"
+              ]
             }
           ]
         },
@@ -157,11 +214,17 @@
                 "The biconditional p ↔ q is true when p and q have the same truth value.",
                 "A tautology is true for every assignment of truth values; a contradiction is false for every assignment."
               ],
-              "outcomes": ["Build truth tables", "Test whether two statements are logically equivalent"]
+              "outcomes": [
+                "Build truth tables",
+                "Test whether two statements are logically equivalent"
+              ]
             }
           ]
         },
-        { "title": "Matrices", "topics": [] },
+        {
+          "title": "Matrices",
+          "topics": []
+        },
         {
           "title": "Graph Theory",
           "topics": [
@@ -172,7 +235,9 @@
                 "Handshaking lemma: the sum of the degrees of all vertices of a graph is twice the number of edges.",
                 "Consequently, every graph has an even number of vertices of odd degree."
               ],
-              "outcomes": ["Use the handshaking lemma"]
+              "outcomes": [
+                "Use the handshaking lemma"
+              ]
             }
           ]
         }

@@ -1,5 +1,11 @@
 {
-  "curricula": [{ "code": "cbse", "name": "CBSE (NCERT textbooks)", "level": "k12" }],
+  "curricula": [
+    {
+      "code": "cbse",
+      "name": "CBSE (NCERT textbooks)",
+      "level": "k12"
+    }
+  ],
   "courses": [
     {
       "curriculum": "cbse",
@@ -20,12 +26,21 @@
                 "For any two positive integers a and b, HCF(a, b) × LCM(a, b) = a × b.",
                 "HCF = product of the smallest power of each common prime factor; LCM = product of the greatest power of each prime factor involved."
               ],
-              "outcomes": ["Find the HCF and LCM of numbers by prime factorisation", "Prove that numbers such as √2 and √3 are irrational"]
+              "outcomes": [
+                "Find the HCF and LCM of numbers by prime factorisation",
+                "Prove that numbers such as √2 and √3 are irrational"
+              ]
             }
           ]
         },
-        { "title": "Polynomials", "topics": [] },
-        { "title": "Pair of Linear Equations in Two Variables", "topics": [] },
+        {
+          "title": "Polynomials",
+          "topics": []
+        },
+        {
+          "title": "Pair of Linear Equations in Two Variables",
+          "topics": []
+        },
         {
           "title": "Quadratic Equations",
           "topics": [
@@ -38,7 +53,17 @@
                 "The discriminant is D = b² − 4ac. If D > 0 there are two distinct real roots; if D = 0, two equal real roots; if D < 0, no real roots.",
                 "Factorisation: split the middle term bx into two terms whose coefficients multiply to ac."
               ],
-              "outcomes": ["Solve a quadratic equation by factorisation and by the quadratic formula", "Decide the nature of the roots from the discriminant"]
+              "outcomes": [
+                "Solve a quadratic equation by factorisation and by the quadratic formula",
+                "Decide the nature of the roots from the discriminant"
+              ],
+              "resources": [
+                {
+                  "kind": "lab",
+                  "id": "lab.graph-plotter",
+                  "title": "Graph plotter"
+                }
+              ]
             }
           ]
         },
@@ -53,12 +78,21 @@
                 "The nth term is aₙ = a + (n − 1)d, where a is the first term.",
                 "The sum of the first n terms is Sₙ = n/2 [2a + (n − 1)d], which can also be written Sₙ = n/2 (a + l) where l is the last term."
               ],
-              "outcomes": ["Find the nth term of an AP", "Find the sum of the first n terms of an AP"]
+              "outcomes": [
+                "Find the nth term of an AP",
+                "Find the sum of the first n terms of an AP"
+              ]
             }
           ]
         },
-        { "title": "Triangles", "topics": [] },
-        { "title": "Coordinate Geometry", "topics": [] },
+        {
+          "title": "Triangles",
+          "topics": []
+        },
+        {
+          "title": "Coordinate Geometry",
+          "topics": []
+        },
         {
           "title": "Introduction to Trigonometry",
           "topics": [
@@ -71,16 +105,83 @@
                 "sin² A + cos² A = 1; 1 + tan² A = sec² A (0° ≤ A < 90°); 1 + cot² A = cosec² A (0° < A ≤ 90°).",
                 "sin 30° = 1/2, sin 45° = 1/√2, sin 60° = √3/2; cos 30° = √3/2, cos 45° = 1/√2, cos 60° = 1/2; tan 30° = 1/√3, tan 45° = 1, tan 60° = √3."
               ],
-              "outcomes": ["Find trigonometric ratios from a right triangle", "Use the standard values and identities to simplify expressions"]
+              "outcomes": [
+                "Find trigonometric ratios from a right triangle",
+                "Use the standard values and identities to simplify expressions"
+              ]
             }
           ]
         },
-        { "title": "Some Applications of Trigonometry", "topics": [] },
-        { "title": "Circles", "topics": [] },
-        { "title": "Areas Related to Circles", "topics": [] },
-        { "title": "Surface Areas and Volumes", "topics": [] },
-        { "title": "Statistics", "topics": [] },
-        { "title": "Probability", "topics": [] }
+        {
+          "title": "Some Applications of Trigonometry",
+          "topics": []
+        },
+        {
+          "title": "Circles",
+          "topics": []
+        },
+        {
+          "title": "Areas Related to Circles",
+          "topics": []
+        },
+        {
+          "title": "Surface Areas and Volumes",
+          "topics": [
+            {
+              "title": "Surface areas and volumes of solids",
+              "summary": "Cuboid, cylinder, cone, sphere, hemisphere and their combinations.",
+              "notes": [
+                "Cuboid: volume = lbh; total surface area = 2(lb + bh + hl).",
+                "Cylinder: volume = πr²h; curved surface area = 2πrh; total surface area = 2πr(r + h).",
+                "Cone: volume = ⅓πr²h; slant height l = √(r² + h²); curved surface area = πrl; total surface area = πr(l + r).",
+                "Sphere: volume = ⁴⁄₃πr³; surface area = 4πr². Hemisphere: volume = ⅔πr³; total surface area = 3πr²."
+              ],
+              "outcomes": [
+                "Find surface areas and volumes of standard solids and their combinations"
+              ],
+              "resources": [
+                {
+                  "kind": "model3d",
+                  "id": "solid.cylinder",
+                  "title": "Cylinder"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "solid.cone",
+                  "title": "Cone"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "solid.sphere",
+                  "title": "Sphere"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "solid.hemisphere",
+                  "title": "Hemisphere"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "solid.cuboid",
+                  "title": "Cuboid"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "solid.frustum",
+                  "title": "Frustum"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Statistics",
+          "topics": []
+        },
+        {
+          "title": "Probability",
+          "topics": []
+        }
       ]
     },
     {
@@ -104,17 +205,72 @@
                 "Double displacement: ions are exchanged between two reactants, e.g. Na₂SO₄ + BaCl₂ → BaSO₄ (precipitate) + 2NaCl.",
                 "Oxidation is gain of oxygen or loss of hydrogen; reduction is loss of oxygen or gain of hydrogen. A reaction in which both occur is a redox reaction."
               ],
-              "outcomes": ["Classify a reaction from its equation", "Write and balance chemical equations"]
+              "outcomes": [
+                "Classify a reaction from its equation",
+                "Write and balance chemical equations"
+              ]
             }
           ]
         },
-        { "title": "Acids, Bases and Salts", "topics": [] },
-        { "title": "Metals and Non-metals", "topics": [] },
-        { "title": "Carbon and its Compounds", "topics": [] },
-        { "title": "Life Processes", "topics": [] },
-        { "title": "Control and Coordination", "topics": [] },
-        { "title": "How do Organisms Reproduce?", "topics": [] },
-        { "title": "Heredity", "topics": [] },
+        {
+          "title": "Acids, Bases and Salts",
+          "topics": []
+        },
+        {
+          "title": "Metals and Non-metals",
+          "topics": []
+        },
+        {
+          "title": "Carbon and its Compounds",
+          "topics": [
+            {
+              "title": "Covalent bonding and the shapes of molecules",
+              "summary": "Carbon shares electrons to form covalent bonds; methane is tetrahedral.",
+              "notes": [
+                "A covalent bond is formed by sharing a pair of electrons between two atoms.",
+                "Carbon has four valence electrons and forms four covalent bonds (tetravalency).",
+                "In methane (CH₄) the four C–H bonds point to the corners of a tetrahedron, about 109.5° apart.",
+                "In carbon dioxide (O=C=O) the molecule is linear, with two double bonds."
+              ],
+              "outcomes": [
+                "Describe covalent bonding in methane and carbon dioxide"
+              ],
+              "resources": [
+                {
+                  "kind": "model3d",
+                  "id": "chem.methane",
+                  "title": "Methane (3D)"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "chem.co2",
+                  "title": "Carbon dioxide (3D)"
+                },
+                {
+                  "kind": "model3d",
+                  "id": "chem.water",
+                  "title": "Water (3D)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Life Processes",
+          "topics": []
+        },
+        {
+          "title": "Control and Coordination",
+          "topics": []
+        },
+        {
+          "title": "How do Organisms Reproduce?",
+          "topics": []
+        },
+        {
+          "title": "Heredity",
+          "topics": []
+        },
         {
           "title": "Light – Reflection and Refraction",
           "topics": [
@@ -127,11 +283,24 @@
                 "Lens formula: 1/v − 1/u = 1/f. Magnification m = h′/h = v/u.",
                 "For a spherical mirror, f = R/2. The power of a lens is P = 1/f with f in metres; its unit is the dioptre (D). A convex lens has positive power, a concave lens negative."
               ],
-              "outcomes": ["Use the mirror and lens formulae with the sign convention", "Find magnification and power"]
+              "outcomes": [
+                "Use the mirror and lens formulae with the sign convention",
+                "Find magnification and power"
+              ],
+              "resources": [
+                {
+                  "kind": "lab",
+                  "id": "lab.lens-mirror",
+                  "title": "Lens and mirror ray diagrams"
+                }
+              ]
             }
           ]
         },
-        { "title": "The Human Eye and the Colourful World", "topics": [] },
+        {
+          "title": "The Human Eye and the Colourful World",
+          "topics": []
+        },
         {
           "title": "Electricity",
           "topics": [
@@ -144,12 +313,28 @@
                 "Resistors in series: R = R₁ + R₂ + R₃. In parallel: 1/R = 1/R₁ + 1/R₂ + 1/R₃.",
                 "Electric power P = VI = I²R = V²/R, in watts. Energy is commonly billed in kilowatt hours: 1 kWh = 3.6 × 10⁶ J."
               ],
-              "outcomes": ["Apply Ohm's law to simple circuits", "Find the equivalent resistance of series and parallel combinations"]
+              "outcomes": [
+                "Apply Ohm's law to simple circuits",
+                "Find the equivalent resistance of series and parallel combinations"
+              ],
+              "resources": [
+                {
+                  "kind": "lab",
+                  "id": "lab.ohms-law",
+                  "title": "Ohm's law circuit"
+                }
+              ]
             }
           ]
         },
-        { "title": "Magnetic Effects of Electric Current", "topics": [] },
-        { "title": "Our Environment", "topics": [] }
+        {
+          "title": "Magnetic Effects of Electric Current",
+          "topics": []
+        },
+        {
+          "title": "Our Environment",
+          "topics": []
+        }
       ]
     }
   ]

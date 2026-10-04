@@ -42,7 +42,7 @@ export class ContentService {
     const chs = await tx.select().from(chapters).where(eq(chapters.courseId, courseId)).orderBy(sql`${chapters.tenantId} is not null`, asc(chapters.position));
     const tps = chs.length
       ? await tx
-          .select({ id: topics.id, chapterId: topics.chapterId, title: topics.title, summary: topics.summary, tenantId: topics.tenantId, position: topics.position })
+          .select({ id: topics.id, chapterId: topics.chapterId, title: topics.title, summary: topics.summary, resources: topics.resources, tenantId: topics.tenantId, position: topics.position })
           .from(topics)
           .where(inArray(topics.chapterId, chs.map((c) => c.id)))
           .orderBy(sql`${topics.tenantId} is not null`, asc(topics.position))
@@ -58,7 +58,7 @@ export class ContentService {
         id: c.id,
         title: c.title,
         own: c.tenantId !== null,
-        topics: tps.filter((t) => t.chapterId === c.id).map((t) => ({ id: t.id, title: t.title, summary: t.summary, own: t.tenantId !== null })),
+        topics: tps.filter((t) => t.chapterId === c.id).map((t) => ({ id: t.id, title: t.title, summary: t.summary, resources: t.resources, own: t.tenantId !== null })),
       })),
     };
   }

@@ -90,6 +90,7 @@ export class ContentController {
           summary: topics.summary,
           notes: topics.notes,
           outcomes: topics.outcomes,
+          resources: topics.resources,
           own: isNotNull(topics.tenantId).mapWith(Boolean),
           chapter: { id: chapters.id, title: chapters.title },
           course: { id: courses.id, title: courses.title, reviewed: courses.reviewed },

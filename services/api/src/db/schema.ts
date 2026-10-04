@@ -12,6 +12,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -194,6 +195,11 @@ export const timetableSlots = pgTable(
     dayOfWeek: smallint('day_of_week').notNull(),
     startsAt: time('starts_at').notNull(),
     endsAt: time('ends_at').notNull(),
+    /**
+     * Set when the slot is removed from the timetable. Kept (not deleted) because attendance,
+     * sessions and recordings point at it.
+     */
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
   },
   (t) => [index('timetable_teacher_day_idx').on(t.teacherId, t.dayOfWeek)],
 );
@@ -260,6 +266,8 @@ export const boardSessions = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     endedAt: timestamp('ended_at', { withTimezone: true }),
     endReason: sessionEndReason('end_reason'),
+    /** "Go live": students of the class may watch the board from the Student App. */
+    liveForClass: boolean('live_for_class').notNull().default(false),
   },
   (t) => [index('board_sessions_device_active_idx').on(t.deviceId, t.endedAt)],
 );
@@ -367,7 +375,7 @@ export const guardians = pgTable(
   (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -682,6 +690,12 @@ export const chapters = pgTable(
   (t) => [index('chapters_course_idx').on(t.courseId, t.position)],
 );
 
+export interface TopicResource {
+  kind: 'model3d' | 'lab';
+  id: string;
+  title: string;
+}
+
 export const topics = pgTable(
   'topics',
   {
@@ -696,6 +710,8 @@ export const topics = pgTable(
     notes: jsonb('notes').$type<string[]>().notNull().default([]),
     /** What students should be able to do afterwards. */
     outcomes: jsonb('outcomes').$type<string[]>().notNull().default([]),
+    /** 3D models and virtual labs on the board for this topic (ids from kinetix_3d / kinetix_labs). */
+    resources: jsonb('resources').$type<TopicResource[]>().notNull().default([]),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: updatedAt(),
   },
@@ -778,6 +794,120 @@ export const receiptCounters = pgTable(
   (t) => [primaryKey({ columns: [t.tenantId, t.financialYear] })],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Library circulation
+// ---------------------------------------------------------------------------------------------
+
+export const libraryBooks = pgTable(
+  'library_books',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    title: text('title').notNull(),
+    author: text('author').notNull().default(''),
+    isbn: text('isbn'),
+    /** Shelf mark, e.g. "657.95 GUP". */
+    callNo: text('call_no'),
+    copies: smallint('copies').notNull().default(1),
+    createdAt: createdAt(),
+  },
+  (t) => [index('library_books_title_idx').on(t.tenantId, t.title)],
+);
+
+export const libraryLoans = pgTable(
+  'library_loans',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    bookId: uuid('book_id').notNull().references(() => libraryBooks.id),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).notNull().defaultNow(),
+    dueOn: date('due_on').notNull(),
+    returnedAt: timestamp('returned_at', { withTimezone: true }),
+    /** Late fine charged on return, in paise. */
+    finePaise: integer('fine_paise').notNull().default(0),
+    issuedBy: uuid('issued_by').notNull().references(() => users.id),
+  },
+  (t) => [index('library_loans_student_idx').on(t.studentId, t.returnedAt), index('library_loans_book_idx').on(t.bookId, t.returnedAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Marks
+// ---------------------------------------------------------------------------------------------
+
+export const assessmentKind = pgEnum('assessment_kind', ['test', 'assignment', 'internal', 'exam', 'practical']);
+
+/** A test, assignment or exam for one class and subject. Families see it once published. */
+export const assessments = pgTable(
+  'assessments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    title: text('title').notNull(),
+    kind: assessmentKind('kind').notNull(),
+    maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
+    heldOn: date('held_on').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('assessments_section_idx').on(t.sectionId, t.heldOn)],
+);
+
+export const marks = pgTable(
+  'marks',
+  {
+    tenantId: tenantId(),
+    assessmentId: uuid('assessment_id').notNull().references(() => assessments.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** Null with absent = true when the student missed it. */
+    marks: numeric('marks', { precision: 6, scale: 2, mode: 'number' }),
+    absent: boolean('absent').notNull().default(false),
+    remark: text('remark'),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.assessmentId, t.studentId] })],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Messages between families and teachers
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * One thread between a member of staff and a family member (or an adult student) about one
+ * student. Staff see only threads they are in; school leaders can read any for safeguarding.
+ */
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    staffId: uuid('staff_id').notNull().references(() => users.id),
+    familyId: uuid('family_id').notNull().references(() => users.id),
+    lastMessageAt: timestamp('last_message_at', { withTimezone: true }),
+    staffReadAt: timestamp('staff_read_at', { withTimezone: true }),
+    familyReadAt: timestamp('family_read_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('conversations_trio_uq').on(t.studentId, t.staffId, t.familyId), index('conversations_staff_idx').on(t.staffId, t.lastMessageAt)],
+);
+
+export const messages = pgTable(
+  'messages',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
+    senderId: uuid('sender_id').notNull().references(() => users.id),
+    body: text('body').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('messages_conversation_idx').on(t.conversationId, t.createdAt)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -811,5 +941,11 @@ export const TENANT_TABLES = [
   'fee_invoices',
   'fee_payments',
   'receipt_counters',
+  'library_books',
+  'library_loans',
+  'assessments',
+  'marks',
+  'conversations',
+  'messages',
   'audit_log',
 ] as const;

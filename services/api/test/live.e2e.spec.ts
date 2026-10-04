@@ -63,7 +63,7 @@ describe('live classroom view', () => {
     const snapshotWanted = next(board, RealtimeEvents.LiveSnapshotRequest);
     const ack = await watch(principal);
     expect(ack).toMatchObject({ ok: true, session: { teacher: expect.any(String), section: 'BCom Sem 3 A', subject: 'Corporate Accounting' } });
-    expect(await viewers).toEqual({ count: 1, indicator: true });
+    expect(await viewers).toEqual({ count: 1, leaders: 1, students: 0, indicator: true });
     await snapshotWanted;
 
     const devices = await http().get('/v1/admin/devices').set('authorization', `Bearer ${tokens.principal}`).expect(200);

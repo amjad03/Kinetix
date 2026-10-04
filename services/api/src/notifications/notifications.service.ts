@@ -11,7 +11,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live';
 
 /** "₹45,000" or "₹1,250.50" from paise. */
 export function rupees(paise: number): string {
@@ -180,6 +180,60 @@ export class NotificationsService {
         body: `${p.title} for ${p.studentName}. Receipt ${p.receiptNo}.`,
         data: { paymentId: p.paymentId, studentId: p.studentId },
         dedupeKey: `fee-paid:${p.paymentId}`,
+      },
+    );
+  }
+
+  /** The student and their family: used by events about one student. */
+  private studentAndFamily(studentId: string): SQL {
+    return sql`select g.user_id from guardians g where g.student_id = ${studentId}::uuid
+               union select s.user_id from students s where s.id = ${studentId}::uuid and s.user_id is not null`;
+  }
+
+  async libraryIssued(tx: Tx, l: { loanId: string; studentId: string; studentName: string; title: string; dueOn: string }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(l.studentId), {
+      kind: 'library',
+      title: `Library book borrowed: ${l.title}`,
+      body: `${l.studentName.split(' ')[0]} borrowed "${l.title}". Please return it by ${shortDate(l.dueOn)}.`,
+      data: { loanId: l.loanId, studentId: l.studentId },
+      dedupeKey: `library:${l.loanId}`,
+    });
+  }
+
+  /** Marks published for a class: each student and their family. */
+  async marksPublished(tx: Tx, a: { id: string; sectionId: string; title: string; subjectName: string }): Promise<void> {
+    await this.insertFor(tx, this.sectionAudience([a.sectionId]), {
+      kind: 'marks',
+      title: `Marks published: ${a.subjectName}`,
+      body: `${a.title}. Open the app to see the marks and the class average.`,
+      data: { assessmentId: a.id, sectionId: a.sectionId },
+      dedupeKey: `marks:${a.id}`,
+    });
+  }
+
+  /** A new message in a conversation, for the other side. */
+  async messageSent(tx: Tx, m: { id: string; conversationId: string; recipientId: string; senderName: string; body: string; studentId: string }): Promise<void> {
+    const preview = m.body.length > 120 ? `${m.body.slice(0, 117)}…` : m.body;
+    await this.insertFor(tx, sql`select ${m.recipientId}::uuid`, {
+      kind: 'message',
+      title: `Message from ${m.senderName}`,
+      body: preview,
+      data: { conversationId: m.conversationId, studentId: m.studentId },
+      dedupeKey: `message:${m.id}`,
+    });
+  }
+
+  /** The teacher started a live class: the students of the class (not families). */
+  async liveClass(tx: Tx, l: { sessionId: string; sectionId: string; subjectName: string | null; teacherName: string }): Promise<void> {
+    await this.insertFor(
+      tx,
+      sql`select s.user_id from students s where s.section_id = ${l.sectionId}::uuid and s.status = 'active' and s.user_id is not null`,
+      {
+        kind: 'live',
+        title: `Live now: ${l.subjectName ?? 'class'}`,
+        body: `${l.teacherName} is teaching live. Open KINETIX to watch the board.`,
+        data: { sessionId: l.sessionId, sectionId: l.sectionId },
+        dedupeKey: `live:${l.sessionId}`,
       },
     );
   }

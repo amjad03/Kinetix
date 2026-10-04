@@ -85,9 +85,21 @@ receipt_counters (tenant, financial_year, last_no)  — RCPT/2026-27/00001…
 
 See [fees-payments.md](fees-payments.md).
 
+## Library, marks, messages, timetable history
+
+```
+library_books (title, author, isbn, call_no, copies)
+library_loans (book, student, issued_at, due_on, returned_at, fine_paise)   — ₹2/day late (setting later)
+assessments (section, subject, title, kind, max_marks, held_on, published_at)
+marks (assessment, student, marks, absent, remark)                         — families see published only
+conversations (student, staff, family member, read markers) + messages     — leaders' reads are audited
+timetable_slots.archived_at                                                — edits archive and re-create
+board_sessions.live_for_class                                              — "Go live" to the class
+topics.resources [{kind: model3d|lab, id, title}]                          — opens on the board
+```
+
 ## Planned next
 
 - Year plan and syllabus progress: `lesson_plans`, `coverage_events`.
 - Homework submissions: `submissions` against `homework` (the `homework` table itself is built).
-- Library circulation: `library_items`, `loans` (visible to students and parents).
 - Consent records per guardian (DPDP).

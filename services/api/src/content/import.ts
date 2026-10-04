@@ -11,6 +11,8 @@ const Topic = z.object({
   summary: z.string().default(''),
   notes: z.array(z.string()).default([]),
   outcomes: z.array(z.string()).default([]),
+  /** 3D models and labs on the board: ids from packages/kinetix_3d and packages/kinetix_labs. */
+  resources: z.array(z.object({ kind: z.enum(['model3d', 'lab']), id: z.string().min(1), title: z.string().min(1) })).default([]),
 });
 
 const LibraryFile = z.object({
@@ -64,7 +66,7 @@ export async function importContent(db: NodePgDatabase<typeof s>, dir = CONTENT_
           for (const [ti, t] of ch.topics.entries()) {
             const tWhere = and(eq(s.topics.chapterId, chapter.id), isNull(s.topics.tenantId), eq(s.topics.position, ti + 1));
             const [existing] = await tx.select({ id: s.topics.id }).from(s.topics).where(tWhere);
-            const tv = { title: t.title, summary: t.summary, notes: t.notes, outcomes: t.outcomes, updatedAt: new Date() };
+            const tv = { title: t.title, summary: t.summary, notes: t.notes, outcomes: t.outcomes, resources: t.resources, updatedAt: new Date() };
             if (existing) await tx.update(s.topics).set(tv).where(eq(s.topics.id, existing.id));
             else await tx.insert(s.topics).values({ ...tv, chapterId: chapter.id, position: ti + 1 });
             topics++;

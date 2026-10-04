@@ -56,6 +56,7 @@ async function main() {
   await staff('Dr. Meera Rao', 'principal@demo.kinetix.in', ['principal']);
   const admin = await staff('Admin Office', 'admin@demo.kinetix.in', ['tenant_admin']);
   await staff('Accounts Office', 'accounts@demo.kinetix.in', ['accountant']);
+  const librarian = await staff('Library Desk', 'library@demo.kinetix.in', ['librarian']);
   const anita = await staff('Anita Sharma', 'anita@demo.kinetix.in', ['teacher'], 'hi');
   const ravi = await staff('Ravi Kumar', 'ravi@demo.kinetix.in', ['teacher', 'hod'], 'kn');
 
@@ -92,14 +93,52 @@ async function main() {
     const [u] = await db.insert(s.users).values({ tenantId, fullName, email, phone, passwordHash: hash }).returning();
     await db.insert(s.userRoles).values({ tenantId, userId: u.id, role: 'guardian', campusId: campus.id });
     for (const [kid, relation] of kids) await db.insert(s.guardians).values({ tenantId, userId: u.id, studentId: byName(kid).id, relation });
+    return u;
   };
-  await parent('Rajesh Patel', 'parent@demo.kinetix.in', '+919800000001', [['Aarav Patel', 'father'], ['Diya Patel', 'father']]);
+  const rajesh = await parent('Rajesh Patel', 'parent@demo.kinetix.in', '+919800000001', [['Aarav Patel', 'father'], ['Diya Patel', 'father']]);
   await parent('Sunita Gowda', 'sunita@demo.kinetix.in', '+919800000002', [['Ananya Gowda', 'mother']]);
+
+  // Rajesh asked Anita about Aarav's absence; she replied.
+  const [chat] = await db
+    .insert(s.conversations)
+    .values({ tenantId, studentId: byName('Aarav Patel').id, staffId: anita.id, familyId: rajesh.id, lastMessageAt: new Date(Date.now() - 20 * 3600_000), staffReadAt: new Date(Date.now() - 20 * 3600_000) })
+    .returning();
+  await db.insert(s.messages).values([
+    { tenantId, conversationId: chat.id, senderId: rajesh.id, body: 'Good morning ma’am. Aarav had fever on Tuesday, so he missed Corporate Accounting. Could you share what was covered?', createdAt: new Date(Date.now() - 26 * 3600_000) },
+    { tenantId, conversationId: chat.id, senderId: anita.id, body: 'Hope he is better now. The lesson recording and the board are shared in the app; please ask him to try Exercise 4.2.', createdAt: new Date(Date.now() - 20 * 3600_000) },
+  ]);
 
   // A student login for the Student App: Aarav.
   const [aaravUser] = await db.insert(s.users).values({ tenantId, fullName: 'Aarav Patel', email: 'aarav@demo.kinetix.in', passwordHash: hash }).returning();
   await db.insert(s.userRoles).values({ tenantId, userId: aaravUser.id, role: 'student', campusId: campus.id });
   await db.update(s.students).set({ userId: aaravUser.id }).where(eq(s.students.id, byName('Aarav Patel').id));
+
+  // Library: a small catalogue; Aarav has one book out (due soon) and Diya one overdue.
+  const books = await db
+    .insert(s.libraryBooks)
+    .values([
+      { tenantId, title: 'Corporate Accounting', author: 'S. N. Maheshwari', callNo: '657.95 MAH', copies: 4 },
+      { tenantId, title: 'Cost Accounting: Principles and Practice', author: 'M. N. Arora', callNo: '657.42 ARO', copies: 3 },
+      { tenantId, title: 'Discrete Mathematics and Its Applications', author: 'Kenneth H. Rosen', callNo: '511.1 ROS', copies: 2 },
+      { tenantId, title: 'Let Us C', author: 'Yashavant Kanetkar', callNo: '005.133 KAN', copies: 2 },
+      { tenantId, title: 'Wings of Fire', author: 'A. P. J. Abdul Kalam', callNo: '920 KAL', copies: 2 },
+    ])
+    .returning();
+  const isoDay = (d: number) => new Date(Date.now() + d * 86400_000).toISOString().slice(0, 10);
+  await db.insert(s.libraryLoans).values([
+    { tenantId, bookId: books[0].id, studentId: byName('Aarav Patel').id, issuedAt: new Date(Date.now() - 9 * 86400_000), dueOn: isoDay(5), issuedBy: librarian.id },
+    { tenantId, bookId: books[2].id, studentId: byName('Diya Patel').id, issuedAt: new Date(Date.now() - 18 * 86400_000), dueOn: isoDay(-4), issuedBy: librarian.id },
+  ]);
+
+  // Marks: Anita's published unit test for BCom Sem 3 A.
+  const bcomKids = allStudents.filter((x) => x.sectionId === bcom3a.id).sort((a, b) => a.rollNo.localeCompare(b.rollNo));
+  const [unitTest] = await db
+    .insert(s.assessments)
+    .values({ tenantId, sectionId: bcom3a.id, subjectId: corpAcc.id, title: 'Unit test 1: Underwriting of shares', kind: 'test', maxMarks: 25, heldOn: isoDay(-6), publishedAt: new Date(Date.now() - 3 * 86400_000), createdBy: anita.id })
+    .returning();
+  await db.insert(s.marks).values(
+    bcomKids.map((st, i) => (i === 7 ? { tenantId, assessmentId: unitTest.id, studentId: st.id, marks: null, absent: true } : { tenantId, assessmentId: unitTest.id, studentId: st.id, marks: [19, 22.5, 17, 24, 13, 20, 21.5, 0, 16, 23, 18, 11.5][i] })),
+  );
 
   // Fees: Semester tuition for both classes. Sunita has paid Ananya's at the counter.
   const issueFee = async (sectionId: string, title: string, amountPaise: number, dueInDays: number) => {
@@ -236,6 +275,7 @@ Seeded tenant "demo-college".
     principal@demo.kinetix.in   (principal: can circulate messages)
     admin@demo.kinetix.in       (tenant admin)
     accounts@demo.kinetix.in    (accountant: fees)
+    library@demo.kinetix.in     (librarian)
     anita@demo.kinetix.in       (teacher, BCom Sem 3 A)
     ravi@demo.kinetix.in        (teacher + HOD, BCA Sem 1 A)
   Parent logins (same password):

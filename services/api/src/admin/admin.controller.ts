@@ -290,7 +290,7 @@ export class AdminController {
       .innerJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
       .innerJoin(users, eq(users.id, timetableSlots.teacherId))
       .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
-      .where(eq(timetableSlots.dayOfWeek, isoWeekday(day)))
+      .where(and(eq(timetableSlots.dayOfWeek, isoWeekday(day)), isNull(timetableSlots.archivedAt)))
       .orderBy(asc(timetableSlots.startsAt), asc(sections.displayName));
 
     const ids = slots.map((s) => s.id);

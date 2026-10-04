@@ -10,13 +10,13 @@ import {
 } from '@nestjs/websockets';
 import { RealtimeEvents, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
 import { and, eq, gt, isNull } from 'drizzle-orm';
-import type { Server, Socket } from 'socket.io';
+import type { Namespace, Server, Socket } from 'socket.io';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { Principal, RoleName } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { DbService } from '../db/db.service.js';
-import { boardSessions, devices, sections, subjects, tenants, users } from '../db/schema.js';
+import { boardSessions, devices, sections, students, subjects, tenants, users } from '../db/schema.js';
 
 export const deviceRoom = (deviceId: string) => `device:${deviceId}`;
 const liveRoom = (deviceId: string) => `live:${deviceId}`;
@@ -30,7 +30,11 @@ const MAX_FRAME_EVENTS = 5000;
 interface Watch {
   deviceId: string;
   since: number;
+  role: ViewerRole;
 }
+
+/** Leaders look in on a class (live view); students attend a class the teacher took live. */
+type ViewerRole = 'leader' | 'student';
 
 /**
  * Socket.IO namespace `/realtime`.
@@ -54,8 +58,8 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   /** Open sockets per device, for the dashboard's "online" indicator. */
   private readonly connected = new Map<string, number>();
 
-  /** Viewer sockets per watched device. */
-  private readonly viewers = new Map<string, Set<string>>();
+  /** Viewer sockets per watched device, and whether each is a school leader or a student. */
+  private readonly viewers = new Map<string, Map<string, ViewerRole>>();
 
   constructor(
     private readonly auth: AuthGuard,
@@ -78,7 +82,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       const principal = await this.auth.resolve(token);
       socket.data.principal = principal;
       if (principal.kind === 'user') {
-        if (!principal.roles.some((r) => LIVE_VIEW_ROLES.includes(r))) throw new Error('role cannot watch classes');
+        if (!principal.roles.some((r) => LIVE_VIEW_ROLES.includes(r) || r === 'student')) throw new Error('role cannot watch classes');
         socket.data.watches = new Map<string, Watch>();
         socket.emit('ready', { userId: principal.userId });
         return;
@@ -126,39 +130,66 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage(RealtimeEvents.LiveWatch)
   async watch(@ConnectedSocket() socket: Socket, @MessageBody() body: { deviceId?: string }): Promise<LiveWatchAck> {
     const p = socket.data.principal as Principal | undefined;
-    if (p?.kind !== 'user') return { ok: false, error: 'Only school leaders can watch classes' };
+    if (p?.kind !== 'user') return { ok: false, error: 'Only school leaders and students can watch classes' };
     const deviceId = body?.deviceId;
     if (typeof deviceId !== 'string' || !/^[0-9a-f-]{36}$/i.test(deviceId)) return { ok: false, error: 'Unknown board' };
+    const role: ViewerRole = p.roles.some((r) => LIVE_VIEW_ROLES.includes(r)) ? 'leader' : 'student';
 
     const found = await this.db.withTenant(p.tenantId, async (tx) => {
       const [tenant] = await tx.select({ settings: tenants.settings }).from(tenants);
-      if (!tenant?.settings.liveViewEnabled) return { error: 'Live view is turned off for your institution' };
+      if (role === 'leader' && !tenant?.settings.liveViewEnabled) return { error: 'Live view is turned off for your institution' };
       const [device] = await tx.select({ id: devices.id }).from(devices).where(eq(devices.id, deviceId));
       if (!device) return { error: 'Unknown board' };
       const [session] = await tx
-        .select({ teacher: users.fullName, section: sections.displayName, subject: subjects.name, startedAt: boardSessions.startedAt })
+        .select({
+          teacher: users.fullName,
+          section: sections.displayName,
+          sectionId: boardSessions.sectionId,
+          subject: subjects.name,
+          startedAt: boardSessions.startedAt,
+          liveForClass: boardSessions.liveForClass,
+        })
         .from(boardSessions)
         .innerJoin(users, eq(users.id, boardSessions.teacherId))
         .leftJoin(sections, eq(sections.id, boardSessions.sectionId))
         .leftJoin(subjects, eq(subjects.id, boardSessions.subjectId))
         .where(and(eq(boardSessions.deviceId, deviceId), isNull(boardSessions.endedAt), gt(boardSessions.expiresAt, this.clock.now())));
       if (!session) return { error: 'No class is being taught on this board right now' };
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'live_view.start', subjectType: 'device', subjectId: deviceId });
-      return { session: { ...session, startedAt: session.startedAt.toISOString() } };
+      if (role === 'student') {
+        const [me] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.userId, p.userId));
+        if (!me || me.sectionId !== session.sectionId) return { error: 'This is not your class' };
+        if (!session.liveForClass) return { error: 'Your teacher has not started a live class' };
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: role === 'leader' ? 'live_view.start' : 'live_class.join', subjectType: 'device', subjectId: deviceId });
+      const { sectionId: _s, liveForClass: _l, ...shown } = session;
+      return { session: { ...shown, startedAt: session.startedAt.toISOString() } };
     });
     if ('error' in found) return { ok: false, error: found.error };
     if (!this.isOnline(deviceId)) return { ok: false, error: 'This board is offline' };
 
     const watches = socket.data.watches as Map<string, Watch>;
     if (!watches.has(deviceId)) {
-      watches.set(deviceId, { deviceId, since: Date.now() });
+      watches.set(deviceId, { deviceId, since: Date.now(), role });
       await socket.join(liveRoom(deviceId));
-      const set = this.viewers.get(deviceId) ?? new Set<string>();
-      set.add(socket.id);
+      const set = this.viewers.get(deviceId) ?? new Map<string, ViewerRole>();
+      set.set(socket.id, role);
       this.viewers.set(deviceId, set);
     }
     await this.tellBoard(p.tenantId, deviceId, true);
     return { ok: true, session: found.session };
+  }
+
+  /** The teacher stopped the live class: students watching are sent away; leaders stay. */
+  async endClassLive(tenantId: string, deviceId: string): Promise<void> {
+    for (const [socketId, role] of [...(this.viewers.get(deviceId) ?? [])]) {
+      if (role !== 'student') continue;
+      // This gateway is a namespace, so its socket table is keyed by socket id.
+      const socket = (this.server as unknown as Namespace).sockets.get(socketId);
+      if (!socket) continue;
+      socket.emit(RealtimeEvents.LiveEnded, { deviceId, reason: 'live_off' });
+      await this.unwatch(socket, deviceId).catch(() => undefined);
+    }
+    await this.tellBoard(tenantId, deviceId, false).catch(() => undefined);
   }
 
   @SubscribeMessage(RealtimeEvents.LiveUnwatch)
@@ -186,6 +217,10 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     const set = this.viewers.get(deviceId);
     set?.delete(socket.id);
     if (set && set.size === 0) this.viewers.delete(deviceId);
+    if (w.role === 'student') {
+      await this.tellBoard(p.tenantId, deviceId, false);
+      return;
+    }
     await this.db
       .withTenant(p.tenantId, (tx) =>
         audit(tx, {
@@ -205,7 +240,13 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   /** Viewer count to the board; a new viewer also needs a full snapshot. */
   private async tellBoard(tenantId: string, deviceId: string, wantSnapshot: boolean): Promise<void> {
     const [tenant] = await this.db.withTenant(tenantId, (tx) => tx.select({ settings: tenants.settings }).from(tenants));
-    const event: LiveViewersEvent = { count: this.viewerCount(deviceId), indicator: tenant?.settings.liveViewIndicator ?? true };
+    const roles = [...(this.viewers.get(deviceId)?.values() ?? [])];
+    const event: LiveViewersEvent = {
+      count: roles.length,
+      leaders: roles.filter((r) => r === 'leader').length,
+      students: roles.filter((r) => r === 'student').length,
+      indicator: tenant?.settings.liveViewIndicator ?? true,
+    };
     this.server.to(deviceRoom(deviceId)).emit(RealtimeEvents.LiveViewers, event);
     if (wantSnapshot && event.count > 0) this.server.to(deviceRoom(deviceId)).emit(RealtimeEvents.LiveSnapshotRequest, {});
   }
