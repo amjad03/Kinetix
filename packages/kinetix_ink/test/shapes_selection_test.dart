@@ -158,4 +158,30 @@ void main() {
       expect(pages.current.palmMode, PalmMode.off);
     });
   });
+
+  group('loading saved boards', () {
+    test('load replaces every page and resets history', () {
+      final pages = BoardPages();
+      drag(pages.current, 1, const Offset(0, 0), const Offset(10, 10));
+      pages.addPage();
+      expect(pages.isBlank, isFalse);
+      final saved = [
+        [Stroke(id: 'a', style: const InkStyle(tool: InkTool.pen, color: Color(0xFF000000), width: 2), points: [p(1, 1), p(2, 2)])],
+        <Stroke>[],
+        <Stroke>[],
+      ];
+      pages.load(saved);
+      expect(pages.count, 3);
+      expect(pages.index, 0);
+      expect(pages.current.strokes, hasLength(1));
+      expect(pages.current.canUndo, isFalse);
+      expect(pages.allStrokes.map((s) => s.length), [1, 0, 0]);
+    });
+
+    test('loading nothing leaves one blank page', () {
+      final pages = BoardPages()..load([]);
+      expect(pages.count, 1);
+      expect(pages.isBlank, isTrue);
+    });
+  });
 }

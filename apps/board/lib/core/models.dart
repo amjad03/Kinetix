@@ -107,3 +107,36 @@ class PairingCode {
   /// "482913" → "482 913", easier to read from the back of the room.
   String get display => '${code.substring(0, 3)} ${code.substring(3)}';
 }
+
+/// A saved board as listed by `GET /v1/whiteboards`.
+class WhiteboardSummary {
+  WhiteboardSummary({
+    required this.id,
+    required this.title,
+    required this.pageCount,
+    required this.updatedAt,
+    this.sectionName,
+    this.subjectName,
+    this.sharedAt,
+  });
+
+  factory WhiteboardSummary.fromJson(Map<String, dynamic> j) => WhiteboardSummary(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    pageCount: j['pageCount'] as int,
+    updatedAt: DateTime.parse(j['updatedAt'] as String),
+    sectionName: j['sectionName'] as String?,
+    subjectName: j['subjectName'] as String?,
+    sharedAt: j['sharedAt'] == null ? null : DateTime.parse(j['sharedAt'] as String),
+  );
+
+  final String id;
+  final String title;
+  final int pageCount;
+  final DateTime updatedAt;
+  final String? sectionName;
+  final String? subjectName;
+  final DateTime? sharedAt;
+
+  bool get shared => sharedAt != null;
+}

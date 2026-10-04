@@ -15,6 +15,7 @@ import 'classroom_tools.dart';
 import 'popovers.dart';
 import 'profile_menu.dart';
 import 'side_panel.dart';
+import 'whiteboard_dialogs.dart';
 
 enum _Popover { write, erase, theme, shapes, tools, eyeComfort, profile }
 
@@ -46,6 +47,8 @@ class _BoardScreenState extends State<BoardScreen> {
   bool _timer = false;
   Offset _timerPos = const Offset(40, 80);
   bool _signInOpen = false;
+  Size _canvasSize = const Size(1920, 1080);
+  String? _boardTitle;
   String? _lastSessionId;
 
   BoardController get board => widget.board;
@@ -109,22 +112,150 @@ class _BoardScreenState extends State<BoardScreen> {
     if (mounted) setState(() => _signInOpen = false);
   }
 
-  Future<void> _endClass() async {
-    final ok = await showDialog<bool>(
+  /// The board as it stands, ready to save.
+  SavedBoard _snapshot() => SavedBoard(background: _background, canvas: _canvasSize, pages: _pages.allStrokes);
+
+  Future<void> _save() async {
+    setState(() => _popover = null);
+    if (!board.isSignedIn) {
+      showBoardMessage(context, 'Sign in with the Teacher app to save boards to the cloud.');
+      return;
+    }
+    if (_pages.isBlank) {
+      showBoardMessage(context, 'There is nothing on the board to save yet.');
+      return;
+    }
+    final choice = await showDialog<({String title, bool share})>(
       context: context,
-      builder: (context) => BoardChromeTheme(
-        child: AlertDialog(
-          icon: const Icon(Icons.logout),
-          title: const Text('End class?'),
-          content: const Text('You will be signed out of this board. Attendance and answers recorded in class are kept.'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Keep teaching')),
-            FilledButton(key: const Key('confirm-end'), onPressed: () => Navigator.pop(context, true), child: const Text('End class')),
-          ],
+      builder: (_) => BoardChromeTheme(
+        child: SaveBoardDialog(
+          initialTitle: _boardTitle ?? board.defaultBoardTitle(DateTime.now()),
+          classLabel: board.session?.sectionName,
         ),
       ),
     );
-    if (ok == true) await board.endClass();
+    if (choice == null || !mounted) return;
+    await _saveAs(choice.title, share: choice.share);
+  }
+
+  Future<bool> _saveAs(String title, {required bool share}) async {
+    try {
+      final saved = await board.saveBoard(_snapshot(), title: title, share: share);
+      _boardTitle = title;
+      if (mounted) {
+        showBoardMessage(context, saved.shared ? 'Saved and shared with ${saved.sectionName}.' : 'Saved to Your whiteboards.');
+      }
+      return true;
+    } catch (e) {
+      if (mounted) showBoardMessage(context, 'Could not save the board: $e');
+      return false;
+    }
+  }
+
+  void _openWhiteboards() {
+    final api = board.api;
+    if (!board.isSignedIn || api == null) {
+      showBoardMessage(context, 'Sign in with the Teacher app to see your saved boards.');
+      return;
+    }
+    showDialog<void>(
+      context: context,
+      builder: (_) => BoardChromeTheme(
+        child: WhiteboardsDialog(
+          api: api,
+          onOpen: (summary) async {
+            if (!_pages.isBlank) {
+              final replace = await showDialog<bool>(
+                context: context,
+                builder: (context) => BoardChromeTheme(
+                  child: AlertDialog(
+                    icon: const Icon(Icons.warning_amber_rounded),
+                    title: const Text('Replace the board?'),
+                    content: const Text('What is on the board now will be lost unless you save it first.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                      FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Open')),
+                    ],
+                  ),
+                ),
+              );
+              if (replace != true) return;
+            }
+            try {
+              final saved = await api.whiteboard(summary.id);
+              _pages.load(saved.pages);
+              board.whiteboardId = summary.id;
+              setState(() {
+                _background = saved.background;
+                _boardTitle = summary.title;
+              });
+              if (mounted) showBoardMessage(context, 'Opened "${summary.title}". Saving again updates it.');
+            } catch (e) {
+              if (mounted) showBoardMessage(context, 'Could not open the board: $e');
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _endClass() async {
+    final hasInk = !_pages.isBlank;
+    final canShare = board.session?.sectionName != null;
+    var save = hasInk;
+    var share = hasInk && canShare;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => BoardChromeTheme(
+        child: StatefulBuilder(
+          builder: (context, setDialog) => AlertDialog(
+            icon: const Icon(Icons.logout),
+            title: const Text('End class?'),
+            content: SizedBox(
+              width: 480,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('You will be signed out of this board. Attendance and answers recorded in class are kept.'),
+                  if (hasInk) ...[
+                    const SizedBox(height: Kx.s12),
+                    SwitchListTile(
+                      key: const Key('end-save'),
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Save this board'),
+                      value: save,
+                      onChanged: (v) => setDialog(() {
+                        save = v;
+                        if (!v) share = false;
+                      }),
+                    ),
+                    SwitchListTile(
+                      key: const Key('end-share'),
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Share with students and parents'),
+                      subtitle: Text(canShare ? board.session!.sectionName! : 'No class is timetabled now'),
+                      value: share,
+                      onChanged: save && canShare ? (v) => setDialog(() => share = v) : null,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Keep teaching')),
+              FilledButton(key: const Key('confirm-end'), onPressed: () => Navigator.pop(context, true), child: const Text('End class')),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (ok != true) return;
+    // If saving fails the class stays open, so nothing on the board is lost.
+    if (save && !await _saveAs(_boardTitle ?? board.defaultBoardTitle(DateTime.now()), share: share)) return;
+    await board.endClass();
+    _pages.load([]);
+    _boardTitle = null;
   }
 
   void _attendance() {
@@ -223,7 +354,12 @@ class _BoardScreenState extends State<BoardScreen> {
       children: [
         if (panel != null && _panelOnLeft) panel,
         Expanded(
-          child: LayoutBuilder(builder: (context, area) => _boardArea(context, compact: area.maxWidth < 1500)),
+          child: LayoutBuilder(
+            builder: (context, area) {
+              _canvasSize = area.biggest;
+              return _boardArea(context, compact: area.maxWidth < 1500);
+            },
+          ),
         ),
         if (panel != null && !_panelOnLeft) panel,
       ],
@@ -334,6 +470,7 @@ class _BoardScreenState extends State<BoardScreen> {
         board: board,
         onSignIn: _signIn,
         onNewPage: _pages.addPage,
+        onWhiteboards: _openWhiteboards,
         onSettings: () => showDialog<void>(
           context: context,
           builder: (_) => BoardChromeTheme(child: BoardSettingsDialog(board: board)),
@@ -388,13 +525,7 @@ class _BoardScreenState extends State<BoardScreen> {
             selected: _popover == _Popover.profile,
             onTap: () => _toggle(_Popover.profile),
           ),
-          if (!compact)
-            ToolButton(
-              icon: Icons.save_outlined,
-              label: 'Save',
-              onTap: () => showComingSoon(context, 'Saving whiteboards to the cloud'),
-              badge: 'Soon',
-            ),
+          ToolButton(key: const Key('save-board'), icon: Icons.save_outlined, label: 'Save', onTap: _save),
         ],
       ),
     );

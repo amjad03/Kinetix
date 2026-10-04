@@ -62,6 +62,10 @@ class BoardController extends ChangeNotifier {
   final List<Map<String, dynamic>> _outbox = [];
   int get pendingOps => _outbox.length;
 
+  /// The id the current board is saved under. A new lesson gets a new id; opening a saved
+  /// board continues it, so saving again updates the same board.
+  String whiteboardId = '';
+
   Timer? _sessionTimer;
   final _random = Random();
 
@@ -218,6 +222,7 @@ class BoardController extends ChangeNotifier {
   void onPaired(String sessionToken, SessionContext ctx) {
     api?.sessionToken = sessionToken;
     session = ctx;
+    whiteboardId = newId();
     roster = [];
     attendance.clear();
     _sessionTimer?.cancel();
@@ -257,6 +262,22 @@ class BoardController extends ChangeNotifier {
       }
     } catch (_) {}
   }
+
+  /// Saves the board to the cloud. Signed-in sessions only.
+  Future<WhiteboardSummary> saveBoard(SavedBoard board, {required String title, required bool share}) async {
+    final api = this.api;
+    if (api == null || session == null) throw StateError('Sign in to save boards');
+    if (whiteboardId.isEmpty) whiteboardId = newId();
+    return api.saveWhiteboard(whiteboardId, title: title, board: board, share: share);
+  }
+
+  /// A title for a new save: "Corporate Accounting · 4 Oct" or "Board · 4 Oct".
+  String defaultBoardTitle(DateTime now) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${session?.subjectName ?? 'Board'} · ${now.day} ${months[now.month - 1]}';
+  }
+
+  String newId() => _uuidV4();
 
   String _uuidV4() {
     final b = List<int>.generate(16, (_) => _random.nextInt(256));

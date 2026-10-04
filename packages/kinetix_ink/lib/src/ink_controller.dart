@@ -209,6 +209,20 @@ class InkController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replaces the page with saved strokes (opening a saved board). Clears undo history.
+  void replaceStrokes(List<Stroke> strokes) {
+    _strokes
+      ..clear()
+      ..addAll(strokes);
+    _active.clear();
+    _activeTool.clear();
+    _selection.clear();
+    _undo.clear();
+    _redo.clear();
+    committed.value++;
+    notifyListeners();
+  }
+
   void deleteSelection() {
     if (_selection.isEmpty) return;
     final removed = <(int, Stroke)>[];
@@ -364,6 +378,28 @@ class BoardPages extends ChangeNotifier {
     for (final p in _pages) {
       p.palmMode = m;
     }
+    notifyListeners();
+  }
+
+  /// Every page's finished strokes, for saving.
+  List<List<Stroke>> get allStrokes => [for (final p in _pages) p.strokes];
+
+  /// True when no page has any ink.
+  bool get isBlank => _pages.every((p) => p.strokes.isEmpty);
+
+  /// Replaces all pages with a saved board's pages and opens the first one.
+  void load(List<List<Stroke>> pages) {
+    final style = current.style.copyWith(tool: current.style.tool == InkTool.select ? InkTool.pen : null);
+    for (final p in _pages) {
+      p.dispose();
+    }
+    _pages
+      ..clear()
+      ..addAll([
+        for (final strokes in pages.isEmpty ? [<Stroke>[]] : pages)
+          InkController(style: style, palmMode: _palmMode)..replaceStrokes(strokes),
+      ]);
+    _index = 0;
     notifyListeners();
   }
 

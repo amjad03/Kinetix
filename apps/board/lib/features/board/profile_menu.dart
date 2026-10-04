@@ -11,6 +11,7 @@ class ProfileMenu extends StatelessWidget {
     required this.board,
     required this.onSignIn,
     required this.onNewPage,
+    required this.onWhiteboards,
     required this.onSettings,
     required this.onClose,
   });
@@ -18,6 +19,7 @@ class ProfileMenu extends StatelessWidget {
   final BoardController board;
   final VoidCallback onSignIn;
   final VoidCallback onNewPage;
+  final VoidCallback onWhiteboards;
   final VoidCallback onSettings;
   final VoidCallback onClose;
 
@@ -91,7 +93,7 @@ class ProfileMenu extends StatelessWidget {
             const Divider(height: Kx.s16),
             item(Icons.note_add_outlined, 'New page', onNewPage),
             item(Icons.folder_open_outlined, 'Import PDF, PPT or image', () {}, soon: true),
-            item(Icons.dashboard_outlined, 'Your whiteboards', () {}, soon: true),
+            item(Icons.dashboard_outlined, 'Your whiteboards', onWhiteboards, key: const Key('menu-whiteboards')),
             item(Icons.cast_outlined, 'Screen projection', () {}, soon: true),
             const Divider(height: Kx.s16),
             item(Icons.settings_outlined, 'Board settings', onSettings, key: const Key('menu-settings')),

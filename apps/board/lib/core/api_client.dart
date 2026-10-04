@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:kinetix_ink/kinetix_ink.dart';
+
 import 'models.dart';
 
 class ApiException implements Exception {
@@ -34,6 +36,24 @@ class ApiClient {
       PairingCode.fromJson(await _send('POST', '/v1/devices/me/pairing-codes', useDeviceToken: true));
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
+
+  Future<WhiteboardSummary> saveWhiteboard(String id, {required String title, required SavedBoard board, required bool share}) async {
+    final j = await _send('PUT', '/v1/whiteboards/$id', body: {...board.toJson(), 'title': title, 'share': share});
+    return WhiteboardSummary.fromJson(j as Map<String, dynamic>);
+  }
+
+  Future<List<WhiteboardSummary>> whiteboards() async {
+    final list = await _send('GET', '/v1/whiteboards') as List<dynamic>;
+    return list.map((e) => WhiteboardSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<SavedBoard> whiteboard(String id) async {
+    final j = await _send('GET', '/v1/whiteboards/$id') as Map<String, dynamic>;
+    return SavedBoard.fromJson(j['content'] as Map<String, dynamic>);
+  }
+
+  Future<WhiteboardSummary> shareWhiteboard(String id) async =>
+      WhiteboardSummary.fromJson(await _send('POST', '/v1/whiteboards/$id/share') as Map<String, dynamic>);
 
   Future<List<Student>> roster() async {
     final j = await _send('GET', '/v1/sessions/current') as Map<String, dynamic>;
