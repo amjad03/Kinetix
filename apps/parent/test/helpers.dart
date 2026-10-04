@@ -58,3 +58,13 @@ Future<void> usePassword(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('usePassword')));
   await tester.pumpAndSettle();
 }
+
+/// Signs in on the sign-in screen with a texted code (the fake accepts 123456).
+Future<void> signInWithCode(WidgetTester tester, {String tenant = 'demo-college', String phone = '98000 00001'}) async {
+  await tester.enterText(find.byKey(const Key('tenant')), tenant);
+  await tester.enterText(find.byKey(const Key('phone')), phone);
+  await tester.tap(find.byKey(const Key('sendCode')));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const Key('otpCode')), '123456');
+  await tester.pumpAndSettle();
+}

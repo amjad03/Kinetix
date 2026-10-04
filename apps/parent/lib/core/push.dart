@@ -101,6 +101,7 @@ class PushRegistrar {
 
   /// Best effort: push is a convenience, so failures never interrupt the parent.
   Future<void> register() async {
+    if (!messaging.available) return;
     _refresh ??= messaging.onTokenRefresh.listen(_send);
     try {
       final token = await messaging.token();
@@ -121,7 +122,8 @@ class PushRegistrar {
   }
 
   Future<void> unregister() async {
-    await _refresh?.cancel();
+    // Not awaited: nothing depends on it, and sign-out should not wait for the stream.
+    unawaited(_refresh?.cancel());
     _refresh = null;
     final token = registeredToken;
     if (token == null) return;

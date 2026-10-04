@@ -287,7 +287,7 @@ class FakeParentApi implements ParentApi {
   @override
   Future<OtpChallenge> requestOtp({required String tenant, required String phone}) async {
     calls.add('otp request $tenant $phone');
-    if (otpRateLimited) throw ApiException(429, 'Too many requests', code: 'RATE_LIMITED');
+    if (otpRateLimited) throw ApiException(429, 'Too many requests', code: 'RATE_LIMITED', retryAfterSeconds: 45);
     return const OtpChallenge(retryAfterSeconds: 30, expiresInSeconds: 300);
   }
 

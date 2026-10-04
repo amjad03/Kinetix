@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_student/core/push.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_student/core/live.dart';
 import 'package:kinetix_student/core/models.dart';
@@ -10,6 +11,7 @@ import 'package:kinetix_student/core/attachments.dart';
 import 'package:kinetix_student/widgets/common.dart';
 
 import 'fake_api.dart';
+import 'fake_push.dart';
 import 'fake_live.dart';
 import 'helpers.dart';
 
@@ -279,6 +281,53 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
+
+    // Phone sign-in on small phones with larger text: every step, its errors and the
+    // notifications question after signing in.
+    for (final MapEntry(key: name, value: size) in const {'320x568': Size(320, 568), '360x640': Size(360, 640)}.entries) {
+      testWidgets('$lang at $name, text ×1.3: phone sign-in and the notifications question lay out', (tester) async {
+        final (api, state) = await pumpApp(
+          tester,
+          signedIn: false,
+          size: size,
+          textScale: 1.3,
+          prefs: {'language': lang},
+          messaging: FakePushMessaging(status: PushPermission.notDetermined),
+        );
+        Future<void> tapKey(String key) async {
+          await tester.ensureVisible(find.byKey(Key(key)));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(Key(key)));
+          await tester.pumpAndSettle();
+        }
+
+        // The number step with both fields' messages, then "too many codes".
+        await tapKey('sendCode');
+        await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
+        await tester.enterText(find.byKey(const Key('phone')), '9800000001');
+        api.otpRateLimited = true;
+        await tapKey('sendCode');
+        expect(find.byKey(const Key('otpCode')), findsNothing);
+        api.otpRateLimited = false;
+        await tapKey('sendCode');
+
+        // The code step: the countdown, a wrong code, then resend once allowed.
+        expect(find.byKey(const Key('otpCode')), findsOneWidget);
+        await tester.enterText(find.byKey(const Key('otpCode')), '000000');
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const Key('changeNumber')));
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(seconds: 30));
+        await tapKey('resendCode');
+        expect(tester.takeException(), isNull);
+
+        await tester.enterText(find.byKey(const Key('otpCode')), '123456');
+        await tester.pumpAndSettle();
+        expect(state.signedIn, isTrue);
+        expect(find.byKey(const Key('notificationsPrompt')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 
   group('Hindi and Kannada content', () {

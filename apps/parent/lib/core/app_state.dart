@@ -115,7 +115,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     if (signedIn) {
       unawaited(_syncLanguage());
-      await push.register();
+      unawaited(push.register());
     }
   }
 
@@ -165,7 +165,8 @@ class AppState extends ChangeNotifier {
     me = profile;
     notifyListeners();
     unawaited(_syncLanguage());
-    await push.register();
+    // In the background: on iOS the token can take a few seconds to arrive.
+    unawaited(push.register());
   }
 
   Future<void> signOut() async {

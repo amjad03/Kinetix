@@ -12,7 +12,7 @@ import 'models.dart';
 enum ApiProblem { timeout, unreachable, wrongLogin, notGuardian, teacherAccount }
 
 class ApiException implements Exception {
-  ApiException(this.status, this.message, {this.problem, this.code});
+  ApiException(this.status, this.message, {this.problem, this.code, this.retryAfterSeconds});
 
   /// HTTP status, or 0 when the server could not be reached.
   final int status;
@@ -27,6 +27,9 @@ class ApiException implements Exception {
   /// common/error-codes.ts), which the app words in its own language. Null when the server
   /// was not reached or sent none.
   final String? code;
+
+  /// For 429 `RATE_LIMITED`: how long until the server takes the request again.
+  final int? retryAfterSeconds;
 
   @override
   String toString() => message.isEmpty ? 'HTTP $status' : message;
@@ -455,9 +458,18 @@ class HttpParentApi implements ParentApi {
 
     if (res.statusCode >= 400) {
       if (res.statusCode == 401 && auth) onUnauthorized?.call();
-      throw ApiException(res.statusCode, _message(res), code: _code(res));
+      throw ApiException(res.statusCode, _message(res), code: _code(res), retryAfterSeconds: _retryAfter(res));
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
+  }
+
+  static int? _retryAfter(http.Response res) {
+    try {
+      final r = (jsonDecode(res.body) as Map)['retryAfterSeconds'];
+      return r is num ? r.toInt() : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   static String? _code(http.Response res) {

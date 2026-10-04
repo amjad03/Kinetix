@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_student/core/api.dart';
-import 'package:kinetix_student/features/sign_in/sign_in_screen.dart';
-import 'package:kinetix_student/l10n/l10n.dart';
+import 'package:kinetix_parent/core/api.dart';
+import 'package:kinetix_parent/features/sign_in/sign_in_screen.dart';
+import 'package:kinetix_parent/l10n/l10n.dart';
 
 import 'helpers.dart';
 
@@ -24,8 +24,9 @@ void main() {
   testWidgets('a code to the phone is the default; the institution and a 10-digit mobile are checked', (tester) async {
     final (api, _) = await pumpApp(tester, signedIn: false);
     expect(find.byKey(const Key('password')), findsNothing);
-    expect(find.text("We'll text a code to the phone number your college has for you"), findsOneWidget);
+    expect(find.text("We'll text a code to the phone number you gave your child's college"), findsOneWidget);
     expect(find.text('+91 '), findsOneWidget);
+    expect(find.text('Use a password instead'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('sendCode')));
     await tester.pump();
@@ -59,7 +60,6 @@ void main() {
     await sendCode(tester, tenant: ' Demo-College ');
     expect(api.calls, ['otp request demo-college +919800000001']);
     expect(find.text('Enter the 6-digit code sent to +91 98000 00001'), findsOneWidget);
-    // The institution and number fields give way to the code.
     expect(find.byKey(const Key('tenant')), findsNothing);
 
     // The code field offers the SMS's code (autofill) without reading SMS.
@@ -85,19 +85,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.calls, contains('otp verify demo-college +919800000001 123456'));
     expect(state.signedIn, isTrue);
-    expect(find.byKey(const Key('greeting')), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
     expect(state.rememberedTenant, 'demo-college');
     expect(state.rememberedLogin, '+919800000001');
     expect(storedToken(state), 'tok');
   });
 
   testWidgets('a wrong or expired code is explained in the app language', (tester) async {
-    final (api, state) = await pumpApp(tester, signedIn: false, prefs: {'language': 'hi'});
+    final (api, state) = await pumpApp(tester, signedIn: false, prefs: {'language': 'kn'});
     await sendCode(tester);
     await tester.enterText(find.byKey(const Key('otpCode')), '000000');
     await tester.pumpAndSettle();
     expect(api.calls.last, 'otp verify demo-college +919800000001 000000');
-    expect(find.text('यह कोड गलत है या इसका समय खत्म हो गया है। SMS देखें या नया कोड मँगाएँ।'), findsOneWidget);
+    expect(find.text('ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕೇಳಿ.'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(storedToken(state), isNull);
 
@@ -105,7 +105,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('otpCode')), '12');
     await tester.tap(find.byKey(const Key('verifyCode')));
     await tester.pumpAndSettle();
-    expect(find.text('6 अंकों का कोड डालें'), findsOneWidget);
+    expect(find.text('6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ'), findsOneWidget);
     expect(api.calls.where((c) => c.startsWith('otp verify')), hasLength(1));
   });
 
@@ -159,16 +159,16 @@ void main() {
     expect(find.byKey(const Key('phone')), findsOneWidget);
   });
 
-  testWidgets('a parent signing in with a code is pointed to the Parent app', (tester) async {
+  testWidgets('a teacher signing in with a code is pointed to the Teacher app', (tester) async {
     final (api, state) = await pumpApp(
       tester,
       signedIn: false,
       setup: (api) => api.profile.roles
         ..clear()
-        ..add('guardian'),
+        ..add('teacher'),
     );
     await signInWithCode(tester);
-    expect(find.textContaining('KINETIX Parent app'), findsOneWidget);
+    expect(find.textContaining('KINETIX Teacher app'), findsOneWidget);
     expect(state.signedIn, isFalse);
     expect(api.token, isNull);
     expect(storedToken(state), isNull);

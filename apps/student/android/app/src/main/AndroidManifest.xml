@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Push notifications (Android 13+ asks; the app asks first in its own words after sign-in). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- TODO: remove usesCleartextTraffic once the app only talks to the HTTPS API (dev server is http://10.0.2.2:4000). -->
     <application
         android:label="KINETIX Student"

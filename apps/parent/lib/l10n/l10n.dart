@@ -54,6 +54,7 @@ extension L10nContext on BuildContext {
 /// server sends no `code`.
 const errorCodeForMessage = <String, String>{
   'Wrong institution, login or password': 'AUTH_WRONG_LOGIN',
+  'Enter a valid mobile number': 'PHONE_INVALID',
   'Your account is not active': 'AUTH_INACTIVE',
   'Invalid or expired token': 'AUTH_EXPIRED',
   'That subject is not taught in this class': 'SUBJECT_NOT_IN_CLASS',
@@ -76,6 +77,7 @@ String? describeErrorCode(AppLocalizations l, String? code) => switch (code) {
   'NOT_FOUND' => l.errNotFound,
   'RATE_LIMITED' => l.errTooMany,
   'OTP_INVALID' => l.errOtpInvalid,
+  'PHONE_INVALID' => l.enterValidMobile,
   'TOO_LARGE' => l.errTooLarge,
   'CONFLICT' => l.errConflict,
   'SUBJECT_NOT_IN_CLASS' => l.errSubjectNotInClass,

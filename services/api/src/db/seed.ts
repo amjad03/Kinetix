@@ -21,6 +21,12 @@ const db = drizzle(pool, { schema: s });
 const PASSWORD = 'kinetix123';
 
 async function main() {
+  // The demo has known passwords: never load it into a real deployment by accident.
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'yes') {
+    console.error('Refusing to load demo data with NODE_ENV=production. Set ALLOW_DEMO_SEED=yes for a staging demo.');
+    process.exitCode = 1;
+    return;
+  }
   const existing = await db.query.tenants.findFirst({ where: (t, { eq }) => eq(t.slug, 'demo-college') });
   if (existing) {
     console.log('Demo tenant already exists. Drop the database to reseed.');

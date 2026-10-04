@@ -90,3 +90,21 @@ jobs:
         run: pnpm --filter @kinetix/erp build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+
+  terraform:
+    name: Terraform fmt, validate, offline tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+      # Mocked providers: no AWS credentials, nothing is created.
+      - run: terraform test

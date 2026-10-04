@@ -70,7 +70,10 @@ services:
     image: kinetix-api:${KINETIX_TAG:-local}
     profiles: ["seed"]
     command: ["seed"]
-    environment: *api-env
+    environment:
+      <<: *api-env
+      # The demo seed refuses to run in production images unless told it is a demo.
+      ALLOW_DEMO_SEED: "yes"
     depends_on:
       migrate: { condition: service_completed_successfully }
     restart: "no"

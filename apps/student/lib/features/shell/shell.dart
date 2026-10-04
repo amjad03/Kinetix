@@ -9,6 +9,7 @@ import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../learn/learn_tab.dart';
 import '../messages/messages_controller.dart';
+import '../messages/messages_screen.dart';
 import '../privacy/privacy.dart';
 import '../profile/profile_tab.dart';
 import '../today/today_tab.dart';
@@ -83,7 +84,11 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     await updates.load();
     if (!mounted) return;
     final n = updates.items.where((n) => n.id == tap.notificationId).firstOrNull;
-    if (n == null) return _go(_updatesTab);
+    if (n == null) {
+      // Not in the inbox (any more): the place for its kind.
+      if (tap.kind == 'message' && messages.available) return MessagesScreen.open(context, messages);
+      return _go(_updatesTab);
+    }
     await UpdatesTab.openNotification(context, n, controller: updates, study: study, messages: messages);
   }
 

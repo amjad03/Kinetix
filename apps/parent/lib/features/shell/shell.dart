@@ -75,7 +75,8 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
     await updates.load();
     if (!mounted) return;
     final n = updates.items.where((n) => n.id == tap.notificationId).firstOrNull;
-    if (n == null) return _go(_updatesTab);
+    // Not in the inbox (any more): the tab for its kind.
+    if (n == null) return _go(tap.kind == 'message' ? _messagesTab : _updatesTab);
     await UpdatesTab.openNotification(context, n, controller: updates, family: family, messages: messages);
   }
 

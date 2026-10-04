@@ -139,7 +139,11 @@ class _SignInScreenState extends State<SignInScreen> {
       await action();
     } on ApiException catch (e) {
       if (mounted) {
-        setState(() => _error = requestingCode && (e.code == 'RATE_LIMITED' || e.status == 429) ? _l.errOtpTooMany : e);
+        final limited = e.code == 'RATE_LIMITED' || e.status == 429;
+        setState(() => _error = requestingCode && limited ? _l.errOtpTooMany : e);
+        // Resend only once the server will take another request.
+        final wait = e.retryAfterSeconds;
+        if (limited && requestingCode && _sentTo != null && wait != null) _startCountdown(wait);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
