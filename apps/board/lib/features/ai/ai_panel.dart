@@ -8,6 +8,7 @@ import 'ai_widgets.dart';
 import 'homework_panel.dart';
 import 'lesson_plan_panel.dart';
 import 'math_panel.dart';
+import 'read_board_panel.dart';
 import 'quiz_panel.dart';
 
 /// KINETIX AI: ask anything, plus the smart tools. Each tool opens as a page inside the
@@ -29,6 +30,7 @@ class AiPanel extends StatelessWidget {
           AiView.homework => HomeworkPanel(ai: ai, onBack: home),
           AiView.lessonPlan => LessonPlanPanel(ai: ai, onBack: home),
           AiView.math => MathPanel(ai: ai, onBack: home),
+          AiView.readBoard => ReadBoardPanel(ai: ai, onBack: home),
         };
       },
     );
@@ -172,7 +174,7 @@ class _AiHomeState extends State<_AiHome> {
             soon(Icons.menu_book_outlined, 'Textbook', const Color(0xFFFDD663)),
             soon(Icons.public, 'Wikipedia', const Color(0xFFDADCE0)),
             soon(Icons.translate, 'Dictionary', const Color(0xFF78D9EC)),
-            soon(Icons.document_scanner_outlined, 'Read board (OCR)', const Color(0xFFFCAD70)),
+            tool(Icons.document_scanner_outlined, 'Read board', const Color(0xFFFCAD70), AiView.readBoard),
           ]),
         ],
       ),

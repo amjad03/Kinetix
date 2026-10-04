@@ -7,7 +7,7 @@ import '../../core/board_controller.dart';
 import '../../core/models.dart';
 
 /// Which page the KINETIX AI panel shows.
-enum AiView { home, quiz, homework, lessonPlan, math }
+enum AiView { home, quiz, homework, lessonPlan, math, readBoard }
 
 /// One AI request and its outcome: loading, a friendly error, or the result.
 class AiTask<T> extends ChangeNotifier {
@@ -106,6 +106,12 @@ class AiController extends ChangeNotifier {
   int lessonMinutes = 45;
   final lessonPlan = AiTask<LessonPlan>();
 
+  // Read the board (handwriting to text)
+  final reading = AiTask<BoardReading>();
+
+  /// Renders the open board page as a PNG (base64). Set by the board screen.
+  Future<String> Function()? captureBoard;
+
   // Maths solver (offline)
   String mathInput = '';
 
@@ -180,6 +186,12 @@ class AiController extends ChangeNotifier {
     await lessonPlan.run(() => _api.lessonPlan(lessonTopic!, minutes: lessonMinutes, language: language, fresh: fresh));
   }
 
+  Future<void> readBoard() async {
+    final capture = captureBoard;
+    if (capture == null) return;
+    await reading.run(() async => _api.readBoard(await capture(), language));
+  }
+
   /// Sends homework to the class open on the board.
   Future<void> sendHomework({required String title, required String instructions, required DateTime dueOn}) =>
       _api.homeworkFromBoard(title: title, instructions: instructions.isEmpty ? null : instructions, dueOn: dueOn);
@@ -193,7 +205,7 @@ class AiController extends ChangeNotifier {
     question = '';
     quizTopic = homeworkTopic = lessonTopic = null;
     homeworkDraft = null;
-    for (final t in [explain, quiz, homework, lessonPlan]) {
+    for (final t in [explain, quiz, homework, lessonPlan, reading]) {
       t.clear();
     }
     notifyListeners();
@@ -202,7 +214,7 @@ class AiController extends ChangeNotifier {
   @override
   void dispose() {
     board.removeListener(_onBoard);
-    for (final t in [explain, quiz, homework, lessonPlan]) {
+    for (final t in [explain, quiz, homework, lessonPlan, reading]) {
       t.dispose();
     }
     super.dispose();

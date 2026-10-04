@@ -168,6 +168,10 @@ class ApiClient {
   Future<AiResult<LessonPlan>> lessonPlan(String topic, {required int minutes, required AiLanguage language, bool fresh = false}) =>
       _ai('lesson-plan', {'topic': topic, 'minutes': minutes, 'language': language.name, 'fresh': fresh}, LessonPlan.fromJson);
 
+  /// Reads the handwriting on a board page (PNG, base64).
+  Future<AiResult<BoardReading>> readBoard(String pngBase64, AiLanguage language) =>
+      _ai('read-board', {'image': pngBase64, 'language': language.name}, BoardReading.fromJson);
+
   Future<AiResult<T>> _ai<T>(String task, Map<String, dynamic> body, T Function(Map<String, dynamic>) parse) async {
     final j = await _send('POST', '/v1/ai/$task', body: body) as Map<String, dynamic>;
     return AiResult(parse(j['result'] as Map<String, dynamic>), AiMeta.fromJson(j['meta'] as Map<String, dynamic>));

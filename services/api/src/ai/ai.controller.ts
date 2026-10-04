@@ -17,6 +17,7 @@ const Bodies = {
   quiz: TaskInputs.quiz.extend(Context.shape),
   homework: TaskInputs.homework.extend(Context.shape),
   lessonPlan: TaskInputs.lessonPlan.extend(Context.shape),
+  readBoard: TaskInputs.readBoard.extend(Context.shape),
 };
 
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -59,6 +60,14 @@ export class AiController {
   @Auth(['board', 'user'], STAFF)
   lessonPlan(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.lessonPlan)) body: z.infer<typeof Bodies.lessonPlan>) {
     return this.run(p, 'lessonPlan', body);
+  }
+
+  /** Reads the handwriting on a board page (sent as a PNG). Needs a vision model on the AI server. */
+  @Post('read-board')
+  @HttpCode(200)
+  @Auth(['board', 'user'], STAFF)
+  readBoard(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.readBoard)) body: z.infer<typeof Bodies.readBoard>) {
+    return this.run(p, 'readBoard', body);
   }
 
   /** Last 30 days of AI use for the institution, by task and outcome. */

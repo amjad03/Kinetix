@@ -13,7 +13,7 @@ import { createApp, createTenant, FixedClock, nextMondayIst, ownerPool, pairBoar
  * test queues (falling back to a fixed valid quiz).
  */
 class FakeModelServer {
-  readonly requests: { messages: { role: string; content: string }[]; response_format?: unknown; model: string }[] = [];
+  readonly requests: { messages: { role: string; content: any }[]; response_format?: unknown; model: string }[] = [];
   readonly replies: (string | number)[] = [];
   private server!: Server;
   url = '';
@@ -171,6 +171,18 @@ describe('KINETIX AI gateway', () => {
     const inbox = await http().get('/v1/notifications').set(auth('parent')).expect(200);
     expect(inbox.body.items.some((n: { kind: string; data: { homeworkId: string } }) => n.kind === 'homework' && n.data.homeworkId === hw.body.id)).toBe(true);
     await http().post('/v1/homework/from-board').set(auth('teacher')).send({ title: 'X', dueOn }).expect(403);
+  });
+
+  it('reads handwriting from a board page with a vision model', async () => {
+    const png = Buffer.alloc(300, 7).toString('base64');
+    model.replies.push(JSON.stringify({ text: 'Goodwill = Super profit × 3', math: ['G = SP \\times 3'] }));
+    const res = await http().post('/v1/ai/read-board').set(auth('board')).send({ image: png }).expect(200);
+    expect(res.body.result).toEqual({ text: 'Goodwill = Super profit × 3', math: ['G = SP \\times 3'] });
+    const user = model.requests[0].messages[1].content as { type: string; image_url?: { url: string } }[];
+    expect(user[1]).toEqual({ type: 'image_url', image_url: { url: `data:image/png;base64,${png}` } });
+    expect(model.requests[0].messages[0].content).not.toContain('syllabus notes'); // no grounding for reading
+    await http().post('/v1/ai/read-board').set(auth('board')).send({ image: 'not base64!' }).expect(400);
+    await http().post('/v1/ai/read-board').set(auth('student')).send({ image: png }).expect(403);
   });
 
   it('reports an unreachable model server as unavailable, and meters everything', async () => {

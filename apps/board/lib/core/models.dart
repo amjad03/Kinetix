@@ -339,6 +339,17 @@ class LessonStep {
   final String activity;
 }
 
+/// What KINETIX AI read on a board page.
+class BoardReading {
+  BoardReading({required this.text, required this.math});
+  factory BoardReading.fromJson(Map<String, dynamic> j) =>
+      BoardReading(text: j['text'] as String? ?? '', math: (j['math'] as List<dynamic>? ?? const []).cast<String>());
+  final String text;
+
+  /// Mathematics found, as LaTeX.
+  final List<String> math;
+}
+
 class LessonPlan {
   LessonPlan({required this.objectives, required this.steps, required this.materials, required this.assessment});
 

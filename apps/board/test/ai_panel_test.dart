@@ -105,6 +105,11 @@ void main() {
         '/v1/ai/quiz' => _quiz(body()),
         '/v1/ai/homework' => _homework(body()),
         '/v1/ai/lesson-plan' => _lesson(body()),
+        '/v1/ai/read-board' => {
+          'task': 'readBoard',
+          'result': {'text': 'Goodwill = Super profit × 3', 'math': ['G = SP \\times 3']},
+          'meta': {'cached': false, 'preview': false, 'sources': []},
+        },
         '/v1/homework/from-board' => {'id': 'h1', 'title': body()['title']},
         _ => null,
       };
@@ -394,6 +399,28 @@ void main() {
 
       await tapKey(tester, 'panel-back');
       expect(find.byKey(const Key('ai-ask')), findsOneWidget);
+    });
+  });
+
+  group('Read board', () {
+    testBoard('sends the open page as a PNG and shows the text it read', (tester) async {
+      await pump(tester);
+      await openAi(tester);
+      await tapKey(tester, 'ai-tool-readBoard');
+      await tester.tap(find.byKey(const Key('read-board')));
+      // Rendering the page to PNG is real (not fake-async) work.
+      for (var i = 0; i < 5 && calls('/v1/ai/read-board').isEmpty; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      final image = bodyOf(calls('/v1/ai/read-board').single)['image'] as String;
+      expect(base64Decode(image).sublist(1, 4), 'PNG'.codeUnits);
+      expect(find.text('Goodwill = Super profit × 3'), findsOneWidget);
+      expect(find.text('G = SP \\times 3'), findsOneWidget);
+
+      await tapKey(tester, 'reading-ask');
+      expect(bodyOf(calls('/v1/ai/explain').single)['question'], 'Explain this from the board: Goodwill = Super profit × 3');
     });
   });
 

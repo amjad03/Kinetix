@@ -45,6 +45,8 @@ export const TaskInputs = {
     language: Language.default('en'),
   }),
   summarize: z.object({ transcript: z.string().trim().min(20).max(60_000), language: Language.default('en') }),
+  /** A board page as a PNG (base64, no data: prefix), for reading handwriting. Needs a vision model. */
+  readBoard: z.object({ image: z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'), language: Language.default('en') }),
 } as const;
 
 const Text = (max: number) => z.string().trim().min(1).max(max);
@@ -82,6 +84,12 @@ export const TaskOutputs = {
     assessment: Text(800),
   }),
   summarize: z.object({ summary: Text(3000), keyPoints: z.array(Text(400)).min(1).max(10) }),
+  readBoard: z.object({
+    /** The writing on the board as plain text, line by line. */
+    text: z.string().max(6000),
+    /** Mathematics found, as LaTeX, one expression per item. */
+    math: z.array(Text(500)).max(30).default([]),
+  }),
 } as const;
 
 export type TaskName = keyof typeof TaskInputs;
@@ -91,9 +99,12 @@ export type TaskOutput<T extends TaskName> = z.infer<(typeof TaskOutputs)[T]>;
 /** Bump when a template changes; it is logged with every output and part of the cache key. */
 export const PROMPT_VERSION = 'v1';
 
+export type ChatContent = string | ({ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } })[];
+
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  /** Text, or text and images in the OpenAI-compatible multi-part form (vision models). */
+  content: ChatContent;
 }
 
 function systemPrompt(g: Grounding, language: Language): string {
@@ -122,6 +133,7 @@ const SHAPES: Record<TaskName, string> = {
   homework: '{"title": string, "instructions": string, "questions": [{"question": string, "marks": integer}]}',
   lessonPlan: '{"objectives": string[], "steps": [{"minutes": integer, "activity": string}], "materials": string[], "assessment": string}',
   summarize: '{"summary": string (one paragraph for a student who missed class), "keyPoints": string[]}',
+  readBoard: '{"text": string (the handwriting, line by line, as written), "math": string[] (each mathematical expression in LaTeX)}',
 };
 
 function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
@@ -138,6 +150,8 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}.`;
       case 'summarize':
         return `Summarise this classroom lesson transcript for students who were absent:\n"""\n${i.transcript}\n"""`;
+      case 'readBoard':
+        return 'Read the handwriting on this classroom whiteboard exactly as written. Do not solve or correct anything.';
     }
   })();
   return `${ask}\n\nReturn JSON shaped like: ${SHAPES[task]}`;
@@ -145,10 +159,23 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
 
 export function buildMessages<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding): ChatMessage[] {
   const language = (input as { language: Language }).language;
+  const user: ChatContent =
+    task === 'readBoard'
+      ? [
+          { type: 'text', text: userPrompt(task, input) },
+          { type: 'image_url', image_url: { url: `data:image/png;base64,${(input as TaskInput<'readBoard'>).image}` } },
+        ]
+      : userPrompt(task, input);
   return [
     { role: 'system', content: systemPrompt(g, language) },
-    { role: 'user', content: userPrompt(task, input) },
+    { role: 'user', content: user },
   ];
+}
+
+/** The words in a request, for grounding and safety checks (never the image data). */
+export function requestText(input: unknown): string {
+  const { image: _image, ...rest } = input as Record<string, unknown>;
+  return JSON.stringify(rest);
 }
 
 /** Rejects outputs that are well-formed JSON but wrong for the request. */
@@ -209,6 +236,8 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           assessment: 'A 5-question quick quiz at the end of class.',
         };
       }
+      case 'readBoard':
+        return { text: 'Preview: connect a KINETIX AI server with a vision model to read the handwriting on the board.', math: [] };
       case 'summarize':
         return {
           summary: `Preview summary. The lesson transcript has ${String(i.transcript).split(/\s+/).length} words; connect the KINETIX AI server for a real summary.`,

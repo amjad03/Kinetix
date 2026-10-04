@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -78,7 +79,7 @@ class _BoardScreenState extends State<BoardScreen> {
     super.initState();
     board.addListener(_onBoardChanged);
     board.onLiveSnapshotRequest = _startLive;
-    _ai = AiController(board);
+    _ai = AiController(board)..captureBoard = () async => base64Encode(await renderPagePng(ink.strokes, _background, _canvasSize));
     _lastSessionId = board.session?.sessionId;
   }
 

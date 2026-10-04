@@ -21,6 +21,7 @@ import {
   checkOutput,
   PROMPT_VERSION,
   previewOutput,
+  requestText,
   TaskOutputs,
   type Grounding,
   type TaskInput,
@@ -60,7 +61,7 @@ export interface AiResponse<T extends TaskName> {
   };
 }
 
-const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 1800, lessonPlan: 1500, summarize: 1200 };
+const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 1800, lessonPlan: 1500, summarize: 1200, readBoard: 1500 };
 const CACHE_DAYS = 30;
 const BLOCKED = "KINETIX AI can't help with that request. Try rephrasing it for the classroom.";
 
@@ -85,11 +86,12 @@ export class AiService {
   async run<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, opts: { fresh?: boolean } = {}): Promise<AiResponse<T>> {
     const p = this.provider;
     const { grounding, key, cached, sources } = await this.db.withTenant(caller.tenantId, async (tx) => {
-      const { grounding, sources } = await this.grounding(tx, caller, allText(input));
+      const words = requestText(input);
+      const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' ? '' : words);
       const key = this.cacheKey(task, input, grounding);
       const forMinors = grounding.institutionKind === 'school';
 
-      const bad = unsafeTerm(allText(input), forMinors);
+      const bad = unsafeTerm(words, forMinors);
       if (bad) {
         await this.record(tx, caller, task, 'blocked', { detail: `input: ${bad}` });
         return { grounding, key, sources, cached: undefined, refusal: 'blocked' as const };
@@ -164,7 +166,7 @@ export class AiService {
   private async generate<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding, usage: { promptTokens: number; completionTokens: number }): Promise<TaskOutput<T>> {
     const messages = buildMessages(task, input, g);
     for (let attempt = 0; ; attempt++) {
-      const reply = await this.provider.complete(messages, { maxTokens: MAX_TOKENS[task], temperature: task === 'summarize' ? 0.2 : 0.5 });
+      const reply = await this.provider.complete(messages, { maxTokens: MAX_TOKENS[task], temperature: task === 'summarize' || task === 'readBoard' ? 0.1 : 0.5 });
       usage.promptTokens += reply.promptTokens;
       usage.completionTokens += reply.completionTokens;
       let problem: string;
