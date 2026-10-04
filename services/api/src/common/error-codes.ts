@@ -46,7 +46,40 @@ export const ERROR_CODES: Record<string, string> = {
   'This is not your class': 'LIVE_NOT_YOUR_CLASS',
   'This student hands in their own homework': 'SUBMISSION_STUDENT_ONLY',
   'KINETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
+  // Bulk import (import/): errors for the whole file…
+  'Upload a CSV file': 'IMPORT_NO_FILE',
+  'The file is not UTF-8 text. Save it as "CSV UTF-8" and try again.': 'IMPORT_NOT_UTF8',
+  'The file has no rows to import': 'IMPORT_EMPTY',
+  'The file has too many rows. Split it into files of at most 5,000 rows.': 'IMPORT_TOO_MANY_ROWS',
+  'Some required columns are missing': 'IMPORT_MISSING_COLUMNS',
+  'There is no current academic year': 'IMPORT_NO_ACADEMIC_YEAR',
+  // …and for one row (each row result carries `code`, and `detail` names the value).
+  'This value is required': 'IMPORT_REQUIRED',
+  'This value is not valid': 'IMPORT_INVALID_VALUE',
+  'Unknown program level (use ug, pg or school)': 'IMPORT_BAD_LEVEL',
+  'The term is outside the program': 'IMPORT_BAD_TERM',
+  'A program with this name has a different level or term count in this file': 'IMPORT_PROGRAM_CONFLICT',
+  'Unknown role': 'IMPORT_BAD_ROLE',
+  'Unknown language (use en, hi or kn)': 'IMPORT_BAD_LANGUAGE',
+  'Give an email or a phone number': 'IMPORT_NO_CONTACT',
+  'Enter a valid email address': 'IMPORT_BAD_EMAIL',
+  'This email and this phone number belong to two different people': 'IMPORT_CONTACT_MISMATCH',
+  'This email or phone number already belongs to someone else': 'IMPORT_CONTACT_TAKEN',
+  'No class with this name': 'IMPORT_UNKNOWN_CLASS',
+  'Subject not found in this class': 'IMPORT_UNKNOWN_SUBJECT',
+  'No member of staff with this email or phone': 'IMPORT_UNKNOWN_TEACHER',
+  'Unknown day (use Mon to Sun, or 1 to 7)': 'IMPORT_BAD_DAY',
+  'Enter times like 09:30, with the end after the start': 'IMPORT_BAD_TIME',
+  'This roll number appears twice in the file': 'IMPORT_DUPLICATE_ROW',
+  'This row repeats an earlier row': 'IMPORT_DUPLICATE_ROW',
+  'Another class already has this name': 'IMPORT_DUPLICATE_CLASS',
+  'This row could not be saved': 'IMPORT_ROW_FAILED',
+  'A guardian needs a name and a phone number': 'IMPORT_GUARDIAN_INCOMPLETE',
+  'This phone number belongs to a student, not a guardian': 'IMPORT_GUARDIAN_NOT_FAMILY',
 };
+
+/** Timetable clashes (409): the message names the class or time, so the code says which kind. */
+export const TIMETABLE_CLASH_CODES = { class: 'TIMETABLE_CLASS_CLASH', teacher: 'TIMETABLE_TEACHER_CLASH', room: 'TIMETABLE_ROOM_CLASH' } as const;
 
 const BY_STATUS: Record<number, string> = {
   400: 'BAD_REQUEST',

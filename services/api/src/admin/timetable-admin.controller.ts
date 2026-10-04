@@ -1,14 +1,14 @@
-import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { and, asc, eq, gt, inArray, isNull, lt, ne, or } from 'drizzle-orm';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { academicYears, rooms, sections, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
+import { rooms, sections, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
+import { Time, validateSlot } from './timetable-rules.js';
 
-const Time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a time like 09:30');
 const SlotBody = z
   .object({
     sectionId: z.uuid(),
@@ -133,45 +133,7 @@ export class TimetableAdminController {
     return s;
   }
 
-  /** Checks every id under row-level security, then clashes: class, teacher or room double-booked. */
-  private async validate(tx: Tx, b: z.infer<typeof SlotBody>, replacing: string | null) {
-    const [section] = await tx.select().from(sections).where(eq(sections.id, b.sectionId));
-    if (!section) throw new NotFoundException('Class not found');
-    const [subject] = await tx.select().from(subjects).where(eq(subjects.id, b.subjectId));
-    if (!subject || subject.programId !== section.programId || subject.term !== section.term) throw new BadRequestException('That subject is not taught in this class');
-    const [teacher] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .innerJoin(userRoles, eq(userRoles.userId, users.id))
-      .where(and(eq(users.id, b.teacherId), inArray(userRoles.role, ['teacher', 'hod', 'principal'])));
-    if (!teacher) throw new BadRequestException('Choose a member of the teaching staff');
-    if (b.roomId) {
-      const [room] = await tx.select({ id: rooms.id }).from(rooms).where(eq(rooms.id, b.roomId));
-      if (!room) throw new NotFoundException('Room not found');
-    }
-    const clash = await tx
-      .select({ section: sections.displayName, teacherId: timetableSlots.teacherId, roomId: timetableSlots.roomId, sectionId: timetableSlots.sectionId, startsAt: timetableSlots.startsAt, endsAt: timetableSlots.endsAt })
-      .from(timetableSlots)
-      .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
-      .where(
-        and(
-          isNull(timetableSlots.archivedAt),
-          eq(timetableSlots.dayOfWeek, b.dayOfWeek),
-          lt(timetableSlots.startsAt, b.endsAt),
-          gt(timetableSlots.endsAt, b.startsAt),
-          replacing ? ne(timetableSlots.id, replacing) : undefined,
-          or(eq(timetableSlots.sectionId, b.sectionId), eq(timetableSlots.teacherId, b.teacherId), b.roomId ? eq(timetableSlots.roomId, b.roomId) : undefined),
-        ),
-      )
-      .limit(1);
-    if (clash.length) {
-      const c = clash[0];
-      const when = `${c.startsAt.slice(0, 5)}–${c.endsAt.slice(0, 5)}`;
-      const what = c.sectionId === b.sectionId ? `${c.section} already has a period` : c.teacherId === b.teacherId ? 'This teacher is already teaching' : 'This room is already booked';
-      throw new ConflictException(`${what} at ${when} that day`);
-    }
-    const [year] = await tx.select({ id: academicYears.id }).from(academicYears).where(eq(academicYears.isCurrent, true));
-    if (!year) throw new BadRequestException('Set the current academic year first');
-    return { academicYearId: year.id, sectionId: section.id, subjectId: subject.id, teacherId: teacher.id, roomId: b.roomId ?? null, dayOfWeek: b.dayOfWeek, startsAt: b.startsAt, endsAt: b.endsAt };
+  private validate(tx: Tx, b: z.infer<typeof SlotBody>, replacing: string | null) {
+    return validateSlot(tx, b, replacing);
   }
 }
