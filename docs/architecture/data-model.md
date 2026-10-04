@@ -114,10 +114,20 @@ holiday shows as a period not held.
 Class audio in live classes is not stored: it is relayed (16 kHz IMA ADPCM, 8 KB/s) and only
 its turning on and off is audited (`live_audio.on` / `live_audio.off`).
 
+## Calendar, coverage, submissions, consent
+
+```
+calendar_events (kind holiday|exam|event, title, starts_on, ends_on, program_ids)  — holidays cancel classes
+topic_coverage (section, topic, covered_on, covered_by, board_session)           — syllabus progress
+homework_submissions (homework, student, text, files, status, remark, checked_*) — files in object storage
+consents (student, purpose, granted, notice_version, given_by)                   — append-only; latest counts
+tenants.settings                                                                  — editable column for the app role
+```
+
+Holidays apply wherever the timetable is turned into days: the teacher's day, the principal's
+day, the department view and the board's current period. See docs/product/privacy-notice.md for
+the consent purposes.
+
 ## Planned next
 
-- Holidays and the academic calendar, so reports skip days without classes.
-
-- Year plan and syllabus progress: `lesson_plans`, `coverage_events`.
-- Homework submissions: `submissions` against `homework` (the `homework` table itself is built).
-- Consent records per guardian (DPDP).
+- Year plan: `lesson_plans` (syllabus progress is built as `topic_coverage`).
