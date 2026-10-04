@@ -13,13 +13,16 @@ const _booksAccent = Color(0xFF8AB4F8);
 /// A topic opens its notes in large type for the class, and can start an AI explanation or a
 /// quick quiz grounded in that topic.
 class BooksPanel extends StatefulWidget {
-  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel});
+  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel, this.onOpenResource});
 
   final BoardController board;
   final AiController ai;
 
   /// Switches the side panel (to the AI or Quiz panel).
   final ValueChanged<PanelKind> onOpenPanel;
+
+  /// Opens a topic's 3D model or lab next to the whiteboard.
+  final void Function(SplitContent content, String id)? onOpenResource;
 
   @override
   State<BooksPanel> createState() => _BooksPanelState();
@@ -269,6 +272,22 @@ class _BooksPanelState extends State<BooksPanel> {
                 ),
               ],
             ),
+            if (t.resources.isNotEmpty && widget.onOpenResource != null) ...[
+              const AiSectionLabel('On the board'),
+              Wrap(
+                spacing: Kx.s8,
+                runSpacing: Kx.s8,
+                children: [
+                  for (final r in t.resources)
+                    ActionChip(
+                      key: Key('resource-${r.id}'),
+                      avatar: Icon(r.kind == 'lab' ? Icons.science_outlined : Icons.view_in_ar_outlined, size: 18),
+                      label: Text(r.title),
+                      onPressed: () => widget.onOpenResource!(r.kind == 'lab' ? SplitContent.lab : SplitContent.model3d, r.id),
+                    ),
+                ],
+              ),
+            ],
             if (t.notes.isNotEmpty) list('Key facts', t.notes, Icons.check_circle_outline),
             if (t.outcomes.isNotEmpty) list('By the end, students can', t.outcomes, Icons.flag_outlined),
             if (!t.reviewed)

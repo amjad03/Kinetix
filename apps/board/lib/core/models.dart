@@ -231,8 +231,18 @@ class Syllabus {
   final List<SyllabusChapter> chapters;
 }
 
+/// A 3D model or lab the content library links to a topic (catalogue ids in kinetix_3d/labs).
+class TopicResource {
+  TopicResource({required this.kind, required this.id, required this.title});
+  factory TopicResource.fromJson(Map<String, dynamic> j) => TopicResource(kind: j['kind'] as String, id: j['id'] as String, title: j['title'] as String);
+  final String kind; // 'model3d' | 'lab'
+  final String id;
+  final String title;
+}
+
 class TopicDetail {
   TopicDetail({
+    this.resources = const [],
     required this.id,
     required this.title,
     required this.summary,
@@ -249,6 +259,7 @@ class TopicDetail {
         outcomes: (j['outcomes'] as List<dynamic>? ?? const []).cast<String>(),
         chapterTitle: ((j['chapter'] as Map?)?['title'] as String?) ?? '',
         reviewed: ((j['course'] as Map?)?['reviewed'] as bool?) ?? false,
+        resources: [for (final r in (j['resources'] as List<dynamic>? ?? const [])) TopicResource.fromJson(r as Map<String, dynamic>)],
       );
   final String id;
   final String title;
@@ -257,6 +268,9 @@ class TopicDetail {
   final List<String> outcomes;
   final String chapterTitle;
   final bool reviewed;
+
+  /// 3D models and labs to open on the board for this topic.
+  final List<TopicResource> resources;
 }
 
 /// A task result with its [meta].

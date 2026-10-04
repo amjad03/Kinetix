@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../core/api_client.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
+import '../board/side_panel.dart';
 
 /// Which page the KINETIX AI panel shows.
 enum AiView { home, quiz, homework, lessonPlan, math, readBoard }
@@ -108,6 +109,9 @@ class AiController extends ChangeNotifier {
 
   // Read the board (handwriting to text)
   final reading = AiTask<BoardReading>();
+
+  /// Opens a 3D model or lab next to the whiteboard (the board screen sets this).
+  void Function(SplitContent content, [String? id, String? preset])? openSplit;
 
   /// Renders the open board page as a PNG (base64). Set by the board screen.
   Future<String> Function()? captureBoard;

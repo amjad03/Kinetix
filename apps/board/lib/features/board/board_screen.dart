@@ -54,6 +54,8 @@ class _BoardScreenState extends State<BoardScreen> {
   bool _panelOnLeft = false;
   double _panelFraction = 0.45;
   SplitContent? _splitContent;
+  String? _splitItem;
+  String? _splitPreset;
   ToolbarAlign _align = ToolbarAlign.center;
   bool _hidden = false;
   bool _timer = false;
@@ -79,7 +81,9 @@ class _BoardScreenState extends State<BoardScreen> {
     super.initState();
     board.addListener(_onBoardChanged);
     board.onLiveSnapshotRequest = _startLive;
-    _ai = AiController(board)..captureBoard = () async => base64Encode(await renderPagePng(ink.strokes, _background, _canvasSize));
+    _ai = AiController(board)
+      ..captureBoard = (() async => base64Encode(await renderPagePng(ink.strokes, _background, _canvasSize)))
+      ..openSplit = _openSplit;
     _lastSessionId = board.session?.sessionId;
   }
 
@@ -94,6 +98,14 @@ class _BoardScreenState extends State<BoardScreen> {
     _ai.dispose();
     super.dispose();
   }
+
+  /// Opens a 3D model or lab (or their picker, with no id) next to the whiteboard.
+  void _openSplit(SplitContent content, [String? id, String? preset]) => setState(() {
+    _panel = PanelKind.split;
+    _splitContent = content;
+    _splitItem = id;
+    _splitPreset = preset;
+  });
 
   void _startLive() => _live.start(background: _background, canvas: _canvasSize);
 
@@ -510,12 +522,21 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Widget _panelContent() => switch (_panel!) {
     PanelKind.ai => AiPanel(ai: _ai),
-    PanelKind.books => BooksPanel(board: board, ai: _ai, onOpenPanel: (k) => setState(() => _panel = k)),
+    PanelKind.books => BooksPanel(board: board, ai: _ai, onOpenPanel: (k) => setState(() => _panel = k), onOpenResource: _openSplit),
     PanelKind.quiz => QuizPanel(ai: _ai),
     PanelKind.homework => HomeworkPanel(ai: _ai),
     PanelKind.split => SplitPanel(
       content: _splitContent,
-      onContent: (c) => setState(() => _splitContent = c),
+      onContent: (c) => setState(() {
+        _splitContent = c;
+        _splitItem = _splitPreset = null;
+      }),
+      itemId: _splitItem,
+      preset: _splitPreset,
+      onItem: (id, preset) => setState(() {
+        _splitItem = id;
+        _splitPreset = preset;
+      }),
       secondInk: _secondInk,
       background: _background,
     ),

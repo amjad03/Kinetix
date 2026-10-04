@@ -7,6 +7,7 @@ import 'ai_controller.dart';
 import 'ai_widgets.dart';
 import 'homework_panel.dart';
 import 'lesson_plan_panel.dart';
+import '../board/side_panel.dart';
 import 'math_panel.dart';
 import 'read_board_panel.dart';
 import 'quiz_panel.dart';
@@ -95,6 +96,14 @@ class _AiHomeState extends State<_AiHome> {
     );
     ChromeTile soon(IconData i, String l, Color col) =>
         ChromeTile(icon: i, label: l, color: col, soon: true, width: tileWidth, onTap: () => showComingSoon(context, 'KINETIX AI $l'));
+    ChromeTile open(IconData i, String l, Color col, SplitContent c, [String? id]) => ChromeTile(
+      key: Key('ai-open-${id ?? c.name}'),
+      icon: i,
+      label: l,
+      color: col,
+      width: tileWidth,
+      onTap: () => ai.openSplit?.call(c, id),
+    );
     ChromeTile tool(IconData i, String l, Color col, AiView v) =>
         ChromeTile(key: Key('ai-tool-${v.name}'), icon: i, label: l, color: col, width: tileWidth, onTap: () => ai.open(v));
     final classLabel = ai.board.session?.classLabel;
@@ -166,9 +175,9 @@ class _AiHomeState extends State<_AiHome> {
           ]),
           group('Maths & science', [
             tool(Icons.functions, 'Math solver', const Color(0xFF8AB4F8), AiView.math),
-            soon(Icons.show_chart, 'Graph', const Color(0xFF81C995)),
-            soon(Icons.grid_view, 'Periodic table', const Color(0xFFF28B82)),
-            soon(Icons.science_outlined, 'Simulations', const Color(0xFFC58AF9)),
+            open(Icons.show_chart, 'Graph', const Color(0xFF81C995), SplitContent.lab, 'lab.graph-plotter'),
+            open(Icons.view_in_ar_outlined, '3D models', const Color(0xFFF28B82), SplitContent.model3d),
+            open(Icons.science_outlined, 'Simulations', const Color(0xFFC58AF9), SplitContent.lab),
           ]),
           group('Look up', [
             soon(Icons.menu_book_outlined, 'Textbook', const Color(0xFFFDD663)),

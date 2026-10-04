@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import 'package:kinetix_3d/kinetix_3d.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_labs/kinetix_labs.dart';
 
 import 'chrome.dart';
 
@@ -168,12 +170,28 @@ class PlannedPanel extends StatelessWidget {
 
 /// Split screen: pick what goes next to the whiteboard.
 class SplitPanel extends StatelessWidget {
-  const SplitPanel({super.key, required this.content, required this.onContent, required this.secondInk, required this.background});
+  const SplitPanel({
+    super.key,
+    required this.content,
+    required this.onContent,
+    required this.secondInk,
+    required this.background,
+    this.itemId,
+    this.preset,
+    this.onItem,
+  });
 
   final SplitContent? content;
   final ValueChanged<SplitContent?> onContent;
   final InkController secondInk;
   final BoardBackground background;
+
+  /// The 3D model or lab shown (catalogue id), and an optional lab preset.
+  final String? itemId;
+  final String? preset;
+  final void Function(String? id, String? preset)? onItem;
+
+  static bool isBuilt(SplitContent c) => c == SplitContent.whiteboard || c == SplitContent.model3d || c == SplitContent.lab;
 
   @override
   Widget build(BuildContext context) {
@@ -185,6 +203,32 @@ class SplitPanel extends StatelessWidget {
           _SplitHeader(content: SplitContent.whiteboard, onBack: () => onContent(null)),
           Expanded(
             child: InkCanvas(controller: secondInk, background: background),
+          ),
+        ],
+      );
+    }
+    if (current == SplitContent.model3d || current == SplitContent.lab) {
+      final kind = current!;
+      final id = itemId;
+      final title = id == null
+          ? null
+          : current == SplitContent.model3d
+          ? ModelCatalogue.byId(id)?.title
+          : LabCatalogue.byId(id)?.title;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SplitHeader(
+            content: kind,
+            title: title,
+            onBack: () => id != null ? onItem?.call(null, null) : onContent(null),
+          ),
+          Expanded(
+            child: id == null
+                ? _CataloguePicker(kind: kind, onPick: (id) => onItem?.call(id, null))
+                : current == SplitContent.model3d
+                ? ModelView(key: ValueKey(id), id: id)
+                : LabView(key: ValueKey('$id/$preset'), id: id, preset: preset),
           ),
         ],
       );
@@ -220,7 +264,7 @@ class SplitPanel extends StatelessWidget {
                   key: Key('split-${s.name}'),
                   icon: s.icon,
                   label: s.label,
-                  soon: s != SplitContent.whiteboard,
+                  soon: !isBuilt(s),
                   onTap: () => onContent(s),
                 ),
             ],
@@ -231,11 +275,58 @@ class SplitPanel extends StatelessWidget {
   }
 }
 
+/// The 3D models or labs that work offline on the board, grouped by subject.
+class _CataloguePicker extends StatelessWidget {
+  const _CataloguePicker({required this.kind, required this.onPick});
+
+  final SplitContent kind;
+  final ValueChanged<String> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = kind == SplitContent.model3d
+        ? [for (final e in ModelCatalogue.entries) (id: e.id, title: e.title, group: e.subjects.first, tags: e.levels)]
+        : [for (final e in LabCatalogue.entries) (id: e.id, title: e.title, group: e.subject, tags: e.levels)];
+    final groups = <String, List<({String id, String title, String group, List<String> tags})>>{};
+    for (final i in items) {
+      groups.putIfAbsent(i.group, () => []).add(i);
+    }
+    final c = context.colors;
+    return ListView(
+      key: Key('catalogue-${kind.name}'),
+      padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s24),
+      children: [
+        for (final g in groups.entries) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s8, Kx.s16, Kx.s8, Kx.s8),
+            child: Text(g.key, style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
+          ),
+          for (final i in g.value)
+            Card(
+              margin: const EdgeInsets.only(bottom: Kx.s8),
+              color: c.surfaceContainer,
+              elevation: 0,
+              child: ListTile(
+                key: Key('pick-${i.id}'),
+                leading: Icon(kind.icon, color: c.primary),
+                title: Text(i.title),
+                subtitle: i.tags.isEmpty ? null : Text(i.tags.join(' · ')),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => onPick(i.id),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
 class _SplitHeader extends StatelessWidget {
-  const _SplitHeader({required this.content, required this.onBack});
+  const _SplitHeader({required this.content, required this.onBack, this.title});
 
   final SplitContent content;
   final VoidCallback onBack;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +339,7 @@ class _SplitHeader extends StatelessWidget {
             IconButton(tooltip: 'Choose something else', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
             Icon(content.icon, size: 20, color: context.colors.onSurfaceVariant),
             const SizedBox(width: Kx.s8),
-            Text(content.label, style: context.text.titleSmall),
+            Expanded(child: Text(title ?? content.label, style: context.text.titleSmall, overflow: TextOverflow.ellipsis)),
           ],
         ),
       ),

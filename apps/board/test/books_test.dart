@@ -10,6 +10,7 @@ import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
 import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
+import 'package:kinetix_labs/kinetix_labs.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -63,6 +64,9 @@ void main() {
             'outcomes': ['Value goodwill by three methods'],
             'chapter': {'id': 'ch1', 'title': 'Valuation of Goodwill'},
             'course': {'id': 'c1', 'title': 'Corporate Accounting', 'reviewed': false},
+            'resources': [
+              {'kind': 'lab', 'id': 'lab.break-even', 'title': 'Break-even chart'},
+            ],
           });
       }
       if (path == '/v1/ai/explain') {
@@ -114,6 +118,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('books-topic')), findsOneWidget);
     expect(find.textContaining('Super profit × Number'), findsOneWidget);
+    expect(find.byKey(const Key('resource-lab.break-even')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('topic-explain')));
     await tester.pumpAndSettle();
@@ -138,5 +143,20 @@ void main() {
     await tester.tap(find.byKey(const Key('panel-books')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('books-signin')), findsOneWidget);
+  });
+
+  testWidgets("a topic's lab opens next to the whiteboard", (tester) async {
+    final board = await pump(tester);
+    await tester.tap(find.byKey(const Key('panel-books')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('chapter-ch1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('topic-t1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('resource-lab.break-even')));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(LabView), findsOneWidget);
+    expect(find.text('Break-even analysis'), findsWidgets);
+    board.dispose();
   });
 }
