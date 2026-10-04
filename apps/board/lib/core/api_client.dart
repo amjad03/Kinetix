@@ -84,6 +84,36 @@ class ApiClient {
   Future<void> markDisplayed(String id) async => _send('POST', '/v1/broadcasts/$id/displayed');
   Future<void> acknowledge(String id) async => _send('POST', '/v1/broadcasts/$id/ack');
 
+  // --- KINETIX AI (board-session token; the class and subject come from the session) --------
+
+  Future<AiResult<Explanation>> explain(String question, AiLanguage language, {bool fresh = false}) =>
+      _ai('explain', {'question': question, 'language': language.name, 'fresh': fresh}, Explanation.fromJson);
+
+  Future<AiResult<Quiz>> quiz(String topic, {required int count, required AiDifficulty difficulty, required AiLanguage language, bool fresh = false}) =>
+      _ai('quiz', {'topic': topic, 'count': count, 'difficulty': difficulty.name, 'language': language.name, 'fresh': fresh}, (j) => Quiz.fromJson(topic, j));
+
+  Future<AiResult<HomeworkDraft>> homeworkDraft(
+    String topic, {
+    required int count,
+    required AiDifficulty difficulty,
+    required AiLanguage language,
+    bool fresh = false,
+  }) => _ai('homework', {'topic': topic, 'count': count, 'difficulty': difficulty.name, 'language': language.name, 'fresh': fresh}, HomeworkDraft.fromJson);
+
+  Future<AiResult<LessonPlan>> lessonPlan(String topic, {required int minutes, required AiLanguage language, bool fresh = false}) =>
+      _ai('lesson-plan', {'topic': topic, 'minutes': minutes, 'language': language.name, 'fresh': fresh}, LessonPlan.fromJson);
+
+  Future<AiResult<T>> _ai<T>(String task, Map<String, dynamic> body, T Function(Map<String, dynamic>) parse) async {
+    final j = await _send('POST', '/v1/ai/$task', body: body) as Map<String, dynamic>;
+    return AiResult(parse(j['result'] as Map<String, dynamic>), AiMeta.fromJson(j['meta'] as Map<String, dynamic>));
+  }
+
+  /// Gives homework to the class open on the board; students and parents are notified.
+  Future<void> homeworkFromBoard({required String title, String? instructions, required DateTime dueOn}) async {
+    final due = '${dueOn.year}-${dueOn.month.toString().padLeft(2, '0')}-${dueOn.day.toString().padLeft(2, '0')}';
+    await _send('POST', '/v1/homework/from-board', body: {'title': title, 'instructions': ?instructions, 'dueOn': due});
+  }
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false}) async {
     final token = useDeviceToken ? deviceToken : (sessionToken ?? deviceToken);
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

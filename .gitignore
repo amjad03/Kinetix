@@ -12,3 +12,4 @@ build/
 *.iml
 .idea/
 .data/
+.claude/worktrees/

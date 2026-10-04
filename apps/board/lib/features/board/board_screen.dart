@@ -9,6 +9,10 @@ import '../../core/board_controller.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
 
+import '../ai/ai_controller.dart';
+import '../ai/ai_panel.dart';
+import '../ai/homework_panel.dart';
+import '../ai/quiz_panel.dart';
 import '../signin/sign_in_dialog.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
@@ -36,6 +40,7 @@ class BoardScreen extends StatefulWidget {
 class _BoardScreenState extends State<BoardScreen> {
   late final BoardPages _pages = BoardPages(palmMode: widget.board.touchProfile.palmMode);
   final _secondInk = InkController();
+  late final AiController _ai;
   BoardBackground _background = BoardBackground.plain;
   _Popover? _popover;
   PanelKind? _panel;
@@ -58,6 +63,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    _ai = AiController(board);
     _lastSessionId = board.session?.sessionId;
   }
 
@@ -66,6 +72,7 @@ class _BoardScreenState extends State<BoardScreen> {
     board.removeListener(_onBoardChanged);
     _pages.dispose();
     _secondInk.dispose();
+    _ai.dispose();
     super.dispose();
   }
 
@@ -367,25 +374,15 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Widget _panelContent() => switch (_panel!) {
-    PanelKind.ai => AiPanel(classLabel: board.session?.classLabel),
+    PanelKind.ai => AiPanel(ai: _ai),
     PanelKind.books => const PlannedPanel(
       icon: Icons.menu_book_outlined,
       title: 'Books',
       accent: Color(0xFF8AB4F8),
       message: 'Textbooks and course material for CBSE/NCERT, ICSE, Karnataka State Board and Bangalore University are coming in an upcoming build.',
     ),
-    PanelKind.quiz => const PlannedPanel(
-      icon: Icons.quiz_outlined,
-      title: 'Quick quiz',
-      accent: Color(0xFF81C995),
-      message: 'Ask the class a question and collect answers from phones or printed answer cards. Coming in an upcoming build.',
-    ),
-    PanelKind.homework => const PlannedPanel(
-      icon: Icons.assignment_outlined,
-      title: 'Homework',
-      accent: Color(0xFFF28B82),
-      message: 'Give homework from the board and it appears in the Student and Parent apps. Teachers can already assign homework from the Teacher app.',
-    ),
+    PanelKind.quiz => QuizPanel(ai: _ai),
+    PanelKind.homework => HomeworkPanel(ai: _ai),
     PanelKind.split => SplitPanel(
       content: _splitContent,
       onContent: (c) => setState(() => _splitContent = c),

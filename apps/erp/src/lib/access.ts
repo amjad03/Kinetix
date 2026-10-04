@@ -1,0 +1,83 @@
+// Which parts of the ERP each role sees. The API enforces the same rules; this decides what to
+// show and where to send someone who opens a page that is not theirs.
+
+import type { RoleName } from './types';
+
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai';
+
+/** Roles for each section. Matches the API's guards (services/api). */
+export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
+  // Today, Classes, Attendance, Homework, Messages: v1/admin/*
+  school: ['principal', 'tenant_admin', 'hod'],
+  boards: ['principal', 'tenant_admin', 'hod'],
+  // realtime.gateway.ts LIVE_VIEW_ROLES
+  live: ['principal', 'tenant_admin', 'hod'],
+  // fees.service.ts FEE_ROLES
+  fees: ['principal', 'tenant_admin', 'accountant'],
+  // Reading the library is open to staff; linking subjects needs principal/admin (checked on the page).
+  syllabus: ['principal', 'tenant_admin', 'hod'],
+  // GET /v1/ai/usage: STAFF_ADMIN_ROLES
+  ai: ['principal', 'tenant_admin'],
+};
+
+/** Everyone who can use some part of the ERP. */
+export const ERP_ROLES: readonly RoleName[] = [...new Set(Object.values(SECTION_ROLES).flat())];
+
+export function canSee(roles: readonly RoleName[], section: Section): boolean {
+  return roles.some((r) => SECTION_ROLES[section].includes(r));
+}
+
+export function canUseErp(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => ERP_ROLES.includes(r));
+}
+
+/** Principal and administrator: link subjects to courses (PUT /v1/admin/subjects/:id/course). */
+export function canLinkSubjects(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
+}
+
+/** Own topics: teaching staff and administrators (content.controller.ts EDITORS). */
+export function canEditTopics(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => ['teacher', 'hod', 'principal', 'tenant_admin'].includes(r));
+}
+
+/** The section a path belongs to, or null for pages everyone signed in may open. */
+export function sectionOf(pathname: string): Section | null {
+  const first = pathname.split('/')[1] ?? '';
+  switch (first) {
+    case '':
+    case 'classes':
+    case 'attendance':
+    case 'homework':
+    case 'messages':
+      return 'school';
+    case 'boards':
+      return 'boards';
+    case 'live':
+      return 'live';
+    case 'fees':
+      return 'fees';
+    case 'syllabus':
+      return 'syllabus';
+    case 'ai':
+      return 'ai';
+    default:
+      return null;
+  }
+}
+
+/** Where a role lands after signing in: Today for school leaders, Fees for the accounts office. */
+export function homeFor(roles: readonly RoleName[]): string {
+  if (canSee(roles, 'school')) return '/';
+  if (canSee(roles, 'fees')) return '/fees';
+  return '/login';
+}
+
+/** A `next` path is followed only when it is local and the role may open it. */
+export function landingFor(roles: readonly RoleName[], next: string | null | undefined): string {
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    const section = sectionOf(next.split('?')[0]);
+    if (section === null || canSee(roles, section)) return next;
+  }
+  return homeFor(roles);
+}

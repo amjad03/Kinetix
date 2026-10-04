@@ -98,14 +98,17 @@ class SidePanelFrame extends StatelessWidget {
   }
 }
 
-/// A titled panel page.
+/// A titled panel page. [onBack] adds a back arrow (sub-pages); [trailing] sits at the end of
+/// the title row.
 class PanelPage extends StatelessWidget {
-  const PanelPage({super.key, required this.icon, required this.title, required this.child, this.accent});
+  const PanelPage({super.key, required this.icon, required this.title, required this.child, this.accent, this.onBack, this.trailing});
 
   final IconData icon;
   final String title;
   final Widget child;
   final Color? accent;
+  final VoidCallback? onBack;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -113,9 +116,13 @@ class PanelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s20, Kx.s24, Kx.s8),
+          padding: EdgeInsets.fromLTRB(onBack == null ? Kx.s24 : Kx.s12, Kx.s20, Kx.s16, Kx.s8),
           child: Row(
             children: [
+              if (onBack != null) ...[
+                IconButton(key: const Key('panel-back'), tooltip: 'Back', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
+                const SizedBox(width: Kx.s4),
+              ],
               Container(
                 width: 40,
                 height: 40,
@@ -126,87 +133,15 @@ class PanelPage extends StatelessWidget {
                 child: Icon(icon, color: accent ?? context.colors.primary),
               ),
               const SizedBox(width: Kx.s12),
-              Text(title, style: context.text.headlineSmall),
+              Expanded(
+                child: Text(title, style: context.text.headlineSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+              ?trailing,
             ],
           ),
         ),
         Expanded(child: child),
       ],
-    );
-  }
-}
-
-/// KINETIX AI: ask anything, plus smart tools. The tools are shells until the India-hosted AI
-/// platform is live (docs/architecture/ai-platform.md); each says so when tapped.
-class AiPanel extends StatelessWidget {
-  const AiPanel({super.key, this.classLabel});
-
-  final String? classLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    // Four tiles per row that fill the panel, whatever its width.
-    var tileWidth = 104.0;
-    Widget group(String title, List<Widget> tiles) => Padding(
-      padding: const EdgeInsets.only(bottom: Kx.s20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
-          const SizedBox(height: Kx.s12),
-          Wrap(spacing: Kx.s12, runSpacing: Kx.s12, children: tiles),
-        ],
-      ),
-    );
-    ChromeTile tile(IconData i, String l, Color col) =>
-        ChromeTile(icon: i, label: l, color: col, soon: true, width: tileWidth, onTap: () => showComingSoon(context, 'KINETIX AI $l'));
-
-    return PanelPage(
-      icon: Icons.auto_awesome,
-      title: 'KINETIX AI',
-      accent: const Color(0xFFA142F4),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
-        children: [
-          SearchBar(
-            hintText: classLabel == null ? 'Ask anything about a topic' : 'Ask anything about $classLabel',
-            leading: const Padding(padding: EdgeInsets.only(left: 8), child: Icon(Icons.auto_awesome_outlined)),
-            trailing: [
-              IconButton(tooltip: 'Speak', onPressed: () => showComingSoon(context, 'Voice questions'), icon: const Icon(Icons.mic_none)),
-            ],
-            onSubmitted: (_) => showComingSoon(context, 'KINETIX AI answers'),
-            elevation: const WidgetStatePropertyAll(0),
-            backgroundColor: WidgetStatePropertyAll(c.surfaceContainerHigh),
-            constraints: const BoxConstraints(minHeight: 56),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: Kx.s8, bottom: Kx.s24),
-            child: Text(
-              'Answers follow your syllabus and cite the textbook. Check before sharing with the class.',
-              style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
-            ),
-          ),
-          group('Teach', [
-            tile(Icons.summarize_outlined, 'Summary', const Color(0xFF8AB4F8)),
-            tile(Icons.quiz_outlined, 'Quick quiz', const Color(0xFF81C995)),
-            tile(Icons.co_present_outlined, 'Lesson', const Color(0xFFFDD663)),
-            tile(Icons.assignment_outlined, 'Homework', const Color(0xFFF28B82)),
-          ]),
-          group('Maths & science', [
-            tile(Icons.functions, 'Math solver', const Color(0xFF8AB4F8)),
-            tile(Icons.show_chart, 'Graph', const Color(0xFF81C995)),
-            tile(Icons.grid_view, 'Periodic table', const Color(0xFFF28B82)),
-            tile(Icons.science_outlined, 'Simulations', const Color(0xFFC58AF9)),
-          ]),
-          group('Look up', [
-            tile(Icons.menu_book_outlined, 'Textbook', const Color(0xFFFDD663)),
-            tile(Icons.public, 'Wikipedia', const Color(0xFFDADCE0)),
-            tile(Icons.translate, 'Dictionary', const Color(0xFF78D9EC)),
-            tile(Icons.document_scanner_outlined, 'Read board (OCR)', const Color(0xFFFCAD70)),
-          ]),
-        ],
-      ),
     );
   }
 }

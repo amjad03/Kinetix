@@ -1,0 +1,11 @@
+name: kinetix_math
+description: KINETIX offline maths solver — arithmetic with BODMAS steps, linear and quadratic equations, exact fractions and surds. Pure Dart, no network.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.29.0

@@ -13,6 +13,8 @@ dependencies:
   intl: ^0.20.3
   kinetix_ink:
     path: ../../packages/kinetix_ink
+  kinetix_math:
+    path: ../../packages/kinetix_math
   kinetix_ui:
     path: ../../packages/kinetix_ui
   qr_flutter: ^4.1.0
