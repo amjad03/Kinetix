@@ -53,6 +53,7 @@ describe('plans', () => {
     expect(weeks).toEqual([monday, addDays(monday, 14), addDays(monday, 21)].filter((w) => weeks.includes(w)));
     expect(plan.items[0]).toMatchObject({ topicId: topics[0], weekOf: monday, coveredOn: null, late: false });
     expect(plan.progress).toMatchObject({ total: topics.length, covered: 0, expected: 0, status: 'not_started' });
+    expect(plan).toMatchObject({ today: monday, thisWeek: monday });
 
     // Regenerating replaces the weeks rather than adding a second plan.
     const again = (await http().post('/v1/year-plans/generate').set(auth('teacher')).send({ ...cls(), startsOn: monday, endsOn: addDays(monday, 27) }).expect(200)).body;
@@ -90,7 +91,7 @@ describe('plans', () => {
     expect(draft.content.objectives.length).toBeGreaterThan(0);
     expect(draft.meta.preview).toBe(true); // no AI server in tests
 
-    await http().put('/v1/lesson-plans').set(auth('teacher')).send({ slotId: t.slot.id, date: addDays(monday, 1), content: draft.content }).expect(400); // not a Monday period
+    expect((await http().put('/v1/lesson-plans').set(auth('teacher')).send({ slotId: t.slot.id, date: addDays(monday, 1), content: draft.content }).expect(400)).body.code).toBe('PERIOD_WRONG_DAY');
     await http().put('/v1/lesson-plans').set(auth('teacher2')).send({ slotId: t.slot.id, date: monday, content: draft.content }).expect(403);
     const saved = (await http().put('/v1/lesson-plans').set(auth('teacher')).send({ slotId: t.slot.id, date: monday, topicIds: draft.topicIds, content: { ...draft.content, homework: 'Ex 4.2' }, aiDrafted: true }).expect(200)).body;
     expect(saved.plan).toMatchObject({ date: monday, aiDrafted: true, content: { homework: 'Ex 4.2' }, reviewedAt: null });
@@ -110,7 +111,7 @@ describe('plans', () => {
     const dept = (await http().post('/v1/admin/departments').set(auth('principal')).send({ name: 'Commerce', headUserId: t.teacher2.id }).expect(201)).body;
     await http().put(`/v1/admin/departments/${dept.id}`).set(auth('principal')).send({ subjectIds: [t.subject.id], staffIds: [t.teacher.id] }).expect(200);
     const reviewed = (await http().post(`/v1/lesson-plans/${saved.plan.id}/review`).set(auth('hod')).send({ remark: 'Add a recap question' }).expect(200)).body;
-    expect(reviewed).toMatchObject({ reviewRemark: 'Add a recap question', reviewedAt: expect.any(String) });
+    expect(reviewed).toMatchObject({ reviewRemark: 'Add a recap question', reviewedAt: expect.any(String), reviewedBy: expect.any(String) });
     const list = (await http().get(`/v1/lesson-plans?sectionId=${t.section.id}&subjectId=${t.subject.id}&from=${monday}&to=${monday}`).set(auth('hod')).expect(200)).body;
     expect(list.plans).toHaveLength(1);
 

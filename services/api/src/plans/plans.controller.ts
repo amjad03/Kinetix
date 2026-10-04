@@ -7,6 +7,7 @@ import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
+import { alias } from 'drizzle-orm/pg-core';
 import { DbService, type Tx } from '../db/db.service.js';
 import {
   academicYears,
@@ -34,6 +35,8 @@ import { mondayOf, periodDates, planProgress, spreadTopics } from './planner.js'
 /** A semester is about 16 teaching weeks; a plan without an end date covers that. */
 const DEFAULT_WEEKS = 16;
 
+const reviewer = alias(users, 'reviewer');
+
 const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const GenerateBody = z.object({ sectionId: z.uuid(), subjectId: z.uuid(), startsOn: DATE.optional(), endsOn: DATE.optional() });
 const ItemsBody = z.object({
@@ -56,7 +59,7 @@ const LessonBody = z.object({
   content: Content,
   aiDrafted: z.boolean().default(false),
 });
-const DraftBody = z.object({ slotId: z.uuid(), date: DATE, topicIds: z.array(z.uuid()).max(5).optional(), language: z.enum(['en', 'hi', 'kn']).optional() });
+const DraftBody = z.object({ slotId: z.uuid(), date: DATE, topicIds: z.array(z.uuid()).max(10).optional(), language: z.enum(['en', 'hi', 'kn']).optional() });
 const ReviewBody = z.object({ remark: z.string().trim().max(1000).optional() });
 
 /**
@@ -308,6 +311,9 @@ export class PlansController {
       startsOn: plan.startsOn,
       endsOn: plan.endsOn,
       updatedAt: plan.updatedAt,
+      /** The institution's today and its week (Monday), so apps agree with `late`. */
+      today,
+      thisWeek,
       progress,
       items: rows.map(({ chapterPos: _c, topicPos: _t, ...r }) => ({
         ...r,
@@ -354,11 +360,13 @@ export class PlansController {
         content: lessonPlans.content,
         aiDrafted: lessonPlans.aiDrafted,
         reviewedAt: lessonPlans.reviewedAt,
+        reviewedBy: reviewer.fullName,
         reviewRemark: lessonPlans.reviewRemark,
         updatedAt: lessonPlans.updatedAt,
       })
       .from(lessonPlans)
       .innerJoin(users, eq(users.id, lessonPlans.teacherId))
+      .leftJoin(reviewer, eq(reviewer.id, lessonPlans.reviewedBy))
       .orderBy(asc(lessonPlans.date))
       .$dynamic();
   }
