@@ -212,6 +212,22 @@ class _ExplanationCard extends StatelessWidget {
             ],
           ),
           if (result.meta.preview) ...[const SizedBox(height: Kx.s8), AiNotice.preview()],
+          if (result.meta.sources.isNotEmpty) ...[
+            const SizedBox(height: Kx.s8),
+            Row(
+              key: const Key('ai-sources'),
+              children: [
+                Icon(Icons.menu_book_outlined, size: 16, color: c.onSurfaceVariant),
+                const SizedBox(width: Kx.s8),
+                Expanded(
+                  child: Text(
+                    'Based on your syllabus: ${result.meta.sources.map((s) => s.title).join(', ')}',
+                    style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: Kx.s12),
           Padding(
             padding: const EdgeInsets.only(right: Kx.s8),

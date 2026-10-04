@@ -129,17 +129,22 @@ class AiController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> ask(String q, {bool fresh = false}) async {
+  /// The syllabus topic the last question or quiz was about (from the Books panel).
+  String? topicId;
+
+  Future<void> ask(String q, {bool fresh = false, String? topicId}) async {
     final text = q.trim();
     if (text.length < 2) return;
     question = text;
+    if (!fresh) this.topicId = topicId;
     notifyListeners();
-    await explain.run(() => _api.explain(text, language, fresh: fresh));
+    await explain.run(() => _api.explain(text, language, fresh: fresh, topicId: this.topicId));
   }
 
-  Future<void> generateQuiz(String topic, {bool fresh = false}) async {
+  Future<void> generateQuiz(String topic, {bool fresh = false, String? topicId}) async {
     quizTopic = topic.trim();
-    await quiz.run(() => _api.quiz(quizTopic!, count: quizCount, difficulty: quizDifficulty, language: language, fresh: fresh));
+    if (!fresh) this.topicId = topicId;
+    await quiz.run(() => _api.quiz(quizTopic!, count: quizCount, difficulty: quizDifficulty, language: language, fresh: fresh, topicId: this.topicId));
   }
 
   Future<void> generateHomework(String topic, {bool fresh = false}) async {

@@ -127,11 +127,32 @@ class ApiClient {
 
   // --- KINETIX AI (board-session token; the class and subject come from the session) --------
 
-  Future<AiResult<Explanation>> explain(String question, AiLanguage language, {bool fresh = false}) =>
-      _ai('explain', {'question': question, 'language': language.name, 'fresh': fresh}, Explanation.fromJson);
+  Future<AiResult<Explanation>> explain(String question, AiLanguage language, {bool fresh = false, String? topicId}) =>
+      _ai('explain', {'question': question, 'language': language.name, 'fresh': fresh, 'topicId': ?topicId}, Explanation.fromJson);
 
-  Future<AiResult<Quiz>> quiz(String topic, {required int count, required AiDifficulty difficulty, required AiLanguage language, bool fresh = false}) =>
-      _ai('quiz', {'topic': topic, 'count': count, 'difficulty': difficulty.name, 'language': language.name, 'fresh': fresh}, (j) => Quiz.fromJson(topic, j));
+  Future<AiResult<Quiz>> quiz(
+    String topic, {
+    required int count,
+    required AiDifficulty difficulty,
+    required AiLanguage language,
+    bool fresh = false,
+    String? topicId,
+  }) =>
+      _ai(
+        'quiz',
+        {'topic': topic, 'count': count, 'difficulty': difficulty.name, 'language': language.name, 'fresh': fresh, 'topicId': ?topicId},
+        (j) => Quiz.fromJson(topic, j),
+      );
+
+  // --- Content library ------------------------------------------------------------------------
+
+  /// The syllabus of the class open on the board, or null when its subject is not linked yet.
+  Future<Syllabus?> syllabus() async {
+    final j = await _send('GET', '/v1/content/syllabus');
+    return j is Map<String, dynamic> && j.isNotEmpty ? Syllabus.fromJson(j) : null;
+  }
+
+  Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id') as Map<String, dynamic>);
 
   Future<AiResult<HomeworkDraft>> homeworkDraft(
     String topic, {

@@ -21,6 +21,7 @@ import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'popovers.dart';
 import 'profile_menu.dart';
+import '../books/books_panel.dart';
 import 'live_stream.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
@@ -507,12 +508,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Widget _panelContent() => switch (_panel!) {
     PanelKind.ai => AiPanel(ai: _ai),
-    PanelKind.books => const PlannedPanel(
-      icon: Icons.menu_book_outlined,
-      title: 'Books',
-      accent: Color(0xFF8AB4F8),
-      message: 'Textbooks and course material for CBSE/NCERT, ICSE, Karnataka State Board and Bangalore University are coming in an upcoming build.',
-    ),
+    PanelKind.books => BooksPanel(board: board, ai: _ai, onOpenPanel: (k) => setState(() => _panel = k)),
     PanelKind.quiz => QuizPanel(ai: _ai),
     PanelKind.homework => HomeworkPanel(ai: _ai),
     PanelKind.split => SplitPanel(
@@ -825,6 +821,7 @@ class _MainToolbar extends StatelessWidget {
               onTap: () => onPanel(PanelKind.ai),
             ),
             ToolButton(
+              key: const Key('panel-books'),
               icon: Icons.menu_book,
               label: 'Books',
               accent: const Color(0xFF1A73E8),

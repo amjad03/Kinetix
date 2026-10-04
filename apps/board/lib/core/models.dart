@@ -170,12 +170,93 @@ enum AiDifficulty {
 /// How an AI answer was produced. [preview] means no AI server is connected and the
 /// result is a fixed placeholder that must be labelled as such.
 class AiMeta {
-  AiMeta({required this.cached, required this.preview});
+  AiMeta({required this.cached, required this.preview, this.sources = const []});
 
-  factory AiMeta.fromJson(Map<String, dynamic> j) => AiMeta(cached: j['cached'] as bool? ?? false, preview: j['preview'] as bool? ?? false);
+  factory AiMeta.fromJson(Map<String, dynamic> j) => AiMeta(
+        cached: j['cached'] as bool? ?? false,
+        preview: j['preview'] as bool? ?? false,
+        sources: [
+          for (final s in (j['sources'] as List<dynamic>? ?? const []))
+            (topicId: (s as Map)['topicId'] as String, title: s['title'] as String),
+        ],
+      );
 
   final bool cached;
   final bool preview;
+
+  /// Syllabus topics the answer was grounded in.
+  final List<({String topicId, String title})> sources;
+}
+
+// --- Content library ------------------------------------------------------------------------
+
+class SyllabusTopic {
+  SyllabusTopic({required this.id, required this.title, required this.summary, required this.own});
+  factory SyllabusTopic.fromJson(Map<String, dynamic> j) =>
+      SyllabusTopic(id: j['id'] as String, title: j['title'] as String, summary: j['summary'] as String? ?? '', own: j['own'] as bool? ?? false);
+  final String id;
+  final String title;
+  final String summary;
+
+  /// Added by the institution rather than the KINETIX library.
+  final bool own;
+}
+
+class SyllabusChapter {
+  SyllabusChapter({required this.id, required this.title, required this.own, required this.topics});
+  factory SyllabusChapter.fromJson(Map<String, dynamic> j) => SyllabusChapter(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        own: j['own'] as bool? ?? false,
+        topics: [for (final t in (j['topics'] as List<dynamic>? ?? const [])) SyllabusTopic.fromJson(t as Map<String, dynamic>)],
+      );
+  final String id;
+  final String title;
+  final bool own;
+  final List<SyllabusTopic> topics;
+}
+
+/// The course the open class follows, from the content library.
+class Syllabus {
+  Syllabus({required this.id, required this.title, required this.reviewed, required this.chapters});
+  factory Syllabus.fromJson(Map<String, dynamic> j) => Syllabus(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        reviewed: j['reviewed'] as bool? ?? false,
+        chapters: [for (final c in (j['chapters'] as List<dynamic>? ?? const [])) SyllabusChapter.fromJson(c as Map<String, dynamic>)],
+      );
+  final String id;
+  final String title;
+  final bool reviewed;
+  final List<SyllabusChapter> chapters;
+}
+
+class TopicDetail {
+  TopicDetail({
+    required this.id,
+    required this.title,
+    required this.summary,
+    required this.notes,
+    required this.outcomes,
+    required this.chapterTitle,
+    required this.reviewed,
+  });
+  factory TopicDetail.fromJson(Map<String, dynamic> j) => TopicDetail(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        summary: j['summary'] as String? ?? '',
+        notes: (j['notes'] as List<dynamic>? ?? const []).cast<String>(),
+        outcomes: (j['outcomes'] as List<dynamic>? ?? const []).cast<String>(),
+        chapterTitle: ((j['chapter'] as Map?)?['title'] as String?) ?? '',
+        reviewed: ((j['course'] as Map?)?['reviewed'] as bool?) ?? false,
+      );
+  final String id;
+  final String title;
+  final String summary;
+  final List<String> notes;
+  final List<String> outcomes;
+  final String chapterTitle;
+  final bool reviewed;
 }
 
 /// A task result with its [meta].
