@@ -439,7 +439,7 @@ void main() {
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
       await pumpApp(tester, signedIn: false);
       expect(find.text('साइन इन'), findsWidgets);
-      expect(find.text('ईमेल या फ़ोन'), findsOneWidget);
+      expect(find.text('मोबाइल नंबर'), findsOneWidget);
 
       tester.platformDispatcher.localesTestValue = const [Locale('en', 'US')];
       await tester.pumpWidget(const SizedBox());
