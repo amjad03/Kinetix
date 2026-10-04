@@ -130,6 +130,22 @@ class LessonRecorder {
     return toJson();
   }
 
+  /// Live view: hands over the events written since the last call and forgets them, so a
+  /// recorder used for streaming does not grow. Do not use on a recorder that is saving a
+  /// lesson (its log would lose these events).
+  List<List<Object?>> drain() {
+    final out = List<List<Object?>>.of(_events);
+    _events.clear();
+    return out;
+  }
+
+  /// Writes a full snapshot of every page now (a new live viewer joined).
+  void snapshotNow() {
+    if (!_recording || _paused) return;
+    _sync();
+    _snapshot();
+  }
+
   Map<String, Object?> toJson() => {
         'v': lessonFormatVersion,
         'canvas': {'w': canvas.width.round(), 'h': canvas.height.round()},
@@ -154,7 +170,7 @@ class LessonRecorder {
       ..addAll(controllers);
     _pageCount = pages.count;
     _events.add([_t, 'L', all, pages.index]);
-    if (_background != BoardBackground.plain) _events.add([_t, 'k', _background.name]);
+    _events.add([_t, 'k', _background.name]); // a live viewer may join after a change
     _attach(pages.current, emit: false);
   }
 
@@ -337,6 +353,10 @@ class LessonPlayer extends ChangeNotifier {
     _reset();
   }
 
+  /// An empty player that live events are applied to with [applyLive].
+  LessonPlayer.live({Size canvas = const Size(1920, 1080)})
+      : this(Lesson(canvas: canvas, background: BoardBackground.plain, duration: Duration.zero, events: []));
+
   final Lesson lesson;
 
   late List<_Page> _pages;
@@ -352,6 +372,14 @@ class LessonPlayer extends ChangeNotifier {
 
   /// The open page's strokes at [position], oldest first.
   List<Stroke> get strokes => List.unmodifiable(_pages[_index].strokes);
+
+  /// Live view: applies events as they arrive from the board, straight away.
+  void applyLive(Iterable<List<dynamic>> events) {
+    for (final e in events) {
+      _apply(e);
+    }
+    notifyListeners();
+  }
 
   void seek(Duration to) {
     if (to < Duration.zero) to = Duration.zero;

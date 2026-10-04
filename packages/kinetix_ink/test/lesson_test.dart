@@ -222,4 +222,22 @@ void main() {
     expect(player.strokes, hasLength(1));
     expect(l.canvas, const Size(800, 600));
   });
+
+  test('streams live: drained batches rebuild the board, and a snapshot catches up a late viewer', () {
+    rec.start();
+    final early = LessonPlayer.live()..applyLive(rec.drain());
+    draw(const Offset(0, 0), const Offset(100, 0));
+    early.applyLive(rec.drain());
+    expect(early.strokes, hasLength(1));
+    expect(rec.drain(), isEmpty);
+
+    draw(const Offset(0, 50), const Offset(100, 50));
+    final batch = rec.drain();
+    early.applyLive(batch);
+    // A viewer joining now gets a snapshot rather than the history.
+    rec.snapshotNow();
+    final late = LessonPlayer.live()..applyLive(rec.drain());
+    expectSameBoard(late, pages.current.strokes);
+    expectSameBoard(early, pages.current.strokes);
+  });
 }
