@@ -9,7 +9,7 @@ Competitor parity items are tracked in
 | Setup | Touch | Notes |
 |---|---|---|
 | Android tablet + projector/TV (HDMI, USB-C DP Alt or Miracast) | On the tablet (stylus recommended) | The cheapest route. The teacher writes on the tablet; the class sees the projection. |
-| TV/projector + **IR touch frame** (USB, 10–20 touch points) + Android box or Windows PC | On the big screen, many touches at once | A cheap retrofit that makes an old TV a multi-touch board. **A KINETIX differentiator.** |
+| TV/projector + **IR touch frame** (USB, 10–20 touch points) + Android box or Windows PC | On the big screen, many touches at once | A cheap retrofit that makes an old TV a multi-touch board. **A KINETIX differentiator.** ✅ Supported: a touch profile in Board settings, plus a [buying and installation guide](../hardware/ir-touch-frames.md). |
 | Android interactive flat panel (IFP) | On the panel, 20–40 touch points | Install the KINETIX APK on the panel |
 | Windows PC / OPS module / Windows IFP | Mouse, pen or touch | Same app, Windows build |
 
@@ -23,7 +23,7 @@ offline AI features on or off accordingly.
 
 ## 2. Sign-in & sessions
 
-- ✅ **Pairing with the Teacher App** (cloud side and board screen built; the Teacher App screen comes next). The Board shows a QR code and a 6-digit code. The teacher scans or types it in the Teacher App and the Board opens their session. Nobody types a PIN on the shared screen. ([design](../architecture/board-pairing.md))
+- ✅ **Pairing with the Teacher App** (board sign-in dialog, cloud, and the Teacher App's Connect-to-board screen). The Board shows a QR code and a 6-digit code. The teacher scans or types it in the Teacher App and the Board opens their session. Nobody types a PIN on the shared screen. ([design](../architecture/board-pairing.md))
 - ⬜ **Offline pairing.** If the internet is down, the teacher's phone proves who they are to the Board over the local network or Bluetooth, using a credential the cloud signed earlier.
 - ⬜ **Fallback sign-in.** A PIN on a keypad whose keys are shuffled each time, so no one can learn it by watching. Each school can turn this on or off.
 - ✅ The current timetable period opens with its class, subject and next chapter.
@@ -35,11 +35,11 @@ offline AI features on or off accordingly.
 - ✅ **Multi-touch writing.** Every finger or pen gets its own stroke, so several students can write at the same time.
 - ⬜ **Multi-user zones.** Split the board into 2–4 zones, each with its own toolbar, for group activities and competitions.
 - ✅ Pen, highlighter, eraser (stroke and area), colours, thickness, undo/redo, clear.
-- 🟡 Palm rejection by contact size (built); the stylus eraser end erases (built); pressure-sensitive ink width is not built yet.
-- ⬜ Infinite canvas and pages; backgrounds (plain, ruled, grid, graph, music staff, dark chalkboard). 🟡 Backgrounds partly built.
-- ⬜ Shapes, lines, arrows, text, sticky notes, images; select, move, resize, lasso.
-- ⬜ **Geometry tools.** Ruler, protractor, compass, set squares. 2D and 3D shapes measure themselves automatically (lengths, angles, area, volume).
-- ✅ **Split screen.** Single, 50/50 or 70/30 layouts, with left/right swap. Each pane can hold the whiteboard, a PDF or PPT, a video, a web page, a 3D model or a lab.
+- ✅ Touch profiles: on a tablet a palm is ignored; on an interactive panel a palm erases like a duster; on an IR frame every touch writes. The stylus eraser end erases. ⬜ Pressure-sensitive ink width is not built yet.
+- ✅ Pages (previous, next, new page). ✅ Backgrounds: plain, ruled, 1 cm grid, dots, chalkboard. ⬜ Infinite canvas, music staff.
+- ✅ 13 2D shapes (line, arrows, circle, ellipse, triangles, rectangle, parallelogram, trapezium, rhombus, pentagon, hexagon). ✅ Box-select, move and delete, all undoable. ⬜ Text, sticky notes, images, resize, lasso.
+- 🟡 **Measurements.** ✅ 2D shapes can show side lengths (cm, on the 1 cm grid), interior angles and a circle's radius. ⬜ Ruler, protractor, compass, set squares, 3D solids, area and volume.
+- ✅ **Split screen.** A side panel next to the board, drag-resizable from 30% to 70%, which can sit on either side. 🟡 It can hold a second whiteboard (built) or a PDF/PPT, video, web page, 3D model or lab (coming).
 - ⬜ Annotate over any pane (a transparent ink layer).
 - ⬜ Save, export as PDF or images, and share to the class (appears in the Student App).
 
@@ -66,9 +66,9 @@ All AI runs on India-hosted infrastructure, or on the device itself. ([design](.
 
 ## 6. Classroom tools
 
-- ⬜ **Random student picker** using the ERP roster, limited to students marked present. The teacher marks the answer correct, partial or incorrect, and the result goes to the student's profile against the topic.
-- ⬜ One-tap attendance, synced to the ERP. Parents of absent students are notified.
-- ⬜ Timer and stopwatch, groups maker, polls, a buzzer and scoreboard for quizzes.
+- ✅ **Random student picker** using the ERP roster, limited to students marked present. The teacher marks the answer correct, partial or incorrect, and the result goes to the student's profile against the topic.
+- ✅ One-tap attendance on the board (present, absent or late), synced to the ERP through the outbox. ⬜ Parents of absent students are notified.
+- ✅ Countdown timer (floating, draggable). ⬜ Stopwatch, groups maker, polls, buzzer, scoreboard.
 - ⬜ Read-aloud (text-to-speech) and a big-text magnifier.
 - ⬜ Screen spotlight, curtain/reveal, zoom.
 

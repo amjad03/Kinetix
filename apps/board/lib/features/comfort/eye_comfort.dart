@@ -21,12 +21,26 @@ class EyeComfortSettings {
   final bool highContrast;
 
   EyeComfortSettings copyWith({bool? enabled, bool? auto, double? warmth, double? dim, bool? highContrast}) => EyeComfortSettings(
-        enabled: enabled ?? this.enabled,
-        auto: auto ?? this.auto,
-        warmth: warmth ?? this.warmth,
-        dim: dim ?? this.dim,
-        highContrast: highContrast ?? this.highContrast,
-      );
+    enabled: enabled ?? this.enabled,
+    auto: auto ?? this.auto,
+    warmth: warmth ?? this.warmth,
+    dim: dim ?? this.dim,
+    highContrast: highContrast ?? this.highContrast,
+  );
+
+  String encode() => [enabled, auto, warmth, dim, highContrast].join(',');
+
+  static EyeComfortSettings decode(String? s) {
+    final p = s?.split(',');
+    if (p == null || p.length != 5) return const EyeComfortSettings();
+    return EyeComfortSettings(
+      enabled: p[0] == 'true',
+      auto: p[1] == 'true',
+      warmth: double.tryParse(p[2]) ?? 0.3,
+      dim: double.tryParse(p[3]) ?? 0.1,
+      highContrast: p[4] == 'true',
+    );
+  }
 
   /// The warmth and dim levels in effect at [time].
   ({double warmth, double dim}) levelsAt(DateTime time) {

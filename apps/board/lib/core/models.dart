@@ -31,15 +31,6 @@ class SessionContext {
     );
   }
 
-  /// A local session for the practice board: no teacher, nothing is synced.
-  factory SessionContext.practice() => SessionContext(
-        sessionId: 'practice',
-        expiresAt: DateTime.now().add(const Duration(hours: 8)),
-        teacherId: '',
-        teacherName: 'Practice board',
-        language: 'en',
-      );
-
   final String sessionId;
   final DateTime expiresAt;
   final String teacherId;
@@ -49,8 +40,27 @@ class SessionContext {
   final String? subjectName;
   final String? periodLabel;
 
-  bool get isPractice => sessionId == 'practice';
+  /// "BCom Sem 3 A · Corporate Accounting", or null for a session with no timetabled class.
+  String? get classLabel {
+    final label = [sectionName, subjectName].whereType<String>().join(' · ');
+    return label.isEmpty ? null : label;
+  }
 }
+
+class Student {
+  Student({required this.id, required this.rollNo, required this.fullName});
+
+  factory Student.fromJson(Map<String, dynamic> j) =>
+      Student(id: j['id'] as String, rollNo: j['rollNo'] as String, fullName: j['fullName'] as String);
+
+  final String id;
+  final String rollNo;
+  final String fullName;
+}
+
+enum AttendanceMark { present, absent, late }
+
+enum AnswerOutcome { correct, partial, incorrect, skipped }
 
 enum BroadcastPriority { info, important, emergency }
 
@@ -66,14 +76,14 @@ class BroadcastMessage {
   });
 
   factory BroadcastMessage.fromJson(Map<String, dynamic> j) => BroadcastMessage(
-        id: j['id'] as String,
-        title: j['title'] as String,
-        body: j['body'] as String,
-        priority: BroadcastPriority.values.byName(j['priority'] as String),
-        requiresAck: j['requiresAck'] as bool,
-        senderName: (j['sender'] as Map<String, dynamic>)['fullName'] as String,
-        expiresAt: DateTime.parse(j['expiresAt'] as String),
-      );
+    id: j['id'] as String,
+    title: j['title'] as String,
+    body: j['body'] as String,
+    priority: BroadcastPriority.values.byName(j['priority'] as String),
+    requiresAck: j['requiresAck'] as bool,
+    senderName: (j['sender'] as Map<String, dynamic>)['fullName'] as String,
+    expiresAt: DateTime.parse(j['expiresAt'] as String),
+  );
 
   final String id;
   final String title;
@@ -87,11 +97,8 @@ class BroadcastMessage {
 class PairingCode {
   PairingCode({required this.code, required this.qrPayload, required this.expiresAt});
 
-  factory PairingCode.fromJson(Map<String, dynamic> j) => PairingCode(
-        code: j['code'] as String,
-        qrPayload: j['qrPayload'] as String,
-        expiresAt: DateTime.parse(j['expiresAt'] as String),
-      );
+  factory PairingCode.fromJson(Map<String, dynamic> j) =>
+      PairingCode(code: j['code'] as String, qrPayload: j['qrPayload'] as String, expiresAt: DateTime.parse(j['expiresAt'] as String));
 
   final String code;
   final String qrPayload;

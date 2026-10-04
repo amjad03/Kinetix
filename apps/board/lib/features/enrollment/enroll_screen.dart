@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 
-/// First run: an admin types the enrolment code from the ERP to register this board.
+/// First run: an admin registers this board with the enrolment code from KINETIX ERP.
 class EnrollScreen extends StatefulWidget {
   const EnrollScreen({super.key, required this.controller});
 
@@ -34,31 +35,72 @@ class _EnrollScreenState extends State<EnrollScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
+      backgroundColor: c.surfaceContainer,
       body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('Set up this board', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              const Text('In KINETIX ERP, go to Devices → Add board and type the code shown there.'),
-              const SizedBox(height: 24),
-              TextField(controller: _server, decoration: const InputDecoration(labelText: 'Server', border: OutlineInputBorder())),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('enroll-code'),
-                controller: _code,
-                textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(labelText: 'Enrolment code (KX-XXXX-XXXX)', border: OutlineInputBorder()),
-                onSubmitted: (_) => _submit(),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(Kx.s24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Card(
+              color: c.surface,
+              child: Padding(
+                padding: const EdgeInsets.all(Kx.s32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(color: c.primaryContainer, borderRadius: Kx.radiusMd),
+                          child: Icon(Icons.co_present_outlined, color: c.onPrimaryContainer),
+                        ),
+                        const SizedBox(width: Kx.s16),
+                        Text('KINETIX Board', style: context.text.titleLarge),
+                      ],
+                    ),
+                    const SizedBox(height: Kx.s24),
+                    Text('Set up this board', style: context.text.headlineMedium),
+                    const SizedBox(height: Kx.s8),
+                    Text(
+                      'In KINETIX ERP, open Devices → Add board, then enter the code shown there.',
+                      style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: Kx.s24),
+                    TextField(
+                      key: const Key('enroll-code'),
+                      controller: _code,
+                      textCapitalization: TextCapitalization.characters,
+                      style: context.text.titleLarge?.copyWith(letterSpacing: 2),
+                      decoration: const InputDecoration(
+                        labelText: 'Enrolment code',
+                        hintText: 'KX-XXXX-XXXX',
+                        prefixIcon: Icon(Icons.key_outlined),
+                      ),
+                      onSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: Kx.s12),
+                    TextField(
+                      controller: _server,
+                      decoration: const InputDecoration(labelText: 'Server', prefixIcon: Icon(Icons.dns_outlined)),
+                    ),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: Kx.s12),
+                        child: Text(_error!, style: TextStyle(color: c.error)),
+                      ),
+                    const SizedBox(height: Kx.s24),
+                    FilledButton(onPressed: _busy ? null : _submit, child: Text(_busy ? 'Registering…' : 'Register board')),
+                    const SizedBox(height: Kx.s8),
+                    TextButton(onPressed: widget.controller.skipEnrollment, child: const Text('Skip for now and use the practice board')),
+                  ],
+                ),
               ),
-              if (_error != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_error!, style: const TextStyle(color: Colors.red))),
-              const SizedBox(height: 20),
-              FilledButton(onPressed: _busy ? null : _submit, child: Text(_busy ? 'Connecting…' : 'Register board')),
-              TextButton(onPressed: widget.controller.startPractice, child: const Text('Try the practice board')),
-            ]),
+            ),
           ),
         ),
       ),

@@ -1,0 +1,42 @@
+name: kinetix_ui
+description: KINETIX design system — Material 3 theme, tokens and bundled fonts shared by the Board and the mobile apps.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  fonts:
+    # Google Sans (OFL), subset to Latin + symbols incl. ₹. Static instances cut from the variable font.
+    - family: GoogleSans
+      fonts:
+        - asset: fonts/GoogleSans-400.ttf
+        - asset: fonts/GoogleSans-500.ttf
+          weight: 500
+        - asset: fonts/GoogleSans-700.ttf
+          weight: 700
+    - family: NotoSansKannada
+      fonts:
+        - asset: fonts/NotoSansKannada-400.ttf
+        - asset: fonts/NotoSansKannada-500.ttf
+          weight: 500
+        - asset: fonts/NotoSansKannada-700.ttf
+          weight: 700
+    - family: NotoSansDevanagari
+      fonts:
+        - asset: fonts/NotoSansDevanagari-400.ttf
+        - asset: fonts/NotoSansDevanagari-500.ttf
+          weight: 500
+        - asset: fonts/NotoSansDevanagari-700.ttf
+          weight: 700

@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Where the board keeps its server address and device token.
+/// Where the board keeps its server address, device token and settings.
 /// TODO: move the token to Android Keystore / Windows DPAPI (flutter_secure_storage).
 class DeviceStore {
   static const _server = 'server_url';
@@ -19,8 +19,7 @@ class DeviceStore {
     await p.setString(_name, name);
   }
 
-  Future<void> clear() async {
-    final p = await SharedPreferences.getInstance();
-    await p.remove(_token);
-  }
+  Future<String?> setting(String key) async => (await SharedPreferences.getInstance()).getString('setting.$key');
+
+  Future<void> setSetting(String key, String value) async => (await SharedPreferences.getInstance()).setString('setting.$key', value);
 }

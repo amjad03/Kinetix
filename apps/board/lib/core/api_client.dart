@@ -35,6 +35,27 @@ class ApiClient {
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
 
+  Future<List<Student>> roster() async {
+    final j = await _send('GET', '/v1/sessions/current') as Map<String, dynamic>;
+    return (j['roster'] as List<dynamic>).map((e) => Student.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// Sends outbox operations. Returns the opIds the server has (applied or duplicate) and
+  /// the ones it rejected; anything else should be retried.
+  Future<({Set<String> done, Map<String, String> rejected})> pushOps(List<Map<String, dynamic>> ops) async {
+    final j = await _send('POST', '/v1/sync/push', body: {'ops': ops}) as Map<String, dynamic>;
+    final done = <String>{};
+    final rejected = <String, String>{};
+    for (final r in (j['results'] as List<dynamic>).cast<Map<String, dynamic>>()) {
+      if (r['status'] == 'rejected') {
+        rejected[r['opId'] as String] = r['reason'] as String? ?? 'rejected';
+      } else {
+        done.add(r['opId'] as String);
+      }
+    }
+    return (done: done, rejected: rejected);
+  }
+
   Future<List<BroadcastMessage>> pendingBroadcasts() async {
     final list = await _send('GET', '/v1/broadcasts/pending') as List<dynamic>;
     return list.map((e) => BroadcastMessage.fromJson(e as Map<String, dynamic>)).toList();
