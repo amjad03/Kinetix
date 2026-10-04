@@ -21,7 +21,7 @@ import type { Course, Curriculum, SubjectLink } from '@/lib/types';
 
 const NONE = '';
 
-/** Each subject on the timetable, and the library course its class uses (the board's Books panel, KINETIX AI). */
+/** Each of the institution's subjects, and the library course its class uses (the board's Books panel, KINETIX AI). */
 export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjects: SubjectLink[]; courses: Course[]; curricula: Curriculum[]; canLink: boolean }) {
   const [links, setLinks] = useState(() => new Map(subjects.map((s) => [s.id, s.courseId])));
   const [busy, setBusy] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                       {s.code}
                     </Typography>
                   </TableCell>
-                  <TableCell>{s.classes.join(', ')}</TableCell>
+                  <TableCell>{s.classes.length ? s.classes.join(', ') : <Box component="span" sx={{ color: 'text.secondary' }}>No class yet</Box>}</TableCell>
                   <TableCell>
                     {canLink ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

@@ -270,7 +270,10 @@ class _SubjectScreenState extends State<SubjectScreen> {
               bottom: Kx.s8,
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  '${o.title} · ${Fmt.plural(o.chapters.length, 'chapter')} · ${Fmt.plural(o.topicCount, 'topic')}'.replaceAll(RegExp(r'(?<=\d) '), '\u00a0'),
+                  '${o.title} · ${Fmt.plural(o.chapters.length, 'chapter')} · ${Fmt.plural(o.topicCount, 'topic')}'.replaceAll(
+                    RegExp(r'(?<=\d) '),
+                    '\u00a0',
+                  ),
                   style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                 ),
               ),

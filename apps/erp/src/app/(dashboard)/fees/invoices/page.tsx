@@ -30,7 +30,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   else if (status !== 'all') q.set('status', status);
 
   const [invoices, summary] = await Promise.all([load(() => api<FeeInvoice[]>(`/v1/fees/invoices?${q}`)), load(() => api<FeeSummary>('/v1/fees/summary'))]);
-  const classes = await load(() => feeClasses(summary.data));
+  const classes = await load(feeClasses);
   const list = (invoices.data ?? []).filter((i) => status !== 'overdue' || i.dueOn < today);
   const filterClasses = (summary.data?.classes ?? []).map((c) => ({ id: c.sectionId, name: c.className }));
   const className = filterClasses.find((c) => c.id === classId)?.name;

@@ -34,12 +34,12 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import { cancelInvoice, invoicePayments, recordPayment, type RecordedPayment } from '@/app/(dashboard)/fees/actions';
+import { cancelInvoice, invoicePayments, recordPayment } from '@/app/(dashboard)/fees/actions';
 import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
 import { daysBetween, formatDate, formatDateTime } from '@/lib/dates';
 import { formatRupees, METHOD_LABEL, paiseToInput, PAY_METHODS, REFERENCE_LABEL, rupeesToPaise, type CounterMethod } from '@/lib/money';
-import type { FeeInvoice, StudentFees } from '@/lib/types';
+import type { FeeInvoice, FeeReceipt, StudentFees } from '@/lib/types';
 import { ReceiptView } from './ReceiptView';
 
 function StatusCell({ inv, today }: { inv: FeeInvoice; today: string }) {
@@ -211,7 +211,7 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
   const [method, setMethod] = useState<CounterMethod>('cash');
   const [reference, setReference] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<RecordedPayment | null>(null);
+  const [done, setDone] = useState<FeeReceipt | null>(null);
   const [pending, start] = useTransition();
 
   const paise = rupeesToPaise(amount);
@@ -223,7 +223,7 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
     if (!ready || paise === null) return;
     setError(null);
     start(async () => {
-      const res = await recordPayment(inv.id, inv.student.id, { amountPaise: paise, method, reference });
+      const res = await recordPayment(inv.id, { amountPaise: paise, method, reference });
       if (res.ok) setDone(res.data);
       else setError(res.error);
     });
@@ -238,18 +238,16 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
         </DialogTitle>
         <DialogContent>
           <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2.5 }}>
-            <ReceiptView r={done.receipt} timeZone={timeZone} />
+            <ReceiptView r={done} timeZone={timeZone} />
           </Box>
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
             The family has been notified in the KINETIX Parent app, where the receipt is also available.
           </Typography>
         </DialogContent>
         <DialogActions>
-          {done.paymentId && (
-            <Button component={Link} href={`/fees/receipts/${done.paymentId}`} target="_blank" startIcon={<PrintOutlined />}>
-              Print receipt
-            </Button>
-          )}
+          <Button component={Link} href={`/fees/receipts/${done.paymentId}`} target="_blank" startIcon={<PrintOutlined />}>
+            Print receipt
+          </Button>
           <Button variant="contained" onClick={onClose}>
             Done
           </Button>

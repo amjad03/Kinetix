@@ -244,7 +244,7 @@ void main() {
 
       await tester.tap(find.byKey(const Key('subjectTile-sub1')));
       await tester.pumpAndSettle();
-      expect(find.text('Corporate Accounting, BCom Semester 3 · 2 chapters · 2 topics'), findsOneWidget);
+      expect(find.text('Corporate Accounting, BCom Semester 3\u00a0· 2\u00a0chapters · 2\u00a0topics'), findsOneWidget);
       expect(find.text('1. Underwriting of Shares'), findsOneWidget);
       await tester.tap(find.byKey(const Key('topic-t1')));
       await tester.pumpAndSettle();

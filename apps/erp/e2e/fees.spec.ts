@@ -20,7 +20,8 @@ test('Fees overview shows totals in rupees and every class', async ({ page }) =>
   await open(page, '/fees');
   await expect(page.getByTestId('fee-billed')).toContainText('₹');
   await expect(page.getByTestId('fee-billed')).toContainText(/₹\d{1,2},\d{2},\d{3}/); // lakh grouping
-  await expect(page.getByTestId('fee-overdue')).toContainText('invoices');
+  await expect(page.getByTestId('fee-overdue')).toContainText('₹');
+  await expect(page.getByTestId('fee-overdue')).toContainText('invoices past the due date');
   await expect(page.getByTestId('fee-classes')).toContainText('BCom Sem 3 A');
   await expect(page.getByTestId('fee-classes')).toContainText('BCA Sem 1 A');
   await shot(page, 'fees-overview');

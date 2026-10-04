@@ -26,6 +26,7 @@ export interface Structure {
   programs: { id: string; name: string; level: string; campusId: string }[];
   sections: { id: string; displayName: string; programId: string; term: number; students: number }[];
   rooms: { id: string; name: string; campusId: string }[];
+  subjects: { id: string; code: string; name: string; programId: string; term: number; courseId: string | null }[];
 }
 
 export type ClassStatus = 'upcoming' | 'live' | 'not_started' | 'taught' | 'missed';
@@ -158,8 +159,18 @@ export interface FeeSummary {
   collectedPaise: number;
   outstandingPaise: number;
   overdueInvoices: number;
+  overduePaise: number;
   openInvoices: number;
-  classes: { sectionId: string; className: string; billedPaise: number; collectedPaise: number; outstandingPaise: number; overdue: number; open: number }[];
+  classes: {
+    sectionId: string;
+    className: string;
+    billedPaise: number;
+    collectedPaise: number;
+    outstandingPaise: number;
+    overdue: number;
+    overduePaise: number;
+    open: number;
+  }[];
 }
 
 export interface FeeInvoice {
@@ -174,6 +185,7 @@ export interface FeeInvoice {
 }
 
 export interface FeeReceipt {
+  paymentId: string;
   receiptNo: string;
   institution: string;
   student: { id: string; fullName: string; rollNo: string | null };
@@ -187,8 +199,8 @@ export interface FeeReceipt {
 
 export interface StudentFees {
   duePaise: number;
-  invoices: { id: string; title: string; amountPaise: number; paidPaise: number; dueOn: string; status: InvoiceStatus }[];
-  payments: { id: string; invoiceId: string; title?: string; amountPaise: number; method: string; reference?: string | null; receiptNo: string | null; paidAt: string | null }[];
+  invoices: { id: string; batchId: string; title: string; amountPaise: number; paidPaise: number; dueOn: string; status: InvoiceStatus }[];
+  payments: { id: string; invoiceId: string; title: string; amountPaise: number; method: string; reference: string | null; receiptNo: string | null; paidAt: string | null }[];
 }
 
 // ---- Content library (v1/content) ----
@@ -223,7 +235,7 @@ export interface Topic {
   course?: { id: string; title: string; reviewed: boolean };
 }
 
-/** One of the institution's subjects, as seen on the timetable. */
+/** One of the institution's subjects, with the classes that study it and its library course. */
 export interface SubjectLink {
   id: string;
   name: string;

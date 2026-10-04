@@ -31,8 +31,7 @@ const exact = (paise: number) => (formatRupeesShort(paise) === formatRupees(pais
 
 export default async function FeesPage() {
   await requireSection('fees');
-  const summary = await load(() => api<FeeSummary>('/v1/fees/summary'));
-  const classes = await load(() => feeClasses(summary.data));
+  const [summary, classes] = await Promise.all([load(() => api<FeeSummary>('/v1/fees/summary')), load(feeClasses)]);
   const today = schoolToday();
   const s = summary.data;
 
@@ -75,10 +74,9 @@ export default async function FeesPage() {
             />
             <StatTile
               label="Overdue"
-              value={s!.overdueInvoices}
-              unit="invoices"
-              tone={s!.overdueInvoices > 0 ? 'warning' : 'default'}
-              caption={s!.overdueInvoices > 0 ? 'Past the due date and not fully paid' : 'Nothing is overdue'}
+              value={formatRupeesShort(s!.overduePaise)}
+              tone={s!.overduePaise > 0 ? 'warning' : 'default'}
+              caption={s!.overdueInvoices > 0 ? `${s!.overdueInvoices} invoices past the due date${exact(s!.overduePaise)}` : 'Nothing is overdue'}
               testId="fee-overdue"
             />
           </StatGrid>
@@ -131,8 +129,19 @@ export default async function FeesPage() {
                           {formatRupees(c.outstandingPaise)}
                         </TableCell>
                         <TableCell align="right">{c.open}</TableCell>
-                        <TableCell align="right" sx={{ color: c.overdue ? 'error.main' : 'text.secondary', fontWeight: c.overdue ? 500 : 400 }}>
-                          {c.overdue}
+                        <TableCell align="right" sx={{ color: c.overdue ? 'error.main' : 'text.secondary', whiteSpace: 'nowrap' }}>
+                          {c.overdue ? (
+                            <>
+                              <Box component="span" sx={{ fontWeight: 500 }}>
+                                {formatRupees(c.overduePaise)}
+                              </Box>
+                              <Typography component="span" variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                                {c.overdue} invoices
+                              </Typography>
+                            </>
+                          ) : (
+                            '—'
+                          )}
                         </TableCell>
                         <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
                           <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={`Invoices for ${c.className}`}>
@@ -156,7 +165,7 @@ export default async function FeesPage() {
                   </Typography>
                   {c.overdue > 0 && (
                     <Typography variant="body2" sx={{ color: 'error.main', whiteSpace: 'nowrap' }}>
-                      {c.overdue} overdue
+                      {formatRupees(c.overduePaise)} overdue
                     </Typography>
                   )}
                 </Box>

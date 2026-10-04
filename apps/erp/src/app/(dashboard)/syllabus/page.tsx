@@ -7,8 +7,8 @@ import { Library } from '@/components/syllabus/Library';
 import { SubjectLinks } from '@/components/syllabus/SubjectLinks';
 import { canLinkSubjects } from '@/lib/access';
 import { api, load, requireSection } from '@/lib/api';
-import { institutionSubjects } from '@/lib/syllabus';
-import type { Course, Curriculum } from '@/lib/types';
+import { subjectLinks } from '@/lib/syllabus';
+import type { Course, Curriculum, Structure } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Syllabus' };
 
@@ -17,7 +17,7 @@ export default async function SyllabusPage({ searchParams }: { searchParams: Pro
   const [curricula, courses, subjects] = await Promise.all([
     load(() => api<Curriculum[]>('/v1/content/curricula')),
     load(() => api<Course[]>('/v1/content/courses')),
-    load(institutionSubjects),
+    load(async () => subjectLinks(await api<Structure>('/v1/admin/structure'))),
   ]);
   const { curriculum } = await searchParams;
   const selected = curricula.data?.some((c) => c.code === curriculum) ? curriculum : undefined;
@@ -36,8 +36,8 @@ export default async function SyllabusPage({ searchParams }: { searchParams: Pro
       {subjects.error !== undefined || courses.error !== undefined ? (
         <ErrorState message={subjects.error ?? courses.error ?? ''} />
       ) : subjects.data.length === 0 ? (
-        <EmptyState dense icon={<MenuBookOutlined />} title="No subjects on the timetable this week">
-          Subjects appear here once they are on the timetable.
+        <EmptyState dense icon={<MenuBookOutlined />} title="No subjects yet">
+          Subjects appear here once they are added to your programs.
         </EmptyState>
       ) : (
         <SubjectLinks subjects={subjects.data} courses={courses.data} curricula={curricula.data ?? []} canLink={!!me && canLinkSubjects(me.roles)} />

@@ -27,18 +27,11 @@ export async function issueFee(input: { sectionId: string; title: string; amount
   return res;
 }
 
-export interface RecordedPayment {
-  receipt: FeeReceipt;
-  /** For the printable receipt page; null if it could not be found (the receipt still shows). */
-  paymentId: string | null;
-}
-
 export async function recordPayment(
   invoiceId: string,
-  studentId: string,
   input: { amountPaise: number; method: CounterMethod; reference?: string },
-): Promise<ActionResult<RecordedPayment>> {
-  if (!UUID.test(invoiceId) || !UUID.test(studentId)) return { ok: false, error: 'Unknown invoice.' };
+): Promise<ActionResult<FeeReceipt>> {
+  if (!UUID.test(invoiceId)) return { ok: false, error: 'Unknown invoice.' };
   if (!PAY_METHODS.includes(input.method)) return { ok: false, error: 'Choose how the money was paid.' };
   if (!Number.isSafeInteger(input.amountPaise) || input.amountPaise < MIN_PAISE || input.amountPaise > MAX_PAISE) return { ok: false, error: 'Enter an amount of at least ₹1.' };
   const reference = input.reference?.trim() || undefined;
@@ -48,17 +41,8 @@ export async function recordPayment(
   const res = await act(() =>
     api<FeeReceipt>(`/v1/fees/invoices/${invoiceId}/payments`, { method: 'POST', body: { amountPaise: input.amountPaise, method: input.method, ...(reference ? { reference } : {}) } }),
   );
-  if (!res.ok) return res;
-  refresh();
-  // The receipt does not carry the payment's id; find it by receipt number for the print view.
-  let paymentId: string | null = null;
-  try {
-    const fees = await api<StudentFees>(`/v1/fees/students/${studentId}`);
-    paymentId = fees.payments.find((p) => p.receiptNo === res.data.receiptNo)?.id ?? null;
-  } catch {
-    /* the receipt is shown anyway */
-  }
-  return { ok: true, data: { receipt: res.data, paymentId } };
+  if (res.ok) refresh();
+  return res;
 }
 
 export async function cancelInvoice(id: string): Promise<ActionResult<{ id: string; status: string }>> {
