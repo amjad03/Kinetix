@@ -123,7 +123,17 @@ class _LiveClassScreenState extends State<LiveClassScreen> {
                       ],
                     ),
                   ),
-                if (phase == LivePhase.ended || phase == LivePhase.failed) Center(child: _EndedCard(controller: controller)),
+                // Clear of the top and bottom bars, so Leave stays reachable when the card is tall
+                // (small phones, larger text, longer words).
+                if (phase == LivePhase.ended || phase == LivePhase.failed)
+                  Positioned.fill(
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: Kx.target + Kx.s8),
+                        child: Center(child: _EndedCard(controller: controller)),
+                      ),
+                    ),
+                  ),
               ],
             );
           },

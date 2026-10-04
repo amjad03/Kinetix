@@ -1221,6 +1221,96 @@ abstract class AppLocalizations {
   /// **'Update'**
   String get update;
 
+  /// No description provided for @attendanceGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good attendance. Keep it up.'**
+  String get attendanceGood;
+
+  /// No description provided for @seeAttendanceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'See attendance history'**
+  String get seeAttendanceHistory;
+
+  /// No description provided for @attendedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended {attended} of {count, plural, =1{1 class} other{{count} classes}}'**
+  String attendedOf(Object attended, int count);
+
+  /// No description provided for @excusedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} excused (counted as attended)'**
+  String excusedNote(Object count);
+
+  /// No description provided for @recentAbsences.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent absences'**
+  String get recentAbsences;
+
+  /// No description provided for @dueCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} due'**
+  String dueCount(Object count);
+
+  /// No description provided for @pastHomework.
+  ///
+  /// In en, this message translates to:
+  /// **'Past homework ({count})'**
+  String pastHomework(Object count);
+
+  /// No description provided for @classBoards.
+  ///
+  /// In en, this message translates to:
+  /// **'Class boards'**
+  String get classBoards;
+
+  /// No description provided for @todaysBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s board: {subject}'**
+  String todaysBoard(Object subject);
+
+  /// No description provided for @resultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Published marks and class averages'**
+  String get resultsSubtitle;
+
+  /// No description provided for @librarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Books borrowed, due dates and fines'**
+  String get librarySubtitle;
+
+  /// No description provided for @college.
+  ///
+  /// In en, this message translates to:
+  /// **'College'**
+  String get college;
+
+  /// No description provided for @resultsLibraryHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Results & library'**
+  String get resultsLibraryHeader;
+
+  /// No description provided for @feesAndReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees and receipts'**
+  String get feesAndReceipts;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
   /// No description provided for @signInHint.
   ///
   /// In en, this message translates to:
@@ -1251,12 +1341,6 @@ abstract class AppLocalizations {
   /// **'No children are linked to your account yet.\nAsk your child\'s college to add you as their parent.'**
   String get noChildrenLinked;
 
-  /// No description provided for @attendanceGood.
-  ///
-  /// In en, this message translates to:
-  /// **'Good attendance. Keep it up.'**
-  String get attendanceGood;
-
   /// No description provided for @attendanceFewMissed.
   ///
   /// In en, this message translates to:
@@ -1269,53 +1353,17 @@ abstract class AppLocalizations {
   /// **'Below 75%. Colleges usually need 75% to sit exams.'**
   String get attendanceBelow75;
 
-  /// No description provided for @seeAttendanceHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'See attendance history'**
-  String get seeAttendanceHistory;
-
   /// No description provided for @noAttendanceFor.
   ///
   /// In en, this message translates to:
   /// **'No attendance has been taken for {name} in the last {days} days.'**
   String noAttendanceFor(Object name, Object days);
 
-  /// No description provided for @attendedOf.
-  ///
-  /// In en, this message translates to:
-  /// **'Attended {attended} of {count, plural, =1{1 class} other{{count} classes}}'**
-  String attendedOf(Object attended, int count);
-
-  /// No description provided for @excusedNote.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} excused (counted as attended)'**
-  String excusedNote(Object count);
-
-  /// No description provided for @recentAbsences.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent absences'**
-  String get recentAbsences;
-
-  /// No description provided for @dueCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} due'**
-  String dueCount(Object count);
-
   /// No description provided for @nothingDue.
   ///
   /// In en, this message translates to:
   /// **'Nothing due right now. New homework from teachers will show here.'**
   String get nothingDue;
-
-  /// No description provided for @pastHomework.
-  ///
-  /// In en, this message translates to:
-  /// **'Past homework ({count})'**
-  String pastHomework(Object count);
 
   /// No description provided for @inClass.
   ///
@@ -1407,23 +1455,11 @@ abstract class AppLocalizations {
   /// **'Did not answer {count}.'**
   String didNotAnswer(Object count);
 
-  /// No description provided for @classBoards.
-  ///
-  /// In en, this message translates to:
-  /// **'Class boards'**
-  String get classBoards;
-
   /// No description provided for @boardsEmpty.
   ///
   /// In en, this message translates to:
   /// **'When a teacher shares the class board after a lesson, it appears here so {name} can revise.'**
   String boardsEmpty(Object name);
-
-  /// No description provided for @todaysBoard.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s board: {subject}'**
-  String todaysBoard(Object subject);
 
   /// No description provided for @childAttendance.
   ///
@@ -1473,12 +1509,6 @@ abstract class AppLocalizations {
   /// **'Fees & receipts'**
   String get feesReceiptsHeader;
 
-  /// No description provided for @feesAndReceipts.
-  ///
-  /// In en, this message translates to:
-  /// **'Fees and receipts'**
-  String get feesAndReceipts;
-
   /// No description provided for @childFees.
   ///
   /// In en, this message translates to:
@@ -1491,41 +1521,17 @@ abstract class AppLocalizations {
   /// **'Dues, payments and receipts'**
   String get feesSubtitle;
 
-  /// No description provided for @resultsLibraryHeader.
-  ///
-  /// In en, this message translates to:
-  /// **'Results & library'**
-  String get resultsLibraryHeader;
-
   /// No description provided for @childResults.
   ///
   /// In en, this message translates to:
   /// **'{name}\'s results'**
   String childResults(Object name);
 
-  /// No description provided for @resultsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Published marks and class averages'**
-  String get resultsSubtitle;
-
   /// No description provided for @childLibraryBooks.
   ///
   /// In en, this message translates to:
   /// **'{name}\'s library books'**
   String childLibraryBooks(Object name);
-
-  /// No description provided for @librarySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Books borrowed, due dates and fines'**
-  String get librarySubtitle;
-
-  /// No description provided for @college.
-  ///
-  /// In en, this message translates to:
-  /// **'College'**
-  String get college;
 
   /// No description provided for @noBooksBorrowed.
   ///

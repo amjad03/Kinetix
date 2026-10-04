@@ -222,6 +222,7 @@ class NotificationTile extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
+                        flex: 3,
                         child: Text(
                           n.title,
                           maxLines: 2,
@@ -230,7 +231,15 @@ class NotificationTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: Kx.s8),
-                      Text(when, style: context.text.labelMedium?.copyWith(color: n.unread ? c.primary : c.onSurfaceVariant)),
+                      // A long day name ("ಮಂಗಳ 29 ಸೆಪ್ಟೆಂ") wraps rather than squeezing past the edge.
+                      Flexible(
+                        flex: 2,
+                        child: Text(
+                          when,
+                          textAlign: TextAlign.end,
+                          style: context.text.labelMedium?.copyWith(color: n.unread ? c.primary : c.onSurfaceVariant),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 2),

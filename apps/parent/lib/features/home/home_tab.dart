@@ -587,6 +587,7 @@ class _BoardsCard extends StatelessWidget {
             ),
           for (final b in summary.boards)
             InkWell(
+              key: Key('board-${b.id}'),
               borderRadius: Kx.radiusMd,
               onTap: () => BoardScreen.open(context, family.api, b.id, summary: b),
               child: Padding(

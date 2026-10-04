@@ -239,7 +239,7 @@
   "childFees": "{name} की फ़ीस",
   "feesSubtitle": "बकाया, भुगतान और रसीदें",
   "childResults": "{name} के परिणाम",
-  "childLibraryBooks": "{name} की पुस्तकालय की किताबें",
+  "childLibraryBooks": "{name} की पुस्तकालय किताबें",
   "noBooksBorrowed": "पुस्तकालय से कोई किताब नहीं ली गई। {name} कॉलेज पुस्तकालय से जो किताबें लेंगे, वे लौटाने की तारीख के साथ यहाँ दिखेंगी।",
   "noBooksOutNow": "अभी {name} के पास पुस्तकालय की कोई किताब नहीं है।",
   "childLibrary": "पुस्तकालय: {name}",

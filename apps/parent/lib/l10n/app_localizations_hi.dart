@@ -663,39 +663,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get update => 'सूचना';
 
   @override
-  String get signInHint => 'वही फ़ोन नंबर या ईमेल इस्तेमाल करें जो आपने अपने बच्चे के कॉलेज को दिया है';
-
-  @override
-  String get errNotGuardian => 'यह ऐप अभिभावकों के लिए है। अपने संस्थान से अपना खाता अपने बच्चे से जोड़ने के लिए कहें।';
-
-  @override
-  String get errTeacherAccount => 'यह ऐप अभिभावकों के लिए है। शिक्षक KINETIX Teacher ऐप इस्तेमाल कर सकते हैं।';
-
-  @override
-  String homeSubtitle(Object name) {
-    return '$name की प्रगति यहाँ देखें';
-  }
-
-  @override
-  String get noChildrenLinked =>
-      'आपके खाते से अभी कोई बच्चा नहीं जुड़ा है।\nअपने बच्चे के कॉलेज से आपको अभिभावक के रूप में जोड़ने के लिए कहें।';
-
-  @override
   String get attendanceGood => 'अच्छी उपस्थिति। ऐसे ही बनाए रखें।';
 
   @override
-  String get attendanceFewMissed => 'हाल में कुछ कक्षाएँ छूटी हैं।';
-
-  @override
-  String get attendanceBelow75 => '75% से कम। परीक्षा में बैठने के लिए कॉलेज आमतौर पर 75% उपस्थिति माँगते हैं।';
-
-  @override
   String get seeAttendanceHistory => 'उपस्थिति का पूरा ब्योरा देखें';
-
-  @override
-  String noAttendanceFor(Object name, Object days) {
-    return 'पिछले $days दिनों में $name की उपस्थिति दर्ज नहीं हुई है।';
-  }
 
   @override
   String attendedOf(Object attended, int count) {
@@ -717,12 +688,67 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get nothingDue => 'अभी कुछ भी जमा करना बाकी नहीं है। शिक्षकों का नया होमवर्क यहाँ दिखेगा।';
-
-  @override
   String pastHomework(Object count) {
     return 'पुराना होमवर्क ($count)';
   }
+
+  @override
+  String get classBoards => 'कक्षा के बोर्ड';
+
+  @override
+  String todaysBoard(Object subject) {
+    return 'आज का बोर्ड: $subject';
+  }
+
+  @override
+  String get resultsSubtitle => 'प्रकाशित अंक और कक्षा का औसत';
+
+  @override
+  String get librarySubtitle => 'ली गई किताबें, लौटाने की तारीखें और जुर्माना';
+
+  @override
+  String get college => 'कॉलेज';
+
+  @override
+  String get resultsLibraryHeader => 'परिणाम और पुस्तकालय';
+
+  @override
+  String get feesAndReceipts => 'फ़ीस और रसीदें';
+
+  @override
+  String get tryAgain => 'फिर से कोशिश करें';
+
+  @override
+  String get signInHint => 'वही फ़ोन नंबर या ईमेल इस्तेमाल करें जो आपने अपने बच्चे के कॉलेज को दिया है';
+
+  @override
+  String get errNotGuardian => 'यह ऐप अभिभावकों के लिए है। अपने संस्थान से अपना खाता अपने बच्चे से जोड़ने के लिए कहें।';
+
+  @override
+  String get errTeacherAccount => 'यह ऐप अभिभावकों के लिए है। शिक्षक KINETIX Teacher ऐप इस्तेमाल कर सकते हैं।';
+
+  @override
+  String homeSubtitle(Object name) {
+    return '$name की प्रगति यहाँ देखें';
+  }
+
+  @override
+  String get noChildrenLinked =>
+      'आपके खाते से अभी कोई बच्चा नहीं जुड़ा है।\nअपने बच्चे के कॉलेज से आपको अभिभावक के रूप में जोड़ने के लिए कहें।';
+
+  @override
+  String get attendanceFewMissed => 'हाल में कुछ कक्षाएँ छूटी हैं।';
+
+  @override
+  String get attendanceBelow75 => '75% से कम। परीक्षा में बैठने के लिए कॉलेज आमतौर पर 75% उपस्थिति माँगते हैं।';
+
+  @override
+  String noAttendanceFor(Object name, Object days) {
+    return 'पिछले $days दिनों में $name की उपस्थिति दर्ज नहीं हुई है।';
+  }
+
+  @override
+  String get nothingDue => 'अभी कुछ भी जमा करना बाकी नहीं है। शिक्षकों का नया होमवर्क यहाँ दिखेगा।';
 
   @override
   String get inClass => 'कक्षा में';
@@ -792,16 +818,8 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get classBoards => 'कक्षा के बोर्ड';
-
-  @override
   String boardsEmpty(Object name) {
     return 'जब शिक्षक पाठ के बाद कक्षा का बोर्ड साझा करते हैं, तो वह यहाँ दिखता है ताकि $name दोहरा सकें।';
-  }
-
-  @override
-  String todaysBoard(Object subject) {
-    return 'आज का बोर्ड: $subject';
   }
 
   @override
@@ -833,9 +851,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get feesReceiptsHeader => 'फ़ीस और रसीदें';
 
   @override
-  String get feesAndReceipts => 'फ़ीस और रसीदें';
-
-  @override
   String childFees(Object name) {
     return '$name की फ़ीस';
   }
@@ -844,26 +859,14 @@ class AppLocalizationsHi extends AppLocalizations {
   String get feesSubtitle => 'बकाया, भुगतान और रसीदें';
 
   @override
-  String get resultsLibraryHeader => 'परिणाम और पुस्तकालय';
-
-  @override
   String childResults(Object name) {
     return '$name के परिणाम';
   }
 
   @override
-  String get resultsSubtitle => 'प्रकाशित अंक और कक्षा का औसत';
-
-  @override
   String childLibraryBooks(Object name) {
-    return '$name की पुस्तकालय की किताबें';
+    return '$name की पुस्तकालय किताबें';
   }
-
-  @override
-  String get librarySubtitle => 'ली गई किताबें, लौटाने की तारीखें और जुर्माना';
-
-  @override
-  String get college => 'कॉलेज';
 
   @override
   String noBooksBorrowed(Object name) {

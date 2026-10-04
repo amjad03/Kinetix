@@ -663,38 +663,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get update => 'ಸೂಚನೆ';
 
   @override
-  String get signInHint => 'ನಿಮ್ಮ ಮಗುವಿನ ಕಾಲೇಜಿಗೆ ನೀಡಿದ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ ಇಮೇಲ್ ಬಳಸಿ';
-
-  @override
-  String get errNotGuardian => 'ಈ ಆ್ಯಪ್ ಪೋಷಕರಿಗಾಗಿ. ನಿಮ್ಮ ಖಾತೆಯನ್ನು ನಿಮ್ಮ ಮಗುವಿನೊಂದಿಗೆ ಜೋಡಿಸಲು ನಿಮ್ಮ ಸಂಸ್ಥೆಯನ್ನು ಕೇಳಿ.';
-
-  @override
-  String get errTeacherAccount => 'ಈ ಆ್ಯಪ್ ಪೋಷಕರಿಗಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
-
-  @override
-  String homeSubtitle(Object name) {
-    return '$name ಅವರ ಪ್ರಗತಿ ಇಲ್ಲಿದೆ';
-  }
-
-  @override
-  String get noChildrenLinked => 'ನಿಮ್ಮ ಖಾತೆಗೆ ಇನ್ನೂ ಯಾವುದೇ ಮಗುವನ್ನು ಜೋಡಿಸಿಲ್ಲ.\nನಿಮ್ಮನ್ನು ಪೋಷಕರಾಗಿ ಸೇರಿಸಲು ನಿಮ್ಮ ಮಗುವಿನ ಕಾಲೇಜನ್ನು ಕೇಳಿ.';
-
-  @override
   String get attendanceGood => 'ಉತ್ತಮ ಹಾಜರಾತಿ. ಹೀಗೆಯೇ ಮುಂದುವರಿಸಿ.';
 
   @override
-  String get attendanceFewMissed => 'ಇತ್ತೀಚೆಗೆ ಕೆಲವು ತರಗತಿಗಳು ತಪ್ಪಿವೆ.';
-
-  @override
-  String get attendanceBelow75 => '75% ಕ್ಕಿಂತ ಕಡಿಮೆ. ಪರೀಕ್ಷೆಗೆ ಕೂರಲು ಕಾಲೇಜುಗಳು ಸಾಮಾನ್ಯವಾಗಿ 75% ಹಾಜರಾತಿ ಕೇಳುತ್ತವೆ.';
-
-  @override
   String get seeAttendanceHistory => 'ಹಾಜರಾತಿಯ ಪೂರ್ಣ ವಿವರ ನೋಡಿ';
-
-  @override
-  String noAttendanceFor(Object name, Object days) {
-    return 'ಕಳೆದ $days ದಿನಗಳಲ್ಲಿ $name ಅವರ ಹಾಜರಾತಿ ದಾಖಲಾಗಿಲ್ಲ.';
-  }
 
   @override
   String attendedOf(Object attended, int count) {
@@ -716,12 +688,66 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get nothingDue => 'ಈಗ ಸಲ್ಲಿಸಬೇಕಾದದ್ದು ಏನೂ ಇಲ್ಲ. ಶಿಕ್ಷಕರ ಹೊಸ ಹೋಂವರ್ಕ್ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
-
-  @override
   String pastHomework(Object count) {
     return 'ಹಿಂದಿನ ಹೋಂವರ್ಕ್ ($count)';
   }
+
+  @override
+  String get classBoards => 'ತರಗತಿಯ ಬೋರ್ಡ್‌ಗಳು';
+
+  @override
+  String todaysBoard(Object subject) {
+    return 'ಇಂದಿನ ಬೋರ್ಡ್: $subject';
+  }
+
+  @override
+  String get resultsSubtitle => 'ಪ್ರಕಟಿತ ಅಂಕಗಳು ಮತ್ತು ತರಗತಿ ಸರಾಸರಿ';
+
+  @override
+  String get librarySubtitle => 'ಪಡೆದ ಪುಸ್ತಕಗಳು, ಹಿಂದಿರುಗಿಸುವ ದಿನಾಂಕಗಳು ಮತ್ತು ದಂಡ';
+
+  @override
+  String get college => 'ಕಾಲೇಜು';
+
+  @override
+  String get resultsLibraryHeader => 'ಫಲಿತಾಂಶ ಮತ್ತು ಗ್ರಂಥಾಲಯ';
+
+  @override
+  String get feesAndReceipts => 'ಶುಲ್ಕ ಮತ್ತು ರಸೀದಿಗಳು';
+
+  @override
+  String get tryAgain => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
+
+  @override
+  String get signInHint => 'ನಿಮ್ಮ ಮಗುವಿನ ಕಾಲೇಜಿಗೆ ನೀಡಿದ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ ಇಮೇಲ್ ಬಳಸಿ';
+
+  @override
+  String get errNotGuardian => 'ಈ ಆ್ಯಪ್ ಪೋಷಕರಿಗಾಗಿ. ನಿಮ್ಮ ಖಾತೆಯನ್ನು ನಿಮ್ಮ ಮಗುವಿನೊಂದಿಗೆ ಜೋಡಿಸಲು ನಿಮ್ಮ ಸಂಸ್ಥೆಯನ್ನು ಕೇಳಿ.';
+
+  @override
+  String get errTeacherAccount => 'ಈ ಆ್ಯಪ್ ಪೋಷಕರಿಗಾಗಿ. ಶಿಕ್ಷಕರು KINETIX Teacher ಆ್ಯಪ್ ಬಳಸಬಹುದು.';
+
+  @override
+  String homeSubtitle(Object name) {
+    return '$name ಅವರ ಪ್ರಗತಿ ಇಲ್ಲಿದೆ';
+  }
+
+  @override
+  String get noChildrenLinked => 'ನಿಮ್ಮ ಖಾತೆಗೆ ಇನ್ನೂ ಯಾವುದೇ ಮಗುವನ್ನು ಜೋಡಿಸಿಲ್ಲ.\nನಿಮ್ಮನ್ನು ಪೋಷಕರಾಗಿ ಸೇರಿಸಲು ನಿಮ್ಮ ಮಗುವಿನ ಕಾಲೇಜನ್ನು ಕೇಳಿ.';
+
+  @override
+  String get attendanceFewMissed => 'ಇತ್ತೀಚೆಗೆ ಕೆಲವು ತರಗತಿಗಳು ತಪ್ಪಿವೆ.';
+
+  @override
+  String get attendanceBelow75 => '75% ಕ್ಕಿಂತ ಕಡಿಮೆ. ಪರೀಕ್ಷೆಗೆ ಕೂರಲು ಕಾಲೇಜುಗಳು ಸಾಮಾನ್ಯವಾಗಿ 75% ಹಾಜರಾತಿ ಕೇಳುತ್ತವೆ.';
+
+  @override
+  String noAttendanceFor(Object name, Object days) {
+    return 'ಕಳೆದ $days ದಿನಗಳಲ್ಲಿ $name ಅವರ ಹಾಜರಾತಿ ದಾಖಲಾಗಿಲ್ಲ.';
+  }
+
+  @override
+  String get nothingDue => 'ಈಗ ಸಲ್ಲಿಸಬೇಕಾದದ್ದು ಏನೂ ಇಲ್ಲ. ಶಿಕ್ಷಕರ ಹೊಸ ಹೋಂವರ್ಕ್ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get inClass => 'ತರಗತಿಯಲ್ಲಿ';
@@ -791,16 +817,8 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get classBoards => 'ತರಗತಿಯ ಬೋರ್ಡ್‌ಗಳು';
-
-  @override
   String boardsEmpty(Object name) {
     return 'ಪಾಠದ ನಂತರ ಶಿಕ್ಷಕರು ತರಗತಿಯ ಬೋರ್ಡ್ ಹಂಚಿಕೊಂಡಾಗ, $name ಪುನರಾವರ್ತಿಸಲು ಅದು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
-  }
-
-  @override
-  String todaysBoard(Object subject) {
-    return 'ಇಂದಿನ ಬೋರ್ಡ್: $subject';
   }
 
   @override
@@ -832,9 +850,6 @@ class AppLocalizationsKn extends AppLocalizations {
   String get feesReceiptsHeader => 'ಶುಲ್ಕ ಮತ್ತು ರಸೀದಿಗಳು';
 
   @override
-  String get feesAndReceipts => 'ಶುಲ್ಕ ಮತ್ತು ರಸೀದಿಗಳು';
-
-  @override
   String childFees(Object name) {
     return '$name ಅವರ ಶುಲ್ಕ';
   }
@@ -843,26 +858,14 @@ class AppLocalizationsKn extends AppLocalizations {
   String get feesSubtitle => 'ಬಾಕಿ, ಪಾವತಿಗಳು ಮತ್ತು ರಸೀದಿಗಳು';
 
   @override
-  String get resultsLibraryHeader => 'ಫಲಿತಾಂಶ ಮತ್ತು ಗ್ರಂಥಾಲಯ';
-
-  @override
   String childResults(Object name) {
     return '$name ಅವರ ಫಲಿತಾಂಶ';
   }
 
   @override
-  String get resultsSubtitle => 'ಪ್ರಕಟಿತ ಅಂಕಗಳು ಮತ್ತು ತರಗತಿ ಸರಾಸರಿ';
-
-  @override
   String childLibraryBooks(Object name) {
     return '$name ಅವರ ಗ್ರಂಥಾಲಯದ ಪುಸ್ತಕಗಳು';
   }
-
-  @override
-  String get librarySubtitle => 'ಪಡೆದ ಪುಸ್ತಕಗಳು, ಹಿಂದಿರುಗಿಸುವ ದಿನಾಂಕಗಳು ಮತ್ತು ದಂಡ';
-
-  @override
-  String get college => 'ಕಾಲೇಜು';
 
   @override
   String noBooksBorrowed(Object name) {

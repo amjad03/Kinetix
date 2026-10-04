@@ -56,9 +56,10 @@ class Pill extends StatelessWidget {
         children: [
           if (icon != null) ...[Icon(icon, size: 14, color: foreground), const SizedBox(width: Kx.s4)],
           Flexible(
+            // Two lines: a due date reads longer in Hindi and Kannada than in English.
             child: Text(
               label,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: context.text.labelMedium?.copyWith(color: foreground, fontWeight: FontWeight.w500),
             ),

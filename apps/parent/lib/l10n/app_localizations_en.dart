@@ -663,38 +663,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get update => 'Update';
 
   @override
-  String get signInHint => 'Use the phone number or email you gave your child\'s college';
-
-  @override
-  String get errNotGuardian => 'This app is for parents and guardians. Ask your institution to link your account to your child.';
-
-  @override
-  String get errTeacherAccount => 'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.';
-
-  @override
-  String homeSubtitle(Object name) {
-    return 'Here\'s how $name is doing';
-  }
-
-  @override
-  String get noChildrenLinked => 'No children are linked to your account yet.\nAsk your child\'s college to add you as their parent.';
-
-  @override
   String get attendanceGood => 'Good attendance. Keep it up.';
 
   @override
-  String get attendanceFewMissed => 'Missed a few classes recently.';
-
-  @override
-  String get attendanceBelow75 => 'Below 75%. Colleges usually need 75% to sit exams.';
-
-  @override
   String get seeAttendanceHistory => 'See attendance history';
-
-  @override
-  String noAttendanceFor(Object name, Object days) {
-    return 'No attendance has been taken for $name in the last $days days.';
-  }
 
   @override
   String attendedOf(Object attended, int count) {
@@ -716,12 +688,66 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get nothingDue => 'Nothing due right now. New homework from teachers will show here.';
-
-  @override
   String pastHomework(Object count) {
     return 'Past homework ($count)';
   }
+
+  @override
+  String get classBoards => 'Class boards';
+
+  @override
+  String todaysBoard(Object subject) {
+    return 'Today\'s board: $subject';
+  }
+
+  @override
+  String get resultsSubtitle => 'Published marks and class averages';
+
+  @override
+  String get librarySubtitle => 'Books borrowed, due dates and fines';
+
+  @override
+  String get college => 'College';
+
+  @override
+  String get resultsLibraryHeader => 'Results & library';
+
+  @override
+  String get feesAndReceipts => 'Fees and receipts';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
+  String get signInHint => 'Use the phone number or email you gave your child\'s college';
+
+  @override
+  String get errNotGuardian => 'This app is for parents and guardians. Ask your institution to link your account to your child.';
+
+  @override
+  String get errTeacherAccount => 'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.';
+
+  @override
+  String homeSubtitle(Object name) {
+    return 'Here\'s how $name is doing';
+  }
+
+  @override
+  String get noChildrenLinked => 'No children are linked to your account yet.\nAsk your child\'s college to add you as their parent.';
+
+  @override
+  String get attendanceFewMissed => 'Missed a few classes recently.';
+
+  @override
+  String get attendanceBelow75 => 'Below 75%. Colleges usually need 75% to sit exams.';
+
+  @override
+  String noAttendanceFor(Object name, Object days) {
+    return 'No attendance has been taken for $name in the last $days days.';
+  }
+
+  @override
+  String get nothingDue => 'Nothing due right now. New homework from teachers will show here.';
 
   @override
   String get inClass => 'In class';
@@ -791,16 +817,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get classBoards => 'Class boards';
-
-  @override
   String boardsEmpty(Object name) {
     return 'When a teacher shares the class board after a lesson, it appears here so $name can revise.';
-  }
-
-  @override
-  String todaysBoard(Object subject) {
-    return 'Today\'s board: $subject';
   }
 
   @override
@@ -832,9 +850,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feesReceiptsHeader => 'Fees & receipts';
 
   @override
-  String get feesAndReceipts => 'Fees and receipts';
-
-  @override
   String childFees(Object name) {
     return '$name\'s fees';
   }
@@ -843,26 +858,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feesSubtitle => 'Dues, payments and receipts';
 
   @override
-  String get resultsLibraryHeader => 'Results & library';
-
-  @override
   String childResults(Object name) {
     return '$name\'s results';
   }
 
   @override
-  String get resultsSubtitle => 'Published marks and class averages';
-
-  @override
   String childLibraryBooks(Object name) {
     return '$name\'s library books';
   }
-
-  @override
-  String get librarySubtitle => 'Books borrowed, due dates and fines';
-
-  @override
-  String get college => 'College';
 
   @override
   String noBooksBorrowed(Object name) {

@@ -48,7 +48,8 @@ void main() {
   }
 
   Future<void> scrollDown(WidgetTester tester) async {
-    await tester.drag(find.byType(Scrollable).last, const Offset(0, -3000));
+    // The page's own list (a SelectableText inside it has a Scrollable too).
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -3000));
     await tester.pumpAndSettle();
   }
 
@@ -83,12 +84,13 @@ void main() {
     await show(tester, find.byKey(const Key('feesView')));
     await tester.tap(find.byKey(const Key('feesView')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('pay-i1')), 300, scrollable: find.byType(Scrollable).first);
     await tapShown(tester, find.byKey(const Key('pay-i1')));
     await tapShown(tester, find.byKey(const Key('payPart')));
     await tapShown(tester, find.byKey(const Key('payContinue')));
     Navigator.of(tester.element(find.byKey(const Key('amountField')))).pop();
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.byKey(const Key('payment-p1')), 300, scrollable: find.byType(Scrollable).last);
+    await tester.scrollUntilVisible(find.byKey(const Key('payment-p1')), 300, scrollable: find.byType(Scrollable).first);
     await tapShown(tester, find.byKey(const Key('payment-p1')));
     await scrollDown(tester);
     await back(tester);
@@ -103,7 +105,7 @@ void main() {
     await tester.pumpAndSettle();
     await back(tester);
 
-    final board = find.descendant(of: find.byKey(const Key('boardsCard')), matching: find.byType(InkWell)).last;
+    final board = find.byKey(const Key('board-wb1'));
     await show(tester, board);
     await tester.tap(board);
     await tester.pumpAndSettle();
@@ -124,9 +126,8 @@ void main() {
     await openTab(tester, Icons.person_outline);
     final profile = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
     await tester.scrollUntilVisible(find.byKey(const Key('languageSetting')), 300, scrollable: profile);
-    await tester.tap(find.byKey(const Key('languageSetting')));
-    await tester.pumpAndSettle();
-    await tester.tapAt(const Offset(4, 4)); // dismiss the dialog
+    await tapShown(tester, find.byKey(const Key('languageSetting')));
+    Navigator.of(tester.element(find.byType(SimpleDialog))).pop();
     await tester.pumpAndSettle();
     await tester.drag(profile, const Offset(0, -3000));
     await tester.pumpAndSettle();
