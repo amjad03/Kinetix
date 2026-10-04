@@ -87,6 +87,7 @@ class Period {
     this.room,
     this.isNow = false,
     this.attendanceTaken = false,
+    this.lessonPlanned = false,
   });
 
   factory Period.fromJson(Map<String, dynamic> j) => Period(
@@ -98,6 +99,7 @@ class Period {
     room: j['room'] == null ? null : Ref((j['room'] as Map)['id'] as String, (j['room'] as Map)['name'] as String),
     isNow: j['isNow'] as bool,
     attendanceTaken: j['attendanceTaken'] as bool,
+    lessonPlanned: j['lessonPlanned'] as bool? ?? false,
   );
 
   final String slotId;
@@ -108,6 +110,12 @@ class Period {
   final Ref? room;
   final bool isNow;
   bool attendanceTaken;
+
+  /// A lesson plan is saved for this period on this day.
+  bool lessonPlanned;
+
+  /// The period's length in minutes.
+  int get minutes => endsAt.minutes - startsAt.minutes;
 }
 
 class DayTimetable {
@@ -664,4 +672,230 @@ class StudentContacts {
   final Student student;
   final String className;
   final List<Guardian> guardians;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Year plans and lesson plans
+
+/// The Monday of [d]'s week.
+DateTime mondayOf(DateTime d) => DateTime(d.year, d.month, d.day - (d.weekday - DateTime.monday));
+
+/// How a class is doing against its year plan. Shown with AppLocalizations.planStatus.
+enum PlanStatus { notStarted, onTrack, behind, ahead }
+
+class PlanProgress {
+  const PlanProgress({
+    required this.total,
+    required this.covered,
+    required this.expected,
+    required this.dueThisWeek,
+    required this.behindBy,
+    required this.status,
+  });
+
+  factory PlanProgress.fromJson(Map<String, dynamic> j) => PlanProgress(
+    total: j['total'] as int? ?? 0,
+    covered: j['covered'] as int? ?? 0,
+    expected: j['expected'] as int? ?? 0,
+    dueThisWeek: j['dueThisWeek'] as int? ?? 0,
+    behindBy: j['behindBy'] as int? ?? 0,
+    status: switch (j['status']) {
+      'on_track' => PlanStatus.onTrack,
+      'behind' => PlanStatus.behind,
+      'ahead' => PlanStatus.ahead,
+      _ => PlanStatus.notStarted,
+    },
+  );
+
+  final int total;
+  final int covered;
+
+  /// Topics planned before this week.
+  final int expected;
+  final int dueThisWeek;
+
+  /// Topics planned before this week that are not taught yet.
+  final int behindBy;
+  final PlanStatus status;
+}
+
+/// One syllabus topic in a year plan: the week it is planned for and how many periods.
+class YearPlanItem {
+  const YearPlanItem({
+    required this.topicId,
+    required this.title,
+    required this.chapter,
+    required this.weekOf,
+    required this.periods,
+    this.coveredOn,
+    this.late = false,
+  });
+
+  factory YearPlanItem.fromJson(Map<String, dynamic> j) => YearPlanItem(
+    topicId: j['topicId'] as String,
+    title: j['title'] as String? ?? '',
+    chapter: j['chapter'] as String? ?? '',
+    weekOf: parseIsoDate(j['weekOf'] as String),
+    periods: j['periods'] as int? ?? 1,
+    coveredOn: j['coveredOn'] == null ? null : parseIsoDate(j['coveredOn'] as String),
+    late: j['late'] as bool? ?? false,
+  );
+
+  final String topicId;
+  final String title;
+  final String chapter;
+
+  /// The Monday of the planned week.
+  final DateTime weekOf;
+  final int periods;
+
+  /// When it was taught, or null.
+  final DateTime? coveredOn;
+
+  /// Planned for an earlier week and not taught yet.
+  final bool late;
+}
+
+/// A class's syllabus spread over the term (GET /v1/year-plans).
+class YearPlan {
+  const YearPlan({required this.id, required this.startsOn, required this.endsOn, required this.progress, required this.items});
+
+  factory YearPlan.fromJson(Map<String, dynamic> j) => YearPlan(
+    id: j['id'] as String,
+    startsOn: parseIsoDate(j['startsOn'] as String),
+    endsOn: parseIsoDate(j['endsOn'] as String),
+    progress: PlanProgress.fromJson(j['progress'] as Map<String, dynamic>),
+    items: [for (final i in j['items'] as List? ?? const []) YearPlanItem.fromJson(i as Map<String, dynamic>)],
+  );
+
+  final String id;
+  final DateTime startsOn;
+  final DateTime endsOn;
+  final PlanProgress progress;
+  final List<YearPlanItem> items;
+
+  /// The Mondays from the first week to the last, for the week picker.
+  List<DateTime> get weeks {
+    final last = mondayOf(endsOn);
+    return [for (var w = mondayOf(startsOn); !w.isAfter(last); w = DateTime(w.year, w.month, w.day + 7)) w];
+  }
+}
+
+class LessonStep {
+  const LessonStep({required this.minutes, required this.activity});
+  factory LessonStep.fromJson(Map<String, dynamic> j) => LessonStep(minutes: j['minutes'] as int? ?? 5, activity: j['activity'] as String? ?? '');
+  final int minutes;
+  final String activity;
+  Map<String, dynamic> toJson() => {'minutes': minutes, 'activity': activity};
+}
+
+List<String> _strings(Object? v) => [for (final s in v as List? ?? const []) s as String];
+
+/// What a lesson plan says: objectives, timed steps, materials, how to check understanding, homework.
+class LessonContent {
+  const LessonContent({
+    this.objectives = const [],
+    this.steps = const [],
+    this.materials = const [],
+    this.assessment = '',
+    this.homework = '',
+  });
+
+  factory LessonContent.fromJson(Map<String, dynamic> j) => LessonContent(
+    objectives: _strings(j['objectives']),
+    steps: [for (final s in j['steps'] as List? ?? const []) LessonStep.fromJson(s as Map<String, dynamic>)],
+    materials: _strings(j['materials']),
+    assessment: j['assessment'] as String? ?? '',
+    homework: j['homework'] as String? ?? '',
+  );
+
+  final List<String> objectives;
+  final List<LessonStep> steps;
+  final List<String> materials;
+  final String assessment;
+  final String homework;
+
+  bool get isEmpty =>
+      objectives.isEmpty && steps.isEmpty && materials.isEmpty && assessment.trim().isEmpty && homework.trim().isEmpty;
+
+  Map<String, dynamic> toJson() => {
+    'objectives': objectives,
+    'steps': [for (final s in steps) s.toJson()],
+    'materials': materials,
+    'assessment': assessment,
+    'homework': homework,
+  };
+}
+
+/// A saved plan for one period on one day.
+class LessonPlan {
+  const LessonPlan({
+    required this.id,
+    required this.date,
+    required this.topics,
+    required this.content,
+    this.aiDrafted = false,
+    this.teacher = '',
+    this.reviewedAt,
+    this.reviewRemark,
+  });
+
+  factory LessonPlan.fromJson(Map<String, dynamic> j) {
+    final titles = {for (final t in j['topics'] as List? ?? const []) (t as Map)['id'] as String: t['title'] as String? ?? ''};
+    return LessonPlan(
+      id: j['id'] as String,
+      date: j['date'] as String,
+      topics: [for (final id in (j['topicIds'] as List? ?? const []).cast<String>()) Ref(id, titles[id] ?? '')],
+      content: LessonContent.fromJson(j['content'] as Map<String, dynamic>? ?? const {}),
+      aiDrafted: j['aiDrafted'] as bool? ?? false,
+      teacher: j['teacher'] as String? ?? '',
+      reviewedAt: j['reviewedAt'] == null ? null : DateTime.parse(j['reviewedAt'] as String).toLocal(),
+      reviewRemark: j['reviewRemark'] as String?,
+    );
+  }
+
+  final String id;
+  final String date;
+  final List<Ref> topics;
+  final LessonContent content;
+  final bool aiDrafted;
+  final String teacher;
+
+  /// When the head of department or principal reviewed it (cleared when the plan changes).
+  final DateTime? reviewedAt;
+  final String? reviewRemark;
+}
+
+/// The plan for a period, or what to start from (GET /v1/lesson-plans/period).
+class PeriodPlan {
+  const PeriodPlan({required this.date, required this.plan, required this.suggestedTopicIds});
+
+  factory PeriodPlan.fromJson(Map<String, dynamic> j) => PeriodPlan(
+    date: j['date'] as String,
+    plan: j['plan'] == null ? null : LessonPlan.fromJson(j['plan'] as Map<String, dynamic>),
+    suggestedTopicIds: (j['suggestedTopicIds'] as List? ?? const []).cast<String>(),
+  );
+
+  final String date;
+  final LessonPlan? plan;
+
+  /// That week's untaught topics in the year plan (or the next untaught one).
+  final List<String> suggestedTopicIds;
+}
+
+/// A first draft from KINETIX AI (POST /v1/lesson-plans/draft); not saved.
+class LessonDraft {
+  const LessonDraft({required this.topicIds, required this.content, this.preview = false});
+
+  factory LessonDraft.fromJson(Map<String, dynamic> j) => LessonDraft(
+    topicIds: (j['topicIds'] as List? ?? const []).cast<String>(),
+    content: LessonContent.fromJson(j['content'] as Map<String, dynamic>),
+    preview: (j['meta'] as Map?)?['preview'] as bool? ?? false,
+  );
+
+  final List<String> topicIds;
+  final LessonContent content;
+
+  /// A placeholder from a server with no AI model connected.
+  final bool preview;
 }

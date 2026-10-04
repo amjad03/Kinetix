@@ -1845,4 +1845,54 @@ class AppLocalizationsKn extends AppLocalizations {
   String mathErrHighPowers(String power) {
     return '$power ಅಥವಾ ಹೆಚ್ಚಿನ ಘಾತಗಳ ಸಮೀಕರಣಗಳು ಇನ್ನೂ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ರೇಖಾತ್ಮಕ ಅಥವಾ ವರ್ಗ ಸಮೀಕರಣ ಪ್ರಯತ್ನಿಸಿ.';
   }
+
+  @override
+  String get toolTodaysPlan => 'ಇಂದಿನ ಯೋಜನೆ';
+
+  @override
+  String get planSignIn =>
+      'ಇಂದಿನ ಯೋಜನೆ ಈಗ ನಡೆಯುತ್ತಿರುವ ತರಗತಿಯ ಪಾಠ ಯೋಜನೆಯನ್ನು ತೋರಿಸುತ್ತದೆ. ತೆರೆಯಲು Teacher app ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+
+  @override
+  String get planOpening => 'ಯೋಜನೆ ತೆರೆಯುತ್ತಿದೆ…';
+
+  @override
+  String get planCouldNotOpen =>
+      'ಪಾಠ ಯೋಜನೆ ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಬೋರ್ಡ್ ಆನ್‌ಲೈನ್ ಇದೆಯೇ ಎಂದು ನೋಡಿ.';
+
+  @override
+  String get planNoClass =>
+      'ಬೋರ್ಡ್‌ನಲ್ಲಿ ವೇಳಾಪಟ್ಟಿಯ ಯಾವುದೇ ತರಗತಿ ತೆರೆದಿಲ್ಲ, ಆದ್ದರಿಂದ ತೋರಿಸಲು ಪಾಠ ಯೋಜನೆ ಇಲ್ಲ.';
+
+  @override
+  String get planNone => 'ಈ ಅವಧಿಗೆ ಪಾಠ ಯೋಜನೆ ಇಲ್ಲ. Teacher app ನಲ್ಲಿ ಯೋಜಿಸಿ.';
+
+  @override
+  String get planAiDrafted => 'KINETIX AI ಮೂಲಕ ಕರಡು ಮಾಡಲಾಗಿದೆ';
+
+  @override
+  String get planTopics => 'ವಿಷಯಗಳು';
+
+  @override
+  String get planOpenInBooks => 'Books ನಲ್ಲಿ ತೆರೆಯಿರಿ';
+
+  @override
+  String planStepsOf(int planned, int length) {
+    return 'ಹಂತಗಳು · $length ರಲ್ಲಿ $planned ನಿಮಿ';
+  }
+
+  @override
+  String get planStartTimer => 'ಹಂತ ಟೈಮರ್ ಪ್ರಾರಂಭಿಸಿ';
+
+  @override
+  String get planResumeTimer => 'ಮುಂದುವರಿಸಿ';
+
+  @override
+  String get planNextStep => 'ಮುಂದಿನ ಹಂತ';
+
+  @override
+  String get planAllStepsDone => 'ಎಲ್ಲಾ ಹಂತಗಳು ಮುಗಿದಿವೆ';
+
+  @override
+  String get planHomework => 'ಹೋಂವರ್ಕ್';
 }

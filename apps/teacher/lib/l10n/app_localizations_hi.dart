@@ -1042,4 +1042,236 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errorValidation => 'कुछ जानकारी सही नहीं है। जाँचकर फिर से कोशिश करें।';
+
+  @override
+  String get yearPlan => 'वार्षिक योजना';
+
+  @override
+  String get yearPlanNone =>
+      'अभी कोई वार्षिक योजना नहीं है। KINETIX आपकी समय-सारिणी के अनुसार, छुट्टियाँ और परीक्षाएँ छोड़कर, इस विषय का पाठ्यक्रम सत्र के हफ़्तों में बाँट सकता है। बाद में आप विषय-वस्तु आगे-पीछे कर सकते हैं।';
+
+  @override
+  String get makeYearPlan => 'वार्षिक योजना बनाएँ';
+
+  @override
+  String get makePlan => 'योजना बनाएँ';
+
+  @override
+  String get remakeYearPlan => 'योजना दोबारा बनाएँ';
+
+  @override
+  String get remakeYearPlanTitle => 'वार्षिक योजना दोबारा बनाएँ?';
+
+  @override
+  String get remakeYearPlanBody =>
+      'आपकी चुनी तारीखों से सभी हफ़्ते फिर से तय होंगे, और जो विषय-वस्तु आपने आगे-पीछे की थी वह वापस चली जाएगी। पढ़ाई जा चुकी विषय-वस्तु पढ़ाई गई ही रहेगी।';
+
+  @override
+  String get remake => 'दोबारा बनाएँ';
+
+  @override
+  String get planDatesNote => 'अगर आप तारीखें नहीं बदलते, तो योजना आज से 16 हफ़्तों की होगी, शैक्षणिक वर्ष के अंत तक।';
+
+  @override
+  String get planStartsOn => 'शुरू होने की तारीख';
+
+  @override
+  String get planEndsOn => 'खत्म होने की तारीख';
+
+  @override
+  String get yearPlanMade => 'वार्षिक योजना बन गई';
+
+  @override
+  String get yearPlanUpdated => 'योजना अपडेट हो गई';
+
+  @override
+  String get planNotStarted => 'शुरू नहीं हुई';
+
+  @override
+  String get planOnTrack => 'समय पर';
+
+  @override
+  String get planAhead => 'योजना से आगे';
+
+  @override
+  String planBehindBy(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count विषय-वस्तु पीछे', one: '1 विषय-वस्तु पीछे');
+    return '$_temp0';
+  }
+
+  @override
+  String weekOf(String date) {
+    return '$date वाला हफ़्ता';
+  }
+
+  @override
+  String get thisWeek => 'इस हफ़्ते';
+
+  @override
+  String periodsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count पीरियड', one: '1 पीरियड');
+    return '$_temp0';
+  }
+
+  @override
+  String get planLate => 'देर से';
+
+  @override
+  String get changeWeek => 'हफ़्ता या पीरियड बदलें';
+
+  @override
+  String get planWeek => 'हफ़्ता';
+
+  @override
+  String get planPeriods => 'पीरियड';
+
+  @override
+  String get fewerPeriods => 'कम पीरियड';
+
+  @override
+  String get morePeriods => 'ज़्यादा पीरियड';
+
+  @override
+  String get planLesson => 'योजना';
+
+  @override
+  String get lessonPlanned => 'योजना तैयार';
+
+  @override
+  String get lessonPlan => 'पाठ योजना';
+
+  @override
+  String get lessonTopics => 'विषय-वस्तु';
+
+  @override
+  String get noTopicsChosen => 'कोई विषय-वस्तु नहीं चुनी';
+
+  @override
+  String get chooseTopics => 'विषय-वस्तु चुनें';
+
+  @override
+  String get suggestedThisWeek => 'इस हफ़्ते की वार्षिक योजना में';
+
+  @override
+  String get lessonObjectives => 'उद्देश्य';
+
+  @override
+  String get objectiveHint => 'विद्यार्थी … कर पाएँगे';
+
+  @override
+  String get addObjective => 'उद्देश्य जोड़ें';
+
+  @override
+  String get lessonSteps => 'चरण';
+
+  @override
+  String get stepHint => 'इस चरण में क्या होगा';
+
+  @override
+  String get addStep => 'चरण जोड़ें';
+
+  @override
+  String get minutesShortLabel => 'मिनट';
+
+  @override
+  String stepsTotal(int planned, int length) {
+    return '$length में से $planned मिनट';
+  }
+
+  @override
+  String stepsOver(int planned, int length) {
+    return '$planned मिनट, पीरियड $length का है';
+  }
+
+  @override
+  String get moveUp => 'ऊपर ले जाएँ';
+
+  @override
+  String get moveDown => 'नीचे ले जाएँ';
+
+  @override
+  String get moreOptions => 'और विकल्प';
+
+  @override
+  String get lessonMaterials => 'सामग्री';
+
+  @override
+  String get materialHint => 'जैसे चार्ट पेपर, किताब पेज 42';
+
+  @override
+  String get addMaterial => 'सामग्री जोड़ें';
+
+  @override
+  String get lessonCheck => 'समझ की जाँच';
+
+  @override
+  String get lessonCheckHint => 'आप कैसे जाँचेंगे कि विद्यार्थियों ने क्या सीखा';
+
+  @override
+  String get lessonHomework => 'होमवर्क';
+
+  @override
+  String get lessonHomeworkHint => 'वैकल्पिक';
+
+  @override
+  String get draftWithAi => 'KINETIX AI से ड्राफ़्ट बनाएँ';
+
+  @override
+  String get drafting => 'KINETIX AI ड्राफ़्ट बना रहा है…';
+
+  @override
+  String get replaceWithDraftTitle => 'KINETIX AI के ड्राफ़्ट से बदलें?';
+
+  @override
+  String get replaceWithDraftBody => 'इस योजना की विषय-वस्तु, उद्देश्य, चरण, सामग्री और जाँच बदल जाएगी। आपका होमवर्क वैसा ही रहेगा।';
+
+  @override
+  String get replace => 'बदलें';
+
+  @override
+  String get aiDraftLabel => 'AI ड्राफ़्ट — इस्तेमाल से पहले जाँचें';
+
+  @override
+  String get aiPreviewNote => 'नमूना: KINETIX AI सर्वर जुड़ा नहीं है, इसलिए यह एक नमूना ड्राफ़्ट है।';
+
+  @override
+  String get savePlan => 'योजना सहेजें';
+
+  @override
+  String get lessonPlanSaved => 'पाठ योजना सहेजी गई';
+
+  @override
+  String reviewedOn(String date) {
+    return '$date को समीक्षा हुई';
+  }
+
+  @override
+  String get reviewRemark => 'विभागाध्यक्ष की टिप्पणी';
+
+  @override
+  String get discardPlanBody => 'आपकी पाठ योजना में ऐसे बदलाव हैं जो अभी सहेजे नहीं गए।';
+
+  @override
+  String get errorPlanNoSyllabus => 'इस विषय का अभी कोई पाठ्यक्रम नहीं है। अपने एडमिन से इसे किसी कोर्स से जोड़ने को कहें।';
+
+  @override
+  String get errorPlanNoPeriods => 'इस कक्षा की समय-सारिणी में इस विषय का कोई पीरियड नहीं है।';
+
+  @override
+  String get errorPlanNoTeachingDays => 'इन तारीखों के बीच पढ़ाई का कोई दिन नहीं है।';
+
+  @override
+  String get errorPlanEndsBeforeStart => 'खत्म होने की तारीख शुरू होने की तारीख के बाद होनी चाहिए।';
+
+  @override
+  String get errorPeriodNotOnDay => 'यह कक्षा उस दिन नहीं है।';
+
+  @override
+  String get errorAiAllowance => 'आपके संस्थान ने आज की KINETIX AI सीमा पूरी कर ली है। कल फिर से मिलेगी।';
+
+  @override
+  String get errorAiUnavailable => 'KINETIX AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।';
+
+  @override
+  String get errorAiUnusable => 'KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।';
 }

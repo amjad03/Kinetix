@@ -25,6 +25,7 @@ import 'classroom_tools.dart';
 import 'popovers.dart';
 import 'profile_menu.dart';
 import '../books/books_panel.dart';
+import '../plan/todays_plan_panel.dart';
 import 'live_stream.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
@@ -150,7 +151,16 @@ class _BoardScreenState extends State<BoardScreen> {
 
   void _openPanel(PanelKind k) => setState(() {
     _popover = null;
+    _booksTopic = null;
     _panel = _panel == k ? null : k;
+  });
+
+  /// The topic Books opens at, when it is opened from Today's plan.
+  String? _booksTopic;
+
+  void _openTopic(String topicId) => setState(() {
+    _booksTopic = topicId;
+    _panel = PanelKind.books;
   });
 
   Future<void> _signIn() async {
@@ -460,6 +470,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   List<ToolEntry> _tools(AppLocalizations l) => [
+    ToolEntry(Icons.event_note_outlined, l.toolTodaysPlan, const Color(0xFF81C995), () => _openPanel(PanelKind.plan)),
     ToolEntry(
       Icons.timer_outlined,
       l.toolTimer,
@@ -547,7 +558,15 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Widget _panelContent() => switch (_panel!) {
     PanelKind.ai => AiPanel(ai: _ai),
-    PanelKind.books => BooksPanel(board: board, ai: _ai, onOpenPanel: (k) => setState(() => _panel = k), onOpenResource: _openSplit),
+    PanelKind.books => BooksPanel(
+      key: ValueKey(_booksTopic),
+      board: board,
+      ai: _ai,
+      onOpenPanel: (k) => setState(() => _panel = k),
+      onOpenResource: _openSplit,
+      initialTopicId: _booksTopic,
+    ),
+    PanelKind.plan => TodaysPlanPanel(board: board, onOpenTopic: _openTopic),
     PanelKind.quiz => QuizPanel(ai: _ai),
     PanelKind.homework => HomeworkPanel(ai: _ai),
     PanelKind.split => SplitPanel(

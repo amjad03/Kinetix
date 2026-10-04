@@ -3135,6 +3135,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Equations with {power} or higher powers are not supported yet. Try a linear or quadratic equation.'**
   String mathErrHighPowers(String power);
+
+  /// Classroom tool and panel title: the lesson plan for the open period.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s plan'**
+  String get toolTodaysPlan;
+
+  /// Guest board.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s plan shows the lesson plan for the class being taught. Sign in with the Teacher app to open it.'**
+  String get planSignIn;
+
+  /// Loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening the plan…'**
+  String get planOpening;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the lesson plan. Check the board is online.'**
+  String get planCouldNotOpen;
+
+  /// Free session (no class).
+  ///
+  /// In en, this message translates to:
+  /// **'No timetabled class is open on the board, so there is no lesson plan to show.'**
+  String get planNoClass;
+
+  /// No plan saved for the period.
+  ///
+  /// In en, this message translates to:
+  /// **'No lesson plan for this period. Plan it in the Teacher app.'**
+  String get planNone;
+
+  /// The plan began as a KINETIX AI draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafted with KINETIX AI'**
+  String get planAiDrafted;
+
+  /// Section: the lesson's syllabus topics.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics'**
+  String get planTopics;
+
+  /// Tooltip on a topic chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Books'**
+  String get planOpenInBooks;
+
+  /// Steps heading: planned minutes vs the period length.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps · {planned} of {length} min'**
+  String planStepsOf(int planned, int length);
+
+  /// Button: start timing the steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Start step timer'**
+  String get planStartTimer;
+
+  /// Button: resume the step timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get planResumeTimer;
+
+  /// Button.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
+  String get planNextStep;
+
+  /// After the last step.
+  ///
+  /// In en, this message translates to:
+  /// **'All steps done'**
+  String get planAllStepsDone;
+
+  /// Section.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get planHomework;
 }
 
 class _AppLocalizationsDelegate

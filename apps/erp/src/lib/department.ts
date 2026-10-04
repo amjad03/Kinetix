@@ -4,6 +4,8 @@ import type { Locale } from '@/i18n/locales';
 import type { MessageKey } from '@/i18n/messages';
 import type { TFunction } from '@/i18n/translate';
 import { addDays, daysBetween, formatDate, isIsoDate, isoWeekday } from './dates';
+import { behindPlan } from './plans';
+import type { PlanProgress } from './types';
 
 /** The API covers at most this many days in one overview. */
 export const MAX_RANGE_DAYS = 120;
@@ -108,6 +110,8 @@ export interface Rates {
   taughtPercent: number | null;
   attendanceTakenPercent: number | null;
   attendancePercent: number | null;
+  /** A class's year plan (teachers have none). */
+  yearPlan?: PlanProgress | null;
 }
 
 /** Why a teacher or class is flagged (dictionary keys: "Few classes held", …); empty when all is well. */
@@ -116,6 +120,7 @@ export function flagsFor(r: Rates): MessageKey[] {
   if (toneOf(r.taughtPercent, 'held') === 'low') out.push('dept.flag.held');
   if (toneOf(r.attendanceTakenPercent, 'held') === 'low') out.push('dept.flag.taken');
   if (toneOf(r.attendancePercent, 'attendance') === 'low') out.push('dept.flag.attendance');
+  if (behindPlan(r.yearPlan)) out.push('dept.flag.behindPlan');
   return out;
 }
 

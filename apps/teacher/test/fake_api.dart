@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart' show DateUtils;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_teacher/core/api.dart';
 import 'package:kinetix_teacher/core/models.dart';
@@ -654,5 +655,124 @@ class FakeTeacherApi implements TeacherApi {
     });
     handedIn = [for (final x in handedIn) x.studentId == done.studentId ? done : x];
     return done;
+  }
+
+  // --- Year plans and lesson plans -------------------------------------------------------------
+
+  /// The class's year plan; null until one is made.
+  YearPlan? plan;
+
+  /// Set to make generating the plan fail with this error.
+  ApiException? planError;
+
+  /// A plan as the server builds it: last week t1 (taught) and t2 (late), this week t3.
+  YearPlan samplePlan() {
+    final week = mondayOf(DateUtils.dateOnly(DateTime.now()));
+    final last = week.subtract(const Duration(days: 7));
+    return YearPlan.fromJson({
+      'id': 'yp1',
+      'startsOn': isoDate(last),
+      'endsOn': isoDate(week.add(const Duration(days: 7 * 15 - 1))),
+      'progress': {'total': 3, 'covered': 1, 'expected': 2, 'dueThisWeek': 1, 'behindBy': 1, 'status': 'behind'},
+      'items': [
+        {'topicId': 't1', 'title': 'Meaning and need for valuation of goodwill', 'chapter': 'Valuation of Goodwill', 'weekOf': isoDate(last), 'periods': 1, 'coveredOn': '2026-09-28', 'late': false},
+        {'topicId': 't2', 'title': 'Methods: average profit, super profit and capitalisation', 'chapter': 'Valuation of Goodwill', 'weekOf': isoDate(last), 'periods': 2, 'coveredOn': null, 'late': true},
+        {'topicId': 't3', 'title': 'Intrinsic value and yield methods', 'chapter': 'Valuation of Shares', 'weekOf': isoDate(week), 'periods': 1, 'coveredOn': null, 'late': false},
+      ],
+    });
+  }
+
+  @override
+  Future<YearPlan?> yearPlan({required String sectionId, required String subjectId}) async {
+    calls.add('yearPlan $sectionId $subjectId');
+    return plan;
+  }
+
+  @override
+  Future<YearPlan> generateYearPlan({required String sectionId, required String subjectId, String? startsOn, String? endsOn}) async {
+    calls.add('generate $sectionId $subjectId ${startsOn ?? '-'} ${endsOn ?? '-'}');
+    if (planError != null) throw planError!;
+    return plan = samplePlan();
+  }
+
+  @override
+  Future<YearPlan> moveYearPlanItem(String planId, {required String topicId, required String weekOf, required int periods}) async {
+    calls.add('move $planId $topicId $weekOf $periods');
+    final p = plan!;
+    final items = [
+      for (final i in p.items)
+        i.topicId == topicId
+            ? YearPlanItem(
+                topicId: i.topicId,
+                title: i.title,
+                chapter: i.chapter,
+                weekOf: mondayOf(parseIsoDate(weekOf)),
+                periods: periods,
+                coveredOn: i.coveredOn,
+              )
+            : i,
+    ]..sort((a, b) => a.weekOf.compareTo(b.weekOf));
+    return plan = YearPlan(id: p.id, startsOn: p.startsOn, endsOn: p.endsOn, progress: p.progress, items: items);
+  }
+
+  /// Saved lesson plans by "slotId date", as the server returns them.
+  final lessonPlans = <String, Map<String, dynamic>>{};
+  List<String> suggestedTopicIds = ['t3'];
+  Map<String, dynamic>? lastSavedPlan;
+
+  /// The draft KINETIX AI returns (a preview, as from a server without an AI model).
+  LessonDraft draft = const LessonDraft(
+    topicIds: ['t3'],
+    preview: true,
+    content: LessonContent(
+      objectives: ['Value shares by the intrinsic value method'],
+      steps: [LessonStep(minutes: 10, activity: 'Recap goodwill'), LessonStep(minutes: 30, activity: 'Worked example on the board')],
+      materials: ['Textbook'],
+      assessment: 'Two quick questions',
+    ),
+  );
+
+  PeriodPlan _periodPlan(String slotId, String date) => PeriodPlan.fromJson({
+    'date': date,
+    'plan': lessonPlans['$slotId $date'],
+    'suggestedTopicIds': suggestedTopicIds,
+  });
+
+  @override
+  Future<PeriodPlan> periodPlan({required String slotId, required String date}) async {
+    calls.add('periodPlan $slotId $date');
+    return _periodPlan(slotId, date);
+  }
+
+  @override
+  Future<PeriodPlan> saveLessonPlan({
+    required String slotId,
+    required String date,
+    required List<String> topicIds,
+    required LessonContent content,
+    required bool aiDrafted,
+  }) async {
+    calls.add('saveLessonPlan $slotId $date');
+    final titles = {for (final c in syllabusOutline?.chapters ?? const <SyllabusChapter>[]) for (final t in c.topics) t.id: t.title};
+    lessonPlans['$slotId $date'] = lastSavedPlan = {
+      'id': 'lp1',
+      'date': date,
+      'topicIds': topicIds,
+      'topics': [
+        for (final id in topicIds) {'id': id, 'title': titles[id] ?? ''},
+      ],
+      'content': content.toJson(),
+      'aiDrafted': aiDrafted,
+      'teacher': profile.fullName,
+      'reviewedAt': null,
+      'reviewRemark': null,
+    };
+    return _periodPlan(slotId, date);
+  }
+
+  @override
+  Future<LessonDraft> draftLessonPlan({required String slotId, required String date, List<String>? topicIds, String? language}) async {
+    calls.add('draft $slotId $date ${topicIds?.join(',') ?? '-'} ${language ?? '-'}');
+    return draft;
   }
 }

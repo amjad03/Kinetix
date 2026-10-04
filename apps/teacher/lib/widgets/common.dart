@@ -98,13 +98,13 @@ class ProfileButton extends StatelessWidget {
   );
 }
 
-/// Asks before leaving the marks screen with unsaved changes. True when the teacher chose to discard.
-Future<bool> confirmDiscard(BuildContext context) async =>
+/// Asks before leaving a screen with unsaved changes ([body] defaults to the marks wording). True when the teacher chose to discard.
+Future<bool> confirmDiscard(BuildContext context, {String? body}) async =>
     await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(ctx.l10n.discardTitle),
-        content: Text(ctx.l10n.discardMarksBody),
+        content: Text(body ?? ctx.l10n.discardMarksBody),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ctx.l10n.keepEditing)),
           FilledButton(key: const Key('discardChanges'), onPressed: () => Navigator.pop(ctx, true), child: Text(ctx.l10n.discard)),

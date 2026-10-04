@@ -139,6 +139,30 @@ abstract class TeacherApi {
   /// The class list for a homework, with what each student handed in and the counts.
   Future<SubmissionList> submissions(String homeworkId);
 
+  /// A class's year plan for a subject, or null when none has been made.
+  Future<YearPlan?> yearPlan({required String sectionId, required String subjectId});
+
+  /// Makes (or remakes, replacing the weeks) the year plan from the timetable and calendar.
+  Future<YearPlan> generateYearPlan({required String sectionId, required String subjectId, String? startsOn, String? endsOn});
+
+  /// Moves a topic to another week (snapped to its Monday) and/or changes its periods.
+  Future<YearPlan> moveYearPlanItem(String planId, {required String topicId, required String weekOf, required int periods});
+
+  /// The lesson plan for a period on [date], or the suggested topics when none is saved.
+  Future<PeriodPlan> periodPlan({required String slotId, required String date});
+
+  /// Saves the plan for a period (an edit clears the head's review).
+  Future<PeriodPlan> saveLessonPlan({
+    required String slotId,
+    required String date,
+    required List<String> topicIds,
+    required LessonContent content,
+    required bool aiDrafted,
+  });
+
+  /// A first draft from KINETIX AI (not saved).
+  Future<LessonDraft> draftLessonPlan({required String slotId, required String date, List<String>? topicIds, String? language});
+
   /// A photo or PDF from a submission.
   Future<Uint8List> submissionFile(String homeworkId, String studentId, int index);
 
@@ -401,8 +425,68 @@ class HttpTeacherApi implements TeacherApi {
         ) as Map<String, dynamic>,
       );
 
-  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
-    final res = await _request(method, path, body: body, auth: auth);
+  @override
+  Future<YearPlan?> yearPlan({required String sectionId, required String subjectId}) async {
+    final j = await _send('GET', '/v1/year-plans?sectionId=$sectionId&subjectId=$subjectId');
+    return j is Map<String, dynamic> ? YearPlan.fromJson(j) : null;
+  }
+
+  @override
+  Future<YearPlan> generateYearPlan({required String sectionId, required String subjectId, String? startsOn, String? endsOn}) async =>
+      YearPlan.fromJson(
+        await _send(
+          'POST',
+          '/v1/year-plans/generate',
+          body: {'sectionId': sectionId, 'subjectId': subjectId, 'startsOn': ?startsOn, 'endsOn': ?endsOn},
+        ) as Map<String, dynamic>,
+      );
+
+  @override
+  Future<YearPlan> moveYearPlanItem(String planId, {required String topicId, required String weekOf, required int periods}) async =>
+      YearPlan.fromJson(
+        await _send(
+          'PUT',
+          '/v1/year-plans/$planId/items',
+          body: {
+            'items': [
+              {'topicId': topicId, 'weekOf': weekOf, 'periods': periods},
+            ],
+          },
+        ) as Map<String, dynamic>,
+      );
+
+  @override
+  Future<PeriodPlan> periodPlan({required String slotId, required String date}) async =>
+      PeriodPlan.fromJson(await _send('GET', '/v1/lesson-plans/period?slotId=$slotId&date=$date') as Map<String, dynamic>);
+
+  @override
+  Future<PeriodPlan> saveLessonPlan({
+    required String slotId,
+    required String date,
+    required List<String> topicIds,
+    required LessonContent content,
+    required bool aiDrafted,
+  }) async => PeriodPlan.fromJson(
+    await _send(
+      'PUT',
+      '/v1/lesson-plans',
+      body: {'slotId': slotId, 'date': date, 'topicIds': topicIds, 'content': content.toJson(), 'aiDrafted': aiDrafted},
+    ) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<LessonDraft> draftLessonPlan({required String slotId, required String date, List<String>? topicIds, String? language}) async =>
+      LessonDraft.fromJson(
+        await _send(
+          'POST',
+          '/v1/lesson-plans/draft',
+          body: {'slotId': slotId, 'date': date, 'topicIds': ?topicIds, 'language': ?language},
+          timeout: const Duration(seconds: 60),
+        ) as Map<String, dynamic>,
+      );
+
+  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, Duration timeout = const Duration(seconds: 20)}) async {
+    final res = await _request(method, path, body: body, auth: auth, timeout: timeout);
     return res.body.isEmpty ? null : jsonDecode(res.body);
   }
 

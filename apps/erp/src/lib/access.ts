@@ -133,3 +133,11 @@ export function landingFor(roles: readonly RoleName[], next: string | null | und
   }
   return homeFor(roles);
 }
+
+/**
+ * Heads of department and the principal (and administrator) review lesson plans
+ * (POST /v1/lesson-plans/:id/review). The API also checks that a head heads the subject.
+ */
+export function canReviewLessonPlans(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'hod' || r === 'principal' || r === 'tenant_admin');
+}

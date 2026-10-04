@@ -80,6 +80,15 @@ extension AppLocalizationsX on AppLocalizations {
       'Nothing has been handed in yet' => errorNothingHandedIn,
       "That topic is not in this subject's syllabus" => errorTopicNotInSyllabus,
       'A topic cannot be marked as taught in the future' => errorFutureCoverage,
+      // Year plans and lesson plans (these have no code of their own yet).
+      'This subject has no syllabus yet. Link it to a course first.' => errorPlanNoSyllabus,
+      'This subject has no periods in the timetable' => errorPlanNoPeriods,
+      'There are no teaching days in these dates' => errorPlanNoTeachingDays,
+      'The plan must end after it starts' => errorPlanEndsBeforeStart,
+      'This period is not on that day' => errorPeriodNotOnDay,
+      "Your institution has used today's KINETIX AI allowance. It resets tomorrow." => errorAiAllowance,
+      'KINETIX AI is not reachable right now. Try again in a minute.' => errorAiUnavailable,
+      'KINETIX AI could not produce a usable answer. Try again or rephrase.' => errorAiUnusable,
       _ => null,
     };
     if (known != null) return known;
@@ -104,6 +113,14 @@ extension AppLocalizationsX on AppLocalizations {
     if (e.status == 429) return errorTooManyAttempts;
     return e.message;
   }
+
+  /// The banner on a year plan: "On track", "Behind by 2 topics", "Ahead", "Not started".
+  String planStatus(PlanProgress p) => switch (p.status) {
+    PlanStatus.notStarted => planNotStarted,
+    PlanStatus.onTrack => planOnTrack,
+    PlanStatus.behind => planBehindBy(p.behindBy),
+    PlanStatus.ahead => planAhead,
+  };
 
   String calendarKind(CalendarKind k) => switch (k) {
     CalendarKind.holiday => calendarHoliday,

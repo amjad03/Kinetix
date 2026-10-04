@@ -172,6 +172,12 @@ class ApiClient {
   /// Undoes [markTopicTaught].
   Future<void> unmarkTopicTaught(String topicId) async => _send('DELETE', '/v1/coverage', body: {'topicId': topicId});
 
+  /// The lesson plan for the period open on the board, or null in a free session.
+  Future<PeriodLessonPlan?> currentLessonPlan() async {
+    final j = await _send('GET', '/v1/lesson-plans/current');
+    return j is Map<String, dynamic> && j.isNotEmpty ? PeriodLessonPlan.fromJson(j) : null;
+  }
+
   Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id') as Map<String, dynamic>);
 
   Future<AiResult<HomeworkDraft>> homeworkDraft(

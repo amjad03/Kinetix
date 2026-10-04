@@ -1846,4 +1846,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String mathErrHighPowers(String power) {
     return 'Equations with $power or higher powers are not supported yet. Try a linear or quadratic equation.';
   }
+
+  @override
+  String get toolTodaysPlan => 'Today\'s plan';
+
+  @override
+  String get planSignIn =>
+      'Today\'s plan shows the lesson plan for the class being taught. Sign in with the Teacher app to open it.';
+
+  @override
+  String get planOpening => 'Opening the plan…';
+
+  @override
+  String get planCouldNotOpen =>
+      'Could not open the lesson plan. Check the board is online.';
+
+  @override
+  String get planNoClass =>
+      'No timetabled class is open on the board, so there is no lesson plan to show.';
+
+  @override
+  String get planNone =>
+      'No lesson plan for this period. Plan it in the Teacher app.';
+
+  @override
+  String get planAiDrafted => 'Drafted with KINETIX AI';
+
+  @override
+  String get planTopics => 'Topics';
+
+  @override
+  String get planOpenInBooks => 'Open in Books';
+
+  @override
+  String planStepsOf(int planned, int length) {
+    return 'Steps · $planned of $length min';
+  }
+
+  @override
+  String get planStartTimer => 'Start step timer';
+
+  @override
+  String get planResumeTimer => 'Resume';
+
+  @override
+  String get planNextStep => 'Next step';
+
+  @override
+  String get planAllStepsDone => 'All steps done';
+
+  @override
+  String get planHomework => 'Homework';
 }

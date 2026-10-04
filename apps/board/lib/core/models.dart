@@ -403,3 +403,54 @@ class LessonPlan {
   final List<String> materials;
   final String assessment;
 }
+
+/// The lesson plan for the period open on the board (GET /v1/lesson-plans/current), saved by
+/// the teacher in the Teacher App. Read-only on the board.
+class PeriodLessonPlan {
+  PeriodLessonPlan({required this.subjectName, required this.minutes, this.plan});
+
+  factory PeriodLessonPlan.fromJson(Map<String, dynamic> j) {
+    final slot = j['slot'] as Map<String, dynamic>? ?? const {};
+    int mins(Object? t) {
+      final p = (t as String? ?? '0:0').split(':');
+      return int.parse(p[0]) * 60 + int.parse(p[1]);
+    }
+
+    final p = j['plan'] as Map<String, dynamic>?;
+    return PeriodLessonPlan(
+      subjectName: (j['subject'] as Map?)?['name'] as String? ?? '',
+      minutes: slot.isEmpty ? 0 : mins(slot['endsAt']) - mins(slot['startsAt']),
+      plan: p == null ? null : SavedLessonPlan.fromJson(p),
+    );
+  }
+
+  final String subjectName;
+
+  /// The period's length.
+  final int minutes;
+
+  /// Null when the teacher has not planned this period.
+  final SavedLessonPlan? plan;
+}
+
+class SavedLessonPlan {
+  SavedLessonPlan({required this.topics, required this.content, required this.homework, this.aiDrafted = false});
+
+  factory SavedLessonPlan.fromJson(Map<String, dynamic> j) {
+    final content = j['content'] as Map<String, dynamic>? ?? const {};
+    return SavedLessonPlan(
+      topics: [
+        for (final t in (j['topics'] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>())
+          (id: t['id'] as String, title: t['title'] as String? ?? ''),
+      ],
+      content: LessonPlan.fromJson({'steps': const [], ...content}),
+      homework: content['homework'] as String? ?? '',
+      aiDrafted: j['aiDrafted'] as bool? ?? false,
+    );
+  }
+
+  final List<({String id, String title})> topics;
+  final LessonPlan content;
+  final String homework;
+  final bool aiDrafted;
+}

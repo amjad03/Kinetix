@@ -9,7 +9,7 @@ import '../../l10n/l10n.dart';
 import 'chrome.dart';
 
 /// What the side panel shows. Opening any of these splits the screen with the whiteboard.
-enum PanelKind { ai, books, quiz, homework, split }
+enum PanelKind { ai, books, quiz, homework, split, plan }
 
 /// Content for the split-screen pane.
 enum SplitContent { whiteboard, document, video, web, model3d, lab }

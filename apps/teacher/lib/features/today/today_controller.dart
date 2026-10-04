@@ -88,6 +88,14 @@ class TodayController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// A lesson plan was saved for [slotId] on the selected day.
+  void markPlanned(String slotId) {
+    for (final p in day?.periods ?? const <Period>[]) {
+      if (p.slotId == slotId) p.lessonPlanned = true;
+    }
+    notifyListeners();
+  }
+
   Future<void> _run(Future<void> Function() body) async {
     loading = true;
     error = null;

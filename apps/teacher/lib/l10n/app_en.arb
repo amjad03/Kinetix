@@ -1526,5 +1526,329 @@
   "errorValidation": "Some details are not right. Check them and try again.",
   "@errorValidation": {
     "description": "Error (VALIDATION): the server rejected the form's fields."
+  },
+  "yearPlan": "Year plan",
+  "@yearPlan": {
+    "description": "Title: a class's syllabus spread over the weeks of the term."
+  },
+  "yearPlanNone": "No year plan yet. KINETIX can spread this subject's syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.",
+  "@yearPlanNone": {
+    "description": "Empty state on the year plan screen."
+  },
+  "makeYearPlan": "Make a year plan",
+  "@makeYearPlan": {
+    "description": "Button and dialog title: generate the year plan."
+  },
+  "makePlan": "Make plan",
+  "@makePlan": {
+    "description": "Dialog button: generate the plan with these dates."
+  },
+  "remakeYearPlan": "Remake plan",
+  "@remakeYearPlan": {
+    "description": "Menu item: generate the year plan again."
+  },
+  "remakeYearPlanTitle": "Remake the year plan?",
+  "@remakeYearPlanTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "remakeYearPlanBody": "All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.",
+  "@remakeYearPlanBody": {
+    "description": "Confirmation dialog body for remaking the year plan."
+  },
+  "remake": "Remake",
+  "@remake": {
+    "description": "Button: confirm remaking the plan."
+  },
+  "planDatesNote": "Unless you change them, the plan covers 16 weeks from today, up to the end of the academic year.",
+  "@planDatesNote": {
+    "description": "Note in the make-plan dialog about the default dates."
+  },
+  "planStartsOn": "Starts on",
+  "@planStartsOn": {
+    "description": "Year plan start date."
+  },
+  "planEndsOn": "Ends on",
+  "@planEndsOn": {
+    "description": "Year plan end date."
+  },
+  "yearPlanMade": "Year plan made",
+  "@yearPlanMade": {
+    "description": "Snackbar after generating."
+  },
+  "yearPlanUpdated": "Plan updated",
+  "@yearPlanUpdated": {
+    "description": "Snackbar after moving a topic."
+  },
+  "planNotStarted": "Not started",
+  "@planNotStarted": {
+    "description": "Year plan status."
+  },
+  "planOnTrack": "On track",
+  "@planOnTrack": {
+    "description": "Year plan status."
+  },
+  "planAhead": "Ahead of plan",
+  "@planAhead": {
+    "description": "Year plan status."
+  },
+  "planBehindBy": "{count, plural, =1{Behind by 1 topic} other{Behind by {count} topics}}",
+  "@planBehindBy": {
+    "description": "Year plan status: topics planned for earlier weeks not taught yet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekOf": "Week of {date}",
+  "@weekOf": {
+    "description": "Week heading; date is the Monday, e.g. \"Mon, 5 Oct\".",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "thisWeek": "This week",
+  "@thisWeek": {
+    "description": "Pill on the current week."
+  },
+  "periodsCount": "{count, plural, =1{1 period} other{{count} periods}}",
+  "@periodsCount": {
+    "description": "Periods planned for a topic.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planLate": "Late",
+  "@planLate": {
+    "description": "Marker: topic planned for an earlier week, not taught yet."
+  },
+  "changeWeek": "Change week or periods",
+  "@changeWeek": {
+    "description": "Tooltip on a year plan topic."
+  },
+  "planWeek": "Week",
+  "@planWeek": {
+    "description": "Label: week picker."
+  },
+  "planPeriods": "Periods",
+  "@planPeriods": {
+    "description": "Label: periods for a topic."
+  },
+  "fewerPeriods": "Fewer periods",
+  "@fewerPeriods": {
+    "description": "Tooltip."
+  },
+  "morePeriods": "More periods",
+  "@morePeriods": {
+    "description": "Tooltip."
+  },
+  "planLesson": "Plan",
+  "@planLesson": {
+    "description": "Button on a period card: open its lesson plan (none saved yet)."
+  },
+  "lessonPlanned": "Planned",
+  "@lessonPlanned": {
+    "description": "Button on a period card: a lesson plan is saved."
+  },
+  "lessonPlan": "Lesson plan",
+  "@lessonPlan": {
+    "description": "Title of the lesson plan editor."
+  },
+  "lessonTopics": "Topics",
+  "@lessonTopics": {
+    "description": "Section: syllabus topics of the lesson."
+  },
+  "noTopicsChosen": "No topics chosen",
+  "@noTopicsChosen": {
+    "description": "When the lesson has no topics."
+  },
+  "chooseTopics": "Choose topics",
+  "@chooseTopics": {
+    "description": "Button and sheet title: pick syllabus topics."
+  },
+  "suggestedThisWeek": "In the year plan for this week",
+  "@suggestedThisWeek": {
+    "description": "Topic picker: suggested from the year plan."
+  },
+  "lessonObjectives": "Objectives",
+  "@lessonObjectives": {
+    "description": "Section of a lesson plan."
+  },
+  "objectiveHint": "Students will be able to…",
+  "@objectiveHint": {
+    "description": "Hint in an objective field."
+  },
+  "addObjective": "Add objective",
+  "@addObjective": {
+    "description": "Button."
+  },
+  "lessonSteps": "Steps",
+  "@lessonSteps": {
+    "description": "Section of a lesson plan: timed steps."
+  },
+  "stepHint": "What happens in this step",
+  "@stepHint": {
+    "description": "Hint in a step activity field."
+  },
+  "addStep": "Add step",
+  "@addStep": {
+    "description": "Button."
+  },
+  "minutesShortLabel": "Min",
+  "@minutesShortLabel": {
+    "description": "Label of a step's minutes field (very short)."
+  },
+  "stepsTotal": "{planned} of {length} min",
+  "@stepsTotal": {
+    "description": "Steps total vs the period length.",
+    "placeholders": {
+      "planned": {
+        "type": "int"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "stepsOver": "{planned} min, period is {length}",
+  "@stepsOver": {
+    "description": "Steps add up to more than the period.",
+    "placeholders": {
+      "planned": {
+        "type": "int"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "moveUp": "Move up",
+  "@moveUp": {
+    "description": "Menu item: reorder a step."
+  },
+  "moveDown": "Move down",
+  "@moveDown": {
+    "description": "Menu item: reorder a step."
+  },
+  "moreOptions": "More options",
+  "@moreOptions": {
+    "description": "Tooltip on a menu button."
+  },
+  "lessonMaterials": "Materials",
+  "@lessonMaterials": {
+    "description": "Section of a lesson plan."
+  },
+  "materialHint": "e.g. chart paper, textbook p. 42",
+  "@materialHint": {
+    "description": "Hint in a material field."
+  },
+  "addMaterial": "Add material",
+  "@addMaterial": {
+    "description": "Button."
+  },
+  "lessonCheck": "Check understanding",
+  "@lessonCheck": {
+    "description": "Section: how the teacher checks what students learnt."
+  },
+  "lessonCheckHint": "How you will check what students learnt",
+  "@lessonCheckHint": {
+    "description": "Hint."
+  },
+  "lessonHomework": "Homework",
+  "@lessonHomework": {
+    "description": "Section of a lesson plan."
+  },
+  "lessonHomeworkHint": "Optional",
+  "@lessonHomeworkHint": {
+    "description": "Hint: homework is optional."
+  },
+  "draftWithAi": "Draft with KINETIX AI",
+  "@draftWithAi": {
+    "description": "Button: KINETIX AI writes a first draft."
+  },
+  "drafting": "KINETIX AI is drafting…",
+  "@drafting": {
+    "description": "While drafting."
+  },
+  "replaceWithDraftTitle": "Replace with a KINETIX AI draft?",
+  "@replaceWithDraftTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "replaceWithDraftBody": "The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.",
+  "@replaceWithDraftBody": {
+    "description": "Confirmation dialog body."
+  },
+  "replace": "Replace",
+  "@replace": {
+    "description": "Button: confirm replacing with the draft."
+  },
+  "aiDraftLabel": "AI draft — check before use",
+  "@aiDraftLabel": {
+    "description": "Label on a plan written by KINETIX AI."
+  },
+  "aiPreviewNote": "Preview: a sample draft, because the KINETIX AI server is not connected.",
+  "@aiPreviewNote": {
+    "description": "Shown when the draft is a placeholder (meta.preview)."
+  },
+  "savePlan": "Save plan",
+  "@savePlan": {
+    "description": "Button."
+  },
+  "lessonPlanSaved": "Lesson plan saved",
+  "@lessonPlanSaved": {
+    "description": "Snackbar."
+  },
+  "reviewedOn": "Reviewed on {date}",
+  "@reviewedOn": {
+    "description": "The head of department or principal reviewed the plan.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewRemark": "Remark from your head of department",
+  "@reviewRemark": {
+    "description": "Title of the review remark card."
+  },
+  "discardPlanBody": "Your lesson plan has changes that are not saved yet.",
+  "@discardPlanBody": {
+    "description": "Discard dialog body."
+  },
+  "errorPlanNoSyllabus": "This subject has no syllabus yet. Ask your administrator to link it to a course.",
+  "@errorPlanNoSyllabus": {
+    "description": "Error: year plan for a subject with no syllabus."
+  },
+  "errorPlanNoPeriods": "This subject has no periods in the timetable for this class.",
+  "@errorPlanNoPeriods": {
+    "description": "Error."
+  },
+  "errorPlanNoTeachingDays": "There are no teaching days between these dates.",
+  "@errorPlanNoTeachingDays": {
+    "description": "Error."
+  },
+  "errorPlanEndsBeforeStart": "The end date must be after the start date.",
+  "@errorPlanEndsBeforeStart": {
+    "description": "Error."
+  },
+  "errorPeriodNotOnDay": "This class is not on that day.",
+  "@errorPeriodNotOnDay": {
+    "description": "Error: saving a lesson plan for a day the period is not on."
+  },
+  "errorAiAllowance": "Your institution has used today's KINETIX AI allowance. It resets tomorrow.",
+  "@errorAiAllowance": {
+    "description": "Error."
+  },
+  "errorAiUnavailable": "KINETIX AI is not reachable right now. Try again in a minute.",
+  "@errorAiUnavailable": {
+    "description": "Error."
+  },
+  "errorAiUnusable": "KINETIX AI could not write a usable draft. Try again.",
+  "@errorAiUnusable": {
+    "description": "Error."
   }
 }

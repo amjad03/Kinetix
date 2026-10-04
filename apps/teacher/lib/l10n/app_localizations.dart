@@ -1886,6 +1886,438 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Some details are not right. Check them and try again.'**
   String get errorValidation;
+
+  /// Title: a class's syllabus spread over the weeks of the term.
+  ///
+  /// In en, this message translates to:
+  /// **'Year plan'**
+  String get yearPlan;
+
+  /// Empty state on the year plan screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.'**
+  String get yearPlanNone;
+
+  /// Button and dialog title: generate the year plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a year plan'**
+  String get makeYearPlan;
+
+  /// Dialog button: generate the plan with these dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Make plan'**
+  String get makePlan;
+
+  /// Menu item: generate the year plan again.
+  ///
+  /// In en, this message translates to:
+  /// **'Remake plan'**
+  String get remakeYearPlan;
+
+  /// Confirmation dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remake the year plan?'**
+  String get remakeYearPlanTitle;
+
+  /// Confirmation dialog body for remaking the year plan.
+  ///
+  /// In en, this message translates to:
+  /// **'All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.'**
+  String get remakeYearPlanBody;
+
+  /// Button: confirm remaking the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Remake'**
+  String get remake;
+
+  /// Note in the make-plan dialog about the default dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Unless you change them, the plan covers 16 weeks from today, up to the end of the academic year.'**
+  String get planDatesNote;
+
+  /// Year plan start date.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts on'**
+  String get planStartsOn;
+
+  /// Year plan end date.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on'**
+  String get planEndsOn;
+
+  /// Snackbar after generating.
+  ///
+  /// In en, this message translates to:
+  /// **'Year plan made'**
+  String get yearPlanMade;
+
+  /// Snackbar after moving a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan updated'**
+  String get yearPlanUpdated;
+
+  /// Year plan status.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get planNotStarted;
+
+  /// Year plan status.
+  ///
+  /// In en, this message translates to:
+  /// **'On track'**
+  String get planOnTrack;
+
+  /// Year plan status.
+  ///
+  /// In en, this message translates to:
+  /// **'Ahead of plan'**
+  String get planAhead;
+
+  /// Year plan status: topics planned for earlier weeks not taught yet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Behind by 1 topic} other{Behind by {count} topics}}'**
+  String planBehindBy(int count);
+
+  /// Week heading; date is the Monday, e.g. "Mon, 5 Oct".
+  ///
+  /// In en, this message translates to:
+  /// **'Week of {date}'**
+  String weekOf(String date);
+
+  /// Pill on the current week.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// Periods planned for a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 period} other{{count} periods}}'**
+  String periodsCount(int count);
+
+  /// Marker: topic planned for an earlier week, not taught yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get planLate;
+
+  /// Tooltip on a year plan topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Change week or periods'**
+  String get changeWeek;
+
+  /// Label: week picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get planWeek;
+
+  /// Label: periods for a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Periods'**
+  String get planPeriods;
+
+  /// Tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer periods'**
+  String get fewerPeriods;
+
+  /// Tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'More periods'**
+  String get morePeriods;
+
+  /// Button on a period card: open its lesson plan (none saved yet).
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get planLesson;
+
+  /// Button on a period card: a lesson plan is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get lessonPlanned;
+
+  /// Title of the lesson plan editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson plan'**
+  String get lessonPlan;
+
+  /// Section: syllabus topics of the lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics'**
+  String get lessonTopics;
+
+  /// When the lesson has no topics.
+  ///
+  /// In en, this message translates to:
+  /// **'No topics chosen'**
+  String get noTopicsChosen;
+
+  /// Button and sheet title: pick syllabus topics.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose topics'**
+  String get chooseTopics;
+
+  /// Topic picker: suggested from the year plan.
+  ///
+  /// In en, this message translates to:
+  /// **'In the year plan for this week'**
+  String get suggestedThisWeek;
+
+  /// Section of a lesson plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Objectives'**
+  String get lessonObjectives;
+
+  /// Hint in an objective field.
+  ///
+  /// In en, this message translates to:
+  /// **'Students will be able to…'**
+  String get objectiveHint;
+
+  /// Button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add objective'**
+  String get addObjective;
+
+  /// Section of a lesson plan: timed steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get lessonSteps;
+
+  /// Hint in a step activity field.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens in this step'**
+  String get stepHint;
+
+  /// Button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add step'**
+  String get addStep;
+
+  /// Label of a step's minutes field (very short).
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get minutesShortLabel;
+
+  /// Steps total vs the period length.
+  ///
+  /// In en, this message translates to:
+  /// **'{planned} of {length} min'**
+  String stepsTotal(int planned, int length);
+
+  /// Steps add up to more than the period.
+  ///
+  /// In en, this message translates to:
+  /// **'{planned} min, period is {length}'**
+  String stepsOver(int planned, int length);
+
+  /// Menu item: reorder a step.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get moveUp;
+
+  /// Menu item: reorder a step.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get moveDown;
+
+  /// Tooltip on a menu button.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
+  /// Section of a lesson plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Materials'**
+  String get lessonMaterials;
+
+  /// Hint in a material field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. chart paper, textbook p. 42'**
+  String get materialHint;
+
+  /// Button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add material'**
+  String get addMaterial;
+
+  /// Section: how the teacher checks what students learnt.
+  ///
+  /// In en, this message translates to:
+  /// **'Check understanding'**
+  String get lessonCheck;
+
+  /// Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'How you will check what students learnt'**
+  String get lessonCheckHint;
+
+  /// Section of a lesson plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get lessonHomework;
+
+  /// Hint: homework is optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get lessonHomeworkHint;
+
+  /// Button: KINETIX AI writes a first draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft with KINETIX AI'**
+  String get draftWithAi;
+
+  /// While drafting.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI is drafting…'**
+  String get drafting;
+
+  /// Confirmation dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace with a KINETIX AI draft?'**
+  String get replaceWithDraftTitle;
+
+  /// Confirmation dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.'**
+  String get replaceWithDraftBody;
+
+  /// Button: confirm replacing with the draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get replace;
+
+  /// Label on a plan written by KINETIX AI.
+  ///
+  /// In en, this message translates to:
+  /// **'AI draft — check before use'**
+  String get aiDraftLabel;
+
+  /// Shown when the draft is a placeholder (meta.preview).
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: a sample draft, because the KINETIX AI server is not connected.'**
+  String get aiPreviewNote;
+
+  /// Button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save plan'**
+  String get savePlan;
+
+  /// Snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson plan saved'**
+  String get lessonPlanSaved;
+
+  /// The head of department or principal reviewed the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed on {date}'**
+  String reviewedOn(String date);
+
+  /// Title of the review remark card.
+  ///
+  /// In en, this message translates to:
+  /// **'Remark from your head of department'**
+  String get reviewRemark;
+
+  /// Discard dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your lesson plan has changes that are not saved yet.'**
+  String get discardPlanBody;
+
+  /// Error: year plan for a subject with no syllabus.
+  ///
+  /// In en, this message translates to:
+  /// **'This subject has no syllabus yet. Ask your administrator to link it to a course.'**
+  String get errorPlanNoSyllabus;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'This subject has no periods in the timetable for this class.'**
+  String get errorPlanNoPeriods;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no teaching days between these dates.'**
+  String get errorPlanNoTeachingDays;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date must be after the start date.'**
+  String get errorPlanEndsBeforeStart;
+
+  /// Error: saving a lesson plan for a day the period is not on.
+  ///
+  /// In en, this message translates to:
+  /// **'This class is not on that day.'**
+  String get errorPeriodNotOnDay;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'Your institution has used today\'s KINETIX AI allowance. It resets tomorrow.'**
+  String get errorAiAllowance;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI is not reachable right now. Try again in a minute.'**
+  String get errorAiUnavailable;
+
+  /// Error.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI could not write a usable draft. Try again.'**
+  String get errorAiUnusable;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -158,6 +158,35 @@ MockClient _server() => MockClient((req) async {
         'assessment': text,
       }),
     ),
+    '/v1/lesson-plans/current' => _json({
+      'slot': {'id': 'slot1', 'startsAt': '10:00:00', 'endsAt': '10:55:00'},
+      'subject': {'id': 'sub1', 'name': 'Corporate Accounting'},
+      'date': '2026-10-05',
+      'suggestedTopicIds': ['t1'],
+      'plan': {
+        'id': 'lp1',
+        'date': '2026-10-05',
+        'topicIds': ['t1'],
+        'topics': [
+          {'id': 't1', 'title': 'Methods of valuing goodwill'},
+        ],
+        'content': {
+          'objectives': [text, text],
+          'steps': [
+            {'minutes': 10, 'activity': text},
+            {'minutes': 35, 'activity': text},
+            {'minutes': 10, 'activity': text},
+          ],
+          'materials': ['Textbook', 'Calculator'],
+          'assessment': text,
+          'homework': text,
+        },
+        'aiDrafted': true,
+        'teacher': 'Anita Sharma',
+        'reviewedAt': null,
+        'reviewRemark': null,
+      },
+    }),
     _ => http.Response('[]', 200),
   };
 });
@@ -567,6 +596,21 @@ void main() {
         await tap(find.text(l.toolSplitScreen));
         expect(find.text(l.splitChoose), findsOneWidget);
         fits('split screen');
+        await tap(find.byKey(const Key('panel-close')));
+        await tap(find.byKey(const Key('tool-tools')));
+        await tap(find.text(l.toolTodaysPlan));
+        expect(find.byKey(const Key('plan-view')), findsOneWidget);
+        await tap(find.byKey(const Key('plan-timer')));
+        fits("today's plan");
+        await tap(find.byKey(const Key('plan-timer')));
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('plan-topic-t1')),
+          -200,
+          scrollable: find.descendant(of: find.byKey(const Key('plan-view')), matching: find.byType(Scrollable)).first,
+        );
+        await tap(find.byKey(const Key('plan-topic-t1')));
+        expect(find.byKey(const Key('books-topic')), findsOneWidget);
+        fits("today's plan → books");
         await tap(find.byKey(const Key('panel-close')));
 
         // Guest board: sign-in.

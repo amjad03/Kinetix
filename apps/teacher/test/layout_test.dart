@@ -15,6 +15,15 @@ Future<void> reveal(WidgetTester tester, Key key) async {
   await tester.pumpAndSettle();
 }
 
+/// Scrolls the list keyed [list] until [key] is built, then to the middle of the screen (text
+/// fields have scrollables of their own, so [reveal]'s last scrollable is not the list).
+Future<void> revealIn(WidgetTester tester, Key list, Key key) async {
+  final scrollable = find.descendant(of: find.byKey(list), matching: find.byType(Scrollable)).first;
+  await tester.scrollUntilVisible(find.byKey(key), 200, scrollable: scrollable);
+  await Scrollable.ensureVisible(tester.element(find.byKey(key)), alignment: 0.5);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(loadAppFonts);
 
@@ -31,6 +40,28 @@ void main() {
           final api = FakeTeacherApi();
           seed(api, language: lang);
           api.holidays = {'2026-10-07': 'Mahatma Gandhi Jayanti and Swachh Bharat Diwas (observed)'};
+          api.lessonPlans['slot2 2026-10-05'] = {
+            'id': 'lp2',
+            'date': '2026-10-05',
+            'topicIds': ['t2'],
+            'topics': [
+              {'id': 't2', 'title': 'Methods: average profit, super profit and capitalisation'},
+            ],
+            'content': {
+              'objectives': ['Compare the three methods of valuing goodwill'],
+              'steps': [
+                {'minutes': 15, 'activity': 'Recap of average profit with last week’s example'},
+              ],
+              'materials': ['Textbook'],
+              'assessment': 'Two quick questions',
+              'homework': '',
+            },
+            'aiDrafted': false,
+            'teacher': 'Anita Sharma',
+            'reviewedAt': '2026-10-04T06:00:00Z',
+            'reviewRemark': 'Add a recap question at the end and give the class five minutes to try the super profit method themselves.',
+          };
+          api.periodsByDate['2026-10-05']![1].lessonPlanned = true;
           await pumpApp(tester, api, prefs: {'token': 'tok'});
 
           // Today, then connected to a board.
@@ -42,6 +73,34 @@ void main() {
           await tapAndSettle(tester, find.byKey(const Key('status-excused')));
           await tester.tap(find.text('Aarav Patel'));
           await tester.pump();
+          await pop(tester);
+
+          // A lesson plan: an AI draft, the topic picker, a step's menu, unsaved changes, saved.
+          await tester.ensureVisible(find.byKey(const Key('plan-slot1')));
+          await tester.pumpAndSettle();
+          await tapAndSettle(tester, find.byKey(const Key('plan-slot1')));
+          await tapAndSettle(tester, find.byKey(const Key('draftWithAi')));
+          await tapAndSettle(tester, find.byKey(const Key('addTopic')));
+          await pop(tester); // the topic picker
+          await revealIn(tester, const Key('lessonPlanForm'), const Key('stepMenu-1'));
+          await tapAndSettle(tester, find.byKey(const Key('stepMenu-1')));
+          await pop(tester); // the menu
+          await tester.enterText(find.byKey(const Key('stepMinutes-1')), '90');
+          await tester.pump();
+          await revealIn(tester, const Key('lessonPlanForm'), const Key('homeworkField'));
+          await tester.enterText(find.byKey(const Key('homeworkField')), 'Exercise 4.2, questions 1 to 5, with all working shown');
+          await tester.pump();
+          await pop(tester);
+          expect(find.byKey(const Key('discardChanges')), findsOneWidget);
+          await pop(tester); // keep editing
+          await tapAndSettle(tester, find.byKey(const Key('saveLessonPlan')));
+          await pop(tester);
+          await clearSnackBars(tester);
+          // A plan the head of department reviewed, with a remark.
+          await tester.ensureVisible(find.byKey(const Key('plan-slot2')));
+          await tester.pumpAndSettle();
+          await tapAndSettle(tester, find.byKey(const Key('plan-slot2')));
+          expect(find.byKey(const Key('reviewCard')), findsOneWidget);
           await pop(tester);
 
           await tester.drag(find.byType(CustomScrollView).first, const Offset(0, 400));
@@ -70,6 +129,27 @@ void main() {
           await tester.ensureVisible(find.byKey(const Key('syllabus-slot1')));
           await tester.pumpAndSettle();
           await tapAndSettle(tester, find.byKey(const Key('syllabus-slot1')));
+
+          // The year plan: none yet, made, a topic's week and periods, remaking.
+          await tapAndSettle(tester, find.byKey(const Key('openYearPlan')));
+          expect(find.byKey(const Key('yearPlanNone')), findsOneWidget);
+          await tapAndSettle(tester, find.byKey(const Key('makeYearPlan')));
+          await tapAndSettle(tester, find.byKey(const Key('planEnd')));
+          await pop(tester); // the date picker
+          await tapAndSettle(tester, find.byKey(const Key('generatePlan')));
+          await clearSnackBars(tester);
+          expect(find.byKey(const Key('planStatus')), findsOneWidget);
+          await reveal(tester, const Key('editPlanItem-t3'));
+          await tapAndSettle(tester, find.byKey(const Key('editPlanItem-t3')));
+          await tapAndSettle(tester, find.byKey(const Key('weekPicker')));
+          await pop(tester); // the week menu
+          await pop(tester); // the dialog
+          await tapAndSettle(tester, find.byKey(const Key('yearPlanMenu')));
+          await tapAndSettle(tester, find.byKey(const Key('remakePlan')));
+          expect(find.byKey(const Key('confirmRemake')), findsOneWidget);
+          await pop(tester); // the confirmation
+          await pop(tester); // the year plan
+
           await reveal(tester, const Key('topic-t2'));
           await tapAndSettle(tester, find.byKey(const Key('topic-t2')));
           await clearSnackBars(tester);

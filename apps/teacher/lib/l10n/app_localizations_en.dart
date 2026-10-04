@@ -1041,4 +1041,237 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorValidation => 'Some details are not right. Check them and try again.';
+
+  @override
+  String get yearPlan => 'Year plan';
+
+  @override
+  String get yearPlanNone =>
+      'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
+
+  @override
+  String get makeYearPlan => 'Make a year plan';
+
+  @override
+  String get makePlan => 'Make plan';
+
+  @override
+  String get remakeYearPlan => 'Remake plan';
+
+  @override
+  String get remakeYearPlanTitle => 'Remake the year plan?';
+
+  @override
+  String get remakeYearPlanBody =>
+      'All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.';
+
+  @override
+  String get remake => 'Remake';
+
+  @override
+  String get planDatesNote => 'Unless you change them, the plan covers 16 weeks from today, up to the end of the academic year.';
+
+  @override
+  String get planStartsOn => 'Starts on';
+
+  @override
+  String get planEndsOn => 'Ends on';
+
+  @override
+  String get yearPlanMade => 'Year plan made';
+
+  @override
+  String get yearPlanUpdated => 'Plan updated';
+
+  @override
+  String get planNotStarted => 'Not started';
+
+  @override
+  String get planOnTrack => 'On track';
+
+  @override
+  String get planAhead => 'Ahead of plan';
+
+  @override
+  String planBehindBy(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Behind by $count topics', one: 'Behind by 1 topic');
+    return '$_temp0';
+  }
+
+  @override
+  String weekOf(String date) {
+    return 'Week of $date';
+  }
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String periodsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count periods', one: '1 period');
+    return '$_temp0';
+  }
+
+  @override
+  String get planLate => 'Late';
+
+  @override
+  String get changeWeek => 'Change week or periods';
+
+  @override
+  String get planWeek => 'Week';
+
+  @override
+  String get planPeriods => 'Periods';
+
+  @override
+  String get fewerPeriods => 'Fewer periods';
+
+  @override
+  String get morePeriods => 'More periods';
+
+  @override
+  String get planLesson => 'Plan';
+
+  @override
+  String get lessonPlanned => 'Planned';
+
+  @override
+  String get lessonPlan => 'Lesson plan';
+
+  @override
+  String get lessonTopics => 'Topics';
+
+  @override
+  String get noTopicsChosen => 'No topics chosen';
+
+  @override
+  String get chooseTopics => 'Choose topics';
+
+  @override
+  String get suggestedThisWeek => 'In the year plan for this week';
+
+  @override
+  String get lessonObjectives => 'Objectives';
+
+  @override
+  String get objectiveHint => 'Students will be able to…';
+
+  @override
+  String get addObjective => 'Add objective';
+
+  @override
+  String get lessonSteps => 'Steps';
+
+  @override
+  String get stepHint => 'What happens in this step';
+
+  @override
+  String get addStep => 'Add step';
+
+  @override
+  String get minutesShortLabel => 'Min';
+
+  @override
+  String stepsTotal(int planned, int length) {
+    return '$planned of $length min';
+  }
+
+  @override
+  String stepsOver(int planned, int length) {
+    return '$planned min, period is $length';
+  }
+
+  @override
+  String get moveUp => 'Move up';
+
+  @override
+  String get moveDown => 'Move down';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get lessonMaterials => 'Materials';
+
+  @override
+  String get materialHint => 'e.g. chart paper, textbook p. 42';
+
+  @override
+  String get addMaterial => 'Add material';
+
+  @override
+  String get lessonCheck => 'Check understanding';
+
+  @override
+  String get lessonCheckHint => 'How you will check what students learnt';
+
+  @override
+  String get lessonHomework => 'Homework';
+
+  @override
+  String get lessonHomeworkHint => 'Optional';
+
+  @override
+  String get draftWithAi => 'Draft with KINETIX AI';
+
+  @override
+  String get drafting => 'KINETIX AI is drafting…';
+
+  @override
+  String get replaceWithDraftTitle => 'Replace with a KINETIX AI draft?';
+
+  @override
+  String get replaceWithDraftBody =>
+      'The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.';
+
+  @override
+  String get replace => 'Replace';
+
+  @override
+  String get aiDraftLabel => 'AI draft — check before use';
+
+  @override
+  String get aiPreviewNote => 'Preview: a sample draft, because the KINETIX AI server is not connected.';
+
+  @override
+  String get savePlan => 'Save plan';
+
+  @override
+  String get lessonPlanSaved => 'Lesson plan saved';
+
+  @override
+  String reviewedOn(String date) {
+    return 'Reviewed on $date';
+  }
+
+  @override
+  String get reviewRemark => 'Remark from your head of department';
+
+  @override
+  String get discardPlanBody => 'Your lesson plan has changes that are not saved yet.';
+
+  @override
+  String get errorPlanNoSyllabus => 'This subject has no syllabus yet. Ask your administrator to link it to a course.';
+
+  @override
+  String get errorPlanNoPeriods => 'This subject has no periods in the timetable for this class.';
+
+  @override
+  String get errorPlanNoTeachingDays => 'There are no teaching days between these dates.';
+
+  @override
+  String get errorPlanEndsBeforeStart => 'The end date must be after the start date.';
+
+  @override
+  String get errorPeriodNotOnDay => 'This class is not on that day.';
+
+  @override
+  String get errorAiAllowance => 'Your institution has used today\'s KINETIX AI allowance. It resets tomorrow.';
+
+  @override
+  String get errorAiUnavailable => 'KINETIX AI is not reachable right now. Try again in a minute.';
+
+  @override
+  String get errorAiUnusable => 'KINETIX AI could not write a usable draft. Try again.';
 }

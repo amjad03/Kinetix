@@ -1841,4 +1841,55 @@ class AppLocalizationsHi extends AppLocalizations {
   String mathErrHighPowers(String power) {
     return '$power या उससे ऊँची घात वाले समीकरण अभी समर्थित नहीं हैं। रैखिक या द्विघात समीकरण आज़माएँ।';
   }
+
+  @override
+  String get toolTodaysPlan => 'आज की योजना';
+
+  @override
+  String get planSignIn =>
+      'आज की योजना में पढ़ाई जा रही कक्षा की पाठ योजना दिखती है। इसे खोलने के लिए Teacher app से साइन इन करें।';
+
+  @override
+  String get planOpening => 'योजना खुल रही है…';
+
+  @override
+  String get planCouldNotOpen =>
+      'पाठ योजना नहीं खुल सकी। देखें कि बोर्ड ऑनलाइन है।';
+
+  @override
+  String get planNoClass =>
+      'बोर्ड पर समय-सारिणी की कोई कक्षा नहीं खुली है, इसलिए दिखाने के लिए कोई पाठ योजना नहीं है।';
+
+  @override
+  String get planNone =>
+      'इस पीरियड की कोई पाठ योजना नहीं है। Teacher app में योजना बनाएँ।';
+
+  @override
+  String get planAiDrafted => 'KINETIX AI से ड्राफ़्ट किया गया';
+
+  @override
+  String get planTopics => 'विषय-वस्तु';
+
+  @override
+  String get planOpenInBooks => 'Books में खोलें';
+
+  @override
+  String planStepsOf(int planned, int length) {
+    return 'चरण · $length में से $planned मिनट';
+  }
+
+  @override
+  String get planStartTimer => 'चरण टाइमर शुरू करें';
+
+  @override
+  String get planResumeTimer => 'फिर शुरू करें';
+
+  @override
+  String get planNextStep => 'अगला चरण';
+
+  @override
+  String get planAllStepsDone => 'सभी चरण पूरे';
+
+  @override
+  String get planHomework => 'होमवर्क';
 }

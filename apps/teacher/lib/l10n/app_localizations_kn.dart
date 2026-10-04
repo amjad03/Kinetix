@@ -1047,4 +1047,237 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errorValidation => 'ಕೆಲವು ವಿವರಗಳು ಸರಿಯಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get yearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆ';
+
+  @override
+  String get yearPlanNone =>
+      'ಇನ್ನೂ ವಾರ್ಷಿಕ ಯೋಜನೆ ಇಲ್ಲ. ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯ ಪ್ರಕಾರ, ರಜೆ ಮತ್ತು ಪರೀಕ್ಷೆಗಳನ್ನು ಬಿಟ್ಟು, KINETIX ಈ ವಿಷಯದ ಪಠ್ಯಕ್ರಮವನ್ನು ಅವಧಿಯ ವಾರಗಳಿಗೆ ಹಂಚಬಹುದು. ನಂತರ ನೀವು ವಿಷಯಗಳನ್ನು ಬದಲಿಸಬಹುದು.';
+
+  @override
+  String get makeYearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆ ಮಾಡಿ';
+
+  @override
+  String get makePlan => 'ಯೋಜನೆ ಮಾಡಿ';
+
+  @override
+  String get remakeYearPlan => 'ಯೋಜನೆಯನ್ನು ಮತ್ತೆ ಮಾಡಿ';
+
+  @override
+  String get remakeYearPlanTitle => 'ವಾರ್ಷಿಕ ಯೋಜನೆಯನ್ನು ಮತ್ತೆ ಮಾಡಬೇಕೇ?';
+
+  @override
+  String get remakeYearPlanBody =>
+      'ನೀವು ಆರಿಸುವ ದಿನಾಂಕಗಳಿಂದ ಎಲ್ಲಾ ವಾರಗಳನ್ನು ಮತ್ತೆ ಯೋಜಿಸಲಾಗುತ್ತದೆ, ನೀವು ಬದಲಿಸಿದ ವಿಷಯಗಳು ಹಿಂದಿನ ಸ್ಥಾನಕ್ಕೆ ಹೋಗುತ್ತವೆ. ಈಗಾಗಲೇ ಕಲಿಸಿದ ವಿಷಯಗಳು ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ.';
+
+  @override
+  String get remake => 'ಮತ್ತೆ ಮಾಡಿ';
+
+  @override
+  String get planDatesNote => 'ನೀವು ದಿನಾಂಕಗಳನ್ನು ಬದಲಿಸದಿದ್ದರೆ, ಯೋಜನೆ ಇಂದಿನಿಂದ 16 ವಾರಗಳು, ಶೈಕ್ಷಣಿಕ ವರ್ಷದ ಕೊನೆಯವರೆಗೆ ಇರುತ್ತದೆ.';
+
+  @override
+  String get planStartsOn => 'ಪ್ರಾರಂಭ ದಿನಾಂಕ';
+
+  @override
+  String get planEndsOn => 'ಮುಕ್ತಾಯ ದಿನಾಂಕ';
+
+  @override
+  String get yearPlanMade => 'ವಾರ್ಷಿಕ ಯೋಜನೆ ಸಿದ್ಧವಾಗಿದೆ';
+
+  @override
+  String get yearPlanUpdated => 'ಯೋಜನೆ ನವೀಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get planNotStarted => 'ಪ್ರಾರಂಭವಾಗಿಲ್ಲ';
+
+  @override
+  String get planOnTrack => 'ಸಮಯಕ್ಕೆ ಸರಿಯಾಗಿದೆ';
+
+  @override
+  String get planAhead => 'ಯೋಜನೆಗಿಂತ ಮುಂದಿದೆ';
+
+  @override
+  String planBehindBy(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ', one: '1 ವಿಷಯ ಹಿಂದಿದೆ');
+    return '$_temp0';
+  }
+
+  @override
+  String weekOf(String date) {
+    return '$date ರ ವಾರ';
+  }
+
+  @override
+  String get thisWeek => 'ಈ ವಾರ';
+
+  @override
+  String periodsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
+    return '$_temp0';
+  }
+
+  @override
+  String get planLate => 'ತಡವಾಗಿದೆ';
+
+  @override
+  String get changeWeek => 'ವಾರ ಅಥವಾ ಅವಧಿಗಳನ್ನು ಬದಲಿಸಿ';
+
+  @override
+  String get planWeek => 'ವಾರ';
+
+  @override
+  String get planPeriods => 'ಅವಧಿಗಳು';
+
+  @override
+  String get fewerPeriods => 'ಕಡಿಮೆ ಅವಧಿಗಳು';
+
+  @override
+  String get morePeriods => 'ಹೆಚ್ಚು ಅವಧಿಗಳು';
+
+  @override
+  String get planLesson => 'ಯೋಜನೆ';
+
+  @override
+  String get lessonPlanned => 'ಯೋಜಿಸಲಾಗಿದೆ';
+
+  @override
+  String get lessonPlan => 'ಪಾಠ ಯೋಜನೆ';
+
+  @override
+  String get lessonTopics => 'ವಿಷಯಗಳು';
+
+  @override
+  String get noTopicsChosen => 'ಯಾವುದೇ ವಿಷಯ ಆರಿಸಿಲ್ಲ';
+
+  @override
+  String get chooseTopics => 'ವಿಷಯಗಳನ್ನು ಆರಿಸಿ';
+
+  @override
+  String get suggestedThisWeek => 'ಈ ವಾರದ ವಾರ್ಷಿಕ ಯೋಜನೆಯಲ್ಲಿದೆ';
+
+  @override
+  String get lessonObjectives => 'ಉದ್ದೇಶಗಳು';
+
+  @override
+  String get objectiveHint => 'ವಿದ್ಯಾರ್ಥಿಗಳು … ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ';
+
+  @override
+  String get addObjective => 'ಉದ್ದೇಶ ಸೇರಿಸಿ';
+
+  @override
+  String get lessonSteps => 'ಹಂತಗಳು';
+
+  @override
+  String get stepHint => 'ಈ ಹಂತದಲ್ಲಿ ಏನು ನಡೆಯುತ್ತದೆ';
+
+  @override
+  String get addStep => 'ಹಂತ ಸೇರಿಸಿ';
+
+  @override
+  String get minutesShortLabel => 'ನಿಮಿ';
+
+  @override
+  String stepsTotal(int planned, int length) {
+    return '$length ರಲ್ಲಿ $planned ನಿಮಿ';
+  }
+
+  @override
+  String stepsOver(int planned, int length) {
+    return '$planned ನಿಮಿ, ಅವಧಿ $length ನಿಮಿ';
+  }
+
+  @override
+  String get moveUp => 'ಮೇಲೆ ಸರಿಸಿ';
+
+  @override
+  String get moveDown => 'ಕೆಳಗೆ ಸರಿಸಿ';
+
+  @override
+  String get moreOptions => 'ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು';
+
+  @override
+  String get lessonMaterials => 'ಸಾಮಗ್ರಿಗಳು';
+
+  @override
+  String get materialHint => 'ಉದಾ. ಚಾರ್ಟ್ ಪೇಪರ್, ಪಠ್ಯಪುಸ್ತಕ ಪುಟ 42';
+
+  @override
+  String get addMaterial => 'ಸಾಮಗ್ರಿ ಸೇರಿಸಿ';
+
+  @override
+  String get lessonCheck => 'ಅರ್ಥವಾಗಿದೆಯೇ ಪರಿಶೀಲನೆ';
+
+  @override
+  String get lessonCheckHint => 'ವಿದ್ಯಾರ್ಥಿಗಳು ಏನು ಕಲಿತರು ಎಂದು ಹೇಗೆ ಪರಿಶೀಲಿಸುವಿರಿ';
+
+  @override
+  String get lessonHomework => 'ಹೋಂವರ್ಕ್';
+
+  @override
+  String get lessonHomeworkHint => 'ಐಚ್ಛಿಕ';
+
+  @override
+  String get draftWithAi => 'KINETIX AI ಮೂಲಕ ಕರಡು ಮಾಡಿ';
+
+  @override
+  String get drafting => 'KINETIX AI ಕರಡು ಮಾಡುತ್ತಿದೆ…';
+
+  @override
+  String get replaceWithDraftTitle => 'KINETIX AI ಕರಡಿನಿಂದ ಬದಲಿಸಬೇಕೇ?';
+
+  @override
+  String get replaceWithDraftBody =>
+      'ಈ ಯೋಜನೆಯ ವಿಷಯಗಳು, ಉದ್ದೇಶಗಳು, ಹಂತಗಳು, ಸಾಮಗ್ರಿಗಳು ಮತ್ತು ಪರಿಶೀಲನೆ ಬದಲಾಗುತ್ತವೆ. ನಿಮ್ಮ ಹೋಂವರ್ಕ್ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತದೆ.';
+
+  @override
+  String get replace => 'ಬದಲಿಸಿ';
+
+  @override
+  String get aiDraftLabel => 'AI ಕರಡು — ಬಳಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ';
+
+  @override
+  String get aiPreviewNote => 'ಮಾದರಿ: KINETIX AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಇದು ಮಾದರಿ ಕರಡು.';
+
+  @override
+  String get savePlan => 'ಯೋಜನೆ ಉಳಿಸಿ';
+
+  @override
+  String get lessonPlanSaved => 'ಪಾಠ ಯೋಜನೆ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String reviewedOn(String date) {
+    return '$date ರಂದು ಪರಿಶೀಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get reviewRemark => 'ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರ ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get discardPlanBody => 'ನಿಮ್ಮ ಪಾಠ ಯೋಜನೆಯಲ್ಲಿ ಇನ್ನೂ ಉಳಿಸದ ಬದಲಾವಣೆಗಳಿವೆ.';
+
+  @override
+  String get errorPlanNoSyllabus => 'ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಪಠ್ಯಕ್ರಮ ಇಲ್ಲ. ಇದನ್ನು ಕೋರ್ಸ್‌ಗೆ ಜೋಡಿಸಲು ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿಗೆ ಕೇಳಿ.';
+
+  @override
+  String get errorPlanNoPeriods => 'ಈ ತರಗತಿಯ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಈ ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಅವಧಿ ಇಲ್ಲ.';
+
+  @override
+  String get errorPlanNoTeachingDays => 'ಈ ದಿನಾಂಕಗಳ ನಡುವೆ ಯಾವುದೇ ಬೋಧನಾ ದಿನವಿಲ್ಲ.';
+
+  @override
+  String get errorPlanEndsBeforeStart => 'ಮುಕ್ತಾಯ ದಿನಾಂಕ ಪ್ರಾರಂಭ ದಿನಾಂಕದ ನಂತರ ಇರಬೇಕು.';
+
+  @override
+  String get errorPeriodNotOnDay => 'ಈ ತರಗತಿ ಆ ದಿನ ಇಲ್ಲ.';
+
+  @override
+  String get errorAiAllowance => 'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ KINETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ನಾಳೆ ಮತ್ತೆ ಲಭ್ಯ.';
+
+  @override
+  String get errorAiUnavailable => 'KINETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get errorAiUnusable => 'KINETIX AI ಬಳಸಬಹುದಾದ ಕರಡು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 }

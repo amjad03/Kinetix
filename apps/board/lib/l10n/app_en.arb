@@ -1252,5 +1252,73 @@
         "type": "String"
       }
     }
+  },
+  "toolTodaysPlan": "Today's plan",
+  "@toolTodaysPlan": {
+    "description": "Classroom tool and panel title: the lesson plan for the open period."
+  },
+  "planSignIn": "Today's plan shows the lesson plan for the class being taught. Sign in with the Teacher app to open it.",
+  "@planSignIn": {
+    "description": "Guest board."
+  },
+  "planOpening": "Opening the plan…",
+  "@planOpening": {
+    "description": "Loading."
+  },
+  "planCouldNotOpen": "Could not open the lesson plan. Check the board is online.",
+  "@planCouldNotOpen": {
+    "description": "Error."
+  },
+  "planNoClass": "No timetabled class is open on the board, so there is no lesson plan to show.",
+  "@planNoClass": {
+    "description": "Free session (no class)."
+  },
+  "planNone": "No lesson plan for this period. Plan it in the Teacher app.",
+  "@planNone": {
+    "description": "No plan saved for the period."
+  },
+  "planAiDrafted": "Drafted with KINETIX AI",
+  "@planAiDrafted": {
+    "description": "The plan began as a KINETIX AI draft."
+  },
+  "planTopics": "Topics",
+  "@planTopics": {
+    "description": "Section: the lesson's syllabus topics."
+  },
+  "planOpenInBooks": "Open in Books",
+  "@planOpenInBooks": {
+    "description": "Tooltip on a topic chip."
+  },
+  "planStepsOf": "Steps · {planned} of {length} min",
+  "@planStepsOf": {
+    "description": "Steps heading: planned minutes vs the period length.",
+    "placeholders": {
+      "planned": {
+        "type": "int"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "planStartTimer": "Start step timer",
+  "@planStartTimer": {
+    "description": "Button: start timing the steps."
+  },
+  "planResumeTimer": "Resume",
+  "@planResumeTimer": {
+    "description": "Button: resume the step timer."
+  },
+  "planNextStep": "Next step",
+  "@planNextStep": {
+    "description": "Button."
+  },
+  "planAllStepsDone": "All steps done",
+  "@planAllStepsDone": {
+    "description": "After the last step."
+  },
+  "planHomework": "Homework",
+  "@planHomework": {
+    "description": "Section."
   }
 }

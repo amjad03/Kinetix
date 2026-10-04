@@ -8,6 +8,7 @@ import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
+import '../plans/year_plan_screen.dart';
 
 /// A class's syllabus for one subject, and which topics have been taught.
 class SyllabusController extends ChangeNotifier {
@@ -151,7 +152,18 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                SliverAppBar.large(title: Text(l.syllabus)),
+                SliverAppBar.large(
+                  title: Text(l.syllabus),
+                  actions: [
+                    if (!controller.unlinked)
+                      TextButton.icon(
+                        key: const Key('openYearPlan'),
+                        onPressed: () => openYearPlan(context, api: widget.api, section: widget.section, subject: widget.subject),
+                        icon: const Icon(Icons.calendar_view_week_outlined, size: 18),
+                        label: Text(l.yearPlan),
+                      ),
+                  ],
+                ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s8),

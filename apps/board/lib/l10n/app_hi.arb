@@ -505,5 +505,20 @@
   "mathErrUnknownPower": "घात में अज्ञात अभी समर्थित नहीं है।",
   "mathErrWholePowers": "अज्ञात की घात पूर्ण संख्या होनी चाहिए, जैसे x² या x³।",
   "mathErrManyUnknowns": "इसमें एक से अधिक अज्ञात हैं ({list})। एक ही अज्ञात लें, जैसे x।",
-  "mathErrHighPowers": "{power} या उससे ऊँची घात वाले समीकरण अभी समर्थित नहीं हैं। रैखिक या द्विघात समीकरण आज़माएँ।"
+  "mathErrHighPowers": "{power} या उससे ऊँची घात वाले समीकरण अभी समर्थित नहीं हैं। रैखिक या द्विघात समीकरण आज़माएँ।",
+  "toolTodaysPlan": "आज की योजना",
+  "planSignIn": "आज की योजना में पढ़ाई जा रही कक्षा की पाठ योजना दिखती है। इसे खोलने के लिए Teacher app से साइन इन करें।",
+  "planOpening": "योजना खुल रही है…",
+  "planCouldNotOpen": "पाठ योजना नहीं खुल सकी। देखें कि बोर्ड ऑनलाइन है।",
+  "planNoClass": "बोर्ड पर समय-सारिणी की कोई कक्षा नहीं खुली है, इसलिए दिखाने के लिए कोई पाठ योजना नहीं है।",
+  "planNone": "इस पीरियड की कोई पाठ योजना नहीं है। Teacher app में योजना बनाएँ।",
+  "planAiDrafted": "KINETIX AI से ड्राफ़्ट किया गया",
+  "planTopics": "विषय-वस्तु",
+  "planOpenInBooks": "Books में खोलें",
+  "planStepsOf": "चरण · {length} में से {planned} मिनट",
+  "planStartTimer": "चरण टाइमर शुरू करें",
+  "planResumeTimer": "फिर शुरू करें",
+  "planNextStep": "अगला चरण",
+  "planAllStepsDone": "सभी चरण पूरे",
+  "planHomework": "होमवर्क"
 }

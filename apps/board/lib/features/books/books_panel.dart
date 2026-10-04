@@ -19,7 +19,7 @@ const _booksAccent = Color(0xFF8AB4F8);
 /// quick quiz grounded in that topic. Topics taught to the open class are ticked, and the
 /// teacher marks a topic as taught (or undoes it) from the outline or the topic.
 class BooksPanel extends StatefulWidget {
-  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel, this.onOpenResource});
+  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel, this.onOpenResource, this.initialTopicId});
 
   final BoardController board;
   final AiController ai;
@@ -29,6 +29,9 @@ class BooksPanel extends StatefulWidget {
 
   /// Opens a topic's 3D model or lab next to the whiteboard.
   final void Function(SplitContent content, String id)? onOpenResource;
+
+  /// Opens straight at this topic (from Today's plan).
+  final String? initialTopicId;
 
   @override
   State<BooksPanel> createState() => _BooksPanelState();
@@ -51,6 +54,8 @@ class _BooksPanelState extends State<BooksPanel> {
     super.initState();
     widget.board.addListener(_onBoard);
     _onBoard();
+    final topic = widget.initialTopicId;
+    if (topic != null && widget.board.api != null && _sessionId != null) _topic = widget.board.api!.topic(topic);
   }
 
   @override

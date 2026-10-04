@@ -57,6 +57,16 @@ describe('department flags', () => {
     expect(flagsFor({ scheduled: 10, taughtPercent: 100, attendanceTakenPercent: 100, attendancePercent: 60 })).toEqual(['dept.flag.attendance']);
   });
 
+  it('flags a class behind its year plan, and not one on track, ahead or without a plan', () => {
+    const fine = { scheduled: 10, taughtPercent: 100, attendanceTakenPercent: 100, attendancePercent: 95 };
+    const plan = { total: 8, covered: 1, expected: 3, dueThisWeek: 1, behindBy: 2, status: 'behind' as const };
+    expect(flagsFor({ ...fine, yearPlan: plan })).toEqual(['dept.flag.behindPlan']);
+    expect(flagsFor({ ...fine, taughtPercent: 10, yearPlan: plan })).toEqual(['dept.flag.held', 'dept.flag.behindPlan']);
+    expect(flagsFor({ ...fine, yearPlan: { ...plan, behindBy: 0, status: 'on_track' } })).toEqual([]);
+    expect(flagsFor({ ...fine, yearPlan: { ...plan, covered: 6, behindBy: 0, status: 'ahead' } })).toEqual([]);
+    expect(flagsFor({ ...fine, yearPlan: null })).toEqual([]);
+  });
+
   it('formats percentages and counts', () => {
     expect(formatPercent(null)).toBe('—');
     expect(formatPercent(87)).toBe('87%');

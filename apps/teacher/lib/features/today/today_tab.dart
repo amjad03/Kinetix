@@ -8,6 +8,7 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../board/connect_screen.dart';
+import '../plans/lesson_plan_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import 'today_controller.dart';
 
@@ -156,6 +157,13 @@ class TodayTab extends StatelessWidget {
                         onAttendance: () => _takeAttendance(context, p),
                         onTeach: p.isNow && controller.connection == null ? () => _connect(context) : null,
                         onSyllabus: () => openSyllabus(context, api: api, section: p.section, subject: p.subject, teacherName: me.fullName),
+                        onPlan: () => openLessonPlan(
+                          context,
+                          api: api,
+                          period: p,
+                          date: controller.selectedDate!,
+                          onSaved: () => controller.markPlanned(p.slotId),
+                        ),
                       );
                     },
                   ),
@@ -513,6 +521,7 @@ class _PeriodCard extends StatelessWidget {
     required this.canTakeAttendance,
     required this.onAttendance,
     required this.onSyllabus,
+    required this.onPlan,
     this.onTeach,
   });
 
@@ -520,6 +529,7 @@ class _PeriodCard extends StatelessWidget {
   final bool canTakeAttendance;
   final VoidCallback onAttendance;
   final VoidCallback onSyllabus;
+  final VoidCallback onPlan;
   final VoidCallback? onTeach;
 
   @override
@@ -605,6 +615,12 @@ class _PeriodCard extends StatelessWidget {
                 spacing: Kx.s8,
                 runSpacing: Kx.s8,
                 children: [
+                  TextButton.icon(
+                    key: Key('plan-${period.slotId}'),
+                    onPressed: onPlan,
+                    icon: Icon(period.lessonPlanned ? Icons.task_alt : Icons.edit_note, size: 18),
+                    label: Text(period.lessonPlanned ? l.lessonPlanned : l.planLesson),
+                  ),
                   TextButton.icon(
                     key: Key('syllabus-${period.slotId}'),
                     onPressed: onSyllabus,

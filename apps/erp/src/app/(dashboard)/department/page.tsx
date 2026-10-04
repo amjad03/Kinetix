@@ -34,6 +34,7 @@ import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
 import type { I18n } from '@/i18n/format';
 import { deptQuery, flagsFor, formatPercent, ofText, RANGE_LABEL, rangeFrom, rangeText, syllabusTotal, TONE_COLOR, toneOf } from '@/lib/department';
+import { lessonPlansText, planChip } from '@/lib/plans';
 import { kindLabel } from '@/lib/results';
 import { schoolToday } from '@/lib/school';
 import type { DepartmentOverview, DepartmentRef, DeptClass, DeptTeacher } from '@/lib/types';
@@ -281,7 +282,7 @@ function TeachersTable({ rows, i18n: { t } }: { rows: DeptTeacher[]; i18n: I18n 
 function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18n }) {
   return (
     <TableFrame testId="dept-classes">
-      <Table sx={{ minWidth: 1040 }}>
+      <Table sx={{ minWidth: 1100 }}>
         <TableHead>
           <TableRow>
             <TableCell>{t('dept.col.class')}</TableCell>
@@ -289,6 +290,8 @@ function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18
             <TableCell align="right">{t('dept.col.heldShort')}</TableCell>
             <TableCell align="right">{t('dept.col.attendance')}</TableCell>
             <TableCell>{t('dept.col.syllabus')}</TableCell>
+            <TableCell>{t('plan.col.yearPlan')}</TableCell>
+            <TableCell align="right">{t('plan.col.lessonPlans')}</TableCell>
             <TableCell align="right">{t('dept.col.homework')}</TableCell>
             <TableCell align="right">{t('dept.col.latest')}</TableCell>
             <TableCell aria-label={t('dept.col.results')} />
@@ -317,6 +320,16 @@ function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18
                 </TableCell>
                 <TableCell data-testid="class-syllabus">
                   <SyllabusCell c={c} t={t} />
+                </TableCell>
+                <TableCell data-testid="class-year-plan">
+                  <YearPlanCell c={c} t={t} />
+                </TableCell>
+                <TableCell align="right" data-testid="class-lesson-plans">
+                  <Tooltip title={t('plan.lessonsHelp')}>
+                    <Typography variant="body2" sx={{ ...num, whiteSpace: 'nowrap', color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}>
+                      {lessonPlansText(c.lessonPlans ?? 0, c.scheduled, t)}
+                    </Typography>
+                  </Tooltip>
                 </TableCell>
                 <TableCell align="right" sx={num}>
                   {c.homework}
@@ -425,5 +438,33 @@ function SyllabusCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
         </Typography>
       </Box>
     </Link>
+  );
+}
+
+const planHref = (c: DeptClass) => `/department/plan?section=${c.sectionId}&subject=${c.subjectId}`;
+
+/** The class against its year plan, as a chip that opens the class's plans. */
+function YearPlanCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
+  const p = c.yearPlan;
+  const chip = planChip(p, t);
+  const sx =
+    chip.status === 'behind'
+      ? { bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }
+      : chip.tone === 'good'
+        ? { bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }
+        : { color: 'text.secondary' };
+  return (
+    <Tooltip title={p ? t('plan.status.help', { covered: p.covered, total: p.total, expected: p.expected }) : t('plan.status.noneHelp')}>
+      <Link href={planHref(c)} aria-label={t('plan.open', { section: c.section, subject: c.subject })} style={{ textDecoration: 'none' }}>
+        <Chip
+          size="small"
+          label={chip.label}
+          variant={chip.tone === 'none' ? 'outlined' : 'filled'}
+          data-testid="plan-status"
+          data-status={chip.status}
+          sx={{ ...sx, fontWeight: 500, maxWidth: 220, cursor: 'pointer' }}
+        />
+      </Link>
+    </Tooltip>
   );
 }

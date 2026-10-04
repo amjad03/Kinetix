@@ -87,6 +87,45 @@ for (const lang of ["hi", "kn"] as const) {
   });
 }
 
+const PLAN_TEXT = {
+  hi: { yearPlan: "वार्षिक योजना", lessons: "पाठ योजनाएँ", steps: "चरण", next: "अगला सप्ताह" },
+  kn: { yearPlan: "ವಾರ್ಷಿಕ ಯೋಜನೆ", lessons: "ಪಾಠ ಯೋಜನೆಗಳು", steps: "ಹಂತಗಳು", next: "ಮುಂದಿನ ವಾರ" },
+} as const;
+
+for (const lang of ["hi", "kn"] as const) {
+  test(`${lang === "hi" ? "Hindi" : "Kannada"}: the class plan page is translated and fits at 1280 and 1440 px`, async ({
+    page,
+  }) => {
+    const words = PLAN_TEXT[lang];
+    await setLanguageCookie(page, lang);
+    await open(page, "/department");
+    await page
+      .getByTestId("dept-classes")
+      .getByTestId("dept-class-row")
+      .filter({ hasText: "Corporate Accounting" })
+      .getByTestId("plan-status")
+      .click();
+    await expect(page).toHaveURL(/\/department\/plan\?/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "BCom Sem 3 A · Corporate Accounting",
+    );
+    await expect(page.getByRole("heading", { level: 2, name: words.yearPlan })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: words.lessons })).toBeVisible();
+    // The seeded lesson plan is for the next Corporate Accounting period: this week or next.
+    if ((await page.getByTestId("lesson-plan").count()) === 0)
+      await page.getByTestId("week-nav").getByRole("link", { name: words.next }).click();
+    await expect(page.getByTestId("lesson-plan")).toHaveCount(1);
+    await expect(page.getByTestId("lesson-plan")).toContainText(words.steps);
+    await expect(page.locator("html")).toHaveAttribute("lang", `${lang}-IN`);
+    await expect(page.getByTestId("error-state")).toHaveCount(0);
+    for (const width of [1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectNoHorizontalOverflow(page, `${lang} class plan at ${width}`);
+    }
+    await shot(page, `${lang}-department-plan`);
+  });
+}
+
 test("dates and money use the language with Western digits and Indian grouping", async ({
   page,
 }) => {

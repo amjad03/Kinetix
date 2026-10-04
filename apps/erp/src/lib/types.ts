@@ -419,6 +419,10 @@ export interface DeptClass extends DeptCounts {
   latestAssessment: { id: string; title: string; heldOn: string; averagePercent: number | null } | null;
   /** Topics of the subject's course marked as taught for this class (total 0: no course linked). */
   syllabus?: { covered: number; total: number; percent: number | null };
+  /** Lesson plans saved for this class's periods in the range. */
+  lessonPlans?: number;
+  /** Where the class stands against its year plan today; null when it has none. */
+  yearPlan?: PlanProgress | null;
 }
 
 export interface DeptAssessment {
@@ -466,4 +470,73 @@ export interface Coverage {
   total: number;
   percent: number | null;
   topics: { topicId: string; coveredOn: string; coveredBy: string }[];
+}
+
+// ---- Year plans and lesson plans (v1/year-plans, v1/lesson-plans) ----
+
+export type PlanStatus = 'not_started' | 'on_track' | 'behind' | 'ahead';
+
+/** A class against its year plan: topics planned for weeks before this one are expected. */
+export interface PlanProgress {
+  total: number;
+  covered: number;
+  expected: number;
+  dueThisWeek: number;
+  behindBy: number;
+  status: PlanStatus;
+}
+
+export interface YearPlanItem {
+  topicId: string;
+  /** Monday of the week the topic is planned for. */
+  weekOf: string;
+  periods: number;
+  title: string;
+  chapter: string;
+  coveredOn: string | null;
+  /** Planned for an earlier week and not taught yet. */
+  late: boolean;
+}
+
+/** GET /v1/year-plans?sectionId&subjectId (null when the class has no plan). */
+export interface YearPlan {
+  id: string;
+  sectionId: string;
+  subjectId: string;
+  startsOn: string;
+  endsOn: string;
+  updatedAt: string;
+  progress: PlanProgress;
+  items: YearPlanItem[];
+}
+
+export interface LessonPlanContent {
+  objectives: string[];
+  steps: { minutes: number; activity: string }[];
+  materials: string[];
+  assessment: string;
+  homework: string;
+}
+
+export interface LessonPlan {
+  id: string;
+  slotId: string;
+  date: string;
+  sectionId: string;
+  subjectId: string;
+  teacher: string;
+  topicIds: string[];
+  topics: { id: string; title: string }[];
+  content: LessonPlanContent;
+  aiDrafted: boolean;
+  reviewedAt: string | null;
+  reviewRemark: string | null;
+  updatedAt: string;
+}
+
+/** GET /v1/lesson-plans?sectionId&subjectId&from&to */
+export interface LessonPlanList {
+  from: string;
+  to: string;
+  plans: LessonPlan[];
 }

@@ -2,7 +2,7 @@
 
 The web dashboard for principals, administrators, heads of department and the accounts office:
 the whole school's day at a glance, classes, the timetable editor, attendance, homework, results,
-messages to every classroom ("Circulate"), the head of department's view of their department (with syllabus progress per class), departments set-up, a read-only safeguarding view of parent–teacher
+messages to every classroom ("Circulate"), the head of department's view of their department (with syllabus progress and year-plan status per class, and each class's year plan and lesson plans to review), departments set-up, a read-only safeguarding view of parent–teacher
 messages, the boards, live classroom view, fees, the library desk,
 the syllabus library, KINETIX AI usage, the academic calendar, and institution settings with the privacy & consent summary.
 In English, Hindi and Kannada ([docs/i18n/erp.md](../../docs/i18n/erp.md)). Spec: [docs/product/erp-dashboard.md](../../docs/product/erp-dashboard.md).
@@ -34,7 +34,7 @@ only) or `library@demo.kinetix.in` (library desk: Library only). Teachers such a
 | `pnpm dev` / `pnpm build` / `pnpm start` | Next.js on port 3000 |
 | `pnpm lint` | ESLint (next/core-web-vitals + TypeScript) |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | Unit tests (Vitest): the dictionary (every key in English, Hindi and Kannada, placeholders, plurals) and formats, the calendar month grid and checks, settings and consent shares, live refusal codes, M3 colour-scheme mapping, dates, role access, rupees, the live-view player and renderer, class audio (IMA ADPCM decoder checked against the boards' Dart codec, playback timing), department ranges and flags, AI usage, library fines, results bands, the timetable grid, conversation search |
+| `pnpm test` | Unit tests (Vitest): the dictionary (every key in English, Hindi and Kannada, placeholders, plurals) and formats, the calendar month grid and checks, settings and consent shares, live refusal codes, M3 colour-scheme mapping, dates, role access, rupees, the live-view player and renderer, class audio (IMA ADPCM decoder checked against the boards' Dart codec, playback timing), department ranges and flags (including classes behind their year plan), year-plan weeks and status labels, AI usage, library fines, results bands, the timetable grid, conversation search |
 | `pnpm test:e2e` | Playwright against a running API with a **fresh** demo seed; starts `pnpm dev` unless `ERP_URL` is set |
 
 ```bash
@@ -52,7 +52,7 @@ account. The live-view tests enrol a pretend board through the API and stream in
 of the pages. Leaders hear class audio only when the institution setting `classroomAudioToViewers` is
 on: the class-audio test turns it on in Settings and off again. The departments test adds a department
 and deletes it again; the calendar test adds a holiday for today and deletes it; the settings test
-puts every setting back. The head-of-department tests sign in as `ravi@demo.kinetix.in` themselves.
+puts every setting back. The head-of-department tests sign in as `ravi@demo.kinetix.in` themselves; the plans test reviews the seeded lesson plan, and has Ravi save a lesson plan for his own Discrete Mathematics period through the API (the principal then reviews it).
 Tests read English: `signIn` picks English on the browser (`kx_lang=en`); `e2e/i18n.spec.ts`
 checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
 
@@ -80,7 +80,7 @@ checks Hindi and Kannada, including no horizontal overflow at 1280 and 1440 px.
   department land on Department (their department's classes, teachers and marks) and see results for
   the classes they teach and their department's classes. The navigation shows only what the role may open, and every page checks again
   (`requireSection`), sending others to their own home page.
-- **Pages** (`src/app/(dashboard)`): Today (with a holiday banner on a holiday), Department (and `/department/syllabus` for a class's topics), Classes, Calendar, Settings, Timetable, Attendance, Homework, Results
+- **Pages** (`src/app/(dashboard)`): Today (with a holiday banner on a holiday), Department (and `/department/syllabus` for a class's topics, `/department/plan` for its year plan by week and a week's lesson plans, which the head of department or principal reviews), Classes, Calendar, Settings, Timetable, Attendance, Homework, Results
   (and each assessment), Messages, Parent messages, Boards, Live, Fees (invoices, printable receipts), Library,
   Syllabus, AI usage, Departments. Dates and filters live in the URL
   (`?date=YYYY-MM-DD`, `?status=`), so every view can be bookmarked and shared.
