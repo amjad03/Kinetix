@@ -9,7 +9,8 @@ multi-tenant SaaS and hosted entirely in India.
 | **KINETIX Cloud API** | Multi-tenant backend: auth, tenancy, sync, realtime, AI gateway | NestJS + PostgreSQL | `services/api` |
 | **KINETIX ERP** | Web app for admins, principals, teachers and the curriculum team | Next.js | `apps/erp` *(planned)* |
 | **KINETIX Teacher App** | Teacher's phone: today's classes, attendance, homework, connecting to the board | Flutter | `apps/teacher` |
-| **Student / Parent apps** | Mobile apps | Flutter | *(planned)* |
+| **KINETIX Parent App** | Parent's phone: each child's attendance, homework, class participation, shared class boards and updates | Flutter | `apps/parent` |
+| **Student app** | Mobile app | Flutter | *(planned)* |
 | Shared contracts | Event and DTO types shared by the TS services | TypeScript | `packages/shared` |
 
 ## Start here
@@ -17,6 +18,7 @@ multi-tenant SaaS and hosted entirely in India.
 - [Product vision & scope](docs/product/vision.md)
 - [Board feature specification](docs/product/board-features.md)
 - [Teacher App specification](docs/product/teacher-app.md)
+- [Parent App specification](docs/product/parent-app.md)
 - [Design system (Material 3, Teachmint-style board layout)](docs/design/design-system.md)
 - [IR touch frames: any TV as a multi-touch board](docs/hardware/ir-touch-frames.md)
 - [Competitive research: Teachmint and others](docs/research/teachmint-competitive-analysis.md)

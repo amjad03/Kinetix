@@ -1,0 +1,31 @@
+import { defineConfig, devices } from '@playwright/test';
+
+// e2e tests run against a live KINETIX Cloud API with the demo seed (see README).
+const ERP_URL = process.env.ERP_URL ?? 'http://localhost:3000';
+const API_URL = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
+
+export default defineConfig({
+  testDir: './e2e',
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
+  fullyParallel: false,
+  workers: 1,
+  retries: process.env.CI ? 1 : 0,
+  reporter: [['list']],
+  use: {
+    baseURL: ERP_URL,
+    viewport: { width: 1440, height: 900 },
+    trace: 'retain-on-failure',
+    ...(process.env.PW_CHROMIUM_PATH ? { launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH } } : {}),
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } }],
+  webServer: process.env.ERP_URL
+    ? undefined
+    : {
+        command: 'pnpm dev',
+        url: `${ERP_URL}/login`,
+        reuseExistingServer: true,
+        timeout: 120_000,
+        env: { KINETIX_API_URL: API_URL },
+      },
+});

@@ -74,12 +74,18 @@ export function buildTheme(seed: string = SEED) {
           sizeSmall: { minHeight: 32, paddingInline: 16 },
           text: { paddingInline: 12 },
           outlined: ({ theme }) => ({ borderColor: theme.vars.palette.m3.outline }),
-          containedSecondary: ({ theme }) => ({
-            backgroundColor: theme.vars.palette.m3.secondaryContainer,
-            color: theme.vars.palette.m3.onSecondaryContainer,
-            '&:hover': { backgroundColor: theme.vars.palette.m3.secondaryContainer, filter: 'brightness(0.97)' },
-          }),
         },
+        variants: [
+          {
+            // M3 "filled tonal" button.
+            props: { variant: 'contained', color: 'secondary' },
+            style: ({ theme }) => ({
+              backgroundColor: theme.vars.palette.m3.secondaryContainer,
+              color: theme.vars.palette.m3.onSecondaryContainer,
+              '&:hover': { backgroundColor: theme.vars.palette.m3.secondaryContainer, boxShadow: `inset 0 0 0 100px ${theme.vars.palette.action.hover}` },
+            }),
+          },
+        ],
       },
       MuiIconButton: { styleOverrides: { root: { borderRadius: SHAPE.full } } },
       MuiFab: { styleOverrides: { root: { borderRadius: SHAPE.lg, boxShadow: level3, textTransform: 'none' } } },
@@ -153,7 +159,7 @@ export function buildTheme(seed: string = SEED) {
       MuiTableCell: {
         styleOverrides: {
           root: ({ theme }) => ({ borderBottomColor: theme.vars.palette.m3.outlineVariant, paddingBlock: 12 }),
-          head: ({ theme }) => ({ color: theme.vars.palette.m3.onSurfaceVariant, fontWeight: 500, ...type(12, 16, 500, 0.4), whiteSpace: 'nowrap' }),
+          head: ({ theme }) => ({ color: theme.vars.palette.m3.onSurfaceVariant, ...type(12, 16, 500, 0.4), whiteSpace: 'nowrap' }),
         },
       },
       MuiTableRow: {
