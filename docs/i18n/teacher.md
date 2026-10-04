@@ -19,7 +19,7 @@ with Flutter gen-l10n. Terms and style follow the [glossary](glossary.md).
 | `apps/teacher/lib/core/l10n.dart` | `context.l10n`, the language list, and labels for API codes (attendance status, assessment kind, role, guardian relation) and errors |
 | `apps/teacher/lib/core/format.dart` | `Fmt.of(context)`: dates, times and durations with intl `en_IN` / `hi_IN` / `kn_IN` |
 
-There are 371 strings. Plurals use ICU (`{count, plural, =1{…} other{…}}`); every placeholder has a type.
+There are 372 strings. Plurals use ICU (`{count, plural, =1{…} other{…}}`); every placeholder has a type.
 
 To add a string: add it to `app_en.arb` with an `@key` description, add the Hindi and Kannada
 translations to the other two files, then run `flutter gen-l10n` (or `flutter pub get`).
@@ -40,7 +40,7 @@ translations to the other two files, then run `flutter gen-l10n` (or `flutter pu
 - Server error messages the app does not know. Every API error carries a stable `code`
   (`services/api/src/common/error-codes.ts`); `errorText` in `core/l10n.dart` words the codes the
   Teacher App can receive (`NOT_YOUR_CLASS`, `PAIRING_CODE_INVALID`, `COVERAGE_FUTURE_DATE`,
-  `SUBMISSION_MISSING`, …, and the status codes `FORBIDDEN`, `NOT_FOUND`, `RATE_LIMITED`,
+  `SUBMISSION_MISSING`, `PLAN_NO_SYLLABUS`, `PERIOD_WRONG_DAY`, …, and the status codes `FORBIDDEN`, `NOT_FOUND`, `RATE_LIMITED`,
   `VALIDATION`, `SERVER_ERROR`). Older servers send no code, so the English messages they are
   known to send are still matched as a fallback; any other server text is shown as is.
 - The lesson player (`packages/kinetix_lesson`: player controls, transcript and summary panels)
