@@ -1,6 +1,9 @@
 import { Controller, Get, Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
+import { JobsModule } from './jobs/jobs.module.js';
+import { RecordingsModule } from './recordings/recordings.module.js';
+import { StorageModule } from './storage/storage.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BroadcastsModule } from './broadcasts/broadcasts.module.js';
 import { DbModule } from './db/db.module.js';
@@ -26,6 +29,8 @@ class HealthController {
 @Module({
   imports: [
     DbModule,
+    StorageModule,
+    JobsModule,
     AuthModule,
     RealtimeModule,
     TimetableModule,
@@ -40,6 +45,7 @@ class HealthController {
     AdminModule,
     TeacherModule,
     AiModule,
+    RecordingsModule,
   ],
   controllers: [HealthController],
 })

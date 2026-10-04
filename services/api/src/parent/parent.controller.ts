@@ -1,5 +1,5 @@
 import { Controller, Get, NotFoundException, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { and, asc, desc, eq, gte, lt, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { localParts, Clock } from '../common/time.js';
@@ -10,6 +10,7 @@ import {
   homework,
   participationEvents,
   programs,
+  recordings,
   sections,
   students,
   subjects,
@@ -19,6 +20,7 @@ import {
 } from '../db/schema.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { RecordingsService } from '../recordings/recordings.service.js';
 import { WhiteboardsService } from '../whiteboards/whiteboards.service.js';
 
 /** What a parent sees about their children. Every route checks the guardian link first. */
@@ -29,6 +31,7 @@ export class ParentController {
     private readonly clock: Clock,
     private readonly timetable: TimetableService,
     private readonly boards: WhiteboardsService,
+    private readonly recordings: RecordingsService,
   ) {}
 
   @Get('children')
@@ -126,6 +129,29 @@ export class ParentController {
         .orderBy(desc(whiteboards.sharedAt))
         .limit(10);
 
+      const recent = await this.recordings
+        .summaries(tx)
+        .where(this.recordings.sharedWith([child.section.id]))
+        .orderBy(desc(recordings.startedAt))
+        .limit(10);
+      // Which of them the child was absent for: those come first in the app.
+      const missedRows = recent.length
+        ? await tx
+            .select({ id: recordings.id })
+            .from(recordings)
+            .innerJoin(
+              attendanceRecords,
+              and(
+                eq(attendanceRecords.timetableSlotId, recordings.timetableSlotId),
+                eq(attendanceRecords.studentId, studentId),
+                eq(attendanceRecords.status, 'absent'),
+                sql`${attendanceRecords.date} = (${recordings.startedAt} at time zone ${await this.timetable.tenantTimezone(tx)})::date`,
+              ),
+            )
+            .where(inArray(recordings.id, recent.map((r) => r.id)))
+        : [];
+      const missed = new Set(missedRows.map((r) => r.id));
+
       return {
         child,
         period: { from, to: today, days },
@@ -142,6 +168,7 @@ export class ParentController {
         homework: { upcoming: upcomingHomework, recent: pastHomework },
         participation,
         sharedBoards,
+        recordings: recent.map((r) => ({ ...r, missed: missed.has(r.id) })),
       };
     });
   }

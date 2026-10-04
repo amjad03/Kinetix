@@ -21,6 +21,8 @@ export const env = {
   JWT_SECRET: 'test-secret-test-secret',
   PAIRING_HMAC_SECRET: 'pairing-test-secret',
   PORT: '0',
+  JOBS_POLL_MS: '0',
+  STORAGE_DIR: `/tmp/kinetix-test-objects-${process.pid}`,
 };
 Object.assign(process.env, env);
 

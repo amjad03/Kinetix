@@ -1,12 +1,13 @@
 import { Body, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { canSeeClassItem } from '../common/class-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { boardSessions, guardians, students, whiteboards, type WhiteboardContent } from '../db/schema.js';
+import { boardSessions, whiteboards, type WhiteboardContent } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { WhiteboardsService } from './whiteboards.service.js';
 
@@ -123,22 +124,7 @@ export class WhiteboardsController {
 
   private async canView(tx: Tx, p: Viewer, wb: typeof whiteboards.$inferSelect): Promise<boolean> {
     if (p.kind === 'board') return wb.ownerId === p.teacherId;
-    if (wb.ownerId === p.userId) return true;
-    if (p.roles.some((r) => r === 'principal' || r === 'tenant_admin')) return true;
-    if (!wb.sharedAt || !wb.sectionId) return false;
-    // A student of the class, or a guardian of one.
-    const [own] = await tx
-      .select({ id: students.id })
-      .from(students)
-      .where(and(eq(students.userId, p.userId), eq(students.sectionId, wb.sectionId)));
-    if (own) return true;
-    const children = await tx.select({ studentId: guardians.studentId }).from(guardians).where(eq(guardians.userId, p.userId));
-    if (children.length === 0) return false;
-    const [inClass] = await tx
-      .select({ id: students.id })
-      .from(students)
-      .where(and(inArray(students.id, children.map((c) => c.studentId)), eq(students.sectionId, wb.sectionId)));
-    return !!inClass;
+    return canSeeClassItem(tx, p, wb);
   }
 
   private async notifyShared(tx: Tx, id: string) {

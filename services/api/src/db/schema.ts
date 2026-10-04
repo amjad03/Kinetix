@@ -365,7 +365,7 @@ export const guardians = pgTable(
   (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -544,6 +544,74 @@ export const aiCache = pgTable(
   (t) => [primaryKey({ columns: [t.tenantId, t.key] })],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Lesson recordings
+// ---------------------------------------------------------------------------------------------
+
+export const processingState = pgEnum('processing_state', ['none', 'queued', 'done', 'failed']);
+
+/**
+ * A recorded lesson: the board's ink as a timed event log plus the teacher's voice. Files
+ * live in object storage (S3 ap-south-1 in production); this row holds the metadata,
+ * transcript and AI summary. The id is chosen by the board, so uploads can be retried.
+ */
+export const recordings = pgTable(
+  'recordings',
+  {
+    id: uuid('id').primaryKey(),
+    tenantId: tenantId(),
+    ownerId: uuid('owner_id').notNull().references(() => users.id),
+    deviceId: uuid('device_id').references(() => devices.id, { onDelete: 'set null' }),
+    boardSessionId: uuid('board_session_id').references(() => boardSessions.id),
+    timetableSlotId: uuid('timetable_slot_id').references(() => timetableSlots.id),
+    sectionId: uuid('section_id').references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    title: text('title').notNull(),
+    language: language('language').notNull().default('en'),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    durationMs: integer('duration_ms').notNull().default(0),
+    eventsKey: text('events_key'),
+    eventsBytes: integer('events_bytes').notNull().default(0),
+    audioKey: text('audio_key'),
+    audioMime: text('audio_mime'),
+    audioBytes: bigint('audio_bytes', { mode: 'number' }).notNull().default(0),
+    /** Set when the board has uploaded everything; the recording can be played from then on. */
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    transcriptState: processingState('transcript_state').notNull().default('none'),
+    transcript: text('transcript'),
+    summaryState: processingState('summary_state').notNull().default('none'),
+    summary: jsonb('summary').$type<{ summary: string; keyPoints: string[] }>(),
+    sharedAt: timestamp('shared_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('recordings_owner_idx').on(t.ownerId, t.startedAt), index('recordings_section_idx').on(t.sectionId, t.sharedAt)],
+);
+
+export const jobState = pgEnum('job_state', ['queued', 'running', 'done', 'failed']);
+
+/**
+ * Background work (transcription, summaries), claimed with FOR UPDATE SKIP LOCKED. Requests
+ * enqueue under RLS like any tenant table; the job runner claims across tenants through the
+ * owner connection, then does each job's work inside its tenant with `withTenant`.
+ */
+export const jobs = pgTable(
+  'jobs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(),
+    payload: jsonb('payload').$type<Record<string, string>>().notNull().default({}),
+    state: jobState('state').notNull().default('queued'),
+    attempts: smallint('attempts').notNull().default(0),
+    runAfter: timestamp('run_after', { withTimezone: true }).notNull().defaultNow(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('jobs_due_idx').on(t.state, t.runAfter)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -569,5 +637,7 @@ export const TENANT_TABLES = [
   'whiteboards',
   'ai_usage',
   'ai_cache',
+  'recordings',
+  'jobs',
   'audit_log',
 ] as const;

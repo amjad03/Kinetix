@@ -10,7 +10,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording';
 
 /** "Mon 5 Oct" for a YYYY-MM-DD date. */
 export function shortDate(date: string): string {
@@ -103,6 +103,42 @@ export class NotificationsService {
       body: `${wb.title}. Open it to revise what was taught in class.`,
       data: { whiteboardId: wb.id, sectionId: wb.sectionId },
       dedupeKey: `board:${wb.id}`,
+    });
+  }
+
+  /**
+   * A lesson recording shared with the class. Families of students who were absent from that
+   * period get a "you missed this" message; everyone else gets the general one.
+   */
+  async recordingShared(
+    tx: Tx,
+    rec: { id: string; sectionId: string; title: string; subjectName: string | null; absentStudentIds: string[] },
+  ): Promise<void> {
+    const subject = rec.subjectName ?? 'class';
+    const data = { recordingId: rec.id, sectionId: rec.sectionId };
+    const dedupeKey = `recording:${rec.id}`;
+    if (rec.absentStudentIds.length > 0) {
+      const ids = uuidList(rec.absentStudentIds);
+      await this.insertFor(
+        tx,
+        sql`select g.user_id from guardians g where g.student_id in (${ids})
+            union select s.user_id from students s where s.id in (${ids}) and s.user_id is not null`,
+        {
+          kind: 'recording',
+          title: `Missed ${subject}? Watch the lesson`,
+          body: `${rec.title}. The teacher's board and voice are recorded so you can catch up.`,
+          data,
+          dedupeKey,
+        },
+      );
+    }
+    // Recipients already told above keep their message (the dedupe key matches).
+    await this.insertFor(tx, this.sectionAudience([rec.sectionId]), {
+      kind: 'recording',
+      title: `Lesson recording: ${subject}`,
+      body: `${rec.title}. Watch it again to revise.`,
+      data,
+      dedupeKey,
     });
   }
 
