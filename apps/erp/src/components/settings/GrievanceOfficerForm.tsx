@@ -53,7 +53,7 @@ export function GrievanceOfficerForm({ initial }: { initial: GrievanceOfficer | 
           <SupportAgentOutlined fontSize="small" /> {t('grievance.title')}
         </Box>
       </SectionTitle>
-      <Card data-testid="grievance-officer" sx={{ px: 2.5, py: 2 }}>
+      <Card data-testid="grievance-officer" data-saved={saved ? 'true' : 'false'} aria-busy={pending} sx={{ px: 2.5, py: 2 }}>
         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760 }}>
           {t('grievance.help')}
         </Typography>

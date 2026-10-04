@@ -40,7 +40,8 @@ test('a Sunday explains there are no classes and offers Saturday and Monday', as
   const empty = page.getByTestId('no-classes');
   await expect(empty).toContainText('No classes on Sundays');
   await empty.getByRole('link', { name: /View Mon/ }).click();
-  await expect(page.getByTestId('class-timeline')).toBeVisible();
+  // The Monday has its classes, unless the academic calendar makes it a holiday (19 Oct 2026 is Dasara).
+  await expect(page.getByTestId('class-timeline').or(page.getByTestId('holiday-banner'))).toBeVisible();
 });
 
 test('Classes shows a filterable table', async ({ page }) => {

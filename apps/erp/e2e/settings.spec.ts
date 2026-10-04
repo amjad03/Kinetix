@@ -49,15 +49,18 @@ test('turning live view off greys out the viewing sign and class audio', async (
 test('the principal names the grievance officer, then removes them', async ({ page }) => {
   await open(page, '/settings');
   const card = page.getByTestId('grievance-officer');
+  await expect(card).toHaveAttribute('data-saved', 'false');
   await expect(card.getByTestId('grievance-not-set')).toBeVisible();
   await card.getByTestId('grievance-name').fill('Dr. Kavya Rao');
+  await expect(card.getByTestId('grievance-name')).toHaveValue('Dr. Kavya Rao');
   await card.getByTestId('grievance-email').fill('not-an-email');
   await card.getByTestId('grievance-save').click();
   await expect(card).toContainText('Enter a valid email address, or leave it empty');
   await card.getByTestId('grievance-email').fill('grievance@demo.kinetix.in');
   await card.getByTestId('grievance-phone').fill('+91 80 4000 1234');
   await card.getByTestId('grievance-save').click();
-  await expect(page.getByText('Grievance officer saved')).toBeVisible();
+  await expect(card).toHaveAttribute('data-saved', 'true');
+  await expect(card.getByTestId('grievance-not-set')).toHaveCount(0);
   await page.reload();
   await expect(page.getByTestId('grievance-name')).toHaveValue('Dr. Kavya Rao');
   await expect(page.getByTestId('grievance-email')).toHaveValue('grievance@demo.kinetix.in');
@@ -65,7 +68,7 @@ test('the principal names the grievance officer, then removes them', async ({ pa
   await expect(page.getByTestId('grievance-not-set')).toHaveCount(0);
 
   await page.getByTestId('grievance-remove').click();
-  await expect(page.getByText('Grievance officer removed')).toBeVisible();
+  await expect(page.getByTestId('grievance-officer')).toHaveAttribute('data-saved', 'false');
   await page.reload();
   await expect(page.getByTestId('grievance-name')).toHaveValue('');
   await expect(page.getByTestId('grievance-not-set')).toBeVisible();
