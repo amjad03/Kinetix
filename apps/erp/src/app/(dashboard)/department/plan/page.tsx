@@ -1,5 +1,4 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
-import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
@@ -7,13 +6,13 @@ import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
 import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
 import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
-import VerifiedOutlined from '@mui/icons-material/VerifiedOutlined';
 import ViewWeekOutlined from '@mui/icons-material/ViewWeekOutlined';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { LessonPlanBadges } from '@/components/department/LessonPlanBadges';
 import { ReviewLessonPlan } from '@/components/department/ReviewLessonPlan';
 import { Hint } from '@/components/Hint';
 import { LinkButton } from '@/components/LinkButton';
@@ -283,26 +282,7 @@ function LessonPlanCard({ p, canReview, i18n }: { p: LessonPlan; canReview: bool
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          {p.aiDrafted && (
-            <Hint title={t('plan.lesson.aiDraftHelp')}>
-              <Chip size="small" icon={<AutoAwesomeOutlined />} label={t('plan.lesson.aiDraft')} variant="outlined" data-testid="ai-draft" sx={{ '& .MuiChip-icon': { color: 'primary.main' } }} />
-            </Hint>
-          )}
-          {p.reviewedAt ? (
-            <Chip
-              size="small"
-              icon={<VerifiedOutlined />}
-              label={
-                p.reviewedBy
-                  ? t('plan.lesson.reviewedBy', { date: fmt.dateTime(p.reviewedAt, undefined, false), name: p.reviewedBy })
-                  : t('plan.lesson.reviewed', { date: fmt.dateTime(p.reviewedAt, undefined, false) })
-              }
-              data-testid="review-status"
-              sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer', '& .MuiChip-icon': { color: 'inherit' } }}
-            />
-          ) : (
-            <Chip size="small" label={t('plan.lesson.notReviewed')} variant="outlined" data-testid="review-status" sx={{ color: 'text.secondary' }} />
-          )}
+          <LessonPlanBadges aiDrafted={p.aiDrafted} reviewedAt={p.reviewedAt} reviewedBy={p.reviewedBy} />
           {canReview && <ReviewLessonPlan id={p.id} date={p.date} reviewed={!!p.reviewedAt} remark={p.reviewRemark} />}
         </Box>
       </Box>

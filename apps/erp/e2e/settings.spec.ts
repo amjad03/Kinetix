@@ -61,7 +61,7 @@ test('the principal names the grievance officer, then removes them', async ({ pa
   await card.getByTestId('grievance-save').click();
   await expect(card).toHaveAttribute('data-saved', 'true');
   await expect(card.getByTestId('grievance-not-set')).toHaveCount(0);
-  await page.reload();
+  await page.reload({ waitUntil: 'networkidle' });
   await expect(page.getByTestId('grievance-name')).toHaveValue('Dr. Kavya Rao');
   await expect(page.getByTestId('grievance-email')).toHaveValue('grievance@demo.kinetix.in');
   await expect(page.getByTestId('grievance-phone')).toHaveValue('+91 80 4000 1234');
@@ -69,7 +69,8 @@ test('the principal names the grievance officer, then removes them', async ({ pa
 
   await page.getByTestId('grievance-remove').click();
   await expect(page.getByTestId('grievance-officer')).toHaveAttribute('data-saved', 'false');
-  await page.reload();
+  // Wait for streaming to finish: React may briefly keep a hidden copy of the card (see `open`).
+  await page.reload({ waitUntil: 'networkidle' });
   await expect(page.getByTestId('grievance-name')).toHaveValue('');
   await expect(page.getByTestId('grievance-not-set')).toBeVisible();
 });
