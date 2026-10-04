@@ -8,15 +8,24 @@ import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
 import '../homework/homework_screen.dart';
+import '../library/library.dart';
+import '../live/live_class_screen.dart';
+import '../marks/marks.dart';
+import '../messages/messages_controller.dart';
+import '../messages/messages_screen.dart';
 import '../recordings/recordings.dart';
 
-/// The student's day: attendance, homework due soon, lesson recordings (missed ones first) and
-/// the boards teachers shared after class.
+/// The student's day: the class being taught live (if any), attendance, homework due soon,
+/// results, library books, messages (colleges), lesson recordings (missed ones first) and the
+/// boards teachers shared after class.
 class TodayTab extends StatelessWidget {
-  const TodayTab({super.key, required this.study, required this.me, this.onAsk, this.now});
+  const TodayTab({super.key, required this.study, required this.me, this.messages, this.onAsk, this.now});
 
   final StudyController study;
   final Me me;
+
+  /// Shown as a card only where students may write to teachers (colleges).
+  final MessagesController? messages;
 
   /// Opens the Learn tab's "Ask a doubt".
   final VoidCallback? onAsk;
@@ -28,26 +37,31 @@ class TodayTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final student = study.student;
     return ListenableBuilder(
-      listenable: study,
+      listenable: Listenable.merge([study, ?messages]),
       builder: (context, _) {
         final summary = study.summary;
+        final live = study.live;
         final cards = <Widget>[
+          if (live != null) LiveNowBanner(live: live, onWatch: () => LiveClassScreen.open(context, study, live)),
           if (summary == null && study.error == null)
             const Padding(
               padding: EdgeInsets.all(Kx.s48),
               child: Center(child: CircularProgressIndicator()),
             ),
-          if (study.error != null) ErrorBanner(study.error!, onRetry: study.load),
+          if (study.error != null) ErrorBanner(study.error!, onRetry: study.loadSummary),
           if (summary != null) ...[
             AttendanceCard(summary: summary, onOpen: () => AttendanceScreen.open(context, study.api, student)),
             HomeworkCard(summary: summary, sectionName: student.sectionName),
             if (onAsk != null) _AskCard(onAsk: onAsk!),
+            ResultsCard(study: study),
+            if (messages?.available ?? false) MessagesCard(controller: messages!),
+            LibraryCard(study: study),
             RecordingsCard(summary: summary, api: study.api),
             BoardsCard(summary: summary, study: study),
           ],
         ];
         return RefreshIndicator(
-          onRefresh: study.load,
+          onRefresh: () => Future.wait([study.load(), if (messages?.available ?? false) messages!.load()]),
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [

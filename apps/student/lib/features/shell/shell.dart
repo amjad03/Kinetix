@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
+import '../../core/models.dart';
 import '../../core/study.dart';
 import '../learn/learn_tab.dart';
+import '../messages/messages_controller.dart';
 import '../profile/profile_tab.dart';
 import '../today/today_tab.dart';
 import '../updates/updates_controller.dart';
@@ -22,10 +24,14 @@ class StudentShell extends StatefulWidget {
   State<StudentShell> createState() => _StudentShellState();
 }
 
-class _StudentShellState extends State<StudentShell> {
-  late final study = StudyController(widget.state.api, widget.state.student!)..load();
+class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver {
+  late final study = StudyController(widget.state.api, widget.state.student!, liveConnector: widget.state.liveConnector)..load();
   late final updates = UpdatesController(widget.state.api)..load();
+  late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id)..start();
   final _learn = GlobalKey<LearnTabState>();
+
+  /// "Live now" updates already acted on.
+  final _seenLive = <String>{};
 
   // Keeps the tabs' state when the layout switches between bar and rail (rotating a tablet).
   final _bodyKey = GlobalKey();
@@ -34,10 +40,35 @@ class _StudentShellState extends State<StudentShell> {
   static const _updatesTab = 2;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    updates.addListener(_onUpdates);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    updates.removeListener(_onUpdates);
     study.dispose();
     updates.dispose();
+    messages.dispose();
     super.dispose();
+  }
+
+  /// Back in the app: a class may have gone live, and replies may have come in.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState s) {
+    if (s != AppLifecycleState.resumed) return;
+    study.loadLive();
+    if (!updates.loading) updates.load();
+    if (messages.available) messages.load();
+  }
+
+  /// A new "Live now" update brings the banner up on Today straight away.
+  void _onUpdates() {
+    final fresh = updates.items.where((n) => n.kind == NotificationKind.live && n.unread && _seenLive.add(n.id)).toList();
+    if (fresh.isNotEmpty) study.loadLive();
   }
 
   void _go(int i) {
@@ -59,10 +90,10 @@ class _StudentShellState extends State<StudentShell> {
       key: _bodyKey,
       index: _tab,
       children: [
-        TodayTab(study: study, me: widget.state.me!, onAsk: _ask),
+        TodayTab(study: study, me: widget.state.me!, messages: messages, onAsk: _ask),
         LearnTab(key: _learn, state: widget.state, study: study),
-        UpdatesTab(controller: updates, study: study),
-        ProfileTab(state: widget.state, study: study),
+        UpdatesTab(controller: updates, study: study, messages: messages),
+        ProfileTab(state: widget.state, study: study, messages: messages),
       ],
     );
     final wide = MediaQuery.sizeOf(context).width >= StudentShell.railWidth;

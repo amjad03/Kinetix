@@ -9,16 +9,22 @@ import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
 import '../fees/fees_screen.dart';
 import '../homework/homework_screen.dart';
+import '../library/library.dart';
+import '../live/live_class_screen.dart';
+import '../marks/marks.dart';
+import '../messages/chat_screen.dart';
+import '../messages/messages_controller.dart';
 import '../recordings/recordings.dart';
 import 'message_screen.dart';
 import 'updates_controller.dart';
 
 /// Notifications grouped Today / Earlier. Tapping one marks it read and opens what it is about.
 class UpdatesTab extends StatelessWidget {
-  const UpdatesTab({super.key, required this.controller, required this.study, this.now});
+  const UpdatesTab({super.key, required this.controller, required this.study, this.messages, this.now});
 
   final UpdatesController controller;
   final StudyController study;
+  final MessagesController? messages;
 
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
@@ -29,6 +35,10 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.boardShared => Icons.co_present,
     NotificationKind.recording => Icons.play_circle,
     NotificationKind.fee => Icons.receipt_long,
+    NotificationKind.library => Icons.local_library,
+    NotificationKind.marks => Icons.grading,
+    NotificationKind.message => Icons.forum,
+    NotificationKind.live => Icons.cast_for_education,
     NotificationKind.broadcast => Icons.campaign,
     NotificationKind.other => Icons.notifications,
   };
@@ -52,6 +62,28 @@ class UpdatesTab extends StatelessWidget {
       case NotificationKind.fee:
         if (n.paymentId != null) return ReceiptScreen.open(context, api, n.paymentId!);
         return FeesScreen.open(context, api, study.student.id, today: study.today);
+      case NotificationKind.library:
+        return LibraryScreen.open(context, study);
+      case NotificationKind.marks:
+        // "Marks published": that result (marks reloaded, as something new was published), else all results.
+        final marks = await study.loadMarks();
+        final result = n.assessmentId == null ? null : marks?.byId(n.assessmentId!);
+        if (!context.mounted) return;
+        if (result != null) return AssessmentScreen.open(context, result: result);
+        return ResultsScreen.open(context, study);
+      case NotificationKind.message:
+        if (n.conversationId != null && messages != null) return ChatScreen.open(context, messages!, n.conversationId!);
+      case NotificationKind.live:
+        // "Live now": straight to the board while the class is still live.
+        final live = await study.loadLive();
+        if (!context.mounted) return;
+        if (live != null && (n.sessionId == null || live.sessionId == n.sessionId)) return LiveClassScreen.open(context, study, live);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(live == null ? 'This class is no longer live.' : 'That class has ended. Another class is live now on Today.')),
+          );
+        return;
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;
@@ -154,6 +186,7 @@ class NotificationTile extends StatelessWidget {
       NotificationKind.boardShared => (c.tertiaryContainer, c.onTertiaryContainer),
       NotificationKind.recording => (c.tertiaryContainer, c.onTertiaryContainer),
       NotificationKind.fee => (Tone.warnContainer(context), Tone.warn(context)),
+      NotificationKind.live => (Kx.live, Colors.white),
       _ => (c.primaryContainer, c.onPrimaryContainer),
     };
     final when = Fmt.daysBetween(n.createdAt, today) == 0 ? Fmt.time(n.createdAt) : Fmt.relativeDay(n.createdAt, today);

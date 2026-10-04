@@ -64,4 +64,26 @@ abstract final class Fmt {
     '' => 'Payment',
     _ => '${m[0].toUpperCase()}${m.substring(1).replaceAll('_', ' ')}',
   };
+
+  /// 19.0 → "19", 22.5 → "22.5", 18.75 → "18.8" (marks and averages).
+  static String marks(double v) {
+    final r = (v * 10).round() / 10;
+    return r == r.roundToDouble() ? r.round().toString() : r.toStringAsFixed(1);
+  }
+
+  /// A library book's due date: "Due today", "Due Fri 9 Oct", or "Overdue by 4 days".
+  static String bookDue(DateTime dueOn, DateTime today) {
+    final diff = daysBetween(today, dueOn);
+    if (diff < 0) return 'Overdue by ${plural(-diff, 'day')}';
+    return due(dueOn, today);
+  }
+
+  /// "2:05 pm" today, "Yesterday", "Mon" this week, else "1 Oct" (message lists).
+  static String messageDay(DateTime d, DateTime now) {
+    final diff = daysBetween(d, now);
+    if (diff == 0) return time(d);
+    if (diff == 1) return 'Yesterday';
+    if (diff < 7) return DateFormat('EEE').format(d);
+    return DateFormat('d MMM').format(d);
+  }
 }

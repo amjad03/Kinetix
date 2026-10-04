@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -193,11 +194,7 @@ class _Gltf {
     return Color.fromARGB(f.length > 3 ? (f[3].clamp(0, 1) * 255).round() : 255, c(f[0]), c(f[1]), c(f[2]));
   }
 
-  static double _linearToSrgb(double v) => v <= 0.0031308 ? v * 12.92 : 1.055 * _pow(v, 1 / 2.4) - 0.055;
-
-  static double _pow(double x, double y) => x <= 0 ? 0 : _exp(y * _ln(x));
-  static double _ln(double x) => _logOf(x);
-  static double _exp(double x) => _expOf(x);
+  static double _linearToSrgb(double v) => v <= 0.0031308 ? v * 12.92 : 1.055 * math.pow(v, 1 / 2.4) - 0.055;
 
   (Uint8List, int, int) _view(Map<String, dynamic> acc, int elementBytes) {
     final viewIndex = acc['bufferView'] as int?;
@@ -276,14 +273,3 @@ class _Gltf {
   }
 }
 
-double _logOf(double x) => _ln2(x);
-double _expOf(double x) => _exp2(x);
-double _ln2(double x) => _mathLog(x);
-double _exp2(double x) => _mathExp(x);
-double _mathLog(double x) => _MathBridge.log(x);
-double _mathExp(double x) => _MathBridge.exp(x);
-
-abstract final class _MathBridge {
-  static double log(double x) => _dm.log(x);
-  static double exp(double x) => _dm.exp(x);
-}

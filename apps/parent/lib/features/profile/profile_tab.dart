@@ -5,6 +5,8 @@ import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../widgets/common.dart';
 import '../fees/fees_screen.dart';
+import '../library/library.dart';
+import '../marks/marks.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, required this.family});
@@ -100,12 +102,29 @@ class ProfileTab extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => FeesScreen.open(context, family, child),
                 ),
+              if (family.children.isNotEmpty) const KxSectionHeader('Results & library'),
+              for (final child in family.children) ...[
+                ListTile(
+                  key: Key('profile-results-${child.id}'),
+                  leading: const Icon(Icons.grading_outlined),
+                  title: Text(family.children.length == 1 ? 'Results' : "${child.firstName}'s results"),
+                  subtitle: const Text('Published marks and class averages'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ResultsScreen.open(context, family, child),
+                ),
+                ListTile(
+                  key: Key('profile-library-${child.id}'),
+                  leading: const Icon(Icons.local_library_outlined),
+                  title: Text(family.children.length == 1 ? 'Library books' : "${child.firstName}'s library books"),
+                  subtitle: const Text('Books borrowed, due dates and fines'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => LibraryScreen.open(context, family, child),
+                ),
+              ],
               const KxSectionHeader('Account'),
               ListTile(leading: const Icon(Icons.apartment_outlined), title: const Text('College'), subtitle: Text(me.institution)),
               ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Server'), subtitle: Text(state.serverUrl)),
               const KxSectionHeader('Coming soon'),
-              soonTile(Icons.forum_outlined, 'Message the teacher', "Ask about your child's progress"),
-              soonTile(Icons.local_library_outlined, 'Library books', 'Books borrowed and due dates'),
               soonTile(Icons.translate, 'Language', 'English · हिन्दी · ಕನ್ನಡ'),
               Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s32),

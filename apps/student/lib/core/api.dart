@@ -75,6 +75,27 @@ abstract class StudentApi {
   Future<FeeAccount> fees(String studentId);
   Future<FeeReceipt> receipt(String paymentId);
 
+  /// Books the student has out and has returned, with fines.
+  Future<LibraryAccount> library(String studentId);
+
+  /// The student's published marks with class averages and per-subject percentages.
+  Future<StudentMarks> marks(String studentId);
+
+  /// Who the student may write to: empty at schools, where families write instead.
+  Future<List<ContactGroup>> contacts();
+  Future<List<Conversation>> conversations();
+
+  /// Opens the thread with [teacherId] about [studentId] (the student themselves), or returns it.
+  Future<Conversation> startConversation({required String studentId, required String teacherId});
+
+  /// Up to 50 messages, oldest first; [before] pages back.
+  Future<MessagePage> messages(String conversationId, {DateTime? before});
+  Future<ChatMessage> sendMessage(String conversationId, String body);
+  Future<void> markConversationRead(String conversationId);
+
+  /// The class being taught live right now, or null.
+  Future<LiveClass?> live();
+
   /// Registers this device for push notifications to the Student App.
   Future<void> registerPushDevice({required String token, required String platform});
   Future<void> removePushDevice(String token);
@@ -213,6 +234,50 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<void> removePushDevice(String token) async => _send('DELETE', '/v1/push/devices', body: {'token': token});
+
+  @override
+  Future<LibraryAccount> library(String studentId) async =>
+      LibraryAccount.fromJson(await _send('GET', '/v1/library/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<StudentMarks> marks(String studentId) async =>
+      StudentMarks.fromJson(await _send('GET', '/v1/marks/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<List<ContactGroup>> contacts() async {
+    final j = await _send('GET', '/v1/conversations/contacts') as Map<String, dynamic>;
+    return [for (final c in (j['asFamily'] as List? ?? const [])) ContactGroup.fromJson(c as Map<String, dynamic>)];
+  }
+
+  @override
+  Future<List<Conversation>> conversations() async => [
+    for (final c in await _send('GET', '/v1/conversations') as List) Conversation.fromJson(c as Map<String, dynamic>),
+  ];
+
+  @override
+  Future<Conversation> startConversation({required String studentId, required String teacherId}) async => Conversation.fromJson(
+    await _send('POST', '/v1/conversations', body: {'studentId': studentId, 'withUserId': teacherId}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<MessagePage> messages(String conversationId, {DateTime? before}) async {
+    final q = before == null ? '' : '?before=${Uri.encodeQueryComponent(before.toUtc().toIso8601String())}';
+    return MessagePage.fromJson(await _send('GET', '/v1/conversations/$conversationId/messages$q') as Map<String, dynamic>);
+  }
+
+  @override
+  Future<ChatMessage> sendMessage(String conversationId, String body) async =>
+      ChatMessage.fromJson(await _send('POST', '/v1/conversations/$conversationId/messages', body: {'body': body}) as Map<String, dynamic>);
+
+  @override
+  Future<void> markConversationRead(String conversationId) async => _send('POST', '/v1/conversations/$conversationId/read');
+
+  @override
+  Future<LiveClass?> live() async {
+    final j = await _send('GET', '/v1/student/live') as Map<String, dynamic>;
+    final live = j['live'];
+    return live == null ? null : LiveClass.fromJson((live as Map).cast<String, dynamic>());
+  }
 
   Future<dynamic> _send(
     String method,

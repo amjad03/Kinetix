@@ -6,14 +6,14 @@ import 'model.dart';
 import 'primitives.dart';
 
 /// An element with its CPK colour and a display radius for ball-and-stick models (Å).
-enum Element {
+enum ChemElement {
   hydrogen('H', 'Hydrogen', Color(0xFFF2F2F2), 0.26),
   carbon('C', 'Carbon', Color(0xFF4A4A4A), 0.36),
   oxygen('O', 'Oxygen', Color(0xFFE53935), 0.36),
   sodium('Na', 'Sodium', Color(0xFF9C5BE0), 0.42),
   chlorine('Cl', 'Chlorine', Color(0xFF2EBD4A), 0.62);
 
-  const Element(this.symbol, this.name, this.color, this.radius);
+  const ChemElement(this.symbol, this.name, this.color, this.radius);
   final String symbol, name;
   final Color color;
   final double radius;
@@ -21,7 +21,7 @@ enum Element {
 
 class Atom {
   const Atom(this.element, this.position, {this.charge = ''});
-  final Element element;
+  final ChemElement element;
   final Vec3 position;
 
   /// '+' or '−' for ions.
@@ -52,9 +52,9 @@ class Molecule {
     const half = 104.5 / 2 * math.pi / 180;
     const d = 0.96;
     return Molecule('Water', 'H₂O', [
-      const Atom(Element.oxygen, Vec3.zero),
-      Atom(Element.hydrogen, Vec3(-d * math.sin(half), -d * math.cos(half), 0)),
-      Atom(Element.hydrogen, Vec3(d * math.sin(half), -d * math.cos(half), 0)),
+      const Atom(ChemElement.oxygen, Vec3.zero),
+      Atom(ChemElement.hydrogen, Vec3(-d * math.sin(half), -d * math.cos(half), 0)),
+      Atom(ChemElement.hydrogen, Vec3(d * math.sin(half), -d * math.cos(half), 0)),
     ], const [Bond(0, 1), Bond(0, 2)]);
   }
 
@@ -63,11 +63,11 @@ class Molecule {
     const d = 1.09;
     final polar = math.acos(-1 / 3); // 109.47°
     return Molecule('Methane', 'CH₄', [
-      const Atom(Element.carbon, Vec3.zero),
-      const Atom(Element.hydrogen, Vec3(0, d, 0)),
+      const Atom(ChemElement.carbon, Vec3.zero),
+      const Atom(ChemElement.hydrogen, Vec3(0, d, 0)),
       for (var k = 0; k < 3; k++)
         Atom(
-          Element.hydrogen,
+          ChemElement.hydrogen,
           Vec3(math.sin(polar) * math.cos(k * 2 * math.pi / 3 + math.pi / 6), math.cos(polar), -math.sin(polar) * math.sin(k * 2 * math.pi / 3 + math.pi / 6)) * d,
         ),
     ], const [Bond(0, 1), Bond(0, 2), Bond(0, 3), Bond(0, 4)]);
@@ -75,9 +75,9 @@ class Molecule {
 
   /// Carbon dioxide: linear O=C=O, C=O 1.16 Å.
   static Molecule carbonDioxide() => const Molecule('Carbon dioxide', 'CO₂', [
-        Atom(Element.carbon, Vec3.zero),
-        Atom(Element.oxygen, Vec3(-1.16, 0, 0)),
-        Atom(Element.oxygen, Vec3(1.16, 0, 0)),
+        Atom(ChemElement.carbon, Vec3.zero),
+        Atom(ChemElement.oxygen, Vec3(-1.16, 0, 0)),
+        Atom(ChemElement.oxygen, Vec3(1.16, 0, 0)),
       ], [Bond(0, 1, order: 2), Bond(0, 2, order: 2)]);
 
   /// Sodium chloride: a 3×3×3 block of the rock-salt lattice, ions alternating, Na–Cl 2.82 Å.
@@ -91,7 +91,7 @@ class Molecule {
         for (var k = 0; k < n; k++) {
           final na = (i + j + k).isEven;
           index['$i,$j,$k'] = atoms.length;
-          atoms.add(Atom(na ? Element.sodium : Element.chlorine, Vec3((i - off) * d, (j - off) * d, (k - off) * d), charge: na ? '+' : '−'));
+          atoms.add(Atom(na ? ChemElement.sodium : ChemElement.chlorine, Vec3((i - off) * d, (j - off) * d, (k - off) * d), charge: na ? '+' : '−'));
         }
       }
     }
@@ -129,14 +129,14 @@ class Molecule {
       final e = a.element;
       final ion = a.charge.isNotEmpty;
       final id = 'atom-$i';
-      final r = ionic ? (e == Element.sodium ? 0.55 : 0.85) : e.radius;
+      final r = ionic ? (e == ChemElement.sodium ? 0.55 : 0.85) : e.radius;
       parts.add(ModelPart(
         id: id,
         mesh: Primitives.sphere(r, center: a.position, segments: sphereDetail, rings: sphereDetail ~/ 2),
         color: e.color,
         name: ion ? '${e.name} ion (${e.symbol}${a.charge})' : '${e.name} atom (${e.symbol})',
         description: ion
-            ? (e == Element.sodium
+            ? (e == ChemElement.sodium
                 ? 'Na+ has lost one electron. Each Na+ is surrounded by 6 Cl− ions.'
                 : 'Cl− has gained one electron. Each Cl− is surrounded by 6 Na+ ions.')
             : _atomNote(e),
@@ -163,14 +163,14 @@ class Molecule {
         final rad = b.order == 2 ? bondRadius * 0.75 : bondRadius;
         parts.add(ModelPart(
           id: 'bond-$k-$j-a',
-          mesh: Primitives.rod(pa + o, mid + o, rad, segments: 12, slices: 2),
+          mesh: Primitives.rod(pa + o, mid + o, rad, segments: ionic ? 8 : 12, slices: ionic ? 4 : 2),
           color: ionic ? const Color(0xFF9E9E9E) : atoms[b.a].element.color,
           name: bondName,
           description: note,
         ));
         parts.add(ModelPart(
           id: 'bond-$k-$j-b',
-          mesh: Primitives.rod(mid + o, pb + o, rad, segments: 12, slices: 2),
+          mesh: Primitives.rod(mid + o, pb + o, rad, segments: ionic ? 8 : 12, slices: ionic ? 4 : 2),
           color: ionic ? const Color(0xFF9E9E9E) : atoms[b.b].element.color,
           name: bondName,
           description: note,
@@ -207,12 +207,12 @@ class Molecule {
     );
   }
 
-  static String _atomNote(Element e) => switch (e) {
-        Element.hydrogen => 'Atomic number 1. Valency 1: forms one bond.',
-        Element.carbon => 'Atomic number 6. Valency 4: forms four bonds (tetravalent).',
-        Element.oxygen => 'Atomic number 8. Valency 2: forms two bonds; has two lone pairs.',
-        Element.sodium => 'Atomic number 11. Loses one electron to form Na+.',
-        Element.chlorine => 'Atomic number 17. Gains one electron to form Cl−.',
+  static String _atomNote(ChemElement e) => switch (e) {
+        ChemElement.hydrogen => 'Atomic number 1. Valency 1: forms one bond.',
+        ChemElement.carbon => 'Atomic number 6. Valency 4: forms four bonds (tetravalent).',
+        ChemElement.oxygen => 'Atomic number 8. Valency 2: forms two bonds; has two lone pairs.',
+        ChemElement.sodium => 'Atomic number 11. Loses one electron to form Na+.',
+        ChemElement.chlorine => 'Atomic number 17. Gains one electron to form Cl−.',
       };
 }
 
@@ -261,7 +261,7 @@ abstract final class ChemistryModels {
       parts: model.parts,
       labels: [
         for (final i in labelled)
-          Label3D(m.atoms[i].element == Element.sodium ? 'Na+ ion' : 'Cl− ion', m.atoms[i].position + const Vec3(0.3, 0.5, 0.3), partId: 'atom-$i'),
+          Label3D(m.atoms[i].element == ChemElement.sodium ? 'Na+ ion' : 'Cl− ion', m.atoms[i].position + const Vec3(0.3, 0.5, 0.3), partId: 'atom-$i'),
       ],
       ambient: model.ambient,
       initialYaw: model.initialYaw,

@@ -93,7 +93,7 @@ class FakeParentApi implements ParentApi {
     ),
   };
 
-  List<ClassMark> marks = [
+  List<ClassMark> attendanceMarks = [
     ClassMark(
       date: DateTime(2026, 10, 3),
       status: AttendanceStatus.present,
@@ -286,7 +286,7 @@ class FakeParentApi implements ParentApi {
   }
 
   @override
-  Future<List<ClassMark>> attendance(String childId, {int days = 30}) async => marks;
+  Future<List<ClassMark>> attendance(String childId, {int days = 30}) async => attendanceMarks;
 
   @override
   Future<Inbox> notifications() async => Inbox(unread: inbox.where((n) => n.unread).length, items: inbox);
@@ -495,5 +495,220 @@ class FakeParentApi implements ParentApi {
       );
     }
     throw ApiException(404, 'Receipt not found');
+  }
+
+  // ── Library ───────────────────────────────────────────────────────────────────────────────
+
+  /// Aarav: one book due in 5 days and one returned late with a fine. Diya: one overdue.
+  late Map<String, LibraryAccount> libraries = {
+    'c1': LibraryAccount.fromJson({
+      'current': [loanJson('l1', 'Corporate Accounting', author: 'S. N. Maheshwari', dueOn: '2026-10-09')],
+      'history': [
+        loanJson(
+          'l2',
+          'Wings of Fire',
+          author: 'A. P. J. Abdul Kalam',
+          issuedAt: '2026-09-05T05:00:00Z',
+          dueOn: '2026-09-20',
+          returnedAt: '2026-09-23T06:00:00Z',
+          finePaise: 600,
+        ),
+      ],
+      'finesPaise': 600,
+    }),
+    'c2': LibraryAccount.fromJson({
+      'current': [loanJson('l3', 'Discrete Mathematics and Its Applications', author: 'Kenneth H. Rosen', dueOn: '2026-09-30', overdue: true)],
+      'history': [],
+      'finesPaise': 0,
+    }),
+  };
+
+  static Map<String, dynamic> loanJson(
+    String id,
+    String title, {
+    required String author,
+    required String dueOn,
+    String issuedAt = '2026-09-25T05:00:00Z',
+    String? returnedAt,
+    int finePaise = 0,
+    bool overdue = false,
+  }) => {
+    'id': id,
+    'book': {'id': 'b-$id', 'title': title, 'author': author, 'callNo': '657.95 MAH'},
+    'issuedAt': issuedAt,
+    'dueOn': dueOn,
+    'returnedAt': returnedAt,
+    'finePaise': finePaise,
+    'overdue': overdue,
+  };
+
+  @override
+  Future<LibraryAccount> library(String childId) async {
+    calls.add('library $childId');
+    return libraries[childId] ?? LibraryAccount(current: [], history: [], finesPaise: 0);
+  }
+
+  // ── Marks ─────────────────────────────────────────────────────────────────────────────────
+
+  late Map<String, ChildMarks> childMarks = {
+    'c1': ChildMarks.fromJson({
+      'assessments': [
+        {
+          'id': 'a1',
+          'title': 'Unit test 1: Underwriting of shares',
+          'kind': 'test',
+          'maxMarks': 25,
+          'heldOn': '2026-09-28',
+          'subject': 'Corporate Accounting',
+          'marks': 22.5,
+          'absent': false,
+          'remark': 'Neat journal entries.',
+          'classAverage': 18.7,
+          'classHighest': 24,
+        },
+        {
+          'id': 'a2',
+          'title': 'Cost sheet assignment',
+          'kind': 'assignment',
+          'maxMarks': 10,
+          'heldOn': '2026-09-21',
+          'subject': 'Cost Accounting',
+          'marks': 5,
+          'absent': false,
+          'remark': null,
+          'classAverage': 7.2,
+          'classHighest': 10,
+        },
+      ],
+      'subjects': [
+        {'subject': 'Corporate Accounting', 'percent': 90},
+        {'subject': 'Cost Accounting', 'percent': 50},
+      ],
+    }),
+    'c2': ChildMarks(assessments: [], subjects: []),
+  };
+
+  @override
+  Future<ChildMarks> marks(String childId) async {
+    calls.add('marks $childId');
+    return childMarks[childId] ?? ChildMarks(assessments: [], subjects: []);
+  }
+
+  // ── Messages ──────────────────────────────────────────────────────────────────────────────
+
+  late List<ChildContacts> familyContacts = [
+    ChildContacts(
+      studentId: 'c1',
+      studentName: 'Aarav Patel',
+      className: 'BCom Sem 3 A',
+      staff: [
+        StaffContact(id: 't1', fullName: 'Anita Sharma', subjects: ['Corporate Accounting', 'Cost Accounting']),
+      ],
+    ),
+    ChildContacts(
+      studentId: 'c2',
+      studentName: 'Diya Patel',
+      className: 'BCA Sem 1 A',
+      staff: [
+        StaffContact(id: 't2', fullName: 'Ravi Kumar', subjects: ['Discrete Mathematics']),
+      ],
+    ),
+  ];
+
+  static DateTime _yesterday(int hour) {
+    final y = DateTime.now().subtract(const Duration(days: 1));
+    return DateTime(y.year, y.month, y.day, hour);
+  }
+
+  /// Conversation id → its messages, oldest first.
+  late Map<String, List<ChatMessage>> chats = {
+    'cv1': [
+      ChatMessage(
+        id: 'm1',
+        senderId: 'u1',
+        body: 'Good morning ma’am. Aarav had fever on Tuesday. Could you share what was covered?',
+        createdAt: _yesterday(9),
+      ),
+      ChatMessage(
+        id: 'm2',
+        senderId: 't1',
+        body: 'Hope he is better now. Please ask him to try Exercise 4.2.',
+        createdAt: _yesterday(15),
+      ),
+    ],
+  };
+
+  /// Conversation id → (child, teacher) and when the parent last read it.
+  late Map<String, ({String childId, String teacherId})> threadInfo = {'cv1': (childId: 'c1', teacherId: 't1')};
+  final _readAt = <String, DateTime>{};
+
+  Conversation _summary(String id) {
+    final info = threadInfo[id]!;
+    final child = kids.firstWhere((k) => k.id == info.childId);
+    final teacher = familyContacts.expand((c) => c.staff).firstWhere((s) => s.id == info.teacherId);
+    final list = chats[id] ?? [];
+    final read = _readAt[id];
+    return Conversation(
+      id: id,
+      student: Person(id: child.id, fullName: child.fullName),
+      className: child.sectionName,
+      staff: Person(id: teacher.id, fullName: teacher.fullName),
+      family: Person(id: profile.id, fullName: profile.fullName),
+      lastMessage: list.lastOrNull?.body,
+      lastMessageAt: list.lastOrNull?.createdAt,
+      unread: list.where((m) => m.senderId != profile.id && (read == null || m.createdAt.isAfter(read))).length,
+    );
+  }
+
+  @override
+  Future<List<ChildContacts>> contacts() async {
+    calls.add('contacts');
+    return familyContacts;
+  }
+
+  @override
+  Future<List<Conversation>> conversations() async {
+    calls.add('conversations');
+    final list = [for (final id in threadInfo.keys) _summary(id)];
+    list.sort((a, b) => (b.lastMessageAt ?? DateTime(0)).compareTo(a.lastMessageAt ?? DateTime(0)));
+    return list;
+  }
+
+  @override
+  Future<Conversation> startConversation({required String childId, required String teacherId}) async {
+    calls.add('start $childId $teacherId');
+    final existing = threadInfo.entries.where((e) => e.value.childId == childId && e.value.teacherId == teacherId).firstOrNull;
+    if (existing != null) return _summary(existing.key);
+    final id = 'cv${threadInfo.length + 1}';
+    threadInfo[id] = (childId: childId, teacherId: teacherId);
+    chats[id] = [];
+    return _summary(id);
+  }
+
+  /// Page size for [messages] (the server's is 50).
+  int pageSize = 50;
+
+  @override
+  Future<MessagePage> messages(String conversationId, {DateTime? before}) async {
+    calls.add('messages $conversationId${before == null ? '' : ' before'}');
+    if (!threadInfo.containsKey(conversationId)) throw ApiException(404, 'Conversation not found');
+    final all = (chats[conversationId] ?? []).where((m) => before == null || m.createdAt.isBefore(before)).toList();
+    final page = all.length <= pageSize ? all : all.sublist(all.length - pageSize);
+    return MessagePage(conversation: _summary(conversationId), messages: page);
+  }
+
+  @override
+  Future<ChatMessage> sendMessage(String conversationId, String body) async {
+    calls.add('send $conversationId $body');
+    final m = ChatMessage(id: 'm${DateTime.now().microsecondsSinceEpoch}', senderId: profile.id, body: body, createdAt: DateTime.now());
+    chats.putIfAbsent(conversationId, () => []).add(m);
+    _readAt[conversationId] = m.createdAt;
+    return m;
+  }
+
+  @override
+  Future<void> markConversationRead(String conversationId) async {
+    calls.add('chat-read $conversationId');
+    _readAt[conversationId] = DateTime.now();
   }
 }

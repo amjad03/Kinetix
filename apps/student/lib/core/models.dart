@@ -1,5 +1,6 @@
 /// Mirrors the student-facing responses of services/api (src/parent for the student's own
-/// summary, src/notifications, src/whiteboards, src/recordings, src/ai, src/content, src/fees).
+/// summary, src/notifications, src/whiteboards, src/recordings, src/ai, src/content, src/fees, src/library,
+/// src/marks, src/messages, src/sessions for live classes).
 library;
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -335,7 +336,7 @@ class StudentSummary {
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, recording, fee, broadcast, other }
+enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, live, broadcast, other }
 
 class AppNotification {
   AppNotification({
@@ -356,6 +357,10 @@ class AppNotification {
       'board_shared' => NotificationKind.boardShared,
       'recording' => NotificationKind.recording,
       'fee' => NotificationKind.fee,
+      'library' => NotificationKind.library,
+      'marks' => NotificationKind.marks,
+      'message' => NotificationKind.message,
+      'live' => NotificationKind.live,
       'broadcast' => NotificationKind.broadcast,
       _ => NotificationKind.other,
     },
@@ -388,6 +393,11 @@ class AppNotification {
   String? get whiteboardId => data['whiteboardId'] as String?;
   String? get recordingId => data['recordingId'] as String?;
   String? get paymentId => data['paymentId'] as String?;
+  String? get assessmentId => data['assessmentId'] as String?;
+  String? get conversationId => data['conversationId'] as String?;
+
+  /// A live class started (`live`).
+  String? get sessionId => data['sessionId'] as String?;
 }
 
 class Inbox {
@@ -694,4 +704,316 @@ class FeeReceipt {
   final String method;
   final String? reference;
   final DateTime? paidAt;
+}
+
+int _studentPaise(Object? v) => (v as num).toInt();
+
+// ── Library ─────────────────────────────────────────────────────────────────────────────────────
+
+/// One book borrowed from the college library: "Corporate Accounting · due Fri 9 Oct".
+class LibraryLoan {
+  LibraryLoan({
+    required this.id,
+    required this.title,
+    required this.author,
+    required this.issuedAt,
+    required this.dueOn,
+    required this.finePaise,
+    required this.overdue,
+    this.callNo,
+    this.returnedAt,
+  });
+
+  factory LibraryLoan.fromJson(Map<String, dynamic> j) {
+    final book = (j['book'] as Map).cast<String, dynamic>();
+    return LibraryLoan(
+      id: j['id'] as String,
+      title: book['title'] as String,
+      author: book['author'] as String? ?? '',
+      callNo: book['callNo'] as String?,
+      issuedAt: _instant(j['issuedAt']) ?? DateTime.now(),
+      dueOn: parseIsoDate(j['dueOn'] as String),
+      returnedAt: _instant(j['returnedAt']),
+      finePaise: _studentPaise(j['finePaise'] ?? 0),
+      overdue: j['overdue'] as bool? ?? false,
+    );
+  }
+
+  final String id;
+  final String title;
+  final String author;
+  final String? callNo;
+  final DateTime issuedAt;
+  final DateTime dueOn;
+  final DateTime? returnedAt;
+
+  /// Charged when a late book comes back.
+  final int finePaise;
+
+  /// Still out and past its due date (the server decides, in the institution's time zone).
+  final bool overdue;
+
+  bool get returned => returnedAt != null;
+
+  /// Returned after the due date.
+  bool get returnedLate => returnedAt != null && DateTime(returnedAt!.year, returnedAt!.month, returnedAt!.day).isAfter(dueOn);
+}
+
+/// The student's library borrowing: books out now (with due dates) and returned books.
+class LibraryAccount {
+  LibraryAccount({required this.current, required this.history, required this.finesPaise});
+
+  factory LibraryAccount.fromJson(Map<String, dynamic> j) => LibraryAccount(
+    current: [for (final l in (j['current'] as List? ?? const [])) LibraryLoan.fromJson(l as Map<String, dynamic>)],
+    history: [for (final l in (j['history'] as List? ?? const [])) LibraryLoan.fromJson(l as Map<String, dynamic>)],
+    finesPaise: _studentPaise(j['finesPaise'] ?? 0),
+  );
+
+  /// Books out now, latest borrowed first (as the server sends them).
+  final List<LibraryLoan> current;
+
+  /// Returned books, latest borrowed first.
+  final List<LibraryLoan> history;
+
+  /// Fines charged for late returns, in total.
+  final int finesPaise;
+
+  List<LibraryLoan> get overdue => current.where((l) => l.overdue).toList();
+
+  /// Books out, overdue first, then the earliest due.
+  List<LibraryLoan> get currentByDue => [...current]..sort((a, b) {
+    if (a.overdue != b.overdue) return a.overdue ? -1 : 1;
+    return a.dueOn.compareTo(b.dueOn);
+  });
+}
+
+// ── Marks ───────────────────────────────────────────────────────────────────────────────────────
+
+enum AssessmentKind {
+  test('Test'),
+  assignment('Assignment'),
+  internal('Internal assessment'),
+  exam('Exam'),
+  practical('Practical');
+
+  const AssessmentKind(this.label);
+  final String label;
+
+  static AssessmentKind parse(Object? v) => values.asNameMap()[v] ?? test;
+}
+
+double? _double(Object? v) => (v as num?)?.toDouble();
+
+/// One published assessment with the student's marks and how the class did.
+class AssessmentResult {
+  AssessmentResult({
+    required this.id,
+    required this.title,
+    required this.kind,
+    required this.maxMarks,
+    required this.heldOn,
+    required this.subject,
+    required this.absent,
+    this.marks,
+    this.remark,
+    this.classAverage,
+    this.classHighest,
+  });
+
+  factory AssessmentResult.fromJson(Map<String, dynamic> j) => AssessmentResult(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    kind: AssessmentKind.parse(j['kind']),
+    maxMarks: _double(j['maxMarks']) ?? 0,
+    heldOn: parseIsoDate(j['heldOn'] as String),
+    subject: j['subject'] as String,
+    marks: _double(j['marks']),
+    absent: j['absent'] as bool? ?? false,
+    remark: (j['remark'] as String?)?.trim().isEmpty ?? true ? null : (j['remark'] as String).trim(),
+    classAverage: _double(j['classAverage']),
+    classHighest: _double(j['classHighest']),
+  );
+
+  final String id;
+  final String title;
+  final AssessmentKind kind;
+  final double maxMarks;
+  final DateTime heldOn;
+  final String subject;
+
+  /// Null when absent or not entered.
+  final double? marks;
+  final bool absent;
+  final String? remark;
+  final double? classAverage;
+  final double? classHighest;
+
+  /// 0..100, or null without marks.
+  double? get percent => marks == null || maxMarks == 0 ? null : marks! * 100 / maxMarks;
+  double? get averagePercent => classAverage == null || maxMarks == 0 ? null : classAverage! * 100 / maxMarks;
+
+  /// Above, at or below the class average (null when either is missing).
+  int? get vsAverage {
+    if (marks == null || classAverage == null) return null;
+    final d = marks! - classAverage!;
+    return d.abs() < 0.05 ? 0 : d.sign.toInt();
+  }
+}
+
+/// The student's percentage in one subject across its published assessments.
+class SubjectResult {
+  SubjectResult({required this.subject, required this.percent});
+
+  factory SubjectResult.fromJson(Map<String, dynamic> j) =>
+      SubjectResult(subject: j['subject'] as String, percent: _double(j['percent']) ?? 0);
+
+  final String subject;
+  final double percent;
+}
+
+/// The student's published marks (`GET /v1/marks/students/:id`).
+class StudentMarks {
+  StudentMarks({required this.assessments, required this.subjects});
+
+  factory StudentMarks.fromJson(Map<String, dynamic> j) => StudentMarks(
+    assessments: [for (final a in (j['assessments'] as List? ?? const [])) AssessmentResult.fromJson(a as Map<String, dynamic>)],
+    subjects: [for (final s in (j['subjects'] as List? ?? const [])) SubjectResult.fromJson(s as Map<String, dynamic>)],
+  );
+
+  /// Latest first.
+  final List<AssessmentResult> assessments;
+  final List<SubjectResult> subjects;
+
+  AssessmentResult? byId(String id) => assessments.where((a) => a.id == id).firstOrNull;
+}
+
+// ── Messages ────────────────────────────────────────────────────────────────────────────────────
+
+class Person {
+  Person({required this.id, required this.fullName});
+
+  factory Person.fromJson(Map<String, dynamic> j) => Person(id: j['id'] as String, fullName: j['fullName'] as String);
+
+  final String id;
+  final String fullName;
+}
+
+/// A teacher the student can write to, with what they teach the class.
+class StaffContact {
+  StaffContact({required this.id, required this.fullName, required this.subjects});
+
+  factory StaffContact.fromJson(Map<String, dynamic> j) => StaffContact(
+    id: j['id'] as String,
+    fullName: j['fullName'] as String,
+    subjects: [for (final s in (j['subjects'] as List? ?? const [])) '$s'],
+  );
+
+  final String id;
+  final String fullName;
+  final List<String> subjects;
+}
+
+/// A student and the teachers of their class (`GET /v1/conversations/contacts`).
+class ContactGroup {
+  ContactGroup({required this.studentId, required this.studentName, required this.className, required this.staff});
+
+  factory ContactGroup.fromJson(Map<String, dynamic> j) {
+    final st = (j['student'] as Map).cast<String, dynamic>();
+    return ContactGroup(
+      studentId: st['id'] as String,
+      studentName: st['fullName'] as String,
+      className: st['className'] as String? ?? '',
+      staff: [for (final s in (j['staff'] as List? ?? const [])) StaffContact.fromJson(s as Map<String, dynamic>)],
+    );
+  }
+
+  final String studentId;
+  final String studentName;
+  final String className;
+  final List<StaffContact> staff;
+}
+
+/// A thread between the student (or their family) and one teacher.
+class Conversation {
+  Conversation({
+    required this.id,
+    required this.student,
+    required this.className,
+    required this.staff,
+    required this.family,
+    required this.unread,
+    this.lastMessage,
+    this.lastMessageAt,
+  });
+
+  factory Conversation.fromJson(Map<String, dynamic> j) => Conversation(
+    id: j['id'] as String,
+    student: Person.fromJson((j['student'] as Map).cast<String, dynamic>()),
+    className: j['className'] as String? ?? '',
+    staff: Person.fromJson((j['staff'] as Map).cast<String, dynamic>()),
+    family: Person.fromJson((j['family'] as Map).cast<String, dynamic>()),
+    lastMessage: j['lastMessage'] as String?,
+    lastMessageAt: _instant(j['lastMessageAt']),
+    unread: (j['unread'] as num?)?.toInt() ?? 0,
+  );
+
+  final String id;
+  final Person student;
+  final String className;
+  final Person staff;
+  final Person family;
+  final String? lastMessage;
+  final DateTime? lastMessageAt;
+  int unread;
+}
+
+class ChatMessage {
+  ChatMessage({required this.id, required this.senderId, required this.body, required this.createdAt});
+
+  factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
+    id: j['id'] as String,
+    senderId: j['senderId'] as String,
+    body: j['body'] as String,
+    createdAt: _instant(j['createdAt']) ?? DateTime.now(),
+  );
+
+  final String id;
+  final String senderId;
+  final String body;
+  final DateTime createdAt;
+}
+
+/// A page of a conversation, oldest first.
+class MessagePage {
+  MessagePage({required this.conversation, required this.messages});
+
+  factory MessagePage.fromJson(Map<String, dynamic> j) => MessagePage(
+    conversation: Conversation.fromJson((j['conversation'] as Map).cast<String, dynamic>()),
+    messages: [for (final m in (j['messages'] as List? ?? const [])) ChatMessage.fromJson(m as Map<String, dynamic>)],
+  );
+
+  final Conversation conversation;
+  final List<ChatMessage> messages;
+}
+
+// ── Live class ──────────────────────────────────────────────────────────────────────────────────
+
+/// The class the teacher is teaching live right now (`GET /v1/student/live`).
+class LiveClass {
+  LiveClass({required this.deviceId, required this.sessionId, required this.teacher, required this.startedAt, this.subject});
+
+  factory LiveClass.fromJson(Map<String, dynamic> j) => LiveClass(
+    deviceId: j['deviceId'] as String,
+    sessionId: j['sessionId'] as String,
+    teacher: j['teacher'] as String? ?? 'Your teacher',
+    subject: j['subject'] as String?,
+    startedAt: _instant(j['startedAt']) ?? DateTime.now(),
+  );
+
+  /// The board the class is on (what the realtime `live.watch` takes).
+  final String deviceId;
+  final String sessionId;
+  final String teacher;
+  final String? subject;
+  final DateTime startedAt;
 }

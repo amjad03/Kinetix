@@ -34,7 +34,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
         <ErrorState message={(books.error ?? loans.error)!} />
       ) : (
         <>
-          <StatGrid min={180}>
+          <StatGrid min={120}>
             <StatTile label="Titles" value={b.length} caption={`${copies} copies in the catalogue`} testId="lib-titles" />
             <StatTile label="On the shelf" value={onShelf} caption={`of ${copies} copies`} testId="lib-shelf" />
             <StatTile label="On loan" value={l.length} caption={l.length ? `${l.length - overdue.length} within their due date` : 'Nothing is out'} testId="lib-loans" />

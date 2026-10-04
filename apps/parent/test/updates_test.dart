@@ -9,7 +9,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder badgeLabel(String text) => find.descendant(of: find.byType(Badge), matching: find.text(text));
+  // The Updates tab's badge (Messages has its own).
+  Finder badgeLabel(String text) => find.descendant(
+    of: find.ancestor(of: find.text('Updates').last, matching: find.byType(NavigationDestination)),
+    matching: find.descendant(of: find.byType(Badge), matching: find.text(text)),
+  );
 
   testWidgets('groups updates into Today and Earlier with an unread badge', (tester) async {
     await pumpApp(tester);

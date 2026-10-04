@@ -2,15 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 
 import 'api.dart';
+import 'live.dart';
 import 'models.dart';
 
-/// The student's Today summary (attendance, homework, recordings, boards) and the subjects of
-/// their class, shared by every tab.
+/// The student's Today summary (attendance, homework, recordings, boards), the class being taught
+/// live, results, library books and the subjects of their class, shared by every tab.
 class StudyController extends ChangeNotifier {
-  StudyController(this.api, this.student);
+  StudyController(this.api, this.student, {LiveConnector? liveConnector}) : liveConnector = liveConnector ?? SocketLiveConnection.new;
 
   final StudentApi api;
   final StudentProfile student;
+
+  /// Opens the realtime connection for watching a live class.
+  final LiveConnector liveConnector;
 
   StudentSummary? summary;
   bool loading = false;
@@ -19,7 +23,10 @@ class StudyController extends ChangeNotifier {
   /// The institution's today once the summary is in, else the device's.
   DateTime get today => summary?.today ?? DateTime.now();
 
-  Future<void> load() async {
+  /// Everything on Today. Each part fails on its own, so one problem never hides the rest.
+  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadMarks(), loadLibrary()]);
+
+  Future<void> loadSummary() async {
     loading = true;
     error = null;
     notifyListeners();
@@ -31,6 +38,57 @@ class StudyController extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  // -- Live class -------------------------------------------------------------------------------
+
+  /// The class being taught live right now, if any.
+  LiveClass? live;
+  Future<LiveClass?>? _liveLoad;
+
+  /// Asks whether a class is live (on open, pull to refresh, app resume and a "Live now" update).
+  /// A failure keeps what we knew: the banner is a convenience.
+  Future<LiveClass?> loadLive() => _liveLoad ??= _loadLive().whenComplete(() => _liveLoad = null);
+
+  Future<LiveClass?> _loadLive() async {
+    try {
+      live = await api.live();
+      notifyListeners();
+    } on ApiException {
+      // Offline: the next refresh tries again.
+    }
+    return live;
+  }
+
+  // -- Results and library ----------------------------------------------------------------------
+
+  StudentMarks? marks;
+  String? marksError;
+  LibraryAccount? library;
+  String? libraryError;
+
+  Future<StudentMarks?> loadMarks() async {
+    marksError = null;
+    try {
+      marks = await api.marks(student.id);
+    } on ApiException catch (e) {
+      marksError = e.message;
+    } finally {
+      notifyListeners();
+    }
+    return marks;
+  }
+
+  Future<LibraryAccount?> loadLibrary() async {
+    libraryError = null;
+    try {
+      library = await api.library(student.id);
+    } on ApiException catch (e) {
+      libraryError = e.message;
+    } finally {
+      notifyListeners();
+    }
+    return library;
   }
 
   // -- Subjects ---------------------------------------------------------------------------------
@@ -60,7 +118,7 @@ class StudyController extends ChangeNotifier {
 
   /// A homework by id: from the summary when it is there, else asked for directly.
   Future<Homework?> findHomework(String homeworkId) async {
-    if (summary == null) await load();
+    if (summary == null) await loadSummary();
     final s = summary;
     for (final hw in [...?s?.upcoming, ...?s?.pastHomework]) {
       if (hw.id == homeworkId) return hw;

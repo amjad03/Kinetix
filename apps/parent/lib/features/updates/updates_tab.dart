@@ -13,15 +13,20 @@ import '../boards/board_screen.dart';
 import '../fees/fees_screen.dart';
 import '../fees/receipt_screen.dart';
 import '../homework/homework_screen.dart';
+import '../library/library.dart';
+import '../marks/marks.dart';
+import '../messages/chat_screen.dart';
+import '../messages/messages_controller.dart';
 import 'message_screen.dart';
 import 'updates_controller.dart';
 
 /// Notifications grouped Today / Earlier. Tapping one marks it read and opens what it is about.
 class UpdatesTab extends StatelessWidget {
-  const UpdatesTab({super.key, required this.controller, required this.family, this.now});
+  const UpdatesTab({super.key, required this.controller, required this.family, required this.messages, this.now});
 
   final UpdatesController controller;
   final FamilyController family;
+  final MessagesController messages;
 
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
@@ -32,6 +37,9 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.boardShared => Icons.co_present,
     NotificationKind.recording => Icons.play_circle,
     NotificationKind.fee => Icons.currency_rupee,
+    NotificationKind.library => Icons.local_library,
+    NotificationKind.marks => Icons.grading,
+    NotificationKind.message => Icons.forum,
     NotificationKind.broadcast => Icons.campaign,
     NotificationKind.other => Icons.notifications,
   };
@@ -68,6 +76,20 @@ class UpdatesTab extends StatelessWidget {
         const prefix = 'Fee due: ';
         final child = await family.findFeeChild(title: n.title.startsWith(prefix) ? n.title.substring(prefix.length) : null);
         if (child != null && context.mounted) return FeesScreen.open(context, family, child);
+      case NotificationKind.library:
+        if (family.children.isEmpty) await family.load();
+        final child = family.byId(n.studentId);
+        if (child != null && context.mounted) return LibraryScreen.open(context, family, child);
+      case NotificationKind.marks:
+        // "Marks published": that assessment's result for the child in the class, else all their results.
+        final found = await family.findAssessment(n.assessmentId, sectionId: n.sectionId);
+        if (found != null && context.mounted) {
+          final (child, result) = found;
+          if (result != null) return AssessmentScreen.open(context, child: child, result: result);
+          return ResultsScreen.open(context, family, child);
+        }
+      case NotificationKind.message:
+        if (n.conversationId != null && context.mounted) return ChatScreen.open(context, messages, n.conversationId!);
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;

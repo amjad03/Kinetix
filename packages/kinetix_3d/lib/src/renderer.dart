@@ -77,6 +77,7 @@ class SceneRenderer {
     _order = Int32List(t);
     _outPos = Float32List(t * 6);
     _outCol = Int32List(t * 3);
+    _outUv = Float32List(t * 6);
     for (var i = 0; i < model.parts.length; i++) {
       for (var k = 0; k < model.parts[i].mesh.triangleCount; k++) {
         _facePart[_tBase[i] + k] = i;
@@ -90,7 +91,7 @@ class SceneRenderer {
 
   final _vBase = <int>[], _tBase = <int>[];
   late final int _vCount, _tCount;
-  late final Float32List _cam, _scr, _vLight, _faceDepth, _faceShade, _outPos;
+  late final Float32List _cam, _scr, _vLight, _faceDepth, _faceShade, _outPos, _outUv;
   late final Uint8List _faceFront;
   late final Int32List _facePart, _order, _outCol;
   int _visibleCount = 0;
@@ -109,7 +110,7 @@ class SceneRenderer {
   TextStyle? _cachedStyle;
 
   /// Camera distance that fits a sphere of [fitRadius] in the view at zoom 1.
-  static double fitDistance(double fitRadius) => fitRadius / math.sin(OrbitCamera.fovDeg / 2 * math.pi / 180) * 1.12;
+  static double fitDistance(double fitRadius) => fitRadius / math.sin(OrbitCamera.fovDeg / 2 * math.pi / 180) * 1.3;
 
   void paint(Canvas canvas, Size size, OrbitCamera camera, RenderStyle style, RenderOptions opts, {double? fitRadius}) {
     if (size.isEmpty) return;
@@ -226,36 +227,43 @@ class SceneRenderer {
     final accent = style.accent;
     final alpha = opts.wireframe ? 0x55 : 0xFF;
     var o = 0;
+    var runStart = 0; // first output vertex of the current run
+    ui.Image? runTexture;
     for (var k = 0; k < n; k++) {
       final ft = sorted[k];
       final pi = _facePart[ft];
       final part = model.parts[pi];
+      final tex = part.mesh.uvs != null ? part.texture : null;
+      if (k > 0 && !identical(tex, runTexture)) {
+        // Textured and plain faces need separate draw calls; keep depth order across them.
+        _flush(canvas, runStart, o, runTexture);
+        runStart = o;
+      }
+      runTexture = tex;
       final vb = _vBase[pi];
       final t = ft - _tBase[pi];
       final idx = part.mesh.indices;
-      final vcols = part.mesh.vertexColors;
+      final vcols = tex == null ? part.mesh.vertexColors : null;
+      final uvs = part.mesh.uvs;
       final smooth = part.mesh.normals != null && !part.doubleSided;
       final hl = selected != null && part.id == selected;
+      final plain = tex != null ? 0xFFFFFFFF : part.color.toARGB32();
       for (var e = 0; e < 3; e++) {
         final local = idx[t * 3 + e];
         final v = vb + local;
         _outPos[o * 2] = _scr[v * 2];
         _outPos[o * 2 + 1] = _scr[v * 2 + 1];
-        final base = vcols != null ? vcols[local] : part.color.toARGB32();
+        if (tex != null) {
+          _outUv[o * 2] = uvs![local * 2] * tex.width;
+          _outUv[o * 2 + 1] = uvs[local * 2 + 1] * tex.height;
+        }
+        final base = vcols != null ? vcols[local] : plain;
         final light = smooth ? _vLight[v] : _faceShade[ft];
         _outCol[o] = _litColor(base, light, hl ? accent : null, alpha);
         o++;
       }
     }
-    if (n > 0) {
-      final verts = ui.Vertices.raw(
-        ui.VertexMode.triangles,
-        Float32List.sublistView(_outPos, 0, n * 6),
-        colors: Int32List.sublistView(_outCol, 0, n * 3),
-      );
-      canvas.drawVertices(verts, BlendMode.dst, Paint());
-      verts.dispose();
-    }
+    if (o > runStart) _flush(canvas, runStart, o, runTexture);
 
     // 5. Wireframe and textbook outlines.
     if (opts.wireframe) _paintWireframe(canvas, sorted, style);
@@ -267,6 +275,25 @@ class SceneRenderer {
     }
     if (opts.labels) _paintLabels(canvas, size, style, opts);
   }
+
+  void _flush(Canvas canvas, int from, int to, ui.Image? texture) {
+    final verts = ui.Vertices.raw(
+      ui.VertexMode.triangles,
+      Float32List.sublistView(_outPos, from * 2, to * 2),
+      colors: Int32List.sublistView(_outCol, from, to),
+      textureCoordinates: texture == null ? null : Float32List.sublistView(_outUv, from * 2, to * 2),
+    );
+    if (texture == null) {
+      canvas.drawVertices(verts, BlendMode.dst, Paint());
+    } else {
+      final shader = _shaders.putIfAbsent(texture, () => ImageShader(texture, TileMode.clamp, TileMode.clamp, Float64List.fromList([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])));
+      // Vertex colours carry the lighting; modulate multiplies them with the map.
+      canvas.drawVertices(verts, BlendMode.modulate, Paint()..shader = shader..filterQuality = FilterQuality.medium);
+    }
+    verts.dispose();
+  }
+
+  final _shaders = <ui.Image, ImageShader>{};
 
   double _shade(double nx, double ny, double nz, double px, double py, double pz, double lx, double ly, double lz, Vec3? point, double ambient, bool emissive) {
     if (emissive) return 1;

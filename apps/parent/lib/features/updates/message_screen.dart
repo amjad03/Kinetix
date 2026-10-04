@@ -25,6 +25,9 @@ class MessageScreen extends StatelessWidget {
       NotificationKind.boardShared => 'Class board',
       NotificationKind.recording => 'Lesson recording',
       NotificationKind.fee => 'Fees',
+      NotificationKind.library => 'Library',
+      NotificationKind.marks => 'Results',
+      NotificationKind.message => 'Message',
       NotificationKind.other => 'Update',
     };
     return Scaffold(

@@ -24,7 +24,7 @@ export default defineConfig({
     { name: 'auth', testMatch: /auth\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     {
       name: 'dashboard',
-      testMatch: /(dashboard|live|syllabus|ai)\.spec\.ts/,
+      testMatch: /(dashboard|live|syllabus|ai|results|timetable|library-principal)\.spec\.ts/,
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
     },
@@ -33,6 +33,12 @@ export default defineConfig({
       testMatch: /fees\.spec\.ts/,
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/accountant.json' },
+    },
+    {
+      name: 'library',
+      testMatch: /library\.spec\.ts/,
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/librarian.json' },
     },
   ],
   webServer: process.env.ERP_URL

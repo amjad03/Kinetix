@@ -17,7 +17,7 @@ abstract final class Primitives {
         final theta = u * 2 * math.pi;
         final n = Vec3(math.sin(phi) * math.cos(theta), math.cos(phi), -math.sin(phi) * math.sin(theta));
         final lat = 90 - v * 180, lon = u * 360 - 180;
-        b.addVertex(center + n * r, normal: n, color: colorAt?.call(lat, lon));
+        b.addVertex(center + n * r, normal: n, color: colorAt?.call(lat, lon), u: u, v: v);
       }
     }
     final row = segments + 1;

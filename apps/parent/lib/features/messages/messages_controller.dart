@@ -41,7 +41,6 @@ class MessagesController extends ChangeNotifier {
 
   Future<void> loadContacts() async {
     contactsError = null;
-    notifyListeners();
     try {
       contacts = await api.contacts();
     } on ApiException catch (e) {

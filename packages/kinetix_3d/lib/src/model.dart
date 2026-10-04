@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'math3d.dart';
 import 'mesh.dart';
@@ -20,6 +21,7 @@ class ModelPart {
     this.pickable = true,
     this.outline = false,
     this.motion,
+    this.texture,
   });
 
   final String id;
@@ -42,6 +44,10 @@ class ModelPart {
   final bool outline;
 
   final PartMotion? motion;
+
+  /// An image wrapped with the mesh's texture coordinates (the Earth's map). Lighting
+  /// modulates it.
+  final ui.Image? texture;
 }
 
 enum LabelKind {

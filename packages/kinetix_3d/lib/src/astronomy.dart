@@ -17,16 +17,16 @@ class _Planet {
 }
 
 const _planets = [
-  _Planet('Mercury', 0.28, 3.8, 0.24, Color(0xFFA7A39E), 'Closest to the Sun. A year lasts 88 Earth days.', phase: 0.4),
-  _Planet('Venus', 0.45, 5.0, 0.62, Color(0xFFE6C27F), 'The hottest planet: thick clouds of carbon dioxide trap heat.', phase: 2.1),
-  _Planet('Earth', 0.48, 6.3, 1.0, Color(0xFF2F74D0), 'Our home. The only planet known to have life and liquid water on its surface.', phase: 4.0),
-  _Planet('Mars', 0.36, 7.6, 1.88, Color(0xFFD0603A), 'The red planet: iron oxide (rust) in its soil. Has two small moons.', phase: 5.3),
-  _Planet('Jupiter', 1.15, 10.0, 11.86, Color(0xFFD8B48C), 'The largest planet, a gas giant. Its Great Red Spot is a giant storm.',
+  _Planet('Mercury', 0.4, 3.8, 0.24, Color(0xFFA7A39E), 'Closest to the Sun. A year lasts 88 Earth days.', phase: 0.4),
+  _Planet('Venus', 0.6, 5.0, 0.62, Color(0xFFE6C27F), 'The hottest planet: thick clouds of carbon dioxide trap heat.', phase: 2.1),
+  _Planet('Earth', 0.64, 6.3, 1.0, Color(0xFF2F74D0), 'Our home. The only planet known to have life and liquid water on its surface.', phase: 4.0),
+  _Planet('Mars', 0.5, 7.6, 1.88, Color(0xFFD0603A), 'The red planet: iron oxide (rust) in its soil. Has two small moons.', phase: 5.3),
+  _Planet('Jupiter', 1.45, 10.2, 11.86, Color(0xFFD8B48C), 'The largest planet, a gas giant. Its Great Red Spot is a giant storm.',
       bands: [0xFFE3C9A6, 0xFFB98A64, 0xFFE8D5B9, 0xFFC49B74, 0xFFDCC2A0], phase: 1.2),
-  _Planet('Saturn', 0.95, 12.9, 29.46, Color(0xFFE2C98E), 'Famous for its bright rings of ice and rock.',
+  _Planet('Saturn', 1.2, 13.8, 29.46, Color(0xFFE2C98E), 'Famous for its bright rings of ice and rock.',
       bands: [0xFFEAD7A6, 0xFFD5B97C, 0xFFE9D4A2], rings: true, phase: 3.1),
-  _Planet('Uranus', 0.7, 15.3, 84.0, Color(0xFF8FD3DE), 'An ice giant that spins on its side.', phase: 5.9),
-  _Planet('Neptune', 0.68, 17.4, 164.8, Color(0xFF4C70E0), 'The farthest planet, with the fastest winds in the Solar System.', phase: 0.9),
+  _Planet('Uranus', 0.9, 16.6, 84.0, Color(0xFF8FD3DE), 'An ice giant that spins on its side.', phase: 5.9),
+  _Planet('Neptune', 0.88, 18.8, 164.8, Color(0xFF4C70E0), 'The farthest planet, with the fastest winds in the Solar System.', phase: 0.9),
 ];
 
 /// The catalogue's astronomy models.
@@ -54,15 +54,16 @@ abstract final class AstronomyModels {
       }
 
       final mesh = p.name == 'Earth'
-          ? Primitives.sphere(p.radius, segments: 28, rings: 14, colorAt: earthColor)
+          ? Primitives.sphere(p.radius, segments: 28, rings: 14)
           : Primitives.sphere(p.radius, segments: 24, rings: 12, colorAt: p.bands == null ? null : (lat, lon) => p.bands![((lat + 90) / 180 * 9).floor() % p.bands!.length]);
-      parts.add(ModelPart(id: id, mesh: mesh, color: p.color, motion: motion, name: p.name, description: '${_ordinal(i + 1)} planet from the Sun. ${p.fact}'));
+      parts.add(ModelPart(id: id, mesh: mesh, color: p.color, texture: p.name == 'Earth' ? earthTexture() : null, motion: motion, name: p.name, description: '${_ordinal(i + 1)} planet from the Sun. ${p.fact}'));
       if (p.rings) {
         parts.add(ModelPart(
           id: '$id-rings',
           mesh: Primitives.ring(p.radius * 1.35, p.radius * 2.2, segments: 48),
-          color: const Color(0xFFCDB98A),
+          color: const Color(0xFFA8987A),
           doubleSided: true,
+          emissive: true,
           motion: (t) => motion(t) * Mat4.rotationX(0.45),
           name: 'Saturn\'s rings',
           description: 'Rings made of countless pieces of ice and rock, from dust-sized to house-sized.',
@@ -86,11 +87,11 @@ abstract final class AstronomyModels {
       lines: lines,
       glows: const [Glow('sun', 4.6, Color(0x88FFB300))],
       pointLight: Vec3.zero,
-      ambient: 0.14,
+      ambient: 0.3,
       initialYaw: -10,
-      initialPitch: 32,
+      initialPitch: 34,
       animated: true,
-      boundsRadius: 17.6,
+      boundsRadius: 12.0,
       center: Vec3.zero,
     );
   }
@@ -106,8 +107,9 @@ abstract final class AstronomyModels {
     final parts = <ModelPart>[
       ModelPart(
         id: 'earth',
-        mesh: Primitives.sphere(r, segments: 80, rings: 40, colorAt: earthColor),
+        mesh: Primitives.sphere(r, segments: 64, rings: 32),
         color: const Color(0xFF2F74D0),
+        texture: earthTexture(),
         motion: (t) => tilt * Mat4.rotationY(t * spin),
         name: 'Earth',
         description: 'Turns once on its axis in 24 hours (west to east), giving day and night.',
@@ -164,8 +166,8 @@ abstract final class AstronomyModels {
         Label3D('North Pole', axis * r * 1.5, emphasis: true),
         Label3D('South Pole', axis * -r * 1.5),
         Label3D('Equator', tilt.transformPoint(Vec3(r * 0.5, 0, r * 0.866)), normal: tilt.transformDirection(const Vec3(0.5, 0, 0.866))),
-        Label3D('23.5°', Vec3(-math.sin(tiltRad / 2), math.cos(tiltRad / 2), 0) * (r * 1.55), kind: LabelKind.dimension, emphasis: true),
-        const Label3D('Sunlight', Vec3(-7.4, 2.0, 0)),
+        Label3D('23.5°', Vec3(-math.sin(tiltRad / 2), math.cos(tiltRad / 2), 0) * (r * 1.2), kind: LabelKind.dimension, emphasis: true),
+        const Label3D('Sunlight', Vec3(-7.4, 2.55, 0), kind: LabelKind.dimension),
         Label3D('Day', const Vec3(-0.78, -0.35, 0.52).normalized * r, normal: const Vec3(-0.78, -0.35, 0.52)),
         Label3D('Night', const Vec3(0.8, -0.3, 0.52).normalized * r, normal: const Vec3(0.8, -0.3, 0.52)),
         Label3D('India', india, partId: 'earth', normal: india, emphasis: true),

@@ -3,6 +3,8 @@
 /// spinning Earth; not for geography lessons that need real coastlines.
 library;
 
+import 'dart:ui';
+
 const _land = <List<double>>[
   // North America
   [-168, 66, -162, 70, -156, 71.3, -140, 69.6, -128, 70, -115, 68, -95, 72, -82, 73, -78, 68, -65, 60, -62, 58, -55, 52, -60, 46, -66, 44, -70, 41.5, -76, 35, -81, 31, -80, 25.5, -82, 29, -84, 30, -90, 29.5, -97, 27, -97, 22, -94, 18.5, -90, 21, -87, 21.5, -88, 16, -83, 15, -83, 10, -79.5, 9, -77.5, 8, -80, 7.5, -85, 10, -88, 13.5, -92, 14.5, -96, 15.7, -105, 19.5, -106, 23, -112, 29, -114.8, 31.5, -112, 25, -110, 23, -115, 28, -117, 32.5, -120.5, 34.5, -124, 40, -124.5, 48, -130, 54, -135, 58, -140, 59.8, -148, 60.5, -152, 58.5, -158, 56, -165, 54.5, -158, 58, -162, 60, -165, 62.5, -166, 64.5],
@@ -115,4 +117,76 @@ int earthColor(double lat, double lon) {
       (lat > -30 && lat < -18 && lon > 14 && lon < 24); // Kalahari
   if (desert) return 0xFFC9A764;
   return lat.abs() < 23 ? 0xFF2E8B45 : 0xFF4C9A4E;
+}
+
+Image? _texture;
+
+/// An equirectangular map of the Earth (1024 × 512), drawn once from the outlines above and
+/// cached. Longitude −180° is at the left edge, latitude 90° at the top, as
+/// `Primitives.sphere` lays out its texture coordinates.
+Image earthTexture() => _texture ??= _drawTexture(1024, 512);
+
+Image _drawTexture(int w, int h) {
+  Offset at(double lon, double lat) => Offset((lon + 180) / 360 * w, (90 - lat) / 180 * h);
+  Rect box(double lon0, double lat0, double lon1, double lat1) => Rect.fromPoints(at(lon0, lat0), at(lon1, lat1));
+  Path poly(List<double> p) {
+    final path = Path()..moveTo(at(p[0], p[1]).dx, at(p[0], p[1]).dy);
+    for (var i = 2; i < p.length; i += 2) {
+      final o = at(p[i], p[i + 1]);
+      path.lineTo(o.dx, o.dy);
+    }
+    return path..close();
+  }
+
+  final rec = PictureRecorder();
+  final c = Canvas(rec, Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()));
+  final full = Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble());
+  // Ocean: deeper towards the poles.
+  c.drawRect(
+    full,
+    Paint()
+      ..shader = Gradient.linear(Offset.zero, Offset(0, h.toDouble()), const [Color(0xFF16468F), Color(0xFF1E62C2), Color(0xFF2370D0), Color(0xFF1E62C2), Color(0xFF16468F)], const [0, 0.3, 0.5, 0.7, 1]),
+  );
+  final land = Path();
+  for (final p in _land) {
+    land.addPath(poly(p), Offset.zero);
+  }
+  land.addRect(box(-180, -66, 180, -90)); // Antarctica
+  final water = Path();
+  for (final p in _water) {
+    water.addPath(poly(p), Offset.zero);
+  }
+  final shore = Path.combine(PathOperation.difference, land, water);
+
+  c.drawPath(shore, Paint()..color = const Color(0xFF4E9A4F));
+  c.save();
+  c.clipPath(shore);
+  final soft = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+  // Rainforest belt, deserts, steppe, tundra and ice.
+  c.drawRect(box(-180, 12, 180, -12), soft..color = const Color(0xFF2E7F3E));
+  c.drawRect(box(-17, 33, 58, 15), soft..color = const Color(0xFFD2B06A)); // Sahara and Arabia
+  c.drawRect(box(58, 32, 74, 24), soft..color = const Color(0xFFC9A764)); // Thar and Iran
+  c.drawRect(box(118, -19, 145, -32), soft..color = const Color(0xFFCB9A5C)); // Australian interior
+  c.drawRect(box(55, 48, 112, 37), soft..color = const Color(0xFFBFA971)); // Central Asian steppe, Gobi
+  c.drawRect(box(-117, 37, -103, 24), soft..color = const Color(0xFFC9A764)); // North American deserts
+  c.drawRect(box(14, -18, 26, -30), soft..color = const Color(0xFFC9A764)); // Kalahari
+  c.drawRect(box(-75, -15, -68, -30), soft..color = const Color(0xFFBFA37A)); // Atacama and Andes
+  c.drawRect(box(-180, 72, 180, 62), soft..color = const Color(0xFF8C9A78)); // tundra
+  c.drawRect(box(-180, 90, 180, 72), soft..color = const Color(0xFFEFF4F7));
+  c.drawRect(box(-75, 85, -10, 60), Paint()..color = const Color(0xFFEFF4F7)); // Greenland ice sheet
+  c.drawRect(box(-180, -62, 180, -90), Paint()..color = const Color(0xFFF1F5F8));
+  c.restore();
+  // Arctic sea ice and a crisp coastline.
+  c.drawRect(box(-180, 90, 180, 80), Paint()..color = const Color(0xFFE6EEF5));
+  c.drawPath(
+    shore,
+    Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0x66103A20),
+  );
+  final picture = rec.endRecording();
+  final image = picture.toImageSync(w, h);
+  picture.dispose();
+  return image;
 }

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
+import 'live.dart';
 import 'models.dart';
 import 'push.dart';
 
@@ -14,11 +15,16 @@ const defaultServerUrl = 'http://localhost:4000';
 /// TODO: keep the token in flutter_secure_storage (Android Keystore / iOS Keychain) and add an
 /// app lock (biometric or OS PIN), per docs/architecture/board-pairing.md.
 class AppState extends ChangeNotifier {
-  AppState(this.api, this.prefs, {PushTokenSource push = const NoPushTokenSource()}) : push = PushRegistrar(api, push);
+  AppState(this.api, this.prefs, {PushTokenSource push = const NoPushTokenSource(), LiveConnector? live})
+    : push = PushRegistrar(api, push),
+      liveConnector = live ?? SocketLiveConnection.new;
 
   final StudentApi api;
   final SharedPreferences prefs;
   final PushRegistrar push;
+
+  /// Opens the realtime connection a live class is watched over (a fake in tests).
+  final LiveConnector liveConnector;
 
   static const _kServer = 'server_url', _kTenant = 'tenant', _kLogin = 'login', _kToken = 'token', _kAiLanguage = 'ai_language';
 

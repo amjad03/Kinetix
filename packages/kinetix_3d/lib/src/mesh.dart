@@ -7,11 +7,12 @@ import 'math3d.dart';
 ///
 /// Triangles wind counter-clockwise when seen from outside (the front face).
 class Mesh {
-  Mesh({required this.positions, required this.indices, this.normals, this.vertexColors})
+  Mesh({required this.positions, required this.indices, this.normals, this.vertexColors, this.uvs})
       : assert(positions.length % 3 == 0),
         assert(indices.length % 3 == 0),
         assert(normals == null || normals.length == positions.length),
-        assert(vertexColors == null || vertexColors.length * 3 == positions.length);
+        assert(vertexColors == null || vertexColors.length * 3 == positions.length),
+        assert(uvs == null || uvs.length * 3 == positions.length * 2);
 
   /// x, y, z per vertex.
   final Float32List positions;
@@ -24,6 +25,9 @@ class Mesh {
 
   /// Optional per-vertex ARGB colours (e.g. continents on the Earth).
   final Int32List? vertexColors;
+
+  /// Optional texture coordinates (u, v in 0–1, v down) for a textured part.
+  final Float32List? uvs;
 
   int get vertexCount => positions.length ~/ 3;
   int get triangleCount => indices.length ~/ 3;
@@ -91,12 +95,15 @@ class MeshBuilder {
   final _n = <double>[];
   final _c = <int>[];
   final _i = <int>[];
-  bool _hasNormals = false, _hasColors = false;
+  final _uv = <double>[];
+  bool _hasNormals = false, _hasColors = false, _hasUvs = false;
 
   int get vertexCount => _p.length ~/ 3;
 
-  int addVertex(Vec3 p, {Vec3? normal, int? color}) {
+  int addVertex(Vec3 p, {Vec3? normal, int? color, double? u, double? v}) {
     _p.addAll([p.x, p.y, p.z]);
+    if (u != null) _hasUvs = true;
+    _uv.addAll([u ?? 0, v ?? 0]);
     if (normal != null) _hasNormals = true;
     final n = normal ?? Vec3.zero;
     _n.addAll([n.x, n.y, n.z]);
@@ -145,5 +152,6 @@ class MeshBuilder {
         indices: Uint32List.fromList(_i),
         normals: smooth && _hasNormals ? Float32List.fromList(_n) : null,
         vertexColors: _hasColors ? Int32List.fromList(_c) : null,
+        uvs: _hasUvs ? Float32List.fromList(_uv) : null,
       );
 }
