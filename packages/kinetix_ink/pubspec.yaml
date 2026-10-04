@@ -1,0 +1,17 @@
+name: kinetix_ink
+description: KINETIX ink engine — multi-touch strokes, shapes with measurements, selection, pages, the saved-board format and a read-only viewer. Shared by the Board and the family apps.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

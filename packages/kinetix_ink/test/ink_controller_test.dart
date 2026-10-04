@@ -1,8 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinetix_board/features/ink/ink_controller.dart';
-import 'package:kinetix_board/features/ink/ink_models.dart';
+import 'package:kinetix_ink/kinetix_ink.dart';
 
 void main() {
   InkPoint p(double x, double y) => InkPoint(x, y);

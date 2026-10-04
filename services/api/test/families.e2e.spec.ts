@@ -162,7 +162,8 @@ describe('families, saved boards and the dashboard', () => {
     it('sharing notifies the class and lets their families open it', async () => {
       await http().post(`/v1/whiteboards/${boardId}/share`).set(auth('teacher')).expect(200);
       expect((await inbox('parent')).items.some((n) => n.kind === 'board_shared' && n.data.whiteboardId === boardId)).toBe(true);
-      expect((await http().get(`/v1/whiteboards/${boardId}`).set(auth('parent')).expect(200)).body.content.background).toBe('grid');
+      const opened = (await http().get(`/v1/whiteboards/${boardId}`).set(auth('parent')).expect(200)).body;
+      expect(opened.content).toMatchObject({ background: 'grid', canvas: { w: 1920, h: 1080 } });
       await http().get(`/v1/whiteboards/${boardId}`).set(auth('student')).expect(200);
       await http().get(`/v1/whiteboards/${boardId}`).set(auth('outsider')).expect(404);
       const s = (await http().get(`/v1/parent/children/${t.students[0].id}/summary`).set(auth('parent')).expect(200)).body;

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
-import '../ink/board_background.dart';
-import '../ink/ink_canvas.dart';
-import '../ink/ink_controller.dart';
+import 'package:kinetix_ink/kinetix_ink.dart';
+
 import 'chrome.dart';
 
 /// What the side panel shows. Opening any of these splits the screen with the whiteboard.

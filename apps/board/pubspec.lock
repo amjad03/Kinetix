@@ -112,6 +112,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.3"
+  kinetix_ink:
+    dependency: "direct main"
+    description:
+      path: "../../packages/kinetix_ink"
+      relative: true
+    source: path
+    version: "0.1.0"
   kinetix_ui:
     dependency: "direct main"
     description:

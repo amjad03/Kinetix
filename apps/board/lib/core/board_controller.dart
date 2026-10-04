@@ -5,7 +5,9 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../features/comfort/eye_comfort.dart';
-import '../features/ink/ink_models.dart';
+
+import 'package:kinetix_ink/kinetix_ink.dart';
+
 import 'api_client.dart';
 import 'device_store.dart';
 import 'models.dart';

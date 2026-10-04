@@ -396,6 +396,7 @@ export interface WhiteboardContent {
   /** Format version. */
   v: 1;
   background: string;
+  canvas: { w: number; h: number };
   pages: { strokes: SerializedStroke[] }[];
 }
 

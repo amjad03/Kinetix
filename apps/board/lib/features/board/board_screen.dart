@@ -6,10 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
-import '../ink/board_background.dart';
-import '../ink/ink_canvas.dart';
-import '../ink/ink_controller.dart';
-import '../ink/ink_models.dart';
+
+import 'package:kinetix_ink/kinetix_ink.dart';
+
 import '../signin/sign_in_dialog.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';

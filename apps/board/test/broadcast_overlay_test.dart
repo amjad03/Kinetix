@@ -4,26 +4,28 @@ import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
 
 BroadcastMessage msg(String id, BroadcastPriority p) => BroadcastMessage(
-      id: id,
-      title: 'Title $id',
-      body: 'Body $id',
-      priority: p,
-      requiresAck: p == BroadcastPriority.emergency,
-      senderName: 'Dr. Meera Rao',
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    );
+  id: id,
+  title: 'Title $id',
+  body: 'Body $id',
+  priority: p,
+  requiresAck: p == BroadcastPriority.emergency,
+  senderName: 'Dr. Meera Rao',
+  expiresAt: DateTime.now().add(const Duration(hours: 1)),
+);
 
 void main() {
   Future<List<(String, bool)>> pump(WidgetTester tester, List<BroadcastMessage> messages, {Set<String> acknowledged = const {}}) async {
     final dismissed = <(String, bool)>[];
-    await tester.pumpWidget(MaterialApp(
-      home: BroadcastOverlay(
-        messages: messages,
-        acknowledged: acknowledged,
-        onDismiss: (m, {required acknowledge}) => dismissed.add((m.id, acknowledge)),
-        child: const Scaffold(body: Text('board')),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BroadcastOverlay(
+          messages: messages,
+          acknowledged: acknowledged,
+          onDismiss: (m, {required acknowledge}) => dismissed.add((m.id, acknowledge)),
+          child: const Scaffold(body: Text('board')),
+        ),
       ),
-    ));
+    );
     return dismissed;
   }
 
@@ -31,7 +33,11 @@ void main() {
     for (final p in BroadcastPriority.values) {
       await pump(tester, [msg(p.name, p)]);
       final text = find.textContaining('Title ${p.name}');
-      expect(find.ancestor(of: text, matching: find.byType(Material)), findsWidgets, reason: p.name);
+      expect(
+        find.ancestor(of: text, matching: find.byType(Material)),
+        findsWidgets,
+        reason: p.name,
+      );
       // The debug fallback style underlines text in yellow.
       final style = DefaultTextStyle.of(tester.element(text)).style;
       expect(style.decoration, isNot(TextDecoration.underline), reason: p.name);

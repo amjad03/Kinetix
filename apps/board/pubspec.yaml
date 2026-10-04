@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   http: ^1.6.0
   intl: ^0.20.3
+  kinetix_ink:
+    path: ../../packages/kinetix_ink
   kinetix_ui:
     path: ../../packages/kinetix_ui
   qr_flutter: ^4.1.0

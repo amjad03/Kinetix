@@ -23,6 +23,8 @@ const StrokeSchema = z.object({
 const SaveBody = z.object({
   title: z.string().trim().min(1).max(120),
   background: z.string().max(32).default('plain'),
+  /** Canvas size the strokes were drawn on, so viewers can scale them. */
+  canvas: z.object({ w: z.number().int().min(100).max(10_000), h: z.number().int().min(100).max(10_000) }).default({ w: 1920, h: 1080 }),
   pages: z.array(z.object({ strokes: z.array(StrokeSchema).max(10_000) })).min(1).max(100),
   /** Share with the class now: students and parents can open it in their apps. */
   share: z.boolean().default(false),
@@ -43,7 +45,7 @@ export class WhiteboardsController {
   @Put(':id')
   @Auth('board')
   save(@CurrentPrincipal() p: BoardPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(SaveBody)) body: z.infer<typeof SaveBody>) {
-    const content: WhiteboardContent = { v: 1, background: body.background, pages: body.pages };
+    const content: WhiteboardContent = { v: 1, background: body.background, canvas: body.canvas, pages: body.pages };
     const sizeBytes = Buffer.byteLength(JSON.stringify(content));
     if (sizeBytes > MAX_BYTES) throw new ForbiddenException('This board is too large to save. Split it into two boards.');
 

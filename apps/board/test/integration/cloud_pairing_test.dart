@@ -19,9 +19,11 @@ void main() {
   final skip = api == null || enrollCode == null ? 'set KINETIX_IT_API and KINETIX_IT_ENROLL_CODE' : null;
 
   Future<String> login(String email) async {
-    final res = await http.post(Uri.parse('$api/v1/auth/login'),
-        headers: {'content-type': 'application/json'},
-        body: jsonEncode({'tenant': 'demo-college', 'login': email, 'password': 'kinetix123'}));
+    final res = await http.post(
+      Uri.parse('$api/v1/auth/login'),
+      headers: {'content-type': 'application/json'},
+      body: jsonEncode({'tenant': 'demo-college', 'login': email, 'password': 'kinetix123'}),
+    );
     return (jsonDecode(res.body) as Map)['accessToken'] as String;
   }
 
@@ -45,8 +47,11 @@ void main() {
     expect(code.code, matches(RegExp(r'^\d{6}$')));
 
     final teacher = await login('anita@demo.kinetix.in');
-    final claim = await http.post(Uri.parse('$api/v1/pairing/claim'),
-        headers: {'content-type': 'application/json', 'authorization': 'Bearer $teacher'}, body: jsonEncode({'qr': code.qrPayload}));
+    final claim = await http.post(
+      Uri.parse('$api/v1/pairing/claim'),
+      headers: {'content-type': 'application/json', 'authorization': 'Bearer $teacher'},
+      body: jsonEncode({'qr': code.qrPayload}),
+    );
     expect(claim.statusCode, 200, reason: claim.body);
 
     final event = await paired.future.timeout(const Duration(seconds: 10));
@@ -55,9 +60,16 @@ void main() {
     client.sessionToken = event['sessionToken'] as String;
 
     final principal = await login('principal@demo.kinetix.in');
-    await http.post(Uri.parse('$api/v1/broadcasts'),
-        headers: {'content-type': 'application/json', 'authorization': 'Bearer $principal'},
-        body: jsonEncode({'title': 'Assembly', 'body': 'Auditorium at 11:00', 'priority': 'important', 'audience': {'all': true}}));
+    await http.post(
+      Uri.parse('$api/v1/broadcasts'),
+      headers: {'content-type': 'application/json', 'authorization': 'Bearer $principal'},
+      body: jsonEncode({
+        'title': 'Assembly',
+        'body': 'Auditorium at 11:00',
+        'priority': 'important',
+        'audience': {'all': true},
+      }),
+    );
     final msg = BroadcastMessage.fromJson(await broadcast.future.timeout(const Duration(seconds: 10)));
     expect(msg.priority, BroadcastPriority.important);
     await client.markDisplayed(msg.id);

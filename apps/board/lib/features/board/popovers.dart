@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../comfort/eye_comfort.dart';
-import '../ink/board_background.dart';
-import '../ink/ink_canvas.dart';
-import '../ink/ink_controller.dart';
-import '../ink/ink_models.dart';
+
+import 'package:kinetix_ink/kinetix_ink.dart';
+
 import 'chrome.dart';
 
 const inkPalette = [

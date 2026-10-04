@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/ink/ink_canvas.dart';
+import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,25 +16,46 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final board = BoardController()..skipEnrollment();
-    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: KinetixTheme.light(),
+        home: BoardScreen(board: board),
+      ),
+    );
     await tester.pump();
     return board;
   }
 
   SessionContext session() => SessionContext(
-        sessionId: 's1',
-        expiresAt: DateTime.now().add(const Duration(hours: 1)),
-        teacherId: 't1',
-        teacherName: 'Anita Sharma',
-        language: 'hi',
-        sectionName: 'BCom Sem 3 A',
-        subjectName: 'Corporate Accounting',
-        periodLabel: '10:00–10:55',
-      );
+    sessionId: 's1',
+    expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    teacherId: 't1',
+    teacherName: 'Anita Sharma',
+    language: 'hi',
+    sectionName: 'BCom Sem 3 A',
+    subjectName: 'Corporate Accounting',
+    periodLabel: '10:00–10:55',
+  );
 
   testWidgets('guest board: toolbar has the Teachmint-style tools, labelled', (tester) async {
     await pump(tester);
-    for (final label in ['Record', 'Theme', 'Write', 'Erase', 'Select', 'Shapes', 'Tools', 'Undo', 'Redo', 'AI', 'Books', 'Quiz', 'Homework', 'Hide', 'New page']) {
+    for (final label in [
+      'Record',
+      'Theme',
+      'Write',
+      'Erase',
+      'Select',
+      'Shapes',
+      'Tools',
+      'Undo',
+      'Redo',
+      'AI',
+      'Books',
+      'Quiz',
+      'Homework',
+      'Hide',
+      'New page',
+    ]) {
       expect(find.text(label), findsWidgets, reason: label);
     }
     expect(find.text('Practice board'), findsOneWidget);
