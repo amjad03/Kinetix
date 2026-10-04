@@ -30,7 +30,9 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
   void initState() {
     super.initState();
     // The subjects feed the "Subject" chips and the syllabus list.
-    if (widget.study.subjects == null) widget.study.loadSubjects();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && widget.study.subjects == null) widget.study.loadSubjects();
+    });
   }
 
   @override

@@ -118,9 +118,17 @@ class _SignInScreenState extends State<SignInScreen> {
                             child: Icon(Icons.school, color: colors.onPrimary, size: 22),
                           ),
                           const SizedBox(width: Kx.s12),
-                          Text('KINETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
-                          const SizedBox(width: Kx.s8),
-                          Text('Student', style: context.text.titleMedium?.copyWith(color: colors.onSurfaceVariant)),
+                          // Wraps under very large text instead of overflowing.
+                          Expanded(
+                            child: Wrap(
+                              spacing: Kx.s8,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text('KINETIX', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                                Text('Student', style: context.text.titleMedium?.copyWith(color: colors.onSurfaceVariant)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: Kx.s32),

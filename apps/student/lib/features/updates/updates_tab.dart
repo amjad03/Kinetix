@@ -88,7 +88,12 @@ class UpdatesTab extends StatelessWidget {
                 title: const Text('Updates'),
                 actions: [
                   if (controller.unread > 0)
-                    TextButton(key: const Key('markAllRead'), onPressed: controller.markAllRead, child: const Text('Mark all as read')),
+                    IconButton(
+                      key: const Key('markAllRead'),
+                      tooltip: 'Mark all as read',
+                      onPressed: controller.markAllRead,
+                      icon: const Icon(Icons.done_all),
+                    ),
                   const SizedBox(width: Kx.s8),
                 ],
               ),

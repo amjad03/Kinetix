@@ -26,6 +26,8 @@ import type { FeeSummary } from '@/lib/types';
 export const metadata: Metadata = { title: 'Fees' };
 
 const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
+/** The exact amount, when the tile shows it shortened (₹9.26 L). */
+const exact = (paise: number) => (formatRupeesShort(paise) === formatRupees(paise) ? '' : ` · ${formatRupees(paise)}`);
 
 export default async function FeesPage() {
   await requireSection('fees');
@@ -61,14 +63,14 @@ export default async function FeesPage() {
             <StatTile
               label="Collected"
               value={formatRupeesShort(s!.collectedPaise)}
-              caption={`${pct(s!.collectedPaise, s!.billedPaise).toFixed(1)}% of billed · ${formatRupees(s!.collectedPaise)}`}
+              caption={`${pct(s!.collectedPaise, s!.billedPaise).toFixed(1)}% of billed${exact(s!.collectedPaise)}`}
               bar={<MiniBar value={pct(s!.collectedPaise, s!.billedPaise)} color="kx.success" label="Share of billed fees collected" />}
               testId="fee-collected"
             />
             <StatTile
               label="Outstanding"
               value={formatRupeesShort(s!.outstandingPaise)}
-              caption={`${s!.openInvoices} open invoices · ${formatRupees(s!.outstandingPaise)}`}
+              caption={`${s!.openInvoices} open invoices${exact(s!.outstandingPaise)}`}
               testId="fee-outstanding"
             />
             <StatTile
@@ -90,58 +92,89 @@ export default async function FeesPage() {
           >
             By class
           </SectionTitle>
-          <TableFrame testId="fee-classes">
-            <Table sx={{ minWidth: 760 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Class</TableCell>
-                  <TableCell align="right">Billed</TableCell>
-                  <TableCell align="right">Collected</TableCell>
-                  <TableCell align="right">Outstanding</TableCell>
-                  <TableCell align="right">Open</TableCell>
-                  <TableCell align="right">Overdue</TableCell>
-                  <TableCell aria-label="Invoices" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {s!.classes.map((c) => {
-                  const share = pct(c.collectedPaise, c.billedPaise);
-                  return (
-                    <TableRow key={c.sectionId} hover data-testid="fee-class-row">
-                      <TableCell>
-                        <Typography variant="subtitle2">{c.className}</Typography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {formatRupees(c.billedPaise)}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
-                          <Box sx={{ width: 64 }}>
-                            <MiniBar value={share} color="kx.success" label={`${share.toFixed(0)}% collected`} />
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <TableFrame testId="fee-classes">
+              <Table sx={{ minWidth: 760 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Class</TableCell>
+                    <TableCell align="right">Billed</TableCell>
+                    <TableCell align="right">Collected</TableCell>
+                    <TableCell align="right">Outstanding</TableCell>
+                    <TableCell align="right">Open</TableCell>
+                    <TableCell align="right">Overdue</TableCell>
+                    <TableCell aria-label="Invoices" />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {s!.classes.map((c) => {
+                    const share = pct(c.collectedPaise, c.billedPaise);
+                    return (
+                      <TableRow key={c.sectionId} hover data-testid="fee-class-row">
+                        <TableCell>
+                          <Typography variant="subtitle2">{c.className}</Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                          {formatRupees(c.billedPaise)}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
+                            <Box sx={{ width: 64 }}>
+                              <MiniBar value={share} color="kx.success" label={`${share.toFixed(0)}% collected`} />
+                            </Box>
+                            <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 96 }}>
+                              {formatRupees(c.collectedPaise)}
+                            </Typography>
                           </Box>
-                          <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 96 }}>
-                            {formatRupees(c.collectedPaise)}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {formatRupees(c.outstandingPaise)}
-                      </TableCell>
-                      <TableCell align="right">{c.open}</TableCell>
-                      <TableCell align="right" sx={{ color: c.overdue ? 'error.main' : 'text.secondary', fontWeight: c.overdue ? 500 : 400 }}>
-                        {c.overdue}
-                      </TableCell>
-                      <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                        <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={`Invoices for ${c.className}`}>
-                          Invoices
-                        </LinkButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableFrame>
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                          {formatRupees(c.outstandingPaise)}
+                        </TableCell>
+                        <TableCell align="right">{c.open}</TableCell>
+                        <TableCell align="right" sx={{ color: c.overdue ? 'error.main' : 'text.secondary', fontWeight: c.overdue ? 500 : 400 }}>
+                          {c.overdue}
+                        </TableCell>
+                        <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
+                          <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={`Invoices for ${c.className}`}>
+                            Invoices
+                          </LinkButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableFrame>
+          </Box>
+          {/* Phones: one card per class instead of a wide table. */}
+          <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="fee-classes-list">
+            {s!.classes.map((c) => (
+              <Box key={c.sectionId} sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                    {c.className}
+                  </Typography>
+                  {c.overdue > 0 && (
+                    <Typography variant="body2" sx={{ color: 'error.main', whiteSpace: 'nowrap' }}>
+                      {c.overdue} overdue
+                    </Typography>
+                  )}
+                </Box>
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  {formatRupees(c.outstandingPaise)} outstanding
+                </Typography>
+                <Box sx={{ my: 1 }}>
+                  <MiniBar value={pct(c.collectedPaise, c.billedPaise)} color="kx.success" label={`${pct(c.collectedPaise, c.billedPaise).toFixed(0)}% collected`} />
+                </Box>
+                <Typography variant="caption" color="text.secondary" component="p">
+                  {formatRupees(c.collectedPaise)} collected of {formatRupees(c.billedPaise)} · {c.open} open
+                </Typography>
+                <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} sx={{ mt: 1, ml: -1 }}>
+                  Invoices
+                </LinkButton>
+              </Box>
+            ))}
+          </Box>
         </>
       )}
     </>

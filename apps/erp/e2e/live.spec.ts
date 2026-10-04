@@ -13,7 +13,11 @@ test.beforeAll(async () => {
   tokens = { admin: await apiLogin('admin@demo.kinetix.in'), teacher: await apiLogin('anita@demo.kinetix.in') };
 });
 
-test.afterAll(() => boards.forEach((b) => b.close()));
+test.afterAll(async () => {
+  // Leave no class open on the pretend boards, so a rerun starts from an empty Live page.
+  await Promise.allSettled(boards.map((b) => b.endClass()));
+  boards.forEach((b) => b.close());
+});
 
 test('Live shows an empty state when no class is on a board', async ({ page }) => {
   await open(page, '/live');

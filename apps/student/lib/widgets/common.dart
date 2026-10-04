@@ -140,10 +140,18 @@ class SectionCard extends StatelessWidget {
                 children: [
                   Icon(icon, size: 20, color: c.primary),
                   const SizedBox(width: Kx.s8),
+                  // The caption sits at the end, or drops under the title with very large text.
                   Expanded(
-                    child: Text(title, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    child: Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: Kx.s8,
+                      children: [
+                        Text(title, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                        if (caption != null) Text(caption!, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+                      ],
+                    ),
                   ),
-                  if (caption != null) Text(caption!, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
                 ],
               ),
             ),

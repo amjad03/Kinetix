@@ -8,7 +8,7 @@ import 'topic_screen.dart';
 
 /// "Ask a doubt": the question box with language (and subject) choice, then the answer and the
 /// earlier questions of this session. Scrolls as one list.
-class AskView extends StatelessWidget {
+class AskView extends StatefulWidget {
   const AskView({super.key, required this.controller, this.subjects, this.header});
 
   final AskController controller;
@@ -18,6 +18,59 @@ class AskView extends StatelessWidget {
 
   /// Shown above the question box (e.g. an intro line).
   final Widget? header;
+
+  @override
+  State<AskView> createState() => _AskViewState();
+}
+
+class _AskViewState extends State<AskView> {
+  final _answerKey = GlobalKey();
+  AskTurn? _shown;
+  bool _shownLoading = false;
+
+  AskController get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _shown = controller.current;
+    _shownLoading = _shown?.loading ?? false;
+    controller.addListener(_changed);
+  }
+
+  @override
+  void didUpdateWidget(AskView old) {
+    super.didUpdateWidget(old);
+    if (old.controller != controller) {
+      old.controller.removeListener(_changed);
+      controller.addListener(_changed);
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.removeListener(_changed);
+    super.dispose();
+  }
+
+  /// A new question (or an earlier one shown again), and again once its answer arrives: bring
+  /// the answer into view, since on a phone it starts below the question box. (While it is
+  /// still "thinking" the card is short, so the list may not scroll far enough yet.)
+  void _changed() {
+    final turn = controller.current;
+    final loading = turn?.loading ?? false;
+    final isNew = !identical(turn, _shown);
+    if (!isNew && loading == _shownLoading) return;
+    _shown = turn;
+    _shownLoading = loading;
+    if (isNew) FocusManager.instance.primaryFocus?.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _answerKey.currentContext;
+      if (ctx != null && ctx.mounted) {
+        Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +83,15 @@ class AskView extends StatelessWidget {
             key: const Key('askList'),
             padding: EdgeInsets.fromLTRB(sideGutter(box.maxWidth), Kx.s16, sideGutter(box.maxWidth), Kx.s32),
             children: [
-              ?header,
-              _Composer(controller: controller, subjects: subjects),
-              if (turn != null) ...[const SizedBox(height: Kx.s16), AnswerCard(turn: turn, controller: controller)],
+              ?widget.header,
+              _Composer(controller: controller, subjects: widget.subjects),
+              if (turn != null) ...[
+                const SizedBox(height: Kx.s16),
+                KeyedSubtree(
+                  key: _answerKey,
+                  child: AnswerCard(turn: turn, controller: controller),
+                ),
+              ],
               if (controller.history.isNotEmpty) ...[
                 const SizedBox(height: Kx.s24),
                 Text('Earlier questions', style: context.text.titleSmall?.copyWith(color: context.colors.primary)),

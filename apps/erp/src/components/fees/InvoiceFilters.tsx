@@ -10,11 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
-
-export const INVOICE_FILTERS = ['due', 'overdue', 'paid', 'cancelled', 'all'] as const;
-export type InvoiceFilter = (typeof INVOICE_FILTERS)[number];
-
-const LABEL: Record<InvoiceFilter, string> = { due: 'Due', overdue: 'Overdue', paid: 'Paid', cancelled: 'Cancelled', all: 'All' };
+import { INVOICE_FILTER_LABEL as LABEL, INVOICE_FILTERS, type InvoiceFilter } from '@/lib/invoices';
 
 /** Status chips and a class picker; both live in the URL. */
 export function InvoiceFilters({ status, classId, classes }: { status: InvoiceFilter; classId: string; classes: { id: string; name: string }[] }) {

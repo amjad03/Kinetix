@@ -1,8 +1,8 @@
 # KINETIX ERP: principal dashboard (first slice)
 
-The web dashboard for principals, administrators and heads of department: the whole school's
-day at a glance, classes, attendance, homework, messages to every classroom ("Circulate") and
-the boards. Spec: [docs/product/erp-dashboard.md](../../docs/product/erp-dashboard.md).
+The web dashboard for principals, administrators, heads of department and the accounts office:
+the whole school's day at a glance, classes, attendance, homework, messages to every classroom
+("Circulate"), the boards, live classroom view, fees, the syllabus library and KINETIX AI usage. Spec: [docs/product/erp-dashboard.md](../../docs/product/erp-dashboard.md).
 
 Next.js (App Router, TypeScript strict) + Material UI themed to Material 3. The colour scheme is
 generated from the seed `#0B57D0` with `@material/material-color-utilities` (TonalSpot, the same
@@ -23,14 +23,15 @@ pnpm dev                              # http://localhost:3000
 
 Sign in with institution code `demo-college`, password `kinetix123`:
 `principal@demo.kinetix.in` (principal), `admin@demo.kinetix.in` (administrator) or
-`ravi@demo.kinetix.in` (head of department). Teachers such as `anita@demo.kinetix.in` are refused.
+`ravi@demo.kinetix.in` (head of department) or `accounts@demo.kinetix.in` (accounts office: Fees
+only). Teachers such as `anita@demo.kinetix.in` are refused.
 
 | Script | |
 |---|---|
 | `pnpm dev` / `pnpm build` / `pnpm start` | Next.js on port 3000 |
 | `pnpm lint` | ESLint (next/core-web-vitals + TypeScript) |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | Unit tests (Vitest): M3 colour-scheme mapping, date helpers |
+| `pnpm test` | Unit tests (Vitest): M3 colour-scheme mapping, dates, role access, rupees, the live-view player and renderer, AI usage |
 | `pnpm test:e2e` | Playwright against a running API with a **fresh** demo seed; starts `pnpm dev` unless `ERP_URL` is set |
 
 ```bash
@@ -39,9 +40,12 @@ KINETIX_API_URL=http://localhost:4000 pnpm test:e2e
 ERP_URL=http://localhost:3000 pnpm test:e2e
 ```
 
-The e2e tests send messages and add boards, so run them on a demo database you can reseed. They
-sign in once per run because the API allows 10 logins a minute per account. Set
-`PW_CHROMIUM_PATH` to use a specific Chromium binary.
+The e2e tests send messages, add boards, issue fees and take payments, so run them on a demo
+database you can reseed. They sign in once per run because the API allows 10 logins a minute per
+account. The live-view tests enrol a pretend board through the API and stream ink to the page
+(`e2e/board-sim.ts`). `ERP_URL`'s port is the port `next dev` is started on. Set
+`PW_CHROMIUM_PATH` to use a specific Chromium binary, and `E2E_SHOTS=<dir>` to save screenshots
+of the pages.
 
 ## Environment
 
@@ -58,8 +62,20 @@ sign in once per run because the API allows 10 logins a minute per account. Set
   in an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). The browser never sees the
   token: pages are server components and mutations are server actions that call the API with it
   (`src/lib/api.ts`). An expired token ends the session and returns to sign-in.
-- **Pages** (`src/app/(dashboard)`): Today, Classes, Attendance, Homework, Messages, Boards. Dates
-  live in the URL (`?date=YYYY-MM-DD`), so every view can be bookmarked and shared.
+- **Roles** (`src/lib/access.ts`): school leaders see the school pages, Live and Syllabus; Fees is
+  for the principal, administrator and accounts office; AI usage for the principal and
+  administrator. The navigation shows only what the role may open, and every page checks again
+  (`requireSection`), sending others to their own home page.
+- **Pages** (`src/app/(dashboard)`): Today, Classes, Attendance, Homework, Messages, Boards, Live,
+  Fees (invoices, printable receipts), Syllabus, AI usage. Dates and filters live in the URL
+  (`?date=YYYY-MM-DD`, `?status=`), so every view can be bookmarked and shared.
+- **Live view.** `src/app/api/live/[deviceId]/route.ts` watches the board on the API's
+  `/realtime` socket from the server, with the session token, and relays frames to the page as
+  server-sent events, so the token stays in its httpOnly cookie. `src/lib/live/player.ts` is a
+  port of the board's `LessonPlayer` (lesson events → pages of strokes) and `render.ts` paints
+  them on a canvas the way the board does (backgrounds, highlighter, arrows, chalk-white ink on
+  the chalkboard).
+- **Money** is integer paise from the API, shown as Indian rupees (`src/lib/money.ts`).
 - **Theme** (`src/theme`): `scheme.ts` generates M3 roles; `palette.ts` maps them onto MUI
   (`primary`, `background`, `text`, `divider`, state layers) and exposes the full scheme as
   `palette.m3.*` and KINETIX extras as `palette.kx.*` (live/success colours, frame and pane).

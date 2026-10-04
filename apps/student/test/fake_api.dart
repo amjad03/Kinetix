@@ -36,15 +36,19 @@ class FakeStudentApi implements StudentApi {
 
   static final today = DateTime(2026, 10, 4);
 
-  Homework homework({String id = 'h1', String title = 'Exercise 4.2: Issue of shares', int dueIn = 1, String subject = 'Corporate Accounting'}) =>
-      Homework(
-        id: id,
-        title: title,
-        instructions: 'Solve questions 1 to 5 from the textbook. Show journal entries for each.',
-        dueOn: today.add(Duration(days: dueIn)),
-        subject: subject,
-        teacher: 'Anita Sharma',
-      );
+  Homework homework({
+    String id = 'h1',
+    String title = 'Exercise 4.2: Issue of shares',
+    int dueIn = 1,
+    String subject = 'Corporate Accounting',
+  }) => Homework(
+    id: id,
+    title: title,
+    instructions: 'Solve questions 1 to 5 from the textbook. Show journal entries for each.',
+    dueOn: today.add(Duration(days: dueIn)),
+    subject: subject,
+    teacher: 'Anita Sharma',
+  );
 
   /// Thrown by [summary] when set.
   ApiException? summaryError;
@@ -135,7 +139,13 @@ class FakeStudentApi implements StudentApi {
     recordingJson('r2', 'Issue of shares', subject: 'Corporate Accounting', startedAt: '2026-10-01T04:30:00Z', missed: true),
   ].map(RecordingInfo.fromJson).toList();
 
-  static Map<String, dynamic> recordingJson(String id, String title, {required String subject, required String startedAt, bool missed = false}) => {
+  static Map<String, dynamic> recordingJson(
+    String id,
+    String title, {
+    required String subject,
+    required String startedAt,
+    bool missed = false,
+  }) => {
     'id': id,
     'title': title,
     'startedAt': startedAt,
@@ -151,6 +161,9 @@ class FakeStudentApi implements StudentApi {
     'finishedAt': startedAt,
     'missed': missed,
   };
+
+  Map<String, dynamic> recordingJsonOf(String id, {bool missed = false}) =>
+      recordingJson(id, 'Lesson $id', subject: 'Subject $id', startedAt: '2026-10-0${1 + id.hashCode % 3}T04:30:00Z', missed: missed);
 
   static Map<String, dynamic> lessonJson = {
     'v': 1,
@@ -228,7 +241,10 @@ class FakeStudentApi implements StudentApi {
     id: 't1',
     title: 'Underwriting and underwriting commission',
     summary: 'What underwriting is, its kinds, and the commission allowed by law.',
-    notes: ['Underwriting is an agreement to take up shares not subscribed by the public.', 'Commission may not exceed 5% of the issue price of shares.'],
+    notes: [
+      'Underwriting is an agreement to take up shares not subscribed by the public.',
+      'Commission may not exceed 5% of the issue price of shares.',
+    ],
     outcomes: ["Compute each underwriter's net liability"],
     chapterTitle: 'Underwriting of Shares',
     courseTitle: 'Corporate Accounting, BCom Semester 3',
@@ -281,11 +297,32 @@ class FakeStudentApi implements StudentApi {
     duePaise: 185000,
     onlinePayments: 'demo',
     invoices: [
-      FeeInvoice(id: 'i1', title: 'Semester 3 tuition fee', amountPaise: 4250000, paidPaise: 4250000, dueOn: DateTime(2026, 10, 14), status: InvoiceStatus.paid),
-      FeeInvoice(id: 'i2', title: 'Exam fee (Nov 2026)', amountPaise: 185000, paidPaise: 0, dueOn: DateTime(2026, 10, 2), status: InvoiceStatus.due),
+      FeeInvoice(
+        id: 'i1',
+        title: 'Semester 3 tuition fee',
+        amountPaise: 4250000,
+        paidPaise: 4250000,
+        dueOn: DateTime(2026, 10, 14),
+        status: InvoiceStatus.paid,
+      ),
+      FeeInvoice(
+        id: 'i2',
+        title: 'Exam fee (Nov 2026)',
+        amountPaise: 185000,
+        paidPaise: 0,
+        dueOn: DateTime(2026, 10, 2),
+        status: InvoiceStatus.due,
+      ),
     ],
     payments: [
-      FeePayment(id: 'p1', invoiceId: 'i1', amountPaise: 4250000, method: 'upi', receiptNo: 'RCPT/2026-27/00001', paidAt: DateTime(2026, 10, 2, 11, 30)),
+      FeePayment(
+        id: 'p1',
+        invoiceId: 'i1',
+        amountPaise: 4250000,
+        method: 'upi',
+        receiptNo: 'RCPT/2026-27/00001',
+        paidAt: DateTime(2026, 10, 2, 11, 30),
+      ),
     ],
   );
 
@@ -370,8 +407,20 @@ class FakeStudentApi implements StudentApi {
   }
 
   @override
-  Future<Explanation> explain({required String question, required AiLanguage language, String? sectionId, String? subjectId, String? topicId}) async {
-    explainRequests.add({'question': question, 'language': language.name, 'sectionId': sectionId, 'subjectId': subjectId, 'topicId': topicId});
+  Future<Explanation> explain({
+    required String question,
+    required AiLanguage language,
+    String? sectionId,
+    String? subjectId,
+    String? topicId,
+  }) async {
+    explainRequests.add({
+      'question': question,
+      'language': language.name,
+      'sectionId': sectionId,
+      'subjectId': subjectId,
+      'topicId': topicId,
+    });
     calls.add('explain $question');
     if (explainGate != null) await explainGate!.future;
     if (explainError != null) throw explainError!;
