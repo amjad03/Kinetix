@@ -53,7 +53,7 @@ class _BoardScreenState extends State<BoardScreen> {
   late final AiController _ai;
 
   /// Today's plan step timer: keeps running while other panels are open or the panel is closed.
-  late final PlanTimer _planTimer = PlanTimer(board);
+  late final PlanTimer _planTimer;
   BoardBackground _background = BoardBackground.plain;
   _Popover? _popover;
   PanelKind? _panel;
@@ -92,6 +92,7 @@ class _BoardScreenState extends State<BoardScreen> {
       ..captureBoard = (() async => base64Encode(await renderPagePng(ink.strokes, _background, _canvasSize)))
       ..openSplit = _openSplit;
     _lastSessionId = board.session?.sessionId;
+    _planTimer = PlanTimer(board);
   }
 
   @override

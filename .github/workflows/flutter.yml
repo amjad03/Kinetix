@@ -29,9 +29,8 @@ permissions:
   contents: read
 
 env:
-  # Pin the SDK the apps are developed on (Dart ^3.13.5). Replace 3.47.x with the exact patch
-  # (e.g. 3.47.1) to make CI fully reproducible; bump it in one place.
-  FLUTTER_VERSION: '3.47.x'
+  # The exact SDK the apps are developed and tested on (Dart ^3.13.5); bump it here only.
+  FLUTTER_VERSION: '3.47.6'
 
 jobs:
   test:
