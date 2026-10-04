@@ -12,6 +12,7 @@ import 'api_client.dart';
 import 'device_store.dart';
 import 'models.dart';
 import 'realtime.dart';
+import 'recording/recordings.dart';
 
 enum BoardStage { loading, needsEnrollment, board }
 
@@ -29,14 +30,20 @@ enum TouchProfile {
 
 /// Top-level state of the board: enrolment, then the board itself, with or without a teacher.
 class BoardController extends ChangeNotifier {
-  BoardController({DeviceStore? store, ApiClient Function(String)? apiFactory, Realtime Function(String)? realtimeFactory})
+  BoardController({DeviceStore? store, ApiClient Function(String)? apiFactory, Realtime Function(String)? realtimeFactory, Recordings? recordings})
     : _store = store ?? DeviceStore(),
       _apiFactory = apiFactory ?? ((url) => ApiClient(baseUrl: url)),
-      _realtimeFactory = realtimeFactory ?? Realtime.new;
+      _realtimeFactory = realtimeFactory ?? Realtime.new,
+      recordings = recordings ?? Recordings() {
+    this.recordings.attach(api: () => api, session: () => session);
+  }
 
   final DeviceStore _store;
   final ApiClient Function(String) _apiFactory;
   final Realtime Function(String) _realtimeFactory;
+
+  /// Lesson recordings saved on this board and their upload queue.
+  final Recordings recordings;
 
   BoardStage stage = BoardStage.loading;
   ApiClient? api;
@@ -84,6 +91,7 @@ class BoardController extends ChangeNotifier {
       stage = BoardStage.board;
     }
     notifyListeners();
+    unawaited(recordings.load());
   }
 
   Future<void> enroll(String serverUrl, String code) async {
@@ -106,6 +114,8 @@ class BoardController extends ChangeNotifier {
   Future<void> endClass() async {
     if (session != null) {
       await flushOutbox();
+      // Uploads need this session's token, so lesson recordings go up before it ends.
+      await recordings.uploadBeforeSignOut();
       try {
         await api?.endSession();
       } catch (_) {
@@ -213,6 +223,7 @@ class BoardController extends ChangeNotifier {
       notifyListeners();
       unawaited(_fetchPendingBroadcasts());
       unawaited(flushOutbox());
+      unawaited(recordings.kick());
     };
     rt.connect(deviceToken);
     _realtime = rt;
@@ -229,6 +240,7 @@ class BoardController extends ChangeNotifier {
     _sessionTimer = Timer(ctx.expiresAt.difference(DateTime.now()), _signOut);
     notifyListeners();
     unawaited(_loadRoster());
+    unawaited(recordings.kick()); // recordings this teacher made earlier on this board
   }
 
   Future<void> _loadRoster() async {
@@ -298,6 +310,7 @@ class BoardController extends ChangeNotifier {
   void dispose() {
     _sessionTimer?.cancel();
     _realtime?.dispose();
+    recordings.dispose();
     super.dispose();
   }
 }

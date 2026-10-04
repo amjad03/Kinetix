@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
+import '../../core/models.dart';
+import '../../core/recording/lesson_capture.dart';
+import '../recording/recording_ui.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
 
@@ -56,6 +59,11 @@ class _BoardScreenState extends State<BoardScreen> {
   String? _boardTitle;
   String? _lastSessionId;
 
+  /// The lesson being recorded, and the teacher who is recording it.
+  LessonCapture? _capture;
+  SessionContext? _captureTeacher;
+  bool _captureStarting = false;
+
   BoardController get board => widget.board;
   InkController get ink => _pages.current;
 
@@ -70,6 +78,7 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void dispose() {
     board.removeListener(_onBoardChanged);
+    _capture?.dispose();
     _pages.dispose();
     _secondInk.dispose();
     _ai.dispose();
@@ -82,6 +91,9 @@ class _BoardScreenState extends State<BoardScreen> {
     if (id == _lastSessionId) return;
     _lastSessionId = id;
     if (_signInOpen && id != null) Navigator.of(context).pop();
+    // The period ended (or the teacher signed out elsewhere) mid-recording: keep what was
+    // recorded; it uploads when this teacher next signs in.
+    if (id == null && _capture != null) unawaited(_stopRecording());
     final s = board.session;
     showBoardMessage(
       context,
@@ -117,6 +129,100 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
     );
     if (mounted) setState(() => _signInOpen = false);
+  }
+
+  void _setBackground(BoardBackground b) {
+    setState(() => _background = b);
+    _capture?.background = b;
+  }
+
+  // --- Lesson recording ----------------------------------------------------------------------
+
+  Future<void> _toggleRecording() async {
+    setState(() => _popover = null);
+    if (_capture != null) return _stopRecording();
+    final s = board.session;
+    if (s == null) {
+      showBoardMessage(context, 'Sign in with the Teacher app to record lessons. The teacher must connect to this board first.');
+      return;
+    }
+    if (_captureStarting) return;
+    _captureStarting = true;
+    try {
+      final capture = await board.recordings.newCapture(id: board.newId(), pages: _pages, background: _background, canvas: _canvasSize);
+      final noSound = await capture.start();
+      if (!mounted || board.session?.sessionId != s.sessionId) {
+        await capture.stop();
+        capture.dispose();
+        await board.recordings.discard(capture.id);
+        return;
+      }
+      setState(() {
+        _capture = capture;
+        _captureTeacher = s;
+      });
+      showBoardMessage(context, noSound == null ? 'Recording the board and your voice.' : 'Recording the board without sound: $noSound');
+    } catch (e) {
+      if (mounted) showBoardMessage(context, 'Could not start recording: $e');
+    } finally {
+      _captureStarting = false;
+    }
+  }
+
+  /// Stops recording and asks the teacher to save (and share) or discard it.
+  Future<void> _stopRecording() async {
+    final capture = _capture;
+    final teacher = _captureTeacher;
+    if (capture == null || teacher == null) return;
+    setState(() {
+      _capture = null;
+      _captureTeacher = null;
+    });
+    final lesson = await capture.stop();
+    capture.dispose();
+    final initialTitle = defaultRecordingTitle(teacher.subjectName, lesson.startedAt);
+    ({String title, bool share})? choice = (title: initialTitle, share: false);
+    if (mounted) {
+      choice = await showDialog<({String title, bool share})>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => BoardChromeTheme(
+          child: SaveRecordingDialog(
+            initialTitle: initialTitle,
+            classLabel: teacher.sectionName,
+            duration: Duration(milliseconds: lesson.durationMs),
+            hasAudio: lesson.hasAudio,
+          ),
+        ),
+      );
+    }
+    if (choice == null) {
+      await board.recordings.discard(lesson.id);
+      if (mounted) showBoardMessage(context, 'Recording discarded.');
+      return;
+    }
+    try {
+      await board.recordings.save(lesson, title: choice.title, share: choice.share, teacher: teacher);
+      if (mounted) {
+        showBoardMessage(
+          context,
+          board.session?.teacherId == teacher.teacherId
+              ? 'Recording saved. It is uploading to KINETIX Cloud.'
+              : 'Recording saved on this board. It uploads when ${teacher.teacherName.split(' ').first} next signs in.',
+        );
+      }
+    } catch (e) {
+      if (mounted) showBoardMessage(context, 'Could not save the recording: $e');
+    }
+  }
+
+  void _openRecordings() {
+    showDialog<void>(
+      context: context,
+      builder: (_) => BoardChromeTheme(
+        child: RecordingsDialog(recordings: board.recordings, signedInTeacherId: board.session?.teacherId),
+      ),
+    );
   }
 
   /// The board as it stands, ready to save.
@@ -196,6 +302,7 @@ class _BoardScreenState extends State<BoardScreen> {
                 _background = saved.background;
                 _boardTitle = summary.title;
               });
+              _capture?.background = saved.background;
               if (mounted) showBoardMessage(context, 'Opened "${summary.title}". Saving again updates it.');
             } catch (e) {
               if (mounted) showBoardMessage(context, 'Could not open the board: $e');
@@ -225,6 +332,10 @@ class _BoardScreenState extends State<BoardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('You will be signed out of this board. Attendance and answers recorded in class are kept.'),
+                  if (_capture != null) ...[
+                    const SizedBox(height: Kx.s12),
+                    const Text('The lesson recording stops, and you can save and share it first.', key: Key('end-recording-note')),
+                  ],
                   if (hasInk) ...[
                     const SizedBox(height: Kx.s12),
                     SwitchListTile(
@@ -258,9 +369,17 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
     );
     if (ok != true) return;
+    if (_capture != null) await _stopRecording();
     // If saving fails the class stays open, so nothing on the board is lost.
     if (save && !await _saveAs(_boardTitle ?? board.defaultBoardTitle(DateTime.now()), share: share)) return;
+    final teacher = board.session;
+    bool waiting() => board.recordings.items.any((r) => r.teacherId == teacher?.teacherId && !r.uploaded && !r.failed);
+    if (waiting() && mounted) showBoardMessage(context, 'Uploading the lesson recording before signing out…');
     await board.endClass();
+    if (waiting() && mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars(); // instead of the plain "Signed out" message
+      showBoardMessage(context, 'Signed out. The lesson recording is saved on this board and uploads when ${teacher!.teacherName.split(' ').first} next signs in.');
+    }
     _pages.load([]);
     _boardTitle = null;
   }
@@ -364,6 +483,7 @@ class _BoardScreenState extends State<BoardScreen> {
           child: LayoutBuilder(
             builder: (context, area) {
               _canvasSize = area.biggest;
+              _capture?.fitCanvas(_canvasSize);
               return _boardArea(context, compact: area.maxWidth < 1500);
             },
           ),
@@ -402,7 +522,15 @@ class _BoardScreenState extends State<BoardScreen> {
           left: 0,
           right: 0,
           child: BoardChromeTheme(
-            child: _TopBar(board: board, onSignIn: _signIn, onEndClass: _endClass, onAttendance: _attendance),
+            child: _TopBar(
+              board: board,
+              onSignIn: _signIn,
+              onEndClass: _endClass,
+              onAttendance: _attendance,
+              recording: _capture == null
+                  ? null
+                  : RecordingIndicator(capture: _capture!, onPause: _capture!.pause, onResume: _capture!.resume, onStop: _stopRecording),
+            ),
           ),
         ),
         _SelectionActions(ink: ink),
@@ -454,20 +582,21 @@ class _BoardScreenState extends State<BoardScreen> {
     final Widget card = switch (_popover!) {
       _Popover.write => WritePopover(ink: ink, background: _background),
       _Popover.erase => ErasePopover(ink: ink, onCleared: () => setState(() => _popover = null)),
-      _Popover.theme => ThemePopover(background: _background, onChanged: (b) => setState(() => _background = b)),
+      _Popover.theme => ThemePopover(background: _background, onChanged: _setBackground),
       _Popover.shapes => ShapesPopover(ink: ink, onPicked: () {}),
       _Popover.tools => ToolsPopover(tools: _tools),
       _Popover.eyeComfort => EyeComfortPopover(
         settings: board.eyeComfort,
         onChanged: board.setEyeComfort,
         chalkboard: _background == BoardBackground.chalkboard,
-        onChalkboard: (v) => setState(() => _background = v ? BoardBackground.chalkboard : BoardBackground.plain),
+        onChalkboard: (v) => _setBackground(v ? BoardBackground.chalkboard : BoardBackground.plain),
       ),
       _Popover.profile => ProfileMenu(
         board: board,
         onSignIn: _signIn,
         onNewPage: _pages.addPage,
         onWhiteboards: _openWhiteboards,
+        onRecordings: _openRecordings,
         onSettings: () => showDialog<void>(
           context: context,
           builder: (_) => BoardChromeTheme(child: BoardSettingsDialog(board: board)),
@@ -505,6 +634,8 @@ class _BoardScreenState extends State<BoardScreen> {
       onTool: _selectTool,
       onPopover: _toggle,
       onPanel: _openPanel,
+      recording: _capture != null,
+      onRecord: _toggleRecording,
     );
     final left = ChromeSurface(
       child: Row(
@@ -597,6 +728,8 @@ class _MainToolbar extends StatelessWidget {
     required this.onTool,
     required this.onPopover,
     required this.onPanel,
+    required this.recording,
+    required this.onRecord,
   });
 
   final InkController ink;
@@ -606,6 +739,8 @@ class _MainToolbar extends StatelessWidget {
   final void Function(InkTool, _Popover?) onTool;
   final ValueChanged<_Popover> onPopover;
   final ValueChanged<PanelKind> onPanel;
+  final bool recording;
+  final VoidCallback onRecord;
 
   @override
   Widget build(BuildContext context) {
@@ -617,11 +752,12 @@ class _MainToolbar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ToolButton(
-              icon: Icons.fiber_manual_record,
-              label: 'Record',
+              key: const Key('record'),
+              icon: recording ? Icons.stop_circle_outlined : Icons.fiber_manual_record,
+              label: recording ? 'Stop' : 'Record',
               iconColor: Kx.record,
-              badge: 'Soon',
-              onTap: () => showComingSoon(context, 'Lesson recording'),
+              selected: recording,
+              onTap: onRecord,
             ),
             ToolButton(icon: Icons.texture, label: 'Theme', selected: popover == _Popover.theme, onTap: () => onPopover(_Popover.theme)),
             ToolButton(
@@ -706,12 +842,15 @@ class _MainToolbar extends StatelessWidget {
 
 /// The status strip across the top of the board.
 class _TopBar extends StatefulWidget {
-  const _TopBar({required this.board, required this.onSignIn, required this.onEndClass, required this.onAttendance});
+  const _TopBar({required this.board, required this.onSignIn, required this.onEndClass, required this.onAttendance, this.recording});
 
   final BoardController board;
   final VoidCallback onSignIn;
   final VoidCallback onEndClass;
   final VoidCallback onAttendance;
+
+  /// The recording indicator, while a lesson is being recorded.
+  final Widget? recording;
 
   @override
   State<_TopBar> createState() => _TopBarState();
@@ -780,6 +919,7 @@ class _TopBarState extends State<_TopBar> {
             ),
           ),
           const SizedBox(width: Kx.s8),
+          if (widget.recording != null) ...[widget.recording!, const SizedBox(width: Kx.s8)],
           ChromeSurface(
             radius: Kx.rSm,
             padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),

@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import 'models.dart';
+import 'recording/recordings.dart' show RecordingSummary;
 
 class ApiException implements Exception {
   ApiException(this.status, this.message);
@@ -81,6 +83,41 @@ class ApiClient {
     return list.map((e) => BroadcastMessage.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  // --- Lesson recordings: PUT /:id → PUT /:id/events → PUT /:id/audio → POST /:id/finish ----
+
+  /// Creates the recording (or renames it while it is unfinished). Idempotent.
+  Future<RecordingSummary> createRecording(String id, {required String title, required DateTime startedAt, required String language}) async {
+    final j = await _send('PUT', '/v1/recordings/$id', body: {'title': title, 'startedAt': startedAt.toUtc().toIso8601String(), 'language': language});
+    return RecordingSummary.fromJson(j as Map<String, dynamic>);
+  }
+
+  /// The ink event log, sent as raw bytes (it can be larger than the API's JSON body limit).
+  Future<void> uploadRecordingEvents(String id, Uint8List json) =>
+      _sendRaw('PUT', '/v1/recordings/$id/events', 'application/octet-stream', json.length, Stream.value(json));
+
+  /// The teacher's voice. [onProgress] gets the bytes sent so far.
+  Future<void> uploadRecordingAudio(String id, Stream<List<int>> bytes, int length, {String mime = 'audio/mp4', void Function(int sent)? onProgress}) {
+    var sent = 0;
+    final counted = bytes.map((chunk) {
+      sent += chunk.length;
+      onProgress?.call(sent);
+      return chunk;
+    });
+    return _sendRaw('PUT', '/v1/recordings/$id/audio', mime, length, counted);
+  }
+
+  Future<RecordingSummary> finishRecording(String id, {required int durationMs, required bool share}) async =>
+      RecordingSummary.fromJson(await _send('POST', '/v1/recordings/$id/finish', body: {'durationMs': durationMs, 'share': share}) as Map<String, dynamic>);
+
+  Future<RecordingSummary> shareRecording(String id) async =>
+      RecordingSummary.fromJson(await _send('POST', '/v1/recordings/$id/share') as Map<String, dynamic>);
+
+  /// The signed-in teacher's recordings, newest first.
+  Future<List<RecordingSummary>> recordings() async {
+    final list = await _send('GET', '/v1/recordings') as List<dynamic>;
+    return list.map((e) => RecordingSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<void> markDisplayed(String id) async => _send('POST', '/v1/broadcasts/$id/displayed');
   Future<void> acknowledge(String id) async => _send('POST', '/v1/broadcasts/$id/ack');
 
@@ -121,7 +158,21 @@ class ApiClient {
       ..headers['accept'] = 'application/json';
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
     if (body != null) req.body = jsonEncode(body);
-    final res = await http.Response.fromStream(await _http.send(req));
+    return _decode(await http.Response.fromStream(await _http.send(req)));
+  }
+
+  /// Sends a raw body (uploads), streamed so a long recording is never held in memory.
+  Future<void> _sendRaw(String method, String path, String contentType, int length, Stream<List<int>> body) async {
+    final req = _UploadRequest(method, Uri.parse('$baseUrl$path'), body)
+      ..headers['content-type'] = contentType
+      ..headers['accept'] = 'application/json'
+      ..contentLength = length;
+    final token = sessionToken ?? deviceToken;
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    _decode(await http.Response.fromStream(await _http.send(req)));
+  }
+
+  dynamic _decode(http.Response res) {
     if (res.statusCode >= 400) {
       String message = 'Request failed (${res.statusCode})';
       try {
@@ -131,5 +182,19 @@ class ApiClient {
       throw ApiException(res.statusCode, message);
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
+  }
+}
+
+/// A request whose body is read from [body] as the connection takes it, so a long recording
+/// is streamed from disk rather than held in memory.
+class _UploadRequest extends http.BaseRequest {
+  _UploadRequest(super.method, super.url, this.body);
+
+  final Stream<List<int>> body;
+
+  @override
+  http.ByteStream finalize() {
+    super.finalize();
+    return http.ByteStream(body);
   }
 }

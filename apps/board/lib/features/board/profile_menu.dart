@@ -14,12 +14,14 @@ class ProfileMenu extends StatelessWidget {
     required this.onWhiteboards,
     required this.onSettings,
     required this.onClose,
+    this.onRecordings,
   });
 
   final BoardController board;
   final VoidCallback onSignIn;
   final VoidCallback onNewPage;
   final VoidCallback onWhiteboards;
+  final VoidCallback? onRecordings;
   final VoidCallback onSettings;
   final VoidCallback onClose;
 
@@ -94,6 +96,20 @@ class ProfileMenu extends StatelessWidget {
             item(Icons.note_add_outlined, 'New page', onNewPage),
             item(Icons.folder_open_outlined, 'Import PDF, PPT or image', () {}, soon: true),
             item(Icons.dashboard_outlined, 'Your whiteboards', onWhiteboards, key: const Key('menu-whiteboards')),
+            if (onRecordings != null)
+              ListTile(
+                key: const Key('menu-recordings'),
+                leading: const Icon(Icons.video_library_outlined),
+                title: const Text('Recordings'),
+                trailing: board.recordings.pending == 0
+                    ? null
+                    : Text('${board.recordings.pending} to upload', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd)),
+                onTap: () {
+                  onClose();
+                  onRecordings!();
+                },
+              ),
             item(Icons.cast_outlined, 'Screen projection', () {}, soon: true),
             const Divider(height: Kx.s16),
             item(Icons.settings_outlined, 'Board settings', onSettings, key: const Key('menu-settings')),
