@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'models.dart';
 
@@ -46,6 +47,47 @@ abstract class TeacherApi {
     required String instructions,
     required String dueOn,
   });
+
+  /// The lessons this teacher recorded on a board, newest first.
+  Future<List<RecordingInfo>> myRecordings();
+
+  /// One recording with its transcript and summary.
+  Future<RecordingInfo> recording(String id);
+
+  /// The recording's board events, for [LessonPlayer].
+  Future<Lesson> recordingLesson(String id);
+
+  /// Shares a finished recording with its class (families of absent students are notified).
+  Future<RecordingInfo> shareRecording(String id);
+}
+
+/// Lets the lesson player load recordings through a [TeacherApi].
+class TeacherLessonSource implements LessonSource {
+  TeacherLessonSource(this.api);
+
+  final TeacherApi api;
+
+  Future<T> _guard<T>(Future<T> Function() f) async {
+    try {
+      return await f();
+    } on ApiException catch (e) {
+      throw LessonLoadException(
+        e.status == 404 ? 'This recording is not available yet. It may still be uploading from the board.' : e.message,
+      );
+    }
+  }
+
+  @override
+  Future<RecordingInfo> recording(String id) => _guard(() => api.recording(id));
+
+  @override
+  Future<Lesson> lesson(String id) => _guard(() => api.recordingLesson(id));
+
+  @override
+  LessonAudioLocation? audio(String id) => LessonAudioLocation(
+    Uri.parse('${api.baseUrl}/v1/recordings/$id/audio'),
+    headers: {if (api.token != null) 'authorization': 'Bearer ${api.token}'},
+  );
 }
 
 class HttpTeacherApi implements TeacherApi {
@@ -135,6 +177,22 @@ class HttpTeacherApi implements TeacherApi {
       body: {'sectionId': sectionId, 'subjectId': subjectId, 'title': title, 'instructions': instructions, 'dueOn': dueOn},
     ),
   );
+
+  @override
+  Future<List<RecordingInfo>> myRecordings() async =>
+      (await _send('GET', '/v1/recordings') as List).map((e) => RecordingInfo.fromJson(e as Map<String, dynamic>)).toList();
+
+  @override
+  Future<RecordingInfo> recording(String id) async =>
+      RecordingInfo.fromJson(await _send('GET', '/v1/recordings/$id') as Map<String, dynamic>);
+
+  @override
+  Future<Lesson> recordingLesson(String id) async =>
+      Lesson.fromJson(await _send('GET', '/v1/recordings/$id/events') as Map<String, dynamic>);
+
+  @override
+  Future<RecordingInfo> shareRecording(String id) async =>
+      RecordingInfo.fromJson(await _send('POST', '/v1/recordings/$id/share') as Map<String, dynamic>);
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

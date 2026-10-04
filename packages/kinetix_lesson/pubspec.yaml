@@ -1,0 +1,24 @@
+name: kinetix_lesson
+description: KINETIX lesson playback — plays a recorded lesson (the board's ink in sync with the teacher's voice) with its summary and transcript. Shared by the Parent and Teacher apps.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kinetix_ink:
+    path: ../kinetix_ink
+  kinetix_ui:
+    path: ../kinetix_ui
+  clock: ^1.1.1
+  intl: ^0.20.2
+  just_audio: ^0.10.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

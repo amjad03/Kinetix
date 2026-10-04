@@ -1,3 +1,4 @@
+import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_parent/core/api.dart';
 import 'package:kinetix_parent/core/models.dart';
 
@@ -76,6 +77,7 @@ class FakeParentApi implements ParentApi {
       pastHomework: [homework(id: 'h3', title: 'Forfeiture of shares: notes', dueIn: -3)],
       participation: [Participation(subject: 'Corporate Accounting', correct: 4, partial: 1, incorrect: 0, skipped: 0)],
       boards: [board.summary],
+      recordings: recordings,
     ),
     'c2': ChildSummary(
       today: today,
@@ -143,6 +145,74 @@ class FakeParentApi implements ParentApi {
     title: "Today's board: Corporate Accounting",
     body: 'Issue and forfeiture of shares. Open it to revise what was taught in class.',
     data: {'whiteboardId': whiteboardId, 'sectionId': 'sec1'},
+    createdAt: DateTime.now(),
+  );
+
+  /// Shared with Aarav's class, newest first: he missed the older one.
+  late List<RecordingInfo> recordings = [
+    recordingJson('r1', 'Cost sheets', subject: 'Cost Accounting', startedAt: '2026-10-04T03:30:00Z'),
+    recordingJson('r2', 'Issue of shares', subject: 'Corporate Accounting', startedAt: '2026-10-01T04:30:00Z', missed: true),
+  ].map(RecordingInfo.fromJson).toList();
+
+  static Map<String, dynamic> recordingJson(
+    String id,
+    String title, {
+    required String subject,
+    required String startedAt,
+    bool missed = false,
+  }) => {
+    'id': id,
+    'title': title,
+    'startedAt': startedAt,
+    'durationMs': 20000,
+    'hasAudio': true,
+    'sectionId': 'sec1',
+    'sectionName': 'BCom Sem 3 A',
+    'subjectName': subject,
+    'teacherName': 'Anita Sharma',
+    'transcriptState': 'done',
+    'summaryState': 'done',
+    'sharedAt': startedAt,
+    'finishedAt': startedAt,
+    'missed': missed,
+  };
+
+  Map<String, dynamic> recordingJsonFor(String id, {bool missed = false}) =>
+      recordingJson(id, 'Lesson $id', subject: 'Subject $id', startedAt: '2026-10-0${1 + id.hashCode % 3}T04:30:00Z', missed: missed);
+
+  static Map<String, dynamic> lessonJson = {
+    'v': 1,
+    'canvas': {'w': 1920, 'h': 1080},
+    'background': 'plain',
+    'durationMs': 20000,
+    'events': [
+      [
+        0,
+        'L',
+        [<Object>[]],
+        0,
+      ],
+      [
+        1000,
+        'b',
+        1,
+        {
+          't': 'pen',
+          'c': 4279966495,
+          'w': 4,
+          'p': [100, 100, 400, 400],
+        },
+      ],
+      [1100, 'e', 1],
+    ],
+  };
+
+  AppNotification recordingNotice(String id, String recordingId) => AppNotification(
+    id: id,
+    kind: NotificationKind.recording,
+    title: 'Missed Corporate Accounting? Watch the lesson',
+    body: 'Issue of shares',
+    data: {'recordingId': recordingId, 'sectionId': 'sec1'},
     createdAt: DateTime.now(),
   );
 
@@ -235,5 +305,27 @@ class FakeParentApi implements ParentApi {
   Future<({Homework homework, String sectionId})> homeworkById(String id) async {
     calls.add('homework $id');
     throw ApiException(404, 'Homework not found');
+  }
+
+  @override
+  Future<RecordingInfo> recording(String id) async {
+    calls.add('recording $id');
+    final r = recordings.where((r) => r.id == id).firstOrNull;
+    if (r == null) throw ApiException(404, 'Recording not found');
+    return RecordingInfo.fromJson({
+      ...recordingJson(r.id, r.title, subject: r.subjectName!, startedAt: r.startedAt.toUtc().toIso8601String()),
+      'missed': null,
+      'transcript': 'Today we look at how companies issue shares.',
+      'summary': {
+        'summary': 'How companies issue shares.',
+        'keyPoints': ['Shares can be issued at par or at a premium'],
+      },
+    });
+  }
+
+  @override
+  Future<Lesson> recordingLesson(String id) async {
+    calls.add('lesson $id');
+    return Lesson.fromJson(lessonJson);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_teacher/core/api.dart';
 import 'package:kinetix_teacher/core/models.dart';
 
@@ -122,4 +123,79 @@ class FakeTeacherApi implements TeacherApi {
     required String instructions,
     required String dueOn,
   }) async => Homework(id: 'h1', title: title, instructions: instructions, dueOn: parseIsoDate(dueOn), section: section, subject: subject);
+
+  static Map<String, dynamic> recordingJson(
+    String id,
+    String title, {
+    bool shared = false,
+    bool finished = true,
+    String transcriptState = 'none',
+    bool hasAudio = true,
+    String? sectionId = 'sec1',
+  }) => {
+    'id': id,
+    'title': title,
+    'startedAt': '2026-10-04T04:32:00Z',
+    'durationMs': 24 * 60000,
+    'hasAudio': hasAudio,
+    'sectionId': sectionId,
+    'sectionName': sectionId == null ? null : 'BCom Sem 3 A',
+    'subjectName': sectionId == null ? null : 'Corporate Accounting',
+    'teacherName': 'Anita Sharma',
+    'transcriptState': transcriptState,
+    'summaryState': 'none',
+    'sharedAt': shared ? '2026-10-04T05:30:00Z' : null,
+    'finishedAt': finished ? '2026-10-04T05:29:00Z' : null,
+  };
+
+  late List<Map<String, dynamic>> recordings = [
+    recordingJson('r1', 'Issue of shares', transcriptState: 'queued'),
+    recordingJson('r2', 'Forfeiture of shares', shared: true, transcriptState: 'done'),
+    recordingJson('r3', 'Cost sheets', finished: false),
+    recordingJson('r4', 'Practice on the board', sectionId: null, hasAudio: false),
+  ];
+
+  /// Set to make sharing fail with this message.
+  String? shareError;
+
+  @override
+  Future<List<RecordingInfo>> myRecordings() async {
+    calls.add('recordings');
+    return recordings.map(RecordingInfo.fromJson).toList();
+  }
+
+  @override
+  Future<RecordingInfo> recording(String id) async {
+    calls.add('recording $id');
+    final j = recordings.where((r) => r['id'] == id).firstOrNull;
+    if (j == null) throw ApiException(404, 'Recording not found');
+    return RecordingInfo.fromJson({...j, 'transcript': null, 'summary': null});
+  }
+
+  @override
+  Future<Lesson> recordingLesson(String id) async {
+    calls.add('lesson $id');
+    return Lesson.fromJson({
+      'v': 1,
+      'canvas': {'w': 1920, 'h': 1080},
+      'durationMs': 20000,
+      'events': [
+        [
+          0,
+          'L',
+          [<Object>[]],
+          0,
+        ],
+      ],
+    });
+  }
+
+  @override
+  Future<RecordingInfo> shareRecording(String id) async {
+    calls.add('share $id');
+    if (shareError != null) throw ApiException(403, shareError!);
+    final j = recordings.firstWhere((r) => r['id'] == id);
+    j['sharedAt'] = '2026-10-04T06:00:00Z';
+    return RecordingInfo.fromJson(j);
+  }
 }

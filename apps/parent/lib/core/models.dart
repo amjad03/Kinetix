@@ -1,7 +1,9 @@
-/// Mirrors the parent-facing responses of services/api (src/parent, src/notifications, src/whiteboards).
+/// Mirrors the parent-facing responses of services/api (src/parent, src/notifications, src/whiteboards,
+/// src/recordings).
 library;
 
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 
 /// "10:00:00" → a wall-clock time from the timetable (local to the institution).
 class ClockTime implements Comparable<ClockTime> {
@@ -271,6 +273,7 @@ class ChildSummary {
     required this.pastHomework,
     required this.participation,
     required this.boards,
+    this.recordings = const [],
   });
 
   factory ChildSummary.fromJson(Map<String, dynamic> j) {
@@ -284,6 +287,7 @@ class ChildSummary {
       pastHomework: list(hw['recent']),
       participation: [for (final p in (j['participation'] as List? ?? const [])) Participation.fromJson(p as Map<String, dynamic>)],
       boards: [for (final b in (j['sharedBoards'] as List? ?? const [])) BoardSummary.fromJson(b as Map<String, dynamic>)],
+      recordings: [for (final r in (j['recordings'] as List? ?? const [])) RecordingInfo.fromJson(r as Map<String, dynamic>)],
     );
   }
 
@@ -295,9 +299,15 @@ class ChildSummary {
   final List<Homework> pastHomework;
   final List<Participation> participation;
   final List<BoardSummary> boards;
+
+  /// Lesson recordings shared with the class, newest first.
+  final List<RecordingInfo> recordings;
+
+  /// The ones the child was absent for first, then the rest; newest first within each.
+  List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, broadcast, other }
+enum NotificationKind { absence, homework, boardShared, recording, broadcast, other }
 
 class AppNotification {
   AppNotification({
@@ -316,6 +326,7 @@ class AppNotification {
       'absence' => NotificationKind.absence,
       'homework' => NotificationKind.homework,
       'board_shared' => NotificationKind.boardShared,
+      'recording' => NotificationKind.recording,
       'broadcast' => NotificationKind.broadcast,
       _ => NotificationKind.other,
     },
@@ -348,6 +359,7 @@ class AppNotification {
   String? get sectionId => data['sectionId'] as String?;
   String? get homeworkId => data['homeworkId'] as String?;
   String? get whiteboardId => data['whiteboardId'] as String?;
+  String? get recordingId => data['recordingId'] as String?;
 }
 
 class Inbox {

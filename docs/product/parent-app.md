@@ -5,7 +5,8 @@ homework is due? Do they take part? What was taught today?* It should feel like 
 Link or Google Classroom: calm tonal cards, big readable numbers, plain language and no
 education jargon. One parent account can follow several children.
 
-Code: [`apps/parent`](../../apps/parent). API: `services/api/src/parent`, `src/notifications`, `src/whiteboards`.
+Code: [`apps/parent`](../../apps/parent). API: `services/api/src/parent`, `src/notifications`, `src/whiteboards`, `src/recordings`.
+Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../../packages/kinetix_lesson).
 
 ## Phase 1 (built)
 
@@ -18,7 +19,8 @@ Code: [`apps/parent`](../../apps/parent). API: `services/api/src/parent`, `src/n
 | Homework | Upcoming homework with relative due dates ("Due tomorrow", "Due Fri 9 Oct"), subject and teacher; past homework collapsed. Detail screen with the instructions. | summary |
 | In class | For each subject, how the child answered when the teacher picked them on the board: correct, partly correct, not correct, no answer. Shown as a sentence and a stacked bar. | summary (`participation`) |
 | Class boards | Boards the teacher shared with the class after a lesson. Full-screen read-only viewer: page swipe, pinch and double-tap zoom, title, subject, teacher and date. | summary (`sharedBoards`), `GET /v1/whiteboards/:id` |
-| Updates | Notification inbox grouped Today / Earlier with an icon per kind (absence, homework, board shared, message from the college), unread dot and a badge on the tab. Tapping marks it read and opens the related screen: absence → attendance history (that day outlined), homework → homework detail, board → viewer, message → full text. Mark all as read. | `GET /v1/notifications`, `POST /v1/notifications/:id/read`, `POST /v1/notifications/read-all` |
+| Lesson recordings | Lessons the teacher recorded on the board and shared with the class. The ones the child was absent for come first, marked **Missed this class**; three on Home, the rest under "See all". The player replays the board in step with the teacher's voice: play/pause (or tap the board), seek bar with elapsed and total time, ±10 s, 1× / 1.5× / 2×, page indicator. **Summary** (key points) and **Transcript** tabs appear when ready ("being prepared" while queued). Where the device has no audio backend (desktop Linux) or the lesson has no sound, the board plays on a silent clock and says so. | summary (`recordings`, with `missed`), `GET /v1/recordings/:id`, `/events`, `/audio` |
+| Updates | Notification inbox grouped Today / Earlier with an icon per kind (absence, homework, board shared, lesson recording, message from the college), unread dot and a badge on the tab. Tapping marks it read and opens the related screen: absence → attendance history (that day outlined), homework → homework detail, board → viewer, recording ("Missed Corporate Accounting? Watch the lesson") → player, message → full text. Mark all as read. | `GET /v1/notifications`, `POST /v1/notifications/:id/read`, `POST /v1/notifications/read-all` |
 | Profile | Parent's name, phone and email, the children, college, server, sign out. | `GET /v1/me` |
 
 ### Rules the server enforces

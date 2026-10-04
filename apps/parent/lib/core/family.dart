@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
@@ -96,5 +97,16 @@ class FamilyController extends ChangeNotifier {
     } on ApiException {
       return null;
     }
+  }
+
+  /// A recording as a child's summary lists it (with whether they missed that class), from
+  /// summaries already loaded. Null when it is not among them.
+  (Child, RecordingInfo)? findRecording(String recordingId, {String? sectionId}) {
+    final candidates = sectionId == null ? children : inSection(sectionId);
+    for (final child in candidates) {
+      final r = _summaries[child.id]?.recordings.where((r) => r.id == recordingId).firstOrNull;
+      if (r != null) return (child, r);
+    }
+    return null;
   }
 }

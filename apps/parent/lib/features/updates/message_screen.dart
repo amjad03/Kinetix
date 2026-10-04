@@ -23,6 +23,7 @@ class MessageScreen extends StatelessWidget {
       NotificationKind.absence => 'Attendance',
       NotificationKind.homework => 'Homework',
       NotificationKind.boardShared => 'Class board',
+      NotificationKind.recording => 'Lesson recording',
       NotificationKind.other => 'Update',
     };
     return Scaffold(

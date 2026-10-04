@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+
+import '../../core/api.dart';
 
 import '../../core/family.dart';
 import '../../core/format.dart';
@@ -25,6 +28,7 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.absence => Icons.person_off,
     NotificationKind.homework => Icons.assignment,
     NotificationKind.boardShared => Icons.co_present,
+    NotificationKind.recording => Icons.play_circle,
     NotificationKind.broadcast => Icons.campaign,
     NotificationKind.other => Icons.notifications,
   };
@@ -46,6 +50,15 @@ class UpdatesTab extends StatelessWidget {
         }
       case NotificationKind.boardShared:
         if (n.whiteboardId != null && context.mounted) return BoardScreen.open(context, api, n.whiteboardId!);
+      case NotificationKind.recording:
+        if (n.recordingId != null && context.mounted) {
+          return LessonPlayerScreen.open(
+            context,
+            source: ParentLessonSource(api),
+            recordingId: n.recordingId!,
+            initial: family.findRecording(n.recordingId!, sectionId: n.sectionId)?.$2,
+          );
+        }
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;
@@ -114,7 +127,7 @@ class UpdatesTab extends StatelessWidget {
     );
   }
 
-  /// Which child an update is about, when it says so (absences, homework and boards).
+  /// Which child an update is about, when it says so (absences, homework, boards, recordings).
   Child? _childFor(AppNotification n) {
     final byId = family.byId(n.studentId);
     if (byId != null) return byId;
@@ -150,6 +163,7 @@ class NotificationTile extends StatelessWidget {
       NotificationKind.absence => (c.errorContainer, c.error),
       NotificationKind.homework => (c.secondaryContainer, c.onSecondaryContainer),
       NotificationKind.boardShared => (c.tertiaryContainer, c.onTertiaryContainer),
+      NotificationKind.recording => (c.tertiaryContainer, c.onTertiaryContainer),
       _ => (c.primaryContainer, c.onPrimaryContainer),
     };
     final when = Fmt.daysBetween(n.createdAt, today) == 0 ? Fmt.time(n.createdAt) : Fmt.relativeDay(n.createdAt, today);

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'models.dart';
 
@@ -40,8 +41,41 @@ abstract class ParentApi {
   Future<void> markAllRead();
   Future<SharedBoard> whiteboard(String id);
 
+  /// A lesson recording shared with the child's class, with transcript and summary.
+  Future<RecordingInfo> recording(String id);
+
+  /// The recording's board events, for [LessonPlayer].
+  Future<Lesson> recordingLesson(String id);
+
   /// One homework (opened from a notification), with the class it was set for.
   Future<({Homework homework, String sectionId})> homeworkById(String id);
+}
+
+/// Lets the lesson player load recordings through a [ParentApi].
+class ParentLessonSource implements LessonSource {
+  ParentLessonSource(this.api);
+
+  final ParentApi api;
+
+  Future<T> _guard<T>(Future<T> Function() f) async {
+    try {
+      return await f();
+    } on ApiException catch (e) {
+      throw LessonLoadException(e.status == 404 ? 'This recording is no longer shared with the class.' : e.message);
+    }
+  }
+
+  @override
+  Future<RecordingInfo> recording(String id) => _guard(() => api.recording(id));
+
+  @override
+  Future<Lesson> lesson(String id) => _guard(() => api.recordingLesson(id));
+
+  @override
+  LessonAudioLocation? audio(String id) => LessonAudioLocation(
+    Uri.parse('${api.baseUrl}/v1/recordings/$id/audio'),
+    headers: {if (api.token != null) 'authorization': 'Bearer ${api.token}'},
+  );
 }
 
 class HttpParentApi implements ParentApi {
@@ -104,6 +138,14 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<SharedBoard> whiteboard(String id) async => SharedBoard.fromJson(await _send('GET', '/v1/whiteboards/$id'));
+
+  @override
+  Future<RecordingInfo> recording(String id) async =>
+      RecordingInfo.fromJson(await _send('GET', '/v1/recordings/$id') as Map<String, dynamic>);
+
+  @override
+  Future<Lesson> recordingLesson(String id) async =>
+      Lesson.fromJson(await _send('GET', '/v1/recordings/$id/events') as Map<String, dynamic>);
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

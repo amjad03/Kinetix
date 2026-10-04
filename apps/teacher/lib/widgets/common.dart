@@ -51,9 +51,13 @@ class Pill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: 14, color: foreground), const SizedBox(width: Kx.s4)],
-          Text(
-            label,
-            style: context.text.labelMedium?.copyWith(color: foreground, fontWeight: FontWeight.w500),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.text.labelMedium?.copyWith(color: foreground, fontWeight: FontWeight.w500),
+            ),
           ),
         ],
       ),

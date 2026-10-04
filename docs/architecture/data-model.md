@@ -51,10 +51,43 @@ See [notifications.md](notifications.md). A whiteboard's `content` is `{v, backg
 pages[{strokes[{t,c,w,s?,p[]}]}]}` with points at 0.1 px (`packages/kinetix_ink/lib/src/serialization.dart`).
 Students and guardians can read a board only after it is shared with their class.
 
-## Planned next (Phase 1)
+## Content library
 
-- Curriculum library (global): `curricula`, `curriculum_nodes` (a tree), `learning_outcomes`, `content_items` (lessons, quizzes, 3D models, labs), with per-tenant overrides.
+```
+curricula (code: cbse, bu-ug…; global)
+courses (curriculum, code, title, term, source, reviewed; global)
+chapters (course, position, title; tenant_id null = global, else the institution's own)
+topics (chapter, position, title, summary, notes[], outcomes[]; tenant_id as chapters)
+subjects.course_id                             — the institution's subject follows this course
+```
+
+See [content-library.md](content-library.md). Global rows are read-only to the application role;
+row-level security shows them to everyone and an institution's own rows only to it.
+
+## AI, recordings, jobs, push
+
+```
+ai_usage (task, outcome, provider, model, prompt_version, tokens, latency)   — metering
+ai_cache (key = sha256(task, version, grounding, input), result, hits)        — per tenant
+recordings (id chosen by the board, owner, session, slot, section, subject, events_key,
+            audio_key, duration, transcript, summary, transcript/summary state, shared_at)
+jobs (kind, payload, state, attempts, run_after, locked_at)                   — Postgres queue
+push_devices (user, token, platform, app)
+```
+
+## Fees
+
+```
+fee_invoices (student, section at issue, batch, title, amount_paise, paid_paise, due_on, status)
+fee_payments (invoice, amount_paise, method, status, provider order/payment ids, receipt_no)
+receipt_counters (tenant, financial_year, last_no)  — RCPT/2026-27/00001…
+```
+
+See [fees-payments.md](fees-payments.md).
+
+## Planned next
+
 - Year plan and syllabus progress: `lesson_plans`, `coverage_events`.
 - Homework submissions: `submissions` against `homework` (the `homework` table itself is built).
-- Recordings: `recordings` (event log + audio blobs in S3), `transcripts`.
+- Library circulation: `library_items`, `loans` (visible to students and parents).
 - Consent records per guardian (DPDP).

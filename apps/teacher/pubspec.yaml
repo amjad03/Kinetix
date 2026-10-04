@@ -1,5 +1,5 @@
 name: kinetix_teacher
-description: "KINETIX Teacher App: today's classes, attendance, homework and connecting to the classroom board."
+description: "KINETIX Teacher App: today's classes, attendance, homework, lesson recordings and connecting to the classroom board."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   kinetix_ui:
     path: ../../packages/kinetix_ui
+  kinetix_lesson:
+    path: ../../packages/kinetix_lesson
   http: ^1.6.0
   intl: ^0.20.3
   mobile_scanner: ^7.4.2
