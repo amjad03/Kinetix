@@ -227,6 +227,53 @@ async function main() {
     { tenantId, sectionId: bcom3a.id, subjectId: corpAcc.id, createdBy: anita.id, title: 'Forfeiture of shares: notes', instructions: 'Read chapter 4.3 and write a one-page summary.', dueOn: inDays(-3) },
   ]);
 
+  // Academic calendar 2026-27 (dates for the demo; each institution keeps its own).
+  const principalUser = (await db.select().from(s.users).where(eq(s.users.email, 'principal@demo.kinetix.in')))[0];
+  await db.insert(s.calendarEvents).values([
+    { tenantId, kind: 'holiday', title: 'Gandhi Jayanti', startsOn: '2026-10-02', endsOn: '2026-10-02', createdBy: principalUser.id },
+    { tenantId, kind: 'holiday', title: 'Dasara holidays', startsOn: '2026-10-19', endsOn: '2026-10-21', createdBy: principalUser.id },
+    { tenantId, kind: 'holiday', title: 'Kannada Rajyotsava', startsOn: '2026-11-01', endsOn: '2026-11-01', createdBy: principalUser.id },
+    { tenantId, kind: 'exam', title: 'Mid-semester exams', startsOn: '2026-11-16', endsOn: '2026-11-20', programIds: [bcom.id], createdBy: principalUser.id },
+    { tenantId, kind: 'event', title: 'Annual sports day', startsOn: '2026-12-12', endsOn: '2026-12-12', createdBy: principalUser.id },
+    { tenantId, kind: 'holiday', title: 'Christmas', startsOn: '2026-12-25', endsOn: '2026-12-25', createdBy: principalUser.id },
+  ]);
+
+  // Syllabus coverage: Anita has taught the first topics of Corporate Accounting to BCom 3A.
+  if (corpAcc.courseId) {
+    const firstTopics = await db
+      .select({ id: s.topics.id })
+      .from(s.topics)
+      .innerJoin(s.chapters, eq(s.chapters.id, s.topics.chapterId))
+      .where(eq(s.chapters.courseId, corpAcc.courseId))
+      .orderBy(s.chapters.position, s.topics.position)
+      .limit(4);
+    if (firstTopics.length) {
+      await db.insert(s.topicCoverage).values(firstTopics.map((t, i) => ({ tenantId, sectionId: bcom3a.id, topicId: t.id, coveredOn: inDays(-14 + i * 3), coveredBy: anita.id })));
+    }
+  }
+
+  // Consent: Aarav (an adult student) answered for himself; Rajesh answered for Diya, who has no login.
+  await db.insert(s.consents).values([
+    { tenantId, studentId: byName('Aarav Patel').id, purpose: 'data_processing', granted: true, noticeVersion: '2026-10', givenBy: aaravUser.id },
+    { tenantId, studentId: byName('Aarav Patel').id, purpose: 'ai_features', granted: true, noticeVersion: '2026-10', givenBy: aaravUser.id },
+    { tenantId, studentId: byName('Diya Patel').id, purpose: 'data_processing', granted: true, noticeVersion: '2026-10', givenBy: rajesh.id },
+  ]);
+
+  // Aarav handed in the forfeiture notes; Anita checked them.
+  const [notesHw] = await db.select().from(s.homework).where(eq(s.homework.title, 'Forfeiture of shares: notes'));
+  await db.insert(s.homeworkSubmissions).values({
+    tenantId,
+    homeworkId: notesHw.id,
+    studentId: byName('Aarav Patel').id,
+    text: 'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the called-up amount, calls in arrears credited, and the amount received credited to Share Forfeiture account.',
+    status: 'checked',
+    submittedBy: aaravUser.id,
+    submittedAt: new Date(today.getTime() - 4 * 86400_000),
+    remark: 'Good summary. Add a journal entry example next time.',
+    checkedBy: anita.id,
+    checkedAt: new Date(today.getTime() - 2 * 86400_000),
+  });
+
   // The notifications those events would have produced, so the parent inbox is not empty.
   const guardianLinks = await db.select().from(s.guardians).where(eq(s.guardians.tenantId, tenantId));
   const recentAbsences = await db

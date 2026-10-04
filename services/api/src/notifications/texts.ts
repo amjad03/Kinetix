@@ -65,6 +65,23 @@ export const texts = {
       }[l];
     }),
 
+  homeworkReviewed: (p: { studentName: string; title: string; status: 'checked' | 'returned'; remark: string | null }) =>
+    all((l) => {
+      const n = first(p.studentName);
+      const note = p.remark ? ` “${p.remark}”` : '';
+      return p.status === 'checked'
+        ? {
+            en: { title: `Homework checked: ${n}`, body: `${p.title}.${note}` },
+            hi: { title: `होमवर्क जाँचा गया: ${n}`, body: `${p.title}।${note}` },
+            kn: { title: `ಹೋಂವರ್ಕ್ ಪರಿಶೀಲಿಸಲಾಗಿದೆ: ${n}`, body: `${p.title}.${note}` },
+          }[l]
+        : {
+            en: { title: `Homework to redo: ${n}`, body: `${p.title}.${note} Please submit it again.` },
+            hi: { title: `होमवर्क दोबारा करें: ${n}`, body: `${p.title}।${note} कृपया फिर से जमा करें।` },
+            kn: { title: `ಹೋಂವರ್ಕ್ ಮತ್ತೆ ಮಾಡಿ: ${n}`, body: `${p.title}.${note} ದಯವಿಟ್ಟು ಮತ್ತೆ ಸಲ್ಲಿಸಿ.` },
+          }[l];
+    }),
+
   boardShared: (p: { subject: string | null; title: string }) =>
     all(
       (l) =>
@@ -131,6 +148,20 @@ export const texts = {
         hi: { title: `पुस्तकालय से किताब ली गई: ${p.title}`, body: `${n} ने "${p.title}" किताब ली है। कृपया ${d} तक लौटाएँ।` },
         kn: { title: `ಗ್ರಂಥಾಲಯದ ಪುಸ್ತಕ ಪಡೆದಿದೆ: ${p.title}`, body: `${n} "${p.title}" ಪುಸ್ತಕವನ್ನು ಪಡೆದಿದ್ದಾರೆ. ದಯವಿಟ್ಟು ${d} ರೊಳಗೆ ಹಿಂದಿರುಗಿಸಿ.` },
       }[l];
+    }),
+
+  calendar: (p: { kind: 'holiday' | 'exam' | 'event'; title: string; startsOn: string; endsOn: string }) =>
+    all((l) => {
+      const when = p.startsOn === p.endsOn ? dateIn(l, p.startsOn) : `${dateIn(l, p.startsOn)} – ${dateIn(l, p.endsOn)}`;
+      if (p.kind === 'holiday') {
+        return {
+          en: { title: `Holiday: ${p.title}`, body: `${when}. There are no classes.` },
+          hi: { title: `छुट्टी: ${p.title}`, body: `${when}। कक्षाएँ नहीं होंगी।` },
+          kn: { title: `ರಜೆ: ${p.title}`, body: `${when}. ತರಗತಿಗಳು ಇರುವುದಿಲ್ಲ.` },
+        }[l];
+      }
+      const label = { exam: { en: 'Exams', hi: 'परीक्षा', kn: 'ಪರೀಕ್ಷೆ' }, event: { en: 'Event', hi: 'कार्यक्रम', kn: 'ಕಾರ್ಯಕ್ರಮ' } }[p.kind][l];
+      return { title: `${label}: ${p.title}`, body: when };
     }),
 
   marksPublished: (p: { subject: string; title: string }) =>

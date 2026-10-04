@@ -4,8 +4,9 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, RoleName, UserPrincipal } from '../auth/principal.js';
 import { ZodBody } from '../common/zod-body.js';
+import { consentWithdrawn } from '../consent/consent.controller.js';
 import { DbService } from '../db/db.service.js';
-import { aiUsage, boardSessions } from '../db/schema.js';
+import { aiUsage, boardSessions, students } from '../db/schema.js';
 import { AiService, type AiCaller } from './ai.service.js';
 import { TaskInputs, type TaskName } from './tasks.js';
 
@@ -102,6 +103,14 @@ export class AiController {
       caller.subjectId = session?.subjectId;
     } else {
       if (task !== 'explain' && !p.roles.some((r) => STAFF.includes(r))) throw new ForbiddenException();
+      if (!p.roles.some((r) => STAFF.includes(r))) {
+        // A student whose family (or who, as an adult) withdrew consent for AI features.
+        const withdrawn = await this.db.withTenant(p.tenantId, async (tx) => {
+          const [me] = await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));
+          return me ? consentWithdrawn(tx, me.id, 'ai_features') : false;
+        });
+        if (withdrawn) throw new ForbiddenException({ message: 'KINETIX AI is turned off for this student (consent was withdrawn)', code: 'CONSENT_WITHDRAWN' });
+      }
       caller.userId = p.userId;
       caller.sectionId = sectionId;
       caller.subjectId = subjectId;

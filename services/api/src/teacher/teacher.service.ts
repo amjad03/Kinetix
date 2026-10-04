@@ -5,6 +5,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { attendanceRecords, homework, rooms, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
+import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -36,6 +37,7 @@ export class TeacherService {
   constructor(
     private readonly timetable: TimetableService,
     private readonly clock: Clock,
+    private readonly calendar: CalendarService,
   ) {}
 
   async localNow(tx: Tx) {
@@ -47,10 +49,11 @@ export class TeacherService {
     const day = date ? parseDate(date) : now.date;
     const weekday = isoWeekday(day);
 
-    const rows = await tx
+    const all = await tx
       .select({
         slot: timetableSlots,
         section: { id: sections.id, displayName: sections.displayName },
+        programId: sections.programId,
         subject: { id: subjects.id, code: subjects.code, name: subjects.name },
         room: { id: rooms.id, name: rooms.name },
       })
@@ -60,6 +63,10 @@ export class TeacherService {
       .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
       .where(and(eq(timetableSlots.teacherId, teacherId), eq(timetableSlots.dayOfWeek, weekday), isNull(timetableSlots.archivedAt)))
       .orderBy(asc(timetableSlots.startsAt));
+    // Holidays cancel the day's classes (for everyone, or for some programs).
+    const holidays = await this.calendar.holidays(tx, day, addDays(day, 31));
+    const rows = all.filter((r) => !holidays.on(day, r.programId));
+    const holiday = holidays.forAll(day) ?? (all.length > 0 && rows.length === 0 ? holidays.on(day, all[0].programId) : null);
 
     const taken = new Set<string>();
     if (rows.length) {
@@ -90,13 +97,13 @@ export class TeacherService {
     let nextTeachingDate: string | null = null;
     for (let i = 1; i <= 7; i++) {
       const candidate = addDays(day, i);
-      if (teachingDays.has(isoWeekday(candidate))) {
+      if (teachingDays.has(isoWeekday(candidate)) && !holidays.forAll(candidate)) {
         nextTeachingDate = candidate;
         break;
       }
     }
 
-    return { date: day, today: now.date, isoWeekday: weekday, periods, nextTeachingDate };
+    return { date: day, today: now.date, isoWeekday: weekday, periods, nextTeachingDate, holiday: holiday ? { title: holiday.title } : null };
   }
 
   /** The section, looked up under RLS (so ids from other tenants are simply not found). */

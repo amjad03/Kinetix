@@ -21,6 +21,7 @@ import {
 } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { addDays, isoWeekday, parseDate } from '../teacher/teacher.service.js';
+import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
 export const DASHBOARD_ROLES: RoleName[] = ['principal', 'tenant_admin', 'hod'];
@@ -35,6 +36,7 @@ export class AdminController {
     private readonly clock: Clock,
     private readonly timetable: TimetableService,
     private readonly realtime: RealtimeGateway,
+    private readonly calendar: CalendarService,
   ) {}
 
   /** Campuses, programs, classes and rooms: for audience pickers and filters. */
@@ -95,6 +97,7 @@ export class AdminController {
       return {
         date: day.date,
         isToday: day.isToday,
+        holiday: day.holiday,
         classes: {
           scheduled: day.classes.length,
           taught: by('taught'),
@@ -275,9 +278,10 @@ export class AdminController {
     const day = date ? parseDate(date) : now.date;
     const bounds = { start: zonedToInstant(day, '00:00:00', tz), end: zonedToInstant(addDays(day, 1), '00:00:00', tz) };
 
-    const slots = await tx
+    const all = await tx
       .select({
         id: timetableSlots.id,
+        programId: sections.programId,
         startsAt: timetableSlots.startsAt,
         endsAt: timetableSlots.endsAt,
         section: { id: sections.id, displayName: sections.displayName },
@@ -292,6 +296,10 @@ export class AdminController {
       .leftJoin(rooms, eq(rooms.id, timetableSlots.roomId))
       .where(and(eq(timetableSlots.dayOfWeek, isoWeekday(day)), isNull(timetableSlots.archivedAt)))
       .orderBy(asc(timetableSlots.startsAt), asc(sections.displayName));
+    // Classes cancelled by a holiday are not due (and not "missed").
+    const holidays = await this.calendar.holidays(tx, day, day);
+    const slots = all.filter((s) => !holidays.on(day, s.programId)).map(({ programId: _p, ...s }) => s);
+    const holiday = holidays.forAll(day);
 
     const ids = slots.map((s) => s.id);
     const sessions = ids.length
@@ -329,6 +337,6 @@ export class AdminController {
         absent: att?.absent ?? 0,
       };
     });
-    return { date: day, isToday: day === now.date, bounds, classes };
+    return { date: day, isToday: day === now.date, bounds, classes, holiday: holiday ? { title: holiday.title } : null };
   }
 }

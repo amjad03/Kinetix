@@ -155,6 +155,20 @@
       "when": 1791141636730,
       "tag": "0021_departments_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791145497267,
+      "tag": "0022_calendar_coverage_submissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791145498213,
+      "tag": "0023_calendar_rls",
+      "breakpoints": true
     }
   ]
 }

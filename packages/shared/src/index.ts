@@ -28,7 +28,15 @@ export const RealtimeEvents = {
   LiveAudioState: 'live.audio.state',
   /** Board → server → listeners: a short piece of class audio ({@link LiveAudioChunk}). */
   LiveAudio: 'live.audio',
+  /** Server → users in the conversation: a new message ({@link MessageNewEvent}); refetch it. */
+  MessageNew: 'message.new',
 } as const;
+
+export interface MessageNewEvent {
+  conversationId: string;
+  messageId: string;
+  senderId: string;
+}
 
 /**
  * Server → board. `count` = everyone watching (stream while > 0); `leaders` look in on the
@@ -177,6 +185,8 @@ export interface TeacherTimetableResponse {
   periods: TeacherPeriod[];
   /** The next date after `date` (within a week) on which the teacher has periods, or null. */
   nextTeachingDate: string | null;
+  /** Set when a holiday cancels the day's classes (periods is then empty, or holds only programs not on holiday). */
+  holiday?: { title: string } | null;
 }
 
 /** GET /v1/teacher/classes: the section + subject pairs a teacher is timetabled for. */

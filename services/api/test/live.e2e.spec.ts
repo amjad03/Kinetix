@@ -52,9 +52,10 @@ describe('live classroom view', () => {
     await owner.end();
   });
 
-  it('only school leaders may connect to watch', async () => {
+  it('only school leaders and students may watch (others connect for their messages only)', async () => {
     const teacherSocket = await connect(tokens.teacher);
-    expect(teacherSocket.connected).toBe(false);
+    expect(teacherSocket.connected).toBe(true);
+    expect(await watch(teacherSocket)).toMatchObject({ ok: false, error: 'Only school leaders and students can watch classes' });
   });
 
   it('streams the board to the principal only while they watch, and audits it', async () => {

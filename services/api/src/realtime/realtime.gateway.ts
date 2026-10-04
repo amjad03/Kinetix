@@ -12,6 +12,8 @@ import { boardSessions, devices, sections, students, subjects, tenants, users } 
 
 export const deviceRoom = (deviceId: string) => `device:${deviceId}`;
 const liveRoom = (deviceId: string) => `live:${deviceId}`;
+/** A signed-in user's sockets (all their devices). */
+const userRoom = (userId: string) => `user:${userId}`;
 /** Viewers of a board who may hear its class audio. */
 const audioRoom = (deviceId: string) => `live-audio:${deviceId}`;
 
@@ -88,7 +90,8 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       const principal = await this.auth.resolve(token);
       socket.data.principal = principal;
       if (principal.kind === 'user') {
-        if (!principal.roles.some((r) => LIVE_VIEW_ROLES.includes(r) || r === 'student')) throw new Error('role cannot watch classes');
+        // Every user gets their own room (new messages); only leaders and students may watch classes.
+        await socket.join(userRoom(principal.userId));
         socket.data.watches = new Map<string, Watch>();
         socket.emit('ready', { userId: principal.userId });
         return;
@@ -124,6 +127,13 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     } else this.connected.set(id, n);
   }
 
+  /** To every socket of these users (for example a new message). */
+  toUsers(userIds: string[], event: string, payload: unknown): void {
+    const ids = [...new Set(userIds)];
+    if (ids.length === 0) return;
+    this.server?.to(ids.map(userRoom)).emit(event, payload);
+  }
+
   toDevices(deviceIds: string[], event: string, payload: unknown): void {
     if (deviceIds.length === 0) return;
     this.server.to(deviceIds.map(deviceRoom)).emit(event, payload);
@@ -138,11 +148,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage(RealtimeEvents.LiveWatch)
   async watch(@ConnectedSocket() socket: Socket, @MessageBody() body: { deviceId?: string }): Promise<LiveWatchAck> {
     const p = socket.data.principal as Principal | undefined;
-    if (p?.kind !== 'user')
-      return {
-        ok: false,
-        error: 'Only school leaders and students can watch classes',
-      };
+    if (p?.kind !== 'user' || !p.roles.some((r) => LIVE_VIEW_ROLES.includes(r) || r === 'student')) return { ok: false, error: 'Only school leaders and students can watch classes' };
     const deviceId = body?.deviceId;
     if (typeof deviceId !== 'string' || !/^[0-9a-f-]{36}$/i.test(deviceId)) return { ok: false, error: 'Unknown board' };
     const role: ViewerRole = p.roles.some((r) => LIVE_VIEW_ROLES.includes(r)) ? 'leader' : 'student';

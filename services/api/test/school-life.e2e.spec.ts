@@ -222,7 +222,8 @@ describe('school life', () => {
 
       const parentSocket = io(`${url}/realtime`, { auth: { token: tokens.parent }, transports: ['websocket'] });
       sockets.push(parentSocket);
-      await new Promise((r) => parentSocket.once('disconnect', r)); // families cannot watch
+      await next(parentSocket, 'ready');
+      expect(await parentSocket.emitWithAck(RealtimeEvents.LiveWatch, { deviceId: t.device.id })).toMatchObject({ ok: false }); // families cannot watch
 
       const ended = next<{ reason: string }>(student, RealtimeEvents.LiveEnded);
       const stopped = next<LiveViewersEvent>(board, RealtimeEvents.LiveViewers);

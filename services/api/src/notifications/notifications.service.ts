@@ -12,7 +12,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar';
 
 export { rupees } from './texts.js';
 
@@ -94,6 +94,16 @@ export class NotificationsService {
       data: { homeworkId: hw.id, sectionId: hw.sectionId },
       dedupeKey: `homework:${hw.id}`,
     });
+  }
+
+  /** The teacher checked or returned a student's homework: the student and their family. */
+  async homeworkReviewed(tx: Tx, r: { homeworkId: string; studentId: string; studentName: string; title: string; status: 'checked' | 'returned'; remark: string | null }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(r.studentId), {
+      kind: 'homework',
+      text: texts.homeworkReviewed(r),
+      data: { homeworkId: r.homeworkId, studentId: r.studentId },
+      dedupeKey: `homework-review:${r.homeworkId}:${r.studentId}`,
+    }, { replace: true });
   }
 
   /** A board shared with the class after the lesson. */
@@ -221,6 +231,19 @@ export class NotificationsService {
     );
   }
 
+  /** A holiday, exam or event for families and students (of the listed programs, or everyone). */
+  async calendarEvent(tx: Tx, e: { id: string; kind: 'holiday' | 'exam' | 'event'; title: string; startsOn: string; endsOn: string; programIds: string[] | null }): Promise<void> {
+    const inScope = e.programIds?.length ? sql`and s.section_id in (select id from sections where program_id in (${uuidList(e.programIds)}))` : sql``;
+    await this.insertFor(
+      tx,
+      sql`select g.user_id from guardians g join students s on s.id = g.student_id where s.status = 'active' ${inScope}
+          union
+          select s.user_id from students s where s.status = 'active' and s.user_id is not null ${inScope}`,
+      { kind: 'calendar', text: texts.calendar(e), data: { calendarEventId: e.id, startsOn: e.startsOn }, dedupeKey: `calendar:${e.id}` },
+      { replace: true },
+    );
+  }
+
   /** A principal's announcement reaches families of everyone in its audience. */
   async broadcastSent(tx: Tx, b: { id: string; title: string; body: string; audience: BroadcastAudience }): Promise<void> {
     const a = b.audience;
@@ -264,14 +287,18 @@ export class NotificationsService {
     tx: Tx,
     recipients: SQL,
     n: { kind: Kind; text: Localized | Text; data: Record<string, string>; dedupeKey: string },
-    opts: { revive?: boolean } = {},
+    opts: { revive?: boolean; replace?: boolean } = {},
   ): Promise<void> {
-    // A withdrawn absence that becomes an absence again is shown again, as unread.
-    const onConflict = opts.revive
+    // A withdrawn absence that becomes an absence again is shown again, as unread; a changed
+    // entry (calendar, a second review) replaces the earlier text and is shown as new.
+    const onConflict = opts.replace
       ? sql`on conflict (user_id, dedupe_key) do update
-            set retracted_at = null, read_at = null, title = excluded.title, body = excluded.body, created_at = now()
-            where notifications.retracted_at is not null`
-      : sql`on conflict (user_id, dedupe_key) do nothing`;
+            set retracted_at = null, read_at = null, title = excluded.title, body = excluded.body, data = excluded.data, created_at = now()`
+      : opts.revive
+        ? sql`on conflict (user_id, dedupe_key) do update
+              set retracted_at = null, read_at = null, title = excluded.title, body = excluded.body, created_at = now()
+              where notifications.retracted_at is not null`
+        : sql`on conflict (user_id, dedupe_key) do nothing`;
     // Each recipient gets the text in their own preferred language.
     const t = 'title' in n.text ? { en: n.text, hi: n.text, kn: n.text } : n.text;
     const pick = (f: 'title' | 'body') => sql`case u.preferred_language when 'hi' then ${t.hi[f]} when 'kn' then ${t.kn[f]} else ${t.en[f]} end`;

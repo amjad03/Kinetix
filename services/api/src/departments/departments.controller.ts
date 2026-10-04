@@ -6,6 +6,7 @@ import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock, localParts, zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
+import { coverageCounts } from '../coverage/coverage.controller.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import {
   academicYears,
@@ -25,6 +26,7 @@ import {
   users,
 } from '../db/schema.js';
 import { addDays, isSchoolAdmin, isoWeekday, parseDate } from '../teacher/teacher.service.js';
+import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
 /** Who can open a department view: its head, or the principal and administrator for any. */
@@ -74,6 +76,7 @@ export class DepartmentsController {
     private readonly db: DbService,
     private readonly clock: Clock,
     private readonly timetable: TimetableService,
+    private readonly calendar: CalendarService,
   ) {}
 
   /** The departments this user may open: the ones they head, or all for the principal. */
@@ -166,6 +169,7 @@ export class DepartmentsController {
           endsAt: timetableSlots.endsAt,
           sectionId: timetableSlots.sectionId,
           section: sections.displayName,
+          programId: sections.programId,
           subjectId: timetableSlots.subjectId,
           teacherId: timetableSlots.teacherId,
           teacher: users.fullName,
@@ -178,9 +182,12 @@ export class DepartmentsController {
 
       // Periods already over in the range: each weekday's date, and today only once a period ends.
       const due = new Map<string, number>();
+      const holidays = await this.calendar.holidays(tx, from, to);
       for (let d = from; d <= to && d <= now.date; d = addDays(d, 1)) {
         const wd = isoWeekday(d);
-        for (const s of slots) if (s.dayOfWeek === wd && (d < now.date || s.endsAt <= now.time)) due.set(s.id, (due.get(s.id) ?? 0) + 1);
+        for (const s of slots) {
+          if (s.dayOfWeek === wd && (d < now.date || s.endsAt <= now.time) && !holidays.on(d, s.programId)) due.set(s.id, (due.get(s.id) ?? 0) + 1);
+        }
       }
 
       const localDate = (col: typeof boardSessions.startedAt) => sql<string>`to_char(${col} at time zone ${tz}, 'YYYY-MM-DD')`;
@@ -319,12 +326,15 @@ export class DepartmentsController {
           attendanceTakenPercent: pct(a.attendanceTaken, a.scheduled),
         };
       };
+      const syllabus = await coverageCounts(tx, [...classes.values()]);
       const classList = [...classes.values()]
         .sort((a, b) => a.section.localeCompare(b.section) || a.subject.localeCompare(b.subject))
         .map((c) => {
           const latest = assessRows.find((a) => a.sectionId === c.sectionId && a.subjectId === c.subjectId && a.publishedAt);
+          const sy = syllabus.get(`${c.sectionId}|${c.subjectId}`)!;
           return {
             ...shape(c),
+            syllabus: { ...sy, percent: pct(sy.covered, sy.total) },
             latestAssessment: latest
               ? {
                   id: latest.id,

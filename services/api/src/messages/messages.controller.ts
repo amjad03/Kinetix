@@ -1,3 +1,4 @@
+import { RealtimeEvents } from '@kinetix/shared';
 import { Body, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -8,6 +9,7 @@ import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { conversations, guardians, messages, sections, students, subjects, tenants, timetableSlots, users } from '../db/schema.js';
+import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
 
@@ -27,6 +29,7 @@ export class ConversationsController {
   constructor(
     private readonly db: DbService,
     private readonly notifications: NotificationsService,
+    private readonly realtime: RealtimeGateway,
   ) {}
 
   /**
@@ -169,8 +172,8 @@ export class ConversationsController {
 
   @Post(':id/messages')
   @Auth('user')
-  send(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(SendBody)) body: z.infer<typeof SendBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
+  async send(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(SendBody)) body: z.infer<typeof SendBody>) {
+    const { out, recipientId } = await this.db.withTenant(p.tenantId, async (tx) => {
       const c = await this.load(tx, id);
       const fromStaff = c.staffId === p.userId;
       if (!fromStaff && c.familyId !== p.userId) throw new NotFoundException('Conversation not found');
@@ -189,8 +192,11 @@ export class ConversationsController {
         body: body.body,
         studentId: c.studentId,
       });
-      return { id: m.id, senderId: m.senderId, body: m.body, createdAt: m.createdAt };
+      return { out: { id: m.id, senderId: m.senderId, body: m.body, createdAt: m.createdAt }, recipientId: fromStaff ? c.familyId : c.staffId };
     });
+    // After the commit, so an app that refetches on this event sees the message.
+    this.realtime.toUsers([recipientId, p.userId], RealtimeEvents.MessageNew, { conversationId: id, messageId: out.id, senderId: p.userId });
+    return out;
   }
 
   @Post(':id/read')

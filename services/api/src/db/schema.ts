@@ -400,7 +400,7 @@ export const guardians = pgTable(
   (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -935,6 +935,98 @@ export const messages = pgTable(
   (t) => [index('messages_conversation_idx').on(t.conversationId, t.createdAt)],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Academic calendar, syllabus coverage, homework submissions, consent
+// ---------------------------------------------------------------------------------------------
+
+export const calendarKind = pgEnum('calendar_kind', ['holiday', 'exam', 'event']);
+
+/**
+ * Holidays, exam days and events. A holiday cancels the timetable's classes on those days (for
+ * the listed programs, or everyone when `program_ids` is null); exams and events are shown only.
+ */
+export const calendarEvents = pgTable(
+  'calendar_events',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: calendarKind('kind').notNull(),
+    title: text('title').notNull(),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    /** Null = the whole institution. */
+    programIds: uuid('program_ids').array(),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('calendar_events_range_idx').on(t.tenantId, t.startsOn, t.endsOn)],
+);
+
+/** Topics of a class's syllabus that have been taught, and when. */
+export const topicCoverage = pgTable(
+  'topic_coverage',
+  {
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    topicId: uuid('topic_id').notNull().references(() => topics.id, { onDelete: 'cascade' }),
+    coveredOn: date('covered_on').notNull(),
+    coveredBy: uuid('covered_by').notNull().references(() => users.id),
+    boardSessionId: uuid('board_session_id').references(() => boardSessions.id),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.sectionId, t.topicId] })],
+);
+
+export const submissionStatus = pgEnum('submission_status', ['submitted', 'checked', 'returned']);
+
+export interface SubmissionFile {
+  key: string;
+  name: string;
+  mime: string;
+  bytes: number;
+}
+
+/** A student's answer to homework: text and up to a few photos or PDFs. Returned work can be resubmitted. */
+export const homeworkSubmissions = pgTable(
+  'homework_submissions',
+  {
+    tenantId: tenantId(),
+    homeworkId: uuid('homework_id').notNull().references(() => homework.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    text: text('text').notNull().default(''),
+    files: jsonb('files').$type<SubmissionFile[]>().notNull().default([]),
+    status: submissionStatus('status').notNull().default('submitted'),
+    submittedBy: uuid('submitted_by').notNull().references(() => users.id),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+    remark: text('remark'),
+    checkedBy: uuid('checked_by').references(() => users.id),
+    checkedAt: timestamp('checked_at', { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.homeworkId, t.studentId] })],
+);
+
+export const consentPurpose = pgEnum('consent_purpose', ['data_processing', 'ai_features', 'class_recordings', 'photos']);
+
+/**
+ * Consent under the DPDP Act, append-only: the latest row per (student, purpose) counts. For a
+ * child the guardian decides; an adult student decides for themselves.
+ */
+export const consents = pgTable(
+  'consents',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    purpose: consentPurpose('purpose').notNull(),
+    granted: boolean('granted').notNull(),
+    /** Version of the notice the person saw. */
+    noticeVersion: text('notice_version').notNull(),
+    givenBy: uuid('given_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('consents_student_idx').on(t.studentId, t.purpose, t.createdAt)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -976,5 +1068,9 @@ export const TENANT_TABLES = [
   'marks',
   'conversations',
   'messages',
+  'calendar_events',
+  'topic_coverage',
+  'homework_submissions',
+  'consents',
   'audit_log',
 ] as const;
