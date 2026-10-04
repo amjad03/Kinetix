@@ -98,7 +98,25 @@ board_sessions.live_for_class                                              — "
 topics.resources [{kind: model3d|lab, id, title}]                          — opens on the board
 ```
 
+## Departments
+
+```
+departments (name, head_user_id)                 — the head (a user with the hod role) gets the department view
+department_staff (department, user)              — a teacher can be in several departments
+subjects.department_id                           — a subject belongs to one department
+```
+
+The department view counts the current timetable's periods for the department's subjects that
+are already over in the range, and matches them with board sessions (taught), attendance
+records (taken) and homework, recordings and assessments. Holidays are not modelled yet, so a
+holiday shows as a period not held.
+
+Class audio in live classes is not stored: it is relayed (16 kHz IMA ADPCM, 8 KB/s) and only
+its turning on and off is audited (`live_audio.on` / `live_audio.off`).
+
 ## Planned next
+
+- Holidays and the academic calendar, so reports skip days without classes.
 
 - Year plan and syllabus progress: `lesson_plans`, `coverage_events`.
 - Homework submissions: `submissions` against `homework` (the `homework` table itself is built).
