@@ -5,6 +5,7 @@ import 'package:kinetix_3d/kinetix_3d.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart';
 
+import '../../l10n/l10n.dart';
 import 'chrome.dart';
 
 /// What the side panel shows. Opening any of these splits the screen with the whiteboard.
@@ -14,13 +15,13 @@ enum PanelKind { ai, books, quiz, homework, split }
 enum SplitContent { whiteboard, document, video, web, model3d, lab }
 
 extension SplitContentInfo on SplitContent {
-  String get label => switch (this) {
-    SplitContent.whiteboard => 'Whiteboard',
-    SplitContent.document => 'PDF / PPT',
-    SplitContent.video => 'Video',
-    SplitContent.web => 'Web page',
-    SplitContent.model3d => '3D model',
-    SplitContent.lab => 'Virtual lab',
+  String label(AppLocalizations l) => switch (this) {
+    SplitContent.whiteboard => l.splitWhiteboard,
+    SplitContent.document => l.splitDocument,
+    SplitContent.video => l.splitVideo,
+    SplitContent.web => l.splitWeb,
+    SplitContent.model3d => l.splitModel3d,
+    SplitContent.lab => l.splitLab,
   };
 
   IconData get icon => switch (this) {
@@ -68,7 +69,7 @@ class SidePanelFrame extends StatelessWidget {
             child: MouseRegion(
               cursor: SystemMouseCursors.resizeColumn,
               child: Tooltip(
-                message: 'Drag to resize',
+                message: context.l10n.dragToResize,
                 child: Container(
                   width: 32,
                   height: 56,
@@ -81,11 +82,11 @@ class SidePanelFrame extends StatelessWidget {
           const SizedBox(height: Kx.s12),
           IconButton(
             key: const Key('panel-swap'),
-            tooltip: 'Move to the other side',
+            tooltip: context.l10n.moveToOtherSide,
             onPressed: onSwapSide,
             icon: const Icon(Icons.swap_horiz),
           ),
-          IconButton(key: const Key('panel-close'), tooltip: 'Close', onPressed: onClose, icon: const Icon(Icons.close)),
+          IconButton(key: const Key('panel-close'), tooltip: context.l10n.close, onPressed: onClose, icon: const Icon(Icons.close)),
         ],
       ),
     );
@@ -122,7 +123,7 @@ class PanelPage extends StatelessWidget {
           child: Row(
             children: [
               if (onBack != null) ...[
-                IconButton(key: const Key('panel-back'), tooltip: 'Back', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
+                IconButton(key: const Key('panel-back'), tooltip: context.l10n.back, onPressed: onBack, icon: const Icon(Icons.arrow_back)),
                 const SizedBox(width: Kx.s4),
               ],
               Container(
@@ -239,19 +240,19 @@ class SplitPanel extends StatelessWidget {
         children: [
           _SplitHeader(content: current, onBack: () => onContent(null)),
           Expanded(
-            child: KxEmptyState(icon: current.icon, message: 'The ${current.label} viewer is coming in an upcoming build.'),
+            child: KxEmptyState(icon: current.icon, message: context.l10n.viewerComingSoon(current.label(context.l10n))),
           ),
         ],
       );
     }
     return PanelPage(
       icon: Icons.vertical_split_outlined,
-      title: 'Split screen',
+      title: context.l10n.toolSplitScreen,
       child: ListView(
         padding: const EdgeInsets.all(Kx.s24),
         children: [
           Text(
-            'Choose what to show next to the whiteboard.',
+            context.l10n.splitChoose,
             style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant),
           ),
           const SizedBox(height: Kx.s16),
@@ -263,7 +264,7 @@ class SplitPanel extends StatelessWidget {
                 ChromeTile(
                   key: Key('split-${s.name}'),
                   icon: s.icon,
-                  label: s.label,
+                  label: s.label(context.l10n),
                   soon: !isBuilt(s),
                   onTap: () => onContent(s),
                 ),
@@ -336,10 +337,10 @@ class _SplitHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: Kx.s4),
         child: Row(
           children: [
-            IconButton(tooltip: 'Choose something else', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
+            IconButton(tooltip: context.l10n.chooseSomethingElse, onPressed: onBack, icon: const Icon(Icons.arrow_back)),
             Icon(content.icon, size: 20, color: context.colors.onSurfaceVariant),
             const SizedBox(width: Kx.s8),
-            Expanded(child: Text(title ?? content.label, style: context.text.titleSmall, overflow: TextOverflow.ellipsis)),
+            Expanded(child: Text(title ?? content.label(context.l10n), style: context.text.titleSmall, overflow: TextOverflow.ellipsis)),
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
@@ -61,7 +62,7 @@ class _AiHomeState extends State<_AiHome> {
   void _ask(String q, {bool fresh = false}) {
     if (q.trim().length < 2) return;
     if (!ai.canUseAi) {
-      showBoardMessage(context, 'Sign in with the Teacher app to ask KINETIX AI.');
+      showBoardMessage(context, context.l10n.aiAskNeedsSignIn);
       return;
     }
     _question.text = q;
@@ -83,6 +84,7 @@ class _AiHomeState extends State<_AiHome> {
 
   Widget _page(BuildContext context, double tileWidth) {
     final c = context.colors;
+    final l = context.l10n;
     Widget group(String title, List<Widget> tiles) => Padding(
       padding: const EdgeInsets.only(bottom: Kx.s20),
       child: Column(
@@ -94,18 +96,18 @@ class _AiHomeState extends State<_AiHome> {
         ],
       ),
     );
-    ChromeTile soon(IconData i, String l, Color col) =>
-        ChromeTile(icon: i, label: l, color: col, soon: true, width: tileWidth, onTap: () => showComingSoon(context, 'KINETIX AI $l'));
-    ChromeTile open(IconData i, String l, Color col, SplitContent c, [String? id]) => ChromeTile(
+    ChromeTile soon(IconData i, String t, Color col) =>
+        ChromeTile(icon: i, label: t, color: col, soon: true, width: tileWidth, onTap: () => showComingSoon(context, l.aiToolSoon(t)));
+    ChromeTile open(IconData i, String t, Color col, SplitContent c, [String? id]) => ChromeTile(
       key: Key('ai-open-${id ?? c.name}'),
       icon: i,
-      label: l,
+      label: t,
       color: col,
       width: tileWidth,
       onTap: () => ai.openSplit?.call(c, id),
     );
-    ChromeTile tool(IconData i, String l, Color col, AiView v) =>
-        ChromeTile(key: Key('ai-tool-${v.name}'), icon: i, label: l, color: col, width: tileWidth, onTap: () => ai.open(v));
+    ChromeTile tool(IconData i, String t, Color col, AiView v) =>
+        ChromeTile(key: Key('ai-tool-${v.name}'), icon: i, label: t, color: col, width: tileWidth, onTap: () => ai.open(v));
     final classLabel = ai.board.session?.classLabel;
 
     return AiPanelPage(
@@ -120,12 +122,12 @@ class _AiHomeState extends State<_AiHome> {
           SearchBar(
             key: const Key('ai-ask'),
             controller: _question,
-            hintText: classLabel == null ? 'Ask anything about a topic' : 'Ask anything about $classLabel',
+            hintText: classLabel == null ? l.aiAskHint : l.aiAskHintClass(classLabel),
             textStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 18)),
             leading: const Padding(padding: EdgeInsets.only(left: 8), child: Icon(Icons.auto_awesome_outlined)),
             trailing: [
-              IconButton(tooltip: 'Speak', onPressed: () => showComingSoon(context, 'Voice questions'), icon: const Icon(Icons.mic_none)),
-              IconButton(key: const Key('ai-ask-send'), tooltip: 'Ask', onPressed: () => _ask(_question.text), icon: const Icon(Icons.arrow_upward)),
+              IconButton(tooltip: l.aiSpeak, onPressed: () => showComingSoon(context, l.aiVoiceQuestions), icon: const Icon(Icons.mic_none)),
+              IconButton(key: const Key('ai-ask-send'), tooltip: l.aiAsk, onPressed: () => _ask(_question.text), icon: const Icon(Icons.arrow_upward)),
             ],
             onSubmitted: _ask,
             elevation: const WidgetStatePropertyAll(0),
@@ -135,7 +137,7 @@ class _AiHomeState extends State<_AiHome> {
           Padding(
             padding: const EdgeInsets.only(top: Kx.s8, bottom: Kx.s20),
             child: Text(
-              'Answers follow your syllabus. Check before sharing with the class.',
+              l.aiDisclaimer,
               style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
             ),
           ),
@@ -143,11 +145,11 @@ class _AiHomeState extends State<_AiHome> {
             listenable: ai.explain,
             builder: (context, _) {
               final t = ai.explain;
-              if (t.loading) return AiLoading(label: 'KINETIX AI is preparing an explanation…');
+              if (t.loading) return AiLoading(label: l.aiPreparing);
               if (t.error != null) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: Kx.s20),
-                  child: AiError(message: t.error!, onRetry: () => _ask(ai.question)),
+                  child: AiError(message: aiErrorMessage(l, t.error!), onRetry: () => _ask(ai.question)),
                 );
               }
               final v = t.value;
@@ -167,23 +169,23 @@ class _AiHomeState extends State<_AiHome> {
               );
             },
           ),
-          group('Teach', [
-            soon(Icons.summarize_outlined, 'Summary', const Color(0xFF8AB4F8)),
-            tool(Icons.quiz_outlined, 'Quick quiz', const Color(0xFF81C995), AiView.quiz),
-            tool(Icons.co_present_outlined, 'Lesson plan', const Color(0xFFFDD663), AiView.lessonPlan),
-            tool(Icons.assignment_outlined, 'Homework', const Color(0xFFF28B82), AiView.homework),
+          group(l.aiGroupTeach, [
+            soon(Icons.summarize_outlined, l.aiSummary, const Color(0xFF8AB4F8)),
+            tool(Icons.quiz_outlined, l.aiQuickQuiz, const Color(0xFF81C995), AiView.quiz),
+            tool(Icons.co_present_outlined, l.aiLessonPlan, const Color(0xFFFDD663), AiView.lessonPlan),
+            tool(Icons.assignment_outlined, l.toolHomework, const Color(0xFFF28B82), AiView.homework),
           ]),
-          group('Maths & science', [
-            tool(Icons.functions, 'Math solver', const Color(0xFF8AB4F8), AiView.math),
-            open(Icons.show_chart, 'Graph', const Color(0xFF81C995), SplitContent.lab, 'lab.graph-plotter'),
-            open(Icons.view_in_ar_outlined, '3D models', const Color(0xFFF28B82), SplitContent.model3d),
-            open(Icons.science_outlined, 'Simulations', const Color(0xFFC58AF9), SplitContent.lab),
+          group(l.aiGroupMathsScience, [
+            tool(Icons.functions, l.aiMathSolver, const Color(0xFF8AB4F8), AiView.math),
+            open(Icons.show_chart, l.aiGraph, const Color(0xFF81C995), SplitContent.lab, 'lab.graph-plotter'),
+            open(Icons.view_in_ar_outlined, l.ai3dModels, const Color(0xFFF28B82), SplitContent.model3d),
+            open(Icons.science_outlined, l.aiSimulations, const Color(0xFFC58AF9), SplitContent.lab),
           ]),
-          group('Look up', [
-            soon(Icons.menu_book_outlined, 'Textbook', const Color(0xFFFDD663)),
-            soon(Icons.public, 'Wikipedia', const Color(0xFFDADCE0)),
-            soon(Icons.translate, 'Dictionary', const Color(0xFF78D9EC)),
-            tool(Icons.document_scanner_outlined, 'Read board', const Color(0xFFFCAD70), AiView.readBoard),
+          group(l.aiGroupLookUp, [
+            soon(Icons.menu_book_outlined, l.aiTextbook, const Color(0xFFFDD663)),
+            soon(Icons.public, l.aiWikipedia, const Color(0xFFDADCE0)),
+            soon(Icons.translate, l.aiDictionary, const Color(0xFF78D9EC)),
+            tool(Icons.document_scanner_outlined, l.aiReadBoard, const Color(0xFFFCAD70), AiView.readBoard),
           ]),
         ],
       ),
@@ -203,6 +205,7 @@ class _ExplanationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final e = result.result;
     return Container(
       key: const Key('ai-explanation'),
@@ -218,8 +221,8 @@ class _ExplanationCard extends StatelessWidget {
               Expanded(
                 child: Text(question, maxLines: 2, overflow: TextOverflow.ellipsis, style: context.text.titleMedium?.copyWith(color: c.onSurfaceVariant)),
               ),
-              IconButton(tooltip: 'Ask again for a new answer', onPressed: onRegenerate, icon: const Icon(Icons.refresh)),
-              IconButton(key: const Key('ai-explanation-close'), tooltip: 'Clear', onPressed: onClose, icon: const Icon(Icons.close)),
+              IconButton(tooltip: l.aiAskAgain, onPressed: onRegenerate, icon: const Icon(Icons.refresh)),
+              IconButton(key: const Key('ai-explanation-close'), tooltip: l.clear, onPressed: onClose, icon: const Icon(Icons.close)),
             ],
           ),
           if (result.meta.preview) ...[const SizedBox(height: Kx.s8), AiNotice.preview()],
@@ -232,7 +235,7 @@ class _ExplanationCard extends StatelessWidget {
                 const SizedBox(width: Kx.s8),
                 Expanded(
                   child: Text(
-                    'Based on your syllabus: ${result.meta.sources.map((s) => s.title).join(', ')}',
+                    l.aiBasedOnSyllabus(result.meta.sources.map((s) => s.title).join(', ')),
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ),
@@ -245,7 +248,7 @@ class _ExplanationCard extends StatelessWidget {
             child: Text(e.answer, style: TextStyle(fontSize: ClassType.lead, height: 1.45, color: c.onSurface)),
           ),
           if (e.keyPoints.isNotEmpty) ...[
-            const AiSectionLabel('Key points'),
+            AiSectionLabel(l.aiKeyPoints),
             for (final p in e.keyPoints)
               Padding(
                 padding: const EdgeInsets.only(bottom: Kx.s8, right: Kx.s8),
@@ -263,7 +266,7 @@ class _ExplanationCard extends StatelessWidget {
               ),
           ],
           if (e.followUps.isNotEmpty) ...[
-            const AiSectionLabel('Ask next'),
+            AiSectionLabel(l.aiAskNext),
             Wrap(
               spacing: Kx.s8,
               runSpacing: Kx.s8,

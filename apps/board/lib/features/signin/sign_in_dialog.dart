@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/api_client.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 
 /// "Sign in to this board": the teacher scans the QR code or types the 6-digit code in the
 /// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
@@ -22,7 +23,10 @@ class SignInDialog extends StatefulWidget {
 
 class _SignInDialogState extends State<SignInDialog> {
   PairingCode? _code;
-  String? _error;
+
+  /// The server's refusal, or [_unreachable] when there is no connection.
+  ApiException? _error;
+  bool _unreachable = false;
   Timer? _refresh;
   Timer? _tick;
 
@@ -41,13 +45,17 @@ class _SignInDialogState extends State<SignInDialog> {
       setState(() {
         _code = code;
         _error = null;
+        _unreachable = false;
       });
       // Replace the code a little before it expires so the board never shows a dead code.
       final wait = code.expiresAt.difference(DateTime.now()) - const Duration(seconds: 10);
       _refresh = Timer(wait.isNegative ? const Duration(seconds: 5) : wait, _load);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = e is ApiException ? e.message : 'Cannot reach KINETIX Cloud. Retrying…');
+      setState(() {
+        _error = e is ApiException ? e : null;
+        _unreachable = e is! ApiException;
+      });
       _refresh = Timer(const Duration(seconds: 5), _load);
     }
   }
@@ -64,6 +72,8 @@ class _SignInDialogState extends State<SignInDialog> {
     final c = context.colors;
     final code = _code;
     final secondsLeft = code == null ? 0 : code.expiresAt.difference(DateTime.now()).inSeconds.clamp(0, 999);
+    final l = context.l10n;
+    final error = _unreachable ? l.cannotReachCloudRetrying : (_error == null ? null : apiErrorText(l, _error!));
     Widget step(int n, String text) => Padding(
       padding: const EdgeInsets.only(bottom: Kx.s12),
       child: Row(
@@ -95,16 +105,16 @@ class _SignInDialogState extends State<SignInDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Sign in to ${widget.boardName ?? 'this board'}', style: context.text.headlineSmall),
+                        Text(l.signInTo(widget.boardName ?? l.thisBoard), style: context.text.headlineSmall),
                         const SizedBox(height: 4),
                         Text(
-                          'Use the KINETIX Teacher app on your phone.',
+                          l.signInUsePhone,
                           style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
                         ),
                       ],
                     ),
                   ),
-                  IconButton(tooltip: 'Close', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                  IconButton(tooltip: l.close, onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
                 ],
               ),
               const SizedBox(height: Kx.s24),
@@ -118,9 +128,9 @@ class _SignInDialogState extends State<SignInDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        step(1, 'Open the KINETIX Teacher app'),
-                        step(2, 'Tap Connect to board'),
-                        step(3, 'Scan the QR code, or type this code'),
+                        step(1, l.signInStep1),
+                        step(2, l.signInStep2),
+                        step(3, l.signInStep3),
                         const SizedBox(height: Kx.s8),
                         Container(
                           width: double.infinity,
@@ -147,13 +157,13 @@ class _SignInDialogState extends State<SignInDialog> {
                                       child: LinearProgressIndicator(value: secondsLeft / 120, borderRadius: BorderRadius.circular(4)),
                                     ),
                                     const SizedBox(width: Kx.s8),
-                                    Text('New code in $secondsLeft s', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                                    Text(l.newCodeIn(secondsLeft), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                                   ],
                                 ),
                             ],
                           ),
                         ),
-                        if (_error != null)
+                        if (error != null)
                           Padding(
                             padding: const EdgeInsets.only(top: Kx.s12),
                             child: Row(
@@ -161,7 +171,7 @@ class _SignInDialogState extends State<SignInDialog> {
                                 Icon(Icons.cloud_off, size: 18, color: c.error),
                                 const SizedBox(width: Kx.s8),
                                 Expanded(
-                                  child: Text(_error!, style: TextStyle(color: c.error)),
+                                  child: Text(error, style: TextStyle(color: c.error)),
                                 ),
                               ],
                             ),
@@ -185,7 +195,7 @@ class _SignInDialogState extends State<SignInDialog> {
                   const SizedBox(width: Kx.s8),
                   Expanded(
                     child: Text(
-                      'The code changes every 2 minutes and works once. No password is typed on the board.',
+                      l.signInCodeNote,
                       style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                     ),
                   ),

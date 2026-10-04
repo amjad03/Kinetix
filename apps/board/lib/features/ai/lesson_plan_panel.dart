@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
@@ -32,11 +33,11 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
 
   void _generate({bool fresh = false}) {
     if (!ai.canUseAi) {
-      showBoardMessage(context, 'Sign in with the Teacher app to plan a lesson with KINETIX AI.');
+      showBoardMessage(context, context.l10n.lessonNeedsSignIn);
       return;
     }
     if (_topic.text.trim().length < 2) {
-      showBoardMessage(context, 'Type a topic for the lesson first.');
+      showBoardMessage(context, context.l10n.lessonTypeTopic);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -45,10 +46,11 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return AiPanelPage(
       ai: ai,
       icon: Icons.co_present_outlined,
-      title: 'Lesson plan',
+      title: l.aiLessonPlan,
       accent: lessonAccent,
       onBack: widget.onBack,
       child: ListenableBuilder(
@@ -64,7 +66,7 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
                 key: const Key('lesson-topic'),
                 controller: _topic,
                 style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(labelText: 'Topic', hintText: 'e.g. The water cycle'),
+                decoration: InputDecoration(labelText: l.topicLabel, hintText: l.lessonTopicHint),
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _generate(),
               ),
@@ -75,25 +77,25 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   NumberPicker(
-                    label: 'Length',
+                    label: l.lessonLength,
                     value: ai.lessonMinutes,
                     options: const [30, 40, 45, 55, 60, 90],
-                    suffix: ' min',
+                    format: l.minutesShort,
                     onChanged: (v) => setState(() => ai.lessonMinutes = v),
                   ),
                   FilledButton.icon(
                     key: const Key('lesson-generate'),
                     onPressed: task.loading ? null : _generate,
                     icon: const Icon(Icons.auto_awesome),
-                    label: Text(plan == null ? 'Plan lesson' : 'Plan again'),
+                    label: Text(plan == null ? l.lessonPlanButton : l.lessonPlanAgain),
                   ),
                   if (plan != null && !task.loading)
-                    OutlinedButton.icon(onPressed: () => _generate(fresh: true), icon: const Icon(Icons.refresh), label: const Text('Regenerate')),
+                    OutlinedButton.icon(onPressed: () => _generate(fresh: true), icon: const Icon(Icons.refresh), label: Text(l.regenerate)),
                 ],
               ),
               const SizedBox(height: Kx.s16),
-              if (task.loading) const AiLoading(label: 'Planning the lesson…'),
-              if (task.error != null) AiError(message: task.error!, onRetry: _generate),
+              if (task.loading) AiLoading(label: l.lessonPlanning),
+              if (task.error != null) AiError(message: aiErrorMessage(l, task.error!), onRetry: _generate),
               if (plan != null && !task.loading) ...[
                 const Divider(height: Kx.s24),
                 if (plan.meta.preview) AiNotice.preview(),
@@ -116,13 +118,14 @@ class _PlanView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final total = plan.steps.fold(0, (s, x) => s + x.minutes);
     const body = TextStyle(fontSize: 18, height: 1.4);
     return Column(
       key: const Key('lesson-plan'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AiSectionLabel('Objectives'),
+        AiSectionLabel(l.lessonObjectives),
         for (final o in plan.objectives)
           Padding(
             padding: const EdgeInsets.only(bottom: Kx.s8),
@@ -135,21 +138,21 @@ class _PlanView extends StatelessWidget {
               ],
             ),
           ),
-        AiSectionLabel('Steps · $total min'),
+        AiSectionLabel(l.lessonSteps(total)),
         for (var i = 0; i < plan.steps.length; i++)
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  width: 64,
+                  width: 76,
                   child: Column(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: Kx.s4),
                         decoration: BoxDecoration(color: c.secondaryContainer, borderRadius: BorderRadius.circular(Kx.rSm)),
                         child: Text(
-                          '${plan.steps[i].minutes} min',
+                          l.minutesShort(plan.steps[i].minutes),
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.onSecondaryContainer),
                         ),
                       ),
@@ -168,7 +171,7 @@ class _PlanView extends StatelessWidget {
             ),
           ),
         if (plan.materials.isNotEmpty) ...[
-          const AiSectionLabel('Materials'),
+          AiSectionLabel(l.lessonMaterials),
           Wrap(
             spacing: Kx.s8,
             runSpacing: Kx.s8,
@@ -182,7 +185,7 @@ class _PlanView extends StatelessWidget {
             ],
           ),
         ],
-        const AiSectionLabel('Check understanding'),
+        AiSectionLabel(l.lessonCheck),
         Text(plan.assessment, style: body),
       ],
     );

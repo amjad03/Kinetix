@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/recording/lesson_capture.dart';
 import '../../core/recording/recordings.dart';
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 
 /// "03:12", or "1:03:12" past an hour.
@@ -13,10 +15,29 @@ String formatElapsed(Duration d) {
   return d.inHours > 0 ? '${d.inHours}:$m:$s' : '$m:$s';
 }
 
-/// A title for a new recording: "Corporate Accounting · 5 Oct" or "Lesson · 5 Oct".
-String defaultRecordingTitle(String? subject, DateTime now) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return '${subject ?? 'Lesson'} · ${now.day} ${months[now.month - 1]}';
+/// A title for a new recording: "Corporate Accounting · 5 Oct" or "Lesson · 5 Oct" ([fallback]
+/// and the date in the board's language).
+String defaultRecordingTitle(String? subject, DateTime now, {String fallback = 'Lesson', String locale = 'en_US'}) =>
+    '${subject ?? fallback} · ${DateFormat('d MMM', locale).format(now)}';
+
+/// Why the board records without sound, in the board's language. The reasons come from
+/// [VoiceRecorder] in English; unknown ones are shown as they are.
+String voiceReason(AppLocalizations l, String reason) => switch (reason) {
+  'no microphone found' => l.voiceNoMicrophone,
+  'the microphone permission was denied' => l.voicePermissionDenied,
+  'this board cannot record sound' => l.voiceUnsupported,
+  'the microphone could not be started' => l.voiceNotStarted,
+  _ => reason,
+};
+
+/// A recording's stored note (written in English by the upload queue), in the board's language.
+String recordingNote(AppLocalizations l, String note) {
+  if (note == 'Could not reach KINETIX Cloud') return l.cloudUnreachable;
+  final failed = RegExp(r'^Request failed \((\d+)\)$').firstMatch(note);
+  if (failed != null) return l.requestFailed(int.parse(failed[1]!));
+  final later = RegExp(r'^Uploaded in a later class\. Share it from here if it is for (.*)\.$').firstMatch(note);
+  if (later != null) return l.recUploadedLaterClass(later[1] == 'this class' ? l.thisClass : later[1]!);
+  return note;
 }
 
 /// The red "recording" pill in the status strip: a dot, the time, pause/resume and stop.
@@ -47,7 +68,7 @@ class RecordingIndicator extends StatelessWidget {
               Icon(Icons.circle, size: 14, color: on ? Kx.record : Kx.record.withValues(alpha: 0.35)),
               const SizedBox(width: Kx.s8),
               Text(
-                paused ? 'Paused' : 'REC',
+                paused ? context.l10n.recPaused : context.l10n.recLive,
                 style: context.text.labelLarge?.copyWith(color: paused ? c.onSurfaceVariant : c.onSurface, fontWeight: FontWeight.w700),
               ),
               const SizedBox(width: Kx.s8),
@@ -60,20 +81,20 @@ class RecordingIndicator extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: Kx.s8),
                   child: Tooltip(
-                    message: 'Recording without sound',
+                    message: context.l10n.recNoSoundTooltip,
                     child: Icon(Icons.mic_off_outlined, size: 18, color: c.onSurfaceVariant),
                   ),
                 ),
               const SizedBox(width: Kx.s4),
               IconButton(
                 key: const Key('rec-pause'),
-                tooltip: paused ? 'Resume recording' : 'Pause recording',
+                tooltip: paused ? context.l10n.recResume : context.l10n.recPause,
                 onPressed: paused ? onResume : onPause,
                 icon: Icon(paused ? Icons.play_arrow_rounded : Icons.pause_rounded),
               ),
               IconButton.filled(
                 key: const Key('rec-stop'),
-                tooltip: 'Stop recording',
+                tooltip: context.l10n.recStop,
                 style: IconButton.styleFrom(backgroundColor: Kx.record, foregroundColor: Colors.white),
                 onPressed: onStop,
                 icon: const Icon(Icons.stop_rounded),
@@ -122,11 +143,11 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
     final sure = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Discard this recording?'),
-        content: Text('${formatElapsed(widget.duration)} of the lesson will be deleted from the board.'),
+        title: Text(context.l10n.recDiscardTitle),
+        content: Text(context.l10n.recDiscardBody(formatElapsed(widget.duration))),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Keep')),
-          FilledButton(key: const Key('rec-discard-confirm'), onPressed: () => Navigator.pop(context, true), child: const Text('Discard')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.keep)),
+          FilledButton(key: const Key('rec-discard-confirm'), onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.discard)),
         ],
       ),
     );
@@ -136,9 +157,10 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return AlertDialog(
       icon: const Icon(Icons.video_library_outlined),
-      title: const Text('Save lesson recording'),
+      title: Text(l.recSaveTitle),
       content: SizedBox(
         width: 480,
         child: Column(
@@ -146,7 +168,7 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${formatElapsed(widget.duration)} · ${widget.hasAudio ? 'board and voice' : 'board only, no sound'}',
+              '${formatElapsed(widget.duration)} · ${widget.hasAudio ? l.recBoardAndVoice : l.recBoardOnly}',
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
             const SizedBox(height: Kx.s12),
@@ -155,32 +177,28 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
               controller: _title,
               autofocus: true,
               maxLength: 120,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: InputDecoration(labelText: l.titleLabel),
               onSubmitted: (_) => _save(),
             ),
             SwitchListTile(
               key: const Key('rec-share'),
               contentPadding: EdgeInsets.zero,
-              title: const Text('Share with the class'),
-              subtitle: Text(
-                widget.classLabel == null
-                    ? 'Available when the board is used in a timetabled class'
-                    : 'Students and parents of ${widget.classLabel} can watch it after it uploads',
-              ),
+              title: Text(l.shareWithClass),
+              subtitle: Text(widget.classLabel == null ? l.shareNeedsClass : l.recShareHint(widget.classLabel!)),
               value: _share,
               onChanged: widget.classLabel == null ? null : (v) => setState(() => _share = v),
             ),
             const SizedBox(height: Kx.s4),
             Text(
-              'It uploads to KINETIX Cloud in the background. Absent students are told it is there.',
+              l.recUploadNote,
               style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(key: const Key('rec-discard'), onPressed: _discard, child: const Text('Discard')),
-        FilledButton(key: const Key('rec-save'), onPressed: _save, child: const Text('Save')),
+        TextButton(key: const Key('rec-discard'), onPressed: _discard, child: Text(l.discard)),
+        FilledButton(key: const Key('rec-save'), onPressed: _save, child: Text(l.save)),
       ],
     );
   }
@@ -227,10 +245,10 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
       final s = await widget.recordings.share(id);
       if (mounted) {
         setState(() => _cloud = [for (final r in _cloud) r.id == id ? s : r]);
-        showBoardMessage(context, 'Shared with ${s.sectionName ?? 'the class'}.');
+        showBoardMessage(context, context.l10n.sharedWith(s.sectionName ?? context.l10n.theClass));
       }
     } catch (e) {
-      if (mounted) showBoardMessage(context, 'Could not share: $e');
+      if (mounted) showBoardMessage(context, context.l10n.couldNotShare('$e'));
     } finally {
       if (mounted) setState(() => _busy.remove(id));
     }
@@ -240,13 +258,13 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: const Icon(Icons.video_library_outlined),
-      title: const Text('Recordings'),
+      title: Text(context.l10n.recordings),
       content: SizedBox(
         width: 680,
         height: 460,
         child: ListenableBuilder(listenable: widget.recordings, builder: (context, _) => _list(context)),
       ),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(context.l10n.close))],
     );
   }
 
@@ -260,9 +278,7 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
     if (local.isEmpty && cloudOnly.isEmpty) {
       return KxEmptyState(
         icon: Icons.video_library_outlined,
-        message: _cloudError != null
-            ? 'Could not load your recordings.\n$_cloudError'
-            : 'Lessons you record appear here. Tap Record on the toolbar to start.',
+        message: _cloudError != null ? context.l10n.couldNotLoadRecordings(_cloudError!) : context.l10n.noRecordingsYet,
       );
     }
     final rows = <Widget>[for (final r in local) _localRow(context, r, cloudById[r.id]), for (final r in cloudOnly) _cloudRow(context, r)];
@@ -278,32 +294,34 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
     final status = recs.statusOf(r);
     final shared = r.sharedAt != null || cloud?.sharedAt != null;
     final mine = r.teacherId == widget.signedInTeacherId;
+    final l = context.l10n;
     final details = [
-      _when(r.startedAt),
+      _when(context, r.startedAt),
       formatElapsed(Duration(milliseconds: r.durationMs)),
       r.sectionName,
-      r.hasAudio ? null : 'no sound',
+      r.hasAudio ? null : l.recNoSound,
       if (!mine) r.teacherName,
     ].whereType<String>().join(' · ');
     final (label, icon) = switch (status) {
-      RecordingStatus.waiting => (mine ? 'Waiting to upload' : 'Uploads when ${r.teacherName.split(' ').first} signs in', Icons.schedule),
-      RecordingStatus.uploading => ('Uploading ${((recs.progressOf(r) ?? 0) * 100).round()}%', Icons.cloud_upload_outlined),
+      RecordingStatus.waiting => (mine ? l.recWaiting : l.recUploadsWhen(r.teacherName.split(' ').first), Icons.schedule),
+      RecordingStatus.uploading => (l.recUploading(((recs.progressOf(r) ?? 0) * 100).round()), Icons.cloud_upload_outlined),
       RecordingStatus.uploaded ||
-      RecordingStatus.shared => (shared ? 'Shared' : 'Uploaded', shared ? Icons.people_alt_outlined : Icons.cloud_done_outlined),
-      RecordingStatus.failed => ('Upload failed', Icons.error_outline),
+      RecordingStatus.shared => (shared ? l.shared : l.recUploaded, shared ? Icons.people_alt_outlined : Icons.cloud_done_outlined),
+      RecordingStatus.failed => (l.recUploadFailed, Icons.error_outline),
     };
     Widget? action;
     if (status == RecordingStatus.failed && mine) {
-      action = TextButton.icon(onPressed: () => recs.retry(r.id), icon: const Icon(Icons.refresh, size: 18), label: const Text('Retry'));
+      action = TextButton.icon(onPressed: () => recs.retry(r.id), icon: const Icon(Icons.refresh, size: 18), label: Text(l.retry));
     } else if (r.uploaded && !shared && mine && r.sectionName != null) {
       action = _shareButton(r.id);
     }
+    // The last error matters only while it can be retried, that is to the teacher who recorded it.
+    final note = (mine ? r.error : null) ?? r.notShared;
     return _row(
       context,
       key: Key('rec-${r.id}'),
       title: r.title,
-      // The last error matters only while it can be retried, that is to the teacher who recorded it.
-      details: [details, (mine ? r.error : null) ?? r.notShared].whereType<String>().join('\n'),
+      details: note == null ? details : '$details\n${recordingNote(l, note)}',
       status: Chip(key: Key('rec-status-${r.id}'), avatar: Icon(icon, size: 16), label: Text(label)),
       progress: recs.progressOf(r),
       action: action,
@@ -312,11 +330,12 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
 
   Widget _cloudRow(BuildContext context, RecordingSummary r) {
     final shared = r.sharedAt != null;
+    final l = context.l10n;
     final details = [
-      _when(r.startedAt),
+      _when(context, r.startedAt),
       if (r.durationMs != null) formatElapsed(Duration(milliseconds: r.durationMs!)),
       r.sectionName,
-      r.hasAudio ? null : 'no sound',
+      r.hasAudio ? null : l.recNoSound,
     ].whereType<String>().join(' · ');
     return _row(
       context,
@@ -326,7 +345,7 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
       status: Chip(
         key: Key('rec-status-${r.id}'),
         avatar: Icon(shared ? Icons.people_alt_outlined : Icons.cloud_done_outlined, size: 16),
-        label: Text(shared ? 'Shared' : 'Uploaded'),
+        label: Text(shared ? l.shared : l.recUploaded),
       ),
       action: !shared && r.sectionId != null ? _shareButton(r.id) : null,
     );
@@ -336,7 +355,7 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
     key: Key('rec-share-$id'),
     onPressed: _busy.contains(id) ? null : () => _share(id),
     icon: const Icon(Icons.share_outlined, size: 18),
-    label: const Text('Share'),
+    label: Text(context.l10n.share),
   );
 
   Widget _row(
@@ -374,9 +393,5 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
     );
   }
 
-  static String _when(DateTime t) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final l = t.toLocal();
-    return '${l.day} ${months[l.month - 1]}, ${l.hour.toString().padLeft(2, '0')}:${l.minute.toString().padLeft(2, '0')}';
-  }
+  static String _when(BuildContext context, DateTime t) => DateFormat('d MMM, HH:mm', context.dateLocale).format(t.toLocal());
 }

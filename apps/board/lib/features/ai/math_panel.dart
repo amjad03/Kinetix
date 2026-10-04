@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_math/kinetix_math.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../l10n/l10n.dart';
+import '../../l10n/math_text.dart';
 import '../board/side_panel.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
@@ -86,9 +88,10 @@ class _MathPanelState extends State<MathPanel> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return PanelPage(
       icon: Icons.functions,
-      title: 'Math solver',
+      title: l.aiMathSolver,
       accent: mathAccent,
       onBack: widget.onBack,
       child: ListView(
@@ -100,8 +103,8 @@ class _MathPanelState extends State<MathPanel> {
             focusNode: _focus,
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
-              hintText: 'Type a sum or an equation',
-              suffixIcon: IconButton(tooltip: 'Clear', onPressed: _clear, icon: const Icon(Icons.close)),
+              hintText: l.mathHint,
+              suffixIcon: IconButton(tooltip: l.clear, onPressed: _clear, icon: const Icon(Icons.close)),
             ),
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _solve(),
@@ -115,7 +118,7 @@ class _MathPanelState extends State<MathPanel> {
               const SizedBox(width: Kx.s8),
               Expanded(
                 child: Text(
-                  'Solved on this board. Works offline, no sign-in needed.',
+                  l.mathOffline,
                   style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                 ),
               ),
@@ -123,10 +126,10 @@ class _MathPanelState extends State<MathPanel> {
           ),
           const SizedBox(height: Kx.s20),
           if (_error != null)
-            AiNotice(key: const Key('math-error'), icon: Icons.error_outline, message: _error!, tone: AiNoticeTone.error),
+            AiNotice(key: const Key('math-error'), icon: Icons.error_outline, message: MathText(l).error(_error!), tone: AiNoticeTone.error),
           if (_solution != null) _SolutionView(solution: _solution!),
           if (_solution == null && _error == null) ...[
-            Text('Try one of these', style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
+            Text(l.mathTryThese, style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
             const SizedBox(height: Kx.s12),
             Wrap(
               spacing: Kx.s8,
@@ -145,7 +148,7 @@ class _MathPanelState extends State<MathPanel> {
             ),
             const SizedBox(height: Kx.s16),
             Text(
-              'Works out sums with BODMAS, fractions, powers and roots, sin/cos/tan in degrees, log, and solves linear and quadratic equations step by step.',
+              l.mathAbout,
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
           ],
@@ -162,25 +165,27 @@ class _Keypad extends StatelessWidget {
   final VoidCallback onBackspace;
   final VoidCallback onSolve;
 
-  static const keys = [
+  /// (label, text typed, tooltip).
+  static List<(String, String, String)> keys(AppLocalizations l) => [
     ('x', 'x', 'x'),
-    ('x²', '²', 'Squared'),
-    ('xⁿ', '^', 'Power'),
-    ('√', '√', 'Square root'),
-    ('π', 'π', 'Pi'),
-    ('a/b', '/', 'Fraction'),
-    ('(', '(', 'Open bracket'),
-    (')', ')', 'Close bracket'),
-    ('×', '×', 'Times'),
-    ('÷', '÷', 'Divide'),
-    ('−', '−', 'Minus'),
-    ('+', '+', 'Plus'),
-    ('=', '=', 'Equals'),
+    ('x²', '²', l.mathKeySquared),
+    ('xⁿ', '^', l.mathKeyPower),
+    ('√', '√', l.mathKeySquareRoot),
+    ('π', 'π', l.mathKeyPi),
+    ('a/b', '/', l.mathKeyFraction),
+    ('(', '(', l.mathKeyOpenBracket),
+    (')', ')', l.mathKeyCloseBracket),
+    ('×', '×', l.mathKeyTimes),
+    ('÷', '÷', l.mathKeyDivide),
+    ('−', '−', l.mathKeyMinus),
+    ('+', '+', l.mathKeyPlus),
+    ('=', '=', l.mathKeyEquals),
   ];
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     Widget key(String label, String tip, VoidCallback onTap, {Key? k}) => Tooltip(
       message: tip,
       child: Material(
@@ -202,8 +207,8 @@ class _Keypad extends StatelessWidget {
       spacing: Kx.s8,
       runSpacing: Kx.s8,
       children: [
-        for (final (label, text, tip) in keys) key(label, tip, () => onKey(text), k: Key('math-key-$label')),
-        key('⌫', 'Delete', onBackspace, k: const Key('math-key-back')),
+        for (final (label, text, tip) in keys(l)) key(label, tip, () => onKey(text), k: Key('math-key-$label')),
+        key('⌫', l.mathKeyDelete, onBackspace, k: const Key('math-key-back')),
         SizedBox(
           height: 48,
           child: FilledButton.icon(
@@ -211,7 +216,7 @@ class _Keypad extends StatelessWidget {
             onPressed: onSolve,
             style: FilledButton.styleFrom(minimumSize: const Size(120, 48)),
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Solve'),
+            label: Text(l.mathSolve),
           ),
         ),
       ],
@@ -228,6 +233,7 @@ class _SolutionView extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final s = solution;
+    final m = MathText(context.l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -238,17 +244,17 @@ class _SolutionView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(s.kindLabel.toUpperCase(), style: context.text.labelLarge?.copyWith(color: c.onPrimaryContainer, letterSpacing: 0.8)),
+              Text(m.kind(s.kind).toUpperCase(), style: context.text.labelLarge?.copyWith(color: c.onPrimaryContainer, letterSpacing: 0.8)),
               const SizedBox(height: Kx.s8),
-              Text(s.answer, style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600, color: c.onPrimaryContainer, height: 1.25)),
+              Text(m.answer(s.answer), style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600, color: c.onPrimaryContainer, height: 1.25)),
               if (s.decimal != null) ...[
                 const SizedBox(height: Kx.s4),
-                Text(s.decimal!, style: TextStyle(fontSize: 20, color: c.onPrimaryContainer.withValues(alpha: 0.8))),
+                Text(m.expression(s.decimal!), style: TextStyle(fontSize: 20, color: c.onPrimaryContainer.withValues(alpha: 0.8))),
               ],
             ],
           ),
         ),
-        const AiSectionLabel('Working'),
+        AiSectionLabel(context.l10n.mathWorking),
         for (var i = 0; i < s.steps.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: Kx.s12),
@@ -269,10 +275,10 @@ class _SolutionView extends StatelessWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(s.steps[i].explanation, style: TextStyle(fontSize: 16, color: c.onSurfaceVariant, height: 1.3)),
+                        child: Text(m.step(s.steps[i].explanation), style: TextStyle(fontSize: 16, color: c.onSurfaceVariant, height: 1.3)),
                       ),
                       const SizedBox(height: Kx.s4),
-                      Text(s.steps[i].expression, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: c.onSurface, height: 1.3)),
+                      Text(m.expression(s.steps[i].expression), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: c.onSurface, height: 1.3)),
                     ],
                   ),
                 ),

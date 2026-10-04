@@ -1,0 +1,1201 @@
+{
+  "@@locale": "en",
+  "appTitle": "KINETIX Board",
+  "@appTitle": {
+    "description": "Product name; stays in English."
+  },
+  "cancel": "Cancel",
+  "save": "Save",
+  "share": "Share",
+  "close": "Close",
+  "done": "Done",
+  "ok": "OK",
+  "open": "Open",
+  "discard": "Discard",
+  "keep": "Keep",
+  "tryAgain": "Try again",
+  "retry": "Retry",
+  "back": "Back",
+  "clear": "Clear",
+  "regenerate": "Regenerate",
+  "titleLabel": "Title",
+  "topicLabel": "Topic",
+  "@topicLabel": {
+    "description": "A topic of a chapter (glossary: Chapter / Topic)."
+  },
+  "soon": "Soon",
+  "@soon": {
+    "description": "Small badge on features that are not built yet."
+  },
+  "comingSoonFeature": "{feature} is coming in an upcoming build.",
+  "@comingSoonFeature": {
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "guest": "Guest",
+  "practiceBoard": "Practice board",
+  "noClassTimetabled": "No class is timetabled now",
+  "goesTo": "Goes to {section}",
+  "@goesTo": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesShort": "{minutes} min",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "requestFailed": "Request failed ({status})",
+  "@requestFailed": {
+    "placeholders": {
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudUnreachable": "Could not reach KINETIX Cloud",
+  "toolRecord": "Record",
+  "toolStop": "Stop",
+  "toolTheme": "Theme",
+  "toolWrite": "Write",
+  "toolErase": "Erase",
+  "toolSelect": "Select",
+  "toolShapes": "Shapes",
+  "toolTools": "Tools",
+  "toolUndo": "Undo",
+  "@toolUndo": {
+    "description": "Short toolbar label. Hindi/Kannada use the English loan word; review."
+  },
+  "toolRedo": "Redo",
+  "@toolRedo": {
+    "description": "Short toolbar label. Hindi/Kannada use the English loan word; review."
+  },
+  "toolAi": "AI",
+  "toolBooks": "Books",
+  "toolQuiz": "Quiz",
+  "toolHomework": "Homework",
+  "toolSwitch": "Switch",
+  "@toolSwitch": {
+    "description": "Moves the toolbar to the other side."
+  },
+  "toolHide": "Hide",
+  "toolPrevious": "Previous",
+  "toolNext": "Next",
+  "toolNewPage": "New page",
+  "showTools": "Show tools",
+  "deleteSelection": "Delete {count}",
+  "@deleteSelection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "guestSignIn": "Guest · Sign in",
+  "beingViewed": "{count, plural, =1{Being viewed} other{Being viewed · {count}}}",
+  "@beingViewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "beingViewedTooltip": "A school leader is watching this class live. Viewing is recorded in the audit log.",
+  "goLive": "Go live",
+  "liveWaiting": "Live · waiting for students",
+  "liveStudents": "{count, plural, =1{Live · 1 student} other{Live · {count} students}}",
+  "@liveStudents": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stopLiveTooltip": "Stop the live class",
+  "goLiveTooltip": "Let students of this class watch the board in the Student app",
+  "liveStarted": "Live: students of this class can watch the board in the Student app. Sound is not included yet.",
+  "liveEnded": "The live class has ended.",
+  "cloudUnreachableCheckOnline": "Could not reach KINETIX Cloud. Check the board is online.",
+  "noClassList": "No class list",
+  "takeAttendance": "{count, plural, =1{1 student · Take attendance} other{{count} students · Take attendance}}",
+  "@takeAttendance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "presentOfTotal": "{present}/{total} present",
+  "@presentOfTotal": {
+    "placeholders": {
+      "present": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingSync": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
+  "@pendingSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "connectedCloud": "Connected to KINETIX Cloud",
+  "offlineSaved": "Offline. Everything is saved and will sync.",
+  "endClass": "End class",
+  "signedOutGuest": "Signed out. The board is in guest mode.",
+  "welcomeTeacher": "Welcome, {name}.",
+  "@welcomeTeacher": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "signInUnregistered": "Sign-in on an unregistered board",
+  "recordNeedsSignIn": "Sign in with the Teacher app to record lessons. The teacher must connect to this board first.",
+  "recordingStarted": "Recording the board and your voice.",
+  "recordingNoSound": "Recording the board without sound: {reason}",
+  "@recordingNoSound": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceNoMicrophone": "no microphone found",
+  "voicePermissionDenied": "the microphone permission was denied",
+  "voiceUnsupported": "this board cannot record sound",
+  "voiceNotStarted": "the microphone could not be started",
+  "couldNotStartRecording": "Could not start recording: {error}",
+  "@couldNotStartRecording": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "recordingDiscarded": "Recording discarded.",
+  "recordingSavedUploading": "Recording saved. It is uploading to KINETIX Cloud.",
+  "recordingSavedLater": "Recording saved on this board. It uploads when {name} next signs in.",
+  "@recordingSavedLater": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotSaveRecording": "Could not save the recording: {error}",
+  "@couldNotSaveRecording": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "saveNeedsSignIn": "Sign in with the Teacher app to save boards to the cloud.",
+  "nothingToSave": "There is nothing on the board to save yet.",
+  "savedAndShared": "Saved and shared with {section}.",
+  "@savedAndShared": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "savedToWhiteboards": "Saved to Your whiteboards.",
+  "couldNotSaveBoard": "Could not save the board: {error}",
+  "@couldNotSaveBoard": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "whiteboardsNeedSignIn": "Sign in with the Teacher app to see your saved boards.",
+  "replaceBoardTitle": "Replace the board?",
+  "replaceBoardBody": "What is on the board now will be lost unless you save it first.",
+  "openedBoard": "Opened \"{title}\". Saving again updates it.",
+  "@openedBoard": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotOpenBoard": "Could not open the board: {error}",
+  "@couldNotOpenBoard": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "endClassTitle": "End class?",
+  "endClassBody": "You will be signed out of this board. Attendance and answers recorded in class are kept.",
+  "endClassRecordingNote": "The lesson recording stops, and you can save and share it first.",
+  "saveThisBoard": "Save this board",
+  "shareWithStudentsParents": "Share with students and parents",
+  "keepTeaching": "Keep teaching",
+  "uploadingBeforeSignOut": "Uploading the lesson recording before signing out…",
+  "signedOutRecordingPending": "Signed out. The lesson recording is saved on this board and uploads when {name} next signs in.",
+  "@signedOutRecordingPending": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "attendanceWithoutClass": "Attendance without a timetabled class",
+  "defaultBoardName": "Board",
+  "@defaultBoardName": {
+    "description": "Default title of a saved board with no subject: \"Board · 4 Oct\"."
+  },
+  "defaultLessonName": "Lesson",
+  "@defaultLessonName": {
+    "description": "Default title of a recording with no subject: \"Lesson · 5 Oct\"."
+  },
+  "toolTimer": "Timer",
+  "toolRandomPick": "Random pick",
+  "toolAttendance": "Attendance",
+  "toolSplitScreen": "Split screen",
+  "toolEyeComfort": "Eye comfort",
+  "toolRuler": "Ruler",
+  "toolProtractor": "Protractor",
+  "toolCalculator": "Calculator",
+  "toolSpotlight": "Spotlight",
+  "toolScreenShade": "Screen shade",
+  "toolScreenshot": "Screenshot",
+  "toolTouchLock": "Touch lock",
+  "pen": "Pen",
+  "highlighter": "Highlighter",
+  "colour": "Colour",
+  "thickness": "Thickness",
+  "eraserSize": "Eraser size",
+  "sizeSmall": "Small",
+  "sizeMedium": "Medium",
+  "sizeLarge": "Large",
+  "eraseTip": "Tip: on an interactive panel, rub with your palm to erase.",
+  "clearPage": "Clear page",
+  "boardTheme": "Board theme",
+  "bgPlain": "Plain",
+  "bgRuled": "Ruled",
+  "bgGrid": "Grid (1 cm)",
+  "bgDots": "Dots",
+  "bgChalkboard": "Chalkboard",
+  "shapes3dSoon": "Rotatable 3D solids (cube, cylinder, cone, sphere) are coming soon.",
+  "shapeLine": "Line",
+  "shapeArrow": "Arrow",
+  "shapeDoubleArrow": "Double arrow",
+  "shapeCircle": "Circle",
+  "shapeEllipse": "Ellipse",
+  "shapeTriangle": "Triangle",
+  "shapeRightTriangle": "Right triangle",
+  "shapeRectangle": "Rectangle",
+  "shapeParallelogram": "Parallelogram",
+  "shapeTrapezium": "Trapezium",
+  "shapeRhombus": "Rhombus",
+  "shapePentagon": "Pentagon",
+  "shapeHexagon": "Hexagon",
+  "showLengths": "Show lengths",
+  "showLengthsHint": "Sides in cm, matching the 1 cm grid",
+  "showAngles": "Show angles",
+  "eyeProtection": "Eye protection",
+  "eyeProtectionHint": "Warmer colours, less blue light, gentle dimming",
+  "adjustSchoolDay": "Adjust through the school day",
+  "warmth": "Warmth",
+  "dimming": "Dimming",
+  "highContrast": "High contrast",
+  "highContrastHint": "For faded projectors",
+  "chalkboardHint": "Dark board, less glare",
+  "dragToResize": "Drag to resize",
+  "moveToOtherSide": "Move to the other side",
+  "splitWhiteboard": "Whiteboard",
+  "splitDocument": "PDF / PPT",
+  "splitVideo": "Video",
+  "splitWeb": "Web page",
+  "splitModel3d": "3D model",
+  "splitLab": "Virtual lab",
+  "viewerComingSoon": "The {viewer} viewer is coming in an upcoming build.",
+  "@viewerComingSoon": {
+    "placeholders": {
+      "viewer": {
+        "type": "String"
+      }
+    }
+  },
+  "splitChoose": "Choose what to show next to the whiteboard.",
+  "chooseSomethingElse": "Choose something else",
+  "signInWithTeacherApp": "Sign in with Teacher app",
+  "importFiles": "Import PDF, PPT or image",
+  "yourWhiteboards": "Your whiteboards",
+  "recordings": "Recordings",
+  "recordingsToUpload": "{count} to upload",
+  "@recordingsToUpload": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "screenProjection": "Screen projection",
+  "boardSettings": "Board settings",
+  "guidedTour": "Guided tour & practice",
+  "language": "Language",
+  "languageHint": "Buttons and messages on this board. A teacher who signs in sees the board in their own language until they sign out.",
+  "touchScreen": "Touch screen",
+  "touchScreenHint": "Choose the hardware this board runs on. It decides what a palm or a large touch does.",
+  "touchTablet": "Tablet",
+  "touchTabletHint": "A hand resting on the screen is ignored",
+  "touchPanel": "Interactive panel",
+  "touchPanelHint": "A palm or fist erases, like a duster",
+  "touchIrFrame": "IR touch frame",
+  "touchIrFrameHint": "Every touch writes. IR frames cannot tell a palm from a finger",
+  "timesUp": "Time's up",
+  "closeTimer": "Close timer",
+  "reset": "Reset",
+  "pause": "Pause",
+  "restart": "Restart",
+  "start": "Start",
+  "randomPickNoClass": "Sign in from the Teacher app during a timetabled class to pick from its students.",
+  "rollNo": "Roll no. {rollNo}",
+  "@rollNo": {
+    "placeholders": {
+      "rollNo": {
+        "type": "String"
+      }
+    }
+  },
+  "answerSavedTo": "{outcome} · saved to {name}'s profile",
+  "@answerSavedTo": {
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answerCorrect": "Correct",
+  "answerPartlyCorrect": "Partly correct",
+  "answerPartly": "Partly",
+  "answerNotCorrect": "Not correct",
+  "answerSkipped": "Skipped",
+  "answerSkip": "Skip",
+  "pickAgain": "Pick again",
+  "attendanceSummary": "{present} present · {absent} absent · {late} late   —   tap a student to change",
+  "@attendanceSummary": {
+    "placeholders": {
+      "present": {
+        "type": "int"
+      },
+      "absent": {
+        "type": "int"
+      },
+      "late": {
+        "type": "int"
+      }
+    }
+  },
+  "present": "Present",
+  "absent": "Absent",
+  "late": "Late",
+  "saveAttendance": "Save attendance",
+  "saveBoard": "Save board",
+  "shareWithClass": "Share with the class",
+  "shareNeedsClass": "Available when the board is used in a timetabled class",
+  "shareBoardHint": "Students and parents of {section} can open it in their apps",
+  "@shareBoardHint": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotLoadBoards": "Could not load your boards.\n{error}",
+  "@couldNotLoadBoards": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noBoardsYet": "Boards you save appear here. Use Save, or save when you end the class.",
+  "pageCount": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@pageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shared": "Shared",
+  "recPaused": "Paused",
+  "recLive": "REC",
+  "@recLive": {
+    "description": "Recording indicator; kept as the familiar camera label."
+  },
+  "recNoSoundTooltip": "Recording without sound",
+  "recResume": "Resume recording",
+  "recPause": "Pause recording",
+  "recStop": "Stop recording",
+  "recDiscardTitle": "Discard this recording?",
+  "recDiscardBody": "{duration} of the lesson will be deleted from the board.",
+  "@recDiscardBody": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "recSaveTitle": "Save lesson recording",
+  "recBoardAndVoice": "board and voice",
+  "recBoardOnly": "board only, no sound",
+  "recShareHint": "Students and parents of {section} can watch it after it uploads",
+  "@recShareHint": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "recUploadNote": "It uploads to KINETIX Cloud in the background. Absent students are told it is there.",
+  "sharedWith": "Shared with {section}.",
+  "@sharedWith": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "theClass": "the class",
+  "@theClass": {
+    "description": "Used when a class has no name: \"Shared with the class.\""
+  },
+  "couldNotShare": "Could not share: {error}",
+  "@couldNotShare": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotLoadRecordings": "Could not load your recordings.\n{error}",
+  "@couldNotLoadRecordings": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noRecordingsYet": "Lessons you record appear here. Tap Record on the toolbar to start.",
+  "recNoSound": "no sound",
+  "recWaiting": "Waiting to upload",
+  "recUploadsWhen": "Uploads when {name} signs in",
+  "@recUploadsWhen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recUploading": "Uploading {percent}%",
+  "@recUploading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "recUploaded": "Uploaded",
+  "recUploadFailed": "Upload failed",
+  "recUploadedLaterClass": "Uploaded in a later class. Share it from here if it is for {section}.",
+  "@recUploadedLaterClass": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "thisClass": "this class",
+  "broadcastFrom": "From {name}",
+  "@broadcastFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "acknowledge": "Acknowledge",
+  "@acknowledge": {
+    "description": "Teacher confirms an emergency message."
+  },
+  "signInTo": "Sign in to {board}",
+  "@signInTo": {
+    "placeholders": {
+      "board": {
+        "type": "String"
+      }
+    }
+  },
+  "thisBoard": "this board",
+  "signInUsePhone": "Use the KINETIX Teacher app on your phone.",
+  "signInStep1": "Open the KINETIX Teacher app",
+  "signInStep2": "Tap Connect to board",
+  "@signInStep2": {
+    "description": "Button name in the Teacher App; keep it the same as the Teacher App shows it."
+  },
+  "signInStep3": "Scan the QR code, or type this code",
+  "newCodeIn": "New code in {seconds} s",
+  "@newCodeIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "cannotReachCloudRetrying": "Cannot reach KINETIX Cloud. Retrying…",
+  "signInCodeNote": "The code changes every 2 minutes and works once. No password is typed on the board.",
+  "enrollTitle": "Set up this board",
+  "enrollHint": "In KINETIX ERP, open Devices → Add board, then enter the code shown there.",
+  "@enrollHint": {
+    "description": "Devices and Add board are ERP menu names; keep them as the ERP shows them."
+  },
+  "enrollCode": "Enrolment code",
+  "enrollServer": "Server",
+  "enrollRegistering": "Registering…",
+  "enrollRegister": "Register board",
+  "enrollSkip": "Skip for now and use the practice board",
+  "aiAskNeedsSignIn": "Sign in with the Teacher app to ask KINETIX AI.",
+  "aiToolSoon": "KINETIX AI {tool}",
+  "@aiToolSoon": {
+    "placeholders": {
+      "tool": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAskHint": "Ask anything about a topic",
+  "aiAskHintClass": "Ask anything about {classLabel}",
+  "@aiAskHintClass": {
+    "placeholders": {
+      "classLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSpeak": "Speak",
+  "aiVoiceQuestions": "Voice questions",
+  "aiAsk": "Ask",
+  "aiDisclaimer": "Answers follow your syllabus. Check before sharing with the class.",
+  "aiPreparing": "KINETIX AI is preparing an explanation…",
+  "aiGroupTeach": "Teach",
+  "aiGroupMathsScience": "Maths & science",
+  "aiGroupLookUp": "Look up",
+  "aiSummary": "Summary",
+  "aiQuickQuiz": "Quick quiz",
+  "aiLessonPlan": "Lesson plan",
+  "aiMathSolver": "Math solver",
+  "aiGraph": "Graph",
+  "ai3dModels": "3D models",
+  "aiSimulations": "Simulations",
+  "aiTextbook": "Textbook",
+  "aiWikipedia": "Wikipedia",
+  "aiDictionary": "Dictionary",
+  "aiReadBoard": "Read board",
+  "aiAskAgain": "Ask again for a new answer",
+  "aiBasedOnSyllabus": "Based on your syllabus: {sources}",
+  "@aiBasedOnSyllabus": {
+    "placeholders": {
+      "sources": {
+        "type": "String"
+      }
+    }
+  },
+  "aiKeyPoints": "Key points",
+  "aiAskNext": "Ask next",
+  "aiPreviewLabel": "Preview — connect the KINETIX AI server for real answers",
+  "aiPreview": "Preview",
+  "aiLanguageTooltip": "Language for KINETIX AI",
+  "aiSignInNotice": "KINETIX AI needs a teacher signed in and the board online. Sign in with the Teacher app from the profile button. The maths solver works without signing in.",
+  "difficultyEasy": "Easy",
+  "difficultyMedium": "Medium",
+  "difficultyHard": "Hard",
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dueDate": "Due date",
+  "aiErrSignInAgain": "Sign in again with the Teacher app to use KINETIX AI.",
+  "aiErrRefused": "KINETIX AI can’t help with that request. Try rephrasing it for the classroom.",
+  "aiErrQuota": "Your institution has used today’s KINETIX AI allowance. It resets tomorrow.",
+  "aiErrUnusable": "KINETIX AI could not produce a usable answer. Try again or rephrase.",
+  "aiErrUnreachable": "KINETIX AI is not reachable right now. Try again in a minute.",
+  "aiErrCheckInput": "Check what you typed and try again.",
+  "aiErrGeneric": "Something went wrong ({status}). Try again.",
+  "@aiErrGeneric": {
+    "placeholders": {
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "aiErrTimeout": "KINETIX AI is taking too long. Try again in a minute.",
+  "aiErrOffline": "The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.",
+  "aiExplainTopic": "Explain {topic}",
+  "@aiExplainTopic": {
+    "description": "Question sent to KINETIX AI, in the AI language.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiExplainFromBoard": "Explain this from the board: {text}",
+  "@aiExplainFromBoard": {
+    "description": "Question sent to KINETIX AI, in the AI language.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "quizNeedsSignIn": "Sign in with the Teacher app to make a quiz with KINETIX AI.",
+  "quizTypeTopic": "Type a topic for the quiz first.",
+  "quizTopicHint": "e.g. Photosynthesis, Fractions, Company accounts",
+  "questionsLabel": "Questions",
+  "quizMake": "Make quiz",
+  "quizMakeNew": "Make a new quiz",
+  "writingQuestions": "{count, plural, =1{Writing 1 question…} other{Writing {count} questions…}}",
+  "@writingQuestions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quizHeader": "{count, plural, =1{1 question · {topic}} other{{count} questions · {topic}}}",
+  "@quizHeader": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "quizDraftNote": "Draft — check the questions and answers before you present them.",
+  "quizPresent": "Present",
+  "@quizPresent": {
+    "description": "Show the quiz full screen to the class (verb)."
+  },
+  "sendAsHomework": "Send as homework",
+  "quizAnswerExplanation": "Answer {letter}. {explanation}",
+  "@quizAnswerExplanation": {
+    "placeholders": {
+      "letter": {
+        "type": "String"
+      },
+      "explanation": {
+        "type": "String"
+      }
+    }
+  },
+  "questionOf": "Question {number} of {total}",
+  "@questionOf": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hideAnswer": "Hide answer",
+  "revealAnswer": "Reveal answer",
+  "finish": "Finish",
+  "quizTitle": "Quiz: {topic}",
+  "@quizTitle": {
+    "description": "Homework title, in the AI language.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "quizHomeworkIntro": "Answer these multiple-choice questions. Write the letter of the correct option.",
+  "@quizHomeworkIntro": {
+    "description": "Homework text sent to students, in the AI language."
+  },
+  "homeworkNeedsSignIn": "Sign in with the Teacher app to make homework with KINETIX AI.",
+  "homeworkTypeTopic": "Type a topic for the homework first.",
+  "homeworkTopicHint": "e.g. Linear equations, Journal entries",
+  "homeworkMake": "Make homework",
+  "homeworkWriteOwn": "Write my own",
+  "homeworkEditNote": "You can edit everything before it goes to the class. Students and parents see it in their apps.",
+  "homeworkNeedsTitle": "Give the homework a title.",
+  "homeworkTooLong": "This homework is too long to send. Remove a few questions.",
+  "quizTooLongForHomework": "This quiz is too long to send as homework. Make one with fewer questions.",
+  "homeworkSent": "Homework sent to {section}. Students and parents are notified.",
+  "@homeworkSent": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "homeworkErrSignIn": "Sign in again with the Teacher app to give homework.",
+  "homeworkErrStatus": "Could not send the homework ({status}). Try again.",
+  "@homeworkErrStatus": {
+    "placeholders": {
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "homeworkErrOffline": "The board is offline. Connect to the internet to send homework.",
+  "questionHint": "Question",
+  "marks": "{count, plural, =1{1 mark} other{{count} marks}}",
+  "@marks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "removeQuestion": "Remove question",
+  "instructionsLabel": "Instructions",
+  "totalMarks": "{count, plural, =1{Total 1 mark} other{Total {count} marks}}",
+  "@totalMarks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addQuestion": "Add question",
+  "sendToClass": "Send to class",
+  "homeworkTitleTopic": "Homework: {topic}",
+  "@homeworkTitleTopic": {
+    "description": "Default homework title, in the AI language.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "homeworkDefaultInstructions": "Answer all questions in your notebook. Show your working.",
+  "@homeworkDefaultInstructions": {
+    "description": "Homework text sent to students, in the AI language."
+  },
+  "homeworkTotalLine": "Total: {marks}",
+  "@homeworkTotalLine": {
+    "description": "Last line of homework text; marks is the \"N marks\" string.",
+    "placeholders": {
+      "marks": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonNeedsSignIn": "Sign in with the Teacher app to plan a lesson with KINETIX AI.",
+  "lessonTypeTopic": "Type a topic for the lesson first.",
+  "lessonTopicHint": "e.g. The water cycle",
+  "lessonLength": "Length",
+  "lessonPlanButton": "Plan lesson",
+  "lessonPlanAgain": "Plan again",
+  "lessonPlanning": "Planning the lesson…",
+  "lessonObjectives": "Objectives",
+  "lessonSteps": "Steps · {minutes} min",
+  "@lessonSteps": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonMaterials": "Materials",
+  "lessonCheck": "Check understanding",
+  "readNeedsSignIn": "Sign in with the Teacher app to read the board with KINETIX AI.",
+  "readIntro": "Turns the handwriting on this page into text you can copy, check or ask about. Write clearly; one page at a time.",
+  "readThisPage": "Read this page",
+  "readAgain": "Read again",
+  "readingBoard": "Reading the board…",
+  "readNoWriting": "No writing found on this page.",
+  "readMathsFound": "Maths found",
+  "copied": "Copied",
+  "copyText": "Copy text",
+  "askAiAboutThis": "Ask KINETIX AI about this",
+  "booksTopic": "Topic",
+  "booksSignIn": "Books show the syllabus of the class being taught. Sign in with the Teacher app to open it.",
+  "booksOpening": "Opening the syllabus…",
+  "booksCouldNotOpen": "Could not open the syllabus. Check the board is online.",
+  "booksUnlinked": "This subject isn't linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.",
+  "booksDraft": "Draft content: check against your textbook before teaching from it.",
+  "booksDraftShort": "Draft content: check against your textbook.",
+  "booksAddedByInstitution": "Added by your institution",
+  "booksNotesSoon": "Notes coming soon",
+  "booksTopicCount": "{count, plural, =1{1 topic} other{{count} topics}}",
+  "@booksTopicCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "booksOpeningTopic": "Opening the topic…",
+  "booksCouldNotOpenTopic": "Could not open this topic.",
+  "booksExplain": "Explain with KINETIX AI",
+  "booksQuiz": "Quick quiz on this",
+  "booksOnTheBoard": "On the board",
+  "booksKeyFacts": "Key facts",
+  "booksOutcomes": "By the end, students can",
+  "mathHint": "Type a sum or an equation",
+  "mathOffline": "Solved on this board. Works offline, no sign-in needed.",
+  "mathTryThese": "Try one of these",
+  "mathAbout": "Works out sums with BODMAS, fractions, powers and roots, sin/cos/tan in degrees, log, and solves linear and quadratic equations step by step.",
+  "mathSolve": "Solve",
+  "mathWorking": "Working",
+  "mathKeySquared": "Squared",
+  "mathKeyPower": "Power",
+  "mathKeySquareRoot": "Square root",
+  "mathKeyPi": "Pi",
+  "mathKeyFraction": "Fraction",
+  "mathKeyOpenBracket": "Open bracket",
+  "mathKeyCloseBracket": "Close bracket",
+  "mathKeyTimes": "Times",
+  "mathKeyDivide": "Divide",
+  "mathKeyMinus": "Minus",
+  "mathKeyPlus": "Plus",
+  "mathKeyEquals": "Equals",
+  "mathKeyDelete": "Delete",
+  "mathKindArithmetic": "Arithmetic",
+  "mathKindSimplify": "Simplify",
+  "mathKindCheck": "Check",
+  "mathKindLinear": "Linear equation",
+  "mathKindQuadratic": "Quadratic equation",
+  "mathTrue": "True",
+  "mathFalse": "False",
+  "mathEveryNumber": "Every number is a solution",
+  "mathNoSolution": "No solution",
+  "mathRepeatedRoot": "{answer} (repeated root)",
+  "@mathRepeatedRoot": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "mathNoRealRoots": "No real roots: {roots}",
+  "@mathNoRealRoots": {
+    "placeholders": {
+      "roots": {
+        "type": "String"
+      }
+    }
+  },
+  "mathOr": "or",
+  "mathAnd": "and",
+  "mathForEvery": "{equation} for every {variable}",
+  "@mathForEvery": {
+    "placeholders": {
+      "equation": {
+        "type": "String"
+      },
+      "variable": {
+        "type": "String"
+      }
+    }
+  },
+  "mathIsFalse": "{equation} is false",
+  "@mathIsFalse": {
+    "placeholders": {
+      "equation": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepWorkOutRest": "Work out the rest",
+  "mathStepBrackets": "Brackets first",
+  "mathStepPowers": "Powers and roots",
+  "mathStepDivideMultiply": "Divide and multiply, left to right",
+  "mathStepAddSubtract": "Add and subtract, left to right",
+  "mathStepStartExpression": "Start with the expression",
+  "mathStepStartStatement": "Start with the statement",
+  "mathStepLeftSide": "Work out the left side",
+  "mathStepRightSide": "Work out the right side",
+  "mathStepStatementTrue": "Both sides are equal, so the statement is true",
+  "mathStepStatementFalse": "The sides are different, so the statement is false",
+  "mathStepExpand": "Expand the brackets and collect like terms",
+  "mathStepToFind": "To find {variable}, write an equation, e.g. {equation}",
+  "@mathStepToFind": {
+    "placeholders": {
+      "variable": {
+        "type": "String"
+      },
+      "equation": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepWriteEquation": "Write the equation",
+  "mathStepExpandEachSide": "Expand the brackets and collect like terms on each side",
+  "mathStepSquaresCancel": "Subtract {term} from both sides; the {square} terms cancel",
+  "@mathStepSquaresCancel": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      },
+      "square": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepAlwaysEqual": "Both sides are always equal",
+  "mathStepNeverEqual": "The two sides can never be equal",
+  "mathStepAddBoth": "Add {term} to both sides",
+  "@mathStepAddBoth": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepSubtractBoth": "Subtract {term} from both sides",
+  "@mathStepSubtractBoth": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepMultiplyBoth": "Multiply both sides by {number}",
+  "@mathStepMultiplyBoth": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepDivideBoth": "Divide both sides by {number}",
+  "@mathStepDivideBoth": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepCheck": "Check: put {value} back into the equation",
+  "@mathStepCheck": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepBringLeft": "Bring every term to the left side and simplify",
+  "mathStepClearFractions": "Multiply both sides by {number} to clear the fractions",
+  "@mathStepClearFractions": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepMakePositive": "Multiply both sides by {number} so the {square} term is positive",
+  "@mathStepMakePositive": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "square": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepCompare": "Compare with {form}",
+  "@mathStepCompare": {
+    "placeholders": {
+      "form": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepDiscriminant": "Find the discriminant {formula}",
+  "@mathStepDiscriminant": {
+    "placeholders": {
+      "formula": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepEqualRoots": "D = 0, so the two roots are equal",
+  "mathStepUse": "Use {formula}",
+  "@mathStepUse": {
+    "placeholders": {
+      "formula": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepComplexRoots": "D < 0, so there are no real roots. The roots are complex numbers",
+  "mathStepTwoRealRoots": "D > 0, so there are two different real roots",
+  "mathStepQuadraticFormula": "Use the quadratic formula {formula}",
+  "@mathStepQuadraticFormula": {
+    "placeholders": {
+      "formula": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepTwoRoots": "Work out the two roots",
+  "mathStepSimplifyRoot": "Simplify the square root",
+  "mathStepDivideTopBottom": "Divide the top and bottom by {number}",
+  "@mathStepDivideTopBottom": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "mathStepSoRoots": "So the roots are",
+  "mathStepInDecimals": "In decimals",
+  "mathStepWorkOutRoots": "Work out the roots",
+  "mathStepFactorised": "Factorised form",
+  "mathErrZeroPowerZero": "0⁰ is not defined.",
+  "mathErrDivisionByZero": "Division by zero is not defined.",
+  "mathErrNegativeFractionalPower": "A negative number to a fractional power is not a real number.",
+  "mathErrNegativeRoot": "The square root of a negative number is not a real number.",
+  "mathErrNotDefined": "{expression} is not defined.",
+  "@mathErrNotDefined": {
+    "placeholders": {
+      "expression": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrPositiveOnly": "{function} is only defined for positive numbers.",
+  "@mathErrPositiveOnly": {
+    "placeholders": {
+      "function": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrUnknownFunction": "Unknown function {function}.",
+  "@mathErrUnknownFunction": {
+    "placeholders": {
+      "function": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrNoValue": "“{name}” has no value.",
+  "@mathErrNoValue": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrTooLarge": "The answer is too large or not defined.",
+  "mathErrNotANumber": "“{text}” is not a number.",
+  "@mathErrNotANumber": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrDontUnderstandUse": "I don’t understand “{text}”. Use numbers, x, + − × ÷ ^, brackets, √, sin, cos, tan, log.",
+  "@mathErrDontUnderstandUse": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrEmpty": "Type a sum or an equation, like 3x + 5 = 20.",
+  "mathErrAfterEquals": "Write something after “=”.",
+  "mathErrOneEquals": "Use only one “=” sign.",
+  "mathErrUnmatchedClose": "There is a “)” without a matching “(”.",
+  "mathErrDontUnderstandHere": "I don’t understand “{text}” here.",
+  "@mathErrDontUnderstandHere": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrEndsEarly": "The expression ends too early. Is something missing?",
+  "mathErrOperatorBetween": "Put an operator (+ − × ÷) between the numbers.",
+  "mathErrPowerAfterCaret": "Write the power after “^”.",
+  "mathErrEmptyBrackets": "There is nothing inside the brackets “()”.",
+  "mathErrBracketNotClosed": "A bracket is not closed. Add “)”.",
+  "mathErrNumberAfter": "Write a number after {function}.",
+  "@mathErrNumberAfter": {
+    "placeholders": {
+      "function": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrBeforeEquals": "Write something before “=”.",
+  "mathErrMissingBefore": "Something is missing before “{text}”.",
+  "@mathErrMissingBefore": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrBothSides": "Write something on both sides of “=”.",
+  "mathErrUnknownInside": "The unknown inside {function} is not supported yet.",
+  "@mathErrUnknownInside": {
+    "placeholders": {
+      "function": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrUnknownDenominator": "The unknown in a denominator is not supported yet.",
+  "mathErrUnknownPower": "The unknown in a power is not supported yet.",
+  "mathErrWholePowers": "Powers of the unknown must be whole numbers like x² or x³.",
+  "mathErrManyUnknowns": "This has more than one unknown ({list}). Use one unknown, like x.",
+  "@mathErrManyUnknowns": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "mathErrHighPowers": "Equations with {power} or higher powers are not supported yet. Try a linear or quadratic equation.",
+  "@mathErrHighPowers": {
+    "placeholders": {
+      "power": {
+        "type": "String"
+      }
+    }
+  }
+}

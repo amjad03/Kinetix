@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 
 /// Shows the principal's messages over whatever is on the board.
 /// - info: a banner at the top that hides itself after 15 s
@@ -103,6 +104,7 @@ class _BannerState extends State<_Banner> {
               ),
             ),
             IconButton(
+              tooltip: context.l10n.close,
               onPressed: () => widget.onDismiss(m, acknowledge: true),
               icon: const Icon(Icons.close, color: Colors.white70),
             ),
@@ -132,7 +134,7 @@ class _Card extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('From ${message.senderName}', style: Theme.of(context).textTheme.labelLarge),
+                  Text(context.l10n.broadcastFrom(message.senderName), style: Theme.of(context).textTheme.labelLarge),
                   const SizedBox(height: 8),
                   Text(message.title, style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 12),
@@ -140,7 +142,7 @@ class _Card extends StatelessWidget {
                   const SizedBox(height: 24),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: FilledButton(onPressed: () => onDismiss(message, acknowledge: true), child: const Text('OK')),
+                    child: FilledButton(onPressed: () => onDismiss(message, acknowledge: true), child: Text(context.l10n.ok)),
                   ),
                 ],
               ),
@@ -163,34 +165,38 @@ class _Emergency extends StatelessWidget {
       child: Material(
         color: const Color(0xFFB91C1C),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(48),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 120),
-                const SizedBox(height: 16),
-                Text(
-                  message.title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 64, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  message.body,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 32),
-                ),
-                const SizedBox(height: 40),
-                OutlinedButton(
-                  onPressed: () => onDismiss(message, acknowledge: true),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white),
+          // Scrolls rather than overflows when a long message (or a longer language) meets a
+          // 720p board.
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(48),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 120),
+                  const SizedBox(height: 16),
+                  Text(
+                    message.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 64, fontWeight: FontWeight.w800),
                   ),
-                  child: const Text('Acknowledge'),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(
+                    message.body,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 32),
+                  ),
+                  const SizedBox(height: 40),
+                  OutlinedButton(
+                    onPressed: () => onDismiss(message, acknowledge: true),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                    ),
+                    child: Text(context.l10n.acknowledge),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,19 +1,22 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../core/api_client.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../board/side_panel.dart';
 
 /// Which page the KINETIX AI panel shows.
 enum AiView { home, quiz, homework, lessonPlan, math, readBoard }
 
-/// One AI request and its outcome: loading, a friendly error, or the result.
+/// One AI request and its outcome: loading, an error, or the result.
 class AiTask<T> extends ChangeNotifier {
   bool loading = false;
-  String? error;
+
+  /// What went wrong; [aiErrorMessage] words it for the class.
+  Object? error;
   AiResult<T>? value;
 
   /// Runs [request]. A newer call wins over a slower older one.
@@ -29,7 +32,7 @@ class AiTask<T> extends ChangeNotifier {
       return r;
     } catch (e) {
       if (ticket != _ticket) return null;
-      error = aiErrorMessage(e);
+      error = e;
       return null;
     } finally {
       if (ticket == _ticket) {
@@ -50,22 +53,23 @@ class AiTask<T> extends ChangeNotifier {
   var _ticket = 0;
 }
 
-/// A message for the class, for each way an AI request can fail.
-String aiErrorMessage(Object e) {
+/// A message for the class, for each way an AI request can fail. Messages written by the
+/// server (refusals, bad input) are shown as they come.
+String aiErrorMessage(AppLocalizations l, Object e) {
   if (e is ApiException) {
     final server = e.message.startsWith('Request failed') ? null : e.message;
     return switch (e.status) {
-      401 || 403 => 'Sign in again with the Teacher app to use KINETIX AI.',
-      422 => server ?? 'KINETIX AI can’t help with that request. Try rephrasing it for the classroom.',
-      429 => 'Your institution has used today’s KINETIX AI allowance. It resets tomorrow.',
-      502 => 'KINETIX AI could not produce a usable answer. Try again or rephrase.',
-      503 => 'KINETIX AI is not reachable right now. Try again in a minute.',
-      400 => server ?? 'Check what you typed and try again.',
-      _ => 'Something went wrong (${e.status}). Try again.',
+      401 || 403 => l.aiErrSignInAgain,
+      422 => server ?? l.aiErrRefused,
+      429 => l.aiErrQuota,
+      502 => l.aiErrUnusable,
+      503 => l.aiErrUnreachable,
+      400 => server ?? l.aiErrCheckInput,
+      _ => l.aiErrGeneric(e.status),
     };
   }
-  if (e is TimeoutException) return 'KINETIX AI is taking too long. Try again in a minute.';
-  return 'The board is offline. Connect to the internet to use KINETIX AI. The maths solver works offline.';
+  if (e is TimeoutException) return l.aiErrTimeout;
+  return l.aiErrOffline;
 }
 
 /// KINETIX AI state for the board: the chosen language, the current page and each tool's
@@ -129,6 +133,10 @@ class AiController extends ChangeNotifier {
 
   ApiClient get _api => board.api!;
 
+  /// Strings in the AI language, for text that goes out with the AI's content (homework,
+  /// questions sent to KINETIX AI), so it matches the language of the answer.
+  AppLocalizations get contentL10n => l10nFor(Locale(language.name));
+
   void setLanguage(AiLanguage l) {
     language = l;
     notifyListeners();
@@ -170,9 +178,10 @@ class AiController extends ChangeNotifier {
   }
 
   void writeOwnHomework() {
+    final l = contentL10n;
     homeworkDraft = HomeworkDraft(
-      title: homeworkTopic?.isNotEmpty == true ? 'Homework: $homeworkTopic' : 'Homework',
-      instructions: 'Answer all questions in your notebook. Show your working.',
+      title: homeworkTopic?.isNotEmpty == true ? l.homeworkTitleTopic(homeworkTopic!) : l.toolHomework,
+      instructions: l.homeworkDefaultInstructions,
       questions: [HomeworkQuestion(question: '', marks: 2)],
     );
     homeworkFromPreview = false;
@@ -225,9 +234,11 @@ class AiController extends ChangeNotifier {
   }
 }
 
-/// Homework text for a quiz: numbered questions with lettered options.
-String quizAsHomework(Quiz quiz) {
-  final b = StringBuffer('Answer these multiple-choice questions. Write the letter of the correct option.\n');
+/// Homework text for a quiz: numbered questions with lettered options. [l] is the language of
+/// the quiz (English by default).
+String quizAsHomework(Quiz quiz, [AppLocalizations? l]) {
+  l ??= l10nFor(const Locale('en'));
+  final b = StringBuffer('${l.quizHomeworkIntro}\n');
   for (var i = 0; i < quiz.questions.length; i++) {
     final q = quiz.questions[i];
     b.write('\n${i + 1}. ${q.question}\n');
@@ -238,17 +249,19 @@ String quizAsHomework(Quiz quiz) {
   return b.toString().trimRight();
 }
 
-/// Homework text for a draft: the instructions, then numbered questions with marks.
-String homeworkInstructions(HomeworkDraft d) {
+/// Homework text for a draft: the instructions, then numbered questions with marks. [l] is the
+/// language of the homework (English by default).
+String homeworkInstructions(HomeworkDraft d, [AppLocalizations? l]) {
+  l ??= l10nFor(const Locale('en'));
   final b = StringBuffer(d.instructions.trim());
   final qs = d.questions.where((q) => q.question.trim().isNotEmpty).toList();
   if (qs.isNotEmpty) {
     if (b.isNotEmpty) b.write('\n\n');
     for (var i = 0; i < qs.length; i++) {
-      b.write('${i + 1}. ${qs[i].question.trim()} (${qs[i].marks} ${qs[i].marks == 1 ? 'mark' : 'marks'})\n');
+      b.write('${i + 1}. ${qs[i].question.trim()} (${l.marks(qs[i].marks)})\n');
     }
     final total = qs.fold(0, (s, q) => s + q.marks);
-    b.write('\nTotal: $total ${total == 1 ? 'mark' : 'marks'}');
+    b.write('\n${l.homeworkTotalLine(l.marks(total))}');
   }
   return b.toString().trim();
 }

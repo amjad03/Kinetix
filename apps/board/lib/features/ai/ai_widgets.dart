@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../board/side_panel.dart';
 import 'ai_controller.dart';
 
 /// KINETIX AI's accent (the AI toolbar group).
 const aiAccent = Color(0xFFA142F4);
 
-/// Shown with every placeholder result, so nobody mistakes it for a real answer.
+/// Shown with every placeholder result, so nobody mistakes it for a real answer. (English; the
+/// board shows [AppLocalizations.aiPreviewLabel].)
 const previewLabel = 'Preview — connect the KINETIX AI server for real answers';
 
 /// Text sizes for reading from the back of a classroom.
@@ -33,7 +36,7 @@ class AiLanguageMenu extends StatelessWidget {
       listenable: ai,
       builder: (context, _) => PopupMenuButton<AiLanguage>(
         key: const Key('ai-language'),
-        tooltip: 'Language for KINETIX AI',
+        tooltip: context.l10n.aiLanguageTooltip,
         initialValue: ai.language,
         onSelected: ai.setLanguage,
         position: PopupMenuPosition.under,
@@ -91,7 +94,10 @@ class AiPanelPage extends StatelessWidget {
 class AiNotice extends StatelessWidget {
   const AiNotice({super.key, required this.icon, required this.message, this.tone = AiNoticeTone.info, this.action});
 
-  factory AiNotice.preview({Key? key}) => AiNotice(key: key ?? const Key('ai-preview'), icon: Icons.science_outlined, message: previewLabel, tone: AiNoticeTone.preview);
+  static Widget preview({Key? key}) => Builder(
+    builder: (context) =>
+        AiNotice(key: key ?? const Key('ai-preview'), icon: Icons.science_outlined, message: context.l10n.aiPreviewLabel, tone: AiNoticeTone.preview),
+  );
 
   final IconData icon;
   final String message;
@@ -143,7 +149,7 @@ class AiError extends StatelessWidget {
         : TextButton(
             onPressed: onRetry,
             style: TextButton.styleFrom(foregroundColor: context.colors.onErrorContainer),
-            child: const Text('Try again'),
+            child: Text(context.l10n.tryAgain),
           ),
   );
 }
@@ -153,11 +159,7 @@ class AiSignInNotice extends StatelessWidget {
   const AiSignInNotice({super.key});
 
   @override
-  Widget build(BuildContext context) => const AiNotice(
-    key: Key('ai-signin'),
-    icon: Icons.lock_outline,
-    message: 'KINETIX AI needs a teacher signed in and the board online. Sign in with the Teacher app from the profile button. The maths solver works without signing in.',
-  );
+  Widget build(BuildContext context) => AiNotice(key: const Key('ai-signin'), icon: Icons.lock_outline, message: context.l10n.aiSignInNotice);
 }
 
 /// A spinner with a line of text, while KINETIX AI works.
@@ -193,6 +195,13 @@ class AiSectionLabel extends StatelessWidget {
   );
 }
 
+/// A difficulty's name in the board's language.
+String difficultyName(AppLocalizations l, AiDifficulty d) => switch (d) {
+  AiDifficulty.easy => l.difficultyEasy,
+  AiDifficulty.medium => l.difficultyMedium,
+  AiDifficulty.hard => l.difficultyHard,
+};
+
 /// Difficulty as a segmented button.
 class DifficultyPicker extends StatelessWidget {
   const DifficultyPicker({super.key, required this.value, required this.onChanged});
@@ -203,7 +212,7 @@ class DifficultyPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SegmentedButton<AiDifficulty>(
     showSelectedIcon: false,
-    segments: [for (final d in AiDifficulty.values) ButtonSegment(value: d, label: Text(d.label))],
+    segments: [for (final d in AiDifficulty.values) ButtonSegment(value: d, label: Text(difficultyName(context.l10n, d)))],
     selected: {value},
     onSelectionChanged: (s) => onChanged(s.single),
   );
@@ -211,13 +220,15 @@ class DifficultyPicker extends StatelessWidget {
 
 /// A labelled dropdown of whole numbers (question count, minutes).
 class NumberPicker extends StatelessWidget {
-  const NumberPicker({super.key, required this.label, required this.value, required this.options, required this.onChanged, this.suffix = ''});
+  const NumberPicker({super.key, required this.label, required this.value, required this.options, required this.onChanged, this.format});
 
   final String label;
   final int value;
   final List<int> options;
   final ValueChanged<int> onChanged;
-  final String suffix;
+
+  /// How an option reads, e.g. "45 min"; the bare number by default.
+  final String Function(int)? format;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -229,23 +240,21 @@ class NumberPicker extends StatelessWidget {
         value: options.contains(value) ? value : options.first,
         borderRadius: BorderRadius.circular(Kx.rMd),
         underline: const SizedBox.shrink(),
-        items: [for (final o in options) DropdownMenuItem(value: o, child: Text('$o$suffix'))],
+        items: [for (final o in options) DropdownMenuItem(value: o, child: Text(format?.call(o) ?? '$o'))],
         onChanged: (v) => v == null ? null : onChanged(v),
       ),
     ],
   );
 }
 
-/// "Thu 8 Oct", or "Today" / "Tomorrow".
-String friendlyDate(DateTime d, {DateTime? now}) {
+/// "Thu 8 Oct", or "Today" / "Tomorrow", in the board's language.
+String friendlyDate(BuildContext context, DateTime d, {DateTime? now}) {
   final today = DateUtils.dateOnly(now ?? DateTime.now());
   final day = DateUtils.dateOnly(d);
   final diff = day.difference(today).inDays;
-  if (diff == 0) return 'Today';
-  if (diff == 1) return 'Tomorrow';
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return '${days[d.weekday - 1]} ${d.day} ${months[d.month - 1]}';
+  if (diff == 0) return context.l10n.today;
+  if (diff == 1) return context.l10n.tomorrow;
+  return DateFormat('EEE d MMM', context.dateLocale).format(d);
 }
 
 /// A chip that opens a date picker for the due date.
@@ -259,7 +268,7 @@ class DueDateChip extends StatelessWidget {
   Widget build(BuildContext context) => ActionChip(
     key: const Key('due-date'),
     avatar: const Icon(Icons.event_outlined, size: 20),
-    label: Text('Due ${friendlyDate(value)}'),
+    label: Text(context.l10n.dueOn(friendlyDate(context, value))),
     onPressed: () async {
       final today = DateUtils.dateOnly(DateTime.now());
       final picked = await showDatePicker(
@@ -267,7 +276,7 @@ class DueDateChip extends StatelessWidget {
         initialDate: value,
         firstDate: today,
         lastDate: today.add(const Duration(days: 180)),
-        helpText: 'Due date',
+        helpText: context.l10n.dueDate,
       );
       if (picked != null) onChanged(picked);
     },

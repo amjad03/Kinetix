@@ -158,14 +158,8 @@ enum AiLanguage {
   static AiLanguage fromCode(String? code) => values.asNameMap()[code] ?? en;
 }
 
-enum AiDifficulty {
-  easy('Easy'),
-  medium('Medium'),
-  hard('Hard');
-
-  const AiDifficulty(this.label);
-  final String label;
-}
+/// How hard AI questions are (names are in the board's strings).
+enum AiDifficulty { easy, medium, hard }
 
 /// How an AI answer was produced. [preview] means no AI server is connected and the
 /// result is a fixed placeholder that must be labelled as such.

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../l10n/l10n.dart';
+
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
 /// They use [KinetixTheme.boardChrome] (Material 3, dark) so they read clearly over a bright
 /// canvas from the back of a classroom.
@@ -115,24 +117,32 @@ class ToolButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(Kx.rMd),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          width: compact ? 52 : 64,
+          // Labels in Hindi and Kannada run longer than English: the button grows a little,
+          // then the label is cut with an ellipsis (the tooltip keeps the full name).
+          width: compact ? 52 : null,
+          constraints: compact ? null : const BoxConstraints(minWidth: 64, maxWidth: 92),
+          padding: compact ? null : const EdgeInsets.symmetric(horizontal: 4),
           height: compact ? 52 : 60,
           decoration: BoxDecoration(
             color: selected ? c.secondaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(Kx.rMd),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 32, child: Center(child: glyph)),
+              SizedBox(height: 32, child: Center(widthFactor: 1, child: glyph)),
               if (!compact) const SizedBox(height: 2),
               if (!compact)
                 Text(
                   label,
                   maxLines: 1,
-                  overflow: TextOverflow.fade,
+                  overflow: TextOverflow.ellipsis,
                   softWrap: false,
-                  style: TextStyle(fontSize: 11.5, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),
+                  textAlign: TextAlign.center,
+                  // As wide as the label, not the 92 px the button may grow to.
+                  textWidthBasis: TextWidthBasis.longestLine,
+                  style: TextStyle(fontSize: 11.5, height: 1.2, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),
                 ),
             ],
           ),
@@ -237,12 +247,16 @@ class ChromeTile extends StatelessWidget {
                       child: Icon(icon, color: soon ? c.onSurfaceVariant : tint, size: 22),
                     ),
                     const SizedBox(height: Kx.s8),
-                    Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500, color: soon ? c.onSurfaceVariant : c.onSurface),
+                    // Two lines, so longer Hindi and Kannada names still fit the tile.
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12.5, height: 1.15, fontWeight: FontWeight.w500, color: soon ? c.onSurfaceVariant : c.onSurface),
+                      ),
                     ),
                   ],
                 ),
@@ -255,7 +269,7 @@ class ChromeTile extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(color: c.surfaceContainerHighest, borderRadius: BorderRadius.circular(6)),
                     child: Text(
-                      'Soon',
+                      context.l10n.soon,
                       style: TextStyle(fontSize: 9.5, color: c.onSurfaceVariant, fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -286,4 +300,4 @@ void showBoardMessage(BuildContext context, String text) {
 }
 
 /// Shows a short message that a feature is on the way, so no button is silently dead.
-void showComingSoon(BuildContext context, String feature) => showBoardMessage(context, '$feature is coming in an upcoming build.');
+void showComingSoon(BuildContext context, String feature) => showBoardMessage(context, context.l10n.comingSoonFeature(feature));

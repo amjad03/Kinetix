@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
+import '../../l10n/l10n.dart';
 import 'chrome.dart';
 
 /// The menu that opens from the avatar in the bottom-left corner.
@@ -29,11 +30,12 @@ class ProfileMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final s = board.session;
+    final l = context.l10n;
     Widget item(IconData icon, String label, VoidCallback onTap, {bool soon = false, Key? key}) => ListTile(
       key: key,
       leading: Icon(icon),
       title: Text(label),
-      trailing: soon ? Text('Soon', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)) : null,
+      trailing: soon ? Text(l.soon, style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)) : null,
       dense: false,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd)),
       onTap: () {
@@ -67,9 +69,9 @@ class ProfileMenu extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(s?.teacherName ?? 'Guest', style: context.text.titleMedium),
+                        Text(s?.teacherName ?? l.guest, style: context.text.titleMedium),
                         Text(
-                          s == null ? (board.deviceName ?? 'Practice board') : (s.classLabel ?? 'No class timetabled now'),
+                          s == null ? (board.deviceName ?? l.practiceBoard) : (s.classLabel ?? l.noClassTimetabled),
                           style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                           maxLines: 2,
                         ),
@@ -89,31 +91,31 @@ class ProfileMenu extends StatelessWidget {
                     onSignIn();
                   },
                   icon: const Icon(Icons.qr_code_2),
-                  label: const Text('Sign in with Teacher app'),
+                  label: Text(l.signInWithTeacherApp),
                 ),
               ),
             const Divider(height: Kx.s16),
-            item(Icons.note_add_outlined, 'New page', onNewPage),
-            item(Icons.folder_open_outlined, 'Import PDF, PPT or image', () {}, soon: true),
-            item(Icons.dashboard_outlined, 'Your whiteboards', onWhiteboards, key: const Key('menu-whiteboards')),
+            item(Icons.note_add_outlined, l.toolNewPage, onNewPage),
+            item(Icons.folder_open_outlined, l.importFiles, () {}, soon: true),
+            item(Icons.dashboard_outlined, l.yourWhiteboards, onWhiteboards, key: const Key('menu-whiteboards')),
             if (onRecordings != null)
               ListTile(
                 key: const Key('menu-recordings'),
                 leading: const Icon(Icons.video_library_outlined),
-                title: const Text('Recordings'),
+                title: Text(l.recordings),
                 trailing: board.recordings.pending == 0
                     ? null
-                    : Text('${board.recordings.pending} to upload', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                    : Text(l.recordingsToUpload(board.recordings.pending), style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd)),
                 onTap: () {
                   onClose();
                   onRecordings!();
                 },
               ),
-            item(Icons.cast_outlined, 'Screen projection', () {}, soon: true),
+            item(Icons.cast_outlined, l.screenProjection, () {}, soon: true),
             const Divider(height: Kx.s16),
-            item(Icons.settings_outlined, 'Board settings', onSettings, key: const Key('menu-settings')),
-            item(Icons.school_outlined, 'Guided tour & practice', () {}, soon: true),
+            item(Icons.settings_outlined, l.boardSettings, onSettings, key: const Key('menu-settings')),
+            item(Icons.school_outlined, l.guidedTour, () {}, soon: true),
             Padding(
               padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s8),
               child: Text('KINETIX Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
@@ -125,7 +127,22 @@ class ProfileMenu extends StatelessWidget {
   }
 }
 
-/// Board settings: the touch surface type (tablet, interactive panel, IR touch frame).
+extension TouchProfileText on TouchProfile {
+  String label(AppLocalizations l) => switch (this) {
+    TouchProfile.tablet => l.touchTablet,
+    TouchProfile.panel => l.touchPanel,
+    TouchProfile.irFrame => l.touchIrFrame,
+  };
+
+  String description(AppLocalizations l) => switch (this) {
+    TouchProfile.tablet => l.touchTabletHint,
+    TouchProfile.panel => l.touchPanelHint,
+    TouchProfile.irFrame => l.touchIrFrameHint,
+  };
+}
+
+/// Board settings: the board's language and the touch surface type (tablet, interactive
+/// panel, IR touch frame).
 class BoardSettingsDialog extends StatelessWidget {
   const BoardSettingsDialog({super.key, required this.board});
 
@@ -135,43 +152,64 @@ class BoardSettingsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: board,
-      builder: (context, _) => AlertDialog(
-        icon: const Icon(Icons.settings_outlined),
-        title: const Text('Board settings'),
-        content: SizedBox(
-          width: 560,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Touch screen', style: context.text.titleSmall),
-              const SizedBox(height: Kx.s4),
-              Text(
-                'Choose the hardware this board runs on. It decides what a palm or a large touch does.',
-                style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
-              ),
-              const SizedBox(height: Kx.s8),
-              RadioGroup<TouchProfile>(
-                groupValue: board.touchProfile,
-                onChanged: (p) => board.setTouchProfile(p!),
-                child: Column(
-                  children: [
-                    for (final p in TouchProfile.values)
-                      RadioListTile<TouchProfile>(
-                        key: Key('touch-${p.name}'),
-                        value: p,
-                        title: Text(p.label),
-                        subtitle: Text(p.description),
-                        contentPadding: EdgeInsets.zero,
+      builder: (context, _) {
+        final l = context.l10n;
+        final hint = context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant);
+        return AlertDialog(
+          icon: const Icon(Icons.settings_outlined),
+          title: Text(l.boardSettings),
+          // Scrolls on a 720p board in the longer languages.
+          scrollable: true,
+          content: SizedBox(
+            width: 560,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.language, style: context.text.titleSmall),
+                const SizedBox(height: Kx.s4),
+                Text(l.languageHint, style: hint),
+                const SizedBox(height: Kx.s12),
+                SegmentedButton<BoardLanguage>(
+                  key: const Key('board-language'),
+                  showSelectedIcon: false,
+                  segments: [
+                    for (final lang in BoardLanguage.values)
+                      ButtonSegment(
+                        value: lang,
+                        label: Text(lang.label, key: Key('board-language-${lang.name}')),
                       ),
                   ],
+                  selected: {board.language},
+                  onSelectionChanged: (s) => board.setBoardLanguage(s.single),
                 ),
-              ),
-            ],
+                const SizedBox(height: Kx.s24),
+                Text(l.touchScreen, style: context.text.titleSmall),
+                const SizedBox(height: Kx.s4),
+                Text(l.touchScreenHint, style: hint),
+                const SizedBox(height: Kx.s8),
+                RadioGroup<TouchProfile>(
+                  groupValue: board.touchProfile,
+                  onChanged: (p) => board.setTouchProfile(p!),
+                  child: Column(
+                    children: [
+                      for (final p in TouchProfile.values)
+                        RadioListTile<TouchProfile>(
+                          key: Key('touch-${p.name}'),
+                          value: p,
+                          title: Text(p.label(l)),
+                          subtitle: Text(p.description(l)),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Done'))],
-      ),
+          actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(l.done))],
+        );
+      },
     );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api_client.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 
 /// "Save board": a title and whether to share it with the class.
 class SaveBoardDialog extends StatefulWidget {
@@ -29,9 +31,10 @@ class _SaveBoardDialogState extends State<SaveBoardDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return AlertDialog(
       icon: const Icon(Icons.save_outlined),
-      title: const Text('Save board'),
+      title: Text(l.saveBoard),
       content: SizedBox(
         width: 480,
         child: Column(
@@ -42,18 +45,14 @@ class _SaveBoardDialogState extends State<SaveBoardDialog> {
               controller: _title,
               autofocus: true,
               maxLength: 120,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: InputDecoration(labelText: l.titleLabel),
               onSubmitted: (_) => _submit(),
             ),
             SwitchListTile(
               key: const Key('save-share'),
               contentPadding: EdgeInsets.zero,
-              title: const Text('Share with the class'),
-              subtitle: Text(
-                widget.classLabel == null
-                    ? 'Available when the board is used in a timetabled class'
-                    : 'Students and parents of ${widget.classLabel} can open it in their apps',
-              ),
+              title: Text(l.shareWithClass),
+              subtitle: Text(widget.classLabel == null ? l.shareNeedsClass : l.shareBoardHint(widget.classLabel!)),
               value: _share,
               onChanged: widget.classLabel == null ? null : (v) => setState(() => _share = v),
             ),
@@ -61,8 +60,8 @@ class _SaveBoardDialogState extends State<SaveBoardDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(key: const Key('save-confirm'), onPressed: _submit, child: const Text('Save')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+        FilledButton(key: const Key('save-confirm'), onPressed: _submit, child: Text(l.save)),
       ],
     );
   }
@@ -98,9 +97,10 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return AlertDialog(
       icon: const Icon(Icons.dashboard_outlined),
-      title: const Text('Your whiteboards'),
+      title: Text(l.yourWhiteboards),
       content: SizedBox(
         width: 640,
         height: 440,
@@ -108,15 +108,12 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
           future: _boards,
           builder: (context, snap) {
             if (snap.hasError) {
-              return KxEmptyState(icon: Icons.cloud_off, message: 'Could not load your boards.\n${snap.error}');
+              return KxEmptyState(icon: Icons.cloud_off, message: l.couldNotLoadBoards('${snap.error}'));
             }
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
             final boards = snap.data!;
             if (boards.isEmpty) {
-              return const KxEmptyState(
-                icon: Icons.dashboard_outlined,
-                message: 'Boards you save appear here. Use Save, or save when you end the class.',
-              );
+              return KxEmptyState(icon: Icons.dashboard_outlined, message: l.noBoardsYet);
             }
             return ListView.separated(
               itemCount: boards.length,
@@ -126,8 +123,8 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
                 final details = [
                   b.sectionName,
                   b.subjectName,
-                  '${b.pageCount} ${b.pageCount == 1 ? 'page' : 'pages'}',
-                  _when(b.updatedAt),
+                  l.pageCount(b.pageCount),
+                  DateFormat('d MMM, HH:mm', context.dateLocale).format(b.updatedAt.toLocal()),
                 ].whereType<String>().join(' · ');
                 return Material(
                   color: c.surfaceContainerHighest,
@@ -143,13 +140,13 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
                       await widget.onOpen(b);
                     },
                     trailing: b.shared
-                        ? Chip(avatar: const Icon(Icons.people_alt_outlined, size: 16), label: const Text('Shared'))
+                        ? Chip(avatar: const Icon(Icons.people_alt_outlined, size: 16), label: Text(l.shared))
                         : b.sectionName == null
                         ? null
                         : TextButton.icon(
                             onPressed: _busy == b.id ? null : () => _share(b),
                             icon: const Icon(Icons.share_outlined, size: 18),
-                            label: const Text('Share'),
+                            label: Text(l.share),
                           ),
                   ),
                 );
@@ -158,13 +155,7 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
           },
         ),
       ),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l.close))],
     );
-  }
-
-  static String _when(DateTime t) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final l = t.toLocal();
-    return '${l.day} ${months[l.month - 1]}, ${l.hour.toString().padLeft(2, '0')}:${l.minute.toString().padLeft(2, '0')}';
   }
 }

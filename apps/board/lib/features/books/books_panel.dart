@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../ai/ai_controller.dart';
 import '../ai/ai_widgets.dart';
 import '../board/side_panel.dart';
@@ -68,7 +69,7 @@ class _BooksPanelState extends State<BooksPanel> {
     final topic = _topic;
     return PanelPage(
       icon: Icons.menu_book_outlined,
-      title: topic == null ? 'Books' : 'Topic',
+      title: topic == null ? context.l10n.toolBooks : context.l10n.booksTopic,
       accent: _booksAccent,
       onBack: topic == null
           ? null
@@ -81,16 +82,13 @@ class _BooksPanelState extends State<BooksPanel> {
 
   Widget _syllabusView() {
     final future = _syllabus;
+    final l = context.l10n;
     if (future == null) {
-      return const Padding(
-        padding: EdgeInsets.all(Kx.s24),
+      return Padding(
+        padding: const EdgeInsets.all(Kx.s24),
         child: Align(
           alignment: Alignment.topCenter,
-          child: AiNotice(
-            key: Key('books-signin'),
-            icon: Icons.lock_outline,
-            message: 'Books show the syllabus of the class being taught. Sign in with the Teacher app to open it.',
-          ),
+          child: AiNotice(key: const Key('books-signin'), icon: Icons.lock_outline, message: l.booksSignIn),
         ),
       );
     }
@@ -98,24 +96,20 @@ class _BooksPanelState extends State<BooksPanel> {
       future: future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const AiLoading(label: 'Opening the syllabus…');
+          return AiLoading(label: l.booksOpening);
         }
         if (snap.hasError) {
           return Padding(
             padding: const EdgeInsets.all(Kx.s24),
             child: Align(
               alignment: Alignment.topCenter,
-              child: AiError(message: 'Could not open the syllabus. Check the board is online.', onRetry: _reload),
+              child: AiError(message: l.booksCouldNotOpen, onRetry: _reload),
             ),
           );
         }
         final s = snap.data;
         if (s == null) {
-          return const KxEmptyState(
-            key: Key('books-unlinked'),
-            icon: Icons.link_off,
-            message: "This subject isn't linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.",
-          );
+          return KxEmptyState(key: const Key('books-unlinked'), icon: Icons.link_off, message: l.booksUnlinked);
         }
         return _outline(s);
       },
@@ -124,6 +118,7 @@ class _BooksPanelState extends State<BooksPanel> {
 
   Widget _outline(Syllabus s) {
     final c = context.colors;
+    final l = context.l10n;
     return ListView(
       key: const Key('books-outline'),
       padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
@@ -132,10 +127,7 @@ class _BooksPanelState extends State<BooksPanel> {
         if (!s.reviewed)
           Padding(
             padding: const EdgeInsets.only(top: Kx.s4),
-            child: Text(
-              'Draft content: check against your textbook before teaching from it.',
-              style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
-            ),
+            child: Text(l.booksDraft, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
           ),
         const SizedBox(height: Kx.s16),
         for (final (i, ch) in s.chapters.indexed)
@@ -155,10 +147,7 @@ class _BooksPanelState extends State<BooksPanel> {
                   ),
                   title: Text(ch.title, style: context.text.titleMedium),
                   subtitle: Text(
-                    [
-                      if (ch.own) 'Added by your institution',
-                      ch.topics.isEmpty ? 'Notes coming soon' : '${ch.topics.length} topic${ch.topics.length == 1 ? '' : 's'}',
-                    ].join(' · '),
+                    [if (ch.own) l.booksAddedByInstitution, ch.topics.isEmpty ? l.booksNotesSoon : l.booksTopicCount(ch.topics.length)].join(' · '),
                   ),
                   trailing: ch.topics.isEmpty ? null : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
                   onTap: ch.topics.isEmpty ? null : () => setState(() => _open.contains(ch.id) ? _open.remove(ch.id) : _open.add(ch.id)),
@@ -186,8 +175,9 @@ class _BooksPanelState extends State<BooksPanel> {
     return FutureBuilder<TopicDetail>(
       future: future,
       builder: (context, snap) {
+        final l = context.l10n;
         if (snap.connectionState != ConnectionState.done) {
-          return const AiLoading(label: 'Opening the topic…');
+          return AiLoading(label: l.booksOpeningTopic);
         }
         if (snap.hasError) {
           return Padding(
@@ -195,7 +185,7 @@ class _BooksPanelState extends State<BooksPanel> {
             child: Align(
               alignment: Alignment.topCenter,
               child: AiError(
-                message: 'Could not open this topic.',
+                message: l.booksCouldNotOpenTopic,
                 onRetry: () => setState(() {
                   _topic = null;
                 }),
@@ -253,11 +243,11 @@ class _BooksPanelState extends State<BooksPanel> {
                       ? () {
                           widget.ai.open(AiView.home);
                           widget.onOpenPanel(PanelKind.ai);
-                          widget.ai.ask('Explain ${t.title}', topicId: t.id);
+                          widget.ai.ask(widget.ai.contentL10n.aiExplainTopic(t.title), topicId: t.id);
                         }
                       : null,
                   icon: const Icon(Icons.auto_awesome),
-                  label: const Text('Explain with KINETIX AI'),
+                  label: Text(l.booksExplain),
                 ),
                 OutlinedButton.icon(
                   key: const Key('topic-quiz'),
@@ -268,12 +258,12 @@ class _BooksPanelState extends State<BooksPanel> {
                         }
                       : null,
                   icon: const Icon(Icons.quiz_outlined),
-                  label: const Text('Quick quiz on this'),
+                  label: Text(l.booksQuiz),
                 ),
               ],
             ),
             if (t.resources.isNotEmpty && widget.onOpenResource != null) ...[
-              const AiSectionLabel('On the board'),
+              AiSectionLabel(l.booksOnTheBoard),
               Wrap(
                 spacing: Kx.s8,
                 runSpacing: Kx.s8,
@@ -288,12 +278,12 @@ class _BooksPanelState extends State<BooksPanel> {
                 ],
               ),
             ],
-            if (t.notes.isNotEmpty) list('Key facts', t.notes, Icons.check_circle_outline),
-            if (t.outcomes.isNotEmpty) list('By the end, students can', t.outcomes, Icons.flag_outlined),
+            if (t.notes.isNotEmpty) list(l.booksKeyFacts, t.notes, Icons.check_circle_outline),
+            if (t.outcomes.isNotEmpty) list(l.booksOutcomes, t.outcomes, Icons.flag_outlined),
             if (!t.reviewed)
               Padding(
                 padding: const EdgeInsets.only(top: Kx.s16),
-                child: Text('Draft content: check against your textbook.', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                child: Text(l.booksDraftShort, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
               ),
           ],
         );

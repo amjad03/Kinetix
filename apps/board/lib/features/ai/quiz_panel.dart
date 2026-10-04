@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
@@ -38,11 +39,11 @@ class _QuizPanelState extends State<QuizPanel> {
 
   void _generate({bool fresh = false}) {
     if (!ai.canUseAi) {
-      showBoardMessage(context, 'Sign in with the Teacher app to make a quiz with KINETIX AI.');
+      showBoardMessage(context, context.l10n.quizNeedsSignIn);
       return;
     }
     if (_topic.text.trim().length < 2) {
-      showBoardMessage(context, 'Type a topic for the quiz first.');
+      showBoardMessage(context, context.l10n.quizTypeTopic);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -50,16 +51,19 @@ class _QuizPanelState extends State<QuizPanel> {
   }
 
   Future<void> _sendAsHomework(Quiz quiz) async {
-    final sent = await showSendHomeworkDialog(context, ai: ai, title: 'Quiz: ${quiz.topic}', instructions: quizAsHomework(quiz));
+    // Homework goes out in the quiz's language.
+    final l = ai.contentL10n;
+    final sent = await showSendHomeworkDialog(context, ai: ai, title: l.quizTitle(quiz.topic), instructions: quizAsHomework(quiz, l));
     if (sent && mounted) showHomeworkSent(context, ai);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return AiPanelPage(
       ai: ai,
       icon: Icons.quiz_outlined,
-      title: 'Quick quiz',
+      title: l.aiQuickQuiz,
       accent: quizAccent,
       onBack: widget.onBack,
       child: ListenableBuilder(
@@ -75,7 +79,7 @@ class _QuizPanelState extends State<QuizPanel> {
                 key: const Key('quiz-topic'),
                 controller: _topic,
                 style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(labelText: 'Topic', hintText: 'e.g. Photosynthesis, Fractions, Company accounts'),
+                decoration: InputDecoration(labelText: l.topicLabel, hintText: l.quizTopicHint),
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _generate(),
               ),
@@ -86,7 +90,7 @@ class _QuizPanelState extends State<QuizPanel> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   NumberPicker(
-                    label: 'Questions',
+                    label: l.questionsLabel,
                     value: ai.quizCount,
                     options: const [3, 5, 8, 10, 15, 20],
                     onChanged: (v) => setState(() => ai.quizCount = v),
@@ -101,21 +105,18 @@ class _QuizPanelState extends State<QuizPanel> {
                   key: const Key('quiz-generate'),
                   onPressed: task.loading ? null : _generate,
                   icon: const Icon(Icons.auto_awesome),
-                  label: Text(quiz == null ? 'Make quiz' : 'Make a new quiz'),
+                  label: Text(quiz == null ? l.quizMake : l.quizMakeNew),
                 ),
               ),
               const SizedBox(height: Kx.s16),
-              if (task.loading) AiLoading(label: 'Writing ${ai.quizCount} questions…'),
-              if (task.error != null) AiError(message: task.error!, onRetry: _generate),
+              if (task.loading) AiLoading(label: l.writingQuestions(ai.quizCount)),
+              if (task.error != null) AiError(message: aiErrorMessage(l, task.error!), onRetry: _generate),
               if (quiz != null && !task.loading) ...[
                 const Divider(height: Kx.s32),
                 if (task.value!.meta.preview) ...[AiNotice.preview(), const SizedBox(height: Kx.s16)],
-                Text('${quiz.questions.length} questions · ${quiz.topic}', style: context.text.titleLarge),
+                Text(l.quizHeader(quiz.questions.length, quiz.topic), style: context.text.titleLarge),
                 const SizedBox(height: Kx.s4),
-                Text(
-                  'Draft — check the questions and answers before you present them.',
-                  style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
-                ),
+                Text(l.quizDraftNote, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
                 const SizedBox(height: Kx.s12),
                 Wrap(
                   spacing: Kx.s8,
@@ -125,19 +126,19 @@ class _QuizPanelState extends State<QuizPanel> {
                       key: const Key('quiz-present'),
                       onPressed: () => showQuizPresenter(context, quiz, preview: task.value!.meta.preview),
                       icon: const Icon(Icons.slideshow),
-                      label: const Text('Present'),
+                      label: Text(l.quizPresent),
                     ),
                     OutlinedButton.icon(
                       key: const Key('quiz-regenerate'),
                       onPressed: () => _generate(fresh: true),
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Regenerate'),
+                      label: Text(l.regenerate),
                     ),
                     OutlinedButton.icon(
                       key: const Key('quiz-homework'),
                       onPressed: () => _sendAsHomework(quiz),
                       icon: const Icon(Icons.assignment_outlined),
-                      label: const Text('Send as homework'),
+                      label: Text(l.sendAsHomework),
                     ),
                   ],
                 ),
@@ -200,7 +201,10 @@ class _QuestionCard extends StatelessWidget {
             ),
           if (q.explanation.isNotEmpty) ...[
             const SizedBox(height: Kx.s8),
-            Text('Answer ${optionLetter(q.answer)}. ${q.explanation}', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+            Text(
+              context.l10n.quizAnswerExplanation(optionLetter(q.answer), q.explanation),
+              style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+            ),
           ],
         ],
       ),
@@ -286,16 +290,16 @@ class _QuizPresenterState extends State<QuizPresenter> {
                             padding: const EdgeInsets.only(right: Kx.s16),
                             child: Chip(
                               avatar: Icon(Icons.science_outlined, size: 18, color: c.onTertiaryContainer),
-                              label: Text('Preview', style: TextStyle(color: c.onTertiaryContainer)),
+                              label: Text(context.l10n.aiPreview, style: TextStyle(color: c.onTertiaryContainer)),
                               backgroundColor: c.tertiaryContainer,
                               side: BorderSide.none,
                             ),
                           ),
-                        Text('Question ${_index + 1} of ${_qs.length}', key: const Key('presenter-count'), style: context.text.titleLarge),
+                        Text(context.l10n.questionOf(_index + 1, _qs.length), key: const Key('presenter-count'), style: context.text.titleLarge),
                         const SizedBox(width: Kx.s16),
                         IconButton.filledTonal(
                           key: const Key('presenter-close'),
-                          tooltip: 'Close',
+                          tooltip: context.l10n.close,
                           iconSize: 28,
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.close),
@@ -365,7 +369,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
                                   SizedBox(width: 16 * scale),
                                   Expanded(
                                     child: Text(
-                                      'Answer ${optionLetter(q.answer)}. ${q.explanation}',
+                                      context.l10n.quizAnswerExplanation(optionLetter(q.answer), q.explanation),
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(fontSize: 28 * scale, height: 1.3, color: c.onSurface),
@@ -395,6 +399,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
     final text = TextStyle(fontSize: (22 * scale).clamp(16, 26), fontWeight: FontWeight.w500);
     final padding = EdgeInsets.symmetric(horizontal: 28 * scale);
     final iconSize = (28 * scale).clamp(20.0, 32.0);
+    final l = context.l10n;
     return Row(
       children: [
         OutlinedButton.icon(
@@ -402,7 +407,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
           style: OutlinedButton.styleFrom(minimumSize: size, textStyle: text, padding: padding, iconSize: iconSize),
           onPressed: _index == 0 ? null : () => _go(-1),
           icon: const Icon(Icons.chevron_left),
-          label: const Text('Previous'),
+          label: Text(l.toolPrevious),
         ),
         const Spacer(),
         FilledButton.icon(
@@ -417,7 +422,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
           ),
           onPressed: _reveal,
           icon: Icon(_shown ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-          label: Text(_shown ? 'Hide answer' : 'Reveal answer'),
+          label: Text(_shown ? l.hideAnswer : l.revealAnswer),
         ),
         const Spacer(),
         FilledButton.tonalIcon(
@@ -426,7 +431,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
           onPressed: last ? () => Navigator.of(context).pop() : () => _go(1),
           iconAlignment: IconAlignment.end,
           icon: Icon(last ? Icons.done : Icons.chevron_right),
-          label: Text(last ? 'Finish' : 'Next'),
+          label: Text(last ? l.finish : l.toolNext),
         ),
       ],
     );

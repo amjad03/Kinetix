@@ -19,6 +19,7 @@ import '../ai/homework_panel.dart';
 import '../ai/quiz_panel.dart';
 import '../signin/sign_in_dialog.dart';
 import '../../core/api_client.dart';
+import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'popovers.dart';
@@ -120,10 +121,13 @@ class _BoardScreenState extends State<BoardScreen> {
     // recorded; it uploads when this teacher next signs in.
     if (id == null && _capture != null) unawaited(_stopRecording());
     final s = board.session;
-    showBoardMessage(
-      context,
-      s == null ? 'Signed out. The board is in guest mode.' : 'Welcome, ${s.teacherName.split(' ').first}. ${s.classLabel ?? ''}',
-    );
+    // The teacher's language may differ from the board's: the new strings arrive with the
+    // next frame, so the message is shown then.
+    unawaited(WidgetsBinding.instance.endOfFrame.then((_) {
+      if (!mounted) return;
+      final l = context.l10n;
+      showBoardMessage(context, s == null ? l.signedOutGuest : '${l.welcomeTeacher(s.teacherName.split(' ').first)} ${s.classLabel ?? ''}'.trim());
+    }));
   }
 
   void _toggle(_Popover p) => setState(() => _popover = _popover == p ? null : p);
@@ -143,7 +147,7 @@ class _BoardScreenState extends State<BoardScreen> {
   Future<void> _signIn() async {
     final api = board.api;
     if (api == null) {
-      showComingSoon(context, 'Sign-in on an unregistered board');
+      showComingSoon(context, context.l10n.signInUnregistered);
       return;
     }
     setState(() => _signInOpen = true);
@@ -169,7 +173,7 @@ class _BoardScreenState extends State<BoardScreen> {
     if (_capture != null) return _stopRecording();
     final s = board.session;
     if (s == null) {
-      showBoardMessage(context, 'Sign in with the Teacher app to record lessons. The teacher must connect to this board first.');
+      showBoardMessage(context, context.l10n.recordNeedsSignIn);
       return;
     }
     if (_captureStarting) return;
@@ -187,9 +191,10 @@ class _BoardScreenState extends State<BoardScreen> {
         _capture = capture;
         _captureTeacher = s;
       });
-      showBoardMessage(context, noSound == null ? 'Recording the board and your voice.' : 'Recording the board without sound: $noSound');
+      final l = context.l10n;
+      showBoardMessage(context, noSound == null ? l.recordingStarted : l.recordingNoSound(voiceReason(l, noSound)));
     } catch (e) {
-      if (mounted) showBoardMessage(context, 'Could not start recording: $e');
+      if (mounted) showBoardMessage(context, context.l10n.couldNotStartRecording('$e'));
     } finally {
       _captureStarting = false;
     }
@@ -206,7 +211,9 @@ class _BoardScreenState extends State<BoardScreen> {
     });
     final lesson = await capture.stop();
     capture.dispose();
-    final initialTitle = defaultRecordingTitle(teacher.subjectName, lesson.startedAt);
+    final initialTitle = mounted
+        ? defaultRecordingTitle(teacher.subjectName, lesson.startedAt, fallback: context.l10n.defaultLessonName, locale: context.dateLocale)
+        : defaultRecordingTitle(teacher.subjectName, lesson.startedAt);
     ({String title, bool share})? choice = (title: initialTitle, share: false);
     if (mounted) {
       choice = await showDialog<({String title, bool share})>(
@@ -224,7 +231,7 @@ class _BoardScreenState extends State<BoardScreen> {
     }
     if (choice == null) {
       await board.recordings.discard(lesson.id);
-      if (mounted) showBoardMessage(context, 'Recording discarded.');
+      if (mounted) showBoardMessage(context, context.l10n.recordingDiscarded);
       return;
     }
     try {
@@ -233,12 +240,12 @@ class _BoardScreenState extends State<BoardScreen> {
         showBoardMessage(
           context,
           board.session?.teacherId == teacher.teacherId
-              ? 'Recording saved. It is uploading to KINETIX Cloud.'
-              : 'Recording saved on this board. It uploads when ${teacher.teacherName.split(' ').first} next signs in.',
+              ? context.l10n.recordingSavedUploading
+              : context.l10n.recordingSavedLater(teacher.teacherName.split(' ').first),
         );
       }
     } catch (e) {
-      if (mounted) showBoardMessage(context, 'Could not save the recording: $e');
+      if (mounted) showBoardMessage(context, context.l10n.couldNotSaveRecording('$e'));
     }
   }
 
@@ -257,18 +264,18 @@ class _BoardScreenState extends State<BoardScreen> {
   Future<void> _save() async {
     setState(() => _popover = null);
     if (!board.isSignedIn) {
-      showBoardMessage(context, 'Sign in with the Teacher app to save boards to the cloud.');
+      showBoardMessage(context, context.l10n.saveNeedsSignIn);
       return;
     }
     if (_pages.isBlank) {
-      showBoardMessage(context, 'There is nothing on the board to save yet.');
+      showBoardMessage(context, context.l10n.nothingToSave);
       return;
     }
     final choice = await showDialog<({String title, bool share})>(
       context: context,
       builder: (_) => BoardChromeTheme(
         child: SaveBoardDialog(
-          initialTitle: _boardTitle ?? board.defaultBoardTitle(DateTime.now()),
+          initialTitle: _boardTitle ?? _defaultTitle(),
           classLabel: board.session?.sectionName,
         ),
       ),
@@ -277,16 +284,19 @@ class _BoardScreenState extends State<BoardScreen> {
     await _saveAs(choice.title, share: choice.share);
   }
 
+  String _defaultTitle() => board.defaultBoardTitle(DateTime.now(), fallback: context.l10n.defaultBoardName, locale: context.dateLocale);
+
   Future<bool> _saveAs(String title, {required bool share}) async {
     try {
       final saved = await board.saveBoard(_snapshot(), title: title, share: share);
       _boardTitle = title;
       if (mounted) {
-        showBoardMessage(context, saved.shared ? 'Saved and shared with ${saved.sectionName}.' : 'Saved to Your whiteboards.');
+        final l = context.l10n;
+        showBoardMessage(context, saved.shared ? l.savedAndShared(saved.sectionName ?? l.theClass) : l.savedToWhiteboards);
       }
       return true;
     } catch (e) {
-      if (mounted) showBoardMessage(context, 'Could not save the board: $e');
+      if (mounted) showBoardMessage(context, context.l10n.couldNotSaveBoard('$e'));
       return false;
     }
   }
@@ -294,7 +304,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void _openWhiteboards() {
     final api = board.api;
     if (!board.isSignedIn || api == null) {
-      showBoardMessage(context, 'Sign in with the Teacher app to see your saved boards.');
+      showBoardMessage(context, context.l10n.whiteboardsNeedSignIn);
       return;
     }
     showDialog<void>(
@@ -309,11 +319,11 @@ class _BoardScreenState extends State<BoardScreen> {
                 builder: (context) => BoardChromeTheme(
                   child: AlertDialog(
                     icon: const Icon(Icons.warning_amber_rounded),
-                    title: const Text('Replace the board?'),
-                    content: const Text('What is on the board now will be lost unless you save it first.'),
+                    title: Text(context.l10n.replaceBoardTitle),
+                    content: Text(context.l10n.replaceBoardBody),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                      FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Open')),
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
+                      FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.open)),
                     ],
                   ),
                 ),
@@ -330,9 +340,9 @@ class _BoardScreenState extends State<BoardScreen> {
               });
               _capture?.background = saved.background;
               _live.background = saved.background;
-              if (mounted) showBoardMessage(context, 'Opened "${summary.title}". Saving again updates it.');
+              if (mounted) showBoardMessage(context, context.l10n.openedBoard(summary.title));
             } catch (e) {
-              if (mounted) showBoardMessage(context, 'Could not open the board: $e');
+              if (mounted) showBoardMessage(context, context.l10n.couldNotOpenBoard('$e'));
             }
           },
         ),
@@ -351,24 +361,24 @@ class _BoardScreenState extends State<BoardScreen> {
         child: StatefulBuilder(
           builder: (context, setDialog) => AlertDialog(
             icon: const Icon(Icons.logout),
-            title: const Text('End class?'),
+            title: Text(context.l10n.endClassTitle),
             content: SizedBox(
               width: 480,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('You will be signed out of this board. Attendance and answers recorded in class are kept.'),
+                  Text(context.l10n.endClassBody),
                   if (_capture != null) ...[
                     const SizedBox(height: Kx.s12),
-                    const Text('The lesson recording stops, and you can save and share it first.', key: Key('end-recording-note')),
+                    Text(context.l10n.endClassRecordingNote, key: const Key('end-recording-note')),
                   ],
                   if (hasInk) ...[
                     const SizedBox(height: Kx.s12),
                     SwitchListTile(
                       key: const Key('end-save'),
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Save this board'),
+                      title: Text(context.l10n.saveThisBoard),
                       value: save,
                       onChanged: (v) => setDialog(() {
                         save = v;
@@ -378,8 +388,8 @@ class _BoardScreenState extends State<BoardScreen> {
                     SwitchListTile(
                       key: const Key('end-share'),
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Share with students and parents'),
-                      subtitle: Text(canShare ? board.session!.sectionName! : 'No class is timetabled now'),
+                      title: Text(context.l10n.shareWithStudentsParents),
+                      subtitle: Text(canShare ? board.session!.sectionName! : context.l10n.noClassTimetabled),
                       value: share,
                       onChanged: save && canShare ? (v) => setDialog(() => share = v) : null,
                     ),
@@ -388,8 +398,8 @@ class _BoardScreenState extends State<BoardScreen> {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Keep teaching')),
-              FilledButton(key: const Key('confirm-end'), onPressed: () => Navigator.pop(context, true), child: const Text('End class')),
+              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.keepTeaching)),
+              FilledButton(key: const Key('confirm-end'), onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.endClass)),
             ],
           ),
         ),
@@ -398,14 +408,20 @@ class _BoardScreenState extends State<BoardScreen> {
     if (ok != true) return;
     if (_capture != null) await _stopRecording();
     // If saving fails the class stays open, so nothing on the board is lost.
-    if (save && !await _saveAs(_boardTitle ?? board.defaultBoardTitle(DateTime.now()), share: share)) return;
+    if (save && !await _saveAs(_boardTitle ?? _defaultTitle(), share: share)) return;
     final teacher = board.session;
     bool waiting() => board.recordings.items.any((r) => r.teacherId == teacher?.teacherId && !r.uploaded && !r.failed);
-    if (waiting() && mounted) showBoardMessage(context, 'Uploading the lesson recording before signing out…');
+    if (waiting() && mounted) showBoardMessage(context, context.l10n.uploadingBeforeSignOut);
     await board.endClass();
     if (waiting() && mounted) {
-      ScaffoldMessenger.of(context).clearSnackBars(); // instead of the plain "Signed out" message
-      showBoardMessage(context, 'Signed out. The lesson recording is saved on this board and uploads when ${teacher!.teacherName.split(' ').first} next signs in.');
+      final name = teacher!.teacherName.split(' ').first;
+      // Instead of the plain "Signed out" message, which is shown at the end of the frame
+      // (see _onBoardChanged).
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        showBoardMessage(context, context.l10n.signedOutRecordingPending(name));
+      }
     }
     _pages.load([]);
     _boardTitle = null;
@@ -413,7 +429,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   void _attendance() {
     if (board.roster.isEmpty) {
-      showComingSoon(context, 'Attendance without a timetabled class');
+      showComingSoon(context, context.l10n.attendanceWithoutClass);
       return;
     }
     showDialog<void>(
@@ -434,30 +450,30 @@ class _BoardScreenState extends State<BoardScreen> {
     );
   }
 
-  List<ToolEntry> get _tools => [
+  List<ToolEntry> _tools(AppLocalizations l) => [
     ToolEntry(
       Icons.timer_outlined,
-      'Timer',
+      l.toolTimer,
       const Color(0xFF8AB4F8),
       () => setState(() {
         _timer = true;
         _popover = null;
       }),
     ),
-    ToolEntry(Icons.casino_outlined, 'Random pick', const Color(0xFFFDD663), _randomPick),
-    ToolEntry(Icons.how_to_reg_outlined, 'Attendance', const Color(0xFF81C995), () {
+    ToolEntry(Icons.casino_outlined, l.toolRandomPick, const Color(0xFFFDD663), _randomPick),
+    ToolEntry(Icons.how_to_reg_outlined, l.toolAttendance, const Color(0xFF81C995), () {
       setState(() => _popover = null);
       _attendance();
     }),
-    ToolEntry(Icons.vertical_split_outlined, 'Split screen', const Color(0xFFC58AF9), () => _openPanel(PanelKind.split)),
-    ToolEntry(Icons.visibility_outlined, 'Eye comfort', const Color(0xFFFCAD70), () => setState(() => _popover = _Popover.eyeComfort)),
-    ToolEntry(Icons.straighten, 'Ruler', const Color(0xFF78D9EC), () => showComingSoon(context, 'Ruler'), soon: true),
-    ToolEntry(Icons.architecture, 'Protractor', const Color(0xFF78D9EC), () => showComingSoon(context, 'Protractor'), soon: true),
-    ToolEntry(Icons.calculate_outlined, 'Calculator', const Color(0xFF8AB4F8), () => showComingSoon(context, 'Calculator'), soon: true),
-    ToolEntry(Icons.highlight_outlined, 'Spotlight', const Color(0xFFFDD663), () => showComingSoon(context, 'Spotlight'), soon: true),
-    ToolEntry(Icons.vignette_outlined, 'Screen shade', const Color(0xFFDADCE0), () => showComingSoon(context, 'Screen shade'), soon: true),
-    ToolEntry(Icons.photo_camera_outlined, 'Screenshot', const Color(0xFFF28B82), () => showComingSoon(context, 'Screenshot'), soon: true),
-    ToolEntry(Icons.lock_outline, 'Touch lock', const Color(0xFFDADCE0), () => showComingSoon(context, 'Touch lock'), soon: true),
+    ToolEntry(Icons.vertical_split_outlined, l.toolSplitScreen, const Color(0xFFC58AF9), () => _openPanel(PanelKind.split)),
+    ToolEntry(Icons.visibility_outlined, l.toolEyeComfort, const Color(0xFFFCAD70), () => setState(() => _popover = _Popover.eyeComfort)),
+    ToolEntry(Icons.straighten, l.toolRuler, const Color(0xFF78D9EC), () => showComingSoon(context, l.toolRuler), soon: true),
+    ToolEntry(Icons.architecture, l.toolProtractor, const Color(0xFF78D9EC), () => showComingSoon(context, l.toolProtractor), soon: true),
+    ToolEntry(Icons.calculate_outlined, l.toolCalculator, const Color(0xFF8AB4F8), () => showComingSoon(context, l.toolCalculator), soon: true),
+    ToolEntry(Icons.highlight_outlined, l.toolSpotlight, const Color(0xFFFDD663), () => showComingSoon(context, l.toolSpotlight), soon: true),
+    ToolEntry(Icons.vignette_outlined, l.toolScreenShade, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolScreenShade), soon: true),
+    ToolEntry(Icons.photo_camera_outlined, l.toolScreenshot, const Color(0xFFF28B82), () => showComingSoon(context, l.toolScreenshot), soon: true),
+    ToolEntry(Icons.lock_outline, l.toolTouchLock, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolTouchLock), soon: true),
   ];
 
   @override
@@ -599,7 +615,7 @@ class _BoardScreenState extends State<BoardScreen> {
             child: BoardChromeTheme(
               child: FloatingActionButton.small(
                 key: const Key('show-tools'),
-                tooltip: 'Show tools',
+                tooltip: context.l10n.showTools,
                 onPressed: () => setState(() => _hidden = false),
                 child: const Icon(Icons.expand_less),
               ),
@@ -615,7 +631,7 @@ class _BoardScreenState extends State<BoardScreen> {
       _Popover.erase => ErasePopover(ink: ink, onCleared: () => setState(() => _popover = null)),
       _Popover.theme => ThemePopover(background: _background, onChanged: _setBackground),
       _Popover.shapes => ShapesPopover(ink: ink, onPicked: () {}),
-      _Popover.tools => ToolsPopover(tools: _tools),
+      _Popover.tools => ToolsPopover(tools: _tools(context.l10n)),
       _Popover.eyeComfort => EyeComfortPopover(
         settings: board.eyeComfort,
         onChanged: board.setEyeComfort,
@@ -657,6 +673,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Widget _bottomChrome(bool compact) {
+    final l = context.l10n;
     final toolbar = _MainToolbar(
       ink: ink,
       compact: compact,
@@ -674,17 +691,17 @@ class _BoardScreenState extends State<BoardScreen> {
         children: [
           ToolButton(
             icon: Icons.swap_horiz,
-            label: 'Switch',
+            label: l.toolSwitch,
             onTap: () => setState(() => _align = _align == ToolbarAlign.left ? ToolbarAlign.center : ToolbarAlign.left),
           ),
           ToolButton(
             key: const Key('profile-button'),
             icon: Icons.person,
-            label: board.session?.teacherName.split(' ').first ?? 'Guest',
+            label: board.session?.teacherName.split(' ').first ?? l.guest,
             selected: _popover == _Popover.profile,
             onTap: () => _toggle(_Popover.profile),
           ),
-          ToolButton(key: const Key('save-board'), icon: Icons.save_outlined, label: 'Save', onTap: _save),
+          ToolButton(key: const Key('save-board'), icon: Icons.save_outlined, label: l.save, onTap: _save),
         ],
       ),
     );
@@ -693,14 +710,15 @@ class _BoardScreenState extends State<BoardScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           ToolButton(
+            key: const Key('hide-tools'),
             icon: Icons.expand_more,
-            label: 'Hide',
+            label: l.toolHide,
             onTap: () => setState(() {
               _hidden = true;
               _popover = null;
             }),
           ),
-          ToolButton(icon: Icons.chevron_left, label: 'Previous', enabled: _pages.hasPrevious, onTap: _pages.previous),
+          ToolButton(icon: Icons.chevron_left, label: l.toolPrevious, enabled: _pages.hasPrevious, onTap: _pages.previous),
           SizedBox(
             width: 52,
             // Builder: this sits inside the chrome theme, not the canvas theme of this State's context.
@@ -716,12 +734,12 @@ class _BoardScreenState extends State<BoardScreen> {
           ToolButton(
             key: const Key('next-page'),
             icon: _pages.hasNext ? Icons.chevron_right : Icons.add,
-            label: _pages.hasNext ? 'Next' : 'New page',
+            label: _pages.hasNext ? l.toolNext : l.toolNewPage,
             onTap: _pages.hasNext ? _pages.next : _pages.addPage,
           ),
           ToolButton(
             icon: Icons.swap_horiz,
-            label: 'Switch',
+            label: l.toolSwitch,
             onTap: () => setState(() => _align = _align == ToolbarAlign.right ? ToolbarAlign.center : ToolbarAlign.right),
           ),
         ],
@@ -776,6 +794,7 @@ class _MainToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tool = ink.style.tool;
+    final l = context.l10n;
     return ListenableBuilder(
       listenable: ink,
       builder: (context, _) => ChromeSurface(
@@ -785,16 +804,16 @@ class _MainToolbar extends StatelessWidget {
             ToolButton(
               key: const Key('record'),
               icon: recording ? Icons.stop_circle_outlined : Icons.fiber_manual_record,
-              label: recording ? 'Stop' : 'Record',
+              label: recording ? l.toolStop : l.toolRecord,
               iconColor: Kx.record,
               selected: recording,
               onTap: onRecord,
             ),
-            ToolButton(icon: Icons.texture, label: 'Theme', selected: popover == _Popover.theme, onTap: () => onPopover(_Popover.theme)),
+            ToolButton(key: const Key('tool-theme'), icon: Icons.texture, label: l.toolTheme, selected: popover == _Popover.theme, onTap: () => onPopover(_Popover.theme)),
             ToolButton(
               key: const Key('tool-write'),
               icon: tool == InkTool.highlighter ? Icons.border_color_outlined : Icons.edit_outlined,
-              label: 'Write',
+              label: l.toolWrite,
               selected: tool == InkTool.pen || tool == InkTool.highlighter,
               onTap: () {
                 if (tool == InkTool.pen || tool == InkTool.highlighter) {
@@ -807,38 +826,38 @@ class _MainToolbar extends StatelessWidget {
             ToolButton(
               key: const Key('tool-erase'),
               icon: Icons.auto_fix_normal,
-              label: 'Erase',
+              label: l.toolErase,
               selected: tool == InkTool.eraser,
               onTap: () => tool == InkTool.eraser ? onPopover(_Popover.erase) : onTool(InkTool.eraser, _Popover.erase),
             ),
             ToolButton(
               key: const Key('tool-select'),
               icon: Icons.highlight_alt,
-              label: 'Select',
+              label: l.toolSelect,
               selected: tool == InkTool.select,
               onTap: () => onTool(InkTool.select, null),
             ),
             ToolButton(
               key: const Key('tool-shapes'),
               icon: Icons.category_outlined,
-              label: 'Shapes',
+              label: l.toolShapes,
               selected: tool == InkTool.shape || popover == _Popover.shapes,
               onTap: () => onPopover(_Popover.shapes),
             ),
             ToolButton(
               key: const Key('tool-tools'),
               icon: Icons.work_outline,
-              label: 'Tools',
+              label: l.toolTools,
               selected: popover == _Popover.tools,
               onTap: () => onPopover(_Popover.tools),
             ),
-            ToolButton(key: const Key('undo'), icon: Icons.undo, label: 'Undo', enabled: ink.canUndo, onTap: ink.undo),
-            ToolButton(key: const Key('redo'), icon: Icons.redo, label: 'Redo', enabled: ink.canRedo, onTap: ink.redo),
+            ToolButton(key: const Key('undo'), icon: Icons.undo, label: l.toolUndo, enabled: ink.canUndo, onTap: ink.undo),
+            ToolButton(key: const Key('redo'), icon: Icons.redo, label: l.toolRedo, enabled: ink.canRedo, onTap: ink.redo),
             const ToolbarDivider(),
             ToolButton(
               key: const Key('panel-ai'),
               icon: Icons.auto_awesome,
-              label: 'AI',
+              label: l.toolAi,
               accent: const Color(0xFF8E44EC),
               selected: panel == PanelKind.ai,
               onTap: () => onPanel(PanelKind.ai),
@@ -846,21 +865,23 @@ class _MainToolbar extends StatelessWidget {
             ToolButton(
               key: const Key('panel-books'),
               icon: Icons.menu_book,
-              label: 'Books',
+              label: l.toolBooks,
               accent: const Color(0xFF1A73E8),
               selected: panel == PanelKind.books,
               onTap: () => onPanel(PanelKind.books),
             ),
             ToolButton(
+              key: const Key('panel-quiz'),
               icon: Icons.quiz,
-              label: 'Quiz',
+              label: l.toolQuiz,
               accent: const Color(0xFF188038),
               selected: panel == PanelKind.quiz,
               onTap: () => onPanel(PanelKind.quiz),
             ),
             ToolButton(
+              key: const Key('panel-homework'),
               icon: Icons.assignment,
-              label: 'Homework',
+              label: l.toolHomework,
               accent: const Color(0xFFD93025),
               selected: panel == PanelKind.homework,
               onTap: () => onPanel(PanelKind.homework),
@@ -897,12 +918,12 @@ class _TopBarState extends State<_TopBar> {
     try {
       await board.setClassLive(on);
       if (context.mounted) {
-        showBoardMessage(context, on ? 'Live: students of this class can watch the board in the Student app. Sound is not included yet.' : 'The live class has ended.');
+        showBoardMessage(context, on ? context.l10n.liveStarted : context.l10n.liveEnded);
       }
     } on ApiException catch (e) {
-      if (context.mounted) showBoardMessage(context, e.message);
+      if (context.mounted) showBoardMessage(context, apiErrorText(context.l10n, e));
     } catch (_) {
-      if (context.mounted) showBoardMessage(context, 'Could not reach KINETIX Cloud. Check the board is online.');
+      if (context.mounted) showBoardMessage(context, context.l10n.cloudUnreachableCheckOnline);
     }
   }
 
@@ -918,6 +939,7 @@ class _TopBarState extends State<_TopBar> {
     final board = widget.board;
     final s = board.session;
     final marked = board.attendance.length;
+    final l = context.l10n;
     return Padding(
       padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, 0),
       child: Row(
@@ -932,7 +954,7 @@ class _TopBarState extends State<_TopBar> {
                     ActionChip(
                       key: const Key('sign-in-chip'),
                       avatar: Icon(board.isEnrolled ? Icons.qr_code_2 : Icons.edit_outlined, size: 18),
-                      label: Text(board.isEnrolled ? 'Guest · Sign in' : 'Practice board'),
+                      label: Text(board.isEnrolled ? l.guestSignIn : l.practiceBoard),
                       onPressed: board.isEnrolled ? widget.onSignIn : null,
                     )
                   else ...[
@@ -944,11 +966,11 @@ class _TopBarState extends State<_TopBar> {
                     if (board.liveLeaders > 0 && board.liveIndicator) ...[
                       const SizedBox(width: Kx.s8),
                       Tooltip(
-                        message: 'A school leader is watching this class live. Viewing is recorded in the audit log.',
+                        message: l.beingViewedTooltip,
                         child: Chip(
                           key: const Key('being-viewed'),
                           avatar: const Icon(Icons.visibility_outlined, size: 18),
-                          label: Text(board.liveLeaders == 1 ? 'Being viewed' : 'Being viewed · ${board.liveLeaders}'),
+                          label: Text(l.beingViewed(board.liveLeaders)),
                         ),
                       ),
                     ],
@@ -958,12 +980,12 @@ class _TopBarState extends State<_TopBar> {
                       avatar: Icon(board.classLive ? Icons.stop_circle_outlined : Icons.sensors, size: 18, color: Kx.live),
                       label: Text(
                         !board.classLive
-                            ? 'Go live'
+                            ? l.goLive
                             : board.liveStudents == 0
-                            ? 'Live · waiting for students'
-                            : 'Live · ${board.liveStudents} student${board.liveStudents == 1 ? '' : 's'}',
+                            ? l.liveWaiting
+                            : l.liveStudents(board.liveStudents),
                       ),
-                      tooltip: board.classLive ? 'Stop the live class' : 'Let students of this class watch the board in the Student app',
+                      tooltip: board.classLive ? l.stopLiveTooltip : l.goLiveTooltip,
                       onPressed: () => _toggleLive(context),
                     ),
                     const SizedBox(width: Kx.s8),
@@ -972,10 +994,10 @@ class _TopBarState extends State<_TopBar> {
                       avatar: const Icon(Icons.groups_outlined, size: 18),
                       label: Text(
                         board.roster.isEmpty
-                            ? 'No class list'
+                            ? l.noClassList
                             : marked == 0
-                            ? '${board.roster.length} students · Take attendance'
-                            : '${board.pickable.length}/${board.roster.length} present',
+                            ? l.takeAttendance(board.roster.length)
+                            : l.presentOfTotal(board.pickable.length, board.roster.length),
                       ),
                       onPressed: widget.onAttendance,
                     ),
@@ -996,17 +1018,17 @@ class _TopBarState extends State<_TopBar> {
                   Padding(
                     padding: const EdgeInsets.only(right: Kx.s8),
                     child: Tooltip(
-                      message: '${board.pendingOps} changes waiting to sync',
+                      message: l.pendingSync(board.pendingOps),
                       child: Icon(Icons.cloud_upload_outlined, color: c.onSurface, size: 20),
                     ),
                   ),
                 if (board.isEnrolled)
                   Tooltip(
-                    message: board.online ? 'Connected to KINETIX Cloud' : 'Offline. Everything is saved and will sync.',
+                    message: board.online ? l.connectedCloud : l.offlineSaved,
                     child: Icon(board.online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined, color: c.onSurface, size: 20),
                   ),
                 const SizedBox(width: Kx.s12),
-                Text(DateFormat('EEE d MMM · h:mm a').format(DateTime.now()), style: context.text.labelLarge?.copyWith(color: c.onSurface)),
+                Text(_clockText(context, DateTime.now()), style: context.text.labelLarge?.copyWith(color: c.onSurface)),
               ],
             ),
           ),
@@ -1017,7 +1039,7 @@ class _TopBarState extends State<_TopBar> {
               style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
               onPressed: widget.onEndClass,
               icon: const Icon(Icons.logout, size: 18),
-              label: const Text('End class'),
+              label: Text(l.endClass),
             ),
           ],
         ],
@@ -1025,6 +1047,11 @@ class _TopBarState extends State<_TopBar> {
     );
   }
 }
+
+/// "Sun 4 Oct · 12:18 pm": day and month in the board's language; the time with am/pm as
+/// classrooms write it (intl's Kannada data abbreviates pm to a bare "p").
+String _clockText(BuildContext context, DateTime now) =>
+    '${DateFormat('EEE d MMM', context.dateLocale).format(now)} · ${DateFormat('h:mm a', dateLocaleFor(const Locale('en'))).format(now)}';
 
 /// Floating "Delete" action above a selection.
 class _SelectionActions extends StatelessWidget {
@@ -1050,7 +1077,7 @@ class _SelectionActions extends StatelessWidget {
                 key: const Key('delete-selection'),
                 onPressed: ink.deleteSelection,
                 icon: const Icon(Icons.delete_outline),
-                label: Text('Delete ${ink.selection.length}'),
+                label: Text(context.l10n.deleteSelection(ink.selection.length)),
               ),
             ),
           ),

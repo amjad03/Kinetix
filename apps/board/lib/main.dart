@@ -7,6 +7,7 @@ import 'features/board/chrome.dart';
 import 'features/broadcast/broadcast_overlay.dart';
 import 'features/comfort/eye_comfort.dart';
 import 'features/enrollment/enroll_screen.dart';
+import 'l10n/l10n.dart';
 
 void main() {
   runApp(KinetixBoardApp(controller: BoardController()..start()));
@@ -19,31 +20,38 @@ class KinetixBoardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'KINETIX Board',
-      debugShowCheckedModeBanner: false,
-      theme: KinetixTheme.light(),
-      builder: (context, child) => ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) => EyeComfortFilter(
-          settings: controller.eyeComfort,
-          child: BoardChromeTheme(
-            child: BroadcastOverlay(
-              messages: controller.broadcasts,
-              acknowledged: controller.acknowledgedEmergencies,
-              onDismiss: controller.dismissBroadcast,
-              child: Theme(data: KinetixTheme.light(), child: child!),
+    // The board's language: its own setting, or the signed-in teacher's while they teach.
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) => MaterialApp(
+        title: 'KINETIX Board',
+        debugShowCheckedModeBanner: false,
+        theme: KinetixTheme.light(),
+        locale: controller.language.locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) => EyeComfortFilter(
+            settings: controller.eyeComfort,
+            child: BoardChromeTheme(
+              child: BroadcastOverlay(
+                messages: controller.broadcasts,
+                acknowledged: controller.acknowledgedEmergencies,
+                onDismiss: controller.dismissBroadcast,
+                child: Theme(data: KinetixTheme.light(), child: child!),
+              ),
             ),
           ),
         ),
-      ),
-      home: ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) => switch (controller.stage) {
-          BoardStage.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
-          BoardStage.needsEnrollment => EnrollScreen(controller: controller),
-          BoardStage.board => BoardScreen(board: controller),
-        },
+        home: ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) => switch (controller.stage) {
+            BoardStage.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
+            BoardStage.needsEnrollment => EnrollScreen(controller: controller),
+            BoardStage.board => BoardScreen(board: controller),
+          },
+        ),
       ),
     );
   }

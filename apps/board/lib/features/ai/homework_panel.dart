@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api_client.dart';
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
@@ -14,18 +15,18 @@ const _maxInstructions = 5000;
 
 DateTime _tomorrow() => DateUtils.dateOnly(DateTime.now()).add(const Duration(days: 1));
 
-/// A friendly line for a failed send.
-String _sendError(Object e) {
-  if (e is ApiException && e.status == 400) return e.message;
-  if (e is ApiException && e.status == 401) return 'Sign in again with the Teacher app to give homework.';
-  if (e is ApiException) return 'Could not send the homework (${e.status}). Try again.';
-  return 'The board is offline. Connect to the internet to send homework.';
+/// A friendly line for a failed send. The server's own message (400) is shown as it comes.
+String _sendError(AppLocalizations l, Object e) {
+  if (e is ApiException && e.status == 400) return apiErrorText(l, e);
+  if (e is ApiException && e.status == 401) return l.homeworkErrSignIn;
+  if (e is ApiException) return l.homeworkErrStatus(e.status);
+  return l.homeworkErrOffline;
 }
 
 /// Confirms that homework went out.
 void showHomeworkSent(BuildContext context, AiController ai) {
   final section = ai.board.session?.sectionName;
-  showBoardMessage(context, 'Homework sent to ${section ?? 'the class'}. Students and parents are notified.');
+  showBoardMessage(context, context.l10n.homeworkSent(section ?? context.l10n.theClass));
 }
 
 /// Homework: generate a draft from a topic (or write one), edit it, choose the due date and
@@ -53,11 +54,11 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
 
   void _generate({bool fresh = false}) {
     if (!ai.canUseAi) {
-      showBoardMessage(context, 'Sign in with the Teacher app to make homework with KINETIX AI.');
+      showBoardMessage(context, context.l10n.homeworkNeedsSignIn);
       return;
     }
     if (_topic.text.trim().length < 2) {
-      showBoardMessage(context, 'Type a topic for the homework first.');
+      showBoardMessage(context, context.l10n.homeworkTypeTopic);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -66,10 +67,11 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return AiPanelPage(
       ai: ai,
       icon: Icons.assignment_outlined,
-      title: 'Homework',
+      title: l.toolHomework,
       accent: homeworkAccent,
       onBack: widget.onBack,
       child: ListenableBuilder(
@@ -93,7 +95,7 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
                 key: const Key('homework-topic'),
                 controller: _topic,
                 style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(labelText: 'Topic', hintText: 'e.g. Linear equations, Journal entries'),
+                decoration: InputDecoration(labelText: l.topicLabel, hintText: l.homeworkTopicHint),
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _generate(),
               ),
@@ -103,7 +105,7 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
                 runSpacing: Kx.s8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  NumberPicker(label: 'Questions', value: ai.homeworkCount, options: const [3, 5, 8, 10, 15], onChanged: (v) => setState(() => ai.homeworkCount = v)),
+                  NumberPicker(label: l.questionsLabel, value: ai.homeworkCount, options: const [3, 5, 8, 10, 15], onChanged: (v) => setState(() => ai.homeworkCount = v)),
                   DifficultyPicker(value: ai.homeworkDifficulty, onChanged: (v) => setState(() => ai.homeworkDifficulty = v)),
                 ],
               ),
@@ -116,24 +118,24 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
                     key: const Key('homework-generate'),
                     onPressed: task.loading ? null : _generate,
                     icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Make homework'),
+                    label: Text(l.homeworkMake),
                   ),
                   OutlinedButton.icon(
                     key: const Key('homework-write'),
                     onPressed: task.loading ? null : ai.writeOwnHomework,
                     icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Write my own'),
+                    label: Text(l.homeworkWriteOwn),
                   ),
                 ],
               ),
               const SizedBox(height: Kx.s16),
-              if (task.loading) AiLoading(label: 'Writing ${ai.homeworkCount} questions…'),
-              if (task.error != null) AiError(message: task.error!, onRetry: _generate),
+              if (task.loading) AiLoading(label: l.writingQuestions(ai.homeworkCount)),
+              if (task.error != null) AiError(message: aiErrorMessage(l, task.error!), onRetry: _generate),
               if (!task.loading && task.error == null)
                 Padding(
                   padding: const EdgeInsets.only(top: Kx.s8),
                   child: Text(
-                    'You can edit everything before it goes to the class. Students and parents see it in their apps.',
+                    l.homeworkEditNote,
                     style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
                   ),
                 ),
@@ -191,12 +193,13 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
       draft.questions[i].question = _questions[i].text;
     }
     if (draft.title.isEmpty) {
-      showBoardMessage(context, 'Give the homework a title.');
+      showBoardMessage(context, context.l10n.homeworkNeedsTitle);
       return;
     }
-    final text = homeworkInstructions(draft);
+    // In the language the homework was written in (the AI language).
+    final text = homeworkInstructions(draft, widget.ai.contentL10n);
     if (text.length > _maxInstructions) {
-      showBoardMessage(context, 'This homework is too long to send. Remove a few questions.');
+      showBoardMessage(context, context.l10n.homeworkTooLong);
       return;
     }
     setState(() => _sending = true);
@@ -208,7 +211,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
     } catch (e) {
       if (mounted) {
         setState(() => _sending = false);
-        showBoardMessage(context, _sendError(e));
+        showBoardMessage(context, _sendError(context.l10n, e));
       }
     }
   }
@@ -217,23 +220,24 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
   /// button go under the text so the question keeps the full width.
   Widget _questionRow(BuildContext context, int i) {
     final q = draft.questions[i];
+    final l = context.l10n;
     final field = TextField(
       key: Key('homework-q$i'),
       controller: _questions[i],
       minLines: 1,
       maxLines: 4,
       style: const TextStyle(fontSize: 17),
-      decoration: const InputDecoration(hintText: 'Question'),
+      decoration: InputDecoration(hintText: l.questionHint),
     );
     final marks = DropdownButton<int>(
       key: Key('homework-marks$i'),
       value: q.marks.clamp(1, 20),
       underline: const SizedBox.shrink(),
       borderRadius: BorderRadius.circular(Kx.rMd),
-      items: [for (var m = 1; m <= 20; m++) DropdownMenuItem(value: m, child: Text('$m ${m == 1 ? 'mark' : 'marks'}'))],
+      items: [for (var m = 1; m <= 20; m++) DropdownMenuItem(value: m, child: Text(l.marks(m)))],
       onChanged: (m) => setState(() => q.marks = m ?? q.marks),
     );
-    final remove = IconButton(tooltip: 'Remove question', onPressed: () => _remove(i), icon: const Icon(Icons.delete_outline));
+    final remove = IconButton(tooltip: l.removeQuestion, onPressed: () => _remove(i), icon: const Icon(Icons.delete_outline));
     final number = SizedBox(
       width: 28,
       child: Padding(
@@ -281,6 +285,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final section = widget.ai.board.session?.sectionName;
     return ListView(
       padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
@@ -290,7 +295,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
           key: const Key('homework-title'),
           controller: _title,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-          decoration: const InputDecoration(labelText: 'Title'),
+          decoration: InputDecoration(labelText: l.titleLabel),
         ),
         const SizedBox(height: Kx.s12),
         TextField(
@@ -299,13 +304,13 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
           minLines: 2,
           maxLines: 5,
           style: const TextStyle(fontSize: 17),
-          decoration: const InputDecoration(labelText: 'Instructions'),
+          decoration: InputDecoration(labelText: l.instructionsLabel),
         ),
         const SizedBox(height: Kx.s16),
         Row(
           children: [
-            Expanded(child: Text('Questions', style: context.text.titleMedium)),
-            Text('Total ${draft.totalMarks} marks', key: const Key('homework-total'), style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
+            Expanded(child: Text(l.questionsLabel, style: context.text.titleMedium)),
+            Text(l.totalMarks(draft.totalMarks), key: const Key('homework-total'), style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
           ],
         ),
         const SizedBox(height: Kx.s8),
@@ -316,7 +321,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
             key: const Key('homework-add'),
             onPressed: draft.questions.length >= 15 ? null : _add,
             icon: const Icon(Icons.add),
-            label: const Text('Add question'),
+            label: Text(l.addQuestion),
           ),
         ),
         const Divider(height: Kx.s32),
@@ -327,7 +332,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
           children: [
             DueDateChip(value: _due, onChanged: (d) => setState(() => _due = d)),
             Text(
-              section == null ? 'No class is timetabled now' : 'Goes to $section',
+              section == null ? l.noClassTimetabled : l.goesTo(section),
               style: context.text.bodyMedium?.copyWith(color: section == null ? c.error : c.onSurfaceVariant),
             ),
           ],
@@ -344,16 +349,16 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
               icon: _sending
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.send_outlined),
-              label: const Text('Send to class'),
+              label: Text(l.sendToClass),
             ),
             if (widget.onRegenerate != null)
               OutlinedButton.icon(
                 key: const Key('homework-regenerate'),
                 onPressed: _sending ? null : widget.onRegenerate,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Regenerate'),
+                label: Text(l.regenerate),
               ),
-            TextButton(key: const Key('homework-discard'), onPressed: _sending ? null : widget.ai.discardHomework, child: const Text('Discard')),
+            TextButton(key: const Key('homework-discard'), onPressed: _sending ? null : widget.ai.discardHomework, child: Text(l.discard)),
           ],
         ),
       ],
@@ -398,11 +403,11 @@ class _SendHomeworkDialogState extends State<_SendHomeworkDialog> {
 
   Future<void> _send() async {
     if (_title.text.trim().isEmpty) {
-      setState(() => _error = 'Give the homework a title.');
+      setState(() => _error = context.l10n.homeworkNeedsTitle);
       return;
     }
     if (widget.instructions.length > _maxInstructions) {
-      setState(() => _error = 'This quiz is too long to send as homework. Make one with fewer questions.');
+      setState(() => _error = context.l10n.quizTooLongForHomework);
       return;
     }
     setState(() {
@@ -416,7 +421,7 @@ class _SendHomeworkDialogState extends State<_SendHomeworkDialog> {
       if (mounted) {
         setState(() {
           _sending = false;
-          _error = _sendError(e);
+          _error = _sendError(context.l10n, e);
         });
       }
     }
@@ -425,17 +430,18 @@ class _SendHomeworkDialogState extends State<_SendHomeworkDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final section = widget.ai.board.session?.sectionName;
     return AlertDialog(
       icon: const Icon(Icons.assignment_outlined),
-      title: const Text('Send as homework'),
+      title: Text(l.sendAsHomework),
       content: SizedBox(
         width: 560,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(key: const Key('send-homework-title'), controller: _title, decoration: const InputDecoration(labelText: 'Title')),
+            TextField(key: const Key('send-homework-title'), controller: _title, decoration: InputDecoration(labelText: l.titleLabel)),
             const SizedBox(height: Kx.s12),
             Wrap(
               spacing: Kx.s12,
@@ -444,7 +450,7 @@ class _SendHomeworkDialogState extends State<_SendHomeworkDialog> {
               children: [
                 DueDateChip(value: _due, onChanged: (d) => setState(() => _due = d)),
                 Text(
-                  section == null ? 'No class is timetabled now' : 'Goes to $section',
+                  section == null ? l.noClassTimetabled : l.goesTo(section),
                   style: TextStyle(color: section == null ? c.error : c.onSurfaceVariant),
                 ),
               ],
@@ -468,11 +474,11 @@ class _SendHomeworkDialogState extends State<_SendHomeworkDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: _sending ? null : () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+        TextButton(onPressed: _sending ? null : () => Navigator.of(context).pop(false), child: Text(l.cancel)),
         FilledButton(
           key: const Key('send-homework-confirm'),
           onPressed: _sending || section == null ? null : _send,
-          child: _sending ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Send to class'),
+          child: _sending ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text(l.sendToClass),
         ),
       ],
     );

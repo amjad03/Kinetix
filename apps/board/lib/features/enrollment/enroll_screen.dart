@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
+import '../../l10n/l10n.dart';
 
 /// First run: an admin registers this board with the enrolment code from KINETIX ERP.
 class EnrollScreen extends StatefulWidget {
@@ -36,6 +37,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return Scaffold(
       backgroundColor: c.surfaceContainer,
       body: Center(
@@ -60,14 +62,14 @@ class _EnrollScreenState extends State<EnrollScreen> {
                           child: Icon(Icons.co_present_outlined, color: c.onPrimaryContainer),
                         ),
                         const SizedBox(width: Kx.s16),
-                        Text('KINETIX Board', style: context.text.titleLarge),
+                        Text(l.appTitle, style: context.text.titleLarge),
                       ],
                     ),
                     const SizedBox(height: Kx.s24),
-                    Text('Set up this board', style: context.text.headlineMedium),
+                    Text(l.enrollTitle, style: context.text.headlineMedium),
                     const SizedBox(height: Kx.s8),
                     Text(
-                      'In KINETIX ERP, open Devices → Add board, then enter the code shown there.',
+                      l.enrollHint,
                       style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                     ),
                     const SizedBox(height: Kx.s24),
@@ -76,17 +78,13 @@ class _EnrollScreenState extends State<EnrollScreen> {
                       controller: _code,
                       textCapitalization: TextCapitalization.characters,
                       style: context.text.titleLarge?.copyWith(letterSpacing: 2),
-                      decoration: const InputDecoration(
-                        labelText: 'Enrolment code',
-                        hintText: 'KX-XXXX-XXXX',
-                        prefixIcon: Icon(Icons.key_outlined),
-                      ),
+                      decoration: InputDecoration(labelText: l.enrollCode, hintText: 'KX-XXXX-XXXX', prefixIcon: const Icon(Icons.key_outlined)),
                       onSubmitted: (_) => _submit(),
                     ),
                     const SizedBox(height: Kx.s12),
                     TextField(
                       controller: _server,
-                      decoration: const InputDecoration(labelText: 'Server', prefixIcon: Icon(Icons.dns_outlined)),
+                      decoration: InputDecoration(labelText: l.enrollServer, prefixIcon: const Icon(Icons.dns_outlined)),
                     ),
                     if (_error != null)
                       Padding(
@@ -94,9 +92,9 @@ class _EnrollScreenState extends State<EnrollScreen> {
                         child: Text(_error!, style: TextStyle(color: c.error)),
                       ),
                     const SizedBox(height: Kx.s24),
-                    FilledButton(onPressed: _busy ? null : _submit, child: Text(_busy ? 'Registering…' : 'Register board')),
+                    FilledButton(onPressed: _busy ? null : _submit, child: Text(_busy ? l.enrollRegistering : l.enrollRegister)),
                     const SizedBox(height: Kx.s8),
-                    TextButton(onPressed: widget.controller.skipEnrollment, child: const Text('Skip for now and use the practice board')),
+                    TextButton(onPressed: widget.controller.skipEnrollment, child: Text(l.enrollSkip)),
                   ],
                 ),
               ),

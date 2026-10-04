@@ -3,8 +3,10 @@ import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 
 import '../features/comfort/eye_comfort.dart';
+import '../l10n/l10n.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
 
@@ -18,14 +20,13 @@ import 'recording/recordings.dart';
 enum BoardStage { loading, needsEnrollment, board }
 
 /// What kind of touch surface the board runs on. Decides how palms and large contacts behave.
+/// (Names and descriptions are in the settings dialog, translated.)
 enum TouchProfile {
-  tablet('Tablet', 'A hand resting on the screen is ignored', PalmMode.ignore),
-  panel('Interactive panel', 'A palm or fist erases, like a duster', PalmMode.erase),
-  irFrame('IR touch frame', 'Every touch writes. IR frames cannot tell a palm from a finger', PalmMode.off);
+  tablet(PalmMode.ignore),
+  panel(PalmMode.erase),
+  irFrame(PalmMode.off);
 
-  const TouchProfile(this.label, this.description, this.palmMode);
-  final String label;
-  final String description;
+  const TouchProfile(this.palmMode);
   final PalmMode palmMode;
 }
 
@@ -66,6 +67,16 @@ class BoardController extends ChangeNotifier {
 
   EyeComfortSettings eyeComfort = const EyeComfortSettings();
   TouchProfile touchProfile = TouchProfile.tablet;
+
+  /// The board's own language for its buttons and messages (Board settings → Language).
+  BoardLanguage boardLanguage = BoardLanguage.en;
+
+  /// The signed-in teacher's preferred language, when the board has it. It wins over
+  /// [boardLanguage] until the teacher signs out.
+  BoardLanguage? _teacherLanguage;
+
+  /// The language the board shows now.
+  BoardLanguage get language => _teacherLanguage ?? boardLanguage;
 
   /// Messages from the principal waiting to be shown, newest first.
   final List<BroadcastMessage> broadcasts = [];
@@ -124,6 +135,7 @@ class BoardController extends ChangeNotifier {
     final saved = await _store.load();
     touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
     eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
+    boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
     if (saved.server == null || saved.token == null) {
       stage = BoardStage.needsEnrollment;
     } else {
@@ -169,6 +181,15 @@ class BoardController extends ChangeNotifier {
   void setEyeComfort(EyeComfortSettings s) {
     eyeComfort = s;
     unawaited(_store.setSetting('eyeComfort', s.encode()));
+    notifyListeners();
+  }
+
+  /// Sets the board's language. A teacher who picks it while signed in sees it at once, in
+  /// place of their own preferred language.
+  void setBoardLanguage(BoardLanguage l) {
+    boardLanguage = l;
+    _teacherLanguage = null;
+    unawaited(_store.setSetting('language', l.name));
     notifyListeners();
   }
 
@@ -322,6 +343,7 @@ class BoardController extends ChangeNotifier {
   void onPaired(String sessionToken, SessionContext ctx) {
     api?.sessionToken = sessionToken;
     session = ctx;
+    _teacherLanguage = BoardLanguage.tryParse(ctx.language);
     whiteboardId = newId();
     roster = [];
     attendance.clear();
@@ -345,6 +367,7 @@ class BoardController extends ChangeNotifier {
     classLive = false;
     api?.sessionToken = null;
     session = null;
+    _teacherLanguage = null;
     roster = [];
     attendance.clear();
     notifyListeners();
@@ -374,11 +397,10 @@ class BoardController extends ChangeNotifier {
     return api.saveWhiteboard(whiteboardId, title: title, board: board, share: share);
   }
 
-  /// A title for a new save: "Corporate Accounting · 4 Oct" or "Board · 4 Oct".
-  String defaultBoardTitle(DateTime now) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${session?.subjectName ?? 'Board'} · ${now.day} ${months[now.month - 1]}';
-  }
+  /// A title for a new save: "Corporate Accounting · 4 Oct" or "Board · 4 Oct" ([fallback]
+  /// and the date in the board's language).
+  String defaultBoardTitle(DateTime now, {String fallback = 'Board', String locale = 'en_US'}) =>
+      '${session?.subjectName ?? fallback} · ${DateFormat('d MMM', locale).format(now)}';
 
   String newId() => _uuidV4();
 

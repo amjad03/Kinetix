@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
@@ -18,7 +19,7 @@ class ReadBoardPanel extends StatelessWidget {
 
   void _read(BuildContext context) {
     if (!ai.canUseAi) {
-      showBoardMessage(context, 'Sign in with the Teacher app to read the board with KINETIX AI.');
+      showBoardMessage(context, context.l10n.readNeedsSignIn);
       return;
     }
     ai.readBoard();
@@ -27,10 +28,11 @@ class ReadBoardPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return AiPanelPage(
       ai: ai,
       icon: Icons.document_scanner_outlined,
-      title: 'Read board',
+      title: l.aiReadBoard,
       accent: readAccent,
       onBack: onBack,
       child: ListenableBuilder(
@@ -43,7 +45,7 @@ class ReadBoardPanel extends StatelessWidget {
             children: [
               if (!ai.canUseAi) ...[const AiSignInNotice(), const SizedBox(height: Kx.s16)],
               Text(
-                'Turns the handwriting on this page into text you can copy, check or ask about. Write clearly; one page at a time.',
+                l.readIntro,
                 style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
               ),
               const SizedBox(height: Kx.s16),
@@ -53,11 +55,11 @@ class ReadBoardPanel extends StatelessWidget {
                   key: const Key('read-board'),
                   onPressed: task.loading ? null : () => _read(context),
                   icon: const Icon(Icons.document_scanner_outlined),
-                  label: Text(r == null ? 'Read this page' : 'Read again'),
+                  label: Text(r == null ? l.readThisPage : l.readAgain),
                 ),
               ),
-              if (task.loading) const AiLoading(label: 'Reading the board…'),
-              if (task.error != null) ...[const SizedBox(height: Kx.s16), AiError(message: task.error!, onRetry: () => _read(context))],
+              if (task.loading) AiLoading(label: l.readingBoard),
+              if (task.error != null) ...[const SizedBox(height: Kx.s16), AiError(message: aiErrorMessage(l, task.error!), onRetry: () => _read(context))],
               if (r != null && !task.loading) ...[
                 const SizedBox(height: Kx.s20),
                 if (r.meta.preview) ...[AiNotice.preview(), const SizedBox(height: Kx.s12)],
@@ -69,11 +71,11 @@ class ReadBoardPanel extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SelectableText(
-                        r.result.text.isEmpty ? 'No writing found on this page.' : r.result.text,
+                        r.result.text.isEmpty ? l.readNoWriting : r.result.text,
                         style: TextStyle(fontSize: ClassType.lead, height: 1.45, color: c.onSurface),
                       ),
                       if (r.result.math.isNotEmpty) ...[
-                        const AiSectionLabel('Maths found'),
+                        AiSectionLabel(l.readMathsFound),
                         for (final m in r.result.math)
                           Padding(
                             padding: const EdgeInsets.only(bottom: Kx.s8),
@@ -90,10 +92,10 @@ class ReadBoardPanel extends StatelessWidget {
                                 ? null
                                 : () {
                                     Clipboard.setData(ClipboardData(text: r.result.text));
-                                    showBoardMessage(context, 'Copied');
+                                    showBoardMessage(context, l.copied);
                                   },
                             icon: const Icon(Icons.copy),
-                            label: const Text('Copy text'),
+                            label: Text(l.copyText),
                           ),
                           FilledButton.tonalIcon(
                             key: const Key('reading-ask'),
@@ -101,10 +103,10 @@ class ReadBoardPanel extends StatelessWidget {
                                 ? null
                                 : () {
                                     ai.open(AiView.home);
-                                    ai.ask('Explain this from the board: ${r.result.text.trim()}');
+                                    ai.ask(ai.contentL10n.aiExplainFromBoard(r.result.text.trim()));
                                   },
                             icon: const Icon(Icons.auto_awesome),
-                            label: const Text('Ask KINETIX AI about this'),
+                            label: Text(l.askAiAboutThis),
                           ),
                         ],
                       ),

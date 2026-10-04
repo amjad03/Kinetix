@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../../l10n/l10n.dart';
 import 'chrome.dart';
 
 /// A countdown that floats over the board and can be dragged out of the way.
@@ -60,6 +61,7 @@ class _CountdownCardState extends State<CountdownCard> {
     final c = context.colors;
     final mm = _left.inMinutes.toString().padLeft(2, '0');
     final ss = (_left.inSeconds % 60).toString().padLeft(2, '0');
+    final l = context.l10n;
     return ChromeSurface(
       radius: Kx.rXl,
       padding: const EdgeInsets.fromLTRB(Kx.s20, Kx.s8, Kx.s8, Kx.s16),
@@ -72,8 +74,8 @@ class _CountdownCardState extends State<CountdownCard> {
               children: [
                 Icon(Icons.timer_outlined, color: c.onSurfaceVariant, size: 20),
                 const SizedBox(width: Kx.s8),
-                Expanded(child: Text(_done ? "Time's up" : 'Timer', style: context.text.titleSmall)),
-                IconButton(tooltip: 'Close timer', onPressed: widget.onClose, icon: const Icon(Icons.close)),
+                Expanded(child: Text(_done ? l.timesUp : l.toolTimer, style: context.text.titleSmall)),
+                IconButton(tooltip: l.closeTimer, onPressed: widget.onClose, icon: const Icon(Icons.close)),
               ],
             ),
             Text(
@@ -88,22 +90,24 @@ class _CountdownCardState extends State<CountdownCard> {
             const SizedBox(height: Kx.s8),
             Wrap(
               spacing: Kx.s8,
+              runSpacing: Kx.s8,
+              alignment: WrapAlignment.center,
               children: [
                 for (final m in [1, 3, 5, 10])
-                  ChoiceChip(label: Text('$m min'), selected: _total.inMinutes == m && !_running, onSelected: (_) => _preset(m)),
+                  ChoiceChip(label: Text(l.minutesShort(m)), selected: _total.inMinutes == m && !_running, onSelected: (_) => _preset(m)),
               ],
             ),
             const SizedBox(height: Kx.s12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton.filledTonal(tooltip: 'Reset', onPressed: () => _preset(_total.inMinutes), icon: const Icon(Icons.replay)),
+                IconButton.filledTonal(tooltip: l.reset, onPressed: () => _preset(_total.inMinutes), icon: const Icon(Icons.replay)),
                 const SizedBox(width: Kx.s12),
                 FilledButton.icon(
                   key: const Key('countdown-toggle'),
                   onPressed: _running ? _stop : _start,
                   icon: Icon(_running ? Icons.pause : Icons.play_arrow),
-                  label: Text(_running ? 'Pause' : (_done ? 'Restart' : 'Start')),
+                  label: Text(_running ? l.pause : (_done ? l.restart : l.start)),
                 ),
               ],
             ),
@@ -170,18 +174,19 @@ class _RandomPickerDialogState extends State<RandomPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     if (widget.classSize == 0) {
       return AlertDialog(
         icon: const Icon(Icons.group_off_outlined),
-        title: const Text('No class list'),
-        content: const Text('Sign in from the Teacher app during a timetabled class to pick from its students.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        title: Text(l.noClassList),
+        content: Text(l.randomPickNoClass),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l.ok))],
       );
     }
     final s = _shown;
     return AlertDialog(
       icon: const Icon(Icons.casino_outlined),
-      title: const Text('Random pick'),
+      title: Text(l.toolRandomPick),
       content: SizedBox(
         width: 520,
         child: Column(
@@ -192,13 +197,13 @@ class _RandomPickerDialogState extends State<RandomPickerDialog> {
               KxAvatar(name: s.fullName, size: 88),
               const SizedBox(height: Kx.s16),
               Text(s.fullName, key: const Key('picked-name'), style: context.text.displaySmall, textAlign: TextAlign.center),
-              Text('Roll no. ${s.rollNo}', style: context.text.titleMedium?.copyWith(color: c.onSurfaceVariant)),
+              Text(l.rollNo(s.rollNo), style: context.text.titleMedium?.copyWith(color: c.onSurfaceVariant)),
             ],
             const SizedBox(height: Kx.s24),
             if (_recorded != null)
               Chip(
                 avatar: const Icon(Icons.check_circle, size: 18),
-                label: Text('$_recorded · saved to ${_picked!.fullName.split(' ').first}\'s profile'),
+                label: Text(l.answerSavedTo(_recorded!, _picked!.fullName.split(' ').first)),
               )
             else
               Wrap(
@@ -207,24 +212,24 @@ class _RandomPickerDialogState extends State<RandomPickerDialog> {
                 runSpacing: Kx.s8,
                 children: [
                   FilledButton.icon(
-                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.correct, 'Correct'),
+                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.correct, l.answerCorrect),
                     style: FilledButton.styleFrom(backgroundColor: Kx.success, foregroundColor: Colors.white),
                     icon: const Icon(Icons.check),
-                    label: const Text('Correct'),
+                    label: Text(l.answerCorrect),
                   ),
                   FilledButton.tonalIcon(
-                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.partial, 'Partly correct'),
+                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.partial, l.answerPartlyCorrect),
                     icon: const Icon(Icons.adjust),
-                    label: const Text('Partly'),
+                    label: Text(l.answerPartly),
                   ),
                   FilledButton.tonalIcon(
-                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.incorrect, 'Not correct'),
+                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.incorrect, l.answerNotCorrect),
                     icon: const Icon(Icons.close),
-                    label: const Text('Not correct'),
+                    label: Text(l.answerNotCorrect),
                   ),
                   TextButton(
-                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.skipped, 'Skipped'),
-                    child: const Text('Skip'),
+                    onPressed: _picked == null ? null : () => _answer(AnswerOutcome.skipped, l.answerSkipped),
+                    child: Text(l.answerSkip),
                   ),
                 ],
               ),
@@ -232,8 +237,8 @@ class _RandomPickerDialogState extends State<RandomPickerDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Done')),
-        FilledButton.tonalIcon(onPressed: _spin, icon: const Icon(Icons.refresh), label: const Text('Pick again')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.done)),
+        FilledButton.tonalIcon(onPressed: _spin, icon: const Icon(Icons.refresh), label: Text(l.pickAgain)),
       ],
     );
   }
@@ -269,9 +274,10 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     return AlertDialog(
       icon: const Icon(Icons.how_to_reg_outlined),
-      title: const Text('Attendance'),
+      title: Text(l.toolAttendance),
       content: SizedBox(
         width: 760,
         // Fit the class: about 64 px per row of four, within the screen.
@@ -280,7 +286,7 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '${_count(AttendanceMark.present)} present · ${_count(AttendanceMark.absent)} absent · ${_count(AttendanceMark.late)} late   —   tap a student to change',
+              l.attendanceSummary(_count(AttendanceMark.present), _count(AttendanceMark.absent), _count(AttendanceMark.late)),
               key: const Key('attendance-summary'),
               style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant),
             ),
@@ -298,14 +304,14 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
         FilledButton(
           key: const Key('attendance-submit'),
           onPressed: () {
             widget.onSubmit(Map.of(_marks));
             Navigator.pop(context);
           },
-          child: const Text('Save attendance'),
+          child: Text(l.saveAttendance),
         ),
       ],
     );
@@ -322,10 +328,11 @@ class _AttendanceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = context.l10n;
     final (bg, fg, label, icon, iconColor) = switch (mark) {
-      AttendanceMark.present => (c.surfaceContainerHighest, c.onSurface, 'Present', Icons.check_circle, const Color(0xFF81C995)),
-      AttendanceMark.absent => (c.errorContainer, c.onErrorContainer, 'Absent', Icons.cancel, c.onErrorContainer),
-      AttendanceMark.late => (c.tertiaryContainer, c.onTertiaryContainer, 'Late', Icons.schedule, c.onTertiaryContainer),
+      AttendanceMark.present => (c.surfaceContainerHighest, c.onSurface, l.present, Icons.check_circle, const Color(0xFF81C995)),
+      AttendanceMark.absent => (c.errorContainer, c.onErrorContainer, l.absent, Icons.cancel, c.onErrorContainer),
+      AttendanceMark.late => (c.tertiaryContainer, c.onTertiaryContainer, l.late, Icons.schedule, c.onTertiaryContainer),
     };
     return Material(
       color: bg,

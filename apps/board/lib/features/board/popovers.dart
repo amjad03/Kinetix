@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../l10n/l10n.dart';
 import '../comfort/eye_comfort.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -36,22 +37,23 @@ class WritePopover extends StatelessWidget {
       builder: (context, _) {
         final style = ink.style;
         final tool = style.tool == InkTool.highlighter ? InkTool.highlighter : InkTool.pen;
+        final l = context.l10n;
         return PopoverCard(
-          title: 'Write',
+          title: l.toolWrite,
           width: 460,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SegmentedButton<InkTool>(
-                segments: const [
-                  ButtonSegment(value: InkTool.pen, icon: Icon(Icons.edit_outlined), label: Text('Pen')),
-                  ButtonSegment(value: InkTool.highlighter, icon: Icon(Icons.border_color_outlined), label: Text('Highlighter')),
+                segments: [
+                  ButtonSegment(value: InkTool.pen, icon: const Icon(Icons.edit_outlined), label: Text(l.pen)),
+                  ButtonSegment(value: InkTool.highlighter, icon: const Icon(Icons.border_color_outlined), label: Text(l.highlighter)),
                 ],
                 selected: {tool},
                 onSelectionChanged: (s) => ink.style = style.copyWith(tool: s.first),
               ),
               const SizedBox(height: Kx.s20),
-              Text('Colour', style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+              Text(l.colour, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
               const SizedBox(height: Kx.s8),
               Wrap(
                 spacing: 10,
@@ -66,7 +68,7 @@ class WritePopover extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Kx.s20),
-              Text('Thickness', style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+              Text(l.thickness, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
               const SizedBox(height: Kx.s8),
               Row(
                 children: [
@@ -171,25 +173,27 @@ class _ErasePopoverState extends State<ErasePopover> {
   @override
   Widget build(BuildContext context) {
     final ink = widget.ink;
+    final l = context.l10n;
     return PopoverCard(
-      title: 'Erase',
-      width: 360,
+      title: l.toolErase,
+      width: 380,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Eraser size', style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+          Text(l.eraserSize, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
+          const SizedBox(height: Kx.s8),
           SegmentedButton<double>(
-            segments: const [
-              ButtonSegment(value: 10, label: Text('Small')),
-              ButtonSegment(value: 18, label: Text('Medium')),
-              ButtonSegment(value: 36, label: Text('Large')),
+            segments: [
+              ButtonSegment(value: 10, label: Text(l.sizeSmall)),
+              ButtonSegment(value: 18, label: Text(l.sizeMedium)),
+              ButtonSegment(value: 36, label: Text(l.sizeLarge)),
             ],
             selected: {ink.eraserRadius},
             onSelectionChanged: (s) => setState(() => ink.eraserRadius = s.first),
           ),
           const SizedBox(height: Kx.s8),
           Text(
-            'Tip: on an interactive panel, rub with your palm to erase.',
+            l.eraseTip,
             style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant),
           ),
           const SizedBox(height: Kx.s16),
@@ -204,7 +208,7 @@ class _ErasePopoverState extends State<ErasePopover> {
                       widget.onCleared();
                     },
               icon: const Icon(Icons.delete_sweep_outlined),
-              label: const Text('Clear page'),
+              label: Text(l.clearPage),
             ),
           ),
         ],
@@ -223,7 +227,7 @@ class ThemePopover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopoverCard(
-      title: 'Board theme',
+      title: context.l10n.boardTheme,
       width: 600,
       child: Wrap(
         spacing: Kx.s12,
@@ -249,7 +253,7 @@ class ThemePopover extends StatelessWidget {
                     child: CustomPaint(painter: BackgroundPainter(b)),
                   ),
                   const SizedBox(height: 6),
-                  Text(b.label, style: context.text.labelMedium),
+                  Text(backgroundName(context.l10n, b), style: context.text.labelMedium),
                 ],
               ),
             ),
@@ -270,20 +274,30 @@ class ShapesPopover extends StatefulWidget {
   State<ShapesPopover> createState() => _ShapesPopoverState();
 }
 
-const shapeNames = <ShapeKind, String>{
-  ShapeKind.line: 'Line',
-  ShapeKind.arrow: 'Arrow',
-  ShapeKind.doubleArrow: 'Double arrow',
-  ShapeKind.circle: 'Circle',
-  ShapeKind.ellipse: 'Ellipse',
-  ShapeKind.triangle: 'Triangle',
-  ShapeKind.rightTriangle: 'Right triangle',
-  ShapeKind.rectangle: 'Rectangle',
-  ShapeKind.parallelogram: 'Parallelogram',
-  ShapeKind.trapezium: 'Trapezium',
-  ShapeKind.rhombus: 'Rhombus',
-  ShapeKind.pentagon: 'Pentagon',
-  ShapeKind.hexagon: 'Hexagon',
+/// The shapes in the popover, in order, with their names in the board's language.
+Map<ShapeKind, String> shapeNames(AppLocalizations l) => {
+  ShapeKind.line: l.shapeLine,
+  ShapeKind.arrow: l.shapeArrow,
+  ShapeKind.doubleArrow: l.shapeDoubleArrow,
+  ShapeKind.circle: l.shapeCircle,
+  ShapeKind.ellipse: l.shapeEllipse,
+  ShapeKind.triangle: l.shapeTriangle,
+  ShapeKind.rightTriangle: l.shapeRightTriangle,
+  ShapeKind.rectangle: l.shapeRectangle,
+  ShapeKind.parallelogram: l.shapeParallelogram,
+  ShapeKind.trapezium: l.shapeTrapezium,
+  ShapeKind.rhombus: l.shapeRhombus,
+  ShapeKind.pentagon: l.shapePentagon,
+  ShapeKind.hexagon: l.shapeHexagon,
+};
+
+/// A board background's name in the board's language.
+String backgroundName(AppLocalizations l, BoardBackground b) => switch (b) {
+  BoardBackground.plain => l.bgPlain,
+  BoardBackground.ruled => l.bgRuled,
+  BoardBackground.grid => l.bgGrid,
+  BoardBackground.dots => l.bgDots,
+  BoardBackground.chalkboard => l.bgChalkboard,
 };
 
 /// An icon for a shape, drawn from the same geometry the board uses, so it always matches.
@@ -334,10 +348,11 @@ class _ShapesPopoverState extends State<ShapesPopover> {
   @override
   Widget build(BuildContext context) {
     final ink = widget.ink;
+    final l = context.l10n;
     return ListenableBuilder(
       listenable: ink,
       builder: (context, _) => PopoverCard(
-        title: 'Shapes',
+        title: l.toolShapes,
         width: 440,
         trailing: SegmentedButton<bool>(
           showSelectedIcon: false,
@@ -349,12 +364,9 @@ class _ShapesPopoverState extends State<ShapesPopover> {
           onSelectionChanged: (s) => setState(() => _threeD = s.first),
         ),
         child: _threeD
-            ? const SizedBox(
+            ? SizedBox(
                 height: 168,
-                child: KxEmptyState(
-                  icon: Icons.view_in_ar_outlined,
-                  message: 'Rotatable 3D solids (cube, cylinder, cone, sphere) are coming soon.',
-                ),
+                child: KxEmptyState(icon: Icons.view_in_ar_outlined, message: l.shapes3dSoon),
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,7 +375,7 @@ class _ShapesPopoverState extends State<ShapesPopover> {
                     spacing: Kx.s8,
                     runSpacing: Kx.s8,
                     children: [
-                      for (final e in shapeNames.entries)
+                      for (final e in shapeNames(l).entries)
                         Tooltip(
                           message: e.value,
                           child: IconButton.filledTonal(
@@ -384,14 +396,14 @@ class _ShapesPopoverState extends State<ShapesPopover> {
                   const Divider(),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Show lengths'),
-                    subtitle: const Text('Sides in cm, matching the 1 cm grid'),
+                    title: Text(l.showLengths),
+                    subtitle: Text(l.showLengthsHint),
                     value: ink.showLengths,
                     onChanged: (v) => ink.showLengths = v,
                   ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Show angles'),
+                    title: Text(l.showAngles),
                     value: ink.showAngles,
                     onChanged: (v) => ink.showAngles = v,
                   ),
@@ -420,7 +432,7 @@ class ToolsPopover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopoverCard(
-      title: 'Tools',
+      title: context.l10n.toolTools,
       width: 4 * 104 + 3 * Kx.s12,
       child: Wrap(
         spacing: Kx.s12,
@@ -449,8 +461,9 @@ class EyeComfortPopover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = settings;
+    final l = context.l10n;
     return PopoverCard(
-      title: 'Eye comfort',
+      title: l.toolEyeComfort,
       width: 440,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -458,40 +471,40 @@ class EyeComfortPopover extends StatelessWidget {
           SwitchListTile(
             key: const Key('eye-protection'),
             contentPadding: EdgeInsets.zero,
-            title: const Text('Eye protection'),
-            subtitle: const Text('Warmer colours, less blue light, gentle dimming'),
+            title: Text(l.eyeProtection),
+            subtitle: Text(l.eyeProtectionHint),
             value: s.enabled,
             onChanged: (v) => onChanged(s.copyWith(enabled: v)),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Adjust through the school day'),
+            title: Text(l.adjustSchoolDay),
             value: s.auto,
             onChanged: s.enabled ? (v) => onChanged(s.copyWith(auto: v)) : null,
           ),
           _SliderRow(
-            label: 'Warmth',
+            label: l.warmth,
             value: s.warmth,
             onChanged: s.enabled && !s.auto ? (v) => onChanged(s.copyWith(warmth: v)) : null,
           ),
           _SliderRow(
-            label: 'Dimming',
+            label: l.dimming,
             value: s.dim,
             onChanged: s.enabled && !s.auto ? (v) => onChanged(s.copyWith(dim: v)) : null,
           ),
           const Divider(),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('High contrast'),
-            subtitle: const Text('For faded projectors'),
+            title: Text(l.highContrast),
+            subtitle: Text(l.highContrastHint),
             value: s.highContrast,
             onChanged: (v) => onChanged(s.copyWith(highContrast: v)),
           ),
           SwitchListTile(
             key: const Key('chalkboard'),
             contentPadding: EdgeInsets.zero,
-            title: const Text('Chalkboard'),
-            subtitle: const Text('Dark board, less glare'),
+            title: Text(l.bgChalkboard),
+            subtitle: Text(l.chalkboardHint),
             value: chalkboard,
             onChanged: onChalkboard,
           ),
@@ -512,7 +525,8 @@ class _SliderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 80, child: Text(label, style: context.text.bodyLarge)),
+        // Wide enough for the Hindi and Kannada names.
+        SizedBox(width: 112, child: Text(label, style: context.text.bodyLarge, maxLines: 2)),
         Expanded(
           child: Slider(value: value, onChanged: onChanged),
         ),

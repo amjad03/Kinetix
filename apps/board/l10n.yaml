@@ -1,0 +1,7 @@
+# Board UI strings: English (template), Hindi and Kannada. See docs/i18n/board.md.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-dir: lib/l10n/gen
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+preferred-supported-locales: [en]
