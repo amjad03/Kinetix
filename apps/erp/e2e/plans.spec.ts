@@ -121,6 +121,7 @@ test('a head of department sees the year plan status, opens the class plan and r
   await expect(page.getByText('Lesson plan reviewed')).toBeVisible();
   await expect(card).toHaveAttribute('data-reviewed', 'true');
   await expect(card.getByTestId('review-status')).toContainText('Reviewed');
+  await expect(card.getByTestId('review-status')).toContainText('by Ravi Kumar');
   await expect(card.getByTestId('review-remark')).toHaveText('Remark: Add a recap question on goodwill');
   await expect(card.getByTestId('review-plan')).toHaveText('Review again');
   await shot(page, 'class-plan-reviewed');

@@ -292,7 +292,11 @@ function LessonPlanCard({ p, canReview, i18n }: { p: LessonPlan; canReview: bool
             <Chip
               size="small"
               icon={<VerifiedOutlined />}
-              label={t('plan.lesson.reviewed', { date: fmt.dateTime(p.reviewedAt, undefined, false) })}
+              label={
+                p.reviewedBy
+                  ? t('plan.lesson.reviewedBy', { date: fmt.dateTime(p.reviewedAt, undefined, false), name: p.reviewedBy })
+                  : t('plan.lesson.reviewed', { date: fmt.dateTime(p.reviewedAt, undefined, false) })
+              }
               data-testid="review-status"
               sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer', '& .MuiChip-icon': { color: 'inherit' } }}
             />

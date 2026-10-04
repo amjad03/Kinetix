@@ -26,7 +26,7 @@ and client components (dialogs, tables with filters) equally.
 | `src/i18n/errors.ts` | API error codes (`services/api/src/common/error-codes.ts`) the ERP words itself. |
 | `src/app/language/actions.ts` | The language menu's server action. |
 
-There are 1,287 strings. Server data (names, class, subject, course, homework and calendar titles,
+There are 1,294 strings. Server data (names, class, subject, course, homework and calendar titles,
 board names, notice text written by staff) is shown as the API sends it.
 
 ## Which language is shown
@@ -54,7 +54,7 @@ board names, notice text written by staff) is shown as the API sends it.
 ## Errors
 
 API error bodies carry `code`. `errorText()` words the codes the ERP can meet (wrong login,
-inactive account, calendar range, live view off, board offline, marks empty, forbidden, not
+inactive account, calendar range, live view off, board offline, marks empty, lesson-plan review refused and the other plan errors, forbidden, not
 found, rate limited, network, server error…). For other codes, English shows the API's message
 as is; Hindi and Kannada show a translated general line ("भरी गई जानकारी जाँचें।") followed by the
 API's English detail in brackets, because the detail names what was wrong. Live-view refusals
@@ -107,8 +107,9 @@ Most uncertain first.
 | `time.yesterdayDay`, `time.tomorrow` | बीता कल / आने वाला कल | कल means both yesterday and tomorrow; is this natural in a date subtitle? |
 | `kind.test`, `kind.exam` | टेस्ट / परीक्षा; ಟೆಸ್ಟ್ / ಪರೀಕ್ಷೆ | The glossary gives ಪರೀಕ್ಷೆ for both in Kannada; we used the loan word for "test" to tell them apart. |
 | `plan.*`, `dept.flag.behindPlan` | वार्षिक योजना, पाठ योजना; ವಾರ್ಷಿಕ ಯೋಜನೆ, ಪಾಠ ಯೋಜನೆ | Year and lesson plans. "Year plan" covers a semester in colleges: is वार्षिक / ವಾರ್ಷಿಕ (annual) right, or सत्र योजना / ಸೆಮಿಸ್ಟರ್ ಯೋಜನೆ? Status chips are short: योजना के अनुसार / ಯೋಜನೆಯಂತೆ (on track), योजना से आगे / ಯೋಜನೆಗಿಂತ ಮುಂದೆ (ahead), "{n} विषय-वस्तु पीछे" / "{n} ವಿಷಯಗಳು ಹಿಂದೆ" (behind by n topics, with the ವಿಷಯ = topic/subject issue below). |
-| `plan.review*`, `plan.lesson.reviewed` | जाँचें / जाँचा गया; ಪರಿಶೀಲಿಸಿ / ಪರಿಶೀಲಿಸಲಾಗಿದೆ; टिप्पणी / ಟಿಪ್ಪಣಿ | The head of department's review of a lesson plan and its remark; same verb as the syllabus library's "Reviewed". |
+| `plan.review*`, `plan.lesson.reviewed*`, `error.PLAN_REVIEW_NOT_ALLOWED` | जाँचें / जाँचा गया; ಪರಿಶೀಲಿಸಿ / ಪರಿಶೀಲಿಸಲಾಗಿದೆ; टिप्पणी / ಟಿಪ್ಪಣಿ | The head of department's review of a lesson plan and its remark; same verb as the syllabus library's "Reviewed". |
 | `plan.lesson.aiDraft`, `plan.lesson.*` | AI ड्राफ़्ट / AI ಕರಡು; उद्देश्य, चरण, सामग्री, मूल्यांकन; ಉದ್ದೇಶಗಳು, ಹಂತಗಳು, ಸಾಮಗ್ರಿಗಳು, ಮೌಲ್ಯಮಾಪನ | Lesson-plan headings as B.Ed.-trained teachers say them; must match the Teacher App once it shows lesson plans. |
+| `error.PLAN_*`, `error.PERIOD_WRONG_DAY` | | Year- and lesson-plan errors from the API's codes (no syllabus, no periods, no teaching days, bad dates, wrong day); the ERP shows only the review refusal today. |
 | `plan.week`, `plan.lessonsOf` | "{date} से शुरू सप्ताह"; "{date} ರಿಂದ ಆರಂಭವಾಗುವ ವಾರ"; "{d} पीरियड में से {n}" | "Week of 5 Oct" is long in both; is there a shorter natural form? |
 | `syl.*`, `dept.syllabus.*` | विषय-वस्तु; ವಿಷಯ | Glossary: Topic = विषय-वस्तु / ವಿಷಯ, but ವಿಷಯ is also Subject, so Kannada "4 of 7 topics" (`{total} ವಿಷಯಗಳಲ್ಲಿ {covered}`) may read as subjects. |
 | `consent.*`, `notice.*`, `grievance.*`, `settings.live.audioPrivacy` | | Legal and privacy wording (DPDP Act name, शिकायत अधिकारी / ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ, "said no" = मना किया / ಬೇಡ ಎಂದಿದ್ದಾರೆ). Needs the legal adviser too. |

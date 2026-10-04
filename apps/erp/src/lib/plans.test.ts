@@ -56,6 +56,17 @@ describe('plan weeks', () => {
     expect(planWeeks(plan, '2026-10-28').filter((w) => w.thisWeek)).toHaveLength(1);
     expect(planWeeks(plan, '2027-02-01').some((w) => w.thisWeek)).toBe(false);
   });
+
+  it("follows the institution's week from the API over the ERP's own today", () => {
+    const plan = { startsOn: '2026-09-07', endsOn: '2026-12-27', today: '2026-10-05', thisWeek: '2026-10-05', items: [item('a', '2026-09-28')] };
+    // The ERP still thinks it is Sunday 4 October; the API says Monday 5 October.
+    const weeks = planWeeks(plan, '2026-10-04');
+    expect(weeks.map((w) => [w.weekOf, w.thisWeek])).toEqual([
+      ['2026-09-28', false],
+      ['2026-10-05', true],
+    ]);
+    expect(weeks[0].items[0].state).toBe('late');
+  });
 });
 
 describe('plan status', () => {
@@ -93,9 +104,17 @@ describe('lesson plans', () => {
   });
 
   it("shows the API's reason when a review is refused, and words other errors as usual", () => {
-    const refused = { status: 403, code: 'FORBIDDEN', message: 'Only the head of department or the principal reviews lesson plans' };
-    expect(reviewErrorText(refused, en)).toBe(refused.message);
-    expect(reviewErrorText(refused, hi)).toBe(`${MESSAGES.hi['error.FORBIDDEN']} (${refused.message})`);
+    const message = 'Only the head of department or the principal reviews lesson plans';
+    // The API's code: worded in the language.
+    const refused = { status: 403, code: 'PLAN_REVIEW_NOT_ALLOWED', message };
+    expect(reviewErrorText(refused, en)).toBe(message);
+    expect(reviewErrorText(refused, hi)).toBe(MESSAGES.hi['error.PLAN_REVIEW_NOT_ALLOWED']);
+    expect(reviewErrorText(refused, kn)).toBe(MESSAGES.kn['error.PLAN_REVIEW_NOT_ALLOWED']);
+    // An older API (plain FORBIDDEN): its reason, after the general line in Hindi and Kannada.
+    const older = { status: 403, code: 'FORBIDDEN', message };
+    expect(reviewErrorText(older, en)).toBe(message);
+    expect(reviewErrorText(older, hi)).toBe(`${MESSAGES.hi['error.FORBIDDEN']} (${message})`);
+    expect(reviewErrorText({ status: 400, code: 'PERIOD_WRONG_DAY', message: 'This period is not on that day' }, kn)).toBe(MESSAGES.kn['error.PERIOD_WRONG_DAY']);
     expect(reviewErrorText({ status: 403, code: 'FORBIDDEN', message: '' }, en)).toBe(MESSAGES.en['error.FORBIDDEN']);
     expect(reviewErrorText({ status: 404, code: 'NOT_FOUND', message: 'Lesson plan not found' }, kn)).toBe(MESSAGES.kn['error.NOT_FOUND']);
     expect(reviewErrorText({ status: 400, code: 'VALIDATION', message: 'Too long' }, en)).toBe('Too long');

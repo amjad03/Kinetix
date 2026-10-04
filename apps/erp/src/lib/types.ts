@@ -506,6 +506,9 @@ export interface YearPlan {
   startsOn: string;
   endsOn: string;
   updatedAt: string;
+  /** The institution's today and the Monday of its week (what `late` and `progress` were worked out against). */
+  today?: string;
+  thisWeek?: string;
   progress: PlanProgress;
   items: YearPlanItem[];
 }
@@ -530,6 +533,8 @@ export interface LessonPlan {
   content: LessonPlanContent;
   aiDrafted: boolean;
   reviewedAt: string | null;
+  /** The reviewer's name. */
+  reviewedBy?: string | null;
   reviewRemark: string | null;
   updatedAt: string;
 }

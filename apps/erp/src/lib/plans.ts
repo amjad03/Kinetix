@@ -77,10 +77,12 @@ export interface PlanWeek {
 
 /**
  * The plan's weeks that have topics, in order, and this week too while the plan runs (so the
- * head sees "nothing new this week" rather than no row).
+ * head sees "nothing new this week" rather than no row). The institution's today and week come
+ * from the API when it sends them (so the ERP agrees with its `late`), else [today].
  */
-export function planWeeks(plan: Pick<YearPlan, 'items' | 'startsOn' | 'endsOn'>, today: string): PlanWeek[] {
-  const thisWeek = mondayOf(today);
+export function planWeeks(plan: Pick<YearPlan, 'items' | 'startsOn' | 'endsOn' | 'today' | 'thisWeek'>, fallbackToday: string): PlanWeek[] {
+  const today = plan.today ?? fallbackToday;
+  const thisWeek = plan.thisWeek ?? mondayOf(today);
   const byWeek = new Map<string, PlanWeek['items']>();
   for (const i of plan.items) {
     const list = byWeek.get(i.weekOf) ?? [];
@@ -99,11 +101,12 @@ export function totalMinutes(steps: readonly { minutes: number }[]): number {
 }
 
 /**
- * The review's error. A refusal (403) says who may review ("Only the head of department or the
- * principal reviews lesson plans"), so it is shown as the API words it: in English as is, in
- * Hindi and Kannada after the translated general line. Other errors as usual.
+ * The review's error. The API's refusal (PLAN_REVIEW_NOT_ALLOWED: "Only the head of department or
+ * the principal reviews lesson plans") is worded in the user's language. A 403 without that code
+ * (an older API) still shows the API's reason: in English as is, in Hindi and Kannada after the
+ * translated general line. Other errors as usual.
  */
 export function reviewErrorText(e: { status: number; message: string; code?: string }, t: TFunction): string {
-  if (e.status === 403 && e.message) return t.locale === 'en' ? e.message : `${t('error.FORBIDDEN')} (${e.message})`;
+  if (e.status === 403 && e.message && e.code !== 'PLAN_REVIEW_NOT_ALLOWED') return t.locale === 'en' ? e.message : `${t('error.FORBIDDEN')} (${e.message})`;
   return errorText(e, t);
 }
