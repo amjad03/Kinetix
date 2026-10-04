@@ -1,5 +1,5 @@
 name: kinetix_board
-description: "A new Flutter project."
+description: "KINETIX Board: the classroom panel app (Windows panels/OPS PCs and Android panels)."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -34,7 +34,23 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  # Windows installer: `dart run msix:create` (docs/operations/mobile-release.md, Board).
+  msix: ^3.18.0
 
 flutter:
   uses-material-design: true
   generate: true
+
+# MSIX installer for Windows panels / OPS PCs. Version comes from `version:` above.
+# `publisher` must equal the Subject of the code-signing certificate (placeholder until we buy
+# one); the certificate itself is passed on the command line, never committed:
+#   dart run msix:create --build-windows false --certificate-path <cert.pfx> --certificate-password <pw>
+msix_config:
+  display_name: KINETIX Board
+  publisher_display_name: KINETIX
+  identity_name: in.kinetix.board
+  publisher: CN=KINETIX, O=KINETIX, C=IN
+  capabilities: internetClient,microphone
+  languages: en-in, hi-in, kn-in
+  store: false
+  install_certificate: false

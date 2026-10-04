@@ -4,7 +4,7 @@
     <!-- Lesson recording: the teacher's voice. Without it the board records ink only. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
-        android:label="kinetix_board"
+        android:label="KINETIX Board"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -7,9 +7,12 @@ import 'core/app_state.dart';
 import 'core/push.dart';
 import 'core/realtime.dart';
 import 'core/secure_store.dart';
+import 'core/server_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // A release built without --dart-define=KINETIX_API_URL stops here with a clear message.
+  if (!checkServerConfig()) return;
   final prefs = await SharedPreferences.getInstance();
   // Firebase only when the build was given its options (see FirebaseConfig).
   final push = await startPush();

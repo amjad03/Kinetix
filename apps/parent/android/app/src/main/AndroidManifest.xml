@@ -2,10 +2,10 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Push notifications (Android 13+ asks; the app asks first in its own words after sign-in). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <!-- TODO: remove usesCleartextTraffic once the app only talks to the HTTPS API (dev server is http://10.0.2.2:4000). -->
+    <!-- Plain http:// only in debug/profile builds (dev server http://10.0.2.2:4000); release is HTTPS-only (build.gradle.kts). -->
     <application
         android:label="KINETIX Parent"
-        android:usesCleartextTraffic="true"
+        android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

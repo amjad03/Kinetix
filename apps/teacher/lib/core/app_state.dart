@@ -9,9 +9,10 @@ import 'models.dart';
 import 'push.dart';
 import 'realtime.dart';
 import 'secure_store.dart';
+import 'server_config.dart';
 
-/// The default API address. On the Android emulator the host machine is 10.0.2.2.
-const defaultServerUrl = 'http://localhost:4000';
+/// The build's server address (`KINETIX_API_URL`; localhost only in debug builds).
+export 'server_config.dart' show defaultServerUrl;
 
 /// Who is signed in, the remembered server and institution, and the UI language.
 ///

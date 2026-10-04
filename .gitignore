@@ -15,3 +15,9 @@ build/
 .claude/worktrees/
 services/api/.dist*/
 services/api/dist-*/
+# Release signing: never commit keys (docs/operations/mobile-release.md)
+key.properties
+*.jks
+*.keystore
+*.p12
+*.pfx

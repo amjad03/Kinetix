@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'core/board_controller.dart';
+import 'core/server_config.dart';
 import 'features/board/board_screen.dart';
 import 'features/board/chrome.dart';
 import 'features/broadcast/broadcast_overlay.dart';
@@ -10,6 +11,8 @@ import 'features/enrollment/enroll_screen.dart';
 import 'l10n/l10n.dart';
 
 void main() {
+  // A release built without --dart-define=KINETIX_API_URL stops here with a clear message.
+  if (!checkServerConfig()) return;
   runApp(KinetixBoardApp(controller: BoardController()..start()));
 }
 

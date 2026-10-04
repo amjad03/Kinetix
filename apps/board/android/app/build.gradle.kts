@@ -1,8 +1,47 @@
+import java.util.Base64
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Release signing (docs/operations/mobile-release.md). Values come from, in order:
+//   1. environment variables (CI): KINETIX_ANDROID_KEYSTORE_BASE64 (or KINETIX_ANDROID_KEYSTORE_PATH),
+//      KINETIX_ANDROID_KEYSTORE_PASSWORD, KINETIX_ANDROID_KEY_ALIAS, KINETIX_ANDROID_KEY_PASSWORD;
+//   2. android/key.properties (local, gitignored): storeFile (relative to android/), storePassword,
+//      keyAlias, keyPassword.
+// Debug and profile builds keep the debug key. A release build without a key fails.
+val keyProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun signingValue(env: String, property: String): String? =
+    System.getenv(env)?.takeIf { it.isNotBlank() } ?: keyProperties.getProperty(property)?.takeIf { it.isNotBlank() }
+
+val releaseKeystore: File? = System.getenv("KINETIX_ANDROID_KEYSTORE_BASE64")?.takeIf { it.isNotBlank() }?.let { encoded ->
+    layout.buildDirectory.file("signing/upload-keystore.jks").get().asFile.apply {
+        parentFile.mkdirs()
+        writeBytes(Base64.getMimeDecoder().decode(encoded.trim()))
+    }
+} ?: signingValue("KINETIX_ANDROID_KEYSTORE_PATH", "storeFile")?.let { rootProject.file(it) }
+val releaseStorePassword = signingValue("KINETIX_ANDROID_KEYSTORE_PASSWORD", "storePassword")
+val releaseKeyAlias = signingValue("KINETIX_ANDROID_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = signingValue("KINETIX_ANDROID_KEY_PASSWORD", "keyPassword")
+val releaseSigningProblem: String? = when {
+    releaseKeystore == null ->
+        "no upload keystore: create android/key.properties or set KINETIX_ANDROID_KEYSTORE_BASE64"
+    !releaseKeystore.isFile -> "keystore not found: $releaseKeystore"
+    releaseStorePassword == null || releaseKeyAlias == null || releaseKeyPassword == null ->
+        "storePassword, keyAlias and keyPassword (or the KINETIX_ANDROID_* variables) are all required"
+    else -> null
+}
+
+// R8 (code + resource shrinking) stays off until a minified release has been smoke-tested on a
+// device; turn it on with -Pkinetix.minify=true (keep rules in proguard-rules.pro).
+val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
 
 android {
     namespace = "`in`.kinetix.kinetix_board"
@@ -15,26 +54,41 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Permanent once published (docs/operations/mobile-release.md).
         applicationId = "`in`.kinetix.kinetix_board"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
-        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
-        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
-        // flag during build.
+        // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (releaseSigningProblem == null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Never the debug key: without a release key the build stops (below).
+            signingConfig = signingConfigs.findByName("release")
+            isMinifyEnabled = minifyRelease
+            isShrinkResources = minifyRelease
         }
+    }
+}
+
+// Fail a release build early and clearly instead of producing an unsigned or debug-signed app.
+tasks.configureEach {
+    if (name == "preReleaseBuild" && releaseSigningProblem != null) {
+        val problem = "Release signing is not configured ($releaseSigningProblem). See docs/operations/mobile-release.md."
+        doFirst { throw GradleException(problem) }
     }
 }
 

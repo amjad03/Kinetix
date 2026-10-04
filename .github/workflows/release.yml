@@ -1,0 +1,158 @@
+# Release builds of the Flutter apps (docs/operations/mobile-release.md). Manual only.
+#
+# Secrets (repository or `release` environment):
+#   KINETIX_ANDROID_KEYSTORE_BASE64   upload keystore (.jks), base64-encoded
+#   KINETIX_ANDROID_KEYSTORE_PASSWORD
+#   KINETIX_ANDROID_KEY_ALIAS
+#   KINETIX_ANDROID_KEY_PASSWORD
+#   FIREBASE_TEACHER_JSON / FIREBASE_PARENT_JSON / FIREBASE_STUDENT_JSON   optional dart-define
+#                                     files (firebase.<env>.json contents); without them no push
+#   KINETIX_WINDOWS_CERT_BASE64       optional code-signing certificate (.pfx), base64-encoded
+#   KINETIX_WINDOWS_CERT_PASSWORD
+# Variable (optional): KINETIX_API_URL, the default for the api_url input.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'API base URL baked into the apps (KINETIX_API_URL), e.g. https://api.example.in. Empty: the KINETIX_API_URL variable.'
+        required: false
+        type: string
+      windows:
+        description: 'Also build the Board MSIX on Windows'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.47.6'
+  KINETIX_API_URL: ${{ inputs.api_url || vars.KINETIX_API_URL }}
+
+jobs:
+  android:
+    name: android (${{ matrix.app }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: board
+            firebase_secret: NONE
+          - app: teacher
+            firebase_secret: FIREBASE_TEACHER_JSON
+          - app: parent
+            firebase_secret: FIREBASE_PARENT_JSON
+          - app: student
+            firebase_secret: FIREBASE_STUDENT_JSON
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      KINETIX_ANDROID_KEYSTORE_BASE64: ${{ secrets.KINETIX_ANDROID_KEYSTORE_BASE64 }}
+      KINETIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KINETIX_ANDROID_KEYSTORE_PASSWORD }}
+      KINETIX_ANDROID_KEY_ALIAS: ${{ secrets.KINETIX_ANDROID_KEY_ALIAS }}
+      KINETIX_ANDROID_KEY_PASSWORD: ${{ secrets.KINETIX_ANDROID_KEY_PASSWORD }}
+      FIREBASE_JSON: ${{ secrets[matrix.firebase_secret] }}
+    steps:
+      - name: Check inputs
+        id: check
+        run: |
+          if [ -z "$KINETIX_API_URL" ]; then
+            echo "::error::Set the api_url input or the KINETIX_API_URL variable (release builds refuse to start without it)."
+            exit 1
+          fi
+          if [ -z "$KINETIX_ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::warning::No KINETIX_ANDROID_KEYSTORE_BASE64 secret: skipping the signed Android build of ${{ matrix.app }}."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.signed == 'true'
+      - uses: actions/setup-java@v4
+        if: steps.check.outputs.signed == 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        if: steps.check.outputs.signed == 'true'
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - name: Build
+        if: steps.check.outputs.signed == 'true'
+        run: |
+          flutter pub get --enforce-lockfile
+          defines=(--dart-define="KINETIX_API_URL=$KINETIX_API_URL")
+          if [ -n "$FIREBASE_JSON" ]; then
+            printf '%s' "$FIREBASE_JSON" > "$RUNNER_TEMP/firebase.json"
+            defines+=(--dart-define-from-file="$RUNNER_TEMP/firebase.json")
+          fi
+          if [ "${{ matrix.app }}" = board ]; then
+            # Panels are sideloaded / MDM-installed: per-ABI APKs, no store bundle.
+            flutter build apk --release --split-per-abi "${defines[@]}"
+          else
+            flutter build appbundle --release "${defines[@]}"
+            flutter build apk --release "${defines[@]}"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.signed == 'true'
+        with:
+          name: android-${{ matrix.app }}
+          if-no-files-found: error
+          path: |
+            apps/${{ matrix.app }}/build/app/outputs/bundle/release/*.aab
+            apps/${{ matrix.app }}/build/app/outputs/flutter-apk/*-release.apk
+
+  windows:
+    name: windows (board msix)
+    if: inputs.windows
+    runs-on: windows-latest
+    timeout-minutes: 45
+    environment: release
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/board
+    env:
+      KINETIX_WINDOWS_CERT_BASE64: ${{ secrets.KINETIX_WINDOWS_CERT_BASE64 }}
+      KINETIX_WINDOWS_CERT_PASSWORD: ${{ secrets.KINETIX_WINDOWS_CERT_PASSWORD }}
+    steps:
+      - name: Check inputs
+        run: |
+          if [ -z "$KINETIX_API_URL" ]; then
+            echo "::error::Set the api_url input or the KINETIX_API_URL variable."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build windows --release --dart-define="KINETIX_API_URL=$KINETIX_API_URL"
+      - name: Package MSIX
+        run: |
+          if [ -n "$KINETIX_WINDOWS_CERT_BASE64" ]; then
+            printf '%s' "$KINETIX_WINDOWS_CERT_BASE64" | base64 -d > "$RUNNER_TEMP/kinetix-codesign.pfx"
+            dart run msix:create --build-windows false \
+              --certificate-path "$RUNNER_TEMP/kinetix-codesign.pfx" \
+              --certificate-password "$KINETIX_WINDOWS_CERT_PASSWORD"
+            rm -f "$RUNNER_TEMP/kinetix-codesign.pfx"
+          else
+            echo "::warning::No KINETIX_WINDOWS_CERT_BASE64 secret: the MSIX is unsigned (test installs only)."
+            dart run msix:create --build-windows false --sign-msix false
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-board
+          if-no-files-found: error
+          path: apps/board/build/windows/x64/runner/Release/*.msix
