@@ -4,10 +4,10 @@ enum Arrangement { series, parallel }
 /// A cell (ideal, no internal resistance), a plug key, an ammeter in the main line and a
 /// voltmeter across the resistor combination, as in the CBSE Class 10 Ohm's law activity.
 class Circuit {
-  const Circuit({required this.voltage, required this.resistors, this.arrangement = Arrangement.series, this.keyClosed = true})
-      : assert(resistors.length >= 1);
+  const Circuit({required this.voltage, required this.resistors, this.arrangement = Arrangement.series, this.keyClosed = true});
 
   final double voltage;
+  /// One or more resistances in ohms.
   final List<double> resistors;
   final Arrangement arrangement;
   final bool keyClosed;

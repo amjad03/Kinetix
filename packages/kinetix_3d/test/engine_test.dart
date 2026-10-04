@@ -34,6 +34,20 @@ void main() {
     expect(Mat4.identity().isIdentity, isTrue);
   });
 
+  test('rods along any axis have real thickness (short bonds along x)', () {
+    for (final d in [const Vec3(0.58, 0, 0), const Vec3(0, 0.3, 0), const Vec3(0, 0, -2), const Vec3(1, 1, 1)]) {
+      final rod = Primitives.rod(Vec3.zero, d, 0.1);
+      var maxR = 0.0;
+      for (var i = 0; i < rod.vertexCount; i++) {
+        final v = rod.vertex(i);
+        final along = v.dot(d.normalized);
+        maxR = math.max(maxR, (v - d.normalized * along).length);
+      }
+      expect(maxR, closeTo(0.1, 1e-6), reason: '$d');
+    }
+    expect(const Vec3(0.5, 0, 0).anyPerpendicular.length, closeTo(1, 1e-12));
+  });
+
   test('a cube mesh has 12 triangles and 12 feature edges', () {
     final cube = Primitives.box(2, 2, 2);
     expect(cube.triangleCount, 12);

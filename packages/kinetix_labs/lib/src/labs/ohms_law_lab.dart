@@ -170,11 +170,11 @@ class _OhmsLawLabState extends State<OhmsLawLab> with SingleTickerProviderStateM
               _set(c.copyWith(resistors: _all.sublist(0, _count)), clearGraph: true);
             },
           ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Plug key closed'),
-          value: c.keyClosed,
-          onChanged: (v) => _set(c.copyWith(keyClosed: v)),
+        Row(
+          children: [
+            Expanded(child: Text('Plug key closed', style: context.text.bodyLarge)),
+            Switch(key: const ValueKey('key-switch'), value: c.keyClosed, onChanged: (v) => _set(c.copyWith(keyClosed: v))),
+          ],
         ),
         Align(
           alignment: Alignment.centerLeft,
@@ -301,7 +301,7 @@ class _CircuitPainter extends CustomPainter {
     _meter(canvas, Offset(ammX, y1), rr, 'A', '${_fmt(c.current, 3)} A', text, small, s, below: true);
 
     // Voltmeter across the combination.
-    final vy = y0 - blockHalf - h * 0.17;
+    final vy = math.max(rr + 26 * s, y0 - blockHalf - h * 0.17);
     final thin = Paint()
       ..color = pal.muted
       ..strokeWidth = 1.8 * s

@@ -281,8 +281,9 @@ class Solid {
           dim(Vec3(-x, 0, z), Vec3(x, 0, z), 'a = ${cm(lx)}', normal: Vec3.unitZ);
         } else {
           dim(Vec3(-x, 0, z), Vec3(x, 0, z), 'l = ${cm(lx)}', normal: Vec3.unitZ);
-          dim(Vec3(x, 0, z), Vec3(x, 0, -z), 'b = ${cm(bz)}', normal: Vec3.unitX);
-          dim(Vec3(x, 0, z), Vec3(x, hy, z), 'h = ${cm(hy)}', normal: const Vec3(1, 0, 1));
+          // The default view looks at the front and left faces.
+          dim(Vec3(-x, 0, z), Vec3(-x, 0, -z), 'b = ${cm(bz)}', normal: const Vec3(-1, 0, 0));
+          dim(Vec3(x, 0, z), Vec3(x, hy, z), 'h = ${cm(hy)}', normal: const Vec3(0.3, 0, 1));
         }
         footprint = math.max(lx, bz) / 2;
       case SolidKind.sphere:
@@ -348,7 +349,7 @@ class Solid {
         // tri[1] and tri[2] form the front edge for the default view.
         final e = (tri[1] + tri[2]) * 0.5;
         dim(tri[1], tri[2], 'a = ${cm(a)}', normal: e.normalized);
-        dim(tri[2], tri[2] + Vec3(0, h, 0), 'h = ${cm(h)}', normal: tri[2].normalized);
+        dim(tri[1], tri[1] + Vec3(0, h, 0), 'h = ${cm(h)}', normal: tri[1].normalized);
         footprint = rc;
       case SolidKind.tetrahedron:
         final a = this['a'];

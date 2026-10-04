@@ -36,8 +36,9 @@ class Vec3 {
 
   /// Any unit vector perpendicular to this one.
   Vec3 get anyPerpendicular {
-    final a = x.abs() < 0.9 ? unitX : unitY;
-    return cross(a).normalized;
+    final n = normalized;
+    final a = n.x.abs() < 0.9 ? unitX : unitY;
+    return n.cross(a).normalized;
   }
 
   @override
