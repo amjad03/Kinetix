@@ -1494,6 +1494,19 @@ class AppLocalizationsHi extends AppLocalizations {
       'संस्थान के शिकायत अधिकारी सवालों का जवाब देते हैं और डेटा देखने, सुधारने या मिटाने के अनुरोध सुनते हैं। उनसे संपर्क का तरीका संस्थान के कार्यालय से पूछें।';
 
   @override
+  String get grievanceOfficer => 'शिकायत अधिकारी';
+
+  @override
+  String get noticeContactOfficer =>
+      'संस्थान के शिकायत अधिकारी सवालों का जवाब देते हैं और डेटा देखने, सुधारने या मिटाने के अनुरोध सुनते हैं। उनसे यहाँ संपर्क करें:';
+
+  @override
+  String get contactEmail => 'ईमेल';
+
+  @override
+  String get contactPhone => 'फ़ोन';
+
+  @override
   String get purposeDataTitle => 'रिकॉर्ड और सूचनाएँ';
 
   @override
@@ -1553,6 +1566,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errLiveNotStarted => 'आपके शिक्षक ने लाइव कक्षा शुरू नहीं की है।';
+
+  @override
+  String get errLiveUnknownBoard => 'यह कक्षा बोर्ड पहचाना नहीं गया। अपने शिक्षक से पूछें कि कौन-सी कक्षा देखनी है।';
+
+  @override
+  String get errLiveNoClass => 'इस बोर्ड पर अभी कोई कक्षा नहीं चल रही है।';
+
+  @override
+  String get errLiveNotYourClass => 'यह आपकी कक्षा नहीं है।';
 
   @override
   String get yourWork => 'आपका काम';

@@ -1501,6 +1501,19 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಸಂಸ್ಥೆಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮತ್ತು ಡೇಟಾ ನೋಡಲು, ಸರಿಪಡಿಸಲು ಅಥವಾ ಅಳಿಸಲು ಬರುವ ವಿನಂತಿಗಳಿಗೆ ಉತ್ತರಿಸುತ್ತಾರೆ. ಅವರನ್ನು ಸಂಪರ್ಕಿಸುವ ಬಗೆಯನ್ನು ಸಂಸ್ಥೆಯ ಕಚೇರಿಯಲ್ಲಿ ಕೇಳಿ.';
 
   @override
+  String get grievanceOfficer => 'ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ';
+
+  @override
+  String get noticeContactOfficer =>
+      'ಸಂಸ್ಥೆಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮತ್ತು ಡೇಟಾ ನೋಡಲು, ಸರಿಪಡಿಸಲು ಅಥವಾ ಅಳಿಸಲು ಬರುವ ವಿನಂತಿಗಳಿಗೆ ಉತ್ತರಿಸುತ್ತಾರೆ. ಅವರನ್ನು ಇಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ:';
+
+  @override
+  String get contactEmail => 'ಇಮೇಲ್';
+
+  @override
+  String get contactPhone => 'ಫೋನ್';
+
+  @override
   String get purposeDataTitle => 'ದಾಖಲೆಗಳು ಮತ್ತು ಸೂಚನೆಗಳು';
 
   @override
@@ -1561,6 +1574,15 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errLiveNotStarted => 'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಲೈವ್ ತರಗತಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿಲ್ಲ.';
+
+  @override
+  String get errLiveUnknownBoard => 'ಈ ತರಗತಿ ಬೋರ್ಡ್ ಗುರುತಿಸಲಾಗಿಲ್ಲ. ಯಾವ ತರಗತಿಯನ್ನು ನೋಡಬೇಕು ಎಂದು ನಿಮ್ಮ ಶಿಕ್ಷಕರನ್ನು ಕೇಳಿ.';
+
+  @override
+  String get errLiveNoClass => 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಈಗ ಯಾವುದೇ ತರಗತಿ ನಡೆಯುತ್ತಿಲ್ಲ.';
+
+  @override
+  String get errLiveNotYourClass => 'ಇದು ನಿಮ್ಮ ತರಗತಿಯಲ್ಲ.';
 
   @override
   String get yourWork => 'ನಿಮ್ಮ ಕೆಲಸ';

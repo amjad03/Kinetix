@@ -1493,6 +1493,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'The institution\'s grievance officer answers questions and requests to see, correct or erase data. Ask the institution\'s office how to reach them.';
 
   @override
+  String get grievanceOfficer => 'Grievance officer';
+
+  @override
+  String get noticeContactOfficer =>
+      'The institution\'s grievance officer answers questions and requests to see, correct or erase data. You can reach them here:';
+
+  @override
+  String get contactEmail => 'Email';
+
+  @override
+  String get contactPhone => 'Phone';
+
+  @override
   String get purposeDataTitle => 'Records and updates';
 
   @override
@@ -1552,6 +1565,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errLiveNotStarted => 'Your teacher has not started a live class.';
+
+  @override
+  String get errLiveUnknownBoard => 'This classroom board isn\'t recognised. Ask your teacher which class to watch.';
+
+  @override
+  String get errLiveNoClass => 'No class is being taught on this board right now.';
+
+  @override
+  String get errLiveNotYourClass => 'This is not your class.';
 
   @override
   String get yourWork => 'Your work';

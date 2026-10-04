@@ -222,6 +222,7 @@ void main() {
               api.liveClass = FakeStudentApi.corporateLive();
               api.calendarEvents.insert(0, FakeStudentApi.eventJson('e0', 'holiday', 'Gandhi Jayanti (observed)', '2026-10-05', '2026-10-06'));
               (api.consentJson['purposes'] as Map)['photos'] = null;
+              api.consentJson['grievanceOfficer'] = {'name': 'Meera Rao', 'email': 'grievance.officer@demo-college.kinetix.in', 'phone': '+919800000009'};
               api.submissions['h1/s1'] = {
                 'status': 'returned',
                 'text': 'Journal entries for questions 1 to 5.',

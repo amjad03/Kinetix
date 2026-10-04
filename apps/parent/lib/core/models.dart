@@ -1200,9 +1200,26 @@ class ConsentDecision {
   final String? givenBy;
 }
 
+/// Who answers privacy questions and data requests, as the principal set them.
+class GrievanceOfficer {
+  const GrievanceOfficer({required this.name, this.email, this.phone});
+
+  static GrievanceOfficer? fromJson(Object? j) {
+    if (j is! Map) return null;
+    final name = (j['name'] as String? ?? '').trim();
+    if (name.isEmpty) return null;
+    String? opt(Object? v) => v is String && v.trim().isNotEmpty ? v.trim() : null;
+    return GrievanceOfficer(name: name, email: opt(j['email']), phone: opt(j['phone']));
+  }
+
+  final String name;
+  final String? email;
+  final String? phone;
+}
+
 /// A student's consent decisions and whether the signed-in user makes them.
 class Consents {
-  Consents({required this.studentId, required this.noticeVersion, required this.canDecide, required this.purposes});
+  Consents({required this.studentId, required this.noticeVersion, required this.canDecide, required this.purposes, this.grievanceOfficer});
 
   factory Consents.fromJson(Map<String, dynamic> j) {
     final p = (j['purposes'] as Map?)?.cast<String, dynamic>() ?? const {};
@@ -1210,6 +1227,7 @@ class Consents {
       studentId: j['studentId'] as String? ?? '',
       noticeVersion: j['noticeVersion'] as String? ?? '',
       canDecide: j['canDecide'] == true,
+      grievanceOfficer: GrievanceOfficer.fromJson(j['grievanceOfficer']),
       purposes: {
         for (final purpose in ConsentPurpose.values)
           purpose: p[purpose.wire] is Map ? ConsentDecision.fromJson((p[purpose.wire] as Map).cast<String, dynamic>()) : null,
@@ -1221,6 +1239,9 @@ class Consents {
   final String noticeVersion;
   final bool canDecide;
   final Map<ConsentPurpose, ConsentDecision?> purposes;
+
+  /// The institution's grievance officer; null when the principal has not named one.
+  final GrievanceOfficer? grievanceOfficer;
 
   /// Something is not decided yet, or was decided on an older notice: ask (when allowed to decide).
   bool get needsAnswer => canDecide && purposes.values.any((d) => d == null || (d.noticeVersion != null && d.noticeVersion != noticeVersion));

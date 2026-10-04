@@ -219,13 +219,39 @@ void main() {
     await tester.tap(find.byKey(const Key('watchLive')));
     await settle(tester);
     expect(find.text("Couldn't join the class"), findsOneWidget);
-    expect(find.text('This is not your class'), findsOneWidget);
+    expect(find.text('This is not your class.'), findsOneWidget);
 
     // The board was offline when another student tried.
     server.last.ack = const LiveWatchAck(ok: false, error: 'This board is offline');
     await tester.tap(find.byKey(const Key('liveRetry')));
     await settle(tester);
     expect(find.text('The board went offline'), findsOneWidget);
+  });
+
+  testWidgets('a refusal is read by its code before its wording', (tester) async {
+    // The English wording no longer matches anything the app knows; the code decides.
+    final server = FakeLiveServer()..ack = const LiveWatchAck(ok: false, error: 'Teacher is not live', code: 'LIVE_NOT_STARTED');
+    await pumpApp(tester, live: server, setup: (api) => api.liveClass = FakeStudentApi.corporateLive());
+    await tester.tap(find.byKey(const Key('watchLive')));
+    await settle(tester);
+    expect(find.text('Your teacher stopped the live class'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('leaveLive')));
+    await settle(tester);
+
+    server.ack = const LiveWatchAck(ok: false, error: 'Nothing on', code: 'LIVE_NO_CLASS');
+    await tester.tap(find.byKey(const Key('watchLive')));
+    await settle(tester);
+    expect(find.text('The class has ended'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('leaveLive')));
+    await settle(tester);
+
+    server.ack = const LiveWatchAck(ok: false, error: 'Wrong class', code: 'LIVE_NOT_YOUR_CLASS');
+    await tester.tap(find.byKey(const Key('watchLive')));
+    await settle(tester);
+    expect(find.text("Couldn't join the class"), findsOneWidget);
+    expect(find.text('This is not your class.'), findsOneWidget);
+    expect(find.text('Wrong class'), findsNothing);
   });
 
   testWidgets('a "Live now" update opens the board, or says the class is over', (tester) async {

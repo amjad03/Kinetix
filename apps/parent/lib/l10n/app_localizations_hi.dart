@@ -1118,6 +1118,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errSubmissionChecked => 'यह होमवर्क पहले ही जाँचा जा चुका है।';
 
   @override
+  String get errSubmissionStudentOnly => 'यह विद्यार्थी अपने लॉगिन से अपना होमवर्क खुद जमा करता है।';
+
+  @override
   String get calendar => 'कैलेंडर';
 
   @override
@@ -1345,6 +1348,19 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get noticeContact =>
       'संस्थान के शिकायत अधिकारी सवालों का जवाब देते हैं और डेटा देखने, सुधारने या मिटाने के अनुरोध सुनते हैं। उनसे संपर्क का तरीका संस्थान के कार्यालय से पूछें।';
+
+  @override
+  String get grievanceOfficer => 'शिकायत अधिकारी';
+
+  @override
+  String get noticeContactOfficer =>
+      'संस्थान के शिकायत अधिकारी सवालों का जवाब देते हैं और डेटा देखने, सुधारने या मिटाने के अनुरोध सुनते हैं। उनसे यहाँ संपर्क करें:';
+
+  @override
+  String get contactEmail => 'ईमेल';
+
+  @override
+  String get contactPhone => 'फ़ोन';
 
   @override
   String get purposeDataTitle => 'रिकॉर्ड और सूचनाएँ';

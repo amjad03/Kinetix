@@ -173,7 +173,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 key: const Key('readNotice'),
-                onPressed: () => NoticeScreen.open(context, widget.controller.consents?.noticeVersion),
+                onPressed: () => NoticeScreen.open(context, widget.controller.consents?.noticeVersion, officer: widget.controller.consents?.grievanceOfficer),
                 icon: const Icon(Icons.article_outlined),
                 label: Text(l.readFullNotice),
               ),
@@ -284,11 +284,18 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                         alignment: Alignment.centerLeft,
                         child: TextButton.icon(
                           key: const Key('readNotice'),
-                          onPressed: () => NoticeScreen.open(context, cs.noticeVersion),
+                          onPressed: () => NoticeScreen.open(context, cs.noticeVersion, officer: cs.grievanceOfficer),
                           icon: const Icon(Icons.article_outlined),
                           label: Text(l.readFullNotice),
                         ),
                       ),
+                      const SizedBox(height: Kx.s16),
+                      Text(l.noticeQuestions, style: context.text.titleMedium),
+                      const SizedBox(height: Kx.s8),
+                      if (cs.grievanceOfficer case final officer?)
+                        GrievanceOfficerCard(officer: officer)
+                      else
+                        Text(l.noticeContact, key: const Key('noGrievanceOfficer'), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -351,12 +358,15 @@ class _PurposeTile extends StatelessWidget {
 
 /// The privacy notice in full (docs/product/privacy-notice.md), in the app's language.
 class NoticeScreen extends StatelessWidget {
-  const NoticeScreen({super.key, this.version});
+  const NoticeScreen({super.key, this.version, this.officer});
 
   final String? version;
 
-  static Future<void> open(BuildContext context, String? version) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => NoticeScreen(version: version)));
+  /// The institution's grievance officer, when the principal has named one.
+  final GrievanceOfficer? officer;
+
+  static Future<void> open(BuildContext context, String? version, {GrievanceOfficer? officer}) =>
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => NoticeScreen(version: version, officer: officer)));
 
   @override
   Widget build(BuildContext context) {
@@ -405,7 +415,48 @@ class NoticeScreen extends StatelessWidget {
             heading(l.noticeWhereKept),
             para(l.noticeDataInIndia),
             heading(l.noticeQuestions),
-            para(l.noticeContact),
+            if (officer case final o?) ...[para(l.noticeContactOfficer), GrievanceOfficerCard(officer: o)] else para(l.noticeContact),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The grievance officer's name, email and phone. The contact details are selectable so they
+/// can be copied into a mail or phone app.
+class GrievanceOfficerCard extends StatelessWidget {
+  const GrievanceOfficerCard({super.key, required this.officer});
+
+  final GrievanceOfficer officer;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = context.colors;
+    Widget line(Key key, IconData icon, String label, String value) => Padding(
+      padding: const EdgeInsets.only(top: Kx.s8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: c.onSurfaceVariant, semanticLabel: label),
+          const SizedBox(width: Kx.s12),
+          Expanded(child: SelectableText(value, key: key, style: context.text.bodyLarge)),
+        ],
+      ),
+    );
+    return Card(
+      key: const Key('grievanceOfficer'),
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.grievanceOfficer, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+            const SizedBox(height: Kx.s4),
+            Text(officer.name, key: const Key('grievanceOfficerName'), style: context.text.titleMedium),
+            if (officer.email case final email?) line(const Key('grievanceOfficerEmail'), Icons.email_outlined, l.contactEmail, email),
+            if (officer.phone case final phone?) line(const Key('grievanceOfficerPhone'), Icons.phone_outlined, l.contactPhone, phone),
           ],
         ),
       ),

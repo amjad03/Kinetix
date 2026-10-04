@@ -351,6 +351,35 @@ void main() {
       expect(find.text('Saved.'), findsOneWidget);
     });
 
+    testWidgets('Privacy and the notice name the grievance officer, with selectable email and phone', (tester) async {
+      await pumpApp(tester, setup: (api) => api.consentJson['grievanceOfficer'] = {'name': 'Meera Rao', 'email': 'dpo@demo.kinetix.in', 'phone': null});
+      await openTab(tester, 'Profile');
+      await scrollTo(tester, find.byKey(const Key('openPrivacy')), scrollable: profileList());
+      await tester.tap(find.byKey(const Key('openPrivacy')));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.byKey(const Key('grievanceOfficer')), scrollable: privacyList());
+      expect(find.text('Meera Rao'), findsOneWidget);
+      expect(find.widgetWithText(SelectableText, 'dpo@demo.kinetix.in'), findsOneWidget);
+      expect(find.byKey(const Key('grievanceOfficerPhone')), findsNothing);
+      await tester.tap(find.byKey(const Key('readNotice')));
+      await tester.pumpAndSettle();
+      await tester.drag(find.byKey(const Key('noticeList')), const Offset(0, -3000));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('You can reach them here'), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('grievanceOfficer')), matching: find.text('Meera Rao')), findsOneWidget);
+    });
+
+    testWidgets('without a grievance officer, Privacy says to ask the institution\'s office', (tester) async {
+      await pumpApp(tester);
+      await openTab(tester, 'Profile');
+      await scrollTo(tester, find.byKey(const Key('openPrivacy')), scrollable: profileList());
+      await tester.tap(find.byKey(const Key('openPrivacy')));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.byKey(const Key('noGrievanceOfficer')), scrollable: privacyList());
+      expect(find.textContaining("Ask the institution's office"), findsOneWidget);
+      expect(find.byKey(const Key('grievanceOfficer')), findsNothing);
+    });
+
     testWidgets('at a school the parent decides: read-only, and never asked', (tester) async {
       final (api, _) = await pumpApp(tester, setup: (api) => undecided(api, canDecide: false));
       expect(find.byType(ConsentScreen), findsNothing);
@@ -458,6 +487,17 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
       }
       expect(find.text(hi.errLiveNotAllowed), findsOneWidget);
+    });
+
+    testWidgets('a refused live class is worded by its code first', (tester) async {
+      final server = FakeLiveServer()..ack = const LiveWatchAck(ok: false, error: 'Some new wording', code: 'LIVE_UNKNOWN_BOARD');
+      await pumpApp(tester, live: server, prefs: {'language': 'hi'}, setup: (api) => api.liveClass = FakeStudentApi.corporateLive());
+      await tester.tap(find.byKey(const Key('watchLive')));
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.text(hi.errLiveUnknownBoard), findsOneWidget);
+      expect(find.text('Some new wording'), findsNothing);
     });
   });
 }

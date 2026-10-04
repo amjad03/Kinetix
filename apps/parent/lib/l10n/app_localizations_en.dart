@@ -1118,6 +1118,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errSubmissionChecked => 'This homework has already been checked.';
 
   @override
+  String get errSubmissionStudentOnly => 'This student hands in their own homework from their own login.';
+
+  @override
   String get calendar => 'Calendar';
 
   @override
@@ -1345,6 +1348,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noticeContact =>
       'The institution\'s grievance officer answers questions and requests to see, correct or erase data. Ask the institution\'s office how to reach them.';
+
+  @override
+  String get grievanceOfficer => 'Grievance officer';
+
+  @override
+  String get noticeContactOfficer =>
+      'The institution\'s grievance officer answers questions and requests to see, correct or erase data. You can reach them here:';
+
+  @override
+  String get contactEmail => 'Email';
+
+  @override
+  String get contactPhone => 'Phone';
 
   @override
   String get purposeDataTitle => 'Records and updates';

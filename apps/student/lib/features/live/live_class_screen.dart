@@ -345,7 +345,7 @@ class _EndedCard extends StatelessWidget {
   /// (icon, title, message, can try again)
   static (IconData, String, String, bool) describe(AppLocalizations l, LiveClassController c) {
     if (c.phase == LivePhase.failed) {
-      return (Icons.error_outline, l.couldNotJoin, c.error == null ? l.tryInAMoment : liveErrorText(l, c.error!), true);
+      return (Icons.error_outline, l.couldNotJoin, c.error == null ? l.tryInAMoment : liveErrorText(l, c.error!, code: c.errorCode), true);
     }
     return switch (c.endedReason) {
       'live_off' => (Icons.cast_connected_outlined, l.liveOffTitle, l.liveOffBody(l.today), false),
@@ -354,8 +354,9 @@ class _EndedCard extends StatelessWidget {
     };
   }
 
-  /// The app's own live-class problems in the app's language; anything the server said, as sent.
-  static String liveErrorText(AppLocalizations l, String message) => switch (message) {
+  /// The server's code in the app's language, else the app's own live-class problems; anything
+  /// else the server said, as sent.
+  static String liveErrorText(AppLocalizations l, String message, {String? code}) => describeErrorCode(l, code) ?? switch (message) {
     LiveErrors.signInAgain => l.liveSignInAgain,
     LiveErrors.notConnected => l.liveNotConnected,
     LiveErrors.timeout => l.liveTimeout,

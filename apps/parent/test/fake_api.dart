@@ -332,6 +332,15 @@ class FakeParentApi implements ParentApi {
   final corpAcc = const Subject(id: 'sub1', name: 'Corporate Accounting', code: 'BCOM-3.1');
   final costing = const Subject(id: 'sub2', name: 'Cost Accounting', code: 'BCOM-3.3');
 
+  /// Each child's subjects (`GET /v1/parent/children/:id/subjects`); others have none.
+  late Map<String, List<Subject>> subjectsOfChild = {'c1': [costing, corpAcc]};
+
+  @override
+  Future<List<Subject>> childSubjects(String childId) async {
+    calls.add('subjects $childId');
+    return subjectsOfChild[childId] ?? const [];
+  }
+
   /// The subject of each homework `GET /v1/homework/:id` knows (others are 404).
   late Map<String, Subject> subjectOfHomework = {'h1': corpAcc, 'h2': corpAcc, 'h3': corpAcc};
 

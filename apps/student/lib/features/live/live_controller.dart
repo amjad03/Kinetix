@@ -50,6 +50,9 @@ class LiveClassController extends ChangeNotifier {
   String? endedReason;
   String? error;
 
+  /// The server's code for why joining failed (`LIVE_VIEW_OFF`…), when it sent one.
+  String? errorCode;
+
   /// From the join answer, else what `/v1/student/live` said.
   late String teacher = live.teacher;
   late String? subject = live.subject;
@@ -132,6 +135,7 @@ class LiveClassController extends ChangeNotifier {
         if (phase == LivePhase.live || phase == LivePhase.joining) _set(LivePhase.reconnecting);
       case LiveRejected(:final message):
         error = message;
+        errorCode = null;
         _set(LivePhase.failed);
       case LiveMessageNew():
         // New messages are handled by the app's message feed.
@@ -150,15 +154,30 @@ class LiveClassController extends ChangeNotifier {
       subject = ack.subject ?? subject;
       endedReason = null;
       error = null;
+      errorCode = null;
       audioAllowed = ack.audioAllowed;
       audioOn = ack.audioOn;
       _syncAudio();
       notifyListeners();
       return;
     }
-    // Why the server said no, in the words the student sees.
+    // Why the server said no, in the words the student sees: by the server's code, else (older
+    // servers) by its English message.
     final message = ack.error ?? LiveErrors.couldNotJoin;
-    if (message.contains('offline')) {
+    final ended = switch (ack.code) {
+      'LIVE_BOARD_OFFLINE' => 'offline',
+      'LIVE_NOT_STARTED' => 'live_off',
+      'LIVE_NO_CLASS' => 'class_ended',
+      _ => null,
+    };
+    if (ended != null) {
+      endedReason = ended;
+      _set(LivePhase.ended);
+    } else if (ack.code != null) {
+      error = message;
+      errorCode = ack.code;
+      _set(LivePhase.failed);
+    } else if (message.contains('offline')) {
       endedReason = 'offline';
       _set(LivePhase.ended);
     } else if (message.contains('not started a live class')) {
@@ -169,6 +188,7 @@ class LiveClassController extends ChangeNotifier {
       _set(LivePhase.ended);
     } else {
       error = message;
+      errorCode = null;
       _set(LivePhase.failed);
     }
   }
@@ -193,6 +213,7 @@ class LiveClassController extends ChangeNotifier {
   void retry() {
     endedReason = null;
     error = null;
+    errorCode = null;
     if (_connected) {
       _join();
     } else {

@@ -212,8 +212,12 @@ void main() {
       await scrollTo(tester, find.byKey(const Key('profile-syllabus-c1')), profileList());
       await tester.tap(find.byKey(const Key('profile-syllabus-c1')));
       await tester.pumpAndSettle();
-      expect(api.calls, contains('coverage sec1 sub1'));
+      expect(api.calls, containsAll(['subjects c1', 'coverage sec1 sub1', 'coverage sec1 sub2']));
+      expect(api.calls.where((c) => c.startsWith('homework ')), isEmpty);
       expect(find.descendant(of: find.byKey(const Key('subjectProgress-sub1')), matching: find.byType(CoverageBar)), findsOneWidget);
+      // Sorted by name; a subject with no syllabus topics shows its code.
+      expect(tester.getTopLeft(find.byKey(const Key('subjectProgress-sub1'))).dy, lessThan(tester.getTopLeft(find.byKey(const Key('subjectProgress-sub2'))).dy));
+      expect(find.descendant(of: find.byKey(const Key('subjectProgress-sub2')), matching: find.text('BCOM-3.3')), findsOneWidget);
       await tester.tap(find.byKey(const Key('subjectProgress-sub1')));
       await tester.pumpAndSettle();
       expect(find.text('1 of 2 topics taught'), findsOneWidget);
@@ -222,7 +226,7 @@ void main() {
       expect(find.text('Taught on Thu 1 Oct'), findsOneWidget);
     });
 
-    testWidgets('a child with no homework yet has no subjects to show', (tester) async {
+    testWidgets('a child whose class has no subjects yet sees an empty state', (tester) async {
       await pumpApp(tester);
       await openTab(tester, 'Profile');
       await scrollTo(tester, find.byKey(const Key('profile-syllabus-c2')), profileList());
@@ -298,6 +302,46 @@ void main() {
       expect(find.textContaining('Diya manages this.'), findsOneWidget);
       expect(find.byType(Switch), findsNothing);
     });
+
+    testWidgets('the grievance officer is named with their email and phone; without one, ask the office', (tester) async {
+      await pumpApp(
+        tester,
+        setup: (api) => api.consentJson['c1'] = {
+          ...FakeParentApi.allDecided('c1'),
+          'grievanceOfficer': {'name': 'Meera Rao', 'email': 'dpo@demo.kinetix.in', 'phone': '+919800000009'},
+        },
+      );
+      Finder privacyList() => find.descendant(of: find.byType(PrivacyScreen), matching: find.byType(Scrollable)).first;
+      await openTab(tester, 'Profile');
+      await scrollTo(tester, find.byKey(const Key('profile-privacy-c1')), profileList());
+      await tester.tap(find.byKey(const Key('profile-privacy-c1')));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.byKey(const Key('grievanceOfficer')), privacyList());
+      expect(find.text('Meera Rao'), findsOneWidget);
+      expect(find.widgetWithText(SelectableText, 'dpo@demo.kinetix.in'), findsOneWidget);
+      expect(find.widgetWithText(SelectableText, '+919800000009'), findsOneWidget);
+      expect(find.byKey(const Key('noGrievanceOfficer')), findsNothing);
+      await scrollTo(tester, find.byKey(const Key('readNotice')), privacyList());
+      await tester.tap(find.byKey(const Key('readNotice')));
+      await tester.pumpAndSettle();
+      await tester.drag(find.byKey(const Key('noticeList')), const Offset(0, -3000));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('You can reach them here'), findsOneWidget);
+      expect(find.textContaining("Ask the institution's office"), findsNothing);
+      expect(find.descendant(of: find.byKey(const Key('grievanceOfficer')), matching: find.text('Meera Rao')), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      // Diya's institution has not named one.
+      await scrollTo(tester, find.byKey(const Key('profile-privacy-c2')), profileList());
+      await tester.tap(find.byKey(const Key('profile-privacy-c2')));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.byKey(const Key('noGrievanceOfficer')), privacyList());
+      expect(find.textContaining("Ask the institution's office"), findsOneWidget);
+      expect(find.byKey(const Key('grievanceOfficer')), findsNothing);
+    });
   });
 
   group('realtime messages', () {
@@ -337,6 +381,8 @@ void main() {
     test('codes are worded in the app\'s language; known messages without a code too; others as sent', () {
       expect(describeError(hi, ApiException(404, 'Homework not found', code: 'NOT_FOUND')), hi.errNotFound);
       expect(describeError(hi, ApiException(400, 'This homework has already been checked')), hi.errSubmissionChecked);
+      expect(describeError(hi, ApiException(403, 'This student hands in their own homework', code: 'SUBMISSION_STUDENT_ONLY')), hi.errSubmissionStudentOnly);
+      expect(describeError(en, ApiException(403, 'This student hands in their own homework')), en.errSubmissionStudentOnly);
       expect(describeError(en, ApiException(413, 'File too large', code: 'TOO_LARGE')), en.errTooLarge);
       expect(describeError(en, ApiException(403, "In a school, the student's parent or guardian decides", code: 'CONSENT_GUARDIAN_DECIDES')), en.errConsentGuardianDecides);
       expect(describeError(en, ApiException(401, 'Invalid or expired token', code: 'AUTH_EXPIRED')), en.errSignInAgain);

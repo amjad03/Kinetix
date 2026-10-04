@@ -1117,6 +1117,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errSubmissionChecked => 'ಈ ಹೋಂವರ್ಕ್ ಈಗಾಗಲೇ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.';
 
   @override
+  String get errSubmissionStudentOnly => 'ಈ ವಿದ್ಯಾರ್ಥಿ ತಮ್ಮ ಸ್ವಂತ ಲಾಗಿನ್‌ನಿಂದ ಹೋಂವರ್ಕ್ ಸಲ್ಲಿಸುತ್ತಾರೆ.';
+
+  @override
   String get calendar => 'ಕ್ಯಾಲೆಂಡರ್';
 
   @override
@@ -1344,6 +1347,19 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get noticeContact =>
       'ಸಂಸ್ಥೆಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮತ್ತು ಡೇಟಾ ನೋಡಲು, ಸರಿಪಡಿಸಲು ಅಥವಾ ಅಳಿಸಲು ಬರುವ ವಿನಂತಿಗಳಿಗೆ ಉತ್ತರಿಸುತ್ತಾರೆ. ಅವರನ್ನು ಸಂಪರ್ಕಿಸುವ ಬಗೆಯನ್ನು ಸಂಸ್ಥೆಯ ಕಚೇರಿಯಲ್ಲಿ ಕೇಳಿ.';
+
+  @override
+  String get grievanceOfficer => 'ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ';
+
+  @override
+  String get noticeContactOfficer =>
+      'ಸಂಸ್ಥೆಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮತ್ತು ಡೇಟಾ ನೋಡಲು, ಸರಿಪಡಿಸಲು ಅಥವಾ ಅಳಿಸಲು ಬರುವ ವಿನಂತಿಗಳಿಗೆ ಉತ್ತರಿಸುತ್ತಾರೆ. ಅವರನ್ನು ಇಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ:';
+
+  @override
+  String get contactEmail => 'ಇಮೇಲ್';
+
+  @override
+  String get contactPhone => 'ಫೋನ್';
 
   @override
   String get purposeDataTitle => 'ದಾಖಲೆಗಳು ಮತ್ತು ಸೂಚನೆಗಳು';

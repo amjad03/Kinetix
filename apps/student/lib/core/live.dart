@@ -94,6 +94,7 @@ class LiveWatchAck {
   const LiveWatchAck({
     required this.ok,
     this.error,
+    this.code,
     this.teacher,
     this.subject,
     this.section,
@@ -107,6 +108,7 @@ class LiveWatchAck {
     return LiveWatchAck(
       ok: j['ok'] == true,
       error: j['error'] as String?,
+      code: j['code'] as String?,
       teacher: s?['teacher'] as String?,
       subject: s?['subject'] as String?,
       section: s?['section'] as String?,
@@ -117,6 +119,10 @@ class LiveWatchAck {
 
   final bool ok;
   final String? error;
+
+  /// The server's stable code for a refusal (`LIVE_NOT_STARTED`, `LIVE_BOARD_OFFLINE`…); null
+  /// from servers that only send [error].
+  final String? code;
   final String? teacher;
   final String? subject;
   final String? section;

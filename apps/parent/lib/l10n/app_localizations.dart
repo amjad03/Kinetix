@@ -1929,6 +1929,12 @@ abstract class AppLocalizations {
   /// **'This homework has already been checked.'**
   String get errSubmissionChecked;
 
+  /// No description provided for @errSubmissionStudentOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This student hands in their own homework from their own login.'**
+  String get errSubmissionStudentOnly;
+
   /// No description provided for @calendar.
   ///
   /// In en, this message translates to:
@@ -2312,6 +2318,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The institution\'s grievance officer answers questions and requests to see, correct or erase data. Ask the institution\'s office how to reach them.'**
   String get noticeContact;
+
+  /// No description provided for @grievanceOfficer.
+  ///
+  /// In en, this message translates to:
+  /// **'Grievance officer'**
+  String get grievanceOfficer;
+
+  /// No description provided for @noticeContactOfficer.
+  ///
+  /// In en, this message translates to:
+  /// **'The institution\'s grievance officer answers questions and requests to see, correct or erase data. You can reach them here:'**
+  String get noticeContactOfficer;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get contactEmail;
+
+  /// No description provided for @contactPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get contactPhone;
 
   /// No description provided for @purposeDataTitle.
   ///

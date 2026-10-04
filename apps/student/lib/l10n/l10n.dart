@@ -65,6 +65,9 @@ const errorCodeForMessage = <String, String>{
   'Live view is turned off for your institution': 'LIVE_VIEW_OFF',
   'Your teacher has not started a live class': 'LIVE_NOT_STARTED',
   'This board is offline': 'LIVE_BOARD_OFFLINE',
+  'Unknown board': 'LIVE_UNKNOWN_BOARD',
+  'No class is being taught on this board right now': 'LIVE_NO_CLASS',
+  'This is not your class': 'LIVE_NOT_YOUR_CLASS',
 };
 
 /// The error's code: the server's, else one recognised from its message.
@@ -90,6 +93,9 @@ String? describeErrorCode(AppLocalizations l, String? code) => switch (code) {
   'LIVE_VIEW_OFF' => l.errLiveViewOff,
   'LIVE_NOT_STARTED' => l.errLiveNotStarted,
   'LIVE_BOARD_OFFLINE' => l.boardOfflineBody,
+  'LIVE_UNKNOWN_BOARD' => l.errLiveUnknownBoard,
+  'LIVE_NO_CLASS' => l.errLiveNoClass,
+  'LIVE_NOT_YOUR_CLASS' => l.errLiveNotYourClass,
   _ => null,
 };
 

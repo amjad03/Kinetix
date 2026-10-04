@@ -2655,6 +2655,30 @@ abstract class AppLocalizations {
   /// **'The institution\'s grievance officer answers questions and requests to see, correct or erase data. Ask the institution\'s office how to reach them.'**
   String get noticeContact;
 
+  /// No description provided for @grievanceOfficer.
+  ///
+  /// In en, this message translates to:
+  /// **'Grievance officer'**
+  String get grievanceOfficer;
+
+  /// No description provided for @noticeContactOfficer.
+  ///
+  /// In en, this message translates to:
+  /// **'The institution\'s grievance officer answers questions and requests to see, correct or erase data. You can reach them here:'**
+  String get noticeContactOfficer;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get contactEmail;
+
+  /// No description provided for @contactPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get contactPhone;
+
   /// No description provided for @purposeDataTitle.
   ///
   /// In en, this message translates to:
@@ -2768,6 +2792,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your teacher has not started a live class.'**
   String get errLiveNotStarted;
+
+  /// No description provided for @errLiveUnknownBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'This classroom board isn\'t recognised. Ask your teacher which class to watch.'**
+  String get errLiveUnknownBoard;
+
+  /// No description provided for @errLiveNoClass.
+  ///
+  /// In en, this message translates to:
+  /// **'No class is being taught on this board right now.'**
+  String get errLiveNoClass;
+
+  /// No description provided for @errLiveNotYourClass.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not your class.'**
+  String get errLiveNotYourClass;
 
   /// No description provided for @yourWork.
   ///

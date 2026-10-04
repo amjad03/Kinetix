@@ -59,6 +59,7 @@ const errorCodeForMessage = <String, String>{
   'That subject is not taught in this class': 'SUBJECT_NOT_IN_CLASS',
   'Write an answer or add a photo': 'SUBMISSION_EMPTY',
   'This homework has already been checked': 'SUBMISSION_CHECKED',
+  'This student hands in their own homework': 'SUBMISSION_STUDENT_ONLY',
   "In a school, the student's parent or guardian decides": 'CONSENT_GUARDIAN_DECIDES',
 };
 
@@ -79,6 +80,7 @@ String? describeErrorCode(AppLocalizations l, String? code) => switch (code) {
   'SUBJECT_NOT_IN_CLASS' => l.errSubjectNotInClass,
   'SUBMISSION_EMPTY' => l.errSubmissionEmpty,
   'SUBMISSION_CHECKED' => l.errSubmissionChecked,
+  'SUBMISSION_STUDENT_ONLY' => l.errSubmissionStudentOnly,
   'CONSENT_GUARDIAN_DECIDES' => l.errConsentGuardianDecides,
   _ => null,
 };
