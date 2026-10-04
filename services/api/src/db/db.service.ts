@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
@@ -18,7 +18,7 @@ export type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
  *   for the few lookups that happen before a tenant is known.
  */
 @Injectable()
-export class DbService implements OnModuleDestroy {
+export class DbService implements OnApplicationShutdown {
   private readonly appPool: pg.Pool;
   private readonly systemPool: pg.Pool;
   private readonly app: Database;
@@ -38,7 +38,14 @@ export class DbService implements OnModuleDestroy {
     });
   }
 
-  async onModuleDestroy(): Promise<void> {
+  /** Readiness: the journal time of the newest applied migration (throws when the database is unreachable). */
+  async migrationState(): Promise<number | undefined> {
+    const { rows } = await this.systemPool.query<{ latest: string | null }>('select max(created_at)::text as latest from drizzle.__drizzle_migrations');
+    return rows[0]?.latest ? Number(rows[0].latest) : undefined;
+  }
+
+  /** Closed last, after sockets have disconnected and running jobs have finished (beforeApplicationShutdown). */
+  async onApplicationShutdown(): Promise<void> {
     await Promise.all([this.appPool.end(), this.systemPool.end()]);
   }
 }

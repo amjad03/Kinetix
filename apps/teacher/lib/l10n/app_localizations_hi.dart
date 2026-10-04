@@ -1279,4 +1279,53 @@ class AppLocalizationsHi extends AppLocalizations {
   String reviewedByOn(String name, String date) {
     return '$name ने $date को समीक्षा की';
   }
+
+  @override
+  String get signInWithPhone => 'फ़ोन से साइन इन करें';
+
+  @override
+  String get signInWithPassword => 'पासवर्ड से साइन इन करें';
+
+  @override
+  String get phoneSignInSubtitle => 'हम आपके रजिस्टर्ड मोबाइल नंबर पर 6 अंकों का कोड भेजेंगे';
+
+  @override
+  String get mobileNumber => 'मोबाइल नंबर';
+
+  @override
+  String get enterMobileNumber => 'अपना मोबाइल नंबर डालें';
+
+  @override
+  String get invalidMobileNumber => 'सही 10 अंकों का मोबाइल नंबर डालें';
+
+  @override
+  String get sendCode => 'कोड भेजें';
+
+  @override
+  String otpSentTo(String phone) {
+    return '$phone पर भेजा गया 6 अंकों का कोड डालें';
+  }
+
+  @override
+  String get otpCode => 'साइन-इन कोड';
+
+  @override
+  String get enterOtp => '6 अंकों का कोड डालें';
+
+  @override
+  String resendCodeIn(String time) {
+    return '$time में कोड दोबारा भेजें';
+  }
+
+  @override
+  String get resendCode => 'कोड दोबारा भेजें';
+
+  @override
+  String get codeResent => 'नया कोड भेजा गया';
+
+  @override
+  String get changeNumber => 'नंबर बदलें';
+
+  @override
+  String get errorOtpInvalid => 'यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। SMS देखें या नया कोड मंगाएँ।';
 }

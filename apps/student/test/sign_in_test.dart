@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_student/features/sign_in/sign_in_screen.dart';
 
-import 'fake_api.dart';
+import 'fake_push.dart';
 import 'helpers.dart';
 
 void main() {
@@ -12,6 +12,7 @@ void main() {
     String login = 'aarav@demo.kinetix.in',
     String password = 'kinetix123',
   }) async {
+    if (find.byKey(const Key('password')).evaluate().isEmpty) await usePassword(tester);
     await tester.enterText(find.byKey(const Key('tenant')), tenant);
     await tester.enterText(find.byKey(const Key('login')), login);
     await tester.enterText(find.byKey(const Key('password')), password);
@@ -22,6 +23,7 @@ void main() {
   testWidgets('shows a message for every empty field', (tester) async {
     final (api, _) = await pumpApp(tester, signedIn: false);
     expect(find.text('Student'), findsOneWidget);
+    await usePassword(tester);
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pump();
     expect(find.text('Enter your institution code'), findsOneWidget);
@@ -93,7 +95,7 @@ void main() {
     expect(find.textContaining('Aarav'), findsWidgets);
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(state.rememberedTenant, 'demo-college');
-    expect(state.prefs.getString('token'), 'tok');
+    expect(storedToken(state), 'tok');
   });
 
   testWidgets('a remembered session opens straight on Today; an expired one asks to sign in', (tester) async {
@@ -102,18 +104,18 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
     final (_, state) = await pumpApp(tester, setup: (api) => api.record = null);
-    expect(find.byKey(const Key('signIn')), findsOneWidget);
-    expect(state.prefs.getString('token'), isNull);
+    expect(find.byKey(const Key('sendCode')), findsOneWidget);
+    expect(storedToken(state), isNull);
   });
 
   testWidgets('registers for push after sign-in and removes it on sign-out', (tester) async {
-    final (api, state) = await pumpApp(tester, signedIn: false, push: FakePushTokenSource());
+    final (api, state) = await pumpApp(tester, signedIn: false, messaging: FakePushMessaging());
     await fill(tester);
     expect(api.calls, contains('push register device-token-123456 android'));
     await state.signOut();
     await tester.pumpAndSettle();
     expect(api.calls, contains('push remove device-token-123456'));
-    expect(find.byKey(const Key('signIn')), findsOneWidget);
+    expect(find.byKey(const Key('sendCode')), findsOneWidget);
   });
 
   testWidgets('without a push SDK nothing is registered', (tester) async {

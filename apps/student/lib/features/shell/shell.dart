@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
@@ -10,6 +12,7 @@ import '../messages/messages_controller.dart';
 import '../privacy/privacy.dart';
 import '../profile/profile_tab.dart';
 import '../today/today_tab.dart';
+import '../updates/notifications_prompt.dart';
 import '../updates/updates_controller.dart';
 import '../updates/updates_tab.dart';
 
@@ -37,6 +40,9 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   MessageFeed? _feed;
   final _learn = GlobalKey<LearnTabState>();
 
+  /// Pushes arriving while the app is open.
+  StreamSubscription<void>? _pushes;
+
   /// "Live now" updates already acted on.
   final _seenLive = <String>{};
 
@@ -51,14 +57,34 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     updates.addListener(_onUpdates);
+    widget.state.pendingPushTap.addListener(_openPushTap);
+    _pushes = widget.state.messaging.onForegroundMessage.listen((_) {
+      if (!updates.loading) updates.load();
+    });
     messages.realtime = () => _feed?.connected ?? false;
     messages.start().then((_) {
       if (mounted && messages.available) _startFeed();
     });
-    // Privacy choices still to make (first sign-in after the notice, or a new notice version).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ConsentScreen.askIfNeeded(context, consent);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // A tapped notification that opened the app (or arrived before sign-in) first.
+      await _openPushTap();
+      // Privacy choices still to make (first sign-in after the notice, or a new notice version).
+      if (mounted) await ConsentScreen.askIfNeeded(context, consent);
+      if (mounted) await NotificationsPrompt.askIfNeeded(context, widget.state);
     });
+  }
+
+  /// Opens a tapped push notification's update, as tapping it in Updates would; the Updates tab
+  /// when it is not in the inbox (any more).
+  Future<void> _openPushTap() async {
+    final tap = widget.state.pendingPushTap.value;
+    if (tap == null || !mounted) return;
+    widget.state.pendingPushTap.value = null;
+    await updates.load();
+    if (!mounted) return;
+    final n = updates.items.where((n) => n.id == tap.notificationId).firstOrNull;
+    if (n == null) return _go(_updatesTab);
+    await UpdatesTab.openNotification(context, n, controller: updates, study: study, messages: messages);
   }
 
   void _startFeed() {
@@ -77,6 +103,8 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     updates.removeListener(_onUpdates);
+    widget.state.pendingPushTap.removeListener(_openPushTap);
+    _pushes?.cancel();
     _feed?.dispose();
     study.dispose();
     updates.dispose();

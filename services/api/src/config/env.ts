@@ -38,6 +38,27 @@ const EnvSchema = z.object({
   RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
   /** How often the job runner looks for work; 0 turns it off (tests run jobs by hand). */
   JOBS_POLL_MS: z.coerce.number().int().min(0).default(2000),
+  /**
+   * Redis, for running more than one API instance: shared rate limits, live-classroom state and
+   * the socket.io adapter. Unset: all of that stays in this process (one instance).
+   */
+  REDIS_URL: z.url().optional(),
+  /** Sign-in codes by SMS: console logs them (development and tests); msg91 sends them (India, DLT). */
+  SMS_PROVIDER: z.enum(['console', 'msg91']).default('console'),
+  MSG91_AUTH_KEY: z.string().optional(),
+  /** The MSG91 Flow template id, linked to the DLT-approved template with variables `otp` and `app`. */
+  MSG91_TEMPLATE_ID: z.string().optional(),
+  /** The 6-character DLT sender id (header), e.g. KINTIX. */
+  MSG91_SENDER_ID: z.string().optional(),
+  /** The app name passed to the SMS template. */
+  SMS_APP_NAME: z.string().default('KINETIX'),
+  /** `json` writes one JSON object per log line (production log shipping); `text` is for people. */
+  LOG_FORMAT: z.enum(['text', 'json']).default('text'),
+  /**
+   * Behind a load balancer, how many proxy hops to trust for the client IP (X-Forwarded-For),
+   * which per-IP rate limits use. Unset: the socket address.
+   */
+  TRUST_PROXY: z.coerce.number().int().min(0).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -55,6 +76,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   if (parsed.data.PAYMENTS_PROVIDER === 'razorpay' && !(parsed.data.RAZORPAY_KEY_ID && parsed.data.RAZORPAY_KEY_SECRET && parsed.data.RAZORPAY_WEBHOOK_SECRET)) {
     throw new Error('Invalid environment: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET are required with PAYMENTS_PROVIDER=razorpay');
+  }
+  if (parsed.data.SMS_PROVIDER === 'msg91' && !(parsed.data.MSG91_AUTH_KEY && parsed.data.MSG91_TEMPLATE_ID && parsed.data.MSG91_SENDER_ID)) {
+    throw new Error('Invalid environment: MSG91_AUTH_KEY, MSG91_TEMPLATE_ID and MSG91_SENDER_ID are required with SMS_PROVIDER=msg91');
   }
   return parsed.data;
 }

@@ -43,6 +43,7 @@ extension AppLocalizationsX on AppLocalizations {
     final byCode = switch (e.code) {
       'AUTH_EXPIRED' || 'UNAUTHORIZED' => errorSessionExpired,
       'AUTH_WRONG_LOGIN' => errorWrongLogin,
+      'OTP_INVALID' => errorOtpInvalid,
       'AUTH_INACTIVE' => errorAccountInactive,
       'PAIRING_CODE_INVALID' => errorCodeExpired,
       'PAIRING_WRONG_CAMPUS' => errorOtherCampus,

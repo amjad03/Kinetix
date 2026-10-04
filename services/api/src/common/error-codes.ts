@@ -11,6 +11,8 @@ export const ERROR_CODES: Record<string, string> = {
   'Wrong institution, login or password': 'AUTH_WRONG_LOGIN',
   'Your account is not active': 'AUTH_INACTIVE',
   'Invalid or expired token': 'AUTH_EXPIRED',
+  'Wrong or expired code': 'OTP_INVALID',
+  'Enter a valid mobile number': 'PHONE_INVALID',
   'This code is invalid or has expired. Use the new code on the board.': 'PAIRING_CODE_INVALID',
   'You are not a teacher at the campus this board belongs to': 'PAIRING_WRONG_CAMPUS',
   'You do not teach this class': 'NOT_YOUR_CLASS',

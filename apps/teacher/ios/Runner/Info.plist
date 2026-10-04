@@ -8,6 +8,13 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>KINETIX Teacher</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<!-- Pushes (APNs via Firebase Cloud Messaging). -->
+		<string>remote-notification</string>
+	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>KINETIX uses the camera to scan the QR code on your classroom board.</string>
 	<key>NSAppTransportSecurity</key>

@@ -52,7 +52,25 @@ abstract class TeacherApi {
 
   /// Signs in and stores the token on this client.
   Future<void> login({required String tenant, required String login, required String password});
+  /// Texts a 6-digit sign-in code to [phone] (E.164). The server answers the same whether or not
+  /// the number has an account. Throws `RATE_LIMITED` (429) when asked too often.
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone});
+
+  /// Signs in with the texted code and stores the token on this client. Throws `OTP_INVALID` (401).
+  Future<void> verifyOtp({required String tenant, required String phone, required String code});
   Future<Me> me();
+
+  /// Registers this phone's push token for the signed-in teacher (POST /v1/push/devices).
+  Future<void> registerPushDevice({required String token, required String platform});
+
+  /// Stops pushes to this phone's token (DELETE /v1/push/devices).
+  Future<void> unregisterPushDevice(String token);
+
+  /// The teacher's latest notifications, newest first.
+  Future<List<AppNotification>> notifications();
+
+  Future<void> markNotificationRead(String id);
+
 
   /// Saves the teacher's language on the server (notifications and pushes use it).
   Future<Me> updatePreferredLanguage(String language);
@@ -220,6 +238,33 @@ class HttpTeacherApi implements TeacherApi {
     final j = await _send('POST', '/v1/auth/login', body: {'tenant': tenant, 'login': login, 'password': password}, auth: false);
     token = j['accessToken'] as String;
   }
+
+  @override
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone}) async => OtpChallenge.fromJson(
+    await _send('POST', '/v1/auth/otp/request', body: {'tenant': tenant, 'phone': phone}, auth: false) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<void> verifyOtp({required String tenant, required String phone, required String code}) async {
+    final j = await _send('POST', '/v1/auth/otp/verify', body: {'tenant': tenant, 'phone': phone, 'code': code}, auth: false);
+    token = j['accessToken'] as String;
+  }
+
+  @override
+  Future<void> registerPushDevice({required String token, required String platform}) async =>
+      _send('POST', '/v1/push/devices', body: {'token': token, 'platform': platform, 'app': 'teacher'});
+
+  @override
+  Future<void> unregisterPushDevice(String token) async => _send('DELETE', '/v1/push/devices', body: {'token': token});
+
+  @override
+  Future<List<AppNotification>> notifications() async {
+    final j = await _send('GET', '/v1/notifications?limit=100') as Map;
+    return (j['items'] as List).map((e) => AppNotification.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<void> markNotificationRead(String id) async => _send('POST', '/v1/notifications/$id/read');
 
   @override
   Future<Me> me() async => Me.fromJson(await _send('GET', '/v1/me'));

@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_student/app.dart';
 import 'package:kinetix_student/core/app_state.dart';
-import 'package:kinetix_student/core/live_audio_player.dart';
 import 'package:kinetix_student/core/push.dart';
+import 'package:kinetix_student/core/token_store.dart';
+import 'package:kinetix_student/core/live_audio_player.dart';
 import 'package:kinetix_student/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +15,8 @@ import 'fake_live.dart';
 /// The app's English words, for tests of helpers that take them.
 final en = lookupAppLocalizations(const Locale('en'));
 
-/// Pumps the app at phone size (or [size]). With [signedIn], a stored token restores the session.
+/// Pumps the app at phone size (or [size]). With [signedIn], a stored token restores the session
+/// ([tokens] defaults to a secure store holding one).
 Future<(FakeStudentApi, AppState)> pumpApp(
   WidgetTester tester, {
   bool signedIn = true,
@@ -22,7 +24,8 @@ Future<(FakeStudentApi, AppState)> pumpApp(
   void Function(FakeStudentApi)? setup,
   Size size = const Size(412, 892),
   double textScale = 1,
-  PushTokenSource push = const NoPushTokenSource(),
+  TokenStore? tokens,
+  PushMessaging messaging = const NoPushMessaging(),
   FakeLiveServer? live,
 }) async {
   tester.view.physicalSize = size;
@@ -36,10 +39,16 @@ Future<(FakeStudentApi, AppState)> pumpApp(
   // Class audio in live classes plays into a recorder.
   LiveAudioPlayer.debugFactory = () => FakeLiveAudioPlayer.last = FakeLiveAudioPlayer();
   addTearDown(() => LiveAudioPlayer.debugFactory = null);
-  SharedPreferences.setMockInitialValues({if (signedIn) 'token': 'tok', ...prefs});
+  SharedPreferences.setMockInitialValues({...prefs});
   final api = FakeStudentApi();
   setup?.call(api);
-  final state = AppState(api, await SharedPreferences.getInstance(), push: push, live: (live ?? FakeLiveServer()).connect);
+  final state = AppState(
+    api,
+    await SharedPreferences.getInstance(),
+    tokens: tokens ?? MemoryTokenStore(signedIn ? 'tok' : null),
+    messaging: messaging,
+    live: (live ?? FakeLiveServer()).connect,
+  );
   await tester.pumpWidget(StudentApp(state: state));
   await state.restore();
   await tester.pumpAndSettle();
@@ -57,5 +66,14 @@ Future<void> openTab(WidgetTester tester, String label) async {
 /// Scrolls the first scrollable on screen until [f] is visible.
 Future<void> scrollTo(WidgetTester tester, Finder f, {Finder? scrollable}) async {
   await tester.scrollUntilVisible(f, 200, scrollable: scrollable ?? find.byType(Scrollable).first);
+  await tester.pumpAndSettle();
+}
+
+/// The token the app keeps in its secure store.
+String? storedToken(AppState state) => (state.tokens as MemoryTokenStore).token;
+
+/// Switches the sign-in screen from a texted code to a password.
+Future<void> usePassword(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('usePassword')));
   await tester.pumpAndSettle();
 }

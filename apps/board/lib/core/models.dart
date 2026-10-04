@@ -407,7 +407,7 @@ class LessonPlan {
 /// The lesson plan for the period open on the board (GET /v1/lesson-plans/current), saved by
 /// the teacher in the Teacher App. Read-only on the board.
 class PeriodLessonPlan {
-  PeriodLessonPlan({required this.subjectName, required this.minutes, this.plan});
+  PeriodLessonPlan({required this.subjectName, required this.minutes, this.plan, this.period = ''});
 
   factory PeriodLessonPlan.fromJson(Map<String, dynamic> j) {
     final slot = j['slot'] as Map<String, dynamic>? ?? const {};
@@ -421,10 +421,14 @@ class PeriodLessonPlan {
       subjectName: (j['subject'] as Map?)?['name'] as String? ?? '',
       minutes: slot.isEmpty ? 0 : mins(slot['endsAt']) - mins(slot['startsAt']),
       plan: p == null ? null : SavedLessonPlan.fromJson(p),
+      period: '${slot['id'] ?? ''} ${j['date'] ?? ''}',
     );
   }
 
   final String subjectName;
+
+  /// Which period this is (timetable slot and date), so the step timer starts over in a new one.
+  final String period;
 
   /// The period's length.
   final int minutes;

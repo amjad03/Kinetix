@@ -66,6 +66,31 @@ test('a head of department lands on their department and sees how its classes we
   await expect(page.getByTestId('dept-range').getByRole('button', { name: 'Custom' })).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('the classes table fits its frame at 1280 and 1440 px, with the teacher and results link in view', async ({ browser }) => {
+  const context = await browser.newContext({ storageState: 'e2e/.auth/hod.json' });
+  const page = await context.newPage();
+  for (const width of [1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page, '/department?range=term');
+    const frame = page.getByTestId('dept-classes');
+    const { scroll, client } = await frame.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+    expect(scroll, `classes table is ${scroll}px wide in a ${client}px frame at ${width}`).toBeLessThanOrEqual(client);
+    const row = frame.getByTestId('dept-class-row').filter({ hasText: 'Corporate Accounting' });
+    // Nothing was dropped: teacher, plans, homework, latest result and the link to the class's results.
+    await expect(row.getByTestId('class-teacher')).toHaveText('Anita Sharma');
+    await expect(row.getByTestId('class-year-plan')).toBeVisible();
+    await expect(row.getByTestId('class-lesson-plans')).toHaveText(/^\d+ of \d+ periods$/);
+    await expect(row.getByTestId('class-homework')).toHaveText(/^\d+$/);
+    await expect(row.getByTestId('class-latest')).toContainText('74.7%');
+    const link = row.getByRole('link', { name: 'Results for BCom Sem 3 A' });
+    await expect(link).toBeVisible();
+    const [box, frameBox] = [await link.boundingBox(), await frame.boundingBox()];
+    expect(box!.x + box!.width, `results link inside the frame at ${width}`).toBeLessThanOrEqual(frameBox!.x + frameBox!.width);
+  }
+  await shot(page, 'department-classes-1440');
+  await context.close();
+});
+
 test("a head of department sees their department's results, and cannot set up departments", async ({ browser }) => {
   const context = await browser.newContext({ storageState: 'e2e/.auth/hod.json' });
   const page = await context.newPage();

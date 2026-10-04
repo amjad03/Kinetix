@@ -270,6 +270,9 @@ void main() {
 
     testWidgets('$lang: sign-in fits a 360-px phone at 2× text', (tester) async {
       await pumpApp(tester, signedIn: false, size: const Size(360, 640), textScale: 2, prefs: {'language': lang});
+      await tester.ensureVisible(find.byKey(const Key('usePassword')));
+      await tester.pumpAndSettle();
+      await usePassword(tester);
       await tester.ensureVisible(find.byKey(const Key('signIn')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('signIn')));

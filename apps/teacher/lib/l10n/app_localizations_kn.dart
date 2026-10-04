@@ -1285,4 +1285,53 @@ class AppLocalizationsKn extends AppLocalizations {
   String reviewedByOn(String name, String date) {
     return '$name ಅವರು $date ರಂದು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ';
   }
+
+  @override
+  String get signInWithPhone => 'ಫೋನ್ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ';
+
+  @override
+  String get signInWithPassword => 'ಪಾಸ್‌ವರ್ಡ್ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ';
+
+  @override
+  String get phoneSignInSubtitle => 'ನಿಮ್ಮ ನೋಂದಾಯಿತ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಗೆ 6 ಅಂಕಿಯ ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ';
+
+  @override
+  String get mobileNumber => 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ';
+
+  @override
+  String get enterMobileNumber => 'ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
+
+  @override
+  String get invalidMobileNumber => 'ಸರಿಯಾದ 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
+
+  @override
+  String get sendCode => 'ಕೋಡ್ ಕಳುಹಿಸಿ';
+
+  @override
+  String otpSentTo(String phone) {
+    return '$phone ಗೆ ಕಳುಹಿಸಿದ 6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ';
+  }
+
+  @override
+  String get otpCode => 'ಸೈನ್ ಇನ್ ಕೋಡ್';
+
+  @override
+  String get enterOtp => '6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ';
+
+  @override
+  String resendCodeIn(String time) {
+    return '$time ನಂತರ ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ';
+  }
+
+  @override
+  String get resendCode => 'ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ';
+
+  @override
+  String get codeResent => 'ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get changeNumber => 'ಸಂಖ್ಯೆ ಬದಲಿಸಿ';
+
+  @override
+  String get errorOtpInvalid => 'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಿ.';
 }

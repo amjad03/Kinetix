@@ -1628,4 +1628,63 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get readAhead => 'कक्षा में ये विषय-वस्तु पढ़ाई जानी हैं। चाहें तो पहले से पढ़ लें।';
+
+  @override
+  String get phoneNumber => 'मोबाइल नंबर';
+
+  @override
+  String get enterPhone => 'अपना मोबाइल नंबर डालें';
+
+  @override
+  String get enterValidMobile => '10 अंकों का मोबाइल नंबर डालें';
+
+  @override
+  String get sendCode => 'कोड भेजें';
+
+  @override
+  String otpSentTo(String phone) {
+    return '$phone पर भेजा गया 6 अंकों का कोड डालें';
+  }
+
+  @override
+  String get otpCode => '6 अंकों का कोड';
+
+  @override
+  String get enterOtp => '6 अंकों का कोड डालें';
+
+  @override
+  String get resendCode => 'कोड फिर से भेजें';
+
+  @override
+  String resendIn(String time) {
+    return '$time में कोड फिर से भेजें';
+  }
+
+  @override
+  String get changeNumber => 'नंबर बदलें';
+
+  @override
+  String get usePassword => 'इसके बजाय पासवर्ड इस्तेमाल करें';
+
+  @override
+  String get usePhoneCode => 'इसके बजाय फ़ोन पर कोड पाएँ';
+
+  @override
+  String get errOtpInvalid => 'यह कोड गलत है या इसका समय खत्म हो गया है। SMS देखें या नया कोड मँगाएँ।';
+
+  @override
+  String get errOtpTooMany => 'बहुत ज़्यादा कोड मँगाए गए। कुछ मिनट रुककर फिर से कोशिश करें।';
+
+  @override
+  String get notificationsTitle => 'इस फ़ोन पर सूचनाएँ पाएँ?';
+
+  @override
+  String get notificationsAllow => 'चालू करें';
+
+  @override
+  String get otpHint => 'आपके कॉलेज में दर्ज फ़ोन नंबर पर हम एक कोड भेजेंगे';
+
+  @override
+  String get notificationsBody =>
+      'नया होमवर्क, परिणाम, लाइव कक्षाएँ और कॉलेज के संदेश आने पर हम आपको बताएँगे। आप इसे कभी भी फ़ोन की सेटिंग में बदल सकते हैं।';
 }

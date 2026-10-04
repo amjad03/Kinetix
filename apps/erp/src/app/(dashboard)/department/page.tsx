@@ -279,22 +279,47 @@ function TeachersTable({ rows, i18n: { t } }: { rows: DeptTeacher[]; i18n: I18n 
   );
 }
 
+/**
+ * One row per class and subject. Kept within its frame at 1280 px: the teacher sits under the
+ * class, lesson plans under the year plan, and the link to the class's results under its latest
+ * test, so nothing scrolls sideways on a laptop.
+ */
 function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18n }) {
+  const results = (c: DeptClass) => (
+    <Link href={`/results?class=${c.sectionId}`} aria-label={t('dept.resultsFor', { section: c.section })} style={{ textDecoration: 'none' }}>
+      <Typography variant="caption" component="span" sx={{ color: 'primary.main', fontWeight: 500, display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', '&:hover': { textDecoration: 'underline' } }}>
+        {t('dept.col.results')}
+        <ChevronRight sx={{ fontSize: 16, mr: -0.5 }} />
+      </Typography>
+    </Link>
+  );
   return (
     <TableFrame testId="dept-classes">
-      <Table sx={{ minWidth: 1100 }}>
+      <Table sx={{ minWidth: 880, '& .MuiTableCell-root': { px: 1.5 }, '& .MuiTableCell-root:first-of-type': { pl: 2 }, '& .MuiTableCell-root:last-of-type': { pr: 2 } }}>
         <TableHead>
           <TableRow>
-            <TableCell>{t('dept.col.class')}</TableCell>
-            <TableCell>{t('dept.col.teacher')}</TableCell>
+            <TableCell>
+              {t('dept.col.class')}
+              <Typography variant="caption" color="text.secondary" component="div">
+                {t('dept.col.teacher')}
+              </Typography>
+            </TableCell>
             <TableCell align="right">{t('dept.col.heldShort')}</TableCell>
             <TableCell align="right">{t('dept.col.attendance')}</TableCell>
             <TableCell>{t('dept.col.syllabus')}</TableCell>
-            <TableCell>{t('plan.col.yearPlan')}</TableCell>
-            <TableCell align="right">{t('plan.col.lessonPlans')}</TableCell>
+            <TableCell>
+              {t('plan.col.yearPlan')}
+              <Typography variant="caption" color="text.secondary" component="div">
+                {t('plan.col.lessonPlans')}
+              </Typography>
+            </TableCell>
             <TableCell align="right">{t('dept.col.homework')}</TableCell>
-            <TableCell align="right">{t('dept.col.latest')}</TableCell>
-            <TableCell aria-label={t('dept.col.results')} />
+            <TableCell align="right">
+              {t('dept.col.latest')}
+              <Typography variant="caption" color="text.secondary" component="div">
+                {t('dept.col.results')}
+              </Typography>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -307,48 +332,55 @@ function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18
                     <Typography variant="subtitle2">{c.section}</Typography>
                     <Flags r={c} t={t} />
                   </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {c.subject}
+                  <Typography variant="caption" color="text.secondary" component="div">
+                    {c.subject} ·{' '}
+                    <Box component="span" data-testid="class-teacher" sx={{ whiteSpace: 'nowrap' }}>
+                      {c.teacher}
+                    </Box>
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{c.teacher}</TableCell>
                 <TableCell align="right">
-                  <Rate value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled, t)} />
+                  <Rate compact value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled, t)} />
                 </TableCell>
                 <TableCell align="right">
-                  <Rate value={c.attendancePercent} kind="attendance" detail={c.scheduled ? t('dept.takenOf', { n: c.attendanceTaken, d: c.scheduled }) : undefined} />
+                  <Rate compact value={c.attendancePercent} kind="attendance" detail={c.scheduled ? t('dept.takenOf', { n: c.attendanceTaken, d: c.scheduled }) : undefined} />
                 </TableCell>
                 <TableCell data-testid="class-syllabus">
                   <SyllabusCell c={c} t={t} />
                 </TableCell>
-                <TableCell data-testid="class-year-plan">
-                  <YearPlanCell c={c} t={t} />
-                </TableCell>
-                <TableCell align="right" data-testid="class-lesson-plans">
+                <TableCell>
+                  <Box data-testid="class-year-plan">
+                    <YearPlanCell c={c} t={t} />
+                  </Box>
                   <Hint title={t('plan.lessonsHelp')}>
-                    <Typography variant="body2" component="span" sx={{ ...num, color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}>
+                    <Typography
+                      variant="caption"
+                      component="span"
+                      data-testid="class-lesson-plans"
+                      sx={{ ...num, lineHeight: '20px', whiteSpace: 'nowrap', color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}
+                    >
                       {lessonPlansText(c.lessonPlans ?? 0, c.scheduled, t)}
                     </Typography>
                   </Hint>
                 </TableCell>
-                <TableCell align="right" sx={num}>
+                <TableCell align="right" sx={num} data-testid="class-homework">
                   {c.homework}
                 </TableCell>
                 <TableCell align="right" data-testid="class-latest">
                   {latest ? (
-                    <Hint title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')}`} block>
-                      <Rate value={latest.averagePercent} kind="marks" detail={t('dept.classAverage')} />
+                    <Hint title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')} · ${t('dept.classAverage')}`} block>
+                      <Rate compact value={latest.averagePercent} kind="marks" detail={results(c)} />
                     </Hint>
                   ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      —
-                    </Typography>
+                    <>
+                      <Typography variant="body2" color="text.secondary">
+                        —
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        {results(c)}
+                      </Typography>
+                    </>
                   )}
-                </TableCell>
-                <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                  <LinkButton href={`/results?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={t('dept.resultsFor', { section: c.section })}>
-                    {t('dept.col.results')}
-                  </LinkButton>
                 </TableCell>
               </TableRow>
             );
@@ -422,9 +454,9 @@ function SyllabusCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
       href={`/department/syllabus?section=${c.sectionId}&subject=${c.subjectId}`}
       aria-label={t('dept.syllabus.open', { section: c.section, subject: c.subject })}
       data-percent={p}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit', minWidth: 150 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}
     >
-      <Box sx={{ width: 64 }}>
+      <Box sx={{ width: 40, flexShrink: 0 }}>
         <MiniBar value={p} color={p >= 100 ? 'kx.success' : 'primary.main'} />
       </Box>
       <Box>
@@ -460,7 +492,7 @@ function YearPlanCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
           variant={chip.tone === 'none' ? 'outlined' : 'filled'}
           data-testid="plan-status"
           data-status={chip.status}
-          sx={{ ...sx, fontWeight: 500, maxWidth: 220, cursor: 'pointer' }}
+          sx={{ ...sx, fontWeight: 500, maxWidth: 180, cursor: 'pointer' }}
         />
       </Link>
     </Hint>

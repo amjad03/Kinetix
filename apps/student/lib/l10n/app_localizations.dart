@@ -2900,6 +2900,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Topics planned for class. Read ahead if you like.'**
   String get readAhead;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get phoneNumber;
+
+  /// No description provided for @enterPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your mobile number'**
+  String get enterPhone;
+
+  /// No description provided for @enterValidMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a 10-digit mobile number'**
+  String get enterValidMobile;
+
+  /// No description provided for @sendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get sendCode;
+
+  /// No description provided for @otpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to {phone}'**
+  String otpSentTo(String phone);
+
+  /// No description provided for @otpCode.
+  ///
+  /// In en, this message translates to:
+  /// **'6-digit code'**
+  String get otpCode;
+
+  /// No description provided for @enterOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code'**
+  String get enterOtp;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get resendCode;
+
+  /// A countdown such as 0:25 until another code may be asked for.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {time}'**
+  String resendIn(String time);
+
+  /// No description provided for @changeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Change number'**
+  String get changeNumber;
+
+  /// No description provided for @usePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a password instead'**
+  String get usePassword;
+
+  /// No description provided for @usePhoneCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a code on your phone instead'**
+  String get usePhoneCode;
+
+  /// No description provided for @errOtpInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That code is wrong or has expired. Check the SMS or ask for a new code.'**
+  String get errOtpInvalid;
+
+  /// No description provided for @errOtpTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many codes asked for. Wait a few minutes and try again.'**
+  String get errOtpTooMany;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get updates on this phone?'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get notificationsAllow;
+
+  /// No description provided for @otpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll text a code to the phone number your college has for you'**
+  String get otpHint;
+
+  /// No description provided for @notificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll tell you about new homework, results, live classes and messages from your college. You can change this any time in your phone\'s settings.'**
+  String get notificationsBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

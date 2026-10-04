@@ -47,7 +47,14 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.other => Icons.notifications,
   };
 
-  Future<void> _open(BuildContext context, AppNotification n) async {
+  /// Opens what [n] is about (from the list, or from a tapped push notification) and marks it read.
+  static Future<void> openNotification(
+    BuildContext context,
+    AppNotification n, {
+    required UpdatesController controller,
+    required FamilyController family,
+    required MessagesController messages,
+  }) async {
     controller.markRead(n);
     final api = family.api;
     switch (n.kind) {
@@ -58,7 +65,9 @@ class UpdatesTab extends StatelessWidget {
         if (child != null && context.mounted) return AttendanceScreen.open(context, api, child, highlightDate: date);
       case NotificationKind.homework:
         // New homework names the class; "checked" and "to redo" name the child.
-        final found = n.homeworkId == null ? null : await family.findHomework(n.homeworkId!, sectionId: n.sectionId, studentId: n.studentId);
+        final found = n.homeworkId == null
+            ? null
+            : await family.findHomework(n.homeworkId!, sectionId: n.sectionId, studentId: n.studentId);
         if (found != null && context.mounted) {
           final (child, hw) = found;
           return HomeworkScreen.open(context, api, homework: hw, today: family.summaryOf(child.id)?.today ?? DateTime.now(), child: child);
@@ -116,8 +125,12 @@ class UpdatesTab extends StatelessWidget {
         final earlier = items.where((n) => Fmt.daysBetween(n.createdAt, today) != 0).toList();
         final multipleChildren = family.children.length > 1;
 
-        Widget tile(AppNotification n) =>
-            NotificationTile(n: n, today: today, child: multipleChildren ? _childFor(n) : null, onTap: () => _open(context, n));
+        Widget tile(AppNotification n) => NotificationTile(
+          n: n,
+          today: today,
+          child: multipleChildren ? _childFor(n) : null,
+          onTap: () => openNotification(context, n, controller: controller, family: family, messages: messages),
+        );
 
         return RefreshIndicator(
           onRefresh: controller.load,

@@ -278,6 +278,26 @@ class FakeParentApi implements ParentApi {
     token = 'tok';
   }
 
+  /// Codes the fake "texts": 123456 always works.
+  static const otpCode = '123456';
+
+  /// Makes `POST /v1/auth/otp/request` answer 429 `RATE_LIMITED`.
+  bool otpRateLimited = false;
+
+  @override
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone}) async {
+    calls.add('otp request $tenant $phone');
+    if (otpRateLimited) throw ApiException(429, 'Too many requests', code: 'RATE_LIMITED');
+    return const OtpChallenge(retryAfterSeconds: 30, expiresInSeconds: 300);
+  }
+
+  @override
+  Future<void> verifyOtp({required String tenant, required String phone, required String code}) async {
+    calls.add('otp verify $tenant $phone $code');
+    if (code != otpCode) throw ApiException(401, 'Invalid or expired code', code: 'OTP_INVALID');
+    token = 'tok';
+  }
+
   @override
   Future<Me> me() async => profile;
 
@@ -563,6 +583,12 @@ class FakeParentApi implements ParentApi {
     };
     return Consents.fromJson(consentJson[childId]!);
   }
+
+  @override
+  Future<void> registerPushDevice({required String token, required String platform}) async => calls.add('push register $token $platform');
+
+  @override
+  Future<void> removePushDevice(String token) async => calls.add('push remove $token');
 
   @override
   Future<RecordingInfo> recording(String id) async {

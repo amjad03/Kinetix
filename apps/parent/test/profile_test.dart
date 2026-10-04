@@ -41,7 +41,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Sign out'));
     await tester.pumpAndSettle();
     expect(state.signedIn, isFalse);
-    expect(find.byKey(const Key('signIn')), findsOneWidget);
+    expect(find.byKey(const Key('sendCode')), findsOneWidget);
   });
 
   testWidgets('Home lays out without overflow with large text', (tester) async {

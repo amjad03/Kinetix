@@ -1279,4 +1279,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String reviewedByOn(String name, String date) {
     return 'Reviewed by $name on $date';
   }
+
+  @override
+  String get signInWithPhone => 'Sign in with phone';
+
+  @override
+  String get signInWithPassword => 'Sign in with password';
+
+  @override
+  String get phoneSignInSubtitle => 'We\'ll text a 6-digit code to your registered mobile number';
+
+  @override
+  String get mobileNumber => 'Mobile number';
+
+  @override
+  String get enterMobileNumber => 'Enter your mobile number';
+
+  @override
+  String get invalidMobileNumber => 'Enter a valid 10-digit mobile number';
+
+  @override
+  String get sendCode => 'Send code';
+
+  @override
+  String otpSentTo(String phone) {
+    return 'Enter the 6-digit code sent to $phone';
+  }
+
+  @override
+  String get otpCode => 'Sign-in code';
+
+  @override
+  String get enterOtp => 'Enter the 6-digit code';
+
+  @override
+  String resendCodeIn(String time) {
+    return 'Resend code in $time';
+  }
+
+  @override
+  String get resendCode => 'Resend code';
+
+  @override
+  String get codeResent => 'New code sent';
+
+  @override
+  String get changeNumber => 'Change number';
+
+  @override
+  String get errorOtpInvalid => 'That code is wrong or has expired. Check the SMS or send a new code.';
 }

@@ -46,7 +46,14 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.other => Icons.notifications,
   };
 
-  Future<void> _open(BuildContext context, AppNotification n) async {
+  /// Opens what [n] is about (from the list, or from a tapped push notification) and marks it read.
+  static Future<void> openNotification(
+    BuildContext context,
+    AppNotification n, {
+    required UpdatesController controller,
+    required StudyController study,
+    MessagesController? messages,
+  }) async {
     controller.markRead(n);
     final api = study.api;
     switch (n.kind) {
@@ -75,7 +82,7 @@ class UpdatesTab extends StatelessWidget {
         if (result != null) return AssessmentScreen.open(context, result: result);
         return ResultsScreen.open(context, study);
       case NotificationKind.message:
-        if (n.conversationId != null && messages != null) return ChatScreen.open(context, messages!, n.conversationId!);
+        if (n.conversationId != null && messages != null) return ChatScreen.open(context, messages, n.conversationId!);
       case NotificationKind.live:
         // "Live now": straight to the board while the class is still live.
         final live = await study.loadLive();
@@ -84,9 +91,7 @@ class UpdatesTab extends StatelessWidget {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(
-              content: Text(live == null ? context.l10n.noLongerLive : context.l10n.otherClassLive(context.l10n.today)),
-            ),
+            SnackBar(content: Text(live == null ? context.l10n.noLongerLive : context.l10n.otherClassLive(context.l10n.today))),
           );
         return;
       case NotificationKind.calendar:
@@ -113,7 +118,12 @@ class UpdatesTab extends StatelessWidget {
           sliver: SliverList.list(
             children: [
               _GroupHeader(title),
-              for (final n in list) NotificationTile(n: n, today: today, onTap: () => _open(context, n)),
+              for (final n in list)
+                NotificationTile(
+                  n: n,
+                  today: today,
+                  onTap: () => openNotification(context, n, controller: controller, study: study, messages: messages),
+                ),
             ],
           ),
         );
@@ -147,10 +157,7 @@ class UpdatesTab extends StatelessWidget {
               else if (controller.loaded && items.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: KxEmptyState(
-                    icon: Icons.notifications_none,
-                    message: context.l10n.noUpdates,
-                  ),
+                  child: KxEmptyState(icon: Icons.notifications_none, message: context.l10n.noUpdates),
                 )
               else ...[
                 if (todays.isNotEmpty) group(context.l10n.today, todays),

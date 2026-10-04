@@ -1,0 +1,31 @@
+# Build context is the repo root (pnpm workspace). Allow-list what the API and ERP images need;
+# the Flutter apps and packages, docs and local state never enter the context.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!packages/shared/package.json
+!packages/shared/tsconfig.json
+!packages/shared/src
+!services/api/package.json
+!services/api/tsconfig.json
+!services/api/tsconfig.build.json
+!services/api/src
+!services/api/migrations
+!services/api/content
+!services/api/docker-entrypoint.sh
+!infra/docker/db-bootstrap.mjs
+!apps/erp/package.json
+!apps/erp/next.config.ts
+!apps/erp/next-env.d.ts
+!apps/erp/tsconfig.json
+!apps/erp/src
+!apps/erp/public
+!infra/docker/postgres-init
+**/node_modules
+**/dist
+**/dist-*
+**/.next
+**/.env
+**/.env.*
+**/*.tsbuildinfo

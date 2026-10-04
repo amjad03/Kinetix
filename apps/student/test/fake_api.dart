@@ -5,7 +5,6 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_student/core/api.dart';
 import 'package:kinetix_student/core/attachments.dart';
 import 'package:kinetix_student/core/models.dart';
-import 'package:kinetix_student/core/push.dart';
 
 /// In-memory [StudentApi] for widget tests.
 class FakeStudentApi implements StudentApi {
@@ -334,6 +333,26 @@ class FakeStudentApi implements StudentApi {
   Future<void> login({required String tenant, required String login, required String password}) async {
     calls.add('login $tenant $login');
     if (password != 'kinetix123') throw ApiException(401, 'Wrong institution, login or password');
+    token = 'tok';
+  }
+
+  /// Codes the fake "texts": 123456 always works.
+  static const otpCode = '123456';
+
+  /// Makes `POST /v1/auth/otp/request` answer 429 `RATE_LIMITED`.
+  bool otpRateLimited = false;
+
+  @override
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone}) async {
+    calls.add('otp request $tenant $phone');
+    if (otpRateLimited) throw ApiException(429, 'Too many requests', code: 'RATE_LIMITED');
+    return const OtpChallenge(retryAfterSeconds: 30, expiresInSeconds: 300);
+  }
+
+  @override
+  Future<void> verifyOtp({required String tenant, required String phone, required String code}) async {
+    calls.add('otp verify $tenant $phone $code');
+    if (code != otpCode) throw ApiException(401, 'Invalid or expired code', code: 'OTP_INVALID');
     token = 'tok';
   }
 
@@ -863,15 +882,6 @@ class FakeStudentApi implements StudentApi {
 
   @override
   Future<void> removePushDevice(String token) async => calls.add('push remove $token');
-}
-
-/// A push token source that always has a token, as Firebase would.
-class FakePushTokenSource implements PushTokenSource {
-  @override
-  Future<String?> token() async => 'device-token-123456';
-
-  @override
-  String get platform => 'android';
 }
 
 /// Hands the hand-in screen fixed files instead of opening the camera, gallery or files.

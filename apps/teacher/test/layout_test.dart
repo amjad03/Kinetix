@@ -311,6 +311,29 @@ void main() {
           await tester.ensureVisible(find.byKey(const Key('signIn')));
           await tapAndSettle(tester, find.byKey(const Key('signIn')));
           expect(find.byKey(const Key('signInError')), findsOneWidget);
+
+          // Sign in with phone: the number (with its errors), then the code, the countdown and a wrong code.
+          await tester.ensureVisible(find.byKey(const Key('signInWithPhone')));
+          await tapAndSettle(tester, find.byKey(const Key('signInWithPhone')));
+          await tester.enterText(find.byKey(const Key('phone')), '12345');
+          await tester.ensureVisible(find.byKey(const Key('sendCode')));
+          await tapAndSettle(tester, find.byKey(const Key('sendCode')));
+          expect(find.text(strings(lang).invalidMobileNumber), findsOneWidget);
+          await tester.enterText(find.byKey(const Key('phone')), '9845012345');
+          await tapAndSettle(tester, find.byKey(const Key('sendCode')));
+          expect(find.byKey(const Key('otpSentTo')), findsOneWidget);
+          await tester.ensureVisible(find.byKey(const Key('verifyCode')));
+          await tapAndSettle(tester, find.byKey(const Key('verifyCode')));
+          expect(find.text(strings(lang).enterOtp), findsOneWidget);
+          await tester.enterText(find.byKey(const Key('otpCode')), '111111');
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('signInError')), findsOneWidget);
+          await tester.ensureVisible(find.byKey(const Key('changeNumber')));
+          expect(find.byKey(const Key('resendCode')), findsOneWidget);
+          await tester.pump(const Duration(seconds: 30));
+          await tester.pumpAndSettle();
+          await tapAndSettle(tester, find.byKey(const Key('resendCode')));
+          await tester.pump(const Duration(seconds: 5));
         });
       }
     }

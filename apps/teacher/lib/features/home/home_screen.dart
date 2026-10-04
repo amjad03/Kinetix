@@ -2,9 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/api.dart';
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
+import '../../core/models.dart';
+import '../../core/push.dart';
 import '../../widgets/common.dart';
+import '../calendar/calendar_screen.dart';
 import '../homework/homework_tab.dart';
 import '../marks/marks_tab.dart';
 import '../messages/messages_tab.dart';
@@ -50,12 +54,65 @@ class _HomeScreenState extends State<HomeScreen> {
       ..add(live.reconnected.listen((_) => _refreshMessages()));
     final token = widget.state.api.token;
     if (token != null) live.connect(baseUrl: widget.state.api.baseUrl, token: token);
+    // A push tapped before this screen existed (it launched the app) waits in pushTap.
+    widget.state.pushTap.addListener(_onPushTap);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onPushTap());
+  }
+
+  void _onPushTap() {
+    final tap = widget.state.pushTap.value;
+    if (tap == null || !mounted) return;
+    widget.state.pushTap.value = null;
+    unawaited(_openPush(tap));
+  }
+
+  /// Opens what a tapped push is about: a message opens its conversation; homework, marks and
+  /// recordings their tab; calendar events the calendar; anything else Today.
+  Future<void> _openPush(PushTap tap) async {
+    final api = widget.state.api;
+    var data = tap.data;
+    final id = tap.notificationId;
+    if (id != null) {
+      unawaited(api.markNotificationRead(id).then((_) {}, onError: (_) {}));
+      // Pushes carry only the notification id and kind; the conversation is in the notification.
+      if (tap.kind == 'message' && data['conversationId'] == null) {
+        try {
+          final n = (await api.notifications()).where((n) => n.id == id).firstOrNull;
+          if (n != null) data = {...data, ...n.data};
+        } on ApiException {
+          // Offline: the Messages tab still opens.
+        }
+      }
+    }
+    if (!mounted) return;
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    switch (tap.kind) {
+      case 'message':
+        _go(_messagesTab);
+        final conversationId = data['conversationId'];
+        if (conversationId == null) return;
+        Conversation? find() => messages.items?.where((c) => c.id == conversationId).firstOrNull;
+        if (find() == null) await messages.load();
+        final c = find();
+        if (c != null && mounted) await MessagesTab.open(context, messages, c, widget.state.me!.id);
+      case 'homework':
+        _go(_homeworkTab);
+      case 'marks':
+        _go(_marksTab);
+      case 'recording':
+        _go(_recordingsTab);
+      case 'calendar':
+        await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CalendarScreen(api: api)));
+      default:
+        _go(0);
+    }
   }
 
   void _refreshMessages() => messages.refresh();
 
   @override
   void dispose() {
+    widget.state.pushTap.removeListener(_onPushTap);
     for (final s in _subscriptions) {
       s.cancel();
     }

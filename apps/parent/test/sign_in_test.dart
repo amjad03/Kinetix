@@ -7,6 +7,7 @@ import 'helpers.dart';
 void main() {
   testWidgets('shows a message for every empty field', (tester) async {
     final (api, _) = await pumpApp(tester, signedIn: false);
+    await usePassword(tester);
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pump();
     expect(find.text('Enter your institution code'), findsOneWidget);
@@ -17,6 +18,7 @@ void main() {
 
   testWidgets('rejects a malformed email or phone number', (tester) async {
     final (api, _) = await pumpApp(tester, signedIn: false);
+    await usePassword(tester);
     await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
     await tester.enterText(find.byKey(const Key('login')), 'rajesh@');
     await tester.enterText(find.byKey(const Key('password')), 'x');
@@ -41,6 +43,7 @@ void main() {
 
   testWidgets('shows the server error inline for a wrong password', (tester) async {
     await pumpApp(tester, signedIn: false);
+    await usePassword(tester);
     await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
     await tester.enterText(find.byKey(const Key('login')), 'parent@demo.kinetix.in');
     await tester.enterText(find.byKey(const Key('password')), 'wrong');
@@ -57,6 +60,7 @@ void main() {
         ..clear()
         ..add('teacher'),
     );
+    await usePassword(tester);
     await tester.enterText(find.byKey(const Key('tenant')), 'demo-college');
     await tester.enterText(find.byKey(const Key('login')), 'anita@demo.kinetix.in');
     await tester.enterText(find.byKey(const Key('password')), 'kinetix123');
@@ -70,6 +74,7 @@ void main() {
 
   testWidgets('signs in with a phone number and opens Home', (tester) async {
     final (api, state) = await pumpApp(tester, signedIn: false);
+    await usePassword(tester);
     await tester.enterText(find.byKey(const Key('tenant')), ' Demo-College ');
     await tester.enterText(find.byKey(const Key('login')), '98000 00001');
     await tester.enterText(find.byKey(const Key('password')), 'kinetix123');

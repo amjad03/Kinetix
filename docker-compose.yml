@@ -1,0 +1,112 @@
+# Production-like local stack: Postgres (owner + RLS app role), Redis, the API, the ERP and a
+# one-off migrate job. The demo seed is a profile:
+#   docker compose up -d --build                          # postgres, redis, migrate, api, erp
+#   docker compose --profile seed run --rm seed           # demo institution (once, on a fresh DB)
+#   open http://localhost:3000  (institution demo-college, principal@demo.kinetix.in / kinetix123)
+# Secrets below are local-only defaults; override them in a .env file next to this one.
+# Behind a registry mirror: NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim, POSTGRES_IMAGE=..., REDIS_IMAGE=...
+
+name: kinetix
+
+x-api-env: &api-env
+  DATABASE_URL: postgres://kinetix_owner:${KINETIX_OWNER_PASSWORD:-kinetix_owner}@postgres:5432/kinetix
+  APP_DATABASE_URL: postgres://kinetix_app:${KINETIX_APP_PASSWORD:-kinetix_app}@postgres:5432/kinetix
+  JWT_SECRET: ${JWT_SECRET:-local-compose-jwt-secret-change-me}
+  PAIRING_HMAC_SECRET: ${PAIRING_HMAC_SECRET:-local-compose-hmac-change-me}
+  REDIS_URL: redis://redis:6379
+  DEFAULT_TIMEZONE: Asia/Kolkata
+  PAYMENTS_PROVIDER: ${PAYMENTS_PROVIDER:-demo}
+  SMS_PROVIDER: console
+  STORAGE_DRIVER: local
+  LOG_FORMAT: ${LOG_FORMAT:-text}
+  # AI_BASE_URL / ASR_BASE_URL are left unset: AI tasks return labelled previews. A real model
+  # server (an open decision: AWS Mumbai GPU or an Indian GPU cloud) must be hosted in India.
+
+x-api-build: &api-build
+  context: .
+  dockerfile: services/api/Dockerfile
+  args:
+    NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:16-alpine}
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KINETIX_OWNER_PASSWORD: ${KINETIX_OWNER_PASSWORD:-kinetix_owner}
+      KINETIX_APP_PASSWORD: ${KINETIX_APP_PASSWORD:-kinetix_app}
+      TZ: Asia/Kolkata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    ports: ["127.0.0.1:${POSTGRES_PORT:-55432}:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kinetix"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: kinetix-api:${KINETIX_TAG:-local}
+    build: *api-build
+    command: ["migrate"]
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  seed:
+    image: kinetix-api:${KINETIX_TAG:-local}
+    profiles: ["seed"]
+    command: ["seed"]
+    environment: *api-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: "no"
+
+  api:
+    image: kinetix-api:${KINETIX_TAG:-local}
+    build: *api-build
+    init: true
+    environment: *api-env
+    ports: ["127.0.0.1:${API_PORT:-4000}:4000"]
+    volumes:
+      - objects:/app/services/api/.data/objects
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  erp:
+    image: kinetix-erp:${KINETIX_TAG:-local}
+    build:
+      context: .
+      dockerfile: apps/erp/Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+    init: true
+    environment:
+      KINETIX_API_URL: http://api:4000
+      KINETIX_TIMEZONE: Asia/Kolkata
+      # Plain HTTP on localhost: drop the Secure cookie flag. Never set this behind HTTPS.
+      KINETIX_INSECURE_COOKIES: "1"
+    ports: ["127.0.0.1:${ERP_PORT:-3000}:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  objects:

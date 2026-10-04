@@ -1862,5 +1862,75 @@
         "type": "String"
       }
     }
+  },
+  "signInWithPhone": "Sign in with phone",
+  "@signInWithPhone": {
+    "description": "Button: switch to signing in with a code sent by SMS."
+  },
+  "signInWithPassword": "Sign in with password",
+  "@signInWithPassword": {
+    "description": "Button: switch back to email or phone and password."
+  },
+  "phoneSignInSubtitle": "We'll text a 6-digit code to your registered mobile number",
+  "@phoneSignInSubtitle": {
+    "description": "Under the sign-in heading, phone sign-in."
+  },
+  "mobileNumber": "Mobile number",
+  "@mobileNumber": {
+    "description": "Field label (after the +91 prefix)."
+  },
+  "enterMobileNumber": "Enter your mobile number",
+  "@enterMobileNumber": {
+    "description": "Validation: empty mobile number."
+  },
+  "invalidMobileNumber": "Enter a valid 10-digit mobile number",
+  "@invalidMobileNumber": {
+    "description": "Validation: not a 10-digit Indian mobile number."
+  },
+  "sendCode": "Send code",
+  "@sendCode": {
+    "description": "Button: text a sign-in code to the number."
+  },
+  "otpSentTo": "Enter the 6-digit code sent to {phone}",
+  "@otpSentTo": {
+    "description": "Above the code field.",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCode": "Sign-in code",
+  "@otpCode": {
+    "description": "Field label: the code from the SMS."
+  },
+  "enterOtp": "Enter the 6-digit code",
+  "@enterOtp": {
+    "description": "Validation: code missing or too short."
+  },
+  "resendCodeIn": "Resend code in {time}",
+  "@resendCodeIn": {
+    "description": "Disabled button with a countdown, e.g. 0:25.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "resendCode": "Resend code",
+  "@resendCode": {
+    "description": "Button: text a new code."
+  },
+  "codeResent": "New code sent",
+  "@codeResent": {
+    "description": "Snackbar after resending."
+  },
+  "changeNumber": "Change number",
+  "@changeNumber": {
+    "description": "Button: back to the mobile number."
+  },
+  "errorOtpInvalid": "That code is wrong or has expired. Check the SMS or send a new code.",
+  "@errorOtpInvalid": {
+    "description": "Server: OTP_INVALID."
   }
 }

@@ -44,8 +44,8 @@ export class PairingService {
   async claim(p: UserPrincipal, input: ClaimInput) {
     const parsed = this.parse(input);
     // Typed codes are guessable in principle, so they get a much tighter budget than scans.
-    if (parsed.secret) this.limiter.hit(`claim-qr:${p.userId}`, 20, 60_000);
-    else this.limiter.hit(`claim-code:${p.userId}`, 5, 60_000);
+    if (parsed.secret) await this.limiter.hit(`claim-qr:${p.userId}`, 20, 60_000);
+    else await this.limiter.hit(`claim-code:${p.userId}`, 5, 60_000);
 
     const result = await this.db.withTenant(p.tenantId, async (tx) => {
       const now = this.clock.now();

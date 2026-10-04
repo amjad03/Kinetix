@@ -1628,4 +1628,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readAhead => 'Topics planned for class. Read ahead if you like.';
+
+  @override
+  String get phoneNumber => 'Mobile number';
+
+  @override
+  String get enterPhone => 'Enter your mobile number';
+
+  @override
+  String get enterValidMobile => 'Enter a 10-digit mobile number';
+
+  @override
+  String get sendCode => 'Send code';
+
+  @override
+  String otpSentTo(String phone) {
+    return 'Enter the 6-digit code sent to $phone';
+  }
+
+  @override
+  String get otpCode => '6-digit code';
+
+  @override
+  String get enterOtp => 'Enter the 6-digit code';
+
+  @override
+  String get resendCode => 'Resend code';
+
+  @override
+  String resendIn(String time) {
+    return 'Resend code in $time';
+  }
+
+  @override
+  String get changeNumber => 'Change number';
+
+  @override
+  String get usePassword => 'Use a password instead';
+
+  @override
+  String get usePhoneCode => 'Get a code on your phone instead';
+
+  @override
+  String get errOtpInvalid => 'That code is wrong or has expired. Check the SMS or ask for a new code.';
+
+  @override
+  String get errOtpTooMany => 'Too many codes asked for. Wait a few minutes and try again.';
+
+  @override
+  String get notificationsTitle => 'Get updates on this phone?';
+
+  @override
+  String get notificationsAllow => 'Turn on';
+
+  @override
+  String get otpHint => 'We\'ll text a code to the phone number your college has for you';
+
+  @override
+  String get notificationsBody =>
+      'We\'ll tell you about new homework, results, live classes and messages from your college. You can change this any time in your phone\'s settings.';
 }

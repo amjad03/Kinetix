@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -8,17 +6,19 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../ai/ai_widgets.dart';
 import '../board/side_panel.dart';
+import 'plan_timer.dart';
 
 const planAccent = Color(0xFF81C995);
 
 /// Today's plan: the lesson plan the teacher saved in the Teacher App for the period open on
 /// the board. Read-only: objectives, timed steps (with a step timer that highlights the current
 /// step), materials, how to check understanding and homework. Its topics open in Books, where
-/// they can be marked as taught.
+/// they can be marked as taught. The step timer is [timer], which outlives the panel.
 class TodaysPlanPanel extends StatefulWidget {
-  const TodaysPlanPanel({super.key, required this.board, required this.onOpenTopic});
+  const TodaysPlanPanel({super.key, required this.board, required this.timer, required this.onOpenTopic});
 
   final BoardController board;
+  final PlanTimer timer;
 
   /// Opens a topic in Books.
   final ValueChanged<String> onOpenTopic;
@@ -31,76 +31,34 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
   Future<PeriodLessonPlan?>? _plan;
   String? _sessionId;
 
-  /// The step timer: the step being taught, time spent on it, and whether it is running.
-  int? _step;
-  Duration _elapsed = Duration.zero;
-  Timer? _tick;
+  PlanTimer get _timer => widget.timer;
 
   @override
   void initState() {
     super.initState();
     widget.board.addListener(_onBoard);
+    _timer.addListener(_onTimer);
     _onBoard();
   }
 
   @override
   void dispose() {
     widget.board.removeListener(_onBoard);
-    _tick?.cancel();
+    _timer.removeListener(_onTimer);
     super.dispose();
   }
+
+  void _onTimer() => setState(() {});
 
   /// A different class (or none) means a different plan.
   void _onBoard() {
     final id = widget.board.session?.sessionId;
     if (id == _sessionId && _plan != null) return;
     _sessionId = id;
-    _stopTimer();
-    setState(() {
-      _step = null;
-      _elapsed = Duration.zero;
-      _plan = id == null || widget.board.api == null ? null : widget.board.api!.currentLessonPlan();
-    });
+    setState(() => _plan = id == null || widget.board.api == null ? null : widget.board.api!.currentLessonPlan());
   }
 
   void _reload() => setState(() => _plan = widget.board.api!.currentLessonPlan());
-
-  void _stopTimer() {
-    _tick?.cancel();
-    _tick = null;
-  }
-
-  void _toggleTimer(List<LessonStep> steps) {
-    if (_tick != null) {
-      setState(_stopTimer);
-      return;
-    }
-    setState(() {
-      if (_step == null || _step! >= steps.length) {
-        _step = 0;
-        _elapsed = Duration.zero;
-      }
-    });
-    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(() {
-        _elapsed += const Duration(seconds: 1);
-        if (_elapsed >= Duration(minutes: steps[_step!].minutes)) _next(steps);
-      });
-    });
-  }
-
-  /// Moves the highlight to the next step; after the last one the timer stops.
-  void _next(List<LessonStep> steps) {
-    _elapsed = Duration.zero;
-    _step = _step! + 1;
-    if (_step! >= steps.length) _stopTimer();
-  }
-
-  void _jump(int i) => setState(() {
-    _step = i;
-    _elapsed = Duration.zero;
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +95,7 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
         if (plan == null) {
           return KxEmptyState(key: const Key('plan-none'), icon: Icons.edit_note, message: l.planNone);
         }
+        _timer.show(period.period, [for (final s in plan.content.steps) s.minutes]);
         return _planView(context, period, plan);
       },
     );
@@ -160,8 +119,9 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
       ),
     );
 
-    final running = _tick != null;
-    final done = _step != null && _step! >= p.steps.length;
+    final running = _timer.running;
+    final step = _timer.step;
+    final done = _timer.done;
     return ListView(
       key: const Key('plan-view'),
       padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
@@ -202,14 +162,14 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
             children: [
               FilledButton.tonalIcon(
                 key: const Key('plan-timer'),
-                onPressed: () => _toggleTimer(p.steps),
+                onPressed: _timer.toggle,
                 icon: Icon(running ? Icons.pause : Icons.play_arrow),
-                label: Text(running ? l.pause : (_step == null || done ? l.planStartTimer : l.planResumeTimer)),
+                label: Text(running ? l.pause : (step == null || done ? l.planStartTimer : l.planResumeTimer)),
               ),
-              if (_step != null && !done)
+              if (step != null && !done)
                 OutlinedButton.icon(
                   key: const Key('plan-next'),
-                  onPressed: () => setState(() => _next(p.steps)),
+                  onPressed: _timer.next,
                   icon: const Icon(Icons.skip_next),
                   label: Text(l.planNextStep),
                 ),
@@ -244,8 +204,8 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
     final c = context.colors;
     final l = context.l10n;
     final s = steps[i];
-    final current = _step == i;
-    final left = Duration(minutes: s.minutes) - _elapsed;
+    final current = _timer.step == i;
+    final left = Duration(minutes: s.minutes) - _timer.elapsed;
     final mm = left.inMinutes.toString().padLeft(2, '0');
     final ss = (left.inSeconds % 60).toString().padLeft(2, '0');
     return Padding(
@@ -259,7 +219,7 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(Kx.rMd),
-          onTap: () => _jump(i),
+          onTap: () => _timer.jump(i),
           child: Padding(
             padding: const EdgeInsets.all(Kx.s12),
             child: Row(

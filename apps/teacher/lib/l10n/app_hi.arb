@@ -371,5 +371,20 @@
   "errorAiAllowance": "आपके संस्थान ने आज की KINETIX AI सीमा पूरी कर ली है। कल फिर से मिलेगी।",
   "errorAiUnavailable": "KINETIX AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।",
   "errorAiUnusable": "KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।",
-  "reviewedByOn": "{name} ने {date} को समीक्षा की"
+  "reviewedByOn": "{name} ने {date} को समीक्षा की",
+  "signInWithPhone": "फ़ोन से साइन इन करें",
+  "signInWithPassword": "पासवर्ड से साइन इन करें",
+  "phoneSignInSubtitle": "हम आपके रजिस्टर्ड मोबाइल नंबर पर 6 अंकों का कोड भेजेंगे",
+  "mobileNumber": "मोबाइल नंबर",
+  "enterMobileNumber": "अपना मोबाइल नंबर डालें",
+  "invalidMobileNumber": "सही 10 अंकों का मोबाइल नंबर डालें",
+  "sendCode": "कोड भेजें",
+  "otpSentTo": "{phone} पर भेजा गया 6 अंकों का कोड डालें",
+  "otpCode": "साइन-इन कोड",
+  "enterOtp": "6 अंकों का कोड डालें",
+  "resendCodeIn": "{time} में कोड दोबारा भेजें",
+  "resendCode": "कोड दोबारा भेजें",
+  "codeResent": "नया कोड भेजा गया",
+  "changeNumber": "नंबर बदलें",
+  "errorOtpInvalid": "यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। SMS देखें या नया कोड मंगाएँ।"
 }

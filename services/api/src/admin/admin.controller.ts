@@ -241,15 +241,16 @@ export class AdminController {
           .where(and(inArray(boardSessions.deviceId, rows.map((r) => r.id)), isNull(boardSessions.endedAt), gte(boardSessions.expiresAt, now)))
       : [];
     const byDevice = new Map(sessions.map((s) => [s.deviceId, s]));
+    const live = await this.realtime.boardStatus(rows.map((r) => r.id));
     return rows.map((r) => {
       const s = byDevice.get(r.id);
       return {
         ...r,
         enrolled: r.enrolledAt != null,
         // Live socket, or an HTTP call in the last 3 minutes.
-        online: this.realtime.isOnline(r.id) || (r.lastSeenAt != null && now.getTime() - r.lastSeenAt.getTime() < 180_000),
+        online: live.get(r.id)?.online || (r.lastSeenAt != null && now.getTime() - r.lastSeenAt.getTime() < 180_000),
         session: s ? { id: s.sessionId, teacher: s.teacher, section: s.section, subject: s.subject, startedAt: s.startedAt } : null,
-        viewers: this.realtime.viewerCount(r.id),
+        viewers: live.get(r.id)?.viewers ?? 0,
       };
     });
   }

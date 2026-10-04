@@ -75,6 +75,7 @@ String? describeErrorCode(AppLocalizations l, String? code) => switch (code) {
   'FORBIDDEN' => l.errForbidden,
   'NOT_FOUND' => l.errNotFound,
   'RATE_LIMITED' => l.errTooMany,
+  'OTP_INVALID' => l.errOtpInvalid,
   'TOO_LARGE' => l.errTooLarge,
   'CONFLICT' => l.errConflict,
   'SUBJECT_NOT_IN_CLASS' => l.errSubjectNotInClass,

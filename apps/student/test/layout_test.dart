@@ -91,6 +91,9 @@ void main() {
 
   testWidgets('sign-in fits a small phone with large text', (tester) async {
     await pumpApp(tester, signedIn: false, size: const Size(360, 640), textScale: 2);
+    await tester.ensureVisible(find.byKey(const Key('usePassword')));
+    await tester.pumpAndSettle();
+    await usePassword(tester);
     await tester.ensureVisible(find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('signIn')));

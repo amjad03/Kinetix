@@ -1,5 +1,5 @@
-import { Logger } from '@nestjs/common';
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { BeforeApplicationShutdown, Inject, Logger } from '@nestjs/common';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { RealtimeEvents, type LiveAudioChunk, type LiveAudioState, type LiveFrameEvent, type LiveViewersEvent, type LiveWatchAck } from '@kinetix/shared';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { Namespace, Server, Socket } from 'socket.io';
@@ -10,6 +10,8 @@ import { errorCode } from '../common/error-codes.js';
 import { Clock } from '../common/time.js';
 import { DbService } from '../db/db.service.js';
 import { boardSessions, devices, sections, students, subjects, tenants, users } from '../db/schema.js';
+import { REDIS } from '../redis/redis.module.js';
+import { LiveState, type ViewerRole } from './live-state.js';
 
 export const deviceRoom = (deviceId: string) => `device:${deviceId}`;
 const liveRoom = (deviceId: string) => `live:${deviceId}`;
@@ -35,8 +37,8 @@ interface Watch {
   audio: boolean;
 }
 
-/** Leaders look in on a class (live view); students attend a class the teacher took live. */
-type ViewerRole = 'leader' | 'student';
+/** Between API instances (Redis): the teacher stopped the live class; each instance sends its students away. */
+const END_CLASS_LIVE = 'kx:end-class-live';
 
 /**
  * Socket.IO namespace `/realtime`.
@@ -51,37 +53,52 @@ type ViewerRole = 'leader' | 'student';
  *   live class may listen, school leaders only when the institution turns
  *   `classroomAudioToViewers` on. Turning audio on and off is audited.
  *
- * TODO: add the Redis adapter before running more than one API instance (the viewer counts
- * below are per process).
+ * More than one API instance: with `REDIS_URL` set, socket.io uses the Redis adapter (emits to
+ * rooms reach every instance) and {@link LiveState} keeps who is online, watching and listening
+ * in Redis. Per-socket data (`socket.data.watches`) stays with the instance holding the socket.
  */
 @WebSocketGateway({ namespace: '/realtime', cors: { origin: true } })
-export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, BeforeApplicationShutdown {
   private readonly log = new Logger(RealtimeGateway.name);
 
   @WebSocketServer()
   server!: Server;
 
-  /** Open sockets per device, for the dashboard's "online" indicator. */
-  private readonly connected = new Map<string, number>();
-
-  /** Viewer sockets per watched device, and whether each is a school leader or a student. */
-  private readonly viewers = new Map<string, Map<string, { role: ViewerRole; audio: boolean }>>();
-
-  /** Boards whose teacher has class audio on. */
-  private readonly audioOn = new Set<string>();
+  /** Disconnect handlers still running (awaited at shutdown, before the database closes). */
+  private readonly pending = new Set<Promise<void>>();
 
   constructor(
     private readonly auth: AuthGuard,
     private readonly db: DbService,
     private readonly clock: Clock,
+    private readonly live: LiveState,
+    @Inject(REDIS) private readonly redis: unknown,
   ) {}
 
-  isOnline(deviceId: string): boolean {
-    return (this.connected.get(deviceId) ?? 0) > 0;
+  afterInit(server: Server): void {
+    (server as unknown as Namespace).on(END_CLASS_LIVE, (tenantId: string, deviceId: string) =>
+      void this.endLocalStudents(tenantId, deviceId)
+        .then(() => this.tellBoard(tenantId, deviceId, false))
+        .catch(() => undefined),
+    );
   }
 
-  viewerCount(deviceId: string): number {
-    return this.viewers.get(deviceId)?.size ?? 0;
+  /** Shutdown: disconnect this instance's sockets and let their handlers finish (audits, shared state). */
+  async beforeApplicationShutdown(): Promise<void> {
+    const nsp = this.server as unknown as Namespace | undefined;
+    for (const socket of [...(nsp?.sockets?.values() ?? [])]) socket.disconnect(true);
+    await Promise.allSettled([...this.pending]);
+    await this.live.close();
+  }
+
+  /** For the dashboard: whether each board has a live socket, and how many are watching it. */
+  async boardStatus(deviceIds: string[]): Promise<Map<string, { online: boolean; viewers: number }>> {
+    const [online, viewers] = await Promise.all([this.live.isOnline(deviceIds), this.live.viewerCounts(deviceIds)]);
+    return new Map(deviceIds.map((id, i) => [id, { online: online[i], viewers: viewers[i] }]));
+  }
+
+  private async viewerCount(deviceId: string): Promise<number> {
+    return (await this.live.viewerCounts([deviceId]))[0];
   }
 
   async handleConnection(socket: Socket): Promise<void> {
@@ -98,10 +115,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
         return;
       }
       await socket.join(deviceRoom(principal.deviceId));
-      this.connected.set(principal.deviceId, (this.connected.get(principal.deviceId) ?? 0) + 1);
+      // The board's first socket: audio starts off (also clears a flag left by a crashed instance).
+      if ((await this.live.boardConnected(principal.deviceId, socket.id)) === 1) await this.live.setAudio(principal.deviceId, false);
       socket.emit('ready', { deviceId: principal.deviceId });
       // Reconnected while people are watching: carry on streaming.
-      if (this.viewerCount(principal.deviceId) > 0) await this.tellBoard(principal.tenantId, principal.deviceId, true);
+      if ((await this.viewerCount(principal.deviceId)) > 0) await this.tellBoard(principal.tenantId, principal.deviceId, true);
     } catch (e) {
       this.log.debug(`Rejected socket: ${(e as Error).message}`);
       socket.emit('error', { message: 'unauthorized' });
@@ -109,23 +127,28 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
-  async handleDisconnect(socket: Socket): Promise<void> {
+  handleDisconnect(socket: Socket): Promise<void> {
+    const done = this.disconnected(socket).catch((e) => this.log.warn(`Disconnect cleanup failed: ${(e as Error).message}`));
+    this.pending.add(done);
+    void done.finally(() => this.pending.delete(done));
+    return done;
+  }
+
+  private async disconnected(socket: Socket): Promise<void> {
     const principal = socket.data.principal as Principal | undefined;
     if (!principal) return;
     if (principal.kind === 'user') {
       for (const deviceId of [...((socket.data.watches as Map<string, Watch>)?.keys() ?? [])]) {
-        // Also runs during shutdown, when the database may already be closed.
+        // Also runs during shutdown (beforeApplicationShutdown waits for it; the database closes after).
         await this.unwatch(socket, deviceId).catch((e) => this.log.warn(`Unwatch failed: ${(e as Error).message}`));
       }
       return;
     }
     const id = principal.deviceId;
-    const n = (this.connected.get(id) ?? 1) - 1;
-    if (n <= 0) {
-      this.connected.delete(id);
-      this.audioOff(id);
+    if ((await this.live.boardDisconnected(id, socket.id)) === 0) {
+      await this.audioOff(id);
       this.server.to(liveRoom(id)).emit(RealtimeEvents.LiveEnded, { deviceId: id, reason: 'offline' });
-    } else this.connected.set(id, n);
+    }
   }
 
   /** To every socket of these users (for example a new message). */
@@ -142,7 +165,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   /** Tells viewers a class is over (called when a board session ends). */
   liveEnded(deviceId: string, reason: string): void {
-    this.audioOff(deviceId);
+    void this.audioOff(deviceId).catch((e) => this.log.warn(`Audio off failed: ${(e as Error).message}`));
     this.server?.to(liveRoom(deviceId)).emit(RealtimeEvents.LiveEnded, { deviceId, reason });
   }
 
@@ -195,7 +218,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       };
     });
     if ('error' in found) return { ok: false, error: found.error, code: errorCode(400, found.error) };
-    if (!this.isOnline(deviceId)) return { ok: false, error: 'This board is offline', code: errorCode(400, 'This board is offline') };
+    if (!(await this.live.isOnline([deviceId]))[0]) return { ok: false, error: 'This board is offline', code: errorCode(400, 'This board is offline') };
 
     const watches = socket.data.watches as Map<string, Watch>;
     if (!watches.has(deviceId)) {
@@ -207,29 +230,33 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       });
       await socket.join(liveRoom(deviceId));
       if (found.audio) await socket.join(audioRoom(deviceId));
-      const set = this.viewers.get(deviceId) ?? new Map<string, { role: ViewerRole; audio: boolean }>();
-      set.set(socket.id, { role, audio: found.audio });
-      this.viewers.set(deviceId, set);
+      await this.live.addViewer(deviceId, socket.id, { role, audio: found.audio });
     }
     await this.tellBoard(p.tenantId, deviceId, true);
     return {
       ok: true,
       session: found.session,
-      audio: { allowed: found.audio, on: this.audioOn.has(deviceId) },
+      audio: { allowed: found.audio, on: await this.live.isAudioOn(deviceId) },
     };
   }
 
   /** The teacher stopped the live class: students watching are sent away; leaders stay. */
   async endClassLive(tenantId: string, deviceId: string): Promise<void> {
-    for (const [socketId, { role }] of [...(this.viewers.get(deviceId) ?? [])]) {
+    // Students connected to other instances are sent away by those instances.
+    if (this.redis) (this.server as unknown as Namespace).serverSideEmit(END_CLASS_LIVE, tenantId, deviceId);
+    await this.endLocalStudents(tenantId, deviceId);
+    await this.tellBoard(tenantId, deviceId, false).catch(() => undefined);
+  }
+
+  private async endLocalStudents(tenantId: string, deviceId: string): Promise<void> {
+    for (const [socketId, { role }] of await this.live.viewers(deviceId)) {
       if (role !== 'student') continue;
-      // This gateway is a namespace, so its socket table is keyed by socket id.
+      // This gateway is a namespace, so its socket table is keyed by socket id; only this instance's sockets are in it.
       const socket = (this.server as unknown as Namespace).sockets.get(socketId);
       if (!socket) continue;
       socket.emit(RealtimeEvents.LiveEnded, { deviceId, reason: 'live_off' });
-      await this.unwatch(socket, deviceId).catch(() => undefined);
+      await this.unwatch(socket, deviceId, false).catch(() => undefined);
     }
-    await this.tellBoard(tenantId, deviceId, false).catch(() => undefined);
   }
 
   @SubscribeMessage(RealtimeEvents.LiveUnwatch)
@@ -240,9 +267,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   /** From the board: relayed to whoever is watching it. */
   @SubscribeMessage(RealtimeEvents.LiveFrame)
-  frame(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveFrameEvent): void {
+  async frame(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveFrameEvent): Promise<void> {
     const p = socket.data.principal as Principal | undefined;
-    if (!p || p.kind === 'user' || this.viewerCount(p.deviceId) === 0) return;
+    if (!p || p.kind === 'user' || (await this.viewerCount(p.deviceId)) === 0) return;
     if (!body || !Array.isArray(body.events) || body.events.length > MAX_FRAME_EVENTS) return;
     socket.to(liveRoom(p.deviceId)).emit(RealtimeEvents.LiveFrame, { ...body, deviceId: p.deviceId });
   }
@@ -252,9 +279,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   async audioState(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveAudioState): Promise<{ ok: boolean }> {
     const p = socket.data.principal as Principal | undefined;
     if (!p || p.kind === 'user' || typeof body?.on !== 'boolean') return { ok: false };
-    if (body.on === this.audioOn.has(p.deviceId)) return { ok: true };
-    if (body.on) this.audioOn.add(p.deviceId);
-    else this.audioOn.delete(p.deviceId);
+    if (!(await this.live.setAudio(p.deviceId, body.on))) return { ok: true };
     this.server.to(liveRoom(p.deviceId)).emit(RealtimeEvents.LiveAudioState, {
       deviceId: p.deviceId,
       on: body.on,
@@ -276,10 +301,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   /** From the board: class audio, relayed only to viewers allowed to hear it. */
   @SubscribeMessage(RealtimeEvents.LiveAudio)
-  audio(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveAudioChunk): void {
+  async audio(@ConnectedSocket() socket: Socket, @MessageBody() body: LiveAudioChunk): Promise<void> {
     const p = socket.data.principal as Principal | undefined;
-    if (!p || p.kind === 'user' || !this.audioOn.has(p.deviceId) || this.listenerCount(p.deviceId) === 0) return;
+    if (!p || p.kind === 'user') return;
     if (!body || typeof body.data !== 'string' || body.data.length > MAX_AUDIO_CHARS || !Number.isInteger(body.seq)) return;
+    if (!(await this.live.isAudioOn(p.deviceId)) || (await this.listenerCount(p.deviceId)) === 0) return;
     socket.to(audioRoom(p.deviceId)).emit(RealtimeEvents.LiveAudio, {
       deviceId: p.deviceId,
       seq: body.seq,
@@ -289,16 +315,16 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     });
   }
 
-  listenerCount(deviceId: string): number {
-    return [...(this.viewers.get(deviceId)?.values() ?? [])].filter((v) => v.audio).length;
+  async listenerCount(deviceId: string): Promise<number> {
+    return [...(await this.live.viewers(deviceId)).values()].filter((v) => v.audio).length;
   }
 
   /** The board's class is over or it went offline: audio is off until the teacher turns it on again. */
-  private audioOff(deviceId: string): void {
-    if (this.audioOn.delete(deviceId)) this.server?.to(liveRoom(deviceId)).emit(RealtimeEvents.LiveAudioState, { deviceId, on: false });
+  private async audioOff(deviceId: string): Promise<void> {
+    if (await this.live.setAudio(deviceId, false)) this.server?.to(liveRoom(deviceId)).emit(RealtimeEvents.LiveAudioState, { deviceId, on: false });
   }
 
-  private async unwatch(socket: Socket, deviceId: string): Promise<void> {
+  private async unwatch(socket: Socket, deviceId: string, tell = true): Promise<void> {
     const p = socket.data.principal as Principal;
     const watches = socket.data.watches as Map<string, Watch> | undefined;
     const w = watches?.get(deviceId);
@@ -306,11 +332,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     watches!.delete(deviceId);
     await socket.leave(liveRoom(deviceId));
     await socket.leave(audioRoom(deviceId));
-    const set = this.viewers.get(deviceId);
-    set?.delete(socket.id);
-    if (set && set.size === 0) this.viewers.delete(deviceId);
+    await this.live.removeViewer(deviceId, socket.id);
     if (w.role === 'student') {
-      await this.tellBoard(p.tenantId, deviceId, false);
+      if (tell) await this.tellBoard(p.tenantId, deviceId, false);
       return;
     }
     await this.db
@@ -332,7 +356,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   /** Viewer count to the board; a new viewer also needs a full snapshot. */
   private async tellBoard(tenantId: string, deviceId: string, wantSnapshot: boolean): Promise<void> {
     const [tenant] = await this.db.withTenant(tenantId, (tx) => tx.select({ settings: tenants.settings }).from(tenants));
-    const watching = [...(this.viewers.get(deviceId)?.values() ?? [])];
+    const watching = [...(await this.live.viewers(deviceId)).values()];
     const roles = watching.map((v) => v.role);
     const event: LiveViewersEvent = {
       count: roles.length,

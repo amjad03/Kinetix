@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { BeforeApplicationShutdown, Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { eq, sql } from 'drizzle-orm';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -17,7 +17,7 @@ const STALE_AFTER = '15 minutes';
  * claim jobs with FOR UPDATE SKIP LOCKED; failures retry with backoff.
  */
 @Injectable()
-export class JobsService implements OnApplicationBootstrap, OnApplicationShutdown {
+export class JobsService implements OnApplicationBootstrap, BeforeApplicationShutdown {
   private readonly log = new Logger(JobsService.name);
   private readonly handlers = new Map<string, JobHandler>();
   private timer?: NodeJS.Timeout;
@@ -43,7 +43,8 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     }
   }
 
-  async onApplicationShutdown(): Promise<void> {
+  /** Stops polling and lets a running job finish while the database is still open. */
+  async beforeApplicationShutdown(): Promise<void> {
     clearInterval(this.timer);
     await this.running?.catch(() => undefined);
   }

@@ -8,6 +8,8 @@ import 'package:kinetix_teacher/app.dart';
 import 'package:kinetix_teacher/core/app_state.dart';
 import 'package:kinetix_teacher/core/l10n.dart';
 import 'package:kinetix_teacher/core/models.dart';
+import 'package:kinetix_teacher/core/push.dart';
+import 'package:kinetix_teacher/core/secure_store.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -108,9 +110,24 @@ void seed(FakeTeacherApi api, {String language = 'en'}) {
   api.addAssessment(title: 'Ledger assignment', maxMarks: 10);
 }
 
-Future<AppState> pumpApp(WidgetTester tester, FakeTeacherApi api, {Map<String, Object>? prefs, FakeRealtime? realtime}) async {
-  if (prefs != null) SharedPreferences.setMockInitialValues(prefs);
-  final state = AppState(api, await SharedPreferences.getInstance(), realtime: realtime);
+/// The phone's key store: emptied with the preferences, kept over a restart like they are.
+SecureStore _keyStore = MemorySecureStore();
+
+/// The app on a phone whose storage holds [prefs] (when given; the key store starts empty then)
+/// and [secure] (default: the phone's key store).
+Future<AppState> pumpApp(
+  WidgetTester tester,
+  FakeTeacherApi api, {
+  Map<String, Object>? prefs,
+  FakeRealtime? realtime,
+  SecureStore? secure,
+  PushMessaging? push,
+}) async {
+  if (prefs != null) {
+    SharedPreferences.setMockInitialValues(prefs);
+    _keyStore = MemorySecureStore();
+  }
+  final state = AppState(api, await SharedPreferences.getInstance(), realtime: realtime, secure: secure ?? _keyStore, push: push);
   await tester.pumpWidget(TeacherApp(state: state));
   await state.restore();
   await tester.pumpAndSettle();

@@ -371,5 +371,20 @@
   "errorAiAllowance": "ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ KINETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ನಾಳೆ ಮತ್ತೆ ಲಭ್ಯ.",
   "errorAiUnavailable": "KINETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "errorAiUnusable": "KINETIX AI ಬಳಸಬಹುದಾದ ಕರಡು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
-  "reviewedByOn": "{name} ಅವರು {date} ರಂದು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ"
+  "reviewedByOn": "{name} ಅವರು {date} ರಂದು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ",
+  "signInWithPhone": "ಫೋನ್ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ",
+  "signInWithPassword": "ಪಾಸ್‌ವರ್ಡ್ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ",
+  "phoneSignInSubtitle": "ನಿಮ್ಮ ನೋಂದಾಯಿತ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಗೆ 6 ಅಂಕಿಯ ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ",
+  "mobileNumber": "ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
+  "enterMobileNumber": "ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ",
+  "invalidMobileNumber": "ಸರಿಯಾದ 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ",
+  "sendCode": "ಕೋಡ್ ಕಳುಹಿಸಿ",
+  "otpSentTo": "{phone} ಗೆ ಕಳುಹಿಸಿದ 6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ",
+  "otpCode": "ಸೈನ್ ಇನ್ ಕೋಡ್",
+  "enterOtp": "6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ",
+  "resendCodeIn": "{time} ನಂತರ ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ",
+  "resendCode": "ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ",
+  "codeResent": "ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "changeNumber": "ಸಂಖ್ಯೆ ಬದಲಿಸಿ",
+  "errorOtpInvalid": "ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಿ."
 }

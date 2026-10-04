@@ -2324,6 +2324,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reviewed by {name} on {date}'**
   String reviewedByOn(String name, String date);
+
+  /// Button: switch to signing in with a code sent by SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with phone'**
+  String get signInWithPhone;
+
+  /// Button: switch back to email or phone and password.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with password'**
+  String get signInWithPassword;
+
+  /// Under the sign-in heading, phone sign-in.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll text a 6-digit code to your registered mobile number'**
+  String get phoneSignInSubtitle;
+
+  /// Field label (after the +91 prefix).
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get mobileNumber;
+
+  /// Validation: empty mobile number.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your mobile number'**
+  String get enterMobileNumber;
+
+  /// Validation: not a 10-digit Indian mobile number.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid 10-digit mobile number'**
+  String get invalidMobileNumber;
+
+  /// Button: text a sign-in code to the number.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get sendCode;
+
+  /// Above the code field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to {phone}'**
+  String otpSentTo(String phone);
+
+  /// Field label: the code from the SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in code'**
+  String get otpCode;
+
+  /// Validation: code missing or too short.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code'**
+  String get enterOtp;
+
+  /// Disabled button with a countdown, e.g. 0:25.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {time}'**
+  String resendCodeIn(String time);
+
+  /// Button: text a new code.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get resendCode;
+
+  /// Snackbar after resending.
+  ///
+  /// In en, this message translates to:
+  /// **'New code sent'**
+  String get codeResent;
+
+  /// Button: back to the mobile number.
+  ///
+  /// In en, this message translates to:
+  /// **'Change number'**
+  String get changeNumber;
+
+  /// Server: OTP_INVALID.
+  ///
+  /// In en, this message translates to:
+  /// **'That code is wrong or has expired. Check the SMS or send a new code.'**
+  String get errorOtpInvalid;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

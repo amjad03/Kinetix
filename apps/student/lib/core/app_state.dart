@@ -9,28 +9,44 @@ import 'api.dart';
 import 'live.dart';
 import 'models.dart';
 import 'push.dart';
+import 'token_store.dart';
 
 /// The default API address. On the Android emulator the host machine is 10.0.2.2.
 const defaultServerUrl = 'http://localhost:4000';
 
 /// Who is signed in, their student record, the remembered server, institution and login, the
-/// app's language, and the language KINETIX AI answers in.
-///
-/// TODO: keep the token in flutter_secure_storage (Android Keystore / iOS Keychain) and add an
-/// app lock (biometric or OS PIN), per docs/architecture/board-pairing.md.
+/// app's language, and the language KINETIX AI answers in. The session token is kept in the
+/// device's secure store ([TokenStore]: Android Keystore / iOS Keychain), never in preferences.
 class AppState extends ChangeNotifier {
-  AppState(this.api, this.prefs, {PushTokenSource push = const NoPushTokenSource(), LiveConnector? live})
-    : push = PushRegistrar(api, push),
-      liveConnector = live ?? SocketLiveConnection.new;
+  AppState(
+    this.api,
+    this.prefs, {
+    TokenStore? tokens,
+    PushMessaging messaging = const NoPushMessaging(),
+    LiveConnector? live,
+  }) : tokens = tokens ?? const SecureTokenStore(),
+       push = PushRegistrar(api, messaging),
+       liveConnector = live ?? SocketLiveConnection.new {
+    _taps = messaging.onTap.listen((t) => pendingPushTap.value = t);
+  }
 
   final StudentApi api;
   final SharedPreferences prefs;
+  final TokenStore tokens;
   final PushRegistrar push;
+  PushMessaging get messaging => push.messaging;
+
+  /// A tapped notification still to open (the shell opens it once someone is signed in).
+  final pendingPushTap = ValueNotifier<PushTap?>(null);
+  StreamSubscription<PushTap>? _taps;
 
   /// Opens the realtime connection a live class is watched over (a fake in tests).
   final LiveConnector liveConnector;
 
-  static const _kServer = 'server_url', _kTenant = 'tenant', _kLogin = 'login', _kToken = 'token', _kAiLanguage = 'ai_language';
+  static const _kServer = 'server_url', _kTenant = 'tenant', _kLogin = 'login', _kAiLanguage = 'ai_language';
+
+  /// Whether the "Get notifications?" question was answered on this phone.
+  static const _kPushAsked = 'push_asked';
 
   /// The language picked in Profile, and whether the server still has to hear about it.
   static const _kLanguage = 'language', _kLanguageUnsynced = 'language_unsynced';
@@ -86,7 +102,9 @@ class AppState extends ChangeNotifier {
   /// Restores a previous sign-in, if the token still works.
   Future<void> restore() async {
     api.baseUrl = serverUrl;
-    final token = prefs.getString(_kToken);
+    pendingPushTap.value ??= await _initialTap();
+    // Earlier versions kept the token in preferences: moved to the secure store once.
+    final token = await migrateLegacyToken(prefs, tokens);
     if (token != null) {
       api.token = token;
       try {
@@ -95,12 +113,12 @@ class AppState extends ChangeNotifier {
           student = await api.student();
           me = profile;
         } else {
-          await prefs.remove(_kToken);
+          await tokens.delete();
           api.token = null;
         }
       } on ApiException catch (e) {
         // Offline: stay on the sign-in screen but keep the token for the next attempt.
-        if (e.status == 401 || e.status == 404) await prefs.remove(_kToken);
+        if (e.status == 401 || e.status == 404) await tokens.delete();
         api.token = null;
       }
     }
@@ -112,9 +130,35 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<PushTap?> _initialTap() async {
+    try {
+      return await messaging.initialTap();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> signIn({required String server, required String tenant, required String login, required String password}) async {
     api.baseUrl = server;
     await api.login(tenant: tenant, login: login, password: password);
+    await _completeSignIn(server: server, tenant: tenant, login: login);
+  }
+
+  /// Texts a sign-in code to [phone] (E.164).
+  Future<OtpChallenge> requestOtp({required String server, required String tenant, required String phone}) {
+    api.baseUrl = server;
+    return api.requestOtp(tenant: tenant, phone: phone);
+  }
+
+  /// Signs in with the code texted to [phone].
+  Future<void> signInWithOtp({required String server, required String tenant, required String phone, required String code}) async {
+    api.baseUrl = server;
+    await api.verifyOtp(tenant: tenant, phone: phone, code: code);
+    await _completeSignIn(server: server, tenant: tenant, login: phone);
+  }
+
+  /// Only students get in; remembers the server, institution and login, and keeps the token.
+  Future<void> _completeSignIn({required String server, required String tenant, required String login}) async {
     final profile = await api.me();
     if (!profile.isStudent) {
       api.token = null;
@@ -142,7 +186,7 @@ class AppState extends ChangeNotifier {
     await prefs.setString(_kServer, server);
     await prefs.setString(_kTenant, tenant);
     await prefs.setString(_kLogin, login);
-    await prefs.setString(_kToken, api.token!);
+    await tokens.write(api.token!);
     me = profile;
     student = record;
     notifyListeners();
@@ -154,9 +198,38 @@ class AppState extends ChangeNotifier {
     // Stop pushes to this phone before the token goes.
     if (api.token != null) await push.unregister();
     api.token = null;
-    await prefs.remove(_kToken);
+    await tokens.delete();
     me = null;
     student = null;
     notifyListeners();
+  }
+
+  /// Whether to ask "Get notifications on this phone?": push is set up, the question was never
+  /// answered here and the system has not been asked either.
+  Future<bool> shouldAskForNotifications() async {
+    if (!messaging.available || prefs.getBool(_kPushAsked) == true) return false;
+    try {
+      return await messaging.permission() == PushPermission.notDetermined;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// The answer to our own question; only "Turn on" brings up the system prompt.
+  Future<void> answerNotifications({required bool allow}) async {
+    await prefs.setBool(_kPushAsked, true);
+    if (!allow) return;
+    try {
+      if (await messaging.requestPermission() == PushPermission.granted && signedIn) await push.register();
+    } catch (e) {
+      debugPrint('Notification permission failed: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _taps?.cancel();
+    pendingPushTap.dispose();
+    super.dispose();
   }
 }

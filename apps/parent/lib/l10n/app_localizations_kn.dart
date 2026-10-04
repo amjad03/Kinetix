@@ -1506,4 +1506,63 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get planIntro => 'ಶಿಕ್ಷಕರು ಕಲಿಸಲು ಯೋಜಿಸಿರುವ ವಿಷಯಗಳು.';
+
+  @override
+  String get phoneNumber => 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ';
+
+  @override
+  String get enterPhone => 'ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
+
+  @override
+  String get enterValidMobile => '10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
+
+  @override
+  String get sendCode => 'ಕೋಡ್ ಕಳುಹಿಸಿ';
+
+  @override
+  String otpSentTo(String phone) {
+    return '$phone ಗೆ ಕಳುಹಿಸಿದ 6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ';
+  }
+
+  @override
+  String get otpCode => '6 ಅಂಕಿಯ ಕೋಡ್';
+
+  @override
+  String get enterOtp => '6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ';
+
+  @override
+  String get resendCode => 'ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ';
+
+  @override
+  String resendIn(String time) {
+    return '$time ನಂತರ ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ';
+  }
+
+  @override
+  String get changeNumber => 'ಸಂಖ್ಯೆ ಬದಲಿಸಿ';
+
+  @override
+  String get usePassword => 'ಬದಲಿಗೆ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ';
+
+  @override
+  String get usePhoneCode => 'ಬದಲಿಗೆ ಫೋನ್‌ಗೆ ಕೋಡ್ ಪಡೆಯಿರಿ';
+
+  @override
+  String get errOtpInvalid => 'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕೇಳಿ.';
+
+  @override
+  String get errOtpTooMany => 'ಹಲವು ಬಾರಿ ಕೋಡ್ ಕೇಳಲಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get notificationsTitle => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳನ್ನು ಪಡೆಯಬೇಕೇ?';
+
+  @override
+  String get notificationsAllow => 'ಆನ್ ಮಾಡಿ';
+
+  @override
+  String get otpHint => 'ನಿಮ್ಮ ಮಗುವಿನ ಕಾಲೇಜಿಗೆ ನೀಡಿದ ಫೋನ್ ಸಂಖ್ಯೆಗೆ ನಾವು ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ';
+
+  @override
+  String get notificationsBody =>
+      'ಹಾಜರಾತಿ, ಹೋಂವರ್ಕ್, ಫಲಿತಾಂಶಗಳು, ಶುಲ್ಕ ಮತ್ತು ನಿಮ್ಮ ಮಗುವಿನ ಕಾಲೇಜಿನ ಸಂದೇಶಗಳ ಬಗ್ಗೆ ನಾವು ತಿಳಿಸುತ್ತೇವೆ. ಇದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಫೋನ್‌ನ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಬದಲಿಸಬಹುದು.';
 }

@@ -117,7 +117,7 @@ export class DevicesController {
   /** The board exchanges its enrolment code for a long-lived device token. */
   @Post('enroll')
   async enroll(@Body(new ZodBody(EnrollBody)) body: z.infer<typeof EnrollBody>) {
-    this.limiter.hit('enroll:global', 30, 60_000);
+    await this.limiter.hit('enroll:global', 30, 60_000);
     const fail = new UnauthorizedException('Invalid or expired enrolment code');
     const hash = this.hashEnrollment(body.code.trim().toUpperCase());
     const found = await this.system.tenantForEnrollmentCode(hash);
@@ -150,8 +150,8 @@ export class DevicesController {
    */
   @Post('me/pairing-codes')
   @Auth('device')
-  issuePairingCode(@CurrentPrincipal() p: DevicePrincipal) {
-    this.limiter.hit(`pairing-code:${p.deviceId}`, 30, 60_000);
+  async issuePairingCode(@CurrentPrincipal() p: DevicePrincipal) {
+    await this.limiter.hit(`pairing-code:${p.deviceId}`, 30, 60_000);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const now = this.clock.now();
       await tx

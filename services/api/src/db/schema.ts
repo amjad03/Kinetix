@@ -271,6 +271,26 @@ export const pairingCodes = pgTable(
   (t) => [index('pairing_codes_lookup_idx').on(t.tenantId, t.codeHash)],
 );
 
+/**
+ * Phone sign-in codes (OTP). Only the HMAC of the code is kept. A code is spent when used, after
+ * five wrong tries, or when a newer code is sent to the same phone.
+ */
+export const otpCodes = pgTable(
+  'otp_codes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    phone: text('phone').notNull(),
+    codeHash: text('code_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('otp_codes_phone_idx').on(t.tenantId, t.phone, t.createdAt)],
+);
+
 export const sessionEndReason = pgEnum('session_end_reason', [
   'teacher_ended',
   'period_over',
@@ -1115,6 +1135,7 @@ export const TENANT_TABLES = [
   'timetable_slots',
   'devices',
   'pairing_codes',
+  'otp_codes',
   'board_sessions',
   'attendance_records',
   'participation_events',

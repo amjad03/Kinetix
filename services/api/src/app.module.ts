@@ -1,4 +1,4 @@
-import { Controller, Get, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module.js';
 import { BroadcastsModule } from './broadcasts/broadcasts.module.js';
 import { ContentModule } from './content/content.module.js';
 import { DbModule } from './db/db.module.js';
+import { RedisModule } from './redis/redis.module.js';
+import { HealthModule } from './health/health.controller.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { ConsentModule } from './consent/consent.module.js';
 import { PlansModule } from './plans/plans.module.js';
@@ -30,17 +32,11 @@ import { TeacherModule } from './teacher/teacher.module.js';
 import { TimetableModule } from './timetable/timetable.module.js';
 import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
 
-@Controller()
-class HealthController {
-  @Get('health')
-  health() {
-    return { status: 'ok' };
-  }
-}
-
 @Module({
   imports: [
     DbModule,
+    RedisModule,
+    HealthModule,
     StorageModule,
     JobsModule,
     PushModule,
@@ -71,6 +67,5 @@ class HealthController {
     MarksModule,
     MessagesModule,
   ],
-  controllers: [HealthController],
 })
 export class AppModule {}

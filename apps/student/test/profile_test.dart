@@ -111,8 +111,8 @@ void main() {
     await tester.tap(find.byKey(const Key('confirmSignOut')));
     await tester.pumpAndSettle();
     expect(state.signedIn, isFalse);
-    expect(state.prefs.getString('token'), isNull);
-    expect(find.byKey(const Key('signIn')), findsOneWidget);
+    expect(storedToken(state), isNull);
+    expect(find.byKey(const Key('sendCode')), findsOneWidget);
     // The institution and login are still there for next time.
     expect(state.rememberedTenant, isNotNull);
   });

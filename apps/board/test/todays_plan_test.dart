@@ -149,6 +149,56 @@ void main() {
     board.dispose();
   });
 
+  testWidgets('the step timer keeps running in other panels and when closed, and starts over for a new class', (tester) async {
+    final board = await pump(tester);
+    await open(tester);
+    await tester.tap(find.byKey(const Key('plan-timer')));
+    await tester.pump(const Duration(seconds: 5));
+    expect(find.text('09:55'), findsOneWidget);
+
+    // Books for a minute, then the panel closed for another.
+    await tester.tap(find.byKey(const Key('panel-books')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plan-view')), findsNothing);
+    await tester.pump(const Duration(minutes: 1));
+    await tester.tap(find.byKey(const Key('panel-close')));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(minutes: 1));
+
+    // Reopened: still counting, from where it got to.
+    await open(tester);
+    expect(find.text('07:55'), findsOneWidget);
+    expect(find.text('Pause'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('07:54'), findsOneWidget);
+
+    // Past the first step while away: the second step is current on return.
+    await tester.tap(find.byKey(const Key('panel-close')));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(minutes: 9));
+    await open(tester);
+    expect(find.descendant(of: find.byKey(const Key('plan-step-1')), matching: find.byKey(const Key('plan-step-left'))), findsOneWidget);
+
+    // Another class session: the timer starts over.
+    board.onPaired(
+      'session-token-2',
+      SessionContext(
+        sessionId: 's2',
+        expiresAt: DateTime.now().add(const Duration(hours: 1)),
+        teacherId: 'u1',
+        teacherName: 'Anita Sharma',
+        language: 'en',
+        sectionName: 'BCom Sem 3 A',
+        subjectName: 'Corporate Accounting',
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.byKey(const Key('plan-step-left')), findsNothing);
+    expect(find.text('Start step timer'), findsOneWidget);
+    board.dispose();
+  });
+
   testWidgets('a topic opens in Books, where it can be marked as taught', (tester) async {
     final board = await pump(tester);
     await open(tester);

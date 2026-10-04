@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_teacher/core/api.dart';
 import 'package:kinetix_teacher/core/models.dart';
+import 'package:kinetix_teacher/core/push.dart';
 import 'package:kinetix_teacher/core/realtime.dart';
 
 /// A [TeacherRealtime] the test drives: [send] delivers `message.new`.
@@ -25,6 +26,44 @@ class FakeRealtime implements TeacherRealtime {
 
   void send(MessageNew m) => _messages.add(m);
   void reconnect() => _reconnected.add(null);
+}
+
+/// A [PushMessaging] the test drives: [tap] delivers a tapped push, [refresh] a new token.
+class FakePush implements PushMessaging {
+  FakePush({this.currentToken = 'fcm-1', this.launchedBy});
+
+  String? currentToken;
+
+  /// The push that launched the app, if any.
+  PushTap? launchedBy;
+  int permissionRequests = 0, tokenDeletes = 0;
+  final _taps = StreamController<PushTap>.broadcast();
+  final _refreshed = StreamController<String>.broadcast();
+
+  @override
+  String get platform => 'android';
+  @override
+  Future<bool> requestPermission() async {
+    permissionRequests++;
+    return true;
+  }
+
+  @override
+  Future<String?> token() async => currentToken;
+  @override
+  Stream<String> get tokenRefreshed => _refreshed.stream;
+  @override
+  Future<PushTap?> initialTap() async => launchedBy;
+  @override
+  Stream<PushTap> get taps => _taps.stream;
+  @override
+  Future<void> deleteToken() async {
+    tokenDeletes++;
+    currentToken = null;
+  }
+
+  void tap(PushTap t) => _taps.add(t);
+  void refresh(String token) => _refreshed.add(currentToken = token);
 }
 
 /// A 1×1 PNG.
@@ -83,8 +122,59 @@ class FakeTeacherApi implements TeacherApi {
     token = 'tok';
   }
 
+  /// The code the fake "texts" for phone sign-in, and the numbers that have an account.
+  String validOtp = '246810';
+  Set<String> otpPhones = {'+919845012345'};
+
+  /// When set, POST /v1/auth/otp/request answers 429 RATE_LIMITED.
+  bool otpRateLimited = false;
+  OtpChallenge otpChallenge = const OtpChallenge(retryAfter: Duration(seconds: 30), expiresIn: Duration(minutes: 5));
+
   @override
-  Future<Me> me() async => profile;
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone}) async {
+    calls.add('otp request $tenant $phone');
+    if (otpRateLimited) throw ApiException(429, 'Too many requests', code: 'RATE_LIMITED');
+    return otpChallenge;
+  }
+
+  @override
+  Future<void> verifyOtp({required String tenant, required String phone, required String code}) async {
+    calls.add('otp verify $tenant $phone $code');
+    if (code != validOtp || !otpPhones.contains(phone)) throw ApiException(401, 'Invalid or expired code', code: 'OTP_INVALID');
+    token = 'otp-tok';
+  }
+
+  /// Push tokens registered (token → platform), in order of the calls.
+  final pushDevices = <String, String>{};
+
+  @override
+  Future<void> registerPushDevice({required String token, required String platform}) async {
+    calls.add('push register $token $platform');
+    pushDevices[token] = platform;
+  }
+
+  @override
+  Future<void> unregisterPushDevice(String token) async {
+    calls.add('push unregister $token');
+    pushDevices.remove(token);
+  }
+
+  List<AppNotification> notificationItems = [];
+
+  @override
+  Future<List<AppNotification>> notifications() async => notificationItems;
+
+  @override
+  Future<void> markNotificationRead(String id) async => calls.add('read notification $id');
+
+  /// When set, GET /v1/me throws it (401: the saved token was revoked).
+  ApiException? meError;
+
+  @override
+  Future<Me> me() async {
+    if (meError != null) throw meError!;
+    return profile;
+  }
 
   /// The account's language (en, hi or kn).
   void useLanguage(String language) => profile = Me(

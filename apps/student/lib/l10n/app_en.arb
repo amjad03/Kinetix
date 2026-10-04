@@ -1006,5 +1006,40 @@
     }
   },
   "comingUpInClass": "Coming up in class",
-  "readAhead": "Topics planned for class. Read ahead if you like."
+  "readAhead": "Topics planned for class. Read ahead if you like.",
+  "phoneNumber": "Mobile number",
+  "enterPhone": "Enter your mobile number",
+  "enterValidMobile": "Enter a 10-digit mobile number",
+  "sendCode": "Send code",
+  "otpSentTo": "Enter the 6-digit code sent to {phone}",
+  "@otpSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String",
+        "example": "+91 98000 00001"
+      }
+    }
+  },
+  "otpCode": "6-digit code",
+  "enterOtp": "Enter the 6-digit code",
+  "resendCode": "Resend code",
+  "resendIn": "Resend code in {time}",
+  "@resendIn": {
+    "description": "A countdown such as 0:25 until another code may be asked for.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "0:25"
+      }
+    }
+  },
+  "changeNumber": "Change number",
+  "usePassword": "Use a password instead",
+  "usePhoneCode": "Get a code on your phone instead",
+  "errOtpInvalid": "That code is wrong or has expired. Check the SMS or ask for a new code.",
+  "errOtpTooMany": "Too many codes asked for. Wait a few minutes and try again.",
+  "notificationsTitle": "Get updates on this phone?",
+  "notificationsAllow": "Turn on",
+  "otpHint": "We'll text a code to the phone number your college has for you",
+  "notificationsBody": "We'll tell you about new homework, results, live classes and messages from your college. You can change this any time in your phone's settings."
 }

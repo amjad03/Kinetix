@@ -25,6 +25,7 @@ import 'classroom_tools.dart';
 import 'popovers.dart';
 import 'profile_menu.dart';
 import '../books/books_panel.dart';
+import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
 import 'live_stream.dart';
 import 'side_panel.dart';
@@ -50,6 +51,9 @@ class _BoardScreenState extends State<BoardScreen> {
   late final BoardPages _pages = BoardPages(palmMode: widget.board.touchProfile.palmMode);
   final _secondInk = InkController();
   late final AiController _ai;
+
+  /// Today's plan step timer: keeps running while other panels are open or the panel is closed.
+  late final PlanTimer _planTimer = PlanTimer(board);
   BoardBackground _background = BoardBackground.plain;
   _Popover? _popover;
   PanelKind? _panel;
@@ -100,6 +104,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _pages.dispose();
     _secondInk.dispose();
     _ai.dispose();
+    _planTimer.dispose();
     super.dispose();
   }
 
@@ -566,7 +571,7 @@ class _BoardScreenState extends State<BoardScreen> {
       onOpenResource: _openSplit,
       initialTopicId: _booksTopic,
     ),
-    PanelKind.plan => TodaysPlanPanel(board: board, onOpenTopic: _openTopic),
+    PanelKind.plan => TodaysPlanPanel(board: board, timer: _planTimer, onOpenTopic: _openTopic),
     PanelKind.quiz => QuizPanel(ai: _ai),
     PanelKind.homework => HomeworkPanel(ai: _ai),
     PanelKind.split => SplitPanel(

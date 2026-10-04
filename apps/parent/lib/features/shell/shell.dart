@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
@@ -9,6 +11,7 @@ import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
 import '../privacy/privacy.dart';
 import '../profile/profile_tab.dart';
+import '../updates/notifications_prompt.dart';
 import '../updates/updates_controller.dart';
 import '../updates/updates_tab.dart';
 
@@ -31,6 +34,9 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
   /// New messages over the realtime connection.
   MessageFeed? _feed;
 
+  /// Pushes arriving while the app is open.
+  StreamSubscription<void>? _pushes;
+
   static const _messagesTab = 1, _updatesTab = 2;
 
   @override
@@ -48,7 +54,29 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
         onReconnected: messages.load,
       )..start();
     }
-    family.load().then((_) => _askConsent());
+    widget.state.pendingPushTap.addListener(_openPushTap);
+    _pushes = widget.state.messaging.onForegroundMessage.listen((_) {
+      if (!updates.loading) updates.load();
+      if (!messages.loading) messages.load();
+    });
+    // A tapped notification that opened the app (or arrived before sign-in) first.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openPushTap());
+    family.load().then((_) => _askConsent()).then((_) {
+      if (mounted) NotificationsPrompt.askIfNeeded(context, widget.state);
+    });
+  }
+
+  /// Opens a tapped push notification's update, as tapping it in Updates would; the Updates tab
+  /// when it is not in the inbox (any more).
+  Future<void> _openPushTap() async {
+    final tap = widget.state.pendingPushTap.value;
+    if (tap == null || !mounted) return;
+    widget.state.pendingPushTap.value = null;
+    await updates.load();
+    if (!mounted) return;
+    final n = updates.items.where((n) => n.id == tap.notificationId).firstOrNull;
+    if (n == null) return _go(_updatesTab);
+    await UpdatesTab.openNotification(context, n, controller: updates, family: family, messages: messages);
   }
 
   /// Privacy choices still to make for any child (first sign-in after the notice, or a new
@@ -71,6 +99,8 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.state.pendingPushTap.removeListener(_openPushTap);
+    _pushes?.cancel();
     _feed?.dispose();
     family.dispose();
     updates.dispose();

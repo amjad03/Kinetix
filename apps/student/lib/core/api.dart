@@ -32,6 +32,19 @@ class ApiException implements Exception {
   String toString() => message.isEmpty ? 'HTTP $status' : message;
 }
 
+/// A sign-in code was sent: when another may be asked for, and how long this one works.
+class OtpChallenge {
+  const OtpChallenge({this.retryAfterSeconds = 30, this.expiresInSeconds = 300});
+
+  factory OtpChallenge.fromJson(Map<String, dynamic>? j) => OtpChallenge(
+    retryAfterSeconds: (j?['retryAfterSeconds'] as num?)?.toInt() ?? 30,
+    expiresInSeconds: (j?['expiresInSeconds'] as num?)?.toInt() ?? 300,
+  );
+
+  final int retryAfterSeconds;
+  final int expiresInSeconds;
+}
+
 /// Everything the Student App asks of the KINETIX Cloud API. Tests use a fake.
 abstract class StudentApi {
   String get baseUrl;
@@ -43,6 +56,14 @@ abstract class StudentApi {
 
   /// Signs in and stores the token on this client.
   Future<void> login({required String tenant, required String login, required String password});
+
+  /// Texts a 6-digit sign-in code to [phone] (E.164) (`POST /v1/auth/otp/request`). The server
+  /// answers the same whether or not the number has an account; 429 `RATE_LIMITED` when asked too often.
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone});
+
+  /// Signs in with the texted code and stores the token on this client (`POST /v1/auth/otp/verify`).
+  /// 401 `OTP_INVALID` for a wrong or expired code.
+  Future<void> verifyOtp({required String tenant, required String phone, required String code});
   Future<Me> me();
 
   /// Saves the language for the app and for notifications (`PATCH /v1/me`).
@@ -200,6 +221,22 @@ class HttpStudentApi implements StudentApi {
       j = await _send('POST', '/v1/auth/login', body: {'tenant': tenant, 'login': login, 'password': password}, auth: false);
     } on ApiException catch (e) {
       if (e.status == 401) throw ApiException(401, e.message, problem: ApiProblem.wrongLogin);
+      rethrow;
+    }
+    token = j['accessToken'] as String;
+  }
+
+  @override
+  Future<OtpChallenge> requestOtp({required String tenant, required String phone}) async =>
+      OtpChallenge.fromJson(await _send('POST', '/v1/auth/otp/request', body: {'tenant': tenant, 'phone': phone}, auth: false) as Map<String, dynamic>);
+
+  @override
+  Future<void> verifyOtp({required String tenant, required String phone, required String code}) async {
+    final dynamic j;
+    try {
+      j = await _send('POST', '/v1/auth/otp/verify', body: {'tenant': tenant, 'phone': phone, 'code': code}, auth: false);
+    } on ApiException catch (e) {
+      if (e.status == 401) throw ApiException(401, e.message, code: e.code ?? 'OTP_INVALID');
       rethrow;
     }
     token = j['accessToken'] as String;

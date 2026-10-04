@@ -1,14 +1,18 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, HttpCode, Ip, Post, UnauthorizedException } from '@nestjs/common';
 import argon2 from 'argon2';
 import { eq, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { RateLimiter } from '../common/rate-limiter.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { userRoles, users } from '../db/schema.js';
+import { users } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
-import type { RoleName } from './principal.js';
+import { OtpService } from './otp.service.js';
+import { normalizePhone } from './phone.js';
+import { signInResponse } from './sign-in.js';
 import { TokensService } from './tokens.service.js';
+
+export { normalizePhone };
 
 const LoginBody = z.object({
   tenant: z.string().min(1),
@@ -17,21 +21,17 @@ const LoginBody = z.object({
   password: z.string().min(1),
 });
 
-/**
- * Phone numbers are stored in E.164. Accept what people actually type: "98000 00001",
- * "098000-00001", "919800000001" or "+91 98000 00001" all mean +919800000001.
- */
-export function normalizePhone(input: string): string {
-  const digits = input.replace(/[\s\-().]/g, '');
-  if (/^\+\d{8,15}$/.test(digits)) return digits;
-  if (/^0?[6-9]\d{9}$/.test(digits)) return `+91${digits.slice(-10)}`;
-  if (/^91[6-9]\d{9}$/.test(digits)) return `+${digits}`;
-  return digits;
-}
+const OtpRequestBody = z.object({
+  /** The institution's slug. */
+  tenant: z.string().min(1).max(100),
+  phone: z.string().min(6).max(30),
+});
+
+const OtpVerifyBody = OtpRequestBody.extend({ code: z.string().trim().min(1).max(10) });
 
 /**
- * Password login for staff (ERP, Teacher App).
- * TODO: phone OTP for teachers, students and parents via an Indian SMS provider (DLT templates).
+ * Sign-in. Staff (ERP, Teacher App) can use a password; teachers, parents and students sign in
+ * with their phone and a one-time code by SMS (docs/architecture/auth-otp.md).
  */
 @Controller('v1/auth')
 export class AuthController {
@@ -40,11 +40,12 @@ export class AuthController {
     private readonly system: SystemLookups,
     private readonly tokens: TokensService,
     private readonly limiter: RateLimiter,
+    private readonly otp: OtpService,
   ) {}
 
   @Post('login')
   async login(@Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>) {
-    this.limiter.hit(`login:${body.tenant}:${body.login}`, 10, 60_000);
+    await this.limiter.hit(`login:${body.tenant}:${body.login}`, 10, 60_000);
     const fail = new UnauthorizedException('Wrong institution, login or password');
 
     const tenant = await this.system.tenantBySlug(body.tenant);
@@ -57,13 +58,20 @@ export class AuthController {
         .where(or(eq(users.email, body.login.trim().toLowerCase()), eq(users.phone, normalizePhone(body.login))));
       if (!user?.passwordHash || user.status !== 'active') throw fail;
       if (!(await argon2.verify(user.passwordHash, body.password))) throw fail;
-
-      const roles = await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, user.id));
-      const roleNames = [...new Set(roles.map((r) => r.role as RoleName))];
-      return {
-        accessToken: this.tokens.signUser({ sub: user.id, tid: tenant.id, roles: roleNames }),
-        user: { id: user.id, fullName: user.fullName, preferredLanguage: user.preferredLanguage, roles: roleNames },
-      };
+      return signInResponse(tx, this.tokens, tenant.id, user, 'password');
     });
+  }
+
+  /** Sends a sign-in code if an active user has this phone. Always 202, so it reveals nothing. */
+  @Post('otp/request')
+  @HttpCode(202)
+  requestOtp(@Body(new ZodBody(OtpRequestBody)) body: z.infer<typeof OtpRequestBody>, @Ip() ip: string) {
+    return this.otp.request(body.tenant, body.phone, ip);
+  }
+
+  /** Exchanges the code for a session: the same body as `login`. */
+  @Post('otp/verify')
+  verifyOtp(@Body(new ZodBody(OtpVerifyBody)) body: z.infer<typeof OtpVerifyBody>, @Ip() ip: string) {
+    return this.otp.verify(body.tenant, body.phone, body.code, ip);
   }
 }

@@ -909,3 +909,33 @@ class LessonDraft {
   /// A placeholder from a server with no AI model connected.
   final bool preview;
 }
+
+/// What POST /v1/auth/otp/request answers: when another code may be sent, and how long this one works.
+class OtpChallenge {
+  const OtpChallenge({required this.retryAfter, required this.expiresIn});
+
+  factory OtpChallenge.fromJson(Map<String, dynamic> j) => OtpChallenge(
+    retryAfter: Duration(seconds: (j['retryAfterSeconds'] as num?)?.toInt() ?? 30),
+    expiresIn: Duration(seconds: (j['expiresInSeconds'] as num?)?.toInt() ?? 300),
+  );
+
+  final Duration retryAfter;
+  final Duration expiresIn;
+}
+
+/// One of the teacher's notifications (GET /v1/notifications), for opening the screen a push is about.
+class AppNotification {
+  const AppNotification({required this.id, required this.kind, this.data = const {}});
+
+  factory AppNotification.fromJson(Map<String, dynamic> j) => AppNotification(
+    id: j['id'] as String,
+    kind: j['kind'] as String,
+    data: {for (final e in ((j['data'] as Map?) ?? const {}).entries) '${e.key}': '${e.value}'},
+  );
+
+  final String id;
+  final String kind;
+
+  /// Ids for the screen to open: conversationId, homeworkId…
+  final Map<String, String> data;
+}
