@@ -13,7 +13,8 @@ Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../.
 
 | Area | Behaviour | API |
 |---|---|---|
-| Sign in | Institution code + phone or email + password. Ten-digit Indian numbers are sent in E.164 (`+91…`). Institution, login and server are remembered. Only accounts with the **guardian** role can use the app; others get a polite explanation. | `POST /v1/auth/login`, `GET /v1/me` |
+| Sign in | **Phone and a texted code** by default: institution code + 10-digit mobile (`+91` shown, a pasted `+91`/`0` dropped), **Send code**, then the 6-digit code (offered by SMS autofill, `AutofillHints.oneTimeCode`; no SMS permission), signing in as soon as six digits are in. **Resend** after the server's `retryAfterSeconds`, **Change number**; wrong/expired codes, invalid numbers and rate limits are worded in the app's language. **Use a password instead** keeps institution + phone or email + password. Institution, login and server are remembered; the session token is kept in secure storage (Android Keystore / iOS Keychain), moved once from older preferences. Only accounts with the **guardian** role can use the app; others get a polite explanation. | `POST /v1/auth/otp/request`, `POST /v1/auth/otp/verify`, `POST /v1/auth/login`, `GET /v1/me` |
+| Push | Optional per build (Firebase options via `--dart-define`): asks once after sign-in, registers the device token (`app: 'parent'`), removes it on sign-out, and a tapped push opens the update as in Updates. See [push-setup.md](push-setup.md). | `POST /v1/push/devices`, `DELETE /v1/push/devices` |
 | Children | Avatar chips at the top of Home switch between children (hidden for one child). The choice is remembered on the device. | `GET /v1/parent/children` |
 | Navigation | **Home · Messages · Updates · Profile** in a bottom bar; Messages and Updates carry unread badges. | |
 | Home | One summary call per child (plus fees, library and marks, each failing on its own): a header card (name, class, roll no.) and the cards below, in this order: attendance, homework, results, fees, library, lesson recordings, in class, class boards. Pull to refresh reloads all of them. | `GET /v1/parent/children/:id/summary?days=30` |
@@ -47,8 +48,7 @@ Also planned for messages: push for replies (the chat polls while open), office 
 attachments.
 
 Also planned for fees: a PDF receipt to download or share, and opening "Fee due" updates
-without matching titles once the notification names the student. Also planned: push notifications (FCM/APNs, the server already has a TODO), secure token
-storage with an app lock, acknowledging a broadcast that requires it, board thumbnails, and
+without matching titles once the notification names the student. Also planned: an app lock, acknowledging a broadcast that requires it, board thumbnails, and
 term-wise attendance and marks.
 
 ## API gaps found while building
@@ -56,7 +56,7 @@ term-wise attendance and marks.
 - **No running fine for an overdue book.** `finePaise` is set only when the book comes back, so
   the app flags an overdue book in red without an amount, and says the library fines each late
   day. A per-day rate (or an accrued fine) in the response would let it show "₹8 so far".
-- **No push or realtime for messages.** A reply shows up when the Messages tab is opened, on pull
+- **Messages are not realtime without push.** With push off in a build, a reply shows up when the Messages tab is opened, on pull
   to refresh, or within 15 seconds while the chat is open.
 - **Paging by time.** `?before=` takes a timestamp; two messages in the same millisecond at a page
   edge could be skipped. A cursor by message id would be exact.
