@@ -98,12 +98,12 @@ describe('live classroom view', () => {
     const ended = next<{ reason: string }>(principal, RealtimeEvents.LiveEnded);
     await http().post('/v1/sessions/current/end').set('authorization', `Bearer ${tokens.board}`).expect(201);
     expect((await ended).reason).toBe('class_ended');
-    expect(await watch(principal)).toEqual({ ok: false, error: 'No class is being taught on this board right now' });
+    expect(await watch(principal)).toEqual({ ok: false, error: 'No class is being taught on this board right now', code: 'LIVE_NO_CLASS' });
   });
 
   it('respects the institution turning live view off', async () => {
     await owner.query(`update tenants set settings = '{"liveViewEnabled": false}' where id = $1`, [t.tenantId]);
     const principal = await connect(tokens.principal);
-    expect(await watch(principal)).toEqual({ ok: false, error: 'Live view is turned off for your institution' });
+    expect(await watch(principal)).toEqual({ ok: false, error: 'Live view is turned off for your institution', code: 'LIVE_VIEW_OFF' });
   });
 });

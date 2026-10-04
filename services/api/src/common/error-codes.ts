@@ -33,6 +33,11 @@ export const ERROR_CODES: Record<string, string> = {
   'Live view is turned off for your institution': 'LIVE_VIEW_OFF',
   'Your teacher has not started a live class': 'LIVE_NOT_STARTED',
   'This board is offline': 'LIVE_BOARD_OFFLINE',
+  'Unknown board': 'LIVE_UNKNOWN_BOARD',
+  'No class is being taught on this board right now': 'LIVE_NO_CLASS',
+  'This is not your class': 'LIVE_NOT_YOUR_CLASS',
+  'This student hands in their own homework': 'SUBMISSION_STUDENT_ONLY',
+  'KINETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
 };
 
 const BY_STATUS: Record<number, string> = {

@@ -91,13 +91,15 @@ describe('school year', () => {
   });
 
   it('lets the principal change institution settings, audited', async () => {
-    expect((await http().get('/v1/admin/settings').set(auth('principal')).expect(200)).body).toEqual({ liveViewEnabled: false, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false });
+    expect((await http().get('/v1/admin/settings').set(auth('principal')).expect(200)).body).toEqual({ liveViewEnabled: false, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false, grievanceOfficer: null });
     await http().put('/v1/admin/settings').set(auth('teacher')).send({ liveViewEnabled: true }).expect(403);
     await http().put('/v1/admin/settings').set(auth('principal')).send({ unknown: true }).expect(400);
     const after = (await http().put('/v1/admin/settings').set(auth('principal')).send({ liveViewEnabled: true, classroomAudioToViewers: true }).expect(200)).body;
     expect(after).toMatchObject({ liveViewEnabled: true, classroomAudioToViewers: true, liveViewIndicator: true });
+    await http().put('/v1/admin/settings').set(auth('principal')).send({ grievanceOfficer: { name: 'Dr. Meera Rao', email: 'grievance@college.in' } }).expect(200);
+    expect((await http().get(`/v1/consents?studentId=${t.students[2].id}`).set(auth('student')).expect(200)).body.grievanceOfficer).toEqual({ name: 'Dr. Meera Rao', email: 'grievance@college.in' });
     const { rows } = await owner.query(`select data from audit_log where tenant_id = $1 and action = 'settings.updated'`, [t.tenantId]);
-    expect(rows).toEqual([{ data: { liveViewEnabled: true, classroomAudioToViewers: true } }]);
+    expect(rows).toContainEqual({ data: { liveViewEnabled: true, classroomAudioToViewers: true } });
   });
 
   it('tracks syllabus coverage from the board and the Teacher App', async () => {
@@ -175,6 +177,18 @@ describe('school year', () => {
       const sub = (await http().post(`/v1/homework/${hwId}/submissions/${child}`).set(auth('parent')).field('text', 'Done in the notebook').expect(200)).body;
       expect(sub.status).toBe('submitted');
       expect((await http().get(`/v1/homework/${hwId}/submissions/${child}`).set(auth('teacher')).expect(200)).body.text).toBe('Done in the notebook');
+
+      // In a college, a student with their own login hands in for themselves.
+      await owner.query(`insert into guardians (tenant_id, user_id, student_id, relation) values ($1, $2, $3, 'father')`, [t.tenantId, t.guardian.id, t.students[2].id]);
+      const own = await http().post(`/v1/homework/${hwId}/submissions/${t.students[2].id}`).set(auth('parent')).field('text', 'x').expect(403);
+      expect(own.body.code).toBe('SUBMISSION_STUDENT_ONLY');
+      await owner.query(`delete from guardians where user_id = $1 and student_id = $2`, [t.guardian.id, t.students[2].id]);
+    });
+
+    it("lists a child's subjects for the family", async () => {
+      const subs = (await http().get(`/v1/parent/children/${t.students[0].id}/subjects`).set(auth('parent')).expect(200)).body;
+      expect(subs.map((x: { id: string }) => x.id)).toEqual([t.subject.id]);
+      await http().get(`/v1/parent/children/${t.students[1].id}/subjects`).set(auth('parent')).expect(404);
     });
   });
 

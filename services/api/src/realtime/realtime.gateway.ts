@@ -6,6 +6,7 @@ import type { Namespace, Server, Socket } from 'socket.io';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { Principal, RoleName } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { errorCode } from '../common/error-codes.js';
 import { Clock } from '../common/time.js';
 import { DbService } from '../db/db.service.js';
 import { boardSessions, devices, sections, students, subjects, tenants, users } from '../db/schema.js';
@@ -148,9 +149,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage(RealtimeEvents.LiveWatch)
   async watch(@ConnectedSocket() socket: Socket, @MessageBody() body: { deviceId?: string }): Promise<LiveWatchAck> {
     const p = socket.data.principal as Principal | undefined;
-    if (p?.kind !== 'user' || !p.roles.some((r) => LIVE_VIEW_ROLES.includes(r) || r === 'student')) return { ok: false, error: 'Only school leaders and students can watch classes' };
+    if (p?.kind !== 'user' || !p.roles.some((r) => LIVE_VIEW_ROLES.includes(r) || r === 'student')) return { ok: false, error: 'Only school leaders and students can watch classes', code: errorCode(400, 'Only school leaders and students can watch classes') };
     const deviceId = body?.deviceId;
-    if (typeof deviceId !== 'string' || !/^[0-9a-f-]{36}$/i.test(deviceId)) return { ok: false, error: 'Unknown board' };
+    if (typeof deviceId !== 'string' || !/^[0-9a-f-]{36}$/i.test(deviceId)) return { ok: false, error: 'Unknown board', code: errorCode(400, 'Unknown board') };
     const role: ViewerRole = p.roles.some((r) => LIVE_VIEW_ROLES.includes(r)) ? 'leader' : 'student';
 
     const found = await this.db.withTenant(p.tenantId, async (tx) => {
@@ -193,8 +194,8 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
         audio,
       };
     });
-    if ('error' in found) return { ok: false, error: found.error };
-    if (!this.isOnline(deviceId)) return { ok: false, error: 'This board is offline' };
+    if ('error' in found) return { ok: false, error: found.error, code: errorCode(400, found.error) };
+    if (!this.isOnline(deviceId)) return { ok: false, error: 'This board is offline', code: errorCode(400, 'This board is offline') };
 
     const watches = socket.data.watches as Map<string, Watch>;
     if (!watches.has(deviceId)) {

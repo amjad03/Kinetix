@@ -52,6 +52,8 @@ export interface TenantSettings {
   liveViewIndicator?: boolean;
   pinFallbackEnabled?: boolean;
   classroomAudioToViewers?: boolean;
+  /** Named in the apps' Privacy screen (DPDP Act). */
+  grievanceOfficer?: { name: string; email?: string; phone?: string } | null;
 }
 
 export const campuses = pgTable('campuses', {

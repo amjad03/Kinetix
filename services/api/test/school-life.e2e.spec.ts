@@ -198,7 +198,7 @@ describe('school life', () => {
       const watch = () => student.emitWithAck(RealtimeEvents.LiveWatch, { deviceId: t.device.id }) as Promise<LiveWatchAck>;
 
       expect((await http().get('/v1/student/live').set(auth('student')).expect(200)).body).toEqual({ live: null });
-      expect(await watch()).toEqual({ ok: false, error: 'Your teacher has not started a live class' });
+      expect(await watch()).toEqual({ ok: false, error: 'Your teacher has not started a live class', code: 'LIVE_NOT_STARTED' });
 
       await http().post('/v1/sessions/current/live').set('authorization', `Bearer ${paired.boardToken}`).send({ on: true }).expect(200);
       expect((await http().get('/v1/student/live').set(auth('student')).expect(200)).body.live).toMatchObject({ deviceId: t.device.id, subject: 'Corporate Accounting' });

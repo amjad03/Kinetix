@@ -25,7 +25,7 @@ import { audit } from '../common/audit.js';
 import { Clock, zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { guardians, homework, homeworkSubmissions, students, type SubmissionFile, users } from '../db/schema.js';
+import { guardians, homework, homeworkSubmissions, students, type SubmissionFile, tenants, users } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { addDays, isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
@@ -80,6 +80,7 @@ export class SubmissionsController {
 
     const hw = await this.db.withTenant(p.tenantId, async (tx) => {
       const hw = await this.homeworkFor(tx, p, id, studentId);
+      await this.assertMayHandIn(tx, p, studentId);
       const [prev] = await tx.select().from(homeworkSubmissions).where(and(eq(homeworkSubmissions.homeworkId, id), eq(homeworkSubmissions.studentId, studentId)));
       if (prev?.status === 'checked') throw new BadRequestException('This homework has already been checked');
       return { ...hw, previous: prev?.files ?? [] };
@@ -228,6 +229,14 @@ export class SubmissionsController {
     if (g) return hw;
     if (staffToo && (isSchoolAdmin(p) || (await this.teacher.teachesSection(tx, p.userId, hw.sectionId)))) return hw;
     throw notFound;
+  }
+
+  /** In a college a student with their own login hands in for themselves; in a school a guardian may help. */
+  private async assertMayHandIn(tx: Tx, p: UserPrincipal, studentId: string) {
+    const [st] = await tx.select({ userId: students.userId }).from(students).where(eq(students.id, studentId));
+    if (!st?.userId || st.userId === p.userId) return;
+    const [t] = await tx.select({ kind: tenants.kind }).from(tenants);
+    if (t?.kind !== 'school') throw new ForbiddenException('This student hands in their own homework');
   }
 
   private async staffHomework(tx: Tx, p: UserPrincipal, id: string) {

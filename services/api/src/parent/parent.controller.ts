@@ -174,6 +174,26 @@ export class ParentController {
   }
 
   /** Attendance by day for a calendar view. */
+  /** The subjects of a child's class, with their syllabus course when linked. */
+  @Get('children/:id/subjects')
+  @Auth('user', ['guardian'])
+  childSubjects(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) studentId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [child] = await tx
+        .select({ programId: sections.programId, term: sections.term })
+        .from(guardians)
+        .innerJoin(students, eq(students.id, guardians.studentId))
+        .innerJoin(sections, eq(sections.id, students.sectionId))
+        .where(and(eq(guardians.userId, p.userId), eq(guardians.studentId, studentId)));
+      if (!child) throw new NotFoundException('Child not found');
+      return tx
+        .select({ id: subjects.id, code: subjects.code, name: subjects.name, courseId: subjects.courseId })
+        .from(subjects)
+        .where(and(eq(subjects.programId, child.programId), eq(subjects.term, child.term)))
+        .orderBy(asc(subjects.code));
+    });
+  }
+
   @Get('children/:id/attendance')
   @Auth('user', ['guardian', 'student'])
   attendance(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) studentId: string, @Query('days') daysParam?: string) {

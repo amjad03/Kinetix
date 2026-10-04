@@ -51,7 +51,8 @@ export class ConsentController {
   get(@CurrentPrincipal() p: UserPrincipal, @Query('studentId', ParseUUIDPipe) studentId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const canDecide = await this.decider(tx, p, studentId);
-      return { studentId, noticeVersion: NOTICE_VERSION, canDecide, purposes: await latestConsents(tx, studentId) };
+      const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
+      return { studentId, noticeVersion: NOTICE_VERSION, canDecide, purposes: await latestConsents(tx, studentId), grievanceOfficer: t?.settings.grievanceOfficer ?? null };
     });
   }
 

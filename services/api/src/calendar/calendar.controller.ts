@@ -162,6 +162,9 @@ const SettingsBody = z
     liveViewIndicator: z.boolean(),
     classroomAudioToViewers: z.boolean(),
     pinFallbackEnabled: z.boolean(),
+    grievanceOfficer: z
+      .object({ name: z.string().trim().min(1).max(120), email: z.email().optional(), phone: z.string().trim().max(20).optional() })
+      .nullable(),
   })
   .partial()
   .strict();
@@ -199,5 +202,6 @@ function withDefaults(s: TenantSettings) {
     liveViewIndicator: s.liveViewIndicator ?? true,
     classroomAudioToViewers: s.classroomAudioToViewers ?? false,
     pinFallbackEnabled: s.pinFallbackEnabled ?? false,
+    grievanceOfficer: s.grievanceOfficer ?? null,
   };
 }

@@ -85,6 +85,8 @@ export interface LiveFrameEvent {
 export interface LiveWatchAck {
   ok: boolean;
   error?: string;
+  /** Stable code for the error (services/api/src/common/error-codes.ts), for translation. */
+  code?: string;
   session?: { teacher: string; section: string | null; subject: string | null; startedAt: string };
   /** Whether this viewer may hear class audio, and whether the teacher has it on now. */
   audio?: { allowed: boolean; on: boolean };
