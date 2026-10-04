@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { and, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import { PushService } from '../push/push.service.js';
+import { dateIn, texts, type Localized, type Text } from './texts.js';
 import {
   attendanceRecords,
   notifications,
@@ -13,15 +14,10 @@ import {
 
 type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live';
 
-/** "₹45,000" or "₹1,250.50" from paise. */
-export function rupees(paise: number): string {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: paise % 100 === 0 ? 0 : 2 }).format(paise / 100);
-}
+export { rupees } from './texts.js';
 
 /** "Mon 5 Oct" for a YYYY-MM-DD date. */
-export function shortDate(date: string): string {
-  return new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
-}
+export const shortDate = (date: string) => dateIn('en', date);
 
 const hhmm = (t: string) => t.slice(0, 5);
 const uuidList = (ids: string[]) => sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `);
@@ -65,15 +61,13 @@ export class NotificationsService {
     for (const r of rows) {
       const key = `absence:${r.studentId}:${date}:${slotId ?? 'day'}`;
       if (r.status === 'absent') {
-        const period = r.subject ? ` for ${r.subject} (${hhmm(r.startsAt!)}–${hhmm(r.endsAt!)})` : '';
         await this.insertFor(
           tx,
           sql`select g.user_id from guardians g where g.student_id = ${r.studentId}::uuid
               union select s.user_id from students s where s.id = ${r.studentId}::uuid and s.user_id is not null`,
           {
             kind: 'absence',
-            title: `${r.studentName.split(' ')[0]} was marked absent`,
-            body: `${r.studentName} was marked absent${period} on ${shortDate(date)}. If this is wrong, please contact the class teacher.`,
+            text: texts.absence({ studentName: r.studentName, date, subject: r.subject, from: r.startsAt ? hhmm(r.startsAt) : undefined, to: r.endsAt ? hhmm(r.endsAt) : undefined }),
             data: { studentId: r.studentId, date, ...(slotId ? { slotId } : {}) },
             dedupeKey: key,
           },
@@ -96,8 +90,7 @@ export class NotificationsService {
   ): Promise<void> {
     await this.insertFor(tx, this.sectionAudience([hw.sectionId]), {
       kind: 'homework',
-      title: `Homework: ${hw.subjectName}`,
-      body: `${hw.title} · due ${shortDate(hw.dueOn)}`,
+      text: texts.homework({ subject: hw.subjectName, title: hw.title, dueOn: hw.dueOn }),
       data: { homeworkId: hw.id, sectionId: hw.sectionId },
       dedupeKey: `homework:${hw.id}`,
     });
@@ -107,8 +100,7 @@ export class NotificationsService {
   async boardShared(tx: Tx, wb: { id: string; sectionId: string; title: string; subjectName: string | null }): Promise<void> {
     await this.insertFor(tx, this.sectionAudience([wb.sectionId]), {
       kind: 'board_shared',
-      title: wb.subjectName ? `Today's board: ${wb.subjectName}` : "Today's board",
-      body: `${wb.title}. Open it to revise what was taught in class.`,
+      text: texts.boardShared({ subject: wb.subjectName, title: wb.title }),
       data: { whiteboardId: wb.id, sectionId: wb.sectionId },
       dedupeKey: `board:${wb.id}`,
     });
@@ -122,7 +114,6 @@ export class NotificationsService {
     tx: Tx,
     rec: { id: string; sectionId: string; title: string; subjectName: string | null; absentStudentIds: string[] },
   ): Promise<void> {
-    const subject = rec.subjectName ?? 'class';
     const data = { recordingId: rec.id, sectionId: rec.sectionId };
     const dedupeKey = `recording:${rec.id}`;
     if (rec.absentStudentIds.length > 0) {
@@ -133,8 +124,7 @@ export class NotificationsService {
             union select s.user_id from students s where s.id in (${ids}) and s.user_id is not null`,
         {
           kind: 'recording',
-          title: `Missed ${subject}? Watch the lesson`,
-          body: `${rec.title}. The teacher's board and voice are recorded so you can catch up.`,
+          text: texts.recordingMissed({ subject: rec.subjectName, title: rec.title }),
           data,
           dedupeKey,
         },
@@ -143,8 +133,7 @@ export class NotificationsService {
     // Recipients already told above keep their message (the dedupe key matches).
     await this.insertFor(tx, this.sectionAudience([rec.sectionId]), {
       kind: 'recording',
-      title: `Lesson recording: ${subject}`,
-      body: `${rec.title}. Watch it again to revise.`,
+      text: texts.recordingShared({ subject: rec.subjectName, title: rec.title }),
       data,
       dedupeKey,
     });
@@ -160,8 +149,7 @@ export class NotificationsService {
           union select s.user_id from students s where s.id in (${ids}) and s.user_id is not null`,
       {
         kind: 'fee',
-        title: `Fee due: ${f.title}`,
-        body: `${rupees(f.amountPaise)} due by ${shortDate(f.dueOn)}. Pay in the app or at the fees counter.`,
+        text: texts.feeIssued({ title: f.title, amountPaise: f.amountPaise, dueOn: f.dueOn }),
         data: { batchId: f.batchId },
         dedupeKey: `fee:${f.batchId}`,
       },
@@ -176,8 +164,7 @@ export class NotificationsService {
           union select s.user_id from students s where s.id = ${p.studentId}::uuid and s.user_id is not null`,
       {
         kind: 'fee',
-        title: `Payment received: ${rupees(p.amountPaise)}`,
-        body: `${p.title} for ${p.studentName}. Receipt ${p.receiptNo}.`,
+        text: texts.feePaid({ title: p.title, amountPaise: p.amountPaise, studentName: p.studentName, receiptNo: p.receiptNo }),
         data: { paymentId: p.paymentId, studentId: p.studentId },
         dedupeKey: `fee-paid:${p.paymentId}`,
       },
@@ -193,8 +180,7 @@ export class NotificationsService {
   async libraryIssued(tx: Tx, l: { loanId: string; studentId: string; studentName: string; title: string; dueOn: string }): Promise<void> {
     await this.insertFor(tx, this.studentAndFamily(l.studentId), {
       kind: 'library',
-      title: `Library book borrowed: ${l.title}`,
-      body: `${l.studentName.split(' ')[0]} borrowed "${l.title}". Please return it by ${shortDate(l.dueOn)}.`,
+      text: texts.libraryIssued({ studentName: l.studentName, title: l.title, dueOn: l.dueOn }),
       data: { loanId: l.loanId, studentId: l.studentId },
       dedupeKey: `library:${l.loanId}`,
     });
@@ -204,8 +190,7 @@ export class NotificationsService {
   async marksPublished(tx: Tx, a: { id: string; sectionId: string; title: string; subjectName: string }): Promise<void> {
     await this.insertFor(tx, this.sectionAudience([a.sectionId]), {
       kind: 'marks',
-      title: `Marks published: ${a.subjectName}`,
-      body: `${a.title}. Open the app to see the marks and the class average.`,
+      text: texts.marksPublished({ subject: a.subjectName, title: a.title }),
       data: { assessmentId: a.id, sectionId: a.sectionId },
       dedupeKey: `marks:${a.id}`,
     });
@@ -216,8 +201,7 @@ export class NotificationsService {
     const preview = m.body.length > 120 ? `${m.body.slice(0, 117)}…` : m.body;
     await this.insertFor(tx, sql`select ${m.recipientId}::uuid`, {
       kind: 'message',
-      title: `Message from ${m.senderName}`,
-      body: preview,
+      text: texts.message({ senderName: m.senderName, preview }),
       data: { conversationId: m.conversationId, studentId: m.studentId },
       dedupeKey: `message:${m.id}`,
     });
@@ -230,8 +214,7 @@ export class NotificationsService {
       sql`select s.user_id from students s where s.section_id = ${l.sectionId}::uuid and s.status = 'active' and s.user_id is not null`,
       {
         kind: 'live',
-        title: `Live now: ${l.subjectName ?? 'class'}`,
-        body: `${l.teacherName} is teaching live. Open KINETIX to watch the board.`,
+        text: texts.live({ subject: l.subjectName, teacherName: l.teacherName }),
         data: { sessionId: l.sessionId, sectionId: l.sectionId },
         dedupeKey: `live:${l.sessionId}`,
       },
@@ -260,8 +243,8 @@ export class NotificationsService {
           union select st.user_id from (${students}) st where st.user_id is not null`,
       {
         kind: 'broadcast',
-        title: b.title,
-        body: b.body,
+        // The principal's own words, in whatever language they wrote them.
+        text: { title: b.title, body: b.body },
         data: { broadcastId: b.id },
         dedupeKey: `broadcast:${b.id}`,
       },
@@ -280,7 +263,7 @@ export class NotificationsService {
   private async insertFor(
     tx: Tx,
     recipients: SQL,
-    n: { kind: Kind; title: string; body: string; data: Record<string, string>; dedupeKey: string },
+    n: { kind: Kind; text: Localized | Text; data: Record<string, string>; dedupeKey: string },
     opts: { revive?: boolean } = {},
   ): Promise<void> {
     // A withdrawn absence that becomes an absence again is shown again, as unread.
@@ -289,11 +272,15 @@ export class NotificationsService {
             set retracted_at = null, read_at = null, title = excluded.title, body = excluded.body, created_at = now()
             where notifications.retracted_at is not null`
       : sql`on conflict (user_id, dedupe_key) do nothing`;
+    // Each recipient gets the text in their own preferred language.
+    const t = 'title' in n.text ? { en: n.text, hi: n.text, kn: n.text } : n.text;
+    const pick = (f: 'title' | 'body') => sql`case u.preferred_language when 'hi' then ${t.hi[f]} when 'kn' then ${t.kn[f]} else ${t.en[f]} end`;
     const { rows } = await tx.execute<{ id: string; tenant_id: string }>(sql`
       insert into notifications (tenant_id, user_id, kind, title, body, data, dedupe_key)
-      select current_setting('app.tenant_id')::uuid, r.user_id, ${n.kind}::notification_kind, ${n.title}, ${n.body},
+      select current_setting('app.tenant_id')::uuid, r.user_id, ${n.kind}::notification_kind, ${pick('title')}, ${pick('body')},
              ${JSON.stringify(n.data)}::jsonb, ${n.dedupeKey}
       from (${recipients}) r(user_id)
+      join users u on u.id = r.user_id
       ${onConflict}
       returning id, tenant_id`);
     if (rows.length) await this.push.queue(tx, rows[0].tenant_id, rows.map((r) => r.id));

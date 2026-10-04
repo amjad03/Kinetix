@@ -1,25 +1,12 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { DbService, type Tx } from '../db/db.service.js';
-import { notifications, pushDevices } from '../db/schema.js';
+import { notifications, pushDevices, users } from '../db/schema.js';
+import { LOCK_SCREEN, OPEN_APP, type Lang } from '../notifications/texts.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { PushSender, type PushMessage } from './push-sender.js';
 
 export const PUSH_SEND = 'push.send';
-
-/** What the lock screen shows. Deliberately generic: names and details stay in the app. */
-const LOCK_SCREEN: Record<string, string> = {
-  absence: 'Attendance update',
-  homework: 'New homework',
-  board_shared: 'Class board shared',
-  recording: 'Lesson recording available',
-  broadcast: 'Message from your institution',
-  fee: 'Fees update',
-  library: 'Library update',
-  marks: 'Marks published',
-  message: 'New message',
-  live: 'Class is live',
-};
 
 /** Sends a push for each new notification to the recipient's registered phones. */
 @Injectable()
@@ -46,9 +33,10 @@ export class PushService implements OnModuleInit {
     const ids = job.payload.ids.split(',').filter(Boolean);
     const targets = await this.db.withTenant(job.tenantId, (tx) =>
       tx
-        .select({ id: notifications.id, kind: notifications.kind, token: pushDevices.token, platform: pushDevices.platform })
+        .select({ id: notifications.id, kind: notifications.kind, token: pushDevices.token, platform: pushDevices.platform, lang: users.preferredLanguage })
         .from(notifications)
         .innerJoin(pushDevices, eq(pushDevices.userId, notifications.userId))
+        .innerJoin(users, eq(users.id, notifications.userId))
         // Not if it was withdrawn or already read before the push went out.
         .where(and(inArray(notifications.id, ids), isNull(notifications.retractedAt), isNull(notifications.readAt))),
     );
@@ -56,8 +44,8 @@ export class PushService implements OnModuleInit {
     const messages: PushMessage[] = targets.map((t) => ({
       token: t.token,
       platform: t.platform,
-      title: LOCK_SCREEN[t.kind] ?? 'KINETIX update',
-      body: 'Open KINETIX to see the details.',
+      title: LOCK_SCREEN[t.kind]?.[t.lang as Lang] ?? 'KINETIX',
+      body: OPEN_APP[t.lang as Lang],
       data: { notificationId: t.id, kind: t.kind },
     }));
     const results = await this.sender.send(messages);

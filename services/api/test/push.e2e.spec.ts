@@ -62,6 +62,20 @@ describe('push notifications', () => {
     expect(push.sent.map((m) => m.token)).toEqual(['phone-of-parent-0001']);
   });
 
+  it('writes notifications and pushes in each recipient\'s language', async () => {
+    await http().patch('/v1/me').set(auth('parent')).send({ preferredLanguage: 'kn' }).expect(200);
+    await http().patch('/v1/me').set(auth('parent')).send({ preferredLanguage: 'fr' }).expect(400);
+    push.sent = [];
+    await mark('present');
+    await mark('absent');
+    await drain();
+    const latest = (await http().get('/v1/notifications').set(auth('parent')).expect(200)).body.items[0];
+    expect(latest.title).toBe('Student ಗೈರು ಎಂದು ದಾಖಲಾಗಿದೆ');
+    expect(latest.body).toContain('Corporate Accounting (10:00–10:55) ತರಗತಿಯಲ್ಲಿ');
+    expect(push.sent[0]).toMatchObject({ title: 'ಹಾಜರಾತಿ ಸೂಚನೆ', body: 'ವಿವರಗಳನ್ನು ನೋಡಲು KINETIX ತೆರೆಯಿರಿ.' });
+    await http().patch('/v1/me').set(auth('parent')).send({ preferredLanguage: 'en' }).expect(200);
+  });
+
   it('skips notifications read or withdrawn before the push went out', async () => {
     push.sent = [];
     await mark('present');

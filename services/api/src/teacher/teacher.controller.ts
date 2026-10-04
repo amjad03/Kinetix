@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterStudent, TeacherClass, TeacherTimetableResponse } from '@kinetix/shared';
 import { and, asc, desc, eq, gt, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -46,6 +46,14 @@ const HomeworkBody = z.object({
 @Controller('v1/me')
 export class MeController {
   constructor(private readonly db: DbService) {}
+
+  /** The user's language for the apps and for notifications sent to them (en, hi, kn). */
+  @Patch()
+  @Auth('user')
+  async update(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(z.object({ preferredLanguage: z.enum(['en', 'hi', 'kn']) }))) body: { preferredLanguage: 'en' | 'hi' | 'kn' }): Promise<MeResponse> {
+    await this.db.withTenant(p.tenantId, (tx) => tx.update(users).set({ preferredLanguage: body.preferredLanguage }).where(eq(users.id, p.userId)));
+    return this.me(p);
+  }
 
   @Get()
   @Auth('user')
