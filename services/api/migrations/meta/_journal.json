@@ -134,6 +134,13 @@
       "when": 1791128782905,
       "tag": "0018_ai_read_board",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791130808145,
+      "tag": "0019_library_fines",
+      "breakpoints": true
     }
   ]
 }

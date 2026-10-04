@@ -126,11 +126,19 @@ export class ConversationsController {
     });
   }
 
-  /** The caller's threads, latest first, with unread counts. */
+  /**
+   * The caller's threads, latest first, with unread counts. School leaders may pass `?all=true`
+   * to list every thread (no message text is shown; opening one is audited).
+   */
   @Get()
   @Auth('user')
-  list(@CurrentPrincipal() p: UserPrincipal) {
+  list(@CurrentPrincipal() p: UserPrincipal, @Query('all') all?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
+      if (all === 'true') {
+        if (!isSchoolAdmin(p)) throw new ForbiddenException();
+        const rows = await this.summaries(tx, p).orderBy(sql`${conversations.lastMessageAt} desc nulls last`).limit(200);
+        return rows.map(({ lastMessage: _hidden, ...r }) => ({ ...r, lastMessage: null }));
+      }
       const rows = await this.summaries(tx, p)
         .where(or(eq(conversations.staffId, p.userId), eq(conversations.familyId, p.userId)))
         .orderBy(sql`${conversations.lastMessageAt} desc nulls last`)

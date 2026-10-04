@@ -1,0 +1,1 @@
+ALTER TABLE "library_loans" ADD COLUMN "fine_paid_at" timestamp with time zone;

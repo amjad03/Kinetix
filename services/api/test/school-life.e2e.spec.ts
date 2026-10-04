@@ -70,6 +70,13 @@ describe('school life', () => {
       expect(back.finePaise).toBe(600);
       const after = (await http().get(`/v1/library/students/${t.students[0].id}`).set(auth('parent')).expect(200)).body;
       expect(after).toMatchObject({ current: [], finesPaise: 600 });
+      expect((await http().get('/v1/library/fines').set(auth('principal')).expect(200)).body.map((f: { id: string }) => f.id)).toEqual([loan.id]);
+      await http().post(`/v1/library/loans/${loan.id}/fine-paid`).set(auth('principal')).expect(200);
+      expect((await http().get('/v1/library/fines').set(auth('principal')).expect(200)).body).toEqual([]);
+      expect((await http().get(`/v1/library/students/${t.students[0].id}`).set(auth('parent')).expect(200)).body.finesPaise).toBe(0);
+      const found = (await http().get('/v1/library/students?q=student b').set(auth('principal')).expect(200)).body;
+      expect(found).toEqual([expect.objectContaining({ id: t.students[1].id, className: 'BCom Sem 3 A' })]);
+      await http().get('/v1/library/students?q=student').set(auth('parent')).expect(403);
       expect((await http().get('/v1/library/books?q=maheshwari').set(auth('principal')).expect(200)).body[0]).toMatchObject({ copies: 1, onLoan: 0 });
     });
   });
@@ -136,6 +143,9 @@ describe('school life', () => {
 
       await http().get(`/v1/conversations/${c.id}/messages`).set(auth('parent2')).expect(404);
       await http().post(`/v1/conversations/${c.id}/messages`).set(auth('principal')).send({ body: 'x' }).expect(404);
+      const all = (await http().get('/v1/conversations?all=true').set(auth('principal')).expect(200)).body;
+      expect(all.find((x: { id: string }) => x.id === c.id)).toMatchObject({ lastMessage: null });
+      await http().get('/v1/conversations?all=true').set(auth('teacher')).expect(403);
       await http().get(`/v1/conversations/${c.id}/messages`).set(auth('principal')).expect(200); // audited read
       const { rows } = await owner.query(`select count(*)::int as n from audit_log where action = 'conversation.read_by_leader' and tenant_id = $1`, [t.tenantId]);
       expect(rows[0].n).toBe(1);

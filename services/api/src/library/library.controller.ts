@@ -127,6 +127,52 @@ export class LibraryController {
     });
   }
 
+  /** Students to lend to: search by name, roll number or class. */
+  @Get('students')
+  @Auth('user', LIBRARY_ROLES)
+  findStudents(@CurrentPrincipal() p: UserPrincipal, @Query('q') q = '') {
+    const term = q.trim();
+    if (term.length < 2) return [];
+    const like = `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({ id: students.id, fullName: students.fullName, rollNo: students.rollNo, className: sections.displayName })
+        .from(students)
+        .innerJoin(sections, eq(sections.id, students.sectionId))
+        .where(and(eq(students.status, 'active'), or(ilike(students.fullName, like), ilike(students.rollNo, like), ilike(sections.displayName, like))))
+        .orderBy(asc(sections.displayName), asc(students.rollNo))
+        .limit(50),
+    );
+  }
+
+  /** Fines charged on returns and not yet paid. */
+  @Get('fines')
+  @Auth('user', LIBRARY_ROLES)
+  fines(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) =>
+      this.loanRows(tx, await this.today(tx))
+        .where(and(sql`${libraryLoans.finePaise} > 0`, isNull(libraryLoans.finePaidAt)))
+        .orderBy(desc(libraryLoans.returnedAt)),
+    );
+  }
+
+  @Post('loans/:id/fine-paid')
+  @HttpCode(200)
+  @Auth('user', LIBRARY_ROLES)
+  finePaid(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [loan] = await tx.select().from(libraryLoans).where(eq(libraryLoans.id, id));
+      if (!loan) throw new NotFoundException('Loan not found');
+      if (loan.finePaise === 0) throw new BadRequestException('There is no fine on this loan');
+      if (!loan.finePaidAt) {
+        await tx.update(libraryLoans).set({ finePaidAt: this.clock.now() }).where(eq(libraryLoans.id, id));
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.fine_paid', subjectType: 'library_loan', subjectId: id, data: { finePaise: loan.finePaise } });
+      }
+      const [row] = await this.loanRows(tx, await this.today(tx)).where(eq(libraryLoans.id, id));
+      return row;
+    });
+  }
+
   /** One student's borrowing: for the student, their family and the library. */
   @Get('students/:id')
   @Auth('user')
@@ -138,7 +184,8 @@ export class LibraryController {
       return {
         current: rows.filter((r) => !r.returnedAt),
         history: rows.filter((r) => r.returnedAt),
-        finesPaise: rows.reduce((s, r) => s + r.finePaise, 0),
+        /** Fines not yet paid at the desk. */
+        finesPaise: rows.filter((r) => !r.finePaidAt).reduce((s, r) => s + r.finePaise, 0),
       };
     });
   }
@@ -154,6 +201,7 @@ export class LibraryController {
         dueOn: libraryLoans.dueOn,
         returnedAt: libraryLoans.returnedAt,
         finePaise: libraryLoans.finePaise,
+        finePaidAt: libraryLoans.finePaidAt,
         overdue: sql<boolean>`${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}`,
       })
       .from(libraryLoans)

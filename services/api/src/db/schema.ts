@@ -826,6 +826,8 @@ export const libraryLoans = pgTable(
     returnedAt: timestamp('returned_at', { withTimezone: true }),
     /** Late fine charged on return, in paise. */
     finePaise: integer('fine_paise').notNull().default(0),
+    /** When the fine was collected at the desk. */
+    finePaidAt: timestamp('fine_paid_at', { withTimezone: true }),
     issuedBy: uuid('issued_by').notNull().references(() => users.id),
   },
   (t) => [index('library_loans_student_idx').on(t.studentId, t.returnedAt), index('library_loans_book_idx').on(t.bookId, t.returnedAt)],
