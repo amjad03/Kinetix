@@ -1,5 +1,5 @@
 /// Mirrors the parent-facing responses of services/api (src/parent, src/notifications, src/whiteboards,
-/// src/recordings).
+/// src/recordings, src/fees).
 library;
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -307,7 +307,7 @@ class ChildSummary {
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, recording, broadcast, other }
+enum NotificationKind { absence, homework, boardShared, recording, fee, broadcast, other }
 
 class AppNotification {
   AppNotification({
@@ -327,6 +327,7 @@ class AppNotification {
       'homework' => NotificationKind.homework,
       'board_shared' => NotificationKind.boardShared,
       'recording' => NotificationKind.recording,
+      'fee' => NotificationKind.fee,
       'broadcast' => NotificationKind.broadcast,
       _ => NotificationKind.other,
     },
@@ -360,6 +361,12 @@ class AppNotification {
   String? get homeworkId => data['homeworkId'] as String?;
   String? get whiteboardId => data['whiteboardId'] as String?;
   String? get recordingId => data['recordingId'] as String?;
+
+  /// A fee payment went through (opens its receipt).
+  String? get paymentId => data['paymentId'] as String?;
+
+  /// A new fee was issued to a class (opens that child's fees).
+  String? get feeBatchId => data['batchId'] as String?;
 }
 
 class Inbox {
@@ -370,4 +377,234 @@ class Inbox {
 
   final int unread;
   final List<AppNotification> items;
+}
+
+int _paise(Object? v) => (v as num).toInt();
+
+enum FeeStatus { due, paid }
+
+/// One fee issued to the child: "Semester 3 tuition · ₹42,500 · due Thu 15 Oct". Part payments add
+/// up in [paidPaise].
+class FeeInvoice {
+  FeeInvoice({
+    required this.id,
+    required this.title,
+    required this.amountPaise,
+    required this.paidPaise,
+    required this.dueOn,
+    required this.status,
+  });
+
+  factory FeeInvoice.fromJson(Map<String, dynamic> j) => FeeInvoice(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    amountPaise: _paise(j['amountPaise']),
+    paidPaise: _paise(j['paidPaise'] ?? 0),
+    dueOn: parseIsoDate(j['dueOn'] as String),
+    status: j['status'] == 'paid' ? FeeStatus.paid : FeeStatus.due,
+  );
+
+  final String id;
+  final String title;
+  final int amountPaise;
+  final int paidPaise;
+  final DateTime dueOn;
+  final FeeStatus status;
+
+  bool get isPaid => status == FeeStatus.paid;
+  int get balancePaise => isPaid ? 0 : (amountPaise - paidPaise).clamp(0, amountPaise);
+
+  /// 0..1 of the fee paid so far.
+  double get progress => amountPaise == 0 ? 1 : (paidPaise / amountPaise).clamp(0, 1).toDouble();
+
+  /// Unpaid and past its due date (the institution's [today]).
+  bool isOverdue(DateTime today) => !isPaid && dueOn.isBefore(DateTime(today.year, today.month, today.day));
+}
+
+/// How a fee was paid.
+enum PaymentMethod {
+  online('Online'),
+  cash('Cash'),
+  cheque('Cheque'),
+  bankTransfer('Bank transfer'),
+  upi('UPI');
+
+  const PaymentMethod(this.label);
+  final String label;
+
+  static PaymentMethod parse(Object? v) => switch (v) {
+    'cash' => cash,
+    'cheque' => cheque,
+    'bank_transfer' => bankTransfer,
+    'upi' => upi,
+    _ => online,
+  };
+}
+
+/// A payment that went through, with its receipt number.
+class FeePayment {
+  FeePayment({required this.id, required this.invoiceId, required this.amountPaise, required this.method, this.receiptNo, this.paidAt});
+
+  factory FeePayment.fromJson(Map<String, dynamic> j) => FeePayment(
+    id: j['id'] as String,
+    invoiceId: j['invoiceId'] as String,
+    amountPaise: _paise(j['amountPaise']),
+    method: PaymentMethod.parse(j['method']),
+    receiptNo: j['receiptNo'] as String?,
+    paidAt: _instant(j['paidAt']),
+  );
+
+  final String id;
+  final String invoiceId;
+  final int amountPaise;
+  final PaymentMethod method;
+  final String? receiptNo;
+  final DateTime? paidAt;
+}
+
+/// How the institution takes online payments.
+enum OnlinePayments { razorpay, demo }
+
+/// A child's fees: what is due, and what has been paid.
+class StudentFees {
+  StudentFees({required this.duePaise, required this.onlinePayments, required this.invoices, required this.payments});
+
+  factory StudentFees.fromJson(Map<String, dynamic> j) => StudentFees(
+    duePaise: _paise(j['duePaise'] ?? 0),
+    onlinePayments: switch (j['onlinePayments']) {
+      'razorpay' => OnlinePayments.razorpay,
+      'demo' => OnlinePayments.demo,
+      _ => null,
+    },
+    invoices: [for (final i in (j['invoices'] as List? ?? const [])) FeeInvoice.fromJson(i as Map<String, dynamic>)],
+    payments: [for (final p in (j['payments'] as List? ?? const [])) FeePayment.fromJson(p as Map<String, dynamic>)],
+  );
+
+  final int duePaise;
+
+  /// Null when the institution only takes payments at the fees counter.
+  final OnlinePayments? onlinePayments;
+
+  /// Newest due date first (as the server sends them).
+  final List<FeeInvoice> invoices;
+
+  /// Newest first.
+  final List<FeePayment> payments;
+
+  /// Unpaid fees, the earliest due first.
+  List<FeeInvoice> get open => invoices.where((i) => !i.isPaid).toList()..sort((a, b) => a.dueOn.compareTo(b.dueOn));
+  List<FeeInvoice> get paid => invoices.where((i) => i.isPaid).toList();
+
+  /// The fee to pay next: the earliest due.
+  FeeInvoice? get next => open.firstOrNull;
+  FeeInvoice? invoice(String id) => invoices.where((i) => i.id == id).firstOrNull;
+}
+
+/// What the payment gateway's checkout needs, from `POST /v1/fees/invoices/:id/checkout`.
+class FeeCheckout {
+  FeeCheckout({
+    required this.paymentId,
+    required this.provider,
+    required this.keyId,
+    required this.orderId,
+    required this.amountPaise,
+    required this.currency,
+    required this.name,
+    required this.description,
+    this.prefillName = '',
+    this.prefillEmail = '',
+    this.prefillContact = '',
+  });
+
+  factory FeeCheckout.fromJson(Map<String, dynamic> j) {
+    final prefill = (j['prefill'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return FeeCheckout(
+      paymentId: j['paymentId'] as String,
+      provider: j['provider'] as String,
+      keyId: j['keyId'] as String? ?? '',
+      orderId: j['orderId'] as String,
+      amountPaise: _paise(j['amountPaise']),
+      currency: j['currency'] as String? ?? 'INR',
+      name: j['name'] as String? ?? 'KINETIX',
+      description: j['description'] as String? ?? '',
+      prefillName: prefill['name'] as String? ?? '',
+      prefillEmail: prefill['email'] as String? ?? '',
+      prefillContact: prefill['contact'] as String? ?? '',
+    );
+  }
+
+  final String paymentId;
+
+  /// 'razorpay' or 'demo'.
+  final String provider;
+  final String keyId;
+  final String orderId;
+  final int amountPaise;
+  final String currency;
+
+  /// The institution.
+  final String name;
+
+  /// The fee's title.
+  final String description;
+  final String prefillName;
+  final String prefillEmail;
+  final String prefillContact;
+}
+
+/// A numbered receipt for one payment.
+class FeeReceipt {
+  FeeReceipt({
+    required this.receiptNo,
+    required this.institution,
+    required this.studentName,
+    required this.rollNo,
+    required this.className,
+    required this.feeTitle,
+    required this.feeAmountPaise,
+    required this.balancePaise,
+    required this.amountPaise,
+    required this.method,
+    required this.paidAt,
+    this.studentId,
+    this.reference,
+  });
+
+  factory FeeReceipt.fromJson(Map<String, dynamic> j) {
+    final student = (j['student'] as Map).cast<String, dynamic>();
+    final invoice = (j['invoice'] as Map).cast<String, dynamic>();
+    return FeeReceipt(
+      receiptNo: j['receiptNo'] as String? ?? '',
+      institution: j['institution'] as String? ?? '',
+      studentId: student['id'] as String?,
+      studentName: student['fullName'] as String? ?? '',
+      rollNo: student['rollNo'] as String? ?? '',
+      className: j['className'] as String? ?? '',
+      feeTitle: invoice['title'] as String? ?? '',
+      feeAmountPaise: _paise(invoice['amountPaise'] ?? 0),
+      balancePaise: _paise(invoice['balancePaise'] ?? 0),
+      amountPaise: _paise(j['amountPaise']),
+      method: PaymentMethod.parse(j['method']),
+      reference: j['reference'] as String?,
+      paidAt: _instant(j['paidAt']) ?? DateTime.now(),
+    );
+  }
+
+  final String receiptNo;
+  final String institution;
+  final String? studentId;
+  final String studentName;
+  final String rollNo;
+  final String className;
+  final String feeTitle;
+  final int feeAmountPaise;
+
+  /// What is still due on the fee after this payment (and any since).
+  final int balancePaise;
+  final int amountPaise;
+  final PaymentMethod method;
+
+  /// The gateway's payment id, or the cheque / bank / UPI reference.
+  final String? reference;
+  final DateTime paidAt;
 }

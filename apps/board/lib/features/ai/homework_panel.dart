@@ -4,7 +4,6 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api_client.dart';
 import '../../core/models.dart';
 import '../board/chrome.dart';
-import '../board/side_panel.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
 
@@ -67,12 +66,12 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return PanelPage(
+    return AiPanelPage(
+      ai: ai,
       icon: Icons.assignment_outlined,
       title: 'Homework',
       accent: homeworkAccent,
       onBack: widget.onBack,
-      trailing: AiLanguageMenu(ai: ai),
       child: ListenableBuilder(
         listenable: Listenable.merge([ai, ai.homework]),
         builder: (context, _) {
@@ -214,6 +213,71 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
     }
   }
 
+  /// One question: number, text, marks and remove. In a narrow panel the marks and remove
+  /// button go under the text so the question keeps the full width.
+  Widget _questionRow(BuildContext context, int i) {
+    final q = draft.questions[i];
+    final field = TextField(
+      key: Key('homework-q$i'),
+      controller: _questions[i],
+      minLines: 1,
+      maxLines: 4,
+      style: const TextStyle(fontSize: 17),
+      decoration: const InputDecoration(hintText: 'Question'),
+    );
+    final marks = DropdownButton<int>(
+      key: Key('homework-marks$i'),
+      value: q.marks.clamp(1, 20),
+      underline: const SizedBox.shrink(),
+      borderRadius: BorderRadius.circular(Kx.rMd),
+      items: [for (var m = 1; m <= 20; m++) DropdownMenuItem(value: m, child: Text('$m ${m == 1 ? 'mark' : 'marks'}'))],
+      onChanged: (m) => setState(() => q.marks = m ?? q.marks),
+    );
+    final remove = IconButton(tooltip: 'Remove question', onPressed: () => _remove(i), icon: const Icon(Icons.delete_outline));
+    final number = SizedBox(
+      width: 28,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Text('${i + 1}.', style: context.text.titleMedium),
+      ),
+    );
+    return Padding(
+      key: ObjectKey(q),
+      padding: const EdgeInsets.only(bottom: Kx.s12),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          if (box.maxWidth < 520) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                number,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      field,
+                      Row(children: [marks, const Spacer(), remove]),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              number,
+              Expanded(child: field),
+              const SizedBox(width: Kx.s8),
+              Padding(padding: const EdgeInsets.only(top: 4), child: marks),
+              Padding(padding: const EdgeInsets.only(top: 4), child: remove),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -245,46 +309,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
           ],
         ),
         const SizedBox(height: Kx.s8),
-        for (var i = 0; i < draft.questions.length; i++)
-          Padding(
-            key: ObjectKey(draft.questions[i]),
-            padding: const EdgeInsets.only(bottom: Kx.s12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 28,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text('${i + 1}.', style: context.text.titleMedium),
-                  ),
-                ),
-                Expanded(
-                  child: TextField(
-                    key: Key('homework-q$i'),
-                    controller: _questions[i],
-                    minLines: 1,
-                    maxLines: 4,
-                    style: const TextStyle(fontSize: 17),
-                    decoration: const InputDecoration(hintText: 'Question'),
-                  ),
-                ),
-                const SizedBox(width: Kx.s8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: DropdownButton<int>(
-                    key: Key('homework-marks$i'),
-                    value: draft.questions[i].marks.clamp(1, 20),
-                    underline: const SizedBox.shrink(),
-                    borderRadius: BorderRadius.circular(Kx.rMd),
-                    items: [for (var m = 1; m <= 20; m++) DropdownMenuItem(value: m, child: Text('$m ${m == 1 ? 'mark' : 'marks'}'))],
-                    onChanged: (m) => setState(() => draft.questions[i].marks = m ?? draft.questions[i].marks),
-                  ),
-                ),
-                IconButton(tooltip: 'Remove question', onPressed: () => _remove(i), icon: const Icon(Icons.delete_outline)),
-              ],
-            ),
-          ),
+        for (var i = 0; i < draft.questions.length; i++) _questionRow(context, i),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
@@ -311,6 +336,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
         Wrap(
           spacing: Kx.s8,
           runSpacing: Kx.s8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             FilledButton.icon(
               key: const Key('homework-send'),

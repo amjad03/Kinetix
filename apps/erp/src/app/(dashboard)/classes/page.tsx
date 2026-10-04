@@ -5,7 +5,7 @@ import { NoClasses } from '@/components/NoClasses';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { STATUS_ORDER } from '@/lib/status';
-import { api, load } from '@/lib/api';
+import { api, load, requireSection } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
 import { dateParam, relativeDay, schoolToday } from '@/lib/school';
 import type { ClassesDay, ClassStatus } from '@/lib/types';
@@ -13,6 +13,7 @@ import type { ClassesDay, ClassStatus } from '@/lib/types';
 export const metadata: Metadata = { title: 'Classes' };
 
 export default async function ClassesPage({ searchParams }: { searchParams: Promise<{ date?: string; status?: string }> }) {
+  await requireSection('school');
   const sp = await searchParams;
   const date = dateParam(sp.date);
   const today = schoolToday();

@@ -10,7 +10,15 @@ import Class from '@mui/icons-material/Class';
 import ClassOutlined from '@mui/icons-material/ClassOutlined';
 import FactCheck from '@mui/icons-material/FactCheck';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
+import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
+import LiveTv from '@mui/icons-material/LiveTv';
+import LiveTvOutlined from '@mui/icons-material/LiveTvOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
+import MenuBook from '@mui/icons-material/MenuBook';
+import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
+import Payments from '@mui/icons-material/Payments';
+import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import Today from '@mui/icons-material/Today';
 import TodayOutlined from '@mui/icons-material/TodayOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -27,19 +35,30 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { signOut } from '@/app/login/actions';
+import { canSee, homeFor, type Section } from '@/lib/access';
 import { initials } from './initials';
 import { Logo, LogoMark } from './Logo';
 
-const NAV = [
-  { href: '/', label: 'Today', icon: TodayOutlined, active: Today },
-  { href: '/classes', label: 'Classes', icon: ClassOutlined, active: Class },
-  { href: '/attendance', label: 'Attendance', icon: FactCheckOutlined, active: FactCheck },
-  { href: '/homework', label: 'Homework', icon: AssignmentOutlined, active: Assignment },
-  { href: '/messages', label: 'Messages', icon: CampaignOutlined, active: Campaign },
-  { href: '/boards', label: 'Boards', icon: CastForEducationOutlined, active: CastForEducation },
-] as const;
+const NAV: { href: string; label: string; section: Section; icon: typeof TodayOutlined; active: typeof Today }[] = [
+  { href: '/', label: 'Today', section: 'school', icon: TodayOutlined, active: Today },
+  { href: '/classes', label: 'Classes', section: 'school', icon: ClassOutlined, active: Class },
+  { href: '/attendance', label: 'Attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
+  { href: '/homework', label: 'Homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
+  { href: '/messages', label: 'Messages', section: 'school', icon: CampaignOutlined, active: Campaign },
+  { href: '/boards', label: 'Boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
+  { href: '/live', label: 'Live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
+  { href: '/fees', label: 'Fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
+  { href: '/syllabus', label: 'Syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
+  { href: '/ai', label: 'AI usage', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
+];
 
-const ROLE_LABEL: Record<string, string> = { principal: 'Principal', tenant_admin: 'Administrator', hod: 'Head of department', teacher: 'Teacher' };
+const ROLE_LABEL: Record<string, string> = {
+  principal: 'Principal',
+  tenant_admin: 'Administrator',
+  hod: 'Head of department',
+  teacher: 'Teacher',
+  accountant: 'Accounts office',
+};
 
 export interface ShellUser {
   fullName: string;
@@ -55,18 +74,21 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
   const pathname = usePathname();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const roleText = user.roles.map((r) => ROLE_LABEL[r]).filter(Boolean).join(' · ');
+  const nav = NAV.filter((item) => canSee(user.roles, item.section));
+  const home = homeFor(user.roles);
 
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', display: 'grid', gridTemplateRows: '64px 1fr', gridTemplateColumns: { xs: '80px 1fr', lg: '256px 1fr' } }}>
+    <Box className="kx-shell" sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', display: 'grid', gridTemplateRows: '64px 1fr', gridTemplateColumns: { xs: '80px 1fr', lg: '256px 1fr' } }}>
       {/* Top app bar */}
       <Box
         component="header"
+        className="kx-chrome"
         sx={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 2, px: { xs: 2, lg: 3 }, position: 'sticky', top: 0, zIndex: 3, bgcolor: 'kx.frame' }}
       >
-        <Box component={Link} href="/" aria-label="KINETIX ERP home" sx={{ textDecoration: 'none', display: { xs: 'none', lg: 'block' }, width: 208 }}>
+        <Box component={Link} href={home} aria-label="KINETIX ERP home" sx={{ textDecoration: 'none', display: { xs: 'none', lg: 'block' }, width: 208 }}>
           <Logo size={30} />
         </Box>
-        <Box component={Link} href="/" aria-label="KINETIX ERP home" sx={{ display: { xs: 'block', lg: 'none' }, ml: 0.5, mr: 1 }}>
+        <Box component={Link} href={home} aria-label="KINETIX ERP home" sx={{ display: { xs: 'block', lg: 'none' }, ml: 0.5, mr: 1 }}>
           <LogoMark size={32} />
         </Box>
         <Typography variant="h5" component="p" noWrap sx={{ fontSize: { xs: '1.0625rem', md: '1.25rem' }, color: 'text.primary', minWidth: 0 }} data-testid="school-name">
@@ -119,8 +141,8 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
       </Box>
 
       {/* Navigation: M3 drawer on wide screens, rail on tablets */}
-      <Box component="nav" aria-label="Main" sx={{ position: 'sticky', top: 64, alignSelf: 'start', px: { xs: 0, lg: 1.5 }, pt: { xs: 0.5, lg: 1 } }}>
-        {NAV.map((item) => {
+      <Box component="nav" aria-label="Main" className="kx-chrome" sx={{ position: 'sticky', top: 64, alignSelf: 'start', px: { xs: 0, lg: 1.5 }, pt: { xs: 0.5, lg: 1 } }}>
+        {nav.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = active ? item.active : item.icon;
           return (
@@ -171,6 +193,7 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
       {/* Content pane */}
       <Box
         component="main"
+        className="kx-main"
         sx={{
           bgcolor: 'kx.pane',
           borderRadius: '16px',

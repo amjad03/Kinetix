@@ -3,7 +3,6 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
 import '../board/chrome.dart';
-import '../board/side_panel.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
 import 'homework_panel.dart';
@@ -69,8 +68,18 @@ class _AiHomeState extends State<_AiHome> {
 
   @override
   Widget build(BuildContext context) {
+    // Up to four tiles per row that fill the panel, whatever its width (the list has 24 px padding).
+    return LayoutBuilder(
+      builder: (context, box) {
+        final available = box.maxWidth - 2 * Kx.s24;
+        final columns = ((available + Kx.s12) / (96 + Kx.s12)).floor().clamp(2, 4);
+        return _page(context, ((available - (columns - 1) * Kx.s12) / columns).clamp(80.0, 200.0).floorToDouble());
+      },
+    );
+  }
+
+  Widget _page(BuildContext context, double tileWidth) {
     final c = context.colors;
-    const tileWidth = 104.0;
     Widget group(String title, List<Widget> tiles) => Padding(
       padding: const EdgeInsets.only(bottom: Kx.s20),
       child: Column(
@@ -88,11 +97,11 @@ class _AiHomeState extends State<_AiHome> {
         ChromeTile(key: Key('ai-tool-${v.name}'), icon: i, label: l, color: col, width: tileWidth, onTap: () => ai.open(v));
     final classLabel = ai.board.session?.classLabel;
 
-    return PanelPage(
+    return AiPanelPage(
+      ai: ai,
       icon: Icons.auto_awesome,
       title: 'KINETIX AI',
       accent: aiAccent,
-      trailing: AiLanguageMenu(ai: ai),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
         children: [

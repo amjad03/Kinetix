@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import path from 'node:path';
 
 export const TENANT = process.env.E2E_TENANT ?? 'demo-college';
 export const PASSWORD = process.env.E2E_PASSWORD ?? 'kinetix123';
@@ -49,4 +50,10 @@ export function futureSunday(): string {
 export async function open(page: Page, path: string) {
   await page.goto(path);
   await page.waitForLoadState('networkidle');
+}
+
+/** Saves a screenshot to $E2E_SHOTS (when set) for reviewing the pages by eye. */
+export async function shot(page: Page, name: string) {
+  const dir = process.env.E2E_SHOTS;
+  if (dir) await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: true });
 }

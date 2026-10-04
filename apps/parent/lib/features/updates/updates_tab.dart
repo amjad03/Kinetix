@@ -10,6 +10,8 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
+import '../fees/fees_screen.dart';
+import '../fees/receipt_screen.dart';
 import '../homework/homework_screen.dart';
 import 'message_screen.dart';
 import 'updates_controller.dart';
@@ -29,6 +31,7 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.homework => Icons.assignment,
     NotificationKind.boardShared => Icons.co_present,
     NotificationKind.recording => Icons.play_circle,
+    NotificationKind.fee => Icons.currency_rupee,
     NotificationKind.broadcast => Icons.campaign,
     NotificationKind.other => Icons.notifications,
   };
@@ -59,6 +62,12 @@ class UpdatesTab extends StatelessWidget {
             initial: family.findRecording(n.recordingId!, sectionId: n.sectionId)?.$2,
           );
         }
+      case NotificationKind.fee:
+        // "Payment received" → its receipt; "Fee due" → that child's fees.
+        if (n.paymentId != null && context.mounted) return ReceiptScreen.open(context, api, paymentId: n.paymentId!);
+        const prefix = 'Fee due: ';
+        final child = await family.findFeeChild(title: n.title.startsWith(prefix) ? n.title.substring(prefix.length) : null);
+        if (child != null && context.mounted) return FeesScreen.open(context, family, child);
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;
@@ -127,7 +136,7 @@ class UpdatesTab extends StatelessWidget {
     );
   }
 
-  /// Which child an update is about, when it says so (absences, homework, boards, recordings).
+  /// Which child an update is about, when it says so (absences, homework, boards, recordings, payments).
   Child? _childFor(AppNotification n) {
     final byId = family.byId(n.studentId);
     if (byId != null) return byId;

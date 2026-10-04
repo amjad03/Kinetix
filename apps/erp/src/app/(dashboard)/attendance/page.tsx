@@ -20,7 +20,7 @@ import { NoClasses } from '@/components/NoClasses';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
-import { api, load } from '@/lib/api';
+import { api, load, requireSection } from '@/lib/api';
 import { formatDate, hhmm, isoWeekday } from '@/lib/dates';
 import { dateParam, relativeDay, schoolToday } from '@/lib/school';
 import type { AttendanceDay } from '@/lib/types';
@@ -34,6 +34,7 @@ function rateOf(present: number, absent: number, late: number): number | null {
 }
 
 export default async function AttendancePage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+  await requireSection('school');
   const date = dateParam((await searchParams).date);
   const today = schoolToday();
   const res = await load(() => api<AttendanceDay>(`/v1/admin/attendance?date=${date}`));

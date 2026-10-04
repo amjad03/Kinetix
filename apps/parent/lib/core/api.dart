@@ -49,6 +49,17 @@ abstract class ParentApi {
 
   /// One homework (opened from a notification), with the class it was set for.
   Future<({Homework homework, String sectionId})> homeworkById(String id);
+
+  /// The child's fees, payments and whether online payment is available.
+  Future<StudentFees> fees(String childId);
+
+  /// Starts an online payment of [amountPaise] (the whole balance when null) against a fee.
+  /// 503 when online payment is off; 400 when the fee is paid or the amount is more than the balance.
+  Future<FeeCheckout> checkout(String invoiceId, {int? amountPaise});
+
+  /// Reports the gateway's result; the server checks the signature (403 when it does not match).
+  Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature});
+  Future<FeeReceipt> receipt(String paymentId);
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
@@ -146,6 +157,26 @@ class HttpParentApi implements ParentApi {
   @override
   Future<Lesson> recordingLesson(String id) async =>
       Lesson.fromJson(await _send('GET', '/v1/recordings/$id/events') as Map<String, dynamic>);
+
+  @override
+  Future<StudentFees> fees(String childId) async =>
+      StudentFees.fromJson(await _send('GET', '/v1/fees/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<FeeCheckout> checkout(String invoiceId, {int? amountPaise}) async => FeeCheckout.fromJson(
+    await _send('POST', '/v1/fees/invoices/$invoiceId/checkout', body: {'amountPaise': ?amountPaise}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature}) async =>
+      FeeReceipt.fromJson(
+        await _send('POST', '/v1/fees/payments/$paymentId/confirm', body: {'providerPaymentId': providerPaymentId, 'signature': signature})
+            as Map<String, dynamic>,
+      );
+
+  @override
+  Future<FeeReceipt> receipt(String paymentId) async =>
+      FeeReceipt.fromJson(await _send('GET', '/v1/fees/payments/$paymentId/receipt') as Map<String, dynamic>);
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
+import '../board/side_panel.dart';
 import 'ai_controller.dart';
 
 /// KINETIX AI's accent (the AI toolbar group).
@@ -19,9 +20,12 @@ abstract final class ClassType {
 
 /// The language used for every AI task, as a compact menu for page headers.
 class AiLanguageMenu extends StatelessWidget {
-  const AiLanguageMenu({super.key, required this.ai});
+  const AiLanguageMenu({super.key, required this.ai, this.compact = false});
 
   final AiController ai;
+
+  /// Short label (EN, हि, ಕ) for narrow panels.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +53,7 @@ class AiLanguageMenu extends StatelessWidget {
             children: [
               Icon(Icons.translate, size: 18, color: context.colors.onSurfaceVariant),
               const SizedBox(width: Kx.s8),
-              Text(ai.language.label, style: context.text.labelLarge),
+              Text(compact ? ai.language.short : ai.language.label, style: context.text.labelLarge),
               Icon(Icons.arrow_drop_down, color: context.colors.onSurfaceVariant),
             ],
           ),
@@ -57,6 +61,30 @@ class AiLanguageMenu extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A panel page for an AI tool, with the language menu in the title row.
+class AiPanelPage extends StatelessWidget {
+  const AiPanelPage({super.key, required this.ai, required this.icon, required this.title, required this.child, this.accent, this.onBack});
+
+  final AiController ai;
+  final IconData icon;
+  final String title;
+  final Widget child;
+  final Color? accent;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => PanelPage(
+      icon: icon,
+      title: title,
+      accent: accent,
+      onBack: onBack,
+      trailing: AiLanguageMenu(ai: ai, compact: box.maxWidth < 480),
+      child: child,
+    ),
+  );
 }
 
 /// A tinted message strip: preview label, errors, sign-in hints.

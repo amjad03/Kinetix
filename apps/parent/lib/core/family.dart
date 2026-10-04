@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api.dart';
 import 'models.dart';
 
-/// The parent's children, which one is selected (remembered), and each child's Home summary.
+/// The parent's children, which one is selected (remembered), and each child's Home summary and fees.
 class FamilyController extends ChangeNotifier {
   FamilyController(this.api, this._prefs);
 
@@ -21,11 +21,15 @@ class FamilyController extends ChangeNotifier {
   final _summaries = <String, ChildSummary>{};
   final _summaryErrors = <String, String>{};
   final _summaryLoading = <String>{};
+  final _fees = <String, StudentFees>{};
+  final _feesErrors = <String, String>{};
 
   Child? get selected => children.where((c) => c.id == _selectedId).firstOrNull ?? children.firstOrNull;
   ChildSummary? summaryOf(String childId) => _summaries[childId];
   String? summaryErrorOf(String childId) => _summaryErrors[childId];
   bool summaryLoading(String childId) => _summaryLoading.contains(childId);
+  StudentFees? feesOf(String childId) => _fees[childId];
+  String? feesErrorOf(String childId) => _feesErrors[childId];
   Child? byId(String? id) => children.where((c) => c.id == id).firstOrNull;
   Iterable<Child> inSection(String? sectionId) => children.where((c) => c.sectionId == sectionId);
 
@@ -45,7 +49,7 @@ class FamilyController extends ChangeNotifier {
       notifyListeners();
     }
     final c = selected;
-    if (c != null) await loadSummary(c.id);
+    if (c != null) await Future.wait([loadSummary(c.id), loadFees(c.id)]);
   }
 
   Future<void> select(String childId) async {
@@ -53,7 +57,7 @@ class FamilyController extends ChangeNotifier {
     _selectedId = childId;
     await _prefs.setString(_kChild, childId);
     notifyListeners();
-    if (!_summaries.containsKey(childId)) await loadSummary(childId);
+    await Future.wait([if (!_summaries.containsKey(childId)) loadSummary(childId), if (!_fees.containsKey(childId)) loadFees(childId)]);
   }
 
   Future<void> loadSummary(String childId) async {
@@ -70,11 +74,40 @@ class FamilyController extends ChangeNotifier {
     }
   }
 
-  /// Pull to refresh: the children list and the selected child's summary.
+  /// The child's fees for the Home card. Kept separate from the summary so a fees problem
+  /// never hides attendance and homework.
+  Future<StudentFees?> loadFees(String childId) async {
+    _feesErrors.remove(childId);
+    try {
+      return _fees[childId] = await api.fees(childId);
+    } on ApiException catch (e) {
+      _feesErrors[childId] = e.message;
+      return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Pull to refresh: the children list and the selected child's summary and fees.
   Future<void> refresh() async {
     if (children.isEmpty) return load();
     final c = selected;
-    if (c != null) await loadSummary(c.id);
+    if (c != null) await Future.wait([loadSummary(c.id), loadFees(c.id)]);
+  }
+
+  /// The child a new fee (titled [title]) is for. The notification names only the class's batch,
+  /// so this reloads each child's fees (the selected child first) and matches the title.
+  Future<Child?> findFeeChild({String? title}) async {
+    if (children.isEmpty) await load();
+    if (children.length <= 1) return children.firstOrNull;
+    if (title != null) {
+      final first = selected;
+      for (final child in [?first, ...children.where((c) => c.id != first?.id)]) {
+        final fees = await loadFees(child.id);
+        if (fees != null && fees.invoices.any((i) => i.title == title)) return child;
+      }
+    }
+    return selected;
   }
 
   /// Finds a homework by id among the children in [sectionId], loading summaries as needed.

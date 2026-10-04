@@ -4,13 +4,14 @@ import { ComposeMessage } from '@/components/messages/ComposeMessage';
 import { SentMessages } from '@/components/messages/SentMessages';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
-import { api, getMe, load } from '@/lib/api';
+import { api, getMe, load, requireSection } from '@/lib/api';
 import { TIMEZONE } from '@/lib/school';
 import type { SentBroadcast, Structure } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Messages' };
 
 export default async function MessagesPage() {
+  await requireSection('school');
   const [me, structure, sent] = await Promise.all([
     getMe(),
     load(() => api<Structure>('/v1/admin/structure')),

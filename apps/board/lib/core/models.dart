@@ -145,12 +145,15 @@ class WhiteboardSummary {
 
 /// Languages KINETIX AI writes in. The label is in the language itself.
 enum AiLanguage {
-  en('English'),
-  hi('हिन्दी'),
-  kn('ಕನ್ನಡ');
+  en('English', 'EN'),
+  hi('हिन्दी', 'हि'),
+  kn('ಕನ್ನಡ', 'ಕ');
 
-  const AiLanguage(this.label);
+  const AiLanguage(this.label, this.short);
   final String label;
+
+  /// For narrow panels.
+  final String short;
 
   static AiLanguage fromCode(String? code) => values.asNameMap()[code] ?? en;
 }

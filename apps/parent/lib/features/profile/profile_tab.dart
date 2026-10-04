@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../widgets/common.dart';
+import '../fees/fees_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, required this.family});
@@ -89,11 +90,20 @@ class ProfileTab extends StatelessWidget {
                 ),
               if (family.children.isEmpty && !family.loading)
                 const ListTile(leading: Icon(Icons.info_outline), title: Text("No children are linked yet. Ask your child's college.")),
+              if (family.children.isNotEmpty) const KxSectionHeader('Fees & receipts'),
+              for (final child in family.children)
+                ListTile(
+                  key: Key('profile-fees-${child.id}'),
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: Text(family.children.length == 1 ? 'Fees and receipts' : "${child.firstName}'s fees"),
+                  subtitle: const Text('Dues, payments and receipts'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => FeesScreen.open(context, family, child),
+                ),
               const KxSectionHeader('Account'),
               ListTile(leading: const Icon(Icons.apartment_outlined), title: const Text('College'), subtitle: Text(me.institution)),
               ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Server'), subtitle: Text(state.serverUrl)),
               const KxSectionHeader('Coming soon'),
-              soonTile(Icons.receipt_long_outlined, 'Fees & receipts', 'Pay fees and download receipts'),
               soonTile(Icons.forum_outlined, 'Message the teacher', "Ask about your child's progress"),
               soonTile(Icons.local_library_outlined, 'Library books', 'Books borrowed and due dates'),
               soonTile(Icons.translate, 'Language', 'English · हिन्दी · ಕನ್ನಡ'),

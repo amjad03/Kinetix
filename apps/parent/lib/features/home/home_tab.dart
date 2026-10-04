@@ -7,12 +7,13 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
+import '../fees/fees_card.dart';
 import '../homework/homework_screen.dart';
 import '../recordings/recordings.dart';
 import 'child_switcher.dart';
 
-/// Home for the selected child: attendance, homework, lesson recordings, class participation and
-/// shared boards.
+/// Home for the selected child: attendance, fees, homework, lesson recordings, class participation
+/// and shared boards.
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key, required this.family, required this.me});
 
@@ -97,6 +98,7 @@ class HomeTab extends StatelessWidget {
       if (summary != null) ...[
         AttendanceCard(child: c, summary: summary, onOpen: () => AttendanceScreen.open(context, family.api, c)),
         _HomeworkCard(child: c, summary: summary),
+        FeesCard(family: family, child: c, today: summary.today),
         RecordingsCard(child: c, summary: summary, api: family.api),
         _InClassCard(child: c, summary: summary),
         _BoardsCard(child: c, summary: summary, family: family),

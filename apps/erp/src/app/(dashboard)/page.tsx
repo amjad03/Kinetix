@@ -15,7 +15,7 @@ import { hrefFor, NoClasses } from '@/components/NoClasses';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
-import { api, load } from '@/lib/api';
+import { api, load, requireSection } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
 import { dateParam, relativeDay, schoolNowTime, schoolToday } from '@/lib/school';
 import type { ClassesDay, Overview } from '@/lib/types';
@@ -23,6 +23,7 @@ import type { ClassesDay, Overview } from '@/lib/types';
 export const metadata: Metadata = { title: 'Today' };
 
 export default async function TodayPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+  await requireSection('school');
   const date = dateParam((await searchParams).date);
   const today = schoolToday();
   const [ov, day] = await Promise.all([

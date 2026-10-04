@@ -175,7 +175,7 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
         return {
           answer: `Preview answer about "${topic}". Connect the KINETIX AI server to get a real explanation that follows your syllabus.`,
           keyPoints: ['Start from what the class already knows', 'Define the key terms', 'Work through one example together'],
-          followUps: [`Where is ${topic} used in real life?`, 'Can you show another example?'],
+          followUps: ['Where is this used in real life?', 'Can you show another example?'],
         };
       case 'quiz':
         return {

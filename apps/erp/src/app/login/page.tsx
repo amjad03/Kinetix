@@ -10,7 +10,7 @@ const NOTICES: Record<string, { severity: 'info' | 'warning'; text: string }> = 
   expired: { severity: 'info', text: 'Your session has ended. Sign in again to continue.' },
   denied: {
     severity: 'warning',
-    text: 'KINETIX ERP is for principals, administrators and heads of department. Teachers can use the KINETIX Teacher App.',
+    text: 'KINETIX ERP is for principals, administrators, heads of department and the accounts office. Teachers can use the KINETIX Teacher App.',
   },
   'signed-out': { severity: 'info', text: 'You have signed out.' },
 };

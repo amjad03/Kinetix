@@ -80,6 +80,7 @@ class ArithmeticStepper {
   };
 
   void _collect(Node n, int depth, List<_Candidate> out) {
+    if (_valueOf(n) != null) return;
     final d = depth + (n.paren ? 1 : 0);
     switch (n) {
       case NumLit() || Const() || Var():

@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_parent/core/api.dart';
 import 'package:kinetix_parent/core/models.dart';
@@ -327,5 +330,170 @@ class FakeParentApi implements ParentApi {
   Future<Lesson> recordingLesson(String id) async {
     calls.add('lesson $id');
     return Lesson.fromJson(lessonJson);
+  }
+
+  // ── Fees ──────────────────────────────────────────────────────────────────────────────────
+
+  /// 'demo', 'razorpay' or null (pay at the counter).
+  String? onlinePayments = 'demo';
+
+  /// Aarav: tuition part-paid (due in 11 days) and an overdue exam fee. Diya: all paid.
+  late Map<String, List<FeeInvoice>> invoices = {
+    'c1': [
+      FeeInvoice(
+        id: 'i1',
+        title: 'Semester 3 tuition',
+        amountPaise: 4250000,
+        paidPaise: 1000000,
+        dueOn: DateTime(2026, 10, 15),
+        status: FeeStatus.due,
+      ),
+      FeeInvoice(id: 'i2', title: 'Exam fee', amountPaise: 250000, paidPaise: 0, dueOn: DateTime(2026, 10, 1), status: FeeStatus.due),
+    ],
+    'c2': [
+      FeeInvoice(
+        id: 'i3',
+        title: 'Semester 1 tuition',
+        amountPaise: 3800000,
+        paidPaise: 3800000,
+        dueOn: DateTime(2026, 9, 20),
+        status: FeeStatus.paid,
+      ),
+    ],
+  };
+
+  late Map<String, List<FeePayment>> feePayments = {
+    'c1': [
+      FeePayment(
+        id: 'p1',
+        invoiceId: 'i1',
+        amountPaise: 1000000,
+        method: PaymentMethod.cash,
+        receiptNo: 'RCPT/2026-27/00001',
+        paidAt: DateTime(2026, 9, 28, 11, 5),
+      ),
+    ],
+    'c2': [
+      FeePayment(
+        id: 'p2',
+        invoiceId: 'i3',
+        amountPaise: 3800000,
+        method: PaymentMethod.online,
+        receiptNo: 'RCPT/2026-27/00002',
+        paidAt: DateTime(2026, 9, 18, 18, 40),
+      ),
+    ],
+  };
+
+  final _orders = <String, ({String invoiceId, String childId, int amountPaise, String orderId})>{};
+  var _receiptNo = 2;
+
+  String? _childOfInvoice(String invoiceId) => invoices.entries.where((e) => e.value.any((i) => i.id == invoiceId)).firstOrNull?.key;
+
+  @override
+  Future<StudentFees> fees(String childId) async {
+    calls.add('fees $childId');
+    final list = [...?invoices[childId]]..sort((a, b) => b.dueOn.compareTo(a.dueOn));
+    return StudentFees(
+      duePaise: list.where((i) => !i.isPaid).fold(0, (s, i) => s + i.balancePaise),
+      onlinePayments: switch (onlinePayments) {
+        'demo' => OnlinePayments.demo,
+        'razorpay' => OnlinePayments.razorpay,
+        _ => null,
+      },
+      invoices: list,
+      payments: [...?feePayments[childId]]..sort((a, b) => b.paidAt!.compareTo(a.paidAt!)),
+    );
+  }
+
+  @override
+  Future<FeeCheckout> checkout(String invoiceId, {int? amountPaise}) async {
+    calls.add('checkout $invoiceId ${amountPaise ?? 'full'}');
+    if (onlinePayments == null) throw ApiException(503, 'Online payment is not available yet. Please pay at the fees counter.');
+    final childId = _childOfInvoice(invoiceId);
+    if (childId == null) throw ApiException(404, 'Invoice not found');
+    final inv = invoices[childId]!.firstWhere((i) => i.id == invoiceId);
+    if (inv.isPaid) throw ApiException(400, 'This fee is already paid');
+    final amount = amountPaise ?? inv.balancePaise;
+    if (amount > inv.balancePaise) throw ApiException(400, 'That is more than the balance due');
+    final paymentId = 'pay${_orders.length + 10}';
+    final orderId = '${onlinePayments}_order_${_orders.length + 1}';
+    _orders[paymentId] = (invoiceId: invoiceId, childId: childId, amountPaise: amount, orderId: orderId);
+    return FeeCheckout(
+      paymentId: paymentId,
+      provider: onlinePayments!,
+      keyId: onlinePayments == 'demo' ? 'demo' : 'rzp_test_key',
+      orderId: orderId,
+      amountPaise: amount,
+      currency: 'INR',
+      name: 'Demo College',
+      description: inv.title,
+      prefillName: profile.fullName,
+      prefillEmail: profile.email!,
+      prefillContact: profile.phone!,
+    );
+  }
+
+  @override
+  Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature}) async {
+    calls.add('confirm $paymentId');
+    final o = _orders[paymentId];
+    if (o == null) throw ApiException(404, 'Payment not found');
+    final expected = Hmac(sha256, utf8.encode('kinetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    if (signature != expected) throw ApiException(403, 'The payment could not be verified');
+    final list = invoices[o.childId]!;
+    final at = list.indexWhere((i) => i.id == o.invoiceId);
+    final inv = list[at];
+    final paid = inv.paidPaise + o.amountPaise;
+    list[at] = FeeInvoice(
+      id: inv.id,
+      title: inv.title,
+      amountPaise: inv.amountPaise,
+      paidPaise: paid,
+      dueOn: inv.dueOn,
+      status: paid >= inv.amountPaise ? FeeStatus.paid : FeeStatus.due,
+    );
+    _receiptNo++;
+    feePayments[o.childId]!.add(
+      FeePayment(
+        id: paymentId,
+        invoiceId: o.invoiceId,
+        amountPaise: o.amountPaise,
+        method: PaymentMethod.online,
+        receiptNo: 'RCPT/2026-27/${_receiptNo.toString().padLeft(5, '0')}',
+        paidAt: DateTime.now(),
+      ),
+    );
+    _references[paymentId] = providerPaymentId;
+    return receipt(paymentId);
+  }
+
+  final _references = <String, String>{};
+
+  @override
+  Future<FeeReceipt> receipt(String paymentId) async {
+    calls.add('receipt $paymentId');
+    for (final MapEntry(key: childId, value: list) in feePayments.entries) {
+      final p = list.where((p) => p.id == paymentId).firstOrNull;
+      if (p == null) continue;
+      final child = kids.firstWhere((k) => k.id == childId);
+      final inv = invoices[childId]!.firstWhere((i) => i.id == p.invoiceId);
+      return FeeReceipt(
+        receiptNo: p.receiptNo!,
+        institution: 'Demo College',
+        studentId: child.id,
+        studentName: child.fullName,
+        rollNo: child.rollNo,
+        className: child.sectionName,
+        feeTitle: inv.title,
+        feeAmountPaise: inv.amountPaise,
+        balancePaise: inv.balancePaise,
+        amountPaise: p.amountPaise,
+        method: p.method,
+        reference: _references[paymentId],
+        paidAt: p.paidAt!,
+      );
+    }
+    throw ApiException(404, 'Receipt not found');
   }
 }

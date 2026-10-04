@@ -44,7 +44,7 @@ class Printer {
             return juxtapose ? '$l$r' : '$l × $r';
           case '/':
             // 1/3, x/2, x²/4: a fraction bar, as written in the book.
-            if (_isWholeLit(right) && (_isWholeLit(left) || (_prec(left) >= 4 && left is! NumLit))) {
+            if (_isWholeLit(right) && (_isLowestTerms(left, right) || (_prec(left) >= 4 && left is! NumLit))) {
               return '${_p(left)}/${_p(right)}';
             }
             final l = _wrapIf(left, _prec(left) < 2 || _isFrac(left));
@@ -61,6 +61,10 @@ class Printer {
   }
 
   String _wrapIf(Node n, bool wrap) => wrap && !n.paren ? '(${_bare(n)})' : _p(n);
+
+  /// 3/4 is a fraction; 8/2 or 6/4 is a division still to do (shown as ÷).
+  bool _isLowestTerms(Node l, Node r) =>
+      _isWholeLit(l) && (l as NumLit).value.exact!.num.gcd((r as NumLit).value.exact!.num) == BigInt.one && !r.value.isOne && !r.value.isZero;
 
   bool _isWholeLit(Node n) => n is NumLit && !n.paren && n.value.isInteger && !n.value.isNegative;
   bool _isNegLit(Node n) => n is NumLit && n.value.isNegative && !n.paren;

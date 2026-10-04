@@ -55,6 +55,10 @@ void main() {
       expect(solve('2(3+4) - 6/4').answer, '25/2');
       expect(solve('2/3 * 3/4').answer, '1/2');
       expect(solve('1/3').decimal, '0.333333');
+      // A fraction is a number, not a step; a division still to do is shown with ÷.
+      expect(working('2*3 + 1/2'), ['2 × 3 + 1/2', '6 + 1/2', '13/2']);
+      expect(working('6/4').first, '6 ÷ 4');
+      expect(working('(1/3)^2'), ['(1/3)²', '1/9']);
     });
 
     test('decimals stay decimals', () {

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'helpers.dart';
 
 void main() {
-  testWidgets('profile lists the children, marks unbuilt features Soon and signs out', (tester) async {
+  testWidgets('profile lists the children, opens fees, marks unbuilt features Soon and signs out', (tester) async {
     final (_, state) = await pumpApp(tester);
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
@@ -15,10 +15,14 @@ void main() {
     expect(find.text('BCA Sem 1 A · Roll no. U01CA001'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.byKey(const Key('signOut')), 200, scrollable: find.byType(Scrollable).last);
-    for (final f in ['Fees & receipts', 'Message the teacher', 'Library books', 'Language']) {
+    for (final f in ['Message the teacher', 'Library books', 'Language']) {
       expect(find.text(f), findsOneWidget);
     }
-    expect(find.text('Soon'), findsNWidgets(4));
+    expect(find.text('Soon'), findsNWidgets(3));
+    // Fees are built: one entry per child instead of a Soon tile.
+    expect(find.text('Fees & receipts'), findsOneWidget);
+    expect(find.text("Aarav's fees"), findsOneWidget);
+    expect(find.text("Diya's fees"), findsOneWidget);
     await tester.tap(find.text('Library books'));
     await tester.pump();
     expect(find.text('Library books is coming in a later update'), findsOneWidget);

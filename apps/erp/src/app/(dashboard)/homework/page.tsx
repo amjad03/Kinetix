@@ -12,7 +12,7 @@ import { TableFrame } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { RangeToggle } from '@/components/RangeToggle';
 import { EmptyState, ErrorState } from '@/components/States';
-import { api, load } from '@/lib/api';
+import { api, load, requireSection } from '@/lib/api';
 import { daysBetween, formatDate, formatDateTime } from '@/lib/dates';
 import { schoolToday, TIMEZONE } from '@/lib/school';
 import type { HomeworkRow } from '@/lib/types';
@@ -51,6 +51,7 @@ function Due({ dueOn, today }: { dueOn: string | null; today: string }) {
 }
 
 export default async function HomeworkPage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
+  await requireSection('school');
   const d = Number((await searchParams).days);
   const days = RANGES.includes(d) ? d : 7;
   const today = schoolToday();

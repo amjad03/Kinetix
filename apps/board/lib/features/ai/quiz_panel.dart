@@ -4,7 +4,6 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
 import '../board/chrome.dart';
-import '../board/side_panel.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
 import 'homework_panel.dart';
@@ -51,23 +50,18 @@ class _QuizPanelState extends State<QuizPanel> {
   }
 
   Future<void> _sendAsHomework(Quiz quiz) async {
-    final sent = await showSendHomeworkDialog(
-      context,
-      ai: ai,
-      title: 'Quiz: ${quiz.topic}',
-      instructions: quizAsHomework(quiz),
-    );
+    final sent = await showSendHomeworkDialog(context, ai: ai, title: 'Quiz: ${quiz.topic}', instructions: quizAsHomework(quiz));
     if (sent && mounted) showHomeworkSent(context, ai);
   }
 
   @override
   Widget build(BuildContext context) {
-    return PanelPage(
+    return AiPanelPage(
+      ai: ai,
       icon: Icons.quiz_outlined,
       title: 'Quick quiz',
       accent: quizAccent,
       onBack: widget.onBack,
-      trailing: AiLanguageMenu(ai: ai),
       child: ListenableBuilder(
         listenable: Listenable.merge([ai, ai.quiz]),
         builder: (context, _) {
@@ -91,7 +85,12 @@ class _QuizPanelState extends State<QuizPanel> {
                 runSpacing: Kx.s8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  NumberPicker(label: 'Questions', value: ai.quizCount, options: const [3, 5, 8, 10, 15, 20], onChanged: (v) => setState(() => ai.quizCount = v)),
+                  NumberPicker(
+                    label: 'Questions',
+                    value: ai.quizCount,
+                    options: const [3, 5, 8, 10, 15, 20],
+                    onChanged: (v) => setState(() => ai.quizCount = v),
+                  ),
                   DifficultyPicker(value: ai.quizDifficulty, onChanged: (v) => setState(() => ai.quizDifficulty = v)),
                 ],
               ),
@@ -181,22 +180,19 @@ class _QuestionCard extends StatelessWidget {
                     width: 28,
                     height: 28,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: o == q.answer ? _correct : c.surfaceContainerHighest,
-                    ),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: o == q.answer ? _correct : c.surfaceContainerHighest),
                     child: o == q.answer
                         ? const Icon(Icons.check, size: 18, color: Colors.white)
-                        : Text(optionLetter(o), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.onSurfaceVariant)),
+                        : Text(
+                            optionLetter(o),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.onSurfaceVariant),
+                          ),
                   ),
                   const SizedBox(width: Kx.s12),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 3),
-                      child: Text(
-                        q.options[o],
-                        style: TextStyle(fontSize: 17, fontWeight: o == q.answer ? FontWeight.w600 : FontWeight.w400),
-                      ),
+                      child: Text(q.options[o], style: TextStyle(fontSize: 17, fontWeight: o == q.answer ? FontWeight.w600 : FontWeight.w400)),
                     ),
                   ),
                 ],
@@ -204,10 +200,7 @@ class _QuestionCard extends StatelessWidget {
             ),
           if (q.explanation.isNotEmpty) ...[
             const SizedBox(height: Kx.s8),
-            Text(
-              'Answer ${optionLetter(q.answer)}. ${q.explanation}',
-              style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-            ),
+            Text('Answer ${optionLetter(q.answer)}. ${q.explanation}', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
           ],
         ],
       ),
@@ -221,7 +214,9 @@ Future<void> showQuizPresenter(BuildContext context, Quiz quiz, {bool preview = 
   useSafeArea: false,
   barrierDismissible: false,
   builder: (_) => BoardChromeTheme(
-    child: Dialog.fullscreen(child: QuizPresenter(quiz: quiz, preview: preview)),
+    child: Dialog.fullscreen(
+      child: QuizPresenter(quiz: quiz, preview: preview),
+    ),
   ),
 );
 
@@ -296,11 +291,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
                               side: BorderSide.none,
                             ),
                           ),
-                        Text(
-                          'Question ${_index + 1} of ${_qs.length}',
-                          key: const Key('presenter-count'),
-                          style: context.text.titleLarge,
-                        ),
+                        Text('Question ${_index + 1} of ${_qs.length}', key: const Key('presenter-count'), style: context.text.titleLarge),
                         const SizedBox(width: Kx.s16),
                         IconButton.filledTonal(
                           key: const Key('presenter-close'),
@@ -387,41 +378,57 @@ class _QuizPresenterState extends State<QuizPresenter> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(32 * scale, 8, 32 * scale, 24 * scale),
-                    child: Row(
-                      children: [
-                        OutlinedButton.icon(
-                          key: const Key('presenter-previous'),
-                          onPressed: _index == 0 ? null : () => _go(-1),
-                          icon: const Icon(Icons.chevron_left),
-                          label: const Text('Previous'),
-                        ),
-                        const Spacer(),
-                        FilledButton.icon(
-                          key: const Key('presenter-reveal'),
-                          style: FilledButton.styleFrom(backgroundColor: _shown ? c.secondaryContainer : _correct, foregroundColor: _shown ? c.onSecondaryContainer : Colors.white),
-                          onPressed: _reveal,
-                          icon: Icon(_shown ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                          label: Text(_shown ? 'Hide answer' : 'Reveal answer'),
-                        ),
-                        const Spacer(),
-                        FilledButton.tonalIcon(
-                          key: const Key('presenter-next'),
-                          onPressed: last ? () => Navigator.of(context).pop() : () => _go(1),
-                          iconAlignment: IconAlignment.end,
-                          icon: Icon(last ? Icons.done : Icons.chevron_right),
-                          label: Text(last ? 'Finish' : 'Next'),
-                        ),
-                      ],
-                    ),
-                  ),
+                  Padding(padding: EdgeInsets.fromLTRB(32 * scale, 8, 32 * scale, 24 * scale), child: _bottomBar(context, scale, last)),
                 ],
               ),
             );
           },
         ),
       ),
+    );
+  }
+
+  Widget _bottomBar(BuildContext context, double scale, bool last) {
+    final c = context.colors;
+    // Large buttons: the teacher taps them standing at the board.
+    final size = Size(176 * scale, 64 * scale < Kx.boardTarget ? Kx.boardTarget : 64 * scale);
+    final text = TextStyle(fontSize: (22 * scale).clamp(16, 26), fontWeight: FontWeight.w500);
+    final padding = EdgeInsets.symmetric(horizontal: 28 * scale);
+    final iconSize = (28 * scale).clamp(20.0, 32.0);
+    return Row(
+      children: [
+        OutlinedButton.icon(
+          key: const Key('presenter-previous'),
+          style: OutlinedButton.styleFrom(minimumSize: size, textStyle: text, padding: padding, iconSize: iconSize),
+          onPressed: _index == 0 ? null : () => _go(-1),
+          icon: const Icon(Icons.chevron_left),
+          label: const Text('Previous'),
+        ),
+        const Spacer(),
+        FilledButton.icon(
+          key: const Key('presenter-reveal'),
+          style: FilledButton.styleFrom(
+            backgroundColor: _shown ? c.secondaryContainer : _correct,
+            foregroundColor: _shown ? c.onSecondaryContainer : Colors.white,
+            minimumSize: size,
+            textStyle: text,
+            padding: padding,
+            iconSize: iconSize,
+          ),
+          onPressed: _reveal,
+          icon: Icon(_shown ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+          label: Text(_shown ? 'Hide answer' : 'Reveal answer'),
+        ),
+        const Spacer(),
+        FilledButton.tonalIcon(
+          key: const Key('presenter-next'),
+          style: FilledButton.styleFrom(minimumSize: size, textStyle: text, padding: padding, iconSize: iconSize),
+          onPressed: last ? () => Navigator.of(context).pop() : () => _go(1),
+          iconAlignment: IconAlignment.end,
+          icon: Icon(last ? Icons.done : Icons.chevron_right),
+          label: Text(last ? 'Finish' : 'Next'),
+        ),
+      ],
     );
   }
 }
@@ -464,11 +471,20 @@ class _OptionCell extends StatelessWidget {
                   decoration: BoxDecoration(shape: BoxShape.circle, color: correct ? _correct : c.primaryContainer),
                   child: correct
                       ? Icon(Icons.check, color: Colors.white, size: 36 * scale)
-                      : Text(letter, style: TextStyle(fontSize: 30 * scale, fontWeight: FontWeight.w700, color: c.onPrimaryContainer)),
+                      : Text(
+                          letter,
+                          style: TextStyle(fontSize: 30 * scale, fontWeight: FontWeight.w700, color: c.onPrimaryContainer),
+                        ),
                 ),
                 SizedBox(width: 24 * scale),
                 Expanded(
-                  child: FitText(text, maxSize: 36 * scale, minSize: 16, style: TextStyle(color: c.onSurface, height: 1.2), center: true),
+                  child: FitText(
+                    text,
+                    maxSize: 36 * scale,
+                    minSize: 16,
+                    style: TextStyle(color: c.onSurface, height: 1.2),
+                    center: true,
+                  ),
                 ),
               ],
             ),
@@ -499,7 +515,10 @@ class FitText extends StatelessWidget {
         var size = maxSize;
         while (size > minSize) {
           final tp = TextPainter(
-            text: TextSpan(text: text, style: base.copyWith(fontSize: size)),
+            text: TextSpan(
+              text: text,
+              style: base.copyWith(fontSize: size),
+            ),
             textDirection: Directionality.of(context),
             textScaler: MediaQuery.textScalerOf(context),
           )..layout(maxWidth: box.maxWidth);
@@ -510,7 +529,11 @@ class FitText extends StatelessWidget {
         }
         return Align(
           alignment: center ? Alignment.centerLeft : Alignment.topLeft,
-          child: Text(text, style: base.copyWith(fontSize: size), overflow: TextOverflow.fade),
+          child: Text(
+            text,
+            style: base.copyWith(fontSize: size),
+            overflow: TextOverflow.fade,
+          ),
         );
       },
     );

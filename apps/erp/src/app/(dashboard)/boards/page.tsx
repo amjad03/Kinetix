@@ -15,7 +15,7 @@ import { TableFrame } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
-import { api, getMe, load } from '@/lib/api';
+import { api, getMe, load, requireSection } from '@/lib/api';
 import { formatDateTime, formatTime, relativeTime } from '@/lib/dates';
 import { TIMEZONE } from '@/lib/school';
 import { BOARD_ADMIN_ROLES, type Board, type Structure } from '@/lib/types';
@@ -48,6 +48,7 @@ function StatusDot({ b }: { b: Board }) {
 }
 
 export default async function BoardsPage() {
+  await requireSection('boards');
   const [me, boards, structure] = await Promise.all([getMe(), load(() => api<Board[]>('/v1/admin/devices')), load(() => api<Structure>('/v1/admin/structure'))]);
   const allowed = me.roles.some((r) => BOARD_ADMIN_ROLES.includes(r));
   const list = boards.data ?? [];

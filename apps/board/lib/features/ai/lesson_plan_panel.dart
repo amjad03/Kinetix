@@ -3,7 +3,6 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/models.dart';
 import '../board/chrome.dart';
-import '../board/side_panel.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
 
@@ -46,12 +45,12 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return PanelPage(
+    return AiPanelPage(
+      ai: ai,
       icon: Icons.co_present_outlined,
       title: 'Lesson plan',
       accent: lessonAccent,
       onBack: widget.onBack,
-      trailing: AiLanguageMenu(ai: ai),
       child: ListenableBuilder(
         listenable: Listenable.merge([ai, ai.lessonPlan]),
         builder: (context, _) {

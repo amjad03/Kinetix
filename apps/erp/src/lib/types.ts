@@ -1,7 +1,8 @@
 // Shapes returned by the KINETIX Cloud API (services/api). Kept by hand for this slice.
 
-export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'parent' | string;
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'accountant' | 'student' | 'guardian' | string;
 
+/** School leaders: the day-to-day pages (Today, Classes, …). Who else may sign in: see access.ts. */
 export const DASHBOARD_ROLES: RoleName[] = ['principal', 'tenant_admin', 'hod'];
 /** Roles the API lets register boards (POST /v1/devices). */
 export const BOARD_ADMIN_ROLES: RoleName[] = ['principal', 'tenant_admin'];
@@ -105,6 +106,8 @@ export interface Board {
   enrolled: boolean;
   online: boolean;
   session: { id: string; teacher: string; section: string | null; subject: string | null; startedAt: string } | null;
+  /** People watching it live right now. */
+  viewers?: number;
 }
 
 export type Priority = 'info' | 'important' | 'emergency';
@@ -144,6 +147,96 @@ export interface CreatedDevice {
   name: string;
   enrollmentCode: string;
   enrollmentExpiresAt: string;
+}
+
+// ---- Fees (v1/fees). Amounts are integer paise. ----
+
+export type InvoiceStatus = 'due' | 'paid' | 'cancelled';
+
+export interface FeeSummary {
+  billedPaise: number;
+  collectedPaise: number;
+  outstandingPaise: number;
+  overdueInvoices: number;
+  openInvoices: number;
+  classes: { sectionId: string; className: string; billedPaise: number; collectedPaise: number; outstandingPaise: number; overdue: number; open: number }[];
+}
+
+export interface FeeInvoice {
+  id: string;
+  title: string;
+  amountPaise: number;
+  paidPaise: number;
+  dueOn: string;
+  status: InvoiceStatus;
+  student: { id: string; fullName: string; rollNo: string | null };
+  className: string;
+}
+
+export interface FeeReceipt {
+  receiptNo: string;
+  institution: string;
+  student: { id: string; fullName: string; rollNo: string | null };
+  className: string;
+  invoice: { id: string; title: string; amountPaise: number; balancePaise: number };
+  amountPaise: number;
+  method: string;
+  reference: string | null;
+  paidAt: string;
+}
+
+export interface StudentFees {
+  duePaise: number;
+  invoices: { id: string; title: string; amountPaise: number; paidPaise: number; dueOn: string; status: InvoiceStatus }[];
+  payments: { id: string; invoiceId: string; amountPaise: number; method: string; receiptNo: string | null; paidAt: string | null }[];
+}
+
+// ---- Content library (v1/content) ----
+
+export interface Curriculum {
+  code: string;
+  name: string;
+  level: string;
+}
+
+export interface Course {
+  id: string;
+  curriculumCode: string;
+  code: string;
+  title: string;
+  term: number;
+  reviewed: boolean;
+}
+
+export interface CourseOutline extends Course {
+  chapters: { id: string; title: string; own: boolean; topics: { id: string; title: string; summary: string; own: boolean }[] }[];
+}
+
+export interface Topic {
+  id: string;
+  title: string;
+  summary: string;
+  notes: string[];
+  outcomes: string[];
+  own: boolean;
+  chapter?: { id: string; title: string };
+  course?: { id: string; title: string; reviewed: boolean };
+}
+
+/** One of the institution's subjects, as seen on the timetable. */
+export interface SubjectLink {
+  id: string;
+  name: string;
+  code: string;
+  classes: string[];
+  courseId: string | null;
+}
+
+// ---- KINETIX AI (v1/ai/usage) ----
+
+export interface AiUsage {
+  days: number;
+  rows: { task: string; outcome: string; requests: number; tokens: number }[];
 }
 
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };

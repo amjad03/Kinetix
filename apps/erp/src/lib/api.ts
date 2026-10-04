@@ -2,6 +2,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect, unstable_rethrow } from 'next/navigation';
 import { cache } from 'react';
+import { canSee, homeFor, type Section } from './access';
 import { API_URL, SESSION_COOKIE } from './config';
 import type { ActionResult, Me } from './types';
 
@@ -16,7 +17,7 @@ export class ApiError extends Error {
 }
 
 interface Options {
-  method?: 'GET' | 'POST' | 'PATCH';
+  method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body?: unknown;
   /** Send without the session token (login). */
   anonymous?: boolean;
@@ -92,3 +93,19 @@ export async function act<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
 
 /** The signed-in user, once per request. */
 export const getMe = cache(() => api<Me>('/v1/me'));
+
+/**
+ * For pages: the signed-in user, if their role may open this section; otherwise back to their
+ * own home page (an accountant opening Today lands on Fees). The API checks roles as well.
+ */
+export async function requireSection(section: Section): Promise<Me | null> {
+  let me: Me;
+  try {
+    me = await getMe();
+  } catch (e) {
+    unstable_rethrow(e);
+    return null; // the layout shows the error
+  }
+  if (!canSee(me.roles, section)) redirect(homeFor(me.roles));
+  return me;
+}
