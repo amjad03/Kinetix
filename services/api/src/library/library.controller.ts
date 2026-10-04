@@ -203,6 +203,8 @@ export class LibraryController {
         finePaise: libraryLoans.finePaise,
         finePaidAt: libraryLoans.finePaidAt,
         overdue: sql<boolean>`${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}`,
+        /** For books still out: the fine if returned today. */
+        fineSoFarPaise: sql<number>`case when ${libraryLoans.returnedAt} is null then greatest(0, ${today}::date - ${libraryLoans.dueOn}) * ${FINE_PAISE_PER_DAY} else 0 end`.mapWith(Number),
       })
       .from(libraryLoans)
       .innerJoin(libraryBooks, eq(libraryBooks.id, libraryLoans.bookId))

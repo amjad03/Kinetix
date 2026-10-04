@@ -65,7 +65,8 @@ describe('school life', () => {
 
       // Returned 3 days late: ₹2 a day.
       await owner.query(`update library_loans set due_on = due_on - 17 where id = $1`, [loan.id]);
-      expect((await http().get('/v1/library/loans?overdue=true').set(auth('principal')).expect(200)).body).toHaveLength(1);
+      const overdue = (await http().get('/v1/library/loans?overdue=true').set(auth('principal')).expect(200)).body;
+      expect(overdue).toEqual([expect.objectContaining({ id: loan.id, fineSoFarPaise: 600 })]);
       const back = (await http().post(`/v1/library/loans/${loan.id}/return`).set(auth('principal')).expect(200)).body;
       expect(back.finePaise).toBe(600);
       const after = (await http().get(`/v1/library/students/${t.students[0].id}`).set(auth('parent')).expect(200)).body;
