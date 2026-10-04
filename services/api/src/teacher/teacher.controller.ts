@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterStudent, TeacherClass, TeacherTimetableResponse } from '@kinetix/shared';
-import { and, asc, desc, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
@@ -9,7 +9,7 @@ import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { attendanceRecords, boardSessions, devices, homework, sections, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
+import { attendanceRecords, boardSessions, devices, guardians, homework, sections, students, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
 
@@ -255,6 +255,29 @@ export class HomeworkController {
       await this.notifications.homeworkCreated(tx, { id: hw.id, sectionId: section.id, title: hw.title, dueOn: hw.dueOn, subjectName: subject.name });
       const [created] = await this.teacher.homeworkList(tx, eq(homework.id, hw.id), 'created');
       return created;
+    });
+  }
+
+  /**
+   * One homework. Staff who can see the class, students in it and their guardians: the
+   * Parent and Student apps open this from a notification.
+   */
+  @Get(':id')
+  @Auth('user')
+  async one(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string): Promise<Homework> {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [hw] = await this.teacher.homeworkList(tx, eq(homework.id, id), 'created');
+      const notFound = new NotFoundException('Homework not found');
+      if (!hw) throw notFound;
+      const [row] = await tx.select({ sectionId: homework.sectionId }).from(homework).where(eq(homework.id, id));
+      if (isSchoolAdmin(p) || (await this.teacher.teachesSection(tx, p.userId, row.sectionId))) return hw;
+      const [inClass] = await tx
+        .select({ id: students.id })
+        .from(students)
+        .leftJoin(guardians, and(eq(guardians.studentId, students.id), eq(guardians.userId, p.userId)))
+        .where(and(eq(students.sectionId, row.sectionId), or(eq(students.userId, p.userId), isNotNull(guardians.id))));
+      if (!inClass) throw notFound;
+      return hw;
     });
   }
 

@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { enrollmentCode, hmac } from '../common/crypto.js';
+import { shortDate } from '../notifications/notifications.service.js';
 import { loadEnv } from '../config/env.js';
 import * as s from './schema.js';
 
@@ -121,7 +122,8 @@ async function main() {
           tenantId,
           studentId: st.id,
           subjectId: slot.subjectId,
-          outcome: (['correct', 'correct', 'partial', 'incorrect'] as const)[(back + j) % 4],
+          // Vary by day, student and turn so each student has a realistic mix.
+          outcome: (['correct', 'correct', 'partial', 'incorrect', 'correct'] as const)[(back * 3 + klass.indexOf(st) * 2 + j) % 5],
           recordedBy: slot.teacherId,
           occurredAt: new Date(`${date}T${slot.startsAt}+05:30`),
         });
@@ -152,7 +154,7 @@ async function main() {
         userId: g.userId,
         kind: 'absence',
         title: `${kid.fullName.split(' ')[0]} was marked absent`,
-        body: `${kid.fullName} was marked absent for ${subject.name} (${slot.startsAt.slice(0, 5)}–${slot.endsAt.slice(0, 5)}) on ${a.date}. If this is wrong, please contact the class teacher.`,
+        body: `${kid.fullName} was marked absent for ${subject.name} (${slot.startsAt.slice(0, 5)}–${slot.endsAt.slice(0, 5)}) on ${shortDate(a.date)}. If this is wrong, please contact the class teacher.`,
         data: { studentId: kid.id, date: a.date, slotId: slot.id },
         dedupeKey: `absence:${kid.id}:${a.date}:${slot.id}`,
         createdAt: a.at,
@@ -171,7 +173,7 @@ async function main() {
           userId: g.userId,
           kind: 'homework',
           title: `Homework: ${subject.name}`,
-          body: `${hw.title} · due ${hw.dueOn}`,
+          body: `${hw.title} · due ${shortDate(hw.dueOn)}`,
           data: { homeworkId: hw.id, sectionId: hw.sectionId },
           dedupeKey: `homework:${hw.id}`,
         })

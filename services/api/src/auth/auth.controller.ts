@@ -18,6 +18,18 @@ const LoginBody = z.object({
 });
 
 /**
+ * Phone numbers are stored in E.164. Accept what people actually type: "98000 00001",
+ * "098000-00001", "919800000001" or "+91 98000 00001" all mean +919800000001.
+ */
+export function normalizePhone(input: string): string {
+  const digits = input.replace(/[\s\-().]/g, '');
+  if (/^\+\d{8,15}$/.test(digits)) return digits;
+  if (/^0?[6-9]\d{9}$/.test(digits)) return `+91${digits.slice(-10)}`;
+  if (/^91[6-9]\d{9}$/.test(digits)) return `+${digits}`;
+  return digits;
+}
+
+/**
  * Password login for staff (ERP, Teacher App).
  * TODO: phone OTP for teachers, students and parents via an Indian SMS provider (DLT templates).
  */
@@ -42,7 +54,7 @@ export class AuthController {
       const [user] = await tx
         .select()
         .from(users)
-        .where(or(eq(users.email, body.login.toLowerCase()), eq(users.phone, body.login)));
+        .where(or(eq(users.email, body.login.trim().toLowerCase()), eq(users.phone, normalizePhone(body.login))));
       if (!user?.passwordHash || user.status !== 'active') throw fail;
       if (!(await argon2.verify(user.passwordHash, body.password))) throw fail;
 

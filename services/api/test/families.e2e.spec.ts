@@ -114,6 +114,17 @@ describe('families, saved boards and the dashboard', () => {
     });
   });
 
+  describe('homework detail', () => {
+    it('opens for guardians and students of the class, not for others', async () => {
+      const id = (await inbox('parent')).items.find((n) => n.kind === 'homework')!.data.homeworkId;
+      const hw = (await http().get(`/v1/homework/${id}`).set(auth('parent')).expect(200)).body;
+      expect(hw.title).toBe('Exercise 4.2');
+      await http().get(`/v1/homework/${id}`).set(auth('student')).expect(200);
+      await http().get(`/v1/homework/${id}`).set(auth('teacher')).expect(200);
+      await http().get(`/v1/homework/${id}`).set(auth('outsider')).expect(404);
+    });
+  });
+
   describe('parent view', () => {
     it('lists only their own children', async () => {
       const kids = (await http().get('/v1/parent/children').set(auth('parent')).expect(200)).body;
@@ -129,6 +140,14 @@ describe('families, saved boards and the dashboard', () => {
       const s = (await http().get(`/v1/parent/children/${t.students[0].id}/summary`).set(auth('parent')).expect(200)).body;
       expect(s.attendance).toMatchObject({ periods: 1, absent: 1, present: 0, rate: 0 });
       expect(s.attendance.recentAbsences[0]).toMatchObject({ date: monday, subject: 'Corporate Accounting' });
+    });
+
+    it('parents can sign in with the phone number as they type it', async () => {
+      await owner.query("update users set phone = '+919800000123' where id = $1", [t.guardian.id]);
+      for (const login of ['98000 00123', '098000-00123', '919800000123', '+91 98000 00123']) {
+        await http().post('/v1/auth/login').send({ tenant: t.slug, login, password: 'pw' }).expect(201);
+      }
+      await http().post('/v1/auth/login').send({ tenant: t.slug, login: '98000 00124', password: 'pw' }).expect(401);
     });
 
     it('teachers cannot use parent routes', async () => {

@@ -88,6 +88,13 @@ class FamilyController extends ChangeNotifier {
         if (hw.id == homeworkId) return (child, hw);
       }
     }
-    return null;
+    // Older than the summary window: ask for it directly.
+    try {
+      final found = await api.homeworkById(homeworkId);
+      final child = inSection(found.sectionId).firstOrNull;
+      return child == null ? null : (child, found.homework);
+    } on ApiException {
+      return null;
+    }
   }
 }

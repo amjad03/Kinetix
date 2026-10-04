@@ -39,6 +39,9 @@ abstract class ParentApi {
   Future<void> markRead(String notificationId);
   Future<void> markAllRead();
   Future<SharedBoard> whiteboard(String id);
+
+  /// One homework (opened from a notification), with the class it was set for.
+  Future<({Homework homework, String sectionId})> homeworkById(String id);
 }
 
 class HttpParentApi implements ParentApi {
@@ -63,8 +66,22 @@ class HttpParentApi implements ParentApi {
   Future<Me> me() async => Me.fromJson(await _send('GET', '/v1/me'));
 
   @override
-  Future<List<Child>> children() async =>
-      [for (final c in await _send('GET', '/v1/parent/children') as List) Child.fromJson(c as Map<String, dynamic>)];
+  Future<List<Child>> children() async => [
+    for (final c in await _send('GET', '/v1/parent/children') as List) Child.fromJson(c as Map<String, dynamic>),
+  ];
+
+  @override
+  Future<({Homework homework, String sectionId})> homeworkById(String id) async {
+    final j = await _send('GET', '/v1/homework/$id') as Map<String, dynamic>;
+    return (
+      homework: Homework.fromJson({
+        ...j,
+        'subject': (j['subject'] as Map<String, dynamic>)['name'],
+        'teacher': (j['createdBy'] as Map<String, dynamic>)['fullName'],
+      }),
+      sectionId: (j['section'] as Map<String, dynamic>)['id'] as String,
+    );
+  }
 
   @override
   Future<ChildSummary> summary(String childId, {int days = 30}) async =>
@@ -72,7 +89,8 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<List<ClassMark>> attendance(String childId, {int days = 30}) async => [
-    for (final m in await _send('GET', '/v1/parent/children/$childId/attendance?days=$days') as List) ClassMark.fromJson(m as Map<String, dynamic>),
+    for (final m in await _send('GET', '/v1/parent/children/$childId/attendance?days=$days') as List)
+      ClassMark.fromJson(m as Map<String, dynamic>),
   ];
 
   @override

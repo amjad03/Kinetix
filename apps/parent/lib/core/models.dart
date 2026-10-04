@@ -34,7 +34,15 @@ DateTime parseIsoDate(String s) {
 DateTime? _instant(Object? v) => v == null ? null : DateTime.parse(v as String).toLocal();
 
 class Me {
-  Me({required this.id, required this.fullName, required this.roles, required this.preferredLanguage, required this.institution, this.email, this.phone});
+  Me({
+    required this.id,
+    required this.fullName,
+    required this.roles,
+    required this.preferredLanguage,
+    required this.institution,
+    this.email,
+    this.phone,
+  });
 
   factory Me.fromJson(Map<String, dynamic> j) => Me(
     id: j['id'] as String,
@@ -63,7 +71,15 @@ class Me {
 }
 
 class Child {
-  Child({required this.id, required this.fullName, required this.rollNo, required this.sectionId, required this.sectionName, this.relation, this.programName});
+  Child({
+    required this.id,
+    required this.fullName,
+    required this.rollNo,
+    required this.sectionId,
+    required this.sectionName,
+    this.relation,
+    this.programName,
+  });
 
   factory Child.fromJson(Map<String, dynamic> j) => Child(
     id: j['id'] as String,
@@ -133,7 +149,9 @@ class AttendanceSummary {
     late: j['late'] as int,
     excused: j['excused'] as int,
     rate: (j['rate'] as num?)?.toDouble(),
-    recentAbsences: [for (final a in (j['recentAbsences'] as List? ?? const [])) ClassMark.fromJson({...a as Map<String, dynamic>, 'status': 'absent'})],
+    recentAbsences: [
+      for (final a in (j['recentAbsences'] as List? ?? const [])) ClassMark.fromJson({...a as Map<String, dynamic>, 'status': 'absent'}),
+    ],
   );
 
   final int periods;
@@ -150,7 +168,15 @@ class AttendanceSummary {
 }
 
 class Homework {
-  Homework({required this.id, required this.title, required this.instructions, required this.dueOn, required this.subject, required this.teacher, this.createdAt});
+  Homework({
+    required this.id,
+    required this.title,
+    required this.instructions,
+    required this.dueOn,
+    required this.subject,
+    required this.teacher,
+    this.createdAt,
+  });
 
   factory Homework.fromJson(Map<String, dynamic> j) => Homework(
     id: j['id'] as String,
@@ -195,7 +221,15 @@ class Participation {
 
 /// A board the teacher shared with the class (no content).
 class BoardSummary {
-  BoardSummary({required this.id, required this.title, required this.pageCount, this.subjectName, this.teacherName, this.sectionName, this.sharedAt});
+  BoardSummary({
+    required this.id,
+    required this.title,
+    required this.pageCount,
+    this.subjectName,
+    this.teacherName,
+    this.sectionName,
+    this.sharedAt,
+  });
 
   factory BoardSummary.fromJson(Map<String, dynamic> j) => BoardSummary(
     id: j['id'] as String,
@@ -229,7 +263,15 @@ class SharedBoard {
 
 /// Everything on Home for one child.
 class ChildSummary {
-  ChildSummary({required this.today, required this.days, required this.attendance, required this.upcoming, required this.pastHomework, required this.participation, required this.boards});
+  ChildSummary({
+    required this.today,
+    required this.days,
+    required this.attendance,
+    required this.upcoming,
+    required this.pastHomework,
+    required this.participation,
+    required this.boards,
+  });
 
   factory ChildSummary.fromJson(Map<String, dynamic> j) {
     final hw = j['homework'] as Map<String, dynamic>;
@@ -258,7 +300,15 @@ class ChildSummary {
 enum NotificationKind { absence, homework, boardShared, broadcast, other }
 
 class AppNotification {
-  AppNotification({required this.id, required this.kind, required this.title, required this.body, required this.data, required this.createdAt, this.readAt});
+  AppNotification({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.body,
+    required this.data,
+    required this.createdAt,
+    this.readAt,
+  });
 
   factory AppNotification.fromJson(Map<String, dynamic> j) => AppNotification(
     id: j['id'] as String,
@@ -285,6 +335,15 @@ class AppNotification {
   DateTime? readAt;
 
   bool get unread => readAt == null;
+
+  /// [body] with any raw "2026-09-29" turned into "Tue 29 Sep" (older rows and the demo seed
+  /// carry ISO dates; the live server already writes them this way).
+  String get displayBody => body.replaceAllMapped(RegExp(r'\b(\d{4})-(\d{2})-(\d{2})\b'), (m) {
+    final d = DateTime(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${days[d.weekday - 1]} ${d.day} ${months[d.month - 1]}';
+  });
   String? get studentId => data['studentId'] as String?;
   String? get sectionId => data['sectionId'] as String?;
   String? get homeworkId => data['homeworkId'] as String?;
