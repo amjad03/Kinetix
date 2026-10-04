@@ -13,6 +13,8 @@ export interface KxColors {
   frame: string;
   /** The rounded content pane. */
   pane: string;
+  /** A tonal panel inside the pane (compose form). */
+  tonal: string;
 }
 
 const KX_LIGHT = {
@@ -41,6 +43,7 @@ export function paletteFor(s: M3Scheme, dark: boolean) {
     ...(dark ? KX_DARK : KX_LIGHT),
     frame: dark ? s.surface : s.surfaceContainerLow,
     pane: dark ? s.surfaceContainerLow : s.surfaceContainerLowest,
+    tonal: dark ? s.surfaceContainerHigh : s.surfaceContainerLow,
   };
   return {
     mode: dark ? ('dark' as const) : ('light' as const),

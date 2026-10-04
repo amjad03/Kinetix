@@ -106,7 +106,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
   };
 
   return (
-    <Card component="section" aria-labelledby="compose-title" sx={{ bgcolor: 'm3.surfaceContainerLow', borderColor: 'transparent' }}>
+    <Card component="section" aria-labelledby="compose-title" sx={{ bgcolor: 'kx.tonal', borderColor: 'transparent' }}>
       <Box
         component="form"
         noValidate
@@ -138,7 +138,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           error={!!titleError}
           helperText={titleError || `${title.length}/120`}
           slotProps={{ htmlInput: { maxLength: 120 }, formHelperText: { sx: { textAlign: titleError ? 'left' : 'right' } } }}
-          sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'm3.surfaceContainerLow', m: 0, px: 1.75, pt: 0.5 } }}
+          sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
           required
         />
         <TextField
@@ -151,7 +151,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           minRows={4}
           maxRows={10}
           slotProps={{ htmlInput: { maxLength: 2000 }, formHelperText: { sx: { textAlign: bodyError ? 'left' : 'right' } } }}
-          sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'm3.surfaceContainerLow', m: 0, px: 1.75, pt: 0.5 } }}
+          sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
           required
         />
 
@@ -168,7 +168,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
                   key={p.value}
                   role="radio"
                   aria-checked={on}
-                  aria-description={`${p.board} ${p.families}`}
+                  title={`${p.board} ${p.families}`}
                   data-testid={`priority-${p.value}`}
                   onClick={() => setPriority(p.value)}
                   sx={{
@@ -237,7 +237,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
                 <TextField
                   {...params}
                   label={mode === 'programs' ? 'Programs' : 'Classes'}
-                  placeholder={mode === 'programs' ? 'BCom, BCA…' : 'BCom Sem 3 A…'}
+                  placeholder={(mode === 'programs' ? programs : classes).length ? undefined : mode === 'programs' ? 'BCom, BCA…' : 'BCom Sem 3 A…'}
                   error={!!audienceError}
                   helperText={audienceError || undefined}
                 />
@@ -259,7 +259,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
             value={ttl}
             onChange={(e) => setTtl(Number(e.target.value))}
             helperText="Boards that come online later still show it until then"
-            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'm3.surfaceContainerLow', m: 0, px: 1.75, pt: 0.5 } }}
+            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
           >
             {EXPIRY_OPTIONS.map((o) => (
               <MenuItem key={o.minutes} value={o.minutes}>

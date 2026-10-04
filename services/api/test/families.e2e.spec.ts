@@ -273,6 +273,29 @@ describe('families, saved boards and the dashboard', () => {
       expect(c.classes[0].status).toBe('missed');
     });
 
+    it('structure counts students per class and gives the school time zone', async () => {
+      const st = (await http().get('/v1/admin/structure').set(auth('principal')).expect(200)).body;
+      expect(st.timezone).toBe('Asia/Kolkata');
+      expect(st.sections.find((x: { id: string }) => x.id === t.section.id).students).toBe(3);
+    });
+
+    it('attendance counts add up: marks = present + absent + late + excused', async () => {
+      const a = (await http().get(`/v1/admin/attendance?date=${monday}`).set(auth('principal')).expect(200)).body;
+      for (const s of a.sections) expect(s.present + s.absent + s.late + s.excused).toBe(s.marks);
+    });
+
+    it('a board can be renamed and re-enrolled, which revokes its old token', async () => {
+      const devicesList = (await http().get('/v1/admin/devices').set(auth('principal')).expect(200)).body;
+      const id = devicesList[0].id;
+      await http().patch(`/v1/devices/${id}`).set(auth('principal')).send({ name: 'Room 1 Board (front)' }).expect(200);
+      const code = (await http().post(`/v1/devices/${id}/enrollment-code`).set(auth('principal')).expect(200)).body.enrollmentCode;
+      expect(code).toMatch(/^KX-/);
+      await http().get('/v1/sessions/current').set('authorization', `Bearer ${boardToken}`).expect(200); // session token still valid until it ends
+      const fresh = (await http().post('/v1/devices/enroll').send({ code, platform: 'windows' }).expect(201)).body;
+      expect(fresh.device.name).toBe('Room 1 Board (front)');
+      await http().patch(`/v1/devices/${id}`).set(auth('teacher')).send({ name: 'x' }).expect(403);
+    });
+
     it('is for school leaders only', async () => {
       await http().get('/v1/admin/overview').set(auth('teacher')).expect(403);
       await http().get('/v1/admin/overview').set(auth('parent')).expect(403);

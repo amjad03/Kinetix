@@ -70,7 +70,7 @@ export interface Overview {
 
 export interface AttendanceDay {
   date: string;
-  sections: { sectionId: string; section: string; students: number; marked: number; present: number; absent: number; late: number }[];
+  sections: { sectionId: string; section: string; students: number; marked: number; marks: number; present: number; absent: number; late: number; excused: number }[];
   absentees: {
     studentId: string;
     student: string;

@@ -44,3 +44,9 @@ export function futureSunday(): string {
   while (weekday(d) !== 0) d = addDays(d, 1);
   return d;
 }
+
+/** Navigate and wait until streamed sections have been revealed (React may briefly keep a hidden copy). */
+export async function open(page: Page, path: string) {
+  await page.goto(path);
+  await page.waitForLoadState('networkidle');
+}

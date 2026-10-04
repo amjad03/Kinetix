@@ -7,7 +7,7 @@ multi-tenant SaaS and hosted entirely in India.
 |---|---|---|---|
 | **KINETIX Board** | AI smart board for the classroom. Runs on an Android tablet with a projector or TV, on Android interactive flat panels, and on Windows PCs. | Flutter | `apps/board` |
 | **KINETIX Cloud API** | Multi-tenant backend: auth, tenancy, sync, realtime, AI gateway | NestJS + PostgreSQL | `services/api` |
-| **KINETIX ERP** | Web app for admins, principals, teachers and the curriculum team | Next.js | `apps/erp` *(planned)* |
+| **KINETIX ERP** | Web app for admins, principals, teachers and the curriculum team. First slice: the principal dashboard | Next.js | `apps/erp` |
 | **KINETIX Teacher App** | Teacher's phone: today's classes, attendance, homework, connecting to the board | Flutter | `apps/teacher` |
 | **KINETIX Parent App** | Parent's phone: each child's attendance, homework, class participation, shared class boards and updates | Flutter | `apps/parent` |
 | **Student app** | Mobile app | Flutter | *(planned)* |
@@ -19,6 +19,7 @@ multi-tenant SaaS and hosted entirely in India.
 - [Board feature specification](docs/product/board-features.md)
 - [Teacher App specification](docs/product/teacher-app.md)
 - [Parent App specification](docs/product/parent-app.md)
+- [ERP principal dashboard](docs/product/erp-dashboard.md)
 - [Design system (Material 3, Teachmint-style board layout)](docs/design/design-system.md)
 - [IR touch frames: any TV as a multi-touch board](docs/hardware/ir-touch-frames.md)
 - [Competitive research: Teachmint and others](docs/research/teachmint-competitive-analysis.md)
@@ -53,6 +54,12 @@ flutter pub get
 flutter run -d windows   # or -d linux, or an Android device
 flutter test
 ../../scripts/board-it.sh  # board client ↔ live API integration test
+
+# ERP principal dashboard (Next.js, needs the API)
+cd apps/erp
+cp .env.example .env.local   # KINETIX_API_URL, defaults to http://localhost:4000
+pnpm dev                     # http://localhost:3000, sign in as principal@demo.kinetix.in / kinetix123
+pnpm test && pnpm test:e2e   # unit tests; Playwright against the API with a fresh demo seed
 
 # Teacher App
 cd apps/teacher

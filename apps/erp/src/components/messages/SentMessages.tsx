@@ -151,47 +151,49 @@ export function SentMessages({
                   pt: 1.5,
                   borderTop: 1,
                   borderColor: 'm3.outlineVariant',
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto',
                   alignItems: 'center',
-                  gap: 2.5,
-                  flexWrap: 'wrap',
+                  gap: 2,
                 }}
-                data-testid="delivery"
               >
-                {d.boards > 0 ? (
-                  <Stat icon={<CastForEducationOutlined />} title="Boards that showed the message, of boards it was sent to">
-                    {d.displayed}/{d.boards} {d.boards === 1 ? 'board' : 'boards'} displayed
+                <Box sx={{ display: 'flex', alignItems: 'center', columnGap: 2.5, rowGap: 1, flexWrap: 'wrap' }} data-testid="delivery">
+                  {d.boards > 0 ? (
+                    <Stat icon={<CastForEducationOutlined />} title="Boards that showed the message, of boards it was sent to">
+                      {d.displayed}/{d.boards} {d.boards === 1 ? 'board' : 'boards'} displayed
+                    </Stat>
+                  ) : (
+                    <Stat icon={<CastForEducationOutlined />} title="Class and program messages reach boards only while a teacher is teaching that class">
+                      No board was in class
+                    </Stat>
+                  )}
+                  {d.boards > 0 && <MiniBar value={(d.displayed / d.boards) * 100} width={64} color="kx.success" label={`${d.displayed} of ${d.boards} displayed`} />}
+                  {b.requiresAck && (
+                    <Stat icon={<DoneAll />} title="Boards where a teacher acknowledged the message">
+                      {d.acknowledged} acknowledged
+                    </Stat>
+                  )}
+                  <Stat icon={<FamilyRestroomOutlined />} title="Students and parents notified in their apps">
+                    {d.families} notified in apps
                   </Stat>
-                ) : (
-                  <Stat icon={<CastForEducationOutlined />} title="Class and program messages reach boards only while a teacher is teaching that class">
-                    No board was in class
-                  </Stat>
-                )}
-                {d.boards > 0 && <MiniBar value={(d.displayed / d.boards) * 100} width={64} color="kx.success" label={`${d.displayed} of ${d.boards} displayed`} />}
-                {b.requiresAck && (
-                  <Stat icon={<DoneAll />} title="Boards where a teacher acknowledged the message">
-                    {d.acknowledged} acknowledged
-                  </Stat>
-                )}
-                <Stat icon={<FamilyRestroomOutlined />} title="Students and parents notified in their apps">
-                  {d.families} notified in apps
-                </Stat>
-                <Box sx={{ flex: 1 }} />
-                <Button size="small" startIcon={<VisibilityOutlined />} onClick={() => openReport(b)}>
-                  Delivery
-                </Button>
-                {state === 'active' && canClear(b) && (
-                  <Button
-                    size="small"
-                    variant={b.priority === 'emergency' ? 'contained' : 'outlined'}
-                    color={b.priority === 'emergency' ? 'error' : 'primary'}
-                    onClick={() => clear(b)}
-                    disabled={pending && clearing === b.id}
-                    startIcon={pending && clearing === b.id ? <CircularProgress size={14} color="inherit" /> : undefined}
-                  >
-                    {b.priority === 'emergency' ? 'All clear' : 'Clear'}
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Button size="small" startIcon={<VisibilityOutlined />} onClick={() => openReport(b)}>
+                    Delivery
                   </Button>
-                )}
+                  {state === 'active' && canClear(b) && (
+                    <Button
+                      size="small"
+                      variant={b.priority === 'emergency' ? 'contained' : 'outlined'}
+                      color={b.priority === 'emergency' ? 'error' : 'primary'}
+                      onClick={() => clear(b)}
+                      disabled={pending && clearing === b.id}
+                      startIcon={pending && clearing === b.id ? <CircularProgress size={14} color="inherit" /> : undefined}
+                    >
+                      {b.priority === 'emergency' ? 'All clear' : 'Clear'}
+                    </Button>
+                  )}
+                </Box>
               </Box>
             </Box>
           </Card>

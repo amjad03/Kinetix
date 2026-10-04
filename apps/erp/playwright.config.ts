@@ -18,7 +18,16 @@ export default defineConfig({
     trace: 'retain-on-failure',
     ...(process.env.PW_CHROMIUM_PATH ? { launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH } } : {}),
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } }],
+  projects: [
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: 'auth', testMatch: /auth\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
+    {
+      name: 'dashboard',
+      testMatch: /dashboard\.spec\.ts/,
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
+    },
+  ],
   webServer: process.env.ERP_URL
     ? undefined
     : {

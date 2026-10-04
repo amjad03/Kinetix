@@ -48,7 +48,6 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
   const [roomId, setRoomId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedDevice | null>(null);
-  const [copied, setCopied] = useState(false);
   const [pending, start] = useTransition();
   const rooms = structure.rooms.filter((r) => r.campusId === campusId);
 
@@ -61,75 +60,7 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
     });
   };
 
-  if (created) {
-    return (
-      <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="code-title">
-        <DialogTitle id="code-title">Enrol “{created.name}”</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary">
-            Type this one-time code on the board to connect it to your school.
-          </Typography>
-          <Box
-            sx={{
-              mt: 2.5,
-              mb: 1,
-              py: 3,
-              px: 2,
-              borderRadius: '16px',
-              bgcolor: 'm3.primaryContainer',
-              color: 'm3.onPrimaryContainer',
-              textAlign: 'center',
-              position: 'relative',
-            }}
-          >
-            <Typography
-              data-testid="enrollment-code"
-              component="p"
-              sx={{ fontSize: { xs: '2rem', sm: '2.75rem' }, lineHeight: 1.2, fontWeight: 500, letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums', userSelect: 'all' }}
-            >
-              {created.enrollmentCode}
-            </Typography>
-            <Typography variant="caption" component="p" sx={{ mt: 1, opacity: 0.85 }}>
-              Works once · expires {formatDateTime(created.enrollmentExpiresAt, timeZone)}
-            </Typography>
-            <Tooltip title={copied ? 'Copied' : 'Copy code'}>
-              <Button
-                size="small"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(created.enrollmentCode);
-                    setCopied(true);
-                  } catch {
-                    /* clipboard blocked: the code is selectable */
-                  }
-                }}
-                startIcon={copied ? <CheckOutlined /> : <ContentCopyOutlined />}
-                sx={{ position: 'absolute', top: 8, right: 8, color: 'inherit' }}
-              >
-                {copied ? 'Copied' : 'Copy'}
-              </Button>
-            </Tooltip>
-          </Box>
-          <Box component="ol" sx={{ pl: 2.5, my: 2, '& li': { mb: 1 }, typography: 'body2' }}>
-            <li>Install KINETIX Board on the tablet, panel or Windows PC, and connect it to the internet.</li>
-            <li>
-              Open the app. On the welcome screen, choose <strong>Enrol this board</strong>.
-            </li>
-            <li>Type the code above. The board appears here as online within a few seconds.</li>
-          </Box>
-          <Alert severity="info" variant="outlined" sx={{ borderColor: 'm3.outlineVariant' }}>
-            Keep the code private. Anyone with it can enrol a board into your school until it is used or expires. You can see it again only by adding the
-            board afresh.
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" onClick={onClose}>
-            Done
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
+  if (created) return <EnrollmentCodeDialog created={created} timeZone={timeZone} onClose={onClose} />;
 
   return (
     <Dialog open onClose={pending ? undefined : onClose} maxWidth="xs" fullWidth aria-labelledby="add-board-title">
@@ -195,5 +126,77 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
         </DialogActions>
       </Box>
     </Dialog>
+  );
+}
+
+/** Shows a one-time enrolment code with instructions. Used when adding a board and when re-enrolling one. */
+export function EnrollmentCodeDialog({ created, timeZone, onClose }: { created: CreatedDevice; timeZone: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  return (
+      <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="code-title">
+        <DialogTitle id="code-title">Enrol “{created.name}”</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Type this one-time code on the board to connect it to your school.
+          </Typography>
+          <Box
+            sx={{
+              mt: 2.5,
+              mb: 1,
+              py: 3,
+              px: 2,
+              borderRadius: '16px',
+              bgcolor: 'm3.primaryContainer',
+              color: 'm3.onPrimaryContainer',
+              textAlign: 'center',
+              position: 'relative',
+            }}
+          >
+            <Typography
+              data-testid="enrollment-code"
+              component="p"
+              sx={{ fontSize: { xs: '2rem', sm: '2.75rem' }, lineHeight: 1.2, fontWeight: 500, letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums', userSelect: 'all' }}
+            >
+              {created.enrollmentCode}
+            </Typography>
+            <Typography variant="caption" component="p" sx={{ mt: 1, opacity: 0.85 }}>
+              Works once · expires {formatDateTime(created.enrollmentExpiresAt, timeZone)}
+            </Typography>
+            <Tooltip title={copied ? 'Copied' : 'Copy code'}>
+              <Button
+                size="small"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(created.enrollmentCode);
+                    setCopied(true);
+                  } catch {
+                    /* clipboard blocked: the code is selectable */
+                  }
+                }}
+                startIcon={copied ? <CheckOutlined /> : <ContentCopyOutlined />}
+                sx={{ position: 'absolute', top: 8, right: 8, color: 'inherit' }}
+              >
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
+            </Tooltip>
+          </Box>
+          <Box component="ol" sx={{ pl: 2.5, my: 2, '& li': { mb: 1 }, typography: 'body2' }}>
+            <li>Install KINETIX Board on the tablet, panel or Windows PC, and connect it to the internet.</li>
+            <li>
+              Open the app. On the <strong>Set up this board</strong> screen, type the code and choose <strong>Register board</strong>.
+            </li>
+            <li>Type the code above. The board appears here as online within a few seconds.</li>
+          </Box>
+          <Alert severity="info" variant="outlined" sx={{ borderColor: 'm3.outlineVariant' }}>
+            Keep the code private. Anyone with it can enrol a board into your school until it is used or expires. If it is lost, issue a new code from
+            the board&apos;s menu.
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={onClose}>
+            Done
+          </Button>
+        </DialogActions>
+      </Dialog>
   );
 }

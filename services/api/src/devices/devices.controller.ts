@@ -1,5 +1,5 @@
-import { Body, Controller, Inject, NotFoundException, Post, UnauthorizedException } from '@nestjs/common';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { Body, Controller, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Patch, Post, UnauthorizedException } from '@nestjs/common';
+import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { DevicePrincipal, UserPrincipal } from '../auth/principal.js';
@@ -11,7 +11,7 @@ import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService } from '../db/db.service.js';
-import { campuses, devices, pairingCodes } from '../db/schema.js';
+import { campuses, devices, pairingCodes, rooms } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 
 export const PAIRING_TTL_MS = 120_000;
@@ -22,6 +22,10 @@ const CreateDeviceBody = z.object({
   campusId: z.uuid(),
   roomId: z.uuid().optional(),
 });
+
+const UpdateDeviceBody = z
+  .object({ name: z.string().trim().min(1).max(80).optional(), roomId: z.uuid().nullable().optional() })
+  .refine((b) => b.name !== undefined || b.roomId !== undefined, 'Nothing to change');
 
 const EnrollBody = z.object({
   code: z.string().min(4),
@@ -61,6 +65,52 @@ export class DevicesController {
         .returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'device.created', subjectType: 'device', subjectId: device.id });
       return { id: device.id, name: device.name, enrollmentCode: code, enrollmentExpiresAt: device.enrollmentExpiresAt };
+    });
+  }
+
+  /** Rename a board or move it to another room. */
+  @Patch(':id')
+  @Auth('user', STAFF_ADMIN_ROLES)
+  update(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(UpdateDeviceBody)) body: z.infer<typeof UpdateDeviceBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      if (body.roomId) {
+        const [room] = await tx.select({ id: rooms.id }).from(rooms).where(eq(rooms.id, body.roomId));
+        if (!room) throw new NotFoundException('Room not found');
+      }
+      const [d] = await tx
+        .update(devices)
+        .set({ ...(body.name ? { name: body.name } : {}), ...(body.roomId !== undefined ? { roomId: body.roomId } : {}) })
+        .where(eq(devices.id, id))
+        .returning({ id: devices.id, name: devices.name, roomId: devices.roomId });
+      if (!d) throw new NotFoundException('Board not found');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'device.updated', subjectType: 'device', subjectId: id, data: body });
+      return d;
+    });
+  }
+
+  /**
+   * A new one-time enrolment code for a board: replacing a broken tablet, or a code that
+   * expired. The board's current token stops working at once.
+   */
+  @Post(':id/enrollment-code')
+  @HttpCode(200)
+  @Auth('user', STAFF_ADMIN_ROLES)
+  reissue(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    const code = enrollmentCode();
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [d] = await tx
+        .update(devices)
+        .set({
+          enrollmentCodeHash: this.hashEnrollment(code),
+          enrollmentExpiresAt: new Date(this.clock.now().getTime() + ENROLLMENT_TTL_MS),
+          enrolledAt: null,
+          tokenVersion: sql`${devices.tokenVersion} + 1`,
+        })
+        .where(eq(devices.id, id))
+        .returning();
+      if (!d) throw new NotFoundException('Board not found');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'device.reenrolment', subjectType: 'device', subjectId: id });
+      return { id: d.id, name: d.name, enrollmentCode: code, enrollmentExpiresAt: d.enrollmentExpiresAt };
     });
   }
 

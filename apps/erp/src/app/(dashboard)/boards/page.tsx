@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { AddBoardButton } from '@/components/boards/AddBoardDialog';
+import { BoardMenu } from '@/components/boards/BoardMenu';
 import { TableFrame } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -86,6 +87,7 @@ export default async function BoardsPage() {
                   <TableCell>Now</TableCell>
                   <TableCell>Platform</TableCell>
                   <TableCell>Last seen</TableCell>
+                  {allowed && <TableCell aria-label="Actions" />}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -118,7 +120,7 @@ export default async function BoardsPage() {
                         <Typography variant="body2" color="text.secondary">
                           {b.enrollmentExpiresAt && new Date(b.enrollmentExpiresAt) > now
                             ? `Code valid until ${formatDateTime(b.enrollmentExpiresAt, TIMEZONE, false)}`
-                            : 'Code expired · add the board again'}
+                            : 'Code expired · issue a new code from the menu'}
                         </Typography>
                       ) : (
                         <Typography variant="body2" color="text.secondary">
@@ -150,6 +152,11 @@ export default async function BoardsPage() {
                         <Box component="span" sx={{ color: 'text.secondary' }}>Never</Box>
                       )}
                     </TableCell>
+                    {allowed && (
+                      <TableCell align="right" padding="checkbox">
+                        <BoardMenu id={b.id} name={b.name} enrolled={b.enrolled} timeZone={TIMEZONE} />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

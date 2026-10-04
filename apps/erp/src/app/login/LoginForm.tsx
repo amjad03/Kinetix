@@ -51,7 +51,7 @@ export function LoginForm({
             Sign in
           </Typography>
           <Typography variant="body1" sx={{ mt: 2, color: 'text.secondary', maxWidth: 380 }}>
-            to KINETIX ERP: your school's day at a glance, messages to every classroom, and the boards.
+            to KINETIX ERP: your school&apos;s day at a glance, messages to every classroom, and the boards.
           </Typography>
         </Box>
 

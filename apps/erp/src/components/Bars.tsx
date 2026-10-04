@@ -22,7 +22,9 @@ export function RateCell({ rate }: { rate: number | null }) {
   const color = rate >= 90 ? 'kx.success' : rate >= 75 ? 'primary.main' : 'error.main';
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'flex-end' }}>
-      <MiniBar value={rate} color={color} width={88} />
+      <Box sx={{ width: { xs: 48, md: 88 } }}>
+        <MiniBar value={rate} color={color} />
+      </Box>
       <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 48, textAlign: 'right' }}>
         {rate.toFixed(1)}%
       </Typography>

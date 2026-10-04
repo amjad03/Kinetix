@@ -42,6 +42,7 @@ export class AdminController {
   @Auth('user', DASHBOARD_ROLES)
   structure(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => ({
+      timezone: await this.timetable.tenantTimezone(tx),
       campuses: await tx.select({ id: campuses.id, name: campuses.name }).from(campuses).orderBy(asc(campuses.name)),
       programs: await tx
         .select({ id: programs.id, name: programs.name, level: programs.level, campusId: programs.campusId })
@@ -53,7 +54,8 @@ export class AdminController {
           displayName: sections.displayName,
           programId: sections.programId,
           term: sections.term,
-          students: sql<number>`(select count(*)::int from students s where s.section_id = ${sections.id} and s.status = 'active')`,
+          // Qualified explicitly: an unqualified "id" here would resolve to students.id.
+          students: sql<number>`(select count(*)::int from students s where s.section_id = "sections"."id" and s.status = 'active')`,
         })
         .from(sections)
         .orderBy(asc(sections.displayName)),
@@ -122,11 +124,15 @@ export class AdminController {
         .select({
           sectionId: sections.id,
           section: sections.displayName,
-          students: sql<number>`(select count(*)::int from students s where s.section_id = ${sections.id} and s.status = 'active')`,
+          students: sql<number>`(select count(*)::int from students s where s.section_id = "sections"."id" and s.status = 'active')`,
+          /** Students with at least one mark on the day. */
           marked: sql<number>`count(distinct ${attendanceRecords.studentId})::int`,
+          /** Marks (one per student per period); present + absent + late + excused = marks. */
+          marks: sql<number>`count(${attendanceRecords.id})::int`,
           present: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'present')::int`,
           absent: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'absent')::int`,
           late: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'late')::int`,
+          excused: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'excused')::int`,
         })
         .from(sections)
         .leftJoin(attendanceRecords, and(eq(attendanceRecords.sectionId, sections.id), eq(attendanceRecords.date, day)))
@@ -242,15 +248,19 @@ export class AdminController {
   private async attendanceTotals(tx: Tx, date: string) {
     const [t] = await tx
       .select({
+        /** Marks: one per student per period. */
         marked: sql<number>`count(*)::int`,
+        studentsMarked: sql<number>`count(distinct ${attendanceRecords.studentId})::int`,
         present: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'present')::int`,
         absent: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'absent')::int`,
         late: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'late')::int`,
+        excused: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'excused')::int`,
         absentStudents: sql<number>`count(distinct ${attendanceRecords.studentId}) filter (where ${attendanceRecords.status} = 'absent')::int`,
       })
       .from(attendanceRecords)
       .where(eq(attendanceRecords.date, date));
-    return { ...t, rate: t.marked === 0 ? null : Math.round(((t.present + t.late) / t.marked) * 1000) / 10 };
+    // Late and excused count as attended, as in the parent view.
+    return { ...t, rate: t.marked === 0 ? null : Math.round(((t.present + t.late + t.excused) / t.marked) * 1000) / 10 };
   }
 
   private async classesOn(tx: Tx, date?: string) {

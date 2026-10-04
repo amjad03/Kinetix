@@ -26,9 +26,9 @@ export function StatTile({
   return (
     <Card data-testid={testId} sx={{ height: '100%' }}>
       <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', minHeight: 24 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, color: 'text.secondary', minHeight: 24 }}>
           {icon && <Box sx={{ display: 'flex', '& svg': { fontSize: 20 } }}>{icon}</Box>}
-          <Typography variant="subtitle2" component="h3" sx={{ color: 'text.secondary' }} noWrap>
+          <Typography variant="subtitle2" component="h3" sx={{ color: 'text.secondary' }}>
             {label}
           </Typography>
         </Box>

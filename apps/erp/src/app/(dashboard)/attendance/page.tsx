@@ -79,7 +79,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
 
   return (
     <>
-      <StatGrid min={200}>
+      <StatGrid min={150}>
         <StatTile
           testId="att-rate"
           icon={<FactCheckOutlined />}
@@ -95,7 +95,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
 
       <SectionTitle>By class</SectionTitle>
       <TableFrame testId="attendance-table">
-        <Table sx={{ minWidth: 720 }}>
+        <Table sx={{ minWidth: 600 }}>
           <TableHead>
             <TableRow>
               <TableCell>Class</TableCell>
@@ -104,7 +104,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
               <TableCell align="right">Present</TableCell>
               <TableCell align="right">Absent</TableCell>
               <TableCell align="right">Late</TableCell>
-              <TableCell align="right" sx={{ width: 200 }}>
+              <TableCell align="right" sx={{ width: { xs: 140, md: 200 } }}>
                 Rate
               </TableCell>
             </TableRow>
@@ -163,7 +163,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
         </EmptyState>
       ) : (
         <TableFrame testId="absentees-table">
-          <Table sx={{ minWidth: 720 }}>
+          <Table sx={{ minWidth: 600 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Student</TableCell>
@@ -179,7 +179,9 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Avatar sx={{ width: 32, height: 32, fontSize: 13, bgcolor: 'm3.primaryContainer', color: 'm3.onPrimaryContainer' }}>{initials(s.student)}</Avatar>
                       <Box>
-                        <Typography variant="subtitle2">{s.student}</Typography>
+                        <Typography variant="subtitle2" sx={{ whiteSpace: 'nowrap' }}>
+                          {s.student}
+                        </Typography>
                         {s.rollNo && (
                           <Typography variant="caption" color="text.secondary">
                             {s.rollNo}
@@ -188,7 +190,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell>{s.section}</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{s.section}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                       {s.periods.map((p, i) => (

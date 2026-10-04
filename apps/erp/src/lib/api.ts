@@ -16,7 +16,7 @@ export class ApiError extends Error {
 }
 
 interface Options {
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'PATCH';
   body?: unknown;
   /** Send without the session token (login). */
   anonymous?: boolean;
