@@ -381,6 +381,9 @@ class BoardPages extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The pages' controllers, in order (for the lesson recorder).
+  List<InkController> get controllers => List.unmodifiable(_pages);
+
   /// Every page's finished strokes, for saving.
   List<List<Stroke>> get allStrokes => [for (final p in _pages) p.strokes];
 

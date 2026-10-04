@@ -5,5 +5,6 @@ export 'src/board_background.dart';
 export 'src/ink_canvas.dart';
 export 'src/ink_controller.dart';
 export 'src/ink_models.dart';
+export 'src/lesson.dart';
 export 'src/serialization.dart';
 export 'src/whiteboard_view.dart';
