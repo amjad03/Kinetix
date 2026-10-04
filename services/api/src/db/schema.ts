@@ -367,7 +367,7 @@ export const guardians = pgTable(
   (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -702,6 +702,82 @@ export const topics = pgTable(
   (t) => [index('topics_chapter_idx').on(t.chapterId, t.position)],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Fees and payments. Amounts are integer paise.
+// ---------------------------------------------------------------------------------------------
+
+export const invoiceStatus = pgEnum('invoice_status', ['due', 'paid', 'cancelled']);
+
+/** What one student owes for one fee (e.g. "Semester 3 tuition"). Part payments add up. */
+export const feeInvoices = pgTable(
+  'fee_invoices',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    /** The class when the fee was issued (students move on; the invoice does not). */
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    /** Invoices issued together to a class share a batch. */
+    batchId: uuid('batch_id').notNull(),
+    title: text('title').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    paidPaise: bigint('paid_paise', { mode: 'number' }).notNull().default(0),
+    dueOn: date('due_on').notNull(),
+    status: invoiceStatus('status').notNull().default('due'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('fee_invoices_student_idx').on(t.studentId, t.dueOn), index('fee_invoices_section_idx').on(t.sectionId, t.status)],
+);
+
+export const paymentStatus = pgEnum('payment_status', ['created', 'paid', 'failed']);
+export const paymentMethod = pgEnum('payment_method', ['online', 'cash', 'cheque', 'bank_transfer', 'upi']);
+
+/**
+ * A payment against an invoice: online (an order with the payment provider, confirmed by its
+ * signature or webhook) or recorded at the fees counter. Paid payments get a receipt number.
+ */
+export const feePayments = pgTable(
+  'fee_payments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    invoiceId: uuid('invoice_id').notNull().references(() => feeInvoices.id),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    method: paymentMethod('method').notNull(),
+    status: paymentStatus('status').notNull(),
+    /** razorpay or demo, for online payments. */
+    provider: text('provider'),
+    providerOrderId: text('provider_order_id'),
+    providerPaymentId: text('provider_payment_id'),
+    /** Cheque number, bank reference or UPI transaction id for counter payments. */
+    reference: text('reference'),
+    receiptNo: text('receipt_no'),
+    payerUserId: uuid('payer_user_id').references(() => users.id, { onDelete: 'set null' }),
+    recordedBy: uuid('recorded_by').references(() => users.id, { onDelete: 'set null' }),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('fee_payments_order_uq').on(t.providerOrderId),
+    uniqueIndex('fee_payments_receipt_uq').on(t.tenantId, t.receiptNo),
+    index('fee_payments_invoice_idx').on(t.invoiceId),
+  ],
+);
+
+/** Receipt numbers run in sequence per institution and financial year (April to March). */
+export const receiptCounters = pgTable(
+  'receipt_counters',
+  {
+    tenantId: tenantId(),
+    financialYear: text('financial_year').notNull(),
+    lastNo: integer('last_no').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.financialYear] })],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -732,5 +808,8 @@ export const TENANT_TABLES = [
   'jobs',
   'chapters',
   'topics',
+  'fee_invoices',
+  'fee_payments',
+  'receipt_counters',
   'audit_log',
 ] as const;

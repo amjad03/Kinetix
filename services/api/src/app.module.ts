@@ -2,6 +2,7 @@ import { Controller, Get, Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
+import { FeesModule } from './fees/fees.module.js';
 import { PushModule } from './push/push.module.js';
 import { RecordingsModule } from './recordings/recordings.module.js';
 import { StorageModule } from './storage/storage.module.js';
@@ -50,6 +51,7 @@ class HealthController {
     ContentModule,
     AiModule,
     RecordingsModule,
+    FeesModule,
   ],
   controllers: [HealthController],
 })

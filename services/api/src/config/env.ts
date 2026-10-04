@@ -28,6 +28,14 @@ const EnvSchema = z.object({
   S3_REGION: z.string().default('ap-south-1'),
   /** Firebase service account (JSON, or a path to it) for push notifications. Optional. */
   FCM_SERVICE_ACCOUNT: z.string().optional(),
+  /**
+   * Online fee payments: razorpay in production, demo for development (no money moves), or
+   * none (fees can still be recorded at the counter).
+   */
+  PAYMENTS_PROVIDER: z.enum(['none', 'demo', 'razorpay']).default('none'),
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
   /** How often the job runner looks for work; 0 turns it off (tests run jobs by hand). */
   JOBS_POLL_MS: z.coerce.number().int().min(0).default(2000),
 });
@@ -44,6 +52,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   if (parsed.data.STORAGE_DRIVER === 's3' && !parsed.data.S3_BUCKET) throw new Error('Invalid environment: S3_BUCKET is required with STORAGE_DRIVER=s3');
   if (parsed.data.STORAGE_DRIVER === 's3' && !parsed.data.S3_REGION.startsWith('ap-south-')) {
     throw new Error('Invalid environment: recordings must be stored in India (S3_REGION ap-south-1 or ap-south-2)');
+  }
+  if (parsed.data.PAYMENTS_PROVIDER === 'razorpay' && !(parsed.data.RAZORPAY_KEY_ID && parsed.data.RAZORPAY_KEY_SECRET && parsed.data.RAZORPAY_WEBHOOK_SECRET)) {
+    throw new Error('Invalid environment: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET are required with PAYMENTS_PROVIDER=razorpay');
   }
   return parsed.data;
 }

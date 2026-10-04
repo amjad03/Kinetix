@@ -8,7 +8,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const env = loadEnv();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true }); // rawBody: payment webhook signatures
   configureApp(app);
 
   const doc = SwaggerModule.createDocument(

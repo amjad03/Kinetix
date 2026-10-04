@@ -54,7 +54,8 @@ async function main() {
     return u;
   };
   await staff('Dr. Meera Rao', 'principal@demo.kinetix.in', ['principal']);
-  await staff('Admin Office', 'admin@demo.kinetix.in', ['tenant_admin']);
+  const admin = await staff('Admin Office', 'admin@demo.kinetix.in', ['tenant_admin']);
+  await staff('Accounts Office', 'accounts@demo.kinetix.in', ['accountant']);
   const anita = await staff('Anita Sharma', 'anita@demo.kinetix.in', ['teacher'], 'hi');
   const ravi = await staff('Ravi Kumar', 'ravi@demo.kinetix.in', ['teacher', 'hod'], 'kn');
 
@@ -94,6 +95,36 @@ async function main() {
   };
   await parent('Rajesh Patel', 'parent@demo.kinetix.in', '+919800000001', [['Aarav Patel', 'father'], ['Diya Patel', 'father']]);
   await parent('Sunita Gowda', 'sunita@demo.kinetix.in', '+919800000002', [['Ananya Gowda', 'mother']]);
+
+  // Fees: Semester tuition for both classes. Sunita has paid Ananya's at the counter.
+  const issueFee = async (sectionId: string, title: string, amountPaise: number, dueInDays: number) => {
+    const batchId = crypto.randomUUID();
+    const dueOn = new Date(Date.now() + dueInDays * 86400_000).toISOString().slice(0, 10);
+    return db
+      .insert(s.feeInvoices)
+      .values(allStudents.filter((x) => x.sectionId === sectionId).map((st) => ({ tenantId, studentId: st.id, sectionId, batchId, title, amountPaise, dueOn, createdBy: admin.id })))
+      .returning();
+  };
+  const bcomFees = await issueFee(bcom3a.id, 'Semester 3 tuition fee', 42_500_00, 10);
+  await issueFee(bca1a.id, 'Semester 1 tuition fee', 48_000_00, 10);
+  await issueFee(bcom3a.id, 'Exam fee (Nov 2026)', 1_850_00, -2);
+  const ananyaFee = bcomFees.find((f) => f.studentId === byName('Ananya Gowda').id)!;
+  const fy = new Date().getMonth() + 1 >= 4 ? new Date().getFullYear() : new Date().getFullYear() - 1;
+  const financialYear = `${fy}-${String((fy + 1) % 100).padStart(2, '0')}`;
+  await db.insert(s.feePayments).values({
+    tenantId,
+    invoiceId: ananyaFee.id,
+    studentId: ananyaFee.studentId,
+    amountPaise: ananyaFee.amountPaise,
+    method: 'upi',
+    status: 'paid',
+    reference: 'UPI 4182 7730 9921',
+    receiptNo: `RCPT/${financialYear}/00001`,
+    recordedBy: admin.id,
+    paidAt: new Date(Date.now() - 3 * 86400_000),
+  });
+  await db.update(s.feeInvoices).set({ paidPaise: ananyaFee.amountPaise, status: 'paid' }).where(eq(s.feeInvoices.id, ananyaFee.id));
+  await db.insert(s.receiptCounters).values({ tenantId, financialYear, lastNo: 1 });
 
   // Two weeks of history so the parent app and the dashboard have something to show.
   const slots = await db.select().from(s.timetableSlots).where(eq(s.timetableSlots.tenantId, tenantId));
@@ -199,6 +230,7 @@ Seeded tenant "demo-college".
   Staff logins (password "${PASSWORD}"):
     principal@demo.kinetix.in   (principal: can circulate messages)
     admin@demo.kinetix.in       (tenant admin)
+    accounts@demo.kinetix.in    (accountant: fees)
     anita@demo.kinetix.in       (teacher, BCom Sem 3 A)
     ravi@demo.kinetix.in        (teacher + HOD, BCA Sem 1 A)
   Parent logins (same password):

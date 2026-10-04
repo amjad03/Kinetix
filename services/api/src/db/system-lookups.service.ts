@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DbService } from './db.service.js';
-import { devices, tenants } from './schema.js';
+import { devices, feePayments, tenants } from './schema.js';
 
 /**
  * The only queries allowed to bypass row-level security. Each one answers
@@ -25,6 +25,15 @@ export class SystemLookups {
       .select({ tenantId: devices.tenantId, deviceId: devices.id })
       .from(devices)
       .where(eq(devices.enrollmentCodeHash, codeHash));
+    return row;
+  }
+
+  /** The tenant of an online payment, for the payment gateway's webhook. */
+  async tenantForPaymentOrder(orderId: string): Promise<{ tenantId: string; paymentId: string } | undefined> {
+    const [row] = await this.db.system
+      .select({ tenantId: feePayments.tenantId, paymentId: feePayments.id })
+      .from(feePayments)
+      .where(eq(feePayments.providerOrderId, orderId));
     return row;
   }
 }

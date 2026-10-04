@@ -99,6 +99,20 @@
       "when": 1791124075597,
       "tag": "0013_push_devices_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791124207507,
+      "tag": "0014_fees",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1791124208324,
+      "tag": "0015_fees_rls",
+      "breakpoints": true
     }
   ]
 }

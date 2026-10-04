@@ -11,7 +11,12 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee';
+
+/** "₹45,000" or "₹1,250.50" from paise. */
+export function rupees(paise: number): string {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: paise % 100 === 0 ? 0 : 2 }).format(paise / 100);
+}
 
 /** "Mon 5 Oct" for a YYYY-MM-DD date. */
 export function shortDate(date: string): string {
@@ -142,6 +147,40 @@ export class NotificationsService {
       data,
       dedupeKey,
     });
+  }
+
+  /** Fees issued to students: their guardians and the students themselves. */
+  async feeIssued(tx: Tx, f: { batchId: string; title: string; amountPaise: number; dueOn: string; studentIds: string[] }): Promise<void> {
+    if (f.studentIds.length === 0) return;
+    const ids = uuidList(f.studentIds);
+    await this.insertFor(
+      tx,
+      sql`select g.user_id from guardians g where g.student_id in (${ids})
+          union select s.user_id from students s where s.id in (${ids}) and s.user_id is not null`,
+      {
+        kind: 'fee',
+        title: `Fee due: ${f.title}`,
+        body: `${rupees(f.amountPaise)} due by ${shortDate(f.dueOn)}. Pay in the app or at the fees counter.`,
+        data: { batchId: f.batchId },
+        dedupeKey: `fee:${f.batchId}`,
+      },
+    );
+  }
+
+  /** A fee payment went through: the student's family gets the receipt number. */
+  async feePaid(tx: Tx, p: { paymentId: string; studentId: string; studentName: string; title: string; amountPaise: number; receiptNo: string }): Promise<void> {
+    await this.insertFor(
+      tx,
+      sql`select g.user_id from guardians g where g.student_id = ${p.studentId}::uuid
+          union select s.user_id from students s where s.id = ${p.studentId}::uuid and s.user_id is not null`,
+      {
+        kind: 'fee',
+        title: `Payment received: ${rupees(p.amountPaise)}`,
+        body: `${p.title} for ${p.studentName}. Receipt ${p.receiptNo}.`,
+        data: { paymentId: p.paymentId, studentId: p.studentId },
+        dedupeKey: `fee-paid:${p.paymentId}`,
+      },
+    );
   }
 
   /** A principal's announcement reaches families of everyone in its audience. */

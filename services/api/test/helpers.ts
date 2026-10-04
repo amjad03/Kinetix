@@ -46,7 +46,7 @@ export function nextMondayIst(time: string): Date {
 
 export async function createApp(clock: FixedClock, customize: (b: TestingModuleBuilder) => TestingModuleBuilder = (b) => b): Promise<INestApplication> {
   const moduleRef = await customize(Test.createTestingModule({ imports: [AppModule] }).overrideProvider(Clock).useValue(clock)).compile();
-  const app = moduleRef.createNestApplication<NestExpressApplication>();
+  const app = moduleRef.createNestApplication<NestExpressApplication>({ rawBody: true });
   configureApp(app);
   await app.init();
   await app.listen(0);
