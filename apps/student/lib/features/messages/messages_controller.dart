@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../core/api.dart';
+import '../../core/live.dart' show LiveMessageNew;
 import '../../core/models.dart';
 
 /// The student's conversations with teachers, the unread total, and who they can write to. Only
@@ -59,6 +62,27 @@ class MessagesController extends ChangeNotifier {
     } finally {
       notifyListeners();
     }
+  }
+
+  final _incoming = StreamController<LiveMessageNew>.broadcast();
+
+  /// New messages pushed over the realtime connection (an open thread refreshes on them).
+  Stream<LiveMessageNew> get incoming => _incoming.stream;
+
+  /// Whether new messages arrive by themselves (the realtime connection is up), so open threads
+  /// need not check as often.
+  bool Function() realtime = () => false;
+
+  /// A message arrived (`message.new`): refresh the list and tell any open thread.
+  void received(LiveMessageNew m) {
+    if (!_incoming.isClosed) _incoming.add(m);
+    if (!loading) load();
+  }
+
+  @override
+  void dispose() {
+    _incoming.close();
+    super.dispose();
   }
 
   /// A thread was opened (and marked read on the server): clear its badge here straight away.

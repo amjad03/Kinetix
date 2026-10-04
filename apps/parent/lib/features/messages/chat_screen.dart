@@ -22,7 +22,8 @@ class ChatScreen extends StatefulWidget {
   /// Shown in the title while the thread loads.
   final Conversation? initial;
 
-  /// How often an open conversation checks for replies (there is no push yet).
+  /// How often an open conversation checks for replies while the realtime connection is down
+  /// (when it is up, `message.new` brings them).
   static Duration pollEvery = const Duration(seconds: 15);
 
   static Future<void> open(BuildContext context, MessagesController controller, String conversationId, {Conversation? initial}) async {
@@ -55,17 +56,22 @@ class _ChatScreenState extends State<ChatScreen> {
   final _text = TextEditingController();
   final _scroll = ScrollController();
   Timer? _poll;
+  StreamSubscription<Object>? _incoming;
 
   @override
   void initState() {
     super.initState();
     _loadLatest(first: true);
-    _poll = Timer.periodic(ChatScreen.pollEvery, (_) => _loadLatest());
+    _poll = Timer.periodic(ChatScreen.pollEvery, (_) {
+      if (!widget.controller.realtime()) _loadLatest();
+    });
+    _incoming = widget.controller.incoming.where((m) => m.conversationId == widget.conversationId).listen((_) => _loadLatest());
   }
 
   @override
   void dispose() {
     _poll?.cancel();
+    _incoming?.cancel();
     _text.dispose();
     _scroll.dispose();
     super.dispose();

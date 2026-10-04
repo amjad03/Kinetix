@@ -21,11 +21,13 @@ import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
 import { canPublishMarks } from '@/lib/access';
 import { api, ApiError, load, requireSection } from '@/lib/api';
-import { formatDate } from '@/lib/dates';
-import { distribution, formatMarks, KIND_LABEL, percent, resultCounts } from '@/lib/results';
+import { getI18n } from '@/i18n/server';
+import { distribution, formatMarks, kindLabel, percent, resultCounts } from '@/lib/results';
 import type { AssessmentDetail, Structure } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Marks' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('results.marks') };
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const num = { fontVariantNumeric: 'tabular-nums' } as const;
@@ -46,12 +48,14 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
     load(() => api<Structure>('/v1/admin/structure')),
   ]);
   const a = res.data;
-  const className = structure.data?.sections.find((s) => s.id === a?.sectionId)?.displayName ?? 'Class';
+  const { t, fmt } = await getI18n();
+  const className = structure.data?.sections.find((s) => s.id === a?.sectionId)?.displayName ?? t('results.class');
 
   const back = (
     <Box sx={{ ml: -1, mb: 0.5 }}>
       <LinkButton href={a ? `/results?class=${a.sectionId}` : '/results'} size="small" startIcon={<ArrowBack />}>
-        Results{a ? ` · ${className}` : ''}
+        {t('results.back')}
+        {a ? ` · ${className}` : ''}
       </LinkButton>
     </Box>
   );
@@ -79,7 +83,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
         subtitle={
           <Box component="span" sx={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
             <span>
-              {className} · {a.subject.name} · {KIND_LABEL[a.kind] ?? a.kind} · {formatDate(a.heldOn, 'short')} · out of {formatMarks(a.maxMarks)} · set by {a.createdBy}
+              {className} · {a.subject.name} · {kindLabel(a.kind, t)} · {fmt.date(a.heldOn, 'short')} · {t('results.outOf', { n: formatMarks(a.maxMarks) })} · {t('results.setBy', { name: a.createdBy })}
             </span>
             <PublishedChip publishedAt={a.publishedAt} />
           </Box>
@@ -93,50 +97,50 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
 
       <StatGrid min={180}>
         <StatTile
-          label="Class average"
+          label={t('results.stat.average')}
           value={s.average === null ? '—' : formatMarks(s.average)}
           unit={s.average === null ? undefined : `/ ${formatMarks(a.maxMarks)}`}
-          caption={s.average === null ? 'No marks entered yet' : pct(s.average)}
-          bar={s.average === null ? undefined : <MiniBar value={percent(s.average, a.maxMarks)} label={`Class average ${pct(s.average)}`} />}
+          caption={s.average === null ? t('results.stat.noMarks') : pct(s.average)}
+          bar={s.average === null ? undefined : <MiniBar value={percent(s.average, a.maxMarks)} label={t('results.classAverage', { p: pct(s.average) })} />}
           testId="stat-average"
         />
-        <StatTile label="Highest" value={formatMarks(s.highest)} unit={s.highest === null ? undefined : `/ ${formatMarks(a.maxMarks)}`} caption={pct(s.highest)} testId="stat-highest" />
-        <StatTile label="Lowest" value={formatMarks(s.lowest)} unit={s.lowest === null ? undefined : `/ ${formatMarks(a.maxMarks)}`} caption={pct(s.lowest)} testId="stat-lowest" />
+        <StatTile label={t('results.stat.highest')} value={formatMarks(s.highest)} unit={s.highest === null ? undefined : `/ ${formatMarks(a.maxMarks)}`} caption={pct(s.highest)} testId="stat-highest" />
+        <StatTile label={t('results.stat.lowest')} value={formatMarks(s.lowest)} unit={s.lowest === null ? undefined : `/ ${formatMarks(a.maxMarks)}`} caption={pct(s.lowest)} testId="stat-lowest" />
         <StatTile
-          label="Absent"
+          label={t('results.stat.absent')}
           value={c.absent}
-          caption={`${c.entered} of ${c.students} marked${c.missing ? ` · ${c.missing} not entered` : ''}`}
+          caption={`${t('results.stat.marked', { n: c.entered, d: c.students })}${c.missing ? ` · ${t('results.stat.notEntered', { n: c.missing })}` : ''}`}
           tone={c.missing ? 'warning' : 'default'}
           testId="stat-absent"
         />
       </StatGrid>
 
-      <SectionTitle>How the class did</SectionTitle>
+      <SectionTitle>{t('results.howClassDid')}</SectionTitle>
       <Card sx={{ p: { xs: 2, md: 3 } }}>
         {c.entered === 0 ? (
           <Typography variant="body2" color="text.secondary">
-            The chart appears once marks are entered.
+            {t('results.chartLater')}
           </Typography>
         ) : (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Students by score, as a share of {formatMarks(a.maxMarks)} marks. {c.absent ? `${c.absent} absent not shown.` : ''}
+              {t('results.chartHelp', { max: formatMarks(a.maxMarks) })} {c.absent ? t('results.absentNotShown', { n: c.absent }) : ''}
             </Typography>
             <Distribution bands={bands} total={c.entered} />
           </>
         )}
       </Card>
 
-      <SectionTitle>Marks</SectionTitle>
+      <SectionTitle>{t('results.marks')}</SectionTitle>
       <TableFrame testId="marks-table">
         <Table size="small" sx={{ minWidth: 640 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Roll no.</TableCell>
-              <TableCell>Student</TableCell>
-              <TableCell align="right">Marks</TableCell>
-              <TableCell sx={{ width: { md: '26%' } }}>Score</TableCell>
-              <TableCell>Remark</TableCell>
+              <TableCell>{t('results.col.roll')}</TableCell>
+              <TableCell>{t('results.col.student')}</TableCell>
+              <TableCell align="right">{t('results.col.marks')}</TableCell>
+              <TableCell sx={{ width: { md: '26%' } }}>{t('results.col.score')}</TableCell>
+              <TableCell>{t('results.col.remark')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -148,10 +152,10 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
                   <TableCell>{st.fullName}</TableCell>
                   <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap' }}>
                     {st.absent ? (
-                      <Chip size="small" label="Absent" variant="outlined" sx={{ color: 'text.secondary' }} data-status="absent" />
+                      <Chip size="small" label={t('results.absent')} variant="outlined" sx={{ color: 'text.secondary' }} data-status="absent" />
                     ) : st.marks === null ? (
                       <Typography variant="body2" color="text.secondary">
-                        Not entered
+                        {t('results.notEntered')}
                       </Typography>
                     ) : (
                       <>

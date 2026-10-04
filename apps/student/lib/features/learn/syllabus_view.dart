@@ -144,11 +144,29 @@ class _SyllabusViewState extends State<SyllabusView> {
   }
 }
 
-class _Subjects extends StatelessWidget {
+class _Subjects extends StatefulWidget {
   const _Subjects({required this.study, required this.ask});
 
   final StudyController study;
   final AskController ask;
+
+  @override
+  State<_Subjects> createState() => _SubjectsState();
+}
+
+class _SubjectsState extends State<_Subjects> {
+  StudyController get study => widget.study;
+  AskController get ask => widget.ask;
+  List<Subject>? _progressFor;
+
+  /// Each subject's progress, once per subject list.
+  void _loadProgress(List<Subject>? subjects) {
+    if (subjects == null || identical(subjects, _progressFor)) return;
+    _progressFor = subjects;
+    for (final s in subjects) {
+      study.loadCoverage(s.id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +175,7 @@ class _Subjects extends StatelessWidget {
       listenable: study,
       builder: (context, _) {
         final subjects = study.subjects;
+        if (!identical(subjects, _progressFor)) WidgetsBinding.instance.addPostFrameCallback((_) => _loadProgress(study.subjects));
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -184,9 +203,18 @@ class _Subjects extends StatelessWidget {
                     key: Key('subjectTile-${s.id}'),
                     leading: IconBadge(Icons.class_outlined, background: c.primaryContainer, foreground: c.onPrimaryContainer),
                     title: Text(s.name),
-                    subtitle: s.code == null ? null : Text(s.code!),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (s.code != null) Text(s.code!),
+                        if (study.coverageOf(s.id) case final cov? when cov.total > 0) ...[
+                          const SizedBox(height: Kx.s4),
+                          CoverageBar(coverage: cov, compact: true),
+                        ],
+                      ],
+                    ),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => SubjectScreen.open(context, study.api, s, ask: ask),
+                    onTap: () => SubjectScreen.open(context, study, s, ask: ask),
                   ),
                 ),
           ],
@@ -196,18 +224,62 @@ class _Subjects extends StatelessWidget {
   }
 }
 
-/// One subject's syllabus: chapters and their topics.
-class SubjectScreen extends StatefulWidget {
-  const SubjectScreen({super.key, required this.api, required this.subject, required this.ask});
+/// "12 of 30 topics taught" with a progress bar and the percentage.
+class CoverageBar extends StatelessWidget {
+  const CoverageBar({super.key, required this.coverage, this.compact = false});
 
-  final StudentApi api;
+  final Coverage coverage;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final value = coverage.total == 0 ? 0.0 : coverage.covered / coverage.total;
+    final label = context.l10n.topicsTaught(coverage.covered, coverage.total);
+    return Column(
+      key: const Key('coverageBar'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: Kx.s8,
+          children: [
+            Text(label, style: (compact ? context.text.bodySmall : context.text.bodyMedium)?.copyWith(color: c.onSurfaceVariant)),
+            if (coverage.percent != null)
+              Text('${coverage.percent}%', style: (compact ? context.text.labelMedium : context.text.titleSmall)?.copyWith(color: Tone.good(context))),
+          ],
+        ),
+        const SizedBox(height: Kx.s4),
+        ClipRRect(
+          borderRadius: Kx.radiusSm,
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: compact ? 4 : 8,
+            color: Tone.goodBar(context),
+            backgroundColor: c.surfaceContainerHighest,
+            semanticsLabel: label,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One subject's syllabus: chapters and their topics, with the topics the class has been taught
+/// ticked.
+class SubjectScreen extends StatefulWidget {
+  const SubjectScreen({super.key, required this.study, required this.subject, required this.ask});
+
+  final StudyController study;
   final Subject subject;
   final AskController ask;
 
-  static Future<void> open(BuildContext context, StudentApi api, Subject subject, {required AskController ask}) => Navigator.of(context)
+  StudentApi get api => study.api;
+
+  static Future<void> open(BuildContext context, StudyController study, Subject subject, {required AskController ask}) => Navigator.of(context)
       .push(
         MaterialPageRoute(
-          builder: (_) => SubjectScreen(api: api, subject: subject, ask: ask),
+          builder: (_) => SubjectScreen(study: study, subject: subject, ask: ask),
         ),
       );
 
@@ -228,6 +300,8 @@ class _SubjectScreenState extends State<SubjectScreen> {
 
   Future<void> _load() async {
     setState(() => _error = null);
+    // Progress is fetched alongside: a failure there only leaves the ticks out.
+    widget.study.loadCoverage(widget.subject.id, fresh: true);
     try {
       final o = await widget.api.syllabus(widget.subject.id);
       if (mounted) {
@@ -242,9 +316,12 @@ class _SubjectScreenState extends State<SubjectScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: widget.study, builder: (context, _) => _build(context));
+
+  Widget _build(BuildContext context) {
     final c = context.colors;
     final o = _outline;
+    final cov = widget.study.coverageOf(widget.subject.id);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -278,6 +355,11 @@ class _SubjectScreenState extends State<SubjectScreen> {
                 ),
               ),
             ),
+            if (cov != null && cov.total > 0)
+              CenteredSliver(
+                bottom: Kx.s16,
+                sliver: SliverToBoxAdapter(child: CoverageBar(coverage: cov)),
+              ),
             CenteredSliver(
               bottom: Kx.s32,
               sliver: SliverList.separated(
@@ -303,8 +385,13 @@ class _SubjectScreenState extends State<SubjectScreen> {
                         for (final t in ch.topics)
                           ListTile(
                             key: Key('topic-${t.id}'),
+                            leading: cov == null
+                                ? null
+                                : cov.topics.containsKey(t.id)
+                                ? Icon(Icons.check_circle, key: Key('taught-${t.id}'), color: Tone.good(context), semanticLabel: context.l10n.taught)
+                                : Icon(Icons.radio_button_unchecked, color: c.outlineVariant),
                             title: Text(t.title),
-                            subtitle: t.summary.isEmpty ? null : Text(t.summary, maxLines: 2, overflow: TextOverflow.ellipsis),
+                            subtitle: _topicSubtitle(context, t, cov?.topics[t.id]),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () => TopicScreen.open(context, widget.api, t.id, controller: widget.ask),
                           ),
@@ -320,4 +407,20 @@ class _SubjectScreenState extends State<SubjectScreen> {
       ),
     );
   }
+}
+
+Widget? _topicSubtitle(BuildContext context, OutlineTopic t, TopicCoverage? taught) {
+  if (t.summary.isEmpty && taught == null) return null;
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (t.summary.isNotEmpty) Text(t.summary, maxLines: 2, overflow: TextOverflow.ellipsis),
+      if (taught != null)
+        Text(
+          context.l10n.taughtOn(context.fmt.shortDay(taught.coveredOn)),
+          key: Key('taughtOn-${t.id}'),
+          style: context.text.bodySmall?.copyWith(color: Tone.good(context)),
+        ),
+    ],
+  );
 }

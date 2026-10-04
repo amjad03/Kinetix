@@ -6,7 +6,7 @@ import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
 import Schedule from '@mui/icons-material/Schedule';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import { STATUS_HELP, STATUS_LABEL } from '@/lib/status';
+import { useI18n } from '@/i18n/client';
 import type { ClassStatus } from '@/lib/types';
 
 function LiveDot() {
@@ -28,7 +28,8 @@ function LiveDot() {
 }
 
 export function StatusChip({ status }: { status: ClassStatus }) {
-  const common = { size: 'small' as const, label: STATUS_LABEL[status], title: STATUS_HELP[status], 'data-status': status };
+  const { t } = useI18n();
+  const common = { size: 'small' as const, label: t(`status.${status}`), title: t(`status.help.${status}`), 'data-status': status };
   const iconSx = { fontSize: '16px !important' };
   switch (status) {
     case 'live':

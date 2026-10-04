@@ -30,7 +30,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('subjectTile-sub1')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('topic-t1')));
+    // The class's progress sits above the chapters: with large text the topic starts off screen.
+    await tester.scrollUntilVisible(find.byKey(const Key('topic-t1')), 200, scrollable: find.byType(Scrollable).last);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('topic-t1')));
     await tester.pumpAndSettle();

@@ -6,6 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import { useI18n } from '@/i18n/client';
 
 /** M3 segmented button that sets `?days=`. */
 export function RangeToggle({ value, options }: { value: number; options: number[] }) {
@@ -13,13 +14,14 @@ export function RangeToggle({ value, options }: { value: number; options: number
   const pathname = usePathname();
   const params = useSearchParams();
   const [pending, start] = useTransition();
+  const { t } = useI18n();
   return (
     <>
       {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} />}
       <ToggleButtonGroup
         exclusive
         value={value}
-        aria-label="Time range"
+        aria-label={t('range.label')}
         onChange={(_, v: number | null) => {
           if (!v) return;
           const q = new URLSearchParams(params.toString());
@@ -28,9 +30,9 @@ export function RangeToggle({ value, options }: { value: number; options: number
         }}
       >
         {options.map((d) => (
-          <ToggleButton key={d} value={d} aria-label={`Last ${d} days`} sx={{ gap: 0.75 }}>
+          <ToggleButton key={d} value={d} aria-label={t('range.lastDays', { n: d })} sx={{ gap: 0.75 }}>
             {value === d && <Check sx={{ fontSize: 18 }} />}
-            {d} days
+            {t('range.days', { n: d })}
           </ToggleButton>
         ))}
       </ToggleButtonGroup>

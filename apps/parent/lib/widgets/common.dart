@@ -250,3 +250,68 @@ class LanguageTile extends StatelessWidget {
     );
   }
 }
+
+/// The widest a column of cards gets on a tablet; wider screens centre it.
+const double maxContentWidth = 720;
+
+/// Horizontal padding that keeps content at most [maxContentWidth] wide and centred, with a
+/// 16 px gutter on phones.
+double sideGutter(double width) => width > maxContentWidth + 2 * Kx.s16 ? (width - maxContentWidth) / 2 : Kx.s16;
+
+/// A sliver whose content is centred and no wider than [maxContentWidth].
+class CenteredSliver extends StatelessWidget {
+  const CenteredSliver({super.key, required this.sliver, this.top = 0, this.bottom = 0, this.flush = false});
+
+  final Widget sliver;
+  final double top;
+  final double bottom;
+
+  /// For full-bleed rows that pad themselves (ListTile): no gutter on phones.
+  final bool flush;
+
+  @override
+  Widget build(BuildContext context) => SliverLayoutBuilder(
+    builder: (context, constraints) {
+      final side = sideGutter(constraints.crossAxisExtent) - (flush ? Kx.s16 : 0);
+      return SliverPadding(padding: EdgeInsets.fromLTRB(side, top, side, bottom), sliver: sliver);
+    },
+  );
+}
+
+/// A bullet line for notes and key points.
+class BulletLine extends StatelessWidget {
+  const BulletLine(this.text, {super.key, this.icon, this.iconColor});
+
+  final String text;
+  final IconData? icon;
+  final Color? iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Kx.s4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (icon != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, size: 18, color: iconColor ?? c.primary),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(top: 9, left: 6, right: 6),
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: iconColor ?? c.primary, shape: BoxShape.circle),
+              ),
+            ),
+          const SizedBox(width: Kx.s8),
+          Expanded(child: Text(text, style: context.text.bodyLarge?.copyWith(height: 1.45))),
+        ],
+      ),
+    );
+  }
+}

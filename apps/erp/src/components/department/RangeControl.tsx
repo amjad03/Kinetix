@@ -16,6 +16,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { deptQuery, MAX_RANGE_DAYS, RANGE_LABEL, type DeptRange, type RangeKey } from '@/lib/department';
 import { addDays, daysBetween } from '@/lib/dates';
+import { useI18n } from '@/i18n/client';
 
 /** M3 segmented button for the department's range: this week, 30 days, the term, or custom dates. */
 export function RangeControl({ deptId, range, today }: { deptId: string | null; range: DeptRange; today: string }) {
@@ -23,16 +24,17 @@ export function RangeControl({ deptId, range, today }: { deptId: string | null; 
   const pathname = usePathname();
   const [pending, start] = useTransition();
   const [custom, setCustom] = useState(false);
+  const { t } = useI18n();
   const go = (r: DeptRange) => start(() => router.push(`${pathname}?${deptQuery(deptId, r)}`, { scroll: false }));
 
   return (
     <>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label="Loading" />}
+      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
       <ToggleButtonGroup
         exclusive
         size="small"
         value={range.key}
-        aria-label="Time range"
+        aria-label={t('range.label')}
         data-testid="dept-range"
         onChange={(_, v: RangeKey | null) => {
           if (v === 'custom') setCustom(true);
@@ -48,7 +50,7 @@ export function RangeControl({ deptId, range, today }: { deptId: string | null; 
             onClick={k === 'custom' && range.key === 'custom' ? () => setCustom(true) : undefined}
           >
             {range.key === k && <Check sx={{ fontSize: 18 }} />}
-            {RANGE_LABEL[k]}
+            {t(RANGE_LABEL[k])}
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
@@ -70,7 +72,8 @@ export function RangeControl({ deptId, range, today }: { deptId: string | null; 
 function CustomDialog({ range, today, onClose, onApply }: { range: DeptRange; today: string; onClose: () => void; onApply: (from: string, to: string) => void }) {
   const [from, setFrom] = useState(range.from);
   const [to, setTo] = useState(range.to);
-  const error = !from || !to ? 'Choose both dates.' : from > to ? 'The start must be on or before the end.' : daysBetween(from, to) >= MAX_RANGE_DAYS ? `Choose at most ${MAX_RANGE_DAYS} days.` : null;
+  const { t } = useI18n();
+  const error = !from || !to ? t('dept.range.bothDates') : from > to ? t('dept.range.order') : daysBetween(from, to) >= MAX_RANGE_DAYS ? t('dept.range.max', { n: MAX_RANGE_DAYS }) : null;
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
       <form
@@ -79,27 +82,27 @@ function CustomDialog({ range, today, onClose, onApply }: { range: DeptRange; to
           if (!error) onApply(from, to);
         }}
       >
-        <DialogTitle>Custom range</DialogTitle>
+        <DialogTitle>{t('dept.range.title')}</DialogTitle>
         <DialogContent>
           <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
             <TextField
-              label="From"
+              label={t('dept.range.from')}
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today, min: addDays(today, -730) } }}
               fullWidth
             />
-            <TextField label="To" type="date" value={to} onChange={(e) => setTo(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} fullWidth />
+            <TextField label={t('dept.range.to')} type="date" value={to} onChange={(e) => setTo(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} fullWidth />
           </Stack>
           <Typography variant="caption" color={error && from && to ? 'error' : 'text.secondary'} component="p" sx={{ mt: 1.5 }}>
-            {error && from && to ? error : `Up to ${MAX_RANGE_DAYS} days, about a term.`}
+            {error && from && to ? error : t('dept.range.help', { n: MAX_RANGE_DAYS })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{t('common.cancel')}</Button>
           <Button type="submit" variant="contained" disabled={!!error}>
-            Show
+            {t('dept.range.show')}
           </Button>
         </DialogActions>
       </form>

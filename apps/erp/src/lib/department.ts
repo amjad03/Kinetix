@@ -1,6 +1,9 @@
 // The head of department's view (GET /v1/departments/:id/overview): ranges, flags and labels.
 
-import { addDays, daysBetween, isIsoDate, isoWeekday } from './dates';
+import type { Locale } from '@/i18n/locales';
+import type { MessageKey } from '@/i18n/messages';
+import type { TFunction } from '@/i18n/translate';
+import { addDays, daysBetween, formatDate, isIsoDate, isoWeekday } from './dates';
 
 /** The API covers at most this many days in one overview. */
 export const MAX_RANGE_DAYS = 120;
@@ -13,11 +16,11 @@ export interface DeptRange {
   to: string;
 }
 
-export const RANGE_LABEL: Record<RangeKey, string> = {
-  week: 'This week',
-  month: 'Last 30 days',
-  term: 'This term',
-  custom: 'Custom',
+export const RANGE_LABEL: Record<RangeKey, MessageKey> = {
+  week: 'dept.range.week',
+  month: 'dept.range.month',
+  term: 'dept.range.term',
+  custom: 'dept.range.custom',
 };
 
 /**
@@ -87,15 +90,15 @@ export function formatPercent(p: number | null | undefined): string {
   return `${Number.isInteger(p) ? p : p.toFixed(1)}%`;
 }
 
-/** "12 of 15" (or "—" when nothing was due). */
-export function ofText(n: number, d: number): string {
-  return d === 0 ? '—' : `${n} of ${d}`;
+/** "12 of 15" (or "—" when nothing was due); in the ERP language with `t`. */
+export function ofText(n: number, d: number, t?: TFunction): string {
+  if (d === 0) return '—';
+  return t ? t('dept.of', { n, d }) : `${n} of ${d}`;
 }
 
-/** "This week · 29 Sep – 4 Oct 2026" style range label. */
-export function rangeText(range: { from: string; to: string }): string {
-  const fmt = (d: string, year: boolean) =>
-    new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', ...(year ? { year: 'numeric' } : {}), timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`));
+/** "29 Sept – 4 Oct 2026" style range label. */
+export function rangeText(range: { from: string; to: string }, locale: Locale = 'en'): string {
+  const fmt = (d: string, year: boolean) => formatDate(d, year ? 'day' : 'dayMonth', locale);
   if (range.from === range.to) return fmt(range.to, true);
   return `${fmt(range.from, range.from.slice(0, 4) !== range.to.slice(0, 4))} – ${fmt(range.to, true)}`;
 }
@@ -107,13 +110,20 @@ export interface Rates {
   attendancePercent: number | null;
 }
 
-/** Why a teacher or class is flagged ("Few classes held", …); empty when all is well. */
-export function flagsFor(r: Rates): string[] {
-  const out: string[] = [];
-  if (toneOf(r.taughtPercent, 'held') === 'low') out.push('Few classes held on the board');
-  if (toneOf(r.attendanceTakenPercent, 'held') === 'low') out.push('Attendance often not taken');
-  if (toneOf(r.attendancePercent, 'attendance') === 'low') out.push('Low attendance');
+/** Why a teacher or class is flagged (dictionary keys: "Few classes held", …); empty when all is well. */
+export function flagsFor(r: Rates): MessageKey[] {
+  const out: MessageKey[] = [];
+  if (toneOf(r.taughtPercent, 'held') === 'low') out.push('dept.flag.held');
+  if (toneOf(r.attendanceTakenPercent, 'held') === 'low') out.push('dept.flag.taken');
+  if (toneOf(r.attendancePercent, 'attendance') === 'low') out.push('dept.flag.attendance');
   return out;
+}
+
+/** Topics covered across classes, as a percentage (null when no class has a syllabus). */
+export function syllabusTotal(classes: readonly { syllabus?: { covered: number; total: number } }[]): { covered: number; total: number; percent: number | null } {
+  const covered = classes.reduce((n, c) => n + (c.syllabus?.covered ?? 0), 0);
+  const total = classes.reduce((n, c) => n + (c.syllabus?.total ?? 0), 0);
+  return { covered, total, percent: total ? Math.round((covered / total) * 1000) / 10 : null };
 }
 
 /** Who may head a department: staff with the HOD role (the API refuses anyone else). */

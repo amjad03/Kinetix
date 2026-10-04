@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_student/core/api.dart';
+import 'package:kinetix_student/core/attachments.dart';
 import 'package:kinetix_student/core/models.dart';
 import 'package:kinetix_student/core/push.dart';
 
@@ -672,6 +674,143 @@ class FakeStudentApi implements StudentApi {
     return liveClass;
   }
 
+  // ── Calendar ──────────────────────────────────────────────────────────────────────────────
+
+  static Map<String, dynamic> eventJson(String id, String kind, String title, String startsOn, [String? endsOn, List<String>? programs]) => {
+    'id': id,
+    'kind': kind,
+    'title': title,
+    'startsOn': startsOn,
+    'endsOn': endsOn ?? startsOn,
+    'programIds': programs == null ? null : ['p-$id'],
+    'programs': programs,
+  };
+
+  List<Map<String, dynamic>> calendarEvents = [
+    eventJson('e1', 'event', 'College day', '2026-10-10'),
+    eventJson('e2', 'exam', 'Mid-semester exams', '2026-10-12', '2026-10-16', ['BCom']),
+    eventJson('e3', 'holiday', 'Dussehra', '2026-10-20', '2026-10-21'),
+    eventJson('e4', 'exam', 'BCA practicals', '2026-10-22', null, ['BCA']),
+  ];
+  ApiException? calendarError;
+
+  @override
+  Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {
+    calls.add('calendar');
+    if (calendarError != null) throw calendarError!;
+    return CalendarRange.fromJson({'from': '2026-10-04', 'to': '2027-01-02', 'today': '2026-10-04', 'events': calendarEvents});
+  }
+
+  // ── Syllabus coverage ─────────────────────────────────────────────────────────────────────
+
+  Map<String, Map<String, dynamic>> coverageJson = {
+    'sub1': {
+      'covered': 1,
+      'total': 2,
+      'percent': 50,
+      'topics': [
+        {'topicId': 't1', 'coveredOn': '2026-10-01', 'coveredBy': 'Anita Sharma'},
+      ],
+    },
+  };
+
+  @override
+  Future<Coverage> coverage({required String sectionId, required String subjectId}) async {
+    calls.add('coverage $sectionId $subjectId');
+    return Coverage.fromJson(coverageJson[subjectId] ?? {'covered': 0, 'total': 0, 'percent': null, 'topics': []});
+  }
+
+  // ── Homework submissions ──────────────────────────────────────────────────────────────────
+
+  /// 'homeworkId/studentId' → the submission JSON.
+  Map<String, Map<String, dynamic>> submissions = {};
+  final submitRequests = <({String homeworkId, String studentId, String text, List<UploadFile> files})>[];
+  ApiException? submitError;
+
+  /// When set, [submitHomework] waits for it after reporting half the bytes sent.
+  Completer<void>? submitGate;
+
+  @override
+  Future<Submission> submission(String homeworkId, String studentId) async {
+    calls.add('submission $homeworkId $studentId');
+    return Submission.fromJson(submissions['$homeworkId/$studentId'] ?? {'status': null});
+  }
+
+  @override
+  Future<Submission> submitHomework(
+    String homeworkId,
+    String studentId, {
+    required String text,
+    List<UploadFile> files = const [],
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    submitRequests.add((homeworkId: homeworkId, studentId: studentId, text: text, files: files));
+    final total = files.fold(text.length, (n, f) => n + f.bytes.length);
+    onProgress?.call(total ~/ 2, total);
+    if (submitGate != null) await submitGate!.future;
+    if (submitError != null) throw submitError!;
+    onProgress?.call(total, total);
+    final j = {
+      'status': 'submitted',
+      'text': text,
+      'files': [
+        for (final (i, f) in files.indexed) {'index': i, 'name': f.name, 'mime': f.mime, 'bytes': f.bytes.length},
+      ],
+      'submittedAt': '2026-10-04T05:00:00Z',
+      'late': false,
+      'remark': null,
+      'checkedBy': null,
+      'checkedAt': null,
+    };
+    submissions['$homeworkId/$studentId'] = j;
+    return Submission.fromJson(j);
+  }
+
+  @override
+  ({Uri url, Map<String, String> headers}) submissionFile(String homeworkId, String studentId, int index) =>
+      (url: Uri.parse('$baseUrl/v1/homework/$homeworkId/submissions/$studentId/files/$index'), headers: const {});
+
+  // ── Consent ───────────────────────────────────────────────────────────────────────────────
+
+  static Map<String, dynamic> decided(bool granted, {String by = 'Aarav Patel', String version = '2026-10'}) => {
+    'granted': granted,
+    'at': '2026-10-01T05:00:00Z',
+    'noticeVersion': version,
+    'givenBy': by,
+  };
+
+  /// Everything decided by default, so the consent screen stays away from other tests.
+  Map<String, dynamic> consentJson = {
+    'studentId': 's1',
+    'noticeVersion': '2026-10',
+    'canDecide': true,
+    'purposes': <String, dynamic>{
+      'data_processing': decided(true),
+      'ai_features': decided(true),
+      'class_recordings': decided(true),
+      'photos': decided(true),
+    },
+  };
+  final consentRequests = <String>[];
+  ApiException? consentError;
+
+  @override
+  Future<Consents> consents(String studentId) async {
+    calls.add('consents $studentId');
+    return Consents.fromJson(consentJson);
+  }
+
+  @override
+  Future<Consents> setConsent(String studentId, ConsentPurpose purpose, {required bool granted}) async {
+    consentRequests.add('$studentId ${purpose.wire} $granted');
+    if (consentError != null) throw consentError!;
+    consentJson = {
+      ...consentJson,
+      'purposes': {...(consentJson['purposes'] as Map), purpose.wire: decided(granted, by: profile.fullName)},
+    };
+    return Consents.fromJson(consentJson);
+  }
+
   @override
   Future<void> registerPushDevice({required String token, required String platform}) async => calls.add('push register $token $platform');
 
@@ -686,4 +825,23 @@ class FakePushTokenSource implements PushTokenSource {
 
   @override
   String get platform => 'android';
+}
+
+/// Hands the hand-in screen fixed files instead of opening the camera, gallery or files.
+class FakeAttachmentPicker implements AttachmentPicker {
+  final picked = <AttachmentSource>[];
+  Map<AttachmentSource, List<UploadFile>> files = {
+    AttachmentSource.camera: [UploadFile(name: 'page1.jpg', mime: 'image/jpeg', bytes: Uint8List(1200))],
+    AttachmentSource.gallery: [
+      UploadFile(name: 'page2.png', mime: 'image/png', bytes: Uint8List(800)),
+      UploadFile(name: 'page3.png', mime: 'image/png', bytes: Uint8List(900)),
+    ],
+    AttachmentSource.pdf: [UploadFile(name: 'answers.pdf', mime: 'application/pdf', bytes: Uint8List(3000))],
+  };
+
+  @override
+  Future<List<UploadFile>> pick(AttachmentSource source, {int max = maxUploadFiles}) async {
+    picked.add(source);
+    return (files[source] ?? const []).take(max).toList();
+  }
 }

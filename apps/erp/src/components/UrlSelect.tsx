@@ -8,6 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { usePathname, useRouter } from 'next/navigation';
 import { useId, useTransition } from 'react';
+import { useI18n } from '@/i18n/client';
 
 export interface UrlOption {
   value: string;
@@ -26,6 +27,7 @@ export function UrlSelect({ label, param, value, options, minWidth = 220, testId
   const pathname = usePathname();
   const [pending, start] = useTransition();
   const id = useId();
+  const { t } = useI18n();
   const items: React.ReactNode[] = [];
   let group: string | undefined;
   for (const o of options) {
@@ -41,7 +43,7 @@ export function UrlSelect({ label, param, value, options, minWidth = 220, testId
   }
   return (
     <>
-      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label="Loading" />}
+      {pending && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: 3, borderRadius: 0 }} aria-label={t('common.loading')} />}
       <FormControl size="small" sx={{ minWidth }}>
         <InputLabel id={id}>{label}</InputLabel>
         <Select

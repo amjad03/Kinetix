@@ -18,13 +18,16 @@ class AskTurn {
 /// "Ask a doubt": the question being typed, the answer language, optional subject or topic
 /// context, the current answer and the earlier ones from this session.
 class AskController extends ChangeNotifier {
-  AskController({required this.api, required this.sectionId, required this.language, this.onLanguageChanged, this.topic});
+  AskController({required this.api, required this.sectionId, required this.language, this.onLanguageChanged, this.topic, this.onOpenPrivacy});
 
   final StudentApi api;
 
   /// The student's class, so answers match its level and syllabus.
   final String sectionId;
   final void Function(AiLanguage)? onLanguageChanged;
+
+  /// Opens Profile → Privacy (when KINETIX AI is off because consent was withdrawn).
+  final void Function(BuildContext context)? onOpenPrivacy;
 
   final input = TextEditingController();
   AiLanguage language;
@@ -120,11 +123,17 @@ class AskController extends ChangeNotifier {
 }
 
 /// How an AI error reads to a student, and whether trying again can help. What the server says
-/// about a refused question or the allowance is shown as sent.
-({String title, String message, bool retry, IconData icon}) describeAiError(AppLocalizations l, ApiException e) => switch (e.status) {
-  422 => (title: l.aiCantAnswer, message: e.message.isEmpty ? l.aiRephrase : e.message, retry: false, icon: Icons.block),
-  429 => (title: l.aiAllowanceUsed, message: e.message.isEmpty ? l.aiAllowanceBody : e.message, retry: false, icon: Icons.hourglass_empty),
-  503 => (title: l.aiUnreachable, message: l.aiUnreachableBody, retry: true, icon: Icons.cloud_off),
-  0 => (title: l.noConnection, message: describeError(l, e), retry: true, icon: Icons.wifi_off),
-  _ => (title: l.somethingWrong, message: describeError(l, e), retry: true, icon: Icons.error_outline),
+/// about a refused question or the allowance is shown as sent. KINETIX AI turned off because
+/// consent was withdrawn ([privacy]) points to Profile → Privacy.
+({String title, String message, bool retry, IconData icon, bool privacy}) describeAiError(AppLocalizations l, ApiException e) =>
+    errorCodeOf(e) == 'CONSENT_WITHDRAWN'
+    ? (title: l.aiConsentWithdrawnTitle, message: l.aiConsentWithdrawnBody, retry: false, icon: Icons.privacy_tip_outlined, privacy: true)
+    : _describeAiError(l, e);
+
+({String title, String message, bool retry, IconData icon, bool privacy}) _describeAiError(AppLocalizations l, ApiException e) => switch (e.status) {
+  422 => (title: l.aiCantAnswer, message: e.message.isEmpty ? l.aiRephrase : e.message, retry: false, icon: Icons.block, privacy: false),
+  429 => (title: l.aiAllowanceUsed, message: e.message.isEmpty ? l.aiAllowanceBody : e.message, retry: false, icon: Icons.hourglass_empty, privacy: false),
+  503 => (title: l.aiUnreachable, message: l.aiUnreachableBody, retry: true, icon: Icons.cloud_off, privacy: false),
+  0 => (title: l.noConnection, message: describeError(l, e), retry: true, icon: Icons.wifi_off, privacy: false),
+  _ => (title: l.somethingWrong, message: describeError(l, e), retry: true, icon: Icons.error_outline, privacy: false),
 };

@@ -2,6 +2,8 @@
 /// src/recordings, src/fees, src/library, src/marks, src/messages).
 library;
 
+import 'dart:typed_data';
+
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 
@@ -34,6 +36,8 @@ DateTime parseIsoDate(String s) {
 }
 
 DateTime? _instant(Object? v) => v == null ? null : DateTime.parse(v as String).toLocal();
+
+List<String> _strings(Object? v) => [for (final s in (v as List? ?? const [])) '$s'];
 
 class Me {
   Me({
@@ -307,7 +311,7 @@ class ChildSummary {
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, broadcast, other }
+enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, broadcast, calendar, other }
 
 class AppNotification {
   AppNotification({
@@ -332,6 +336,7 @@ class AppNotification {
       'marks' => NotificationKind.marks,
       'message' => NotificationKind.message,
       'broadcast' => NotificationKind.broadcast,
+      'calendar' => NotificationKind.calendar,
       _ => NotificationKind.other,
     },
     title: j['title'] as String,
@@ -376,6 +381,9 @@ class AppNotification {
 
   /// A teacher wrote (opens the conversation).
   String? get conversationId => data['conversationId'] as String?;
+
+  /// A holiday, exam or event was announced (`calendar`).
+  String? get calendarEventId => data['calendarEventId'] as String?;
 }
 
 class Inbox {
@@ -910,4 +918,306 @@ class MessagePage {
 
   final Conversation conversation;
   final List<ChatMessage> messages;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Subjects and syllabus (`GET /v1/content/syllabus?subjectId=`)
+
+/// A subject taught in a child's class.
+class Subject {
+  const Subject({required this.id, required this.name, this.code});
+
+  factory Subject.fromJson(Map<String, dynamic> j) => Subject(id: j['id'] as String, name: j['name'] as String, code: j['code'] as String?);
+
+  final String id;
+  final String name;
+  final String? code;
+}
+
+class OutlineTopic {
+  OutlineTopic({required this.id, required this.title, required this.summary});
+
+  final String id;
+  final String title;
+  final String summary;
+}
+
+class OutlineChapter {
+  OutlineChapter({required this.id, required this.title, required this.topics});
+
+  final String id;
+  final String title;
+  final List<OutlineTopic> topics;
+}
+
+/// A subject's syllabus: `GET /v1/content/syllabus?subjectId=` (null when not linked).
+class CourseOutline {
+  CourseOutline({required this.id, required this.title, required this.reviewed, required this.chapters});
+
+  factory CourseOutline.fromJson(Map<String, dynamic> j) => CourseOutline(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    reviewed: j['reviewed'] as bool? ?? false,
+    chapters: [
+      for (final c in (j['chapters'] as List? ?? const []))
+        OutlineChapter(
+          id: (c as Map)['id'] as String,
+          title: c['title'] as String,
+          topics: [
+            for (final t in (c['topics'] as List? ?? const []))
+              OutlineTopic(id: (t as Map)['id'] as String, title: t['title'] as String, summary: t['summary'] as String? ?? ''),
+          ],
+        ),
+    ],
+  );
+
+  final String id;
+  final String title;
+  final bool reviewed;
+  final List<OutlineChapter> chapters;
+
+  int get topicCount => chapters.fold(0, (n, c) => n + c.topics.length);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Academic calendar (`GET /v1/calendar`)
+
+enum CalendarKind { holiday, exam, event }
+
+/// A holiday (no classes), exam days or an event, for one or more days.
+class CalendarEvent {
+  CalendarEvent({required this.id, required this.kind, required this.title, required this.startsOn, required this.endsOn, this.programs});
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> j) => CalendarEvent(
+    id: j['id'] as String,
+    kind: CalendarKind.values.asNameMap()[j['kind']] ?? CalendarKind.event,
+    title: j['title'] as String,
+    startsOn: parseIsoDate(j['startsOn'] as String),
+    endsOn: parseIsoDate(j['endsOn'] as String),
+    programs: j['programs'] == null ? null : _strings(j['programs']),
+  );
+
+  final String id;
+  final CalendarKind kind;
+  final String title;
+  final DateTime startsOn;
+  final DateTime endsOn;
+
+  /// The programs it is for; null for the whole institution.
+  final List<String>? programs;
+
+  bool get multiDay => endsOn.isAfter(startsOn);
+
+  /// Whether [day] falls on this entry.
+  bool covers(DateTime day) {
+    final d = DateTime(day.year, day.month, day.day);
+    return !d.isBefore(startsOn) && !d.isAfter(endsOn);
+  }
+
+  /// Whether it applies to a student in [program] (null: unknown, so yes).
+  bool appliesTo(String? program) => programs == null || program == null || programs!.contains(program);
+}
+
+class CalendarRange {
+  CalendarRange({required this.from, required this.to, required this.today, required this.events});
+
+  factory CalendarRange.fromJson(Map<String, dynamic> j) => CalendarRange(
+    from: parseIsoDate(j['from'] as String),
+    to: parseIsoDate(j['to'] as String),
+    today: parseIsoDate(j['today'] as String),
+    events: [for (final e in j['events'] as List) CalendarEvent.fromJson(e as Map<String, dynamic>)],
+  );
+
+  final DateTime from;
+  final DateTime to;
+
+  /// The institution's today.
+  final DateTime today;
+  final List<CalendarEvent> events;
+
+  /// A holiday today, else one tomorrow, for a student in [program]: (holiday, is today).
+  (CalendarEvent, bool)? holidaySoon({String? program}) {
+    final holidays = events.where((e) => e.kind == CalendarKind.holiday && e.appliesTo(program));
+    final now = holidays.where((e) => e.covers(today)).firstOrNull;
+    if (now != null) return (now, true);
+    final next = holidays.where((e) => e.covers(today.add(const Duration(days: 1)))).firstOrNull;
+    return next == null ? null : (next, false);
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Syllabus coverage (`GET /v1/coverage?sectionId&subjectId`)
+
+class TopicCoverage {
+  TopicCoverage({required this.topicId, required this.coveredOn, this.coveredBy});
+
+  final String topicId;
+  final DateTime coveredOn;
+  final String? coveredBy;
+}
+
+/// How much of a subject's syllabus the class has been taught.
+class Coverage {
+  Coverage({required this.covered, required this.total, required this.percent, required this.topics});
+
+  factory Coverage.fromJson(Map<String, dynamic> j) => Coverage(
+    covered: (j['covered'] as num?)?.toInt() ?? 0,
+    total: (j['total'] as num?)?.toInt() ?? 0,
+    percent: (j['percent'] as num?)?.toInt(),
+    topics: {
+      for (final t in (j['topics'] as List? ?? const []))
+        (t as Map)['topicId'] as String: TopicCoverage(
+          topicId: t['topicId'] as String,
+          coveredOn: parseIsoDate(t['coveredOn'] as String),
+          coveredBy: t['coveredBy'] as String?,
+        ),
+    },
+  );
+
+  final int covered;
+  final int total;
+
+  /// Null when the subject has no syllabus topics.
+  final int? percent;
+
+  /// Taught topics by id.
+  final Map<String, TopicCoverage> topics;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Homework submissions (`/v1/homework/:id/submissions/:studentId`)
+
+enum SubmissionStatus { submitted, checked, returned }
+
+class SubmissionFile {
+  SubmissionFile({required this.index, required this.name, required this.mime, required this.bytes});
+
+  factory SubmissionFile.fromJson(Map<String, dynamic> j) =>
+      SubmissionFile(index: (j['index'] as num).toInt(), name: j['name'] as String, mime: j['mime'] as String, bytes: (j['bytes'] as num).toInt());
+
+  final int index;
+  final String name;
+  final String mime;
+  final int bytes;
+
+  bool get isImage => mime.startsWith('image/');
+}
+
+/// What was handed in for one student, and the teacher's verdict. [status] null: nothing yet.
+class Submission {
+  Submission({
+    this.status,
+    this.text = '',
+    this.files = const [],
+    this.submittedAt,
+    this.late = false,
+    this.remark,
+    this.checkedBy,
+    this.checkedAt,
+  });
+
+  factory Submission.fromJson(Map<String, dynamic> j) => Submission(
+    status: SubmissionStatus.values.asNameMap()[j['status']],
+    text: j['text'] as String? ?? '',
+    files: [for (final f in (j['files'] as List? ?? const [])) SubmissionFile.fromJson(f as Map<String, dynamic>)],
+    submittedAt: _instant(j['submittedAt']),
+    late: j['late'] == true,
+    remark: j['remark'] as String?,
+    checkedBy: j['checkedBy'] as String?,
+    checkedAt: _instant(j['checkedAt']),
+  );
+
+  final SubmissionStatus? status;
+  final String text;
+  final List<SubmissionFile> files;
+  final DateTime? submittedAt;
+  final bool late;
+  final String? remark;
+  final String? checkedBy;
+  final DateTime? checkedAt;
+
+  /// Whether the work can be handed in (again): anything but checked work.
+  bool get canHandIn => status != SubmissionStatus.checked;
+}
+
+/// A photo or PDF picked to hand in.
+class UploadFile {
+  const UploadFile({required this.name, required this.mime, required this.bytes});
+
+  final String name;
+  final String mime;
+  final Uint8List bytes;
+
+  bool get isImage => mime.startsWith('image/');
+
+  /// The types the server takes, from the picker's type or the file name.
+  static String? mimeFor(String name, [String? given]) {
+    const ok = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf'];
+    if (given != null && ok.contains(given)) return given;
+    final ext = name.contains('.') ? name.split('.').last.toLowerCase() : '';
+    return switch (ext) {
+      'jpg' || 'jpeg' => 'image/jpeg',
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'heic' || 'heif' => 'image/heic',
+      'pdf' => 'application/pdf',
+      _ => null,
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Consent (`/v1/consents`)
+
+/// What the privacy notice asks about (docs/product/privacy-notice.md).
+enum ConsentPurpose {
+  dataProcessing('data_processing'),
+  aiFeatures('ai_features'),
+  classRecordings('class_recordings'),
+  photos('photos');
+
+  const ConsentPurpose(this.wire);
+  final String wire;
+}
+
+class ConsentDecision {
+  ConsentDecision({required this.granted, required this.at, this.noticeVersion, this.givenBy});
+
+  factory ConsentDecision.fromJson(Map<String, dynamic> j) => ConsentDecision(
+    granted: j['granted'] == true,
+    at: _instant(j['at']) ?? DateTime.now(),
+    noticeVersion: j['noticeVersion'] as String?,
+    givenBy: j['givenBy'] as String?,
+  );
+
+  final bool granted;
+  final DateTime at;
+  final String? noticeVersion;
+  final String? givenBy;
+}
+
+/// A student's consent decisions and whether the signed-in user makes them.
+class Consents {
+  Consents({required this.studentId, required this.noticeVersion, required this.canDecide, required this.purposes});
+
+  factory Consents.fromJson(Map<String, dynamic> j) {
+    final p = (j['purposes'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return Consents(
+      studentId: j['studentId'] as String? ?? '',
+      noticeVersion: j['noticeVersion'] as String? ?? '',
+      canDecide: j['canDecide'] == true,
+      purposes: {
+        for (final purpose in ConsentPurpose.values)
+          purpose: p[purpose.wire] is Map ? ConsentDecision.fromJson((p[purpose.wire] as Map).cast<String, dynamic>()) : null,
+      },
+    );
+  }
+
+  final String studentId;
+  final String noticeVersion;
+  final bool canDecide;
+  final Map<ConsentPurpose, ConsentDecision?> purposes;
+
+  /// Something is not decided yet, or was decided on an older notice: ask (when allowed to decide).
+  bool get needsAnswer => canDecide && purposes.values.any((d) => d == null || (d.noticeVersion != null && d.noticeVersion != noticeVersion));
 }

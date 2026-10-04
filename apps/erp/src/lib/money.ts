@@ -9,12 +9,12 @@ export function formatRupees(paise: number): string {
   return p % 100 === 0 ? WHOLE.format(p / 100) : EXACT.format(p / 100);
 }
 
-/** ₹42.5 L / ₹1.2 Cr for big totals in tiles; exact below a lakh. */
-export function formatRupeesShort(paise: number): string {
+/** ₹42.5 L / ₹1.2 Cr for big totals in tiles; exact below a lakh. `units` words them in another language. */
+export function formatRupeesShort(paise: number, units: { lakh: string; crore: string } = { lakh: 'L', crore: 'Cr' }): string {
   const r = Math.round(paise) / 100;
   const trim = (n: number) => n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2).replace(/\.?0+$/, '');
-  if (Math.abs(r) >= 1e7) return `₹${trim(r / 1e7)} Cr`;
-  if (Math.abs(r) >= 1e5) return `₹${trim(r / 1e5)} L`;
+  if (Math.abs(r) >= 1e7) return `₹${trim(r / 1e7)} ${units.crore}`;
+  if (Math.abs(r) >= 1e5) return `₹${trim(r / 1e5)} ${units.lakh}`;
   return formatRupees(paise);
 }
 

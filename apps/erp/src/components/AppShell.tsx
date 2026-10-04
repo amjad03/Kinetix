@@ -8,6 +8,12 @@ import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import Campaign from '@mui/icons-material/Campaign';
 import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
+import Check from '@mui/icons-material/Check';
+import EventNote from '@mui/icons-material/EventNote';
+import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
+import Settings from '@mui/icons-material/Settings';
+import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
 import CastForEducation from '@mui/icons-material/CastForEducation';
 import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
 import Class from '@mui/icons-material/Class';
@@ -39,44 +45,52 @@ import ButtonBase from '@mui/material/ButtonBase';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useTransition, type ReactNode } from 'react';
+import { setLanguage } from '@/app/language/actions';
 import { signOut } from '@/app/login/actions';
+import { useI18n } from '@/i18n/client';
+import { LANGUAGE_NAMES, LOCALES, BCP47 } from '@/i18n/locales';
+import type { MessageKey } from '@/i18n/messages';
 import { canSee, homeFor, type Section } from '@/lib/access';
 import { initials } from './initials';
 import { Logo, LogoMark } from './Logo';
 
-const NAV: { href: string; label: string; section: Section; icon: typeof TodayOutlined; active: typeof Today }[] = [
-  { href: '/', label: 'Today', section: 'school', icon: TodayOutlined, active: Today },
-  { href: '/department', label: 'Department', section: 'department', icon: InsightsOutlined, active: Insights },
-  { href: '/classes', label: 'Classes', section: 'school', icon: ClassOutlined, active: Class },
-  { href: '/timetable', label: 'Timetable', section: 'timetable', icon: CalendarMonthOutlined, active: CalendarMonth },
-  { href: '/attendance', label: 'Attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
-  { href: '/homework', label: 'Homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
-  { href: '/results', label: 'Results', section: 'results', icon: GradingOutlined, active: Grading },
-  { href: '/messages', label: 'Messages', section: 'school', icon: CampaignOutlined, active: Campaign },
-  { href: '/conversations', label: 'Parent messages', section: 'conversations', icon: ForumOutlined, active: Forum },
-  { href: '/boards', label: 'Boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
-  { href: '/live', label: 'Live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
-  { href: '/fees', label: 'Fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
-  { href: '/library', label: 'Library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
-  { href: '/syllabus', label: 'Syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
-  { href: '/ai', label: 'AI usage', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
-  { href: '/departments', label: 'Departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
+const NAV: { href: string; label: MessageKey; section: Section; icon: typeof TodayOutlined; active: typeof Today }[] = [
+  { href: '/', label: 'nav.today', section: 'school', icon: TodayOutlined, active: Today },
+  { href: '/department', label: 'nav.department', section: 'department', icon: InsightsOutlined, active: Insights },
+  { href: '/classes', label: 'nav.classes', section: 'school', icon: ClassOutlined, active: Class },
+  { href: '/calendar', label: 'nav.calendar', section: 'calendar', icon: EventNoteOutlined, active: EventNote },
+  { href: '/timetable', label: 'nav.timetable', section: 'timetable', icon: CalendarMonthOutlined, active: CalendarMonth },
+  { href: '/attendance', label: 'nav.attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
+  { href: '/homework', label: 'nav.homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
+  { href: '/results', label: 'nav.results', section: 'results', icon: GradingOutlined, active: Grading },
+  { href: '/messages', label: 'nav.messages', section: 'school', icon: CampaignOutlined, active: Campaign },
+  { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: ForumOutlined, active: Forum },
+  { href: '/boards', label: 'nav.boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
+  { href: '/live', label: 'nav.live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
+  { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
+  { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
+  { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
+  { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
+  { href: '/departments', label: 'nav.departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
+  { href: '/settings', label: 'nav.settings', section: 'settings', icon: SettingsOutlined, active: Settings },
 ];
 
-const ROLE_LABEL: Record<string, string> = {
-  principal: 'Principal',
-  tenant_admin: 'Administrator',
-  hod: 'Head of department',
-  teacher: 'Teacher',
-  accountant: 'Accounts office',
-  librarian: 'Library',
+const ROLE_LABEL: Record<string, MessageKey> = {
+  principal: 'role.principal',
+  tenant_admin: 'role.tenant_admin',
+  hod: 'role.hod',
+  teacher: 'role.teacher',
+  accountant: 'role.accountant',
+  librarian: 'role.librarian',
 };
 
 export interface ShellUser {
@@ -91,8 +105,15 @@ function isActive(pathname: string, href: string) {
 
 export function AppShell({ user, school, children }: { user: ShellUser; school: string; children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { t, locale } = useI18n();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const roleText = user.roles.map((r) => ROLE_LABEL[r]).filter(Boolean).join(' · ');
+  const [switching, startSwitch] = useTransition();
+  const roleText = user.roles
+    .map((r) => ROLE_LABEL[r])
+    .filter(Boolean)
+    .map((k) => t(k))
+    .join(' · ');
   const nav = NAV.filter((item) => canSee(user.roles, item.section));
   const home = homeFor(user.roles);
 
@@ -104,10 +125,10 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
         className="kx-chrome"
         sx={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 2, px: { xs: 2, lg: 3 }, position: 'sticky', top: 0, zIndex: 3, bgcolor: 'kx.frame' }}
       >
-        <Box component={Link} href={home} aria-label="KINETIX ERP home" sx={{ textDecoration: 'none', display: { xs: 'none', lg: 'block' }, width: 208 }}>
+        <Box component={Link} href={home} aria-label={t('shell.home')} sx={{ textDecoration: 'none', display: { xs: 'none', lg: 'block' }, width: 208 }}>
           <Logo size={30} />
         </Box>
-        <Box component={Link} href={home} aria-label="KINETIX ERP home" sx={{ display: { xs: 'block', lg: 'none' }, ml: 0.5, mr: 1 }}>
+        <Box component={Link} href={home} aria-label={t('shell.home')} sx={{ display: { xs: 'block', lg: 'none' }, ml: 0.5, mr: 1 }}>
           <LogoMark size={32} />
         </Box>
         <Typography variant="h5" component="p" noWrap sx={{ fontSize: { xs: '1.0625rem', md: '1.25rem' }, color: 'text.primary', minWidth: 0 }} data-testid="school-name">
@@ -115,7 +136,7 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
         </Typography>
         <Box sx={{ flex: 1 }} />
         <Tooltip title={`${user.fullName}${roleText ? ` · ${roleText}` : ''}`}>
-          <IconButton onClick={(e) => setAnchor(e.currentTarget)} aria-label="Account" aria-haspopup="menu" sx={{ p: 0.5 }}>
+          <IconButton onClick={(e) => setAnchor(e.currentTarget)} aria-label={t('shell.account')} aria-haspopup="menu" sx={{ p: 0.5 }}>
             <Avatar sx={{ width: 36, height: 36, bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', fontSize: 15, fontWeight: 500 }}>
               {initials(user.fullName)}
             </Avatar>
@@ -134,7 +155,7 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
               {initials(user.fullName)}
             </Avatar>
             <Typography variant="h6" component="p">
-              Hi, {user.fullName}
+              {t('shell.hi', { name: user.fullName })}
             </Typography>
             {user.email && (
               <Typography variant="body2" color="text.secondary">
@@ -148,12 +169,37 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
             )}
           </Box>
           <Divider />
+          <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '36px', px: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TranslateOutlined fontSize="small" /> {t('shell.language')}
+          </ListSubheader>
+          {LOCALES.map((l) => (
+            <MenuItem
+              key={l}
+              lang={BCP47[l]}
+              selected={l === locale}
+              disabled={switching}
+              data-testid={`language-${l}`}
+              onClick={() => {
+                if (l === locale) return;
+                startSwitch(async () => {
+                  await setLanguage(l);
+                  setAnchor(null);
+                  router.refresh();
+                });
+              }}
+              sx={{ px: 3 }}
+            >
+              <ListItemIcon>{l === locale && <Check fontSize="small" />}</ListItemIcon>
+              <ListItemText>{LANGUAGE_NAMES[l]}</ListItemText>
+            </MenuItem>
+          ))}
+          <Divider />
           <form action={signOut}>
             <MenuItem component="button" type="submit" sx={{ width: '100%', mt: 1, px: 3 }}>
               <ListItemIcon>
                 <LogoutOutlined fontSize="small" />
               </ListItemIcon>
-              Sign out
+              {t('shell.signOut')}
             </MenuItem>
           </form>
         </Menu>
@@ -162,7 +208,7 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
       {/* Navigation: M3 drawer on wide screens, rail on tablets */}
       <Box
         component="nav"
-        aria-label="Main"
+        aria-label={t('nav.main')}
         className="kx-chrome"
         // Scrolls on its own when the list is taller than the window (the principal sees every page).
         sx={{ position: 'sticky', top: 64, alignSelf: 'start', maxHeight: 'calc(100dvh - 64px)', overflowY: 'auto', scrollbarWidth: 'thin', px: { xs: 0, lg: 1.5 }, pt: { xs: 0.5, lg: 1 }, pb: 1 }}
@@ -194,7 +240,8 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
                 // Rail item
                 '@media (max-width: 1199.95px)': {
                   flexDirection: 'column',
-                  height: 64,
+                  minHeight: 64,
+                  py: 0.5,
                   gap: 0.5,
                   '& .kx-ind': { bgcolor: active ? 'm3.secondaryContainer' : 'transparent' },
                   '&:hover .kx-ind': { bgcolor: active ? 'm3.secondaryContainer' : 'action.hover' },
@@ -206,9 +253,9 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
               </Box>
               <Typography
                 component="span"
-                sx={{ fontSize: { xs: '0.75rem', lg: '0.875rem' }, fontWeight: active ? 700 : 500, lineHeight: { xs: '16px', lg: '20px' }, letterSpacing: '0.1px' }}
+                sx={{ fontSize: { xs: '0.75rem', lg: '0.875rem' }, fontWeight: active ? 700 : 500, lineHeight: { xs: '16px', lg: '20px' }, letterSpacing: '0.1px', textAlign: { xs: 'center', lg: 'left' }, px: { xs: 0.5, lg: 0 }, overflowWrap: 'anywhere' }}
               >
-                {item.label}
+                {t(item.label)}
               </Typography>
             </ButtonBase>
           );

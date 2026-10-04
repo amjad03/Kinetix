@@ -771,5 +771,313 @@
   },
   "noUpdates": "No updates yet.\nAbsences, homework and messages from the college will appear here.",
   "phoneOrEmail": "Phone or email",
-  "enterPhoneOrEmail": "Enter your phone number or email"
+  "enterPhoneOrEmail": "Enter your phone number or email",
+  "errAccountInactive": "Your account is not active. Ask your institution's office.",
+  "errSignInAgain": "Your sign-in has expired. Please sign in again.",
+  "errTooLarge": "A file is too big. Each photo or PDF can be up to 8 MB.",
+  "errConflict": "This was changed in the meantime. Refresh and try again.",
+  "errSubjectNotInClass": "That subject is not taught in this class.",
+  "errSubmissionEmpty": "Write an answer or add a photo.",
+  "errSubmissionChecked": "This homework has already been checked.",
+  "calendar": "Calendar",
+  "calendarSubtitle": "Holidays, exams and events",
+  "upcoming": "Coming up",
+  "seeCalendar": "See the full calendar",
+  "calendarEmpty": "No holidays, exams or events in the coming months.",
+  "kindHoliday": "Holiday",
+  "kindExams": "Exams",
+  "kindEvent": "Event",
+  "inDays": "{count, plural, =1{In 1 day} other{In {count} days}}",
+  "@inDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forPrograms": "For {programs}",
+  "@forPrograms": {
+    "placeholders": {
+      "programs": {
+        "type": "String"
+      }
+    }
+  },
+  "holidayToday": "Holiday today: {title}",
+  "@holidayToday": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "holidayTomorrow": "Holiday tomorrow: {title}",
+  "@holidayTomorrow": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noClasses": "No classes.",
+  "noClassesUntil": "No classes until {date}.",
+  "@noClassesUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notHandedIn": "Not handed in yet",
+  "statusHandedIn": "Handed in",
+  "statusChecked": "Checked",
+  "statusReturned": "Returned to redo",
+  "handedInAt": "Handed in {when}",
+  "@handedInAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "checkedByOn": "Checked by {name} on {date}",
+  "@checkedByOn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "returnedByOn": "Returned by {name} on {date}",
+  "@returnedByOn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherRemark": "Teacher's remark",
+  "answerLabel": "Answer",
+  "answerHint": "Type the answer here, or add photos of the work",
+  "handIn": "Hand in",
+  "handInAgain": "Hand in again",
+  "handInTitle": "Hand in homework",
+  "handedInDone": "Handed in.",
+  "couldNotAddFile": "Couldn't add that file. Try again.",
+  "fileTooBig": "{name} is too big (8 MB at most).",
+  "@fileTooBig": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filesCount": "Photos and PDFs: {count} of {max}",
+  "@filesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "removeFile": "Remove",
+  "takePhoto": "Take a photo",
+  "choosePhotos": "Choose photos",
+  "addPdf": "Add a PDF",
+  "filesHint": "Up to 5 photos or PDFs, 8 MB each. Photos are made smaller before they are sent.",
+  "uploading": "Sending… {percent}",
+  "@uploading": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "photoNotLoaded": "Couldn't load this photo.",
+  "topicsTaught": "{covered} of {total} topics taught",
+  "@topicsTaught": {
+    "placeholders": {
+      "covered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "taught": "Taught",
+  "taughtOn": "Taught on {date}",
+  "@taughtOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "privacy": "Privacy",
+  "privacySubtitle": "What KINETIX may do with the student's information",
+  "notNow": "Not now",
+  "ifYouSayNo": "If you say no: {text}",
+  "@ifYouSayNo": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "changeAnyTime": "You can change these choices at any time in Profile → Privacy. A change does not affect what was done before it.",
+  "readFullNotice": "Read the full notice",
+  "allowAll": "Allow all",
+  "saveChoices": "Save my choices",
+  "notDecided": "Not decided yet",
+  "decidedBy": "{choice} by {name} on {date}",
+  "@decidedBy": {
+    "placeholders": {
+      "choice": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "allowed": "Allowed",
+  "notAllowed": "Not allowed",
+  "choicesSaved": "Saved.",
+  "privacyNotice": "Privacy notice",
+  "noticeVersion": "Version {version}",
+  "@noticeVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeWhoDecides": "Who decides",
+  "noticeSchool": "School (students under 18): the parent or guardian decides for the child.",
+  "noticeCollege": "College or university: students decide for themselves. A guardian decides only for a student who has no KINETIX login of their own.",
+  "noticeWhatWeAsk": "What we ask about",
+  "noticeWhereKept": "Where data is kept",
+  "noticeDataInIndia": "All data and all AI processing stay in India. Data is kept while the student is at the institution, and then for as long as the institution's records policy requires.",
+  "noticeQuestions": "Questions and requests",
+  "noticeContact": "The institution's grievance officer answers questions and requests to see, correct or erase data. Ask the institution's office how to reach them.",
+  "purposeDataTitle": "Records and updates",
+  "purposeDataBody": "Keeping the student's attendance, homework, marks, fees and library records so the institution can run classes and keep you informed.",
+  "purposeDataNo": "the institution still keeps the records it must by law; you will not get updates in the app.",
+  "purposeAiTitle": "KINETIX AI",
+  "purposeAiBody": "The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.",
+  "purposeAiNo": "KINETIX AI is turned off for the student. Everything else works.",
+  "purposeRecordingsTitle": "Class recordings and live classes",
+  "purposeRecordingsBody": "The student's voice or image appearing in lesson recordings and live classes shared with the class.",
+  "purposeRecordingsNo": "teachers are asked not to record the student; recordings already shared stay with the class.",
+  "purposePhotosTitle": "Photos",
+  "purposePhotosBody": "Photos of the student (for example on homework or in class activities) shared with the class.",
+  "purposePhotosNo": "photos of the student are not shared with the class.",
+  "errConsentGuardianDecides": "You can't change these choices for this student.",
+  "childWork": "{name}'s work",
+  "@childWork": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "returnedNote": "The teacher has asked for this to be done again. Read the remark, then hand it in again.",
+  "handInFor": "Hand in for {name}",
+  "@handInFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "handInForNote": "Hand in here for a child who doesn't have their own KINETIX login.",
+  "consentTitleFor": "Privacy choices for {name}",
+  "@consentTitleFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "consentIntroFor": "Choose what KINETIX may do with {name}'s information. Nothing is switched on until you choose.",
+  "@consentIntroFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyIntroFor": "What KINETIX may do with {name}'s information. Turn a switch off to withdraw your consent.",
+  "@privacyIntroFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyIntroReadOnlyFor": "What KINETIX may do with {name}'s information, and who decided.",
+  "@privacyIntroReadOnlyFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "managedByStudent": "{name} manages this. At a college, students with their own KINETIX login make these choices themselves.",
+  "@managedByStudent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "childPrivacy": "Privacy: {name}",
+  "@childPrivacy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syllabusProgress": "Syllabus progress",
+  "childSyllabusProgress": "Syllabus progress: {name}",
+  "@childSyllabusProgress": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syllabusProgressSubtitle": "What the class has been taught in each subject",
+  "syllabusSubjectsEmpty": "Subjects appear here once teachers set homework in them.",
+  "syllabusNotLinked": "The syllabus for {subject} isn't in KINETIX yet.",
+  "@syllabusNotLinked": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "chaptersTopics": "{chapters, plural, =1{1 chapter} other{{chapters} chapters}}",
+  "@chaptersTopics": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      }
+    }
+  },
+  "noTopicsInChapter": "No topics yet"
 }

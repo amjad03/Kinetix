@@ -133,6 +133,9 @@ class LiveClassController extends ChangeNotifier {
       case LiveRejected(:final message):
         error = message;
         _set(LivePhase.failed);
+      case LiveMessageNew():
+        // New messages are handled by the app's message feed.
+        break;
     }
   }
 

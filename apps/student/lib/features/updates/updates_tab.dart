@@ -8,6 +8,7 @@ import '../../core/study.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
+import '../calendar/calendar_screen.dart';
 import '../fees/fees_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
@@ -41,6 +42,7 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.message => Icons.forum,
     NotificationKind.live => Icons.cast_for_education,
     NotificationKind.broadcast => Icons.campaign,
+    NotificationKind.calendar => Icons.event,
     NotificationKind.other => Icons.notifications,
   };
 
@@ -54,7 +56,7 @@ class UpdatesTab extends StatelessWidget {
       case NotificationKind.homework:
         final hw = n.homeworkId == null ? null : await study.findHomework(n.homeworkId!);
         if (hw != null && context.mounted) {
-          return HomeworkScreen.open(context, homework: hw, today: study.today, sectionName: study.student.sectionName);
+          return HomeworkScreen.open(context, study, hw);
         }
       case NotificationKind.boardShared:
         if (n.whiteboardId != null) return BoardScreen.open(context, api, n.whiteboardId!);
@@ -87,6 +89,8 @@ class UpdatesTab extends StatelessWidget {
             ),
           );
         return;
+      case NotificationKind.calendar:
+        return CalendarScreen.open(context, api, program: study.student.programName, highlightId: n.calendarEventId);
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;

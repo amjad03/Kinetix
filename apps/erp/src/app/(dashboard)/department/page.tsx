@@ -6,6 +6,7 @@ import GradingOutlined from '@mui/icons-material/GradingOutlined';
 import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
 import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
+import AutoStoriesOutlined from '@mui/icons-material/AutoStoriesOutlined';
 import VideocamOutlined from '@mui/icons-material/VideocamOutlined';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -17,6 +18,7 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { MiniBar } from '@/components/Bars';
 import { TableFrame } from '@/components/DataTable';
 import { RangeControl } from '@/components/department/RangeControl';
@@ -29,13 +31,16 @@ import { EmptyState, ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
 import { canSee } from '@/lib/access';
 import { api, load, requireSection } from '@/lib/api';
-import { formatDate } from '@/lib/dates';
-import { deptQuery, flagsFor, formatPercent, ofText, RANGE_LABEL, rangeFrom, rangeText, TONE_COLOR, toneOf } from '@/lib/department';
-import { KIND_LABEL } from '@/lib/results';
+import { getI18n } from '@/i18n/server';
+import type { I18n } from '@/i18n/format';
+import { deptQuery, flagsFor, formatPercent, ofText, RANGE_LABEL, rangeFrom, rangeText, syllabusTotal, TONE_COLOR, toneOf } from '@/lib/department';
+import { kindLabel } from '@/lib/results';
 import { schoolToday } from '@/lib/school';
 import type { DepartmentOverview, DepartmentRef, DeptClass, DeptTeacher } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Department' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.department') };
+}
 
 const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
@@ -46,11 +51,13 @@ export default async function DepartmentPage({ searchParams }: { searchParams: P
   const range = rangeFrom(sp, today);
   const depts = await load(() => api<DepartmentRef[]>('/v1/departments'));
   const canManage = !!me && canSee(me.roles, 'departments');
+  const i18n = await getI18n();
+  const { t } = i18n;
 
   if (depts.error !== undefined)
     return (
       <>
-        <PageHeader title="Department" />
+        <PageHeader title={t('nav.department')} />
         <ErrorState message={depts.error} />
       </>
     );
@@ -59,22 +66,20 @@ export default async function DepartmentPage({ searchParams }: { searchParams: P
   if (!dept)
     return (
       <>
-        <PageHeader title="Department" />
+        <PageHeader title={t('nav.department')} />
         <EmptyState
           icon={<GroupsOutlined />}
-          title={canManage ? 'No departments yet' : 'You are not head of a department yet'}
+          title={canManage ? t('dept.noDepartments') : t('dept.notHead')}
           testId="no-departments"
           actions={
             canManage ? (
               <LinkButton href="/departments" variant="contained">
-                Set up departments
+                {t('dept.setUp')}
               </LinkButton>
             ) : undefined
           }
         >
-          {canManage
-            ? 'Group subjects and staff into departments and choose a head for each, who then sees how their classes are going here.'
-            : 'You are not head of a department yet. Ask the principal to set one up.'}
+          {canManage ? t('dept.noDepartmentsBody') : t('dept.notHeadBody')}
         </EmptyState>
       </>
     );
@@ -88,145 +93,154 @@ export default async function DepartmentPage({ searchParams }: { searchParams: P
         title={dept.name}
         subtitle={
           <span data-testid="dept-subtitle">
-            {dept.head ? `Head: ${dept.head.fullName}` : 'No head of department'} · {RANGE_LABEL[range.key]}, {rangeText(ov.error === undefined ? ov.data.range : range)}
+            {dept.head ? t('dept.head', { name: dept.head.fullName }) : t('dept.noHead')} · {t(RANGE_LABEL[range.key])}, {rangeText(ov.error === undefined ? ov.data.range : range, i18n.locale)}
           </span>
         }
         actions={
           <>
             {many && (
               // Without `param`, each option's value is the whole query string, so the range is kept.
-              <UrlSelect label="Department" value={deptQuery(dept.id, range)} minWidth={200} testId="dept-picker" options={list.map((d) => ({ value: deptQuery(d.id, range), label: d.name }))} />
+              <UrlSelect label={t('dept.picker')} value={deptQuery(dept.id, range)} minWidth={200} testId="dept-picker" options={list.map((d) => ({ value: deptQuery(d.id, range), label: d.name }))} />
             )}
             <RangeControl deptId={many ? dept.id : null} range={range} today={today} />
           </>
         }
       />
-      {ov.error !== undefined ? <ErrorState message={ov.error} /> : <Overview o={ov.data} canManage={canManage} />}
+      {ov.error !== undefined ? <ErrorState message={ov.error} /> : <Overview o={ov.data} canManage={canManage} i18n={i18n} />}
     </>
   );
 }
 
-function Overview({ o, canManage }: { o: DepartmentOverview; canManage: boolean }) {
-  const t = o.totals;
-  if (!t)
+function Overview({ o, canManage, i18n }: { o: DepartmentOverview; canManage: boolean; i18n: I18n }) {
+  const { t } = i18n;
+  const tot = o.totals;
+  if (!tot)
     return (
       <EmptyState
         icon={<MenuBookOutlined />}
-        title="No subjects in this department yet"
+        title={t('dept.noSubjects')}
         testId="no-subjects"
         actions={
           canManage ? (
             <LinkButton href="/departments" variant="contained">
-              Add subjects
+              {t('dept.addSubjects')}
             </LinkButton>
           ) : undefined
         }
       >
-        {canManage
-          ? 'Add the subjects this department teaches, and its classes, teachers and marks appear here.'
-          : 'When the principal adds the subjects this department teaches, its classes, teachers and marks appear here.'}
+        {canManage ? t('dept.noSubjectsManage') : t('dept.noSubjectsBody')}
       </EmptyState>
     );
 
+  const syl = syllabusTotal(o.classes);
   return (
     <>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} data-testid="dept-subjects">
         {o.subjects.map((s) => s.name).join(' · ')}
       </Typography>
-      <StatGrid>
+      <StatGrid min={140}>
         <StatTile
           testId="dept-stat-held"
           icon={<ClassOutlined />}
-          label="Classes held"
-          value={formatPercent(t.taughtPercent)}
-          unit={t.scheduled ? `${t.taught} of ${t.scheduled}` : undefined}
-          tone={toneOf(t.taughtPercent, 'held') === 'low' ? 'warning' : 'default'}
-          bar={t.taughtPercent === null ? undefined : <MiniBar value={t.taughtPercent} color={TONE_COLOR[toneOf(t.taughtPercent, 'held')]} />}
-          caption={t.scheduled ? 'Periods taught on a KINETIX board' : 'No periods were due'}
+          label={t('dept.stat.held')}
+          value={formatPercent(tot.taughtPercent)}
+          unit={tot.scheduled ? t('dept.of', { n: tot.taught, d: tot.scheduled }) : undefined}
+          tone={toneOf(tot.taughtPercent, 'held') === 'low' ? 'warning' : 'default'}
+          bar={tot.taughtPercent === null ? undefined : <MiniBar value={tot.taughtPercent} color={TONE_COLOR[toneOf(tot.taughtPercent, 'held')]} />}
+          caption={tot.scheduled ? t('dept.stat.heldCaption') : t('dept.stat.noPeriods')}
         />
         <StatTile
           testId="dept-stat-taken"
           icon={<FactCheckOutlined />}
-          label="Attendance taken"
-          value={formatPercent(t.attendanceTakenPercent)}
-          unit={t.scheduled ? `${t.attendanceTaken} of ${t.scheduled}` : undefined}
-          tone={toneOf(t.attendanceTakenPercent, 'held') === 'low' ? 'warning' : 'default'}
-          bar={t.attendanceTakenPercent === null ? undefined : <MiniBar value={t.attendanceTakenPercent} color={TONE_COLOR[toneOf(t.attendanceTakenPercent, 'held')]} />}
-          caption="Periods with attendance marked"
+          label={t('dept.stat.taken')}
+          value={formatPercent(tot.attendanceTakenPercent)}
+          unit={tot.scheduled ? t('dept.of', { n: tot.attendanceTaken, d: tot.scheduled }) : undefined}
+          tone={toneOf(tot.attendanceTakenPercent, 'held') === 'low' ? 'warning' : 'default'}
+          bar={tot.attendanceTakenPercent === null ? undefined : <MiniBar value={tot.attendanceTakenPercent} color={TONE_COLOR[toneOf(tot.attendanceTakenPercent, 'held')]} />}
+          caption={t('dept.stat.takenCaption')}
         />
         <StatTile
           testId="dept-stat-attendance"
           icon={<HowToRegOutlined />}
-          label="Attendance"
-          value={formatPercent(t.attendancePercent)}
-          tone={toneOf(t.attendancePercent, 'attendance') === 'low' ? 'warning' : 'default'}
-          bar={t.attendancePercent === null ? undefined : <MiniBar value={t.attendancePercent} color={TONE_COLOR[toneOf(t.attendancePercent, 'attendance')]} />}
-          caption={t.attendancePercent === null ? 'No attendance marked' : 'Students present or late'}
+          label={t('dept.stat.attendance')}
+          value={formatPercent(tot.attendancePercent)}
+          tone={toneOf(tot.attendancePercent, 'attendance') === 'low' ? 'warning' : 'default'}
+          bar={tot.attendancePercent === null ? undefined : <MiniBar value={tot.attendancePercent} color={TONE_COLOR[toneOf(tot.attendancePercent, 'attendance')]} />}
+          caption={tot.attendancePercent === null ? t('dept.stat.noAttendance') : t('dept.stat.attendanceCaption')}
         />
-        <StatTile testId="dept-stat-homework" icon={<AssignmentOutlined />} label="Homework" value={t.homework} unit="set" caption="Assignments for students" />
-        <StatTile testId="dept-stat-recordings" icon={<VideocamOutlined />} label="Recordings" value={t.recordings} unit={t.recordings === 1 ? 'lesson' : 'lessons'} caption="Recorded on the boards" />
+        <StatTile
+          testId="dept-stat-syllabus"
+          icon={<AutoStoriesOutlined />}
+          label={t('dept.stat.syllabus')}
+          value={formatPercent(syl.percent)}
+          unit={syl.total ? t('dept.stat.syllabusUnit', { covered: syl.covered, total: syl.total }) : undefined}
+          bar={syl.percent === null ? undefined : <MiniBar value={syl.percent} />}
+          caption={syl.total ? t('dept.stat.syllabusCaption') : t('dept.stat.noSyllabus')}
+        />
+        <StatTile testId="dept-stat-homework" icon={<AssignmentOutlined />} label={t('dept.stat.homework')} value={tot.homework} unit={t('dept.stat.homeworkUnit')} caption={t('dept.stat.homeworkCaption')} />
+        <StatTile testId="dept-stat-recordings" icon={<VideocamOutlined />} label={t('dept.stat.recordings')} value={tot.recordings} unit={t.plural('dept.stat.lesson', tot.recordings)} caption={t('dept.stat.recordingsCaption')} />
         <StatTile
           testId="dept-stat-assessments"
           icon={<GradingOutlined />}
-          label="Assessments"
-          value={t.assessments}
-          unit={t.assessments ? `${t.published} published` : undefined}
-          caption="Tests, assignments and exams held"
+          label={t('dept.stat.assessments')}
+          value={tot.assessments}
+          unit={tot.assessments ? t('dept.stat.published', { n: tot.published }) : undefined}
+          caption={t('dept.stat.assessmentsCaption')}
         />
       </StatGrid>
 
-      <SectionTitle>Teachers</SectionTitle>
+      <SectionTitle>{t('dept.teachers')}</SectionTitle>
       {o.teachers.length === 0 ? (
-        <EmptyState dense icon={<GroupsOutlined />} title="No teachers yet" testId="no-teachers">
-          Nobody teaches this department&apos;s subjects on the timetable{canManage ? ', and no staff are in the department' : ''}.
+        <EmptyState dense icon={<GroupsOutlined />} title={t('dept.noTeachers')} testId="no-teachers">
+          {canManage ? t('dept.noTeachersBodyManage') : t('dept.noTeachersBody')}
         </EmptyState>
       ) : (
-        <TeachersTable rows={o.teachers} />
+        <TeachersTable rows={o.teachers} i18n={i18n} />
       )}
 
-      <SectionTitle>Classes</SectionTitle>
+      <SectionTitle>{t('dept.classes')}</SectionTitle>
       {o.classes.length === 0 ? (
-        <EmptyState dense icon={<ClassOutlined />} title="No classes on the timetable" testId="no-dept-classes">
-          The department&apos;s subjects are not on the current timetable yet.
+        <EmptyState dense icon={<ClassOutlined />} title={t('dept.noClasses')} testId="no-dept-classes">
+          {t('dept.noClassesBody')}
         </EmptyState>
       ) : (
-        <ClassesTable rows={o.classes} />
+        <ClassesTable rows={o.classes} i18n={i18n} />
       )}
 
-      <SectionTitle>Recent assessments</SectionTitle>
+      <SectionTitle>{t('dept.assessments')}</SectionTitle>
       {o.assessments.length === 0 ? (
-        <EmptyState dense icon={<GradingOutlined />} title="No assessments in this range" testId="no-dept-assessments">
-          Tests and assignments set in the Teacher App for the department&apos;s subjects appear here.
+        <EmptyState dense icon={<GradingOutlined />} title={t('dept.noAssessments')} testId="no-dept-assessments">
+          {t('dept.noAssessmentsBody')}
         </EmptyState>
       ) : (
-        <AssessmentsTable o={o} />
+        <AssessmentsTable o={o} i18n={i18n} />
       )}
     </>
   );
 }
 
-function Flags({ r }: { r: DeptTeacher | DeptClass }) {
+function Flags({ r, t }: { r: DeptTeacher | DeptClass; t: I18n['t'] }) {
   const flags = flagsFor(r);
   if (flags.length === 0) return null;
   return (
-    <Tooltip title={flags.join(' · ')}>
-      <Chip size="small" label="Needs attention" data-testid="flag" sx={{ ml: 1, height: 22, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer', fontWeight: 500 }} />
+    <Tooltip title={flags.map((k) => t(k)).join(' · ')}>
+      <Chip size="small" label={t('dept.needsAttention')} data-testid="flag" sx={{ ml: 1, height: 22, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer', fontWeight: 500 }} />
     </Tooltip>
   );
 }
 
-function TeachersTable({ rows }: { rows: DeptTeacher[] }) {
+function TeachersTable({ rows, i18n: { t } }: { rows: DeptTeacher[]; i18n: I18n }) {
   return (
     <TableFrame testId="dept-teachers">
       <Table sx={{ minWidth: 820 }}>
         <TableHead>
           <TableRow>
-            <TableCell>Teacher</TableCell>
-            <TableCell align="right">Classes held</TableCell>
-            <TableCell align="right">Attendance taken</TableCell>
-            <TableCell align="right">Attendance</TableCell>
-            <TableCell align="right">Homework</TableCell>
-            <TableCell align="right">Recordings</TableCell>
+            <TableCell>{t('dept.col.teacher')}</TableCell>
+            <TableCell align="right">{t('dept.col.held')}</TableCell>
+            <TableCell align="right">{t('dept.col.taken')}</TableCell>
+            <TableCell align="right">{t('dept.col.attendance')}</TableCell>
+            <TableCell align="right">{t('dept.col.homework')}</TableCell>
+            <TableCell align="right">{t('dept.col.recordings')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -235,17 +249,17 @@ function TeachersTable({ rows }: { rows: DeptTeacher[] }) {
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                   <Typography variant="subtitle2">{r.fullName}</Typography>
-                  <Flags r={r} />
+                  <Flags r={r} t={t} />
                 </Box>
                 <Typography variant="caption" color="text.secondary">
-                  {r.scheduled ? `${r.scheduled} period${r.scheduled === 1 ? '' : 's'} due` : 'No periods due in this range'}
+                  {r.scheduled ? t.plural('dept.periodsDue', r.scheduled) : t('dept.noPeriodsDue')}
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Rate value={r.taughtPercent} kind="held" detail={ofText(r.taught, r.scheduled)} testId="teacher-held" />
+                <Rate value={r.taughtPercent} kind="held" detail={ofText(r.taught, r.scheduled, t)} testId="teacher-held" />
               </TableCell>
               <TableCell align="right">
-                <Rate value={r.attendanceTakenPercent} kind="held" detail={ofText(r.attendanceTaken, r.scheduled)} testId="teacher-taken" />
+                <Rate value={r.attendanceTakenPercent} kind="held" detail={ofText(r.attendanceTaken, r.scheduled, t)} testId="teacher-taken" />
               </TableCell>
               <TableCell align="right">
                 <Rate value={r.attendancePercent} kind="attendance" testId="teacher-attendance" />
@@ -264,19 +278,20 @@ function TeachersTable({ rows }: { rows: DeptTeacher[] }) {
   );
 }
 
-function ClassesTable({ rows }: { rows: DeptClass[] }) {
+function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18n }) {
   return (
     <TableFrame testId="dept-classes">
-      <Table sx={{ minWidth: 920 }}>
+      <Table sx={{ minWidth: 1040 }}>
         <TableHead>
           <TableRow>
-            <TableCell>Class</TableCell>
-            <TableCell>Teacher</TableCell>
-            <TableCell align="right">Held</TableCell>
-            <TableCell align="right">Attendance</TableCell>
-            <TableCell align="right">Homework</TableCell>
-            <TableCell align="right">Latest test</TableCell>
-            <TableCell aria-label="Results" />
+            <TableCell>{t('dept.col.class')}</TableCell>
+            <TableCell>{t('dept.col.teacher')}</TableCell>
+            <TableCell align="right">{t('dept.col.heldShort')}</TableCell>
+            <TableCell align="right">{t('dept.col.attendance')}</TableCell>
+            <TableCell>{t('dept.col.syllabus')}</TableCell>
+            <TableCell align="right">{t('dept.col.homework')}</TableCell>
+            <TableCell align="right">{t('dept.col.latest')}</TableCell>
+            <TableCell aria-label={t('dept.col.results')} />
           </TableRow>
         </TableHead>
         <TableBody>
@@ -287,7 +302,7 @@ function ClassesTable({ rows }: { rows: DeptClass[] }) {
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                     <Typography variant="subtitle2">{c.section}</Typography>
-                    <Flags r={c} />
+                    <Flags r={c} t={t} />
                   </Box>
                   <Typography variant="caption" color="text.secondary">
                     {c.subject}
@@ -295,19 +310,22 @@ function ClassesTable({ rows }: { rows: DeptClass[] }) {
                 </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{c.teacher}</TableCell>
                 <TableCell align="right">
-                  <Rate value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled)} />
+                  <Rate value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled, t)} />
                 </TableCell>
                 <TableCell align="right">
-                  <Rate value={c.attendancePercent} kind="attendance" detail={c.scheduled ? `taken ${ofText(c.attendanceTaken, c.scheduled)}` : undefined} />
+                  <Rate value={c.attendancePercent} kind="attendance" detail={c.scheduled ? t('dept.takenOf', { n: c.attendanceTaken, d: c.scheduled }) : undefined} />
+                </TableCell>
+                <TableCell data-testid="class-syllabus">
+                  <SyllabusCell c={c} t={t} />
                 </TableCell>
                 <TableCell align="right" sx={num}>
                   {c.homework}
                 </TableCell>
                 <TableCell align="right" data-testid="class-latest">
                   {latest ? (
-                    <Tooltip title={`${latest.title} · ${formatDate(latest.heldOn, 'short')}`}>
+                    <Tooltip title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')}`}>
                       <Box>
-                        <Rate value={latest.averagePercent} kind="marks" detail="class average" />
+                        <Rate value={latest.averagePercent} kind="marks" detail={t('dept.classAverage')} />
                       </Box>
                     </Tooltip>
                   ) : (
@@ -317,8 +335,8 @@ function ClassesTable({ rows }: { rows: DeptClass[] }) {
                   )}
                 </TableCell>
                 <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                  <LinkButton href={`/results?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={`Results for ${c.section}`}>
-                    Results
+                  <LinkButton href={`/results?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={t('dept.resultsFor', { section: c.section })}>
+                    {t('dept.col.results')}
                   </LinkButton>
                 </TableCell>
               </TableRow>
@@ -330,18 +348,18 @@ function ClassesTable({ rows }: { rows: DeptClass[] }) {
   );
 }
 
-function AssessmentsTable({ o }: { o: DepartmentOverview }) {
+function AssessmentsTable({ o, i18n: { t, fmt } }: { o: DepartmentOverview; i18n: I18n }) {
   return (
     <TableFrame testId="dept-assessments">
       <Table sx={{ minWidth: 820 }}>
         <TableHead>
           <TableRow>
-            <TableCell>Assessment</TableCell>
-            <TableCell>Held on</TableCell>
-            <TableCell align="right">Marks entered</TableCell>
-            <TableCell align="right">Class average</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell aria-label="Open" />
+            <TableCell>{t('dept.col.assessment')}</TableCell>
+            <TableCell>{t('dept.col.heldOn')}</TableCell>
+            <TableCell align="right">{t('dept.col.entered')}</TableCell>
+            <TableCell align="right">{t('dept.col.average')}</TableCell>
+            <TableCell>{t('dept.col.status')}</TableCell>
+            <TableCell aria-label={t('dept.col.open')} />
           </TableRow>
         </TableHead>
         <TableBody>
@@ -350,10 +368,10 @@ function AssessmentsTable({ o }: { o: DepartmentOverview }) {
               <TableCell>
                 <Typography variant="subtitle2">{a.title}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {a.section} · {a.subject} · {KIND_LABEL[a.kind] ?? a.kind} · {a.createdBy}
+                  {a.section} · {a.subject} · {kindLabel(a.kind, t)} · {a.createdBy}
                 </Typography>
               </TableCell>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(a.heldOn, 'short')}</TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.date(a.heldOn, 'short')}</TableCell>
               <TableCell align="right" sx={num}>
                 {a.entered}
               </TableCell>
@@ -364,8 +382,8 @@ function AssessmentsTable({ o }: { o: DepartmentOverview }) {
                 <PublishedChip publishedAt={a.publishedAt} />
               </TableCell>
               <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} aria-label={`Marks for ${a.title}`}>
-                  Marks
+                <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} aria-label={t('dept.marksFor', { title: a.title })}>
+                  {t('dept.marks')}
                 </LinkButton>
               </TableCell>
             </TableRow>
@@ -373,5 +391,39 @@ function AssessmentsTable({ o }: { o: DepartmentOverview }) {
         </TableBody>
       </Table>
     </TableFrame>
+  );
+}
+
+/** Topics of the class's syllabus taught so far, with a link to the topic list. */
+function SyllabusCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
+  const sy = c.syllabus;
+  if (!sy || sy.total === 0)
+    return (
+      <Tooltip title={t('dept.syllabus.noneHelp')}>
+        <Typography variant="body2" color="text.secondary" data-percent="none">
+          {t('dept.syllabus.none')}
+        </Typography>
+      </Tooltip>
+    );
+  const p = sy.percent ?? 0;
+  return (
+    <Link
+      href={`/department/syllabus?section=${c.sectionId}&subject=${c.subjectId}`}
+      aria-label={t('dept.syllabus.open', { section: c.section, subject: c.subject })}
+      data-percent={p}
+      style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit', minWidth: 150 }}
+    >
+      <Box sx={{ width: 64 }}>
+        <MiniBar value={p} color={p >= 100 ? 'kx.success' : 'primary.main'} />
+      </Box>
+      <Box>
+        <Typography variant="body2" sx={{ ...num, color: 'primary.main', fontWeight: 500 }}>
+          {formatPercent(p)}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" component="div" sx={{ ...num, lineHeight: '16px', whiteSpace: 'nowrap' }}>
+          {t('dept.syllabus.topics', { covered: sy.covered, total: sy.total })}
+        </Typography>
+      </Box>
+    </Link>
   );
 }

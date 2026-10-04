@@ -1242,4 +1242,336 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errNotLinked => 'आपका लॉगिन अभी किसी विद्यार्थी रिकॉर्ड से नहीं जुड़ा है। इसे जोड़ने के लिए कॉलेज ऑफ़िस से कहें।';
+
+  @override
+  String get errAccountInactive => 'आपका खाता सक्रिय नहीं है। अपने संस्थान के कार्यालय से पूछें।';
+
+  @override
+  String get errSignInAgain => 'आपका साइन इन समाप्त हो गया है। कृपया फिर से साइन इन करें।';
+
+  @override
+  String get errTooLarge => 'एक फ़ाइल बहुत बड़ी है। हर फ़ोटो या PDF ज़्यादा से ज़्यादा 8 MB की हो सकती है।';
+
+  @override
+  String get errConflict => 'इस बीच इसमें बदलाव हो गया। रीफ़्रेश करके फिर से कोशिश करें।';
+
+  @override
+  String get errSubjectNotInClass => 'यह विषय इस कक्षा में नहीं पढ़ाया जाता।';
+
+  @override
+  String get errSubmissionEmpty => 'जवाब लिखें या फ़ोटो जोड़ें।';
+
+  @override
+  String get errSubmissionChecked => 'यह होमवर्क पहले ही जाँचा जा चुका है।';
+
+  @override
+  String get calendar => 'कैलेंडर';
+
+  @override
+  String get calendarSubtitle => 'छुट्टियाँ, परीक्षाएँ और कार्यक्रम';
+
+  @override
+  String get upcoming => 'आने वाले';
+
+  @override
+  String get seeCalendar => 'पूरा कैलेंडर देखें';
+
+  @override
+  String get calendarEmpty => 'आने वाले महीनों में कोई छुट्टी, परीक्षा या कार्यक्रम नहीं है।';
+
+  @override
+  String get kindHoliday => 'छुट्टी';
+
+  @override
+  String get kindExams => 'परीक्षा';
+
+  @override
+  String get kindEvent => 'कार्यक्रम';
+
+  @override
+  String inDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count दिन में', one: '1 दिन में');
+    return '$_temp0';
+  }
+
+  @override
+  String forPrograms(String programs) {
+    return '$programs के लिए';
+  }
+
+  @override
+  String holidayToday(String title) {
+    return 'आज छुट्टी है: $title';
+  }
+
+  @override
+  String holidayTomorrow(String title) {
+    return 'कल छुट्टी है: $title';
+  }
+
+  @override
+  String get noClasses => 'कक्षाएँ नहीं होंगी।';
+
+  @override
+  String noClassesUntil(String date) {
+    return '$date तक कक्षाएँ नहीं होंगी।';
+  }
+
+  @override
+  String get notHandedIn => 'अभी जमा नहीं किया';
+
+  @override
+  String get statusHandedIn => 'जमा किया';
+
+  @override
+  String get statusChecked => 'जाँचा गया';
+
+  @override
+  String get statusReturned => 'दोबारा करने के लिए लौटाया';
+
+  @override
+  String handedInAt(String when) {
+    return '$when को जमा किया';
+  }
+
+  @override
+  String checkedByOn(String name, String date) {
+    return '$name ने $date को जाँचा';
+  }
+
+  @override
+  String returnedByOn(String name, String date) {
+    return '$name ने $date को लौटाया';
+  }
+
+  @override
+  String get teacherRemark => 'शिक्षक की टिप्पणी';
+
+  @override
+  String get answerLabel => 'जवाब';
+
+  @override
+  String get answerHint => 'जवाब यहाँ लिखें, या काम की फ़ोटो जोड़ें';
+
+  @override
+  String get handIn => 'जमा करें';
+
+  @override
+  String get handInAgain => 'फिर से जमा करें';
+
+  @override
+  String get handInTitle => 'होमवर्क जमा करें';
+
+  @override
+  String get handedInDone => 'जमा हो गया।';
+
+  @override
+  String get couldNotAddFile => 'वह फ़ाइल नहीं जुड़ पाई। फिर से कोशिश करें।';
+
+  @override
+  String fileTooBig(String name) {
+    return '$name बहुत बड़ी है (ज़्यादा से ज़्यादा 8 MB)।';
+  }
+
+  @override
+  String filesCount(int count, int max) {
+    return 'फ़ोटो और PDF: $max में से $count';
+  }
+
+  @override
+  String get removeFile => 'हटाएँ';
+
+  @override
+  String get takePhoto => 'फ़ोटो खींचें';
+
+  @override
+  String get choosePhotos => 'फ़ोटो चुनें';
+
+  @override
+  String get addPdf => 'PDF जोड़ें';
+
+  @override
+  String get filesHint => 'ज़्यादा से ज़्यादा 5 फ़ोटो या PDF, हर एक 8 MB तक। भेजने से पहले फ़ोटो छोटी की जाती हैं।';
+
+  @override
+  String uploading(String percent) {
+    return 'भेजा जा रहा है… $percent';
+  }
+
+  @override
+  String get photoNotLoaded => 'यह फ़ोटो लोड नहीं हो पाई।';
+
+  @override
+  String topicsTaught(int covered, int total) {
+    return '$total में से $covered विषय-वस्तु पढ़ाई गई';
+  }
+
+  @override
+  String get taught => 'पढ़ाया गया';
+
+  @override
+  String taughtOn(String date) {
+    return '$date को पढ़ाया गया';
+  }
+
+  @override
+  String get privacy => 'गोपनीयता';
+
+  @override
+  String get privacySubtitle => 'विद्यार्थी की जानकारी के साथ KINETIX क्या कर सकता है';
+
+  @override
+  String get notNow => 'अभी नहीं';
+
+  @override
+  String ifYouSayNo(String text) {
+    return 'अगर आप मना करते हैं: $text';
+  }
+
+  @override
+  String get changeAnyTime =>
+      'आप ये विकल्प कभी भी प्रोफ़ाइल → गोपनीयता में बदल सकते हैं। बदलाव से पहले जो हो चुका है, उस पर इसका असर नहीं पड़ता।';
+
+  @override
+  String get readFullNotice => 'पूरी सूचना पढ़ें';
+
+  @override
+  String get allowAll => 'सबकी अनुमति दें';
+
+  @override
+  String get saveChoices => 'मेरे विकल्प सहेजें';
+
+  @override
+  String get notDecided => 'अभी तय नहीं किया';
+
+  @override
+  String decidedBy(String choice, String name, String date) {
+    return '$choice · $name, $date';
+  }
+
+  @override
+  String get allowed => 'अनुमति दी';
+
+  @override
+  String get notAllowed => 'अनुमति नहीं दी';
+
+  @override
+  String get choicesSaved => 'सहेज लिया।';
+
+  @override
+  String get privacyNotice => 'गोपनीयता सूचना';
+
+  @override
+  String noticeVersion(String version) {
+    return 'संस्करण $version';
+  }
+
+  @override
+  String get noticeWhoDecides => 'कौन तय करता है';
+
+  @override
+  String get noticeSchool => 'स्कूल (18 साल से कम उम्र के विद्यार्थी): बच्चे के लिए अभिभावक तय करते हैं।';
+
+  @override
+  String get noticeCollege =>
+      'कॉलेज या विश्वविद्यालय: विद्यार्थी अपने लिए ख़ुद तय करते हैं। अभिभावक केवल उस विद्यार्थी के लिए तय करते हैं जिसका अपना KINETIX लॉगिन नहीं है।';
+
+  @override
+  String get noticeWhatWeAsk => 'हम किस बारे में पूछते हैं';
+
+  @override
+  String get noticeWhereKept => 'डेटा कहाँ रखा जाता है';
+
+  @override
+  String get noticeDataInIndia =>
+      'सारा डेटा और AI की सारी प्रोसेसिंग भारत में ही रहती है। डेटा तब तक रखा जाता है जब तक विद्यार्थी संस्थान में है, और उसके बाद उतने समय तक जितना संस्थान की रिकॉर्ड नीति में ज़रूरी है।';
+
+  @override
+  String get noticeQuestions => 'सवाल और अनुरोध';
+
+  @override
+  String get noticeContact =>
+      'संस्थान के शिकायत अधिकारी सवालों का जवाब देते हैं और डेटा देखने, सुधारने या मिटाने के अनुरोध सुनते हैं। उनसे संपर्क का तरीका संस्थान के कार्यालय से पूछें।';
+
+  @override
+  String get purposeDataTitle => 'रिकॉर्ड और सूचनाएँ';
+
+  @override
+  String get purposeDataBody =>
+      'विद्यार्थी की उपस्थिति, होमवर्क, अंक, फ़ीस और पुस्तकालय के रिकॉर्ड रखना, ताकि संस्थान कक्षाएँ चला सके और आपको जानकारी देता रहे।';
+
+  @override
+  String get purposeDataNo => 'संस्थान वे रिकॉर्ड फिर भी रखेगा जो क़ानूनन ज़रूरी हैं; आपको ऐप में सूचनाएँ नहीं मिलेंगी।';
+
+  @override
+  String get purposeAiTitle => 'KINETIX AI';
+
+  @override
+  String get purposeAiBody =>
+      'विद्यार्थी का संदेह दूर करने के लिए KINETIX AI से मदद माँगना। सवाल भारत के सर्वर पर प्रोसेस होते हैं और AI मॉडल सिखाने में इस्तेमाल नहीं होते।';
+
+  @override
+  String get purposeAiNo => 'विद्यार्थी के लिए KINETIX AI बंद हो जाएगा। बाक़ी सब काम करेगा।';
+
+  @override
+  String get purposeRecordingsTitle => 'कक्षा की रिकॉर्डिंग और लाइव कक्षाएँ';
+
+  @override
+  String get purposeRecordingsBody => 'कक्षा के साथ साझा की गई पाठ की रिकॉर्डिंग और लाइव कक्षाओं में विद्यार्थी की आवाज़ या तस्वीर आना।';
+
+  @override
+  String get purposeRecordingsNo =>
+      'शिक्षकों से कहा जाएगा कि विद्यार्थी को रिकॉर्ड न करें; पहले से साझा की गई रिकॉर्डिंग कक्षा के पास रहेंगी।';
+
+  @override
+  String get purposePhotosTitle => 'फ़ोटो';
+
+  @override
+  String get purposePhotosBody => 'विद्यार्थी की फ़ोटो (जैसे होमवर्क पर या कक्षा की गतिविधियों में) कक्षा के साथ साझा करना।';
+
+  @override
+  String get purposePhotosNo => 'विद्यार्थी की फ़ोटो कक्षा के साथ साझा नहीं की जाएँगी।';
+
+  @override
+  String get errConsentGuardianDecides => 'स्कूल में ये विकल्प आपके अभिभावक चुनते हैं।';
+
+  @override
+  String get aiConsentWithdrawnTitle => 'KINETIX AI बंद है';
+
+  @override
+  String get aiConsentWithdrawnBody =>
+      'KINETIX AI की अनुमति वापस ले ली गई है, इसलिए यह आपके लिए बंद है। बाक़ी सब काम करता है। किसने तय किया, यह देखने या बदलने के लिए प्रोफ़ाइल → गोपनीयता खोलें।';
+
+  @override
+  String get openPrivacy => 'गोपनीयता खोलें';
+
+  @override
+  String get errLiveNotAllowed => 'केवल स्कूल प्रमुख और विद्यार्थी ही कक्षाएँ देख सकते हैं।';
+
+  @override
+  String get errLiveViewOff => 'आपके संस्थान के लिए लाइव देखना बंद है।';
+
+  @override
+  String get errLiveNotStarted => 'आपके शिक्षक ने लाइव कक्षा शुरू नहीं की है।';
+
+  @override
+  String get yourWork => 'आपका काम';
+
+  @override
+  String get returnedNote => 'आपके शिक्षक ने इसे फिर से करने को कहा है। टिप्पणी पढ़ें, फिर दोबारा जमा करें।';
+
+  @override
+  String get consentTitle => 'आपकी गोपनीयता के विकल्प';
+
+  @override
+  String get consentIntro => 'चुनें कि KINETIX आपकी जानकारी के साथ क्या कर सकता है। जब तक आप नहीं चुनते, कुछ भी चालू नहीं होता।';
+
+  @override
+  String get privacyIntro => 'KINETIX आपकी जानकारी के साथ क्या कर सकता है। अनुमति वापस लेने के लिए स्विच बंद करें।';
+
+  @override
+  String get privacyIntroReadOnly => 'KINETIX आपकी जानकारी के साथ क्या कर सकता है, और किसने तय किया।';
+
+  @override
+  String get managedByParent => 'इसे आपके अभिभावक संभालते हैं। स्कूल में ये विकल्प आपके अभिभावक KINETIX Parent ऐप में चुनते हैं।';
 }

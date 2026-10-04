@@ -4,9 +4,11 @@ import Refresh from '@mui/icons-material/Refresh';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+import { useI18n } from '@/i18n/client';
 
 export function RetryButton({ onRetry }: { onRetry?: () => void }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [pending, start] = useTransition();
   return (
     <Button
@@ -18,7 +20,7 @@ export function RetryButton({ onRetry }: { onRetry?: () => void }) {
         start(() => router.refresh());
       }}
     >
-      {pending ? 'Trying again…' : 'Try again'}
+      {pending ? t('common.tryingAgain') : t('common.tryAgain')}
     </Button>
   );
 }

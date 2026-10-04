@@ -24,7 +24,7 @@ class StudyController extends ChangeNotifier {
   DateTime get today => summary?.today ?? DateTime.now();
 
   /// Everything on Today. Each part fails on its own, so one problem never hides the rest.
-  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadMarks(), loadLibrary()]);
+  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadMarks(), loadLibrary(), loadCalendar()]);
 
   Future<void> loadSummary() async {
     loading = true;
@@ -112,6 +112,53 @@ class StudyController extends ChangeNotifier {
       subjectsLoading = false;
       notifyListeners();
     }
+  }
+
+  // -- Calendar ---------------------------------------------------------------------------------
+
+  /// Holidays, exams and events from today for the next 90 days (the server's default).
+  CalendarRange? calendar;
+  ApiException? calendarError;
+
+  Future<CalendarRange?> loadCalendar() async {
+    calendarError = null;
+    try {
+      calendar = await api.calendar();
+    } on ApiException catch (e) {
+      calendarError = e;
+    } finally {
+      notifyListeners();
+    }
+    return calendar;
+  }
+
+  /// A holiday today or tomorrow for the student's program: (holiday, is today).
+  (CalendarEvent, bool)? get holidaySoon => calendar?.holidaySoon(program: student.programName);
+
+  // -- Syllabus coverage ------------------------------------------------------------------------
+
+  final _coverage = <String, Coverage>{};
+  final _coverageLoads = <String, Future<Coverage?>>{};
+
+  /// How much of [subjectId] the class has been taught, once loaded.
+  Coverage? coverageOf(String subjectId) => _coverage[subjectId];
+
+  /// Loads (or reloads with [fresh]) the class's progress in [subjectId]. A failure leaves the
+  /// syllabus without ticks: progress is extra information.
+  Future<Coverage?> loadCoverage(String subjectId, {bool fresh = false}) {
+    if (!fresh && _coverage.containsKey(subjectId)) return Future.value(_coverage[subjectId]);
+    return _coverageLoads[subjectId] ??= () async {
+      try {
+        final c = await api.coverage(sectionId: student.sectionId, subjectId: subjectId);
+        _coverage[subjectId] = c;
+        notifyListeners();
+        return c;
+      } on ApiException {
+        return _coverage[subjectId];
+      } finally {
+        _coverageLoads.remove(subjectId);
+      }
+    }();
   }
 
   // -- Lookups for Updates ----------------------------------------------------------------------

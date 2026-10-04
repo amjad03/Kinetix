@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -30,6 +30,10 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   department: ['hod', 'principal', 'tenant_admin'],
   // departments.controller.ts DepartmentsAdminController: STAFF_ADMIN_ROLES
   departments: ['principal', 'tenant_admin'],
+  // calendar.controller.ts: GET /v1/calendar is open to everyone signed in (staff see every entry)
+  calendar: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian'],
+  // SettingsController and ConsentAdminController: STAFF_ADMIN_ROLES
+  settings: ['principal', 'tenant_admin'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -50,6 +54,11 @@ export function canLinkSubjects(roles: readonly RoleName[]): boolean {
 
 /** Principal and administrator publish marks from the ERP (teachers publish from the Teacher App). */
 export function canPublishMarks(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
+}
+
+/** Principal and administrator keep the academic calendar (CalendarAdminController: STAFF_ADMIN_ROLES). */
+export function canEditCalendar(roles: readonly RoleName[]): boolean {
   return roles.some((r) => r === 'principal' || r === 'tenant_admin');
 }
 
@@ -90,6 +99,10 @@ export function sectionOf(pathname: string): Section | null {
       return 'department';
     case 'departments':
       return 'departments';
+    case 'calendar':
+      return 'calendar';
+    case 'settings':
+      return 'settings';
     default:
       return null;
   }

@@ -1,7 +1,10 @@
+'use client';
+
 import CloudOffOutlined from '@mui/icons-material/CloudOffOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
+import { useI18n } from '@/i18n/client';
 import { RetryButton } from './RetryButton';
 
 /** Calm, helpful empty state: icon in a tonal circle, a title, one line of help, and next steps. */
@@ -62,9 +65,10 @@ export function EmptyState({
   );
 }
 
-export function ErrorState({ message, title = "Couldn't load this page" }: { message: string; title?: string }) {
+export function ErrorState({ message, title }: { message: string; title?: string }) {
+  const { t } = useI18n();
   return (
-    <EmptyState icon={<CloudOffOutlined />} title={title} actions={<RetryButton />} testId="error-state">
+    <EmptyState icon={<CloudOffOutlined />} title={title ?? t('state.loadFailed')} actions={<RetryButton />} testId="error-state">
       {message}
     </EmptyState>
   );

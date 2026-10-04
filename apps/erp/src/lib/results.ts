@@ -1,14 +1,22 @@
 // Marks: percentages, the class's distribution and labels. Pure.
 
+import type { MessageKey } from '@/i18n/messages';
 import type { AssessmentDetail, AssessmentKind } from './types';
 
-export const KIND_LABEL: Record<AssessmentKind, string> = {
-  test: 'Test',
-  assignment: 'Assignment',
-  internal: 'Internal',
-  exam: 'Exam',
-  practical: 'Practical',
+/** Dictionary keys for assessment kinds. */
+export const KIND_LABEL: Record<AssessmentKind, MessageKey> = {
+  test: 'kind.test',
+  assignment: 'kind.assignment',
+  internal: 'kind.internal',
+  exam: 'kind.exam',
+  practical: 'kind.practical',
 };
+
+/** "Test", or the kind as the API sent it when the ERP doesn't know it. */
+export function kindLabel(kind: string, t: (k: MessageKey) => string): string {
+  const key = KIND_LABEL[kind as AssessmentKind];
+  return key ? t(key) : kind;
+}
 
 export function percent(marks: number, max: number): number {
   return max > 0 ? (marks / max) * 100 : 0;

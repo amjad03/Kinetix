@@ -2,6 +2,8 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect, unstable_rethrow } from 'next/navigation';
 import { cache } from 'react';
+import { errorText } from '@/i18n/errors';
+import { getI18n } from '@/i18n/server';
 import { canSee, homeFor, type Section } from './access';
 import { API_URL, SESSION_COOKIE } from './config';
 import type { ActionResult, Me } from './types';
@@ -10,6 +12,8 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** The API's stable error code (services/api/src/common/error-codes.ts), when it sent one. */
+    readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -23,18 +27,31 @@ interface Options {
   anonymous?: boolean;
 }
 
-async function messageFrom(res: Response): Promise<string> {
+interface ErrorBody {
+  message?: string | string[];
+  code?: string;
+  /** A validation error is the flattened zod error itself. */
+  formErrors?: string[];
+  fieldErrors?: Record<string, string[] | undefined>;
+}
+
+/** The API's error: its English message (the first one) and its `code`. */
+async function errorFrom(res: Response): Promise<ApiError> {
+  let body: ErrorBody = {};
   try {
-    const body = (await res.json()) as { message?: string | string[]; error?: string };
-    const m = Array.isArray(body.message) ? body.message.join(', ') : body.message;
-    if (m) return m;
+    body = (await res.json()) as ErrorBody;
   } catch {
     /* not JSON */
   }
-  if (res.status === 403) return "Your account doesn't have access to this.";
-  if (res.status === 404) return 'Not found.';
-  if (res.status === 429) return 'Too many attempts. Wait a minute and try again.';
-  return `KINETIX Cloud returned an error (${res.status}).`;
+  const m =
+    (Array.isArray(body.message) ? body.message.join(', ') : body.message) ??
+    body.formErrors?.[0] ??
+    Object.values(body.fieldErrors ?? {}).find((v) => v?.length)?.[0];
+  if (m) return new ApiError(res.status, m, body.code);
+  if (res.status === 403) return new ApiError(403, "Your account doesn't have access to this.", body.code ?? 'FORBIDDEN');
+  if (res.status === 404) return new ApiError(404, 'Not found.', body.code ?? 'NOT_FOUND');
+  if (res.status === 429) return new ApiError(429, 'Too many attempts. Wait a minute and try again.', body.code ?? 'RATE_LIMITED');
+  return new ApiError(res.status, `KINETIX Cloud returned an error (${res.status}).`, body.code);
 }
 
 /**
@@ -61,10 +78,10 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
       signal: AbortSignal.timeout(15_000),
     });
   } catch {
-    throw new ApiError(0, "Can't reach KINETIX Cloud. Check your connection and try again.");
+    throw new ApiError(0, "Can't reach KINETIX Cloud. Check your connection and try again.", 'NETWORK');
   }
   if (res.status === 401 && !opts.anonymous) redirect('/auth/end?reason=expired');
-  if (!res.ok) throw new ApiError(res.status, await messageFrom(res));
+  if (!res.ok) throw await errorFrom(res);
   if (res.status === 204) return undefined as T;
   // A handler that returns null sends an empty body.
   const text = await res.text();
@@ -79,7 +96,8 @@ export async function load<T>(fn: () => Promise<T>): Promise<Loaded<T>> {
     return { data: await fn() };
   } catch (e) {
     unstable_rethrow(e);
-    return { error: e instanceof ApiError ? e.message : 'Something went wrong while loading this page.' };
+    const { t } = await getI18n();
+    return { error: e instanceof ApiError ? errorText(e, t) : t('error.loadPage') };
   }
 }
 
@@ -89,7 +107,8 @@ export async function act<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
     return { ok: true, data: await fn() };
   } catch (e) {
     unstable_rethrow(e);
-    return { ok: false, error: e instanceof ApiError ? e.message : 'Something went wrong. Try again.' };
+    const { t } = await getI18n();
+    return { ok: false, error: e instanceof ApiError ? errorText(e, t) : t('error.generic') };
   }
 }
 

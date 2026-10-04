@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
+import '../calendar/calendar_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
 import '../live/live_class_screen.dart';
@@ -34,6 +35,8 @@ class TodayTab extends StatelessWidget {
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
 
+  void _openCalendar(BuildContext context) => CalendarScreen.open(context, study.api, program: study.student.programName);
+
   @override
   Widget build(BuildContext context) {
     final student = study.student;
@@ -44,6 +47,8 @@ class TodayTab extends StatelessWidget {
         final live = study.live;
         final cards = <Widget>[
           if (live != null) LiveNowBanner(live: live, onWatch: () => LiveClassScreen.open(context, study, live)),
+          if (study.holidaySoon case (final holiday, final isToday))
+            HolidayBanner(holiday: holiday, isToday: isToday, onOpen: () => _openCalendar(context)),
           if (summary == null && study.error == null)
             const Padding(
               padding: EdgeInsets.all(Kx.s48),
@@ -52,11 +57,18 @@ class TodayTab extends StatelessWidget {
           if (study.error != null) ErrorBanner(study.error!, onRetry: study.loadSummary),
           if (summary != null) ...[
             AttendanceCard(summary: summary, onOpen: () => AttendanceScreen.open(context, study.api, student)),
-            HomeworkCard(summary: summary, sectionName: student.sectionName),
+            HomeworkCard(summary: summary, study: study),
             if (onAsk != null) _AskCard(onAsk: onAsk!),
             ResultsCard(study: study),
             if (messages?.available ?? false) MessagesCard(controller: messages!),
             LibraryCard(study: study),
+            UpcomingCard(
+              range: study.calendar,
+              program: student.programName,
+              error: study.calendarError,
+              onRetry: study.loadCalendar,
+              onOpen: () => _openCalendar(context),
+            ),
             RecordingsCard(summary: summary, api: study.api),
             BoardsCard(summary: summary, study: study),
           ],
@@ -269,10 +281,10 @@ class _Stat extends StatelessWidget {
 }
 
 class HomeworkCard extends StatelessWidget {
-  const HomeworkCard({super.key, required this.summary, required this.sectionName});
+  const HomeworkCard({super.key, required this.summary, required this.study});
 
   final StudentSummary summary;
-  final String sectionName;
+  final StudyController study;
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +302,7 @@ class HomeworkCard extends StatelessWidget {
               context.l10n.nothingDue,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
-          for (final hw in summary.upcoming) HomeworkRow(homework: hw, today: summary.today, sectionName: sectionName),
+          for (final hw in summary.upcoming) HomeworkRow(homework: hw, today: summary.today, study: study),
           if (summary.pastHomework.isNotEmpty)
             Theme(
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -305,7 +317,7 @@ class HomeworkCard extends StatelessWidget {
                 ),
                 children: [
                   for (final hw in summary.pastHomework)
-                    HomeworkRow(homework: hw, today: summary.today, sectionName: sectionName, past: true),
+                    HomeworkRow(homework: hw, today: summary.today, study: study, past: true),
                 ],
               ),
             ),
@@ -316,11 +328,11 @@ class HomeworkCard extends StatelessWidget {
 }
 
 class HomeworkRow extends StatelessWidget {
-  const HomeworkRow({super.key, required this.homework, required this.today, required this.sectionName, this.past = false});
+  const HomeworkRow({super.key, required this.homework, required this.today, required this.study, this.past = false});
 
   final Homework homework;
   final DateTime today;
-  final String sectionName;
+  final StudyController study;
   final bool past;
 
   @override
@@ -335,7 +347,7 @@ class HomeworkRow extends StatelessWidget {
     return InkWell(
       key: Key('homework-${homework.id}'),
       borderRadius: Kx.radiusMd,
-      onTap: () => HomeworkScreen.open(context, homework: homework, today: today, sectionName: sectionName),
+      onTap: () => HomeworkScreen.open(context, study, homework),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: Kx.s8),
         child: Row(

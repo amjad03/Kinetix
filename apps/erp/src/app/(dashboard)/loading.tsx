@@ -1,9 +1,11 @@
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
+import { getI18n } from '@/i18n/server';
 
-export default function Loading() {
+export default async function Loading() {
+  const { t } = await getI18n();
   return (
-    <Box aria-busy="true" aria-label="Loading">
+    <Box aria-busy="true" aria-label={t('common.loading')}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Box>
           <Skeleton variant="text" width={180} height={36} />

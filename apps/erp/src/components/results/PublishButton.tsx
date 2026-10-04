@@ -12,9 +12,11 @@ import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { publishAssessment } from '@/app/(dashboard)/results/actions';
+import { useI18n } from '@/i18n/client';
 
 /** Rendered on published assessments too (with `published`), so the confirmation outlives the refresh. */
 export function PublishButton({ id, title, className, entered, missing, published }: { id: string; title: string; className: string; entered: number; missing: number; published: boolean }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -24,10 +26,10 @@ export function PublishButton({ id, title, className, entered, missing, publishe
   return (
     <>
       <Button variant="contained" startIcon={<PublishOutlined />} onClick={() => setOpen(true)} disabled={entered === 0}>
-        Publish marks
+        {t('results.publish')}
       </Button>
       <Dialog open={open} onClose={pending ? undefined : () => setOpen(false)} maxWidth="xs" fullWidth aria-labelledby="publish-title">
-        <DialogTitle id="publish-title">Publish these marks?</DialogTitle>
+        <DialogTitle id="publish-title">{t('results.publish.title')}</DialogTitle>
         <DialogContent>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -35,17 +37,17 @@ export function PublishButton({ id, title, className, entered, missing, publishe
             </Alert>
           )}
           <Typography variant="body2">
-            Students of {className} and their families will see their marks for <strong>{title}</strong>, with the class average and highest, in the KINETIX apps.
+            {t('results.publish.body', { className, title })}
           </Typography>
           {missing > 0 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
-              {missing} student{missing === 1 ? ' has' : 's have'} no marks yet. Teachers can still add or correct marks after publishing.
+              {t.plural('results.publish.missing', missing)}
             </Alert>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)} disabled={pending}>
-            Not now
+            {t('results.publish.notNow')}
           </Button>
           <Button
             variant="contained"
@@ -56,12 +58,12 @@ export function PublishButton({ id, title, className, entered, missing, publishe
                 const res = await publishAssessment(id);
                 if (res.ok) {
                   setOpen(false);
-                  setToast('Marks published. Families have been notified.');
+                  setToast(t('results.publish.done'));
                 } else setError(res.error);
               })
             }
           >
-            Publish
+            {t('results.publish.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

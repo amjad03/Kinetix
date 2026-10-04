@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_parent/core/api.dart';
+import 'package:kinetix_parent/core/attachments.dart';
+import 'package:kinetix_parent/core/realtime.dart';
 import 'package:kinetix_parent/core/models.dart';
 
 /// In-memory [ParentApi] for widget tests.
@@ -44,14 +48,15 @@ class FakeParentApi implements ParentApi {
 
   static final today = DateTime(2026, 10, 4);
 
-  Homework homework({String id = 'h1', String title = 'Exercise 4.2: Issue of shares', int dueIn = 1}) => Homework(
-    id: id,
-    title: title,
-    instructions: 'Solve questions 1 to 5 from the textbook. Show journal entries for each.',
-    dueOn: today.add(Duration(days: dueIn)),
-    subject: 'Corporate Accounting',
-    teacher: 'Anita Sharma',
-  );
+  Homework homework({String id = 'h1', String title = 'Exercise 4.2: Issue of shares', int dueIn = 1, String subject = 'Corporate Accounting'}) =>
+      Homework(
+        id: id,
+        title: title,
+        instructions: 'Solve questions 1 to 5 from the textbook. Show journal entries for each.',
+        dueOn: today.add(Duration(days: dueIn)),
+        subject: subject,
+        teacher: 'Anita Sharma',
+      );
 
   late Map<String, ChildSummary> summaries = {
     'c1': ChildSummary(
@@ -322,10 +327,183 @@ class FakeParentApi implements ParentApi {
     return board;
   }
 
+  final corpAcc = const Subject(id: 'sub1', name: 'Corporate Accounting', code: 'BCOM-3.1');
+  final costing = const Subject(id: 'sub2', name: 'Cost Accounting', code: 'BCOM-3.3');
+
+  /// The subject of each homework `GET /v1/homework/:id` knows (others are 404).
+  late Map<String, Subject> subjectOfHomework = {'h1': corpAcc, 'h2': corpAcc, 'h3': corpAcc};
+
   @override
-  Future<({Homework homework, String sectionId})> homeworkById(String id) async {
+  Future<({Homework homework, String sectionId, Subject subject})> homeworkById(String id) async {
     calls.add('homework $id');
+    final subject = subjectOfHomework[id];
+    for (final MapEntry(key: childId, value: s) in summaries.entries) {
+      final hw = [...s.upcoming, ...s.pastHomework].where((h) => h.id == id).firstOrNull;
+      if (hw != null && subject != null) return (homework: hw, sectionId: kids.firstWhere((k) => k.id == childId).sectionId, subject: subject);
+    }
     throw ApiException(404, 'Homework not found');
+  }
+
+  // ── Calendar ──────────────────────────────────────────────────────────────────────────────
+
+  static Map<String, dynamic> eventJson(String id, String kind, String title, String startsOn, [String? endsOn, List<String>? programs]) => {
+    'id': id,
+    'kind': kind,
+    'title': title,
+    'startsOn': startsOn,
+    'endsOn': endsOn ?? startsOn,
+    'programIds': programs == null ? null : ['p-$id'],
+    'programs': programs,
+  };
+
+  List<Map<String, dynamic>> calendarEvents = [
+    eventJson('e1', 'event', 'College day', '2026-10-10'),
+    eventJson('e2', 'exam', 'Mid-semester exams', '2026-10-12', '2026-10-16', ['BCom']),
+    eventJson('e3', 'holiday', 'Dussehra', '2026-10-20', '2026-10-21'),
+    eventJson('e4', 'exam', 'BCA practicals', '2026-10-22', null, ['BCA']),
+  ];
+
+  @override
+  Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {
+    calls.add('calendar');
+    return CalendarRange.fromJson({'from': '2026-10-04', 'to': '2027-01-02', 'today': '2026-10-04', 'events': calendarEvents});
+  }
+
+  // ── Syllabus and coverage ─────────────────────────────────────────────────────────────────
+
+  late Map<String, CourseOutline?> syllabi = {
+    'sub1': CourseOutline(
+      id: 'c1',
+      title: 'Corporate Accounting, BCom Semester 3',
+      reviewed: false,
+      chapters: [
+        OutlineChapter(
+          id: 'ch1',
+          title: 'Underwriting of Shares',
+          topics: [OutlineTopic(id: 't1', title: 'Underwriting and underwriting commission', summary: 'What underwriting is and the commission allowed by law.')],
+        ),
+        OutlineChapter(
+          id: 'ch2',
+          title: 'Valuation of Goodwill',
+          topics: [OutlineTopic(id: 't2', title: 'Methods of valuing goodwill', summary: 'Average profit and super profit methods.')],
+        ),
+      ],
+    ),
+  };
+
+  @override
+  Future<CourseOutline?> syllabus(String subjectId) async {
+    calls.add('syllabus $subjectId');
+    return syllabi[subjectId];
+  }
+
+  Map<String, Map<String, dynamic>> coverageJson = {
+    'sec1|sub1': {
+      'covered': 1,
+      'total': 2,
+      'percent': 50,
+      'topics': [
+        {'topicId': 't1', 'coveredOn': '2026-10-01', 'coveredBy': 'Anita Sharma'},
+      ],
+    },
+  };
+
+  @override
+  Future<Coverage> coverage({required String sectionId, required String subjectId}) async {
+    calls.add('coverage $sectionId $subjectId');
+    return Coverage.fromJson(coverageJson['$sectionId|$subjectId'] ?? {'covered': 0, 'total': 0, 'percent': null, 'topics': []});
+  }
+
+  // ── Homework submissions ──────────────────────────────────────────────────────────────────
+
+  /// 'homeworkId/childId' → the submission JSON.
+  Map<String, Map<String, dynamic>> submissions = {};
+  final submitRequests = <({String homeworkId, String studentId, String text, List<UploadFile> files})>[];
+  ApiException? submitError;
+
+  /// When set, [submitHomework] waits for it after reporting half the bytes sent.
+  Completer<void>? submitGate;
+
+  @override
+  Future<Submission> submission(String homeworkId, String childId) async {
+    calls.add('submission $homeworkId $childId');
+    return Submission.fromJson(submissions['$homeworkId/$childId'] ?? {'status': null});
+  }
+
+  @override
+  Future<Submission> submitHomework(
+    String homeworkId,
+    String childId, {
+    required String text,
+    List<UploadFile> files = const [],
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    submitRequests.add((homeworkId: homeworkId, studentId: childId, text: text, files: files));
+    final total = files.fold(text.length, (n, f) => n + f.bytes.length);
+    onProgress?.call(total ~/ 2, total);
+    if (submitGate != null) await submitGate!.future;
+    if (submitError != null) throw submitError!;
+    onProgress?.call(total, total);
+    final j = {
+      'status': 'submitted',
+      'text': text,
+      'files': [
+        for (final (i, f) in files.indexed) {'index': i, 'name': f.name, 'mime': f.mime, 'bytes': f.bytes.length},
+      ],
+      'submittedAt': '2026-10-04T05:00:00Z',
+      'late': false,
+      'remark': null,
+      'checkedBy': null,
+      'checkedAt': null,
+    };
+    submissions['$homeworkId/$childId'] = j;
+    return Submission.fromJson(j);
+  }
+
+  @override
+  ({Uri url, Map<String, String> headers}) submissionFile(String homeworkId, String childId, int index) =>
+      (url: Uri.parse('$baseUrl/v1/homework/$homeworkId/submissions/$childId/files/$index'), headers: const {});
+
+  // ── Consent ───────────────────────────────────────────────────────────────────────────────
+
+  static Map<String, dynamic> decided(bool granted, {String by = 'Rajesh Patel', String version = '2026-10'}) => {
+    'granted': granted,
+    'at': '2026-10-01T05:00:00Z',
+    'noticeVersion': version,
+    'givenBy': by,
+  };
+
+  static Map<String, dynamic> allDecided(String childId, {bool canDecide = true}) => {
+    'studentId': childId,
+    'noticeVersion': '2026-10',
+    'canDecide': canDecide,
+    'purposes': <String, dynamic>{
+      'data_processing': decided(true),
+      'ai_features': decided(true),
+      'class_recordings': decided(true),
+      'photos': decided(true),
+    },
+  };
+
+  /// Everything decided by default, so the consent screen stays away from other tests.
+  late Map<String, Map<String, dynamic>> consentJson = {'c1': allDecided('c1'), 'c2': allDecided('c2')};
+  final consentRequests = <String>[];
+
+  @override
+  Future<Consents> consents(String childId) async {
+    calls.add('consents $childId');
+    return Consents.fromJson(consentJson[childId] ?? allDecided(childId));
+  }
+
+  @override
+  Future<Consents> setConsent(String childId, ConsentPurpose purpose, {required bool granted}) async {
+    consentRequests.add('$childId ${purpose.wire} $granted');
+    final j = consentJson[childId] ?? allDecided(childId);
+    consentJson[childId] = {
+      ...j,
+      'purposes': {...(j['purposes'] as Map), purpose.wire: decided(granted, by: profile.fullName)},
+    };
+    return Consents.fromJson(consentJson[childId]!);
   }
 
   @override
@@ -727,5 +905,62 @@ class FakeParentApi implements ParentApi {
   Future<void> markConversationRead(String conversationId) async {
     calls.add('chat-read $conversationId');
     _readAt[conversationId] = DateTime.now();
+  }
+}
+
+/// Hands the hand-in screen fixed files instead of opening the camera, gallery or files.
+class FakeAttachmentPicker implements AttachmentPicker {
+  final picked = <AttachmentSource>[];
+  Map<AttachmentSource, List<UploadFile>> files = {
+    AttachmentSource.camera: [UploadFile(name: 'page1.jpg', mime: 'image/jpeg', bytes: Uint8List(1200))],
+    AttachmentSource.gallery: [UploadFile(name: 'page2.png', mime: 'image/png', bytes: Uint8List(800))],
+    AttachmentSource.pdf: [UploadFile(name: 'answers.pdf', mime: 'application/pdf', bytes: Uint8List(3000))],
+  };
+
+  @override
+  Future<List<UploadFile>> pick(AttachmentSource source, {int max = maxUploadFiles}) async {
+    picked.add(source);
+    return (files[source] ?? const []).take(max).toList();
+  }
+}
+
+/// An in-memory realtime connection: tests play the server.
+class FakeRealtimeConnection implements RealtimeConnection {
+  FakeRealtimeConnection({required this.baseUrl, required this.token});
+
+  final String baseUrl;
+  final String token;
+  final _signals = StreamController<RealtimeSignal>.broadcast(sync: true);
+  bool connected = false;
+  bool disposed = false;
+
+  @override
+  Stream<RealtimeSignal> get signals => _signals.stream;
+
+  @override
+  void connect() {
+    connected = true;
+    scheduleMicrotask(() => send(const RealtimeReady()));
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
+    _signals.close();
+  }
+
+  void send(RealtimeSignal s) {
+    if (!_signals.isClosed) _signals.add(s);
+  }
+}
+
+/// Hands out [FakeRealtimeConnection]s and remembers them.
+class FakeRealtimeServer {
+  final connections = <FakeRealtimeConnection>[];
+
+  RealtimeConnection connect({required String baseUrl, required String token}) {
+    final c = FakeRealtimeConnection(baseUrl: baseUrl, token: token);
+    connections.add(c);
+    return c;
   }
 }

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/l10n.dart';
 import 'api.dart';
 import 'models.dart';
+import 'realtime.dart';
 
 /// The default API address. On the Android emulator the host machine is 10.0.2.2.
 const defaultServerUrl = 'http://localhost:4000';
@@ -16,10 +17,13 @@ const defaultServerUrl = 'http://localhost:4000';
 /// TODO: keep the token in flutter_secure_storage (Android Keystore / iOS Keychain) and add an
 /// app lock (biometric or OS PIN), per docs/architecture/board-pairing.md.
 class AppState extends ChangeNotifier {
-  AppState(this.api, this.prefs);
+  AppState(this.api, this.prefs, {RealtimeConnector? realtime}) : realtime = realtime ?? SocketRealtimeConnection.new;
 
   final ParentApi api;
   final SharedPreferences prefs;
+
+  /// Opens the realtime connection new messages arrive on (a fake in tests).
+  final RealtimeConnector realtime;
 
   static const _kServer = 'server_url', _kTenant = 'tenant', _kLogin = 'login', _kToken = 'token';
 

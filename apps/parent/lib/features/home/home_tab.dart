@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/api.dart';
 import '../../core/family.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
@@ -8,6 +9,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
+import '../calendar/calendar_screen.dart';
 import '../fees/fees_card.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
@@ -88,7 +90,10 @@ class HomeTab extends StatelessWidget {
     final c = child!;
     final summary = family.summaryOf(c.id);
     final error = family.summaryErrorOf(c.id);
+    final holiday = family.holidaySoon(c);
+    void openCalendar() => CalendarScreen.open(context, family.api, program: c.programName);
     final cards = <Widget>[
+      if (holiday case (final h, final isToday)) HolidayBanner(holiday: h, isToday: isToday, onOpen: openCalendar),
       _ChildCard(child: c),
       if (summary == null && error == null)
         const Padding(
@@ -98,10 +103,17 @@ class HomeTab extends StatelessWidget {
       if (error != null) ErrorBanner(error, onRetry: () => family.loadSummary(c.id)),
       if (summary != null) ...[
         AttendanceCard(child: c, summary: summary, onOpen: () => AttendanceScreen.open(context, family.api, c)),
-        _HomeworkCard(child: c, summary: summary),
+        _HomeworkCard(child: c, summary: summary, api: family.api),
         ResultsCard(family: family, child: c),
         FeesCard(family: family, child: c, today: summary.today),
         LibraryCard(family: family, child: c, today: summary.today),
+        UpcomingCard(
+          range: family.calendar,
+          program: c.programName,
+          error: family.calendarError,
+          onRetry: family.loadCalendar,
+          onOpen: openCalendar,
+        ),
         RecordingsCard(child: c, summary: summary, api: family.api),
         _InClassCard(child: c, summary: summary),
         _BoardsCard(child: c, summary: summary, family: family),
@@ -315,10 +327,11 @@ class _Stat extends StatelessWidget {
 }
 
 class _HomeworkCard extends StatelessWidget {
-  const _HomeworkCard({required this.child, required this.summary});
+  const _HomeworkCard({required this.child, required this.summary, required this.api});
 
   final Child child;
   final ChildSummary summary;
+  final ParentApi api;
 
   @override
   Widget build(BuildContext context) {
@@ -336,7 +349,7 @@ class _HomeworkCard extends StatelessWidget {
               context.l10n.nothingDue,
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
-          for (final hw in summary.upcoming) HomeworkRow(homework: hw, today: summary.today, child: child),
+          for (final hw in summary.upcoming) HomeworkRow(homework: hw, today: summary.today, child: child, api: api),
           if (summary.pastHomework.isNotEmpty)
             Theme(
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -350,7 +363,7 @@ class _HomeworkCard extends StatelessWidget {
                   style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant),
                 ),
                 children: [
-                  for (final hw in summary.pastHomework) HomeworkRow(homework: hw, today: summary.today, child: child, past: true),
+                  for (final hw in summary.pastHomework) HomeworkRow(homework: hw, today: summary.today, child: child, api: api, past: true),
                 ],
               ),
             ),
@@ -361,11 +374,12 @@ class _HomeworkCard extends StatelessWidget {
 }
 
 class HomeworkRow extends StatelessWidget {
-  const HomeworkRow({super.key, required this.homework, required this.today, required this.child, this.past = false});
+  const HomeworkRow({super.key, required this.homework, required this.today, required this.child, required this.api, this.past = false});
 
   final Homework homework;
   final DateTime today;
   final Child child;
+  final ParentApi api;
   final bool past;
 
   @override
@@ -379,7 +393,7 @@ class HomeworkRow extends StatelessWidget {
         : (c.secondaryContainer, c.onSecondaryContainer);
     return InkWell(
       borderRadius: Kx.radiusMd,
-      onTap: () => HomeworkScreen.open(context, homework: homework, today: today, child: child),
+      onTap: () => HomeworkScreen.open(context, api, homework: homework, today: today, child: child),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: Kx.s8),
         child: Row(

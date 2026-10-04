@@ -9,11 +9,13 @@ import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
+import '../calendar/calendar_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
+import '../privacy/privacy.dart';
 
 /// The student's details, attendance history, fees (read-only, with receipts), the language
 /// KINETIX AI answers in, and sign out.
@@ -238,6 +240,22 @@ class ProfileTabState extends State<ProfileTab> {
                 ),
                 KxSectionHeader(l.settings),
                 LanguageTile(onChanged: state.setLanguage),
+                ListTile(
+                  key: const Key('openPrivacy'),
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(l.privacy),
+                  subtitle: Text(l.privacySubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => PrivacyScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openCalendar'),
+                  leading: const Icon(Icons.event_outlined),
+                  title: Text(l.calendar),
+                  subtitle: Text(l.calendarSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => CalendarScreen.open(context, widget.study.api, program: st.programName),
+                ),
                 const KxSectionHeader('KINETIX AI'),
                 ListTile(
                   key: const Key('aiLanguage'),

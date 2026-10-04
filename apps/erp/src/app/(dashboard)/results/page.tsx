@@ -16,16 +16,19 @@ import { PublishedChip } from '@/components/results/PublishedChip';
 import { EmptyState, ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
 import { load, requireSection } from '@/lib/api';
-import { formatDate } from '@/lib/dates';
-import { formatMarks, KIND_LABEL, percent } from '@/lib/results';
+import { getI18n } from '@/i18n/server';
+import type { TFunction } from '@/i18n/translate';
+import { formatMarks, kindLabel, percent } from '@/lib/results';
 import { resultClasses } from '@/lib/results-data';
 import type { AssessmentSummary } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Results' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.results') };
+}
 
 const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
-function Average({ a }: { a: AssessmentSummary }) {
+function Average({ a, t }: { a: AssessmentSummary; t: TFunction }) {
   if (a.average === null)
     return (
       <Typography variant="body2" color="text.secondary">
@@ -36,7 +39,7 @@ function Average({ a }: { a: AssessmentSummary }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'flex-end' }}>
       <Box sx={{ width: { xs: 48, md: 72 } }}>
-        <MiniBar value={p} label={`Class average ${p.toFixed(0)}%`} />
+        <MiniBar value={p} label={t('results.classAverage', { p: `${p.toFixed(0)}%` })} />
       </Box>
       <Typography variant="body2" sx={{ ...num, minWidth: 92, textAlign: 'right' }}>
         {formatMarks(a.average)} / {formatMarks(a.maxMarks)}
@@ -56,44 +59,45 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
   const klass = list.find((c) => c.id === sp.class) ?? list.find((c) => c.assessments.length > 0) ?? list[0];
   const rows = klass?.assessments ?? [];
   const published = rows.filter((a) => a.publishedAt).length;
+  const { t, fmt } = await getI18n();
 
   return (
     <>
       <PageHeader
-        title="Results"
-        subtitle="Tests, assignments and exams, class by class. Teachers enter marks in the KINETIX Teacher App."
+        title={t('nav.results')}
+        subtitle={t('results.subtitle')}
         actions={
           list.length > 0 && klass ? (
-            <UrlSelect label="Class" param="class" value={klass.id} options={list.map((c) => ({ value: c.id, label: c.name }))} testId="results-class" />
+            <UrlSelect label={t('results.class')} param="class" value={klass.id} options={list.map((c) => ({ value: c.id, label: c.name }))} testId="results-class" />
           ) : undefined
         }
       />
       {classes.error !== undefined ? (
         <ErrorState message={classes.error} />
       ) : !klass ? (
-        <EmptyState icon={<GradingOutlined />} title="No classes to show" testId="no-result-classes">
-          Results appear here for the classes you teach.
+        <EmptyState icon={<GradingOutlined />} title={t('results.noClasses')} testId="no-result-classes">
+          {t('results.noClassesBody')}
         </EmptyState>
       ) : rows.length === 0 ? (
-        <EmptyState icon={<GradingOutlined />} title={`No assessments for ${klass.name} yet`} testId="no-assessments">
-          When a teacher sets a test or assignment for this class in the Teacher App, it appears here with the marks entered.
+        <EmptyState icon={<GradingOutlined />} title={t('results.noAssessments', { name: klass.name })} testId="no-assessments">
+          {t('results.noAssessmentsBody')}
         </EmptyState>
       ) : (
         <>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }} data-testid="results-summary">
-            {klass.name} · {klass.students} students · {rows.length} assessment{rows.length === 1 ? '' : 's'} · {published} published
+            {t('results.summary', { name: klass.name, students: klass.students, assessments: t.plural('results.assessments', rows.length), published })}
           </Typography>
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>
             <TableFrame testId="assessments-table">
               <Table sx={{ minWidth: 860 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Assessment</TableCell>
-                    <TableCell>Held on</TableCell>
-                    <TableCell align="right">Marks entered</TableCell>
-                    <TableCell align="right">Class average</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell aria-label="Open" />
+                    <TableCell>{t('results.col.assessment')}</TableCell>
+                    <TableCell>{t('results.col.heldOn')}</TableCell>
+                    <TableCell align="right">{t('results.col.entered')}</TableCell>
+                    <TableCell align="right">{t('results.col.average')}</TableCell>
+                    <TableCell>{t('results.col.status')}</TableCell>
+                    <TableCell aria-label={t('results.col.open')} />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -103,22 +107,22 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
                         <TableCell>
                           <Typography variant="subtitle2">{a.title}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {a.subject.name} · {KIND_LABEL[a.kind] ?? a.kind} · out of {formatMarks(a.maxMarks)} · {a.createdBy}
+                            {a.subject.name} · {kindLabel(a.kind, t)} · {t('results.outOf', { n: formatMarks(a.maxMarks) })} · {a.createdBy}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(a.heldOn, 'short')}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.date(a.heldOn, 'short')}</TableCell>
                         <TableCell align="right" sx={num} data-testid="assessment-entered">
-                          {a.entered} of {a.classSize}
+                          {t('results.entered', { n: a.entered, d: a.classSize })}
                         </TableCell>
                         <TableCell align="right" data-testid="assessment-average">
-                          <Average a={a} />
+                          <Average a={a} t={t} />
                         </TableCell>
                         <TableCell>
                           <PublishedChip publishedAt={a.publishedAt} />
                         </TableCell>
                         <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                          <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} aria-label={`Marks for ${a.title}`}>
-                            Marks
+                          <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} aria-label={t('results.marksFor', { title: a.title })}>
+                            {t('results.marks')}
                           </LinkButton>
                         </TableCell>
                       </TableRow>
@@ -138,13 +142,13 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
                   <PublishedChip publishedAt={a.publishedAt} />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
-                  {a.subject.name} · {formatDate(a.heldOn, 'short')}
+                  {a.subject.name} · {fmt.date(a.heldOn, 'short')}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  Average {a.average === null ? '—' : `${formatMarks(a.average)} / ${formatMarks(a.maxMarks)}`} · {a.entered} of {a.classSize} entered
+                  {t('results.averageLine', { avg: a.average === null ? '—' : `${formatMarks(a.average)} / ${formatMarks(a.maxMarks)}`, n: a.entered, d: a.classSize })}
                 </Typography>
                 <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} sx={{ mt: 1, ml: -1 }}>
-                  Marks
+                  {t('results.marks')}
                 </LinkButton>
               </Box>
             ))}

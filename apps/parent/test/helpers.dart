@@ -19,6 +19,7 @@ Future<(FakeParentApi, AppState)> pumpApp(
   void Function(FakeParentApi)? setup,
   Size size = const Size(412, 892),
   double textScale = 1,
+  FakeRealtimeServer? realtime,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -31,7 +32,7 @@ Future<(FakeParentApi, AppState)> pumpApp(
   SharedPreferences.setMockInitialValues({if (signedIn) 'token': 'tok', ...prefs});
   final api = FakeParentApi();
   setup?.call(api);
-  final state = AppState(api, await SharedPreferences.getInstance());
+  final state = AppState(api, await SharedPreferences.getInstance(), realtime: (realtime ?? FakeRealtimeServer()).connect);
   await tester.pumpWidget(ParentApp(state: state));
   await state.restore();
   await tester.pumpAndSettle();

@@ -5,9 +5,12 @@ import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import '../calendar/calendar_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
 import '../marks/marks.dart';
+import '../privacy/privacy.dart';
+import '../syllabus/syllabus_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, required this.family});
@@ -116,6 +119,34 @@ class ProfileTab extends StatelessWidget {
                   onTap: () => LibraryScreen.open(context, family, child),
                 ),
               ],
+              if (family.children.isNotEmpty) KxSectionHeader(l.syllabusProgress),
+              for (final child in family.children)
+                ListTile(
+                  key: Key('profile-syllabus-${child.id}'),
+                  leading: const Icon(Icons.menu_book_outlined),
+                  title: Text(family.children.length == 1 ? l.syllabusProgress : l.childSyllabusProgress(child.firstName)),
+                  subtitle: Text(l.syllabusProgressSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => SyllabusProgressScreen.open(context, family, child),
+                ),
+              ListTile(
+                key: const Key('profile-calendar'),
+                leading: const Icon(Icons.event_outlined),
+                title: Text(l.calendar),
+                subtitle: Text(l.calendarSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => CalendarScreen.open(context, family.api),
+              ),
+              if (family.children.isNotEmpty) KxSectionHeader(l.privacy),
+              for (final child in family.children)
+                ListTile(
+                  key: Key('profile-privacy-${child.id}'),
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(family.children.length == 1 ? l.privacy : l.childPrivacy(child.firstName)),
+                  subtitle: Text(l.privacySubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => PrivacyScreen.open(context, family.api, child),
+                ),
               KxSectionHeader(l.settings),
               LanguageTile(onChanged: state.setLanguage),
               KxSectionHeader(l.account),

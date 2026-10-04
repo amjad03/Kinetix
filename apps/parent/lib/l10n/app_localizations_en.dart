@@ -1095,4 +1095,370 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterPhoneOrEmail => 'Enter your phone number or email';
+
+  @override
+  String get errAccountInactive => 'Your account is not active. Ask your institution\'s office.';
+
+  @override
+  String get errSignInAgain => 'Your sign-in has expired. Please sign in again.';
+
+  @override
+  String get errTooLarge => 'A file is too big. Each photo or PDF can be up to 8 MB.';
+
+  @override
+  String get errConflict => 'This was changed in the meantime. Refresh and try again.';
+
+  @override
+  String get errSubjectNotInClass => 'That subject is not taught in this class.';
+
+  @override
+  String get errSubmissionEmpty => 'Write an answer or add a photo.';
+
+  @override
+  String get errSubmissionChecked => 'This homework has already been checked.';
+
+  @override
+  String get calendar => 'Calendar';
+
+  @override
+  String get calendarSubtitle => 'Holidays, exams and events';
+
+  @override
+  String get upcoming => 'Coming up';
+
+  @override
+  String get seeCalendar => 'See the full calendar';
+
+  @override
+  String get calendarEmpty => 'No holidays, exams or events in the coming months.';
+
+  @override
+  String get kindHoliday => 'Holiday';
+
+  @override
+  String get kindExams => 'Exams';
+
+  @override
+  String get kindEvent => 'Event';
+
+  @override
+  String inDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'In $count days', one: 'In 1 day');
+    return '$_temp0';
+  }
+
+  @override
+  String forPrograms(String programs) {
+    return 'For $programs';
+  }
+
+  @override
+  String holidayToday(String title) {
+    return 'Holiday today: $title';
+  }
+
+  @override
+  String holidayTomorrow(String title) {
+    return 'Holiday tomorrow: $title';
+  }
+
+  @override
+  String get noClasses => 'No classes.';
+
+  @override
+  String noClassesUntil(String date) {
+    return 'No classes until $date.';
+  }
+
+  @override
+  String get notHandedIn => 'Not handed in yet';
+
+  @override
+  String get statusHandedIn => 'Handed in';
+
+  @override
+  String get statusChecked => 'Checked';
+
+  @override
+  String get statusReturned => 'Returned to redo';
+
+  @override
+  String handedInAt(String when) {
+    return 'Handed in $when';
+  }
+
+  @override
+  String checkedByOn(String name, String date) {
+    return 'Checked by $name on $date';
+  }
+
+  @override
+  String returnedByOn(String name, String date) {
+    return 'Returned by $name on $date';
+  }
+
+  @override
+  String get teacherRemark => 'Teacher\'s remark';
+
+  @override
+  String get answerLabel => 'Answer';
+
+  @override
+  String get answerHint => 'Type the answer here, or add photos of the work';
+
+  @override
+  String get handIn => 'Hand in';
+
+  @override
+  String get handInAgain => 'Hand in again';
+
+  @override
+  String get handInTitle => 'Hand in homework';
+
+  @override
+  String get handedInDone => 'Handed in.';
+
+  @override
+  String get couldNotAddFile => 'Couldn\'t add that file. Try again.';
+
+  @override
+  String fileTooBig(String name) {
+    return '$name is too big (8 MB at most).';
+  }
+
+  @override
+  String filesCount(int count, int max) {
+    return 'Photos and PDFs: $count of $max';
+  }
+
+  @override
+  String get removeFile => 'Remove';
+
+  @override
+  String get takePhoto => 'Take a photo';
+
+  @override
+  String get choosePhotos => 'Choose photos';
+
+  @override
+  String get addPdf => 'Add a PDF';
+
+  @override
+  String get filesHint => 'Up to 5 photos or PDFs, 8 MB each. Photos are made smaller before they are sent.';
+
+  @override
+  String uploading(String percent) {
+    return 'Sending… $percent';
+  }
+
+  @override
+  String get photoNotLoaded => 'Couldn\'t load this photo.';
+
+  @override
+  String topicsTaught(int covered, int total) {
+    return '$covered of $total topics taught';
+  }
+
+  @override
+  String get taught => 'Taught';
+
+  @override
+  String taughtOn(String date) {
+    return 'Taught on $date';
+  }
+
+  @override
+  String get privacy => 'Privacy';
+
+  @override
+  String get privacySubtitle => 'What KINETIX may do with the student\'s information';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String ifYouSayNo(String text) {
+    return 'If you say no: $text';
+  }
+
+  @override
+  String get changeAnyTime =>
+      'You can change these choices at any time in Profile → Privacy. A change does not affect what was done before it.';
+
+  @override
+  String get readFullNotice => 'Read the full notice';
+
+  @override
+  String get allowAll => 'Allow all';
+
+  @override
+  String get saveChoices => 'Save my choices';
+
+  @override
+  String get notDecided => 'Not decided yet';
+
+  @override
+  String decidedBy(String choice, String name, String date) {
+    return '$choice by $name on $date';
+  }
+
+  @override
+  String get allowed => 'Allowed';
+
+  @override
+  String get notAllowed => 'Not allowed';
+
+  @override
+  String get choicesSaved => 'Saved.';
+
+  @override
+  String get privacyNotice => 'Privacy notice';
+
+  @override
+  String noticeVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get noticeWhoDecides => 'Who decides';
+
+  @override
+  String get noticeSchool => 'School (students under 18): the parent or guardian decides for the child.';
+
+  @override
+  String get noticeCollege =>
+      'College or university: students decide for themselves. A guardian decides only for a student who has no KINETIX login of their own.';
+
+  @override
+  String get noticeWhatWeAsk => 'What we ask about';
+
+  @override
+  String get noticeWhereKept => 'Where data is kept';
+
+  @override
+  String get noticeDataInIndia =>
+      'All data and all AI processing stay in India. Data is kept while the student is at the institution, and then for as long as the institution\'s records policy requires.';
+
+  @override
+  String get noticeQuestions => 'Questions and requests';
+
+  @override
+  String get noticeContact =>
+      'The institution\'s grievance officer answers questions and requests to see, correct or erase data. Ask the institution\'s office how to reach them.';
+
+  @override
+  String get purposeDataTitle => 'Records and updates';
+
+  @override
+  String get purposeDataBody =>
+      'Keeping the student\'s attendance, homework, marks, fees and library records so the institution can run classes and keep you informed.';
+
+  @override
+  String get purposeDataNo => 'the institution still keeps the records it must by law; you will not get updates in the app.';
+
+  @override
+  String get purposeAiTitle => 'KINETIX AI';
+
+  @override
+  String get purposeAiBody =>
+      'The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.';
+
+  @override
+  String get purposeAiNo => 'KINETIX AI is turned off for the student. Everything else works.';
+
+  @override
+  String get purposeRecordingsTitle => 'Class recordings and live classes';
+
+  @override
+  String get purposeRecordingsBody =>
+      'The student\'s voice or image appearing in lesson recordings and live classes shared with the class.';
+
+  @override
+  String get purposeRecordingsNo => 'teachers are asked not to record the student; recordings already shared stay with the class.';
+
+  @override
+  String get purposePhotosTitle => 'Photos';
+
+  @override
+  String get purposePhotosBody => 'Photos of the student (for example on homework or in class activities) shared with the class.';
+
+  @override
+  String get purposePhotosNo => 'photos of the student are not shared with the class.';
+
+  @override
+  String get errConsentGuardianDecides => 'You can\'t change these choices for this student.';
+
+  @override
+  String childWork(String name) {
+    return '$name\'s work';
+  }
+
+  @override
+  String get returnedNote => 'The teacher has asked for this to be done again. Read the remark, then hand it in again.';
+
+  @override
+  String handInFor(String name) {
+    return 'Hand in for $name';
+  }
+
+  @override
+  String get handInForNote => 'Hand in here for a child who doesn\'t have their own KINETIX login.';
+
+  @override
+  String consentTitleFor(String name) {
+    return 'Privacy choices for $name';
+  }
+
+  @override
+  String consentIntroFor(String name) {
+    return 'Choose what KINETIX may do with $name\'s information. Nothing is switched on until you choose.';
+  }
+
+  @override
+  String privacyIntroFor(String name) {
+    return 'What KINETIX may do with $name\'s information. Turn a switch off to withdraw your consent.';
+  }
+
+  @override
+  String privacyIntroReadOnlyFor(String name) {
+    return 'What KINETIX may do with $name\'s information, and who decided.';
+  }
+
+  @override
+  String managedByStudent(String name) {
+    return '$name manages this. At a college, students with their own KINETIX login make these choices themselves.';
+  }
+
+  @override
+  String childPrivacy(String name) {
+    return 'Privacy: $name';
+  }
+
+  @override
+  String get syllabusProgress => 'Syllabus progress';
+
+  @override
+  String childSyllabusProgress(String name) {
+    return 'Syllabus progress: $name';
+  }
+
+  @override
+  String get syllabusProgressSubtitle => 'What the class has been taught in each subject';
+
+  @override
+  String get syllabusSubjectsEmpty => 'Subjects appear here once teachers set homework in them.';
+
+  @override
+  String syllabusNotLinked(String subject) {
+    return 'The syllabus for $subject isn\'t in KINETIX yet.';
+  }
+
+  @override
+  String chaptersTopics(int chapters) {
+    String _temp0 = intl.Intl.pluralLogic(chapters, locale: localeName, other: '$chapters chapters', one: '1 chapter');
+    return '$_temp0';
+  }
+
+  @override
+  String get noTopicsInChapter => 'No topics yet';
 }

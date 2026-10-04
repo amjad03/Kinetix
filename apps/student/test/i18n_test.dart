@@ -6,6 +6,7 @@ import 'package:kinetix_student/core/models.dart';
 import 'package:kinetix_student/features/learn/learn_tab.dart';
 import 'package:kinetix_student/features/profile/profile_tab.dart';
 import 'package:kinetix_student/features/today/today_tab.dart';
+import 'package:kinetix_student/core/attachments.dart';
 import 'package:kinetix_student/widgets/common.dart';
 
 import 'fake_api.dart';
@@ -99,7 +100,26 @@ void main() {
     await scrollDown(tester);
     await back(tester);
 
+    // Homework: returned with a remark, then the hand-in screen with a photo and a PDF.
     await tapShown(tester, find.byKey(const Key('homework-h1')));
+    await scrollDown(tester);
+    await tester.ensureVisible(find.byKey(const Key('handIn')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('handIn')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('addCamera')));
+    await tester.tap(find.byKey(const Key('addCamera')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('addPdf')));
+    await tester.tap(find.byKey(const Key('addPdf')));
+    await tester.pumpAndSettle();
+    await scrollDown(tester);
+    await back(tester);
+    await back(tester);
+
+    // The holiday banner and the calendar.
+    await show(tester, find.byKey(const Key('holidayBanner')));
+    await openCardLink(tester, 'calendarCard');
     await scrollDown(tester);
     await back(tester);
 
@@ -153,6 +173,13 @@ void main() {
     await tapShown(tester, find.byKey(const Key('aiLanguage')), scrollable: profile);
     Navigator.of(tester.element(find.byType(SimpleDialog))).pop();
     await tester.pumpAndSettle();
+    // Privacy: each decision with who made it, and the full notice.
+    await tapShown(tester, find.byKey(const Key('openPrivacy')), scrollable: profile);
+    await scrollDown(tester);
+    await tapShown(tester, find.byKey(const Key('readNotice')), scrollable: find.byType(Scrollable).first);
+    await scrollDown(tester);
+    await back(tester);
+    await back(tester);
     await tapShown(tester, find.byKey(const Key('openFees')), scrollable: profile);
     await tapShown(tester, find.byKey(const Key('payment-p1')), scrollable: find.byType(Scrollable).first);
     await scrollDown(tester);
@@ -174,6 +201,8 @@ void main() {
     for (final MapEntry(key: name, value: size) in sizes.entries) {
       for (final scale in [1.0, 1.3]) {
         testWidgets('$lang at $name, text ×$scale: every main screen lays out', (tester) async {
+          AttachmentPicker.instance = FakeAttachmentPicker();
+          addTearDown(() => AttachmentPicker.instance = const DeviceAttachmentPicker());
           final server = FakeLiveServer()
             ..ack = const LiveWatchAck(
               ok: true,
@@ -191,6 +220,20 @@ void main() {
             prefs: {'language': lang},
             setup: (api) {
               api.liveClass = FakeStudentApi.corporateLive();
+              api.calendarEvents.insert(0, FakeStudentApi.eventJson('e0', 'holiday', 'Gandhi Jayanti (observed)', '2026-10-05', '2026-10-06'));
+              (api.consentJson['purposes'] as Map)['photos'] = null;
+              api.submissions['h1/s1'] = {
+                'status': 'returned',
+                'text': 'Journal entries for questions 1 to 5.',
+                'files': [
+                  {'index': 0, 'name': 'IMG_20261004_page_one_of_the_homework.jpg', 'mime': 'image/jpeg', 'bytes': 1245000},
+                ],
+                'submittedAt': '2026-10-06T05:00:00Z',
+                'late': true,
+                'remark': 'Show the working for question 3, and write the narration under each entry.',
+                'checkedBy': 'Anita Sharma',
+                'checkedAt': '2026-10-07T05:00:00Z',
+              };
               api.answer = Explanation(
                 answer: 'Preview answer about underwriting commission.',
                 keyPoints: ['Start from what the class already knows', 'Define the key terms'],
@@ -200,6 +243,15 @@ void main() {
               );
             },
           );
+          // Asked for the undecided privacy choice first: the summary, the full notice, then "Not now".
+          await tester.drag(find.byType(Scrollable).first, const Offset(0, -3000));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('readNotice')));
+          await tester.pumpAndSettle();
+          await scrollDown(tester);
+          await back(tester);
+          await tester.tap(find.byKey(const Key('consentLater')));
+          await tester.pumpAndSettle();
           for (final w in words[lang]!) {
             expect(find.text(w), findsWidgets, reason: w);
           }

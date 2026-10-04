@@ -9,7 +9,7 @@ export const BOARD_ADMIN_ROLES: RoleName[] = ['principal', 'tenant_admin'];
 
 export interface LoginResponse {
   accessToken: string;
-  user: { id: string; fullName: string; roles: RoleName[] };
+  user: { id: string; fullName: string; preferredLanguage?: string; roles: RoleName[] };
 }
 
 export interface Me {
@@ -17,6 +17,8 @@ export interface Me {
   fullName: string;
   email: string | null;
   phone: string | null;
+  /** en, hi or kn: the ERP's language unless one was picked on this browser. */
+  preferredLanguage?: string;
   roles: RoleName[];
   tenant: { name: string; slug: string };
 }
@@ -45,15 +47,20 @@ export interface ClassRow {
   absent: number;
 }
 
+/** A holiday for the whole institution on that day (classes are not due, so none are "missed"). */
+export type DayHoliday = { title: string } | null;
+
 export interface ClassesDay {
   date: string;
   isToday: boolean;
   classes: ClassRow[];
+  holiday?: DayHoliday;
 }
 
 export interface Overview {
   date: string;
   isToday: boolean;
+  holiday?: DayHoliday;
   classes: { scheduled: number; taught: number; live: number; notStarted: number; missed: number; upcoming: number };
   attendance: {
     marked: number;
@@ -410,6 +417,8 @@ export interface DeptClass extends DeptCounts {
   teacherId: string;
   teacher: string;
   latestAssessment: { id: string; title: string; heldOn: string; averagePercent: number | null } | null;
+  /** Topics of the subject's course marked as taught for this class (total 0: no course linked). */
+  syllabus?: { covered: number; total: number; percent: number | null };
 }
 
 export interface DeptAssessment {
@@ -446,4 +455,15 @@ export interface AdminDepartment {
   head: string | null;
   staff: { id: string; fullName: string }[];
   subjects: { id: string; code: string; name: string }[];
+}
+
+// ---- Syllabus coverage (GET /v1/coverage?sectionId&subjectId) ----
+
+export interface Coverage {
+  sectionId: string;
+  subjectId: string;
+  covered: number;
+  total: number;
+  percent: number | null;
+  topics: { topicId: string; coveredOn: string; coveredBy: string }[];
 }

@@ -187,6 +187,7 @@ class _AskScreenState extends State<AskScreen> {
     language: widget.template.language,
     onLanguageChanged: (l) => widget.template.setLanguage(l),
     topic: widget.topic,
+    onOpenPrivacy: widget.template.onOpenPrivacy,
   );
 
   @override

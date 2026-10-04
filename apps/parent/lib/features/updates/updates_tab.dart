@@ -11,6 +11,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
+import '../calendar/calendar_screen.dart';
 import '../fees/fees_screen.dart';
 import '../fees/receipt_screen.dart';
 import '../homework/homework_screen.dart';
@@ -42,6 +43,7 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.marks => Icons.grading,
     NotificationKind.message => Icons.forum,
     NotificationKind.broadcast => Icons.campaign,
+    NotificationKind.calendar => Icons.event,
     NotificationKind.other => Icons.notifications,
   };
 
@@ -55,10 +57,11 @@ class UpdatesTab extends StatelessWidget {
         final date = n.data['date'] is String ? parseIsoDate(n.data['date'] as String) : null;
         if (child != null && context.mounted) return AttendanceScreen.open(context, api, child, highlightDate: date);
       case NotificationKind.homework:
-        final found = n.homeworkId == null ? null : await family.findHomework(n.homeworkId!, sectionId: n.sectionId);
+        // New homework names the class; "checked" and "to redo" name the child.
+        final found = n.homeworkId == null ? null : await family.findHomework(n.homeworkId!, sectionId: n.sectionId, studentId: n.studentId);
         if (found != null && context.mounted) {
           final (child, hw) = found;
-          return HomeworkScreen.open(context, homework: hw, today: family.summaryOf(child.id)?.today ?? DateTime.now(), child: child);
+          return HomeworkScreen.open(context, api, homework: hw, today: family.summaryOf(child.id)?.today ?? DateTime.now(), child: child);
         }
       case NotificationKind.boardShared:
         if (n.whiteboardId != null && context.mounted) return BoardScreen.open(context, api, n.whiteboardId!);
@@ -92,6 +95,8 @@ class UpdatesTab extends StatelessWidget {
         }
       case NotificationKind.message:
         if (n.conversationId != null && context.mounted) return ChatScreen.open(context, messages, n.conversationId!);
+      case NotificationKind.calendar:
+        return CalendarScreen.open(context, api, highlightId: n.calendarEventId);
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;

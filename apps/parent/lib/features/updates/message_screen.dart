@@ -30,6 +30,7 @@ class MessageScreen extends StatelessWidget {
       NotificationKind.library => l.library,
       NotificationKind.marks => l.results,
       NotificationKind.message => l.message,
+      NotificationKind.calendar => l.calendar,
       NotificationKind.other => l.update,
     };
     return Scaffold(

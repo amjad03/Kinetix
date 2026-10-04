@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
+import '../../core/message_feed.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../learn/learn_tab.dart';
 import '../messages/messages_controller.dart';
+import '../privacy/privacy.dart';
 import '../profile/profile_tab.dart';
 import '../today/today_tab.dart';
 import '../updates/updates_controller.dart';
@@ -28,7 +30,11 @@ class StudentShell extends StatefulWidget {
 class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver {
   late final study = StudyController(widget.state.api, widget.state.student!, liveConnector: widget.state.liveConnector)..load();
   late final updates = UpdatesController(widget.state.api)..load();
-  late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id)..start();
+  late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id);
+  late final consent = ConsentController(widget.state.api, widget.state.student!.id);
+
+  /// New messages over the realtime connection (colleges, where students write to teachers).
+  MessageFeed? _feed;
   final _learn = GlobalKey<LearnTabState>();
 
   /// "Live now" updates already acted on.
@@ -45,15 +51,37 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     updates.addListener(_onUpdates);
+    messages.realtime = () => _feed?.connected ?? false;
+    messages.start().then((_) {
+      if (mounted && messages.available) _startFeed();
+    });
+    // Privacy choices still to make (first sign-in after the notice, or a new notice version).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ConsentScreen.askIfNeeded(context, consent);
+    });
+  }
+
+  void _startFeed() {
+    final token = widget.state.api.token;
+    if (token == null || _feed != null) return;
+    _feed = MessageFeed(
+      connector: widget.state.liveConnector,
+      baseUrl: widget.state.api.baseUrl,
+      token: token,
+      onMessage: messages.received,
+      onReconnected: messages.load,
+    )..start();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     updates.removeListener(_onUpdates);
+    _feed?.dispose();
     study.dispose();
     updates.dispose();
     messages.dispose();
+    consent.dispose();
     super.dispose();
   }
 
@@ -64,6 +92,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     study.loadLive();
     if (!updates.loading) updates.load();
     if (messages.available) messages.load();
+    _feed?.resume();
   }
 
   /// A new "Live now" update brings the banner up on Today straight away.

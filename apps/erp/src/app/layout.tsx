@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { I18nProvider } from '@/i18n/client';
+import { BCP47 } from '@/i18n/locales';
+import { MESSAGES } from '@/i18n/messages';
+import { getI18n } from '@/i18n/server';
 import { googleSans, notoDevanagari, notoKannada } from '@/theme/fonts';
 import { ThemeRegistry } from '@/theme/ThemeRegistry';
 
-export const metadata: Metadata = {
-  title: { default: 'KINETIX ERP', template: '%s · KINETIX ERP' },
-  description: "The principal's view of the whole school: classes, attendance, homework, messages and boards.",
-  icons: { icon: '/icon.svg' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: { default: t('app.name'), template: `%s · ${t('app.name')}` },
+    description: t('app.description'),
+    icons: { icon: '/icon.svg' },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -16,11 +23,14 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const { locale } = await getI18n();
   return (
-    <html lang="en-IN" className={`${googleSans.variable} ${notoDevanagari.variable} ${notoKannada.variable}`} suppressHydrationWarning>
+    <html lang={BCP47[locale]} className={`${googleSans.variable} ${notoDevanagari.variable} ${notoKannada.variable}`} suppressHydrationWarning>
       <body>
-        <ThemeRegistry>{children}</ThemeRegistry>
+        <I18nProvider locale={locale} messages={MESSAGES[locale]}>
+          <ThemeRegistry locale={locale}>{children}</ThemeRegistry>
+        </I18nProvider>
       </body>
     </html>
   );

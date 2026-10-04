@@ -1886,6 +1886,612 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter your phone number or email'**
   String get enterPhoneOrEmail;
+
+  /// No description provided for @errAccountInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is not active. Ask your institution\'s office.'**
+  String get errAccountInactive;
+
+  /// No description provided for @errSignInAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in has expired. Please sign in again.'**
+  String get errSignInAgain;
+
+  /// No description provided for @errTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'A file is too big. Each photo or PDF can be up to 8 MB.'**
+  String get errTooLarge;
+
+  /// No description provided for @errConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This was changed in the meantime. Refresh and try again.'**
+  String get errConflict;
+
+  /// No description provided for @errSubjectNotInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'That subject is not taught in this class.'**
+  String get errSubjectNotInClass;
+
+  /// No description provided for @errSubmissionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Write an answer or add a photo.'**
+  String get errSubmissionEmpty;
+
+  /// No description provided for @errSubmissionChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'This homework has already been checked.'**
+  String get errSubmissionChecked;
+
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// No description provided for @calendarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays, exams and events'**
+  String get calendarSubtitle;
+
+  /// No description provided for @upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up'**
+  String get upcoming;
+
+  /// No description provided for @seeCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'See the full calendar'**
+  String get seeCalendar;
+
+  /// No description provided for @calendarEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No holidays, exams or events in the coming months.'**
+  String get calendarEmpty;
+
+  /// No description provided for @kindHoliday.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get kindHoliday;
+
+  /// No description provided for @kindExams.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams'**
+  String get kindExams;
+
+  /// No description provided for @kindEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get kindEvent;
+
+  /// No description provided for @inDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{In 1 day} other{In {count} days}}'**
+  String inDays(int count);
+
+  /// No description provided for @forPrograms.
+  ///
+  /// In en, this message translates to:
+  /// **'For {programs}'**
+  String forPrograms(String programs);
+
+  /// No description provided for @holidayToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday today: {title}'**
+  String holidayToday(String title);
+
+  /// No description provided for @holidayTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday tomorrow: {title}'**
+  String holidayTomorrow(String title);
+
+  /// No description provided for @noClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes.'**
+  String get noClasses;
+
+  /// No description provided for @noClassesUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes until {date}.'**
+  String noClassesUntil(String date);
+
+  /// No description provided for @notHandedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Not handed in yet'**
+  String get notHandedIn;
+
+  /// No description provided for @statusHandedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in'**
+  String get statusHandedIn;
+
+  /// No description provided for @statusChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked'**
+  String get statusChecked;
+
+  /// No description provided for @statusReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned to redo'**
+  String get statusReturned;
+
+  /// No description provided for @handedInAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in {when}'**
+  String handedInAt(String when);
+
+  /// No description provided for @checkedByOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked by {name} on {date}'**
+  String checkedByOn(String name, String date);
+
+  /// No description provided for @returnedByOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned by {name} on {date}'**
+  String returnedByOn(String name, String date);
+
+  /// No description provided for @teacherRemark.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s remark'**
+  String get teacherRemark;
+
+  /// No description provided for @answerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer'**
+  String get answerLabel;
+
+  /// No description provided for @answerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type the answer here, or add photos of the work'**
+  String get answerHint;
+
+  /// No description provided for @handIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand in'**
+  String get handIn;
+
+  /// No description provided for @handInAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand in again'**
+  String get handInAgain;
+
+  /// No description provided for @handInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand in homework'**
+  String get handInTitle;
+
+  /// No description provided for @handedInDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in.'**
+  String get handedInDone;
+
+  /// No description provided for @couldNotAddFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add that file. Try again.'**
+  String get couldNotAddFile;
+
+  /// No description provided for @fileTooBig.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is too big (8 MB at most).'**
+  String fileTooBig(String name);
+
+  /// No description provided for @filesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and PDFs: {count} of {max}'**
+  String filesCount(int count, int max);
+
+  /// No description provided for @removeFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeFile;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get takePhoto;
+
+  /// No description provided for @choosePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose photos'**
+  String get choosePhotos;
+
+  /// No description provided for @addPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a PDF'**
+  String get addPdf;
+
+  /// No description provided for @filesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 photos or PDFs, 8 MB each. Photos are made smaller before they are sent.'**
+  String get filesHint;
+
+  /// No description provided for @uploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending… {percent}'**
+  String uploading(String percent);
+
+  /// No description provided for @photoNotLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this photo.'**
+  String get photoNotLoaded;
+
+  /// No description provided for @topicsTaught.
+  ///
+  /// In en, this message translates to:
+  /// **'{covered} of {total} topics taught'**
+  String topicsTaught(int covered, int total);
+
+  /// No description provided for @taught.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught'**
+  String get taught;
+
+  /// No description provided for @taughtOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught on {date}'**
+  String taughtOn(String date);
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacy;
+
+  /// No description provided for @privacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What KINETIX may do with the student\'s information'**
+  String get privacySubtitle;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @ifYouSayNo.
+  ///
+  /// In en, this message translates to:
+  /// **'If you say no: {text}'**
+  String ifYouSayNo(String text);
+
+  /// No description provided for @changeAnyTime.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change these choices at any time in Profile → Privacy. A change does not affect what was done before it.'**
+  String get changeAnyTime;
+
+  /// No description provided for @readFullNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the full notice'**
+  String get readFullNotice;
+
+  /// No description provided for @allowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow all'**
+  String get allowAll;
+
+  /// No description provided for @saveChoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my choices'**
+  String get saveChoices;
+
+  /// No description provided for @notDecided.
+  ///
+  /// In en, this message translates to:
+  /// **'Not decided yet'**
+  String get notDecided;
+
+  /// No description provided for @decidedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'{choice} by {name} on {date}'**
+  String decidedBy(String choice, String name, String date);
+
+  /// No description provided for @allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get allowed;
+
+  /// No description provided for @notAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed'**
+  String get notAllowed;
+
+  /// No description provided for @choicesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get choicesSaved;
+
+  /// No description provided for @privacyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy notice'**
+  String get privacyNotice;
+
+  /// No description provided for @noticeVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String noticeVersion(String version);
+
+  /// No description provided for @noticeWhoDecides.
+  ///
+  /// In en, this message translates to:
+  /// **'Who decides'**
+  String get noticeWhoDecides;
+
+  /// No description provided for @noticeSchool.
+  ///
+  /// In en, this message translates to:
+  /// **'School (students under 18): the parent or guardian decides for the child.'**
+  String get noticeSchool;
+
+  /// No description provided for @noticeCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'College or university: students decide for themselves. A guardian decides only for a student who has no KINETIX login of their own.'**
+  String get noticeCollege;
+
+  /// No description provided for @noticeWhatWeAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'What we ask about'**
+  String get noticeWhatWeAsk;
+
+  /// No description provided for @noticeWhereKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Where data is kept'**
+  String get noticeWhereKept;
+
+  /// No description provided for @noticeDataInIndia.
+  ///
+  /// In en, this message translates to:
+  /// **'All data and all AI processing stay in India. Data is kept while the student is at the institution, and then for as long as the institution\'s records policy requires.'**
+  String get noticeDataInIndia;
+
+  /// No description provided for @noticeQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions and requests'**
+  String get noticeQuestions;
+
+  /// No description provided for @noticeContact.
+  ///
+  /// In en, this message translates to:
+  /// **'The institution\'s grievance officer answers questions and requests to see, correct or erase data. Ask the institution\'s office how to reach them.'**
+  String get noticeContact;
+
+  /// No description provided for @purposeDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Records and updates'**
+  String get purposeDataTitle;
+
+  /// No description provided for @purposeDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeping the student\'s attendance, homework, marks, fees and library records so the institution can run classes and keep you informed.'**
+  String get purposeDataBody;
+
+  /// No description provided for @purposeDataNo.
+  ///
+  /// In en, this message translates to:
+  /// **'the institution still keeps the records it must by law; you will not get updates in the app.'**
+  String get purposeDataNo;
+
+  /// No description provided for @purposeAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI'**
+  String get purposeAiTitle;
+
+  /// No description provided for @purposeAiBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.'**
+  String get purposeAiBody;
+
+  /// No description provided for @purposeAiNo.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI is turned off for the student. Everything else works.'**
+  String get purposeAiNo;
+
+  /// No description provided for @purposeRecordingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Class recordings and live classes'**
+  String get purposeRecordingsTitle;
+
+  /// No description provided for @purposeRecordingsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The student\'s voice or image appearing in lesson recordings and live classes shared with the class.'**
+  String get purposeRecordingsBody;
+
+  /// No description provided for @purposeRecordingsNo.
+  ///
+  /// In en, this message translates to:
+  /// **'teachers are asked not to record the student; recordings already shared stay with the class.'**
+  String get purposeRecordingsNo;
+
+  /// No description provided for @purposePhotosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get purposePhotosTitle;
+
+  /// No description provided for @purposePhotosBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos of the student (for example on homework or in class activities) shared with the class.'**
+  String get purposePhotosBody;
+
+  /// No description provided for @purposePhotosNo.
+  ///
+  /// In en, this message translates to:
+  /// **'photos of the student are not shared with the class.'**
+  String get purposePhotosNo;
+
+  /// No description provided for @errConsentGuardianDecides.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t change these choices for this student.'**
+  String get errConsentGuardianDecides;
+
+  /// No description provided for @childWork.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s work'**
+  String childWork(String name);
+
+  /// No description provided for @returnedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The teacher has asked for this to be done again. Read the remark, then hand it in again.'**
+  String get returnedNote;
+
+  /// No description provided for @handInFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand in for {name}'**
+  String handInFor(String name);
+
+  /// No description provided for @handInForNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand in here for a child who doesn\'t have their own KINETIX login.'**
+  String get handInForNote;
+
+  /// No description provided for @consentTitleFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy choices for {name}'**
+  String consentTitleFor(String name);
+
+  /// No description provided for @consentIntroFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what KINETIX may do with {name}\'s information. Nothing is switched on until you choose.'**
+  String consentIntroFor(String name);
+
+  /// No description provided for @privacyIntroFor.
+  ///
+  /// In en, this message translates to:
+  /// **'What KINETIX may do with {name}\'s information. Turn a switch off to withdraw your consent.'**
+  String privacyIntroFor(String name);
+
+  /// No description provided for @privacyIntroReadOnlyFor.
+  ///
+  /// In en, this message translates to:
+  /// **'What KINETIX may do with {name}\'s information, and who decided.'**
+  String privacyIntroReadOnlyFor(String name);
+
+  /// No description provided for @managedByStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} manages this. At a college, students with their own KINETIX login make these choices themselves.'**
+  String managedByStudent(String name);
+
+  /// No description provided for @childPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy: {name}'**
+  String childPrivacy(String name);
+
+  /// No description provided for @syllabusProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Syllabus progress'**
+  String get syllabusProgress;
+
+  /// No description provided for @childSyllabusProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Syllabus progress: {name}'**
+  String childSyllabusProgress(String name);
+
+  /// No description provided for @syllabusProgressSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What the class has been taught in each subject'**
+  String get syllabusProgressSubtitle;
+
+  /// No description provided for @syllabusSubjectsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects appear here once teachers set homework in them.'**
+  String get syllabusSubjectsEmpty;
+
+  /// No description provided for @syllabusNotLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'The syllabus for {subject} isn\'t in KINETIX yet.'**
+  String syllabusNotLinked(String subject);
+
+  /// No description provided for @chaptersTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'{chapters, plural, =1{1 chapter} other{{chapters} chapters}}'**
+  String chaptersTopics(int chapters);
+
+  /// No description provided for @noTopicsInChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'No topics yet'**
+  String get noTopicsInChapter;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -5,6 +5,7 @@ import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import 'ask_controller.dart';
 import 'ask_view.dart';
+import '../privacy/privacy.dart';
 import 'syllabus_view.dart';
 
 /// Self-paced learning: ask KINETIX AI a doubt, or browse and search the syllabus library.
@@ -25,6 +26,7 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
     sectionId: widget.study.student.sectionId,
     language: widget.state.aiLanguage,
     onLanguageChanged: widget.state.setAiLanguage,
+    onOpenPrivacy: (context) => PrivacyScreen.open(context, widget.study.api, widget.study.student.id),
   );
 
   @override

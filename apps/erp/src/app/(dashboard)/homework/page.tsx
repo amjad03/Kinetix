@@ -13,27 +13,31 @@ import { PageHeader } from '@/components/PageHeader';
 import { RangeToggle } from '@/components/RangeToggle';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
-import { daysBetween, formatDate, formatDateTime } from '@/lib/dates';
+import { getI18n } from '@/i18n/server';
+import type { I18n } from '@/i18n/format';
+import { daysBetween } from '@/lib/dates';
 import { schoolToday, TIMEZONE } from '@/lib/school';
 import type { HomeworkRow } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Homework' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.homework') };
+}
 
 const RANGES = [7, 14, 30];
 
-function Due({ dueOn, today }: { dueOn: string | null; today: string }) {
+function Due({ dueOn, today, i18n: { t, fmt } }: { dueOn: string | null; today: string; i18n: I18n }) {
   if (!dueOn)
     return (
       <Typography variant="body2" color="text.secondary">
-        No due date
+        {t('hw.noDue')}
       </Typography>
     );
   const n = daysBetween(today, dueOn);
-  const label = n === 0 ? 'Due today' : n === 1 ? 'Due tomorrow' : n > 1 ? `In ${n} days` : n === -1 ? 'Was due yesterday' : `Was due ${-n} days ago`;
+  const label = n === 0 ? t('hw.dueToday') : n === 1 ? t('hw.dueTomorrow') : n > 1 ? t('hw.inDays', { n }) : n === -1 ? t('hw.wasYesterday') : t('hw.wasDaysAgo', { n: -n });
   return (
     <Box>
       <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-        {formatDate(dueOn, 'short')}
+        {fmt.date(dueOn, 'short')}
       </Typography>
       {n >= 0 ? (
         <Chip
@@ -59,35 +63,37 @@ export default async function HomeworkPage({ searchParams }: { searchParams: Pro
   const rows = res.data ?? [];
   const classes = new Set(rows.map((r) => r.section)).size;
   const teachers = new Set(rows.map((r) => r.teacher)).size;
+  const i18n = await getI18n();
+  const { t, fmt } = i18n;
 
   return (
     <>
       <PageHeader
-        title="Homework"
+        title={t('nav.homework')}
         subtitle={
           res.data
-            ? `${rows.length} ${rows.length === 1 ? 'assignment' : 'assignments'} set in the last ${days} days${rows.length ? ` · ${classes} ${classes === 1 ? 'class' : 'classes'} · ${teachers} ${teachers === 1 ? 'teacher' : 'teachers'}` : ''}`
-            : `Set in the last ${days} days`
+            ? `${t.plural('hw.subtitle', rows.length, { days })}${rows.length ? ` · ${t.plural('hw.classes', classes)} · ${t.plural('hw.teachers', teachers)}` : ''}`
+            : t('hw.setInLast', { days })
         }
         actions={<RangeToggle value={days} options={RANGES} />}
       />
       {res.error !== undefined ? (
         <ErrorState message={res.error} />
       ) : rows.length === 0 ? (
-        <EmptyState icon={<AssignmentOutlined />} title={`No homework in the last ${days} days`} testId="no-homework">
-          Teachers set homework from the board or the Teacher App. {days < 30 ? 'Try a longer range.' : ''}
+        <EmptyState icon={<AssignmentOutlined />} title={t('hw.none', { days })} testId="no-homework">
+          {t('hw.noneBody')} {days < 30 ? t('hw.tryLonger') : ''}
         </EmptyState>
       ) : (
         <TableFrame testId="homework-table">
           <Table sx={{ minWidth: 860 }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ width: '38%' }}>Homework</TableCell>
-                <TableCell>Class</TableCell>
-                <TableCell>Subject</TableCell>
-                <TableCell>Teacher</TableCell>
-                <TableCell>Set</TableCell>
-                <TableCell sx={{ minWidth: 150 }}>Due</TableCell>
+                <TableCell sx={{ width: '38%' }}>{t('hw.col.homework')}</TableCell>
+                <TableCell>{t('hw.col.class')}</TableCell>
+                <TableCell>{t('hw.col.subject')}</TableCell>
+                <TableCell>{t('hw.col.teacher')}</TableCell>
+                <TableCell>{t('hw.col.set')}</TableCell>
+                <TableCell sx={{ minWidth: 150 }}>{t('hw.col.due')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -108,9 +114,9 @@ export default async function HomeworkPage({ searchParams }: { searchParams: Pro
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{h.section}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{h.subject}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{h.teacher}</TableCell>
-                  <TableCell sx={{ whiteSpace: 'nowrap', color: 'text.secondary' }}>{formatDateTime(h.createdAt, TIMEZONE)}</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap', color: 'text.secondary' }}>{fmt.dateTime(h.createdAt, TIMEZONE)}</TableCell>
                   <TableCell>
-                    <Due dueOn={h.dueOn} today={today} />
+                    <Due dueOn={h.dueOn} today={today} i18n={i18n} />
                   </TableCell>
                 </TableRow>
               ))}

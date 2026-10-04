@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { deptQuery, flagsFor, formatPercent, headCandidates, movedSubjects, ofText, rangeFrom, rangeText, toneOf } from './department';
+import { MESSAGES } from '@/i18n/messages';
+import { createT } from '@/i18n/translate';
+import { deptQuery, flagsFor, formatPercent, headCandidates, movedSubjects, ofText, rangeFrom, rangeText, syllabusTotal, toneOf } from './department';
 
 describe('department ranges', () => {
   const today = '2026-10-04'; // a Sunday
@@ -49,10 +51,10 @@ describe('department flags', () => {
   it('says why a teacher or class is flagged', () => {
     expect(flagsFor({ scheduled: 0, taughtPercent: null, attendanceTakenPercent: null, attendancePercent: null })).toEqual([]);
     expect(flagsFor({ scheduled: 10, taughtPercent: 0, attendanceTakenPercent: 41, attendancePercent: 95 })).toEqual([
-      'Few classes held on the board',
-      'Attendance often not taken',
+      'dept.flag.held',
+      'dept.flag.taken',
     ]);
-    expect(flagsFor({ scheduled: 10, taughtPercent: 100, attendanceTakenPercent: 100, attendancePercent: 60 })).toEqual(['Low attendance']);
+    expect(flagsFor({ scheduled: 10, taughtPercent: 100, attendanceTakenPercent: 100, attendancePercent: 60 })).toEqual(['dept.flag.attendance']);
   });
 
   it('formats percentages and counts', () => {
@@ -61,6 +63,17 @@ describe('department flags', () => {
     expect(formatPercent(74.66)).toBe('74.7%');
     expect(ofText(3, 0)).toBe('—');
     expect(ofText(3, 5)).toBe('3 of 5');
+    expect(ofText(3, 5, createT('hi', MESSAGES.hi))).toBe('5 में से 3');
+  });
+
+  it('words the range in Hindi and Kannada with Western digits', () => {
+    expect(rangeText({ from: '2026-09-28', to: '2026-10-04' }, 'hi')).toBe('28 सित॰ – 4 अक्टू॰ 2026');
+    expect(rangeText({ from: '2026-10-04', to: '2026-10-04' }, 'kn')).toBe('4 ಅಕ್ಟೋ 2026');
+  });
+
+  it('adds up syllabus coverage across classes', () => {
+    expect(syllabusTotal([{ syllabus: { covered: 4, total: 19 } }, { syllabus: { covered: 0, total: 0 } }, { syllabus: { covered: 2, total: 10 } }])).toEqual({ covered: 6, total: 29, percent: 20.7 });
+    expect(syllabusTotal([{ syllabus: { covered: 0, total: 0 } }, {}]).percent).toBeNull();
   });
 });
 

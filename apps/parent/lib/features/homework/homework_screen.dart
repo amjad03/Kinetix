@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'submission_panel.dart';
 
-/// One piece of homework: what to do, by when, and who set it.
+/// One piece of homework: what to do, by when, who set it, and the child's hand-in.
 class HomeworkScreen extends StatelessWidget {
-  const HomeworkScreen({super.key, required this.homework, required this.today, required this.child});
+  const HomeworkScreen({super.key, required this.api, required this.homework, required this.today, required this.child});
 
+  final ParentApi api;
   final Homework homework;
   final DateTime today;
   final Child child;
 
-  static Future<void> open(BuildContext context, {required Homework homework, required DateTime today, required Child child}) =>
+  static Future<void> open(BuildContext context, ParentApi api, {required Homework homework, required DateTime today, required Child child}) =>
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => HomeworkScreen(homework: homework, today: today, child: child),
+          builder: (_) => HomeworkScreen(api: api, homework: homework, today: today, child: child),
         ),
       );
 
@@ -81,6 +84,8 @@ class HomeworkScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: Kx.s16),
+          SubmissionPanel(api: api, homework: hw, child: child),
           const SizedBox(height: Kx.s16),
           fact(Icons.event_outlined, context.l10n.factDue, context.fmt.longDay(hw.dueOn)),
           fact(Icons.person_outline, context.l10n.setBy, hw.teacher),

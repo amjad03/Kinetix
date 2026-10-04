@@ -295,6 +295,19 @@ class AnswerCard extends StatelessWidget {
             ],
           ),
         ),
+        if (e.privacy && controller.onOpenPrivacy != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(top: Kx.s8),
+              child: TextButton.icon(
+                key: const Key('aiOpenPrivacy'),
+                onPressed: () => controller.onOpenPrivacy!(context),
+                icon: const Icon(Icons.privacy_tip_outlined),
+                label: Text(context.l10n.openPrivacy),
+              ),
+            ),
+          ),
         if (e.retry)
           Align(
             alignment: Alignment.centerRight,

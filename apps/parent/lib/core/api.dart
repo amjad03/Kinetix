@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
@@ -11,7 +12,7 @@ import 'models.dart';
 enum ApiProblem { timeout, unreachable, wrongLogin, notGuardian, teacherAccount }
 
 class ApiException implements Exception {
-  ApiException(this.status, this.message, {this.problem});
+  ApiException(this.status, this.message, {this.problem, this.code});
 
   /// HTTP status, or 0 when the server could not be reached.
   final int status;
@@ -21,6 +22,11 @@ class ApiException implements Exception {
 
   /// Set when the app knows what went wrong and words it itself.
   final ApiProblem? problem;
+
+  /// The server's stable error code (`SUBMISSION_CHECKED`, `NOT_FOUND`…; services/api
+  /// common/error-codes.ts), which the app words in its own language. Null when the server
+  /// was not reached or sent none.
+  final String? code;
 
   @override
   String toString() => message.isEmpty ? 'HTTP $status' : message;
@@ -59,8 +65,8 @@ abstract class ParentApi {
   /// The recording's board events, for [LessonPlayer].
   Future<Lesson> recordingLesson(String id);
 
-  /// One homework (opened from a notification), with the class it was set for.
-  Future<({Homework homework, String sectionId})> homeworkById(String id);
+  /// One homework (opened from a notification), with the class and subject it was set for.
+  Future<({Homework homework, String sectionId, Subject subject})> homeworkById(String id);
 
   /// The child's fees, payments and whether online payment is available.
   Future<StudentFees> fees(String childId);
@@ -92,6 +98,38 @@ abstract class ParentApi {
   Future<MessagePage> messages(String conversationId, {DateTime? before});
   Future<ChatMessage> sendMessage(String conversationId, String body);
   Future<void> markConversationRead(String conversationId);
+
+  /// The academic calendar for the children's classes between [from] and [to] (default: today
+  /// and the next 90 days).
+  Future<CalendarRange> calendar({DateTime? from, DateTime? to});
+
+  /// A subject's syllabus, or null when the subject is not linked to a library course yet.
+  Future<CourseOutline?> syllabus(String subjectId);
+
+  /// How much of [subjectId]'s syllabus the class [sectionId] has been taught.
+  Future<Coverage> coverage({required String sectionId, required String subjectId});
+
+  /// What [childId] handed in for homework [homeworkId] (status null: nothing yet).
+  Future<Submission> submission(String homeworkId, String childId);
+
+  /// Hands in [text] and up to five photos or PDFs for [childId] (multipart), reporting bytes
+  /// sent. The server allows it for a child without their own login.
+  Future<Submission> submitHomework(
+    String homeworkId,
+    String childId, {
+    required String text,
+    List<UploadFile> files = const [],
+    void Function(int sent, int total)? onProgress,
+  });
+
+  /// Where a handed-in file is served, with the headers to fetch it.
+  ({Uri url, Map<String, String> headers}) submissionFile(String homeworkId, String childId, int index);
+
+  /// A child's privacy decisions (`GET /v1/consents?studentId=`).
+  Future<Consents> consents(String childId);
+
+  /// Records one decision for [childId]; returns them all.
+  Future<Consents> setConsent(String childId, ConsentPurpose purpose, {required bool granted});
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
@@ -161,7 +199,7 @@ class HttpParentApi implements ParentApi {
   ];
 
   @override
-  Future<({Homework homework, String sectionId})> homeworkById(String id) async {
+  Future<({Homework homework, String sectionId, Subject subject})> homeworkById(String id) async {
     final j = await _send('GET', '/v1/homework/$id') as Map<String, dynamic>;
     return (
       homework: Homework.fromJson({
@@ -170,6 +208,7 @@ class HttpParentApi implements ParentApi {
         'teacher': (j['createdBy'] as Map<String, dynamic>)['fullName'],
       }),
       sectionId: (j['section'] as Map<String, dynamic>)['id'] as String,
+      subject: Subject.fromJson(j['subject'] as Map<String, dynamic>),
     );
   }
 
@@ -260,16 +299,88 @@ class HttpParentApi implements ParentApi {
   @override
   Future<void> markConversationRead(String conversationId) async => _send('POST', '/v1/conversations/$conversationId/read');
 
+  @override
+  Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {
+    final q = [if (from != null) 'from=${isoDate(from)}', if (to != null) 'to=${isoDate(to)}'].join('&');
+    return CalendarRange.fromJson(await _send('GET', '/v1/calendar${q.isEmpty ? '' : '?$q'}') as Map<String, dynamic>);
+  }
+
+  @override
+  Future<CourseOutline?> syllabus(String subjectId) async {
+    final j = await _send('GET', '/v1/content/syllabus?subjectId=$subjectId');
+    return j == null ? null : CourseOutline.fromJson(j as Map<String, dynamic>);
+  }
+
+  @override
+  Future<Coverage> coverage({required String sectionId, required String subjectId}) async =>
+      Coverage.fromJson(await _send('GET', '/v1/coverage?sectionId=$sectionId&subjectId=$subjectId') as Map<String, dynamic>);
+
+  @override
+  Future<Submission> submission(String homeworkId, String childId) async =>
+      Submission.fromJson(await _send('GET', '/v1/homework/$homeworkId/submissions/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<Submission> submitHomework(
+    String homeworkId,
+    String childId, {
+    required String text,
+    List<UploadFile> files = const [],
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    final form = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/homework/$homeworkId/submissions/$childId'))
+      ..fields['text'] = text
+      ..files.addAll([
+        for (final f in files) http.MultipartFile.fromBytes('files', f.bytes, filename: f.name, contentType: MediaType.parse(f.mime)),
+      ]);
+    // Copied into a streamed request so the bytes can be counted as they go.
+    final body = form.finalize();
+    final total = form.contentLength;
+    final req = http.StreamedRequest('POST', form.url)
+      ..contentLength = total
+      ..headers.addAll(form.headers)
+      ..headers['accept'] = 'application/json';
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    var sent = 0;
+    onProgress?.call(0, total);
+    body.listen(
+      (chunk) {
+        req.sink.add(chunk);
+        sent += chunk.length;
+        onProgress?.call(sent, total);
+      },
+      onDone: req.sink.close,
+      onError: req.sink.addError,
+    );
+    return Submission.fromJson(await _receive(req, auth: true, timeout: const Duration(minutes: 3)) as Map<String, dynamic>);
+  }
+
+  @override
+  ({Uri url, Map<String, String> headers}) submissionFile(String homeworkId, String childId, int index) => (
+    url: Uri.parse('$baseUrl/v1/homework/$homeworkId/submissions/$childId/files/$index'),
+    headers: {if (token != null) 'authorization': 'Bearer $token'},
+  );
+
+  @override
+  Future<Consents> consents(String childId) async => Consents.fromJson(await _send('GET', '/v1/consents?studentId=$childId') as Map<String, dynamic>);
+
+  @override
+  Future<Consents> setConsent(String childId, ConsentPurpose purpose, {required bool granted}) async => Consents.fromJson(
+    await _send('POST', '/v1/consents', body: {'studentId': childId, 'purpose': purpose.wire, 'granted': granted}) as Map<String, dynamic>,
+  );
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
     if (body != null) req.body = jsonEncode(body);
+    return _receive(req, auth: auth, timeout: const Duration(seconds: 20));
+  }
 
+  Future<dynamic> _receive(http.BaseRequest req, {required bool auth, required Duration timeout}) async {
     final http.Response res;
     try {
-      res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 20));
+      res = await http.Response.fromStream(await _http.send(req)).timeout(timeout);
     } on TimeoutException {
       throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
     } catch (_) {
@@ -278,9 +389,18 @@ class HttpParentApi implements ParentApi {
 
     if (res.statusCode >= 400) {
       if (res.statusCode == 401 && auth) onUnauthorized?.call();
-      throw ApiException(res.statusCode, _message(res));
+      throw ApiException(res.statusCode, _message(res), code: _code(res));
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
+  }
+
+  static String? _code(http.Response res) {
+    try {
+      final c = (jsonDecode(res.body) as Map)['code'];
+      return c is String ? c : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   static String _message(http.Response res) {

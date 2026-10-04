@@ -10,6 +10,9 @@ abstract final class LiveEvents {
   static const ended = 'live.ended';
   static const audioState = 'live.audio.state';
   static const audio = 'live.audio';
+
+  /// To every socket of a user: a new message in one of their conversations.
+  static const messageNew = 'message.new';
 }
 
 /// What arrives on a live-class connection.
@@ -55,6 +58,15 @@ class LiveAudioChunk extends LiveSignal {
   final String deviceId;
   final int seq;
   final String data;
+}
+
+/// A new message in one of the user's conversations (`message.new`), on any signed-in socket.
+class LiveMessageNew extends LiveSignal {
+  const LiveMessageNew({required this.conversationId, required this.messageId, required this.senderId});
+
+  final String conversationId;
+  final String messageId;
+  final String senderId;
 }
 
 /// The connection dropped; the client keeps trying to reconnect on its own.
@@ -154,6 +166,10 @@ class SocketLiveConnection implements LiveConnection {
           .disableAutoConnect()
           .enableForceNew()
           .enableReconnection()
+          // Backs off from 1 s to 30 s (with jitter) while the server cannot be reached.
+          .setReconnectionDelay(1000)
+          .setReconnectionDelayMax(30000)
+          .setRandomizationFactor(0.5)
           .build(),
     );
     socket.on('ready', (_) => _add(const LiveReady()));
@@ -178,6 +194,11 @@ class SocketLiveConnection implements LiveConnection {
     socket.on(LiveEvents.audio, (d) {
       if (d is Map && d['data'] is String && d['codec'] == 'ima-adpcm') {
         _add(LiveAudioChunk('${d['deviceId']}', (d['seq'] as num?)?.toInt() ?? 0, d['data'] as String));
+      }
+    });
+    socket.on(LiveEvents.messageNew, (d) {
+      if (d is Map && d['conversationId'] is String) {
+        _add(LiveMessageNew(conversationId: '${d['conversationId']}', messageId: '${d['messageId']}', senderId: '${d['senderId']}'));
       }
     });
     socket.on('error', (d) {

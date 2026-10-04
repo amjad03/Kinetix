@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../../core/family.dart';
+import '../../core/realtime.dart';
 import '../../l10n/l10n.dart';
 import '../home/home_tab.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
+import '../privacy/privacy.dart';
 import '../profile/profile_tab.dart';
 import '../updates/updates_controller.dart';
 import '../updates/updates_tab.dart';
@@ -20,16 +22,56 @@ class ParentShell extends StatefulWidget {
   State<ParentShell> createState() => _ParentShellState();
 }
 
-class _ParentShellState extends State<ParentShell> {
-  late final family = FamilyController(widget.state.api, widget.state.prefs)..load();
+class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
+  late final family = FamilyController(widget.state.api, widget.state.prefs);
   late final updates = UpdatesController(widget.state.api)..load();
   late final messages = MessagesController(widget.state.api, meId: widget.state.me!.id)..load();
   int _tab = 0;
 
+  /// New messages over the realtime connection.
+  MessageFeed? _feed;
+
   static const _messagesTab = 1, _updatesTab = 2;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    messages.realtime = () => _feed?.connected ?? false;
+    final token = widget.state.api.token;
+    if (token != null) {
+      _feed = MessageFeed(
+        connector: widget.state.realtime,
+        baseUrl: widget.state.api.baseUrl,
+        token: token,
+        onMessage: messages.received,
+        onReconnected: messages.load,
+      )..start();
+    }
+    family.load().then((_) => _askConsent());
+  }
+
+  /// Privacy choices still to make for any child (first sign-in after the notice, or a new
+  /// notice version): one child at a time. Only for children the parent decides for.
+  Future<void> _askConsent() async {
+    for (final child in List.of(family.children)) {
+      if (!mounted) return;
+      final c = ConsentController(widget.state.api, child);
+      await ConsentScreen.askIfNeeded(context, c);
+      c.dispose();
+    }
+  }
+
+  /// Back in the app: reconnect the realtime connection straight away.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState s) {
+    if (s == AppLifecycleState.resumed) _feed?.resume();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _feed?.dispose();
     family.dispose();
     updates.dispose();
     messages.dispose();

@@ -3,28 +3,28 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'submission_panel.dart';
 
-/// One piece of homework: what to do, by when, and who set it.
+/// One piece of homework: what to do, by when, who set it, and handing it in.
 class HomeworkScreen extends StatelessWidget {
-  const HomeworkScreen({super.key, required this.homework, required this.today, required this.sectionName});
+  const HomeworkScreen({super.key, required this.homework, required this.study});
 
   final Homework homework;
-  final DateTime today;
-  final String sectionName;
+  final StudyController study;
 
-  static Future<void> open(BuildContext context, {required Homework homework, required DateTime today, required String sectionName}) =>
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => HomeworkScreen(homework: homework, today: today, sectionName: sectionName),
-        ),
-      );
+  static Future<void> open(BuildContext context, StudyController study, Homework homework) => Navigator.of(context).push(
+    MaterialPageRoute(builder: (_) => HomeworkScreen(homework: homework, study: study)),
+  );
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final hw = homework;
+    final today = study.today;
+    final sectionName = study.student.sectionName;
     final days = Fmt.daysBetween(today, hw.dueOn);
     final (bg, fg) = days < 0
         ? (c.surfaceContainerHighest, c.onSurfaceVariant)
@@ -82,6 +82,8 @@ class HomeworkScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: Kx.s16),
+            SubmissionPanel(api: study.api, homework: hw, studentId: study.student.id),
             const SizedBox(height: Kx.s16),
             fact(Icons.event_outlined, context.l10n.factDue, context.fmt.longDay(hw.dueOn)),
             fact(Icons.person_outline, context.l10n.setBy, hw.teacher),

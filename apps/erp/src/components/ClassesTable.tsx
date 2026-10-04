@@ -21,12 +21,14 @@ import type { ClassRow, ClassStatus } from '@/lib/types';
 import { AttendanceSummary } from './ClassTimeline';
 import { TableFrame } from './DataTable';
 import { EmptyState } from './States';
-import { STATUS_LABEL, STATUS_ORDER } from '@/lib/status';
+import { STATUS_ORDER } from '@/lib/status';
+import { useI18n } from '@/i18n/client';
 import { StatusChip } from './StatusChip';
 
 const ALL = '';
 
 export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; initialStatus?: ClassStatus }) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<ClassStatus | typeof ALL>(initialStatus ?? ALL);
   const [section, setSection] = useState(ALL);
   const [teacher, setTeacher] = useState(ALL);
@@ -49,9 +51,9 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', mb: 2 }} role="group" aria-label="Filter by status">
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', mb: 2 }} role="group" aria-label={t('classes.filterStatus')}>
         <Chip
-          label={`All · ${classes.length}`}
+          label={t('classes.all', { n: classes.length })}
           variant={status === ALL ? 'filled' : 'outlined'}
           onClick={() => setStatus(ALL)}
           icon={status === ALL ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
@@ -63,7 +65,7 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
           return (
             <Chip
               key={s}
-              label={`${STATUS_LABEL[s]} · ${counts.get(s) ?? 0}`}
+              label={t('classes.chip', { label: t(`status.${s}`), n: counts.get(s) ?? 0 })}
               variant={on ? 'filled' : 'outlined'}
               onClick={() => setStatus(on ? ALL : s)}
               icon={on ? <Check sx={{ fontSize: '18px !important' }} /> : undefined}
@@ -75,9 +77,9 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
         })}
         <Box sx={{ flex: 1 }} />
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel id="f-class" shrink>Class</InputLabel>
-          <Select labelId="f-class" label="Class" notched displayEmpty value={section} onChange={(e) => setSection(e.target.value)} data-testid="filter-class">
-            <MenuItem value={ALL}>All classes</MenuItem>
+          <InputLabel id="f-class" shrink>{t('classes.col.class')}</InputLabel>
+          <Select labelId="f-class" label={t('classes.col.class')} notched displayEmpty value={section} onChange={(e) => setSection(e.target.value)} data-testid="filter-class">
+            <MenuItem value={ALL}>{t('common.allClasses')}</MenuItem>
             {sections.map(([id, name]) => (
               <MenuItem key={id} value={id}>
                 {name}
@@ -86,9 +88,9 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
           </Select>
         </FormControl>
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel id="f-teacher" shrink>Teacher</InputLabel>
-          <Select labelId="f-teacher" label="Teacher" notched displayEmpty value={teacher} onChange={(e) => setTeacher(e.target.value)}>
-            <MenuItem value={ALL}>All teachers</MenuItem>
+          <InputLabel id="f-teacher" shrink>{t('classes.col.teacher')}</InputLabel>
+          <Select labelId="f-teacher" label={t('classes.col.teacher')} notched displayEmpty value={teacher} onChange={(e) => setTeacher(e.target.value)}>
+            <MenuItem value={ALL}>{t('common.allTeachers')}</MenuItem>
             {teachers.map(([id, name]) => (
               <MenuItem key={id} value={id}>
                 {name}
@@ -102,10 +104,10 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
         <EmptyState
           dense
           icon={<FilterAltOffOutlined />}
-          title="No classes match these filters"
+          title={t('classes.noMatch')}
           actions={
             <Button variant="outlined" onClick={clear}>
-              Clear filters
+              {t('common.clearFilters')}
             </Button>
           }
         />
@@ -114,13 +116,13 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
           <Table sx={{ minWidth: 860 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Time</TableCell>
-                <TableCell>Class</TableCell>
-                <TableCell>Teacher</TableCell>
-                <TableCell>Room</TableCell>
-                <TableCell>Board</TableCell>
-                <TableCell>Attendance</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>{t('classes.col.time')}</TableCell>
+                <TableCell>{t('classes.col.class')}</TableCell>
+                <TableCell>{t('classes.col.teacher')}</TableCell>
+                <TableCell>{t('classes.col.room')}</TableCell>
+                <TableCell>{t('classes.col.board')}</TableCell>
+                <TableCell>{t('classes.col.attendance')}</TableCell>
+                <TableCell>{t('classes.col.status')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -154,9 +156,9 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
       )}
       {filtered && rows.length > 0 && (
         <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          Showing {rows.length} of {classes.length} classes.{' '}
+          {t('classes.showing', { shown: rows.length, total: classes.length })}{' '}
           <Box component="button" onClick={clear} sx={{ all: 'unset', cursor: 'pointer', color: 'primary.main', fontWeight: 500 }}>
-            Clear filters
+            {t('common.clearFilters')}
           </Box>
         </Typography>
       )}

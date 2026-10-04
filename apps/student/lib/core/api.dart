@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
@@ -11,7 +12,7 @@ import 'models.dart';
 enum ApiProblem { timeout, unreachable, wrongLogin, notStudent, guardianAccount, teacherAccount, notLinked }
 
 class ApiException implements Exception {
-  ApiException(this.status, this.message, {this.problem});
+  ApiException(this.status, this.message, {this.problem, this.code});
 
   /// HTTP status, or 0 when the server could not be reached.
   final int status;
@@ -21,6 +22,11 @@ class ApiException implements Exception {
 
   /// Set when the app knows what went wrong and words it itself.
   final ApiProblem? problem;
+
+  /// The server's stable error code (`CONSENT_WITHDRAWN`, `NOT_FOUND`…; services/api
+  /// common/error-codes.ts), which the app words in its own language. Null when the server
+  /// was not reached or sent none.
+  final String? code;
 
   @override
   String toString() => message.isEmpty ? 'HTTP $status' : message;
@@ -107,6 +113,34 @@ abstract class StudentApi {
 
   /// The class being taught live right now, or null.
   Future<LiveClass?> live();
+
+  /// The academic calendar for the student's class between [from] and [to] (default: today
+  /// and the next 90 days).
+  Future<CalendarRange> calendar({DateTime? from, DateTime? to});
+
+  /// How much of [subjectId]'s syllabus the class [sectionId] has been taught.
+  Future<Coverage> coverage({required String sectionId, required String subjectId});
+
+  /// What [studentId] handed in for homework [homeworkId] (status null: nothing yet).
+  Future<Submission> submission(String homeworkId, String studentId);
+
+  /// Hands in [text] and up to five photos or PDFs (multipart), reporting bytes sent.
+  Future<Submission> submitHomework(
+    String homeworkId,
+    String studentId, {
+    required String text,
+    List<UploadFile> files = const [],
+    void Function(int sent, int total)? onProgress,
+  });
+
+  /// Where a handed-in file is served, with the headers to fetch it.
+  ({Uri url, Map<String, String> headers}) submissionFile(String homeworkId, String studentId, int index);
+
+  /// The student's privacy decisions (`GET /v1/consents?studentId=`).
+  Future<Consents> consents(String studentId);
+
+  /// Records one decision; returns them all.
+  Future<Consents> setConsent(String studentId, ConsentPurpose purpose, {required bool granted});
 
   /// Registers this device for push notifications to the Student App.
   Future<void> registerPushDevice({required String token, required String platform});
@@ -305,6 +339,69 @@ class HttpStudentApi implements StudentApi {
     return live == null ? null : LiveClass.fromJson((live as Map).cast<String, dynamic>());
   }
 
+  @override
+  Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {
+    final q = [if (from != null) 'from=${isoDate(from)}', if (to != null) 'to=${isoDate(to)}'].join('&');
+    return CalendarRange.fromJson(await _send('GET', '/v1/calendar${q.isEmpty ? '' : '?$q'}') as Map<String, dynamic>);
+  }
+
+  @override
+  Future<Coverage> coverage({required String sectionId, required String subjectId}) async =>
+      Coverage.fromJson(await _send('GET', '/v1/coverage?sectionId=$sectionId&subjectId=$subjectId') as Map<String, dynamic>);
+
+  @override
+  Future<Submission> submission(String homeworkId, String studentId) async =>
+      Submission.fromJson(await _send('GET', '/v1/homework/$homeworkId/submissions/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<Submission> submitHomework(
+    String homeworkId,
+    String studentId, {
+    required String text,
+    List<UploadFile> files = const [],
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    final form = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/homework/$homeworkId/submissions/$studentId'))
+      ..fields['text'] = text
+      ..files.addAll([
+        for (final f in files) http.MultipartFile.fromBytes('files', f.bytes, filename: f.name, contentType: MediaType.parse(f.mime)),
+      ]);
+    // Copied into a streamed request so the bytes can be counted as they go.
+    final body = form.finalize();
+    final total = form.contentLength;
+    final req = http.StreamedRequest('POST', form.url)
+      ..contentLength = total
+      ..headers.addAll(form.headers)
+      ..headers['accept'] = 'application/json';
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    var sent = 0;
+    onProgress?.call(0, total);
+    body.listen(
+      (chunk) {
+        req.sink.add(chunk);
+        sent += chunk.length;
+        onProgress?.call(sent, total);
+      },
+      onDone: req.sink.close,
+      onError: req.sink.addError,
+    );
+    return Submission.fromJson(await _receive(req, auth: true, timeout: const Duration(minutes: 3)) as Map<String, dynamic>);
+  }
+
+  @override
+  ({Uri url, Map<String, String> headers}) submissionFile(String homeworkId, String studentId, int index) => (
+    url: Uri.parse('$baseUrl/v1/homework/$homeworkId/submissions/$studentId/files/$index'),
+    headers: {if (token != null) 'authorization': 'Bearer $token'},
+  );
+
+  @override
+  Future<Consents> consents(String studentId) async => Consents.fromJson(await _send('GET', '/v1/consents?studentId=$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<Consents> setConsent(String studentId, ConsentPurpose purpose, {required bool granted}) async => Consents.fromJson(
+    await _send('POST', '/v1/consents', body: {'studentId': studentId, 'purpose': purpose.wire, 'granted': granted}) as Map<String, dynamic>,
+  );
+
   Future<dynamic> _send(
     String method,
     String path, {
@@ -317,7 +414,10 @@ class HttpStudentApi implements StudentApi {
       ..headers['accept'] = 'application/json';
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
     if (body != null) req.body = jsonEncode(body);
+    return _receive(req, auth: auth, timeout: timeout);
+  }
 
+  Future<dynamic> _receive(http.BaseRequest req, {required bool auth, required Duration timeout}) async {
     final http.Response res;
     try {
       res = await http.Response.fromStream(await _http.send(req)).timeout(timeout);
@@ -329,9 +429,18 @@ class HttpStudentApi implements StudentApi {
 
     if (res.statusCode >= 400) {
       if (res.statusCode == 401 && auth) onUnauthorized?.call();
-      throw ApiException(res.statusCode, _message(res));
+      throw ApiException(res.statusCode, _message(res), code: _code(res));
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
+  }
+
+  static String? _code(http.Response res) {
+    try {
+      final c = (jsonDecode(res.body) as Map)['code'];
+      return c is String ? c : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   static String _message(http.Response res) {

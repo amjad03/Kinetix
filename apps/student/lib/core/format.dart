@@ -18,6 +18,16 @@ class Fmt {
   String longDay(DateTime d) => DateFormat('EEEE, d MMMM', _locale).format(d);
   String shortDay(DateTime d) => DateFormat('EEE d MMM', _locale).format(d);
 
+  /// "October 2026"
+  String month(DateTime d) => DateFormat('MMMM y', _locale).format(d);
+
+  /// "Fri 9 Oct", or "Mon 12 Oct – Fri 16 Oct" for several days.
+  String dayRange(DateTime from, DateTime to) => daysBetween(from, to) == 0 ? shortDay(from) : '${shortDay(from)} – ${shortDay(to)}';
+
+  /// "1.2 MB", "350 KB"
+  static String fileSize(int bytes) =>
+      bytes >= 1024 * 1024 ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB' : '${(bytes / 1024).ceil()} KB';
+
   /// "4 Oct 2026"
   String date(DateTime d) => DateFormat('d MMM y', _locale).format(d);
 

@@ -4,20 +4,22 @@ import ErrorOutline from '@mui/icons-material/ErrorOutlined';
 import Refresh from '@mui/icons-material/Refresh';
 import Button from '@mui/material/Button';
 import { EmptyState } from '@/components/States';
+import { useI18n } from '@/i18n/client';
 
 export default function DashboardError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <EmptyState
       icon={<ErrorOutline />}
-      title="Something went wrong"
+      title={t('state.somethingWrong')}
       testId="error-state"
       actions={
         <Button variant="outlined" startIcon={<Refresh />} onClick={() => reset()}>
-          Try again
+          {t('common.tryAgain')}
         </Button>
       }
     >
-      This page couldn&apos;t be shown. Try again; if it keeps happening, tell your KINETIX administrator.
+      {t('state.pageFailed')}
     </EmptyState>
   );
 }

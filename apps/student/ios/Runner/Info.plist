@@ -72,5 +72,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>KINETIX uses the camera to take photos of your homework to hand in.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KINETIX opens your photos so you can choose pictures of your homework to hand in.</string>
 </dict>
 </plist>

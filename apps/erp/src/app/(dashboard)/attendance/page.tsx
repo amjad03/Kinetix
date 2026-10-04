@@ -21,11 +21,15 @@ import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
-import { formatDate, hhmm, isoWeekday } from '@/lib/dates';
-import { dateParam, relativeDay, schoolToday } from '@/lib/school';
+import { getI18n } from '@/i18n/server';
+import type { I18n } from '@/i18n/format';
+import { hhmm, isoWeekday } from '@/lib/dates';
+import { dateParam, schoolToday } from '@/lib/school';
 import type { AttendanceDay } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Attendance' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.attendance') };
+}
 
 /** Present + late over all marks. Marks are per period, so a student in three periods has three. */
 function rateOf(present: number, absent: number, late: number): number | null {
@@ -38,30 +42,32 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
   const date = dateParam((await searchParams).date);
   const today = schoolToday();
   const res = await load(() => api<AttendanceDay>(`/v1/admin/attendance?date=${date}`));
+  const i18n = await getI18n();
+  const { t, fmt } = i18n;
 
   return (
     <>
       <PageHeader
-        title="Attendance"
-        subtitle={`${formatDate(date, 'long')}${date === today ? '' : ` · ${relativeDay(date, today)}`}`}
+        title={t('nav.attendance')}
+        subtitle={`${fmt.date(date, 'long')}${date === today ? '' : ` · ${fmt.relativeDay(date, today)}`}`}
         actions={<DateNav date={date} today={today} />}
       />
-      {res.error !== undefined ? <ErrorState message={res.error} /> : <AttendanceView a={res.data} date={date} today={today} />}
+      {res.error !== undefined ? <ErrorState message={res.error} /> : <AttendanceView a={res.data} date={date} today={today} i18n={i18n} />}
     </>
   );
 }
 
-function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; today: string }) {
-  const t = a.sections.reduce(
+function AttendanceView({ a, date, today, i18n: { t } }: { a: AttendanceDay; date: string; today: string; i18n: I18n }) {
+  const tot = a.sections.reduce(
     (s, r) => ({ present: s.present + r.present, absent: s.absent + r.absent, late: s.late + r.late, marked: s.marked + r.marked, students: s.students + r.students }),
     { present: 0, absent: 0, late: 0, marked: 0, students: 0 },
   );
-  const marks = t.present + t.absent + t.late;
+  const marks = tot.present + tot.absent + tot.late;
   if (marks === 0) {
     if (isoWeekday(date) === 7) return <NoClasses date={date} today={today} path="/attendance" />;
     return (
-      <EmptyState icon={<FactCheckOutlined />} title={date > today ? 'Attendance is not due yet' : 'No attendance marked on this day'} testId="no-attendance">
-        Teachers mark attendance on the board or in the Teacher App. It appears here as soon as it syncs.
+      <EmptyState icon={<FactCheckOutlined />} title={date > today ? t('att.notDueYet') : t('att.noneMarked')} testId="no-attendance">
+        {t('att.noneBody')}
       </EmptyState>
     );
   }
@@ -74,7 +80,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
     byStudent.set(r.studentId, e);
   }
   const absentees = [...byStudent.entries()];
-  const rate = rateOf(t.present, t.absent, t.late);
+  const rate = rateOf(tot.present, tot.absent, tot.late);
   const classesMarked = a.sections.filter((s) => s.present + s.absent + s.late > 0).length;
   const classesWithStudents = a.sections.filter((s) => s.students > 0).length;
 
@@ -84,29 +90,29 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
         <StatTile
           testId="att-rate"
           icon={<FactCheckOutlined />}
-          label="Attendance rate"
+          label={t('att.rate')}
           value={rate === null ? '—' : `${rate}%`}
           bar={rate === null ? undefined : <MiniBar value={rate} color={rate >= 90 ? 'kx.success' : rate >= 75 ? 'primary.main' : 'error.main'} />}
-          caption={`${marks} period marks`}
+          caption={t('att.periodMarks', { n: marks })}
         />
-        <StatTile testId="att-absent" icon={<PersonOffOutlined />} label="Absent students" value={absentees.length} caption={`${t.absent} absent marks`} />
-        <StatTile icon={<ScheduleOutlined />} label="Late marks" value={t.late} caption="Counted as present in the rate" />
-        <StatTile icon={<HowToRegOutlined />} label="Classes marked" value={classesMarked} unit={`of ${classesWithStudents}`} caption={`${t.marked} of ${t.students} students marked`} />
+        <StatTile testId="att-absent" icon={<PersonOffOutlined />} label={t('att.absentStudents')} value={absentees.length} caption={t('att.absentMarks', { n: tot.absent })} />
+        <StatTile icon={<ScheduleOutlined />} label={t('att.lateMarks')} value={tot.late} caption={t('att.lateCaption')} />
+        <StatTile icon={<HowToRegOutlined />} label={t('att.classesMarked')} value={classesMarked} unit={t('att.ofN', { n: classesWithStudents })} caption={t('att.studentsMarked', { n: tot.marked, d: tot.students })} />
       </StatGrid>
 
-      <SectionTitle>By class</SectionTitle>
+      <SectionTitle>{t('att.byClass')}</SectionTitle>
       <TableFrame testId="attendance-table">
         <Table sx={{ minWidth: 600 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Class</TableCell>
-              <TableCell align="right">Students</TableCell>
-              <TableCell align="right">Marked</TableCell>
-              <TableCell align="right">Present</TableCell>
-              <TableCell align="right">Absent</TableCell>
-              <TableCell align="right">Late</TableCell>
+              <TableCell>{t('att.col.class')}</TableCell>
+              <TableCell align="right">{t('att.col.students')}</TableCell>
+              <TableCell align="right">{t('att.col.marked')}</TableCell>
+              <TableCell align="right">{t('att.col.present')}</TableCell>
+              <TableCell align="right">{t('att.col.absent')}</TableCell>
+              <TableCell align="right">{t('att.col.late')}</TableCell>
               <TableCell align="right" sx={{ width: { xs: 140, md: 200 } }}>
-                Rate
+                {t('att.col.rate')}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -120,12 +126,12 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
                     <Typography variant="subtitle2">{s.section}</Typography>
                     {none && (
                       <Typography variant="caption" color="text.secondary">
-                        No students enrolled
+                        {t('att.noStudents')}
                       </Typography>
                     )}
                     {!none && s.marked === 0 && (
                       <Typography variant="caption" color="error.main">
-                        Not marked
+                        {t('att.notMarked')}
                       </Typography>
                     )}
                   </TableCell>
@@ -154,23 +160,23 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
         </Table>
       </TableFrame>
       <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
-        Marked counts students. Present, absent and late count marks: one per student per period.
+        {t('att.note')}
       </Typography>
 
-      <SectionTitle>Absent students · {absentees.length}</SectionTitle>
+      <SectionTitle>{t('att.absentTitle', { n: absentees.length })}</SectionTitle>
       {absentees.length === 0 ? (
-        <EmptyState dense icon={<HowToRegOutlined />} title="Everyone was present" testId="no-absentees">
-          No student was marked absent on this day.
+        <EmptyState dense icon={<HowToRegOutlined />} title={t('att.everyonePresent')} testId="no-absentees">
+          {t('att.everyoneBody')}
         </EmptyState>
       ) : (
         <TableFrame testId="absentees-table">
           <Table sx={{ minWidth: 600 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Student</TableCell>
-                <TableCell>Class</TableCell>
-                <TableCell>Absent for</TableCell>
-                <TableCell>Marked by</TableCell>
+                <TableCell>{t('att.col.student')}</TableCell>
+                <TableCell>{t('att.col.class')}</TableCell>
+                <TableCell>{t('att.col.absentFor')}</TableCell>
+                <TableCell>{t('att.col.markedBy')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -195,7 +201,7 @@ function AttendanceView({ a, date, today }: { a: AttendanceDay; date: string; to
                   <TableCell>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                       {s.periods.map((p, i) => (
-                        <Chip key={i} size="small" variant="outlined" label={`${hhmm(p.startsAt)} ${p.subject ?? 'Unscheduled'}`} />
+                        <Chip key={i} size="small" variant="outlined" label={`${hhmm(p.startsAt)} ${p.subject ?? t('att.unscheduled')}`} />
                       ))}
                     </Box>
                   </TableCell>

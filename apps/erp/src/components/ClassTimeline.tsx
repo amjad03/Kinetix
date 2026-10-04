@@ -1,3 +1,5 @@
+'use client';
+
 import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import MeetingRoomOutlined from '@mui/icons-material/MeetingRoomOutlined';
@@ -5,6 +7,7 @@ import PersonOutline from '@mui/icons-material/PersonOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Fragment, type ReactNode } from 'react';
+import { useI18n } from '@/i18n/client';
 import { hhmm } from '@/lib/dates';
 import type { ClassRow, ClassStatus } from '@/lib/types';
 import { StatusChip } from './StatusChip';
@@ -27,13 +30,14 @@ function Meta({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 }
 
 export function AttendanceSummary({ c }: { c: ClassRow }) {
-  if (c.status === 'upcoming') return <>Attendance not due yet</>;
-  if (!c.attendanceTaken) return <Box component="span" sx={{ color: c.status === 'live' ? 'text.secondary' : 'error.main' }}>Attendance not taken</Box>;
+  const { t } = useI18n();
+  if (c.status === 'upcoming') return <>{t('att.notDue')}</>;
+  if (!c.attendanceTaken) return <Box component="span" sx={{ color: c.status === 'live' ? 'text.secondary' : 'error.main' }}>{t('att.notTaken')}</Box>;
   return (
     <>
-      Attendance taken ·{' '}
+      {t('att.taken')}{' '}
       <Box component="span" sx={{ color: c.absent ? 'error.main' : 'inherit', fontWeight: c.absent ? 500 : 400 }}>
-        {c.absent ? `${c.absent} absent` : 'all present'}
+        {c.absent ? t('att.absent', { n: c.absent }) : t('att.allPresent')}
       </Box>
     </>
   );
@@ -41,12 +45,13 @@ export function AttendanceSummary({ c }: { c: ClassRow }) {
 
 /** The day's classes as a vertical timeline, with a "now" line on today. */
 export function ClassTimeline({ classes, nowTime }: { classes: ClassRow[]; nowTime?: string }) {
+  const { t } = useI18n();
   const nowIndex = nowTime ? classes.findIndex((c) => c.startsAt > nowTime) : -1;
   const showNowAtEnd = !!nowTime && nowIndex === -1 && classes.length > 0;
   const nowLine = nowTime ? (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '64px 20px 1fr', sm: '96px 24px 1fr' }, alignItems: 'center', my: 0.5 }} aria-label={`Now, ${nowTime?.slice(0, 5)}`}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '64px 20px 1fr', sm: '96px 24px 1fr' }, alignItems: 'center', my: 0.5 }} aria-label={t('timeline.nowLabel', { time: nowTime.slice(0, 5) })}>
       <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 500, textAlign: 'right', pr: 1.5 }}>
-        Now {nowTime?.slice(0, 5)}
+        {t('timeline.now', { time: nowTime.slice(0, 5) })}
       </Typography>
       <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'error.main', justifySelf: 'center' }} />
       <Box sx={{ height: 2, bgcolor: 'error.main', borderRadius: 1 }} />

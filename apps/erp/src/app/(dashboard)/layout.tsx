@@ -6,17 +6,19 @@ import { Logo } from '@/components/Logo';
 import { ErrorState } from '@/components/States';
 import { getMe, load } from '@/lib/api';
 import { canUseErp } from '@/lib/access';
+import { getI18n } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const me = await load(getMe);
+  const { t } = await getI18n();
   if (me.error !== undefined) {
     return (
       <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', p: 3 }}>
         <Logo />
         <Box sx={{ maxWidth: 640, mx: 'auto', mt: 10 }}>
-          <ErrorState title="Can't open KINETIX ERP" message={me.error} />
+          <ErrorState title={t('state.cantOpen')} message={me.error} />
         </Box>
       </Box>
     );

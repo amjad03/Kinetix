@@ -58,7 +58,7 @@ class FamilyController extends ChangeNotifier {
       notifyListeners();
     }
     final c = selected;
-    if (c != null) await _loadAll(c.id);
+    await Future.wait([if (c != null) _loadAll(c.id), loadCalendar()]);
   }
 
   /// Everything Home shows for a child. Each part fails on its own, so one problem never hides the rest.
@@ -129,11 +129,79 @@ class FamilyController extends ChangeNotifier {
     }
   }
 
-  /// Pull to refresh: the children list and the selected child's summary, fees, library and marks.
+  /// Pull to refresh: the children list and the selected child's summary, fees, library and
+  /// marks, and the calendar.
   Future<void> refresh() async {
     if (children.isEmpty) return load();
     final c = selected;
-    if (c != null) await _loadAll(c.id);
+    await Future.wait([if (c != null) _loadAll(c.id), loadCalendar()]);
+  }
+
+  // -- Calendar ---------------------------------------------------------------------------------
+
+  /// Holidays, exams and events for the children's classes, from today for the next 90 days.
+  CalendarRange? calendar;
+  ApiException? calendarError;
+
+  Future<CalendarRange?> loadCalendar() async {
+    calendarError = null;
+    try {
+      calendar = await api.calendar();
+    } on ApiException catch (e) {
+      calendarError = e;
+    } finally {
+      notifyListeners();
+    }
+    return calendar;
+  }
+
+  /// A holiday today or tomorrow for [child]'s program: (holiday, is today).
+  (CalendarEvent, bool)? holidaySoon(Child child) => calendar?.holidaySoon(program: child.programName);
+
+  // -- Subjects and syllabus progress -----------------------------------------------------------
+
+  final _subjects = <String, List<Subject>>{};
+  final _coverage = <String, Coverage>{};
+
+  List<Subject>? subjectsOf(String childId) => _subjects[childId];
+  Coverage? coverageOf(String childId, String subjectId) => _coverage['$childId|$subjectId'];
+
+  /// The subjects of [child]'s class. There is no list of a class's subjects for families yet,
+  /// so they are worked out from the class's homework: one homework per subject name says the
+  /// subject's id (`GET /v1/homework/:id`).
+  Future<List<Subject>> loadSubjects(Child child) async {
+    if (!_summaries.containsKey(child.id)) await loadSummary(child.id);
+    final s = _summaries[child.id];
+    final firstBySubject = <String, Homework>{};
+    for (final hw in [...?s?.upcoming, ...?s?.pastHomework]) {
+      firstBySubject.putIfAbsent(hw.subject, () => hw);
+    }
+    final subjects = <Subject>[];
+    ApiException? failed;
+    for (final hw in firstBySubject.values) {
+      try {
+        final found = await api.homeworkById(hw.id);
+        if (!subjects.any((x) => x.id == found.subject.id)) subjects.add(found.subject);
+      } on ApiException catch (e) {
+        failed = e;
+      }
+    }
+    if (subjects.isEmpty && failed != null) throw failed;
+    subjects.sort((a, b) => a.name.compareTo(b.name));
+    _subjects[child.id] = subjects;
+    notifyListeners();
+    return subjects;
+  }
+
+  /// How much of [subjectId] [child]'s class has been taught. A failure leaves it out.
+  Future<Coverage?> loadCoverage(Child child, String subjectId) async {
+    try {
+      final c = _coverage['${child.id}|$subjectId'] = await api.coverage(sectionId: child.sectionId, subjectId: subjectId);
+      notifyListeners();
+      return c;
+    } on ApiException {
+      return _coverage['${child.id}|$subjectId'];
+    }
   }
 
   /// The child (in [sectionId]) whose published marks include [assessmentId], with that result.
@@ -165,10 +233,12 @@ class FamilyController extends ChangeNotifier {
     return selected;
   }
 
-  /// Finds a homework by id among the children in [sectionId], loading summaries as needed.
-  Future<(Child, Homework)?> findHomework(String homeworkId, {String? sectionId}) async {
+  /// Finds a homework by id for [studentId] (a checked or returned hand-in), else among the
+  /// children in [sectionId], loading summaries as needed.
+  Future<(Child, Homework)?> findHomework(String homeworkId, {String? sectionId, String? studentId}) async {
     if (children.isEmpty) await load();
-    final candidates = sectionId == null ? children : inSection(sectionId).toList();
+    final named = byId(studentId);
+    final candidates = named != null ? [named] : sectionId == null ? children : inSection(sectionId).toList();
     for (final child in candidates) {
       if (!_summaries.containsKey(child.id)) await loadSummary(child.id);
       final s = _summaries[child.id];
@@ -180,7 +250,7 @@ class FamilyController extends ChangeNotifier {
     // Older than the summary window: ask for it directly.
     try {
       final found = await api.homeworkById(homeworkId);
-      final child = inSection(found.sectionId).firstOrNull;
+      final child = named ?? inSection(found.sectionId).firstOrNull;
       return child == null ? null : (child, found.homework);
     } on ApiException {
       return null;

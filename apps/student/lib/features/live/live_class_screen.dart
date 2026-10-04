@@ -360,7 +360,7 @@ class _EndedCard extends StatelessWidget {
     LiveErrors.notConnected => l.liveNotConnected,
     LiveErrors.timeout => l.liveTimeout,
     LiveErrors.couldNotJoin => l.liveCouldNotJoin,
-    _ => message,
+    _ => describeErrorCode(l, errorCodeForMessage[message]) ?? message,
   };
 
   @override
