@@ -165,5 +165,15 @@ describe('broadcasts and sync', () => {
     it('needs a paired board, not just a device token', async () => {
       await http().post('/v1/sync/push').set('authorization', `Bearer ${deviceToken}`).send({ ops: [] }).expect(403);
     });
+
+    it("accepts a restarted board's queued ops with its device token and the class session", async () => {
+      const current = await http().get('/v1/sessions/current').set('authorization', `Bearer ${sessionToken}`).expect(200);
+      const op = { opId: randomUUID(), type: 'participation.recorded', occurredAt: at('10:30'), payload: { studentId: t.students[1].id, outcome: 'skipped' } };
+      const res = await http().post('/v1/sync/push').set('authorization', `Bearer ${deviceToken}`).send({ sessionId: current.body.sessionId, ops: [op] }).expect(200);
+      expect(res.body.results).toEqual([{ opId: op.opId, status: 'applied' }]);
+      const { rows } = await owner.query('select recorded_by from participation_events where student_id = $1 and outcome = $2', [t.students[1].id, 'skipped']);
+      expect(rows).toEqual([{ recorded_by: t.teacher.id }]);
+      await http().post('/v1/sync/push').set('authorization', `Bearer ${deviceToken}`).send({ sessionId: randomUUID(), ops: [op] }).expect(403);
+    });
   });
 });

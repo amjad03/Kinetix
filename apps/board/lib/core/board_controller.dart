@@ -11,6 +11,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'api_client.dart';
 import 'device_store.dart';
 import 'models.dart';
+import 'outbox_store.dart';
 import 'realtime.dart';
 import 'recording/recordings.dart';
 
@@ -30,8 +31,14 @@ enum TouchProfile {
 
 /// Top-level state of the board: enrolment, then the board itself, with or without a teacher.
 class BoardController extends ChangeNotifier {
-  BoardController({DeviceStore? store, ApiClient Function(String)? apiFactory, Realtime Function(String)? realtimeFactory, Recordings? recordings})
-    : _store = store ?? DeviceStore(),
+  BoardController({
+    DeviceStore? store,
+    ApiClient Function(String)? apiFactory,
+    Realtime Function(String)? realtimeFactory,
+    Recordings? recordings,
+    OutboxStore? outboxStore,
+  }) : _store = store ?? DeviceStore(),
+      _outboxStore = outboxStore ?? FileOutboxStore(),
       _apiFactory = apiFactory ?? ((url) => ApiClient(baseUrl: url)),
       _realtimeFactory = realtimeFactory ?? Realtime.new,
       recordings = recordings ?? Recordings() {
@@ -39,6 +46,7 @@ class BoardController extends ChangeNotifier {
   }
 
   final DeviceStore _store;
+  final OutboxStore _outboxStore;
   final ApiClient Function(String) _apiFactory;
   final Realtime Function(String) _realtimeFactory;
 
@@ -65,8 +73,11 @@ class BoardController extends ChangeNotifier {
   /// Emergencies the teacher acknowledged. They shrink to a strip but stay until the sender clears them.
   final Set<String> acknowledgedEmergencies = {};
 
-  /// Operations waiting to reach the cloud. TODO: persist (Drift) so they survive a restart.
+  /// Operations waiting to reach the cloud, each tagged with the class session it belongs to.
+  /// Saved to disk on every change, so they survive a crash or restart and still go up after
+  /// the class has ended (with the device token; see [flushOutbox]).
   final List<Map<String, dynamic>> _outbox = [];
+  Future<void> _outboxSaving = Future.value();
   int get pendingOps => _outbox.length;
 
   /// The id the current board is saved under. A new lesson gets a new id; opening a saved
@@ -80,6 +91,7 @@ class BoardController extends ChangeNotifier {
   bool get isSignedIn => session != null;
 
   Future<void> start() async {
+    _outbox.addAll(await _outboxStore.load());
     final saved = await _store.load();
     touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
     eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
@@ -172,31 +184,71 @@ class BoardController extends ChangeNotifier {
 
   void _enqueue(String type, Map<String, dynamic> payload) {
     if (session == null) return; // guest boards do not record anything
-    _outbox.add({'opId': _uuidV4(), 'type': type, 'occurredAt': DateTime.now().toUtc().toIso8601String(), 'payload': payload});
+    _outbox.add({
+      'opId': _uuidV4(),
+      'type': type,
+      'occurredAt': DateTime.now().toUtc().toIso8601String(),
+      'payload': payload,
+      'sessionId': session!.sessionId,
+    });
+    _persistOutbox();
     notifyListeners();
     unawaited(flushOutbox());
   }
 
+  /// Writes the outbox to disk, one write after another so an older list never wins.
+  void _persistOutbox() {
+    final snapshot = [for (final op in _outbox) Map<String, dynamic>.of(op)];
+    _outboxSaving = _outboxSaving.then((_) => _outboxStore.save(snapshot)).catchError((_) {});
+  }
+
+  /// Waits until the outbox on disk matches memory (tests, shutdown).
+  Future<void> get outboxSaved => _outboxSaving;
+
   bool _flushing = false;
 
   Future<void> flushOutbox() async {
-    if (_flushing || api?.sessionToken == null) return;
+    final api = this.api;
+    if (_flushing || api == null) return;
     _flushing = true;
+    var changed = false;
     try {
       // Keep going while there is work: operations queued during a request go in the next batch.
-      while (_outbox.isNotEmpty && api?.sessionToken != null) {
-        final batch = List.of(_outbox.take(200));
-        final res = await api!.pushOps(batch);
+      while (_outbox.isNotEmpty) {
+        // Oldest class first. The current class uses its session token; an earlier class's ops
+        // (from before a restart, or after it ended) go with the device token.
+        final sessionId = _outbox.first['sessionId'] as String?;
+        final current = sessionId == null || sessionId == session?.sessionId;
+        if (current && api.sessionToken == null) break;
+        if (!current && api.deviceToken == null) break;
+        final batch = _outbox.where((op) => op['sessionId'] == sessionId).take(200).toList();
+        final res = await api.pushOps(
+          [for (final op in batch) Map.of(op)..remove('sessionId')],
+          sessionId: sessionId,
+          useDeviceToken: !current,
+        );
         final handled = batch.where((op) => res.done.contains(op['opId']) || res.rejected.containsKey(op['opId'])).toSet();
         _outbox.removeWhere(handled.contains);
+        changed = changed || handled.isNotEmpty;
         online = true;
         if (handled.isEmpty) break; // the server answered but took nothing; retry later
+      }
+    } on ApiException catch (e) {
+      // The server refuses this class's ops for good (too old, not this board): drop them so
+      // they do not block newer ones.
+      if (e.status == 403 && _outbox.isNotEmpty && _outbox.first['sessionId'] != session?.sessionId) {
+        final stale = _outbox.first['sessionId'];
+        _outbox.removeWhere((op) => op['sessionId'] == stale);
+        changed = true;
+      } else {
+        online = false;
       }
     } catch (_) {
       online = false; // keep everything; retried on reconnect or the next change
     } finally {
       _flushing = false;
-      notifyListeners();
+      if (changed) _persistOutbox();
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -306,8 +358,11 @@ class BoardController extends ChangeNotifier {
     return 'linux';
   }
 
+  bool _disposed = false;
+
   @override
   void dispose() {
+    _disposed = true;
     _sessionTimer?.cancel();
     _realtime?.dispose();
     recordings.dispose();

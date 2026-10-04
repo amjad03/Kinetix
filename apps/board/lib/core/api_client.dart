@@ -64,8 +64,12 @@ class ApiClient {
 
   /// Sends outbox operations. Returns the opIds the server has (applied or duplicate) and
   /// the ones it rejected; anything else should be retried.
-  Future<({Set<String> done, Map<String, String> rejected})> pushOps(List<Map<String, dynamic>> ops) async {
-    final j = await _send('POST', '/v1/sync/push', body: {'ops': ops}) as Map<String, dynamic>;
+  /// Sends queued classroom operations. Ops from the current class go with the session token;
+  /// ops from an earlier class on this board (after a restart, or once the class has ended) go
+  /// with the device token and that class's [sessionId].
+  Future<({Set<String> done, Map<String, String> rejected})> pushOps(List<Map<String, dynamic>> ops, {String? sessionId, bool useDeviceToken = false}) async {
+    final j =
+        await _send('POST', '/v1/sync/push', body: {'sessionId': ?sessionId, 'ops': ops}, useDeviceToken: useDeviceToken) as Map<String, dynamic>;
     final done = <String>{};
     final rejected = <String, String>{};
     for (final r in (j['results'] as List<dynamic>).cast<Map<String, dynamic>>()) {
