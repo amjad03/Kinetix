@@ -14,6 +14,8 @@ import FactCheck from '@mui/icons-material/FactCheck';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
+import Forum from '@mui/icons-material/Forum';
+import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import Grading from '@mui/icons-material/Grading';
 import GradingOutlined from '@mui/icons-material/GradingOutlined';
 import LocalLibrary from '@mui/icons-material/LocalLibrary';
@@ -53,6 +55,7 @@ const NAV: { href: string; label: string; section: Section; icon: typeof TodayOu
   { href: '/homework', label: 'Homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
   { href: '/results', label: 'Results', section: 'results', icon: GradingOutlined, active: Grading },
   { href: '/messages', label: 'Messages', section: 'school', icon: CampaignOutlined, active: Campaign },
+  { href: '/conversations', label: 'Parent messages', section: 'conversations', icon: ForumOutlined, active: Forum },
   { href: '/boards', label: 'Boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
   { href: '/live', label: 'Live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
   { href: '/fees', label: 'Fees', section: 'fees', icon: PaymentsOutlined, active: Payments },

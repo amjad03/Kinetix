@@ -2,7 +2,7 @@
 // client components and tests can use them.
 
 import { daysBetween } from './dates';
-import type { LibraryBook, LibraryStudent } from './types';
+import type { LibraryBook, LibraryLoan } from './types';
 
 /** The API's loan period and late fine (library.controller.ts). */
 export const LOAN_DAYS = 14;
@@ -30,27 +30,21 @@ export function dueLabel(dueOn: string, today: string): string {
   return `Due in ${n} day${n === 1 ? '' : 's'}`;
 }
 
-const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+/** The API searches students from two characters. */
+export const STUDENT_QUERY_MIN = 2;
 
-/** Every word typed must appear in the name, roll number or class. */
-export function matchesStudent(s: LibraryStudent, query: string): boolean {
-  const words = norm(query).split(/\s+/).filter(Boolean);
-  if (words.length === 0) return true;
-  const hay = norm(`${s.fullName} ${s.rollNo ?? ''} ${s.className}`);
-  return words.every((w) => hay.includes(w));
+export function canSearchStudents(query: string): boolean {
+  return query.trim().length >= STUDENT_QUERY_MIN;
 }
 
-/** Matches first by roll number, then by name; at most `limit`. */
-export function searchStudents(list: LibraryStudent[], query: string, limit = 50): LibraryStudent[] {
-  const q = norm(query.trim());
-  const hits = list.filter((s) => matchesStudent(s, q));
-  const rank = (s: LibraryStudent) => ((s.rollNo ?? '').toLowerCase() === q ? 0 : norm(s.fullName).startsWith(q) ? 1 : 2);
-  return hits.sort((a, b) => rank(a) - rank(b) || a.fullName.localeCompare(b.fullName)).slice(0, limit);
+/** Fines charged on returns and not collected yet. */
+export function unpaidFines(loans: Pick<LibraryLoan, 'finePaise' | 'finePaidAt'>[]): { count: number; paise: number } {
+  const open = loans.filter((l) => l.finePaise > 0 && !l.finePaidAt);
+  return { count: open.length, paise: open.reduce((s, l) => s + l.finePaise, 0) };
 }
 
-/** Students known to the library desk, de-duplicated and sorted. */
-export function uniqueStudents(list: LibraryStudent[]): LibraryStudent[] {
-  const byId = new Map<string, LibraryStudent>();
-  for (const s of list) if (!byId.has(s.id)) byId.set(s.id, s);
-  return [...byId.values()].sort((a, b) => a.className.localeCompare(b.className) || (a.rollNo ?? '').localeCompare(b.rollNo ?? '') || a.fullName.localeCompare(b.fullName));
+/** "Unpaid", "Paid", or null when the loan carries no fine. */
+export function fineStatus(loan: Pick<LibraryLoan, 'finePaise' | 'finePaidAt'>): 'paid' | 'unpaid' | null {
+  if (loan.finePaise <= 0) return null;
+  return loan.finePaidAt ? 'paid' : 'unpaid';
 }

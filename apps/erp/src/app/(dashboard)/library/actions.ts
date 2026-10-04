@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { act, api } from '@/lib/api';
 import { isIsoDate } from '@/lib/dates';
-import type { ActionResult, LibraryBook, LibraryLoan, ReturnedLoan } from '@/lib/types';
+import { canSearchStudents } from '@/lib/library';
+import type { ActionResult, LibraryBook, LibraryLoan, LibraryStudent, ReturnedLoan } from '@/lib/types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -36,6 +37,21 @@ export async function issueBook(input: { bookId: string; studentId: string; dueO
 export async function returnBook(loanId: string): Promise<ActionResult<ReturnedLoan>> {
   if (!UUID.test(loanId)) return { ok: false, error: 'Unknown loan.' };
   const res = await act(() => api<ReturnedLoan>(`/v1/library/loans/${loanId}/return`, { method: 'POST' }));
+  if (res.ok) revalidatePath('/library');
+  return res;
+}
+
+/** Students to lend to, by name, roll number or class (the API answers from two characters). */
+export async function findStudents(query: string): Promise<ActionResult<LibraryStudent[]>> {
+  const q = query.trim().slice(0, 80);
+  if (!canSearchStudents(q)) return { ok: true, data: [] };
+  return act(() => api<LibraryStudent[]>(`/v1/library/students?q=${encodeURIComponent(q)}`));
+}
+
+/** The student paid the late fine at the desk. */
+export async function markFinePaid(loanId: string): Promise<ActionResult<LibraryLoan>> {
+  if (!UUID.test(loanId)) return { ok: false, error: 'Unknown loan.' };
+  const res = await act(() => api<LibraryLoan>(`/v1/library/loans/${loanId}/fine-paid`, { method: 'POST' }));
   if (res.ok) revalidatePath('/library');
   return res;
 }

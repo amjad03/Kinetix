@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -24,6 +24,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   results: ['principal', 'tenant_admin', 'hod'],
   // timetable-admin.controller.ts: STAFF_ADMIN_ROLES
   timetable: ['principal', 'tenant_admin'],
+  // messages.controller.ts: GET /v1/conversations?all=true is for isSchoolAdmin (principal, admin)
+  conversations: ['principal', 'tenant_admin'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -78,6 +80,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'results';
     case 'timetable':
       return 'timetable';
+    case 'conversations':
+      return 'conversations';
     default:
       return null;
   }

@@ -272,6 +272,8 @@ export interface LibraryLoan {
   dueOn: string;
   returnedAt: string | null;
   finePaise: number;
+  /** When the fine was collected at the desk; null while unpaid (or when there is no fine). */
+  finePaidAt: string | null;
   overdue: boolean;
 }
 
@@ -285,7 +287,7 @@ export interface ReturnedLoan {
   finePaise: number;
 }
 
-/** A student the library can lend to. */
+/** A student the library can lend to (`GET /v1/library/students?q=`). */
 export interface LibraryStudent {
   id: string;
   fullName: string;
@@ -347,6 +349,31 @@ export interface TimetableSlot {
   teacher: { id: string; fullName: string };
   roomId: string | null;
   room: string | null;
+}
+
+// ---- Parent–teacher conversations (v1/conversations?all=true, read-only for leaders) ----
+
+export interface ConversationSummary {
+  id: string;
+  student: { id: string; fullName: string };
+  className: string;
+  staff: { id: string; fullName: string };
+  family: { id: string; fullName: string };
+  lastMessageAt: string | null;
+  /** Always null in the leaders' list: message text shows only when a thread is opened (audited). */
+  lastMessage: string | null;
+}
+
+export interface ConversationMessage {
+  id: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface ConversationThread {
+  conversation: ConversationSummary;
+  messages: ConversationMessage[];
 }
 
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };

@@ -31,17 +31,17 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { Theme } from '@mui/material/styles';
 import { usePathname } from 'next/navigation';
-import { useMemo, useState, useTransition } from 'react';
-import { addBook, issueBook, returnBook } from '@/app/(dashboard)/library/actions';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
 import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
 import { addDays, formatDate, formatDateTime } from '@/lib/dates';
-import { availableCopies, daysLate, dueLabel, finePreview, LOAN_DAYS, searchStudents } from '@/lib/library';
+import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, LOAN_DAYS } from '@/lib/library';
 import { formatRupees } from '@/lib/money';
 import { withAlpha } from '@/theme/scheme';
 import type { LibraryBook, LibraryLoan, LibraryStudent } from '@/lib/types';
 
-type TabName = 'loans' | 'catalogue';
+type TabName = 'loans' | 'catalogue' | 'fines';
 
 const num = { fontVariantNumeric: 'tabular-nums' } as const;
 /** A light wash of the error container on overdue loans. */
@@ -51,21 +51,20 @@ export function LibraryDesk({
   books,
   loans,
   today,
-  students,
-  studentsComplete,
+  fines,
   initialTab,
 }: {
   books: LibraryBook[];
   loans: LibraryLoan[];
   today: string;
-  students: LibraryStudent[];
-  studentsComplete: boolean;
+  fines: LibraryLoan[];
   initialTab: TabName;
 }) {
   const pathname = usePathname();
   const [tab, setTab] = useState<TabName>(initialTab);
   const [issuing, setIssuing] = useState<{ book?: LibraryBook } | null>(null);
   const [returning, setReturning] = useState<LibraryLoan | null>(null);
+  const [collecting, setCollecting] = useState<LibraryLoan | null>(null);
   const [adding, setAdding] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const overdue = loans.filter((l) => l.overdue).length;
@@ -79,9 +78,10 @@ export function LibraryDesk({
   return (
     <>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mt: 3, mb: 2, borderBottom: 1, borderColor: 'm3.outlineVariant' }}>
-        <Tabs value={tab} onChange={(_, v: TabName) => switchTab(v)} aria-label="Library" sx={{ flex: '1 1 auto', minHeight: 48 }}>
+        <Tabs value={tab} onChange={(_, v: TabName) => switchTab(v)} aria-label="Library" variant="scrollable" scrollButtons={false} sx={{ flex: '1 1 auto', minHeight: 48 }}>
           <Tab value="loans" label={`On loan · ${loans.length}`} data-testid="tab-loans" />
           <Tab value="catalogue" label={`Catalogue · ${books.length}`} data-testid="tab-catalogue" />
+          <Tab value="fines" label={`Unpaid fines · ${fines.length}`} data-testid="tab-fines" />
         </Tabs>
         <Box sx={{ display: { xs: 'grid', sm: 'flex' }, gridTemplateColumns: '1fr 1fr', width: { xs: '100%', sm: 'auto' }, gap: 1, pb: 1, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>
           <Button variant="outlined" startIcon={<LibraryAddOutlined />} onClick={() => setAdding(true)}>
@@ -99,6 +99,8 @@ export function LibraryDesk({
 
       {tab === 'loans' ? (
         <Loans loans={loans} overdue={overdue} today={today} onReturn={setReturning} />
+      ) : tab === 'fines' ? (
+        <Fines fines={fines} onCollect={setCollecting} />
       ) : (
         <Catalogue books={books} onIssue={(book) => setIssuing({ book })} onAdd={() => setAdding(true)} />
       )}
@@ -107,8 +109,6 @@ export function LibraryDesk({
         <IssueDialog
           books={books}
           book={issuing.book}
-          students={students}
-          studentsComplete={studentsComplete}
           today={today}
           onClose={(done) => {
             setIssuing(null);
@@ -117,6 +117,15 @@ export function LibraryDesk({
         />
       )}
       {returning && <ReturnDialog loan={returning} today={today} onClose={() => setReturning(null)} />}
+      {collecting && (
+        <FinePaidDialog
+          loan={collecting}
+          onClose={(done) => {
+            setCollecting(null);
+            if (done) setToast(done);
+          }}
+        />
+      )}
       {adding && (
         <AddBookDialog
           onClose={(done) => {
@@ -308,6 +317,111 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
   );
 }
 
+// ---- Unpaid fines --------------------------------------------------------------------------
+
+function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: LibraryLoan) => void }) {
+  if (fines.length === 0)
+    return (
+      <EmptyState icon={<CheckCircleOutlined />} title="No unpaid fines" testId="no-fines">
+        Books returned late are fined ₹2 a day. Fines waiting to be collected at the desk appear here.
+      </EmptyState>
+    );
+  const total = fines.reduce((s, f) => s + f.finePaise, 0);
+  return (
+    <>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} data-testid="fines-summary">
+        {fines.length} fine{fines.length === 1 ? '' : 's'} to collect · {formatRupees(total)}
+      </Typography>
+      <TableFrame testId="fines-table">
+        <Table sx={{ minWidth: 720 }} size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Student</TableCell>
+              <TableCell>Book</TableCell>
+              <TableCell>Due</TableCell>
+              <TableCell>Returned</TableCell>
+              <TableCell align="right">Fine</TableCell>
+              <TableCell aria-label="Actions" />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {fines.map((f) => (
+              <TableRow key={f.id} hover data-testid="fine-row" sx={{ '& td': { py: 1.25 } }}>
+                <TableCell>
+                  <Typography variant="subtitle2">{f.student.fullName}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {[f.student.rollNo, f.className].filter(Boolean).join(' · ')}
+                  </Typography>
+                </TableCell>
+                <TableCell>{f.book.title}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(f.dueOn, 'short')}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? formatDateTime(f.returnedAt, undefined, false) : '—'}</TableCell>
+                <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap', color: 'error.main', fontWeight: 500 }}>
+                  {formatRupees(f.finePaise)}
+                  <Chip size="small" label="Unpaid" variant="outlined" sx={{ ml: 1, color: 'error.main', borderColor: 'error.main' }} data-status="unpaid" />
+                </TableCell>
+                <TableCell align="right" sx={{ pr: 1.5 }}>
+                  <Button size="small" variant="outlined" onClick={() => onCollect(f)}>
+                    Mark paid
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableFrame>
+    </>
+  );
+}
+
+function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?: string) => void }) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <Dialog open onClose={pending ? undefined : () => onClose()} maxWidth="xs" fullWidth aria-labelledby="fine-paid-title">
+      <DialogTitle id="fine-paid-title">Mark this fine paid?</DialogTitle>
+      <DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <Box sx={{ p: 2, borderRadius: '12px', bgcolor: 'kx.tonal' }}>
+          <Typography sx={{ fontSize: '2rem', lineHeight: '40px', ...num }}>{formatRupees(loan.finePaise)}</Typography>
+          <Typography variant="body2">
+            {loan.student.fullName} · {[loan.student.rollNo, loan.className].filter(Boolean).join(' · ')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Late return of {loan.book.title}
+          </Typography>
+        </Box>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          Confirm you have received {formatRupees(loan.finePaise)} at the desk. This is recorded and can&apos;t be undone here.
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onClose()} disabled={pending}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          disabled={pending}
+          startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}
+          onClick={() =>
+            start(async () => {
+              const res = await markFinePaid(loan.id);
+              if (res.ok) onClose(`${formatRupees(loan.finePaise)} fine from ${loan.student.fullName} marked paid`);
+              else setError(res.error);
+            })
+          }
+        >
+          Mark {formatRupees(loan.finePaise)} paid
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 // ---- Catalogue -------------------------------------------------------------------------------
 
 function Availability({ book }: { book: LibraryBook }) {
@@ -425,21 +539,42 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
 function IssueDialog({
   books,
   book: preset,
-  students,
-  studentsComplete,
   today,
   onClose,
 }: {
   books: LibraryBook[];
   book?: LibraryBook;
-  students: LibraryStudent[];
-  studentsComplete: boolean;
   today: string;
   onClose: (done?: string) => void;
 }) {
   const shelf = books.filter((b) => availableCopies(b) > 0);
   const [book, setBook] = useState<LibraryBook | null>(preset ?? null);
   const [student, setStudent] = useState<LibraryStudent | null>(null);
+  const [query, setQuery] = useState('');
+  const [found, setFound] = useState<{ query: string; students: LibraryStudent[] } | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const searchable = canSearchStudents(query);
+
+  // Ask the API as the librarian types (after a short pause).
+  useEffect(() => {
+    if (!searchable) return;
+    let live = true;
+    const t = setTimeout(() => {
+      findStudents(query).then((res) => {
+        if (!live) return;
+        if (res.ok) {
+          setFound({ query, students: res.data });
+          setSearchError(null);
+        } else setSearchError(res.error);
+      });
+    }, 250);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [query, searchable]);
+  const options = searchable && found ? found.students : [];
+  const searching = searchable && found?.query !== query && !searchError;
   const [dueOn, setDueOn] = useState(addDays(today, LOAN_DAYS));
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -494,12 +629,19 @@ function IssueDialog({
               noOptionsText="No book on the shelf matches"
             />
             <Autocomplete
-              options={students}
+              options={student && !options.some((o) => o.id === student.id) ? [student, ...options] : options}
               value={student}
               onChange={(_, v) => setStudent(v)}
+              inputValue={query}
+              onInputChange={(_, v, reason) => {
+                if (reason !== 'reset') setQuery(v);
+                else if (student) setQuery(student.fullName);
+              }}
               getOptionLabel={(s) => s.fullName}
               isOptionEqualToValue={(a, b) => a.id === b.id}
-              filterOptions={(opts, { inputValue }) => searchStudents(opts, inputValue)}
+              filterOptions={(opts) => opts}
+              loading={searching}
+              loadingText="Searching…"
               renderOption={({ key, ...props }, s) => (
                 <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
                   <Typography variant="body2">{s.fullName}</Typography>
@@ -511,19 +653,17 @@ function IssueDialog({
               renderInput={(params) => (
                 <TextField
                   {...params}
+                  error={!!searchError}
                   label="Student"
                   required
                   placeholder="Name or roll number"
                   helperText={
-                    student
-                      ? [student.rollNo, student.className].filter(Boolean).join(' · ')
-                      : studentsComplete
-                        ? `${students.length} students`
-                        : 'Only students who already have a book out are listed for now.'
+                    searchError ??
+                    (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : 'Type at least 2 letters of the name, roll number or class')
                   }
                 />
               )}
-              noOptionsText="No student matches"
+              noOptionsText={searchable ? 'No student matches' : 'Type at least 2 letters'}
             />
             <TextField
               label="Due on"
@@ -552,7 +692,7 @@ function IssueDialog({
 
 function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: string; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ finePaise: number } | null>(null);
+  const [done, setDone] = useState<{ finePaise: number; paid: boolean } | null>(null);
   const [pending, start] = useTransition();
   const late = daysLate(loan.dueOn, today);
   const fine = finePreview(loan.dueOn, today);
@@ -573,7 +713,10 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
               <Typography variant="body2">Late fine to collect</Typography>
               <Typography sx={{ fontSize: '2rem', lineHeight: '40px', ...num }}>{formatRupees(done.finePaise)}</Typography>
               <Typography variant="caption">
-                {late} day{late === 1 ? '' : 's'} late at ₹2 a day
+                {late} day{late === 1 ? '' : 's'} late at ₹2 a day ·{' '}
+                <Box component="strong" data-testid="return-fine-status">
+                  {done.paid ? 'Paid' : 'Unpaid'}
+                </Box>
               </Typography>
             </Box>
           ) : (
@@ -582,10 +725,39 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
             </Typography>
           )}
         </DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mx: 3 }}>
+            {error}
+          </Alert>
+        )}
         <DialogActions>
-          <Button variant="contained" onClick={onClose}>
-            Done
-          </Button>
+          {done.finePaise > 0 && !done.paid ? (
+            <>
+              <Button onClick={onClose} disabled={pending}>
+                Collect later
+              </Button>
+              <Button
+                variant="contained"
+                disabled={pending}
+                startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}
+                onClick={() =>
+                  start(async () => {
+                    const res = await markFinePaid(loan.id);
+                    if (res.ok) {
+                      setError(null);
+                      setDone({ ...done, paid: true });
+                    } else setError(res.error);
+                  })
+                }
+              >
+                Mark {formatRupees(done.finePaise)} paid
+              </Button>
+            </>
+          ) : (
+            <Button variant="contained" onClick={onClose}>
+              Done
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     );
@@ -630,7 +802,7 @@ function ReturnDialog({ loan, today, onClose }: { loan: LibraryLoan; today: stri
           onClick={() =>
             start(async () => {
               const res = await returnBook(loan.id);
-              if (res.ok) setDone({ finePaise: res.data.finePaise });
+              if (res.ok) setDone({ finePaise: res.data.finePaise, paid: false });
               else setError(res.error);
             })
           }

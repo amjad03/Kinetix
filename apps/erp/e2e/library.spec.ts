@@ -30,12 +30,14 @@ test('issue a book to a student, then take back an overdue one with its fine', a
   const dialog = page.getByRole('dialog', { name: 'Issue a book' });
   await dialog.getByRole('combobox', { name: 'Book' }).fill('Wings');
   await page.getByRole('option', { name: /Wings of Fire/ }).click();
-  await dialog.getByRole('combobox', { name: 'Student' }).fill('U03BC001');
-  await page.getByRole('option', { name: /Aarav Patel/ }).click();
+  // Any student, searched on the server by name, roll number or class.
+  await dialog.getByRole('combobox', { name: 'Student' }).fill('ananya');
+  await page.getByRole('option', { name: /Ananya Gowda/ }).click();
+  await expect(dialog).toContainText('U03BC002 · BCom Sem 3 A');
   await expect(dialog).toContainText('Due in 14 days');
   await shot(page, 'library-issue');
   await dialog.getByRole('button', { name: 'Issue', exact: true }).click();
-  await expect(page.getByText(/Issued “Wings of Fire” to Aarav Patel · due /)).toBeVisible();
+  await expect(page.getByText(/Issued “Wings of Fire” to Ananya Gowda · due /)).toBeVisible();
   await expect(rows).toHaveCount(before + 1);
   await expect(rows.filter({ hasText: 'Wings of Fire' })).toContainText('Due in 14 days');
 
@@ -50,17 +52,37 @@ test('issue a book to a student, then take back an overdue one with its fine', a
   const done = page.getByRole('dialog', { name: 'Book returned' });
   await expect(done.getByTestId('return-fine')).toContainText('Late fine to collect');
   await expect(done.getByTestId('return-fine')).toContainText(fine);
+  await expect(done.getByTestId('return-fine-status')).toHaveText('Unpaid');
+  await expect(done.getByRole('button', { name: `Mark ${fine} paid` })).toBeVisible();
   await shot(page, 'library-returned');
-  await done.getByRole('button', { name: 'Done' }).click();
+  await done.getByRole('button', { name: 'Collect later' }).click();
   await expect(rows).toHaveCount(before);
   await expect(rows.filter({ hasText: 'Diya Patel' })).toHaveCount(0);
   await expect(page.getByTestId('lib-overdue')).toContainText('Nothing is overdue');
+  await expect(page.getByTestId('lib-fines')).toContainText(fine);
+
+  // Collect it at the desk from Unpaid fines.
+  await page.getByTestId('tab-fines').click();
+  const row = page.getByTestId('fine-row').filter({ hasText: 'Diya Patel' });
+  await expect(row).toContainText(fine);
+  await expect(row.locator('[data-status="unpaid"]')).toBeVisible();
+  await shot(page, 'library-fines');
+  await row.getByRole('button', { name: 'Mark paid' }).click();
+  const paid = page.getByRole('dialog', { name: 'Mark this fine paid?' });
+  await expect(paid).toContainText(fine);
+  await expect(paid).toContainText('Diya Patel');
+  await paid.getByRole('button', { name: `Mark ${fine} paid` }).click();
+  await expect(page.getByText(`${fine} fine from Diya Patel marked paid`)).toBeVisible();
+  await expect(page.getByTestId('fine-row')).toHaveCount(0);
+  await expect(page.getByTestId('no-fines')).toBeVisible();
+  await expect(page.getByTestId('lib-fines')).toContainText('All fines collected');
 });
 
 test('the catalogue shows availability and takes new books', async ({ page }) => {
   await open(page, '/library?tab=catalogue');
   const books = page.getByTestId('book-row');
   await expect(books.filter({ hasText: 'Wings of Fire' }).locator('[data-available]')).toHaveText('1 of 2 available');
+  await expect(books.filter({ hasText: 'Discrete Mathematics' }).locator('[data-available]')).toHaveText('2 of 2 available');
   const title = `E2E Atlas ${Date.now() % 100000}`;
   await page.getByRole('button', { name: 'Add book' }).click();
   const dialog = page.getByRole('dialog', { name: 'Add a book' });

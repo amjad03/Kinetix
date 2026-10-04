@@ -5,7 +5,7 @@ office (`accountant`, Fees only) and the library desk (`librarian`, Library only
 students and parents are refused at sign-in and pointed to their apps.
 **Where:** `apps/erp` (Next.js). Reads the KINETIX Cloud API `v1/admin/*` (including
 `v1/admin/timetable`), `v1/broadcasts`, `v1/devices`, `v1/fees`, `v1/library`, `v1/assessments`,
-`v1/sections/:id/roster`, `v1/content`, `v1/ai/usage` and the `/realtime` socket (live view).
+`v1/conversations`, `v1/content`, `v1/ai/usage` and the `/realtime` socket (live view).
 
 The principal's question each morning is "is the school running?": are classes being taught,
 is attendance taken, who is absent, is homework set, are the boards working. This slice answers
@@ -30,10 +30,11 @@ the system.
 | **Homework** | Homework set in the last 7 / 14 / 30 days: title, instructions, class, subject, teacher, set, due (with "in 2 days" / "was due"). |
 | **Results** | Per class (picker in the URL): each test, assignment or exam with subject, type, maximum, who set it, date, marks entered (of the class), class average (with a bar and %) and **Published** / **Draft**. An assessment shows class average, highest, lowest (out of the maximum and as %), absentees and marks not yet entered; **How the class did**, students per score band (below 40%, 40–49% … 90–100%; absentees left out); and the marks table (roll number, student, marks, score bar, remark, **Absent**). Principal and administrator can **Publish marks** a teacher has entered (with a warning when some students have no marks); families are notified. Teachers enter marks in the Teacher App. Principal, administrator; a head of department sees the classes they teach. |
 | **Messages** ("Circulate") | Compose: title, message, priority, audience (whole school / programs / classes), require acknowledgement, expiry; emergency asks for confirmation. Sent list: priority, active / cleared / expired, audience, boards displayed and acknowledged, families notified, per-board delivery, **Clear** ("All clear" for emergencies). |
+| **Parent messages** | Safeguarding view of every parent–teacher conversation: parent ↔ teacher, the student and class, last activity; search by any name. The list never shows message text. Opening a thread shows the messages (parent on the left, teacher on the right) and is recorded in the audit log (`conversation.read_by_leader`); a notice says so on both pages. Read-only: leaders cannot reply. Principal and administrator. |
 | **Boards** | Each board: online dot, room, what it is teaching now and by whom, platform and version, last seen. **Add board** registers it and shows the one-time enrolment code large, with steps. Principal and administrator only. |
 | **Live** | Boards with a class in session: subject and class, teacher, board and room, started, people watching, **Watch**. The watch view shows the board as the class sees it (scaled to fit, all backgrounds, highlighter, shapes, page *n* of *m*), the class, and "Viewing is recorded in the audit log". It works on an empty board, and explains offline (waits for the board), class ended, no class, and live view turned off. Board only: classroom sound is not part of live view yet. Principal, administrator, HOD. |
 | **Fees** | Billed, collected (with a bar), outstanding and overdue (amount and invoices) in rupees (₹1,23,456; tiles shorten to ₹9.16 L), then each class. **Issue fee** to a class (name, amount per student in ₹, due date): every student gets an invoice and families are notified. **Invoices**: Due / Overdue / Paid / Cancelled / All, by class, search by student or roll number; **Record payment** at the counter (cash, cheque, bank transfer, UPI with its reference; part payments allowed) shows the numbered receipt at once; **Print receipt** opens a print-ready receipt (amount in words); **Cancel invoice** for a fee with no money received; past receipts from the row menu. Principal, administrator, accounts office. |
-| **Library** | Titles, copies on the shelf, books on loan and overdue (with the fines if they came back today). **On loan**: book, student (roll number, class), issued, due ("Due in 5 days" / "4 days late"), today's fine; overdue loans are tinted and marked **Overdue**; All / Overdue chips and search. **Return** shows the fine before confirming and the recorded fine (₹2 a day late) afterwards, to collect at the desk. **Catalogue**: search by title, author, call number or ISBN; copies and "2 of 4 available" / "All out"; **Issue** from a row. **Issue a book**: book (only ones on the shelf), student (search by name, roll number or class), due date (14 days by default); the family sees it in the Parent app. **Add book**: title, author, call number, copies, ISBN. The library desk sees only this page; principal and administrator see it too. |
+| **Library** | Titles, copies on the shelf, books on loan and overdue (with the fines if they came back today). **On loan**: book, student (roll number, class), issued, due ("Due in 5 days" / "4 days late"), today's fine; overdue loans are tinted and marked **Overdue**; All / Overdue chips and search. **Return** shows the fine before confirming and the recorded fine (₹2 a day late) afterwards, marked **Unpaid**, with **Mark ₹8 paid** to collect it there and then or **Collect later**. **Unpaid fines**: student, book, due, returned, fine; **Mark paid** confirms the amount received (recorded in the audit log). A tile shows the total still to collect. **Catalogue**: search by title, author, call number or ISBN; copies and "2 of 4 available" / "All out"; **Issue** from a row. **Issue a book**: book (only ones on the shelf), student (any active student, searched on the server by name, roll number or class from two letters), due date (14 days by default); the family sees it in the Parent app. **Add book**: title, author, call number, copies, ISBN. The library desk sees only this page; principal and administrator see it too. |
 | **Syllabus** | Your subjects (from the school structure, with the classes that study them) and the library course each is linked to; principal and administrator change the link. The library by curriculum, with **Not reviewed** on courses not yet checked by a subject expert and which subject uses each course. A course shows its chapters and topics (notes, learning outcomes); the institution adds, edits and deletes **its own topics** (library topics are read-only). |
 | **AI usage** | KINETIX AI over the last 30 days: requests, share answered, blocked or failed, tokens, and the same per task (Explain, Quiz, Homework, Lesson plan, Lesson summary). Principal and administrator. |
 
@@ -70,18 +71,10 @@ reaches the browser, and the browser needs no route to the API. The API audits e
 Live classroom thumbnails, classroom sound in live view, per-student history, exports, removing
 boards, notifications to the principal, fee reports and concessions, online payment
 reconciliation, adding chapters to a course (the API supports it; the page adds topics), entering
-marks in the ERP (teachers do it in the Teacher App), editing books and marking library fines as
-paid, an overview of parent–teacher conversations.
+marks in the ERP (teachers do it in the Teacher App), editing books, replying to or closing parent
+conversations.
 
 ### Waiting on the API
 
-- **Student lookup for the library desk.** The librarian can't read the school structure or class
-  rosters, and `v1/library` has no student search, so the desk can only lend to students who
-  already have a book out. Principal and administrator get every student from the rosters. Needs
-  e.g. `GET /v1/library/students?q=` (name / roll number) for `LIBRARY_ROLES`.
 - **A department view for heads of department.** Marks are readable by staff who teach the class,
   so an HOD sees only their own classes' results, not their department's.
-- **Fines collected.** A return records `finePaise`, but there is no way to mark it paid or list
-  unpaid fines.
-- **Conversations overview.** Leaders can read a thread by id (audited) but cannot list threads,
-  so the ERP has no messaging inbox.

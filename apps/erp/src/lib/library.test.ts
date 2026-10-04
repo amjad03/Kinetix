@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { availableCopies, daysLate, dueLabel, finePreview, searchStudents, uniqueStudents } from './library';
-import type { LibraryStudent } from './types';
-
-const kids: LibraryStudent[] = [
-  { id: '1', fullName: 'Aarav Patel', rollNo: 'U03BC001', className: 'BCom Sem 3 A' },
-  { id: '2', fullName: 'Diya Patel', rollNo: 'U01CA001', className: 'BCA Sem 1 A' },
-  { id: '3', fullName: 'Ananya Gowda', rollNo: 'U03BC002', className: 'BCom Sem 3 A' },
-  { id: '4', fullName: 'Rohan Desai', rollNo: null, className: 'BCA Sem 1 A' },
-];
+import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, fineStatus, unpaidFines } from './library';
 
 describe('library', () => {
   it('counts copies on the shelf', () => {
@@ -32,24 +24,22 @@ describe('library', () => {
     expect(dueLabel('2026-09-30', '2026-10-04')).toBe('4 days late');
   });
 
-  it('finds students by name, roll number or class, every word', () => {
-    expect(searchStudents(kids, 'patel').map((s) => s.id)).toEqual(['1', '2']);
-    expect(searchStudents(kids, 'U01CA001').map((s) => s.id)).toEqual(['2']);
-    expect(searchStudents(kids, 'u03bc').map((s) => s.id)).toEqual(['1', '3']);
-    expect(searchStudents(kids, 'patel bca').map((s) => s.id)).toEqual(['2']);
-    expect(searchStudents(kids, 'rohan').map((s) => s.id)).toEqual(['4']);
-    expect(searchStudents(kids, '')).toHaveLength(4);
-    expect(searchStudents(kids, 'zzz')).toEqual([]);
-    expect(searchStudents(kids, '', 2)).toHaveLength(2);
+  it('searches students from two characters', () => {
+    expect(canSearchStudents('a')).toBe(false);
+    expect(canSearchStudents(' a ')).toBe(false);
+    expect(canSearchStudents('aa')).toBe(true);
+    expect(canSearchStudents('U03')).toBe(true);
   });
 
-  it('puts an exact roll number first', () => {
-    const list = [...kids, { id: '5', fullName: 'Zoya U03BC001', rollNo: 'X', className: 'BCom Sem 3 A' }];
-    expect(searchStudents(list, 'U03BC001')[0].id).toBe('1');
-  });
-
-  it('de-duplicates students by class and roll number', () => {
-    const u = uniqueStudents([kids[0], kids[1], kids[0], kids[2]]);
-    expect(u.map((s) => s.id)).toEqual(['2', '1', '3']);
+  it('adds up fines not collected yet', () => {
+    const loans = [
+      { finePaise: 800, finePaidAt: null },
+      { finePaise: 200, finePaidAt: '2026-10-04T10:00:00Z' },
+      { finePaise: 0, finePaidAt: null },
+      { finePaise: 1400, finePaidAt: null },
+    ];
+    expect(unpaidFines(loans)).toEqual({ count: 2, paise: 2200 });
+    expect(unpaidFines([])).toEqual({ count: 0, paise: 0 });
+    expect(loans.map(fineStatus)).toEqual(['unpaid', 'paid', null, 'unpaid']);
   });
 });
