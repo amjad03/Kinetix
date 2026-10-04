@@ -1,0 +1,26 @@
+name: kinetix_parent
+description: "KINETIX Parent App: attendance, homework, class participation and shared class boards for parents."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kinetix_ui:
+    path: ../../packages/kinetix_ui
+  kinetix_ink:
+    path: ../../packages/kinetix_ink
+  http: ^1.6.0
+  intl: ^0.20.3
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
