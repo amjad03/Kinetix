@@ -32,6 +32,7 @@ class MessagesController extends ChangeNotifier {
     await loadContacts();
     if (available) await load();
   }
+
   Conversation? byId(String id) => threads.where((t) => t.id == id).firstOrNull;
 
   Future<void> load() async {

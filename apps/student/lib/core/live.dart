@@ -117,9 +117,15 @@ class SocketLiveConnection implements LiveConnection {
     socket.on('ready', (_) => _add(const LiveReady()));
     socket.on(LiveEvents.frame, (d) {
       if (d is! Map) return;
-      final events = d['events'];
-      if (events is! List) return;
-      _add(LiveFrame('${d['deviceId']}', [for (final e in events) if (e is List) e]));
+      // Boards put the snapshot ('L') first in `events`; a separate `snapshot` is honoured too.
+      final snapshot = d['snapshot'] is Map ? (d['snapshot'] as Map)['events'] : null;
+      final events = [...(snapshot is List ? snapshot : const []), ...(d['events'] is List ? d['events'] as List : const [])];
+      _add(
+        LiveFrame('${d['deviceId']}', [
+          for (final e in events)
+            if (e is List) e,
+        ]),
+      );
     });
     socket.on(LiveEvents.ended, (d) {
       if (d is Map) _add(LiveEnded('${d['deviceId']}', '${d['reason']}'));

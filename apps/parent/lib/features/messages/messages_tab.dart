@@ -165,8 +165,11 @@ class NewMessageScreen extends StatefulWidget {
   final MessagesController controller;
   final FamilyController family;
 
-  static Future<void> open(BuildContext context, MessagesController controller, FamilyController family) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => NewMessageScreen(controller: controller, family: family)));
+  static Future<void> open(BuildContext context, MessagesController controller, FamilyController family) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => NewMessageScreen(controller: controller, family: family),
+    ),
+  );
 
   @override
   State<NewMessageScreen> createState() => _NewMessageScreenState();
@@ -192,7 +195,9 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
       if (!mounted) return;
       final c = controller;
       await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ChatScreen(controller: c, conversationId: conv.id, initial: conv)),
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(controller: c, conversationId: conv.id, initial: conv),
+        ),
       );
       c.load();
     } on ApiException catch (e) {
@@ -222,7 +227,10 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
                   );
           }
           if (all.isEmpty) {
-            return const KxEmptyState(icon: Icons.forum_outlined, message: "No children are linked to your account yet.\nAsk your child's college.");
+            return const KxEmptyState(
+              icon: Icons.forum_outlined,
+              message: "No children are linked to your account yet.\nAsk your child's college.",
+            );
           }
           final child = all.where((k) => k.studentId == _childId).firstOrNull ?? all.first;
           return ListView(

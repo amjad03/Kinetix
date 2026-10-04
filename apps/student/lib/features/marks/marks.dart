@@ -75,7 +75,10 @@ class ResultsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final a in marks.assessments.take(2))
-            AssessmentRow(result: a, onTap: () => AssessmentScreen.open(context, result: a)),
+            AssessmentRow(
+              result: a,
+              onTap: () => AssessmentScreen.open(context, result: a),
+            ),
           if (marks.subjects.isNotEmpty) ...[
             const SizedBox(height: Kx.s12),
             Text('By subject', style: context.text.titleSmall),
@@ -169,7 +172,9 @@ class SubjectBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(result.subject, style: context.text.bodyLarge, maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(
+                child: Text(result.subject, style: context.text.bodyLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
               Text(Fmt.percent(result.percent), style: context.text.titleSmall),
             ],
           ),
@@ -232,35 +237,41 @@ class _ResultsScreenState extends State<ResultsScreen> {
             onRefresh: study.loadMarks,
             child: LayoutBuilder(
               builder: (context, box) => ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(sideGutter(box.maxWidth), Kx.s8, sideGutter(box.maxWidth), Kx.s32),
-              children: [
-                if (marks.assessments.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: Kx.s48),
-                    child: KxEmptyState(
-                      icon: Icons.grading_outlined,
-                      message: 'No marks published yet.\nWhen your teachers publish marks, they show here.',
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(sideGutter(box.maxWidth), Kx.s8, sideGutter(box.maxWidth), Kx.s32),
+                children: [
+                  if (marks.assessments.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: Kx.s48),
+                      child: KxEmptyState(
+                        icon: Icons.grading_outlined,
+                        message: 'No marks published yet.\nWhen your teachers publish marks, they show here.',
+                      ),
                     ),
-                  ),
-                if (marks.subjects.isNotEmpty) ...[
-                  Text('By subject', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
-                  const SizedBox(height: Kx.s4),
-                  Text('Marks scored out of the total, across published assessments.', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
-                  const SizedBox(height: Kx.s8),
-                  for (final s in marks.subjects) SubjectBar(result: s),
-                ],
-                if (marks.assessments.isNotEmpty) ...[
-                  const SizedBox(height: Kx.s24),
-                  Text('Assessments', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
-                  const SizedBox(height: Kx.s4),
-                  for (final (i, a) in marks.assessments.indexed) ...[
-                    if (i > 0) const Divider(height: 1),
-                    AssessmentRow(result: a, onTap: () => AssessmentScreen.open(context, result: a)),
+                  if (marks.subjects.isNotEmpty) ...[
+                    Text('By subject', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: Kx.s4),
+                    Text(
+                      'Marks scored out of the total, across published assessments.',
+                      style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: Kx.s8),
+                    for (final s in marks.subjects) SubjectBar(result: s),
+                  ],
+                  if (marks.assessments.isNotEmpty) ...[
+                    const SizedBox(height: Kx.s24),
+                    Text('Assessments', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: Kx.s4),
+                    for (final (i, a) in marks.assessments.indexed) ...[
+                      if (i > 0) const Divider(height: 1),
+                      AssessmentRow(
+                        result: a,
+                        onTap: () => AssessmentScreen.open(context, result: a),
+                      ),
+                    ],
                   ],
                 ],
-              ],
-            ),
+              ),
             ),
           );
         },
@@ -292,83 +303,86 @@ class AssessmentScreen extends StatelessWidget {
       appBar: AppBar(title: Text(a.subject)),
       body: LayoutBuilder(
         builder: (context, box) => ListView(
-        padding: EdgeInsets.fromLTRB(sideGutter(box.maxWidth), Kx.s8, sideGutter(box.maxWidth), Kx.s32),
-        children: [
-          Text(a.title, style: context.text.headlineSmall),
-          const SizedBox(height: Kx.s4),
-          Text(
-            '${a.kind.label} · ${Fmt.longDay(a.heldOn)} · out of ${Fmt.marks(a.maxMarks)}',
-            style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
-          ),
-          const SizedBox(height: Kx.s24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(Kx.s16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.end,
-                    spacing: Kx.s12,
-                    runSpacing: Kx.s4,
-                    children: [
-                      Text(
-                        a.absent ? 'Absent' : (a.marks == null ? 'Not entered' : Fmt.marks(a.marks!)),
-                        key: const Key('assessmentScore'),
-                        style: context.text.displayMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          height: 1,
-                          color: a.absent ? c.error : null,
-                        ),
-                      ),
-                      if (a.marks != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            'out of ${Fmt.marks(a.maxMarks)} · ${Fmt.percent(a.percent!)}',
-                            style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (cmp != null) ...[
-                    const SizedBox(height: Kx.s12),
-                    Align(alignment: Alignment.centerLeft, child: Pill(cmp.$1, background: cmp.$2, foreground: cmp.$3)),
-                  ],
-                  if (a.absent) ...[
-                    const SizedBox(height: Kx.s8),
-                    Text(
-                      'You were marked absent for this ${a.kind.label.toLowerCase()}.',
-                      style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-                    ),
-                  ],
-                  if (bars.isNotEmpty) ...[
-                    const SizedBox(height: Kx.s16),
-                    for (final (label, value, color) in bars) _CompareBar(label: label, value: value, max: a.maxMarks, color: color),
-                  ],
-                ],
-              ),
+          padding: EdgeInsets.fromLTRB(sideGutter(box.maxWidth), Kx.s8, sideGutter(box.maxWidth), Kx.s32),
+          children: [
+            Text(a.title, style: context.text.headlineSmall),
+            const SizedBox(height: Kx.s4),
+            Text(
+              '${a.kind.label} · ${Fmt.longDay(a.heldOn)} · out of ${Fmt.marks(a.maxMarks)}',
+              style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
-          ),
-          if (a.remark != null) ...[
-            const SizedBox(height: Kx.s16),
+            const SizedBox(height: Kx.s24),
             Card(
-              color: c.secondaryContainer,
               child: Padding(
                 padding: const EdgeInsets.all(Kx.s16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text("Teacher's remark", style: context.text.titleSmall?.copyWith(color: c.onSecondaryContainer)),
-                    const SizedBox(height: Kx.s4),
-                    Text(a.remark!, style: context.text.bodyLarge?.copyWith(color: c.onSecondaryContainer)),
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.end,
+                      spacing: Kx.s12,
+                      runSpacing: Kx.s4,
+                      children: [
+                        Text(
+                          a.absent ? 'Absent' : (a.marks == null ? 'Not entered' : Fmt.marks(a.marks!)),
+                          key: const Key('assessmentScore'),
+                          style: context.text.displayMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            height: 1,
+                            color: a.absent ? c.error : null,
+                          ),
+                        ),
+                        if (a.marks != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              'out of ${Fmt.marks(a.maxMarks)} · ${Fmt.percent(a.percent!)}',
+                              style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (cmp != null) ...[
+                      const SizedBox(height: Kx.s12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Pill(cmp.$1, background: cmp.$2, foreground: cmp.$3),
+                      ),
+                    ],
+                    if (a.absent) ...[
+                      const SizedBox(height: Kx.s8),
+                      Text(
+                        'You were marked absent for this ${a.kind.label.toLowerCase()}.',
+                        style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+                      ),
+                    ],
+                    if (bars.isNotEmpty) ...[
+                      const SizedBox(height: Kx.s16),
+                      for (final (label, value, color) in bars) _CompareBar(label: label, value: value, max: a.maxMarks, color: color),
+                    ],
                   ],
                 ),
               ),
             ),
+            if (a.remark != null) ...[
+              const SizedBox(height: Kx.s16),
+              Card(
+                color: c.secondaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(Kx.s16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Teacher's remark", style: context.text.titleSmall?.copyWith(color: c.onSecondaryContainer)),
+                      const SizedBox(height: Kx.s4),
+                      Text(a.remark!, style: context.text.bodyLarge?.copyWith(color: c.onSecondaryContainer)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }

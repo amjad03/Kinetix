@@ -517,7 +517,9 @@ class FakeParentApi implements ParentApi {
       'finesPaise': 600,
     }),
     'c2': LibraryAccount.fromJson({
-      'current': [loanJson('l3', 'Discrete Mathematics and Its Applications', author: 'Kenneth H. Rosen', dueOn: '2026-09-30', overdue: true)],
+      'current': [
+        loanJson('l3', 'Discrete Mathematics and Its Applications', author: 'Kenneth H. Rosen', dueOn: '2026-09-30', overdue: true),
+      ],
       'history': [],
       'finesPaise': 0,
     }),
@@ -629,12 +631,7 @@ class FakeParentApi implements ParentApi {
         body: 'Good morning ma’am. Aarav had fever on Tuesday. Could you share what was covered?',
         createdAt: _yesterday(9),
       ),
-      ChatMessage(
-        id: 'm2',
-        senderId: 't1',
-        body: 'Hope he is better now. Please ask him to try Exercise 4.2.',
-        createdAt: _yesterday(15),
-      ),
+      ChatMessage(id: 'm2', senderId: 't1', body: 'Hope he is better now. Please ask him to try Exercise 4.2.', createdAt: _yesterday(15)),
     ],
   };
 

@@ -189,9 +189,7 @@ class ProfileTabState extends State<ProfileTab> {
                     key: const Key('openMessages'),
                     leading: const Icon(Icons.forum_outlined),
                     title: const Text('Messages'),
-                    subtitle: Text(
-                      widget.messages!.unread > 0 ? '${widget.messages!.unread} unread' : 'Write to your teachers',
-                    ),
+                    subtitle: Text(widget.messages!.unread > 0 ? '${widget.messages!.unread} unread' : 'Write to your teachers'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => MessagesScreen.open(context, widget.messages!),
                   ),

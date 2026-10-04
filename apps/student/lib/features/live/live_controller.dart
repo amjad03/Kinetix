@@ -80,9 +80,16 @@ class LiveClassController extends ChangeNotifier {
       case LiveFrame(:final deviceId, :final events):
         if (deviceId != live.deviceId) return;
         player.applyLive(events);
+        final snapshot = events.any((e) => e.length > 1 && e[1] == 'L');
+        // A board that went offline keeps its viewers and sends a fresh snapshot when it is back.
+        if (phase == LivePhase.ended && endedReason == 'offline' && snapshot) {
+          endedReason = null;
+          _set(LivePhase.live);
+          return;
+        }
         if (phase == LivePhase.joining || phase == LivePhase.reconnecting) {
           // Live once the board's snapshot is in (a frame without one only carries recent strokes).
-          if (events.any((e) => e.length > 1 && e[1] == 'L') || phase == LivePhase.reconnecting) _set(LivePhase.live);
+          if (snapshot || phase == LivePhase.reconnecting) _set(LivePhase.live);
         }
       case LiveEnded(:final deviceId, :final reason):
         if (deviceId != live.deviceId) return;

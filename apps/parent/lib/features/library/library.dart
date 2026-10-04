@@ -74,8 +74,7 @@ class LibraryCard extends StatelessWidget {
             const SizedBox(height: Kx.s4),
           ],
           for (final l in out.take(3)) LoanRow(loan: l, today: today),
-          if (out.length > 3)
-            Text('and ${out.length - 3} more', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+          if (out.length > 3) Text('and ${out.length - 3} more', style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
           if (account.finesPaise > 0) ...[
             const SizedBox(height: Kx.s8),
             Text(
@@ -148,10 +147,7 @@ class LoanRow extends StatelessWidget {
                         background: bg,
                         foreground: fg,
                       ),
-                      Text(
-                        'Borrowed ${Fmt.shortDay(l.issuedAt)}',
-                        style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
-                      ),
+                      Text('Borrowed ${Fmt.shortDay(l.issuedAt)}', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                     ],
                   ),
               ],
@@ -170,8 +166,11 @@ class LibraryScreen extends StatefulWidget {
   final FamilyController family;
   final Child child;
 
-  static Future<void> open(BuildContext context, FamilyController family, Child child) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => LibraryScreen(family: family, child: child)));
+  static Future<void> open(BuildContext context, FamilyController family, Child child) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => LibraryScreen(family: family, child: child),
+    ),
+  );
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();

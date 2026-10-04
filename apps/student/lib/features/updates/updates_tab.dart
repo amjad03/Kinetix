@@ -81,7 +81,9 @@ class UpdatesTab extends StatelessWidget {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(live == null ? 'This class is no longer live.' : 'That class has ended. Another class is live now on Today.')),
+            SnackBar(
+              content: Text(live == null ? 'This class is no longer live.' : 'That class has ended. Another class is live now on Today.'),
+            ),
           );
         return;
       case NotificationKind.broadcast:

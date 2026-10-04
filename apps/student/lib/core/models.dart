@@ -781,10 +781,11 @@ class LibraryAccount {
   List<LibraryLoan> get overdue => current.where((l) => l.overdue).toList();
 
   /// Books out, overdue first, then the earliest due.
-  List<LibraryLoan> get currentByDue => [...current]..sort((a, b) {
-    if (a.overdue != b.overdue) return a.overdue ? -1 : 1;
-    return a.dueOn.compareTo(b.dueOn);
-  });
+  List<LibraryLoan> get currentByDue => [...current]
+    ..sort((a, b) {
+      if (a.overdue != b.overdue) return a.overdue ? -1 : 1;
+      return a.dueOn.compareTo(b.dueOn);
+    });
 }
 
 // ── Marks ───────────────────────────────────────────────────────────────────────────────────────

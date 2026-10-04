@@ -27,7 +27,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   void initState() {
     super.initState();
-    controller.load();
+    // Fresh replies each time it opens (after this frame: the controller notifies Today too).
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.load());
   }
 
   @override
@@ -72,7 +73,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     sliver: SliverList.list(
                       children: [
                         for (final t in threads)
-                          ThreadTile(thread: t, now: now, onTap: () => ChatScreen.open(context, controller, t.id, initial: t)),
+                          ThreadTile(
+                            thread: t,
+                            now: now,
+                            onTap: () => ChatScreen.open(context, controller, t.id, initial: t),
+                          ),
                       ],
                     ),
                   ),
@@ -193,7 +198,9 @@ class _NewMessageScreenState extends State<NewMessageScreen> {
       if (!mounted) return;
       final c = controller;
       await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ChatScreen(controller: c, conversationId: conv.id, initial: conv)),
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(controller: c, conversationId: conv.id, initial: conv),
+        ),
       );
       c.load();
     } on ApiException catch (e) {

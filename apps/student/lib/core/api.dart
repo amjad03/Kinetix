@@ -187,8 +187,9 @@ class HttpStudentApi implements StudentApi {
       HomeworkDetail.fromJson(await _send('GET', '/v1/homework/$id') as Map<String, dynamic>);
 
   @override
-  Future<List<Subject>> subjects() async =>
-      [for (final s in await _send('GET', '/v1/student/subjects') as List<dynamic>) Subject.fromJson(s as Map<String, dynamic>)];
+  Future<List<Subject>> subjects() async => [
+    for (final s in await _send('GET', '/v1/student/subjects') as List<dynamic>) Subject.fromJson(s as Map<String, dynamic>),
+  ];
 
   @override
   Future<Explanation> explain({

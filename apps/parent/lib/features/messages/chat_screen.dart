@@ -27,7 +27,8 @@ class ChatScreen extends StatefulWidget {
   static Future<void> open(BuildContext context, MessagesController controller, String conversationId, {Conversation? initial}) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ChatScreen(controller: controller, conversationId: conversationId, initial: initial ?? controller.byId(conversationId)),
+        builder: (_) =>
+            ChatScreen(controller: controller, conversationId: conversationId, initial: initial ?? controller.byId(conversationId)),
       ),
     );
     // Previews and unread counts changed while it was open.
@@ -195,10 +196,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding: const EdgeInsets.all(Kx.s16),
                     child: Align(
                       alignment: Alignment.topCenter,
-                      child: ErrorBanner(_error!, onRetry: () {
-                        setState(() => _loading = true);
-                        _loadLatest(first: true);
-                      }),
+                      child: ErrorBanner(
+                        _error!,
+                        onRetry: () {
+                          setState(() => _loading = true);
+                          _loadLatest(first: true);
+                        },
+                      ),
                     ),
                   )
                 : RefreshIndicator(
@@ -260,7 +264,12 @@ class _ChatScreenState extends State<ChatScreen> {
                         hintText: 'Message',
                         filled: true,
                         fillColor: c.surfaceContainerHigh,
-                        border: OutlineInputBorder(borderRadius: Kx.radiusXl, borderSide: BorderSide.none),
+                        border: const OutlineInputBorder(borderRadius: Kx.radiusXl, borderSide: BorderSide.none),
+                        enabledBorder: const OutlineInputBorder(borderRadius: Kx.radiusXl, borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: Kx.radiusXl,
+                          borderSide: BorderSide(color: c.primary, width: 1.5),
+                        ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s12),
                       ),
                       onSubmitted: (_) => _send(),
@@ -331,22 +340,22 @@ class MessageBubble extends StatelessWidget {
         child: GestureDetector(
           onLongPress: copy,
           child: Container(
-          key: Key('message-${message.id}'),
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, Kx.s8),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.only(topLeft: r, topRight: r, bottomLeft: mine ? r : tail, bottomRight: mine ? tail : r),
+            key: Key('message-${message.id}'),
+            margin: const EdgeInsets.symmetric(vertical: 3),
+            padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, Kx.s8),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.only(topLeft: r, topRight: r, bottomLeft: mine ? r : tail, bottomRight: mine ? tail : r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(message.body, style: context.text.bodyLarge?.copyWith(color: fg)),
+                const SizedBox(height: 2),
+                Text(Fmt.time(message.createdAt), style: context.text.labelSmall?.copyWith(color: fg.withValues(alpha: 0.75))),
+              ],
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(message.body, style: context.text.bodyLarge?.copyWith(color: fg)),
-              const SizedBox(height: 2),
-              Text(Fmt.time(message.createdAt), style: context.text.labelSmall?.copyWith(color: fg.withValues(alpha: 0.75))),
-            ],
-          ),
-        ),
         ),
       ),
     );

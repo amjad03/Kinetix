@@ -203,7 +203,8 @@ class HttpParentApi implements ParentApi {
       LibraryAccount.fromJson(await _send('GET', '/v1/library/students/$childId') as Map<String, dynamic>);
 
   @override
-  Future<ChildMarks> marks(String childId) async => ChildMarks.fromJson(await _send('GET', '/v1/marks/students/$childId') as Map<String, dynamic>);
+  Future<ChildMarks> marks(String childId) async =>
+      ChildMarks.fromJson(await _send('GET', '/v1/marks/students/$childId') as Map<String, dynamic>);
 
   @override
   Future<List<ChildContacts>> contacts() async {

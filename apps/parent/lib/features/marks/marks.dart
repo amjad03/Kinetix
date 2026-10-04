@@ -76,7 +76,10 @@ class ResultsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final a in marks.assessments.take(2))
-            AssessmentRow(result: a, onTap: () => AssessmentScreen.open(context, child: child, result: a)),
+            AssessmentRow(
+              result: a,
+              onTap: () => AssessmentScreen.open(context, child: child, result: a),
+            ),
           if (marks.subjects.isNotEmpty) ...[
             const SizedBox(height: Kx.s12),
             Text('By subject', style: context.text.titleSmall),
@@ -170,7 +173,9 @@ class SubjectBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(result.subject, style: context.text.bodyLarge, maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(
+                child: Text(result.subject, style: context.text.bodyLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
               Text(Fmt.percent(result.percent), style: context.text.titleSmall),
             ],
           ),
@@ -197,8 +202,11 @@ class ResultsScreen extends StatefulWidget {
   final FamilyController family;
   final Child child;
 
-  static Future<void> open(BuildContext context, FamilyController family, Child child) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultsScreen(family: family, child: child)));
+  static Future<void> open(BuildContext context, FamilyController family, Child child) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => ResultsScreen(family: family, child: child),
+    ),
+  );
 
   @override
   State<ResultsScreen> createState() => _ResultsScreenState();
@@ -248,7 +256,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 if (marks.subjects.isNotEmpty) ...[
                   Text('By subject', style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                   const SizedBox(height: Kx.s4),
-                  Text('Marks scored out of the total, across published assessments.', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                  Text(
+                    'Marks scored out of the total, across published assessments.',
+                    style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                  ),
                   const SizedBox(height: Kx.s8),
                   for (final s in marks.subjects) SubjectBar(result: s),
                 ],
@@ -258,7 +269,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   const SizedBox(height: Kx.s4),
                   for (final (i, a) in marks.assessments.indexed) ...[
                     if (i > 0) const Divider(height: 1),
-                    AssessmentRow(result: a, onTap: () => AssessmentScreen.open(context, child: child, result: a)),
+                    AssessmentRow(
+                      result: a,
+                      onTap: () => AssessmentScreen.open(context, child: child, result: a),
+                    ),
                   ],
                 ],
               ],
@@ -277,8 +291,11 @@ class AssessmentScreen extends StatelessWidget {
   final Child child;
   final AssessmentResult result;
 
-  static Future<void> open(BuildContext context, {required Child child, required AssessmentResult result}) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => AssessmentScreen(child: child, result: result)));
+  static Future<void> open(BuildContext context, {required Child child, required AssessmentResult result}) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => AssessmentScreen(child: child, result: result),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -334,7 +351,10 @@ class AssessmentScreen extends StatelessWidget {
                   ),
                   if (cmp != null) ...[
                     const SizedBox(height: Kx.s12),
-                    Align(alignment: Alignment.centerLeft, child: Pill(cmp.$1, background: cmp.$2, foreground: cmp.$3)),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Pill(cmp.$1, background: cmp.$2, foreground: cmp.$3),
+                    ),
                   ],
                   if (a.absent) ...[
                     const SizedBox(height: Kx.s8),

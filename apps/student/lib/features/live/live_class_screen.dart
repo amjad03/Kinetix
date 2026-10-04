@@ -17,7 +17,11 @@ class LiveClassScreen extends StatefulWidget {
   final LiveClass live;
 
   static Future<void> open(BuildContext context, StudyController study, LiveClass live) async {
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => LiveClassScreen(study: study, live: live)));
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LiveClassScreen(study: study, live: live),
+      ),
+    );
     // Back on Today: is the class still live?
     study.loadLive();
   }
@@ -81,7 +85,10 @@ class _LiveClassScreenState extends State<LiveClassScreen> {
                           child: AnimatedOpacity(
                             opacity: showBoard ? 1 : 0.15,
                             duration: const Duration(milliseconds: 200),
-                            child: ClipRRect(borderRadius: Kx.radiusSm, child: LessonView(player: controller.player)),
+                            child: ClipRRect(
+                              borderRadius: Kx.radiusSm,
+                              child: LessonView(player: controller.player),
+                            ),
                           ),
                         ),
                       ),
@@ -95,8 +102,8 @@ class _LiveClassScreenState extends State<LiveClassScreen> {
                 if (phase == LivePhase.reconnecting)
                   const Positioned(
                     top: 72,
-                    left: 0,
-                    right: 0,
+                    left: Kx.s16,
+                    right: Kx.s16,
                     child: SafeArea(child: Center(child: _Reconnecting())),
                   ),
                 if (phase == LivePhase.connecting || phase == LivePhase.joining)
@@ -274,7 +281,9 @@ class _Reconnecting extends StatelessWidget {
       children: [
         const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
         const SizedBox(width: Kx.s12),
-        Text('Connection lost. Reconnecting…', style: context.text.bodyMedium?.copyWith(color: Colors.white)),
+        Flexible(
+          child: Text('Connection lost. Reconnecting…', style: context.text.bodyMedium?.copyWith(color: Colors.white)),
+        ),
       ],
     ),
   );
@@ -298,7 +307,7 @@ class _EndedCard extends StatelessWidget {
       'offline' => (
         Icons.wifi_off_outlined,
         'The board went offline',
-        'The classroom board lost its connection. It may come back in a moment.',
+        'The classroom board lost its connection. Stay here: the board comes back on its own when it reconnects.',
         true,
       ),
       _ => (
@@ -314,32 +323,38 @@ class _EndedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final (icon, title, message, canRetry) = describe(controller);
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 420),
-      child: Card(
-        key: const Key('liveEnded'),
-        margin: const EdgeInsets.all(Kx.s24),
-        child: Padding(
-          padding: const EdgeInsets.all(Kx.s24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 40, color: c.primary),
-              const SizedBox(height: Kx.s12),
-              Text(title, textAlign: TextAlign.center, style: context.text.titleLarge),
-              const SizedBox(height: Kx.s8),
-              Text(message, textAlign: TextAlign.center, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
-              const SizedBox(height: Kx.s24),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: Kx.s8,
-                runSpacing: Kx.s8,
-                children: [
-                  if (canRetry) FilledButton(key: const Key('liveRetry'), onPressed: controller.retry, child: const Text('Try again')),
-                  OutlinedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Back to Today')),
-                ],
-              ),
-            ],
+    return SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Card(
+          key: const Key('liveEnded'),
+          margin: const EdgeInsets.all(Kx.s24),
+          child: Padding(
+            padding: const EdgeInsets.all(Kx.s24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 40, color: c.primary),
+                const SizedBox(height: Kx.s12),
+                Text(title, textAlign: TextAlign.center, style: context.text.titleLarge),
+                const SizedBox(height: Kx.s8),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
+                ),
+                const SizedBox(height: Kx.s24),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: Kx.s8,
+                  runSpacing: Kx.s8,
+                  children: [
+                    if (canRetry) FilledButton(key: const Key('liveRetry'), onPressed: controller.retry, child: const Text('Try again')),
+                    OutlinedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Back to Today')),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -366,6 +381,7 @@ class LiveNowBanner extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(Kx.s16),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 48,
@@ -388,15 +404,16 @@ class LiveNowBanner extends StatelessWidget {
                       '${live.teacher} is teaching. Watch the board.',
                       style: context.text.bodyMedium?.copyWith(color: c.onInverseSurface.withValues(alpha: 0.8)),
                     ),
+                    const SizedBox(height: Kx.s12),
+                    FilledButton.icon(
+                      key: const Key('watchLive'),
+                      style: FilledButton.styleFrom(backgroundColor: Kx.live, foregroundColor: Colors.white),
+                      onPressed: onWatch,
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text('Watch'),
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(width: Kx.s8),
-              FilledButton(
-                key: const Key('watchLive'),
-                style: FilledButton.styleFrom(backgroundColor: Kx.live, foregroundColor: Colors.white),
-                onPressed: onWatch,
-                child: const Text('Watch'),
               ),
             ],
           ),

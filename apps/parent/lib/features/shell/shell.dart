@@ -42,8 +42,7 @@ class _ParentShellState extends State<ParentShell> {
     setState(() => _tab = i);
   }
 
-  Widget _badge(Key? key, int count, IconData icon) =>
-      Badge(key: key, isLabelVisible: count > 0, label: Text('$count'), child: Icon(icon));
+  Widget _badge(Key? key, int count, IconData icon) => Badge(key: key, isLabelVisible: count > 0, label: Text('$count'), child: Icon(icon));
 
   @override
   Widget build(BuildContext context) {

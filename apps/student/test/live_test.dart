@@ -11,6 +11,13 @@ import 'helpers.dart';
 
 /// Watching the teacher's board live.
 void main() {
+  /// Like pumpAndSettle, for screens with a spinner (which never settles).
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
   const device = '11111111-2222-3333-4444-555555555555';
 
   Map<String, dynamic> pen(List<num> points) => {'t': 'pen', 'c': 4279966495, 'w': 4, 'p': points};
@@ -22,10 +29,16 @@ void main() {
       'L',
       [
         [
-          [1, pen([100, 100, 400, 400])],
+          [
+            1,
+            pen([100, 100, 400, 400]),
+          ],
         ],
         [
-          [2, pen([500, 500, 900, 600])],
+          [
+            2,
+            pen([500, 500, 900, 600]),
+          ],
         ],
       ],
       index,
@@ -35,13 +48,19 @@ void main() {
 
   Future<(FakeStudentApi, FakeLiveServer)> pumpLive(WidgetTester tester, {Size size = const Size(412, 892), double textScale = 1}) async {
     final server = FakeLiveServer();
-    final (api, _) = await pumpApp(tester, live: server, size: size, textScale: textScale, setup: (api) => api.liveClass = FakeStudentApi.corporateLive());
+    final (api, _) = await pumpApp(
+      tester,
+      live: server,
+      size: size,
+      textScale: textScale,
+      setup: (api) => api.liveClass = FakeStudentApi.corporateLive(),
+    );
     return (api, server);
   }
 
   Future<void> watch(WidgetTester tester) async {
     await tester.tap(find.byKey(const Key('watchLive')));
-    await tester.pumpAndSettle();
+    await settle(tester);
   }
 
   Finder pageLabel(String text) => find.descendant(of: find.byKey(const Key('livePage')), matching: find.text(text));
@@ -53,7 +72,7 @@ void main() {
   });
 
   testWidgets('a live class shows a banner on Today that opens the board', (tester) async {
-    final (_, server) = await pumpLive(tester);
+    final (api, server) = await pumpLive(tester);
     expect(find.byKey(const Key('liveBanner')), findsOneWidget);
     expect(find.text('Live now: Corporate Accounting'), findsOneWidget);
     expect(find.text('Anita Sharma is teaching. Watch the board.'), findsOneWidget);
@@ -67,13 +86,13 @@ void main() {
     expect(find.byType(LiveClassScreen), findsOneWidget);
     final conn = server.last;
     expect(conn.token, 'tok');
-    expect(conn.baseUrl, 'http://test');
+    expect(conn.baseUrl, api.baseUrl);
     expect(conn.watched, [device]);
     expect(find.text('Waiting for the board…'), findsOneWidget);
     expect(find.text('Board only: no sound yet'), findsOneWidget);
 
     conn.send(LiveFrame(device, snapshot()));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('liveJoining')), findsNothing);
     expect(find.text('LIVE'), findsOneWidget);
     expect(find.text('Corporate Accounting'), findsOneWidget);
@@ -92,7 +111,7 @@ void main() {
         ],
       ]),
     );
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(pageLabel('Page 2 of 2'), findsOneWidget);
 
     // Frames for another board are ignored.
@@ -101,20 +120,20 @@ void main() {
         [30, 'g', 0],
       ]),
     );
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(pageLabel('Page 2 of 2'), findsOneWidget);
 
     // A tap on the board hides the bars; another brings them back.
     await tester.tap(find.byKey(const Key('liveBoard')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('livePage')), findsNothing);
     await tester.tap(find.byKey(const Key('liveBoard')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('livePage')), findsOneWidget);
 
     // Leaving stops watching.
     await tester.tap(find.byKey(const Key('leaveLive')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(conn.unwatched, [device]);
     expect(conn.disposed, isTrue);
     expect(find.byType(LiveClassScreen), findsNothing);
@@ -125,19 +144,19 @@ void main() {
     await watch(tester);
     final conn = server.last;
     conn.send(LiveFrame(device, snapshot()));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     conn.send(const LiveDisconnected());
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Connection lost. Reconnecting…'), findsOneWidget);
     expect(pageLabel('Page 1 of 2'), findsOneWidget);
 
     // Back: the app joins again and the board sends a fresh snapshot.
     conn.send(const LiveReady());
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(conn.watched, [device, device]);
     conn.send(LiveFrame(device, snapshot(index: 1)));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('liveReconnecting')), findsNothing);
     expect(pageLabel('Page 2 of 2'), findsOneWidget);
   });
@@ -147,10 +166,10 @@ void main() {
     await watch(tester);
     final conn = server.last;
     conn.send(LiveFrame(device, snapshot()));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     conn.send(const LiveEnded(device, 'live_off'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Your teacher stopped the live class'), findsOneWidget);
     expect(find.byKey(const Key('liveRetry')), findsNothing);
     expect(find.text('LIVE'), findsNothing);
@@ -158,7 +177,7 @@ void main() {
     // Back on Today the banner goes once the server says nothing is live.
     api.liveClass = null;
     await tester.tap(find.text('Back to Today'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('liveBanner')), findsNothing);
   });
 
@@ -167,21 +186,30 @@ void main() {
     await watch(tester);
     final conn = server.last;
     conn.send(LiveFrame(device, snapshot()));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     conn.send(const LiveEnded(device, 'offline'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('The board went offline'), findsOneWidget);
     await tester.tap(find.byKey(const Key('liveRetry')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(conn.watched, [device, device]);
     conn.send(LiveFrame(device, snapshot()));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('liveEnded')), findsNothing);
     expect(find.text('LIVE'), findsOneWidget);
 
+    // Offline again; this time the board comes back by itself with a fresh snapshot.
+    conn.send(const LiveEnded(device, 'offline'));
+    await settle(tester);
+    expect(find.text('The board went offline'), findsOneWidget);
+    conn.send(LiveFrame(device, snapshot(index: 1)));
+    await settle(tester);
+    expect(find.byKey(const Key('liveEnded')), findsNothing);
+    expect(pageLabel('Page 2 of 2'), findsOneWidget);
+
     conn.send(const LiveEnded(device, 'class_ended'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('The class has ended'), findsOneWidget);
   });
 
@@ -189,14 +217,14 @@ void main() {
     final server = FakeLiveServer()..ack = const LiveWatchAck(ok: false, error: 'This is not your class');
     await pumpApp(tester, live: server, setup: (api) => api.liveClass = FakeStudentApi.corporateLive());
     await tester.tap(find.byKey(const Key('watchLive')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text("Couldn't join the class"), findsOneWidget);
     expect(find.text('This is not your class'), findsOneWidget);
 
     // The board was offline when another student tried.
     server.last.ack = const LiveWatchAck(ok: false, error: 'This board is offline');
     await tester.tap(find.byKey(const Key('liveRetry')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('The board went offline'), findsOneWidget);
   });
 
@@ -207,21 +235,24 @@ void main() {
       live: server,
       setup: (api) {
         api.liveClass = FakeStudentApi.corporateLive();
-        api.inbox.insert(0, api.notice('n9', NotificationKind.live, {'sessionId': 'sess1', 'sectionId': 'sec1'}, title: 'Live now: Corporate Accounting'));
+        api.inbox.insert(
+          0,
+          api.notice('n9', NotificationKind.live, {'sessionId': 'sess1', 'sectionId': 'sec1'}, title: 'Live now: Corporate Accounting'),
+        );
       },
     );
     await openTab(tester, 'Updates');
     expect(find.byIcon(Icons.cast_for_education), findsOneWidget);
     await tester.tap(find.byKey(const Key('notification-n9')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byType(LiveClassScreen), findsOneWidget);
     expect(server.last.watched, [device]);
     await tester.tap(find.byKey(const Key('leaveLive')));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     api.liveClass = null;
     await tester.tap(find.byKey(const Key('notification-n9')));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byType(LiveClassScreen), findsNothing);
     expect(find.text('This class is no longer live.'), findsOneWidget);
   });
@@ -238,23 +269,27 @@ void main() {
 
     api.liveClass = null;
     await tester.fling(find.byType(Scrollable).first, const Offset(0, 500), 1000);
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.byKey(const Key('liveBanner')), findsNothing);
   });
 
-  for (final (name, size, scale) in [('landscape phone', const Size(892, 412), 1.0), ('small phone, large text', const Size(360, 640), 2.0)]) {
+  for (final (name, size, scale) in [
+    ('landscape phone', const Size(892, 412), 1.0),
+    ('small phone, large text', const Size(360, 640), 2.0),
+  ]) {
     testWidgets('the viewer fits a $name', (tester) async {
       final (_, server) = await pumpLive(tester, size: size, textScale: scale);
       await tester.ensureVisible(find.byKey(const Key('watchLive')));
+      await settle(tester);
       await watch(tester);
       server.last.send(LiveFrame(device, snapshot()));
-      await tester.pumpAndSettle();
+      await settle(tester);
       expect(find.byKey(const Key('livePage')), findsOneWidget);
       // The board is as big as the screen allows, 16:9.
       final board = tester.getSize(find.byType(LessonView));
       expect(board.width / board.height, closeTo(16 / 9, 0.01));
       server.last.send(const LiveEnded(device, 'offline'));
-      await tester.pumpAndSettle();
+      await settle(tester);
       expect(tester.takeException(), isNull);
     });
   }

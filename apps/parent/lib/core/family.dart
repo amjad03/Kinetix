@@ -62,8 +62,7 @@ class FamilyController extends ChangeNotifier {
   }
 
   /// Everything Home shows for a child. Each part fails on its own, so one problem never hides the rest.
-  Future<void> _loadAll(String childId) =>
-      Future.wait([loadSummary(childId), loadFees(childId), loadLibrary(childId), loadMarks(childId)]);
+  Future<void> _loadAll(String childId) => Future.wait([loadSummary(childId), loadFees(childId), loadLibrary(childId), loadMarks(childId)]);
 
   Future<void> select(String childId) async {
     if (childId == _selectedId) return;
