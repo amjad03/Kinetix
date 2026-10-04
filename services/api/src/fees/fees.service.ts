@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, lte, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
@@ -100,12 +100,17 @@ export class FeesService {
     if (!r) throw new NotFoundException('Receipt not found');
     await this.assertCanSee(tx, p, r.student.id);
     if (r.payment.status !== 'paid') throw new ForbiddenException('This payment has not gone through');
+    // The balance as it stood after this payment, not today's, so old receipts stay true.
+    const [paidBy] = await tx
+      .select({ paise: sql<number>`coalesce(sum(${feePayments.amountPaise}), 0)::bigint`.mapWith(Number) })
+      .from(feePayments)
+      .where(and(eq(feePayments.invoiceId, r.invoice.id), eq(feePayments.status, 'paid'), lte(feePayments.paidAt, r.payment.paidAt!)));
     return {
       receiptNo: r.payment.receiptNo,
       institution: r.institution,
       student: r.student,
       className: r.className,
-      invoice: { id: r.invoice.id, title: r.invoice.title, amountPaise: r.invoice.amountPaise, balancePaise: Math.max(0, r.invoice.amountPaise - r.invoice.paidPaise) },
+      invoice: { id: r.invoice.id, title: r.invoice.title, amountPaise: r.invoice.amountPaise, balancePaise: Math.max(0, r.invoice.amountPaise - paidBy.paise) },
       amountPaise: r.payment.amountPaise,
       method: r.payment.method,
       reference: r.payment.reference ?? r.payment.providerPaymentId,

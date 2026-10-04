@@ -100,7 +100,13 @@ describe('fees and payments', () => {
     await webhook(event(20_000_00)).expect(200);
     const after = await fees('parent2', t.students[1].id);
     expect(after).toMatchObject({ duePaise: 25_000_00, invoices: [{ status: 'due', paidPaise: 20_000_00 }] });
-    expect(after.payments[0].receiptNo).toBe(`RCPT/${fy}/00002`);
+    expect(after.payments[0]).toMatchObject({ receiptNo: `RCPT/${fy}/00002`, title: 'Semester 3 tuition', reference: 'pay_demo_2' });
+    expect(after.invoices[0].batchId).toEqual(expect.any(String));
+    // A later payment does not change what the earlier receipt says was left.
+    const rest = await http().post(`/v1/fees/invoices/${invoiceId}/payments`).set(auth('principal')).send({ amountPaise: 25_000_00, method: 'cash' }).expect(201);
+    expect(rest.body.invoice.balancePaise).toBe(0);
+    const first = await http().get(`/v1/fees/payments/${order.body.paymentId}/receipt`).set(auth('parent2')).expect(200);
+    expect(first.body.invoice.balancePaise).toBe(25_000_00);
     await webhook({ event: 'payment.captured', payload: { payment: { entity: { id: 'x', order_id: 'order_from_elsewhere', amount: 1, status: 'captured' } } } }).expect(200);
   });
 
@@ -109,13 +115,13 @@ describe('fees and payments', () => {
     const invoiceId = (await fees('principal', studentC)).invoices[0].id;
     await http().post(`/v1/fees/invoices/${invoiceId}/payments`).set(auth('principal')).send({ amountPaise: 50_000_00, method: 'cash' }).expect(400);
     const receipt = await http().post(`/v1/fees/invoices/${invoiceId}/payments`).set(auth('principal')).send({ amountPaise: 45_000_00, method: 'cheque', reference: 'CHQ 004512' }).expect(201);
-    expect(receipt.body).toMatchObject({ receiptNo: `RCPT/${fy}/00003`, method: 'cheque', reference: 'CHQ 004512' });
+    expect(receipt.body).toMatchObject({ receiptNo: `RCPT/${fy}/00004`, method: 'cheque', reference: 'CHQ 004512' });
     // The student sees their own fees and receipt.
     expect((await fees('student', studentC)).duePaise).toBe(0);
     await http().post(`/v1/fees/invoices/${invoiceId}/cancel`).set(auth('principal')).expect(400);
 
     const summary = await http().get('/v1/fees/summary').set(auth('principal')).expect(200);
-    expect(summary.body).toMatchObject({ billedPaise: 135_000_00, collectedPaise: 110_000_00, outstandingPaise: 25_000_00, openInvoices: 1, overdueInvoices: 0 });
+    expect(summary.body).toMatchObject({ billedPaise: 135_000_00, collectedPaise: 135_000_00, outstandingPaise: 0, openInvoices: 0, overdueInvoices: 0 });
     expect((await http().get('/v1/fees/summary').set(auth('outsider')).expect(200)).body.billedPaise).toBe(0);
   });
 

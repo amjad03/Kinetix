@@ -178,13 +178,23 @@ export class FeesController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.fees.assertCanSee(tx, p, studentId);
       const invoices = await tx
-        .select({ id: feeInvoices.id, title: feeInvoices.title, amountPaise: feeInvoices.amountPaise, paidPaise: feeInvoices.paidPaise, dueOn: feeInvoices.dueOn, status: feeInvoices.status })
+        .select({ id: feeInvoices.id, batchId: feeInvoices.batchId, title: feeInvoices.title, amountPaise: feeInvoices.amountPaise, paidPaise: feeInvoices.paidPaise, dueOn: feeInvoices.dueOn, status: feeInvoices.status })
         .from(feeInvoices)
         .where(and(eq(feeInvoices.studentId, studentId), ne(feeInvoices.status, 'cancelled')))
         .orderBy(desc(feeInvoices.dueOn));
       const payments = await tx
-        .select({ id: feePayments.id, invoiceId: feePayments.invoiceId, amountPaise: feePayments.amountPaise, method: feePayments.method, receiptNo: feePayments.receiptNo, paidAt: feePayments.paidAt })
+        .select({
+          id: feePayments.id,
+          invoiceId: feePayments.invoiceId,
+          title: feeInvoices.title,
+          amountPaise: feePayments.amountPaise,
+          method: feePayments.method,
+          reference: sql<string | null>`coalesce(${feePayments.reference}, ${feePayments.providerPaymentId})`,
+          receiptNo: feePayments.receiptNo,
+          paidAt: feePayments.paidAt,
+        })
         .from(feePayments)
+        .innerJoin(feeInvoices, eq(feeInvoices.id, feePayments.invoiceId))
         .where(and(eq(feePayments.studentId, studentId), eq(feePayments.status, 'paid')))
         .orderBy(desc(feePayments.paidAt));
       const duePaise = invoices.filter((i) => i.status === 'due').reduce((s, i) => s + i.amountPaise - i.paidPaise, 0);
