@@ -13,6 +13,20 @@ multi-tenant SaaS and hosted entirely in India.
 | **Student app** | Mobile app | Flutter | *(planned)* |
 | Shared contracts | Event and DTO types shared by the TS services | TypeScript | `packages/shared` |
 
+## Status (October 2026)
+
+| Piece | State |
+|---|---|
+| Cloud API | Multi-tenant (row-level security), pairing, timetable, attendance, homework, broadcasts, sync outbox, saved boards, families and notifications, principal dashboard routes. 59 e2e tests |
+| Board | Teachmint-style Material 3 board: multi-touch ink, shapes with measurements, select, pages, split screen, attendance, random pick, timer, eye comfort, IR-frame touch profile, save and share boards. 23 tests + live integration test |
+| Teacher App | Today's classes, connect to board, attendance, homework. 13 tests |
+| Parent App | Children, attendance, homework, class participation, shared boards, updates inbox. 21 tests |
+| Principal dashboard | Today, classes, attendance, homework, circulate messages, boards. 12 unit + 17 Playwright tests |
+| Not built yet | AI features (shells only), lesson recording, live classroom view, content library, push notifications, Student App, fees and payments, offline storage for the board's outbox |
+
+**Demo logins** after `pnpm db:seed` (institution `demo-college`, password `kinetix123`): principal@demo.kinetix.in,
+anita@demo.kinetix.in (teacher), parent@demo.kinetix.in (parent of two). The seed prints a board enrolment code.
+
 ## Start here
 
 - [Product vision & scope](docs/product/vision.md)
