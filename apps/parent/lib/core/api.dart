@@ -60,6 +60,26 @@ abstract class ParentApi {
   /// Reports the gateway's result; the server checks the signature (403 when it does not match).
   Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature});
   Future<FeeReceipt> receipt(String paymentId);
+
+  /// Books the child has out and has returned, with fines (`GET /v1/library/students/:id`).
+  Future<LibraryAccount> library(String childId);
+
+  /// The child's published marks with class averages and per-subject percentages.
+  Future<ChildMarks> marks(String childId);
+
+  /// Each child with the teachers of their class, who the parent can write to.
+  Future<List<ChildContacts>> contacts();
+
+  /// The parent's conversations, latest first, with unread counts.
+  Future<List<Conversation>> conversations();
+
+  /// Opens the thread with [teacherId] about [childId], or returns the existing one.
+  Future<Conversation> startConversation({required String childId, required String teacherId});
+
+  /// Up to 50 messages, oldest first; [before] pages back from an earlier message's time.
+  Future<MessagePage> messages(String conversationId, {DateTime? before});
+  Future<ChatMessage> sendMessage(String conversationId, String body);
+  Future<void> markConversationRead(String conversationId);
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
@@ -177,6 +197,42 @@ class HttpParentApi implements ParentApi {
   @override
   Future<FeeReceipt> receipt(String paymentId) async =>
       FeeReceipt.fromJson(await _send('GET', '/v1/fees/payments/$paymentId/receipt') as Map<String, dynamic>);
+
+  @override
+  Future<LibraryAccount> library(String childId) async =>
+      LibraryAccount.fromJson(await _send('GET', '/v1/library/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<ChildMarks> marks(String childId) async => ChildMarks.fromJson(await _send('GET', '/v1/marks/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<List<ChildContacts>> contacts() async {
+    final j = await _send('GET', '/v1/conversations/contacts') as Map<String, dynamic>;
+    return [for (final c in (j['asFamily'] as List? ?? const [])) ChildContacts.fromJson(c as Map<String, dynamic>)];
+  }
+
+  @override
+  Future<List<Conversation>> conversations() async => [
+    for (final c in await _send('GET', '/v1/conversations') as List) Conversation.fromJson(c as Map<String, dynamic>),
+  ];
+
+  @override
+  Future<Conversation> startConversation({required String childId, required String teacherId}) async => Conversation.fromJson(
+    await _send('POST', '/v1/conversations', body: {'studentId': childId, 'withUserId': teacherId}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<MessagePage> messages(String conversationId, {DateTime? before}) async {
+    final q = before == null ? '' : '?before=${Uri.encodeQueryComponent(before.toUtc().toIso8601String())}';
+    return MessagePage.fromJson(await _send('GET', '/v1/conversations/$conversationId/messages$q') as Map<String, dynamic>);
+  }
+
+  @override
+  Future<ChatMessage> sendMessage(String conversationId, String body) async =>
+      ChatMessage.fromJson(await _send('POST', '/v1/conversations/$conversationId/messages', body: {'body': body}) as Map<String, dynamic>);
+
+  @override
+  Future<void> markConversationRead(String conversationId) async => _send('POST', '/v1/conversations/$conversationId/read');
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

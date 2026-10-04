@@ -59,6 +59,34 @@ abstract class TeacherApi {
 
   /// Shares a finished recording with its class (families of absent students are notified).
   Future<RecordingInfo> shareRecording(String id);
+
+  /// A class's tests and assignments, latest first (no marks or stats).
+  Future<List<Assessment>> assessments(String sectionId);
+
+  /// One assessment with the class roster, saved marks and stats.
+  Future<Assessment> assessment(String id);
+  Future<Assessment> createAssessment({
+    required String sectionId,
+    required String subjectId,
+    required String title,
+    required AssessmentKind kind,
+    required double maxMarks,
+    required String heldOn,
+  });
+
+  /// Saves (or corrects) marks. Returns the assessment with fresh stats.
+  Future<Assessment> saveMarks(String assessmentId, List<MarkInput> entries);
+
+  /// Publishes to students and families (who are notified).
+  Future<Assessment> publishAssessment(String id);
+
+  /// The teacher's message threads, latest first.
+  Future<List<Conversation>> conversations();
+
+  /// Up to [ChatPage.pageSize] messages, oldest first; [before] pages back.
+  Future<ChatPage> conversationMessages(String id, {DateTime? before});
+  Future<ChatMessage> sendMessage(String conversationId, String body);
+  Future<void> markConversationRead(String id);
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -193,6 +221,57 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<RecordingInfo> shareRecording(String id) async =>
       RecordingInfo.fromJson(await _send('POST', '/v1/recordings/$id/share') as Map<String, dynamic>);
+
+  @override
+  Future<List<Assessment>> assessments(String sectionId) async =>
+      (await _send('GET', '/v1/assessments?sectionId=$sectionId') as List).map((e) => Assessment.fromJson(e as Map<String, dynamic>)).toList();
+
+  @override
+  Future<Assessment> assessment(String id) async => Assessment.fromJson(await _send('GET', '/v1/assessments/$id') as Map<String, dynamic>);
+
+  @override
+  Future<Assessment> createAssessment({
+    required String sectionId,
+    required String subjectId,
+    required String title,
+    required AssessmentKind kind,
+    required double maxMarks,
+    required String heldOn,
+  }) async => Assessment.fromJson(
+    await _send(
+      'POST',
+      '/v1/assessments',
+      body: {'sectionId': sectionId, 'subjectId': subjectId, 'title': title, 'kind': kind.name, 'maxMarks': maxMarks, 'heldOn': heldOn},
+    ),
+  );
+
+  @override
+  Future<Assessment> saveMarks(String assessmentId, List<MarkInput> entries) async => Assessment.fromJson(
+    await _send('PUT', '/v1/assessments/$assessmentId/marks', body: {'entries': [for (final e in entries) e.toJson()]}),
+  );
+
+  @override
+  Future<Assessment> publishAssessment(String id) async =>
+      Assessment.fromJson(await _send('POST', '/v1/assessments/$id/publish') as Map<String, dynamic>);
+
+  @override
+  Future<List<Conversation>> conversations() async =>
+      (await _send('GET', '/v1/conversations') as List).map((e) => Conversation.fromJson(e as Map<String, dynamic>)).toList();
+
+  @override
+  Future<ChatPage> conversationMessages(String id, {DateTime? before}) async => ChatPage.fromJson(
+    await _send(
+      'GET',
+      '/v1/conversations/$id/messages${before == null ? '' : '?before=${Uri.encodeQueryComponent(before.toUtc().toIso8601String())}'}',
+    ),
+  );
+
+  @override
+  Future<ChatMessage> sendMessage(String conversationId, String body) async =>
+      ChatMessage.fromJson(await _send('POST', '/v1/conversations/$conversationId/messages', body: {'body': body}));
+
+  @override
+  Future<void> markConversationRead(String id) async => _send('POST', '/v1/conversations/$id/read');
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

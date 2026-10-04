@@ -241,3 +241,214 @@ class Homework {
   final Ref section;
   final Ref subject;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Marks
+
+/// "25" for whole numbers, "22.5" otherwise.
+String formatMarks(num n) {
+  if (n == n.roundToDouble()) return n.toInt().toString();
+  return n.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
+}
+
+enum AssessmentKind {
+  test('Test'),
+  assignment('Assignment'),
+  internal('Internal'),
+  exam('Exam'),
+  practical('Practical');
+
+  const AssessmentKind(this.label);
+  final String label;
+}
+
+/// Average, highest and lowest of the marks entered (absentees excluded).
+class MarkStats {
+  const MarkStats({required this.count, this.average, this.highest, this.lowest});
+
+  factory MarkStats.fromJson(Map<String, dynamic> j) => MarkStats(
+    count: j['count'] as int,
+    average: (j['average'] as num?)?.toDouble(),
+    highest: (j['highest'] as num?)?.toDouble(),
+    lowest: (j['lowest'] as num?)?.toDouble(),
+  );
+
+  final int count;
+  final double? average;
+  final double? highest;
+  final double? lowest;
+}
+
+/// One student's row in an assessment.
+class MarkEntry {
+  MarkEntry({required this.student, this.marks, this.absent = false, this.remark});
+
+  factory MarkEntry.fromJson(Map<String, dynamic> j) => MarkEntry(
+    student: Student.fromJson(j),
+    marks: (j['marks'] as num?)?.toDouble(),
+    absent: j['absent'] as bool? ?? false,
+    remark: j['remark'] as String?,
+  );
+
+  final Student student;
+  final double? marks;
+  final bool absent;
+  final String? remark;
+
+  bool get hasValue => marks != null || absent || (remark?.isNotEmpty ?? false);
+}
+
+/// A test, assignment or exam for one class and subject. [students] and [stats] come with the detail.
+class Assessment {
+  Assessment({
+    required this.id,
+    required this.title,
+    required this.kind,
+    required this.maxMarks,
+    required this.heldOn,
+    required this.sectionId,
+    required this.subject,
+    required this.entered,
+    this.publishedAt,
+    this.createdBy,
+    this.stats,
+    this.students,
+  });
+
+  factory Assessment.fromJson(Map<String, dynamic> j) => Assessment(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    kind: AssessmentKind.values.asNameMap()[j['kind']] ?? AssessmentKind.test,
+    maxMarks: (j['maxMarks'] as num).toDouble(),
+    heldOn: parseIsoDate(j['heldOn'] as String),
+    publishedAt: j['publishedAt'] == null ? null : DateTime.parse(j['publishedAt'] as String),
+    sectionId: j['sectionId'] as String,
+    subject: Ref((j['subject'] as Map)['id'] as String, (j['subject'] as Map)['name'] as String),
+    createdBy: j['createdBy'] as String?,
+    entered: j['entered'] as int? ?? 0,
+    stats: j['stats'] == null ? null : MarkStats.fromJson(j['stats'] as Map<String, dynamic>),
+    students: (j['students'] as List?)?.map((e) => MarkEntry.fromJson(e as Map<String, dynamic>)).toList(),
+  );
+
+  final String id;
+  final String title;
+  final AssessmentKind kind;
+  final double maxMarks;
+  final DateTime heldOn;
+  final DateTime? publishedAt;
+  final String sectionId;
+  final Ref subject;
+  final String? createdBy;
+
+  /// Students with a saved row (marks, absent or a remark).
+  final int entered;
+  final MarkStats? stats;
+  final List<MarkEntry>? students;
+
+  bool get isPublished => publishedAt != null;
+}
+
+/// What the teacher sends for one student: marks (null when blank or absent), absent, remark.
+class MarkInput {
+  const MarkInput({required this.studentId, this.marks, this.absent = false, this.remark});
+
+  final String studentId;
+  final double? marks;
+  final bool absent;
+  final String? remark;
+
+  Map<String, dynamic> toJson() => {
+    'studentId': studentId,
+    'marks': absent ? null : marks,
+    'absent': absent,
+    if (remark != null) 'remark': remark,
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Messages
+
+/// A thread between this teacher and a family (or an adult student) about one student.
+class Conversation {
+  Conversation({
+    required this.id,
+    required this.student,
+    required this.className,
+    required this.staff,
+    required this.family,
+    this.lastMessageAt,
+    this.lastMessage,
+    this.unread = 0,
+  });
+
+  factory Conversation.fromJson(Map<String, dynamic> j) {
+    Ref ref(Object? m) => Ref((m as Map)['id'] as String, m['fullName'] as String);
+    return Conversation(
+      id: j['id'] as String,
+      student: ref(j['student']),
+      className: j['className'] as String,
+      staff: ref(j['staff']),
+      family: ref(j['family']),
+      lastMessageAt: j['lastMessageAt'] == null ? null : DateTime.parse(j['lastMessageAt'] as String).toLocal(),
+      lastMessage: j['lastMessage'] as String?,
+      unread: j['unread'] as int? ?? 0,
+    );
+  }
+
+  final String id;
+  final Ref student;
+  final String className;
+  final Ref staff;
+  final Ref family;
+  final DateTime? lastMessageAt;
+  final String? lastMessage;
+  final int unread;
+
+  /// At colleges an adult student may write for themselves.
+  bool get withStudent => family.name == student.name;
+
+  /// "Parent of Aarav Patel · BCom Sem 3 A"
+  String get about => withStudent ? 'Student · $className' : 'Parent of ${student.name} · $className';
+
+  Conversation copyWith({int? unread, String? lastMessage, DateTime? lastMessageAt}) => Conversation(
+    id: id,
+    student: student,
+    className: className,
+    staff: staff,
+    family: family,
+    lastMessage: lastMessage ?? this.lastMessage,
+    lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+    unread: unread ?? this.unread,
+  );
+}
+
+class ChatMessage {
+  ChatMessage({required this.id, required this.senderId, required this.body, required this.createdAt});
+
+  factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
+    id: j['id'] as String,
+    senderId: j['senderId'] as String,
+    body: j['body'] as String,
+    createdAt: DateTime.parse(j['createdAt'] as String).toLocal(),
+  );
+
+  final String id;
+  final String senderId;
+  final String body;
+  final DateTime createdAt;
+}
+
+/// One page of a thread, oldest first.
+class ChatPage {
+  ChatPage(this.conversation, this.messages);
+
+  factory ChatPage.fromJson(Map<String, dynamic> j) => ChatPage(
+    Conversation.fromJson(j['conversation'] as Map<String, dynamic>),
+    (j['messages'] as List).map((e) => ChatMessage.fromJson(e as Map<String, dynamic>)).toList(),
+  );
+
+  static const pageSize = 50;
+
+  final Conversation conversation;
+  final List<ChatMessage> messages;
+}

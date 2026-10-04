@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -18,6 +18,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   syllabus: ['principal', 'tenant_admin', 'hod'],
   // GET /v1/ai/usage: STAFF_ADMIN_ROLES
   ai: ['principal', 'tenant_admin'],
+  // library.controller.ts LIBRARY_ROLES
+  library: ['librarian', 'principal', 'tenant_admin'],
+  // marks.controller.ts: staff who teach the class, principal and admin. HODs see the classes they teach.
+  results: ['principal', 'tenant_admin', 'hod'],
+  // timetable-admin.controller.ts: STAFF_ADMIN_ROLES
+  timetable: ['principal', 'tenant_admin'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -33,6 +39,11 @@ export function canUseErp(roles: readonly RoleName[]): boolean {
 
 /** Principal and administrator: link subjects to courses (PUT /v1/admin/subjects/:id/course). */
 export function canLinkSubjects(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
+}
+
+/** Principal and administrator publish marks from the ERP (teachers publish from the Teacher App). */
+export function canPublishMarks(roles: readonly RoleName[]): boolean {
   return roles.some((r) => r === 'principal' || r === 'tenant_admin');
 }
 
@@ -61,15 +72,22 @@ export function sectionOf(pathname: string): Section | null {
       return 'syllabus';
     case 'ai':
       return 'ai';
+    case 'library':
+      return 'library';
+    case 'results':
+      return 'results';
+    case 'timetable':
+      return 'timetable';
     default:
       return null;
   }
 }
 
-/** Where a role lands after signing in: Today for school leaders, Fees for the accounts office. */
+/** Where a role lands after signing in: Today for school leaders, Fees for the accounts office, Library for the librarian. */
 export function homeFor(roles: readonly RoleName[]): string {
   if (canSee(roles, 'school')) return '/';
   if (canSee(roles, 'fees')) return '/fees';
+  if (canSee(roles, 'library')) return '/library';
   return '/login';
 }
 

@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api.dart';
 import 'models.dart';
 
-/// The parent's children, which one is selected (remembered), and each child's Home summary and fees.
+/// The parent's children, which one is selected (remembered), and each child's Home summary, fees,
+/// library books and marks.
 class FamilyController extends ChangeNotifier {
   FamilyController(this.api, this._prefs);
 
@@ -23,6 +24,10 @@ class FamilyController extends ChangeNotifier {
   final _summaryLoading = <String>{};
   final _fees = <String, StudentFees>{};
   final _feesErrors = <String, String>{};
+  final _library = <String, LibraryAccount>{};
+  final _libraryErrors = <String, String>{};
+  final _marks = <String, ChildMarks>{};
+  final _marksErrors = <String, String>{};
 
   Child? get selected => children.where((c) => c.id == _selectedId).firstOrNull ?? children.firstOrNull;
   ChildSummary? summaryOf(String childId) => _summaries[childId];
@@ -30,6 +35,10 @@ class FamilyController extends ChangeNotifier {
   bool summaryLoading(String childId) => _summaryLoading.contains(childId);
   StudentFees? feesOf(String childId) => _fees[childId];
   String? feesErrorOf(String childId) => _feesErrors[childId];
+  LibraryAccount? libraryOf(String childId) => _library[childId];
+  String? libraryErrorOf(String childId) => _libraryErrors[childId];
+  ChildMarks? marksOf(String childId) => _marks[childId];
+  String? marksErrorOf(String childId) => _marksErrors[childId];
   Child? byId(String? id) => children.where((c) => c.id == id).firstOrNull;
   Iterable<Child> inSection(String? sectionId) => children.where((c) => c.sectionId == sectionId);
 
@@ -49,15 +58,24 @@ class FamilyController extends ChangeNotifier {
       notifyListeners();
     }
     final c = selected;
-    if (c != null) await Future.wait([loadSummary(c.id), loadFees(c.id)]);
+    if (c != null) await _loadAll(c.id);
   }
+
+  /// Everything Home shows for a child. Each part fails on its own, so one problem never hides the rest.
+  Future<void> _loadAll(String childId) =>
+      Future.wait([loadSummary(childId), loadFees(childId), loadLibrary(childId), loadMarks(childId)]);
 
   Future<void> select(String childId) async {
     if (childId == _selectedId) return;
     _selectedId = childId;
     await _prefs.setString(_kChild, childId);
     notifyListeners();
-    await Future.wait([if (!_summaries.containsKey(childId)) loadSummary(childId), if (!_fees.containsKey(childId)) loadFees(childId)]);
+    await Future.wait([
+      if (!_summaries.containsKey(childId)) loadSummary(childId),
+      if (!_fees.containsKey(childId)) loadFees(childId),
+      if (!_library.containsKey(childId)) loadLibrary(childId),
+      if (!_marks.containsKey(childId)) loadMarks(childId),
+    ]);
   }
 
   Future<void> loadSummary(String childId) async {
@@ -88,11 +106,49 @@ class FamilyController extends ChangeNotifier {
     }
   }
 
-  /// Pull to refresh: the children list and the selected child's summary and fees.
+  Future<LibraryAccount?> loadLibrary(String childId) async {
+    _libraryErrors.remove(childId);
+    try {
+      return _library[childId] = await api.library(childId);
+    } on ApiException catch (e) {
+      _libraryErrors[childId] = e.message;
+      return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<ChildMarks?> loadMarks(String childId) async {
+    _marksErrors.remove(childId);
+    try {
+      return _marks[childId] = await api.marks(childId);
+    } on ApiException catch (e) {
+      _marksErrors[childId] = e.message;
+      return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Pull to refresh: the children list and the selected child's summary, fees, library and marks.
   Future<void> refresh() async {
     if (children.isEmpty) return load();
     final c = selected;
-    if (c != null) await Future.wait([loadSummary(c.id), loadFees(c.id)]);
+    if (c != null) await _loadAll(c.id);
+  }
+
+  /// The child (in [sectionId]) whose published marks include [assessmentId], with that result.
+  /// Reloads their marks, since the notification means something new was published.
+  Future<(Child, AssessmentResult?)?> findAssessment(String? assessmentId, {String? sectionId}) async {
+    if (children.isEmpty) await load();
+    final candidates = sectionId == null ? children : inSection(sectionId).toList();
+    for (final child in candidates.isEmpty ? children : candidates) {
+      final m = await loadMarks(child.id);
+      final a = assessmentId == null ? null : m?.byId(assessmentId);
+      if (a != null) return (child, a);
+    }
+    final first = candidates.firstOrNull;
+    return first == null ? null : (first, null);
   }
 
   /// The child a new fee (titled [title]) is for. The notification names only the class's batch,

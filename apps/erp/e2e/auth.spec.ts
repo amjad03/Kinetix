@@ -3,7 +3,7 @@ import { signIn, signInAsPrincipal } from './helpers';
 
 test('a teacher is refused with a clear message', async ({ page }) => {
   await signIn(page, 'anita@demo.kinetix.in');
-  await expect(page.locator('form').getByRole('alert')).toContainText('for principals, administrators, heads of department and the accounts office');
+  await expect(page.locator('form').getByRole('alert')).toContainText('for principals, administrators, heads of department, the accounts office and the library');
   await expect(page).toHaveURL(/\/login/);
   // No session was created: the dashboard still sends us to sign in.
   await page.goto('/');

@@ -13,7 +13,7 @@ export interface LoginState {
 }
 
 const NOT_FOR_ROLE =
-  'KINETIX ERP is for principals, administrators, heads of department and the accounts office. Teachers can use the KINETIX Teacher App; students and parents, their own apps.';
+  'KINETIX ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the KINETIX Teacher App; students and parents, their own apps.';
 
 export async function signIn(_prev: LoginState, form: FormData): Promise<LoginState> {
   const tenant = String(form.get('tenant') ?? '').trim().toLowerCase();

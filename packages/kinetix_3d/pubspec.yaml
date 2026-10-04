@@ -1,0 +1,19 @@
+name: kinetix_3d
+description: KINETIX 3D models — a small pure-Dart software 3D engine, solids with live measurements, procedural science models (molecules, Solar System, Earth) and a minimal glTF binary loader. No WebView, no plugins, works offline on Android, Windows and Linux.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kinetix_ui:
+    path: ../kinetix_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

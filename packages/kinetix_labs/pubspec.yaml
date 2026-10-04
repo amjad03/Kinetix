@@ -1,0 +1,19 @@
+name: kinetix_labs
+description: KINETIX virtual labs — pure Flutter simulations (Ohm's law, ray optics, pendulum, break-even, graph plotter) with controls, live readouts and an aim card. Offline, no plugins.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kinetix_ui:
+    path: ../kinetix_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

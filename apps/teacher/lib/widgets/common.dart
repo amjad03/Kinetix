@@ -64,3 +64,37 @@ class Pill extends StatelessWidget {
     );
   }
 }
+
+/// Green "done" colours (Shared, Published) that read in both themes: (background, foreground).
+(Color, Color) goodColors(BuildContext context) => Theme.of(context).brightness == Brightness.dark
+    ? (const Color(0xFF0D3B1E), const Color(0xFF81C995))
+    : (const Color(0xFFE6F4EA), const Color(0xFF137333));
+
+/// The signed-in teacher's avatar in a tab's app bar; opens Profile.
+class ProfileButton extends StatelessWidget {
+  const ProfileButton({super.key, required this.name, required this.onPressed});
+
+  final String name;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(right: Kx.s8),
+    child: IconButton(onPressed: onPressed, tooltip: 'Profile', icon: KxAvatar(name: name, size: 32)),
+  );
+}
+
+/// Asks before leaving a screen with unsaved changes. True when the teacher chose to discard.
+Future<bool> confirmDiscard(BuildContext context, {String what = 'marks'}) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: Text('You have $what that are not saved yet.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Keep editing')),
+          FilledButton(key: const Key('discardChanges'), onPressed: () => Navigator.pop(ctx, true), child: const Text('Discard')),
+        ],
+      ),
+    ) ??
+    false;

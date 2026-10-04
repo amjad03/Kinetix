@@ -251,4 +251,97 @@ export interface AiUsage {
   rows: { task: string; outcome: string; requests: number; tokens: number }[];
 }
 
+// ---- Library (v1/library). Fines are integer paise. ----
+
+export interface LibraryBook {
+  id: string;
+  title: string;
+  author: string;
+  isbn: string | null;
+  callNo: string | null;
+  copies: number;
+  onLoan: number;
+}
+
+export interface LibraryLoan {
+  id: string;
+  book: { id: string; title: string; author: string; callNo: string | null };
+  student: { id: string; fullName: string; rollNo: string | null };
+  className: string;
+  issuedAt: string;
+  dueOn: string;
+  returnedAt: string | null;
+  finePaise: number;
+  overdue: boolean;
+}
+
+/** What `POST /v1/library/loans/:id/return` sends back (the loan row). */
+export interface ReturnedLoan {
+  id: string;
+  bookId: string;
+  studentId: string;
+  dueOn: string;
+  returnedAt: string | null;
+  finePaise: number;
+}
+
+/** A student the library can lend to. */
+export interface LibraryStudent {
+  id: string;
+  fullName: string;
+  rollNo: string | null;
+  className: string;
+}
+
+// ---- Marks (v1/assessments) ----
+
+export type AssessmentKind = 'test' | 'assignment' | 'internal' | 'exam' | 'practical';
+
+export interface AssessmentSummary {
+  id: string;
+  title: string;
+  kind: AssessmentKind;
+  maxMarks: number;
+  heldOn: string;
+  publishedAt: string | null;
+  sectionId: string;
+  subject: { id: string; name: string };
+  createdBy: string;
+  entered: number;
+}
+
+export interface MarkStats {
+  count: number;
+  average: number | null;
+  highest: number | null;
+  lowest: number | null;
+}
+
+export interface AssessmentDetail extends AssessmentSummary {
+  stats: MarkStats;
+  students: { id: string; fullName: string; rollNo: string | null; marks: number | null; absent: boolean; remark: string | null }[];
+}
+
+// ---- Timetable editing (v1/admin/timetable) ----
+
+export interface StaffMember {
+  id: string;
+  fullName: string;
+  roles: RoleName[];
+}
+
+export interface TimetableSlot {
+  id: string;
+  /** 1 = Monday … 7 = Sunday. */
+  dayOfWeek: number;
+  /** "09:00:00". */
+  startsAt: string;
+  endsAt: string;
+  section: { id: string; displayName: string };
+  subject: { id: string; code: string; name: string };
+  teacher: { id: string; fullName: string };
+  roomId: string | null;
+  room: string | null;
+}
+
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };

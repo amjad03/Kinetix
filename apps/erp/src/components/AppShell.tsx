@@ -2,6 +2,8 @@
 
 import Assignment from '@mui/icons-material/Assignment';
 import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import Campaign from '@mui/icons-material/Campaign';
 import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
 import CastForEducation from '@mui/icons-material/CastForEducation';
@@ -12,6 +14,10 @@ import FactCheck from '@mui/icons-material/FactCheck';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
+import Grading from '@mui/icons-material/Grading';
+import GradingOutlined from '@mui/icons-material/GradingOutlined';
+import LocalLibrary from '@mui/icons-material/LocalLibrary';
+import LocalLibraryOutlined from '@mui/icons-material/LocalLibraryOutlined';
 import LiveTv from '@mui/icons-material/LiveTv';
 import LiveTvOutlined from '@mui/icons-material/LiveTvOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
@@ -42,12 +48,15 @@ import { Logo, LogoMark } from './Logo';
 const NAV: { href: string; label: string; section: Section; icon: typeof TodayOutlined; active: typeof Today }[] = [
   { href: '/', label: 'Today', section: 'school', icon: TodayOutlined, active: Today },
   { href: '/classes', label: 'Classes', section: 'school', icon: ClassOutlined, active: Class },
+  { href: '/timetable', label: 'Timetable', section: 'timetable', icon: CalendarMonthOutlined, active: CalendarMonth },
   { href: '/attendance', label: 'Attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
   { href: '/homework', label: 'Homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
+  { href: '/results', label: 'Results', section: 'results', icon: GradingOutlined, active: Grading },
   { href: '/messages', label: 'Messages', section: 'school', icon: CampaignOutlined, active: Campaign },
   { href: '/boards', label: 'Boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
   { href: '/live', label: 'Live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
   { href: '/fees', label: 'Fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
+  { href: '/library', label: 'Library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/syllabus', label: 'Syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/ai', label: 'AI usage', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
 ];
@@ -58,6 +67,7 @@ const ROLE_LABEL: Record<string, string> = {
   hod: 'Head of department',
   teacher: 'Teacher',
   accountant: 'Accounts office',
+  librarian: 'Library',
 };
 
 export interface ShellUser {
