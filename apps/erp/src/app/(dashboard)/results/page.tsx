@@ -18,28 +18,28 @@ import { UrlSelect } from '@/components/UrlSelect';
 import { load, requireSection } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
 import { formatMarks, KIND_LABEL, percent } from '@/lib/results';
-import { assessmentDetails, resultClasses } from '@/lib/results-data';
-import type { AssessmentDetail } from '@/lib/types';
+import { resultClasses } from '@/lib/results-data';
+import type { AssessmentSummary } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Results' };
 
 const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
-function Average({ a }: { a: AssessmentDetail }) {
-  if (a.stats.average === null)
+function Average({ a }: { a: AssessmentSummary }) {
+  if (a.average === null)
     return (
       <Typography variant="body2" color="text.secondary">
         —
       </Typography>
     );
-  const p = percent(a.stats.average, a.maxMarks);
+  const p = percent(a.average, a.maxMarks);
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'flex-end' }}>
       <Box sx={{ width: { xs: 48, md: 72 } }}>
         <MiniBar value={p} label={`Class average ${p.toFixed(0)}%`} />
       </Box>
       <Typography variant="body2" sx={{ ...num, minWidth: 92, textAlign: 'right' }}>
-        {formatMarks(a.stats.average)} / {formatMarks(a.maxMarks)}
+        {formatMarks(a.average)} / {formatMarks(a.maxMarks)}
         <Typography component="span" variant="caption" color="text.secondary" sx={{ display: 'block' }}>
           {p.toFixed(1)}%
         </Typography>
@@ -54,8 +54,7 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
   const classes = await load(resultClasses);
   const list = classes.data ?? [];
   const klass = list.find((c) => c.id === sp.class) ?? list.find((c) => c.assessments.length > 0) ?? list[0];
-  const details = klass ? await load(() => assessmentDetails(klass.assessments.map((a) => a.id))) : null;
-  const rows = details?.data ?? [];
+  const rows = klass?.assessments ?? [];
   const published = rows.filter((a) => a.publishedAt).length;
 
   return (
@@ -75,8 +74,6 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
         <EmptyState icon={<GradingOutlined />} title="No classes to show" testId="no-result-classes">
           Results appear here for the classes you teach.
         </EmptyState>
-      ) : details?.error !== undefined ? (
-        <ErrorState message={details.error} />
       ) : rows.length === 0 ? (
         <EmptyState icon={<GradingOutlined />} title={`No assessments for ${klass.name} yet`} testId="no-assessments">
           When a teacher sets a test or assignment for this class in the Teacher App, it appears here with the marks entered.
@@ -101,7 +98,6 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
                 </TableHead>
                 <TableBody>
                   {rows.map((a) => {
-                    const done = a.students.filter((s) => s.marks !== null || s.absent).length;
                     return (
                       <TableRow key={a.id} hover data-testid="assessment-row">
                         <TableCell>
@@ -112,7 +108,7 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
                         </TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(a.heldOn, 'short')}</TableCell>
                         <TableCell align="right" sx={num} data-testid="assessment-entered">
-                          {done} of {a.students.length}
+                          {a.entered} of {a.classSize}
                         </TableCell>
                         <TableCell align="right" data-testid="assessment-average">
                           <Average a={a} />
@@ -145,7 +141,7 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
                   {a.subject.name} · {formatDate(a.heldOn, 'short')}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  Average {a.stats.average === null ? '—' : `${formatMarks(a.stats.average)} / ${formatMarks(a.maxMarks)}`}
+                  Average {a.average === null ? '—' : `${formatMarks(a.average)} / ${formatMarks(a.maxMarks)}`} · {a.entered} of {a.classSize} entered
                 </Typography>
                 <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} sx={{ mt: 1, ml: -1 }}>
                   Marks

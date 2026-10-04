@@ -307,7 +307,12 @@ export interface AssessmentSummary {
   sectionId: string;
   subject: { id: string; name: string };
   createdBy: string;
+  /** Students with a mark or marked absent. */
   entered: number;
+  /** Active students in the class. */
+  classSize: number;
+  /** Class average of the marks entered (absentees excluded), one decimal. */
+  average: number | null;
 }
 
 export interface MarkStats {

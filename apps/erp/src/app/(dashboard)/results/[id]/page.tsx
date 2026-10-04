@@ -84,7 +84,11 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
             <PublishedChip publishedAt={a.publishedAt} />
           </Box>
         }
-        actions={!a.publishedAt && me && canPublishMarks(me.roles) ? <PublishButton id={a.id} title={a.title} className={className} entered={c.entered + c.absent} missing={c.missing} /> : undefined}
+        actions={
+          me && canPublishMarks(me.roles) ? (
+            <PublishButton id={a.id} title={a.title} className={className} entered={c.entered + c.absent} missing={c.missing} published={!!a.publishedAt} />
+          ) : undefined
+        }
       />
 
       <StatGrid min={180}>

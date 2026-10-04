@@ -1,6 +1,6 @@
 import 'server-only';
 import { api, ApiError } from './api';
-import type { AssessmentDetail, AssessmentSummary, Structure } from './types';
+import type { AssessmentSummary, Structure } from './types';
 
 export interface ResultClass {
   id: string;
@@ -28,9 +28,4 @@ export async function resultClasses(): Promise<ResultClass[]> {
     }),
   );
   return rows.filter((r): r is ResultClass => r !== null);
-}
-
-/** Each assessment with its marks, for averages (the list has no stats). */
-export function assessmentDetails(ids: string[]): Promise<AssessmentDetail[]> {
-  return Promise.all(ids.map((id) => api<AssessmentDetail>(`/v1/assessments/${id}`)));
 }

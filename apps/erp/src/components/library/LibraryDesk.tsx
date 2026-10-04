@@ -123,7 +123,8 @@ export function LibraryDesk({
             setAdding(false);
             if (done) {
               setToast(done);
-              switchTab('catalogue');
+              // Show the new book; the URL is left alone while the page refreshes with it.
+              setTab('catalogue');
             }
           }}
         />

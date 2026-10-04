@@ -88,7 +88,7 @@ export function TimetableEditor({
             sx={{ display: 'grid', gridTemplateColumns: `72px repeat(${grid.columns.length}, minmax(132px, 1fr))`, minWidth: 72 + grid.columns.length * 132 }}
           >
             <Box role="row" sx={{ display: 'contents' }}>
-              <Box role="columnheader" sx={headSx} />
+              <Box role="columnheader" sx={{ ...headSx, position: 'sticky', left: 0, zIndex: 2 }} />
               {grid.columns.map((c) => (
                 <Box key={c.key} role="columnheader" sx={{ ...headSx, textAlign: 'center' }}>
                   <Typography variant="subtitle2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -99,7 +99,7 @@ export function TimetableEditor({
             </Box>
             {grid.rows.map((r) => (
               <Box key={r.day} role="row" sx={{ display: 'contents' }} data-testid={`day-${r.day}`}>
-                <Box role="rowheader" sx={{ ...cellSx, display: 'flex', alignItems: 'center', bgcolor: 'm3.surfaceContainerLow' }}>
+                <Box role="rowheader" sx={{ ...cellSx, display: 'flex', alignItems: 'center', bgcolor: 'm3.surfaceContainerLow', position: 'sticky', left: 0, zIndex: 1 }}>
                   <Typography variant="subtitle2">{DAY_SHORT[r.day]}</Typography>
                 </Box>
                 {grid.columns.map((c) => {

@@ -79,8 +79,6 @@ paid, an overview of parent–teacher conversations.
   rosters, and `v1/library` has no student search, so the desk can only lend to students who
   already have a book out. Principal and administrator get every student from the rosters. Needs
   e.g. `GET /v1/library/students?q=` (name / roll number) for `LIBRARY_ROLES`.
-- **Class average in the assessment list.** `GET /v1/assessments?sectionId=` has the entered
-  count but no stats, so Results loads each assessment to show its average.
 - **A department view for heads of department.** Marks are readable by staff who teach the class,
   so an HOD sees only their own classes' results, not their department's.
 - **Fines collected.** A return records `finePaise`, but there is no way to mark it paid or list

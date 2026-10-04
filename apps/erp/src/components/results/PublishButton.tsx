@@ -13,11 +13,14 @@ import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { publishAssessment } from '@/app/(dashboard)/results/actions';
 
-export function PublishButton({ id, title, className, entered, missing }: { id: string; title: string; className: string; entered: number; missing: number }) {
+/** Rendered on published assessments too (with `published`), so the confirmation outlives the refresh. */
+export function PublishButton({ id, title, className, entered, missing, published }: { id: string; title: string; className: string; entered: number; missing: number; published: boolean }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const toastBar = <Snackbar open={!!toast} autoHideDuration={6000} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} />;
+  if (published) return toastBar;
   return (
     <>
       <Button variant="contained" startIcon={<PublishOutlined />} onClick={() => setOpen(true)} disabled={entered === 0}>
@@ -62,7 +65,7 @@ export function PublishButton({ id, title, className, entered, missing }: { id: 
           </Button>
         </DialogActions>
       </Dialog>
-      <Snackbar open={!!toast} autoHideDuration={6000} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} />
+      {toastBar}
     </>
   );
 }
