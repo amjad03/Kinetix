@@ -103,6 +103,11 @@ describe('departments', () => {
     await http().get(`/v1/departments/${deptId}/overview`).set(auth('principal')).expect(200);
     await http().get(`/v1/departments/${deptId}/overview`).set(auth('outsider')).expect(404);
     await http().get(`/v1/departments/${deptId}/overview?from=${monday}&to=2020-01-01`).set(auth('hod')).expect(400);
+
+    // A range reaching back before the academic year (1 Aug) starts at the year's first day.
+    const early = (await http().get(`/v1/departments/${deptId}/overview?from=2026-07-01&to=2026-08-03`).set(auth('hod')).expect(200)).body;
+    expect(early.range).toEqual({ from: '2026-08-01', to: '2026-08-03' });
+    expect(early.totals.scheduled).toBe(1); // only Monday 3 Aug's period
   });
 
   it('stops showing the department once the head is changed', async () => {

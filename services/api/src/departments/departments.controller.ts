@@ -1,41 +1,14 @@
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lt, sql } from 'drizzle-orm';
+import { z } from 'zod';
+import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
+import type { RoleName, UserPrincipal } from '../auth/principal.js';
+import { audit } from '../common/audit.js';
+import { Clock, localParts, zonedToInstant } from '../common/time.js';
+import { ZodBody } from '../common/zod-body.js';
+import { DbService, type Tx } from '../db/db.service.js';
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  NotFoundException,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  Put,
-  Query,
-} from "@nestjs/common";
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  gte,
-  inArray,
-  isNotNull,
-  isNull,
-  lt,
-  sql,
-} from "drizzle-orm";
-import { z } from "zod";
-import {
-  Auth,
-  CurrentPrincipal,
-  STAFF_ADMIN_ROLES,
-} from "../auth/auth.decorators.js";
-import type { RoleName, UserPrincipal } from "../auth/principal.js";
-import { audit } from "../common/audit.js";
-import { Clock, localParts, zonedToInstant } from "../common/time.js";
-import { ZodBody } from "../common/zod-body.js";
-import { DbService, type Tx } from "../db/db.service.js";
-import {
+  academicYears,
   assessments,
   attendanceRecords,
   boardSessions,
@@ -50,17 +23,12 @@ import {
   timetableSlots,
   userRoles,
   users,
-} from "../db/schema.js";
-import {
-  addDays,
-  isSchoolAdmin,
-  isoWeekday,
-  parseDate,
-} from "../teacher/teacher.service.js";
-import { TimetableService } from "../timetable/timetable.service.js";
+} from '../db/schema.js';
+import { addDays, isSchoolAdmin, isoWeekday, parseDate } from '../teacher/teacher.service.js';
+import { TimetableService } from '../timetable/timetable.service.js';
 
 /** Who can open a department view: its head, or the principal and administrator for any. */
-const VIEW_ROLES: RoleName[] = ["hod", "principal", "tenant_admin"];
+const VIEW_ROLES: RoleName[] = ['hod', 'principal', 'tenant_admin'];
 
 /** Longest range the overview covers (a term is about 100 days). */
 const MAX_DAYS = 120;
@@ -77,43 +45,30 @@ const UpdateBody = z.object({
 });
 
 /** Departments a user heads. */
-export async function headedDepartmentIds(
-  tx: Tx,
-  userId: string,
-): Promise<string[]> {
-  const rows = await tx
-    .select({ id: departments.id })
-    .from(departments)
-    .where(eq(departments.headUserId, userId));
+export async function headedDepartmentIds(tx: Tx, userId: string): Promise<string[]> {
+  const rows = await tx.select({ id: departments.id }).from(departments).where(eq(departments.headUserId, userId));
   return rows.map((r) => r.id);
 }
 
 /** Whether [p] heads the department that teaches [subjectId] (read access to its classes' records). */
-export async function headsSubject(
-  tx: Tx,
-  p: UserPrincipal,
-  subjectId: string,
-): Promise<boolean> {
-  if (!p.roles.includes("hod")) return false;
+export async function headsSubject(tx: Tx, p: UserPrincipal, subjectId: string): Promise<boolean> {
+  if (!p.roles.includes('hod')) return false;
   const [row] = await tx
     .select({ id: subjects.id })
     .from(subjects)
     .innerJoin(departments, eq(departments.id, subjects.departmentId))
-    .where(
-      and(eq(subjects.id, subjectId), eq(departments.headUserId, p.userId)),
-    );
+    .where(and(eq(subjects.id, subjectId), eq(departments.headUserId, p.userId)));
   return !!row;
 }
 
-const pct = (n: number, d: number) =>
-  d === 0 ? null : Math.round((n / d) * 100);
+const pct = (n: number, d: number) => (d === 0 ? null : Math.round((n / d) * 100));
 
 /**
  * The head of department's view: how the department's classes went over a range of days
  * (taught on the board, attendance taken, homework, recordings, marks), per teacher and per
  * class. The principal and administrator can open any department.
  */
-@Controller("v1/departments")
+@Controller('v1/departments')
 export class DepartmentsController {
   constructor(
     private readonly db: DbService,
@@ -123,7 +78,7 @@ export class DepartmentsController {
 
   /** The departments this user may open: the ones they head, or all for the principal. */
   @Get()
-  @Auth("user", VIEW_ROLES)
+  @Auth('user', VIEW_ROLES)
   mine(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) =>
       tx
@@ -134,21 +89,14 @@ export class DepartmentsController {
         })
         .from(departments)
         .leftJoin(users, eq(users.id, departments.headUserId))
-        .where(
-          isSchoolAdmin(p) ? undefined : eq(departments.headUserId, p.userId),
-        )
+        .where(isSchoolAdmin(p) ? undefined : eq(departments.headUserId, p.userId))
         .orderBy(asc(departments.name)),
     );
   }
 
-  @Get(":id/overview")
-  @Auth("user", VIEW_ROLES)
-  overview(
-    @CurrentPrincipal() p: UserPrincipal,
-    @Param("id", ParseUUIDPipe) id: string,
-    @Query("from") fromQ?: string,
-    @Query("to") toQ?: string,
-  ) {
+  @Get(':id/overview')
+  @Auth('user', VIEW_ROLES)
+  overview(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('from') fromQ?: string, @Query('to') toQ?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [dept] = await tx
         .select({
@@ -161,19 +109,19 @@ export class DepartmentsController {
         .leftJoin(users, eq(users.id, departments.headUserId))
         .where(eq(departments.id, id));
       // Someone else's department reads as missing, so ids reveal nothing.
-      if (!dept || (!isSchoolAdmin(p) && dept.headUserId !== p.userId))
-        throw new NotFoundException("Department not found");
+      if (!dept || (!isSchoolAdmin(p) && dept.headUserId !== p.userId)) throw new NotFoundException('Department not found');
 
       const tz = await this.timetable.tenantTimezone(tx);
       const now = localParts(this.clock.now(), tz);
-      const to = toQ ? parseDate(toQ, "to") : now.date;
-      const from = fromQ ? parseDate(fromQ, "from") : addDays(to, -6);
-      if (from > to)
-        throw new BadRequestException("from must be on or before to");
-      if (addDays(from, MAX_DAYS - 1) < to)
-        throw new BadRequestException(`Choose at most ${MAX_DAYS} days`);
-      const start = zonedToInstant(from, "00:00:00", tz);
-      const end = zonedToInstant(addDays(to, 1), "00:00:00", tz);
+      const to = toQ ? parseDate(toQ, 'to') : now.date;
+      const asked = fromQ ? parseDate(fromQ, 'from') : addDays(to, -6);
+      if (asked > to) throw new BadRequestException('from must be on or before to');
+      if (addDays(asked, MAX_DAYS - 1) < to) throw new BadRequestException(`Choose at most ${MAX_DAYS} days`);
+      // Periods before the academic year began were never due.
+      const [year] = await tx.select({ startsOn: academicYears.startsOn }).from(academicYears).where(eq(academicYears.isCurrent, true));
+      const from = year && year.startsOn > asked ? (year.startsOn > to ? to : year.startsOn) : asked;
+      const start = zonedToInstant(from, '00:00:00', tz);
+      const end = zonedToInstant(addDays(to, 1), '00:00:00', tz);
 
       const subjectRows = await tx
         .select({
@@ -225,25 +173,17 @@ export class DepartmentsController {
         .from(timetableSlots)
         .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
         .innerJoin(users, eq(users.id, timetableSlots.teacherId))
-        .where(
-          and(
-            inArray(timetableSlots.subjectId, subjectIds),
-            isNull(timetableSlots.archivedAt),
-          ),
-        );
+        .where(and(inArray(timetableSlots.subjectId, subjectIds), isNull(timetableSlots.archivedAt)));
       const slotIds = slots.map((s) => s.id);
 
       // Periods already over in the range: each weekday's date, and today only once a period ends.
       const due = new Map<string, number>();
       for (let d = from; d <= to && d <= now.date; d = addDays(d, 1)) {
         const wd = isoWeekday(d);
-        for (const s of slots)
-          if (s.dayOfWeek === wd && (d < now.date || s.endsAt <= now.time))
-            due.set(s.id, (due.get(s.id) ?? 0) + 1);
+        for (const s of slots) if (s.dayOfWeek === wd && (d < now.date || s.endsAt <= now.time)) due.set(s.id, (due.get(s.id) ?? 0) + 1);
       }
 
-      const localDate = (col: typeof boardSessions.startedAt) =>
-        sql<string>`to_char(${col} at time zone ${tz}, 'YYYY-MM-DD')`;
+      const localDate = (col: typeof boardSessions.startedAt) => sql<string>`to_char(${col} at time zone ${tz}, 'YYYY-MM-DD')`;
       const taughtRows = slotIds.length
         ? await tx
             .selectDistinct({
@@ -251,13 +191,7 @@ export class DepartmentsController {
               day: localDate(boardSessions.startedAt),
             })
             .from(boardSessions)
-            .where(
-              and(
-                inArray(boardSessions.timetableSlotId, slotIds),
-                gte(boardSessions.startedAt, start),
-                lt(boardSessions.startedAt, end),
-              ),
-            )
+            .where(and(inArray(boardSessions.timetableSlotId, slotIds), gte(boardSessions.startedAt, start), lt(boardSessions.startedAt, end)))
         : [];
       const attRows = slotIds.length
         ? await tx
@@ -268,13 +202,7 @@ export class DepartmentsController {
               present: sql<number>`count(*) filter (where ${attendanceRecords.status} in ('present', 'late'))::int`,
             })
             .from(attendanceRecords)
-            .where(
-              and(
-                inArray(attendanceRecords.timetableSlotId, slotIds),
-                gte(attendanceRecords.date, from),
-                sql`${attendanceRecords.date} <= ${to}`,
-              ),
-            )
+            .where(and(inArray(attendanceRecords.timetableSlotId, slotIds), gte(attendanceRecords.date, from), sql`${attendanceRecords.date} <= ${to}`))
             .groupBy(attendanceRecords.timetableSlotId)
         : [];
       const hwRows = await tx
@@ -285,13 +213,7 @@ export class DepartmentsController {
           n: sql<number>`count(*)::int`,
         })
         .from(homework)
-        .where(
-          and(
-            inArray(homework.subjectId, subjectIds),
-            gte(homework.createdAt, start),
-            lt(homework.createdAt, end),
-          ),
-        )
+        .where(and(inArray(homework.subjectId, subjectIds), gte(homework.createdAt, start), lt(homework.createdAt, end)))
         .groupBy(homework.sectionId, homework.subjectId, homework.createdBy);
       const recRows = await tx
         .select({
@@ -301,19 +223,8 @@ export class DepartmentsController {
           n: sql<number>`count(*)::int`,
         })
         .from(recordings)
-        .where(
-          and(
-            inArray(recordings.subjectId, subjectIds),
-            isNotNull(recordings.finishedAt),
-            gte(recordings.startedAt, start),
-            lt(recordings.startedAt, end),
-          ),
-        )
-        .groupBy(
-          recordings.sectionId,
-          recordings.subjectId,
-          recordings.ownerId,
-        );
+        .where(and(inArray(recordings.subjectId, subjectIds), isNotNull(recordings.finishedAt), gte(recordings.startedAt, start), lt(recordings.startedAt, end)))
+        .groupBy(recordings.sectionId, recordings.subjectId, recordings.ownerId);
       const assessRows = await tx
         .select({
           id: assessments.id,
@@ -328,32 +239,19 @@ export class DepartmentsController {
           subject: subjects.name,
           createdBy: users.fullName,
           entered: sql<number>`(select count(*)::int from ${marks} m where m.assessment_id = ${assessments.id})`,
-          average: sql<
-            number | null
-          >`(select avg(m.marks)::float from ${marks} m where m.assessment_id = ${assessments.id} and m.marks is not null)`,
+          average: sql<number | null>`(select avg(m.marks)::float from ${marks} m where m.assessment_id = ${assessments.id} and m.marks is not null)`,
         })
         .from(assessments)
         .innerJoin(sections, eq(sections.id, assessments.sectionId))
         .innerJoin(subjects, eq(subjects.id, assessments.subjectId))
         .innerJoin(users, eq(users.id, assessments.createdBy))
-        .where(
-          and(
-            inArray(assessments.subjectId, subjectIds),
-            gte(assessments.heldOn, from),
-            sql`${assessments.heldOn} <= ${to}`,
-          ),
-        )
+        .where(and(inArray(assessments.subjectId, subjectIds), gte(assessments.heldOn, from), sql`${assessments.heldOn} <= ${to}`))
         .orderBy(desc(assessments.heldOn), asc(sections.displayName));
 
       const taughtBySlot = new Map<string, number>();
-      for (const r of taughtRows)
-        if (r.slotId)
-          taughtBySlot.set(r.slotId, (taughtBySlot.get(r.slotId) ?? 0) + 1);
+      for (const r of taughtRows) if (r.slotId) taughtBySlot.set(r.slotId, (taughtBySlot.get(r.slotId) ?? 0) + 1);
       const attBySlot = new Map(attRows.map((r) => [r.slotId!, r]));
-      const percentOf = (a: (typeof assessRows)[number]) =>
-        a.average === null
-          ? null
-          : Math.round((a.average / a.maxMarks) * 1000) / 10;
+      const percentOf = (a: (typeof assessRows)[number]) => (a.average === null ? null : Math.round((a.average / a.maxMarks) * 1000) / 10);
 
       // Per class (section + subject + teacher).
       type Agg = ReturnType<typeof zero>;
@@ -368,10 +266,7 @@ export class DepartmentsController {
           teacher: string;
         }
       >();
-      const teachers = new Map<
-        string,
-        Agg & { id: string; fullName: string }
-      >();
+      const teachers = new Map<string, Agg & { id: string; fullName: string }>();
       for (const s of staffRows) teachers.set(s.id, { ...s, ...zero() });
       const subjectName = new Map(subjectRows.map((s) => [s.id, s.name]));
       for (const s of slots) {
@@ -400,31 +295,17 @@ export class DepartmentsController {
           marked: att?.marked ?? 0,
           present: att?.present ?? 0,
         };
-        for (const target of [c, t])
-          for (const [k, v] of Object.entries(add))
-            target[k as keyof typeof add] += v;
+        for (const target of [c, t]) for (const [k, v] of Object.entries(add)) target[k as keyof typeof add] += v;
         classes.set(key, c);
         teachers.set(s.teacherId, t);
       }
       for (const r of hwRows) {
-        for (const c of classes.values())
-          if (
-            c.sectionId === r.sectionId &&
-            c.subjectId === r.subjectId &&
-            c.teacherId === r.by
-          )
-            c.homework += r.n;
+        for (const c of classes.values()) if (c.sectionId === r.sectionId && c.subjectId === r.subjectId && c.teacherId === r.by) c.homework += r.n;
         const t = teachers.get(r.by);
         if (t) t.homework += r.n;
       }
       for (const r of recRows) {
-        for (const c of classes.values())
-          if (
-            c.sectionId === r.sectionId &&
-            c.subjectId === r.subjectId &&
-            c.teacherId === r.by
-          )
-            c.recordings += r.n;
+        for (const c of classes.values()) if (c.sectionId === r.sectionId && c.subjectId === r.subjectId && c.teacherId === r.by) c.recordings += r.n;
         const t = teachers.get(r.by);
         if (t) t.recordings += r.n;
       }
@@ -439,18 +320,9 @@ export class DepartmentsController {
         };
       };
       const classList = [...classes.values()]
-        .sort(
-          (a, b) =>
-            a.section.localeCompare(b.section) ||
-            a.subject.localeCompare(b.subject),
-        )
+        .sort((a, b) => a.section.localeCompare(b.section) || a.subject.localeCompare(b.subject))
         .map((c) => {
-          const latest = assessRows.find(
-            (a) =>
-              a.sectionId === c.sectionId &&
-              a.subjectId === c.subjectId &&
-              a.publishedAt,
-          );
+          const latest = assessRows.find((a) => a.sectionId === c.sectionId && a.subjectId === c.subjectId && a.publishedAt);
           return {
             ...shape(c),
             latestAssessment: latest
@@ -474,9 +346,7 @@ export class DepartmentsController {
           assessments: assessRows.length,
           published: assessRows.filter((a) => a.publishedAt).length,
         },
-        teachers: [...teachers.values()]
-          .sort((a, b) => a.fullName.localeCompare(b.fullName))
-          .map(shape),
+        teachers: [...teachers.values()].sort((a, b) => a.fullName.localeCompare(b.fullName)).map(shape),
         classes: classList,
         assessments: assessRows.map(({ average: _a, ...a }) => ({
           ...a,
@@ -500,12 +370,12 @@ function zero() {
 }
 
 /** Setting up departments: principal and administrator. */
-@Controller("v1/admin/departments")
+@Controller('v1/admin/departments')
 export class DepartmentsAdminController {
   constructor(private readonly db: DbService) {}
 
   @Get()
-  @Auth("user", STAFF_ADMIN_ROLES)
+  @Auth('user', STAFF_ADMIN_ROLES)
   list(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) => this.listIn(tx));
   }
@@ -542,21 +412,14 @@ export class DepartmentsAdminController {
       .orderBy(asc(subjects.code));
     return rows.map((d) => ({
       ...d,
-      staff: staff
-        .filter((s) => s.departmentId === d.id)
-        .map(({ departmentId: _d, ...s }) => s),
-      subjects: subs
-        .filter((s) => s.departmentId === d.id)
-        .map(({ departmentId: _d, ...s }) => s),
+      staff: staff.filter((s) => s.departmentId === d.id).map(({ departmentId: _d, ...s }) => s),
+      subjects: subs.filter((s) => s.departmentId === d.id).map(({ departmentId: _d, ...s }) => s),
     }));
   }
 
   @Post()
-  @Auth("user", STAFF_ADMIN_ROLES)
-  create(
-    @CurrentPrincipal() p: UserPrincipal,
-    @Body(new ZodBody(CreateBody)) body: z.infer<typeof CreateBody>,
-  ) {
+  @Auth('user', STAFF_ADMIN_ROLES)
+  create(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(CreateBody)) body: z.infer<typeof CreateBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       if (body.headUserId) await this.assertCanHead(tx, body.headUserId);
       const [d] = await tx
@@ -569,10 +432,10 @@ export class DepartmentsAdminController {
         .returning();
       await audit(tx, {
         tenantId: p.tenantId,
-        actorType: "user",
+        actorType: 'user',
         actorId: p.userId,
-        action: "department.created",
-        subjectType: "department",
+        action: 'department.created',
+        subjectType: 'department',
         subjectId: d.id,
         data: { name: d.name, headUserId: d.headUserId },
       });
@@ -581,19 +444,12 @@ export class DepartmentsAdminController {
   }
 
   /** Rename, change the head, and replace the staff list or subject list (each when given). */
-  @Put(":id")
-  @Auth("user", STAFF_ADMIN_ROLES)
-  update(
-    @CurrentPrincipal() p: UserPrincipal,
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body(new ZodBody(UpdateBody)) body: z.infer<typeof UpdateBody>,
-  ) {
+  @Put(':id')
+  @Auth('user', STAFF_ADMIN_ROLES)
+  update(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(UpdateBody)) body: z.infer<typeof UpdateBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [d] = await tx
-        .select()
-        .from(departments)
-        .where(eq(departments.id, id));
-      if (!d) throw new NotFoundException("Department not found");
+      const [d] = await tx.select().from(departments).where(eq(departments.id, id));
+      if (!d) throw new NotFoundException('Department not found');
       if (body.headUserId) await this.assertCanHead(tx, body.headUserId);
       if (body.name !== undefined || body.headUserId !== undefined) {
         await tx
@@ -609,54 +465,35 @@ export class DepartmentsAdminController {
       if (body.staffIds) {
         const ids = [...new Set(body.staffIds)];
         if (ids.length) {
-          const found = await tx
-            .select({ id: users.id })
-            .from(users)
-            .where(inArray(users.id, ids));
-          if (found.length !== ids.length)
-            throw new BadRequestException("Some staff were not found");
+          const found = await tx.select({ id: users.id }).from(users).where(inArray(users.id, ids));
+          if (found.length !== ids.length) throw new BadRequestException('Some staff were not found');
         }
-        await tx
-          .delete(departmentStaff)
-          .where(eq(departmentStaff.departmentId, id));
+        await tx.delete(departmentStaff).where(eq(departmentStaff.departmentId, id));
         if (ids.length)
-          await tx
-            .insert(departmentStaff)
-            .values(
-              ids.map((userId) => ({
-                tenantId: p.tenantId,
-                departmentId: id,
-                userId,
-              })),
-            );
+          await tx.insert(departmentStaff).values(
+            ids.map((userId) => ({
+              tenantId: p.tenantId,
+              departmentId: id,
+              userId,
+            })),
+          );
       }
       if (body.subjectIds) {
         const ids = [...new Set(body.subjectIds)];
         if (ids.length) {
-          const found = await tx
-            .select({ id: subjects.id })
-            .from(subjects)
-            .where(inArray(subjects.id, ids));
-          if (found.length !== ids.length)
-            throw new BadRequestException("Some subjects were not found");
+          const found = await tx.select({ id: subjects.id }).from(subjects).where(inArray(subjects.id, ids));
+          if (found.length !== ids.length) throw new BadRequestException('Some subjects were not found');
         }
         // A subject belongs to one department: listing it here moves it.
-        await tx
-          .update(subjects)
-          .set({ departmentId: null })
-          .where(eq(subjects.departmentId, id));
-        if (ids.length)
-          await tx
-            .update(subjects)
-            .set({ departmentId: id })
-            .where(inArray(subjects.id, ids));
+        await tx.update(subjects).set({ departmentId: null }).where(eq(subjects.departmentId, id));
+        if (ids.length) await tx.update(subjects).set({ departmentId: id }).where(inArray(subjects.id, ids));
       }
       await audit(tx, {
         tenantId: p.tenantId,
-        actorType: "user",
+        actorType: 'user',
         actorId: p.userId,
-        action: "department.updated",
-        subjectType: "department",
+        action: 'department.updated',
+        subjectType: 'department',
         subjectId: id,
         data: body,
       });
@@ -664,25 +501,19 @@ export class DepartmentsAdminController {
     });
   }
 
-  @Delete(":id")
+  @Delete(':id')
   @HttpCode(204)
-  @Auth("user", STAFF_ADMIN_ROLES)
-  async remove(
-    @CurrentPrincipal() p: UserPrincipal,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
+  @Auth('user', STAFF_ADMIN_ROLES)
+  async remove(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     await this.db.withTenant(p.tenantId, async (tx) => {
-      const [d] = await tx
-        .delete(departments)
-        .where(eq(departments.id, id))
-        .returning({ id: departments.id, name: departments.name });
-      if (!d) throw new NotFoundException("Department not found");
+      const [d] = await tx.delete(departments).where(eq(departments.id, id)).returning({ id: departments.id, name: departments.name });
+      if (!d) throw new NotFoundException('Department not found');
       await audit(tx, {
         tenantId: p.tenantId,
-        actorType: "user",
+        actorType: 'user',
         actorId: p.userId,
-        action: "department.deleted",
-        subjectType: "department",
+        action: 'department.deleted',
+        subjectType: 'department',
         subjectId: id,
         data: { name: d.name },
       });
@@ -698,12 +529,9 @@ export class DepartmentsAdminController {
       })
       .from(users)
       .leftJoin(userRoles, eq(userRoles.userId, users.id))
-      .where(and(eq(users.id, userId), eq(users.status, "active")))
+      .where(and(eq(users.id, userId), eq(users.status, 'active')))
       .groupBy(users.id);
-    if (!u) throw new BadRequestException("That person was not found");
-    if (!u.hod)
-      throw new BadRequestException(
-        `Give ${u.fullName} the HOD role before making them head of a department`,
-      );
+    if (!u) throw new BadRequestException('That person was not found');
+    if (!u.hod) throw new BadRequestException(`Give ${u.fullName} the HOD role before making them head of a department`);
   }
 }

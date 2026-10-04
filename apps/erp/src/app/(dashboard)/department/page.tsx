@@ -88,7 +88,7 @@ export default async function DepartmentPage({ searchParams }: { searchParams: P
         title={dept.name}
         subtitle={
           <span data-testid="dept-subtitle">
-            {dept.head ? `Head: ${dept.head.fullName}` : 'No head of department'} · {RANGE_LABEL[range.key]}, {rangeText(range)}
+            {dept.head ? `Head: ${dept.head.fullName}` : 'No head of department'} · {RANGE_LABEL[range.key]}, {rangeText(ov.error === undefined ? ov.data.range : range)}
           </span>
         }
         actions={
