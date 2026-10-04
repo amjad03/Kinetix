@@ -226,6 +226,65 @@ void main() {
       expect(find.text('Taught on Thu 1 Oct'), findsOneWidget);
     });
 
+    Future<void> openProgress(WidgetTester tester) async {
+      await openTab(tester, 'Profile');
+      await scrollTo(tester, find.byKey(const Key('profile-syllabus-c1')), profileList());
+      await tester.tap(find.byKey(const Key('profile-syllabus-c1')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets("the plan's status per subject, and this week's and next week's topics", (tester) async {
+      final (api, _) = await pumpApp(tester);
+      await openProgress(tester);
+      expect(api.calls, containsAll(['year-plan sec1 sub1', 'year-plan sec1 sub2']));
+      expect(find.descendant(of: find.byKey(const Key('subjectProgress-sub1')), matching: find.text('Class is on schedule')), findsOneWidget);
+      // No plan for Cost Accounting: no status, just its code.
+      expect(find.descendant(of: find.byKey(const Key('subjectProgress-sub2')), matching: find.byKey(const Key('planStatus'))), findsNothing);
+      await tester.tap(find.byKey(const Key('subjectProgress-sub1')));
+      await tester.pumpAndSettle();
+      final week = find.byKey(const Key('weekPlan'));
+      expect(find.descendant(of: week, matching: find.text('This week in class')), findsOneWidget);
+      expect(find.descendant(of: week, matching: find.text('Class is on schedule')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('planned-t1')), matching: find.byIcon(Icons.check_circle)), findsOneWidget);
+      expect(find.descendant(of: week, matching: find.text('Next week')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('planned-t2')), matching: find.text('Methods of valuing goodwill')), findsOneWidget);
+    });
+
+    testWidgets('behind the plan is said plainly; ahead too', (tester) async {
+      final (api, _) = await pumpApp(
+        tester,
+        setup: (api) => api.yearPlanJson['sec1|sub1'] = FakeParentApi.planJson(
+          status: 'behind',
+          behindBy: 1,
+          items: [FakeParentApi.planItemJson('t2', 'Methods of valuing goodwill', 'Valuation of Goodwill', '2026-09-21', late: true)],
+        ),
+      );
+      await openProgress(tester);
+      expect(find.text('Class is 1 topic behind the plan'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('subjectProgress-sub1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('nothingThisWeek')), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      api.yearPlanJson['sec1|sub1'] = FakeParentApi.planJson(
+        status: 'ahead',
+        items: [FakeParentApi.planItemJson('t2', 'Methods of valuing goodwill', 'Valuation of Goodwill', '2026-10-12', coveredOn: '2026-10-01')],
+      );
+      await tester.fling(find.byType(Scrollable).first, const Offset(0, 400), 1000);
+      await tester.pumpAndSettle();
+      expect(find.text('Class is ahead of the plan'), findsOneWidget);
+    });
+
+    testWidgets('no plan: no status and no week', (tester) async {
+      await pumpApp(tester, setup: (api) => api.yearPlanJson.clear());
+      await openProgress(tester);
+      expect(find.byKey(const Key('planStatus')), findsNothing);
+      await tester.tap(find.byKey(const Key('subjectProgress-sub1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('weekPlan')), findsNothing);
+      expect(find.byKey(const Key('taught-t1')), findsOneWidget);
+    });
+
     testWidgets('a child whose class has no subjects yet sees an empty state', (tester) async {
       await pumpApp(tester);
       await openTab(tester, 'Profile');

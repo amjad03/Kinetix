@@ -404,5 +404,12 @@
   "syllabusSubjectsEmpty": "शिक्षकों के होमवर्क देने के बाद विषय यहाँ दिखेंगे।",
   "syllabusNotLinked": "{subject} का पाठ्यक्रम अभी KINETIX में नहीं है।",
   "chaptersTopics": "{chapters, plural, =1{1 अध्याय} other{{chapters} अध्याय}}",
-  "noTopicsInChapter": "अभी कोई विषय-वस्तु नहीं"
+  "noTopicsInChapter": "अभी कोई विषय-वस्तु नहीं",
+  "thisWeekInClass": "इस हफ़्ते कक्षा में",
+  "nextWeekInClass": "अगले हफ़्ते",
+  "nothingPlannedThisWeek": "इस हफ़्ते के लिए कोई नई विषय-वस्तु तय नहीं है।",
+  "planOnSchedule": "कक्षा योजना के अनुसार चल रही है",
+  "planAhead": "कक्षा योजना से आगे चल रही है",
+  "planBehind": "{count, plural, =1{कक्षा योजना से 1 विषय-वस्तु पीछे है} other{कक्षा योजना से {count} विषय-वस्तु पीछे है}}",
+  "planIntro": "शिक्षक जो विषय-वस्तु पढ़ाने वाले हैं।"
 }

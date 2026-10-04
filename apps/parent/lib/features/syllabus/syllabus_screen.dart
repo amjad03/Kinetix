@@ -85,7 +85,7 @@ class _SyllabusProgressScreenState extends State<SyllabusProgressScreen> {
     });
     try {
       final subjects = await family.loadSubjects(widget.child);
-      await Future.wait([for (final s in subjects) family.loadCoverage(widget.child, s.id)]);
+      await Future.wait([for (final s in subjects) ...[family.loadCoverage(widget.child, s.id), family.loadPlan(widget.child, s.id)]]);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
     } finally {
@@ -140,13 +140,7 @@ class _SyllabusProgressScreenState extends State<SyllabusProgressScreen> {
                               key: Key('subjectProgress-${s.id}'),
                               leading: IconBadge(Icons.class_outlined, background: c.primaryContainer, foreground: c.onPrimaryContainer),
                               title: Text(s.name),
-                              subtitle: switch (family.coverageOf(widget.child.id, s.id)) {
-                                final cov? when cov.total > 0 => Padding(
-                                  padding: const EdgeInsets.only(top: Kx.s4),
-                                  child: CoverageBar(coverage: cov, compact: true),
-                                ),
-                                _ => s.code == null ? null : Text(s.code!),
-                              },
+                              subtitle: _subjectSubtitle(context, s, family.coverageOf(widget.child.id, s.id), family.planOf(widget.child.id, s.id)),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => ChildSubjectScreen.open(context, family, widget.child, s),
                             ),
@@ -161,6 +155,23 @@ class _SyllabusProgressScreenState extends State<SyllabusProgressScreen> {
       ),
     );
   }
+}
+
+Widget? _subjectSubtitle(BuildContext context, Subject s, Coverage? cov, YearPlan? plan) {
+  final status = PlanStatusLine.textFor(context.l10n, plan) != null;
+  final bar = cov != null && cov.total > 0;
+  if (!bar && !status) return s.code == null ? null : Text(s.code!);
+  return Padding(
+    padding: const EdgeInsets.only(top: Kx.s4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (bar) CoverageBar(coverage: cov, compact: true),
+        if (bar && status) const SizedBox(height: Kx.s4),
+        if (status) PlanStatusLine(plan: plan!, compact: true),
+      ],
+    ),
+  );
 }
 
 /// One subject's syllabus for a child's class: chapters and topics, the taught ones ticked.
@@ -193,6 +204,7 @@ class _ChildSubjectScreenState extends State<ChildSubjectScreen> {
   Future<void> _load() async {
     setState(() => _error = null);
     widget.family.loadCoverage(widget.child, widget.subject.id);
+    widget.family.loadPlan(widget.child, widget.subject.id);
     try {
       final o = await widget.family.api.syllabus(widget.subject.id);
       if (mounted) {
@@ -216,6 +228,7 @@ class _ChildSubjectScreenState extends State<ChildSubjectScreen> {
         builder: (context, _) {
           final o = _outline;
           final cov = widget.family.coverageOf(widget.child.id, widget.subject.id);
+          final plan = widget.family.planOf(widget.child.id, widget.subject.id);
           return CustomScrollView(
             slivers: [
               SliverAppBar.large(title: Text(widget.subject.name)),
@@ -245,6 +258,11 @@ class _ChildSubjectScreenState extends State<ChildSubjectScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s16),
                     sliver: SliverToBoxAdapter(child: CoverageBar(coverage: cov)),
+                  ),
+                if (plan != null && plan.items.isNotEmpty)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s16),
+                    sliver: SliverToBoxAdapter(child: WeekPlanCard(plan: plan, today: widget.family.todayFor(widget.child))),
                   ),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s32),
@@ -308,4 +326,102 @@ Widget? _topicSubtitle(BuildContext context, OutlineTopic t, TopicCoverage? taug
         ),
     ],
   );
+}
+
+/// Where the class is against its year plan, in neutral words: "Class is on schedule", "Class is
+/// 2 topics behind the plan". Nothing when the subject has no plan.
+class PlanStatusLine extends StatelessWidget {
+  const PlanStatusLine({super.key, required this.plan, this.compact = false});
+
+  final YearPlan plan;
+  final bool compact;
+
+  static String? textFor(AppLocalizations l, YearPlan? plan) => plan == null || plan.items.isEmpty
+      ? null
+      : switch (plan.progress.status) {
+          PlanStatus.behind when plan.progress.behindBy > 0 => l.planBehind(plan.progress.behindBy),
+          PlanStatus.ahead => l.planAhead,
+          _ => l.planOnSchedule,
+        };
+
+  @override
+  Widget build(BuildContext context) {
+    final text = textFor(context.l10n, plan);
+    if (text == null) return const SizedBox.shrink();
+    final c = context.colors;
+    return Row(
+      key: const Key('planStatus'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 1),
+          child: Icon(Icons.event_note_outlined, size: compact ? 16 : 18, color: c.onSurfaceVariant),
+        ),
+        const SizedBox(width: Kx.s4),
+        Expanded(
+          child: Text(text, style: (compact ? context.text.bodySmall : context.text.bodyMedium)?.copyWith(color: c.onSurfaceVariant)),
+        ),
+      ],
+    );
+  }
+}
+
+/// "This week in class": the topics the year plan has for this week and next, with the plan's
+/// status on top.
+class WeekPlanCard extends StatelessWidget {
+  const WeekPlanCard({super.key, required this.plan, required this.today});
+
+  final YearPlan plan;
+  final DateTime today;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l = context.l10n;
+    final thisWeek = plan.weekOf(today);
+    final nextWeek = plan.weekAfter(today);
+    Widget row(PlanItem i) => ListTile(
+      key: Key('planned-${i.topicId}'),
+      leading: i.taught
+          ? Icon(Icons.check_circle, color: Tone.good(context), semanticLabel: l.taught)
+          : Icon(Icons.radio_button_unchecked, color: c.outlineVariant),
+      title: Text(i.title),
+      subtitle: i.chapter.isEmpty ? null : Text(i.chapter, maxLines: 2, overflow: TextOverflow.ellipsis),
+    );
+    return Card(
+      key: const Key('weekPlan'),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, Kx.s4),
+            child: Text(l.thisWeekInClass, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
+            child: PlanStatusLine(plan: plan),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s4, Kx.s16, 0),
+            child: Text(l.planIntro, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+          ),
+          if (thisWeek.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s12, Kx.s16, 0),
+              child: Text(l.nothingPlannedThisWeek, key: const Key('nothingThisWeek'), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+            ),
+          for (final i in thisWeek) row(i),
+          if (nextWeek.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s12, Kx.s16, 0),
+              child: Text(l.nextWeekInClass, style: context.text.titleSmall?.copyWith(color: c.primary)),
+            ),
+            for (final i in nextWeek) row(i),
+          ],
+          const SizedBox(height: Kx.s8),
+        ],
+      ),
+    );
+  }
 }

@@ -24,7 +24,7 @@ class StudyController extends ChangeNotifier {
   DateTime get today => summary?.today ?? DateTime.now();
 
   /// Everything on Today. Each part fails on its own, so one problem never hides the rest.
-  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadMarks(), loadLibrary(), loadCalendar()]);
+  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans()]);
 
   Future<void> loadSummary() async {
     loading = true;
@@ -159,6 +159,54 @@ class StudyController extends ChangeNotifier {
         _coverageLoads.remove(subjectId);
       }
     }();
+  }
+
+  // -- Year plans ------------------------------------------------------------------------------
+
+  /// Subject id → the class's year plan (null: the teacher has not made one). Absent until asked.
+  final _plans = <String, YearPlan?>{};
+  final _planLoads = <String, Future<YearPlan?>>{};
+
+  /// The class's year plan for [subjectId], once loaded (null also when there is none).
+  YearPlan? planOf(String subjectId) => _plans[subjectId];
+
+  /// Loads (or reloads with [fresh]) the year plan for [subjectId]. A failure keeps what we had:
+  /// the plan is extra information.
+  Future<YearPlan?> loadPlan(String subjectId, {bool fresh = false}) {
+    if (!fresh && _plans.containsKey(subjectId)) return Future.value(_plans[subjectId]);
+    return _planLoads[subjectId] ??= () async {
+      try {
+        final p = _plans[subjectId] = await api.yearPlan(sectionId: student.sectionId, subjectId: subjectId);
+        notifyListeners();
+        return p;
+      } on ApiException {
+        return _plans[subjectId];
+      } finally {
+        _planLoads.remove(subjectId);
+      }
+    }();
+  }
+
+  /// Every subject's year plan, for "Coming up" on Today.
+  Future<void> loadPlans() async {
+    if (subjects == null) await loadSubjects();
+    await Future.wait([for (final s in subjects ?? const <Subject>[]) loadPlan(s.id, fresh: true)]);
+  }
+
+  /// This week's planned topics across subjects (by subject name), and whether any subject has
+  /// a plan at all.
+  ({bool any, List<(Subject, PlanItem)> thisWeek, List<(Subject, PlanItem)> nextWeek}) get comingUp {
+    final thisWeek = <(Subject, PlanItem)>[];
+    final nextWeek = <(Subject, PlanItem)>[];
+    var any = false;
+    for (final s in subjects ?? const <Subject>[]) {
+      final p = _plans[s.id];
+      if (p == null) continue;
+      any = true;
+      thisWeek.addAll([for (final i in p.weekOf(today)) (s, i)]);
+      nextWeek.addAll([for (final i in p.weekAfter(today)) (s, i)]);
+    }
+    return (any: any, thisWeek: thisWeek, nextWeek: nextWeek);
   }
 
   // -- Lookups for Updates ----------------------------------------------------------------------

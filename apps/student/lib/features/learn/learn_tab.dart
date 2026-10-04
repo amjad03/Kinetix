@@ -7,6 +7,7 @@ import 'ask_controller.dart';
 import 'ask_view.dart';
 import '../privacy/privacy.dart';
 import 'syllabus_view.dart';
+import 'topic_screen.dart';
 
 /// Self-paced learning: ask KINETIX AI a doubt, or browse and search the syllabus library.
 class LearnTab extends StatefulWidget {
@@ -47,6 +48,9 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
 
   /// Switches to "Ask a doubt" (from Today's shortcut).
   void showAsk() => tabs.animateTo(0);
+
+  /// Opens a syllabus topic (from Today's "Coming up in class").
+  void openTopic(String topicId) => TopicScreen.open(context, widget.study.api, topicId, controller: ask);
 
   @override
   Widget build(BuildContext context) {

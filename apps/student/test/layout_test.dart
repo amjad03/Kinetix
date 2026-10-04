@@ -28,6 +28,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('tabSyllabus')));
     await tester.pumpAndSettle();
+    // Each subject shows its progress and plan status, so with large text the tile may start off screen.
+    await tester.ensureVisible(find.byKey(const Key('subjectTile-sub1')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('subjectTile-sub1')));
     await tester.pumpAndSettle();
     // The class's progress sits above the chapters: with large text the topic starts off screen.

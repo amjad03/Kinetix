@@ -1596,4 +1596,36 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get managedByParent => 'इसे आपके अभिभावक संभालते हैं। स्कूल में ये विकल्प आपके अभिभावक KINETIX Parent ऐप में चुनते हैं।';
+
+  @override
+  String get thisWeekInClass => 'इस हफ़्ते कक्षा में';
+
+  @override
+  String get nextWeekInClass => 'अगले हफ़्ते';
+
+  @override
+  String get nothingPlannedThisWeek => 'इस हफ़्ते के लिए कोई नई विषय-वस्तु तय नहीं है।';
+
+  @override
+  String get planOnSchedule => 'कक्षा योजना के अनुसार चल रही है';
+
+  @override
+  String get planAhead => 'कक्षा योजना से आगे चल रही है';
+
+  @override
+  String planBehind(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'कक्षा योजना से $count विषय-वस्तु पीछे है',
+      one: 'कक्षा योजना से 1 विषय-वस्तु पीछे है',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get comingUpInClass => 'कक्षा में आगे';
+
+  @override
+  String get readAhead => 'कक्षा में ये विषय-वस्तु पढ़ाई जानी हैं। चाहें तो पहले से पढ़ लें।';
 }

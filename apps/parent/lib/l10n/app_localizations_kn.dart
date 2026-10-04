@@ -1477,4 +1477,33 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get noTopicsInChapter => 'ಇನ್ನೂ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ';
+
+  @override
+  String get thisWeekInClass => 'ಈ ವಾರ ತರಗತಿಯಲ್ಲಿ';
+
+  @override
+  String get nextWeekInClass => 'ಮುಂದಿನ ವಾರ';
+
+  @override
+  String get nothingPlannedThisWeek => 'ಈ ವಾರಕ್ಕೆ ಹೊಸ ವಿಷಯಗಳನ್ನು ಯೋಜಿಸಿಲ್ಲ.';
+
+  @override
+  String get planOnSchedule => 'ತರಗತಿ ಯೋಜನೆಯಂತೆ ನಡೆಯುತ್ತಿದೆ';
+
+  @override
+  String get planAhead => 'ತರಗತಿ ಯೋಜನೆಗಿಂತ ಮುಂದಿದೆ';
+
+  @override
+  String planBehind(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ತರಗತಿ ಯೋಜನೆಗಿಂತ $count ವಿಷಯಗಳಷ್ಟು ಹಿಂದಿದೆ',
+      one: 'ತರಗತಿ ಯೋಜನೆಗಿಂತ 1 ವಿಷಯ ಹಿಂದಿದೆ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get planIntro => 'ಶಿಕ್ಷಕರು ಕಲಿಸಲು ಯೋಜಿಸಿರುವ ವಿಷಯಗಳು.';
 }

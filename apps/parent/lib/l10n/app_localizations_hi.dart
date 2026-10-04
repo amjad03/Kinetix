@@ -1477,4 +1477,33 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get noTopicsInChapter => 'अभी कोई विषय-वस्तु नहीं';
+
+  @override
+  String get thisWeekInClass => 'इस हफ़्ते कक्षा में';
+
+  @override
+  String get nextWeekInClass => 'अगले हफ़्ते';
+
+  @override
+  String get nothingPlannedThisWeek => 'इस हफ़्ते के लिए कोई नई विषय-वस्तु तय नहीं है।';
+
+  @override
+  String get planOnSchedule => 'कक्षा योजना के अनुसार चल रही है';
+
+  @override
+  String get planAhead => 'कक्षा योजना से आगे चल रही है';
+
+  @override
+  String planBehind(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'कक्षा योजना से $count विषय-वस्तु पीछे है',
+      one: 'कक्षा योजना से 1 विषय-वस्तु पीछे है',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get planIntro => 'शिक्षक जो विषय-वस्तु पढ़ाने वाले हैं।';
 }

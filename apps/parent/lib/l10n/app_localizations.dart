@@ -2522,6 +2522,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No topics yet'**
   String get noTopicsInChapter;
+
+  /// No description provided for @thisWeekInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'This week in class'**
+  String get thisWeekInClass;
+
+  /// No description provided for @nextWeekInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get nextWeekInClass;
+
+  /// No description provided for @nothingPlannedThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new is planned for this week.'**
+  String get nothingPlannedThisWeek;
+
+  /// No description provided for @planOnSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Class is on schedule'**
+  String get planOnSchedule;
+
+  /// No description provided for @planAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Class is ahead of the plan'**
+  String get planAhead;
+
+  /// No description provided for @planBehind.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Class is 1 topic behind the plan} other{Class is {count} topics behind the plan}}'**
+  String planBehind(int count);
+
+  /// No description provided for @planIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics the teacher plans to teach.'**
+  String get planIntro;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

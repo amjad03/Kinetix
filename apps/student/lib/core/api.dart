@@ -121,6 +121,10 @@ abstract class StudentApi {
   /// How much of [subjectId]'s syllabus the class [sectionId] has been taught.
   Future<Coverage> coverage({required String sectionId, required String subjectId});
 
+  /// The class [sectionId]'s year plan for [subjectId] with its progress, or null when the
+  /// teacher has not made one (`GET /v1/year-plans`).
+  Future<YearPlan?> yearPlan({required String sectionId, required String subjectId});
+
   /// What [studentId] handed in for homework [homeworkId] (status null: nothing yet).
   Future<Submission> submission(String homeworkId, String studentId);
 
@@ -348,6 +352,12 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<Coverage> coverage({required String sectionId, required String subjectId}) async =>
       Coverage.fromJson(await _send('GET', '/v1/coverage?sectionId=$sectionId&subjectId=$subjectId') as Map<String, dynamic>);
+
+  @override
+  Future<YearPlan?> yearPlan({required String sectionId, required String subjectId}) async {
+    final j = await _send('GET', '/v1/year-plans?sectionId=$sectionId&subjectId=$subjectId');
+    return j == null ? null : YearPlan.fromJson((j as Map).cast<String, dynamic>());
+  }
 
   @override
   Future<Submission> submission(String homeworkId, String studentId) async =>

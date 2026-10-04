@@ -21,7 +21,7 @@ import '../recordings/recordings.dart';
 /// results, library books, messages (colleges), lesson recordings (missed ones first) and the
 /// boards teachers shared after class.
 class TodayTab extends StatelessWidget {
-  const TodayTab({super.key, required this.study, required this.me, this.messages, this.onAsk, this.now});
+  const TodayTab({super.key, required this.study, required this.me, this.messages, this.onAsk, this.onOpenTopic, this.now});
 
   final StudyController study;
   final Me me;
@@ -31,6 +31,9 @@ class TodayTab extends StatelessWidget {
 
   /// Opens the Learn tab's "Ask a doubt".
   final VoidCallback? onAsk;
+
+  /// Opens a syllabus topic (from "Coming up in class").
+  final void Function(String topicId)? onOpenTopic;
 
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
@@ -58,6 +61,7 @@ class TodayTab extends StatelessWidget {
           if (summary != null) ...[
             AttendanceCard(summary: summary, onOpen: () => AttendanceScreen.open(context, study.api, student)),
             HomeworkCard(summary: summary, study: study),
+            if (study.comingUp.any) ComingUpCard(study: study, onOpenTopic: onOpenTopic),
             if (onAsk != null) _AskCard(onAsk: onAsk!),
             ResultsCard(study: study),
             if (messages?.available ?? false) MessagesCard(controller: messages!),
@@ -500,5 +504,73 @@ class BoardsCard extends StatelessWidget {
     final subject = b.subjectName ?? b.title;
     final isToday = b.sharedAt != null && Fmt.daysBetween(today, b.sharedAt!) == 0;
     return isToday ? l.todaysBoard(subject) : subject;
+  }
+}
+
+/// "Coming up in class": this week's topics from the year plans of every subject (next week's
+/// when this week has none), so the student can read ahead. Shown only when a plan exists.
+class ComingUpCard extends StatelessWidget {
+  const ComingUpCard({super.key, required this.study, this.onOpenTopic});
+
+  final StudyController study;
+  final void Function(String topicId)? onOpenTopic;
+
+  static const _shown = 4;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l = context.l10n;
+    final up = study.comingUp;
+    final nextWeek = up.thisWeek.isEmpty && up.nextWeek.isNotEmpty;
+    final items = nextWeek ? up.nextWeek : up.thisWeek;
+    return SectionCard(
+      key: const Key('comingUpCard'),
+      icon: Icons.event_note_outlined,
+      title: l.comingUpInClass,
+      caption: items.isEmpty ? null : '${nextWeek ? l.nextWeekInClass : l.thisWeekInClass} · ${l.topicsCount(items.length)}',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (items.isEmpty)
+            Text(l.nothingPlannedThisWeek, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
+          for (final (subject, item) in items.take(_shown))
+            InkWell(
+              key: Key('comingUp-${item.topicId}'),
+              borderRadius: Kx.radiusMd,
+              onTap: onOpenTopic == null ? null : () => onOpenTopic!(item.topicId),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: Kx.s4),
+                child: Row(
+                  children: [
+                    Icon(
+                      item.taught ? Icons.check_circle : Icons.menu_book_outlined,
+                      size: 20,
+                      color: item.taught ? Tone.good(context) : c.onSurfaceVariant,
+                      semanticLabel: item.taught ? l.taught : null,
+                    ),
+                    const SizedBox(width: Kx.s12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.title, style: context.text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                          Text(
+                            subject.name,
+                            style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (onOpenTopic != null) Icon(Icons.chevron_right, color: c.onSurfaceVariant),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

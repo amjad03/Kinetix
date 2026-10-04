@@ -297,5 +297,63 @@ void main() {
       expect(api.calls.where((c) => c.startsWith('search')), hasLength(1));
       expect(find.byKey(const Key('subjectTile-sub1')), findsOneWidget);
     });
+
+    testWidgets("the plan's status per subject, and this week's and next week's topics", (tester) async {
+      final (api, _) = await pumpApp(tester);
+      await openSyllabus(tester);
+      final sub1 = find.byKey(const Key('subjectTile-sub1'));
+      expect(find.descendant(of: sub1, matching: find.text('Class is on schedule')), findsOneWidget);
+      // No plan for Cost Accounting: no status.
+      expect(find.descendant(of: find.byKey(const Key('subjectTile-sub2')), matching: find.byKey(const Key('planStatus'))), findsNothing);
+
+      await tester.tap(sub1);
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('year-plan sec1 sub1'));
+      final week = find.byKey(const Key('weekPlan'));
+      expect(find.descendant(of: week, matching: find.text('This week in class')), findsOneWidget);
+      expect(find.descendant(of: week, matching: find.text('Class is on schedule')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('planned-t1')), matching: find.byIcon(Icons.check_circle)), findsOneWidget);
+      expect(find.descendant(of: week, matching: find.text('Next week')), findsOneWidget);
+      expect(find.byKey(const Key('planned-t2')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('planned-t1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('topicTitle')), findsOneWidget);
+    });
+
+    testWidgets('behind the plan is said plainly, without alarm', (tester) async {
+      await pumpApp(
+        tester,
+        setup: (api) => api.yearPlanJson['sub1'] = FakeStudentApi.planJson(
+          status: 'behind',
+          behindBy: 2,
+          items: [
+            FakeStudentApi.planItemJson('t1', 'Underwriting and underwriting commission', 'Underwriting of Shares', '2026-09-14', late: true),
+            FakeStudentApi.planItemJson('t2', 'Methods of valuing goodwill', 'Valuation of Goodwill', '2026-09-21', late: true),
+          ],
+        ),
+      );
+      await openSyllabus(tester);
+      expect(find.text('Class is 2 topics behind the plan'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('subjectTile-sub1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('nothingThisWeek')), findsOneWidget);
+      expect(find.text('Class is 2 topics behind the plan'), findsOneWidget);
+    });
+
+    test('one topic behind, and ahead of the plan', () {
+      final l = en;
+      expect(l.planBehind(1), 'Class is 1 topic behind the plan');
+      expect(l.planAhead, 'Class is ahead of the plan');
+    });
+
+    testWidgets('no plan, or a plan that fails to load: no status and no week', (tester) async {
+      await pumpApp(tester, setup: (api) => api.yearPlanError = ApiException(500, 'Server error'));
+      await openSyllabus(tester);
+      expect(find.byKey(const Key('planStatus')), findsNothing);
+      await tester.tap(find.byKey(const Key('subjectTile-sub1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('weekPlan')), findsNothing);
+      expect(find.byKey(const Key('chapter-ch1')), findsOneWidget);
+    });
   });
 }

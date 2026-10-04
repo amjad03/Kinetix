@@ -5,6 +5,7 @@ import 'package:kinetix_student/core/api.dart';
 import 'package:kinetix_student/core/models.dart';
 import 'package:kinetix_student/features/today/today_tab.dart';
 
+import 'fake_api.dart';
 import 'helpers.dart';
 
 void main() {
@@ -162,5 +163,42 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('question')), findsOneWidget);
     expect(find.text('Ask a doubt'), findsWidgets);
+  });
+
+  group('coming up in class', () {
+    testWidgets("lists this week's planned topics across subjects; a topic opens", (tester) async {
+      final (api, _) = await pumpApp(tester);
+      final card = find.byKey(const Key('comingUpCard'));
+      await scrollTo(tester, card);
+      expect(find.descendant(of: card, matching: find.text('Coming up in class')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('This week in class · 1 topic')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Underwriting and underwriting commission')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Corporate Accounting')), findsOneWidget);
+      // Next week's topic waits for the subject screen.
+      expect(find.descendant(of: card, matching: find.text('Methods of valuing goodwill')), findsNothing);
+      expect(api.calls, containsAll(['year-plan sec1 sub1', 'year-plan sec1 sub2']));
+      await tester.tap(find.byKey(const Key('comingUp-t1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('topicTitle')), findsOneWidget);
+    });
+
+    testWidgets("nothing planned this week shows next week's topics", (tester) async {
+      await pumpApp(
+        tester,
+        setup: (api) => api.yearPlanJson['sub1'] = FakeStudentApi.planJson(
+          items: [FakeStudentApi.planItemJson('t2', 'Methods of valuing goodwill', 'Valuation of Goodwill', '2026-10-05')],
+        ),
+      );
+      final card = find.byKey(const Key('comingUpCard'));
+      await scrollTo(tester, card);
+      expect(find.descendant(of: card, matching: find.text('Next week · 1 topic')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Methods of valuing goodwill')), findsOneWidget);
+    });
+
+    testWidgets('no year plans: no card', (tester) async {
+      await pumpApp(tester, setup: (api) => api.yearPlanJson.clear());
+      await scrollTo(tester, find.byKey(const Key('boardsCard')));
+      expect(find.byKey(const Key('comingUpCard')), findsNothing);
+    });
   });
 }

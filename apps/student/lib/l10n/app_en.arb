@@ -991,5 +991,20 @@
   "consentIntro": "Choose what KINETIX may do with your information. Nothing is switched on until you choose.",
   "privacyIntro": "What KINETIX may do with your information. Turn a switch off to withdraw your consent.",
   "privacyIntroReadOnly": "What KINETIX may do with your information, and who decided.",
-  "managedByParent": "Your parent manages this. In a school, your parent or guardian makes these choices in the KINETIX Parent app."
+  "managedByParent": "Your parent manages this. In a school, your parent or guardian makes these choices in the KINETIX Parent app.",
+  "thisWeekInClass": "This week in class",
+  "nextWeekInClass": "Next week",
+  "nothingPlannedThisWeek": "Nothing new is planned for this week.",
+  "planOnSchedule": "Class is on schedule",
+  "planAhead": "Class is ahead of the plan",
+  "planBehind": "{count, plural, =1{Class is 1 topic behind the plan} other{Class is {count} topics behind the plan}}",
+  "@planBehind": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "comingUpInClass": "Coming up in class",
+  "readAhead": "Topics planned for class. Read ahead if you like."
 }

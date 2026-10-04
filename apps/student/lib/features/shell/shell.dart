@@ -120,7 +120,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       key: _bodyKey,
       index: _tab,
       children: [
-        TodayTab(study: study, me: widget.state.me!, messages: messages, onAsk: _ask),
+        TodayTab(study: study, me: widget.state.me!, messages: messages, onAsk: _ask, onOpenTopic: (id) => _learn.currentState?.openTopic(id)),
         LearnTab(key: _learn, state: widget.state, study: study),
         UpdatesTab(controller: updates, study: study, messages: messages),
         ProfileTab(state: widget.state, study: study, messages: messages),

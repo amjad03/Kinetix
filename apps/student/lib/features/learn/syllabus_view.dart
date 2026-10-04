@@ -165,6 +165,7 @@ class _SubjectsState extends State<_Subjects> {
     _progressFor = subjects;
     for (final s in subjects) {
       study.loadCoverage(s.id);
+      study.loadPlan(s.id);
     }
   }
 
@@ -210,6 +211,10 @@ class _SubjectsState extends State<_Subjects> {
                         if (study.coverageOf(s.id) case final cov? when cov.total > 0) ...[
                           const SizedBox(height: Kx.s4),
                           CoverageBar(coverage: cov, compact: true),
+                        ],
+                        if (PlanStatusLine.textFor(context.l10n, study.planOf(s.id)) != null) ...[
+                          const SizedBox(height: Kx.s4),
+                          PlanStatusLine(plan: study.planOf(s.id)!, compact: true),
                         ],
                       ],
                     ),
@@ -302,6 +307,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
     setState(() => _error = null);
     // Progress is fetched alongside: a failure there only leaves the ticks out.
     widget.study.loadCoverage(widget.subject.id, fresh: true);
+    widget.study.loadPlan(widget.subject.id, fresh: true);
     try {
       final o = await widget.api.syllabus(widget.subject.id);
       if (mounted) {
@@ -322,6 +328,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
     final c = context.colors;
     final o = _outline;
     final cov = widget.study.coverageOf(widget.subject.id);
+    final plan = widget.study.planOf(widget.subject.id);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -359,6 +366,17 @@ class _SubjectScreenState extends State<SubjectScreen> {
               CenteredSliver(
                 bottom: Kx.s16,
                 sliver: SliverToBoxAdapter(child: CoverageBar(coverage: cov)),
+              ),
+            if (plan != null && plan.items.isNotEmpty)
+              CenteredSliver(
+                bottom: Kx.s16,
+                sliver: SliverToBoxAdapter(
+                  child: WeekPlanCard(
+                    plan: plan,
+                    today: widget.study.today,
+                    onOpen: (topicId) => TopicScreen.open(context, widget.api, topicId, controller: widget.ask),
+                  ),
+                ),
               ),
             CenteredSliver(
               bottom: Kx.s32,
@@ -423,4 +441,106 @@ Widget? _topicSubtitle(BuildContext context, OutlineTopic t, TopicCoverage? taug
         ),
     ],
   );
+}
+
+/// Where the class is against its year plan, in neutral words: "Class is on schedule", "Class is
+/// 2 topics behind the plan". Nothing when the subject has no plan.
+class PlanStatusLine extends StatelessWidget {
+  const PlanStatusLine({super.key, required this.plan, this.compact = false});
+
+  final YearPlan plan;
+  final bool compact;
+
+  static String? textFor(AppLocalizations l, YearPlan? plan) => plan == null || plan.items.isEmpty
+      ? null
+      : switch (plan.progress.status) {
+          PlanStatus.behind when plan.progress.behindBy > 0 => l.planBehind(plan.progress.behindBy),
+          PlanStatus.ahead => l.planAhead,
+          _ => l.planOnSchedule,
+        };
+
+  @override
+  Widget build(BuildContext context) {
+    final text = textFor(context.l10n, plan);
+    if (text == null) return const SizedBox.shrink();
+    final c = context.colors;
+    return Row(
+      key: const Key('planStatus'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 1),
+          child: Icon(Icons.event_note_outlined, size: compact ? 16 : 18, color: c.onSurfaceVariant),
+        ),
+        const SizedBox(width: Kx.s4),
+        Expanded(
+          child: Text(text, style: (compact ? context.text.bodySmall : context.text.bodyMedium)?.copyWith(color: c.onSurfaceVariant)),
+        ),
+      ],
+    );
+  }
+}
+
+/// "This week in class": the topics the year plan has for this week and next, so the student can
+/// read ahead, with the plan's status on top.
+class WeekPlanCard extends StatelessWidget {
+  const WeekPlanCard({super.key, required this.plan, required this.today, required this.onOpen});
+
+  final YearPlan plan;
+  final DateTime today;
+  final void Function(String topicId) onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l = context.l10n;
+    final thisWeek = plan.weekOf(today);
+    final nextWeek = plan.weekAfter(today);
+    Widget heading(String text) => Padding(
+      padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s12, Kx.s16, 0),
+      child: Text(text, style: context.text.titleSmall?.copyWith(color: c.primary)),
+    );
+    Widget row(PlanItem i) => ListTile(
+      key: Key('planned-${i.topicId}'),
+      leading: i.taught
+          ? Icon(Icons.check_circle, color: Tone.good(context), semanticLabel: l.taught)
+          : Icon(Icons.radio_button_unchecked, color: c.outlineVariant),
+      title: Text(i.title),
+      subtitle: i.chapter.isEmpty ? null : Text(i.chapter, maxLines: 2, overflow: TextOverflow.ellipsis),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => onOpen(i.topicId),
+    );
+    return Card(
+      key: const Key('weekPlan'),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, Kx.s4),
+            child: Text(l.thisWeekInClass, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
+            child: PlanStatusLine(plan: plan),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s4, Kx.s16, 0),
+            child: Text(l.readAhead, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+          ),
+          if (thisWeek.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s12, Kx.s16, 0),
+              child: Text(l.nothingPlannedThisWeek, key: const Key('nothingThisWeek'), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+            ),
+          for (final i in thisWeek) row(i),
+          if (nextWeek.isNotEmpty) ...[
+            heading(l.nextWeekInClass),
+            for (final i in nextWeek) row(i),
+          ],
+          const SizedBox(height: Kx.s8),
+        ],
+      ),
+    );
+  }
 }

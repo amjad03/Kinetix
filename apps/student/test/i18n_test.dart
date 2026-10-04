@@ -117,6 +117,9 @@ void main() {
     await back(tester);
     await back(tester);
 
+    // This week's planned topics.
+    await show(tester, find.byKey(const Key('comingUpCard')));
+
     // The holiday banner and the calendar.
     await show(tester, find.byKey(const Key('holidayBanner')));
     await openCardLink(tester, 'calendarCard');
@@ -156,6 +159,9 @@ void main() {
     await tester.pumpAndSettle();
     final syllabus = find.descendant(of: find.byType(LearnTab), matching: find.byType(Scrollable)).last;
     await tapShown(tester, find.byKey(const Key('subjectTile-sub1')), scrollable: syllabus);
+    // The plan's status, this week's and next week's topics.
+    await show(tester, find.byKey(const Key('planned-t2')), scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('planStatus')), findsWidgets);
     await tapShown(tester, find.byKey(const Key('topic-t1')), scrollable: find.byType(Scrollable).first);
     await scrollDown(tester);
     await back(tester);

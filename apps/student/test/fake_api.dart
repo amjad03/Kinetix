@@ -719,6 +719,53 @@ class FakeStudentApi implements StudentApi {
     calls.add('coverage $sectionId $subjectId');
     return Coverage.fromJson(coverageJson[subjectId] ?? {'covered': 0, 'total': 0, 'percent': null, 'topics': []});
   }
+  // ── Year plans ────────────────────────────────────────────────────────────────────────────
+
+  static Map<String, dynamic> planItemJson(String topicId, String title, String chapter, String weekOf, {String? coveredOn, bool late = false}) => {
+    'topicId': topicId,
+    'title': title,
+    'chapter': chapter,
+    'weekOf': weekOf,
+    'periods': 2,
+    'coveredOn': coveredOn,
+    'late': late,
+  };
+
+  static Map<String, dynamic> planJson({String status = 'on_track', int behindBy = 0, required List<Map<String, dynamic>> items}) => {
+    'id': 'plan1',
+    'startsOn': '2026-09-21',
+    'endsOn': '2027-01-09',
+    'progress': {
+      'total': items.length,
+      'covered': items.where((i) => i['coveredOn'] != null).length,
+      'expected': 0,
+      'dueThisWeek': 1,
+      'behindBy': behindBy,
+      'status': status,
+    },
+    'items': items,
+  };
+
+  /// The class's year plans by subject id; others have none. Today is Sunday 4 Oct 2026, so this
+  /// week began on 28 Sept.
+  Map<String, Map<String, dynamic>> yearPlanJson = {
+    'sub1': planJson(
+      items: [
+        planItemJson('t1', 'Underwriting and underwriting commission', 'Underwriting of Shares', '2026-09-28', coveredOn: '2026-10-01'),
+        planItemJson('t2', 'Methods of valuing goodwill', 'Valuation of Goodwill', '2026-10-05'),
+      ],
+    ),
+  };
+  ApiException? yearPlanError;
+
+  @override
+  Future<YearPlan?> yearPlan({required String sectionId, required String subjectId}) async {
+    calls.add('year-plan $sectionId $subjectId');
+    if (yearPlanError != null) throw yearPlanError!;
+    final j = yearPlanJson[subjectId];
+    return j == null ? null : YearPlan.fromJson(j);
+  }
+
 
   // ── Homework submissions ──────────────────────────────────────────────────────────────────
 

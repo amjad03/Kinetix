@@ -85,3 +85,12 @@ Please check in particular:
 - Error texts now come from the server's error `code` (services/api common/error-codes.ts) in
   both apps (`describeErrorCode` in `lib/l10n/l10n.dart`); the server's English message is the
   fallback for codes without words of their own (validation messages).
+
+### Year plan wording (needs native review)
+
+| English | Hindi | Kannada |
+|---|---|---|
+| This week in class | इस हफ़्ते कक्षा में | ಈ ವಾರ ತರಗತಿಯಲ್ಲಿ |
+| Class is on schedule | कक्षा योजना के अनुसार चल रही है | ತರಗತಿ ಯೋಜನೆಯಂತೆ ನಡೆಯುತ್ತಿದೆ |
+| Class is N topics behind the plan | कक्षा योजना से N विषय-वस्तु पीछे है | ತರಗತಿ ಯೋಜನೆಗಿಂತ N ವಿಷಯಗಳಷ್ಟು ಹಿಂದಿದೆ |
+| Coming up in class (least certain; short for a card title) | कक्षा में आगे | ತರಗತಿಯಲ್ಲಿ ಮುಂದೆ |

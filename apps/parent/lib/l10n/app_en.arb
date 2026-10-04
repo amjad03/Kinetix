@@ -1084,5 +1084,19 @@
       }
     }
   },
-  "noTopicsInChapter": "No topics yet"
+  "noTopicsInChapter": "No topics yet",
+  "thisWeekInClass": "This week in class",
+  "nextWeekInClass": "Next week",
+  "nothingPlannedThisWeek": "Nothing new is planned for this week.",
+  "planOnSchedule": "Class is on schedule",
+  "planAhead": "Class is ahead of the plan",
+  "planBehind": "{count, plural, =1{Class is 1 topic behind the plan} other{Class is {count} topics behind the plan}}",
+  "@planBehind": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planIntro": "Topics the teacher plans to teach."
 }

@@ -1136,6 +1136,104 @@ class Coverage {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Year plan (`GET /v1/year-plans?sectionId&subjectId`): the class's syllabus spread over the term
+
+/// Where the class is against its year plan (services/api plans/planner.ts `planProgress`).
+enum PlanStatus {
+  notStarted,
+  onTrack,
+  behind,
+  ahead;
+
+  static PlanStatus parse(String? s) => switch (s) {
+    'on_track' => onTrack,
+    'behind' => behind,
+    'ahead' => ahead,
+    _ => notStarted,
+  };
+}
+
+class PlanProgress {
+  PlanProgress({required this.total, required this.covered, required this.expected, required this.dueThisWeek, required this.behindBy, required this.status});
+
+  factory PlanProgress.fromJson(Map<String, dynamic> j) => PlanProgress(
+    total: (j['total'] as num?)?.toInt() ?? 0,
+    covered: (j['covered'] as num?)?.toInt() ?? 0,
+    expected: (j['expected'] as num?)?.toInt() ?? 0,
+    dueThisWeek: (j['dueThisWeek'] as num?)?.toInt() ?? 0,
+    behindBy: (j['behindBy'] as num?)?.toInt() ?? 0,
+    status: PlanStatus.parse(j['status'] as String?),
+  );
+
+  final int total;
+  final int covered;
+
+  /// Topics planned before this week.
+  final int expected;
+  final int dueThisWeek;
+
+  /// Topics planned before this week that have not been taught yet.
+  final int behindBy;
+  final PlanStatus status;
+}
+
+/// One topic in the plan, in the week (a Monday) it is planned for.
+class PlanItem {
+  PlanItem({required this.topicId, required this.title, required this.chapter, required this.weekOf, required this.periods, this.coveredOn, this.late = false});
+
+  factory PlanItem.fromJson(Map<String, dynamic> j) => PlanItem(
+    topicId: j['topicId'] as String,
+    title: j['title'] as String? ?? '',
+    chapter: j['chapter'] as String? ?? '',
+    weekOf: parseIsoDate(j['weekOf'] as String),
+    periods: (j['periods'] as num?)?.toInt() ?? 1,
+    coveredOn: j['coveredOn'] == null ? null : parseIsoDate(j['coveredOn'] as String),
+    late: j['late'] as bool? ?? false,
+  );
+
+  final String topicId;
+  final String title;
+  final String chapter;
+  final DateTime weekOf;
+  final int periods;
+  final DateTime? coveredOn;
+  final bool late;
+
+  bool get taught => coveredOn != null;
+}
+
+class YearPlan {
+  YearPlan({required this.startsOn, required this.endsOn, required this.progress, required this.items});
+
+  factory YearPlan.fromJson(Map<String, dynamic> j) => YearPlan(
+    startsOn: parseIsoDate(j['startsOn'] as String),
+    endsOn: parseIsoDate(j['endsOn'] as String),
+    progress: PlanProgress.fromJson((j['progress'] as Map).cast<String, dynamic>()),
+    items: [for (final i in (j['items'] as List? ?? const [])) PlanItem.fromJson((i as Map).cast<String, dynamic>())],
+  );
+
+  final DateTime startsOn;
+  final DateTime endsOn;
+  final PlanProgress progress;
+  final List<PlanItem> items;
+
+  /// The Monday of [day]'s week (weeks run Monday to Sunday, as on the server).
+  static DateTime mondayOf(DateTime day) => DateTime(day.year, day.month, day.day - (day.weekday - DateTime.monday));
+
+  /// The topics planned for the week of [day].
+  List<PlanItem> weekOf(DateTime day) {
+    final monday = isoDate(mondayOf(day));
+    return [for (final i in items) if (isoDate(i.weekOf) == monday) i];
+  }
+
+  /// The topics planned for the week after [day]'s.
+  List<PlanItem> weekAfter(DateTime day) {
+    final m = mondayOf(day);
+    return weekOf(DateTime(m.year, m.month, m.day + 7));
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Homework submissions (`/v1/homework/:id/submissions/:studentId`)
 
 enum SubmissionStatus { submitted, checked, returned }

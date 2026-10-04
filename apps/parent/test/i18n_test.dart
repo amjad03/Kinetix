@@ -155,6 +155,9 @@ void main() {
     await tester.scrollUntilVisible(find.byKey(const Key('profile-syllabus-c1')), 300, scrollable: profile);
     await tapShown(tester, find.byKey(const Key('profile-syllabus-c1')));
     await tapShown(tester, find.byKey(const Key('subjectProgress-sub1')));
+    // The plan's status, this week's and next week's topics.
+    await tester.scrollUntilVisible(find.byKey(const Key('planned-t2')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('planStatus')), findsWidgets);
     await scrollDown(tester);
     await back(tester);
     await back(tester);

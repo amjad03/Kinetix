@@ -185,6 +185,27 @@ class FamilyController extends ChangeNotifier {
     }
   }
 
+  final _plans = <String, YearPlan?>{};
+
+  /// [childId]'s class's year plan for [subjectId], once loaded (null also when there is none).
+  YearPlan? planOf(String childId, String subjectId) => _plans['$childId|$subjectId'];
+
+  /// The class's year plan for [subjectId] (null: the teacher has not made one). A failure keeps
+  /// what we had: the plan is extra information.
+  Future<YearPlan?> loadPlan(Child child, String subjectId) async {
+    final key = '${child.id}|$subjectId';
+    try {
+      final p = _plans[key] = await api.yearPlan(sectionId: child.sectionId, subjectId: subjectId);
+      notifyListeners();
+      return p;
+    } on ApiException {
+      return _plans[key];
+    }
+  }
+
+  /// The institution's today for [child] (from their summary or the calendar), else the device's.
+  DateTime todayFor(Child child) => summaryOf(child.id)?.today ?? calendar?.today ?? DateTime.now();
+
   /// The child (in [sectionId]) whose published marks include [assessmentId], with that result.
   /// Reloads their marks, since the notification means something new was published.
   Future<(Child, AssessmentResult?)?> findAssessment(String? assessmentId, {String? sectionId}) async {

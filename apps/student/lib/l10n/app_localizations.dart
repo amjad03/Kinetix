@@ -2852,6 +2852,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your parent manages this. In a school, your parent or guardian makes these choices in the KINETIX Parent app.'**
   String get managedByParent;
+
+  /// No description provided for @thisWeekInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'This week in class'**
+  String get thisWeekInClass;
+
+  /// No description provided for @nextWeekInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get nextWeekInClass;
+
+  /// No description provided for @nothingPlannedThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new is planned for this week.'**
+  String get nothingPlannedThisWeek;
+
+  /// No description provided for @planOnSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Class is on schedule'**
+  String get planOnSchedule;
+
+  /// No description provided for @planAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Class is ahead of the plan'**
+  String get planAhead;
+
+  /// No description provided for @planBehind.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Class is 1 topic behind the plan} other{Class is {count} topics behind the plan}}'**
+  String planBehind(int count);
+
+  /// No description provided for @comingUpInClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up in class'**
+  String get comingUpInClass;
+
+  /// No description provided for @readAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics planned for class. Read ahead if you like.'**
+  String get readAhead;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

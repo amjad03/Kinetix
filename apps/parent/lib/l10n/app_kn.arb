@@ -404,5 +404,12 @@
   "syllabusSubjectsEmpty": "ಶಿಕ್ಷಕರು ಹೋಂವರ್ಕ್ ನೀಡಿದ ನಂತರ ವಿಷಯಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
   "syllabusNotLinked": "{subject} ಪಠ್ಯಕ್ರಮ ಇನ್ನೂ KINETIX ನಲ್ಲಿ ಇಲ್ಲ.",
   "chaptersTopics": "{chapters, plural, =1{1 ಅಧ್ಯಾಯ} other{{chapters} ಅಧ್ಯಾಯಗಳು}}",
-  "noTopicsInChapter": "ಇನ್ನೂ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ"
+  "noTopicsInChapter": "ಇನ್ನೂ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ",
+  "thisWeekInClass": "ಈ ವಾರ ತರಗತಿಯಲ್ಲಿ",
+  "nextWeekInClass": "ಮುಂದಿನ ವಾರ",
+  "nothingPlannedThisWeek": "ಈ ವಾರಕ್ಕೆ ಹೊಸ ವಿಷಯಗಳನ್ನು ಯೋಜಿಸಿಲ್ಲ.",
+  "planOnSchedule": "ತರಗತಿ ಯೋಜನೆಯಂತೆ ನಡೆಯುತ್ತಿದೆ",
+  "planAhead": "ತರಗತಿ ಯೋಜನೆಗಿಂತ ಮುಂದಿದೆ",
+  "planBehind": "{count, plural, =1{ತರಗತಿ ಯೋಜನೆಗಿಂತ 1 ವಿಷಯ ಹಿಂದಿದೆ} other{ತರಗತಿ ಯೋಜನೆಗಿಂತ {count} ವಿಷಯಗಳಷ್ಟು ಹಿಂದಿದೆ}}",
+  "planIntro": "ಶಿಕ್ಷಕರು ಕಲಿಸಲು ಯೋಜಿಸಿರುವ ವಿಷಯಗಳು."
 }
