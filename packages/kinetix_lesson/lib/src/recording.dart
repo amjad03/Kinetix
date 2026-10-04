@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 /// Where an after-class job (transcript, summary) has got to.
@@ -126,9 +127,13 @@ class LessonAudioLocation {
 
 /// A problem loading a recording, in words the viewer can act on.
 class LessonLoadException implements Exception {
-  const LessonLoadException(this.message);
+  const LessonLoadException(this.message, {this.describe});
 
+  /// The problem in English (and the fallback when [describe] is null).
   final String message;
+
+  /// The problem in the viewer's language, for apps that localise their errors.
+  final String Function(BuildContext context)? describe;
 
   @override
   String toString() => message;

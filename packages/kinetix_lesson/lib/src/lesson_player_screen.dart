@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'audio.dart';
 import 'format.dart';
+import 'l10n.dart';
 import 'recording.dart';
 
 /// Plays a lesson recording: the board as it was written, in step with the teacher's voice,
@@ -44,7 +45,8 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
   LessonPlayer? _player;
   LessonAudio? _audio;
   Duration _total = Duration.zero;
-  String? _error;
+  /// What went wrong, worded in the viewer's language at build time.
+  String Function(BuildContext context)? _error;
   bool _loading = true;
 
   /// The slider while it is being dragged (the board previews it).
@@ -102,7 +104,11 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e is LessonLoadException ? e.message : "Couldn't load this lesson. Try again.";
+        _error = switch (e) {
+          LessonLoadException(:final describe?) => describe,
+          LessonLoadException(:final message) => (_) => message,
+          _ => (context) => LessonStrings.of(context).loadFailed,
+        };
       });
     }
   }
@@ -158,8 +164,9 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final s = LessonStrings.of(context);
     final info = _info ?? widget.initial;
-    final subtitle = [?info?.subjectName, ?info?.teacherName, if (info != null) LessonFmt.when(info.startedAt)].join(' · ');
+    final subtitle = [?info?.subjectName, ?info?.teacherName, if (info != null) LessonFmt.when(info.startedAt, s)].join(' · ');
 
     return Scaffold(
       backgroundColor: c.surfaceContainer,
@@ -169,7 +176,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(info?.title ?? 'Lesson recording', maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
+            Text(info?.title ?? s.lessonRecording, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.titleMedium),
             if (subtitle.isNotEmpty)
               Text(
                 subtitle,
@@ -185,7 +192,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
               padding: const EdgeInsets.all(Kx.s16),
               child: Align(
                 alignment: Alignment.topCenter,
-                child: _ErrorBox(_error!, onRetry: _load),
+                child: _ErrorBox(_error!(context), onRetry: _load),
               ),
             )
           : _loading || _player == null
@@ -260,6 +267,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
   }
 
   Widget _board(BuildContext context) {
+    final s = LessonStrings.of(context);
     final player = _player!;
     final playing = _audio!.playing;
     return Padding(
@@ -280,7 +288,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
                   LessonView(key: const Key('lessonView'), player: player),
                   Semantics(
                     button: true,
-                    label: playing ? 'Pause' : 'Play',
+                    label: playing ? s.pause : s.play,
                     child: GestureDetector(key: const Key('lessonBoard'), behavior: HitTestBehavior.opaque, onTap: _toggle),
                   ),
                   if (!playing)
@@ -305,7 +313,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
                               padding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: 3),
                               decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.55), borderRadius: Kx.radiusSm),
                               child: Text(
-                                'Page ${player.pageIndex + 1} of ${player.pageCount}',
+                                s.page(player.pageIndex + 1, player.pageCount),
                                 key: const Key('lessonPage'),
                                 style: context.text.labelMedium?.copyWith(color: Colors.white),
                               ),
@@ -323,6 +331,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
 
   Widget _controls(BuildContext context) {
     final c = context.colors;
+    final s = LessonStrings.of(context);
     final audio = _audio!;
     final totalMs = _total.inMilliseconds.toDouble();
     return Padding(
@@ -383,20 +392,20 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
                     key: const Key('lessonSpeed'),
                     onPressed: _cycleSpeed,
                     style: TextButton.styleFrom(minimumSize: const Size(56, Kx.target)),
-                    child: Text(LessonFmt.speed(audio.speed), semanticsLabel: 'Speed ${LessonFmt.speed(audio.speed)}'),
+                    child: Text(LessonFmt.speed(audio.speed), semanticsLabel: s.speed(LessonFmt.speed(audio.speed))),
                   ),
                 ),
               ),
               IconButton(
                 key: const Key('lessonBack10'),
-                tooltip: 'Back 10 seconds',
+                tooltip: s.back10,
                 onPressed: () => _skip(-skip),
                 icon: const Icon(Icons.replay_10),
               ),
               const SizedBox(width: Kx.s8),
               IconButton.filled(
                 key: const Key('lessonPlay'),
-                tooltip: audio.playing ? 'Pause' : (audio.completed ? 'Play again' : 'Play'),
+                tooltip: audio.playing ? s.pause : (audio.completed ? s.playAgain : s.play),
                 iconSize: 32,
                 style: IconButton.styleFrom(minimumSize: const Size(56, 56)),
                 onPressed: _toggle,
@@ -405,7 +414,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
               const SizedBox(width: Kx.s8),
               IconButton(
                 key: const Key('lessonForward10'),
-                tooltip: 'Forward 10 seconds',
+                tooltip: s.forward10,
                 onPressed: () => _skip(skip),
                 icon: const Icon(Icons.forward_10),
               ),
@@ -419,12 +428,13 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
 
   Widget? _notes(BuildContext context, RecordingInfo info) {
     final c = context.colors;
+    final s = LessonStrings.of(context);
     final lines = <(IconData, String, Color)>[
-      if (info.missed) (Icons.event_busy, 'Missed this class. Watch the lesson to catch up.', c.error),
+      if (info.missed) (Icons.event_busy, s.missedNote, c.error),
       if (!info.hasAudio)
-        (Icons.volume_off_outlined, 'This lesson was recorded without sound.', c.onSurfaceVariant)
+        (Icons.volume_off_outlined, s.noSound, c.onSurfaceVariant)
       else if (!_audio!.audible)
-        (Icons.volume_off_outlined, "Sound can't play on this device, so the board plays on its own.", c.onSurfaceVariant),
+        (Icons.volume_off_outlined, s.soundUnavailable, c.onSurfaceVariant),
     ];
     if (lines.isEmpty) return null;
     return Padding(
@@ -451,32 +461,35 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
   }
 }
 
+enum _Tab { summary, transcript }
+
 /// Summary and transcript tabs.
 class _Details extends StatelessWidget {
   const _Details({required this.info});
 
   final RecordingInfo info;
 
-  static List<String> tabsFor(RecordingInfo i) => [
-    if (i.summary != null || i.summaryState == Processing.queued) 'Summary',
-    if (i.transcript != null || i.transcriptState == Processing.queued) 'Transcript',
+  static List<_Tab> tabsFor(RecordingInfo i) => [
+    if (i.summary != null || i.summaryState == Processing.queued) _Tab.summary,
+    if (i.transcript != null || i.transcriptState == Processing.queued) _Tab.transcript,
   ];
 
   @override
   Widget build(BuildContext context) {
+    final s = LessonStrings.of(context);
     final tabs = tabsFor(info);
     return DefaultTabController(
-      key: ValueKey(tabs.join()),
+      key: ValueKey(tabs.map((t) => t.name).join()),
       length: tabs.length,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TabBar(tabs: [for (final t in tabs) Tab(text: t)]),
+          TabBar(tabs: [for (final t in tabs) Tab(text: t == _Tab.summary ? s.summary : s.transcript)]),
           Expanded(
             child: TabBarView(
               children: [
                 for (final t in tabs)
-                  if (t == 'Summary') _SummaryView(info) else _TranscriptView(info),
+                  if (t == _Tab.summary) _SummaryView(info) else _TranscriptView(info),
               ],
             ),
           ),
@@ -519,7 +532,7 @@ class _SummaryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = info.summary;
-    if (s == null) return const _Pending('The summary is being prepared. Check back in a few minutes.');
+    if (s == null) return _Pending(LessonStrings.of(context).summaryPending);
     final c = context.colors;
     return ListView(
       key: const Key('lessonSummary'),
@@ -528,7 +541,7 @@ class _SummaryView extends StatelessWidget {
         if (s.summary.isNotEmpty) Text(s.summary, style: context.text.bodyLarge),
         if (s.keyPoints.isNotEmpty) ...[
           const SizedBox(height: Kx.s16),
-          Text('Key points', style: context.text.titleSmall?.copyWith(color: c.primary)),
+          Text(LessonStrings.of(context).keyPoints, style: context.text.titleSmall?.copyWith(color: c.primary)),
           const SizedBox(height: Kx.s8),
           for (final p in s.keyPoints)
             Padding(
@@ -559,7 +572,7 @@ class _TranscriptView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = info.transcript;
-    if (t == null) return const _Pending('Transcript is being prepared. Check back in a few minutes.');
+    if (t == null) return _Pending(LessonStrings.of(context).transcriptPending);
     return ListView(
       key: const Key('lessonTranscript'),
       padding: const EdgeInsets.all(Kx.s16),
@@ -590,7 +603,7 @@ class _ErrorBox extends StatelessWidget {
           TextButton(
             onPressed: onRetry,
             style: TextButton.styleFrom(foregroundColor: c.onErrorContainer),
-            child: const Text('Retry'),
+            child: Text(LessonStrings.of(context).retry),
           ),
         ],
       ),

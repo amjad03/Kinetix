@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   kinetix_ui:
     path: ../../packages/kinetix_ui
   kinetix_lesson:
@@ -25,3 +27,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # UI strings: lib/l10n/app_{en,hi,kn}.arb → AppLocalizations (see l10n.yaml).
+  generate: true
