@@ -13,3 +13,5 @@ build/
 .idea/
 .data/
 .claude/worktrees/
+services/api/.dist*/
+services/api/dist-*/
