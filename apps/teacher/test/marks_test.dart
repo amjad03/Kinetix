@@ -73,11 +73,13 @@ void main() {
     await pumpApp(tester);
 
     expect(api.calls, contains('assessments sec1'));
+    // The list carries the averages: no request per card.
+    expect(api.calls.where((c) => c.startsWith('assessment ')), isEmpty);
     expect(find.text('BCom Sem 3 A'), findsOneWidget);
     final published = find.byKey(const Key('assessment-a1'));
     expect(find.descendant(of: published, matching: find.text('Published')), findsOneWidget);
     expect(find.descendant(of: published, matching: find.textContaining('20.8')), findsOneWidget);
-    expect(find.descendant(of: published, matching: find.text('2 of 3 marked')), findsOneWidget);
+    expect(find.descendant(of: published, matching: find.text('3 of 3 entered')), findsOneWidget);
     final draft = find.byKey(const Key('assessment-a2'));
     expect(find.descendant(of: draft, matching: find.text('Draft')), findsOneWidget);
     expect(find.descendant(of: draft, matching: find.text('No marks yet · out of 10')), findsOneWidget);

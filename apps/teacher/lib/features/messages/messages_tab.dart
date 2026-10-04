@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import 'chat_screen.dart';
+import 'new_message_screen.dart';
 
 /// The teacher's threads with families, latest first, and the unread total for the badge.
 class MessagesController extends ChangeNotifier {
@@ -47,13 +48,24 @@ class MessagesTab extends StatelessWidget {
   final String myId;
   final Widget? profileButton;
 
-  Future<void> _open(BuildContext context, Conversation c) async {
+  Future<void> _open(BuildContext context, Conversation c) => open(context, controller, c, myId);
+
+  static Future<void> open(BuildContext context, MessagesController controller, Conversation c, String myId) async {
     controller.updated(c.copyWith(unread: 0));
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ChatScreen(api: controller.api, conversation: c, myId: myId, onChanged: controller.updated),
       ),
     );
+  }
+
+  /// "New message": choose a student's parent or guardian, then go to the thread.
+  static Future<void> compose(BuildContext context, MessagesController controller, String myId) async {
+    final c = await Navigator.of(context).push<Conversation>(
+      MaterialPageRoute(fullscreenDialog: true, builder: (_) => NewMessageScreen(api: controller.api)),
+    );
+    if (c == null || !context.mounted) return;
+    await open(context, controller, c, myId);
   }
 
   @override
@@ -80,12 +92,13 @@ class MessagesTab extends StatelessWidget {
                   hasScrollBody: false,
                   child: KxEmptyState(
                     icon: Icons.forum_outlined,
-                    message: 'No messages yet.\nWhen a parent writes to you about their child, the conversation shows up here.',
+                    message: 'No messages yet.\nWrite to a student’s parent with New message, or wait for families to write to you.',
                   ),
                 )
               else if (items != null)
                 SliverPadding(
-                  padding: const EdgeInsets.only(bottom: Kx.s24),
+                  // Leaves room for the floating action button.
+                  padding: const EdgeInsets.only(bottom: 96),
                   sliver: SliverList.builder(
                     itemCount: items.length,
                     itemBuilder: (context, i) => ConversationTile(conversation: items[i], onTap: () => _open(context, items[i])),

@@ -233,6 +233,8 @@ class FakeTeacherApi implements TeacherApi {
     return Assessment.fromJson({
       ...row,
       'entered': m.length,
+      'classSize': students.length,
+      'average': values.isEmpty ? null : (values.reduce((a, b) => a + b) / values.length * 10).round() / 10,
       'stats': {
         'count': values.length,
         'average': values.isEmpty ? null : (values.reduce((a, b) => a + b) / values.length * 10).round() / 10,
@@ -257,12 +259,21 @@ class FakeTeacherApi implements TeacherApi {
   Future<List<Assessment>> assessments(String sectionId) async {
     calls.add('assessments $sectionId');
     return [
-      for (final r in assessmentRows.values.toList().reversed) Assessment.fromJson({...r, 'entered': savedMarks[r['id']]!.length}),
+      for (final r in assessmentRows.values.toList().reversed) _summary(r['id'] as String),
     ];
   }
 
+  /// What the list returns: no roster or stats, but the class size and average.
+  Assessment _summary(String id) {
+    final d = _detail(id);
+    return Assessment.fromJson({...assessmentRows[id]!, 'entered': d.entered, 'classSize': d.classSize, 'average': d.average});
+  }
+
   @override
-  Future<Assessment> assessment(String id) async => _detail(id);
+  Future<Assessment> assessment(String id) async {
+    calls.add('assessment $id');
+    return _detail(id);
+  }
 
   @override
   Future<Assessment> createAssessment({
@@ -370,5 +381,48 @@ class FakeTeacherApi implements TeacherApi {
   Future<void> markConversationRead(String id) async {
     calls.add('read $id');
     threads = [for (final t in threads) t.id == id ? t.copyWith(unread: 0) : t];
+  }
+
+  /// Students of the class with their guardians; Bhavya has none on record.
+  late List<StudentContacts> contacts = [
+    StudentContacts(
+      student: students[0],
+      className: section.name,
+      guardians: const [Guardian(id: 'g1', fullName: 'Rajesh Patel', relation: 'father')],
+    ),
+    StudentContacts(
+      student: students[1],
+      className: section.name,
+      guardians: const [
+        Guardian(id: 'g2', fullName: 'Sunita Gowda', relation: 'mother'),
+        Guardian(id: 'g3', fullName: 'Mahesh Gowda', relation: 'father'),
+      ],
+    ),
+    StudentContacts(student: students[2], className: section.name, guardians: const []),
+  ];
+
+  @override
+  Future<List<StudentContacts>> familyContacts({String? sectionId}) async {
+    calls.add('contacts');
+    return contacts;
+  }
+
+  @override
+  Future<Conversation> startConversation({required String studentId, required String guardianId}) async {
+    calls.add('start $studentId $guardianId');
+    final existing = threads.where((t) => t.student.id == studentId && t.family.id == guardianId).firstOrNull;
+    if (existing != null) return existing;
+    final s = contacts.firstWhere((c) => c.student.id == studentId);
+    final g = s.guardians.firstWhere((g) => g.id == guardianId);
+    final c = Conversation(
+      id: 'c${threads.length + 1}',
+      student: Ref(studentId, s.student.fullName),
+      className: s.className,
+      staff: Ref(profile.id, profile.fullName),
+      family: Ref(g.id, g.fullName),
+    );
+    threads = [...threads, c];
+    chat[c.id] = [];
+    return c;
   }
 }

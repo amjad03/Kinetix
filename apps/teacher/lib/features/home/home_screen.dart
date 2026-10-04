@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final _lifecycle = AppLifecycleListener(onResume: _refreshMessages);
   int _tab = 0;
 
-  static const _homeworkTab = 1, _marksTab = 2, _recordingsTab = 4;
+  static const _homeworkTab = 1, _marksTab = 2, _messagesTab = 3, _recordingsTab = 4;
 
   @override
   void initState() {
@@ -96,6 +96,12 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () => MarksTab.create(context, marks),
           icon: const Icon(Icons.add),
           label: const Text('New assessment'),
+        ),
+        _messagesTab => FloatingActionButton.extended(
+          key: const Key('newMessageFab'),
+          onPressed: () => MessagesTab.compose(context, messages, widget.state.me!.id),
+          icon: const Icon(Icons.edit_outlined),
+          label: const Text('New message'),
         ),
         _ => null,
       },

@@ -17,8 +17,6 @@ class MarksController extends ChangeNotifier {
   Ref? section;
   List<Assessment>? items;
 
-  /// Details (roster and stats) by assessment id, loaded after the list for the averages.
-  final details = <String, Assessment>{};
   bool loading = false;
   String? error;
 
@@ -39,27 +37,13 @@ class MarksController extends ChangeNotifier {
         return;
       }
       final list = await api.assessments(s.id);
-      if (section != s) return;
-      items = list;
-      notifyListeners();
-      await _loadDetails(list);
+      if (section == s) items = list;
     } on ApiException catch (e) {
       error = e.message;
     } finally {
       loading = false;
       notifyListeners();
     }
-  }
-
-  /// The list has no stats, so each card fills in its average as its detail arrives.
-  Future<void> _loadDetails(List<Assessment> list) async {
-    await Future.wait([
-      for (final a in list)
-        api.assessment(a.id).then((d) {
-          details[a.id] = d;
-          notifyListeners();
-        }, onError: (Object _) {}),
-    ]);
   }
 
   Future<void> select(Ref s) async {
@@ -69,9 +53,8 @@ class MarksController extends ChangeNotifier {
     await load();
   }
 
-  /// A created or updated assessment (with its detail).
+  /// A created or updated assessment.
   void upsert(Assessment a) {
-    details[a.id] = a;
     if (a.sectionId == section?.id) {
       final list = [...?items];
       final i = list.indexWhere((x) => x.id == a.id);
@@ -190,7 +173,6 @@ class MarksTab extends StatelessWidget {
                     separatorBuilder: (_, _) => const SizedBox(height: Kx.s12),
                     itemBuilder: (context, i) => AssessmentCard(
                       assessment: items[i],
-                      detail: controller.details[items[i].id],
                       onTap: () => open(context, controller, items[i]),
                     ),
                   ),
@@ -205,20 +187,17 @@ class MarksTab extends StatelessWidget {
 
 /// One test or assignment: title, subject, kind, date, Draft/Published and the class average.
 class AssessmentCard extends StatelessWidget {
-  const AssessmentCard({super.key, required this.assessment, this.detail, required this.onTap});
+  const AssessmentCard({super.key, required this.assessment, required this.onTap});
 
   final Assessment assessment;
-
-  /// With stats and the roster, once loaded.
-  final Assessment? detail;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final a = assessment;
-    final stats = detail?.stats;
-    final total = detail?.students?.length;
+    final average = a.average;
+    final total = a.classSize;
     final (goodBg, good) = goodColors(context);
     final muted = context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant);
 
@@ -249,36 +228,33 @@ class AssessmentCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: stats?.average != null
+                    child: average != null
                         ? Text.rich(
                             TextSpan(
                               children: [
                                 TextSpan(text: 'Class average  ', style: muted),
                                 TextSpan(
-                                  text: formatMarks(stats!.average!),
+                                  text: formatMarks(average),
                                   style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500),
                                 ),
                                 TextSpan(text: ' / ${formatMarks(a.maxMarks)}', style: muted),
                               ],
                             ),
                           )
-                        : Text(
-                            detail == null ? 'Out of ${formatMarks(a.maxMarks)}' : 'No marks yet · out of ${formatMarks(a.maxMarks)}',
-                            style: muted,
-                          ),
+                        : Text('No marks yet · out of ${formatMarks(a.maxMarks)}', style: muted),
                   ),
                   Text(
-                    total == null ? '${a.entered} entered' : '${detail!.students!.where((e) => e.marks != null).length} of $total marked',
+                    total == null ? '${a.entered} entered' : '${a.entered} of $total entered',
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],
               ),
-              if (stats?.average != null) ...[
+              if (average != null) ...[
                 const SizedBox(height: Kx.s8),
                 ClipRRect(
                   borderRadius: Kx.radiusSm,
                   child: LinearProgressIndicator(
-                    value: (stats!.average! / a.maxMarks).clamp(0, 1),
+                    value: (average / a.maxMarks).clamp(0, 1),
                     minHeight: 6,
                     backgroundColor: c.surfaceContainerHighest,
                   ),

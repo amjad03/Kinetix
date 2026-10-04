@@ -125,4 +125,61 @@ void main() {
     expect(find.text('Messages about Aarav Patel with Rajesh Patel'), findsOneWidget);
     expect(find.text('Pull down for earlier messages'), findsNothing);
   });
+
+  testWidgets('New message: class, search a student, choose the guardian, then chat', (tester) async {
+    await pumpApp(tester);
+    await openInbox(tester);
+    await tester.tap(find.byKey(const Key('newMessageFab')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('contacts'));
+    expect(find.text('Aarav Patel'), findsOneWidget);
+
+    // A student with no guardian on record says so and cannot be picked.
+    await tester.enterText(find.byKey(const Key('studentSearch')), 'bhav');
+    await tester.pump();
+    expect(find.text('Aarav Patel'), findsNothing);
+    expect(find.text('U03BC003 · No parent or guardian on record'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('contact-s3')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Write to'), findsNothing);
+
+    // Search by roll number.
+    await tester.enterText(find.byKey(const Key('studentSearch')), 'u03bc002');
+    await tester.pump();
+    expect(find.text('Ananya Gowda'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('contact-s2')));
+    await tester.pumpAndSettle();
+    expect(find.text('Write to Ananya Gowda’s family'), findsOneWidget);
+    expect(find.text('Sunita Gowda'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('guardian-g3')));
+    await tester.pumpAndSettle();
+
+    expect(api.calls, contains('start s2 g3'));
+    expect(find.text('Mahesh Gowda'), findsOneWidget);
+    expect(find.text('Parent of Ananya Gowda · BCom Sem 3 A'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('messageField')), 'Ananya did very well in the unit test.');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('sendMessage')));
+    await tester.pumpAndSettle();
+    expect(api.chat['c3']!.single.body, 'Ananya did very well in the unit test.');
+
+    // Back in the inbox the new thread is at the top.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: find.byKey(const Key('conversation-c3')), matching: find.text('Mahesh Gowda')), findsOneWidget);
+    expect(tester.getTopLeft(find.byKey(const Key('conversation-c3'))).dy, lessThan(tester.getTopLeft(find.byKey(const Key('conversation-c1'))).dy));
+  });
+
+  testWidgets('writing to a family with a thread already open goes to that thread', (tester) async {
+    await pumpApp(tester);
+    await openInbox(tester);
+    await tester.tap(find.byKey(const Key('newMessageFab')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('contact-s1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('guardian-g1')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('start s1 g1'));
+    expect(find.text('Thank you, he will finish it tonight.'), findsOneWidget);
+  });
 }

@@ -309,6 +309,8 @@ class Assessment {
     required this.sectionId,
     required this.subject,
     required this.entered,
+    this.classSize,
+    this.average,
     this.publishedAt,
     this.createdBy,
     this.stats,
@@ -326,6 +328,8 @@ class Assessment {
     subject: Ref((j['subject'] as Map)['id'] as String, (j['subject'] as Map)['name'] as String),
     createdBy: j['createdBy'] as String?,
     entered: j['entered'] as int? ?? 0,
+    classSize: j['classSize'] as int?,
+    average: ((j['average'] ?? (j['stats'] as Map?)?['average']) as num?)?.toDouble(),
     stats: j['stats'] == null ? null : MarkStats.fromJson(j['stats'] as Map<String, dynamic>),
     students: (j['students'] as List?)?.map((e) => MarkEntry.fromJson(e as Map<String, dynamic>)).toList(),
   );
@@ -342,6 +346,10 @@ class Assessment {
 
   /// Students with a saved row (marks, absent or a remark).
   final int entered;
+
+  /// Active students in the class, and the class average of the marks entered (from the list).
+  final int? classSize;
+  final double? average;
   final MarkStats? stats;
   final List<MarkEntry>? students;
 
@@ -451,4 +459,38 @@ class ChatPage {
 
   final Conversation conversation;
   final List<ChatMessage> messages;
+}
+
+/// A parent or guardian the teacher can write to.
+class Guardian {
+  const Guardian({required this.id, required this.fullName, required this.relation});
+
+  factory Guardian.fromJson(Map<String, dynamic> j) =>
+      Guardian(id: j['id'] as String, fullName: j['fullName'] as String, relation: j['relation'] as String? ?? 'parent');
+
+  final String id;
+  final String fullName;
+
+  /// "father", "mother", "guardian"…
+  final String relation;
+
+  String get relationLabel => relation.isEmpty ? 'Parent' : relation[0].toUpperCase() + relation.substring(1);
+}
+
+/// A student in a class the teacher teaches, with the family members on record.
+class StudentContacts {
+  StudentContacts({required this.student, required this.className, required this.guardians});
+
+  factory StudentContacts.fromJson(Map<String, dynamic> j) {
+    final s = j['student'] as Map<String, dynamic>;
+    return StudentContacts(
+      student: Student.fromJson(s),
+      className: s['className'] as String,
+      guardians: (j['guardians'] as List).map((e) => Guardian.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  final Student student;
+  final String className;
+  final List<Guardian> guardians;
 }

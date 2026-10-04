@@ -87,6 +87,12 @@ abstract class TeacherApi {
   Future<ChatPage> conversationMessages(String id, {DateTime? before});
   Future<ChatMessage> sendMessage(String conversationId, String body);
   Future<void> markConversationRead(String id);
+
+  /// Students (with their guardians) in the classes this teacher teaches, or in one class.
+  Future<List<StudentContacts>> familyContacts({String? sectionId});
+
+  /// Opens (or returns) the thread with [guardianId] about [studentId].
+  Future<Conversation> startConversation({required String studentId, required String guardianId});
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -272,6 +278,16 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<void> markConversationRead(String id) async => _send('POST', '/v1/conversations/$id/read');
+
+  @override
+  Future<List<StudentContacts>> familyContacts({String? sectionId}) async {
+    final j = await _send('GET', '/v1/conversations/contacts${sectionId == null ? '' : '?sectionId=$sectionId'}') as Map;
+    return ((j['asStaff'] as List?) ?? const []).map((e) => StudentContacts.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<Conversation> startConversation({required String studentId, required String guardianId}) async =>
+      Conversation.fromJson(await _send('POST', '/v1/conversations', body: {'studentId': studentId, 'withUserId': guardianId}));
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
