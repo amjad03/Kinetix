@@ -245,4 +245,23 @@ export class StudentController {
       return me;
     });
   }
+
+  /** The subjects of the student's class, with their syllabus course when linked. */
+  @Get('subjects')
+  @Auth('user', ['student'])
+  subjects(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [me] = await tx
+        .select({ programId: sections.programId, term: sections.term })
+        .from(students)
+        .innerJoin(sections, eq(sections.id, students.sectionId))
+        .where(eq(students.userId, p.userId));
+      if (!me) throw new NotFoundException('No student record is linked to this login');
+      return tx
+        .select({ id: subjects.id, code: subjects.code, name: subjects.name, courseId: subjects.courseId })
+        .from(subjects)
+        .where(and(eq(subjects.programId, me.programId), eq(subjects.term, me.term)))
+        .orderBy(asc(subjects.code));
+    });
+  }
 }

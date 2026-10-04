@@ -37,13 +37,9 @@ student's own invoice, but paying is the family's job, so the Student App offers
 
 ## API gaps found while building
 
-- **No "subjects of my class" endpoint for students.** The app finds subject ids through
-  homework (`GET /v1/homework/:id` returns `subject.id`), one lookup per subject. A subject that
-  has not had homework yet is missing from *Your subjects* and the subject chips. Suggested:
-  `GET /v1/student/subjects` → `[{id, code, name, courseId}]` for the student's section and term
-  (or include `subjects` in `/v1/student/me`, and `subjectId` on summary homework and recordings).
-- **Absence alerts go to guardians only**, not to the student's own account
-  (`NotificationsService.attendanceChanged`). The app opens attendance history if one arrives.
+- ~~No "subjects of my class" endpoint~~: added, `GET /v1/student/subjects`; the app uses it.
+- ~~Absence alerts go to guardians only~~: they now reach the student's own account too; the
+  app opens attendance history.
 - **The seed writes notifications for guardians only**, so a fresh demo student has an empty
   inbox until homework, a payment or a broadcast is created.
 - **No PDF receipt.** The receipt is shown on screen only.

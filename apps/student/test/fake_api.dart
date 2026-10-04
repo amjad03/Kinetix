@@ -376,6 +376,16 @@ class FakeStudentApi implements StudentApi {
   }
 
   @override
+  Future<List<Subject>> subjects() async {
+    calls.add('subjects');
+    final out = <Subject>[];
+    for (final s in subjectOfHomework.values) {
+      if (!out.any((x) => x.id == s.id)) out.add(s);
+    }
+    return out;
+  }
+
+  @override
   Future<HomeworkDetail> homeworkById(String id) async {
     calls.add('homework $id');
     final s = subjectOfHomework[id];

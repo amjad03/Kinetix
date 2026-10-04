@@ -234,13 +234,13 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('lists the subjects found through homework and browses a syllabus', (tester) async {
+    testWidgets("lists the class's subjects and browses a syllabus", (tester) async {
       final (api, _) = await pumpApp(tester);
       await openSyllabus(tester);
       expect(find.byKey(const Key('subjectTile-sub1')), findsOneWidget);
       expect(find.byKey(const Key('subjectTile-sub2')), findsOneWidget);
-      // One lookup per subject, not per homework.
-      expect(api.calls.where((c) => c.startsWith('homework ')), hasLength(2));
+      expect(api.calls, contains('subjects'));
+      expect(api.calls.where((c) => c.startsWith('homework ')), isEmpty);
 
       await tester.tap(find.byKey(const Key('subjectTile-sub1')));
       await tester.pumpAndSettle();
@@ -259,18 +259,8 @@ void main() {
       expect(find.byKey(const Key('noSyllabus')), findsOneWidget);
     });
 
-    testWidgets('no homework yet: no subjects, search still works', (tester) async {
-      final (api, _) = await pumpApp(
-        tester,
-        setup: (api) => api.studentSummary = StudentSummary(
-          today: DateTime(2026, 10, 4),
-          days: 30,
-          attendance: AttendanceSummary(periods: 0, present: 0, absent: 0, late: 0, excused: 0, rate: null, recentAbsences: []),
-          upcoming: [],
-          pastHomework: [],
-          boards: [],
-        ),
-      );
+    testWidgets('no subjects set up yet: search still works', (tester) async {
+      final (api, _) = await pumpApp(tester, setup: (api) => api.subjectOfHomework.clear());
       await openSyllabus(tester);
       expect(find.byKey(const Key('noSubjects')), findsOneWidget);
       api.hits = [

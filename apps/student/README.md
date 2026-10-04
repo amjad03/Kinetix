@@ -78,9 +78,7 @@ App. Design system: [`packages/kinetix_ui`](../../packages/kinetix_ui); boards r
   (`app: 'student'`) after sign-in and removes it on sign-out, but `NoPushTokenSource` has no
   token until Firebase Messaging is added (TODO in `lib/core/push.dart`). Updates refresh when
   the tab is opened or pulled.
-- **Subjects**: there is no "subjects of my class" endpoint for students. The app finds subjects
-  through homework (`GET /v1/homework/:id` carries the subject id), so a subject with no
-  homework yet does not appear under Your subjects or as a subject chip. Search covers it.
+- **Subjects** come from `GET /v1/student/subjects` (the subjects of the student's class).
 - The token is in `shared_preferences`; it should move to secure storage, with an app lock.
 - Receipts are shown on screen; there is no PDF download yet.
 - The app's own text is English only; KINETIX AI answers in English, Hindi or Kannada.

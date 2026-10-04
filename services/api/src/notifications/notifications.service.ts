@@ -68,7 +68,8 @@ export class NotificationsService {
         const period = r.subject ? ` for ${r.subject} (${hhmm(r.startsAt!)}–${hhmm(r.endsAt!)})` : '';
         await this.insertFor(
           tx,
-          sql`select g.user_id from guardians g where g.student_id = ${r.studentId}::uuid`,
+          sql`select g.user_id from guardians g where g.student_id = ${r.studentId}::uuid
+              union select s.user_id from students s where s.id = ${r.studentId}::uuid and s.user_id is not null`,
           {
             kind: 'absence',
             title: `${r.studentName.split(' ')[0]} was marked absent`,

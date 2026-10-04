@@ -54,6 +54,9 @@ abstract class StudentApi {
   /// One homework, with the class and subject it was set for.
   Future<HomeworkDetail> homeworkById(String id);
 
+  /// The subjects of the student's class (`GET /v1/student/subjects`).
+  Future<List<Subject>> subjects();
+
   /// KINETIX AI: explains a doubt in the chosen language, grounded in the class's syllabus.
   Future<Explanation> explain({
     required String question,
@@ -161,6 +164,10 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<HomeworkDetail> homeworkById(String id) async =>
       HomeworkDetail.fromJson(await _send('GET', '/v1/homework/$id') as Map<String, dynamic>);
+
+  @override
+  Future<List<Subject>> subjects() async =>
+      [for (final s in await _send('GET', '/v1/student/subjects') as List<dynamic>) Subject.fromJson(s as Map<String, dynamic>)];
 
   @override
   Future<Explanation> explain({

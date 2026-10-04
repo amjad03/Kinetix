@@ -312,6 +312,8 @@ describe('families, saved boards and the dashboard', () => {
       await http().get(`/v1/parent/children/${t.students[0].id}/summary`).set(auth('student')).expect(404);
       await http().get(`/v1/parent/children/${t.students[2].id}/attendance`).set(auth('student')).expect(200);
       await http().get('/v1/student/me').set(auth('parent')).expect(403);
+      const subjects = await http().get('/v1/student/subjects').set(auth('student')).expect(200);
+      expect(subjects.body).toEqual([{ id: t.subject.id, code: 'BCOM-3.1', name: 'Corporate Accounting', courseId: null }]);
     });
   });
 });

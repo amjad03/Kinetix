@@ -333,15 +333,6 @@ class StudentSummary {
 
   /// The ones the student was absent for first, then the rest; newest first within each.
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
-
-  /// One homework id per subject (newest first), to look the subject up by id.
-  Map<String, String> get homeworkIdBySubject {
-    final out = <String, String>{};
-    for (final hw in [...upcoming, ...pastHomework]) {
-      out.putIfAbsent(hw.subject, () => hw.id);
-    }
-    return out;
-  }
 }
 
 enum NotificationKind { absence, homework, boardShared, recording, fee, broadcast, other }

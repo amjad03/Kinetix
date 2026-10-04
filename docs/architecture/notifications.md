@@ -10,7 +10,7 @@ servers.
 
 | Event | Who is told | Dedupe key | Code |
 |---|---|---|---|
-| A student is marked **absent** (Teacher App or board) | That student's guardians | `absence:<student>:<date>:<period>` | `NotificationsService.attendanceChanged` |
+| A student is marked **absent** (Teacher App or board) | That student's guardians and the student's own account | `absence:<student>:<date>:<period>` | `NotificationsService.attendanceChanged` |
 | The mark is **corrected** to present or late | The earlier alert is withdrawn (`retracted_at`) and disappears from the inbox | same | same |
 | Marked absent again after a correction | The alert returns, unread | same | same |
 | **Homework** is set | Guardians and student accounts of the class | `homework:<id>` | `homeworkCreated` |

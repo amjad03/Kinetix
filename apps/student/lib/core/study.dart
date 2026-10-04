@@ -34,11 +34,6 @@ class StudyController extends ChangeNotifier {
   }
 
   // -- Subjects ---------------------------------------------------------------------------------
-  //
-  // API gap: there is no "subjects of my class" endpoint for students. Homework carries the
-  // subject's id (GET /v1/homework/:id), so each subject that has had homework is looked up
-  // once through one of its homework. Subjects without homework do not appear; the syllabus
-  // search covers them.
 
   List<Subject>? subjects;
   bool subjectsLoading = false;
@@ -52,19 +47,7 @@ class StudyController extends ChangeNotifier {
     subjectsError = null;
     notifyListeners();
     try {
-      if (summary == null) await load();
-      final s = summary;
-      if (s == null) {
-        subjectsError = error;
-        return;
-      }
-      final found = <Subject>[];
-      for (final hwId in s.homeworkIdBySubject.values) {
-        final d = await api.homeworkById(hwId);
-        if (!found.any((x) => x.id == d.subject.id)) found.add(d.subject);
-      }
-      found.sort((a, b) => a.name.compareTo(b.name));
-      subjects = found;
+      subjects = [...await api.subjects()]..sort((a, b) => a.name.compareTo(b.name));
     } on ApiException catch (e) {
       subjectsError = e.message;
     } finally {
