@@ -96,6 +96,11 @@ async function main() {
   await parent('Rajesh Patel', 'parent@demo.kinetix.in', '+919800000001', [['Aarav Patel', 'father'], ['Diya Patel', 'father']]);
   await parent('Sunita Gowda', 'sunita@demo.kinetix.in', '+919800000002', [['Ananya Gowda', 'mother']]);
 
+  // A student login for the Student App: Aarav.
+  const [aaravUser] = await db.insert(s.users).values({ tenantId, fullName: 'Aarav Patel', email: 'aarav@demo.kinetix.in', passwordHash: hash }).returning();
+  await db.insert(s.userRoles).values({ tenantId, userId: aaravUser.id, role: 'student', campusId: campus.id });
+  await db.update(s.students).set({ userId: aaravUser.id }).where(eq(s.students.id, byName('Aarav Patel').id));
+
   // Fees: Semester tuition for both classes. Sunita has paid Ananya's at the counter.
   const issueFee = async (sectionId: string, title: string, amountPaise: number, dueInDays: number) => {
     const batchId = crypto.randomUUID();
@@ -236,6 +241,8 @@ Seeded tenant "demo-college".
   Parent logins (same password):
     parent@demo.kinetix.in      (Rajesh Patel: Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A)
     sunita@demo.kinetix.in      (Sunita Gowda: Ananya, BCom Sem 3 A)
+  Student login (same password):
+    aarav@demo.kinetix.in       (Aarav Patel, BCom Sem 3 A)
   Board enrolment code for "Room 204 Board": ${code}
   Content library: ${library.courses} courses, ${library.topics} topics with notes
 `);

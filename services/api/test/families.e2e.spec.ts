@@ -301,4 +301,16 @@ describe('families, saved boards and the dashboard', () => {
       await http().get('/v1/admin/overview').set(auth('parent')).expect(403);
     });
   });
+
+  describe('student view', () => {
+    it('a student sees their own record and summary, not a classmate\'s', async () => {
+      const me = await http().get('/v1/student/me').set(auth('student')).expect(200);
+      expect(me.body).toMatchObject({ id: t.students[2].id, section: { id: t.section.id, displayName: 'BCom Sem 3 A' } });
+      const summary = await http().get(`/v1/parent/children/${t.students[2].id}/summary`).set(auth('student')).expect(200);
+      expect(summary.body.child.id).toBe(t.students[2].id);
+      await http().get(`/v1/parent/children/${t.students[0].id}/summary`).set(auth('student')).expect(404);
+      await http().get(`/v1/parent/children/${t.students[2].id}/attendance`).set(auth('student')).expect(200);
+      await http().get('/v1/student/me').set(auth('parent')).expect(403);
+    });
+  });
 });

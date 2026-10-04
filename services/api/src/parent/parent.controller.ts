@@ -58,7 +58,7 @@ export class ParentController {
 
   /** One screen's worth: attendance over the last [days] days, homework, class participation, shared boards. */
   @Get('children/:id/summary')
-  @Auth('user', ['guardian'])
+  @Auth('user', ['guardian', 'student'])
   summary(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) studentId: string, @Query('days') daysParam?: string) {
     const days = Math.min(Math.max(Number(daysParam) || 30, 1), 365);
     return this.db.withTenant(p.tenantId, async (tx) => {
@@ -175,7 +175,7 @@ export class ParentController {
 
   /** Attendance by day for a calendar view. */
   @Get('children/:id/attendance')
-  @Auth('user', ['guardian'])
+  @Auth('user', ['guardian', 'student'])
   attendance(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) studentId: string, @Query('days') daysParam?: string) {
     const days = Math.min(Math.max(Number(daysParam) || 30, 1), 365);
     return this.db.withTenant(p.tenantId, async (tx) => {
@@ -197,20 +197,52 @@ export class ParentController {
     });
   }
 
-  /** The child, if this user is their guardian. 404 otherwise, so ids reveal nothing. */
+  /**
+   * The child, if this user is their guardian, or the student themselves (the Student App uses
+   * these routes for its own summary). 404 otherwise, so ids reveal nothing.
+   */
   private async child(tx: Tx, p: UserPrincipal, studentId: string) {
-    const [c] = await tx
-      .select({
-        id: students.id,
-        fullName: students.fullName,
-        rollNo: students.rollNo,
-        section: { id: sections.id, displayName: sections.displayName },
-      })
-      .from(guardians)
-      .innerJoin(students, eq(students.id, guardians.studentId))
-      .innerJoin(sections, eq(sections.id, students.sectionId))
-      .where(and(eq(guardians.userId, p.userId), eq(guardians.studentId, studentId)));
+    const cols = {
+      id: students.id,
+      fullName: students.fullName,
+      rollNo: students.rollNo,
+      section: { id: sections.id, displayName: sections.displayName },
+    };
+    const base = () => tx.select(cols).from(students).innerJoin(sections, eq(sections.id, students.sectionId)).$dynamic();
+    const [self] = await base().where(and(eq(students.id, studentId), eq(students.userId, p.userId)));
+    const [c] = self
+      ? [self]
+      : await base()
+          .innerJoin(guardians, eq(guardians.studentId, students.id))
+          .where(and(eq(guardians.userId, p.userId), eq(guardians.studentId, studentId)));
     if (!c) throw new NotFoundException('Child not found');
     return c;
+  }
+}
+
+/** The signed-in student's own record: the Student App's starting point. */
+@Controller('v1/student')
+export class StudentController {
+  constructor(private readonly db: DbService) {}
+
+  @Get('me')
+  @Auth('user', ['student'])
+  me(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [me] = await tx
+        .select({
+          id: students.id,
+          fullName: students.fullName,
+          rollNo: students.rollNo,
+          section: { id: sections.id, displayName: sections.displayName, term: sections.term },
+          program: { name: programs.name, level: programs.level },
+        })
+        .from(students)
+        .innerJoin(sections, eq(sections.id, students.sectionId))
+        .innerJoin(programs, eq(programs.id, sections.programId))
+        .where(eq(students.userId, p.userId));
+      if (!me) throw new NotFoundException('No student record is linked to this login');
+      return me;
+    });
   }
 }
