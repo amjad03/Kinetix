@@ -41,7 +41,7 @@ offline AI features on or off accordingly.
 - 🟡 **Measurements.** ✅ 2D shapes can show side lengths (cm, on the 1 cm grid), interior angles and a circle's radius. ⬜ Ruler, protractor, compass, set squares, 3D solids, area and volume.
 - ✅ **Split screen.** A side panel next to the board, drag-resizable from 30% to 70%, which can sit on either side. 🟡 It can hold a second whiteboard (built) or a PDF/PPT, video, web page, 3D model or lab (coming).
 - ⬜ Annotate over any pane (a transparent ink layer).
-- ⬜ Save, export as PDF or images, and share to the class (appears in the Student App).
+- ✅ Save boards to KINETIX Cloud, reopen them from *Your whiteboards*, and share them with the class: students and parents are notified and can open the board read-only in their apps. End class offers to save and share. ⬜ Export as PDF or images.
 
 ## 4. KINETIX AI on the board
 

@@ -39,10 +39,22 @@ broadcasts ── broadcast_receipts (device, displayed_at, acknowledged_at)
 homework (section, subject, created_by, title, instructions, due_on, board_session?)  ← Teacher App
 ```
 
+## Families, notifications, saved boards
+
+```
+guardians (user ↔ student, relation)          — who may see which child
+notifications (user, kind, title, body, data, dedupe_key, read_at, retracted_at)
+whiteboards (id chosen by the board, owner, session, section, subject, content jsonb, shared_at)
+```
+
+See [notifications.md](notifications.md). A whiteboard's `content` is `{v, background, canvas{w,h},
+pages[{strokes[{t,c,w,s?,p[]}]}]}` with points at 0.1 px (`packages/kinetix_ink/lib/src/serialization.dart`).
+Students and guardians can read a board only after it is shared with their class.
+
 ## Planned next (Phase 1)
 
 - Curriculum library (global): `curricula`, `curriculum_nodes` (a tree), `learning_outcomes`, `content_items` (lessons, quizzes, 3D models, labs), with per-tenant overrides.
 - Year plan and syllabus progress: `lesson_plans`, `coverage_events`.
 - Homework submissions: `submissions` against `homework` (the `homework` table itself is built).
 - Recordings: `recordings` (event log + audio blobs in S3), `transcripts`.
-- Guardianship: `guardians` (guardian user ↔ student, relation, consent).
+- Consent records per guardian (DPDP).

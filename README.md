@@ -19,7 +19,6 @@ multi-tenant SaaS and hosted entirely in India.
 - [Teacher App specification](docs/product/teacher-app.md)
 - [Design system (Material 3, Teachmint-style board layout)](docs/design/design-system.md)
 - [IR touch frames: any TV as a multi-touch board](docs/hardware/ir-touch-frames.md)
-- [Teacher App specification](docs/product/teacher-app.md)
 - [Competitive research: Teachmint and others](docs/research/teachmint-competitive-analysis.md)
 - [System architecture](docs/architecture/overview.md)
   - [Multi-tenancy & data residency](docs/architecture/tenancy.md)
@@ -27,6 +26,7 @@ multi-tenant SaaS and hosted entirely in India.
   - [Offline-first sync protocol](docs/architecture/sync-protocol.md)
   - [Live classroom view & broadcast](docs/architecture/live-classroom.md)
   - [AI platform (India-hosted)](docs/architecture/ai-platform.md)
+  - [Notifications to families](docs/architecture/notifications.md)
   - [Data model](docs/architecture/data-model.md)
 - [Decision records](docs/adr/)
 
