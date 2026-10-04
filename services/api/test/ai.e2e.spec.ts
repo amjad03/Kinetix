@@ -163,6 +163,16 @@ describe('KINETIX AI gateway', () => {
     await http().post('/v1/ai/explain').set(auth('teacher')).send({ question: 'Something odd' }).expect(422);
   });
 
+  it('sends accepted homework from the board to the open class', async () => {
+    const dueOn = new Date(clock.at.getTime() + 3 * 86400_000).toISOString().slice(0, 10);
+    const hw = await http().post('/v1/homework/from-board').set(auth('board')).send({ title: 'Goodwill problems', instructions: '1. Value goodwill…', dueOn }).expect(201);
+    expect(hw.body).toMatchObject({ title: 'Goodwill problems', section: { id: t.section.id }, subject: { name: 'Corporate Accounting' } });
+    expect(hw.body.boardSessionId).toBeTruthy();
+    const inbox = await http().get('/v1/notifications').set(auth('parent')).expect(200);
+    expect(inbox.body.items.some((n: { kind: string; data: { homeworkId: string } }) => n.kind === 'homework' && n.data.homeworkId === hw.body.id)).toBe(true);
+    await http().post('/v1/homework/from-board').set(auth('teacher')).send({ title: 'X', dueOn }).expect(403);
+  });
+
   it('reports an unreachable model server as unavailable, and meters everything', async () => {
     model.replies.push(500);
     await http().post('/v1/ai/explain').set(auth('teacher')).send({ question: 'What is a debenture?' }).expect(503);

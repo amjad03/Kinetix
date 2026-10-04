@@ -3,11 +3,11 @@ import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterS
 import { and, asc, desc, eq, gt, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
-import type { RoleName, UserPrincipal } from '../auth/principal.js';
+import type { BoardPrincipal, RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
-import { DbService } from '../db/db.service.js';
+import { DbService, type Tx } from '../db/db.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { attendanceRecords, boardSessions, devices, guardians, homework, sections, students, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
@@ -25,6 +25,12 @@ const AttendanceBody = z.object({
     .array(z.object({ studentId: z.uuid(), status: z.enum(['present', 'absent', 'late', 'excused']) }))
     .min(1)
     .max(500),
+});
+
+const BoardHomeworkBody = z.object({
+  title: z.string().trim().min(1).max(200),
+  instructions: z.string().trim().max(5000).optional(),
+  dueOn: Day,
 });
 
 const HomeworkBody = z.object({
@@ -235,27 +241,60 @@ export class HomeworkController {
         const [s] = await tx.select({ teacherId: boardSessions.teacherId }).from(boardSessions).where(eq(boardSessions.id, body.boardSessionId));
         if (!s || s.teacherId !== p.userId) throw new BadRequestException('Board session not found');
       }
-      const now = await this.teacher.localNow(tx);
-      if (dueOn < now.date) throw new BadRequestException('The due date has already passed');
-
-      const [hw] = await tx
-        .insert(homework)
-        .values({
-          tenantId: p.tenantId,
-          sectionId: section.id,
-          subjectId: subject.id,
-          createdBy: p.userId,
-          boardSessionId: body.boardSessionId,
-          title: body.title,
-          instructions: body.instructions ?? '',
-          dueOn,
-        })
-        .returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.created', subjectType: 'homework', subjectId: hw.id });
-      await this.notifications.homeworkCreated(tx, { id: hw.id, sectionId: section.id, title: hw.title, dueOn: hw.dueOn, subjectName: subject.name });
-      const [created] = await this.teacher.homeworkList(tx, eq(homework.id, hw.id), 'created');
-      return created;
+      return this.insert(tx, { tenantId: p.tenantId, teacherId: p.userId, actor: 'user', actorId: p.userId, sectionId: section.id, subject, boardSessionId: body.boardSessionId, title: body.title, instructions: body.instructions, dueOn });
     });
+  }
+
+  /**
+   * Homework set from the board (often a KINETIX AI draft the teacher accepted). The class and
+   * subject come from the period open on the board.
+   */
+  @Post('from-board')
+  @Auth('board')
+  fromBoard(@CurrentPrincipal() p: BoardPrincipal, @Body(new ZodBody(BoardHomeworkBody)) body: z.infer<typeof BoardHomeworkBody>): Promise<Homework> {
+    const dueOn = parseDate(body.dueOn, 'dueOn');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [session] = await tx.select().from(boardSessions).where(eq(boardSessions.id, p.sessionId));
+      if (!session?.sectionId || !session.subjectId) throw new BadRequestException('Open a class on the board to give homework');
+      const [subject] = await tx.select().from(subjects).where(eq(subjects.id, session.subjectId));
+      return this.insert(tx, { tenantId: p.tenantId, teacherId: p.teacherId, actor: 'device', actorId: p.deviceId, sectionId: session.sectionId, subject, boardSessionId: session.id, title: body.title, instructions: body.instructions, dueOn });
+    });
+  }
+
+  private async insert(
+    tx: Tx,
+    h: {
+      tenantId: string;
+      teacherId: string;
+      actor: 'user' | 'device';
+      actorId: string;
+      sectionId: string;
+      subject: typeof subjects.$inferSelect;
+      boardSessionId?: string;
+      title: string;
+      instructions?: string;
+      dueOn: string;
+    },
+  ): Promise<Homework> {
+    const now = await this.teacher.localNow(tx);
+    if (h.dueOn < now.date) throw new BadRequestException('The due date has already passed');
+    const [hw] = await tx
+      .insert(homework)
+      .values({
+        tenantId: h.tenantId,
+        sectionId: h.sectionId,
+        subjectId: h.subject.id,
+        createdBy: h.teacherId,
+        boardSessionId: h.boardSessionId,
+        title: h.title,
+        instructions: h.instructions ?? '',
+        dueOn: h.dueOn,
+      })
+      .returning();
+    await audit(tx, { tenantId: h.tenantId, actorType: h.actor, actorId: h.actorId, action: 'homework.created', subjectType: 'homework', subjectId: hw.id });
+    await this.notifications.homeworkCreated(tx, { id: hw.id, sectionId: h.sectionId, title: hw.title, dueOn: hw.dueOn, subjectName: h.subject.name });
+    const [created] = await this.teacher.homeworkList(tx, eq(homework.id, hw.id), 'created');
+    return created;
   }
 
   /**
