@@ -7,6 +7,7 @@ import 'package:kinetix_student/core/push.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
+import 'fake_live.dart';
 
 /// Pumps the app at phone size (or [size]). With [signedIn], a stored token restores the session.
 Future<(FakeStudentApi, AppState)> pumpApp(
@@ -17,6 +18,7 @@ Future<(FakeStudentApi, AppState)> pumpApp(
   Size size = const Size(412, 892),
   double textScale = 1,
   PushTokenSource push = const NoPushTokenSource(),
+  FakeLiveServer? live,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -29,7 +31,7 @@ Future<(FakeStudentApi, AppState)> pumpApp(
   SharedPreferences.setMockInitialValues({if (signedIn) 'token': 'tok', ...prefs});
   final api = FakeStudentApi();
   setup?.call(api);
-  final state = AppState(api, await SharedPreferences.getInstance(), push: push);
+  final state = AppState(api, await SharedPreferences.getInstance(), push: push, live: (live ?? FakeLiveServer()).connect);
   await tester.pumpWidget(StudentApp(state: state));
   await state.restore();
   await tester.pumpAndSettle();

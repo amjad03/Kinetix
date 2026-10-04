@@ -183,7 +183,7 @@ class _PendulumPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
-    final s = (math.min(w / 600, h / 420)).clamp(0.6, 1.6);
+    final s = (math.min(w / 600, h / 420)).clamp(0.85, 1.6);
     final pivot = Offset(w / 2, h * 0.1);
     final pxPerM = h * 0.8 / 2.0;
     final len = sim.length * pxPerM;
@@ -222,7 +222,7 @@ class _PendulumPainter extends CustomPainter {
       ..color = pal.ink
       ..strokeWidth = 2 * s);
     canvas.drawCircle(pivot, 4 * s, Paint()..color = pal.ink);
-    final r = 14 * s;
+    final r = 18 * s;
     canvas.drawCircle(
       bob,
       r,

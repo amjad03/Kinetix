@@ -159,13 +159,16 @@ class _View {
   _View(this.size, double f, double u) {
     final half = math.max(3.2 * f, u * 1.12);
     scale = size.width / (2 * half);
+    // Heights are drawn taller than true scale, as in textbook diagrams. Straight lines stay
+    // straight and meet at the same points, so the construction is still exact.
+    yScale = math.max(scale, size.height * 0.2 / _LensMirrorLabState._objH);
     origin = Offset(size.width / 2, size.height * 0.55);
   }
   final Size size;
-  late final double scale;
+  late final double scale, yScale;
   late final Offset origin;
 
-  Offset toPx(double x, double y) => Offset(origin.dx + x * scale, origin.dy - y * scale);
+  Offset toPx(double x, double y) => Offset(origin.dx + x * scale, origin.dy - y * yScale);
   double toCm(double px) => (px - origin.dx) / scale;
 }
 
@@ -179,7 +182,7 @@ class _OpticsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.width < 50 || size.height < 50) return;
-    final s = (math.min(size.width / 700, size.height / 380)).clamp(0.6, 1.6);
+    final s = (math.min(size.width / 700, size.height / 380)).clamp(0.85, 1.6);
     final label = pal.textStyle.copyWith(fontSize: 14 * s, color: pal.ink, fontWeight: FontWeight.w600);
     final small = pal.textStyle.copyWith(fontSize: 12 * s, color: pal.muted);
     final kind = img.kind;
@@ -205,7 +208,7 @@ class _OpticsPainter extends CustomPainter {
         mark(sign * fa, 'F');
         mark(sign * 2 * fa, '2F');
       }
-      paintLabel(canvas, 'O', o + Offset(6 * s, 6 * s), label, align: Alignment.topLeft);
+      paintLabel(canvas, 'O', o + Offset(-8 * s, 8 * s), label, align: Alignment.topRight);
     } else {
       final side = kind == OpticKind.concaveMirror ? -1.0 : 1.0;
       mark(side * fa, 'F');
@@ -214,7 +217,7 @@ class _OpticsPainter extends CustomPainter {
     }
 
     // The optic.
-    final halfH = math.min(size.height * 0.42, view.scale * fa * 1.1);
+    final halfH = math.min(size.height * 0.45, view.yScale * objH * 1.7);
     _drawOptic(canvas, kind, o, halfH, s);
 
     // Object (an upright arrow) and image.
@@ -224,7 +227,9 @@ class _OpticsPainter extends CustomPainter {
 
     final rays = <(Offset, Color)>[];
     // Hit points on the optic for the principal rays.
-    double mirrorX(double y) => kind.isLens ? 0 : (kind == OpticKind.concaveMirror ? -1 : 1) * y * y / (4 * fa) * 0.5;
+    // Paraxial rays meet the mirror at the pole's plane (x = 0); the drawn curve is shallow enough
+    // that the difference does not show.
+    double mirrorX(double y) => 0;
     rays.add((Offset(mirrorX(objH), objH), pal.amber)); // parallel to the axis
     rays.add((Offset(mirrorX(0), 0), pal.green)); // through O / to P
     // Through (or towards) F for lenses; towards C for mirrors.
@@ -233,7 +238,7 @@ class _OpticsPainter extends CustomPainter {
         : Offset(kind == OpticKind.concaveMirror ? -2 * fa : 2 * fa, 0);
     if ((aim.dx - img.u).abs() > 1e-6) {
       final y = objH + (0 - img.u) * (aim.dy - objH) / (aim.dx - img.u);
-      if (y.abs() < size.height / view.scale) rays.add((Offset(mirrorX(y), y), pal.purple));
+      if (y.abs() < size.height / view.yScale) rays.add((Offset(mirrorX(y), y), pal.purple));
     }
 
     final far = (size.width + size.height) / view.scale * 2;
@@ -320,8 +325,8 @@ class _OpticsPainter extends CustomPainter {
       ..color = pal.muted
       ..strokeWidth = 1.4 * s;
     for (var i = 0; i <= 40; i++) {
-      final yCm = (i / 40 * 2 - 1) * halfH / view.scale;
-      final x = dir * yCm * yCm / (4 * fa) * 0.5;
+      final yCm = (i / 40 * 2 - 1) * halfH / view.yScale;
+      final x = dir * yCm * yCm / (4 * fa) * 0.12;
       final pt = view.toPx(x, yCm);
       if (i == 0) {
         p.moveTo(pt.dx, pt.dy);

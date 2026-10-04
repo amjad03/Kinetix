@@ -201,6 +201,7 @@ class _ModelViewerState extends State<ModelViewer> with SingleTickerProviderStat
       labelForeground: c.onSurface,
       accent: const Color(0xFFFFB300),
       onAccent: const Color(0xFF231A00),
+      measure: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFD54F) : const Color(0xFFC25E00),
       textStyle: context.text.labelLarge ?? const TextStyle(fontSize: 14),
       labelScale: (math.min(size.width, size.height) / 640).clamp(0.85, 1.35),
     );

@@ -9,14 +9,21 @@ import '../../core/study.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../fees/fees_screen.dart';
+import '../library/library.dart';
+import '../marks/marks.dart';
+import '../messages/messages_controller.dart';
+import '../messages/messages_screen.dart';
 
 /// The student's details, attendance history, fees (read-only, with receipts), the language
 /// KINETIX AI answers in, and sign out.
 class ProfileTab extends StatefulWidget {
-  const ProfileTab({super.key, required this.state, required this.study});
+  const ProfileTab({super.key, required this.state, required this.study, this.messages});
 
   final AppState state;
   final StudyController study;
+
+  /// Listed only where students may write to teachers (colleges).
+  final MessagesController? messages;
 
   /// "+919800000001" → "+91 98000 00001"
   static String phone(String p) {
@@ -117,7 +124,7 @@ class ProfileTabState extends State<ProfileTab> {
     void openFees() => FeesScreen.open(context, widget.study.api, st.id, today: today);
 
     return ListenableBuilder(
-      listenable: Listenable.merge([state, widget.study]),
+      listenable: Listenable.merge([state, widget.study, ?widget.messages]),
       builder: (context, _) => CustomScrollView(
         slivers: [
           const SliverAppBar.large(title: Text('Profile')),
@@ -160,6 +167,34 @@ class ProfileTabState extends State<ProfileTab> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => AttendanceScreen.open(context, widget.study.api, st),
                 ),
+                const KxSectionHeader('Results & library'),
+                ListTile(
+                  key: const Key('openResults'),
+                  leading: const Icon(Icons.grading_outlined),
+                  title: const Text('Results'),
+                  subtitle: Text(_resultsLine(widget.study.marks)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ResultsScreen.open(context, widget.study),
+                ),
+                ListTile(
+                  key: const Key('openLibrary'),
+                  leading: const Icon(Icons.local_library_outlined),
+                  title: const Text('Library books'),
+                  subtitle: Text(_libraryLine(widget.study.library)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => LibraryScreen.open(context, widget.study),
+                ),
+                if (widget.messages?.available ?? false)
+                  ListTile(
+                    key: const Key('openMessages'),
+                    leading: const Icon(Icons.forum_outlined),
+                    title: const Text('Messages'),
+                    subtitle: Text(
+                      widget.messages!.unread > 0 ? '${widget.messages!.unread} unread' : 'Write to your teachers',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => MessagesScreen.open(context, widget.messages!),
+                  ),
                 const KxSectionHeader('Fees'),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Kx.s12),
@@ -198,8 +233,6 @@ class ProfileTabState extends State<ProfileTab> {
                 ),
                 const KxSectionHeader('Coming soon'),
                 soonTile(Icons.calendar_view_week_outlined, 'Timetable', 'Your classes for the week'),
-                soonTile(Icons.grading_outlined, 'Marks', 'Internal assessment and exam results'),
-                soonTile(Icons.local_library_outlined, 'Library books', 'Books borrowed and due dates'),
                 const KxSectionHeader('Account'),
                 ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Server'), subtitle: Text(state.serverUrl)),
                 Padding(
@@ -224,6 +257,19 @@ class ProfileTabState extends State<ProfileTab> {
     if (s == null) return 'Every class in the last 30 days';
     if (rate == null) return 'No attendance taken in the last ${s.days} days';
     return '${Fmt.percent(rate)} attended in the last ${s.days} days';
+  }
+
+  static String _resultsLine(StudentMarks? m) {
+    if (m == null) return 'Published marks and class averages';
+    if (m.assessments.isEmpty) return 'No marks published yet';
+    return '${Fmt.plural(m.assessments.length, 'assessment')} published';
+  }
+
+  static String _libraryLine(LibraryAccount? l) {
+    if (l == null) return 'Books borrowed, due dates and fines';
+    if (l.current.isEmpty) return 'No books out';
+    final overdue = l.overdue.length;
+    return '${Fmt.plural(l.current.length, 'book')} out${overdue > 0 ? ', $overdue overdue' : ''}';
   }
 
   static String _feesLine(FeeAccount f) =>

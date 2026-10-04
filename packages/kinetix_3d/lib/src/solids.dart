@@ -261,7 +261,7 @@ class Solid {
     String cm(double v) => '${formatNumber(v)} cm';
 
     void dim(Vec3 a, Vec3 b, String text, {bool hidden = false, Vec3? normal, Vec3 labelShift = Vec3.zero}) {
-      lines.add(Line3D([a, b], width: 2.4, dashed: hidden, arrows: true, normal: normal, color: const Color(0xFFFFD54F)));
+      lines.add(Line3D([a, b], width: 2.4, dashed: hidden, arrows: true, normal: normal, accent: true));
       labels.add(Label3D(text, a.lerp(b, 0.5) + labelShift, kind: LabelKind.dimension, normal: normal));
     }
 

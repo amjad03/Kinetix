@@ -93,10 +93,13 @@ void main() {
   testWidgets('soon entries explain themselves', (tester) async {
     await pumpApp(tester);
     await openProfile(tester);
-    await scrollTo(tester, find.text('Marks'));
-    await tester.tap(find.text('Marks'));
+    await scrollTo(tester, find.text('Timetable'));
+    await tester.tap(find.text('Timetable'));
     await tester.pump();
-    expect(find.text('Marks is coming in a later update'), findsOneWidget);
+    expect(find.text('Timetable is coming in a later update'), findsOneWidget);
+    // Results and library are built now.
+    expect(find.text('Marks'), findsNothing);
+    expect(find.text('Soon'), findsOneWidget);
   });
 
   testWidgets('signs out after confirming', (tester) async {

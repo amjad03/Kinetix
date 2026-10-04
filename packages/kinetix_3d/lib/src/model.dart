@@ -77,7 +77,7 @@ class Label3D {
 /// A 3D polyline drawn in screen space: before the meshes ([overlay] false, e.g. orbits and
 /// floor grids) or on top of them (measurement lines).
 class Line3D {
-  const Line3D(this.points, {this.color, this.width = 2, this.dashed = false, this.closed = false, this.overlay = true, this.partId, this.normal, this.arrows = false, this.head = false, this.opacity = 1});
+  const Line3D(this.points, {this.color, this.width = 2, this.dashed = false, this.closed = false, this.overlay = true, this.partId, this.normal, this.arrows = false, this.head = false, this.opacity = 1, this.accent = false});
 
   final List<Vec3> points;
 
@@ -98,6 +98,9 @@ class Line3D {
 
   /// An arrowhead at the last point (sunlight rays).
   final bool head;
+
+  /// Drawn in the theme's measurement colour (amber on dark, deep orange on light).
+  final bool accent;
 
   /// 0–1, multiplies the colour's alpha (faint floor grids).
   final double opacity;

@@ -99,7 +99,7 @@ class _BreakEvenPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final s = (math.min(size.width / 700, size.height / 400)).clamp(0.6, 1.5);
+    final s = (math.min(size.width / 700, size.height / 400)).clamp(0.85, 1.5);
     final small = pal.textStyle.copyWith(fontSize: 12 * s, color: pal.muted);
     final label = pal.textStyle.copyWith(fontSize: 13.5 * s, color: pal.ink, fontWeight: FontWeight.w700);
     final l = 78.0 * s, r = 20.0 * s, t = 40.0 * s, bt = 46.0 * s;
@@ -144,9 +144,8 @@ class _BreakEvenPainter extends CustomPainter {
         ..lineTo(at(xMax, b.totalCostAt(xMax)).dx, at(xMax, b.totalCostAt(xMax)).dy)
         ..close();
       canvas.drawPath(profit, Paint()..color = pal.green.withValues(alpha: 0.16));
-      paintLabel(canvas, 'Loss', at(bep * 0.3, (b.fixedCost + b.revenueAt(bep * 0.3)) / 2 + b.fixedCost * 0.05), label.copyWith(color: pal.red));
-      final px = bep + (xMax - bep) * 0.75;
-      paintLabel(canvas, 'Profit', at(px, (b.revenueAt(px) + b.totalCostAt(px)) / 2), label.copyWith(color: pal.green));
+      paintLabel(canvas, 'Loss', at(bep / 3, (b.revenueAt(bep) + b.fixedCost) / 3), label.copyWith(color: pal.red));
+      paintLabel(canvas, 'Profit', at((bep + 2 * xMax) / 3, (b.revenueAt(bep) + b.revenueAt(xMax) + b.totalCostAt(xMax)) / 3), label.copyWith(color: pal.green));
     }
 
     Paint line(Color c, {double w = 3}) => Paint()
@@ -160,8 +159,9 @@ class _BreakEvenPainter extends CustomPainter {
     }
     canvas.drawLine(at(0, b.fixedCost), at(xMax, b.totalCostAt(xMax)), line(pal.red));
     canvas.drawLine(at(0, 0), at(xMax, b.revenueAt(xMax)), line(pal.blue));
-    _endLabel(canvas, 'Sales', at(xMax, b.revenueAt(xMax)), pal.blue, label, plot);
-    _endLabel(canvas, 'Total cost', at(xMax, b.totalCostAt(xMax)), pal.red, label, plot);
+    final salesAbove = b.revenueAt(xMax) >= b.totalCostAt(xMax);
+    _endLabel(canvas, 'Sales', at(xMax, b.revenueAt(xMax)), pal.blue, label, plot, above: salesAbove);
+    _endLabel(canvas, 'Total cost', at(xMax, b.totalCostAt(xMax)), pal.red, label, plot, above: !salesAbove);
     paintLabel(canvas, 'Fixed cost', at(xMax, b.fixedCost) + Offset(-4 * s, -6 * s), label.copyWith(color: pal.muted), align: Alignment.bottomRight);
 
     // Actual sales and margin of safety.
@@ -199,8 +199,10 @@ class _BreakEvenPainter extends CustomPainter {
     }
   }
 
-  void _endLabel(Canvas canvas, String text, Offset p, Color c, TextStyle style, Rect plot) {
-    paintLabel(canvas, text, Offset(p.dx - 6, math.max(plot.top + 10, p.dy)), style.copyWith(color: c), align: Alignment.topRight);
+  void _endLabel(Canvas canvas, String text, Offset p, Color c, TextStyle style, Rect plot, {required bool above}) {
+    // Sit just above (or below) the end of the line, clear of it.
+    final y = above ? math.max(plot.top + 24, p.dy - 14) : math.min(plot.bottom - 4, p.dy + 18);
+    paintLabel(canvas, text, Offset(p.dx - 8, y), style.copyWith(color: c), align: above ? Alignment.bottomRight : Alignment.topRight);
   }
 
   static double _nice(double v) {

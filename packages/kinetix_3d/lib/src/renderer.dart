@@ -33,10 +33,14 @@ class RenderStyle {
     required this.accent,
     required this.onAccent,
     required this.textStyle,
+    this.measure = const Color(0xFFFFD54F),
     this.labelScale = 1,
   });
 
   final Color foreground, labelBackground, labelForeground, accent, onAccent;
+
+  /// Colour of measurement lines and angle arcs.
+  final Color measure;
   final TextStyle textStyle;
   final double labelScale;
 }
@@ -454,7 +458,7 @@ class SceneRenderer {
     final cams = [for (final p in l.points) toCamera(p, partId: l.partId)];
     final away = _facesAway(l.normal, cams.first.lerp(cams.last, 0.5), l.partId);
     final pts = [for (final c in cams) project(c)];
-    final color = (l.color ?? style.foreground).withValues(alpha: (away ? 0.4 : (l.color?.a ?? 1)) * l.opacity);
+    final color = (l.accent ? style.measure : (l.color ?? style.foreground)).withValues(alpha: (away ? 0.4 : (l.color?.a ?? 1)) * l.opacity);
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -555,6 +559,9 @@ class SceneRenderer {
       Offset? leaderEnd;
       if (l.kind == LabelKind.dimension) {
         rect = Rect.fromCenter(center: anchor, width: w, height: h);
+        for (var tries = 0; tries < 4 && placed.any((r) => r.overlaps(rect)); tries++) {
+          rect = rect.shift(Offset(0, h * 1.1));
+        }
       } else {
         var dir = anchor - centerScr;
         dir = dir.distance < 4 ? const Offset(0.6, -0.8) : dir / dir.distance;

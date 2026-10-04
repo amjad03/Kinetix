@@ -194,7 +194,7 @@ class _CircuitPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
-    final s = (math.min(w / 640, h / 380)).clamp(0.6, 1.8);
+    final s = (math.min(w / 640, h / 380)).clamp(0.85, 1.8);
     final text = pal.textStyle.copyWith(fontSize: 14 * s, color: pal.ink, fontWeight: FontWeight.w600);
     final small = pal.textStyle.copyWith(fontSize: 12.5 * s, color: pal.muted);
     final wire = Paint()
@@ -241,9 +241,6 @@ class _CircuitPainter extends CustomPainter {
     paintLabel(canvas, '+', Offset(x0 - 26 * s, batY - 16 * s), text);
     paintLabel(canvas, '${c.voltage.toStringAsFixed(1)} V', Offset(x0 + 24 * s, batY), text, align: Alignment.centerLeft);
 
-    // Ammeter.
-    _meter(canvas, Offset(ammX, y1), rr, 'A', '${_fmt(c.current, 3)} A', text, small, s, below: true);
-
     // Plug key.
     final keyPaint = Paint()..color = pal.ink;
     canvas.drawCircle(Offset(keyX - 14 * s, y1), 4.5 * s, keyPaint);
@@ -254,7 +251,6 @@ class _CircuitPainter extends CustomPainter {
     paintLabel(canvas, c.keyClosed ? 'Key (closed)' : 'Key (open)', Offset(keyX, y1 + 12 * s), small, align: Alignment.topCenter);
 
     // Resistor block.
-    final rPaths = <(Offset, Offset, double)>[]; // start, end, current
     if (!parallel) {
       final seg = (xb - xa) / n;
       for (var i = 0; i < n; i++) {
@@ -263,7 +259,6 @@ class _CircuitPainter extends CustomPainter {
         paintLabel(canvas, 'R${i + 1} = ${c.resistors[i].toStringAsFixed(0)} Ω', Offset((a + b) / 2, y0 - 16 * s), text, align: Alignment.bottomCenter);
         if (n > 1) paintLabel(canvas, '${_fmt(c.resistorVoltages[i])} V', Offset((a + b) / 2, y0 + 16 * s), small, align: Alignment.topCenter);
       }
-      rPaths.add((Offset(xa, y0), Offset(xb, y0), c.current));
     } else {
       final top = y0 - blockHalf, bottom = y0 + blockHalf;
       canvas.drawLine(Offset(xa, top), Offset(xa, bottom), wire);
@@ -276,11 +271,34 @@ class _CircuitPainter extends CustomPainter {
         _resistor(canvas, Offset(m1, y), Offset(m2, y), wire, s);
         paintLabel(canvas, 'R${i + 1} = ${c.resistors[i].toStringAsFixed(0)} Ω', Offset((xa + xb) / 2, y - 14 * s), text, align: Alignment.bottomCenter);
         paintLabel(canvas, '${_fmt(c.resistorCurrents[i], 3)} A', Offset(xb + 8 * s, y - 4 * s), small, align: Alignment.bottomLeft);
-        rPaths.add((Offset(xa, y), Offset(xb, y), c.resistorCurrents[i]));
       }
       canvas.drawCircle(Offset(xa, y0), 4 * s, keyPaint);
       canvas.drawCircle(Offset(xb, y0), 4 * s, keyPaint);
     }
+
+    // Moving charges (conventional current direction), speed proportional to current.
+    if (c.current > 0) {
+      final dot = Paint()..color = pal.amber;
+      const pxPerAmp = 160.0;
+      final t = phase.value;
+      final main = Path()
+        ..moveTo(xb, y0)
+        ..lineTo(x1, y0)
+        ..lineTo(x1, y1)
+        ..lineTo(x0, y1)
+        ..lineTo(x0, y0)
+        ..lineTo(xa, y0);
+      canvas.save();
+      canvas.clipPath(Path()..addRect(Offset.zero & size)..addRect(Rect.fromCenter(center: Offset(x0, batY), width: 40 * s, height: 30 * s))..fillType = PathFillType.evenOdd);
+      _dots(canvas, main, t * math.min(c.current * pxPerAmp, 420) * s, dot, s);
+      canvas.restore();
+      for (final (a, b, i) in _blockPaths(xa, xb, y0, blockHalf, gap, parallel)) {
+        _dots(canvas, Path()..moveTo(a.dx, a.dy)..lineTo(b.dx, b.dy), t * math.min(i * pxPerAmp, 420) * s, dot, s);
+      }
+    }
+
+    // Ammeter.
+    _meter(canvas, Offset(ammX, y1), rr, 'A', '${_fmt(c.current, 3)} A', text, small, s, below: true);
 
     // Voltmeter across the combination.
     final vy = y0 - blockHalf - h * 0.17;
@@ -301,23 +319,13 @@ class _CircuitPainter extends CustomPainter {
     );
     _meter(canvas, Offset(vx, vy), rr, 'V', '${_fmt(c.voltmeterReading, 1)} V', text, small, s, below: false);
 
-    // Moving charges (conventional current direction), speed proportional to current.
-    if (c.current > 0) {
-      final dot = Paint()..color = pal.amber;
-      const pxPerAmp = 160.0;
-      final t = phase.value;
-      final main = Path()
-        ..moveTo(xb, y0)
-        ..lineTo(x1, y0)
-        ..lineTo(x1, y1)
-        ..lineTo(x0, y1)
-        ..lineTo(x0, y0)
-        ..lineTo(xa, y0);
-      _dots(canvas, main, t * math.min(c.current * pxPerAmp, 420) * s, dot, s);
-      for (final (a, b, i) in rPaths) {
-        _dots(canvas, Path()..moveTo(a.dx, a.dy)..lineTo(b.dx, b.dy), t * math.min(i * pxPerAmp, 420) * s, dot, s);
-      }
-    }
+  }
+
+  List<(Offset, Offset, double)> _blockPaths(double xa, double xb, double y0, double blockHalf, double gap, bool parallel) {
+    if (!parallel) return [(Offset(xa, y0), Offset(xb, y0), c.current)];
+    return [
+      for (var i = 0; i < c.resistors.length; i++) (Offset(xa, y0 - blockHalf + gap * i), Offset(xb, y0 - blockHalf + gap * i), c.resistorCurrents[i]),
+    ];
   }
 
   void _dots(Canvas canvas, Path p, double offset, Paint paint, double s) {
@@ -376,7 +384,7 @@ class _ViGraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final s = (math.min(size.width / 640, size.height / 260)).clamp(0.6, 1.6);
+    final s = (math.min(size.width / 640, size.height / 260)).clamp(0.85, 1.6);
     final style = pal.textStyle.copyWith(fontSize: 12.5 * s, color: pal.muted);
     final title = pal.textStyle.copyWith(fontSize: 14 * s, color: pal.ink, fontWeight: FontWeight.w700);
     final l = 62.0 * s, r = 24.0 * s, t = 30.0 * s, b = 40.0 * s;
@@ -395,8 +403,8 @@ class _ViGraphPainter extends CustomPainter {
       canvas.drawLine(at(v, 0), at(v, iMax), grid);
       paintLabel(canvas, v.toStringAsFixed(0), at(v, 0) + Offset(0, 6 * s), style, align: Alignment.topCenter);
     }
-    for (var k = 0; k <= 4; k++) {
-      final i = iMax * k / 4;
+    for (var k = 0; k <= 5; k++) {
+      final i = iMax * k / 5;
       canvas.drawLine(at(0, i), at(vMax, i), grid);
       paintLabel(canvas, i.toStringAsFixed(iMax < 1 ? 2 : 1), at(0, i) - Offset(6 * s, 0), style, align: Alignment.centerRight);
     }

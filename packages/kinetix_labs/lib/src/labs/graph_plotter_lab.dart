@@ -272,7 +272,7 @@ class _PlotPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
     if (w < 20 || h < 20) return;
-    final s = (math.min(w / 700, h / 420)).clamp(0.6, 1.5);
+    final s = (math.min(w / 700, h / 420)).clamp(0.85, 1.5);
     final small = pal.textStyle.copyWith(fontSize: 12 * s, color: pal.muted);
     final label = pal.textStyle.copyWith(fontSize: 13.5 * s, color: pal.ink, fontWeight: FontWeight.w700);
     double sx(double x) => w / 2 + (x - cx) / ux;
@@ -289,13 +289,13 @@ class _PlotPainter extends CustomPainter {
     final axisY = sy(0).clamp(0.0, h), axisX = sx(0).clamp(0.0, w);
     for (var x = (x0 / stepX).floorToDouble() * stepX; x <= x1; x += stepX) {
       canvas.drawLine(Offset(sx(x), 0), Offset(sx(x), h), minor);
-      if (x.abs() > stepX / 2) {
+      if (x.abs() > stepX / 2 && sx(x) > 24 * s && sx(x) < w - 24 * s) {
         paintLabel(canvas, '${_fmt(x, stepX)}$unit', Offset(sx(x), (axisY + 4 * s).clamp(0, h - 18 * s)), small, align: Alignment.topCenter);
       }
     }
     for (var y = (y0 / stepY).floorToDouble() * stepY; y <= y1; y += stepY) {
       canvas.drawLine(Offset(0, sy(y)), Offset(w, sy(y)), minor);
-      if (y.abs() > stepY / 2) {
+      if (y.abs() > stepY / 2 && sy(y) > 12 * s && sy(y) < h - 12 * s) {
         paintLabel(canvas, _fmt(y, stepY), Offset((axisX - 6 * s).clamp(30 * s, w), sy(y)), small, align: Alignment.centerRight);
       }
     }

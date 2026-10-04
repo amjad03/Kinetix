@@ -163,14 +163,14 @@ class Molecule {
         final rad = b.order == 2 ? bondRadius * 0.75 : bondRadius;
         parts.add(ModelPart(
           id: 'bond-$k-$j-a',
-          mesh: Primitives.rod(pa + o, mid + o, rad, segments: ionic ? 8 : 12, slices: ionic ? 4 : 2),
+          mesh: Primitives.rod(pa + o, mid + o, rad, segments: ionic ? 6 : 12, slices: ionic ? 3 : 2),
           color: ionic ? const Color(0xFF9E9E9E) : atoms[b.a].element.color,
           name: bondName,
           description: note,
         ));
         parts.add(ModelPart(
           id: 'bond-$k-$j-b',
-          mesh: Primitives.rod(mid + o, pb + o, rad, segments: ionic ? 8 : 12, slices: ionic ? 4 : 2),
+          mesh: Primitives.rod(mid + o, pb + o, rad, segments: ionic ? 6 : 12, slices: ionic ? 3 : 2),
           color: ionic ? const Color(0xFF9E9E9E) : atoms[b.b].element.color,
           name: bondName,
           description: note,
@@ -190,7 +190,7 @@ class Molecule {
         final t = ang * math.pi / 180 * s / 24;
         pts.add(pc + (da * math.cos(t) + pn * math.sin(t)) * r);
       }
-      lines.add(Line3D(pts, color: const Color(0xFFFFD54F), width: 2.6));
+      lines.add(Line3D(pts, accent: true, width: 2.6));
       final midT = ang * math.pi / 180 / 2;
       labels.add(Label3D('${ang.toStringAsFixed(1)}°', pc + (da * math.cos(midT) + pn * math.sin(midT)) * (r + 0.32), kind: LabelKind.dimension, emphasis: true));
     }

@@ -130,11 +130,18 @@ class AssessmentRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: Kx.s12),
-            Text(
-              scoreLine(a),
-              style: (a.marks == null ? context.text.titleMedium : context.text.headlineSmall)?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: a.absent ? c.error : null,
+            // Shrinks rather than squeezing the title out with very large text.
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 120),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  scoreLine(a),
+                  style: (a.marks == null ? context.text.titleMedium : context.text.headlineSmall)?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: a.absent ? c.error : null,
+                  ),
+                ),
               ),
             ),
             Icon(Icons.chevron_right, color: c.onSurfaceVariant),

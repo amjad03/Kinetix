@@ -136,7 +136,7 @@ abstract final class AstronomyModels {
       Vec3 at(double f) => tilt.transformPoint(Vec3(r * 1.004 * math.cos(f * 2 * math.pi), 0, -r * 1.004 * math.sin(f * 2 * math.pi)));
       lines.add(Line3D(
         [for (var s = 0; s <= 3; s++) at((k + s / 3) / arcs)],
-        color: const Color(0xFFFFD54F),
+        accent: true,
         width: 2,
         normal: tilt.transformDirection(Vec3(math.cos((k + 0.5) / arcs * 2 * math.pi), 0, -math.sin((k + 0.5) / arcs * 2 * math.pi))),
       ));
@@ -148,7 +148,7 @@ abstract final class AstronomyModels {
       final a = tiltDeg * math.pi / 180 * s / 16;
       arc.add(Vec3(-math.sin(a), math.cos(a), 0) * (r * 1.38));
     }
-    lines.add(Line3D(arc, color: const Color(0xFFFFD54F), width: 2.4));
+    lines.add(Line3D(arc, accent: true, width: 2.4));
     // Parallel rays of sunlight from the left.
     for (final y in [-2.0, 0.0, 2.0]) {
       lines.add(Line3D([Vec3(-9.5, y, 0), Vec3(-5.2, y, 0)], color: const Color(0xFFFFC107), width: 2.4, head: true, overlay: false));

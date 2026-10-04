@@ -81,7 +81,7 @@ class FakeStudentApi implements StudentApi {
     recordings: recordings,
   );
 
-  List<ClassMark> marks = [
+  List<ClassMark> attendanceMarks = [
     ClassMark(
       date: DateTime(2026, 10, 3),
       status: AttendanceStatus.present,
@@ -356,7 +356,7 @@ class FakeStudentApi implements StudentApi {
   @override
   Future<List<ClassMark>> attendance(String studentId, {int days = 30}) async {
     calls.add('attendance $studentId');
-    return marks;
+    return attendanceMarks;
   }
 
   @override
@@ -481,6 +481,175 @@ class FakeStudentApi implements StudentApi {
       reference: 'UPI-778812',
       paidAt: DateTime(2026, 10, 2, 11, 30),
     );
+  }
+
+  // ── Library ───────────────────────────────────────────────────────────────────────────────
+
+  /// One book due in 5 days, one overdue, and one returned late with a fine.
+  LibraryAccount libraryAccount = LibraryAccount.fromJson({
+    'current': [
+      loanJson('l1', 'Corporate Accounting', author: 'S. N. Maheshwari', dueOn: '2026-10-09'),
+      loanJson('l3', 'Cost Accounting: Principles and Practice', author: 'M. N. Arora', dueOn: '2026-10-01', overdue: true),
+    ],
+    'history': [
+      loanJson(
+        'l2',
+        'Wings of Fire',
+        author: 'A. P. J. Abdul Kalam',
+        issuedAt: '2026-09-05T05:00:00Z',
+        dueOn: '2026-09-20',
+        returnedAt: '2026-09-23T06:00:00Z',
+        finePaise: 600,
+      ),
+    ],
+    'finesPaise': 600,
+  });
+
+  static Map<String, dynamic> loanJson(
+    String id,
+    String title, {
+    required String author,
+    required String dueOn,
+    String issuedAt = '2026-09-25T05:00:00Z',
+    String? returnedAt,
+    int finePaise = 0,
+    bool overdue = false,
+  }) => {
+    'id': id,
+    'book': {'id': 'b-$id', 'title': title, 'author': author, 'callNo': '657.95 MAH'},
+    'issuedAt': issuedAt,
+    'dueOn': dueOn,
+    'returnedAt': returnedAt,
+    'finePaise': finePaise,
+    'overdue': overdue,
+  };
+
+  @override
+  Future<LibraryAccount> library(String studentId) async {
+    calls.add('library $studentId');
+    return libraryAccount;
+  }
+
+  // ── Marks ─────────────────────────────────────────────────────────────────────────────────
+
+  StudentMarks studentMarks = StudentMarks.fromJson({
+    'assessments': [
+      {
+        'id': 'a1',
+        'title': 'Unit test 1: Underwriting of shares',
+        'kind': 'test',
+        'maxMarks': 25,
+        'heldOn': '2026-09-28',
+        'subject': 'Corporate Accounting',
+        'marks': 19,
+        'absent': false,
+        'remark': 'Good. Revise the journal entries for forfeiture.',
+        'classAverage': 18.7,
+        'classHighest': 24,
+      },
+    ],
+    'subjects': [
+      {'subject': 'Corporate Accounting', 'percent': 76},
+    ],
+  });
+
+  @override
+  Future<StudentMarks> marks(String studentId) async {
+    calls.add('marks $studentId');
+    return studentMarks;
+  }
+
+  // ── Messages (colleges let students write for themselves) ──────────────────────────────────
+
+  /// Empty at a school.
+  late List<ContactGroup> contactGroups = [
+    ContactGroup(
+      studentId: 's1',
+      studentName: 'Aarav Patel',
+      className: 'BCom Sem 3 A',
+      staff: [
+        StaffContact(id: 't1', fullName: 'Anita Sharma', subjects: ['Corporate Accounting', 'Cost Accounting']),
+      ],
+    ),
+  ];
+
+  /// Conversation id → its messages, oldest first.
+  Map<String, List<ChatMessage>> chats = {};
+  final _readAt = <String, DateTime>{};
+
+  Conversation _summary(String id) {
+    final list = chats[id] ?? [];
+    final read = _readAt[id];
+    return Conversation(
+      id: id,
+      student: Person(id: 's1', fullName: 'Aarav Patel'),
+      className: 'BCom Sem 3 A',
+      staff: Person(id: 't1', fullName: 'Anita Sharma'),
+      family: Person(id: profile.id, fullName: profile.fullName),
+      lastMessage: list.lastOrNull?.body,
+      lastMessageAt: list.lastOrNull?.createdAt,
+      unread: list.where((m) => m.senderId != profile.id && (read == null || m.createdAt.isAfter(read))).length,
+    );
+  }
+
+  @override
+  Future<List<ContactGroup>> contacts() async {
+    calls.add('contacts');
+    return contactGroups;
+  }
+
+  @override
+  Future<List<Conversation>> conversations() async {
+    calls.add('conversations');
+    return [for (final id in chats.keys) _summary(id)];
+  }
+
+  @override
+  Future<Conversation> startConversation({required String studentId, required String teacherId}) async {
+    calls.add('start $studentId $teacherId');
+    chats.putIfAbsent('cv1', () => []);
+    return _summary('cv1');
+  }
+
+  @override
+  Future<MessagePage> messages(String conversationId, {DateTime? before}) async {
+    calls.add('messages $conversationId');
+    if (!chats.containsKey(conversationId)) throw ApiException(404, 'Conversation not found');
+    return MessagePage(conversation: _summary(conversationId), messages: [...chats[conversationId]!]);
+  }
+
+  @override
+  Future<ChatMessage> sendMessage(String conversationId, String body) async {
+    calls.add('send $conversationId $body');
+    final m = ChatMessage(id: 'm${DateTime.now().microsecondsSinceEpoch}', senderId: profile.id, body: body, createdAt: DateTime.now());
+    chats.putIfAbsent(conversationId, () => []).add(m);
+    _readAt[conversationId] = m.createdAt;
+    return m;
+  }
+
+  @override
+  Future<void> markConversationRead(String conversationId) async {
+    calls.add('chat-read $conversationId');
+    _readAt[conversationId] = DateTime.now();
+  }
+
+  // ── Live class ────────────────────────────────────────────────────────────────────────────
+
+  /// The class being taught live, if any.
+  LiveClass? liveClass;
+
+  static LiveClass corporateLive() => LiveClass(
+    deviceId: '11111111-2222-3333-4444-555555555555',
+    sessionId: 'sess1',
+    teacher: 'Anita Sharma',
+    subject: 'Corporate Accounting',
+    startedAt: DateTime.now().subtract(const Duration(minutes: 5)),
+  );
+
+  @override
+  Future<LiveClass?> live() async {
+    calls.add('live');
+    return liveClass;
   }
 
   @override
