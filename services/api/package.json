@@ -1,0 +1,49 @@
+{
+  "name": "@kinetix/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --env-file-if-exists=.env dist/main.js",
+    "start:dev": "tsc -p tsconfig.build.json && concurrently -k -n tsc,api \"tsc -p tsconfig.build.json --watch --preserveWatchOutput\" \"node --env-file-if-exists=.env --watch dist/main.js\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:setup": "bash scripts/setup-local-db.sh",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=.env --experimental-strip-types src/db/migrate.ts",
+    "db:seed": "pnpm build && node --env-file-if-exists=.env dist/db/seed.js"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^12.1.2",
+    "@swc/core": "^1.16.13",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "concurrently": "^10.0.5",
+    "drizzle-kit": "^0.31.11",
+    "socket.io-client": "^4.8.4",
+    "supertest": "^7.3.1",
+    "typescript": "~5.9.3",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@kinetix/shared": "workspace:^",
+    "@nestjs/common": "^12",
+    "@nestjs/core": "^12",
+    "@nestjs/jwt": "^12",
+    "@nestjs/platform-express": "^12",
+    "@nestjs/platform-socket.io": "^12",
+    "@nestjs/swagger": "^12",
+    "@nestjs/throttler": "^6.7.1",
+    "@nestjs/websockets": "^12",
+    "argon2": "^0.45.1",
+    "drizzle-orm": "^0.45.3",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.5"
+  }
+}

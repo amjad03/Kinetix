@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.env
+*.log
+.DS_Store
+# Flutter
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
