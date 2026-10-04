@@ -1,0 +1,156 @@
+{
+  "curricula": [{ "code": "cbse", "name": "CBSE (NCERT textbooks)", "level": "k12" }],
+  "courses": [
+    {
+      "curriculum": "cbse",
+      "code": "class-10-mathematics",
+      "title": "Mathematics, Class 10",
+      "term": 10,
+      "source": "NCERT Mathematics textbook for Class 10, chapter list",
+      "reviewed": false,
+      "chapters": [
+        {
+          "title": "Real Numbers",
+          "topics": [
+            {
+              "title": "The Fundamental Theorem of Arithmetic",
+              "summary": "Every composite number can be written as a product of primes in exactly one way, apart from the order of the factors.",
+              "notes": [
+                "Every composite number can be expressed as a product of primes, and this factorisation is unique apart from the order of the prime factors.",
+                "For any two positive integers a and b, HCF(a, b) × LCM(a, b) = a × b.",
+                "HCF = product of the smallest power of each common prime factor; LCM = product of the greatest power of each prime factor involved."
+              ],
+              "outcomes": ["Find the HCF and LCM of numbers by prime factorisation", "Prove that numbers such as √2 and √3 are irrational"]
+            }
+          ]
+        },
+        { "title": "Polynomials", "topics": [] },
+        { "title": "Pair of Linear Equations in Two Variables", "topics": [] },
+        {
+          "title": "Quadratic Equations",
+          "topics": [
+            {
+              "title": "Solving quadratic equations",
+              "summary": "Quadratic equations in standard form, solving by factorisation and by the quadratic formula, and the nature of roots.",
+              "notes": [
+                "A quadratic equation in the variable x has the standard form ax² + bx + c = 0, where a, b, c are real numbers and a ≠ 0.",
+                "The roots are x = (−b ± √(b² − 4ac)) / 2a, provided b² − 4ac ≥ 0.",
+                "The discriminant is D = b² − 4ac. If D > 0 there are two distinct real roots; if D = 0, two equal real roots; if D < 0, no real roots.",
+                "Factorisation: split the middle term bx into two terms whose coefficients multiply to ac."
+              ],
+              "outcomes": ["Solve a quadratic equation by factorisation and by the quadratic formula", "Decide the nature of the roots from the discriminant"]
+            }
+          ]
+        },
+        {
+          "title": "Arithmetic Progressions",
+          "topics": [
+            {
+              "title": "nth term and sum of an AP",
+              "summary": "General term and the sum of the first n terms of an arithmetic progression.",
+              "notes": [
+                "An arithmetic progression (AP) is a list of numbers in which each term after the first is obtained by adding a fixed number d, the common difference.",
+                "The nth term is aₙ = a + (n − 1)d, where a is the first term.",
+                "The sum of the first n terms is Sₙ = n/2 [2a + (n − 1)d], which can also be written Sₙ = n/2 (a + l) where l is the last term."
+              ],
+              "outcomes": ["Find the nth term of an AP", "Find the sum of the first n terms of an AP"]
+            }
+          ]
+        },
+        { "title": "Triangles", "topics": [] },
+        { "title": "Coordinate Geometry", "topics": [] },
+        {
+          "title": "Introduction to Trigonometry",
+          "topics": [
+            {
+              "title": "Trigonometric ratios and identities",
+              "summary": "The six ratios of an acute angle in a right triangle, standard values and the basic identities.",
+              "notes": [
+                "In a right triangle with acute angle A: sin A = opposite/hypotenuse, cos A = adjacent/hypotenuse, tan A = opposite/adjacent = sin A / cos A.",
+                "cosec A = 1/sin A, sec A = 1/cos A, cot A = 1/tan A.",
+                "sin² A + cos² A = 1; 1 + tan² A = sec² A (0° ≤ A < 90°); 1 + cot² A = cosec² A (0° < A ≤ 90°).",
+                "sin 30° = 1/2, sin 45° = 1/√2, sin 60° = √3/2; cos 30° = √3/2, cos 45° = 1/√2, cos 60° = 1/2; tan 30° = 1/√3, tan 45° = 1, tan 60° = √3."
+              ],
+              "outcomes": ["Find trigonometric ratios from a right triangle", "Use the standard values and identities to simplify expressions"]
+            }
+          ]
+        },
+        { "title": "Some Applications of Trigonometry", "topics": [] },
+        { "title": "Circles", "topics": [] },
+        { "title": "Areas Related to Circles", "topics": [] },
+        { "title": "Surface Areas and Volumes", "topics": [] },
+        { "title": "Statistics", "topics": [] },
+        { "title": "Probability", "topics": [] }
+      ]
+    },
+    {
+      "curriculum": "cbse",
+      "code": "class-10-science",
+      "title": "Science, Class 10",
+      "term": 10,
+      "source": "NCERT Science textbook for Class 10, chapter list",
+      "reviewed": false,
+      "chapters": [
+        {
+          "title": "Chemical Reactions and Equations",
+          "topics": [
+            {
+              "title": "Types of chemical reactions",
+              "summary": "Combination, decomposition, displacement, double displacement and redox reactions.",
+              "notes": [
+                "Combination: two or more substances combine to form a single product, e.g. CaO + H₂O → Ca(OH)₂.",
+                "Decomposition: a single reactant breaks down into simpler products, e.g. 2FeSO₄ → Fe₂O₃ + SO₂ + SO₃ on heating.",
+                "Displacement: a more reactive element displaces a less reactive one from its compound, e.g. Fe + CuSO₄ → FeSO₄ + Cu.",
+                "Double displacement: ions are exchanged between two reactants, e.g. Na₂SO₄ + BaCl₂ → BaSO₄ (precipitate) + 2NaCl.",
+                "Oxidation is gain of oxygen or loss of hydrogen; reduction is loss of oxygen or gain of hydrogen. A reaction in which both occur is a redox reaction."
+              ],
+              "outcomes": ["Classify a reaction from its equation", "Write and balance chemical equations"]
+            }
+          ]
+        },
+        { "title": "Acids, Bases and Salts", "topics": [] },
+        { "title": "Metals and Non-metals", "topics": [] },
+        { "title": "Carbon and its Compounds", "topics": [] },
+        { "title": "Life Processes", "topics": [] },
+        { "title": "Control and Coordination", "topics": [] },
+        { "title": "How do Organisms Reproduce?", "topics": [] },
+        { "title": "Heredity", "topics": [] },
+        {
+          "title": "Light – Reflection and Refraction",
+          "topics": [
+            {
+              "title": "Mirror and lens formulae",
+              "summary": "Sign convention, the mirror and lens formulae, magnification and power.",
+              "notes": [
+                "New Cartesian sign convention: distances are measured from the pole (mirror) or optical centre (lens); distances in the direction of incident light are positive.",
+                "Mirror formula: 1/v + 1/u = 1/f. Magnification m = h′/h = −v/u.",
+                "Lens formula: 1/v − 1/u = 1/f. Magnification m = h′/h = v/u.",
+                "For a spherical mirror, f = R/2. The power of a lens is P = 1/f with f in metres; its unit is the dioptre (D). A convex lens has positive power, a concave lens negative."
+              ],
+              "outcomes": ["Use the mirror and lens formulae with the sign convention", "Find magnification and power"]
+            }
+          ]
+        },
+        { "title": "The Human Eye and the Colourful World", "topics": [] },
+        {
+          "title": "Electricity",
+          "topics": [
+            {
+              "title": "Ohm's law and resistances",
+              "summary": "Current, potential difference, Ohm's law, resistors in series and parallel, and electric power.",
+              "notes": [
+                "Ohm's law: at constant temperature, V = IR, where V is potential difference in volts, I current in amperes and R resistance in ohms.",
+                "Resistance R = ρl/A, where ρ is the resistivity of the material, l the length and A the area of cross-section.",
+                "Resistors in series: R = R₁ + R₂ + R₃. In parallel: 1/R = 1/R₁ + 1/R₂ + 1/R₃.",
+                "Electric power P = VI = I²R = V²/R, in watts. Energy is commonly billed in kilowatt hours: 1 kWh = 3.6 × 10⁶ J."
+              ],
+              "outcomes": ["Apply Ohm's law to simple circuits", "Find the equivalent resistance of series and parallel combinations"]
+            }
+          ]
+        },
+        { "title": "Magnetic Effects of Electric Current", "topics": [] },
+        { "title": "Our Environment", "topics": [] }
+      ]
+    }
+  ]
+}

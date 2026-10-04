@@ -1,5 +1,9 @@
 import { execSync } from 'node:child_process';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
+import { importContent } from '../src/content/import.js';
 import { runMigrations } from '../src/db/migrate.js';
+import * as schema from '../src/db/schema.js';
 
 export const TEST_DB = 'kinetix_test';
 
@@ -10,4 +14,7 @@ export default async function setup() {
   psql(`DROP DATABASE IF EXISTS ${TEST_DB} WITH (FORCE)`);
   psql(`CREATE DATABASE ${TEST_DB} OWNER kinetix_owner`);
   await runMigrations(owner);
+  const pool = new pg.Pool({ connectionString: owner, max: 1 });
+  await importContent(drizzle(pool, { schema }));
+  await pool.end();
 }

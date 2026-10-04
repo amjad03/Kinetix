@@ -154,6 +154,8 @@ export const subjects = pgTable('subjects', {
   term: smallint('term').notNull(),
   code: text('code').notNull(),
   name: text('name').notNull(),
+  /** The content-library course this subject follows (syllabus, notes, AI grounding). */
+  courseId: uuid('course_id').references(() => courses.id),
 });
 
 export const students = pgTable(
@@ -612,6 +614,71 @@ export const jobs = pgTable(
   (t) => [index('jobs_due_idx').on(t.state, t.runAfter)],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Content library. Curricula and courses are global (produced by the KINETIX curriculum team
+// and shared by every institution). Chapters and topics are global too, and an institution may
+// add its own on top: rows with a tenant_id are visible only to that tenant.
+// ---------------------------------------------------------------------------------------------
+
+export const curricula = pgTable('curricula', {
+  /** 'cbse', 'icse', 'ka-state', 'bu-ug', 'bu-pg'… Matches programs.curriculum_code. */
+  code: text('code').primaryKey(),
+  name: text('name').notNull(),
+  level: programLevel('level').notNull(),
+});
+
+export const courses = pgTable(
+  'courses',
+  {
+    id: id(),
+    curriculumCode: text('curriculum_code').notNull().references(() => curricula.code),
+    /** Stable code within the curriculum, e.g. 'bcom-3-corporate-accounting', 'class-10-science'. */
+    code: text('code').notNull(),
+    title: text('title').notNull(),
+    /** Class number (K-12) or semester (UG/PG). */
+    term: smallint('term').notNull(),
+    language: language('language').notNull().default('en'),
+    /** Where the content came from and whether the curriculum team has reviewed it. */
+    source: text('source').notNull(),
+    reviewed: boolean('reviewed').notNull().default(false),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('courses_curriculum_code_uq').on(t.curriculumCode, t.code)],
+);
+
+export const chapters = pgTable(
+  'chapters',
+  {
+    id: id(),
+    /** Null for the global library; set for an institution's own chapters. */
+    tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+    courseId: uuid('course_id').notNull().references(() => courses.id, { onDelete: 'cascade' }),
+    position: smallint('position').notNull(),
+    title: text('title').notNull(),
+  },
+  (t) => [index('chapters_course_idx').on(t.courseId, t.position)],
+);
+
+export const topics = pgTable(
+  'topics',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+    chapterId: uuid('chapter_id').notNull().references(() => chapters.id, { onDelete: 'cascade' }),
+    position: smallint('position').notNull(),
+    title: text('title').notNull(),
+    /** A short teacher-facing summary. */
+    summary: text('summary').notNull().default(''),
+    /** Key facts, definitions and formulas. Given to KINETIX AI as grounding. */
+    notes: jsonb('notes').$type<string[]>().notNull().default([]),
+    /** What students should be able to do afterwards. */
+    outcomes: jsonb('outcomes').$type<string[]>().notNull().default([]),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('topics_chapter_idx').on(t.chapterId, t.position)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -639,5 +706,7 @@ export const TENANT_TABLES = [
   'ai_cache',
   'recordings',
   'jobs',
+  'chapters',
+  'topics',
   'audit_log',
 ] as const;

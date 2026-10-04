@@ -12,7 +12,8 @@
     "db:setup": "bash scripts/setup-local-db.sh",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node --env-file-if-exists=.env --experimental-strip-types src/db/migrate.ts",
-    "db:seed": "pnpm build && node --env-file-if-exists=.env dist/db/seed.js"
+    "db:seed": "pnpm build && node --env-file-if-exists=.env dist/db/seed.js",
+    "content:import": "pnpm build && node --env-file-if-exists=.env dist/content/import.js"
   },
   "devDependencies": {
     "@nestjs/testing": "^12.1.2",

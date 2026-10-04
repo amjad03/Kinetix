@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 import { ENV, type Env } from '../config/env.js';
+import { ContentService } from '../content/content.service.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
 import { AiUnavailableError, OpenAiCompatibleProvider, parseJsonReply, PreviewProvider, type LlmProvider } from './providers.js';
@@ -40,6 +41,8 @@ export interface AiCaller {
   deviceId?: string;
   sectionId?: string | null;
   subjectId?: string | null;
+  /** A content-library topic chosen by the teacher; otherwise topics are matched from the request. */
+  topicId?: string | null;
 }
 
 export interface AiResponse<T extends TaskName> {
@@ -52,6 +55,8 @@ export interface AiResponse<T extends TaskName> {
     cached: boolean;
     /** A placeholder answer: no AI server is connected. Apps label it as such. */
     preview: boolean;
+    /** Content-library topics the answer was grounded in, for citing. */
+    sources: { topicId: string; title: string }[];
   };
 }
 
@@ -74,21 +79,20 @@ export class AiService {
     private readonly db: DbService,
     @Inject(LLM_PROVIDER) private readonly provider: LlmProvider,
     @Inject(ENV) private readonly env: Env,
+    private readonly content: ContentService,
   ) {}
 
   async run<T extends TaskName>(caller: AiCaller, task: T, input: TaskInput<T>, opts: { fresh?: boolean } = {}): Promise<AiResponse<T>> {
     const p = this.provider;
-    const meta = { provider: p.name, model: p.model, promptVersion: PROMPT_VERSION, preview: p.preview };
-
-    const { grounding, key, cached } = await this.db.withTenant(caller.tenantId, async (tx) => {
-      const grounding = await this.grounding(tx, caller);
+    const { grounding, key, cached, sources } = await this.db.withTenant(caller.tenantId, async (tx) => {
+      const { grounding, sources } = await this.grounding(tx, caller, allText(input));
       const key = this.cacheKey(task, input, grounding);
       const forMinors = grounding.institutionKind === 'school';
 
       const bad = unsafeTerm(allText(input), forMinors);
       if (bad) {
         await this.record(tx, caller, task, 'blocked', { detail: `input: ${bad}` });
-        return { grounding, key, cached: undefined, refusal: 'blocked' as const };
+        return { grounding, key, sources, cached: undefined, refusal: 'blocked' as const };
       }
       if (!opts.fresh && !p.preview) {
         const [hit] = await tx
@@ -98,14 +102,14 @@ export class AiService {
         if (hit) {
           await tx.update(aiCache).set({ hits: sql`${aiCache.hits} + 1` }).where(eq(aiCache.key, key));
           await this.record(tx, caller, task, 'cached');
-          return { grounding, key, cached: hit.result as TaskOutput<T> };
+          return { grounding, key, sources, cached: hit.result as TaskOutput<T> };
         }
       }
       if (!p.preview && (await this.usedToday(tx)) >= this.env.AI_DAILY_LIMIT) {
         await this.record(tx, caller, task, 'quota');
-        return { grounding, key, cached: undefined, refusal: 'quota' as const };
+        return { grounding, key, sources, cached: undefined, refusal: 'quota' as const };
       }
-      return { grounding, key, cached: undefined };
+      return { grounding, key, sources, cached: undefined };
     }).then((r) => {
       // Refusals are thrown after the transaction commits, so the usage row is kept.
       if ('refusal' in r && r.refusal === 'blocked') throw new UnprocessableEntityException(BLOCKED);
@@ -115,6 +119,7 @@ export class AiService {
       return r;
     });
 
+    const meta = { provider: p.name, model: p.model, promptVersion: PROMPT_VERSION, preview: p.preview, sources };
     if (cached) return { task, result: cached, meta: { ...meta, cached: true } };
     if (p.preview) {
       await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'ok'));
@@ -181,21 +186,28 @@ export class AiService {
     }
   }
 
-  private async grounding(tx: Tx, caller: AiCaller): Promise<Grounding> {
+  private async grounding(tx: Tx, caller: AiCaller, request: string): Promise<{ grounding: Grounding; sources: { topicId: string; title: string }[] }> {
     const [tenant] = await tx.select({ name: tenants.name, kind: tenants.kind }).from(tenants).where(eq(tenants.id, caller.tenantId));
     const g: Grounding = { institution: tenant?.name ?? 'an Indian institution', institutionKind: tenant?.kind ?? 'school' };
     if (caller.sectionId) {
-      const [s] = await tx
-        .select({ name: sections.displayName })
-        .from(sections)
-        .where(eq(sections.id, caller.sectionId));
+      const [s] = await tx.select({ name: sections.displayName }).from(sections).where(eq(sections.id, caller.sectionId));
       if (s) g.className = s.name;
     }
+    let courseId: string | null = null;
     if (caller.subjectId) {
-      const [s] = await tx.select({ name: subjects.name }).from(subjects).where(eq(subjects.id, caller.subjectId));
+      const [s] = await tx.select({ name: subjects.name, courseId: subjects.courseId }).from(subjects).where(eq(subjects.id, caller.subjectId));
       if (s) g.subjectName = s.name;
+      courseId = s?.courseId ?? null;
     }
-    return g;
+    // Syllabus notes from the content library: the chosen topic, or the best matches in the course.
+    const found = caller.topicId
+      ? await this.content.topicsById(tx, [caller.topicId])
+      : courseId
+        ? await this.content.matchTopics(tx, courseId, request)
+        : [];
+    const notes = found.flatMap((t) => t.notes).slice(0, 12);
+    if (notes.length) g.notes = notes;
+    return { grounding: g, sources: found.map((t) => ({ topicId: t.id, title: t.title })) };
   }
 
   private cacheKey(task: TaskName, input: unknown, g: Grounding): string {

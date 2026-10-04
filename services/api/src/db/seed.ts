@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { enrollmentCode, hmac } from '../common/crypto.js';
+import { importContent } from '../content/import.js';
 import { shortDate } from '../notifications/notifications.service.js';
 import { loadEnv } from '../config/env.js';
 import * as s from './schema.js';
@@ -24,6 +25,8 @@ async function main() {
     return;
   }
   const hash = await argon2.hash(PASSWORD);
+  const library = await importContent(db);
+  const course = async (code: string) => (await db.query.courses.findFirst({ where: (c, { eq }) => eq(c.code, code) }))?.id ?? null;
 
   const [tenant] = await db
     .insert(s.tenants)
@@ -41,9 +44,9 @@ async function main() {
   const [bca1a] = await db.insert(s.sections).values({ tenantId, programId: bca.id, academicYearId: year.id, term: 1, name: 'A', displayName: 'BCA Sem 1 A' }).returning();
   await db.insert(s.sections).values({ tenantId, programId: mcom.id, academicYearId: year.id, term: 1, name: 'A', displayName: 'MCom Sem 1 A' });
 
-  const [corpAcc] = await db.insert(s.subjects).values({ tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.1', name: 'Corporate Accounting' }).returning();
-  const [costing] = await db.insert(s.subjects).values({ tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.3', name: 'Cost Accounting' }).returning();
-  const [dmaths] = await db.insert(s.subjects).values({ tenantId, programId: bca.id, term: 1, code: 'BCA-1.2', name: 'Discrete Mathematics' }).returning();
+  const [corpAcc] = await db.insert(s.subjects).values({ tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.1', name: 'Corporate Accounting', courseId: await course('bcom-3-corporate-accounting') }).returning();
+  const [costing] = await db.insert(s.subjects).values({ tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.3', name: 'Cost Accounting', courseId: await course('bcom-3-cost-accounting') }).returning();
+  const [dmaths] = await db.insert(s.subjects).values({ tenantId, programId: bca.id, term: 1, code: 'BCA-1.2', name: 'Discrete Mathematics', courseId: await course('bca-1-discrete-mathematics') }).returning();
 
   const staff = async (fullName: string, email: string, roles: (typeof s.roleName.enumValues)[number][], lang: 'en' | 'hi' | 'kn' = 'en') => {
     const [u] = await db.insert(s.users).values({ tenantId, fullName, email, passwordHash: hash, preferredLanguage: lang }).returning();
@@ -202,6 +205,7 @@ Seeded tenant "demo-college".
     parent@demo.kinetix.in      (Rajesh Patel: Aarav, BCom Sem 3 A, and Diya, BCA Sem 1 A)
     sunita@demo.kinetix.in      (Sunita Gowda: Ananya, BCom Sem 3 A)
   Board enrolment code for "Room 204 Board": ${code}
+  Content library: ${library.courses} courses, ${library.topics} topics with notes
 `);
 }
 

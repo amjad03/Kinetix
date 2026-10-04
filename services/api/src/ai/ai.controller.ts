@@ -10,7 +10,7 @@ import { AiService, type AiCaller } from './ai.service.js';
 import { TaskInputs, type TaskName } from './tasks.js';
 
 /** Optional class context for app callers; the board takes it from its session. */
-const Context = z.object({ sectionId: z.uuid().optional(), subjectId: z.uuid().optional(), fresh: z.boolean().default(false) });
+const Context = z.object({ sectionId: z.uuid().optional(), subjectId: z.uuid().optional(), topicId: z.uuid().optional(), fresh: z.boolean().default(false) });
 
 const Bodies = {
   explain: TaskInputs.explain.extend(Context.shape),
@@ -81,8 +81,8 @@ export class AiController {
   }
 
   private async run<T extends TaskName>(p: BoardPrincipal | UserPrincipal, task: T, body: z.infer<(typeof Bodies)[keyof typeof Bodies]>) {
-    const { sectionId, subjectId, fresh, ...input } = body;
-    const caller: AiCaller = { tenantId: p.tenantId };
+    const { sectionId, subjectId, topicId, fresh, ...input } = body;
+    const caller: AiCaller = { tenantId: p.tenantId, topicId };
     if (p.kind === 'board') {
       caller.deviceId = p.deviceId;
       caller.userId = p.teacherId;

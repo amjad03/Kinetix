@@ -71,6 +71,20 @@
       "when": 1791122888769,
       "tag": "0009_recordings_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791123717842,
+      "tag": "0010_content_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791123718795,
+      "tag": "0011_content_library_rls",
+      "breakpoints": true
     }
   ]
 }
