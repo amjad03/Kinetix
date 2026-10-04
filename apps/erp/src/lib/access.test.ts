@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
+import { canEditCalendar, canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
 
 describe('access', () => {
-  it('lets the accounts office into Fees only', () => {
+  it('lets the accounts office into Fees (and the calendar) only', () => {
     const r = ['accountant'];
     expect(canUseErp(r)).toBe(true);
     expect(canSee(r, 'fees')).toBe(true);
@@ -12,7 +12,7 @@ describe('access', () => {
     expect(landingFor(r, '/fees/invoices?status=due')).toBe('/fees/invoices?status=due');
   });
 
-  it('lets the librarian into Library only', () => {
+  it('lets the librarian into Library (and the calendar) only', () => {
     const r = ['librarian'];
     expect(canUseErp(r)).toBe(true);
     expect(canSee(r, 'library')).toBe(true);
@@ -69,6 +69,23 @@ describe('access', () => {
     }
     expect(sectionOf('/department')).toBe('department');
     expect(sectionOf('/departments')).toBe('departments');
+  });
+
+  it('shows everyone in the ERP the calendar, and lets only the principal and admin keep it and the settings', () => {
+    for (const r of [['principal'], ['tenant_admin'], ['teacher', 'hod'], ['accountant'], ['librarian']]) expect(canSee(r, 'calendar')).toBe(true);
+    expect(canSee(['teacher'], 'calendar')).toBe(false);
+    for (const r of [['principal'], ['tenant_admin']]) {
+      expect(canEditCalendar(r)).toBe(true);
+      expect(canSee(r, 'settings')).toBe(true);
+    }
+    for (const r of [['teacher', 'hod'], ['accountant'], ['librarian']]) {
+      expect(canEditCalendar(r)).toBe(false);
+      expect(canSee(r, 'settings')).toBe(false);
+    }
+    expect(sectionOf('/calendar')).toBe('calendar');
+    expect(sectionOf('/settings')).toBe('settings');
+    expect(landingFor(['accountant'], '/calendar?month=2026-11')).toBe('/calendar?month=2026-11');
+    expect(landingFor(['teacher', 'hod'], '/settings')).toBe('/department');
   });
 
   it('refuses teachers, students and parents', () => {

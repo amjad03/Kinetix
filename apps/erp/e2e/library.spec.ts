@@ -4,11 +4,12 @@ import { open, shot } from './helpers';
 // Signed in as the library desk (library@demo.kinetix.in) by principal.setup.ts.
 test.describe.configure({ mode: 'serial' });
 
-test('the library desk sees only Library', async ({ page }) => {
+test('the library desk sees only Library and the calendar', async ({ page }) => {
   await open(page, '/');
   await expect(page).toHaveURL(/\/library$/);
   const nav = page.getByRole('navigation', { name: 'Main' });
-  await expect(nav.getByRole('link')).toHaveCount(1);
+  await expect(nav.getByRole('link')).toHaveCount(2);
+  await expect(nav.getByRole('link', { name: 'Calendar' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Library' })).toHaveAttribute('aria-current', 'page');
   await open(page, '/timetable');
   await expect(page).toHaveURL(/\/library$/);

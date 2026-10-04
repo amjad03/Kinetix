@@ -2,6 +2,8 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getI18n } from '@/i18n/server';
+import { errorText } from '@/i18n/errors';
 import { api, ApiError } from '@/lib/api';
 import { SESSION_COOKIE, SESSION_MAX_AGE, TENANT_COOKIE } from '@/lib/config';
 import { canUseErp, landingFor } from '@/lib/access';
@@ -12,24 +14,23 @@ export interface LoginState {
   fields?: { tenant: string; login: string };
 }
 
-const NOT_FOR_ROLE =
-  'KINETIX ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the KINETIX Teacher App; students and parents, their own apps.';
-
 export async function signIn(_prev: LoginState, form: FormData): Promise<LoginState> {
   const tenant = String(form.get('tenant') ?? '').trim().toLowerCase();
   const login = String(form.get('login') ?? '').trim();
   const password = String(form.get('password') ?? '');
   const fields = { tenant, login };
-  if (!tenant || !login || !password) return { error: 'Enter your institution code, email or phone, and password.', fields };
+  const { t } = await getI18n();
+  if (!tenant || !login || !password) return { error: t('login.missing'), fields };
 
   let res: LoginResponse;
   try {
     res = await api<LoginResponse>('/v1/auth/login', { method: 'POST', body: { tenant, login, password }, anonymous: true });
   } catch (e) {
-    if (e instanceof ApiError && (e.status === 401 || e.status === 400)) return { error: 'Wrong institution code, login or password.', fields };
-    return { error: e instanceof ApiError ? e.message : 'Sign-in failed. Try again.', fields };
+    if (e instanceof ApiError && e.code === 'AUTH_INACTIVE') return { error: t('error.AUTH_INACTIVE'), fields };
+    if (e instanceof ApiError && (e.status === 401 || e.status === 400)) return { error: t('error.AUTH_WRONG_LOGIN'), fields };
+    return { error: e instanceof ApiError ? errorText(e, t) : t('login.failed'), fields };
   }
-  if (!canUseErp(res.user.roles)) return { error: NOT_FOR_ROLE, fields };
+  if (!canUseErp(res.user.roles)) return { error: t('login.notForRole'), fields };
 
   const jar = await cookies();
   const secure = process.env.NODE_ENV === 'production' && process.env.KINETIX_INSECURE_COOKIES !== '1';

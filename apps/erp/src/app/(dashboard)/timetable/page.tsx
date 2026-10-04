@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getI18n } from '@/i18n/server';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { TimetableEditor, type TimetableView } from '@/components/timetable/TimetableEditor';
@@ -6,7 +7,9 @@ import { UrlSelect } from '@/components/UrlSelect';
 import { api, load, requireSection } from '@/lib/api';
 import type { StaffMember, Structure, TimetableSlot } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Timetable' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.timetable') };
+}
 
 export default async function TimetablePage({ searchParams }: { searchParams: Promise<{ class?: string; teacher?: string }> }) {
   await requireSection('timetable');
@@ -24,23 +27,24 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
       : null;
   const slots = view ? await load(() => api<TimetableSlot[]>(`/v1/admin/timetable?${view.kind === 'class' ? 'sectionId' : 'teacherId'}=${view.id}`)) : null;
 
+  const { t } = await getI18n();
   const options = [
-    ...sections.map((s) => ({ value: `class=${s.id}`, label: s.displayName, group: 'Classes' })),
-    ...people.map((p) => ({ value: `teacher=${p.id}`, label: p.fullName, group: 'Teachers' })),
+    ...sections.map((s) => ({ value: `class=${s.id}`, label: s.displayName, group: t('tt.classes') })),
+    ...people.map((p) => ({ value: `teacher=${p.id}`, label: p.fullName, group: t('tt.teachers') })),
   ];
 
   const error = structure.error ?? staff.error ?? slots?.error;
   return (
     <>
       <PageHeader
-        title="Timetable"
-        subtitle="The week for a class or a teacher. Add, move and remove periods; clashes are caught before saving."
-        actions={view ? <UrlSelect label="Class or teacher" value={`${view.kind}=${view.id}`} options={options} minWidth={240} testId="timetable-of" /> : undefined}
+        title={t('nav.timetable')}
+        subtitle={t('tt.subtitle')}
+        actions={view ? <UrlSelect label={t('tt.of')} value={`${view.kind}=${view.id}`} options={options} minWidth={240} testId="timetable-of" /> : undefined}
       />
       {error !== undefined ? (
         <ErrorState message={error} />
       ) : !view ? (
-        <ErrorState title="No classes yet" message="Add programs and classes to the school structure first." />
+        <ErrorState title={t('tt.noClasses')} message={t('tt.noClassesBody')} />
       ) : (
         <TimetableEditor
           key={`${view.kind}:${view.id}`}

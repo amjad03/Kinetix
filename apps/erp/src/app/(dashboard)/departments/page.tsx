@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import { getI18n } from '@/i18n/server';
 import { DepartmentsManager } from '@/components/department/DepartmentsManager';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import type { AdminDepartment, StaffMember, Structure } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Departments' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('nav.departments') };
+}
 
 export default async function DepartmentsPage() {
   await requireSection('departments');
@@ -15,7 +18,7 @@ export default async function DepartmentsPage() {
   if (data.error !== undefined)
     return (
       <>
-        <PageHeader title="Departments" />
+        <PageHeader title={(await getI18n()).t('nav.departments')} />
         <ErrorState message={data.error} />
       </>
     );

@@ -1,13 +1,22 @@
 // Institution settings (GET/PUT /v1/admin/settings) and the consent summary (GET /v1/admin/consents).
 
+/** The DPDP grievance officer families see in the apps (Profile → Privacy). */
+export interface GrievanceOfficer {
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface InstitutionSettings {
   liveViewEnabled: boolean;
   liveViewIndicator: boolean;
   classroomAudioToViewers: boolean;
   pinFallbackEnabled: boolean;
+  grievanceOfficer?: GrievanceOfficer | null;
 }
 
-export type SettingKey = keyof InstitutionSettings;
+/** The on/off settings. */
+export type SettingKey = 'liveViewEnabled' | 'liveViewIndicator' | 'classroomAudioToViewers' | 'pinFallbackEnabled';
 export const SETTING_KEYS: SettingKey[] = ['liveViewEnabled', 'liveViewIndicator', 'classroomAudioToViewers', 'pinFallbackEnabled'];
 
 /** The "being viewed" sign and class audio only matter while live view is on. */
@@ -44,4 +53,25 @@ export function consentShares(p: { granted: number; withdrawn: number; notAsked:
     left -= 1;
   }
   return { granted: out[0], withdrawn: out[1], notAsked: out[2] };
+}
+
+export type GrievanceProblem = 'name' | 'nameLong' | 'email' | 'phone';
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Checks the grievance officer the way the API does (name 1–120, a valid email, phone up to 20). */
+export function grievanceProblem(g: { name: string; email: string; phone: string }): GrievanceProblem | null {
+  const name = g.name.trim();
+  if (!name) return 'name';
+  if (name.length > 120) return 'nameLong';
+  if (g.email.trim() && !EMAIL.test(g.email.trim())) return 'email';
+  if (g.phone.trim().length > 20) return 'phone';
+  return null;
+}
+
+/** The body for PUT /v1/admin/settings: empty email and phone are left out. */
+export function grievanceBody(g: { name: string; email: string; phone: string }): GrievanceOfficer {
+  const email = g.email.trim();
+  const phone = g.phone.trim();
+  return { name: g.name.trim(), ...(email ? { email } : {}), ...(phone ? { phone } : {}) };
 }

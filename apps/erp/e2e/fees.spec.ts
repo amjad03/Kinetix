@@ -6,11 +6,12 @@ test.describe.configure({ mode: 'serial' });
 
 const FEE = `E2E Library fee ${Date.now() % 100000}`;
 
-test('the accounts office sees only Fees', async ({ page }) => {
+test('the accounts office sees only Fees and the calendar', async ({ page }) => {
   await open(page, '/');
   await expect(page).toHaveURL(/\/fees$/);
   const nav = page.getByRole('navigation', { name: 'Main' });
-  await expect(nav.getByRole('link')).toHaveCount(1);
+  await expect(nav.getByRole('link')).toHaveCount(2);
+  await expect(nav.getByRole('link', { name: 'Calendar' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Fees' })).toHaveAttribute('aria-current', 'page');
   await open(page, '/boards');
   await expect(page).toHaveURL(/\/fees$/);

@@ -2,22 +2,25 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SESSION_COOKIE, TENANT_COOKIE } from '@/lib/config';
+import { getI18n } from '@/i18n/server';
+import type { MessageKey } from '@/i18n/messages';
 import { LoginForm } from './LoginForm';
 
-export const metadata: Metadata = { title: 'Sign in' };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t('login.title') };
+}
 
-const NOTICES: Record<string, { severity: 'info' | 'warning'; text: string }> = {
-  expired: { severity: 'info', text: 'Your session has ended. Sign in again to continue.' },
-  denied: {
-    severity: 'warning',
-    text: 'KINETIX ERP is for principals, administrators, heads of department, the accounts office and the library. Teachers can use the KINETIX Teacher App.',
-  },
-  'signed-out': { severity: 'info', text: 'You have signed out.' },
+const NOTICES: Record<string, { severity: 'info' | 'warning'; text: MessageKey }> = {
+  expired: { severity: 'info', text: 'login.expired' },
+  denied: { severity: 'warning', text: 'login.denied' },
+  'signed-out': { severity: 'info', text: 'login.signedOut' },
 };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string; next?: string }> }) {
   const jar = await cookies();
   const { reason, next } = await searchParams;
   if (jar.get(SESSION_COOKIE) && !reason) redirect('/');
-  return <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={reason ? NOTICES[reason] : undefined} next={next} />;
+  const { t } = await getI18n();
+  const notice = reason ? NOTICES[reason] : undefined;
+  return <LoginForm defaultTenant={jar.get(TENANT_COOKIE)?.value ?? ''} notice={notice ? { severity: notice.severity, text: t(notice.text) } : undefined} next={next} />;
 }

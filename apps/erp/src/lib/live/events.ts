@@ -2,7 +2,6 @@
 // packages/shared/src/index.ts (Socket.IO namespace `/realtime`).
 
 import type { MessageKey } from '@/i18n/messages';
-
 import type { LessonEvent, LiveSnapshot } from './player';
 
 export const LiveEvents = {
@@ -39,6 +38,8 @@ export interface LiveSession {
 export interface LiveWatchAck {
   ok: boolean;
   error?: string;
+  /** Stable code for the refusal (LIVE_VIEW_OFF, LIVE_NO_CLASS, LIVE_BOARD_OFFLINE…). */
+  code?: string;
   session?: LiveSession;
   audio?: LiveAudioInfo;
 }
@@ -71,8 +72,20 @@ export type StreamMessage =
 
 export type RefusalCode = 'turned_off' | 'no_class' | 'offline' | 'unknown_board' | 'expired' | 'forbidden' | 'unavailable' | 'other';
 
-/** Turns the API's refusal text into a state the page can explain. */
-export function refusalCode(error: string | undefined): RefusalCode {
+/** The API's stable live-watch codes (services/api/src/common/error-codes.ts). */
+const BY_CODE: Record<string, RefusalCode> = {
+  LIVE_VIEW_OFF: 'turned_off',
+  LIVE_NO_CLASS: 'no_class',
+  LIVE_NOT_STARTED: 'no_class',
+  LIVE_BOARD_OFFLINE: 'offline',
+  LIVE_UNKNOWN_BOARD: 'unknown_board',
+  LIVE_NOT_ALLOWED: 'forbidden',
+  LIVE_NOT_YOUR_CLASS: 'forbidden',
+};
+
+/** Turns the API's refusal (its `code`, else its English text) into a state the page can explain. */
+export function refusalCode(error: string | undefined, code?: string): RefusalCode {
+  if (code && BY_CODE[code]) return BY_CODE[code];
   const e = (error ?? '').toLowerCase();
   if (e.includes('turned off')) return 'turned_off';
   if (e.includes('no class')) return 'no_class';

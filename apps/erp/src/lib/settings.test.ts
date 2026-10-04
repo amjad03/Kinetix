@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { consentShares, needsConfirm, settingDisabled, type InstitutionSettings } from './settings';
+import { consentShares, grievanceBody, grievanceProblem, needsConfirm, settingDisabled, type InstitutionSettings } from './settings';
 
 const s: InstitutionSettings = { liveViewEnabled: true, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false };
 
@@ -25,5 +25,16 @@ describe('settings', () => {
     const r = consentShares({ granted: 1, withdrawn: 2, notAsked: 4 })!;
     expect(r.granted + r.withdrawn + r.notAsked).toBe(100);
     expect(consentShares({ granted: 0, withdrawn: 0, notAsked: 0 })).toBeNull();
+  });
+
+  it('checks the grievance officer like the API and drops empty contact fields', () => {
+    const ok = { name: ' Dr. Kavya Rao ', email: '', phone: '' };
+    expect(grievanceProblem(ok)).toBeNull();
+    expect(grievanceBody(ok)).toEqual({ name: 'Dr. Kavya Rao' });
+    expect(grievanceBody({ name: 'K', email: ' grievance@demo.in ', phone: '+91 80 1234 5678' })).toEqual({ name: 'K', email: 'grievance@demo.in', phone: '+91 80 1234 5678' });
+    expect(grievanceProblem({ ...ok, name: '  ' })).toBe('name');
+    expect(grievanceProblem({ ...ok, name: 'x'.repeat(121) })).toBe('nameLong');
+    expect(grievanceProblem({ ...ok, email: 'not-an-email' })).toBe('email');
+    expect(grievanceProblem({ ...ok, phone: '1'.repeat(21) })).toBe('phone');
   });
 });

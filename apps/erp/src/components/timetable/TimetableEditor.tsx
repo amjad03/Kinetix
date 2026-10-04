@@ -21,7 +21,10 @@ import Typography from '@mui/material/Typography';
 import { useMemo, useState, useTransition } from 'react';
 import { addSlot, changeSlot, removeSlot } from '@/app/(dashboard)/timetable/actions';
 import { EmptyState } from '@/components/States';
-import { addMinutes, DAY_NAMES, DAY_SHORT, hm, slotProblem, subjectsFor, weekGrid, type SlotInput } from '@/lib/timetable';
+import { useI18n } from '@/i18n/client';
+import type { TFunction } from '@/i18n/translate';
+import { weekdayName, weekdayNameShort } from '@/lib/dates';
+import { addMinutes, hm, slotProblem, subjectsFor, weekGrid, type SlotInput } from '@/lib/timetable';
 import type { StaffMember, Structure, TimetableSlot } from '@/lib/types';
 
 export interface TimetableView {
@@ -49,6 +52,7 @@ export function TimetableEditor({
   rooms: Structure['rooms'];
   staff: StaffMember[];
 }) {
+  const { t, locale } = useI18n();
   const grid = useMemo(() => weekGrid(slots), [slots]);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -65,17 +69,18 @@ export function TimetableEditor({
             {view.name}
           </Typography>
           <Typography variant="body2" color="text.secondary" data-testid="timetable-summary">
-            {slots.length} period{slots.length === 1 ? '' : 's'} a week{hours ? ` · ${formatHours(hours)} of teaching` : ''}
+            {t.plural('tt.periods', slots.length)}
+            {hours ? ` · ${t('tt.teaching', { time: formatHours(hours, t) })}` : ''}
           </Typography>
         </Box>
         <Button variant="contained" startIcon={<Add />} onClick={() => add()}>
-          Add period
+          {t('tt.addPeriod')}
         </Button>
       </Box>
 
       {slots.length === 0 ? (
-        <EmptyState icon={<CalendarMonthOutlined />} title={view.kind === 'class' ? 'No periods for this class yet' : 'No periods for this teacher yet'} testId="no-periods" actions={<Button variant="outlined" startIcon={<Add />} onClick={() => add()}>Add period</Button>}>
-          Add the week&apos;s periods: subject, teacher, room, day and time. The board, the apps and attendance follow the timetable.
+        <EmptyState icon={<CalendarMonthOutlined />} title={view.kind === 'class' ? t('tt.noPeriodsClass') : t('tt.noPeriodsTeacher')} testId="no-periods" actions={<Button variant="outlined" startIcon={<Add />} onClick={() => add()}>{t('tt.addPeriod')}</Button>}>
+          {t('tt.noPeriodsBody')}
         </EmptyState>
       ) : (
         <Box
@@ -84,7 +89,7 @@ export function TimetableEditor({
         >
           <Box
             role="table"
-            aria-label={`Timetable for ${view.name}`}
+            aria-label={t('tt.gridLabel', { name: view.name })}
             sx={{ display: 'grid', gridTemplateColumns: `72px repeat(${grid.columns.length}, minmax(132px, 1fr))`, minWidth: 72 + grid.columns.length * 132 }}
           >
             <Box role="row" sx={{ display: 'contents' }}>
@@ -100,7 +105,7 @@ export function TimetableEditor({
             {grid.rows.map((r) => (
               <Box key={r.day} role="row" sx={{ display: 'contents' }} data-testid={`day-${r.day}`}>
                 <Box role="rowheader" sx={{ ...cellSx, display: 'flex', alignItems: 'center', bgcolor: 'm3.surfaceContainerLow', position: 'sticky', left: 0, zIndex: 1 }}>
-                  <Typography variant="subtitle2">{DAY_SHORT[r.day]}</Typography>
+                  <Typography variant="subtitle2">{weekdayNameShort(r.day, locale)}</Typography>
                 </Box>
                 {grid.columns.map((c) => {
                   const here = r.cells[c.key] ?? [];
@@ -113,7 +118,7 @@ export function TimetableEditor({
                         <IconButton
                           className="kx-add"
                           size="small"
-                          aria-label={`Add a period on ${DAY_NAMES[r.day]} at ${c.startsAt}`}
+                          aria-label={t('tt.addAt', { day: weekdayName(r.day, locale), time: c.startsAt })}
                           onClick={() => add({ dayOfWeek: r.day, startsAt: c.startsAt, endsAt: c.endsAt })}
                           sx={{ justifySelf: 'center', alignSelf: 'center', opacity: 0.35, '&:focus-visible': { opacity: 1 }, color: 'text.secondary' }}
                         >
@@ -129,7 +134,7 @@ export function TimetableEditor({
         </Box>
       )}
       <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-        Changes apply from the next class. Attendance and recordings already taken stay with the period as it was.
+        {t('tt.footer')}
       </Typography>
 
       {editing && (
@@ -159,15 +164,16 @@ const minutes = (t: string) => {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + m;
 };
-const formatHours = (m: number) => (m % 60 === 0 ? `${m / 60} h` : `${Math.floor(m / 60)} h ${m % 60} min`);
+const formatHours = (m: number, t: TFunction) => (m % 60 === 0 ? t('tt.hours', { h: m / 60 }) : t('time.hoursMinutes', { h: Math.floor(m / 60), m: m % 60 }));
 
 function SlotCard({ slot, view, onClick }: { slot: TimetableSlot; view: TimetableView; onClick: () => void }) {
+  const { t, locale } = useI18n();
   const who = view.kind === 'class' ? slot.teacher.fullName : slot.section.displayName;
   return (
     <ButtonBase
       onClick={onClick}
       data-testid="slot"
-      aria-label={`${slot.subject.name}, ${who}, ${DAY_NAMES[slot.dayOfWeek]} ${hm(slot.startsAt)}–${hm(slot.endsAt)}. Change`}
+      aria-label={t('tt.slotLabel', { subject: slot.subject.name, who, day: weekdayName(slot.dayOfWeek, locale), time: `${hm(slot.startsAt)}–${hm(slot.endsAt)}` })}
       sx={{
         display: 'block',
         textAlign: 'left',
@@ -216,6 +222,7 @@ function PeriodDialog({
   staff: StaffMember[];
   onClose: (done?: string) => void;
 }) {
+  const { t, locale } = useI18n();
   const existing = 'slot' in editing ? editing.slot : null;
   const d: Partial<SlotInput> = existing
     ? {
@@ -243,18 +250,18 @@ function PeriodDialog({
 
   const input: SlotInput = { sectionId, subjectId, teacherId, roomId: roomId || null, dayOfWeek: day, startsAt, endsAt };
   const problem = slotProblem(input);
-  const subjectName = subjects.find((s) => s.id === subjectId)?.name ?? 'the period';
-  const when = `${DAY_NAMES[day]} ${startsAt}–${endsAt}`;
+  const subjectName = subjects.find((s) => s.id === subjectId)?.name ?? t('tt.thePeriod');
+  const when = `${weekdayName(day, locale)} ${startsAt}–${endsAt}`;
 
   const save = () => {
     if (problem) {
-      setError(problem);
+      setError(t(problem));
       return;
     }
     setError(null);
     start(async () => {
       const res = existing ? await changeSlot(existing.id, input) : await addSlot(input);
-      if (res.ok) onClose(existing ? `Changed ${subjectName} to ${when}` : `Added ${subjectName} on ${when}`);
+      if (res.ok) onClose(existing ? t('tt.changed', { subject: subjectName, when }) : t('tt.added', { subject: subjectName, when }));
       else setError(res.error);
     });
   };
@@ -262,7 +269,7 @@ function PeriodDialog({
   const remove = () =>
     start(async () => {
       const res = await removeSlot(existing!.id);
-      if (res.ok) onClose(`Removed ${existing!.subject.name} on ${DAY_NAMES[existing!.dayOfWeek]} ${hm(existing!.startsAt)}`);
+      if (res.ok) onClose(t('tt.removed', { subject: existing!.subject.name, when: `${weekdayName(existing!.dayOfWeek, locale)} ${hm(existing!.startsAt)}` }));
       else {
         setConfirmRemove(false);
         setError(res.error);
@@ -272,18 +279,18 @@ function PeriodDialog({
   if (confirmRemove && existing)
     return (
       <Dialog open onClose={pending ? undefined : () => setConfirmRemove(false)} maxWidth="xs" fullWidth aria-labelledby="remove-period-title">
-        <DialogTitle id="remove-period-title">Remove this period?</DialogTitle>
+        <DialogTitle id="remove-period-title">{t('tt.remove.title')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            <strong>{existing.subject.name}</strong> for {existing.section.displayName} with {existing.teacher.fullName} on {DAY_NAMES[existing.dayOfWeek]} at {hm(existing.startsAt)} stops from the next class. Attendance already taken is kept.
+            {t('tt.remove.body', { subject: existing.subject.name, className: existing.section.displayName, teacher: existing.teacher.fullName, day: weekdayName(existing.dayOfWeek, locale), time: hm(existing.startsAt) })}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmRemove(false)} disabled={pending}>
-            Keep it
+            {t('tt.keep')}
           </Button>
           <Button variant="contained" color="error" onClick={remove} disabled={pending} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            Remove period
+            {t('tt.removePeriod')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -299,7 +306,7 @@ function PeriodDialog({
           save();
         }}
       >
-        <DialogTitle id="period-title">{existing ? 'Change period' : 'Add a period'}</DialogTitle>
+        <DialogTitle id="period-title">{existing ? t('tt.change') : t('tt.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             {error && (
@@ -309,7 +316,7 @@ function PeriodDialog({
             )}
             <TextField
               select
-              label="Class"
+              label={t('tt.class')}
               value={sectionId}
               onChange={(e) => {
                 setSectionId(e.target.value);
@@ -327,12 +334,12 @@ function PeriodDialog({
             </TextField>
             <TextField
               select
-              label="Subject"
+              label={t('tt.subject')}
               value={classSubjects.some((s) => s.id === subjectId) ? subjectId : ''}
               onChange={(e) => setSubjectId(e.target.value)}
               required
               disabled={!sectionId}
-              helperText={sectionId && classSubjects.length === 0 ? 'This class has no subjects for its term yet.' : ' '}
+              helperText={sectionId && classSubjects.length === 0 ? t('tt.noSubjects') : ' '}
             >
               {classSubjects.map((s) => (
                 <MenuItem key={s.id} value={s.id}>
@@ -344,17 +351,17 @@ function PeriodDialog({
               ))}
             </TextField>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-              <TextField select label="Teacher" value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required>
+              <TextField select label={t('tt.teacher')} value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required>
                 {staff.map((p) => (
                   <MenuItem key={p.id} value={p.id}>
                     {p.fullName}
                   </MenuItem>
                 ))}
               </TextField>
-              <TextField select label="Room" value={roomId} onChange={(e) => setRoomId(e.target.value)} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
+              <TextField select label={t('tt.room')} value={roomId} onChange={(e) => setRoomId(e.target.value)} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
                 <MenuItem value="">
                   <Typography component="span" color="text.secondary">
-                    No room
+                    {t('tt.noRoom')}
                   </Typography>
                 </MenuItem>
                 {rooms.map((r) => (
@@ -365,15 +372,15 @@ function PeriodDialog({
               </TextField>
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1.4fr 1fr 1fr' }, gap: 2 }}>
-              <TextField select label="Day" value={day} onChange={(e) => setDay(Number(e.target.value))} required sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}>
+              <TextField select label={t('tt.day')} value={day} onChange={(e) => setDay(Number(e.target.value))} required sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}>
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <MenuItem key={n} value={n}>
-                    {DAY_NAMES[n]}
+                    {weekdayName(n, locale)}
                   </MenuItem>
                 ))}
               </TextField>
               <TextField
-                label="Starts"
+                label={t('tt.starts')}
                 type="time"
                 value={startsAt}
                 onChange={(e) => {
@@ -386,7 +393,7 @@ function PeriodDialog({
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
               />
               <TextField
-                label="Ends"
+                label={t('tt.ends')}
                 type="time"
                 value={endsAt}
                 onChange={(e) => setEndsAt(e.target.value)}
@@ -397,7 +404,7 @@ function PeriodDialog({
             </Box>
             {existing && (
               <Typography variant="caption" color="text.secondary">
-                Saving replaces this period from the next class; attendance already taken stays with the old one.
+                {t('tt.replaces')}
               </Typography>
             )}
           </Stack>
@@ -405,15 +412,15 @@ function PeriodDialog({
         <DialogActions sx={{ justifyContent: existing ? 'space-between' : 'flex-end' }}>
           {existing && (
             <Button color="error" startIcon={<DeleteOutline />} onClick={() => setConfirmRemove(true)} disabled={pending}>
-              Remove
+              {t('tt.remove')}
             </Button>
           )}
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button onClick={() => onClose()} disabled={pending}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" variant="contained" disabled={pending || !!problem} startIcon={pending ? <CircularProgress size={16} color="inherit" /> : undefined}>
-              {existing ? 'Save' : 'Add period'}
+              {existing ? t('common.save') : t('tt.addPeriod')}
             </Button>
           </Box>
         </DialogActions>

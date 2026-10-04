@@ -85,7 +85,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
             audio.on = ack.audio?.on === true;
             send({ type: 'audio-state', audio: { ...audio } });
           }
-          else close({ type: 'refused', error: ack?.error ?? 'This class cannot be watched right now', code: refusalCode(ack?.error) });
+          else close({ type: 'refused', error: ack?.error ?? 'This class cannot be watched right now', code: refusalCode(ack?.error, ack?.code) });
         } catch {
           close({ type: 'refused', error: 'KINETIX Cloud did not answer. Try again.', code: 'unavailable' });
         }

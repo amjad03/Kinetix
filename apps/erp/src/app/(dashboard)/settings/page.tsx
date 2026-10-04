@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/PageHeader';
 import { ConsentSummaryView } from '@/components/settings/ConsentSummary';
+import { GrievanceOfficerForm } from '@/components/settings/GrievanceOfficerForm';
 import { SettingsForm } from '@/components/settings/SettingsForm';
 import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
@@ -18,7 +19,14 @@ export default async function SettingsPage() {
   return (
     <>
       <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} />
-      {settings.error !== undefined ? <ErrorState message={settings.error} /> : <SettingsForm initial={settings.data} />}
+      {settings.error !== undefined ? (
+        <ErrorState message={settings.error} />
+      ) : (
+        <>
+          <SettingsForm initial={settings.data} />
+          <GrievanceOfficerForm initial={settings.data.grievanceOfficer ?? null} />
+        </>
+      )}
       {consents.error !== undefined ? <ErrorState message={consents.error} /> : <ConsentSummaryView summary={consents.data} />}
     </>
   );

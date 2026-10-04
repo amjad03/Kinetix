@@ -35,11 +35,11 @@ describe('timetable', () => {
   it('checks a period before saving', () => {
     const ok = { sectionId: 's', subjectId: 'm', teacherId: 't', roomId: null, dayOfWeek: 6, startsAt: '15:00', endsAt: '15:55' };
     expect(slotProblem(ok)).toBeNull();
-    expect(slotProblem({ ...ok, subjectId: '' })).toBe('Choose a subject.');
-    expect(slotProblem({ ...ok, teacherId: '' })).toBe('Choose a teacher.');
-    expect(slotProblem({ ...ok, endsAt: '14:00' })).toBe('The period must end after it starts.');
-    expect(slotProblem({ ...ok, startsAt: '9:00' })).toBe('Use times like 09:30.');
-    expect(slotProblem({ ...ok, dayOfWeek: 0 })).toBe('Choose a day.');
+    expect(slotProblem({ ...ok, subjectId: '' })).toBe('tt.err.subject');
+    expect(slotProblem({ ...ok, teacherId: '' })).toBe('tt.err.teacher');
+    expect(slotProblem({ ...ok, endsAt: '14:00' })).toBe('tt.err.order');
+    expect(slotProblem({ ...ok, startsAt: '9:00' })).toBe('tt.err.time');
+    expect(slotProblem({ ...ok, dayOfWeek: 0 })).toBe('tt.err.day');
   });
 
   it('offers only the subjects of the class’s program and term', () => {

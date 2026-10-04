@@ -4,7 +4,19 @@ import path from 'node:path';
 export const TENANT = process.env.E2E_TENANT ?? 'demo-college';
 export const PASSWORD = process.env.E2E_PASSWORD ?? 'kinetix123';
 
-export async function signIn(page: Page, login: string, tenant = TENANT, password = PASSWORD) {
+export const ERP_URL = process.env.ERP_URL ?? 'http://localhost:3000';
+
+/** Picks the ERP language on this browser (the language menu's cookie). */
+export async function setLanguageCookie(page: Page, lang: 'en' | 'hi' | 'kn') {
+  await page.context().addCookies([{ name: 'kx_lang', value: lang, url: ERP_URL }]);
+}
+
+/**
+ * Signs in. The tests read English, so the browser picks English unless `lang` says otherwise;
+ * `lang: null` leaves it to the account's preferredLanguage (Ravi's is Kannada in the seed).
+ */
+export async function signIn(page: Page, login: string, tenant = TENANT, password = PASSWORD, lang: 'en' | 'hi' | 'kn' | null = 'en') {
+  if (lang) await setLanguageCookie(page, lang);
   await page.goto('/login');
   await page.locator('input[name=tenant]').fill(tenant);
   await page.locator('input[name=login]').fill(login);
@@ -56,4 +68,16 @@ export async function open(page: Page, path: string) {
 export async function shot(page: Page, name: string) {
   const dir = process.env.E2E_SHOTS;
   if (dir) await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: true });
+}
+
+/** Turns "Let leaders hear the class" on or off on the Settings page (principal or admin). */
+export async function setClassAudio(page: Page, on: boolean) {
+  await open(page, '/settings');
+  const row = page.getByTestId('setting-classroomAudioToViewers');
+  if ((await row.getAttribute('data-checked')) !== String(on)) {
+    await row.getByRole('switch').click();
+    if (on) await page.getByTestId('audio-confirm').click();
+  }
+  await expect(row).toHaveAttribute('data-checked', String(on));
+  await expect(page.getByText('Setting saved')).toBeVisible();
 }

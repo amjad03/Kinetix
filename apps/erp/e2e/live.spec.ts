@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { execFileSync } from 'node:child_process';
 import { apiLogin, SAMPLE_INK, startBoard, type SimBoard } from './board-sim';
 import { readFileSync } from 'node:fs';
-import { open, shot } from './helpers';
+import { open, setClassAudio, shot } from './helpers';
 
 // Signed in as the principal by principal.setup.ts. A pretend board is enrolled and paired
 // through the API, and answers snapshot requests like the KINETIX Board app.
@@ -46,6 +45,8 @@ test('watching an empty board, then ink arrives live', async ({ page }) => {
   await expect(page.getByTestId('live-notes')).toContainText('Viewing is recorded in the audit log');
   // Class audio is off for leaders unless the institution allows it (the demo does not).
   await expect(page.getByTestId('live-notes')).toContainText('Class audio is off for leaders');
+  // The principal can change that in Settings.
+  await expect(page.getByTestId('live-audio-settings')).toHaveAttribute('href', '/settings');
   await board.setAudio(true);
   await page.waitForTimeout(500);
   await expect(page.getByTestId('live-audio')).toHaveCount(0);
@@ -96,16 +97,9 @@ test('a board whose class has ended, and an unknown board, cannot be watched', a
   await expect(page.getByText('Board not found')).toBeVisible();
 });
 
-/**
- * Leaders hear class audio only when the institution allows it. There is no API for that
- * setting yet, so this test needs the database (E2E_DATABASE_URL, the API's owner connection).
- */
+/** Leaders hear class audio only when the institution allows it: the test turns it on in Settings, and off again. */
 test('with class audio allowed for leaders, the principal can listen to the teacher', async ({ page }) => {
-  const db = process.env.E2E_DATABASE_URL;
-  test.skip(!db, 'Set E2E_DATABASE_URL to let leaders hear class audio');
-  const setting = (on: boolean) =>
-    execFileSync('psql', [db!, '-qc', `update tenants set settings = settings || '{"classroomAudioToViewers": ${on}}'::jsonb where slug = 'demo-college'`]);
-  setting(true);
+  await setClassAudio(page, true);
   let timer: ReturnType<typeof setInterval> | undefined;
   try {
     const board = await startBoard({ name: `E2E Audio Board ${Date.now() % 100000}`, adminToken: tokens.admin, teacherToken: tokens.teacher, snapshot: [[0, 'L', [[]], 0], ...SAMPLE_INK] });
@@ -143,6 +137,6 @@ test('with class audio allowed for leaders, the principal can listen to the teac
     await expect(page.getByTestId('live-audio')).toHaveCount(0);
   } finally {
     clearInterval(timer);
-    setting(false);
+    await setClassAudio(page, false);
   }
 });

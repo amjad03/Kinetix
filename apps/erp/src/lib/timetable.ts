@@ -1,5 +1,6 @@
 // The week grid for the timetable editor. Pure.
 
+import type { MessageKey } from '@/i18n/messages';
 import type { Structure, TimetableSlot } from './types';
 
 export const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -52,14 +53,14 @@ export interface SlotInput {
   endsAt: string;
 }
 
-/** The same checks the API makes on the form, so mistakes are explained before saving. */
-export function slotProblem(s: SlotInput): string | null {
-  if (!s.sectionId) return 'Choose a class.';
-  if (!s.subjectId) return 'Choose a subject.';
-  if (!s.teacherId) return 'Choose a teacher.';
-  if (!Number.isInteger(s.dayOfWeek) || s.dayOfWeek < 1 || s.dayOfWeek > 7) return 'Choose a day.';
-  if (!TIME.test(s.startsAt) || !TIME.test(s.endsAt)) return 'Use times like 09:30.';
-  if (s.startsAt >= s.endsAt) return 'The period must end after it starts.';
+/** The same checks the API makes on the form, so mistakes are explained before saving (dictionary keys). */
+export function slotProblem(s: SlotInput): MessageKey | null {
+  if (!s.sectionId) return 'tt.err.class';
+  if (!s.subjectId) return 'tt.err.subject';
+  if (!s.teacherId) return 'tt.err.teacher';
+  if (!Number.isInteger(s.dayOfWeek) || s.dayOfWeek < 1 || s.dayOfWeek > 7) return 'tt.err.day';
+  if (!TIME.test(s.startsAt) || !TIME.test(s.endsAt)) return 'tt.err.time';
+  if (s.startsAt >= s.endsAt) return 'tt.err.order';
   return null;
 }
 

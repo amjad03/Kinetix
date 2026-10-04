@@ -11,7 +11,11 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useActionState, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useActionState, useState, useTransition } from 'react';
+import { setLanguage } from '@/app/language/actions';
+import { useI18n } from '@/i18n/client';
+import { BCP47, LANGUAGE_NAMES, LOCALES } from '@/i18n/locales';
 import { LogoMark } from '@/components/Logo';
 import { signIn, type LoginState } from './actions';
 
@@ -26,6 +30,9 @@ export function LoginForm({
 }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(signIn, {});
   const [show, setShow] = useState(false);
+  const { t, locale } = useI18n();
+  const router = useRouter();
+  const [switching, startSwitch] = useTransition();
 
   return (
     <Box
@@ -48,11 +55,33 @@ export function LoginForm({
         <Box>
           <LogoMark size={48} />
           <Typography variant="h2" component="h1" sx={{ mt: 3, fontSize: { xs: '2rem', md: '2.25rem' }, lineHeight: '44px' }}>
-            Sign in
+            {t('login.title')}
           </Typography>
           <Typography variant="body1" sx={{ mt: 2, color: 'text.secondary', maxWidth: 380 }}>
-            to KINETIX ERP: your school&apos;s day at a glance, messages to every classroom, and the boards.
+            {t('login.lead')}
           </Typography>
+          <Box role="group" aria-label={t('shell.language')} sx={{ display: 'flex', gap: 0.5, mt: 3, ml: -1, flexWrap: 'wrap' }}>
+            {LOCALES.map((l) => (
+              <Button
+                key={l}
+                size="small"
+                lang={BCP47[l]}
+                variant={l === locale ? 'outlined' : 'text'}
+                aria-pressed={l === locale}
+                disabled={switching}
+                data-testid={`login-language-${l}`}
+                onClick={() =>
+                  l !== locale &&
+                  startSwitch(async () => {
+                    await setLanguage(l);
+                    router.refresh();
+                  })
+                }
+              >
+                {LANGUAGE_NAMES[l]}
+              </Button>
+            ))}
+          </Box>
         </Box>
 
         <Box component="form" action={action} noValidate>
@@ -66,17 +95,17 @@ export function LoginForm({
             )}
             <TextField
               name="tenant"
-              label="Institution code"
+              label={t('login.tenant')}
               defaultValue={state.fields?.tenant ?? defaultTenant}
               autoComplete="organization"
-              helperText="Given by your school, for example demo-college"
+              helperText={t('login.tenantHelp')}
               required
               autoFocus={!defaultTenant}
               slotProps={{ htmlInput: { autoCapitalize: 'none', spellCheck: false } }}
             />
             <TextField
               name="login"
-              label="Email or phone"
+              label={t('login.login')}
               defaultValue={state.fields?.login ?? ''}
               autoComplete="username"
               required
@@ -85,7 +114,7 @@ export function LoginForm({
             />
             <TextField
               name="password"
-              label="Password"
+              label={t('login.password')}
               type={show ? 'text' : 'password'}
               autoComplete="current-password"
               required
@@ -93,7 +122,7 @@ export function LoginForm({
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton aria-label={show ? 'Hide password' : 'Show password'} onClick={() => setShow((s) => !s)} edge="end">
+                      <IconButton aria-label={show ? t('login.hide') : t('login.show')} onClick={() => setShow((s) => !s)} edge="end">
                         {show ? <VisibilityOffOutlined /> : <VisibilityOutlined />}
                       </IconButton>
                     </InputAdornment>
@@ -103,10 +132,10 @@ export function LoginForm({
             />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 2, gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Forgot your password? Ask your school admin.
+                {t('login.forgot')}
               </Typography>
               <Button type="submit" variant="contained" disabled={pending} sx={{ minWidth: 104 }}>
-                {pending ? <CircularProgress size={20} color="inherit" aria-label="Signing in" /> : 'Sign in'}
+                {pending ? <CircularProgress size={20} color="inherit" aria-label={t('login.signingIn')} /> : t('login.submit')}
               </Button>
             </Box>
           </Stack>

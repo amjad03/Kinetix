@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import { slotProblem, type SlotInput } from '@/lib/timetable';
 import type { ActionResult, TimetableSlot } from '@/lib/types';
@@ -13,17 +14,18 @@ const refresh = () => {
   revalidatePath('/classes');
 };
 
-function check(s: SlotInput): string | null {
+async function check(s: SlotInput): Promise<string | null> {
+  const { t } = await getI18n();
   const problem = slotProblem(s);
-  if (problem) return problem;
-  if (![s.sectionId, s.subjectId, s.teacherId].every((x) => UUID.test(x)) || (s.roomId !== null && !UUID.test(s.roomId))) return 'Choose the class, subject, teacher and room again.';
+  if (problem) return t(problem);
+  if (![s.sectionId, s.subjectId, s.teacherId].every((x) => UUID.test(x)) || (s.roomId !== null && !UUID.test(s.roomId))) return t('tt.err.again');
   return null;
 }
 
 const body = (s: SlotInput) => ({ sectionId: s.sectionId, subjectId: s.subjectId, teacherId: s.teacherId, roomId: s.roomId, dayOfWeek: s.dayOfWeek, startsAt: s.startsAt, endsAt: s.endsAt });
 
 export async function addSlot(s: SlotInput): Promise<ActionResult<TimetableSlot>> {
-  const problem = check(s);
+  const problem = await check(s);
   if (problem) return { ok: false, error: problem };
   const res = await act(() => api<TimetableSlot>('/v1/admin/timetable/slots', { method: 'POST', body: body(s) }));
   if (res.ok) refresh();
@@ -32,8 +34,8 @@ export async function addSlot(s: SlotInput): Promise<ActionResult<TimetableSlot>
 
 /** The API archives the old period and creates a new one, so past attendance keeps its period. */
 export async function changeSlot(id: string, s: SlotInput): Promise<ActionResult<TimetableSlot>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Unknown period.' };
-  const problem = check(s);
+  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('tt.err.unknown') };
+  const problem = await check(s);
   if (problem) return { ok: false, error: problem };
   const res = await act(() => api<TimetableSlot>(`/v1/admin/timetable/slots/${id}`, { method: 'PATCH', body: body(s) }));
   if (res.ok) refresh();
@@ -41,7 +43,7 @@ export async function changeSlot(id: string, s: SlotInput): Promise<ActionResult
 }
 
 export async function removeSlot(id: string): Promise<ActionResult<undefined>> {
-  if (!UUID.test(id)) return { ok: false, error: 'Unknown period.' };
+  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('tt.err.unknown') };
   const res = await act(() => api<undefined>(`/v1/admin/timetable/slots/${id}`, { method: 'DELETE' }));
   if (res.ok) refresh();
   return res;

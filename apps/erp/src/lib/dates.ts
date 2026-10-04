@@ -41,6 +41,18 @@ function partsIn(iso: string, timeZone: string) {
   return { y: Number(p.year), m: Number(p.month), d: Number(p.day), time: `${p.hour}:${p.minute}` };
 }
 
+const EN_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+/** "Monday", "सोमवार", "ಸೋಮವಾರ" for an ISO weekday (1 = Monday … 7 = Sunday). */
+export function weekdayName(isoDay: number, locale: Locale = 'en'): string {
+  return (locale === 'en' ? EN_DAYS : NAMES[locale].weekdays)[isoDay - 1] ?? '';
+}
+
+/** "Mon", "सोम", "ಸೋಮ" for an ISO weekday. */
+export function weekdayNameShort(isoDay: number, locale: Locale = 'en'): string {
+  return locale === 'en' ? (EN_DAYS[isoDay - 1] ?? '').slice(0, 3) : (NAMES[locale].weekdaysShort[isoDay - 1] ?? '');
+}
+
 /** Short weekday ("Mon", "सोम", "ಸೋಮ") for a calendar date. */
 export function weekdayShort(date: string, locale: Locale = 'en'): string {
   if (locale === 'en') return new Intl.DateTimeFormat('en-IN', { weekday: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
