@@ -1,0 +1,15 @@
+# KINETIX import: the weekly timetable. One row per period.
+# section       The class, as shown, e.g. BSc Sem 1 A (required)
+# subject_code  A subject of the class's program and term (required)
+# teacher       The teacher's email or phone (required; import staff first)
+# day           Mon, Tue, Wed, Thu, Fri, Sat or Sun, or 1 (Monday) to 7 (required)
+# start, end    24-hour times, e.g. 09:00 and 09:55 (required)
+# room          Optional room name (created if missing)
+# Clashes (a class, teacher or room booked twice) are reported per row. A period is matched by class,
+# day and start time. With "replace", each class in the file gets exactly the periods in the file.
+section,subject_code,teacher,day,start,end,room
+BSc Sem 1 A,BSC-1.1,priya.nair@example.in,Mon,09:00,09:55,Room 101
+BSc Sem 1 A,BSC-1.2,suresh.hegde@example.in,Mon,10:00,10:55,Room 101
+BSc Sem 1 A,BSC-1.3,manjunath.gowda@example.in,Tue,09:00,09:55,Room 101
+BSc Sem 1 B,BSC-1.1,priya.nair@example.in,Mon,10:00,10:55,Room 102
+BSc Sem 1 B,BSC-1.4,sunita.verma@example.in,Tue,09:00,09:55,Room 102

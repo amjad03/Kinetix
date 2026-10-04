@@ -1,0 +1,14 @@
+# KINETIX import: staff. One row per person.
+# full_name           Full name, in any script (required)
+# email               Email address (email or phone required; used to match on re-import)
+# phone               Mobile number, e.g. 98450 12345 (staff sign in with a code sent to it)
+# roles               teacher, hod, principal, tenant_admin, accountant, librarian; several separated by ; (required)
+# preferred_language  en, hi or kn (default en)
+# departments         Department names separated by ; (created if missing)
+# Rows are matched by email, then phone: importing again updates the name, adds roles and departments.
+full_name,email,phone,roles,preferred_language,departments
+Priya Nair,priya.nair@example.in,+919845000101,teacher,en,Science
+Suresh Hegde,suresh.hegde@example.in,+919845000102,teacher;hod,kn,Science
+सुनीता वर्मा,sunita.verma@example.in,+919845000103,teacher,hi,Languages
+ಮಂಜುನಾಥ ಗೌಡ,manjunath.gowda@example.in,+919845000104,teacher,kn,Languages
+Office Accounts,accounts@example.in,,accountant,en,

@@ -91,6 +91,26 @@ test('the classes table fits its frame at 1280 and 1440 px, with the teacher and
   await context.close();
 });
 
+test('the stat tiles fit at 1280 and 1440 px: "Syllabus covered" shows "n of m topics" in full', async ({ browser }) => {
+  const context = await browser.newContext({ storageState: 'e2e/.auth/hod.json' });
+  const page = await context.newPage();
+  for (const width of [1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page, '/department?range=term');
+    const tile = page.getByTestId('dept-stat-syllabus');
+    const unit = tile.getByText(/^\d+ of \d+ topics$/);
+    await expect(unit).toBeVisible();
+    const [u, box] = [await unit.boundingBox(), await tile.boundingBox()];
+    expect(u!.x + u!.width, `topics count inside the tile at ${width}`).toBeLessThanOrEqual(box!.x + box!.width);
+    for (const id of ['held', 'taken', 'attendance', 'syllabus', 'homework', 'recordings', 'assessments']) {
+      const { scroll, client } = await page.getByTestId(`dept-stat-${id}`).evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+      expect(scroll, `${id} tile content is ${scroll}px in a ${client}px tile at ${width}`).toBeLessThanOrEqual(client);
+    }
+  }
+  await shot(page, 'department-tiles-1440');
+  await context.close();
+});
+
 test("a head of department sees their department's results, and cannot set up departments", async ({ browser }) => {
   const context = await browser.newContext({ storageState: 'e2e/.auth/hod.json' });
   const page = await context.newPage();

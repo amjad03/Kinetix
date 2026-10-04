@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   // Tracing starts at the workspace root so pnpm's hoisted packages are included.
   output: 'standalone',
   outputFileTracingRoot: path.join(path.dirname(fileURLToPath(import.meta.url)), '../..'),
+  // Bulk import sends a CSV file (up to 5,000 rows) through a server action; the API takes up to 6 MB.
+  experimental: { serverActions: { bodySizeLimit: '6mb' } },
 };
 
 export default nextConfig;

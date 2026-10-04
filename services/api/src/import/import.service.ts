@@ -252,7 +252,7 @@ export class ImportService {
     const roles = parseRoles(required(r, 'roles'));
     const lang = r.get('preferred_language') ? language(r.get('preferred_language')) : undefined;
     const key = `staff:${email ?? phone}`;
-    if (ctx.seen.has(key)) fail('This row repeats an earlier row', email ?? phone);
+    if (ctx.seen.has(key)) fail('This row repeats an earlier row', email ?? phone ?? undefined);
     ctx.seen.add(key);
 
     let created = false;
@@ -261,7 +261,7 @@ export class ImportService {
     let user = found;
     if (user) {
       const have = await this.rolesOf(tx, user.id);
-      if (have.includes('student')) fail('This email or phone number already belongs to someone else', email ?? phone);
+      if (have.includes('student')) fail('This email or phone number already belongs to someone else', email ?? phone ?? undefined);
       const set: Partial<typeof users.$inferInsert> = {};
       if (user.fullName !== fullName) set.fullName = fullName;
       if (email && user.email !== email) set.email = email;

@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1.7
 # KINETIX Cloud API (NestJS, ESM). Build from the repo root (the pnpm workspace):
 #   docker build -f services/api/Dockerfile -t kinetix-api .
-# Modes (see docker-entrypoint.sh): serve (default), migrate, seed, content-import, db-bootstrap.
+# Modes (see docker-entrypoint.sh): serve (default), migrate, seed, content-import, create-institution, db-bootstrap.
 #   docker run --rm --env-file api.env kinetix-api migrate   # one-off, owner role, before deploy
+#   docker run --rm --env-file api.env kinetix-api create-institution --slug … --name … (owner role)
 #   docker run --init -p 4000:4000 --env-file api.env kinetix-api
 #
 # Behind a TLS-intercepting proxy, pass its CA as a build secret:

@@ -1,0 +1,15 @@
+# KINETIX import: students and their parents or guardians. One row per student.
+# roll_no             Roll number, unique in the institution (required; used to match on re-import)
+# full_name           Full name, in any script (required)
+# section             The class, as shown, e.g. BSc Sem 1 A (required; import programs first)
+# student_email       Optional: gives the student a login
+# student_phone       Optional: gives the student a login (they sign in with a code sent to it)
+# preferred_language  en, hi or kn, for the student's login (default en)
+# guardian1_name, guardian1_phone, guardian1_relation (father, mother, guardian…), guardian1_language
+# guardian2_name, guardian2_phone, guardian2_relation, guardian2_language
+# A guardian is matched by phone: brothers and sisters with the same parent phone share one parent login.
+roll_no,full_name,section,student_email,student_phone,preferred_language,guardian1_name,guardian1_phone,guardian1_relation,guardian1_language,guardian2_name,guardian2_phone,guardian2_relation,guardian2_language
+BSC1A001,Aditi Kulkarni,BSc Sem 1 A,,,en,Ramesh Kulkarni,+919900000201,father,en,Asha Kulkarni,+919900000202,mother,kn
+BSC1A002,ಕಾವ್ಯ ಶೆಟ್ಟಿ,BSc Sem 1 A,kavya.shetty@example.in,+919900000203,kn,ಪ್ರಕಾಶ್ ಶೆಟ್ಟಿ,+919900000204,father,kn,,,,
+BSC1B001,आरव मिश्रा,BSc Sem 1 B,,,hi,राजेश मिश्रा,+919900000205,father,hi,,,,
+BSC1B002,Rohan Kulkarni,BSc Sem 1 B,,,en,Ramesh Kulkarni,+919900000201,father,en,,,,

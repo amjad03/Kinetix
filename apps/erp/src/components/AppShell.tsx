@@ -13,6 +13,8 @@ import EventNote from '@mui/icons-material/EventNote';
 import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
 import Settings from '@mui/icons-material/Settings';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import UploadFile from '@mui/icons-material/UploadFile';
+import UploadFileOutlined from '@mui/icons-material/UploadFileOutlined';
 import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
 import CastForEducation from '@mui/icons-material/CastForEducation';
 import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
@@ -81,6 +83,7 @@ const NAV: { href: string; label: MessageKey; section: Section; icon: typeof Tod
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
   { href: '/departments', label: 'nav.departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
+  { href: '/import', label: 'nav.import', section: 'import', icon: UploadFileOutlined, active: UploadFile },
   { href: '/settings', label: 'nav.settings', section: 'settings', icon: SettingsOutlined, active: Settings },
 ];
 

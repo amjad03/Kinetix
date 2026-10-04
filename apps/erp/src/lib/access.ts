@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -34,6 +34,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   calendar: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian'],
   // SettingsController and ConsentAdminController: STAFF_ADMIN_ROLES
   settings: ['principal', 'tenant_admin'],
+  // import.controller.ts (bulk import from CSV): STAFF_ADMIN_ROLES
+  import: ['principal', 'tenant_admin'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -103,6 +105,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'calendar';
     case 'settings':
       return 'settings';
+    case 'import':
+      return 'import';
     default:
       return null;
   }

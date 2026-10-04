@@ -37,6 +37,10 @@ const GENERIC_FALLBACK: Record<string, MessageKey> = {
   CONFLICT: 'error.CONFLICT',
   TOO_LARGE: 'error.TOO_LARGE',
   UNPROCESSABLE: 'error.BAD_REQUEST',
+  // Timetable clashes: the message names the class and the time.
+  TIMETABLE_CLASS_CLASH: 'error.CONFLICT',
+  TIMETABLE_TEACHER_CLASH: 'error.CONFLICT',
+  TIMETABLE_ROOM_CLASH: 'error.CONFLICT',
 };
 
 /**

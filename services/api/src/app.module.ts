@@ -14,6 +14,7 @@ import { BroadcastsModule } from './broadcasts/broadcasts.module.js';
 import { ContentModule } from './content/content.module.js';
 import { DbModule } from './db/db.module.js';
 import { RedisModule } from './redis/redis.module.js';
+import { ImportModule } from './import/import.module.js';
 import { HealthModule } from './health/health.controller.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { ConsentModule } from './consent/consent.module.js';
@@ -58,6 +59,7 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     WhiteboardsModule,
     ParentModule,
     AdminModule,
+    ImportModule,
     TeacherModule,
     ContentModule,
     AiModule,

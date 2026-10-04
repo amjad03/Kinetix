@@ -32,7 +32,8 @@ export function StatTile({
             {label}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, mt: 1.5 }}>
+        {/* Wraps the unit ("4 of 7 topics") under the number when the tile is narrow, instead of clipping it. */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 0.75, rowGap: 0, mt: 1.5, minWidth: 0 }}>
           <Typography
             component="p"
             sx={{
@@ -46,7 +47,7 @@ export function StatTile({
             {value}
           </Typography>
           {unit && (
-            <Typography variant="body2" color="text.secondary" component="span">
+            <Typography variant="body2" color="text.secondary" component="span" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
               {unit}
             </Typography>
           )}

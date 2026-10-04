@@ -25,6 +25,12 @@ interface Options {
   body?: unknown;
   /** Send without the session token (login). */
   anonymous?: boolean;
+  /** Send this text as a CSV body (bulk import) instead of `body` as JSON. */
+  csv?: string;
+  /** Return the response body as text (a CSV template) instead of parsing JSON. */
+  text?: boolean;
+  /** Request timeout; a large import takes longer than a page load. */
+  timeoutMs?: number;
 }
 
 interface ErrorBody {
@@ -67,15 +73,16 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
     headers.authorization = `Bearer ${token}`;
   }
   if (opts.body !== undefined) headers['content-type'] = 'application/json';
+  if (opts.csv !== undefined) headers['content-type'] = 'text/csv; charset=utf-8';
 
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
       method: opts.method ?? 'GET',
       headers,
-      body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+      body: opts.csv !== undefined ? opts.csv : opts.body === undefined ? undefined : JSON.stringify(opts.body),
       cache: 'no-store',
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 15_000),
     });
   } catch {
     throw new ApiError(0, "Can't reach KINETIX Cloud. Check your connection and try again.", 'NETWORK');
@@ -85,6 +92,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
   if (res.status === 204) return undefined as T;
   // A handler that returns null sends an empty body.
   const text = await res.text();
+  if (opts.text) return text as T;
   return (text ? JSON.parse(text) : null) as T;
 }
 

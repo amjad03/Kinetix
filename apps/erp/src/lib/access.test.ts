@@ -25,7 +25,7 @@ describe('access', () => {
 
   it('gives the principal and admin the library, results and the timetable editor', () => {
     for (const r of [['principal'], ['tenant_admin']]) {
-      for (const s of ['library', 'results', 'timetable', 'conversations'] as const) expect(canSee(r, s)).toBe(true);
+      for (const s of ['library', 'results', 'timetable', 'conversations', 'import'] as const) expect(canSee(r, s)).toBe(true);
       expect(canPublishMarks(r)).toBe(true);
       expect(homeFor(r)).toBe('/');
     }
@@ -37,6 +37,9 @@ describe('access', () => {
     expect(canSee(r, 'syllabus')).toBe(true);
     expect(canSee(r, 'fees')).toBe(false);
     expect(canSee(r, 'ai')).toBe(false);
+    expect(canSee(r, 'import')).toBe(false);
+    expect(sectionOf('/import')).toBe('import');
+    expect(landingFor(r, '/import')).toBe(homeFor(r));
     expect(canLinkSubjects(r)).toBe(false);
     expect(canSee(r, 'results')).toBe(true);
     expect(canPublishMarks(r)).toBe(false);

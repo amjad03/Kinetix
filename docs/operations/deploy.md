@@ -23,7 +23,7 @@ Related: [backups-and-restore.md](backups-and-restore.md) · [monitoring.md](mon
 | Recordings | S3 `kinetix-<env>-objects-<account>` | KMS, versioned, public access blocked, lifecycle to IA/Glacier IR |
 
 The image modes are documented in `services/api/docker-entrypoint.sh`:
-`serve` (default), `migrate`, `seed` (demo data — **never in prod**), `content-import`, `db-bootstrap`.
+`serve` (default), `migrate`, `seed` (demo data — **never in prod**), `content-import`, `create-institution` (a real institution and its first administrator; see [Onboarding](#onboarding-a-real-institution)), `db-bootstrap`.
 
 ## One-time setup (per AWS account)
 
@@ -146,31 +146,68 @@ Deploy staging first; promote the same SHA to prod after a check on staging.
 
 ## Onboarding a real institution
 
-There is **no self-service onboarding or bulk import yet** (open work item). The demo seed
-(`services/api/src/db/seed.ts`) is the reference for the order and shape of the data. Plan on a
-supervised data load per institution:
+An institution is created once from the command line (owner role, because the app role may not
+create tenants); everything else is loaded by its own administrator from the ERP's **Import** page,
+from four CSV files. The demo seed is never used for a real institution.
 
-1. **Collect** (spreadsheet, from the institution, under a signed data-processing agreement):
-   institution name and short slug (used at sign-in), kind (school/college), campuses (name, city),
-   academic year (label, start/end dates), terms, programs (name, level, curriculum, term count),
-   sections (program, term, name), subjects, departments and their heads, staff (name, email, phone,
-   roles: principal, hod, teacher, accountant, librarian…), students (name, section, roll no.,
-   phone if they sign in), guardians (name, phone, relationship), rooms, bell schedule and the
-   timetable (day, period, section, subject, teacher, room), fee heads if fees are used.
-2. **Load**, in this order, as `kinetix_owner` (the same order as the seed): tenant → campuses →
-   academic year → programs → sections → subjects → users + roles → departments + staff →
-   students → rooms → timetable slots → guardians. Do it with a reviewed, idempotent load script
-   (TypeScript in `services/api/src/db/`, modelled on `seed.ts`, reading the cleaned spreadsheet as
-   CSV/JSON), shipped in the image and run as a one-off task on the API task definition with a
-   command override, e.g. `run_task kinetix-$ENV-api '["node","dist/db/onboard.js","s3://…"]' api`.
-   Keep the input in the objects bucket under `onboarding/<slug>/` (encrypted, in India) and delete
-   it once the load is verified; never email spreadsheets of student data around.
-   Run it on **staging first** against a copy of the same input, and have the institution check it there.
-   Staff get **no default password**: they sign in with a phone code (OTP) or a set-password flow.
-3. **Settings** in the ERP (principal): languages, live view and its indicator, classroom audio,
-   consent texts, calendar (holidays), fee settings.
-4. **Timetable**: after the bulk load, corrections are made in ERP → Timetable (one slot at a time,
-   `POST/PATCH/DELETE /v1/admin/timetable/slots`).
+1. **Collect** (under a signed data-processing agreement): the institution's name and a short slug
+   (typed at sign-in), kind (school / college / university), time zone, main campus and city, the
+   current academic year (label, first and last day), and the administrator's name, email and
+   mobile number. The institution fills in the four templates in
+   [`import-templates/`](import-templates/) (also downloadable from ERP → Import): programs and
+   classes, staff, students and families, timetable. Each has comment lines explaining its columns
+   and example rows. Spreadsheets are saved as **CSV UTF-8** (Hindi and Kannada names stay intact)
+   and stay with the institution: they are uploaded by its administrator, never emailed to us.
+2. **Create the institution** on **staging first**, then prod, as a one-off task on the API task
+   definition with a command override (the task's `DATABASE_URL` is the owner role):
+   ```bash
+   run_task kinetix-$ENV-api '["create-institution","--slug","sjc-blr","--name","St. Joseph'"'"'s College",
+     "--kind","college","--timezone","Asia/Kolkata","--campus","Main Campus","--city","Bengaluru",
+     "--year-label","2026-27","--year-start","2026-06-01","--year-end","2027-03-31",
+     "--admin-name","Admin Office","--admin-email","office@sjc.example.in","--admin-phone","98450 12345"]' api
+   ```
+   Locally: `pnpm --filter @kinetix/api db:create-institution -- --slug … ` (or
+   `node dist/db/create-institution.js …`). It creates the tenant (default settings: live view off,
+   indicator on, class audio off, PIN fallback off), the campus, the current academic year and the
+   first `tenant_admin`, audited as `institution.created`. It **refuses a slug that already exists**
+   (exit code 1, nothing changed) and bad arguments (exit code 2). The administrator's
+   **temporary password is printed once** in the task log (`/kinetix/$ENV/jobs`); give it to them in
+   person or by phone, never by email. With `--otp-only` (needs `--admin-phone`) there is no password
+   and the administrator signs in with a code sent by SMS.
+3. **Sign in as the administrator** (ERP, institution = the slug) and open **Import**. Each step:
+   download the template, choose the filled-in file, **Check file** (a dry run: every row is
+   checked, nothing is saved; errors are highlighted with the line number), fix the sheet until
+   there are no errors, then **Import**. A file is imported completely or not at all (one
+   transaction; any row with an error rolls everything back), and every import is audited
+   (`import.programs`, …). Importing the same file again is safe: rows are matched by natural keys
+   and reported as *new*, *updated* or *unchanged*. In order:
+   1. **Programs and classes** — program, level (ug / pg / school), number of terms; each class
+      (term + section → "BSc Sem 1 A", school "Grade 7 A") and subject (code, name, term), with the
+      department that teaches it (created if missing). Matched by program name, term + section, and
+      subject code.
+   2. **Staff** — name, email, phone, roles (teacher, hod, principal, tenant_admin, accountant,
+      librarian), language, departments. Matched by email, then phone; roles and departments are
+      added, never removed. Staff get **no password**: they sign in with a phone code (OTP).
+   3. **Students and families** — roll number (unique in the institution; a student can move class),
+      name, class, an optional student login (email / phone), and up to two parents or guardians
+      (name, phone, relation, language). Guardians are matched **by phone**, so brothers and sisters
+      share one parent login, and a teacher who is also a parent keeps one account.
+   4. **Timetable** — class, subject code, teacher (email or phone), day (Mon–Sun or 1–7), start, end,
+      room (created if missing). Checked with the same rules as the timetable editor: a class,
+      teacher or room booked twice is reported on its row. A period is matched by class, day and
+      start time (a changed period is archived and replaced, like an edit in ERP → Timetable). With
+      **Replace the timetable of each class in the file** (`?replace=true`) those classes get exactly
+      the file's periods; the rest are archived, and unchanged periods keep their history.
+
+   The same API is available for scripted loads: `POST /v1/admin/import/{programs|staff|students|timetable}`
+   with the CSV as a `text/csv` body or a multipart `file` field (max 5,000 rows, 6 MB, UTF-8),
+   `?dryRun=true` to check only; the response lists `{row, status, message, code, detail}` per row
+   and the totals, with `committed` true only when it was saved. Principal or tenant_admin only.
+4. **Set up the rest** in the ERP: **Departments** (heads of department; the import already created
+   departments and placed subjects and staff in them), **Calendar** (holidays, exams), **Settings**
+   (live view and its indicator, classroom audio, consent texts, grievance officer), fees if used,
+   and **Syllabus** (link subjects to courses). Corrections to the timetable are made in ERP →
+   Timetable one period at a time, or by importing again.
 5. **Boards**: for each classroom, ERP → Boards → *Add board* gives an enrolment code; enter it on
    the board with the server address `https://<api_domain>`.
 6. **Apps**: teachers, parents and students install the apps (see

@@ -8,8 +8,11 @@ import { createT } from './translate';
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 const en = MESSAGES.en;
 const keys = Object.keys(en) as MessageKey[];
-/** Words that stay in Latin script in every language (glossary): brand and technical names. */
-const LATIN_OK = /^(KINETIX|ERP|AI|UPI|ISBN|ID|PIN|HOD|UTR|PC|Windows|Board|Teacher|App|Parent|Student|Books|Set|up|this|board|Register|Commerce|Room|demo-college|Cr|L|Cloud)$/;
+/**
+ * Words that stay in Latin script in every language (glossary): brand and technical names, and
+ * values people type into import files as they are (CSV, levels ug/pg/school, languages en/hi/kn, days Mon–Sun).
+ */
+const LATIN_OK = /^(KINETIX|ERP|AI|UPI|ISBN|ID|PIN|HOD|UTR|PC|Windows|Board|Teacher|App|Parent|Student|Books|Set|up|this|board|Register|Commerce|Room|demo-college|Cr|L|Cloud|CSV|UTF-|ug|pg|school|en|hi|kn|Mon|Sun)$/;
 
 describe('dictionary', () => {
   it('has every key in English, Hindi and Kannada, and nothing extra', () => {

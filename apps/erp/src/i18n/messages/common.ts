@@ -24,6 +24,7 @@ export default area(
     'nav.syllabus': 'Syllabus',
     'nav.ai': 'AI usage',
     'nav.departments': 'Departments',
+    'nav.import': 'Import',
     'nav.settings': 'Settings',
 
     'role.principal': 'Principal',
@@ -170,6 +171,7 @@ export default area(
       'nav.syllabus': 'पाठ्यक्रम',
       'nav.ai': 'AI उपयोग',
       'nav.departments': 'विभाग सेटअप',
+      'nav.import': 'आयात',
       'nav.settings': 'सेटिंग्स',
 
       'role.principal': 'प्रधानाचार्य',
@@ -315,6 +317,7 @@ export default area(
       'nav.syllabus': 'ಪಠ್ಯಕ್ರಮ',
       'nav.ai': 'AI ಬಳಕೆ',
       'nav.departments': 'ವಿಭಾಗಗಳ ಸೆಟಪ್',
+      'nav.import': 'ಆಮದು',
       'nav.settings': 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
 
       'role.principal': 'ಪ್ರಾಂಶುಪಾಲರು',

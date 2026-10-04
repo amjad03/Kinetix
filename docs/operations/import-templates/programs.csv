@@ -1,0 +1,16 @@
+# KINETIX import: programs, classes (sections) and subjects. One row per class or subject; repeat the program on each row.
+# program        Program name, e.g. BCom, BSc, CBSE (required)
+# level          ug, pg or school (required)
+# terms          Number of semesters (ug/pg) or grades (school) (required)
+# term           Semester or grade of the class or subject on this row
+# section        Class name within the term, e.g. A. Shown as "BSc Sem 1 A" (school: "Grade 7 A")
+# display_name   Optional: the class's name as shown, instead of the one above
+# subject_code   Subject code, unique within the program, e.g. BSC-1.1
+# subject_name   Subject name
+# department     Optional: the department that teaches the subject (created if missing)
+# Rows are matched by program name, by term + section, and by subject code: importing again updates them.
+program,level,terms,term,section,display_name,subject_code,subject_name,department
+BSc,ug,6,1,A,,BSC-1.1,Physics I,Science
+BSc,ug,6,1,B,,BSC-1.2,Mathematics I,Science
+BSc,ug,6,1,,,BSC-1.3,Kannada I,Languages
+BSc,ug,6,1,,,BSC-1.4,Hindi I,Languages
