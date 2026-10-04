@@ -403,7 +403,7 @@ function ReceiptsDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone:
                 }
               >
                 <ListItemText
-                  primary={`${formatRupees(p.amountPaise)} · ${METHOD_LABEL[p.method] ?? p.method}`}
+                  primary={`${formatRupees(p.amountPaise)} · ${METHOD_LABEL[p.method] ?? p.method}${p.reference ? ` · ${p.reference}` : ''}`}
                   secondary={`${p.receiptNo ?? ''}${p.paidAt ? ` · ${formatDateTime(p.paidAt, timeZone)}` : ''}`}
                 />
               </ListItem>

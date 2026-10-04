@@ -85,13 +85,13 @@ class _AskViewState extends State<AskView> {
             children: [
               ?widget.header,
               _Composer(controller: controller, subjects: widget.subjects),
-              if (turn != null) ...[
-                const SizedBox(height: Kx.s16),
-                KeyedSubtree(
+              if (turn != null)
+                // The gap is inside the key so scrolling to the answer leaves a little air above it.
+                Padding(
                   key: _answerKey,
+                  padding: const EdgeInsets.only(top: Kx.s16),
                   child: AnswerCard(turn: turn, controller: controller),
                 ),
-              ],
               if (controller.history.isNotEmpty) ...[
                 const SizedBox(height: Kx.s24),
                 Text('Earlier questions', style: context.text.titleSmall?.copyWith(color: context.colors.primary)),
@@ -350,19 +350,35 @@ class AnswerCard extends StatelessWidget {
           const SizedBox(height: Kx.s16),
           Text('Ask next', style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
           const SizedBox(height: Kx.s4),
-          Wrap(
-            spacing: Kx.s8,
-            runSpacing: Kx.s4,
-            children: [
-              for (final (i, f) in answer.followUps.indexed)
-                ActionChip(
-                  key: Key('followUp-$i'),
-                  avatar: const Icon(Icons.subdirectory_arrow_right, size: 18),
-                  label: Text(f),
-                  onPressed: () => controller.ask(f),
+          // Rows rather than chips: follow-up questions are often long and should wrap.
+          for (final (i, f) in answer.followUps.indexed)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Kx.s8),
+              child: Material(
+                shape: RoundedRectangleBorder(
+                  borderRadius: Kx.radiusSm,
+                  side: BorderSide(color: c.outlineVariant),
                 ),
-            ],
-          ),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  key: Key('followUp-$i'),
+                  onTap: () => controller.ask(f),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: Kx.target),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),
+                      child: Row(
+                        children: [
+                          Icon(Icons.subdirectory_arrow_right, size: 18, color: c.primary),
+                          const SizedBox(width: Kx.s8),
+                          Expanded(child: Text(f, style: context.text.bodyMedium)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
         const SizedBox(height: Kx.s16),
         Text(

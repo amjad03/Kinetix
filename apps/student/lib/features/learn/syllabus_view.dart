@@ -84,26 +84,27 @@ class _SyllabusViewState extends State<SyllabusView> {
           key: const Key('syllabusList'),
           padding: EdgeInsets.fromLTRB(side, Kx.s16, side, Kx.s32),
           children: [
-            TextField(
+            SearchBar(
               key: const Key('search'),
               controller: _query,
               onChanged: _changed,
               onSubmitted: _search,
               textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search topics, e.g. goodwill',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _query.text.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: 'Clear',
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          _query.clear();
-                          _search('');
-                        },
-                      ),
-              ),
+              hintText: 'Search topics, e.g. goodwill',
+              elevation: const WidgetStatePropertyAll(0),
+              padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: Kx.s16)),
+              leading: const Icon(Icons.search),
+              trailing: [
+                if (_query.text.isNotEmpty)
+                  IconButton(
+                    tooltip: 'Clear',
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      _query.clear();
+                      _search('');
+                    },
+                  ),
+              ],
             ),
             const SizedBox(height: Kx.s8),
             if (_searching) const LinearProgressIndicator(key: Key('searching')),
@@ -269,7 +270,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
               bottom: Kx.s8,
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  '${o.title} · ${o.chapters.length} chapters · ${o.topicCount} topics',
+                  '${o.title} · ${Fmt.plural(o.chapters.length, 'chapter')} · ${Fmt.plural(o.topicCount, 'topic')}'.replaceAll(RegExp(r'(?<=\d) '), '\u00a0'),
                   style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                 ),
               ),

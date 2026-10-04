@@ -188,7 +188,7 @@ export interface FeeReceipt {
 export interface StudentFees {
   duePaise: number;
   invoices: { id: string; title: string; amountPaise: number; paidPaise: number; dueOn: string; status: InvoiceStatus }[];
-  payments: { id: string; invoiceId: string; amountPaise: number; method: string; receiptNo: string | null; paidAt: string | null }[];
+  payments: { id: string; invoiceId: string; title?: string; amountPaise: number; method: string; reference?: string | null; receiptNo: string | null; paidAt: string | null }[];
 }
 
 // ---- Content library (v1/content) ----
