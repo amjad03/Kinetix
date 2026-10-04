@@ -16,31 +16,33 @@ syllabus comes from the **global curriculum library**, which belongs to no tenan
 
 | Tier | For | How |
 |---|---|---|
-| **Pooled** (default) | Most schools and colleges | Shared PostgreSQL schema. Every tenant-owned table has `tenant_id uuid not null`, and **row-level security** is enabled *and forced*. |
+| **Pooled** (default) | Most schools and colleges | Shared PostgreSQL schema. Every tenant-owned table has `tenant_id uuid not null` and **row-level security** enabled. |
 | **Dedicated DB** | Large universities, contractual need | The same schema on a dedicated RDS instance. The tenant registry maps `tenant_id` to a connection string. |
 
 The application code is the same in both tiers. A per-request resolver picks the connection.
 
 ## How RLS is enforced
 
-1. The app connects as a role `kinetix_app`, which is **not** the table owner and has no `BYPASSRLS`.
+Implemented in `services/api/migrations/0001_rls.sql` and `src/db/db.service.ts`.
+
+1. The app connects as `kinetix_app`. That role is **not** the table owner and has no `BYPASSRLS`, so policies always apply to it. We don't need `FORCE ROW LEVEL SECURITY` because the app never connects as the owner.
 2. Every tenant table has:
    ```sql
    alter table x enable row level security;
-   alter table x force row level security;
    create policy tenant_isolation on x
-     using (tenant_id = current_setting('app.tenant_id', true)::uuid)
-     with check (tenant_id = current_setting('app.tenant_id', true)::uuid);
+     using (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
+     with check (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);
    ```
-3. A Prisma client extension wraps each operation in a transaction that first runs
-   `select set_config('app.tenant_id', $1, true)`. The setting is transaction-local, so a
-   pooled connection can't carry it over to the next request.
-4. If `app.tenant_id` is unset, the policy compares against `NULL` and **no rows match**. A
-   bug therefore fails closed: it returns nothing rather than another school's data.
-5. Cross-tenant jobs (billing, platform analytics) use a separate `kinetix_platform` role.
-   Every use is written to the audit log.
-6. Tests check isolation: a query run in tenant A's context must never see rows belonging
-   to tenant B (`services/api/test/rls.e2e-spec.ts`).
+3. `DbService.withTenant(tenantId, fn)` opens a transaction and runs `select set_config('app.tenant_id', $1, true)` before anything else. The setting is local to the transaction, so a pooled connection never carries it into the next request.
+4. If `app.tenant_id` is unset, the policy compares against `NULL` and **no rows match**. A bug therefore returns nothing rather than another school's data.
+5. A few lookups happen before the tenant is known: the tenant by its slug at login, and the device by its enrolment code. They live in `SystemLookups`, use the owner connection, and return only the tenant identity.
+6. **Foreign keys are checked without RLS.** Any client-supplied id (a student, a section) must therefore be looked up under RLS before it is written. `SyncService.studentInSession` shows the pattern.
+7. Tests (`services/api/test/rls.e2e.spec.ts`) check four things:
+   - every table with a `tenant_id` column has a policy, so a new table can't be forgotten;
+   - tenant A can't read, update or insert tenant B's rows;
+   - nothing is visible without a tenant context;
+   - the app role can't change the `tenants` table or delete from the audit log.
+8. Cross-tenant platform jobs (billing, analytics) will use a separate audited role. It is not built yet.
 
 ## Data residency (India)
 

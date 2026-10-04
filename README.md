@@ -28,17 +28,22 @@ multi-tenant SaaS and hosted entirely in India.
 ## Local development
 
 ```bash
-# API (needs PostgreSQL 16 running locally)
+pnpm install
+pnpm --filter @kinetix/shared build
+
+# API (PostgreSQL 16 running locally)
 cd services/api
 cp .env.example .env
-pnpm install
-pnpm db:migrate        # applies the schema and row-level-security policies
-pnpm db:seed           # demo college tenant, teachers, timetable, a board
-pnpm start:dev         # http://localhost:4000, docs at /docs
+pnpm db:setup          # creates the kinetix + kinetix_test databases and the two roles
+pnpm db:migrate        # schema + row-level-security policies
+pnpm db:seed           # demo BU-affiliated college, staff logins, a board enrolment code
+pnpm start:dev         # http://localhost:4000, OpenAPI docs at /docs
+pnpm test              # e2e tests against kinetix_test (RLS, pairing, broadcasts, sync)
 
 # Board (Flutter 3.47+)
 cd apps/board
 flutter pub get
-flutter run -d windows   # or an Android device / emulator
+flutter run -d windows   # or -d linux, or an Android device
 flutter test
+../../scripts/board-it.sh  # board client ↔ live API integration test
 ```

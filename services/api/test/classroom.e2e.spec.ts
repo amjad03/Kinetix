@@ -95,6 +95,19 @@ describe('broadcasts and sync', () => {
       expect(report.body.acknowledged).toBe(1);
     });
 
+    it('an info banner is not shown again once displayed; an important card is, until OK is pressed', async () => {
+      const send = (priority: string) =>
+        http().post('/v1/broadcasts').set('authorization', `Bearer ${principalToken}`).send({ title: priority, body: '…', priority, audience: { all: true } }).expect(201);
+      const info = (await send('info')).body.id;
+      const important = (await send('important')).body.id;
+      for (const id of [info, important]) {
+        await http().post(`/v1/broadcasts/${id}/displayed`).set('authorization', `Bearer ${deviceToken}`).expect(204);
+      }
+      const pending = (await http().get('/v1/broadcasts/pending').set('authorization', `Bearer ${deviceToken}`).expect(200)).body.map((m: BroadcastMessage) => m.id);
+      expect(pending).not.toContain(info);
+      expect(pending).toContain(important);
+    });
+
     it('teachers cannot circulate', async () => {
       const teacher = await login(t.slug, t.teacher.email!);
       await http().post('/v1/broadcasts').set('authorization', `Bearer ${teacher}`).send({ title: 'x', body: 'y', audience: { all: true } }).expect(403);

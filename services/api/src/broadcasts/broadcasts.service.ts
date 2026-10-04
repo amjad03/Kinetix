@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { BroadcastMessage } from '@kinetix/shared';
 import { RealtimeEvents } from '@kinetix/shared';
-import { and, desc, eq, gt, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNull, ne, or, sql, type SQL } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
@@ -110,7 +110,10 @@ export class BroadcastsService {
     return toMessage(row.b, row.sender);
   }
 
-  /** Unexpired, uncleared broadcasts for a board that has not acknowledged them yet. */
+  /**
+   * Unexpired, uncleared broadcasts this board still has to show: anything not acknowledged,
+   * except info banners, which hide themselves and count as done once displayed.
+   */
   async pendingForDevice(tx: Tx, deviceId: string): Promise<BroadcastMessage[]> {
     const rows = await tx
       .select({ b: broadcasts, sender: { id: users.id, fullName: users.fullName } })
@@ -121,6 +124,7 @@ export class BroadcastsService {
         and(
           eq(broadcastReceipts.deviceId, deviceId),
           isNull(broadcastReceipts.acknowledgedAt),
+          or(ne(broadcasts.priority, 'info'), isNull(broadcastReceipts.displayedAt)),
           isNull(broadcasts.clearedAt),
           gt(broadcasts.expiresAt, this.clock.now()),
         ),

@@ -23,11 +23,11 @@ offline AI features on or off accordingly.
 
 ## 2. Sign-in & sessions
 
-- ✅ **Pairing with the Teacher App.** The Board shows a QR code and a 6-digit code. The teacher scans or types it in the Teacher App and the Board opens their session. Nobody types a PIN on the shared screen. ([design](../architecture/board-pairing.md))
+- ✅ **Pairing with the Teacher App** (cloud side and board screen built; the Teacher App screen comes next). The Board shows a QR code and a 6-digit code. The teacher scans or types it in the Teacher App and the Board opens their session. Nobody types a PIN on the shared screen. ([design](../architecture/board-pairing.md))
 - ⬜ **Offline pairing.** If the internet is down, the teacher's phone proves who they are to the Board over the local network or Bluetooth, using a credential the cloud signed earlier.
 - ⬜ **Fallback sign-in.** A PIN on a keypad whose keys are shuffled each time, so no one can learn it by watching. Each school can turn this on or off.
 - ✅ The current timetable period opens with its class, subject and next chapter.
-- ⬜ Auto sign-out at the end of the period, when the teacher ends the class on their phone, or after a period of inactivity.
+- 🟡 Auto sign-out at the end of the period (built) or when the teacher ends the class on their phone (built). Idle timeout is not built yet.
 - ⬜ A per-teacher language (English, Hindi, Kannada) and preferences that apply at sign-in.
 
 ## 3. Board workspace
@@ -35,7 +35,7 @@ offline AI features on or off accordingly.
 - ✅ **Multi-touch writing.** Every finger or pen gets its own stroke, so several students can write at the same time.
 - ⬜ **Multi-user zones.** Split the board into 2–4 zones, each with its own toolbar, for group activities and competitions.
 - ✅ Pen, highlighter, eraser (stroke and area), colours, thickness, undo/redo, clear.
-- ⬜ Palm rejection. Pressure-sensitive ink on supported pens.
+- 🟡 Palm rejection by contact size (built); the stylus eraser end erases (built); pressure-sensitive ink width is not built yet.
 - ⬜ Infinite canvas and pages; backgrounds (plain, ruled, grid, graph, music staff, dark chalkboard). 🟡 Backgrounds partly built.
 - ⬜ Shapes, lines, arrows, text, sticky notes, images; select, move, resize, lasso.
 - ⬜ **Geometry tools.** Ruler, protractor, compass, set squares. 2D and 3D shapes measure themselves automatically (lengths, angles, area, volume).
@@ -85,7 +85,7 @@ All AI runs on India-hosted infrastructure, or on the device itself. ([design](.
 ## 9. School-wide (principal/admin)
 
 - ⬜ **Live classroom view.** The principal can watch any board and listen to its microphone in real time. ([design](../architecture/live-classroom.md))
-- 🟡 **Circulate a message.** Send to all boards, a grade, or one class. It appears on the board immediately, with optional acknowledgement, and also goes to the Student and Parent apps. Emergency messages fill the screen.
+- ✅ **Circulate a message.** Send to all boards, a grade, or one class. It appears on the board immediately, with optional acknowledgement, and also goes to the Student and Parent apps. Emergency messages fill the screen.
 - ⬜ Daily dashboard: classes taught, syllabus coverage against the year plan, attendance, homework.
 - ⬜ Device management: health, app version, remote restart, kiosk lock.
 
@@ -98,7 +98,24 @@ All AI runs on India-hosted infrastructure, or on the device itself. ([design](.
 - ✅ High-contrast mode.
 - ⬜ Simple mode with big buttons.
 
-## 11. Help for teachers new to technology
+## 11. Parity items from the competitor research
+
+These come from [the Teachmint analysis](../research/teachmint-competitive-analysis.md) §5.1 and were missing above.
+
+- ⬜ **Write over anything.** A transparent ink layer over other apps, video, PDF and the web (Android overlay + MediaProjection; a transparent window on Windows).
+- ⬜ **Student responses without clickers.** Students answer from phones or tablets through a web link, no install, or with printed QR answer cards that the board camera scans.
+- ⬜ **Wireless casting** from teacher and student phones, several at once, with teacher approval and a filter on student content.
+- ⬜ **Face-recognition attendance** as an option, with teacher review. Face templates stay on the device and the feature needs consent.
+- ⬜ Live or hybrid class via native WebRTC.
+- ⬜ AI grading of homework and test submissions.
+- ⬜ Voice commands in English, Kannada and Hindi ("next slide", "start a 5-minute timer", "mark attendance").
+- ⬜ Live captions of the teacher's speech, plus accessibility: a dyslexia-friendly font and an immersive reader.
+- ⬜ Usage analytics for the principal: minutes taught, syllabus coverage, AI use.
+- ⬜ NFC card login where the hardware supports it.
+- ⬜ MDM: remote updates, kiosk lock, schedules, health.
+- ⬜ Tests that autosave every answer locally. This answers a common complaint about a competitor.
+
+## 12. Help for teachers new to technology
 
 - ⬜ Guided tour, and a five-minute practice board that ticks off each task as it is done.
 - ⬜ "Show me" help that points at the right button.
