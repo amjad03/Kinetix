@@ -121,6 +121,7 @@ export class FeesController {
           billedPaise: sql<number>`sum(${feeInvoices.amountPaise})::bigint`.mapWith(Number),
           collectedPaise: sql<number>`sum(${feeInvoices.paidPaise})::bigint`.mapWith(Number),
           overdue: sql<number>`count(*) filter (where ${feeInvoices.status} = 'due' and ${feeInvoices.dueOn} < ${today})::int`,
+          overduePaise: sql<number>`coalesce(sum(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise}) filter (where ${feeInvoices.status} = 'due' and ${feeInvoices.dueOn} < ${today}), 0)::bigint`.mapWith(Number),
           open: sql<number>`count(*) filter (where ${feeInvoices.status} = 'due')::int`,
         })
         .from(feeInvoices)
@@ -128,12 +129,13 @@ export class FeesController {
         .where(ne(feeInvoices.status, 'cancelled'))
         .groupBy(sections.id, sections.displayName)
         .orderBy(asc(sections.displayName));
-      const total = (k: 'billedPaise' | 'collectedPaise' | 'overdue' | 'open') => rows.reduce((s, r) => s + Number(r[k]), 0);
+      const total = (k: 'billedPaise' | 'collectedPaise' | 'overdue' | 'overduePaise' | 'open') => rows.reduce((s, r) => s + Number(r[k]), 0);
       return {
         billedPaise: total('billedPaise'),
         collectedPaise: total('collectedPaise'),
         outstandingPaise: Math.max(0, total('billedPaise') - total('collectedPaise')),
         overdueInvoices: total('overdue'),
+        overduePaise: total('overduePaise'),
         openInvoices: total('open'),
         classes: rows.map((r) => ({ ...r, outstandingPaise: Math.max(0, r.billedPaise - r.collectedPaise) })),
       };

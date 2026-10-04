@@ -38,8 +38,9 @@ export class AdminController {
   ) {}
 
   /** Campuses, programs, classes and rooms: for audience pickers and filters. */
+  /** Also readable by the accounts office, which issues fees to classes. */
   @Get('structure')
-  @Auth('user', DASHBOARD_ROLES)
+  @Auth('user', [...DASHBOARD_ROLES, 'accountant'])
   structure(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => ({
       timezone: await this.timetable.tenantTimezone(tx),
@@ -60,6 +61,10 @@ export class AdminController {
         .from(sections)
         .orderBy(asc(sections.displayName)),
       rooms: await tx.select({ id: rooms.id, name: rooms.name, campusId: rooms.campusId }).from(rooms).orderBy(asc(rooms.name)),
+      subjects: await tx
+        .select({ id: subjects.id, code: subjects.code, name: subjects.name, programId: subjects.programId, term: subjects.term, courseId: subjects.courseId })
+        .from(subjects)
+        .orderBy(asc(subjects.code)),
     }));
   }
 

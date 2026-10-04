@@ -106,6 +106,7 @@ export class FeesService {
       .from(feePayments)
       .where(and(eq(feePayments.invoiceId, r.invoice.id), eq(feePayments.status, 'paid'), lte(feePayments.paidAt, r.payment.paidAt!)));
     return {
+      paymentId: r.payment.id,
       receiptNo: r.payment.receiptNo,
       institution: r.institution,
       student: r.student,

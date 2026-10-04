@@ -115,13 +115,13 @@ describe('fees and payments', () => {
     const invoiceId = (await fees('principal', studentC)).invoices[0].id;
     await http().post(`/v1/fees/invoices/${invoiceId}/payments`).set(auth('principal')).send({ amountPaise: 50_000_00, method: 'cash' }).expect(400);
     const receipt = await http().post(`/v1/fees/invoices/${invoiceId}/payments`).set(auth('principal')).send({ amountPaise: 45_000_00, method: 'cheque', reference: 'CHQ 004512' }).expect(201);
-    expect(receipt.body).toMatchObject({ receiptNo: `RCPT/${fy}/00004`, method: 'cheque', reference: 'CHQ 004512' });
+    expect(receipt.body).toMatchObject({ paymentId: expect.any(String), receiptNo: `RCPT/${fy}/00004`, method: 'cheque', reference: 'CHQ 004512' });
     // The student sees their own fees and receipt.
     expect((await fees('student', studentC)).duePaise).toBe(0);
     await http().post(`/v1/fees/invoices/${invoiceId}/cancel`).set(auth('principal')).expect(400);
 
     const summary = await http().get('/v1/fees/summary').set(auth('principal')).expect(200);
-    expect(summary.body).toMatchObject({ billedPaise: 135_000_00, collectedPaise: 135_000_00, outstandingPaise: 0, openInvoices: 0, overdueInvoices: 0 });
+    expect(summary.body).toMatchObject({ billedPaise: 135_000_00, collectedPaise: 135_000_00, outstandingPaise: 0, openInvoices: 0, overdueInvoices: 0, overduePaise: 0 });
     expect((await http().get('/v1/fees/summary').set(auth('outsider')).expect(200)).body.billedPaise).toBe(0);
   });
 

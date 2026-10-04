@@ -277,6 +277,7 @@ describe('families, saved boards and the dashboard', () => {
       const st = (await http().get('/v1/admin/structure').set(auth('principal')).expect(200)).body;
       expect(st.timezone).toBe('Asia/Kolkata');
       expect(st.sections.find((x: { id: string }) => x.id === t.section.id).students).toBe(3);
+      expect(st.subjects).toEqual([expect.objectContaining({ id: t.subject.id, name: 'Corporate Accounting', courseId: null })]);
     });
 
     it('attendance counts add up: marks = present + absent + late + excused', async () => {
