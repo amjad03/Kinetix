@@ -494,6 +494,56 @@ export const auditLog = pgTable('audit_log', {
 });
 
 /** Every table with a tenant_id column; the RLS migration and its tests iterate over this. */
+// ---------------------------------------------------------------------------------------------
+// AI (India-hosted; see docs/architecture/ai-platform.md)
+// ---------------------------------------------------------------------------------------------
+
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize']);
+export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
+
+/** One row per AI request: metering per tenant, plus the model and template behind each answer. */
+export const aiUsage = pgTable(
+  'ai_usage',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    deviceId: uuid('device_id').references(() => devices.id, { onDelete: 'set null' }),
+    task: aiTask('task').notNull(),
+    outcome: aiOutcome('outcome').notNull(),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    promptTokens: integer('prompt_tokens').notNull().default(0),
+    completionTokens: integer('completion_tokens').notNull().default(0),
+    latencyMs: integer('latency_ms').notNull().default(0),
+    /** Why a request was refused or failed, never the prompt itself. */
+    detail: text('detail'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('ai_usage_tenant_created_idx').on(t.tenantId, t.createdAt)],
+);
+
+/**
+ * Generated results, reused for the same request in the same institution. Per tenant because
+ * free-text questions may name people; topic-keyed sharing across tenants comes with the
+ * content library.
+ */
+export const aiCache = pgTable(
+  'ai_cache',
+  {
+    tenantId: tenantId(),
+    /** sha256 of task, prompt version, model, grounding and input. */
+    key: text('key').notNull(),
+    task: aiTask('task').notNull(),
+    result: jsonb('result').notNull(),
+    model: text('model').notNull(),
+    hits: integer('hits').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.key] })],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -517,5 +567,7 @@ export const TENANT_TABLES = [
   'guardians',
   'notifications',
   'whiteboards',
+  'ai_usage',
+  'ai_cache',
   'audit_log',
 ] as const;

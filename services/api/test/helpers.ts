@@ -1,6 +1,9 @@
 import 'reflect-metadata';
 import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, type TestingModuleBuilder } from '@nestjs/testing';
+import { RealtimeEvents, type PairingClaimedEvent } from '@kinetix/shared';
+import { io, type Socket } from 'socket.io-client';
+import request from 'supertest';
 import argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -39,11 +42,8 @@ export function nextMondayIst(time: string): Date {
   return zonedToInstant(monday, `${time}:00`, 'Asia/Kolkata');
 }
 
-export async function createApp(clock: FixedClock): Promise<INestApplication> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-    .overrideProvider(Clock)
-    .useValue(clock)
-    .compile();
+export async function createApp(clock: FixedClock, customize: (b: TestingModuleBuilder) => TestingModuleBuilder = (b) => b): Promise<INestApplication> {
+  const moduleRef = await customize(Test.createTestingModule({ imports: [AppModule] }).overrideProvider(Clock).useValue(clock)).compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>();
   configureApp(app);
   await app.init();
@@ -117,4 +117,20 @@ export async function createTenant(pool: pg.Pool) {
     .returning();
 
   return { slug, tenantId, campus, program, section, otherSection, subject, students: studentRows, room, teacher, teacher2, principal, studentUser, guardian, guardian2, slot, device, enrollmentCode: code };
+}
+
+/**
+ * Enrols the tenant's board, opens its realtime socket and pairs the teacher to it (the
+ * teacher's Monday 10:00 class is open when the clock is inside that period).
+ */
+export async function pairBoard(app: INestApplication, t: { enrollmentCode: string }, teacherToken: string): Promise<{ boardToken: string; deviceToken: string; socket: Socket }> {
+  const http = () => request(app.getHttpServer());
+  const deviceToken = (await http().post('/v1/devices/enroll').send({ code: t.enrollmentCode, platform: 'android' }).expect(201)).body.deviceToken as string;
+  const url = (await app.getUrl()).replace('[::1]', 'localhost');
+  const socket = io(`${url}/realtime`, { auth: { token: deviceToken }, transports: ['websocket'] });
+  await new Promise((r) => socket.once('ready', r));
+  const { code } = (await http().post('/v1/devices/me/pairing-codes').set('authorization', `Bearer ${deviceToken}`).expect(201)).body;
+  const claimed = new Promise<PairingClaimedEvent>((r) => socket.once(RealtimeEvents.PairingClaimed, r));
+  await http().post('/v1/pairing/claim').set('authorization', `Bearer ${teacherToken}`).send({ code }).expect(200);
+  return { boardToken: (await claimed).sessionToken, deviceToken, socket };
 }
