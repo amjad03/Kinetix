@@ -19,8 +19,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// [WidgetTester.pageBack] finds the back button by its English tooltip.
   Future<void> back(WidgetTester tester) async {
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton).last);
     await tester.pumpAndSettle();
   }
 
@@ -28,6 +29,7 @@ void main() {
 
   Future<void> show(WidgetTester tester, Finder f) async {
     await tester.scrollUntilVisible(f, 300, scrollable: home());
+    await tester.ensureVisible(f);
     await tester.pumpAndSettle();
   }
 
@@ -35,6 +37,13 @@ void main() {
     final link = find.descendant(of: find.byKey(Key(card)), matching: find.byType(CardLink));
     await show(tester, link);
     await tester.tap(link);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapShown(WidgetTester tester, Finder f) async {
+    await tester.ensureVisible(f);
+    await tester.pumpAndSettle();
+    await tester.tap(f);
     await tester.pumpAndSettle();
   }
 
@@ -74,17 +83,13 @@ void main() {
     await show(tester, find.byKey(const Key('feesView')));
     await tester.tap(find.byKey(const Key('feesView')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('pay-i1')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('payPart')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('payContinue')));
-    await tester.pumpAndSettle();
+    await tapShown(tester, find.byKey(const Key('pay-i1')));
+    await tapShown(tester, find.byKey(const Key('payPart')));
+    await tapShown(tester, find.byKey(const Key('payContinue')));
     Navigator.of(tester.element(find.byKey(const Key('amountField')))).pop();
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('payment-p1')), 300, scrollable: find.byType(Scrollable).last);
-    await tester.tap(find.byKey(const Key('payment-p1')));
-    await tester.pumpAndSettle();
+    await tapShown(tester, find.byKey(const Key('payment-p1')));
     await scrollDown(tester);
     await back(tester);
     await back(tester);
@@ -276,7 +281,7 @@ void main() {
 
     testWidgets('the lesson player follows the app language', (tester) async {
       await pumpApp(tester, prefs: {'language': 'hi'});
-      await tester.scrollUntilVisible(find.byKey(const Key('recording-r1')), 300, scrollable: home());
+      await show(tester, find.byKey(const Key('recording-r1')));
       await tester.tap(find.byKey(const Key('recording-r1')));
       await tester.pumpAndSettle();
       expect(find.byType(LessonPlayerScreen), findsOneWidget);

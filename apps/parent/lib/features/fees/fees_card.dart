@@ -126,7 +126,10 @@ class FeesCard extends StatelessWidget {
           ],
           const SizedBox(height: Kx.s16),
           if (canPay)
-            Row(
+            // Wraps under larger text or longer words instead of overflowing.
+            Wrap(
+              spacing: Kx.s8,
+              runSpacing: Kx.s4,
               children: [
                 FilledButton.icon(
                   key: const Key('feesPay'),
@@ -134,7 +137,6 @@ class FeesCard extends StatelessWidget {
                   icon: const Icon(Icons.currency_rupee, size: 18),
                   label: Text(l.pay),
                 ),
-                const SizedBox(width: Kx.s8),
                 TextButton(key: const Key('feesView'), onPressed: view, child: Text(l.viewFees)),
               ],
             )

@@ -123,7 +123,13 @@ class UpdatesTab extends StatelessWidget {
                 title: Text(context.l10n.navUpdates),
                 actions: [
                   if (controller.unread > 0)
-                    TextButton(key: const Key('markAllRead'), onPressed: controller.markAllRead, child: Text(context.l10n.markAllRead)),
+                    // An icon with a tooltip: the words don't fit the bar in every language.
+                    IconButton(
+                      key: const Key('markAllRead'),
+                      tooltip: context.l10n.markAllRead,
+                      onPressed: controller.markAllRead,
+                      icon: const Icon(Icons.done_all),
+                    ),
                   const SizedBox(width: Kx.s8),
                 ],
               ),

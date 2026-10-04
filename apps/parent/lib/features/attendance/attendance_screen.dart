@@ -169,9 +169,14 @@ class _DayCard extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: Text(context.fmt.longDay(date), style: context.text.titleSmall)),
-                  Text(
-                    allThere ? context.l10n.attendedAll : context.l10n.attendedNofM(attended, allMarks.length),
-                    style: context.text.labelMedium?.copyWith(color: allThere ? Tone.good(context) : c.onSurfaceVariant),
+                  const SizedBox(width: Kx.s8),
+                  // Longer words (or larger text) wrap instead of pushing past the edge.
+                  Flexible(
+                    child: Text(
+                      allThere ? context.l10n.attendedAll : context.l10n.attendedNofM(attended, allMarks.length),
+                      textAlign: TextAlign.end,
+                      style: context.text.labelMedium?.copyWith(color: allThere ? Tone.good(context) : c.onSurfaceVariant),
+                    ),
                   ),
                 ],
               ),
