@@ -405,6 +405,7 @@ class PaySheet extends StatefulWidget {
 class _PaySheetState extends State<PaySheet> {
   bool _part = false;
   final _amount = TextEditingController();
+  final _focus = FocusNode();
   String? _error;
   bool _tried = false;
 
@@ -415,6 +416,7 @@ class _PaySheetState extends State<PaySheet> {
   @override
   void dispose() {
     _amount.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -425,7 +427,7 @@ class _PaySheetState extends State<PaySheet> {
         _tried = true;
         _error = err;
       });
-      if (err != null) return;
+      if (err != null) return _focus.requestFocus();
     }
     Navigator.pop(context, _paise);
   }
@@ -467,6 +469,7 @@ class _PaySheetState extends State<PaySheet> {
               TextField(
                 key: const Key('amountField'),
                 controller: _amount,
+                focusNode: _focus,
                 autofocus: true,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,9}(\.\d{0,2})?'))],

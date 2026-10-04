@@ -5,7 +5,8 @@ homework is due? Do they take part? What was taught today?* It should feel like 
 Link or Google Classroom: calm tonal cards, big readable numbers, plain language and no
 education jargon. One parent account can follow several children.
 
-Code: [`apps/parent`](../../apps/parent). API: `services/api/src/parent`, `src/notifications`, `src/whiteboards`, `src/recordings`.
+Code: [`apps/parent`](../../apps/parent). API: `services/api/src/parent`, `src/notifications`, `src/whiteboards`, `src/recordings`, `src/fees`
+([fees and payments](../architecture/fees-payments.md)).
 Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../../packages/kinetix_lesson).
 
 ## Phase 1 (built)
@@ -20,7 +21,8 @@ Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../.
 | In class | For each subject, how the child answered when the teacher picked them on the board: correct, partly correct, not correct, no answer. Shown as a sentence and a stacked bar. | summary (`participation`) |
 | Class boards | Boards the teacher shared with the class after a lesson. Full-screen read-only viewer: page swipe, pinch and double-tap zoom, title, subject, teacher and date. | summary (`sharedBoards`), `GET /v1/whiteboards/:id` |
 | Lesson recordings | Lessons the teacher recorded on the board and shared with the class. The ones the child was absent for come first, marked **Missed this class**; three on Home, the rest under "See all". The player replays the board in step with the teacher's voice: play/pause (or tap the board), seek bar with elapsed and total time, ±10 s, 1× / 1.5× / 2×, page indicator. **Summary** (key points) and **Transcript** tabs appear when ready ("being prepared" while queued). Where the device has no audio backend (desktop Linux) or the lesson has no sound, the board plays on a silent clock and says so. | summary (`recordings`, with `missed`), `GET /v1/recordings/:id`, `/events`, `/audio` |
-| Updates | Notification inbox grouped Today / Earlier with an icon per kind (absence, homework, board shared, lesson recording, message from the college), unread dot and a badge on the tab. Tapping marks it read and opens the related screen: absence → attendance history (that day outlined), homework → homework detail, board → viewer, recording ("Missed Corporate Accounting? Watch the lesson") → player, message → full text. Mark all as read. | `GET /v1/notifications`, `POST /v1/notifications/:id/read`, `POST /v1/notifications/read-all` |
+| Fees & receipts | A **Fees** card on Home: the amount due (Indian grouping, ₹1,23,456; paise only when non-zero), the fee to pay next with its due date (overdue in red, overdue first), "Pay" and "View fees"; "All fees paid" with the last payment otherwise. The Fees screen (also from Profile → *Fees & receipts*, one entry per child): total due, fees **to pay** (earliest first) with due/overdue chips and a progress bar for part payments ("₹10,000 of ₹42,500 paid · ₹32,500 left"), **paid** fees, and **payments and receipts** (amount, fee, date, method, receipt number). **Pay now** asks for the full balance or a part (rupees, minimum ₹1, no more than the balance), creates the order on the server, opens the gateway's checkout and confirms the signed result with the server, then shows the **receipt**: institution, student and roll no., class, fee, amount, method, reference, receipt no., date and balance left, on a paper-like card that stays light in dark mode; *Copy receipt* puts it in plain text for a message or email. **Gateways:** Razorpay through the official `razorpay_flutter` checkout on Android and iOS (key, order, amount, name, description, prefill; success, failure, cancel and external wallets handled); **demo** in development, a confirm sheet labelled "Demo payment: no money moves" that signs the payment like the server's demo provider; and when the college has no online payments (or on desktop builds with Razorpay), "Please pay at the fees counter". A payment the server can't verify is not recorded and the parent is told plainly. | `GET /v1/fees/students/:id`, `POST /v1/fees/invoices/:id/checkout`, `POST /v1/fees/payments/:id/confirm`, `GET /v1/fees/payments/:id/receipt` |
+| Updates | Notification inbox grouped Today / Earlier with an icon per kind (absence, homework, board shared, lesson recording, fees, message from the college), unread dot and a badge on the tab. Tapping marks it read and opens the related screen: absence → attendance history (that day outlined), homework → homework detail, board → viewer, recording ("Missed Corporate Accounting? Watch the lesson") → player, payment received → its receipt, new fee → that child's fees (matched by the fee's title when there are several children), message → full text. Mark all as read. | `GET /v1/notifications`, `POST /v1/notifications/:id/read`, `POST /v1/notifications/read-all` |
 | Profile | Parent's name, phone and email, the children, college, server, sign out. | `GET /v1/me` |
 
 ### Rules the server enforces
@@ -35,11 +37,11 @@ Lesson playback is shared with the Teacher App: [`packages/kinetix_lesson`](../.
 
 These appear under **Profile → Coming soon** with a *Soon* badge:
 
-- **Fees & receipts**: dues, online payment (UPI) and downloadable receipts.
 - **Message the teacher**: a thread per child and teacher, with office hours.
 - **Library books**: books borrowed and due dates.
 - **Language**: English, हिन्दी and ಕನ್ನಡ (the fonts are already bundled in `kinetix_ui`).
 
-Also planned: push notifications (FCM/APNs, the server already has a TODO), secure token
+Also planned for fees: a PDF receipt to download or share, and opening "Fee due" updates
+without matching titles once the notification names the student. Also planned: push notifications (FCM/APNs, the server already has a TODO), secure token
 storage with an app lock, acknowledging a broadcast that requires it, board thumbnails, and
 term-wise attendance and marks.

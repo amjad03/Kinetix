@@ -151,7 +151,6 @@ class FeesCard extends StatelessWidget {
       key: const Key('feesCard'),
       icon: Icons.currency_rupee,
       title: 'Fees',
-      caption: overdue.isNotEmpty ? 'Overdue' : null,
       onTap: view,
       footer: canPay && next != null ? null : CardLink(fees.payments.isEmpty ? 'View fees' : 'View fees and receipts', onTap: view),
       child: body,
