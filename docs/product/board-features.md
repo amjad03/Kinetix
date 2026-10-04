@@ -38,8 +38,8 @@ offline AI features on or off accordingly.
 - ✅ Touch profiles: on a tablet a palm is ignored; on an interactive panel a palm erases like a duster; on an IR frame every touch writes. The stylus eraser end erases. ⬜ Pressure-sensitive ink width is not built yet.
 - ✅ Pages (previous, next, new page). ✅ Backgrounds: plain, ruled, 1 cm grid, dots, chalkboard. ⬜ Infinite canvas, music staff.
 - ✅ 13 2D shapes (line, arrows, circle, ellipse, triangles, rectangle, parallelogram, trapezium, rhombus, pentagon, hexagon). ✅ Box-select, move and delete, all undoable. ⬜ Text, sticky notes, images, resize, lasso.
-- 🟡 **Measurements.** ✅ 2D shapes can show side lengths (cm, on the 1 cm grid), interior angles and a circle's radius. ⬜ Ruler, protractor, compass, set squares, 3D solids, area and volume.
-- ✅ **Split screen.** A side panel next to the board, drag-resizable from 30% to 70%, which can sit on either side. 🟡 It can hold a second whiteboard (built) or a PDF/PPT, video, web page, 3D model or lab (coming).
+- 🟡 **Measurements.** ✅ 2D shapes can show side lengths (cm, on the 1 cm grid), interior angles and a circle's radius. ✅ 3D solids (cube to frustum) with live volume, curved and total surface area and slant height, each with its formula and the values substituted. ⬜ Ruler, protractor, compass, set squares.
+- ✅ **Split screen.** A side panel next to the board, drag-resizable from 30% to 70%, which can sit on either side. 🟡 It holds a second whiteboard, a 3D model or a virtual lab (built), or a PDF/PPT, video or web page (coming).
 - ⬜ Annotate over any pane (a transparent ink layer).
 - ✅ Save boards to KINETIX Cloud, reopen them from *Your whiteboards*, and share them with the class: students and parents are notified and can open the board read-only in their apps. End class offers to save and share. ⬜ Export as PDF or images.
 
@@ -48,7 +48,7 @@ offline AI features on or off accordingly.
 All AI runs on India-hosted infrastructure, or on the device itself. ([design](../architecture/ai-platform.md))
 
 - ⬜ Handwriting cleanup: turns handwriting into typed text in English, Hindi and Kannada, and rough sketches into clean shapes.
-- ⬜ **OCR** of photos, documents and the board itself.
+- 🟡 **OCR.** ✅ *Read board*: KINETIX AI reads the handwriting on the open page (text and maths as LaTeX) with a vision model on the India-hosted AI server. ⬜ Photos and documents.
 - ⬜ A step-by-step maths solver for handwritten or typed problems, offline as well.
 - ⬜ Explain a topic at the class's level, in the teacher's language.
 - ⬜ Generate quizzes, homework and assignments from the current chapter, then send them to the Student App.
@@ -60,8 +60,8 @@ All AI runs on India-hosted infrastructure, or on the device itself. ([design](.
 
 - ⬜ A ready lesson for the next chapter, for each syllabus: CBSE/NCERT, ICSE, Karnataka State Board and Bangalore University UG/PG.
 - ⬜ Global library plus each school's own content. Teachers prepare material in the ERP and it appears on the Board.
-- ⬜ 3D models (heart, Earth's layers and so on), some built in-house and some licensed.
-- ⬜ Virtual science labs.
+- 🟡 3D models: ✅ built in-house, offline (solids, water, methane, CO₂, NaCl lattice, the Solar System, Earth's tilt; tap a part to name it) and a glTF (.glb) loader for licensed models. ⬜ More models (heart, Earth's layers, cells…). See [3d-and-labs.md](3d-and-labs.md).
+- 🟡 Virtual labs, offline: ✅ Ohm's law, lens and mirror ray diagrams, simple pendulum, break-even chart, graph plotter. Syllabus topics link to them (Books → topic → *On the board*). ⬜ More labs (titration, refraction through a slab, …).
 - ⬜ PPT, PDF, images and video, with offline cache.
 
 ## 6. Classroom tools
@@ -84,7 +84,7 @@ All AI runs on India-hosted infrastructure, or on the device itself. ([design](.
 
 ## 9. School-wide (principal/admin)
 
-- ⬜ **Live classroom view.** The principal can watch any board and listen to its microphone in real time. ([design](../architecture/live-classroom.md))
+- 🟡 **Live classroom view.** ✅ The principal watches any board's ink live from the ERP (audited; 'Being viewed' on the board). ✅ *Go live*: students of the class watch from the Student App. ⬜ Classroom sound. ([design](../architecture/live-classroom.md))
 - ✅ **Circulate a message.** Send to all boards, a grade, or one class. It appears on the board immediately, with optional acknowledgement, and also goes to the Student and Parent apps. Emergency messages fill the screen.
 - ⬜ Daily dashboard: classes taught, syllabus coverage against the year plan, attendance, homework.
 - ⬜ Device management: health, app version, remote restart, kiosk lock.
