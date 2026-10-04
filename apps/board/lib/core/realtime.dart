@@ -6,6 +6,9 @@ abstract final class RealtimeEvents {
   static const sessionEnded = 'session.ended';
   static const broadcastNew = 'broadcast.new';
   static const broadcastCleared = 'broadcast.cleared';
+  static const liveViewers = 'live.viewers';
+  static const liveSnapshotRequest = 'live.snapshot.request';
+  static const liveFrame = 'live.frame';
 }
 
 /// The board's live connection to KINETIX Cloud. Reconnects on its own.
@@ -36,6 +39,9 @@ class Realtime {
     socket.connect();
     _socket = socket;
   }
+
+  /// Board → server (live view frames).
+  void emit(String event, Object data) => _socket?.emit(event, data);
 
   void dispose() => _socket?.dispose();
 }

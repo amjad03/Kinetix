@@ -70,6 +70,20 @@ class BoardController extends ChangeNotifier {
   /// Messages from the principal waiting to be shown, newest first.
   final List<BroadcastMessage> broadcasts = [];
 
+  /// Live view: how many school leaders are watching this board now, and whether the
+  /// institution wants the board to show it.
+  int liveViewers = 0;
+  bool liveIndicator = true;
+
+  /// Called when a new viewer needs a full picture of the board.
+  VoidCallback? onLiveSnapshotRequest;
+
+  /// Sends lesson events to the people watching (no-op when nobody is).
+  void sendLiveFrame(List<List<Object?>> events) {
+    if (liveViewers == 0 || events.isEmpty) return;
+    _realtime?.emit(RealtimeEvents.liveFrame, {'events': events});
+  }
+
   /// Emergencies the teacher acknowledged. They shrink to a strip but stay until the sender clears them.
   final Set<String> acknowledgedEmergencies = {};
 
@@ -270,6 +284,12 @@ class BoardController extends ChangeNotifier {
       broadcasts.removeWhere((b) => b.id == e['id']);
       notifyListeners();
     });
+    rt.on(RealtimeEvents.liveViewers, (e) {
+      liveViewers = (e['count'] as num?)?.toInt() ?? 0;
+      liveIndicator = e['indicator'] as bool? ?? true;
+      notifyListeners();
+    });
+    rt.on(RealtimeEvents.liveSnapshotRequest, (_) => onLiveSnapshotRequest?.call());
     rt.onReady = () {
       online = true;
       notifyListeners();
@@ -304,6 +324,7 @@ class BoardController extends ChangeNotifier {
 
   void _signOut() {
     _sessionTimer?.cancel();
+    liveViewers = 0;
     api?.sessionToken = null;
     session = null;
     roster = [];

@@ -21,6 +21,7 @@ import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'popovers.dart';
 import 'profile_menu.dart';
+import 'live_stream.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
 
@@ -64,6 +65,9 @@ class _BoardScreenState extends State<BoardScreen> {
   SessionContext? _captureTeacher;
   bool _captureStarting = false;
 
+  /// Streams the board while school leaders watch it live.
+  late final LiveStream _live = LiveStream(pages: _pages, send: (events) => board.sendLiveFrame(events));
+
   BoardController get board => widget.board;
   InkController get ink => _pages.current;
 
@@ -71,6 +75,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    board.onLiveSnapshotRequest = _startLive;
     _ai = AiController(board);
     _lastSessionId = board.session?.sessionId;
   }
@@ -78,6 +83,8 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void dispose() {
     board.removeListener(_onBoardChanged);
+    if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
+    _live.stop();
     _capture?.dispose();
     _pages.dispose();
     _secondInk.dispose();
@@ -85,8 +92,11 @@ class _BoardScreenState extends State<BoardScreen> {
     super.dispose();
   }
 
+  void _startLive() => _live.start(background: _background, canvas: _canvasSize);
+
   void _onBoardChanged() {
     _pages.palmMode = board.touchProfile.palmMode;
+    if (board.liveViewers == 0 && _live.isStreaming) _live.stop();
     final id = board.session?.sessionId;
     if (id == _lastSessionId) return;
     _lastSessionId = id;
@@ -134,6 +144,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void _setBackground(BoardBackground b) {
     setState(() => _background = b);
     _capture?.background = b;
+    _live.background = b;
   }
 
   // --- Lesson recording ----------------------------------------------------------------------
@@ -303,6 +314,7 @@ class _BoardScreenState extends State<BoardScreen> {
                 _boardTitle = summary.title;
               });
               _capture?.background = saved.background;
+              _live.background = saved.background;
               if (mounted) showBoardMessage(context, 'Opened "${summary.title}". Saving again updates it.');
             } catch (e) {
               if (mounted) showBoardMessage(context, 'Could not open the board: $e');
@@ -894,6 +906,17 @@ class _TopBarState extends State<_TopBar> {
                       avatar: KxAvatar(name: s.teacherName, size: 24),
                       label: Text([s.teacherName, s.classLabel, s.periodLabel].whereType<String>().join('  ·  ')),
                     ),
+                    if (board.liveViewers > 0 && board.liveIndicator) ...[
+                      const SizedBox(width: Kx.s8),
+                      Tooltip(
+                        message: 'A school leader is watching this class live. Viewing is recorded in the audit log.',
+                        child: Chip(
+                          key: const Key('being-viewed'),
+                          avatar: const Icon(Icons.visibility_outlined, size: 18),
+                          label: Text(board.liveViewers == 1 ? 'Being viewed' : 'Being viewed · ${board.liveViewers}'),
+                        ),
+                      ),
+                    ],
                     const SizedBox(width: Kx.s8),
                     ActionChip(
                       avatar: const Icon(Icons.sensors, size: 18, color: Kx.live),
