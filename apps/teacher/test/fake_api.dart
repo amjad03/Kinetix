@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart' show DateUtils;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import 'package:kinetix_teacher/core/api.dart';
 import 'package:kinetix_teacher/core/models.dart';
@@ -665,14 +664,17 @@ class FakeTeacherApi implements TeacherApi {
   /// Set to make generating the plan fail with this error.
   ApiException? planError;
 
-  /// A plan as the server builds it: last week t1 (taught) and t2 (late), this week t3.
+  /// A plan as the server builds it for [today]: last week t1 (taught) and t2 (late), this week t3.
   YearPlan samplePlan() {
-    final week = mondayOf(DateUtils.dateOnly(DateTime.now()));
+    // The institution's week, which can differ from the phone's date.
+    final week = mondayOf(parseIsoDate(today));
     final last = week.subtract(const Duration(days: 7));
     return YearPlan.fromJson({
       'id': 'yp1',
       'startsOn': isoDate(last),
       'endsOn': isoDate(week.add(const Duration(days: 7 * 15 - 1))),
+      'today': today,
+      'thisWeek': isoDate(week),
       'progress': {'total': 3, 'covered': 1, 'expected': 2, 'dueThisWeek': 1, 'behindBy': 1, 'status': 'behind'},
       'items': [
         {'topicId': 't1', 'title': 'Meaning and need for valuation of goodwill', 'chapter': 'Valuation of Goodwill', 'weekOf': isoDate(last), 'periods': 1, 'coveredOn': '2026-09-28', 'late': false},
@@ -712,7 +714,7 @@ class FakeTeacherApi implements TeacherApi {
               )
             : i,
     ]..sort((a, b) => a.weekOf.compareTo(b.weekOf));
-    return plan = YearPlan(id: p.id, startsOn: p.startsOn, endsOn: p.endsOn, progress: p.progress, items: items);
+    return plan = YearPlan(id: p.id, startsOn: p.startsOn, endsOn: p.endsOn, progress: p.progress, items: items, thisWeek: p.thisWeek);
   }
 
   /// Saved lesson plans by "slotId date", as the server returns them.
@@ -765,6 +767,7 @@ class FakeTeacherApi implements TeacherApi {
       'aiDrafted': aiDrafted,
       'teacher': profile.fullName,
       'reviewedAt': null,
+      'reviewedBy': null,
       'reviewRemark': null,
     };
     return _periodPlan(slotId, date);

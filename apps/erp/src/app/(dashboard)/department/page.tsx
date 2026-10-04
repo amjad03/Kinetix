@@ -15,7 +15,6 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -23,6 +22,7 @@ import { MiniBar } from '@/components/Bars';
 import { TableFrame } from '@/components/DataTable';
 import { RangeControl } from '@/components/department/RangeControl';
 import { Rate } from '@/components/department/Rate';
+import { Hint } from '@/components/Hint';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { PublishedChip } from '@/components/results/PublishedChip';
@@ -224,9 +224,9 @@ function Flags({ r, t }: { r: DeptTeacher | DeptClass; t: I18n['t'] }) {
   const flags = flagsFor(r);
   if (flags.length === 0) return null;
   return (
-    <Tooltip title={flags.map((k) => t(k)).join(' · ')}>
+    <Hint title={flags.map((k) => t(k)).join(' · ')}>
       <Chip size="small" label={t('dept.needsAttention')} data-testid="flag" sx={{ ml: 1, height: 22, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer', fontWeight: 500 }} />
-    </Tooltip>
+    </Hint>
   );
 }
 
@@ -325,22 +325,20 @@ function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18
                   <YearPlanCell c={c} t={t} />
                 </TableCell>
                 <TableCell align="right" data-testid="class-lesson-plans">
-                  <Tooltip title={t('plan.lessonsHelp')}>
-                    <Typography variant="body2" sx={{ ...num, whiteSpace: 'nowrap', color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}>
+                  <Hint title={t('plan.lessonsHelp')}>
+                    <Typography variant="body2" component="span" sx={{ ...num, color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}>
                       {lessonPlansText(c.lessonPlans ?? 0, c.scheduled, t)}
                     </Typography>
-                  </Tooltip>
+                  </Hint>
                 </TableCell>
                 <TableCell align="right" sx={num}>
                   {c.homework}
                 </TableCell>
                 <TableCell align="right" data-testid="class-latest">
                   {latest ? (
-                    <Tooltip title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')}`}>
-                      <Box>
-                        <Rate value={latest.averagePercent} kind="marks" detail={t('dept.classAverage')} />
-                      </Box>
-                    </Tooltip>
+                    <Hint title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')}`} block>
+                      <Rate value={latest.averagePercent} kind="marks" detail={t('dept.classAverage')} />
+                    </Hint>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       —
@@ -412,11 +410,11 @@ function SyllabusCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
   const sy = c.syllabus;
   if (!sy || sy.total === 0)
     return (
-      <Tooltip title={t('dept.syllabus.noneHelp')}>
-        <Typography variant="body2" color="text.secondary" data-percent="none">
+      <Hint title={t('dept.syllabus.noneHelp')}>
+        <Typography variant="body2" component="span" color="text.secondary" data-percent="none">
           {t('dept.syllabus.none')}
         </Typography>
-      </Tooltip>
+      </Hint>
     );
   const p = sy.percent ?? 0;
   return (
@@ -454,7 +452,7 @@ function YearPlanCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
         ? { bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }
         : { color: 'text.secondary' };
   return (
-    <Tooltip title={p ? t('plan.status.help', { covered: p.covered, total: p.total, expected: p.expected }) : t('plan.status.noneHelp')}>
+    <Hint title={p ? t('plan.status.help', { covered: p.covered, total: p.total, expected: p.expected }) : t('plan.status.noneHelp')}>
       <Link href={planHref(c)} aria-label={t('plan.open', { section: c.section, subject: c.subject })} style={{ textDecoration: 'none' }}>
         <Chip
           size="small"
@@ -465,6 +463,6 @@ function YearPlanCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
           sx={{ ...sx, fontWeight: 500, maxWidth: 220, cursor: 'pointer' }}
         />
       </Link>
-    </Tooltip>
+    </Hint>
   );
 }

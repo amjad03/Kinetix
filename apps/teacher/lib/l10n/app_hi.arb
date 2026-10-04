@@ -370,5 +370,6 @@
   "errorPeriodNotOnDay": "यह कक्षा उस दिन नहीं है।",
   "errorAiAllowance": "आपके संस्थान ने आज की KINETIX AI सीमा पूरी कर ली है। कल फिर से मिलेगी।",
   "errorAiUnavailable": "KINETIX AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।",
-  "errorAiUnusable": "KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।"
+  "errorAiUnusable": "KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।",
+  "reviewedByOn": "{name} ने {date} को समीक्षा की"
 }

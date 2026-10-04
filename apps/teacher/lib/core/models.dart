@@ -758,7 +758,7 @@ class YearPlanItem {
 
 /// A class's syllabus spread over the term (GET /v1/year-plans).
 class YearPlan {
-  const YearPlan({required this.id, required this.startsOn, required this.endsOn, required this.progress, required this.items});
+  const YearPlan({required this.id, required this.startsOn, required this.endsOn, required this.progress, required this.items, this.thisWeek});
 
   factory YearPlan.fromJson(Map<String, dynamic> j) => YearPlan(
     id: j['id'] as String,
@@ -766,6 +766,7 @@ class YearPlan {
     endsOn: parseIsoDate(j['endsOn'] as String),
     progress: PlanProgress.fromJson(j['progress'] as Map<String, dynamic>),
     items: [for (final i in j['items'] as List? ?? const []) YearPlanItem.fromJson(i as Map<String, dynamic>)],
+    thisWeek: j['thisWeek'] == null ? null : parseIsoDate(j['thisWeek'] as String),
   );
 
   final String id;
@@ -773,6 +774,10 @@ class YearPlan {
   final DateTime endsOn;
   final PlanProgress progress;
   final List<YearPlanItem> items;
+
+  /// The Monday of the institution's current week (the server decides `late` by it); null from
+  /// older servers.
+  final DateTime? thisWeek;
 
   /// The Mondays from the first week to the last, for the week picker.
   List<DateTime> get weeks {
@@ -837,6 +842,7 @@ class LessonPlan {
     this.aiDrafted = false,
     this.teacher = '',
     this.reviewedAt,
+    this.reviewedBy,
     this.reviewRemark,
   });
 
@@ -850,6 +856,7 @@ class LessonPlan {
       aiDrafted: j['aiDrafted'] as bool? ?? false,
       teacher: j['teacher'] as String? ?? '',
       reviewedAt: j['reviewedAt'] == null ? null : DateTime.parse(j['reviewedAt'] as String).toLocal(),
+      reviewedBy: j['reviewedBy'] as String?,
       reviewRemark: j['reviewRemark'] as String?,
     );
   }
@@ -863,6 +870,9 @@ class LessonPlan {
 
   /// When the head of department or principal reviewed it (cleared when the plan changes).
   final DateTime? reviewedAt;
+
+  /// The reviewer's name.
+  final String? reviewedBy;
   final String? reviewRemark;
 }
 

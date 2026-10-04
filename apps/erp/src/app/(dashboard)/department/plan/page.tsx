@@ -11,11 +11,11 @@ import VerifiedOutlined from '@mui/icons-material/VerifiedOutlined';
 import ViewWeekOutlined from '@mui/icons-material/ViewWeekOutlined';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { ReviewLessonPlan } from '@/components/department/ReviewLessonPlan';
+import { Hint } from '@/components/Hint';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -256,9 +256,9 @@ function TopicStateChip({ state, coveredOn, t, fmt }: { state: TopicState; cover
       return <Chip {...base} label={t('plan.topic.taught', { date: fmt.date(coveredOn!, 'dayMonth') })} data-testid="topic-taught" sx={{ ...base.sx, bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} />;
     case 'late':
       return (
-        <Tooltip title={t('plan.topic.lateHelp')}>
+        <Hint title={t('plan.topic.lateHelp')}>
           <Chip {...base} label={t('plan.topic.late')} data-testid="topic-late" sx={{ ...base.sx, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} />
-        </Tooltip>
+        </Hint>
       );
     case 'due':
       return <Chip {...base} label={t('plan.topic.due')} color="primary" variant="outlined" />;
@@ -284,9 +284,9 @@ function LessonPlanCard({ p, canReview, i18n }: { p: LessonPlan; canReview: bool
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           {p.aiDrafted && (
-            <Tooltip title={t('plan.lesson.aiDraftHelp')}>
+            <Hint title={t('plan.lesson.aiDraftHelp')}>
               <Chip size="small" icon={<AutoAwesomeOutlined />} label={t('plan.lesson.aiDraft')} variant="outlined" data-testid="ai-draft" sx={{ '& .MuiChip-icon': { color: 'primary.main' } }} />
-            </Tooltip>
+            </Hint>
           )}
           {p.reviewedAt ? (
             <Chip

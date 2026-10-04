@@ -59,6 +59,7 @@ void main() {
             'aiDrafted': false,
             'teacher': 'Anita Sharma',
             'reviewedAt': '2026-10-04T06:00:00Z',
+            'reviewedBy': 'Dr. Ravi Kumar Venkataramanan',
             'reviewRemark': 'Add a recap question at the end and give the class five minutes to try the super profit method themselves.',
           };
           api.periodsByDate['2026-10-05']![1].lessonPlanned = true;

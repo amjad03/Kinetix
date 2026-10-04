@@ -57,6 +57,11 @@ extension AppLocalizationsX on AppLocalizations {
       'SUBMISSION_MISSING' => errorNothingHandedIn,
       'TOPIC_NOT_IN_SYLLABUS' => errorTopicNotInSyllabus,
       'COVERAGE_FUTURE_DATE' => errorFutureCoverage,
+      'PLAN_NO_SYLLABUS' => errorPlanNoSyllabus,
+      'PLAN_NO_PERIODS' => errorPlanNoPeriods,
+      'PLAN_NO_TEACHING_DAYS' => errorPlanNoTeachingDays,
+      'PLAN_BAD_RANGE' => errorPlanEndsBeforeStart,
+      'PERIOD_WRONG_DAY' => errorPeriodNotOnDay,
       _ => null,
     };
     if (byCode != null) return byCode;
@@ -80,7 +85,7 @@ extension AppLocalizationsX on AppLocalizations {
       'Nothing has been handed in yet' => errorNothingHandedIn,
       "That topic is not in this subject's syllabus" => errorTopicNotInSyllabus,
       'A topic cannot be marked as taught in the future' => errorFutureCoverage,
-      // Year plans and lesson plans (these have no code of their own yet).
+      // Year plans and lesson plans, from servers that sent no code for them.
       'This subject has no syllabus yet. Link it to a course first.' => errorPlanNoSyllabus,
       'This subject has no periods in the timetable' => errorPlanNoPeriods,
       'There are no teaching days in these dates' => errorPlanNoTeachingDays,

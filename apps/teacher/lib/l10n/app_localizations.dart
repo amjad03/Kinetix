@@ -2318,6 +2318,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'KINETIX AI could not write a usable draft. Try again.'**
   String get errorAiUnusable;
+
+  /// The lesson plan's reviewer (head of department or principal) and the date.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by {name} on {date}'**
+  String reviewedByOn(String name, String date);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

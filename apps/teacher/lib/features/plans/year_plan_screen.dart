@@ -145,7 +145,7 @@ class _YearPlanScreenState extends State<YearPlanScreen> {
         listenable: controller,
         builder: (context, _) {
           final plan = controller.plan;
-          final thisWeek = mondayOf(DateUtils.dateOnly(DateTime.now()));
+          final thisWeek = plan?.thisWeek ?? mondayOf(DateUtils.dateOnly(DateTime.now()));
           final weeks = <DateTime, List<YearPlanItem>>{};
           for (final i in plan?.items ?? const <YearPlanItem>[]) {
             weeks.putIfAbsent(i.weekOf, () => []).add(i);

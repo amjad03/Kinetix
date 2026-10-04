@@ -69,7 +69,7 @@ void main() {
     });
 
     testWidgets('a chosen start date is sent; a refusal is shown in words', (tester) async {
-      api.planError = ApiException(400, 'This subject has no periods in the timetable', code: 'BAD_REQUEST');
+      api.planError = ApiException(400, 'This subject has no periods in the timetable'); // an older server: no code
       await openYearPlan(tester);
       await tapAndSettle(tester, find.byKey(const Key('makeYearPlan')));
       await tapAndSettle(tester, find.byKey(const Key('planStart')));
@@ -78,6 +78,12 @@ void main() {
       expect(api.calls.last, startsWith('generate sec1 sub1 ${isoDate(DateTime.now())} -'));
       expect(find.text('This subject has no periods in the timetable for this class.'), findsOneWidget);
       expect(find.byKey(const Key('yearPlanNone')), findsOneWidget);
+
+      // The server's code decides the words, whatever its English says.
+      api.planError = ApiException(400, 'Some newer wording', code: 'PLAN_NO_SYLLABUS');
+      await tapAndSettle(tester, find.byKey(const Key('makeYearPlan')));
+      await tapAndSettle(tester, find.byKey(const Key('generatePlan')));
+      expect(find.text('This subject has no syllabus yet. Ask your administrator to link it to a course.'), findsOneWidget);
     });
 
     testWidgets('moves a topic to another week and changes its periods', (tester) async {
@@ -88,7 +94,9 @@ void main() {
       await tapAndSettle(tester, find.byKey(const Key('periodsMore')));
       expect(find.text('2'), findsWidgets);
       await tapAndSettle(tester, find.byKey(const Key('weekPicker')));
-      final next = mondayOf(DateUtils.dateOnly(DateTime.now())).add(const Duration(days: 7));
+      // Weeks follow the institution's date from the server (Monday 5 Oct), not the phone's.
+      expect(find.descendant(of: find.byKey(const Key('week-2026-10-05')), matching: find.byKey(const Key('thisWeek'))), findsOneWidget);
+      final next = DateTime(2026, 10, 12);
       final label = 'Week of ${Fmt(strings('en'), 'en').shortDay(next)}';
       await tapAndSettle(tester, find.text(label).last);
       await tapAndSettle(tester, find.byKey(const Key('saveMove')));
@@ -219,13 +227,14 @@ void main() {
         'aiDrafted': false,
         'teacher': 'Anita Sharma',
         'reviewedAt': '2026-10-04T06:00:00Z',
+        'reviewedBy': 'Ravi Kumar',
         'reviewRemark': 'Add a recap question',
       };
       api.periodsByDate['2026-10-05']!.first.lessonPlanned = true;
       await openLessonPlan(tester);
       expect(find.byKey(const Key('reviewCard')), findsOneWidget);
       expect(find.text('Add a recap question'), findsOneWidget);
-      expect(find.textContaining('Reviewed on'), findsOneWidget);
+      expect(find.text('Reviewed by Ravi Kumar on Sun, 4 Oct'), findsOneWidget);
       expect(find.text('Compare methods'), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('objective-0')), 'Compare the three methods');

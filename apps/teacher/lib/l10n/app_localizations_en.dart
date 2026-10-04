@@ -1274,4 +1274,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorAiUnusable => 'KINETIX AI could not write a usable draft. Try again.';
+
+  @override
+  String reviewedByOn(String name, String date) {
+    return 'Reviewed by $name on $date';
+  }
 }

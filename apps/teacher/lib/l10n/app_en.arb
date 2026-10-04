@@ -1850,5 +1850,17 @@
   "errorAiUnusable": "KINETIX AI could not write a usable draft. Try again.",
   "@errorAiUnusable": {
     "description": "Error."
+  },
+  "reviewedByOn": "Reviewed by {name} on {date}",
+  "@reviewedByOn": {
+    "description": "The lesson plan's reviewer (head of department or principal) and the date.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

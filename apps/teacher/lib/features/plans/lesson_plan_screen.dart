@@ -9,7 +9,7 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 
 /// The API's limits on a lesson plan.
-const _maxObjectives = 8, _maxSteps = 15, _maxMaterials = 12, _maxTopics = 10, _maxDraftTopics = 5;
+const _maxObjectives = 8, _maxSteps = 15, _maxMaterials = 12, _maxTopics = 10;
 
 class _Step {
   _Step(LessonStep s) : minutes = TextEditingController(text: '${s.minutes}'), activity = TextEditingController(text: s.activity);
@@ -184,7 +184,7 @@ class _LessonPlanScreenState extends State<LessonPlanScreen> {
       final d = await widget.api.draftLessonPlan(
         slotId: widget.period.slotId,
         date: widget.date,
-        topicIds: _topicIds.isEmpty ? null : _topicIds.take(_maxDraftTopics).toList(),
+        topicIds: _topicIds.isEmpty ? null : _topicIds,
         language: Localizations.localeOf(context).languageCode,
       );
       if (!mounted) return;
@@ -586,7 +586,11 @@ class _ReviewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    plan.reviewedAt == null ? l.reviewRemark : l.reviewedOn(Fmt.of(context).shortDay(plan.reviewedAt!)),
+                    switch ((plan.reviewedAt, plan.reviewedBy)) {
+                      (null, _) => l.reviewRemark,
+                      (final at?, final by?) when by.isNotEmpty => l.reviewedByOn(by, Fmt.of(context).shortDay(at)),
+                      (final at?, _) => l.reviewedOn(Fmt.of(context).shortDay(at)),
+                    },
                     style: context.text.titleSmall?.copyWith(color: c.onSecondaryContainer),
                   ),
                   if (remark.isNotEmpty) ...[

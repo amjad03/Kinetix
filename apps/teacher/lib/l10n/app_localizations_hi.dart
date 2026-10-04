@@ -1274,4 +1274,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errorAiUnusable => 'KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।';
+
+  @override
+  String reviewedByOn(String name, String date) {
+    return '$name ने $date को समीक्षा की';
+  }
 }
