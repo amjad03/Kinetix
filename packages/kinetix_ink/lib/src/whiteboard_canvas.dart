@@ -85,6 +85,7 @@ class WhiteboardCanvas extends StatefulWidget {
     this.selectionActions,
     this.onLongPress,
     this.onPenSeen,
+    this.fingerTaps = true,
     this.labels = const WhiteboardCanvasLabels(),
   });
 
@@ -113,7 +114,15 @@ class WhiteboardCanvas extends StatefulWidget {
 
   /// The first time a pen touches the board (in auto mode, fingers stop writing).
   final VoidCallback? onPenSeen;
+
+  /// A quick tap with two fingers undoes, with three fingers redoes (not with [multiWriter],
+  /// where every finger writes). Two fingers held or moved still move and zoom the board.
+  final bool fingerTaps;
   final WhiteboardCanvasLabels labels;
+
+  /// The longest a finger tap may last, and how far its fingers may move.
+  static const tapTimeout = Duration(milliseconds: 250);
+  static const tapSlop = 20.0;
 
   @override
   State<WhiteboardCanvas> createState() => WhiteboardCanvasState();
@@ -143,6 +152,13 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   int? _transformPointer;
   int? _tapPointer; // text, equation and note tools
   double _trackpadScale = 1;
+
+  // A tap with two or three fingers (undo, redo): when the first finger landed, how many
+  // fingers joined it in time, and the view before any pinch began.
+  Duration? _tapStart;
+  int _tapFingers = 0;
+  bool _tapLifted = false;
+  ViewState? _tapView;
   Timer? _hold;
   Offset? _hover;
 
@@ -230,13 +246,17 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     }
 
     if (kind == PointerDeviceKind.touch) {
+      // A second or third finger that lands at once is a tap or a pinch, never a palm (phones
+      // report broad contacts for thumbs).
+      final joining = _joinsTap(e);
       // A palm or fist: rubbed out or ignored by the controller, never a finger.
-      if (c.palmMode != PalmMode.off && _palm.isPalm(e.radiusMajor)) {
+      if (!joining && c.palmMode != PalmMode.off && _palm.isPalm(e.radiusMajor)) {
         _drawing.add(e.pointer);
         c.pointerDown(e.pointer, _point(e), scale: _scale, palm: true, contactRadius: e.radiusMajor / _scale);
         return;
       }
       _touches[e.pointer] = e.localPosition;
+      _trackTap(e, joining);
       final navigate = c.tool == BoardTool.hand || _fingersNavigate;
       if (navigate || !widget.multiWriter) {
         if (_touches.length >= 2) {
@@ -294,6 +314,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     if (_touches.containsKey(e.pointer)) _touches[e.pointer] = e.localPosition;
     final down = _downAt[e.pointer];
     if (down != null && (e.localPosition - down).distance > 10) _hold?.cancel();
+    if (down != null && _tapStart != null && (e.localPosition - down).distance > WhiteboardCanvas.tapSlop) _tapStart = null;
     if (_pinching) {
       _updatePinch();
       return;
@@ -317,6 +338,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     _hold?.cancel();
     final down = _downAt.remove(e.pointer);
     final wasTouch = _touches.remove(e.pointer) != null;
+    if (wasTouch) _endTap(e);
     if (_pinching) {
       if (_touches.length < 2) {
         _pinching = false;
@@ -355,7 +377,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   void _onCancel(PointerCancelEvent e) {
     _hold?.cancel();
     _downAt.remove(e.pointer);
-    _touches.remove(e.pointer);
+    if (_touches.remove(e.pointer) != null) _tapStart = null;
     if (_touches.length < 2) _pinching = false;
     if (e.pointer == _panPointer) _panPointer = null;
     if (e.pointer == _tapPointer) _tapPointer = null;
@@ -374,6 +396,52 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       } else {
         c.panBy(-e.scrollDelta);
       }
+    }
+  }
+
+  bool get _tapsOn => widget.fingerTaps && !widget.multiWriter;
+
+  /// Whether this finger joins a finger tap or pinch begun a moment ago.
+  bool _joinsTap(PointerDownEvent e) {
+    final start = _tapStart;
+    return _tapsOn && start != null && _touches.isNotEmpty && !_tapLifted && e.timeStamp - start < WhiteboardCanvas.tapTimeout;
+  }
+
+  void _trackTap(PointerDownEvent e, bool joining) {
+    if (!_tapsOn) return;
+    if (_touches.length == 1) {
+      _tapStart = e.timeStamp;
+      _tapFingers = 1;
+      _tapLifted = false;
+      _tapView = c.view.value;
+    } else if (joining) {
+      _tapFingers = math.max(_tapFingers, _touches.length);
+    } else {
+      // Too late, or after a finger lifted: a pinch or writing, not a tap.
+      _tapStart = null;
+    }
+  }
+
+  /// A finger of a possible tap lifted; with the last one, two fingers undo and three redo.
+  void _endTap(PointerUpEvent e) {
+    final start = _tapStart;
+    if (start == null) return;
+    final held = e.timeStamp - start;
+    if (held >= WhiteboardCanvas.tapTimeout * (_tapLifted ? 2 : 1)) {
+      _tapStart = null;
+      return;
+    }
+    _tapLifted = true;
+    if (_touches.isNotEmpty) return;
+    _tapStart = null;
+    if (_tapFingers < 2) return;
+    // The fingers barely moved, but put back any zoom they made before undoing.
+    final view = _tapView;
+    if (view != null && c.view.value != view) c.setView(view);
+    if (_tapFingers == 2) {
+      c.undo();
+    } else {
+      c.redo();
     }
   }
 
