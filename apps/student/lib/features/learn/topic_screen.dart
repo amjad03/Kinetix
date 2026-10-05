@@ -7,6 +7,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'ask_controller.dart';
 import 'ask_view.dart';
+import 'concept_videos.dart';
 
 /// A library topic: summary, notes and what the student should be able to do, with a way to
 /// ask KINETIX AI about it.
@@ -88,6 +89,8 @@ class _TopicScreenState extends State<TopicScreen> {
                     ),
                   ),
                   const SizedBox(height: Kx.s16),
+                  // Preview before class, revise after (shows nothing when the topic has no videos).
+                  ConceptVideosSection(api: widget.api, topicId: t.id),
                   if (t.notes.isNotEmpty)
                     _Block(
                       key: const Key('topicNotes'),
