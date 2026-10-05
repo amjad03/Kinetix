@@ -19,6 +19,9 @@ dependencies:
     path: ../../packages/kinetix_lesson
   kinetix_labs:
     path: ../../packages/kinetix_labs
+  # The code lab (Learn → Code lab): Python, JavaScript and SQL offline; C, C++ and Java on the server.
+  kinetix_cs:
+    path: ../../packages/kinetix_cs
   http: ^1.6.0
   http_parser: ^4.1.2
   intl: ^0.20.3

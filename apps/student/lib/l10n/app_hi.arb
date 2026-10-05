@@ -281,6 +281,7 @@
   "receiptsCount": "{count, plural, =1{1 रसीद} other{{count} रसीदें}}",
   "askADoubt": "संदेह पूछें",
   "syllabus": "पाठ्यक्रम",
+  "codeLab": "कोड लैब",
   "labs": "प्रयोगशाला",
   "earlierQuestions": "पहले पूछे गए सवाल",
   "askIntro": "KINETIX AI आपके पाठ्यक्रम के अनुसार इसे कदम-दर-कदम समझाता है।",

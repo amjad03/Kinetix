@@ -281,6 +281,7 @@
   "receiptsCount": "{count, plural, =1{1 ರಸೀದಿ} other{{count} ರಸೀದಿಗಳು}}",
   "askADoubt": "ಸಂದೇಹ ಕೇಳಿ",
   "syllabus": "ಪಠ್ಯಕ್ರಮ",
+  "codeLab": "ಕೋಡ್ ಲ್ಯಾಬ್",
   "labs": "ಪ್ರಯೋಗಾಲಯ",
   "earlierQuestions": "ಹಿಂದೆ ಕೇಳಿದ ಪ್ರಶ್ನೆಗಳು",
   "askIntro": "KINETIX AI ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮದ ಪ್ರಕಾರ ಇದನ್ನು ಹಂತ ಹಂತವಾಗಿ ವಿವರಿಸುತ್ತದೆ.",
