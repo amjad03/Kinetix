@@ -179,6 +179,16 @@ class DemoBoardServer {
             'Sample notes (demo): work one example on the board, then let the class try the next one.',
           ],
           'outcomes': ['Explain $t', 'Solve a textbook problem on $t'],
+          'lesson': {
+            'hook': 'Sample lesson (demo): ask the class where they have seen $t in a business they know.',
+            'example': 'Work the first textbook example on the board, one step at a time.',
+            'activity': 'In pairs, students solve the next example and compare answers.',
+            'questions': [
+              {'q': 'What is $t used for?', 'a': s},
+            ],
+            'homework': 'Two textbook problems on $t.',
+            'terms': [t],
+          },
           'chapter': {'id': cid, 'title': chapter},
           'course': {
             'id': 'co1',

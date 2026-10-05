@@ -1461,6 +1461,18 @@ class AppLocalizationsKn extends AppLocalizations {
   String get booksMarkFailed => 'ಉಳಿಸಲಾಗಲಿಲ್ಲ. ಬೋರ್ಡ್ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿದೆಯೇ ನೋಡಿ.';
 
   @override
+  String get booksHook => 'ಹೀಗೆ ಆರಂಭಿಸಿ';
+
+  @override
+  String get booksTerms => 'ಕಲಿಯಬೇಕಾದ ಪದಗಳು';
+
+  @override
+  String get booksExample => 'ಬಿಡಿಸಿದ ಉದಾಹರಣೆ';
+
+  @override
+  String get booksActivity => 'ತರಗತಿ ಚಟುವಟಿಕೆ';
+
+  @override
   String get mathHint => 'ಲೆಕ್ಕ ಅಥವಾ ಸಮೀಕರಣ ಟೈಪ್ ಮಾಡಿ';
 
   @override
