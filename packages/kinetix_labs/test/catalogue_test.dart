@@ -150,7 +150,9 @@ void main() {
         currentLabLang = LabLang.kn;
         final kn = tr(key);
         currentLabLang = LabLang.en;
-        if (RegExp('[A-Za-z]{3,}').hasMatch(key.replaceAll(RegExp(r'\{\w+\}'), '')) && (hi == key || kn == key)) missing.add('${f.path}: $key');
+        final words = key.replaceAll(RegExp(r'\{\w+\}'), '');
+        // Acronyms (LED, CRO) read the same in every language.
+        if (RegExp('[A-Za-z]{3,}').hasMatch(words) && words != words.toUpperCase() && (hi == key || kn == key)) missing.add('${f.path}: $key');
       }
     }
     expect(missing, isEmpty);
