@@ -1,4 +1,7 @@
 import '../core/bench.dart';
+import 'chemistry/physchem.dart';
+import 'chemistry/spot_tests.dart';
+import 'chemistry/titrations.dart';
 import 'electronics/bridges.dart';
 import 'electronics/diode.dart';
 import 'electronics/networks.dart';
@@ -109,6 +112,18 @@ final labBenches = <String, LabBench>{
     const PhotoelectricBench(),
     const HallBench(),
     const HysteresisBench(),
+    // Chemistry.
+    const TitrationBench(),
+    const PhTitrationBench(),
+    const ConductometricBench(),
+    const ReactionRateBench(),
+    const ChromatographyBench(),
+    const NeutralisationBench(),
+    const EsterHydrolysisBench(),
+    const BeerLambertBench(),
+    const OstwaldBench(),
+    const FlameTestBench(),
+    const SpotTestBench(),
   ])
     b.kind: b,
 };
