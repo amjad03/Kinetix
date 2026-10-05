@@ -9,7 +9,8 @@ and `AI_BASE_URL`/`ASR_BASE_URL` must point at servers hosted in India (setups a
 fallback: [ai-hosting.md](ai-hosting.md)).
 
 Related: [backups-and-restore.md](backups-and-restore.md) · [monitoring.md](monitoring.md) ·
-[security.md](security.md) · [mobile-release.md](mobile-release.md).
+[security.md](security.md) · [mobile-release.md](mobile-release.md) ·
+[code-runner.md](code-runner.md) (C, C++ and Java for the code lab: its own locked-down service).
 
 ## What runs where
 

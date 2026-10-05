@@ -51,6 +51,7 @@ accounts@demo.kinetix.in (fees). The seed prints a board enrolment code and impo
   - [Live classroom view & broadcast](docs/architecture/live-classroom.md)
   - [AI platform (India-hosted)](docs/architecture/ai-platform.md)
     - [AI hosting runbook (self-hosted first, Sarvam fallback)](docs/operations/ai-hosting.md)
+    - [Code runner (code lab: C, C++, Java in a locked-down container)](docs/operations/code-runner.md)
   - [Notifications to families](docs/architecture/notifications.md)
   - [Lesson recording](docs/architecture/lesson-recording.md)
   - [Content library](docs/architecture/content-library.md)
