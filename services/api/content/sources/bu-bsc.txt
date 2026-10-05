@@ -1,0 +1,596 @@
+// BSc (Forensic Science combination), Bangalore University. Semesters 1-6.
+file: bu-bsc
+curriculum: bu-ug | Bangalore University (UG) | ug
+programme: BSc
+scheme: SEP 2024 | 2024-25
+! SIMS offers BSc with Forensic Science (secondary listings); the combination's other subjects were not confirmed. Forensic Science and Chemistry are written for all six semesters; the third optional (e.g. Biochemistry, Microbiology, Computer Science, Psychology) is not written. Confirm the combination offered.
+! Course titles per semester are the KINETIX team's reading of the BU NEP/SEP pattern (one theory paper per subject per semester); confirm every title against the BU SEP BSc Forensic Science and Chemistry syllabi.
+! Indian criminal law references use the Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS) and Bharatiya Sakshya Adhiniyam (BSA), in force from 1 July 2024.
+
+# bsc-fs-1-forensic-science-intro | 1 | Forensic Science: Principles and Criminology
+## Introduction to Forensic Science
+### History, principles and branches
+= Definition, history, basic principles and branches of forensic science.
+- Forensic science applies scientific methods to questions of law.
+- Locard's exchange principle: every contact leaves a trace.
+- Other principles: individuality, progressive change, comparison, analysis, probability.
+- Pioneers: Bertillon (anthropometry), Galton and Henry (fingerprints), Locard (first police crime laboratory, Lyon, 1910).
+- Branches: biology, serology, DNA, chemistry, toxicology, physics, ballistics, documents, fingerprints, digital forensics.
+> State and apply Locard's exchange principle
+> Name the branches of forensic science and their work
+hook: A burglar wears gloves and wipes the door handle. What might he still leave behind, and take away?
+q: Who established the first police crime laboratory? || Edmond Locard, in Lyon in 1910.
+q: What does the principle of individuality say? || Every object, natural or man-made, has an individuality that is not duplicated in another object.
+terms: Locard's principle; trace evidence; individuality
+## Forensic Science Organisations
+### Forensic laboratories in India
+= Organisation of forensic science services in India.
+- Central Forensic Science Laboratories (CFSLs) work under the Directorate of Forensic Science Services (DFSS), Ministry of Home Affairs.
+- Each state has a State FSL with Regional and District mobile units.
+- Other agencies: Central Fingerprint Bureau (NCRB), Government Examiners of Questioned Documents, National Forensic Sciences University (Gandhinagar).
+- BNSS section 176(3) requires a forensic expert to visit the crime scene for offences punishable with seven years or more.
+> Describe the structure of forensic services in India
+> Explain the mandatory forensic visit under BNSS
+## Criminology
+### Crime and its causes
+= Concepts of crime, schools of criminology and theories of causation.
+- Crime is an act or omission punishable by law; criminology studies crime, criminals and society's response.
+- Schools: classical (Beccaria, free will and deterrence), positivist (Lombroso, born criminal), sociological.
+- Theories: differential association (Sutherland), strain (Merton), labelling, routine activity.
+> Compare schools of criminology
+> Apply theories to explain a crime
+## Forensic Science and the Law
+### Expert evidence
+= Admissibility of scientific evidence and the role of the expert witness.
+- BSA section 39 (formerly Evidence Act section 45) makes the opinion of experts relevant.
+- Reports of certain government scientific experts can be used as evidence without calling them (BNSS section 329).
+- An expert must be qualified, impartial, and explain the basis of the opinion; the court decides the weight.
+- Chain of custody documents every transfer of evidence.
+> Explain the role and duties of an expert witness
+> Maintain chain-of-custody records
+
+# bsc-fs-2-crime-scene-fingerprints | 2 | Crime Scene Investigation and Fingerprints
+## Crime Scene Management
+### Securing and searching a crime scene
+= First responder duties, scene protection and search methods.
+- First responder: ensure safety, give aid, secure and cordon the scene, record entry and exit.
+- Search patterns: spiral, strip (line), grid, zone, wheel (ray).
+- Indoor scenes favour zone searches; large outdoor scenes favour grid or line searches.
+> Plan a crime scene search
+> Explain first responder duties
+## Documentation
+### Notes, photography and sketching
+= Recording the crime scene before evidence is moved.
+- Photography: overall, mid-range and close-up (with and without a scale).
+- Sketches: rough sketch at the scene, finished sketch later; measurements by triangulation or baseline.
+- Notes record date, time, weather, people present and observations.
+> Document a scene by photographs and sketches
+> Measure evidence positions by triangulation
+## Collection and Preservation of Evidence
+### Packaging and preservation
+= Collecting, packaging and preserving physical and biological evidence.
+- Biological evidence is air-dried and packed in paper (not plastic) to prevent mould.
+- Volatile samples (arson debris) go in airtight metal cans.
+- Each item is sealed, labelled and recorded in the chain of custody.
+> Choose packaging for each evidence type
+> Prepare evidence labels and seals
+## Fingerprints
+### Fingerprint patterns and classification
+= Ridge characteristics, pattern types and the Henry system.
+- Fingerprints are unique and permanent from fetal life.
+- Pattern types: arches (about 5%), loops (60–65%), whorls (30–35%).
+- A loop has one delta; a whorl two; a plain arch none.
+- Henry classification assigns values to whorls in finger pairs to form a primary classification.
+> Identify arch, loop and whorl patterns
+> Count deltas and ridges
+@lab fingerprint-patterns
+hook: Identical twins share the same DNA. Do they share fingerprints?
+q: Which pattern type is the most common? || Loops (about 60–65%).
+q: How many deltas does a whorl have? || Two.
+terms: ridge; delta; core; loop; whorl
+### Developing and comparing latent prints
+= Powder, chemical and physical methods, and minutiae comparison.
+- Powder dusting on smooth non-porous surfaces; ninhydrin on paper (reacts with amino acids, purple colour).
+- Cyanoacrylate fuming develops prints on non-porous items; iodine fuming is non-destructive and temporary.
+- Comparison uses minutiae (ridge endings, bifurcations, dots, islands); ACE-V method: analysis, comparison, evaluation, verification.
+> Choose a development method for a surface
+> Compare prints by minutiae
+@lab fingerprint-matching
+
+# bsc-fs-3-documents-physics | 3 | Questioned Documents and Forensic Physics | year=2025-26
+## Questioned Documents
+### Handwriting and signature examination
+= Principles of handwriting identification and forgery.
+- No two people write alike, and no one writes exactly the same way twice (natural variation).
+- Class characteristics (taught system) vs individual characteristics (habits).
+- Forgery types: simulated, traced, freehand; signs include tremor, pen lifts, blunt starts and patching.
+- Admitted and specimen writings are standards for comparison.
+> Compare questioned and standard writings
+> Identify signs of forgery
+### Inks, alterations and paper
+= Detecting alterations, erasures and ink differences.
+- Alterations show under UV, IR and oblique light; VSC (video spectral comparator) is the standard instrument.
+- Inks are compared by thin-layer chromatography.
+- Indentations are revealed by ESDA (electrostatic detection apparatus).
+> Detect alterations with light sources
+> Compare inks by chromatography
+@lab ink-chromatography
+## Forensic Physics
+### Glass and soil evidence
+= Physical properties used to compare glass and soil.
+- Glass is compared by density and refractive index (immersion method, Becke line).
+- Radial cracks form on the side opposite the impact; concentric cracks on the same side (3R rule: radial cracks form right angles on the reverse side).
+- Soil is compared by colour, particle size and mineral content.
+> Compare glass fragments by density and RI
+> Determine direction of force from fracture lines
+@lab glass-density
+@lab glass-refractive-index
+### Tool marks and impressions
+= Footwear, tyre and tool mark evidence.
+- Impressions may be 2-D (dust, blood) or 3-D (mud, snow); 3-D impressions are cast with dental stone.
+- Class characteristics (sole pattern, size) narrow the source; wear and damage individualise it.
+- Stature can be estimated from foot length using population-specific regression formulae.
+> Cast and compare footwear impressions
+> Estimate stature from a footprint
+@lab footprint-stature
+## Forensic Ballistics
+### Firearms and ballistics
+= Firearm classification, internal, external and terminal ballistics.
+- Rifled arms leave land and groove marks on bullets; smooth-bore (shotguns) do not.
+- Internal ballistics: inside the barrel; external: in flight; terminal: on the target.
+- Entry wounds are smaller with abrasion collars; exit wounds are larger and irregular.
+- Range of fire is estimated from soot and tattooing (powder stippling).
+> Classify firearms and ammunition
+> Reconstruct a bullet's trajectory
+@lab ballistics-trajectory
+
+# bsc-fs-4-chemistry-toxicology | 4 | Forensic Chemistry and Toxicology | year=2025-26
+## Drugs of Abuse
+### Narcotic drugs and psychotropic substances
+= Classification of drugs, the NDPS Act and presumptive tests.
+- NDPS Act, 1985 controls narcotic drugs and psychotropic substances; quantities are classed small, intermediate or commercial.
+- Classes: opioids (morphine, heroin), stimulants (cocaine, amphetamines), depressants, hallucinogens (LSD), cannabinoids.
+- Presumptive colour tests: Marquis (opiates, amphetamines), Duquenois–Levine (cannabis), cobalt thiocyanate (cocaine).
+- Confirmation needs instrumental methods such as GC-MS.
+> Classify drugs of abuse
+> Choose presumptive and confirmatory tests
+@lab toxicology-spot-tests
+## Toxicology
+### Poisons and their analysis
+= Classification of poisons, specimens and extraction.
+- Paracelsus: "the dose makes the poison".
+- Classes: corrosives, irritants (metallic: arsenic, mercury, lead), neurotoxins, asphyxiants (CO, cyanide).
+- Viscera (stomach, intestine, liver, kidney), blood and urine are preserved; saturated salt solution is used for viscera (not in cases of corrosive acid poisoning).
+- Stas–Otto method extracts alkaloids and organic poisons.
+> Classify poisons and their effects
+> Select specimens for toxicological analysis
+## Fire and Explosives
+### Arson and explosives
+= Fire chemistry, accelerants and explosive residues.
+- Fire triangle: fuel, heat, oxygen (tetrahedron adds the chain reaction).
+- Accelerants (petrol, kerosene) are recovered from debris by headspace sampling and identified by GC.
+- Low explosives deflagrate (black powder); high explosives detonate (TNT, RDX, PETN).
+> Locate the seat of fire and identify accelerants
+> Distinguish low and high explosives
+## Instrumental Analysis
+### Chromatography and spectroscopy in forensics
+= TLC, GC, HPLC, UV-Vis, IR and mass spectrometry.
+- Rf = distance moved by the spot ÷ distance moved by the solvent front.
+- GC separates volatile compounds; HPLC non-volatile ones; MS identifies compounds by mass-to-charge ratio.
+- IR spectroscopy identifies functional groups; UV-Vis follows Beer–Lambert's law A = εcl.
+> Calculate Rf values
+> Choose an instrument for an analysis
+@lab ink-chromatography
+@lab beer-lambert
+
+# bsc-fs-5-biology-serology | 5 | Forensic Biology and Serology | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Biological Evidence
+### Hair and fibres
+= Microscopic examination of hair and fibres.
+- Human hair has a medullary index usually below 1/3; animal hair above 1/2.
+- Scale patterns (imbricate in humans) and medulla type distinguish species.
+- Fibres are natural (cotton, wool, silk) or synthetic (nylon, polyester); compared by microscopy, birefringence and dye.
+> Distinguish human and animal hair
+> Compare fibres microscopically
+@lab hair-microscopy
+@lab fibre-microscopy
+## Serology
+### Blood: identification and grouping
+= Presumptive and confirmatory tests for blood and ABO grouping.
+- Presumptive tests: phenolphthalein (Kastle–Meyer), benzidine, luminol (chemiluminescence).
+- Confirmatory: Teichmann (haemin crystals), Takayama (haemochromogen crystals).
+- Precipitin test decides human or animal origin.
+- ABO grouping by agglutination with anti-A and anti-B; Rh with anti-D.
+> Identify blood stains with presumptive and confirmatory tests
+> Determine ABO and Rh groups
+@lab blood-typing
+hook: A brown stain on a shirt: blood, rust or tea? How would you find out without destroying it?
+q: Which test detects blood by chemiluminescence? || Luminol.
+q: Blood agglutinates with anti-A but not anti-B. Group? || A.
+terms: presumptive test; confirmatory test; agglutination; precipitin
+### Bloodstain pattern analysis
+= Types of bloodstains and determining the point of origin.
+- Passive stains (drops, flows), transfer stains (smears, swipes) and projected stains (spatter, arterial).
+- Angle of impact: sin θ = width ÷ length of the stain.
+- Area of convergence (2-D) and point of origin (3-D) are found from several stains.
+> Compute the angle of impact
+> Classify bloodstain patterns
+## Other Body Fluids
+### Semen and saliva
+= Identifying semen, saliva and other fluids.
+- Acid phosphatase test is presumptive for semen; PSA (p30) and spermatozoa are confirmatory.
+- Alternate light sources show fluids by fluorescence.
+- Salivary amylase (starch–iodine test) indicates saliva.
+> Choose tests for body fluids
+> Explain the use of alternate light sources
+@lab enzyme-amylase
+## DNA Profiling
+### DNA typing
+= DNA structure, extraction, PCR and STR profiling.
+- STRs are short tandem repeats of 2–6 bases; forensic profiles type 15–20+ STR loci and amelogenin (sex).
+- Workflow: extraction, quantification, PCR amplification, capillary electrophoresis, interpretation.
+- Mitochondrial DNA (maternal) and Y-STRs (paternal) help with degraded samples and male lineages.
+- A match with a reference sample is reported with its random match probability; clear differences at typed loci exclude the reference as the source.
+> Describe the DNA profiling workflow
+> Interpret a simple STR profile
+@lab dna-fingerprinting
+@lab gel-electrophoresis
+@3d dna
+
+# bsc-fs-5-forensic-medicine | 5 | Forensic Medicine and Anthropology | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Death and Post-mortem Changes
+### Signs of death and time since death
+= Death, early and late post-mortem changes.
+- Early changes: algor mortis (cooling, roughly 1 °C per hour early on), livor mortis (hypostasis, fixed in about 6–8 hours), rigor mortis (begins 2–6 hours, full by about 12, passes by 24–36 hours).
+- Late changes: decomposition, adipocere, mummification.
+- Entomology (insect succession) helps estimate time since death in later stages.
+> Estimate time since death from post-mortem changes
+> Explain factors affecting cooling and rigor
+## Injuries
+### Mechanical injuries
+= Abrasions, contusions, lacerations, incised and stab wounds.
+- Abrasion: loss of superficial skin; contusion: bruise from ruptured vessels; laceration: tear from blunt force.
+- Incised wounds are longer than deep with clean edges; stab wounds are deeper than long.
+- Defence wounds on hands and forearms suggest the victim resisted.
+> Classify mechanical injuries
+> Distinguish suicidal, homicidal and accidental wounds
+## Asphyxia
+### Asphyxial deaths
+= Hanging, strangulation, drowning and smothering.
+- Hanging: ligature mark oblique, above the thyroid, incomplete; ligature strangulation: horizontal, below the thyroid, complete.
+- Drowning signs: froth at mouth and nostrils, water in the stomach, diatoms in bone marrow.
+- Petechial haemorrhages are seen in many asphyxial deaths.
+> Distinguish hanging and strangulation
+> List signs of drowning
+## Forensic Anthropology and Odontology
+### Identification from skeletal and dental remains
+= Estimating sex, age and stature from bones and teeth.
+- Sex: pelvis (wider sub-pubic angle in females) and skull features.
+- Age: epiphyseal fusion and ossification centres in the young; dental eruption in children.
+- Stature from long bones (e.g. femur) using regression formulae.
+- Bite marks and dental records aid identification.
+> Estimate sex and age from skeletal remains
+> Explain dental identification
+@3d skeleton
+
+# bsc-fs-6-digital-forensics | 6 | Digital and Cyber Forensics | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Cyber Crime
+### Cyber crimes and the law
+= Types of cyber crime and provisions of the IT Act.
+- Cyber crimes: hacking, phishing, identity theft, cyberstalking, ransomware, online financial fraud, child sexual abuse material.
+- IT Act, 2000 sections 43 (civil liability), 66 (computer offences), 66C (identity theft), 66D (cheating by impersonation), 67 (obscene material).
+- Electronic records are admissible under the Bharatiya Sakshya Adhiniyam with a certificate (section 63).
+> Classify cyber crimes
+> Identify the applicable legal provisions
+## Digital Evidence
+### Acquisition and preservation
+= Seizing devices, forensic imaging and hashing.
+- Order of volatility: registers and cache, RAM, network state, disk, backups.
+- A forensic image is a bit-by-bit copy made through a write blocker.
+- Hash values (MD5, SHA-256) verify that the image matches the original.
+> Acquire a forensic image correctly
+> Verify integrity with hash values
+## Analysis
+### File systems and artefacts
+= Recovering deleted files and analysing system artefacts.
+- Deleted files often remain in unallocated space until overwritten; file carving uses headers and footers.
+- Artefacts: browser history, registry, logs, metadata (EXIF), timestamps (MAC times).
+- Tools: Autopsy/Sleuth Kit, FTK, EnCase.
+> Recover deleted files
+> Build a timeline from timestamps
+## Mobile and Network Forensics
+### Mobile and network evidence
+= Extracting data from phones and analysing network traffic.
+- Extraction levels: manual, logical, file system, physical (chip-off).
+- Call detail records and tower dumps place a phone in time and space.
+- Packet captures (Wireshark) and logs reconstruct network events.
+> Choose a mobile extraction method
+> Analyse a packet capture
+
+# bsc-fs-6-forensic-psychology | 6 | Forensic Psychology and Victimology | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Forensic Psychology
+### Scope and methods
+= Psychology applied to law: assessment, testimony and offender profiling.
+- Forensic psychologists assess competence, risk and mental state, and assist investigations.
+- Offender profiling infers characteristics from crime scene behaviour (organised vs disorganised).
+- Psychological autopsy reconstructs a deceased person's state of mind.
+> Describe the work of forensic psychologists
+> Explain offender profiling
+## Detection of Deception
+### Polygraph, narco-analysis and brain mapping
+= Deception detection techniques and their legal status.
+- The polygraph records heart rate, blood pressure, respiration and skin conductance.
+- Selvi v State of Karnataka (2010): narco-analysis, polygraph and BEAP cannot be done without consent, and results are not admissible as such.
+- Information discovered as a result of a voluntary test may be admitted.
+> Explain how a polygraph works
+> State the legal position after Selvi
+## Eyewitness Testimony
+### Memory and interviewing
+= Reliability of eyewitnesses and the cognitive interview.
+- Memory is reconstructive; leading questions can alter recall (Loftus).
+- Factors: stress, weapon focus, cross-race effect, delay.
+- The cognitive interview improves recall without leading.
+> Evaluate eyewitness reliability
+> Use cognitive interview techniques
+## Victimology
+### Victims and justice
+= Victim typologies, victim rights and compensation.
+- Mendelsohn's typology ranges from completely innocent to most guilty victims.
+- Secondary victimisation is further harm from the justice process.
+- Victim compensation schemes operate under BNSS section 396.
+> Describe victim typologies
+> Explain victim compensation
+
+# bsc-chem-1-analytical-inorganic | 1 | Chemistry: Atomic Structure and Analytical Chemistry
+## Atomic Structure
+### Quantum model of the atom
+= Quantum numbers, orbitals and electronic configuration.
+- Quantum numbers: n (shell), l (subshell, 0 to n − 1), mₗ (−l to +l), mₛ (±½).
+- Aufbau principle (n + l rule), Pauli exclusion principle, Hund's rule.
+- Half-filled and fully filled subshells are extra stable (Cr: 3d⁵4s¹, Cu: 3d¹⁰4s¹).
+- de Broglie wavelength λ = h ÷ mv; Heisenberg: Δx·Δp ≥ h ÷ 4π.
+> Write electronic configurations
+> Assign quantum numbers
+@3d orbitals
+@3d atoms
+## Periodic Properties
+### Periodic trends
+= Atomic radius, ionisation energy, electron affinity and electronegativity.
+- Atomic radius decreases across a period and increases down a group.
+- Ionisation energy increases across a period (with exceptions at groups 13 and 16).
+- Electronegativity (Pauling scale) is highest for fluorine (4.0).
+- Effective nuclear charge Z* = Z − S (Slater's rules).
+> Explain periodic trends
+> Compute effective nuclear charge with Slater's rules
+## Volumetric Analysis
+### Titrimetric analysis
+= Concentration terms, standard solutions and acid–base titrations.
+- Molarity = moles of solute ÷ litres of solution; normality = gram equivalents ÷ litres.
+- N₁V₁ = N₂V₂ at the equivalence point.
+- Primary standards (oxalic acid, sodium carbonate) are pure and stable; NaOH must be standardised.
+- Indicators: phenolphthalein (pH 8.2–10), methyl orange (3.1–4.4).
+> Prepare standard solutions
+> Calculate concentrations from titration data
+@lab titration-oxalic-naoh
+@lab titration-hcl-naoh
+hook: How can a few drops of an indicator tell you exactly how much acid is in a flask?
+ex: 20 mL of 0.1 N oxalic acid needs 25 mL NaOH. N(NaOH) = 0.1 × 20 ÷ 25 = 0.08 N.
+q: Why is NaOH not a primary standard? || It absorbs moisture and CO₂ from the air, so its mass is not reliable.
+terms: molarity; normality; primary standard; equivalence point
+### Redox titrations
+= Oxidising and reducing agents and permanganometry.
+- KMnO₄ is a self-indicator: in acid it is reduced from Mn(VII) to Mn²⁺ (colourless).
+- Equivalent weight of KMnO₄ in acid medium = molar mass ÷ 5.
+- Oxalic acid titration is carried out warm (60–70 °C) in dilute H₂SO₄.
+> Balance redox equations
+> Perform permanganate titrations
+@lab kmno4-oxalic
+@lab kmno4-mohr
+## Errors and Data Treatment
+### Errors in chemical analysis
+= Accuracy, precision, errors and significant figures.
+- Accuracy is closeness to the true value; precision is closeness of repeated measurements.
+- Determinate (systematic) errors can be corrected; indeterminate (random) errors cannot.
+- Report results with appropriate significant figures; standard deviation measures precision.
+> Distinguish accuracy and precision
+> Report results with correct significant figures
+
+# bsc-chem-2-organic | 2 | Chemistry: Basic Organic Chemistry
+## Bonding and Structure
+### Hybridisation and electronic effects
+= Hybridisation, inductive, resonance and hyperconjugation effects.
+- sp³ (109.5°, tetrahedral), sp² (120°, trigonal), sp (180°, linear).
+- Inductive effect is permanent polarisation through σ bonds; −I groups (NO₂, Cl) withdraw electrons.
+- Resonance delocalises π electrons; hyperconjugation explains stability of alkyl-substituted carbocations.
+- Carbocation stability: 3° > 2° > 1° > methyl.
+> Predict hybridisation and shape
+> Rank intermediates by stability
+@3d hybridisation
+@3d molecules
+## Reaction Mechanisms
+### Substitution and elimination
+= SN1, SN2, E1 and E2 mechanisms.
+- SN2: one step, backside attack, inversion of configuration, rate = k[RX][Nu]; favoured for 1° substrates.
+- SN1: carbocation intermediate, racemisation, rate = k[RX]; favoured for 3° substrates and polar protic solvents.
+- E2 needs an anti-periplanar H; Zaitsev's rule gives the more substituted alkene.
+> Predict SN1/SN2 and E1/E2 outcomes
+> Write mechanisms with curved arrows
+hook: Why does tert-butyl bromide react fast in water but slowly with a strong nucleophile in acetone?
+q: What happens to configuration in an SN2 reaction? || It is inverted (Walden inversion).
+q: Which substrate reacts fastest by SN1: 1°, 2° or 3°? || 3°, because it forms the most stable carbocation.
+terms: nucleophile; leaving group; carbocation; inversion
+## Stereochemistry
+### Isomerism and chirality
+= Structural and stereoisomerism, R/S and E/Z nomenclature.
+- A chiral carbon has four different groups; enantiomers are non-superimposable mirror images.
+- CIP priority by atomic number assigns R (clockwise) or S (anticlockwise) with the lowest priority away.
+- Diastereomers are stereoisomers that are not mirror images; meso compounds are achiral despite chiral centres.
+- E/Z for alkenes uses CIP priorities on each carbon.
+> Assign R/S and E/Z configurations
+> Identify enantiomers, diastereomers and meso forms
+## Hydrocarbons
+### Alkanes, alkenes and arenes
+= Preparation and reactions of hydrocarbons and aromaticity.
+- Alkenes undergo electrophilic addition; Markovnikov's rule: H adds to the carbon with more H atoms.
+- Peroxide effect (anti-Markovnikov) applies to HBr only.
+- Hückel's rule: planar cyclic conjugated systems with (4n + 2) π electrons are aromatic.
+- Benzene undergoes electrophilic substitution (nitration, halogenation, sulphonation, Friedel–Crafts).
+> Predict addition products using Markovnikov's rule
+> Test compounds for aromaticity
+
+# bsc-chem-3-physical | 3 | Chemistry: Physical Chemistry I | year=2025-26
+## Gaseous State
+### Real gases
+= Kinetic theory, deviations from ideal behaviour and the van der Waals equation.
+- Ideal gas: PV = nRT; kinetic energy per mole = (3/2)RT.
+- van der Waals: (P + an²/V²)(V − nb) = nRT; a corrects attraction, b volume.
+- Compressibility factor Z = PV ÷ nRT; Z = 1 for an ideal gas.
+> Use the van der Waals equation
+> Interpret the compressibility factor
+## Thermodynamics
+### First and second laws
+= Internal energy, enthalpy, entropy and free energy.
+- First law: ΔU = q + w.
+- ΔH = ΔU + Δn_g RT.
+- Gibbs free energy ΔG = ΔH − TΔS; a process is spontaneous at constant T and P if ΔG < 0.
+- Hess's law: enthalpy change is independent of path.
+> Compute ΔH, ΔS and ΔG
+> Predict spontaneity
+@lab enthalpy-neutralisation
+## Chemical Kinetics
+### Rate laws and order
+= Rate, order, molecularity, integrated rate laws and Arrhenius equation.
+- First-order: k = (2.303/t) log([A]₀/[A]); half-life t½ = 0.693 ÷ k, independent of concentration.
+- Zero-order: [A] = [A]₀ − kt.
+- Arrhenius: k = A e^(−Ea/RT); log(k₂/k₁) = (Ea/2.303R)(1/T₁ − 1/T₂).
+> Determine order and rate constants from data
+> Compute activation energy
+@lab ester-hydrolysis
+@lab reaction-rate-thiosulphate
+ex: A first-order reaction has k = 0.0693 min⁻¹. t½ = 0.693 ÷ 0.0693 = 10 min.
+ex: After 30 min (3 half-lives), 1/8 of the reactant remains.
+## Liquids and Solutions
+### Viscosity, surface tension and colligative properties
+= Properties of liquids and colligative properties of solutions.
+- Ostwald viscometer: η₁/η₂ = d₁t₁ ÷ d₂t₂.
+- Colligative properties depend on the number of solute particles: relative lowering of vapour pressure, ΔTb = Kb m, ΔTf = Kf m, osmotic pressure π = CRT.
+- van't Hoff factor i corrects for dissociation or association.
+> Measure relative viscosity
+> Compute molar mass from colligative data
+@lab ostwald-viscosity
+
+# bsc-chem-4-inorganic | 4 | Chemistry: Coordination and Inorganic Chemistry | year=2025-26
+## Coordination Compounds
+### Werner's theory and nomenclature
+= Coordination number, ligands, IUPAC names and isomerism.
+- Werner: primary valency (oxidation state, ionisable) and secondary valency (coordination number, directional).
+- Ligands: monodentate (NH₃, Cl⁻), bidentate (en, ox²⁻), polydentate (EDTA⁴⁻, hexadentate); chelates are extra stable.
+- Isomerism: ionisation, linkage, geometrical (cis/trans), optical.
+> Name coordination compounds by IUPAC rules
+> Identify isomers of complexes
+### Bonding in complexes
+= Valence bond theory and crystal field theory.
+- Octahedral crystal field splits d orbitals into t₂g (lower) and e_g (higher) by Δo.
+- Strong-field ligands (CN⁻, CO) give low-spin complexes; weak-field (F⁻, H₂O) high-spin (spectrochemical series).
+- Magnetic moment μ = √(n(n + 2)) BM for n unpaired electrons.
+> Predict high-spin or low-spin configurations
+> Compute spin-only magnetic moments
+## Main Group Chemistry
+### s- and p-block compounds
+= Hydrides, oxides, halides and important compounds.
+- Diagonal relationship: Li–Mg, Be–Al, B–Si.
+- Boranes have electron-deficient three-centre two-electron bonds (diborane).
+- Silicates are built from SiO₄ tetrahedra; silicones have Si–O–Si chains with organic groups.
+> Explain anomalous properties of first elements
+> Describe the structure of diborane and silicates
+## Qualitative Analysis
+### Semi-micro qualitative analysis
+= Group separation of cations and tests for anions.
+- Cation groups by precipitating reagent: I HCl, II H₂S in acid, III NH₄OH/NH₄Cl, IV H₂S in ammoniacal medium, V (NH₄)₂CO₃, VI none.
+- Common ion effect controls precipitation in groups II and IV.
+- Flame colours: Na golden yellow, K lilac, Ca brick red, Sr crimson, Ba apple green, Cu blue-green.
+> Analyse a salt mixture systematically
+> Identify cations by flame tests
+@lab salt-analysis
+@lab flame-test
+## Solid State
+### Crystal structures
+= Unit cells, packing and defects.
+- Cubic cells: simple (1 atom per cell), bcc (2), fcc (4).
+- Packing efficiency: sc 52.4%, bcc 68%, fcc/hcp 74%.
+- Defects: Schottky (cation–anion vacancy pair, lowers density) and Frenkel (ion displaced to interstitial site).
+> Compute atoms per unit cell and density
+> Distinguish Schottky and Frenkel defects
+@3d crystal_lattices
+
+# bsc-chem-5-spectroscopy-electrochemistry | 5 | Chemistry: Spectroscopy and Electrochemistry | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Spectroscopy
+### UV-Visible and IR spectroscopy
+= Electronic transitions, Beer–Lambert law and IR functional group frequencies.
+- Beer–Lambert law: A = εcl.
+- UV-Vis transitions: σ→σ*, n→σ*, π→π*, n→π*; conjugation shifts λmax to longer wavelength.
+- IR: O–H about 3200–3600 cm⁻¹ (broad), C=O about 1700 cm⁻¹, C≡N about 2250 cm⁻¹.
+> Identify functional groups from IR spectra
+> Determine concentration with Beer–Lambert's law
+@lab beer-lambert
+### NMR and mass spectrometry
+= Chemical shift, splitting and molecular ion.
+- ¹H NMR chemical shift (ppm from TMS) depends on electronic environment; aldehyde H ≈ 9–10 ppm.
+- n + 1 rule: a proton with n equivalent neighbours splits into n + 1 peaks.
+- In MS, the molecular ion peak gives the molar mass; the base peak is the most intense.
+> Interpret simple ¹H NMR spectra
+> Find molar mass from a mass spectrum
+## Electrochemistry
+### Conductance
+= Conductivity, molar conductivity and Kohlrausch's law.
+- Molar conductivity Λm = κ × 1000 ÷ C.
+- Strong electrolytes: Λm = Λ°m − A√C; weak electrolytes: degree of dissociation α = Λm ÷ Λ°m.
+- Kohlrausch's law: Λ°m = ν₊λ°₊ + ν₋λ°₋.
+> Compute molar conductivity and degree of dissociation
+> Apply Kohlrausch's law
+@lab conductometric-titration
+### Electrochemical cells
+= EMF, Nernst equation and pH measurement.
+- E°cell = E°cathode − E°anode.
+- Nernst equation: E = E° − (0.0591/n) log Q at 298 K.
+- ΔG° = −nFE°.
+- pH is measured with a glass electrode; pH-metric titration finds the equivalence point from the steepest rise.
+> Compute cell EMF with the Nernst equation
+> Perform a pH-metric titration
+@lab ph-metric-titration
+
+# bsc-chem-6-applied | 6 | Chemistry: Polymers, Green and Industrial Chemistry | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Polymers
+### Polymerisation and polymers
+= Addition and condensation polymers and their properties.
+- Addition (chain-growth) polymers: polythene, PVC, polystyrene; condensation (step-growth): nylon-6,6, polyester, Bakelite.
+- Thermoplastics soften on heating; thermosets do not.
+- Number-average molar mass Mn = ΣNᵢMᵢ ÷ ΣNᵢ; weight-average Mw = ΣNᵢMᵢ² ÷ ΣNᵢMᵢ.
+> Classify polymers
+> Compute average molar masses
+## Green Chemistry
+### Principles of green chemistry
+= The twelve principles and atom economy.
+- Twelve principles include waste prevention, atom economy, safer solvents and energy efficiency.
+- Atom economy = molar mass of desired product ÷ total molar mass of reactants × 100.
+- Catalysis and renewable feedstocks reduce environmental impact.
+> Compute atom economy
+> Suggest greener alternatives
+## Separation Techniques
+### Chromatography and extraction
+= Paper, TLC, column chromatography and solvent extraction.
+- Separation depends on partition between stationary and mobile phases.
+- Rf = distance of solute ÷ distance of solvent front.
+- Distribution law: K = C₁ ÷ C₂; several small extractions remove more than one large one.
+> Separate mixtures by chromatography
+> Apply the distribution law
+@lab leaf-pigment-chromatography
+@lab ink-chromatography
+## Industrial and Environmental Chemistry
+### Industrial processes and pollution
+= Fertilisers, cement, water treatment and pollution.
+- Haber process: N₂ + 3H₂ ⇌ 2NH₃ (iron catalyst, about 200 atm, 700 K).
+- Water hardness: temporary (bicarbonates, removed by boiling) and permanent (chlorides, sulphates); EDTA titration measures it.
+- BOD and COD measure organic pollution of water.
+> Explain key industrial processes
+> Interpret water quality parameters

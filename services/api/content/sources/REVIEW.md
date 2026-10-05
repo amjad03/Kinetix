@@ -78,6 +78,13 @@ When a course is checked, add `reviewed=yes` to its `#` line in the source and r
 - **Goods and Services Tax, BCom Semester 6**
   - GST rates were rationalised from 22 September 2025 (5% and 18% main slabs, 40% for specified goods); confirm rates taught.
 
+## BSc (bu-bsc.txt, curriculum `bu-ug`, SEP 2024 (2024-25))
+
+- SIMS offers BSc with Forensic Science (secondary listings); the combination's other subjects were not confirmed. Forensic Science and Chemistry are written for all six semesters; the third optional (e.g. Biochemistry, Microbiology, Computer Science, Psychology) is not written. Confirm the combination offered.
+- Course titles per semester are the KINETIX team's reading of the BU NEP/SEP pattern (one theory paper per subject per semester); confirm every title against the BU SEP BSc Forensic Science and Chemistry syllabi.
+- Indian criminal law references use the Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS) and Bharatiya Sakshya Adhiniyam (BSA), in force from 1 July 2024.
+
+
 ## MBA (bu-mba.txt, curriculum `bu-pg`, BU MBA CBCS (2024-25))
 
 - PG programmes were not moved to SEP; the course list follows the BU MBA CBCS scheme as commonly listed (Sem 1-2 core, Sem 3-4 strategy plus dual specialisation). Confirm paper titles, codes and semesters against the current BU MBA regulations.
