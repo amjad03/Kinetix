@@ -1,0 +1,18 @@
+name: kinetix_cards
+description: KINETIX answer cards — the 7×7 card codebook, the photo reader (pure Dart, run in an isolate), card painting and the printable PDF.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  pdf: ^3.11.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
