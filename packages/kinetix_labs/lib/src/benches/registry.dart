@@ -1,0 +1,70 @@
+import '../core/bench.dart';
+import 'buoyancy.dart';
+import 'calorimetry.dart';
+import 'circle.dart';
+import 'conductors.dart';
+import 'displacement.dart';
+import 'electromagnet.dart';
+import 'germination.dart';
+import 'heating.dart';
+import 'indicators.dart';
+import 'lens.dart';
+import 'lever.dart';
+import 'magnets.dart';
+import 'microscope.dart';
+import 'mirror.dart';
+import 'ohm.dart';
+import 'osmosis.dart';
+import 'pendulum.dart';
+import 'pinhole.dart';
+import 'prism.dart';
+import 'probability.dart';
+import 'pythagoras.dart';
+import 'reactions.dart';
+import 'resistors.dart';
+import 'rusting.dart';
+import 'separation.dart';
+import 'shadows.dart';
+import 'slab.dart';
+import 'sonometer.dart';
+import 'starch.dart';
+import 'transpiration.dart';
+import 'triangle.dart';
+
+/// Every bench, by the name the lab content uses.
+final labBenches = <String, LabBench>{
+  for (final b in <LabBench>[
+    const OhmBench(),
+    const ResistorsBench(),
+    const SlabBench(),
+    const LensBench(),
+    const PendulumBench(),
+    const BuoyancyBench(),
+    const IndicatorsBench(),
+    const DisplacementBench(),
+    const MicroscopeBench(),
+    const ProbabilityBench(),
+    const ConductorsBench(),
+    const MagnetsBench(),
+    const ShadowsBench(),
+    const PrismBench(),
+    const HeatingBench(),
+    const ReactionsBench(),
+    const StarchBench(),
+    const TriangleBench(),
+    const SeparationBench(),
+    const GerminationBench(),
+    const PinholeBench(),
+    const MirrorBench(),
+    const RustingBench(),
+    const OsmosisBench(),
+    const PythagorasBench(),
+    const CircleBench(),
+    const LeverBench(),
+    const ElectromagnetBench(),
+    const CalorimetryBench(),
+    const SonometerBench(),
+    const TranspirationBench(),
+  ])
+    b.kind: b,
+};

@@ -289,8 +289,8 @@ class _AimCard extends StatelessWidget {
 }
 
 /// A labelled slider with its value shown large.
-class LabSlider extends StatelessWidget {
-  const LabSlider({
+class LabSliderRow extends StatelessWidget {
+  const LabSliderRow({
     super.key,
     required this.label,
     required this.value,

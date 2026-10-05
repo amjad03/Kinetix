@@ -47,7 +47,7 @@ class _BreakEvenLabState extends State<BreakEvenLab> {
         Readout('Margin of safety', ok ? '${formatInr(b.marginOfSafetySales)} (${pct(b.marginOfSafetyPercent)})' : '–', key: const ValueKey('readout-mos')),
       ],
       controls: [
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-fixed'),
           label: 'Fixed cost (F)',
           value: b.fixedCost,
@@ -57,7 +57,7 @@ class _BreakEvenLabState extends State<BreakEvenLab> {
           format: (v) => formatInr(v, decimals: 0),
           onChanged: (v) => setState(() => _b = b.copyWith(fixedCost: v)),
         ),
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-variable'),
           label: 'Variable cost per unit (V)',
           value: b.variableCostPerUnit,
@@ -67,7 +67,7 @@ class _BreakEvenLabState extends State<BreakEvenLab> {
           format: (v) => formatInr(v, decimals: 0),
           onChanged: (v) => setState(() => _b = b.copyWith(variableCostPerUnit: v)),
         ),
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-price'),
           label: 'Selling price per unit (S)',
           value: b.sellingPrice,
@@ -77,7 +77,7 @@ class _BreakEvenLabState extends State<BreakEvenLab> {
           format: (v) => formatInr(v, decimals: 0),
           onChanged: (v) => setState(() => _b = b.copyWith(sellingPrice: v)),
         ),
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-sales'),
           label: 'Actual / budgeted sales',
           value: b.salesUnits,

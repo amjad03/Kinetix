@@ -221,7 +221,7 @@ class _GraphPlotterLabState extends State<GraphPlotterLab> {
         Text(f.mode.form, style: context.text.titleMedium?.copyWith(color: context.colors.onSurfaceVariant)),
         const SizedBox(height: Kx.s8),
         for (final (i, c) in _coefs.indexed)
-          LabSlider(
+          LabSliderRow(
             key: ValueKey('coef-${c.name}'),
             label: c.name,
             value: _coef(i),

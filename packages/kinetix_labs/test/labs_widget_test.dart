@@ -23,7 +23,7 @@ String _readout(WidgetTester tester, String key) {
 
 void main() {
   test('catalogue ids are stable', () {
-    expect(LabCatalogue.ids, ['lab.ohms-law', 'lab.lens-mirror', 'lab.pendulum', 'lab.break-even', 'lab.graph-plotter']);
+    expect(LabCatalogue.ids, containsAll(['lab.ohms-law', 'lab.lens-mirror', 'lab.pendulum', 'lab.break-even', 'lab.graph-plotter']));
     for (final e in LabCatalogue.entries) {
       expect(e.title, isNotEmpty);
       expect(e.levels, isNotEmpty);

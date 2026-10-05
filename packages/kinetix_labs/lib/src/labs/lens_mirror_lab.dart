@@ -109,7 +109,7 @@ class _LensMirrorLabState extends State<LensMirrorLab> {
           ],
         ),
         const SizedBox(height: Kx.s12),
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-u'),
           label: 'Object distance |u|',
           value: _u,
@@ -119,7 +119,7 @@ class _LensMirrorLabState extends State<LensMirrorLab> {
           unit: 'cm',
           onChanged: _setU,
         ),
-        LabSlider(
+        LabSliderRow(
           label: 'Focal length |f|',
           value: _f,
           min: 5,

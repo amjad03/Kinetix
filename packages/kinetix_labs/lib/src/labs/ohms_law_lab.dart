@@ -119,7 +119,7 @@ class _OhmsLawLabState extends State<OhmsLawLab> with SingleTickerProviderStateM
         Readout('Power P = VI', _fmt(c.power), unit: 'W'),
       ],
       controls: [
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-voltage'),
           label: 'Battery voltage',
           value: c.voltage,
@@ -156,7 +156,7 @@ class _OhmsLawLabState extends State<OhmsLawLab> with SingleTickerProviderStateM
         ),
         const SizedBox(height: Kx.s8),
         for (var i = 0; i < _count; i++)
-          LabSlider(
+          LabSliderRow(
             key: ValueKey('slider-r$i'),
             label: 'R${i + 1}',
             value: _all[i],

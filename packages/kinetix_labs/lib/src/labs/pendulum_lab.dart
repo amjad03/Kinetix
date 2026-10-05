@@ -126,7 +126,7 @@ class _PendulumLabState extends State<PendulumLab> with SingleTickerProviderStat
           ),
         ),
         const SizedBox(height: Kx.s8),
-        LabSlider(
+        LabSliderRow(
           key: const ValueKey('slider-length'),
           label: 'Length L',
           value: _length,
@@ -140,7 +140,7 @@ class _PendulumLabState extends State<PendulumLab> with SingleTickerProviderStat
             _restart();
           }),
         ),
-        LabSlider(
+        LabSliderRow(
           label: 'Amplitude θ',
           value: _amplitude,
           min: 2,
