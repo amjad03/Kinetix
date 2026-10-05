@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../ai/ai_controller.dart';
+import 'ai_pen_ui.dart';
 import 'chrome.dart';
 import 'kit/subjects.dart';
 import 'side_panel.dart';
@@ -17,7 +18,7 @@ import 'side_panel.dart';
 /// letter, and there are fewer of them.
 
 /// What the left rail's popovers are about.
-enum RailPopover { write, erase, shapes, insert, tools, theme }
+enum RailPopover { write, aiPen, erase, shapes, insert, tools, theme }
 
 /// Sizes of the rails, for the board's safe area.
 abstract final class RailSizes {
@@ -31,6 +32,7 @@ class ToolRail extends StatelessWidget {
   const ToolRail({
     super.key,
     required this.wb,
+    this.pen,
     required this.style,
     required this.primary,
     required this.compact,
@@ -41,6 +43,9 @@ class ToolRail extends StatelessWidget {
   });
 
   final WhiteboardController wb;
+
+  /// The AI pen (not offered on primary boards).
+  final AiPenController? pen;
   final SubjectStyle style;
   final bool primary;
   final bool compact;
@@ -58,7 +63,7 @@ class ToolRail extends StatelessWidget {
     final l = context.l10n;
     final size = RailSizes.button(primary: primary, compact: compact);
     return ListenableBuilder(
-      listenable: Listenable.merge([wb, wb.ruler, wb.protractor]),
+      listenable: Listenable.merge([wb, wb.ruler, wb.protractor, ?pen]),
       builder: (context, _) {
         final tool = wb.tool;
         Widget button({
@@ -127,6 +132,15 @@ class ToolRail extends StatelessWidget {
             selected: tool == BoardTool.highlighter,
             onTap: () => pick(BoardTool.highlighter, RailPopover.write),
           ),
+          if (!primary && pen != null)
+            button(
+              key: const Key('tool-ai-pen'),
+              icon: AiPenIcon(busy: pen!.converting),
+              label: l.aiPen,
+              letter: 'W',
+              selected: tool == BoardTool.aiPen || popover == RailPopover.aiPen,
+              onTap: () => pick(BoardTool.aiPen, RailPopover.aiPen),
+            ),
           button(
             key: const Key('tool-erase'),
             icon: const Icon(Icons.auto_fix_normal),

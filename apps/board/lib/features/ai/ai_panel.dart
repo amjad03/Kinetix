@@ -31,7 +31,7 @@ class AiPanel extends StatelessWidget {
           AiView.quiz => QuizPanel(ai: ai, onBack: home),
           AiView.homework => HomeworkPanel(ai: ai, onBack: home),
           AiView.lessonPlan => LessonPlanPanel(ai: ai, onBack: home),
-          AiView.math => MathPanel(ai: ai, onBack: home),
+          AiView.math => MathPanel(key: ValueKey('math-${ai.mathRequest}'), ai: ai, onBack: home),
           AiView.readBoard => ReadBoardPanel(ai: ai, onBack: home),
         };
       },

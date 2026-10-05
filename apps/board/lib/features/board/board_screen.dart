@@ -28,6 +28,7 @@ import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
 import '../recording/recording_ui.dart';
 import '../signin/sign_in_dialog.dart';
+import 'ai_pen_ui.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'editors.dart';
@@ -43,7 +44,7 @@ import 'selection_actions.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
 
-enum _Popover { write, erase, theme, shapes, tools, eyeComfort, profile, insert }
+enum _Popover { write, aiPen, erase, theme, shapes, tools, eyeComfort, profile, insert }
 
 enum ToolbarAlign { left, center, right }
 
@@ -72,6 +73,9 @@ class _BoardScreenState extends State<BoardScreen> {
   final _canvasKey = GlobalKey<WhiteboardCanvasState>();
   final _secondInk = InkController();
   late final AiController _ai;
+
+  /// The AI pen: shapes, maths and words from what the teacher writes.
+  late final AiPenController _pen;
 
   /// The model or lab view in the split pane, for a picture of it.
   final _splitKey = GlobalKey();
@@ -121,7 +125,11 @@ class _BoardScreenState extends State<BoardScreen> {
       ..openSplit = _openSplit;
     _lastSessionId = board.session?.sessionId;
     _planTimer = PlanTimer(board);
+    _pen = AiPenController(_wb, handwriting: board.handwriting)
+      ..onNotice = _aiPenNotice
+      ..onLetterSize = (px) => board.saveLetterSize(board.session?.teacherId, px);
     _applyClass();
+    unawaited(_loadLetterSize());
   }
 
   @override
@@ -131,6 +139,7 @@ class _BoardScreenState extends State<BoardScreen> {
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
     _live.stop();
     _capture?.dispose();
+    _pen.dispose();
     _wb.dispose();
     _images.dispose();
     _secondInk.dispose();
@@ -174,6 +183,43 @@ class _BoardScreenState extends State<BoardScreen> {
       _wb.font = primary ? BoardFont.andika : BoardFont.inter;
       if (primary) _wb.textSize = 40;
     }
+    _syncPen();
+  }
+
+  /// The AI pen's settings from Board settings. Primary boards have no AI pen (tidying shapes
+  /// stays, as an option of the pen).
+  void _syncPen() {
+    if (_pen.mode != board.aiPenMode) _pen.mode = board.aiPenMode;
+    _pen
+      ..language = board.aiPenLanguage.name
+      ..snapShapes = board.snapShapes;
+    if (_primary && _wb.tool == BoardTool.aiPen) _wb.tool = BoardTool.pen;
+  }
+
+  /// The handwriting size the AI pen learnt for this teacher.
+  Future<void> _loadLetterSize() async {
+    final px = await board.letterSize(board.session?.teacherId);
+    if (mounted) _pen.letterPx = px ?? 46;
+  }
+
+  void _aiPenNotice(AiPenNotice n) {
+    if (mounted) showBoardMessage(context, aiPenNoticeText(context.l10n, n, board.aiPenLanguage));
+  }
+
+  /// Opens the maths solver on an equation from the board.
+  void _solveMath(MathElement e) {
+    _ai.solve(_pen.solverText(e));
+    setState(() {
+      _popover = null;
+      _panel = PanelKind.ai;
+    });
+  }
+
+  /// Converts the selected ink with the AI pen.
+  Future<void> _convertSelection() async {
+    final strokes = _wb.selectedElements.whereType<Stroke>().toList();
+    _wb.clearSelection();
+    await _pen.convertStrokes(strokes);
   }
 
   void _onBoardChanged() {
@@ -183,6 +229,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final id = board.session?.sessionId;
     if (id == _lastSessionId) return;
     _lastSessionId = id;
+    unawaited(_loadLetterSize());
     if (_signInOpen && id != null) Navigator.of(context).pop();
     // A new class on a clean board starts on its subject's paper.
     if (id != null && _wb.isBlank) _wb.background = _style.paper;
@@ -749,6 +796,7 @@ class _BoardScreenState extends State<BoardScreen> {
         LogicalKeyboardKey.keyH when !_primary => done(() => _wb.tool = BoardTool.hand),
         LogicalKeyboardKey.keyP => done(() => _wb.tool = BoardTool.pen),
         LogicalKeyboardKey.keyI => done(() => _wb.tool = BoardTool.highlighter),
+        LogicalKeyboardKey.keyW when !_primary => done(() => _wb.tool = BoardTool.aiPen),
         LogicalKeyboardKey.keyE => done(() => _wb.tool = BoardTool.eraser),
         LogicalKeyboardKey.keyT => done(() => _wb.tool = BoardTool.text),
         LogicalKeyboardKey.keyS => done(() => _wb.tool = BoardTool.shape),
@@ -897,7 +945,16 @@ class _BoardScreenState extends State<BoardScreen> {
               onOpenLink: _openLink,
               onEdit: _editElement,
               onAskAi: _readSelectionWithAi,
+              onSolve: _solveMath,
+              onConvertInk: primary ? null : () => unawaited(_convertSelection()),
+              onReadings: (e) => _pen.conversions.containsKey(e.id) ? () => _pen.inspecting.value = e.id : null,
             ),
+          ),
+        ),
+        // The AI pen's Convert button and its readings of what it converted.
+        Positioned.fill(
+          child: BoardChromeTheme(
+            child: AiPenOverlay(wb: _wb, pen: _pen, onSolve: _solveMath, onMessage: (m) => showBoardMessage(context, m)),
           ),
         ),
         Positioned(
@@ -968,6 +1025,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final runner = _subjectTools;
     final railPopover = switch (_popover) {
       _Popover.write => RailPopover.write,
+      _Popover.aiPen => RailPopover.aiPen,
       _Popover.erase => RailPopover.erase,
       _Popover.shapes => RailPopover.shapes,
       _Popover.insert => RailPopover.insert,
@@ -985,12 +1043,14 @@ class _BoardScreenState extends State<BoardScreen> {
             alignment: Alignment.centerLeft,
             child: ToolRail(
               wb: _wb,
+              pen: _pen,
               style: style,
               primary: primary,
               compact: compact,
               popover: railPopover,
               onPopover: (p) => _toggle(switch (p) {
                 RailPopover.write => _Popover.write,
+                RailPopover.aiPen => _Popover.aiPen,
                 RailPopover.erase => _Popover.erase,
                 RailPopover.shapes => _Popover.shapes,
                 RailPopover.insert => _Popover.insert,
@@ -1084,7 +1144,8 @@ class _BoardScreenState extends State<BoardScreen> {
   Widget _popoverLayer(double railW) {
     final l = context.l10n;
     final Widget card = switch (_popover!) {
-      _Popover.write => WritePopover(wb: _wb),
+      _Popover.write => WritePopover(wb: _wb, footer: SnapShapesSwitch(board: board)),
+      _Popover.aiPen => AiPenPopover(board: board, pen: _pen),
       _Popover.erase => ErasePopover(wb: _wb, onCleared: () => setState(() => _popover = null)),
       _Popover.theme => ThemePopover(background: _background, onChanged: _setBackground),
       _Popover.shapes => ShapesPopover(wb: _wb, primary: _primary, onPicked: () {}),
@@ -1154,6 +1215,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final l = context.l10n;
     final toolbar = _MainToolbar(
       wb: _wb,
+      primary: _primary,
       compact: compact,
       popover: _popover,
       panel: _panel,
@@ -1247,6 +1309,7 @@ class _BoardScreenState extends State<BoardScreen> {
 class _MainToolbar extends StatelessWidget {
   const _MainToolbar({
     required this.wb,
+    required this.primary,
     required this.compact,
     required this.popover,
     required this.panel,
@@ -1258,6 +1321,9 @@ class _MainToolbar extends StatelessWidget {
   });
 
   final WhiteboardController wb;
+
+  /// Primary boards have no AI pen.
+  final bool primary;
   final bool compact;
   final _Popover? popover;
   final PanelKind? panel;
@@ -1295,6 +1361,14 @@ class _MainToolbar extends StatelessWidget {
                 selected: writing,
                 onTap: () => writing ? onPopover(_Popover.write) : onTool(BoardTool.pen, _Popover.write),
               ),
+              if (!primary)
+                ToolButton(
+                  key: const Key('tool-ai-pen'),
+                  icon: Icons.draw_outlined,
+                  label: l.aiPen,
+                  selected: tool == BoardTool.aiPen || popover == _Popover.aiPen,
+                  onTap: () => tool == BoardTool.aiPen ? onPopover(_Popover.aiPen) : onTool(BoardTool.aiPen, _Popover.aiPen),
+                ),
               ToolButton(
                 key: const Key('tool-erase'),
                 icon: Icons.auto_fix_normal,

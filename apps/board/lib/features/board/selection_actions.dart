@@ -7,9 +7,20 @@ import 'chrome.dart';
 import 'popovers.dart';
 
 /// The actions under a selection: colour, fill, order, copy, paste, duplicate, group, delete;
-/// "Open" for a picture of a 3D model or lab; "Read with AI" for what is selected.
+/// "Open" for a picture of a 3D model or lab; "Read with AI" for what is selected; "Solve" for
+/// an equation; the AI pen's readings of something it converted, or converting selected ink.
 class SelectionActions extends StatelessWidget {
-  const SelectionActions({super.key, required this.wb, required this.box, this.onOpenLink, this.onEdit, this.onAskAi});
+  const SelectionActions({
+    super.key,
+    required this.wb,
+    required this.box,
+    this.onOpenLink,
+    this.onEdit,
+    this.onAskAi,
+    this.onSolve,
+    this.onConvertInk,
+    this.onReadings,
+  });
 
   final WhiteboardController wb;
 
@@ -25,6 +36,15 @@ class SelectionActions extends StatelessWidget {
   /// Reads what is selected with KINETIX AI.
   final VoidCallback? onAskAi;
 
+  /// Sends the selected equation to the maths solver.
+  final void Function(MathElement e)? onSolve;
+
+  /// Converts the selected ink with the AI pen.
+  final VoidCallback? onConvertInk;
+
+  /// Shows the AI pen's readings of [e], when the AI pen made it (null otherwise).
+  final VoidCallback? Function(BoardElement e)? onReadings;
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -33,6 +53,7 @@ class SelectionActions extends StatelessWidget {
     final single = els.length == 1 ? els.single : null;
     final link = single is ImageElement ? single.link : null;
     final editable = single is MathElement || single is NoteElement || single is TextElement;
+    final readings = single == null ? null : onReadings?.call(single);
     final size = MediaQuery.sizeOf(context);
     Widget btn(IconData icon, String label, VoidCallback f, {Key? key, bool text = false, bool ai = false}) => Tooltip(
       message: label,
@@ -68,6 +89,9 @@ class SelectionActions extends StatelessWidget {
               text: true,
             ),
           if (onAskAi != null) btn(Icons.auto_awesome, l.readWithAi, onAskAi!, key: const Key('sel-ai'), text: true, ai: true),
+          if (single is MathElement && onSolve != null) btn(Icons.calculate_outlined, l.mathSolve, () => onSolve!(single), key: const Key('sel-solve'), text: true),
+          if (readings != null) btn(Icons.auto_awesome_outlined, l.aiPenReadings, readings, key: const Key('sel-readings'), ai: true),
+          if (onConvertInk != null && els.any(isPenInk)) btn(Icons.draw_outlined, l.aiPenConvertInk, onConvertInk!, key: const Key('sel-convert'), ai: true),
           if (editable && onEdit != null) btn(Icons.edit_outlined, l.edit, () => onEdit!(single!), key: const Key('sel-edit')),
           gap(),
           Builder(builder: (ctx) => btn(Icons.palette_outlined, l.colour, () => _pickColour(ctx), key: const Key('sel-colour'))),

@@ -5,6 +5,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
 import '../kiosk/kiosk_ui.dart';
+import 'ai_pen_ui.dart';
 import 'chrome.dart';
 
 /// The menu that opens from the avatar in the bottom-left corner.
@@ -149,8 +150,8 @@ extension TouchProfileText on TouchProfile {
 }
 
 /// Board settings: the board's language, the layout of its tools, the Simple board, who may
-/// write (pen or fingers), the touch surface type (tablet, interactive panel, IR touch frame)
-/// and kiosk mode.
+/// write (pen or fingers), the touch surface type (tablet, interactive panel, IR touch frame),
+/// the AI pen's handwriting models and kiosk mode.
 class BoardSettingsDialog extends StatelessWidget {
   const BoardSettingsDialog({super.key, required this.board});
 
@@ -259,6 +260,8 @@ class BoardSettingsDialog extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: Kx.s24),
+                AiPenSettingsSection(board: board),
                 const SizedBox(height: Kx.s24),
                 KioskSettingsSection(kiosk: board.kiosk),
               ],

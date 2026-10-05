@@ -4377,6 +4377,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to 100%'**
   String get zoomReset;
+
+  /// The pen that turns rough drawings into clean shapes and handwriting into text and typeset maths.
+  ///
+  /// In en, this message translates to:
+  /// **'AI pen'**
+  String get aiPen;
+
+  /// No description provided for @aiPenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI pen: shapes, maths and words from your handwriting'**
+  String get aiPenTitle;
+
+  /// No description provided for @aiPenModeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'After a pause'**
+  String get aiPenModeAuto;
+
+  /// No description provided for @aiPenModeAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write as usual; about a second after you stop, it is converted.'**
+  String get aiPenModeAutoHint;
+
+  /// No description provided for @aiPenModeLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Word by word'**
+  String get aiPenModeLive;
+
+  /// No description provided for @aiPenModeLiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each word is converted as you start the next one.'**
+  String get aiPenModeLiveHint;
+
+  /// No description provided for @aiPenModeTap.
+  ///
+  /// In en, this message translates to:
+  /// **'When I tap Convert'**
+  String get aiPenModeTap;
+
+  /// No description provided for @aiPenModeTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ink stays as written until you tap Convert.'**
+  String get aiPenModeTapHint;
+
+  /// No description provided for @aiPenConvert.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get aiPenConvert;
+
+  /// No description provided for @aiPenWordsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Words are read in'**
+  String get aiPenWordsLanguage;
+
+  /// No description provided for @aiPenTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap something the AI pen converted to see other readings or get your ink back. Scribble over ink to rub it out.'**
+  String get aiPenTapHint;
+
+  /// No description provided for @aiPenSnapShapes.
+  ///
+  /// In en, this message translates to:
+  /// **'Tidy shapes as I draw'**
+  String get aiPenSnapShapes;
+
+  /// No description provided for @aiPenSnapShapesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rough circles, lines, arrows and polygons drawn with the pen become clean shapes.'**
+  String get aiPenSnapShapesHint;
+
+  /// No description provided for @aiPenDidYouMean.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you mean…'**
+  String get aiPenDidYouMean;
+
+  /// No description provided for @aiPenTypeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Or type it'**
+  String get aiPenTypeIt;
+
+  /// No description provided for @aiPenItsShape.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s a shape'**
+  String get aiPenItsShape;
+
+  /// No description provided for @aiPenItsWriting.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s writing'**
+  String get aiPenItsWriting;
+
+  /// No description provided for @aiPenBackToInk.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to my ink'**
+  String get aiPenBackToInk;
+
+  /// No description provided for @aiPenKeepShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the shape'**
+  String get aiPenKeepShape;
+
+  /// No description provided for @aiPenNoShape.
+  ///
+  /// In en, this message translates to:
+  /// **'No clean shape fits that ink.'**
+  String get aiPenNoShape;
+
+  /// No description provided for @aiPenReadings.
+  ///
+  /// In en, this message translates to:
+  /// **'Other readings'**
+  String get aiPenReadings;
+
+  /// No description provided for @aiPenConvertInk.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert with AI pen'**
+  String get aiPenConvertInk;
+
+  /// No description provided for @aiPenWordsStayInk.
+  ///
+  /// In en, this message translates to:
+  /// **'Shapes and maths convert on this board. Words stay as ink: this board has no handwriting reader.'**
+  String get aiPenWordsStayInk;
+
+  /// No description provided for @aiPenModelNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Words stay as ink until the {language} handwriting model is downloaded (Board settings → AI pen).'**
+  String aiPenModelNeeded(String language);
+
+  /// No description provided for @aiPenLanguageUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This board cannot read {language} handwriting. Words stay as ink; shapes and maths still convert.'**
+  String aiPenLanguageUnsupported(String language);
+
+  /// No description provided for @aiPenNothingToConvert.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to convert: select handwriting or drawings first.'**
+  String get aiPenNothingToConvert;
+
+  /// No description provided for @aiPenSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI pen'**
+  String get aiPenSettingsTitle;
+
+  /// No description provided for @aiPenSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Handwriting is read on this board: nothing you write leaves it. Shapes and maths work in every language with no download.'**
+  String get aiPenSettingsHint;
+
+  /// No description provided for @aiPenEngineMlkit.
+  ///
+  /// In en, this message translates to:
+  /// **'Words are read by Google ML Kit on this panel. Each language\'s model downloads once (about 20 MB); after that it works offline.'**
+  String get aiPenEngineMlkit;
+
+  /// No description provided for @aiPenEngineWindows.
+  ///
+  /// In en, this message translates to:
+  /// **'Words are read by the Windows handwriting recogniser. To add a language, add its handwriting in Windows Settings → Time & language.'**
+  String get aiPenEngineWindows;
+
+  /// No description provided for @aiPenEngineNone.
+  ///
+  /// In en, this message translates to:
+  /// **'This board has no handwriting reader: words stay as ink.'**
+  String get aiPenEngineNone;
+
+  /// No description provided for @aiPenModelReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get aiPenModelReady;
+
+  /// No description provided for @aiPenModelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get aiPenModelDownload;
+
+  /// No description provided for @aiPenModelDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading…'**
+  String get aiPenModelDownloading;
+
+  /// No description provided for @aiPenModelUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this board'**
+  String get aiPenModelUnsupported;
+
+  /// No description provided for @aiPenDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download the handwriting model. Connect to the internet once and try again.'**
+  String get aiPenDownloadFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -2519,4 +2519,128 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get zoomReset => '100% पर लौटें';
+
+  @override
+  String get aiPen => 'AI पेन';
+
+  @override
+  String get aiPenTitle => 'AI पेन: आपकी लिखावट से आकृतियाँ, गणित और शब्द';
+
+  @override
+  String get aiPenModeAuto => 'थोड़ा रुकने पर';
+
+  @override
+  String get aiPenModeAutoHint =>
+      'हमेशा की तरह लिखें; रुकने के लगभग एक सेकंड बाद यह बदल जाता है।';
+
+  @override
+  String get aiPenModeLive => 'शब्द-दर-शब्द';
+
+  @override
+  String get aiPenModeLiveHint =>
+      'अगला शब्द शुरू करते ही पिछला शब्द बदल जाता है।';
+
+  @override
+  String get aiPenModeTap => 'जब मैं बदलें दबाऊँ';
+
+  @override
+  String get aiPenModeTapHint =>
+      'जब तक आप बदलें नहीं दबाते, स्याही जैसी लिखी है वैसी रहती है।';
+
+  @override
+  String get aiPenConvert => 'बदलें';
+
+  @override
+  String get aiPenWordsLanguage => 'शब्द इस भाषा में पढ़े जाते हैं';
+
+  @override
+  String get aiPenTapHint =>
+      'AI पेन ने जो बदला है उस पर टैप करें: दूसरे विकल्प देखें या अपनी स्याही वापस पाएँ। किसी लिखावट को मिटाने के लिए उस पर घिचपिच करें।';
+
+  @override
+  String get aiPenSnapShapes => 'बनाते समय आकृतियाँ साफ़ करें';
+
+  @override
+  String get aiPenSnapShapesHint =>
+      'पेन से बने कच्चे वृत्त, रेखाएँ, तीर और बहुभुज साफ़ आकृतियाँ बन जाते हैं।';
+
+  @override
+  String get aiPenDidYouMean => 'क्या आपका मतलब था…';
+
+  @override
+  String get aiPenTypeIt => 'या टाइप करें';
+
+  @override
+  String get aiPenItsShape => 'यह आकृति है';
+
+  @override
+  String get aiPenItsWriting => 'यह लिखावट है';
+
+  @override
+  String get aiPenBackToInk => 'मेरी स्याही वापस';
+
+  @override
+  String get aiPenKeepShape => 'आकृति रखें';
+
+  @override
+  String get aiPenNoShape => 'इस स्याही से कोई साफ़ आकृति नहीं बनती।';
+
+  @override
+  String get aiPenReadings => 'दूसरे विकल्प';
+
+  @override
+  String get aiPenConvertInk => 'AI पेन से बदलें';
+
+  @override
+  String get aiPenWordsStayInk =>
+      'इस बोर्ड पर आकृतियाँ और गणित बदल जाते हैं। शब्द स्याही ही रहते हैं: इस बोर्ड में लिखावट पढ़ने वाला नहीं है।';
+
+  @override
+  String aiPenModelNeeded(String language) {
+    return '$language लिखावट मॉडल डाउनलोड होने तक शब्द स्याही ही रहेंगे (बोर्ड सेटिंग्स → AI पेन)।';
+  }
+
+  @override
+  String aiPenLanguageUnsupported(String language) {
+    return 'यह बोर्ड $language लिखावट नहीं पढ़ सकता। शब्द स्याही ही रहेंगे; आकृतियाँ और गणित फिर भी बदलेंगे।';
+  }
+
+  @override
+  String get aiPenNothingToConvert =>
+      'बदलने को कुछ नहीं: पहले लिखावट या चित्र चुनें।';
+
+  @override
+  String get aiPenSettingsTitle => 'AI पेन';
+
+  @override
+  String get aiPenSettingsHint =>
+      'लिखावट इसी बोर्ड पर पढ़ी जाती है: आप जो लिखते हैं वह बोर्ड से बाहर नहीं जाता। आकृतियाँ और गणित हर भाषा में बिना डाउनलोड के काम करते हैं।';
+
+  @override
+  String get aiPenEngineMlkit =>
+      'इस पैनल पर शब्द Google ML Kit पढ़ता है। हर भाषा का मॉडल एक बार डाउनलोड होता है (लगभग 20 MB); उसके बाद यह बिना इंटरनेट के चलता है।';
+
+  @override
+  String get aiPenEngineWindows =>
+      'शब्द Windows का लिखावट पहचानने वाला पढ़ता है। कोई भाषा जोड़ने के लिए Windows Settings → Time & language में उसकी लिखावट जोड़ें।';
+
+  @override
+  String get aiPenEngineNone =>
+      'इस बोर्ड में लिखावट पढ़ने वाला नहीं है: शब्द स्याही ही रहते हैं।';
+
+  @override
+  String get aiPenModelReady => 'तैयार';
+
+  @override
+  String get aiPenModelDownload => 'डाउनलोड करें';
+
+  @override
+  String get aiPenModelDownloading => 'डाउनलोड हो रहा है…';
+
+  @override
+  String get aiPenModelUnsupported => 'इस बोर्ड पर उपलब्ध नहीं';
+
+  @override
+  String get aiPenDownloadFailed =>
+      'लिखावट मॉडल डाउनलोड नहीं हो सका। एक बार इंटरनेट से जुड़ें और फिर कोशिश करें।';
 }

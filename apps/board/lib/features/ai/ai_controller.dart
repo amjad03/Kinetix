@@ -123,6 +123,16 @@ class AiController extends ChangeNotifier {
   // Maths solver (offline)
   String mathInput = '';
 
+  /// Bumped when the board sends an equation to the solver, so an open solver starts afresh.
+  int mathRequest = 0;
+
+  /// Opens the maths solver on [text] (an equation from the board, in the solver's syntax).
+  void solve(String text) {
+    mathInput = text;
+    mathRequest++;
+    open(AiView.math);
+  }
+
   String? _sessionId;
 
   /// AI needs a signed-in teacher: the request is billed to the institution and grounded in the class.
