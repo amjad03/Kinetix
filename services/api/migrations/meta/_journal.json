@@ -204,6 +204,20 @@
       "when": 1791158222741,
       "tag": "0028_users_password_must_change",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791182608822,
+      "tag": "0029_academic_terms",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1791182612280,
+      "tag": "0030_academic_terms_rls",
+      "breakpoints": true
     }
   ]
 }
