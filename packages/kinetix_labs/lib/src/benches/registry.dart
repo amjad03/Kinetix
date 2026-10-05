@@ -4,6 +4,7 @@ import 'electronics/diode.dart';
 import 'electronics/networks.dart';
 import 'electronics/rectifier.dart';
 import 'electronics/transistor.dart';
+import 'optics/optics_benches.dart';
 import 'buoyancy.dart';
 import 'calorimetry.dart';
 import 'circle.dart';
@@ -83,6 +84,12 @@ final labBenches = <String, LabBench>{
     const KirchhoffBench(),
     const MeterBridgeBench(),
     const PotentiometerBench(),
+    // Optics.
+    const OpticalBench(),
+    const ConvexMirrorBench(),
+    const TravellingMicroscopeBench(),
+    const GratingBench(),
+    const NewtonRingsBench(),
   ])
     b.kind: b,
 };
