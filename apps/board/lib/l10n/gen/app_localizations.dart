@@ -241,8 +241,8 @@ abstract class AppLocalizations {
   /// No description provided for @minutesShort.
   ///
   /// In en, this message translates to:
-  /// **'{minutes} min'**
-  String minutesShort(int minutes);
+  /// **'{n} min'**
+  String minutesShort(int n);
 
   /// No description provided for @today.
   ///
@@ -4593,6 +4593,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not download the handwriting model. Connect to the internet once and try again.'**
   String get aiPenDownloadFailed;
+
+  /// No description provided for @aiOfflineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline sample — from the board\'s own notes (in English), because KINETIX AI cannot be reached'**
+  String get aiOfflineLabel;
+
+  /// No description provided for @profilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who is teaching?'**
+  String get profilesTitle;
+
+  /// No description provided for @profilesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers who have signed in on this board. Tap your name and enter your PIN.'**
+  String get profilesHint;
+
+  /// No description provided for @profilesSignInFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with the Teacher app'**
+  String get profilesSignInFull;
+
+  /// No description provided for @profilesLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get profilesLocked;
+
+  /// No description provided for @profilesNoPin.
+  ///
+  /// In en, this message translates to:
+  /// **'No PIN yet'**
+  String get profilesNoPin;
+
+  /// No description provided for @pinEnterFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter {name}\'s PIN'**
+  String pinEnterFor(String name);
+
+  /// No description provided for @pinWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong PIN. Tries left: {n}'**
+  String pinWrong(int n);
+
+  /// No description provided for @pinWrongNoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong PIN. Try again.'**
+  String get pinWrongNoCount;
+
+  /// No description provided for @pinLockedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong PINs. Sign in with the Teacher app, or ask your administrator to reset your PIN.'**
+  String get pinLockedOut;
+
+  /// No description provided for @pinNoPin.
+  ///
+  /// In en, this message translates to:
+  /// **'No PIN is set for you on this board. Sign in with the Teacher app, then set a PIN.'**
+  String get pinNoPin;
+
+  /// No description provided for @pinNeedsNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'This board is offline and has no class open for you. Connect to the internet, or sign in with the Teacher app.'**
+  String get pinNeedsNetwork;
+
+  /// No description provided for @pinSetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a PIN for this board'**
+  String get pinSetTitle;
+
+  /// No description provided for @pinSetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'4 to 6 digits. Next time, tap your name on this board and enter your PIN instead of using the Teacher app.'**
+  String get pinSetHint;
+
+  /// No description provided for @pinConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the PIN again'**
+  String get pinConfirm;
+
+  /// No description provided for @pinMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The two PINs are different. Try again.'**
+  String get pinMismatch;
+
+  /// No description provided for @pinWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a PIN that is harder to guess.'**
+  String get pinWeak;
+
+  /// No description provided for @pinSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN saved. Use it to switch to your profile on this board.'**
+  String get pinSaved;
+
+  /// No description provided for @pinSetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set PIN'**
+  String get pinSetAction;
+
+  /// No description provided for @pinChangeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change PIN'**
+  String get pinChangeAction;
+
+  /// No description provided for @pinBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a PIN to switch to your profile on this board without your phone.'**
+  String get pinBanner;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @lockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Board locked'**
+  String get lockTitle;
+
+  /// No description provided for @lockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s class is still open. Enter the PIN to carry on.'**
+  String lockHint(String name);
+
+  /// No description provided for @switchTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch teacher'**
+  String get switchTeacher;
+
+  /// No description provided for @lockBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock board'**
+  String get lockBoard;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @idleLockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock when idle'**
+  String get idleLockTitle;
+
+  /// No description provided for @idleLockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For teachers with a PIN, the board locks after this many minutes without a touch. It signs out when the period ends.'**
+  String get idleLockHint;
+
+  /// No description provided for @idleOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get idleOff;
+
+  /// No description provided for @projectorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Projector'**
+  String get projectorTitle;
+
+  /// No description provided for @projectorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the board to the class on a second screen (a projector or TV), without your tools and panels. 3D models and labs show beside it.'**
+  String get projectorHint;
+
+  /// No description provided for @projectorEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a second screen'**
+  String get projectorEnabled;
+
+  /// No description provided for @projectorAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Start when a screen is connected'**
+  String get projectorAuto;
+
+  /// No description provided for @projectorNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No second screen connected'**
+  String get projectorNone;
+
+  /// No description provided for @projectorShowingOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing on {name}'**
+  String projectorShowingOn(String name);
+
+  /// No description provided for @projectorShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on second screen'**
+  String get projectorShow;
+
+  /// No description provided for @projectorStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop showing'**
+  String get projectorStop;
+
+  /// No description provided for @projectorBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank the class screen'**
+  String get projectorBlank;
 }
 
 class _AppLocalizationsDelegate

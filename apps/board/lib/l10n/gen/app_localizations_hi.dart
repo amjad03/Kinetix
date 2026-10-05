@@ -83,8 +83,8 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String minutesShort(int minutes) {
-    return '$minutes मिनट';
+  String minutesShort(int n) {
+    return '$n मिनट';
   }
 
   @override
@@ -2643,4 +2643,139 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get aiPenDownloadFailed =>
       'लिखावट मॉडल डाउनलोड नहीं हो सका। एक बार इंटरनेट से जुड़ें और फिर कोशिश करें।';
+
+  @override
+  String get aiOfflineLabel =>
+      'ऑफ़लाइन नमूना — बोर्ड के अपने नोट्स से (अंग्रेज़ी में), क्योंकि KINETIX AI से संपर्क नहीं हो पा रहा';
+
+  @override
+  String get profilesTitle => 'कौन पढ़ा रहा है?';
+
+  @override
+  String get profilesHint =>
+      'जिन शिक्षकों ने इस बोर्ड पर साइन इन किया है। अपने नाम पर टैप करें और अपना PIN डालें।';
+
+  @override
+  String get profilesSignInFull => 'Teacher ऐप से साइन इन करें';
+
+  @override
+  String get profilesLocked => 'लॉक';
+
+  @override
+  String get profilesNoPin => 'अभी PIN नहीं';
+
+  @override
+  String pinEnterFor(String name) {
+    return '$name का PIN डालें';
+  }
+
+  @override
+  String pinWrong(int n) {
+    return 'गलत PIN। बचे प्रयास: $n';
+  }
+
+  @override
+  String get pinWrongNoCount => 'गलत PIN। फिर कोशिश करें।';
+
+  @override
+  String get pinLockedOut =>
+      'बहुत सारे गलत PIN। Teacher ऐप से साइन इन करें, या अपने एडमिन से PIN रीसेट करवाएँ।';
+
+  @override
+  String get pinNoPin =>
+      'इस बोर्ड पर आपका PIN सेट नहीं है। Teacher ऐप से साइन इन करें, फिर PIN सेट करें।';
+
+  @override
+  String get pinNeedsNetwork =>
+      'यह बोर्ड ऑफ़लाइन है और आपकी कोई कक्षा खुली नहीं है। इंटरनेट से जुड़ें, या Teacher ऐप से साइन इन करें।';
+
+  @override
+  String get pinSetTitle => 'इस बोर्ड के लिए PIN सेट करें';
+
+  @override
+  String get pinSetHint =>
+      '4 से 6 अंक। अगली बार Teacher ऐप की जगह इस बोर्ड पर अपने नाम पर टैप करके PIN डालें।';
+
+  @override
+  String get pinConfirm => 'PIN फिर से डालें';
+
+  @override
+  String get pinMismatch => 'दोनों PIN अलग हैं। फिर कोशिश करें।';
+
+  @override
+  String get pinWeak => 'ऐसा PIN चुनें जिसका अंदाज़ा लगाना मुश्किल हो।';
+
+  @override
+  String get pinSaved =>
+      'PIN सेव हो गया। इस बोर्ड पर अपनी प्रोफ़ाइल पर जाने के लिए इसका इस्तेमाल करें।';
+
+  @override
+  String get pinSetAction => 'PIN सेट करें';
+
+  @override
+  String get pinChangeAction => 'PIN बदलें';
+
+  @override
+  String get pinBanner =>
+      'फ़ोन के बिना इस बोर्ड पर अपनी प्रोफ़ाइल पर जाने के लिए PIN सेट करें।';
+
+  @override
+  String get notNow => 'अभी नहीं';
+
+  @override
+  String get lockTitle => 'बोर्ड लॉक है';
+
+  @override
+  String lockHint(String name) {
+    return '$name की कक्षा अभी खुली है। जारी रखने के लिए PIN डालें।';
+  }
+
+  @override
+  String get switchTeacher => 'शिक्षक बदलें';
+
+  @override
+  String get lockBoard => 'बोर्ड लॉक करें';
+
+  @override
+  String get signOut => 'साइन आउट';
+
+  @override
+  String get idleLockTitle => 'खाली रहने पर लॉक करें';
+
+  @override
+  String get idleLockHint =>
+      'PIN वाले शिक्षकों के लिए, इतने मिनट तक न छूने पर बोर्ड लॉक हो जाता है। पीरियड ख़त्म होने पर साइन आउट हो जाता है।';
+
+  @override
+  String get idleOff => 'बंद';
+
+  @override
+  String get projectorTitle => 'प्रोजेक्टर';
+
+  @override
+  String get projectorHint =>
+      'बोर्ड को दूसरी स्क्रीन (प्रोजेक्टर या टीवी) पर कक्षा को दिखाएँ, आपके टूल और पैनल के बिना। 3D मॉडल और लैब उसके बगल में दिखते हैं।';
+
+  @override
+  String get projectorEnabled => 'दूसरी स्क्रीन इस्तेमाल करें';
+
+  @override
+  String get projectorAuto => 'स्क्रीन जुड़ते ही शुरू करें';
+
+  @override
+  String get projectorNone => 'कोई दूसरी स्क्रीन नहीं जुड़ी';
+
+  @override
+  String projectorShowingOn(String name) {
+    return '$name पर दिख रहा है';
+  }
+
+  @override
+  String get projectorShow => 'दूसरी स्क्रीन पर दिखाएँ';
+
+  @override
+  String get projectorStop => 'दिखाना बंद करें';
+
+  @override
+  String get projectorBlank => 'कक्षा की स्क्रीन खाली करें';
 }

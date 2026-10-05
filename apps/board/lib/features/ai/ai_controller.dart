@@ -6,7 +6,9 @@ import '../../core/api_client.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
+import '../../demo/demo.dart';
 import '../board/side_panel.dart';
+import '../offline_ai/offline_ai.dart';
 
 /// Which page the KINETIX AI panel shows.
 enum AiView { home, quiz, homework, lessonPlan, math, readBoard }
@@ -106,6 +108,9 @@ class AiController extends ChangeNotifier {
   HomeworkDraft? homeworkDraft;
   bool homeworkFromPreview = false;
 
+  /// The draft came from the board's offline notes.
+  bool homeworkOffline = false;
+
   // Lesson plan
   String? lessonTopic;
   int lessonMinutes = 45;
@@ -143,6 +148,28 @@ class AiController extends ChangeNotifier {
 
   ApiClient get _api => board.api!;
 
+  /// Sample answers from the board's own notes, when KINETIX AI cannot be reached or in demo
+  /// builds (features/offline_ai). Nothing leaves the board.
+  final offlineAi = const OfflineAi();
+
+  String? get _subject => board.session?.subjectName;
+
+  /// Asks KINETIX AI; in a demo build, or when it cannot be reached, the offline notes answer
+  /// instead if they cover the topic (labelled "Offline sample"). Anything else they do not
+  /// make up: the error stands, as do refusals and other errors.
+  Future<AiResult<T>> _withOffline<T>(Future<AiResult<T>> Function() online, AiResult<T>? Function() offline) async {
+    if (Demo.enabled) {
+      final r = offline();
+      if (r != null) return r;
+    }
+    try {
+      return await online().timeout(const Duration(seconds: 60));
+    } catch (e) {
+      if (!cloudUnreachable(e)) rethrow;
+      return offline() ?? (throw e);
+    }
+  }
+
   /// Strings in the AI language, for text that goes out with the AI's content (homework,
   /// questions sent to KINETIX AI), so it matches the language of the answer.
   AppLocalizations get contentL10n => l10nFor(Locale(language.name));
@@ -166,23 +193,32 @@ class AiController extends ChangeNotifier {
     question = text;
     if (!fresh) this.topicId = topicId;
     notifyListeners();
-    await explain.run(() => _api.explain(text, language, fresh: fresh, topicId: this.topicId));
+    await explain.run(() => _withOffline(() => _api.explain(text, language, fresh: fresh, topicId: this.topicId), () => offlineAi.explain(text, subject: _subject)));
   }
 
   Future<void> generateQuiz(String topic, {bool fresh = false, String? topicId}) async {
     quizTopic = topic.trim();
     if (!fresh) this.topicId = topicId;
-    await quiz.run(() => _api.quiz(quizTopic!, count: quizCount, difficulty: quizDifficulty, language: language, fresh: fresh, topicId: this.topicId));
+    await quiz.run(
+      () => _withOffline(
+        () => _api.quiz(quizTopic!, count: quizCount, difficulty: quizDifficulty, language: language, fresh: fresh, topicId: this.topicId),
+        () => offlineAi.quiz(quizTopic!, count: quizCount, subject: _subject),
+      ),
+    );
   }
 
   Future<void> generateHomework(String topic, {bool fresh = false}) async {
     homeworkTopic = topic.trim();
     final r = await homework.run(
-      () => _api.homeworkDraft(homeworkTopic!, count: homeworkCount, difficulty: homeworkDifficulty, language: language, fresh: fresh),
+      () => _withOffline(
+        () => _api.homeworkDraft(homeworkTopic!, count: homeworkCount, difficulty: homeworkDifficulty, language: language, fresh: fresh),
+        () => offlineAi.homework(homeworkTopic!, count: homeworkCount, subject: _subject),
+      ),
     );
     if (r != null) {
       homeworkDraft = r.result;
       homeworkFromPreview = r.meta.preview;
+      homeworkOffline = r.meta.offline;
       notifyListeners();
     }
   }
@@ -194,7 +230,7 @@ class AiController extends ChangeNotifier {
       instructions: l.homeworkDefaultInstructions,
       questions: [HomeworkQuestion(question: '', marks: 2)],
     );
-    homeworkFromPreview = false;
+    homeworkFromPreview = homeworkOffline = false;
     notifyListeners();
   }
 
@@ -206,7 +242,12 @@ class AiController extends ChangeNotifier {
 
   Future<void> generateLessonPlan(String topic, {bool fresh = false}) async {
     lessonTopic = topic.trim();
-    await lessonPlan.run(() => _api.lessonPlan(lessonTopic!, minutes: lessonMinutes, language: language, fresh: fresh));
+    await lessonPlan.run(
+      () => _withOffline(
+        () => _api.lessonPlan(lessonTopic!, minutes: lessonMinutes, language: language, fresh: fresh),
+        () => offlineAi.lessonPlan(lessonTopic!, minutes: lessonMinutes, subject: _subject),
+      ),
+    );
   }
 
   Future<void> readBoard() async {

@@ -83,8 +83,8 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String minutesShort(int minutes) {
-    return '$minutes ನಿಮಿಷ';
+  String minutesShort(int n) {
+    return '$n ನಿಮಿಷ';
   }
 
   @override
@@ -2647,4 +2647,139 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get aiPenDownloadFailed =>
       'ಕೈಬರಹ ಮಾದರಿ ಡೌನ್‌ಲೋಡ್ ಆಗಲಿಲ್ಲ. ಒಮ್ಮೆ ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get aiOfflineLabel =>
+      'ಆಫ್‌ಲೈನ್ ಮಾದರಿ — ಬೋರ್ಡ್‌ನದೇ ಟಿಪ್ಪಣಿಗಳಿಂದ (ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ), ಏಕೆಂದರೆ KINETIX AI ಸಂಪರ್ಕಕ್ಕೆ ಸಿಗುತ್ತಿಲ್ಲ';
+
+  @override
+  String get profilesTitle => 'ಯಾರು ಕಲಿಸುತ್ತಿದ್ದಾರೆ?';
+
+  @override
+  String get profilesHint =>
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿದ ಶಿಕ್ಷಕರು. ನಿಮ್ಮ ಹೆಸರನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ PIN ನಮೂದಿಸಿ.';
+
+  @override
+  String get profilesSignInFull => 'Teacher ಆ್ಯಪ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡಿ';
+
+  @override
+  String get profilesLocked => 'ಲಾಕ್ ಆಗಿದೆ';
+
+  @override
+  String get profilesNoPin => 'ಇನ್ನೂ PIN ಇಲ್ಲ';
+
+  @override
+  String pinEnterFor(String name) {
+    return '$name ಅವರ PIN ನಮೂದಿಸಿ';
+  }
+
+  @override
+  String pinWrong(int n) {
+    return 'ತಪ್ಪು PIN. ಉಳಿದ ಪ್ರಯತ್ನಗಳು: $n';
+  }
+
+  @override
+  String get pinWrongNoCount => 'ತಪ್ಪು PIN. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get pinLockedOut =>
+      'ಹಲವು ತಪ್ಪು PIN ಗಳು. Teacher ಆ್ಯಪ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡಿ, ಅಥವಾ ನಿಮ್ಮ ಆಡಳಿತಗಾರರಿಂದ PIN ಮರುಹೊಂದಿಸಿಕೊಳ್ಳಿ.';
+
+  @override
+  String get pinNoPin =>
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ನಿಮಗೆ PIN ಹೊಂದಿಸಿಲ್ಲ. Teacher ಆ್ಯಪ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡಿ, ನಂತರ PIN ಹೊಂದಿಸಿ.';
+
+  @override
+  String get pinNeedsNetwork =>
+      'ಈ ಬೋರ್ಡ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದೆ ಮತ್ತು ನಿಮ್ಮ ಯಾವುದೇ ತರಗತಿ ತೆರೆದಿಲ್ಲ. ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ, ಅಥವಾ Teacher ಆ್ಯಪ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+
+  @override
+  String get pinSetTitle => 'ಈ ಬೋರ್ಡ್‌ಗೆ PIN ಹೊಂದಿಸಿ';
+
+  @override
+  String get pinSetHint =>
+      '4 ರಿಂದ 6 ಅಂಕಿಗಳು. ಮುಂದಿನ ಬಾರಿ Teacher ಆ್ಯಪ್ ಬದಲು ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಹೆಸರನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ PIN ನಮೂದಿಸಿ.';
+
+  @override
+  String get pinConfirm => 'PIN ಅನ್ನು ಮತ್ತೆ ನಮೂದಿಸಿ';
+
+  @override
+  String get pinMismatch => 'ಎರಡು PIN ಗಳು ಬೇರೆ ಬೇರೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get pinWeak => 'ಊಹಿಸಲು ಕಷ್ಟವಾದ PIN ಆಯ್ಕೆಮಾಡಿ.';
+
+  @override
+  String get pinSaved =>
+      'PIN ಉಳಿಸಲಾಗಿದೆ. ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ಗೆ ಬದಲಾಯಿಸಲು ಇದನ್ನು ಬಳಸಿ.';
+
+  @override
+  String get pinSetAction => 'PIN ಹೊಂದಿಸಿ';
+
+  @override
+  String get pinChangeAction => 'PIN ಬದಲಿಸಿ';
+
+  @override
+  String get pinBanner =>
+      'ಫೋನ್ ಇಲ್ಲದೆ ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ಗೆ ಬದಲಾಯಿಸಲು PIN ಹೊಂದಿಸಿ.';
+
+  @override
+  String get notNow => 'ಈಗ ಬೇಡ';
+
+  @override
+  String get lockTitle => 'ಬೋರ್ಡ್ ಲಾಕ್ ಆಗಿದೆ';
+
+  @override
+  String lockHint(String name) {
+    return '$name ಅವರ ತರಗತಿ ಇನ್ನೂ ತೆರೆದಿದೆ. ಮುಂದುವರಿಸಲು PIN ನಮೂದಿಸಿ.';
+  }
+
+  @override
+  String get switchTeacher => 'ಶಿಕ್ಷಕರನ್ನು ಬದಲಿಸಿ';
+
+  @override
+  String get lockBoard => 'ಬೋರ್ಡ್ ಲಾಕ್ ಮಾಡಿ';
+
+  @override
+  String get signOut => 'ಸೈನ್ ಔಟ್';
+
+  @override
+  String get idleLockTitle => 'ಬಳಕೆಯಿಲ್ಲದಾಗ ಲಾಕ್ ಮಾಡಿ';
+
+  @override
+  String get idleLockHint =>
+      'PIN ಇರುವ ಶಿಕ್ಷಕರಿಗೆ, ಇಷ್ಟು ನಿಮಿಷ ಮುಟ್ಟದಿದ್ದರೆ ಬೋರ್ಡ್ ಲಾಕ್ ಆಗುತ್ತದೆ. ಪಿರಿಯಡ್ ಮುಗಿದಾಗ ಸೈನ್ ಔಟ್ ಆಗುತ್ತದೆ.';
+
+  @override
+  String get idleOff => 'ಆಫ್';
+
+  @override
+  String get projectorTitle => 'ಪ್ರೊಜೆಕ್ಟರ್';
+
+  @override
+  String get projectorHint =>
+      'ಬೋರ್ಡ್ ಅನ್ನು ಎರಡನೇ ಪರದೆಯಲ್ಲಿ (ಪ್ರೊಜೆಕ್ಟರ್ ಅಥವಾ ಟಿವಿ) ತರಗತಿಗೆ ತೋರಿಸಿ, ನಿಮ್ಮ ಉಪಕರಣಗಳು ಮತ್ತು ಪ್ಯಾನೆಲ್‌ಗಳಿಲ್ಲದೆ. 3D ಮಾದರಿಗಳು ಮತ್ತು ಲ್ಯಾಬ್‌ಗಳು ಅದರ ಪಕ್ಕದಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
+
+  @override
+  String get projectorEnabled => 'ಎರಡನೇ ಪರದೆ ಬಳಸಿ';
+
+  @override
+  String get projectorAuto => 'ಪರದೆ ಸಂಪರ್ಕವಾದಾಗ ಪ್ರಾರಂಭಿಸಿ';
+
+  @override
+  String get projectorNone => 'ಎರಡನೇ ಪರದೆ ಸಂಪರ್ಕವಾಗಿಲ್ಲ';
+
+  @override
+  String projectorShowingOn(String name) {
+    return '$name ನಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತಿದೆ';
+  }
+
+  @override
+  String get projectorShow => 'ಎರಡನೇ ಪರದೆಯಲ್ಲಿ ತೋರಿಸಿ';
+
+  @override
+  String get projectorStop => 'ತೋರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get projectorBlank => 'ತರಗತಿಯ ಪರದೆಯನ್ನು ಖಾಲಿ ಮಾಡಿ';
 }

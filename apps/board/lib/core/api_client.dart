@@ -9,9 +9,15 @@ import 'models.dart';
 import 'recording/recordings.dart' show RecordingSummary;
 
 class ApiException implements Exception {
-  ApiException(this.status, this.message);
+  ApiException(this.status, this.message, {this.code, this.body = const {}});
   final int status;
   final String message;
+
+  /// The API's stable error code (services/api/src/common/error-codes.ts), when it sent one.
+  final String? code;
+
+  /// The whole error body (e.g. `attemptsLeft` after a wrong PIN).
+  final Map<String, dynamic> body;
   @override
   String toString() => message;
 }
@@ -41,6 +47,24 @@ class ApiClient {
   Future<Map<String, dynamic>> boardConfig() async => await _send('GET', '/v1/devices/me/config', useDeviceToken: true) as Map<String, dynamic>;
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
+
+  // --- Shared-board profiles (features/profiles; docs/architecture/board-profiles.md) -------
+
+  /// The teachers who have signed in on this board, with each PIN's salt and hash for offline checks.
+  Future<List<Map<String, dynamic>>> boardProfiles() async =>
+      (await _send('GET', '/v1/devices/me/profiles', useDeviceToken: true) as List<dynamic>).cast<Map<String, dynamic>>();
+
+  /// The signed-in teacher sets their PIN for this board. Answers with the new hash's parts.
+  Future<Map<String, dynamic>> setProfilePin(String pin) async => await _send('PUT', '/v1/devices/me/profiles/me/pin', body: {'pin': pin}) as Map<String, dynamic>;
+
+  /// Switches the board to [userId]'s profile: a new class session, as after pairing.
+  Future<({String sessionToken, Map<String, dynamic> session})> unlockProfile(String userId, String pin) async {
+    final j = await _send('POST', '/v1/devices/me/profiles/$userId/unlock', body: {'pin': pin}, useDeviceToken: true) as Map<String, dynamic>;
+    return (sessionToken: j['sessionToken'] as String, session: j['session'] as Map<String, dynamic>);
+  }
+
+  /// The signed-in teacher takes their profile off this board.
+  Future<void> removeMyProfile() async => _send('DELETE', '/v1/devices/me/profiles/me');
 
   /// "Go live": opens (or closes) the board to the class's students in the Student App.
   Future<void> setClassLive(bool on) async => _send('POST', '/v1/sessions/current/live', body: {'on': on});
@@ -240,11 +264,13 @@ class ApiClient {
   dynamic _decode(http.Response res) {
     if (res.statusCode >= 400) {
       String message = 'Request failed (${res.statusCode})';
+      var body = const <String, dynamic>{};
       try {
-        final m = (jsonDecode(res.body) as Map)['message'];
+        body = (jsonDecode(res.body) as Map).cast<String, dynamic>();
+        final m = body['message'];
         if (m is String) message = m;
       } catch (_) {}
-      throw ApiException(res.statusCode, message);
+      throw ApiException(res.statusCode, message, code: body['code'] as String?, body: body);
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
   }
