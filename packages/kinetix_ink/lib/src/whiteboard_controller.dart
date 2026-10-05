@@ -30,11 +30,15 @@ enum BoardTool {
 
   /// Press at the centre, drag out the radius: a circle.
   compass,
+
+  /// The AI pen: writes like the pen, then rough shapes become clean ones and handwriting
+  /// becomes text or typeset maths (see AiPenController).
+  aiPen,
 }
 
 extension BoardToolDraws on BoardTool {
   /// Tools that put ink down where the pointer goes.
-  bool get draws => this == BoardTool.pen || this == BoardTool.highlighter || this == BoardTool.shape || this == BoardTool.compass;
+  bool get draws => this == BoardTool.pen || this == BoardTool.highlighter || this == BoardTool.shape || this == BoardTool.compass || this == BoardTool.aiPen;
 }
 
 /// The handles around a selection: four corners and four sides resize, the knob above turns.
@@ -371,7 +375,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   void setPen({Color? color, double? width}) {
     if (color != null) penColor = color;
     if (width != null) penWidth = width;
-    if (_tool != BoardTool.pen && _tool != BoardTool.shape && _tool != BoardTool.compass) _tool = BoardTool.pen;
+    if (_tool != BoardTool.pen && _tool != BoardTool.aiPen && _tool != BoardTool.shape && _tool != BoardTool.compass) _tool = BoardTool.pen;
     notifyListeners();
   }
 
@@ -494,6 +498,21 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   void removeIds(Set<String> ids) {
     if (ids.isEmpty || !page.elements.any((e) => ids.contains(e.id))) return;
     setElements(page.elements.where((e) => !ids.contains(e.id)).toList());
+  }
+
+  /// Replaces the open page's elements as part of the last undo step rather than a new one: a
+  /// stroke just finished that turned into something else (a scribble that rubbed out what it
+  /// crossed, a tap that opened a menu). Undo then goes back to before the stroke.
+  void amendLastStep(List<BoardElement> els) {
+    if (!canUndo) {
+      setElements(els);
+      return;
+    }
+    page.elements = List.of(els);
+    final ids = {for (final e in els) e.id};
+    page.groups.removeWhere((k, _) => !ids.contains(k));
+    _selection.removeWhere((id) => !ids.contains(id));
+    _changed();
   }
 
   /// A layout-only change, such as an equation's measured size: not an undo step.
@@ -881,6 +900,14 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   double _scale = 1;
 
+  /// The view's zoom when the last pointer touched the board (screen pixels per board unit).
+  double get inputScale => _scale;
+
+  /// Told when a pen or AI pen stroke starts at a board point, and when it is on the page (the
+  /// AI pen listens to both).
+  void Function(BoardTool tool, Offset at)? onStrokeStart;
+  void Function(BoardTool tool, Stroke stroke)? onStrokeEnd;
+
   /// A pointer touched the board at [p] (board units). [scale] is the view's zoom (screen pixels
   /// per board unit), for sizes given in pixels. [palm] marks a contact the canvas judged to be a
   /// palm or fist; [contactRadius] is its size in board units. [forceEraser] is for the eraser
@@ -901,7 +928,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     final at = p.offset;
     _activeTool[pointer] = tool;
     switch (tool) {
-      case BoardTool.pen || BoardTool.highlighter:
+      case BoardTool.pen || BoardTool.highlighter || BoardTool.aiPen:
         final hl = tool == BoardTool.highlighter;
         final style = InkStyle(
           tool: hl ? InkTool.highlighter : InkTool.pen,
@@ -923,6 +950,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         } else {
           _active[pointer] = Stroke(id: newElementId(), style: style, points: [p]);
         }
+        if (!hl) onStrokeStart?.call(tool, at);
       case BoardTool.shape:
         _shapeStart[pointer] = at;
         _active[pointer] = Stroke(
@@ -975,7 +1003,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (tool == null) return;
     final at = p.offset;
     switch (tool) {
-      case BoardTool.pen || BoardTool.highlighter:
+      case BoardTool.pen || BoardTool.highlighter || BoardTool.aiPen:
         final s = _active[pointer]!;
         final edge = _rulerEdge[pointer];
         if (edge != null) {
@@ -1026,12 +1054,13 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     final tool = _activeTool.remove(pointer);
     if (tool == null) return;
     switch (tool) {
-      case BoardTool.pen || BoardTool.highlighter:
+      case BoardTool.pen || BoardTool.highlighter || BoardTool.aiPen:
         final s = _active.remove(pointer)!;
         _rulerEdge.remove(pointer);
         // A ruler line that never left its start point is a stray tap.
         if (s.shape == ShapeKind.line && (s.points.first.offset - s.points.last.offset).distance * _scale < 4) break;
         _commit(s);
+        if (tool != BoardTool.highlighter) onStrokeEnd?.call(tool, s);
       case BoardTool.shape || BoardTool.compass:
         final s = _active.remove(pointer)!;
         _shapeStart.remove(pointer);
