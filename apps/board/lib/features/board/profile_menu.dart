@@ -9,6 +9,9 @@ import '../../l10n/l10n.dart';
 import '../kiosk/kiosk_ui.dart';
 import '../profiles/profiles_ui.dart';
 import '../projector/projector_ui.dart';
+import '../search/filter_bar.dart';
+import '../search/fuzzy.dart';
+import '../search/search_strings.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
 
@@ -177,19 +180,187 @@ extension TouchProfileText on TouchProfile {
 
 /// Board settings: the board's language, the layout of its tools, the Simple board, who may
 /// write (pen or fingers), the touch surface type (tablet, interactive panel, IR touch frame),
-/// the AI pen's handwriting models and kiosk mode.
-class BoardSettingsDialog extends StatelessWidget {
-  const BoardSettingsDialog({super.key, required this.board});
+/// the AI pen's handwriting models and kiosk mode. A search field at the top narrows them to
+/// the sections that match ([initialQuery] when opened from the board's search).
+class BoardSettingsDialog extends StatefulWidget {
+  const BoardSettingsDialog({super.key, required this.board, this.initialQuery = ''});
 
   final BoardController board;
+  final String initialQuery;
+
+  @override
+  State<BoardSettingsDialog> createState() => _BoardSettingsDialogState();
+}
+
+class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
+  late String _q = widget.initialQuery;
 
   @override
   Widget build(BuildContext context) {
+    final board = widget.board;
     return ListenableBuilder(
       listenable: board,
       builder: (context, _) {
         final l = context.l10n;
         final hint = context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant);
+        // Each section: the words it is found by, and what it shows.
+        final sections = <(List<String>, List<Widget>)>[
+          (
+            [l.language, l.languageHint, for (final lang in BoardLanguage.values) lang.label],
+            [
+              Text(l.language, style: context.text.titleSmall),
+              const SizedBox(height: Kx.s4),
+              Text(l.languageHint, style: hint),
+              const SizedBox(height: Kx.s12),
+              SegmentedButton<BoardLanguage>(
+                key: const Key('board-language'),
+                showSelectedIcon: false,
+                segments: [
+                  for (final lang in BoardLanguage.values)
+                    ButtonSegment(
+                      value: lang,
+                      label: Text(lang.label, key: Key('board-language-${lang.name}')),
+                    ),
+                ],
+                selected: {board.language},
+                onSelectionChanged: (s) => board.setBoardLanguage(s.single),
+              ),
+            ],
+          ),
+          (
+            [l.layoutTitle, l.layoutHint, l.layoutRails, l.layoutBottomBar],
+            [
+              Text(l.layoutTitle, style: context.text.titleSmall),
+              const SizedBox(height: Kx.s4),
+              Text(l.layoutHint, style: hint),
+              const SizedBox(height: Kx.s12),
+              SegmentedButton<BoardLayout>(
+                key: const Key('board-layout'),
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: BoardLayout.rails, icon: const Icon(Icons.view_sidebar_outlined), label: Text(l.layoutRails, key: const Key('layout-rails'))),
+                  ButtonSegment(value: BoardLayout.bottomBar, icon: const Icon(Icons.call_to_action_outlined), label: Text(l.layoutBottomBar, key: const Key('layout-bottomBar'))),
+                ],
+                selected: {board.layout},
+                onSelectionChanged: (s) => board.setLayout(s.single),
+              ),
+            ],
+          ),
+          (
+            [l.appThemeTitle, l.appThemeHint, l.themeLight, l.themeDark, l.themeChalkboard, l.themeSystem],
+            [
+              Text(l.appThemeTitle, style: context.text.titleSmall),
+              const SizedBox(height: Kx.s4),
+              Text(l.appThemeHint, style: hint),
+              const SizedBox(height: Kx.s12),
+              Wrap(
+                key: const Key('board-theme'),
+                spacing: Kx.s8,
+                runSpacing: Kx.s8,
+                children: [
+                  for (final t in BoardTheme.values)
+                    ChoiceChip(
+                      key: Key('theme-${t.name}'),
+                      label: Text(switch (t) {
+                        BoardTheme.light => l.themeLight,
+                        BoardTheme.dark => l.themeDark,
+                        BoardTheme.chalkboard => l.themeChalkboard,
+                        BoardTheme.system => l.themeSystem,
+                      }),
+                      avatar: Icon(switch (t) {
+                        BoardTheme.light => Icons.light_mode_outlined,
+                        BoardTheme.dark => Icons.dark_mode_outlined,
+                        BoardTheme.chalkboard => Icons.school_outlined,
+                        BoardTheme.system => Icons.brightness_auto_outlined,
+                      }),
+                      showCheckmark: false,
+                      selected: board.theme == t,
+                      onSelected: (_) => board.setTheme(t),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          (
+            [l.simpleBoardTitle, l.simpleBoardHint],
+            [
+              Text(l.simpleBoardTitle, style: context.text.titleSmall),
+              const SizedBox(height: Kx.s4),
+              Text(l.simpleBoardHint, style: hint),
+              const SizedBox(height: Kx.s12),
+              SegmentedButton<SimpleBoard>(
+                key: const Key('simple-board'),
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: SimpleBoard.auto, label: Text(l.simpleBoardAuto, key: const Key('simple-auto'))),
+                  ButtonSegment(value: SimpleBoard.on, label: Text(l.simpleBoardOn, key: const Key('simple-on'))),
+                  ButtonSegment(value: SimpleBoard.off, label: Text(l.simpleBoardOff, key: const Key('simple-off'))),
+                ],
+                selected: {board.simpleBoard},
+                onSelectionChanged: (s) => board.setSimpleBoard(s.single),
+              ),
+            ],
+          ),
+          (
+            [l.inputTitle, l.inputHint, l.inputPen, l.inputFinger, l.fingerTapsTitle, l.fingerTapsHint],
+            [
+              Text(l.inputTitle, style: context.text.titleSmall),
+              const SizedBox(height: Kx.s4),
+              Text(l.inputHint, style: hint),
+              const SizedBox(height: Kx.s12),
+              SegmentedButton<InputMode>(
+                key: const Key('input-mode'),
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: InputMode.auto, label: Text(l.inputAuto, key: const Key('input-auto'))),
+                  ButtonSegment(value: InputMode.pen, icon: const Icon(Icons.draw_outlined), label: Text(l.inputPen, key: const Key('input-pen'))),
+                  ButtonSegment(value: InputMode.finger, icon: const Icon(Icons.touch_app_outlined), label: Text(l.inputFinger, key: const Key('input-finger'))),
+                ],
+                selected: {board.inputMode},
+                onSelectionChanged: (s) => board.setInputMode(s.single),
+              ),
+              const SizedBox(height: Kx.s8),
+              SwitchListTile(
+                key: const Key('finger-taps'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(l.fingerTapsTitle),
+                subtitle: Text(l.fingerTapsHint),
+                value: board.fingerTaps,
+                onChanged: board.setFingerTaps,
+              ),
+            ],
+          ),
+          (
+            [l.touchScreen, l.touchScreenHint, for (final p in TouchProfile.values) p.label(l)],
+            [
+              Text(l.touchScreen, style: context.text.titleSmall),
+              const SizedBox(height: Kx.s4),
+              Text(l.touchScreenHint, style: hint),
+              const SizedBox(height: Kx.s8),
+              RadioGroup<TouchProfile>(
+                groupValue: board.touchProfile,
+                onChanged: (p) => board.setTouchProfile(p!),
+                child: Column(
+                  children: [
+                    for (final p in TouchProfile.values)
+                      RadioListTile<TouchProfile>(
+                        key: Key('touch-${p.name}'),
+                        value: p,
+                        title: Text(p.label(l)),
+                        subtitle: Text(p.description(l)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          ([l.aiPen], [AiPenSettingsSection(board: board)]),
+          ([l.projectorTitle], [ProjectorSettingsSection(projector: board.projector)]),
+          ([l.profilesTitle, l.switchTeacher], [ProfileSettingsSection(board: board)]),
+          ([l.kioskTitle], [KioskSettingsSection(kiosk: board.kiosk)]),
+        ];
+        final shown = matching(sections, (s) => s.$1, _q);
         return AlertDialog(
           icon: const Icon(Icons.settings_outlined),
           title: Text(l.boardSettings),
@@ -201,139 +372,18 @@ class BoardSettingsDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.language, style: context.text.titleSmall),
-                const SizedBox(height: Kx.s4),
-                Text(l.languageHint, style: hint),
-                const SizedBox(height: Kx.s12),
-                SegmentedButton<BoardLanguage>(
-                  key: const Key('board-language'),
-                  showSelectedIcon: false,
-                  segments: [
-                    for (final lang in BoardLanguage.values)
-                      ButtonSegment(
-                        value: lang,
-                        label: Text(lang.label, key: Key('board-language-${lang.name}')),
-                      ),
-                  ],
-                  selected: {board.language},
-                  onSelectionChanged: (s) => board.setBoardLanguage(s.single),
+                ModuleSearchField(
+                  key: const Key('settings-search'),
+                  hint: SearchStrings.of(context).searchSettings,
+                  initial: widget.initialQuery,
+                  padding: const EdgeInsets.only(bottom: Kx.s16),
+                  onChanged: (v) => setState(() => _q = v),
                 ),
-                const SizedBox(height: Kx.s24),
-                Text(l.layoutTitle, style: context.text.titleSmall),
-                const SizedBox(height: Kx.s4),
-                Text(l.layoutHint, style: hint),
-                const SizedBox(height: Kx.s12),
-                SegmentedButton<BoardLayout>(
-                  key: const Key('board-layout'),
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment(value: BoardLayout.rails, icon: const Icon(Icons.view_sidebar_outlined), label: Text(l.layoutRails, key: const Key('layout-rails'))),
-                    ButtonSegment(value: BoardLayout.bottomBar, icon: const Icon(Icons.call_to_action_outlined), label: Text(l.layoutBottomBar, key: const Key('layout-bottomBar'))),
-                  ],
-                  selected: {board.layout},
-                  onSelectionChanged: (s) => board.setLayout(s.single),
-                ),
-                const SizedBox(height: Kx.s24),
-                Text(l.appThemeTitle, style: context.text.titleSmall),
-                const SizedBox(height: Kx.s4),
-                Text(l.appThemeHint, style: hint),
-                const SizedBox(height: Kx.s12),
-                Wrap(
-                  key: const Key('board-theme'),
-                  spacing: Kx.s8,
-                  runSpacing: Kx.s8,
-                  children: [
-                    for (final t in BoardTheme.values)
-                      ChoiceChip(
-                        key: Key('theme-${t.name}'),
-                        label: Text(switch (t) {
-                          BoardTheme.light => l.themeLight,
-                          BoardTheme.dark => l.themeDark,
-                          BoardTheme.chalkboard => l.themeChalkboard,
-                          BoardTheme.system => l.themeSystem,
-                        }),
-                        avatar: Icon(switch (t) {
-                          BoardTheme.light => Icons.light_mode_outlined,
-                          BoardTheme.dark => Icons.dark_mode_outlined,
-                          BoardTheme.chalkboard => Icons.school_outlined,
-                          BoardTheme.system => Icons.brightness_auto_outlined,
-                        }),
-                        showCheckmark: false,
-                        selected: board.theme == t,
-                        onSelected: (_) => board.setTheme(t),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: Kx.s24),
-                Text(l.simpleBoardTitle, style: context.text.titleSmall),
-                const SizedBox(height: Kx.s4),
-                Text(l.simpleBoardHint, style: hint),
-                const SizedBox(height: Kx.s12),
-                SegmentedButton<SimpleBoard>(
-                  key: const Key('simple-board'),
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment(value: SimpleBoard.auto, label: Text(l.simpleBoardAuto, key: const Key('simple-auto'))),
-                    ButtonSegment(value: SimpleBoard.on, label: Text(l.simpleBoardOn, key: const Key('simple-on'))),
-                    ButtonSegment(value: SimpleBoard.off, label: Text(l.simpleBoardOff, key: const Key('simple-off'))),
-                  ],
-                  selected: {board.simpleBoard},
-                  onSelectionChanged: (s) => board.setSimpleBoard(s.single),
-                ),
-                const SizedBox(height: Kx.s24),
-                Text(l.inputTitle, style: context.text.titleSmall),
-                const SizedBox(height: Kx.s4),
-                Text(l.inputHint, style: hint),
-                const SizedBox(height: Kx.s12),
-                SegmentedButton<InputMode>(
-                  key: const Key('input-mode'),
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment(value: InputMode.auto, label: Text(l.inputAuto, key: const Key('input-auto'))),
-                    ButtonSegment(value: InputMode.pen, icon: const Icon(Icons.draw_outlined), label: Text(l.inputPen, key: const Key('input-pen'))),
-                    ButtonSegment(value: InputMode.finger, icon: const Icon(Icons.touch_app_outlined), label: Text(l.inputFinger, key: const Key('input-finger'))),
-                  ],
-                  selected: {board.inputMode},
-                  onSelectionChanged: (s) => board.setInputMode(s.single),
-                ),
-                const SizedBox(height: Kx.s8),
-                SwitchListTile(
-                  key: const Key('finger-taps'),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.fingerTapsTitle),
-                  subtitle: Text(l.fingerTapsHint),
-                  value: board.fingerTaps,
-                  onChanged: board.setFingerTaps,
-                ),
-                const SizedBox(height: Kx.s24),
-                Text(l.touchScreen, style: context.text.titleSmall),
-                const SizedBox(height: Kx.s4),
-                Text(l.touchScreenHint, style: hint),
-                const SizedBox(height: Kx.s8),
-                RadioGroup<TouchProfile>(
-                  groupValue: board.touchProfile,
-                  onChanged: (p) => board.setTouchProfile(p!),
-                  child: Column(
-                    children: [
-                      for (final p in TouchProfile.values)
-                        RadioListTile<TouchProfile>(
-                          key: Key('touch-${p.name}'),
-                          value: p,
-                          title: Text(p.label(l)),
-                          subtitle: Text(p.description(l)),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: Kx.s24),
-                AiPenSettingsSection(board: board),
-                const SizedBox(height: Kx.s24),
-                ProjectorSettingsSection(projector: board.projector),
-                const SizedBox(height: Kx.s24),
-                ProfileSettingsSection(board: board),
-                const SizedBox(height: Kx.s24),
-                KioskSettingsSection(kiosk: board.kiosk),
+                if (shown.isEmpty) Text(SearchStrings.of(context).noneMatch, key: const Key('settings-none'), style: hint),
+                for (final (i, (_, children)) in shown.indexed) ...[
+                  if (i > 0) const SizedBox(height: Kx.s24),
+                  ...children,
+                ],
               ],
             ),
           ),

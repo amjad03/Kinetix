@@ -3,6 +3,10 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../comfort/eye_comfort.dart';
+import '../search/filter_bar.dart';
+import '../search/fuzzy.dart';
+import '../search/search_strings.dart';
+import '../search/solids3d.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
 
@@ -283,12 +287,16 @@ class ThemePopover extends StatelessWidget {
   }
 }
 
-/// Shapes: 2D shapes, filled or not, with optional measurements. 3D solids are on the way.
+/// Shapes: 2D shapes, filled or not, with optional measurements, and 3D solids to turn round
+/// and put on the board (lib/features/search/solids3d.dart).
 class ShapesPopover extends StatefulWidget {
-  const ShapesPopover({super.key, required this.wb, required this.onPicked, this.primary = false});
+  const ShapesPopover({super.key, required this.wb, required this.onPicked, this.primary = false, this.onOpenModel});
 
   final WhiteboardController wb;
   final VoidCallback onPicked;
+
+  /// Opens a 3D model (a solid's id) in the viewer beside the board.
+  final ValueChanged<String>? onOpenModel;
 
   /// The little ones get the first few shapes and no measurements.
   final bool primary;
@@ -389,10 +397,7 @@ class _ShapesPopoverState extends State<ShapesPopover> {
           onSelectionChanged: (s) => setState(() => _threeD = s.first),
         ),
         child: _threeD
-            ? SizedBox(
-                height: 168,
-                child: KxEmptyState(icon: Icons.view_in_ar_outlined, message: l.shapes3dSoon),
-              )
+            ? Solids3dGrid(onOpen: (k) => Solid3dDialog.open(context, k, onOpenViewer: widget.onOpenModel))
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -458,20 +463,38 @@ class ToolEntry {
   final VoidCallback onTap;
 }
 
-class ToolsPopover extends StatelessWidget {
+class ToolsPopover extends StatefulWidget {
   const ToolsPopover({super.key, required this.tools});
 
   final List<ToolEntry> tools;
 
   @override
+  State<ToolsPopover> createState() => _ToolsPopoverState();
+}
+
+class _ToolsPopoverState extends State<ToolsPopover> {
+  String _q = '';
+
+  @override
   Widget build(BuildContext context) {
+    final shown = matchingLabels(widget.tools, (t) => t.label, _q);
     return PopoverCard(
       title: context.l10n.toolTools,
       width: 4 * 104 + 3 * Kx.s12,
+      // Beside the title, so the grid keeps its room.
+      trailing: SizedBox(
+        width: 190,
+        child: ModuleSearchField(
+          key: const Key('tools-search'),
+          hint: SearchStrings.of(context).searchTools,
+          padding: const EdgeInsets.only(left: Kx.s8),
+          onChanged: (v) => setState(() => _q = v),
+        ),
+      ),
       child: Wrap(
         spacing: Kx.s12,
         runSpacing: Kx.s12,
-        children: [for (final t in tools) ChromeTile(icon: t.icon, label: t.label, color: t.color, onTap: t.onTap)],
+        children: [for (final t in shown) ChromeTile(icon: t.icon, label: t.label, color: t.color, onTap: t.onTap)],
       ),
     );
   }

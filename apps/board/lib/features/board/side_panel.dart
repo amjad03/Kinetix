@@ -6,6 +6,8 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart';
 
 import '../../l10n/l10n.dart';
+import '../search/catalogue_browser.dart';
+import '../search/catalogue_facets.dart';
 import 'chrome.dart';
 
 /// What the side panel shows. Opening any of these splits the screen with the whiteboard.
@@ -249,7 +251,11 @@ class SplitPanel extends StatelessWidget {
           ),
           Expanded(
             child: id == null
-                ? _CataloguePicker(kind: kind, onPick: (id) => onItem?.call(id, null))
+                ? CatalogueBrowser(
+                    key: ValueKey(kind),
+                    kind: kind == SplitContent.model3d ? CatalogueKind.model3d : CatalogueKind.lab,
+                    onPick: (id) => onItem?.call(id, null),
+                  )
                 : RepaintBoundary(
                     key: snapshotKey,
                     child: current == SplitContent.model3d
@@ -286,52 +292,6 @@ class SplitPanel extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// The 3D models or labs that work offline on the board, grouped by subject.
-class _CataloguePicker extends StatelessWidget {
-  const _CataloguePicker({required this.kind, required this.onPick});
-
-  final SplitContent kind;
-  final ValueChanged<String> onPick;
-
-  @override
-  Widget build(BuildContext context) {
-    final items = kind == SplitContent.model3d
-        ? [for (final e in ModelCatalogue.entries) (id: e.id, title: e.title, group: e.subjects.first, tags: e.levels)]
-        : [for (final e in LabCatalogue.entries) (id: e.id, title: e.title, group: e.subject, tags: e.levels)];
-    final groups = <String, List<({String id, String title, String group, List<String> tags})>>{};
-    for (final i in items) {
-      groups.putIfAbsent(i.group, () => []).add(i);
-    }
-    final c = context.colors;
-    return ListView(
-      key: Key('catalogue-${kind.name}'),
-      padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s24),
-      children: [
-        for (final g in groups.entries) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(Kx.s8, Kx.s16, Kx.s8, Kx.s8),
-            child: Text(g.key, style: context.text.titleSmall?.copyWith(color: c.onSurfaceVariant)),
-          ),
-          for (final i in g.value)
-            Card(
-              margin: const EdgeInsets.only(bottom: Kx.s8),
-              color: c.surfaceContainer,
-              elevation: 0,
-              child: ListTile(
-                key: Key('pick-${i.id}'),
-                leading: Icon(kind.icon, color: c.primary),
-                title: Text(i.title),
-                subtitle: i.tags.isEmpty ? null : Text(i.tags.join(' · ')),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => onPick(i.id),
-              ),
-            ),
-        ],
-      ],
     );
   }
 }

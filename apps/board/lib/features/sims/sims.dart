@@ -6,6 +6,9 @@ import 'package:kinetix_ink/kinetix_ink.dart' show GraphElement, compileGraph, p
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../search/filter_bar.dart';
+import '../search/fuzzy.dart';
+import '../search/search_strings.dart';
 
 /// The six interactive simulations from the KINETIX prototype. They open in a window over the
 /// board (they are not written on it).
@@ -528,8 +531,15 @@ class SimWindow extends StatelessWidget {
 }
 
 /// Picks a simulation to open.
-class SimPickerDialog extends StatelessWidget {
+class SimPickerDialog extends StatefulWidget {
   const SimPickerDialog({super.key});
+
+  @override
+  State<SimPickerDialog> createState() => _SimPickerDialogState();
+}
+
+class _SimPickerDialogState extends State<SimPickerDialog> {
+  String _q = '';
 
   @override
   Widget build(BuildContext context) {
@@ -543,11 +553,29 @@ class SimPickerDialog extends StatelessWidget {
       scrollable: true,
       content: SizedBox(
         width: 520,
-        child: Wrap(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ModuleSearchField(
+              key: const Key('sims-search'),
+              hint: SearchStrings.of(context).searchSims,
+              padding: const EdgeInsets.only(bottom: Kx.s12),
+              onChanged: (v) => setState(() => _q = v),
+            ),
+            _grid(l, tile),
+          ],
+        ),
+      ),
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel))],
+    );
+  }
+
+  Widget _grid(AppLocalizations l, double tile) => Wrap(
           spacing: Kx.s12,
           runSpacing: Kx.s12,
           children: [
-            for (final k in SimKind.values)
+            for (final k in matchingLabels(SimKind.values, (k) => simName(l, k), _q))
               SizedBox(
                 width: tile,
                 child: OutlinedButton(
@@ -564,9 +592,5 @@ class SimPickerDialog extends StatelessWidget {
                 ),
               ),
           ],
-        ),
-      ),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel))],
-    );
-  }
+        );
 }
