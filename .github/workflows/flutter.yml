@@ -67,3 +67,24 @@ jobs:
       # The Board's live-API integration test (tag `integration`, scripts/board-it.sh) needs a
       # seeded API; it is not part of this job.
       - run: flutter test --exclude-tags integration
+
+  # The Board's Windows runner has native code of its own (the AI pen's handwriting reader,
+  # windows/runner/handwriting_channel.cpp, C++/WinRT): compile it on every change, as the
+  # release build does.
+  board-windows:
+    name: apps/board (Windows build)
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/board
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build windows --debug

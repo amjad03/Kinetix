@@ -35,9 +35,12 @@ const highlighterPalette = [
 /// Write: pen or highlighter, colour and thickness. With something selected, a colour
 /// recolours it.
 class WritePopover extends StatelessWidget {
-  const WritePopover({super.key, required this.wb});
+  const WritePopover({super.key, required this.wb, this.footer});
 
   final WhiteboardController wb;
+
+  /// Under the pen's settings (tidying shapes as they are drawn).
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +103,7 @@ class WritePopover extends StatelessWidget {
                     ),
                 ],
               ),
+              if (footer != null && !hl) ...[const SizedBox(height: Kx.s12), footer!],
             ],
           ),
         );

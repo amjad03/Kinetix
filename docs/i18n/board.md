@@ -56,5 +56,7 @@ them.
 - Maths terms (विविक्तकर / ಶೋಧಕ for discriminant, ಸಮಾಸ for expression, ತ್ರಾಪಿಜ್ಯ, ವಜ್ರಾಕೃತಿ):
   check against the state textbooks.
 - Quiz option letters stay A–D in every language.
+- AI pen (AI पेन, AI ಪೆನ್): *Back to my ink* (मेरी स्याही वापस, ನನ್ನ ಶಾಯಿ ಮರಳಿ), scribble to rub out
+  (घिचपिच करें, ಗೀಚಿ), handwriting model (लिखावट मॉडल, ಕೈಬರಹ ಮಾದರಿ).
 - Today's plan (आज की योजना, ಇಂದಿನ ಯೋಜನೆ): step timer (चरण टाइमर, ಹಂತ ಟೈಮರ್), Drafted with
   KINETIX AI (`planAiDrafted`), and "Steps · x of y min" (`planStepsOf`).

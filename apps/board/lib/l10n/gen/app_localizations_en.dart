@@ -2523,4 +2523,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoomReset => 'Back to 100%';
+
+  @override
+  String get aiPen => 'AI pen';
+
+  @override
+  String get aiPenTitle =>
+      'AI pen: shapes, maths and words from your handwriting';
+
+  @override
+  String get aiPenModeAuto => 'After a pause';
+
+  @override
+  String get aiPenModeAutoHint =>
+      'Write as usual; about a second after you stop, it is converted.';
+
+  @override
+  String get aiPenModeLive => 'Word by word';
+
+  @override
+  String get aiPenModeLiveHint =>
+      'Each word is converted as you start the next one.';
+
+  @override
+  String get aiPenModeTap => 'When I tap Convert';
+
+  @override
+  String get aiPenModeTapHint => 'Ink stays as written until you tap Convert.';
+
+  @override
+  String get aiPenConvert => 'Convert';
+
+  @override
+  String get aiPenWordsLanguage => 'Words are read in';
+
+  @override
+  String get aiPenTapHint =>
+      'Tap something the AI pen converted to see other readings or get your ink back. Scribble over ink to rub it out.';
+
+  @override
+  String get aiPenSnapShapes => 'Tidy shapes as I draw';
+
+  @override
+  String get aiPenSnapShapesHint =>
+      'Rough circles, lines, arrows and polygons drawn with the pen become clean shapes.';
+
+  @override
+  String get aiPenDidYouMean => 'Did you mean…';
+
+  @override
+  String get aiPenTypeIt => 'Or type it';
+
+  @override
+  String get aiPenItsShape => 'It\'s a shape';
+
+  @override
+  String get aiPenItsWriting => 'It\'s writing';
+
+  @override
+  String get aiPenBackToInk => 'Back to my ink';
+
+  @override
+  String get aiPenKeepShape => 'Keep the shape';
+
+  @override
+  String get aiPenNoShape => 'No clean shape fits that ink.';
+
+  @override
+  String get aiPenReadings => 'Other readings';
+
+  @override
+  String get aiPenConvertInk => 'Convert with AI pen';
+
+  @override
+  String get aiPenWordsStayInk =>
+      'Shapes and maths convert on this board. Words stay as ink: this board has no handwriting reader.';
+
+  @override
+  String aiPenModelNeeded(String language) {
+    return 'Words stay as ink until the $language handwriting model is downloaded (Board settings → AI pen).';
+  }
+
+  @override
+  String aiPenLanguageUnsupported(String language) {
+    return 'This board cannot read $language handwriting. Words stay as ink; shapes and maths still convert.';
+  }
+
+  @override
+  String get aiPenNothingToConvert =>
+      'Nothing to convert: select handwriting or drawings first.';
+
+  @override
+  String get aiPenSettingsTitle => 'AI pen';
+
+  @override
+  String get aiPenSettingsHint =>
+      'Handwriting is read on this board: nothing you write leaves it. Shapes and maths work in every language with no download.';
+
+  @override
+  String get aiPenEngineMlkit =>
+      'Words are read by Google ML Kit on this panel. Each language\'s model downloads once (about 20 MB); after that it works offline.';
+
+  @override
+  String get aiPenEngineWindows =>
+      'Words are read by the Windows handwriting recogniser. To add a language, add its handwriting in Windows Settings → Time & language.';
+
+  @override
+  String get aiPenEngineNone =>
+      'This board has no handwriting reader: words stay as ink.';
+
+  @override
+  String get aiPenModelReady => 'Ready';
+
+  @override
+  String get aiPenModelDownload => 'Download';
+
+  @override
+  String get aiPenModelDownloading => 'Downloading…';
+
+  @override
+  String get aiPenModelUnsupported => 'Not available on this board';
+
+  @override
+  String get aiPenDownloadFailed =>
+      'Could not download the handwriting model. Connect to the internet once and try again.';
 }

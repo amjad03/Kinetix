@@ -2523,4 +2523,128 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get zoomReset => '100% ಗೆ ಹಿಂತಿರುಗಿ';
+
+  @override
+  String get aiPen => 'AI ಪೆನ್';
+
+  @override
+  String get aiPenTitle => 'AI ಪೆನ್: ನಿಮ್ಮ ಕೈಬರಹದಿಂದ ಆಕಾರಗಳು, ಗಣಿತ ಮತ್ತು ಪದಗಳು';
+
+  @override
+  String get aiPenModeAuto => 'ಸ್ವಲ್ಪ ನಿಲ್ಲಿಸಿದಾಗ';
+
+  @override
+  String get aiPenModeAutoHint =>
+      'ಎಂದಿನಂತೆ ಬರೆಯಿರಿ; ನಿಲ್ಲಿಸಿದ ಸುಮಾರು ಒಂದು ಸೆಕೆಂಡಿನ ನಂತರ ಅದು ಬದಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get aiPenModeLive => 'ಪದದಿಂದ ಪದಕ್ಕೆ';
+
+  @override
+  String get aiPenModeLiveHint =>
+      'ಮುಂದಿನ ಪದ ಆರಂಭಿಸಿದ ತಕ್ಷಣ ಹಿಂದಿನ ಪದ ಬದಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get aiPenModeTap => 'ನಾನು ಬದಲಿಸಿ ಒತ್ತಿದಾಗ';
+
+  @override
+  String get aiPenModeTapHint =>
+      'ನೀವು ಬದಲಿಸಿ ಒತ್ತುವವರೆಗೆ ಶಾಯಿ ಬರೆದಂತೆಯೇ ಇರುತ್ತದೆ.';
+
+  @override
+  String get aiPenConvert => 'ಬದಲಿಸಿ';
+
+  @override
+  String get aiPenWordsLanguage => 'ಪದಗಳನ್ನು ಓದುವ ಭಾಷೆ';
+
+  @override
+  String get aiPenTapHint =>
+      'AI ಪೆನ್ ಬದಲಿಸಿದುದರ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ: ಬೇರೆ ಓದುಗಳನ್ನು ನೋಡಿ ಅಥವಾ ನಿಮ್ಮ ಶಾಯಿಯನ್ನು ಮರಳಿ ಪಡೆಯಿರಿ. ಶಾಯಿಯನ್ನು ಅಳಿಸಲು ಅದರ ಮೇಲೆ ಗೀಚಿ.';
+
+  @override
+  String get aiPenSnapShapes => 'ಬಿಡಿಸುವಾಗ ಆಕಾರಗಳನ್ನು ಅಚ್ಚುಕಟ್ಟಾಗಿಸಿ';
+
+  @override
+  String get aiPenSnapShapesHint =>
+      'ಪೆನ್‌ನಿಂದ ಬಿಡಿಸಿದ ಒರಟು ವೃತ್ತಗಳು, ರೇಖೆಗಳು, ಬಾಣಗಳು ಮತ್ತು ಬಹುಭುಜಗಳು ಅಚ್ಚುಕಟ್ಟಾದ ಆಕಾರಗಳಾಗುತ್ತವೆ.';
+
+  @override
+  String get aiPenDidYouMean => 'ನಿಮ್ಮ ಅರ್ಥ ಇದೇ…';
+
+  @override
+  String get aiPenTypeIt => 'ಅಥವಾ ಟೈಪ್ ಮಾಡಿ';
+
+  @override
+  String get aiPenItsShape => 'ಇದು ಆಕಾರ';
+
+  @override
+  String get aiPenItsWriting => 'ಇದು ಬರಹ';
+
+  @override
+  String get aiPenBackToInk => 'ನನ್ನ ಶಾಯಿ ಮರಳಿ';
+
+  @override
+  String get aiPenKeepShape => 'ಆಕಾರ ಇರಲಿ';
+
+  @override
+  String get aiPenNoShape => 'ಈ ಶಾಯಿಗೆ ಯಾವ ಅಚ್ಚುಕಟ್ಟಾದ ಆಕಾರವೂ ಹೊಂದುವುದಿಲ್ಲ.';
+
+  @override
+  String get aiPenReadings => 'ಬೇರೆ ಓದುಗಳು';
+
+  @override
+  String get aiPenConvertInk => 'AI ಪೆನ್‌ನಿಂದ ಬದಲಿಸಿ';
+
+  @override
+  String get aiPenWordsStayInk =>
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಆಕಾರಗಳು ಮತ್ತು ಗಣಿತ ಬದಲಾಗುತ್ತವೆ. ಪದಗಳು ಶಾಯಿಯಾಗಿಯೇ ಇರುತ್ತವೆ: ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಕೈಬರಹ ಓದುವ ಸಾಧನವಿಲ್ಲ.';
+
+  @override
+  String aiPenModelNeeded(String language) {
+    return '$language ಕೈಬರಹ ಮಾದರಿ ಡೌನ್‌ಲೋಡ್ ಆಗುವವರೆಗೆ ಪದಗಳು ಶಾಯಿಯಾಗಿಯೇ ಇರುತ್ತವೆ (ಬೋರ್ಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು → AI ಪೆನ್).';
+  }
+
+  @override
+  String aiPenLanguageUnsupported(String language) {
+    return 'ಈ ಬೋರ್ಡ್ $language ಕೈಬರಹವನ್ನು ಓದಲಾರದು. ಪದಗಳು ಶಾಯಿಯಾಗಿಯೇ ಇರುತ್ತವೆ; ಆಕಾರಗಳು ಮತ್ತು ಗಣಿತ ಆದರೂ ಬದಲಾಗುತ್ತವೆ.';
+  }
+
+  @override
+  String get aiPenNothingToConvert =>
+      'ಬದಲಿಸಲು ಏನೂ ಇಲ್ಲ: ಮೊದಲು ಕೈಬರಹ ಅಥವಾ ಚಿತ್ರಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ.';
+
+  @override
+  String get aiPenSettingsTitle => 'AI ಪೆನ್';
+
+  @override
+  String get aiPenSettingsHint =>
+      'ಕೈಬರಹವನ್ನು ಈ ಬೋರ್ಡ್‌ನಲ್ಲೇ ಓದಲಾಗುತ್ತದೆ: ನೀವು ಬರೆದುದು ಬೋರ್ಡ್‌ನಿಂದ ಹೊರಗೆ ಹೋಗುವುದಿಲ್ಲ. ಆಕಾರಗಳು ಮತ್ತು ಗಣಿತ ಎಲ್ಲ ಭಾಷೆಗಳಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಇಲ್ಲದೆ ಕೆಲಸ ಮಾಡುತ್ತವೆ.';
+
+  @override
+  String get aiPenEngineMlkit =>
+      'ಈ ಪ್ಯಾನೆಲ್‌ನಲ್ಲಿ ಪದಗಳನ್ನು Google ML Kit ಓದುತ್ತದೆ. ಪ್ರತಿ ಭಾಷೆಯ ಮಾದರಿ ಒಮ್ಮೆ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತದೆ (ಸುಮಾರು 20 MB); ನಂತರ ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get aiPenEngineWindows =>
+      'ಪದಗಳನ್ನು Windows ಕೈಬರಹ ಗುರುತಿಸುವಿಕೆ ಓದುತ್ತದೆ. ಭಾಷೆ ಸೇರಿಸಲು Windows Settings → Time & language ನಲ್ಲಿ ಅದರ ಕೈಬರಹ ಸೇರಿಸಿ.';
+
+  @override
+  String get aiPenEngineNone =>
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಕೈಬರಹ ಓದುವ ಸಾಧನವಿಲ್ಲ: ಪದಗಳು ಶಾಯಿಯಾಗಿಯೇ ಇರುತ್ತವೆ.';
+
+  @override
+  String get aiPenModelReady => 'ಸಿದ್ಧ';
+
+  @override
+  String get aiPenModelDownload => 'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
+
+  @override
+  String get aiPenModelDownloading => 'ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ…';
+
+  @override
+  String get aiPenModelUnsupported => 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ';
+
+  @override
+  String get aiPenDownloadFailed =>
+      'ಕೈಬರಹ ಮಾದರಿ ಡೌನ್‌ಲೋಡ್ ಆಗಲಿಲ್ಲ. ಒಮ್ಮೆ ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 }

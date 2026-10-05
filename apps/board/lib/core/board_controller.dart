@@ -15,6 +15,7 @@ import 'api_client.dart';
 import 'class_audio/class_audio.dart';
 import 'class_audio/mic_capture.dart';
 import 'device_store.dart';
+import 'handwriting/handwriting.dart';
 import 'kiosk/kiosk_controller.dart';
 import 'models.dart';
 import 'outbox_store.dart';
@@ -61,7 +62,9 @@ class BoardController extends ChangeNotifier {
     OutboxStore? outboxStore,
     MicCapture Function()? micFactory,
     KioskController? kiosk,
+    HandwritingRecognizer? handwriting,
   }) : _store = store ?? DeviceStore(),
+      handwriting = handwriting ?? platformHandwriting(),
       _outboxStore = outboxStore ?? FileOutboxStore(),
       _apiFactory = apiFactory ?? ((url) => ApiClient(baseUrl: url)),
       _realtimeFactory = realtimeFactory ?? Realtime.new,
@@ -114,6 +117,21 @@ class BoardController extends ChangeNotifier {
 
   /// Who may write: fingers, a pen, or fingers until a pen is used.
   InputMode inputMode = InputMode.auto;
+
+  /// Reads handwritten words for the AI pen, on the board (ML Kit on Android, Windows' own
+  /// recogniser on Windows).
+  final HandwritingRecognizer handwriting;
+
+  /// When the AI pen converts what is written.
+  AiPenMode aiPenMode = AiPenMode.auto;
+
+  /// The language the AI pen reads words in, when set; otherwise the board's language.
+  BoardLanguage? _aiPenLanguage;
+  BoardLanguage get aiPenLanguage => _aiPenLanguage ?? language;
+
+  /// The pen tidies rough shapes too (the AI pen always does). For primary classes, where the
+  /// AI pen is hidden, this is the one part of it on offer.
+  bool snapShapes = false;
 
   /// The board's primary-class layout (big labelled tools, Andika, class stars): chosen from the
   /// period's class (LKG to Class 5) unless the Simple board setting says otherwise.
@@ -227,6 +245,9 @@ class BoardController extends ChangeNotifier {
       layout = BoardLayout.values.asNameMap()[await _store.setting('layout')] ?? BoardLayout.rails;
       simpleBoard = SimpleBoard.values.asNameMap()[await _store.setting('simpleBoard')] ?? SimpleBoard.auto;
       inputMode = InputMode.values.asNameMap()[await _store.setting('inputMode')] ?? InputMode.auto;
+      aiPenMode = AiPenMode.values.asNameMap()[await _store.setting('aiPenMode')] ?? AiPenMode.auto;
+      _aiPenLanguage = BoardLanguage.tryParse(await _store.setting('aiPenLanguage'));
+      snapShapes = await _store.setting('snapShapes') == 'true';
     } catch (e) {
       debugPrint('Board settings unreadable, using defaults: $e');
     }
@@ -321,6 +342,36 @@ class BoardController extends ChangeNotifier {
     unawaited(_store.setSetting('inputMode', m.name));
     notifyListeners();
   }
+
+  void setAiPenMode(AiPenMode m) {
+    aiPenMode = m;
+    unawaited(_store.setSetting('aiPenMode', m.name));
+    notifyListeners();
+  }
+
+  void setAiPenLanguage(BoardLanguage l) {
+    _aiPenLanguage = l;
+    unawaited(_store.setSetting('aiPenLanguage', l.name));
+    notifyListeners();
+  }
+
+  void setSnapShapes(bool on) {
+    snapShapes = on;
+    unawaited(_store.setSetting('snapShapes', '$on'));
+    notifyListeners();
+  }
+
+  /// The size of [teacherId]'s handwriting the AI pen learnt (screen pixels), if any; per
+  /// teacher, since every teacher writes differently ("guest" without one).
+  Future<double?> letterSize(String? teacherId) async {
+    try {
+      return double.tryParse(await _store.setting('aiPenLetterPx.${teacherId ?? 'guest'}') ?? '');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void saveLetterSize(String? teacherId, double px) => unawaited(_store.setSetting('aiPenLetterPx.${teacherId ?? 'guest'}', px.toStringAsFixed(1)).catchError((_) {}));
 
   void dismissBroadcast(BroadcastMessage m, {required bool acknowledge}) {
     if (m.priority == BroadcastPriority.emergency) {

@@ -14,6 +14,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
+  # Handwriting to text on Android panels: ML Kit Digital Ink, on-device (the language model
+  # downloads once from Google; no ink leaves the panel). See lib/core/handwriting.
+  google_mlkit_digital_ink_recognition: ^0.16.1
   http: ^1.6.0
   intl: ^0.20.3
   kinetix_3d:

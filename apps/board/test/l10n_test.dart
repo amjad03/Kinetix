@@ -664,6 +664,14 @@ void main() {
             fits(key);
             await closePopover();
           }
+          if (!primary) {
+            // The AI pen: the first tap takes it, the second opens its options.
+            await tap(find.byKey(const Key('tool-ai-pen')));
+            await tap(find.byKey(const Key('tool-ai-pen')));
+            expect(find.byKey(const Key('ai-pen-popover')), findsOneWidget);
+            fits('AI pen');
+            await closePopover();
+          }
           await tap(find.byKey(const Key('tool-insert')));
           await tap(find.byKey(const Key('insert-equation')));
           expect(find.byKey(const Key('math-tex')), findsOneWidget);
