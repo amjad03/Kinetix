@@ -1217,27 +1217,28 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       if ((deg - step).abs() < 4) a = step * math.pi / 180;
       _transform = (handle: h, box: r, from: from, f: (e) => e.rotated(c, a), angle: a);
     } else {
-      final (anchor, grip) = switch (h) {
-        SelectionHandle.topLeft => (r.bottomRight, r.topLeft),
-        SelectionHandle.topRight => (r.bottomLeft, r.topRight),
-        SelectionHandle.bottomLeft => (r.topRight, r.bottomLeft),
-        SelectionHandle.bottomRight => (r.topLeft, r.bottomRight),
-        SelectionHandle.top => (r.bottomCenter, r.topCenter),
-        SelectionHandle.bottom => (r.topCenter, r.bottomCenter),
-        SelectionHandle.left => (r.centerRight, r.centerLeft),
-        SelectionHandle.right => (r.centerLeft, r.centerRight),
-        SelectionHandle.rotate => (r.center, r.center),
+      final anchor = switch (h) {
+        SelectionHandle.topLeft => r.bottomRight,
+        SelectionHandle.topRight => r.bottomLeft,
+        SelectionHandle.bottomLeft => r.topRight,
+        SelectionHandle.bottomRight => r.topLeft,
+        SelectionHandle.top => r.bottomCenter,
+        SelectionHandle.bottom => r.topCenter,
+        SelectionHandle.left => r.centerRight,
+        SelectionHandle.right => r.centerLeft,
+        SelectionHandle.rotate => r.center,
       };
+      // Measured from where the handle was grabbed, so the box does not jump when it is taken.
       double ratio(double now, double was, double at) => was == at ? 1 : ((now - at) / (was - at)).clamp(0.05, 50.0);
       var sx = 1.0, sy = 1.0;
       switch (h) {
         case SelectionHandle.left || SelectionHandle.right:
-          sx = ratio(w.dx, grip.dx, anchor.dx);
+          sx = ratio(w.dx, from.dx, anchor.dx);
         case SelectionHandle.top || SelectionHandle.bottom:
-          sy = ratio(w.dy, grip.dy, anchor.dy);
+          sy = ratio(w.dy, from.dy, anchor.dy);
         default:
           // Corners keep the proportions: scale along the diagonal.
-          final d0 = grip - anchor, d = w - anchor;
+          final d0 = from - anchor, d = w - anchor;
           final k = d0.distanceSquared == 0 ? 1.0 : ((d.dx * d0.dx + d.dy * d0.dy) / d0.distanceSquared).clamp(0.05, 50.0);
           sx = sy = k;
       }

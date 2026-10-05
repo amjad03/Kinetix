@@ -5,6 +5,7 @@ library;
 
 export 'src/board_background.dart';
 export 'src/element_painting.dart';
+export 'src/geometry_tools.dart';
 export 'src/graph_expr.dart';
 export 'src/ink_canvas.dart';
 export 'src/ink_controller.dart';
@@ -15,5 +16,6 @@ export 'src/math_layer.dart';
 export 'src/render.dart';
 export 'src/serialization.dart';
 export 'src/view.dart';
+export 'src/whiteboard_canvas.dart';
 export 'src/whiteboard_controller.dart';
 export 'src/whiteboard_view.dart';
