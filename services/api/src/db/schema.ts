@@ -603,7 +603,7 @@ export const auditLog = pgTable('audit_log', {
 // AI (India-hosted; see docs/architecture/ai-platform.md)
 // ---------------------------------------------------------------------------------------------
 
-export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard']);
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe']);
 export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
@@ -622,6 +622,10 @@ export const aiUsage = pgTable(
     promptTokens: integer('prompt_tokens').notNull().default(0),
     completionTokens: integer('completion_tokens').notNull().default(0),
     latencyMs: integer('latency_ms').notNull().default(0),
+    /** Audio transcribed (task `transcribe`), for the monthly hours cap. */
+    audioMs: integer('audio_ms').notNull().default(0),
+    /** Estimated rupees, for pay-per-use providers (Sarvam); null for self-hosted models. */
+    estCostInr: numeric('est_cost_inr', { precision: 12, scale: 4, mode: 'number' }),
     /** Why a request was refused or failed, never the prompt itself. */
     detail: text('detail'),
     createdAt: createdAt(),
@@ -869,6 +873,24 @@ export const receiptCounters = pgTable(
   },
   (t) => [primaryKey({ columns: [t.tenantId, t.financialYear] })],
 );
+
+/**
+ * The institution's own Razorpay account: fees go straight to it. The key secret and webhook
+ * secret are encrypted at rest (AES-256-GCM, see common/secret-box.ts) and never returned by the
+ * API; only the last four characters of the key secret are kept in clear, to recognise it.
+ */
+export const paymentGatewayAccounts = pgTable('payment_gateway_accounts', {
+  tenantId: tenantId().primaryKey(),
+  provider: text('provider').notNull().default('razorpay'),
+  /** Public: the app's checkout needs it. rzp_test_… or rzp_live_…. */
+  keyId: text('key_id').notNull(),
+  keySecretEnc: text('key_secret_enc').notNull(),
+  keySecretLast4: text('key_secret_last4').notNull(),
+  webhookSecretEnc: text('webhook_secret_enc').notNull(),
+  updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
 
 // ---------------------------------------------------------------------------------------------
 // Library circulation
@@ -1186,6 +1208,7 @@ export const TENANT_TABLES = [
   'fee_invoices',
   'fee_payments',
   'receipt_counters',
+  'payment_gateway_accounts',
   'library_books',
   'library_loans',
   'assessments',

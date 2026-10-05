@@ -3,23 +3,18 @@ import { ENV, type Env } from '../config/env.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
 import { FeesController } from './fees.controller.js';
 import { FeesService } from './fees.service.js';
-import { DemoPaymentProvider, NoPaymentProvider, PaymentProvider, RazorpayProvider } from './payment-provider.js';
+import { PaymentGateway } from './payment-gateway.service.js';
+import { FakeRazorpayApi, HttpRazorpayApi, RazorpayApi } from './payment-provider.js';
+import { PaymentsAdminController } from './payments-admin.controller.js';
 
 @Module({
   imports: [NotificationsModule],
   providers: [
     FeesService,
-    {
-      provide: PaymentProvider,
-      inject: [ENV],
-      useFactory: (env: Env) =>
-        env.PAYMENTS_PROVIDER === 'razorpay'
-          ? new RazorpayProvider(env.RAZORPAY_KEY_ID!, env.RAZORPAY_KEY_SECRET!, env.RAZORPAY_WEBHOOK_SECRET!)
-          : env.PAYMENTS_PROVIDER === 'demo'
-            ? new DemoPaymentProvider()
-            : new NoPaymentProvider(),
-    },
+    PaymentGateway,
+    // Each institution's own keys are used per request (PaymentGateway); RAZORPAY_FAKE keeps tests off the network.
+    { provide: RazorpayApi, inject: [ENV], useFactory: (env: Env) => (env.RAZORPAY_FAKE ? new FakeRazorpayApi() : new HttpRazorpayApi()) },
   ],
-  controllers: [FeesController],
+  controllers: [FeesController, PaymentsAdminController],
 })
 export class FeesModule {}

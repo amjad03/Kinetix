@@ -31,7 +31,8 @@ import { feeInvoices, feePayments, sections, students, tenants, users } from '..
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { FEE_ROLES, FeesService } from './fees.service.js';
-import { PaymentProvider } from './payment-provider.js';
+import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
+import type { PaymentProvider } from './payment-provider.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Paise = z.number().int().min(100).max(100_000_000_00);
@@ -47,7 +48,8 @@ const ConfirmBody = z.object({ providerPaymentId: z.string().min(1).max(100), si
 
 /**
  * Fees: the accounts office issues fees to a class and records counter payments; families pay
- * online in the app (Razorpay) and get numbered receipts. Amounts are integer paise.
+ * online in the app through the institution's own Razorpay account and get numbered receipts.
+ * Amounts are integer paise.
  */
 @Controller('v1/fees')
 export class FeesController {
@@ -56,7 +58,7 @@ export class FeesController {
   constructor(
     private readonly db: DbService,
     private readonly fees: FeesService,
-    private readonly provider: PaymentProvider,
+    private readonly gateway: PaymentGateway,
     private readonly notifications: NotificationsService,
     private readonly lookups: SystemLookups,
   ) {}
@@ -200,7 +202,7 @@ export class FeesController {
         .where(and(eq(feePayments.studentId, studentId), eq(feePayments.status, 'paid')))
         .orderBy(desc(feePayments.paidAt));
       const duePaise = invoices.filter((i) => i.status === 'due').reduce((s, i) => s + i.amountPaise - i.paidPaise, 0);
-      return { duePaise, onlinePayments: this.provider.configured ? this.provider.name : null, invoices, payments };
+      return { duePaise, onlinePayments: await this.gateway.availableName(tx), invoices, payments };
     });
   }
 
@@ -208,28 +210,31 @@ export class FeesController {
   @Post('invoices/:id/checkout')
   @Auth('user')
   async checkout(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CheckoutBody)) body: z.infer<typeof CheckoutBody>) {
-    if (!this.provider.configured) throw new ServiceUnavailableException('Online payment is not available yet. Please pay at the fees counter.');
-    const { inv, amountPaise, payer } = await this.db.withTenant(p.tenantId, async (tx) => {
+    const { inv, amountPaise, payer, provider } = await this.db.withTenant(p.tenantId, async (tx) => {
+      // Fees go to the institution's own Razorpay account; without one, only the counter.
+      const provider = await this.gateway.forTenant(tx);
+      if (!provider) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
       const inv = await this.openInvoice(tx, id);
       await this.fees.assertCanSee(tx, p, inv.studentId);
       const balance = inv.amountPaise - inv.paidPaise;
       const amountPaise = body.amountPaise ?? balance;
       if (amountPaise > balance) throw new BadRequestException('That is more than the balance due');
       const [payer] = await tx.select({ fullName: users.fullName, email: users.email, phone: users.phone }).from(users).where(eq(users.id, p.userId));
-      return { inv, amountPaise, payer };
+      return { inv, amountPaise, payer, provider };
     });
     // The gateway call happens outside the transaction.
-    const order = await this.provider.createOrder({ amountPaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId } });
+    const order = await provider.createOrder({ amountPaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId } });
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [pay] = await tx
         .insert(feePayments)
-        .values({ tenantId: p.tenantId, invoiceId: id, studentId: inv.studentId, amountPaise, method: 'online', status: 'created', provider: this.provider.name, providerOrderId: order.orderId, payerUserId: p.userId })
+        .values({ tenantId: p.tenantId, invoiceId: id, studentId: inv.studentId, amountPaise, method: 'online', status: 'created', provider: provider.name, providerOrderId: order.orderId, payerUserId: p.userId })
         .returning();
       const [tenant] = await tx.select({ name: tenants.name }).from(tenants);
       return {
         paymentId: pay.id,
-        provider: this.provider.name,
-        keyId: this.provider.keyId,
+        provider: provider.name,
+        // The institution's own public key: the app's checkout pays into its account.
+        keyId: provider.keyId,
         orderId: order.orderId,
         amountPaise,
         currency: 'INR',
@@ -250,7 +255,9 @@ export class FeesController {
       if (!pay || pay.method !== 'online') throw new NotFoundException('Payment not found');
       await this.fees.assertCanSee(tx, p, pay.studentId);
       if (pay.status !== 'paid') {
-        if (!pay.providerOrderId || !this.provider.verifyPayment(pay.providerOrderId, body.providerPaymentId, body.signature)) {
+        // Signed with the institution's key secret.
+        const provider = await this.gateway.forTenant(tx);
+        if (!pay.providerOrderId || !provider || !provider.verifyPayment(pay.providerOrderId, body.providerPaymentId, body.signature)) {
           throw new ForbiddenException('The payment could not be verified');
         }
         await this.fees.markPaid(tx, id, { providerPaymentId: body.providerPaymentId });
@@ -267,26 +274,61 @@ export class FeesController {
 
   /**
    * The gateway's server-to-server notice, in case the app never confirmed (closed, offline).
-   * Public, authenticated by the signature over the raw body.
+   * Public, authenticated by the signature over the raw body with the institution's own webhook
+   * secret. Each institution pastes its URL (with its slug) into its Razorpay dashboard.
+   */
+  @Post('webhooks/razorpay/:tenantSlug')
+  @HttpCode(200)
+  async tenantWebhook(@Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>, @Headers('x-razorpay-signature') signature?: string) {
+    const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    if (!tenant) throw new NotFoundException('Not found');
+    const entity = this.paymentEntity(req);
+    await this.db.withTenant(tenant.id, async (tx) => {
+      const provider = await this.gateway.forTenant(tx);
+      this.assertSigned(provider, req, signature);
+      if (!entity) return;
+      // RLS: an order of another institution is simply not found here.
+      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, entity.order_id));
+      if (pay) await this.credit(tx, pay, entity);
+    });
+    return { ok: true };
+  }
+
+  /**
+   * The webhook URL from before institutions had their own accounts. The order names the
+   * institution, whose webhook secret must have signed the body. Unknown orders are acknowledged
+   * (another environment) so they are not retried.
    */
   @Post('webhooks/razorpay')
   @HttpCode(200)
   async webhook(@Req() req: RawBodyRequest<Request>, @Headers('x-razorpay-signature') signature?: string) {
-    if (!req.rawBody || !signature || !this.provider.verifyWebhook(req.rawBody, signature)) throw new UnauthorizedException('Bad signature');
-    const event = req.body as { event?: string; payload?: { payment?: { entity?: { id: string; order_id: string; amount: number; status: string } } } };
-    const entity = event.payload?.payment?.entity;
-    if (!entity || !['payment.captured', 'order.paid'].includes(event.event ?? '')) return { ok: true };
-    const found = await this.lookups.tenantForPaymentOrder(entity.order_id);
-    if (!found) return { ok: true }; // not ours (another environment): acknowledge so it is not retried
+    const entity = this.paymentEntity(req);
+    const found = entity ? await this.lookups.tenantForPaymentOrder(entity.order_id) : undefined;
+    if (!found) return { ok: true }; // nothing to do, so nothing to verify
     await this.db.withTenant(found.tenantId, async (tx) => {
+      this.assertSigned(await this.gateway.forTenant(tx), req, signature);
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, found.paymentId));
-      if (pay.amountPaise !== entity.amount) {
-        this.log.error(`Webhook amount ${entity.amount} does not match payment ${pay.id} (${pay.amountPaise})`);
-        return;
-      }
-      await this.fees.markPaid(tx, pay.id, { providerPaymentId: entity.id });
+      await this.credit(tx, pay, entity!);
     });
     return { ok: true };
+  }
+
+  private paymentEntity(req: Request) {
+    const event = req.body as { event?: string; payload?: { payment?: { entity?: { id: string; order_id: string; amount: number; status: string } } } };
+    const entity = event?.payload?.payment?.entity;
+    return entity && typeof entity.order_id === 'string' && ['payment.captured', 'order.paid'].includes(event.event ?? '') ? entity : undefined;
+  }
+
+  private assertSigned(provider: PaymentProvider | null, req: RawBodyRequest<Request>, signature?: string) {
+    if (!provider || !req.rawBody || !signature || !provider.verifyWebhook(req.rawBody, signature)) throw new UnauthorizedException('Bad signature');
+  }
+
+  private async credit(tx: Tx, pay: typeof feePayments.$inferSelect, entity: { id: string; amount: number }) {
+    if (pay.amountPaise !== entity.amount) {
+      this.log.error(`Webhook amount ${entity.amount} does not match payment ${pay.id} (${pay.amountPaise})`);
+      return;
+    }
+    await this.fees.markPaid(tx, pay.id, { providerPaymentId: entity.id });
   }
 
   private async openInvoice(tx: Tx, id: string) {

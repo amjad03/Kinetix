@@ -60,7 +60,7 @@ run "staging_defaults" {
     error_message = "staging uses one NAT gateway and two private subnets"
   }
   assert {
-    condition     = !contains(keys(local.api_secrets), "MSG91_AUTH_KEY") && !contains(keys(local.api_secrets), "FCM_SERVICE_ACCOUNT")
+    condition     = !contains(keys(local.api_secrets), "MSG91_AUTH_KEY") && !contains(keys(local.api_secrets), "FCM_SERVICE_ACCOUNT") && !contains(keys(local.api_secrets), "SARVAM_API_KEY")
     error_message = "optional secrets are only injected when their provider is enabled"
   }
   assert {
@@ -80,19 +80,29 @@ run "staging_defaults" {
 run "prod_providers_and_github" {
   command = plan
   variables {
-    environment       = "prod"
-    sms_provider      = "msg91"
-    payments_provider = "razorpay"
-    push_enabled      = true
-    db_multi_az       = true
-    redis_nodes       = 2
-    ai_base_url       = "http://10.40.30.10:8000/v1"
-    github_repository = "example/Kinetix"
+    environment          = "prod"
+    sms_provider         = "msg91"
+    payments_provider    = "razorpay"
+    push_enabled         = true
+    db_multi_az          = true
+    redis_nodes          = 2
+    ai_base_url          = "http://10.40.30.10:8000/v1"
+    ai_fallback_provider = "sarvam"
+    github_repository    = "example/Kinetix"
   }
 
   assert {
-    condition     = alltrue([for k in ["MSG91_AUTH_KEY", "MSG91_TEMPLATE_ID", "MSG91_SENDER_ID", "RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET", "FCM_SERVICE_ACCOUNT"] : contains(keys(local.api_secrets), k)])
+    condition     = contains(keys(local.api_secrets), "SARVAM_API_KEY") && local.api_environment.AI_FALLBACK_PROVIDER == "sarvam" && local.api_environment.ASR_FALLBACK_PROVIDER == "none"
+    error_message = "the Sarvam key is injected from Secrets Manager when Sarvam is a fallback"
+  }
+
+  assert {
+    condition     = alltrue([for k in ["MSG91_AUTH_KEY", "MSG91_TEMPLATE_ID", "MSG91_SENDER_ID", "SECRETS_ENCRYPTION_KEY", "FCM_SERVICE_ACCOUNT"] : contains(keys(local.api_secrets), k)])
     error_message = "provider secrets are injected in prod"
+  }
+  assert {
+    condition     = !anytrue([for k in keys(local.api_secrets) : startswith(k, "RAZORPAY_")])
+    error_message = "there are no platform Razorpay keys: each institution has its own account"
   }
   assert {
     condition     = aws_elasticache_replication_group.main.automatic_failover_enabled && aws_db_instance.main.multi_az

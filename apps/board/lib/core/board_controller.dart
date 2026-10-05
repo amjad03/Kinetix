@@ -145,9 +145,7 @@ class BoardController extends ChangeNotifier {
   Future<void> start() async {
     _outbox.addAll(await _outboxStore.load());
     final saved = await _store.load();
-    touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
-    eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
-    boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
+    await _loadSettings();
     if (saved.server == null || saved.token == null) {
       stage = BoardStage.needsEnrollment;
     } else {
@@ -156,6 +154,30 @@ class BoardController extends ChangeNotifier {
       stage = BoardStage.board;
     }
     notifyListeners();
+    unawaited(recordings.load());
+  }
+
+  Future<void> _loadSettings() async {
+    touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
+    eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
+    boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
+  }
+
+  /// Demo builds (docs/product/demo-builds.md): no enrolment. The board connects to the demo
+  /// server at [serverUrl] (the API and realtime factories decide what that is) and opens in its
+  /// class, signed in as [session]'s teacher.
+  Future<void> startDemo({
+    required String serverUrl,
+    required String deviceToken,
+    required String deviceName,
+    required String sessionToken,
+    required SessionContext session,
+  }) async {
+    await _loadSettings();
+    _connect(serverUrl, deviceToken);
+    this.deviceName = deviceName;
+    stage = BoardStage.board;
+    onPaired(sessionToken, session);
     unawaited(recordings.load());
   }
 

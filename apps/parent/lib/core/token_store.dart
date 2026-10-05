@@ -44,7 +44,7 @@ class SecureTokenStore implements TokenStore {
   }
 }
 
-/// Keeps the token in memory only: for tests.
+/// Keeps the token in memory only: for tests and demo builds.
 class MemoryTokenStore implements TokenStore {
   MemoryTokenStore([this.token]);
 

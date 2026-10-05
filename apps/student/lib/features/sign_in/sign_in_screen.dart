@@ -6,6 +6,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
 import '../../core/app_state.dart';
+import '../../demo/demo.dart';
+import '../../demo/demo_api.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
@@ -160,6 +162,14 @@ class _SignInScreenState extends State<SignInScreen> {
         password: _password.text,
       ),
     );
+  }
+
+  /// Demo builds: signs in as Aarav in one tap.
+  Future<void> _demoSignIn() async {
+    _tenant.text = DemoStudentApi.demoTenant;
+    _login.text = DemoStudentApi.demoLogin;
+    setState(() => _error = null);
+    await _run(() => widget.state.signIn(server: _serverUrl, tenant: DemoStudentApi.demoTenant, login: DemoStudentApi.demoLogin, password: 'demo'));
   }
 
   Future<void> _sendCode() async {
@@ -327,6 +337,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ],
                       ),
                       const SizedBox(height: Kx.s32),
+                      if (Demo.enabled) ...[
+                        DemoSignInPanel(busy: _busy, accounts: [('Aarav Patel', _demoSignIn)]),
+                        const SizedBox(height: Kx.s24),
+                      ],
                       Text(l.signIn, style: context.text.headlineMedium),
                       const SizedBox(height: Kx.s8),
                       Text(
@@ -362,6 +376,10 @@ class _SignInScreenState extends State<SignInScreen> {
                           autocorrect: false,
                           validator: validateServer,
                         ),
+                      ],
+                      if (Demo.enabled && !_usePassword) ...[
+                        const SizedBox(height: Kx.s8),
+                        Text(l.demoOtpHint, key: const Key('demoOtpHint'), style: context.text.bodySmall),
                       ],
                       if (_error != null) ...[const SizedBox(height: Kx.s16), ErrorBanner(_error!)],
                       const SizedBox(height: Kx.s24),

@@ -19,6 +19,7 @@ import '../ai/homework_panel.dart';
 import '../ai/quiz_panel.dart';
 import '../signin/sign_in_dialog.dart';
 import '../../core/api_client.dart';
+import '../../demo/demo.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
@@ -947,6 +948,11 @@ class _TopBarState extends State<_TopBar> {
   late final Timer _clock = Timer.periodic(const Duration(seconds: 20), (_) => setState(() {}));
 
   Future<void> _toggleLive(BuildContext context) async {
+    // Live classes need KINETIX Cloud (docs/product/demo-builds.md).
+    if (Demo.enabled) {
+      showBoardMessage(context, context.l10n.notInDemo);
+      return;
+    }
     final board = widget.board;
     final on = !board.classLive;
     try {
@@ -962,6 +968,10 @@ class _TopBarState extends State<_TopBar> {
   }
 
   Future<void> _toggleAudio(BuildContext context) async {
+    if (Demo.enabled) {
+      showBoardMessage(context, context.l10n.notInDemo);
+      return;
+    }
     final audio = widget.board.classAudio;
     if (audio.enabled) {
       await audio.turnOff();
@@ -1059,6 +1069,7 @@ class _TopBarState extends State<_TopBar> {
             ),
           ),
           const SizedBox(width: Kx.s8),
+          if (Demo.enabled) ...[const DemoChip(), const SizedBox(width: Kx.s8)],
           // Privacy: whenever the microphone is going out to the class, the teacher sees it.
           // Kept outside the scrolling chips so it can never scroll out of view.
           if (board.classAudio.sending) ...[

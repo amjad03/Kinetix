@@ -2,7 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import { createHmac } from 'node:crypto';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DemoPaymentProvider, PaymentProvider } from '../src/fees/payment-provider.js';
+import { ENV, loadEnv } from '../src/config/env.js';
+import { DemoPaymentProvider } from '../src/fees/payment-provider.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
 describe('fees and payments', () => {
@@ -33,7 +34,7 @@ describe('fees and payments', () => {
   beforeAll(async () => {
     t = await createTenant(owner);
     other = await createTenant(owner);
-    app = await createApp(new FixedClock(new Date()), (b) => b.overrideProvider(PaymentProvider).useValue(new DemoPaymentProvider()));
+    app = await createApp(new FixedClock(new Date()), (b) => b.overrideProvider(ENV).useValue(loadEnv({ ...process.env, PAYMENTS_PROVIDER: 'demo' })));
     tokens = {
       principal: await login(t.slug, t.principal.email!),
       teacher: await login(t.slug, t.teacher.email!),

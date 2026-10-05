@@ -14,7 +14,16 @@ import { ENV, type Env } from '../config/env.js';
 import { ContentService } from '../content/content.service.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { aiCache, aiUsage, sections, subjects, tenants } from '../db/schema.js';
-import { AiUnavailableError, OpenAiCompatibleProvider, parseJsonReply, PreviewProvider, type LlmProvider } from './providers.js';
+import {
+  AiUnavailableError,
+  CircuitBreaker,
+  FallbackProvider,
+  OpenAiCompatibleProvider,
+  parseJsonReply,
+  PreviewProvider,
+  SarvamProvider,
+  type LlmProvider,
+} from './providers.js';
 import { allText, unsafeTerm } from './safety.js';
 import {
   buildMessages,
@@ -31,8 +40,21 @@ import {
 
 export const LLM_PROVIDER = Symbol('LLM_PROVIDER');
 
+/**
+ * Local first: the self-hosted model (AI_BASE_URL), then the pay-per-use fallback. One of them
+ * alone is used as is; with neither, the labelled previews.
+ */
 export function providerFromEnv(env: Env): LlmProvider {
-  return env.AI_BASE_URL ? new OpenAiCompatibleProvider(env.AI_BASE_URL, env.AI_MODEL, env.AI_API_KEY, env.AI_TIMEOUT_MS) : new PreviewProvider();
+  const chain: LlmProvider[] = [];
+  if (env.AI_BASE_URL) chain.push(new OpenAiCompatibleProvider(env.AI_BASE_URL, env.AI_MODEL, env.AI_API_KEY, env.AI_TIMEOUT_MS, env.AI_VISION));
+  if (env.AI_FALLBACK_PROVIDER === 'sarvam' && env.SARVAM_API_KEY) {
+    chain.push(
+      new SarvamProvider(env.SARVAM_API_KEY, env.SARVAM_LLM_MODEL, { inputPerM: env.SARVAM_INR_PER_M_INPUT, outputPerM: env.SARVAM_INR_PER_M_OUTPUT }, env.AI_TIMEOUT_MS, env.SARVAM_BASE_URL),
+    );
+  }
+  if (chain.length === 0) return new PreviewProvider();
+  if (chain.length === 1) return chain[0];
+  return new FallbackProvider(chain.map((provider) => ({ provider, breaker: new CircuitBreaker(env.AI_BREAKER_FAILURES, env.AI_BREAKER_COOLDOWN_S * 1000) })));
 }
 
 /** Who is asking, and about which class. */
@@ -67,6 +89,15 @@ const BLOCKED = "KINETIX AI can't help with that request. Try rephrasing it for 
 
 type Outcome = (typeof aiUsage.$inferInsert)['outcome'];
 
+/** Tokens, cost and the provider that actually answered (the fallback may have served it). */
+interface Usage {
+  promptTokens: number;
+  completionTokens: number;
+  provider: string;
+  model: string;
+  costInr?: number;
+}
+
 /**
  * The AI gateway: grounding, safety, quota, cache, the model call (with one repair attempt
  * when the reply is not valid), and metering. Model calls happen outside any database
@@ -100,7 +131,7 @@ export class AiService {
         const [hit] = await tx
           .select()
           .from(aiCache)
-          .where(and(eq(aiCache.key, key), eq(aiCache.model, p.model), gte(aiCache.createdAt, new Date(Date.now() - CACHE_DAYS * 86400_000))));
+          .where(and(eq(aiCache.key, key), inArray(aiCache.model, [...(p.models ?? [p.model])]), gte(aiCache.createdAt, new Date(Date.now() - CACHE_DAYS * 86400_000))));
         if (hit) {
           await tx.update(aiCache).set({ hits: sql`${aiCache.hits} + 1` }).where(eq(aiCache.key, key));
           await this.record(tx, caller, task, 'cached');
@@ -129,7 +160,7 @@ export class AiService {
     }
 
     const started = Date.now();
-    const usage = { promptTokens: 0, completionTokens: 0 };
+    const usage: Usage = { promptTokens: 0, completionTokens: 0, provider: p.name, model: p.model };
     let outcome: Outcome = 'ok';
     let detail: string | undefined;
     let result: TaskOutput<T> | undefined;
@@ -151,24 +182,32 @@ export class AiService {
       if (outcome === 'ok' && result) {
         await tx
           .insert(aiCache)
-          .values({ tenantId: caller.tenantId, key, task, result, model: p.model })
-          .onConflictDoUpdate({ target: [aiCache.tenantId, aiCache.key], set: { result, model: p.model, createdAt: new Date(), hits: 0 } });
+          .values({ tenantId: caller.tenantId, key, task, result, model: usage.model })
+          .onConflictDoUpdate({ target: [aiCache.tenantId, aiCache.key], set: { result, model: usage.model, createdAt: new Date(), hits: 0 } });
       }
     });
+    if (usage.costInr !== undefined) {
+      this.log.log(`AI ${task} served by ${usage.provider} (${usage.model}): ${usage.promptTokens}+${usage.completionTokens} tokens, about ₹${usage.costInr.toFixed(4)}`);
+    }
 
     if (outcome === 'unavailable') throw new ServiceUnavailableException('KINETIX AI is not reachable right now. Try again in a minute.');
     if (outcome === 'invalid') throw new BadGatewayException('KINETIX AI could not produce a usable answer. Try again or rephrase.');
     if (outcome === 'blocked') throw new UnprocessableEntityException(BLOCKED);
-    return { task, result: result!, meta: { ...meta, cached: false } };
+    return { task, result: result!, meta: { ...meta, provider: usage.provider, model: usage.model, cached: false } };
   }
 
   /** Calls the model; if the reply is not the right JSON, tells it what was wrong once. */
-  private async generate<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding, usage: { promptTokens: number; completionTokens: number }): Promise<TaskOutput<T>> {
+  private async generate<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding, usage: Usage): Promise<TaskOutput<T>> {
+    // A text-only provider (e.g. the Sarvam fallback on its own) cannot read the board.
+    if (task === 'readBoard' && this.provider.vision === false) throw new AiUnavailableError('No vision model is configured', false);
     const messages = buildMessages(task, input, g);
     for (let attempt = 0; ; attempt++) {
       const reply = await this.provider.complete(messages, { maxTokens: MAX_TOKENS[task], temperature: task === 'summarize' || task === 'readBoard' ? 0.1 : 0.5 });
       usage.promptTokens += reply.promptTokens;
       usage.completionTokens += reply.completionTokens;
+      usage.provider = reply.provider ?? usage.provider;
+      usage.model = reply.model ?? usage.model;
+      if (reply.costInr !== undefined) usage.costInr = (usage.costInr ?? 0) + reply.costInr;
       let problem: string;
       try {
         const parsed = TaskOutputs[task].safeParse(parseJsonReply(reply.text));
@@ -230,18 +269,20 @@ export class AiService {
     caller: AiCaller,
     task: TaskName,
     outcome: Outcome,
-    extra: { promptTokens?: number; completionTokens?: number; latencyMs?: number; detail?: string } = {},
+    extra: Partial<Usage> & { latencyMs?: number; detail?: string } = {},
   ) {
+    const { costInr, provider, model, ...rest } = extra;
     await tx.insert(aiUsage).values({
       tenantId: caller.tenantId,
       userId: caller.userId ?? null,
       deviceId: caller.deviceId ?? null,
       task,
       outcome,
-      provider: this.provider.name,
-      model: this.provider.model,
+      provider: provider ?? this.provider.name,
+      model: model ?? this.provider.model,
       promptVersion: PROMPT_VERSION,
-      ...extra,
+      estCostInr: costInr ?? null,
+      ...rest,
     });
   }
 }

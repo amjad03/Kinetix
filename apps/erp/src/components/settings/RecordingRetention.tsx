@@ -1,0 +1,143 @@
+'use client';
+
+import VideocamOutlined from '@mui/icons-material/VideocamOutlined';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import InputAdornment from '@mui/material/InputAdornment';
+import Link from '@mui/material/Link';
+import Snackbar from '@mui/material/Snackbar';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import NextLink from 'next/link';
+import { useState, useTransition } from 'react';
+import { saveRetentionGraceDays } from '@/app/(dashboard)/settings/retention-actions';
+import { SectionTitle } from '@/components/PageHeader';
+import { useI18n } from '@/i18n/client';
+import { expiringFirst, parseGraceDays, totalExpiring, type RetentionOverview } from '@/lib/retention';
+
+/** "Keep class recordings until N days after the semester ends", and per class what goes in the next 30 days. */
+export function RecordingRetention({ overview }: { overview: RetentionOverview }) {
+  const { t, fmt } = useI18n();
+  const [saved, setSaved] = useState(overview.graceDays);
+  const [value, setValue] = useState(String(overview.graceDays));
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const days = parseGraceDays(value);
+  const soon = expiringFirst(overview.classes).filter((c) => c.expiringSoon > 0);
+
+  const save = () => {
+    if (days === null) return;
+    setError(null);
+    start(async () => {
+      const res = await saveRetentionGraceDays(days);
+      if (!res.ok) return setError(res.error);
+      setSaved(res.data.recordingRetentionGraceDays);
+      setValue(String(res.data.recordingRetentionGraceDays));
+      setToast(t('retention.saved', { n: res.data.recordingRetentionGraceDays }));
+    });
+  };
+
+  return (
+    <>
+      <SectionTitle>
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+          <VideocamOutlined fontSize="small" /> {t('retention.title')}
+        </Box>
+      </SectionTitle>
+      <Card data-testid="retention" data-grace={saved} aria-busy={pending}>
+        <Box sx={{ px: 2.5, py: 2 }}>
+          {error && (
+            <Alert severity="error" role="alert" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Typography variant="subtitle1" component="p" sx={{ lineHeight: '24px' }} data-testid="retention-summary">
+            {t('retention.grace', { n: saved })}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, maxWidth: 760 }}>
+            {t('retention.graceHelp')}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
+            <TextField
+              size="small"
+              label={t('retention.graceLabel')}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              error={days === null}
+              helperText={days === null ? t('retention.graceProblem') : ' '}
+              sx={{ width: 260 }}
+              slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
+            />
+            <Button variant="contained" onClick={save} disabled={pending || days === null || days === saved} data-testid="retention-save" sx={{ mt: '2px' }}>
+              {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : t('retention.save')}
+            </Button>
+          </Box>
+        </Box>
+        <Divider />
+        <Box sx={{ px: 2.5, py: 2 }} data-testid="retention-overview" data-expiring={totalExpiring(overview.classes)}>
+          <Typography variant="subtitle2" component="h3" sx={{ mb: 1 }}>
+            {t('retention.overview')}
+          </Typography>
+          {soon.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" data-testid="retention-nothing">
+              {t('retention.nothingSoon')}
+            </Typography>
+          ) : (
+            <Box sx={{ overflowX: 'auto' }}>
+              <Table size="small" aria-label={t('retention.overview')}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('retention.class')}</TableCell>
+                    <TableCell align="right">{t('retention.expiring')}</TableCell>
+                    <TableCell>{t('retention.next')}</TableCell>
+                    <TableCell align="right">{t('retention.kept')}</TableCell>
+                    <TableCell align="right">{t('retention.total')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {soon.map((c) => (
+                    <TableRow key={c.sectionId} data-testid="retention-class">
+                      <TableCell>{c.sectionName}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {fmt.number(c.expiringSoon)}
+                      </TableCell>
+                      <TableCell>{c.nextExpiresOn ? fmt.date(c.nextExpiresOn, 'short') : t('retention.none')}</TableCell>
+                      <TableCell align="right">{fmt.number(c.kept)}</TableCell>
+                      <TableCell align="right">{fmt.number(c.total)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
+          {overview.noTerm.count > 0 && (
+            <Alert severity="info" sx={{ mt: 2 }} data-testid="retention-no-term">
+              {t.plural('retention.noTerm', overview.noTerm.count)}{' '}
+              <Link component={NextLink} href="/calendar">
+                {t('retention.noTermHint')}
+              </Link>
+              <Box component="ul" sx={{ m: 0, mt: 1, pl: 2.5 }}>
+                {overview.noTerm.recordings.slice(0, 10).map((r) => (
+                  <li key={r.id} data-testid="retention-no-term-item">
+                    {r.title} · {r.sectionName ?? t('retention.noClass')} · {r.teacherName} · {fmt.date(r.startedAt.slice(0, 10), 'short')}
+                  </li>
+                ))}
+              </Box>
+            </Alert>
+          )}
+        </Box>
+      </Card>
+      <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast(null)} message={toast} />
+    </>
+  );
+}

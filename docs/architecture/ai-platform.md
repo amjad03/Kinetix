@@ -1,7 +1,12 @@
 # KINETIX AI platform (India-hosted)
 
-**Constraint:** all AI processing runs in India, on our own GPUs in AWS Mumbai or on an Indian
-GPU cloud, or on the device. No prompt, image or recording goes to a model API abroad.
+**Constraint:** all AI processing runs in India: on the device, on a GPU we run (in the college
+or rented from an Indian GPU cloud), or with an Indian pay-per-use API under a contract that
+keeps the data in India. No prompt, image or recording goes to a model API abroad.
+
+**Decision:** run AI *as locally as possible* (a self-hosted open model) and fall back to
+Sarvam AI's pay-per-use API for the rest. See [Hosting](#hosting-local-first-with-an-indian-fallback)
+below and the runbook in [docs/operations/ai-hosting.md](../operations/ai-hosting.md).
 
 ## Layers
 
@@ -19,8 +24,9 @@ GPU cloud, or on the device. No prompt, image or recording goes to a model API a
         vLLM, OpenAI-   Triton / custom    handwriting,    (symbolic CAS +
         compatible API                     diagrams)       LLM explanation)
              │
-     GPU pool: AWS g6/g5 in ap-south-1, or an Indian GPU cloud
-     (E2E Networks / Yotta / others; benchmark before choosing)
+     1. self-hosted: vLLM + Whisper/IndicConformer on a college GPU box
+        or an E2E Networks GPU (L4 / L40S)          ── AI_BASE_URL, ASR_BASE_URL
+     2. fallback: Sarvam AI pay-per-use (Bengaluru) ── AI_FALLBACK_PROVIDER, ASR_FALLBACK_PROVIDER
 ```
 
 ## Task catalogue (what the Board and apps call)
@@ -59,6 +65,44 @@ In practice, "AI offline" covers almost everything a teacher needs, even on low-
 - Generated quizzes and homework are shown to the teacher **as drafts**. They go to students
   only after the teacher accepts them.
 - Safety: content filters for under-18 users, and blocklists for regional languages.
+
+## Hosting: local first, with an Indian fallback
+
+The gateway (`services/api/src/ai/`) talks to two kinds of server, in order:
+
+| | Primary (self-hosted) | Fallback (pay-per-use) |
+|---|---|---|
+| Chat tasks | Any OpenAI-compatible server (`AI_BASE_URL`): vLLM with an open 8–14B multilingual model | Sarvam AI `POST /v1/chat/completions`, `sarvam-105b` (`AI_FALLBACK_PROVIDER=sarvam`) |
+| Board handwriting (`readBoard`) | The primary, if its model reads images (`AI_VISION=true`) | Not sent: Sarvam is text-only here, so the task is "not available" (503) while the primary is down |
+| Lesson transcripts | OpenAI-compatible `/audio/transcriptions` (`ASR_BASE_URL`): faster-whisper / IndicConformer | Sarvam speech-to-text (`ASR_FALLBACK_PROVIDER=sarvam`): REST for clips up to 30 s, the batch job API for lesson recordings (up to 2 h per file; longer audio is split with ffmpeg) |
+
+Rules:
+
+- **When to fall back.** Connection errors, timeouts, 5xx and 429 go to the fallback. A 4xx
+  (the request itself is wrong) does not: it is reported, not retried elsewhere.
+- **Circuit breaker.** After `AI_BREAKER_FAILURES` failures in a row (default 3) the primary is
+  skipped for `AI_BREAKER_COOLDOWN_S` (default 60 s), then one request tests it again. One
+  breaker per server per API instance.
+- **Either alone works.** Only the fallback configured is the pilot setup (no GPU); only the
+  primary is a fully self-hosted install; neither gives labelled previews (development).
+- **Metering.** Every call writes an `ai_usage` row with the provider and model that actually
+  answered, tokens, latency and, for Sarvam, an estimated cost in rupees (`est_cost_inr`, from
+  `SARVAM_INR_PER_*`). Responses carry the same in `meta.provider` / `meta.model`.
+  Transcripts are metered as task `transcribe` with `audio_ms`.
+- **Caps.** `AI_DAILY_LIMIT` model requests per institution per day (cached answers are free);
+  `ASR_MONTHLY_HOURS` hours of transcription per institution per calendar month (IST, default
+  300 h, all providers). Over the cap the transcript job fails with `ASR_MONTHLY_LIMIT` and an
+  `ai_usage` row with outcome `quota`.
+- **Language.** The recording language is passed as a hint: `en`/`hi`/`kn` to the self-hosted
+  server, `en-IN`/`hi-IN`/`kn-IN` to Sarvam.
+- **Data residency.** Self-hosted servers are ours. For Sarvam and E2E Networks, residency,
+  no-training and deletion must be confirmed in the contract before production use: see the
+  checklist in the runbook.
+
+Recommended path: **pilot** on Sarvam alone (no fixed cost), **grow** onto an E2E Networks L4 or
+L40S running vLLM + Whisper/IndicConformer with Sarvam as fallback, and optionally move the
+primary onto a GPU box in the college. The options, costs and setup commands are in
+[docs/operations/ai-hosting.md](../operations/ai-hosting.md).
 
 ## Cost control
 

@@ -31,11 +31,15 @@ log_retention_days = 90
 enable_ecs_exec    = false
 
 sms_provider      = "msg91"    # fill in kinetix/prod/msg91 first
-payments_provider = "razorpay" # fill in kinetix/prod/razorpay first, or "none"
+payments_provider = "razorpay" # each institution adds its own keys in the ERP, or "none"
 push_enabled      = true       # fill in kinetix/prod/fcm first
 
 ai_base_url  = ""
 asr_base_url = ""
+# Pay-per-use fallback (and the only provider while the URLs above are empty). Fill in the
+# kinetix/<env>/sarvam secret first. See docs/operations/ai-hosting.md.
+ai_fallback_provider  = "none"
+asr_fallback_provider = "none"
 
 alarm_emails      = [] # CHANGE
 github_repository = "" # e.g. "your-org/Kinetix"

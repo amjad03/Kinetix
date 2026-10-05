@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'core/app_state.dart';
 import 'core/l10n.dart';
+import 'demo/demo.dart';
 import 'features/home/home_screen.dart';
 import 'features/sign_in/sign_in_screen.dart';
 
@@ -42,6 +43,7 @@ class TeacherApp extends StatelessWidget {
       darkTheme: KinetixTheme.dark(),
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
+      builder: demoAppBuilder,
       home: ListenableBuilder(
         listenable: state,
         builder: (context, _) {

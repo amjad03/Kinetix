@@ -21,6 +21,12 @@ void main() {
       );
     });
 
+    test('demo builds (KINETIX_DEMO) need no server address, even in release', () {
+      expect(resolveServerUrl(defined: '', debug: false, demo: true), demoServerUrl);
+      expect(resolveServerUrl(defined: 'https://api.example.in', debug: false, demo: true), demoServerUrl);
+      expect(() => resolveServerUrl(defined: '', debug: false, demo: false), throwsA(isA<ServerConfigError>()));
+    });
+
     test('rejects values that are not http(s) URLs', () {
       for (final bad in ['api.example.in', 'ftp://api.example.in', 'https://']) {
         expect(() => resolveServerUrl(defined: bad, debug: true), throwsA(isA<ServerConfigError>()), reason: bad);

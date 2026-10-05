@@ -164,6 +164,18 @@ export const texts = {
       return { title: `${label}: ${p.title}`, body: when };
     }),
 
+  /** To the teacher, a week before a lesson recording is deleted at the end of its term. */
+  recordingExpiring: (p: { title: string; sectionName: string | null; expiresOn: string }) =>
+    all((l) => {
+      const what = p.sectionName ? `${p.title} (${p.sectionName})` : p.title;
+      const d = dateIn(l, p.expiresOn);
+      return {
+        en: { title: `Recording will be deleted on ${d}`, body: `${what}. The semester has ended. Mark it "Keep" in KINETIX Teacher to save it.` },
+        hi: { title: `रिकॉर्डिंग ${d} को हटा दी जाएगी`, body: `${what}। सेमेस्टर समाप्त हो गया है। इसे रखने के लिए KINETIX Teacher में "रखें" चुनें।` },
+        kn: { title: `ರೆಕಾರ್ಡಿಂಗ್ ${d} ರಂದು ಅಳಿಸಲಾಗುವುದು`, body: `${what}. ಸೆಮಿಸ್ಟರ್ ಮುಗಿದಿದೆ. ಉಳಿಸಲು KINETIX Teacher ನಲ್ಲಿ "ಉಳಿಸಿ" ಆಯ್ಕೆಮಾಡಿ.` },
+      }[l];
+    }),
+
   marksPublished: (p: { subject: string; title: string }) =>
     all(
       (l) =>

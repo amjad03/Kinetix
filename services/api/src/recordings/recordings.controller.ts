@@ -20,7 +20,7 @@ import {
 import { desc, eq } from 'drizzle-orm';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
+import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { canSeeClassItem, isInClass } from '../common/class-access.js';
@@ -30,6 +30,7 @@ import { boardSessions, recordings } from '../db/schema.js';
 import { JobsService } from '../jobs/jobs.service.js';
 import { bufferStream, ObjectStorage, TooLargeError } from '../storage/storage.service.js';
 import { RecordingsService, TRANSCRIBE } from './recordings.service.js';
+import { RetentionService } from './retention.service.js';
 
 const MAX_EVENTS_BYTES = 32 * 1024 * 1024;
 /** About three hours of AAC at 64 kbit/s. */
@@ -41,6 +42,8 @@ const CreateBody = z.object({
   startedAt: z.iso.datetime(),
   language: z.enum(['en', 'hi', 'kn']).default('en'),
 });
+
+const KeepBody = z.object({ keep: z.boolean() });
 
 const FinishBody = z.object({
   durationMs: z.number().int().min(0).max(6 * 3600_000),
@@ -171,6 +174,31 @@ export class RecordingsController {
   }
 
   /**
+   * The teacher keeps a recording past the end of its term (or lets it go again). Kept
+   * recordings are never deleted automatically.
+   */
+  @Post(':id/keep')
+  @HttpCode(200)
+  @Auth(['board', 'user'])
+  keep(@CurrentPrincipal() p: Viewer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(KeepBody)) body: z.infer<typeof KeepBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rec = await this.owned(tx, p.kind === 'board' ? p.teacherId : p.userId, id);
+      if (rec.keep !== body.keep) {
+        await tx.update(recordings).set({ keep: body.keep, updatedAt: new Date() }).where(eq(recordings.id, id));
+        await audit(tx, {
+          tenantId: p.tenantId,
+          actorType: p.kind === 'board' ? 'device' : 'user',
+          actorId: p.kind === 'board' ? p.deviceId : p.userId,
+          action: body.keep ? 'recording.kept' : 'recording.unkept',
+          subjectType: 'recording',
+          subjectId: id,
+        });
+      }
+      return this.view(tx, id);
+    });
+  }
+
+  /**
    * Without `sectionId`: the caller's own recordings (teacher or board). With it: recordings
    * shared with that class, for its students, their families and school leaders.
    */
@@ -274,6 +302,22 @@ export class RecordingsController {
     // Families see a recording only once it is complete.
     if (!rec.finishedAt && rec.ownerId !== (p.kind === 'board' ? p.teacherId : p.userId)) throw new NotFoundException('Recording not found');
     return rec;
+  }
+}
+
+/** Recording retention for the principal and the administrator. */
+@Controller('v1/admin/recordings')
+export class RecordingsAdminController {
+  constructor(
+    private readonly db: DbService,
+    private readonly retention: RetentionService,
+  ) {}
+
+  /** Per class: recordings deleted in the next 30 days; and the recordings without a term (kept). */
+  @Get('retention')
+  @Auth('user', STAFF_ADMIN_ROLES)
+  overview(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.retention.overview(tx));
   }
 }
 

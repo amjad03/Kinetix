@@ -10,6 +10,8 @@ export type JobHandler = (job: Job) => Promise<void>;
 const MAX_ATTEMPTS = 5;
 /** A job still "running" after this long is assumed lost (its process died) and retried. */
 const STALE_AFTER = '15 minutes';
+/** How often a runner checks that every tenant has its daily jobs queued. */
+const ENSURE_DAILY_MS = 3600_000;
 
 /**
  * A small Postgres job queue. Enqueue inside the request's tenant transaction, so a job
@@ -20,7 +22,9 @@ const STALE_AFTER = '15 minutes';
 export class JobsService implements OnApplicationBootstrap, BeforeApplicationShutdown {
   private readonly log = new Logger(JobsService.name);
   private readonly handlers = new Map<string, JobHandler>();
+  private readonly daily = new Set<string>();
   private timer?: NodeJS.Timeout;
+  private dailyTimer?: NodeJS.Timeout;
   private running?: Promise<number>;
 
   constructor(
@@ -32,6 +36,35 @@ export class JobsService implements OnApplicationBootstrap, BeforeApplicationShu
     this.handlers.set(kind, handler);
   }
 
+  /**
+   * Work every tenant runs once a day (deleting expired recordings). Each run queues the next
+   * one a day later; {@link ensureDaily} queues the first, and replaces a run that gave up.
+   */
+  registerDaily(kind: string, handler: JobHandler): void {
+    this.daily.add(kind);
+    this.register(kind, async (job) => {
+      await handler(job);
+      await this.db.system.insert(jobs).values({ tenantId: job.tenantId, kind, runAfter: sql`now() + interval '1 day'` });
+    });
+  }
+
+  /** Queues each daily job for every tenant that has none queued or running. Returns how many were queued. */
+  async ensureDaily(): Promise<number> {
+    let n = 0;
+    for (const kind of this.daily) {
+      n += await this.db.system.transaction(async (tx) => {
+        // One runner at a time, so two API processes starting together do not both queue it.
+        await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`jobs.daily:${kind}`}))`);
+        const { rowCount } = await tx.execute(sql`
+          insert into jobs (tenant_id, kind)
+          select t.id, ${kind} from tenants t
+          where not exists (select 1 from jobs j where j.tenant_id = t.id and j.kind = ${kind} and j.state in ('queued', 'running'))`);
+        return rowCount ?? 0;
+      });
+    }
+    return n;
+  }
+
   async enqueue(tx: Tx, tenantId: string, kind: string, payload: Record<string, string>): Promise<void> {
     await tx.insert(jobs).values({ tenantId, kind, payload });
   }
@@ -40,12 +73,17 @@ export class JobsService implements OnApplicationBootstrap, BeforeApplicationShu
     if (this.env.JOBS_POLL_MS > 0) {
       this.timer = setInterval(() => void this.drain().catch((e) => this.log.error(e)), this.env.JOBS_POLL_MS);
       this.timer.unref();
+      const ensure = () => void this.ensureDaily().catch((e) => this.log.error(e));
+      ensure();
+      this.dailyTimer = setInterval(ensure, ENSURE_DAILY_MS);
+      this.dailyTimer.unref();
     }
   }
 
   /** Stops polling and lets a running job finish while the database is still open. */
   async beforeApplicationShutdown(): Promise<void> {
     clearInterval(this.timer);
+    clearInterval(this.dailyTimer);
     await this.running?.catch(() => undefined);
   }
 

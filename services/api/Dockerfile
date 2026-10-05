@@ -52,6 +52,10 @@ ENV NODE_ENV=production \
     TZ=Asia/Kolkata \
     LOG_FORMAT=json \
     STORAGE_DIR=/app/services/api/.data/objects
+# ffmpeg/ffprobe: lesson-audio length for the monthly transcription cap, and splitting
+# recordings longer than Sarvam's batch limit (2 h per file) before upload.
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 # node_modules (pnpm layout: root .pnpm store + per-package symlinks), then the compiled code.
 COPY --from=prod-deps --chown=root:root /app /app

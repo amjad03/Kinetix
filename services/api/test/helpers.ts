@@ -23,6 +23,8 @@ export const env = {
   PORT: '0',
   JOBS_POLL_MS: '0',
   STORAGE_DIR: `/tmp/kinetix-test-objects-${process.pid}`,
+  /** Encrypts institutions' payment secrets in tests (32 bytes, base64; not a real key). */
+  SECRETS_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
 };
 Object.assign(process.env, env);
 

@@ -43,6 +43,8 @@ async function main() {
   const tenantId = tenant.id;
   const [campus] = await db.insert(s.campuses).values({ tenantId, name: 'Main Campus', city: 'Bengaluru' }).returning();
   const [year] = await db.insert(s.academicYears).values({ tenantId, label: '2026-27', startsOn: '2026-08-01', endsOn: '2027-05-31', isCurrent: true }).returning();
+  // Recordings are kept until their semester ends (plus the grace period in Settings).
+  await db.insert(s.academicTerms).values({ tenantId, academicYearId: year.id, name: 'Odd semester 2026', startsOn: '2026-08-01', endsOn: '2026-12-15' });
 
   const [bcom] = await db.insert(s.programs).values({ tenantId, campusId: campus.id, name: 'BCom', level: 'ug', curriculumCode: 'bu-ug', termCount: 6 }).returning();
   const [bca] = await db.insert(s.programs).values({ tenantId, campusId: campus.id, name: 'BCA', level: 'ug', curriculumCode: 'bu-ug', termCount: 6 }).returning();

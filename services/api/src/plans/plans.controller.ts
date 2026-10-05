@@ -30,9 +30,10 @@ import { headsSubject } from '../departments/departments.controller.js';
 import { addDays, isoWeekday, isSchoolAdmin, parseDate, TeacherService } from '../teacher/teacher.service.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { termFor } from '../terms/terms.js';
 import { mondayOf, periodDates, planProgress, spreadTopics } from './planner.js';
 
-/** A semester is about 16 teaching weeks; a plan without an end date covers that. */
+/** A semester is about 16 teaching weeks; a plan without an end date (and no term set up) covers that. */
 const DEFAULT_WEEKS = 16;
 
 const reviewer = alias(users, 'reviewer');
@@ -93,8 +94,11 @@ export class PlansController {
       const today = await this.today(tx);
       const [year] = await tx.select().from(academicYears).where(eq(academicYears.isCurrent, true));
       const startsOn = b.startsOn ? parseDate(b.startsOn, 'startsOn') : today < (year?.startsOn ?? today) ? year!.startsOn : today;
-      let endsOn = b.endsOn ? parseDate(b.endsOn, 'endsOn') : addDays(startsOn, DEFAULT_WEEKS * 7 - 1);
-      if (!b.endsOn && year && endsOn > year.endsOn) endsOn = year.endsOn;
+      const [section] = await tx.select({ programId: sections.programId }).from(sections).where(eq(sections.id, b.sectionId));
+      // Without an end date: to the end of the class's current term, else about a semester (within the year).
+      const term = b.endsOn ? undefined : await termFor(tx, startsOn, section.programId);
+      let endsOn = b.endsOn ? parseDate(b.endsOn, 'endsOn') : (term?.endsOn ?? addDays(startsOn, DEFAULT_WEEKS * 7 - 1));
+      if (!b.endsOn && !term && year && endsOn > year.endsOn) endsOn = year.endsOn;
       if (endsOn < startsOn) throw new BadRequestException('The plan must end after it starts');
 
       const topicIds = await this.syllabusTopics(tx, b.subjectId);
@@ -104,7 +108,6 @@ export class PlansController {
         .from(timetableSlots)
         .where(and(eq(timetableSlots.sectionId, b.sectionId), eq(timetableSlots.subjectId, b.subjectId), isNull(timetableSlots.archivedAt)));
       if (slots.length === 0) throw new BadRequestException('This subject has no periods in the timetable');
-      const [section] = await tx.select({ programId: sections.programId }).from(sections).where(eq(sections.id, b.sectionId));
       const off = await this.calendar.holidays(tx, startsOn, endsOn, ['holiday', 'exam']);
       const dates = periodDates(
         slots.map((s) => s.dayOfWeek),

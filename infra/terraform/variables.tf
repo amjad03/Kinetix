@@ -239,7 +239,7 @@ variable "noncurrent_versions_expire_after_days" {
 # Application settings (plain environment variables)
 # ---------------------------------------------------------------------------------------------
 variable "ai_base_url" {
-  description = "OpenAI-compatible model server (vLLM / llama.cpp). Must be hosted in India. Empty = AI tasks return labelled previews. Hosting is an open decision; no GPU infrastructure is created here."
+  description = "Primary, self-hosted OpenAI-compatible model server (vLLM on a college GPU box or an E2E Networks GPU). Must be in India. Empty = Sarvam alone if ai_fallback_provider = sarvam, else labelled previews. No GPU infrastructure is created here (docs/operations/ai-hosting.md)."
   type        = string
   default     = ""
 }
@@ -250,7 +250,7 @@ variable "ai_model" {
 }
 
 variable "asr_base_url" {
-  description = "OpenAI-compatible speech-to-text server (faster-whisper). Must be hosted in India. Empty = no transcripts."
+  description = "Primary, self-hosted OpenAI-compatible speech-to-text server (faster-whisper / IndicConformer). Must be in India. Empty = Sarvam alone if asr_fallback_provider = sarvam, else no transcripts."
   type        = string
   default     = ""
 }
@@ -258,6 +258,32 @@ variable "asr_base_url" {
 variable "asr_model" {
   type    = string
   default = "whisper"
+}
+
+variable "ai_fallback_provider" {
+  description = "Pay-per-use fallback for AI tasks when the primary is down or unset: none or sarvam (fill in the sarvam secret first)."
+  type        = string
+  default     = "none"
+  validation {
+    condition     = contains(["none", "sarvam"], var.ai_fallback_provider)
+    error_message = "ai_fallback_provider must be none or sarvam."
+  }
+}
+
+variable "asr_fallback_provider" {
+  description = "Pay-per-use fallback for lesson transcripts: none or sarvam (fill in the sarvam secret first)."
+  type        = string
+  default     = "none"
+  validation {
+    condition     = contains(["none", "sarvam"], var.asr_fallback_provider)
+    error_message = "asr_fallback_provider must be none or sarvam."
+  }
+}
+
+variable "asr_monthly_hours" {
+  description = "Hours of lesson audio each institution may transcribe per month (0 = no cap)."
+  type        = number
+  default     = 300
 }
 
 variable "sms_provider" {
@@ -271,13 +297,26 @@ variable "sms_provider" {
 }
 
 variable "payments_provider" {
-  description = "none, demo (no money moves: staging only) or razorpay (needs the razorpay secret filled in)."
+  description = "none, demo (no money moves: staging only) or razorpay (each institution enters its own Razorpay keys in the ERP; fees go to its account)."
   type        = string
   default     = "none"
   validation {
     condition     = contains(["none", "demo", "razorpay"], var.payments_provider)
     error_message = "payments_provider must be none, demo or razorpay."
   }
+}
+
+variable "secrets_encryption_key_version" {
+  description = "Version of SECRETS_ENCRYPTION_KEY (random_bytes.secrets_encryption). Raise it when replacing the key (docs/operations/security.md)."
+  type        = number
+  default     = 1
+}
+
+variable "secrets_encryption_old_keys" {
+  description = "During a key rotation only: the previous master key(s) as \"<version>:<base64>\", until rotate-secrets has run. Empty otherwise."
+  type        = string
+  default     = ""
+  sensitive   = true
 }
 
 variable "push_enabled" {

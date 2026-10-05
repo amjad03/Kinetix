@@ -30,6 +30,9 @@ jobs:
       JWT_SECRET: ci-only-jwt-secret-0123456789abcdef
       PAIRING_HMAC_SECRET: ci-only-hmac-secret
       PAYMENTS_PROVIDER: demo
+      # Settings → Online payments saves an institution's Razorpay keys encrypted; Razorpay's API is faked.
+      SECRETS_ENCRYPTION_KEY: Y2ktb25seS1zZWNyZXRzLWtleS0zMi1ieXRlcy0hISE=
+      RAZORPAY_FAKE: 'true'
       PORT: '4000'
       KINETIX_API_URL: http://localhost:4000
       NEXT_TELEMETRY_DISABLED: '1'

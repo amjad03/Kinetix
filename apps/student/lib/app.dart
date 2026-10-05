@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'core/app_state.dart';
+import 'demo/demo.dart';
 import 'features/shell/shell.dart';
 import 'features/sign_in/sign_in_screen.dart';
 import 'l10n/l10n.dart';
@@ -29,6 +30,7 @@ class StudentApp extends StatelessWidget {
       darkTheme: KinetixTheme.dark(),
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
+      builder: demoAppBuilder,
       home: ListenableBuilder(
         listenable: state,
         builder: (context, _) {

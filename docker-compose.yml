@@ -16,6 +16,8 @@ x-api-env: &api-env
   REDIS_URL: redis://redis:6379
   DEFAULT_TIMEZONE: Asia/Kolkata
   PAYMENTS_PROVIDER: ${PAYMENTS_PROVIDER:-demo}
+  # Encrypts institutions' Razorpay secrets (Settings → Online payments). Local-only default.
+  SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY:-bG9jYWwtY29tcG9zZS1zZWNyZXRzLWtleS0zMmJ5dGU=}
   SMS_PROVIDER: console
   STORAGE_DRIVER: local
   LOG_FORMAT: ${LOG_FORMAT:-text}

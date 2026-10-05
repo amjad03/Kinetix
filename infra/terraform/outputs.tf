@@ -47,7 +47,7 @@ output "redis_endpoint" {
 }
 
 output "secrets" {
-  description = "Secrets Manager names. Fill in msg91, razorpay and fcm by hand."
+  description = "Secrets Manager names. Fill in msg91, fcm and sarvam by hand (Razorpay keys are per institution, in the ERP)."
   value = merge(
     { db = aws_secretsmanager_secret.db.name, app = aws_secretsmanager_secret.app.name, redis = aws_secretsmanager_secret.redis.name },
     { for k, s in aws_secretsmanager_secret.manual : k => s.name },

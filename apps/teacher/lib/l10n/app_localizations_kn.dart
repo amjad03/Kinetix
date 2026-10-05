@@ -1334,4 +1334,25 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get errorOtpInvalid => 'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಿ.';
+
+  @override
+  String get demoChip => 'ಡೆಮೊ';
+
+  @override
+  String get demoBannerTitle => 'ಡೆಮೊ ಮೋಡ್';
+
+  @override
+  String get demoBannerBody =>
+      'KINETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
+
+  @override
+  String demoSignInAs(String name) {
+    return '$name ಆಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ';
+  }
+
+  @override
+  String get demoOtpHint => 'ಡೆಮೊ: ಯಾವುದೇ ಸಂಖ್ಯೆ ಸಾಕು; ಕೋಡ್ 123456.';
+
+  @override
+  String get notInDemo => 'ಡೆಮೊದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.';
 }

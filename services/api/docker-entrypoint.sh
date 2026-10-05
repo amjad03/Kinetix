@@ -7,6 +7,8 @@
 #   create-institution --slug … --name … (see src/db/create-institution.ts)
 #                   create a real institution and its first administrator, as the owner role
 #                   (DATABASE_URL); prints the administrator's temporary password once, then exits
+#   rotate-secrets  re-encrypt stored secrets (institutions' Razorpay keys) with the current
+#                   SECRETS_ENCRYPTION_KEY, as the owner role (DATABASE_URL), then exit
 #   db-bootstrap    create/update the kinetix_owner and kinetix_app roles and the database, as the
 #                   RDS master user (ADMIN_DATABASE_URL), then exit. Idempotent; re-run to rotate.
 # Anything else is executed as given (e.g. `sh` for debugging).
@@ -29,6 +31,9 @@ case "${1:-serve}" in
   create-institution)
     shift
     exec node --enable-source-maps dist/db/create-institution.js "$@"
+    ;;
+  rotate-secrets)
+    exec node --enable-source-maps dist/db/rotate-secrets.js
     ;;
   db-bootstrap)
     exec node db-bootstrap.mjs

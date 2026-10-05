@@ -1328,4 +1328,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorOtpInvalid => 'That code is wrong or has expired. Check the SMS or send a new code.';
+
+  @override
+  String get demoChip => 'DEMO';
+
+  @override
+  String get demoBannerTitle => 'Demo mode';
+
+  @override
+  String get demoBannerBody =>
+      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+
+  @override
+  String demoSignInAs(String name) {
+    return 'Sign in as $name';
+  }
+
+  @override
+  String get demoOtpHint => 'Demo: any number works; the code is 123456.';
+
+  @override
+  String get notInDemo => 'Not available in the demo.';
 }

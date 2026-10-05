@@ -1892,4 +1892,29 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get planHomework => 'होमवर्क';
+
+  @override
+  String get demoChip => 'डेमो';
+
+  @override
+  String get demoBannerTitle => 'डेमो मोड';
+
+  @override
+  String get demoBannerBody =>
+      'KINETIX डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
+
+  @override
+  String demoSignInAs(String name) {
+    return '$name के रूप में साइन इन करें';
+  }
+
+  @override
+  String get demoOtpHint => 'डेमो: कोई भी नंबर चलेगा; कोड 123456 है।';
+
+  @override
+  String get notInDemo => 'डेमो में उपलब्ध नहीं है।';
+
+  @override
+  String get demoBoardBody =>
+      'यह बोर्ड नमूना डेटा वाली एक डेमो कक्षा में है। कुछ भी सर्वर पर नहीं भेजा जाता।';
 }

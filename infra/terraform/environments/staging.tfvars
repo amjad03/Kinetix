@@ -32,9 +32,13 @@ sms_provider      = "console"
 payments_provider = "demo"
 push_enabled      = false
 
-# AI hosting is an open decision; leave empty for labelled previews. Must be in India.
+# Self-hosted AI (vLLM / faster-whisper on a college or E2E Networks GPU); must be in India.
 ai_base_url  = ""
 asr_base_url = ""
+# Pay-per-use fallback (and the only provider while the URLs above are empty). Fill in the
+# kinetix/<env>/sarvam secret first. See docs/operations/ai-hosting.md.
+ai_fallback_provider  = "none"
+asr_fallback_provider = "none"
 
 alarm_emails      = [] # e.g. ["ops@example.in"]
 github_repository = "" # e.g. "your-org/Kinetix"

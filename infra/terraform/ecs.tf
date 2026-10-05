@@ -47,6 +47,12 @@ locals {
       PAYMENTS_PROVIDER = var.payments_provider
       AI_MODEL          = var.ai_model
       ASR_MODEL         = var.asr_model
+      # Institutions' Razorpay secrets are encrypted with SECRETS_ENCRYPTION_KEY (secrets.tf).
+      SECRETS_ENCRYPTION_KEY_VERSION = tostring(var.secrets_encryption_key_version)
+      # Local first, then the pay-per-use fallback (docs/operations/ai-hosting.md).
+      AI_FALLBACK_PROVIDER  = var.ai_fallback_provider
+      ASR_FALLBACK_PROVIDER = var.asr_fallback_provider
+      ASR_MONTHLY_HOURS     = tostring(var.asr_monthly_hours)
     },
     var.ai_base_url != "" ? { AI_BASE_URL = var.ai_base_url } : {},
     var.asr_base_url != "" ? { ASR_BASE_URL = var.asr_base_url } : {},

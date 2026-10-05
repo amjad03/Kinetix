@@ -84,7 +84,7 @@ async function listBetween(tx: Tx, from: string, to: string) {
 }
 
 /** Programs of a family's children or a student's own class; null for staff (they see everything). */
-async function familyPrograms(tx: Tx, p: UserPrincipal): Promise<string[] | null> {
+export async function familyPrograms(tx: Tx, p: UserPrincipal): Promise<string[] | null> {
   const family = p.roles.every((r) => r === 'guardian' || r === 'student');
   if (!family) return null;
   const rows = await tx
@@ -156,6 +156,9 @@ async function assertPrograms(tx: Tx, ids: string[] | null | undefined) {
   if (found.length !== new Set(ids).size) throw new BadRequestException('Some programs were not found');
 }
 
+/** Days lesson recordings are kept after their term ends, unless the institution says otherwise. */
+export const DEFAULT_RETENTION_GRACE_DAYS = 7;
+
 const SettingsBody = z
   .object({
     liveViewEnabled: z.boolean(),
@@ -165,11 +168,12 @@ const SettingsBody = z
     grievanceOfficer: z
       .object({ name: z.string().trim().min(1).max(120), email: z.email().optional(), phone: z.string().trim().max(20).optional() })
       .nullable(),
+    recordingRetentionGraceDays: z.number().int().min(0).max(90),
   })
   .partial()
   .strict();
 
-/** Institution settings: live view, the "being viewed" sign, class audio for leaders, PIN fallback. */
+/** Institution settings: live view, the "being viewed" sign, class audio for leaders, PIN fallback, recording retention. */
 @Controller('v1/admin/settings')
 export class SettingsController {
   constructor(private readonly db: DbService) {}
@@ -203,5 +207,6 @@ function withDefaults(s: TenantSettings) {
     classroomAudioToViewers: s.classroomAudioToViewers ?? false,
     pinFallbackEnabled: s.pinFallbackEnabled ?? false,
     grievanceOfficer: s.grievanceOfficer ?? null,
+    recordingRetentionGraceDays: s.recordingRetentionGraceDays ?? DEFAULT_RETENTION_GRACE_DAYS,
   };
 }

@@ -1133,5 +1133,34 @@
   "notificationsTitle": "Get updates on this phone?",
   "notificationsAllow": "Turn on",
   "otpHint": "We'll text a code to the phone number you gave your child's college",
-  "notificationsBody": "We'll tell you about attendance, homework, results, fees and messages from your child's college. You can change this any time in your phone's settings."
+  "notificationsBody": "We'll tell you about attendance, homework, results, fees and messages from your child's college. You can change this any time in your phone's settings.",
+  "demoChip": "DEMO",
+  "@demoChip": {
+    "description": "Marks demo builds in the app bar."
+  },
+  "demoBannerTitle": "Demo mode",
+  "@demoBannerTitle": {
+    "description": "Title of the banner on the sign-in screen of demo builds."
+  },
+  "demoBannerBody": "Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.",
+  "@demoBannerBody": {
+    "description": "Body of the demo banner."
+  },
+  "demoSignInAs": "Sign in as {name}",
+  "@demoSignInAs": {
+    "description": "One-tap demo sign-in button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "demoOtpHint": "Demo: any number works; the code is 123456.",
+  "@demoOtpHint": {
+    "description": "Hint under the phone sign-in in demo builds."
+  },
+  "notInDemo": "Not available in the demo.",
+  "@notInDemo": {
+    "description": "Shown for features that need a real server (live video, audio, playback)."
+  }
 }

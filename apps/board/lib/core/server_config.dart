@@ -10,6 +10,13 @@ const kinetixApiUrlDefine = String.fromEnvironment('KINETIX_API_URL');
 /// host machine is 10.0.2.2). Profile and release builds never fall back to it.
 const debugServerUrl = 'http://localhost:4000';
 
+/// `--dart-define=KINETIX_DEMO=true`: an offline demo build with sample data and no server
+/// (docs/product/demo-builds.md).
+const kinetixDemoDefine = bool.fromEnvironment('KINETIX_DEMO');
+
+/// The address a demo build shows. It is never contacted.
+const demoServerUrl = 'https://demo.kinetix.invalid';
+
 /// A build that cannot know its server (docs/operations/mobile-release.md).
 class ServerConfigError extends Error {
   ServerConfigError(this.message);
@@ -21,9 +28,11 @@ class ServerConfigError extends Error {
 }
 
 /// The server address for this build: [defined] (`KINETIX_API_URL`) without trailing slashes, or
-/// [debugServerUrl] in a debug build. Throws [ServerConfigError] for a profile/release build
-/// without the define, or for a value that is not an http(s) URL.
-String resolveServerUrl({String defined = kinetixApiUrlDefine, bool debug = kDebugMode}) {
+/// [debugServerUrl] in a debug build, or [demoServerUrl] in a [demo] build (which needs no
+/// server). Throws [ServerConfigError] for a profile/release build without the define, or for a
+/// value that is not an http(s) URL.
+String resolveServerUrl({String defined = kinetixApiUrlDefine, bool debug = kDebugMode, bool demo = kinetixDemoDefine}) {
+  if (demo) return demoServerUrl;
   final url = defined.trim().replaceAll(RegExp(r'/+$'), '');
   if (url.isEmpty) {
     if (debug) return debugServerUrl;

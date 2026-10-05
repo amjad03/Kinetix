@@ -5,6 +5,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
+import '../../demo/demo.dart';
 import '../../widgets/common.dart';
 
 /// The teacher's lesson recordings.
@@ -85,7 +86,7 @@ class RecordingsTab extends StatelessWidget {
     final l = context.l10n;
     LessonPlayerScreen.open(
       context,
-      source: TeacherLessonSource(controller.api, notAvailable: l.recordingNotAvailable, describe: l.errorText),
+      source: TeacherLessonSource(controller.api, notAvailable: Demo.enabled ? l.notInDemo : l.recordingNotAvailable, describe: l.errorText),
       recordingId: r.id,
       initial: r,
     );

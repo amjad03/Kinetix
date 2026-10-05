@@ -48,6 +48,7 @@ accounts@demo.kinetix.in (fees). The seed prints a board enrolment code and impo
   - [Offline-first sync protocol](docs/architecture/sync-protocol.md)
   - [Live classroom view & broadcast](docs/architecture/live-classroom.md)
   - [AI platform (India-hosted)](docs/architecture/ai-platform.md)
+    - [AI hosting runbook (self-hosted first, Sarvam fallback)](docs/operations/ai-hosting.md)
   - [Notifications to families](docs/architecture/notifications.md)
   - [Lesson recording](docs/architecture/lesson-recording.md)
   - [Content library](docs/architecture/content-library.md)

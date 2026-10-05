@@ -1687,4 +1687,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationsBody =>
       'We\'ll tell you about new homework, results, live classes and messages from your college. You can change this any time in your phone\'s settings.';
+
+  @override
+  String get demoChip => 'DEMO';
+
+  @override
+  String get demoBannerTitle => 'Demo mode';
+
+  @override
+  String get demoBannerBody =>
+      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+
+  @override
+  String demoSignInAs(String name) {
+    return 'Sign in as $name';
+  }
+
+  @override
+  String get demoOtpHint => 'Demo: any number works; the code is 123456.';
+
+  @override
+  String get notInDemo => 'Not available in the demo.';
 }

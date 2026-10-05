@@ -7,6 +7,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/api.dart';
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
+import '../../demo/demo.dart';
+import '../../demo/demo_api.dart';
 import '../../widgets/common.dart';
 
 /// How the teacher is signing in: with a password, or with a code texted to their phone (first
@@ -159,6 +161,25 @@ class _SignInScreenState extends State<SignInScreen> {
     return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty ? null : l.invalidServer;
   }
 
+  /// Demo builds: signs in as Anita in one tap.
+  Future<void> _demoSignIn() async {
+    _tenant.text = DemoTeacherApi.demoTenant;
+    _login.text = DemoTeacherApi.demoLogin;
+    _password.text = 'demo';
+    setState(() {
+      _mode = SignInMode.password;
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await widget.state.signIn(server: _serverUrl, tenant: DemoTeacherApi.demoTenant, login: DemoTeacherApi.demoLogin, password: 'demo');
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _submit() async {
     if (!_validate()) return;
     setState(() => _busy = true);
@@ -275,6 +296,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ],
                       ),
                       const SizedBox(height: Kx.s32),
+                      if (Demo.enabled) ...[
+                        DemoSignInPanel(busy: _busy, accounts: [('Anita Sharma', _demoSignIn)]),
+                        const SizedBox(height: Kx.s24),
+                      ],
                       Text(l.signInTitle, style: context.text.headlineMedium),
                       const SizedBox(height: Kx.s8),
                       Text(
@@ -312,6 +337,10 @@ class _SignInScreenState extends State<SignInScreen> {
                           autocorrect: false,
                           validator: (v) => validateServer(l, v),
                         ),
+                      ],
+                      if (Demo.enabled && _mode != SignInMode.password) ...[
+                        const SizedBox(height: Kx.s8),
+                        Text(l.demoOtpHint, key: const Key('demoOtpHint'), style: context.text.bodySmall),
                       ],
                       if (_error != null) ...[const SizedBox(height: Kx.s16), ErrorBanner.api(_error!, key: const Key('signInError'))],
                       const SizedBox(height: Kx.s24),

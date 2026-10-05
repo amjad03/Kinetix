@@ -5,7 +5,8 @@ load balancer, RDS PostgreSQL, ElastiCache Redis, S3 for recordings, Secrets Man
 defined in [`infra/terraform`](../../infra/terraform) with one state per environment (`staging`,
 `prod`). Images are built by [`.github/workflows/docker.yml`](../../.github/workflows/docker.yml).
 Data and AI stay in India: the Terraform refuses any region other than `ap-south-1`/`ap-south-2`,
-and `AI_BASE_URL`/`ASR_BASE_URL` must point at servers hosted in India.
+and `AI_BASE_URL`/`ASR_BASE_URL` must point at servers hosted in India (setups and the Sarvam
+fallback: [ai-hosting.md](ai-hosting.md)).
 
 Related: [backups-and-restore.md](backups-and-restore.md) · [monitoring.md](monitoring.md) ·
 [security.md](security.md) · [mobile-release.md](mobile-release.md).

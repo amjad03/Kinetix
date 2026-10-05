@@ -2414,6 +2414,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That code is wrong or has expired. Check the SMS or send a new code.'**
   String get errorOtpInvalid;
+
+  /// Marks demo builds in the app bar.
+  ///
+  /// In en, this message translates to:
+  /// **'DEMO'**
+  String get demoChip;
+
+  /// Title of the banner on the sign-in screen of demo builds.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo mode'**
+  String get demoBannerTitle;
+
+  /// Body of the demo banner.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.'**
+  String get demoBannerBody;
+
+  /// One-tap demo sign-in button.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in as {name}'**
+  String demoSignInAs(String name);
+
+  /// Hint under the phone sign-in in demo builds.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo: any number works; the code is 123456.'**
+  String get demoOtpHint;
+
+  /// Shown for features that need a real server (live video, audio, playback).
+  ///
+  /// In en, this message translates to:
+  /// **'Not available in the demo.'**
+  String get notInDemo;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -9,6 +9,7 @@ import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { recordingExpiresOn } from './retention.service.js';
 
 export const TRANSCRIBE = 'recording.transcribe';
 export const SUMMARIZE = 'recording.summarize';
@@ -59,6 +60,10 @@ export class RecordingsService implements OnModuleInit {
         summaryState: recordings.summaryState,
         sharedAt: recordings.sharedAt,
         finishedAt: recordings.finishedAt,
+        /** Kept by the teacher: never deleted at the end of the term. */
+        keep: recordings.keep,
+        /** The day it will be deleted (its term's end plus the grace period), or null. */
+        expiresOn: recordingExpiresOn,
       })
       .from(recordings)
       .innerJoin(users, eq(users.id, recordings.ownerId))
@@ -102,7 +107,7 @@ export class RecordingsService implements OnModuleInit {
     const { stream } = await this.storage.get(rec.audioKey);
     const chunks: Buffer[] = [];
     for await (const c of stream) chunks.push(c as Buffer);
-    const text = await this.asr.transcribe(Buffer.concat(chunks), rec.audioMime ?? 'audio/mp4', rec.language);
+    const text = await this.asr.transcribe(Buffer.concat(chunks), rec.audioMime ?? 'audio/mp4', rec.language, { tenantId: job.tenantId, durationMs: rec.durationMs, userId: rec.ownerId, deviceId: rec.deviceId });
     await this.db.withTenant(job.tenantId, async (tx) => {
       await tx
         .update(recordings)

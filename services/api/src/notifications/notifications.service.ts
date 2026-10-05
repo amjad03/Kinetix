@@ -149,6 +149,16 @@ export class NotificationsService {
     });
   }
 
+  /** The teacher's recording will be deleted at the end of its term: told once, a week ahead. */
+  async recordingExpiring(tx: Tx, r: { id: string; ownerId: string; title: string; sectionName: string | null; expiresOn: string }): Promise<void> {
+    await this.insertFor(tx, sql`select ${r.ownerId}::uuid`, {
+      kind: 'recording',
+      text: texts.recordingExpiring(r),
+      data: { recordingId: r.id, expiresOn: r.expiresOn },
+      dedupeKey: `recording-expiry:${r.id}`,
+    });
+  }
+
   /** Fees issued to students: their guardians and the students themselves. */
   async feeIssued(tx: Tx, f: { batchId: string; title: string; amountPaise: number; dueOn: string; studentIds: string[] }): Promise<void> {
     if (f.studentIds.length === 0) return;

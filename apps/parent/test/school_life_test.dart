@@ -64,7 +64,9 @@ void main() {
       await tester.tap(find.byKey(const Key('notification-n9')));
       await tester.pumpAndSettle();
       expect(find.text("Diya's library"), findsOneWidget);
-      expect(find.text('Overdue by 4 days'), findsOneWidget);
+      // Due Wed 30 Sept: the count depends on today's date.
+      final late = DateUtils.dateOnly(DateTime.now()).difference(DateTime(2026, 9, 30)).inDays;
+      expect(find.text('Overdue by $late days'), findsOneWidget);
     });
   });
 

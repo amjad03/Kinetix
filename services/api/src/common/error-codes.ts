@@ -56,6 +56,13 @@ export const ERROR_CODES: Record<string, string> = {
   'This is not your class': 'LIVE_NOT_YOUR_CLASS',
   'This student hands in their own homework': 'SUBMISSION_STUDENT_ONLY',
   'KINETIX AI is turned off for this student (consent was withdrawn)': 'CONSENT_WITHDRAWN',
+  // Fees: online payments go to the institution's own Razorpay account (fees/).
+  'Online payment is not available yet. Please pay at the fees counter.': 'PAYMENTS_NOT_CONFIGURED',
+  'Enter the key secret and the webhook secret': 'PAYMENTS_KEYS_REQUIRED',
+  'Enter the key secret for the new key id': 'PAYMENTS_KEY_SECRET_REQUIRED',
+  'Enter a Razorpay key id (rzp_live_… or rzp_test_…)': 'PAYMENTS_BAD_KEY_ID',
+  'This secret is too short': 'PAYMENTS_SECRET_TOO_SHORT',
+  'Payment keys cannot be stored on this server yet (SECRETS_ENCRYPTION_KEY is not set)': 'SECRETS_KEY_MISSING',
   // Bulk import (import/): errors for the whole file…
   'Upload a CSV file': 'IMPORT_NO_FILE',
   'The file is not UTF-8 text. Save it as "CSV UTF-8" and try again.': 'IMPORT_NOT_UTF8',
