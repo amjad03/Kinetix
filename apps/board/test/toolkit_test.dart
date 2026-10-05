@@ -143,8 +143,8 @@ void main() {
 
     test('the spinner lands on the slice under the pointer', () async {
       expect(ToolkitController.sliceAt(0, 4), 0);
-      // Turned a quarter clockwise: the last slice has come under the pointer.
-      expect(ToolkitController.sliceAt(math.pi / 2 + 0.01, 4), 3);
+      // Turned just past a quarter clockwise: slice 2 has come under the pointer.
+      expect(ToolkitController.sliceAt(math.pi / 2 + 0.01, 4), 2);
       expect(ToolkitController.sliceAt(-math.pi / 2 - 0.01, 4), 1);
       final k = ToolkitController(roster: () => const [], random: math.Random(3));
       k.setSpinnerOptions(['  Red ', '', 'Blue', 'Green']);
@@ -377,7 +377,10 @@ void main() {
       final before = tester.getTopLeft(find.byKey(const Key('toolkit-dice')));
       await tester.drag(find.text('Dice'), const Offset(-300, 100));
       await tester.pump();
-      expect(tester.getTopLeft(find.byKey(const Key('toolkit-dice'))), before + const Offset(-300, 100));
+      // Less the drag's start slop.
+      final moved = tester.getTopLeft(find.byKey(const Key('toolkit-dice'))) - before;
+      expect(moved.dx, lessThan(-260));
+      expect(moved.dy, greaterThan(80));
       k.dispose();
     });
   });

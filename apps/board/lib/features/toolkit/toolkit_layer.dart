@@ -33,6 +33,15 @@ IconData toolkitIcon(ToolkitItem t) => switch (t) {
   ToolkitItem.spotlight => Icons.highlight_outlined,
 };
 
+/// A toolkit item's tile colour in the Tools popover.
+Color toolkitColor(ToolkitItem t) => switch (t) {
+  ToolkitItem.timer || ToolkitItem.stopwatch => const Color(0xFF8AB4F8),
+  ToolkitItem.picker || ToolkitItem.dice || ToolkitItem.spinner => const Color(0xFFFDD663),
+  ToolkitItem.noise => const Color(0xFF81C995),
+  ToolkitItem.curtain => const Color(0xFFDADCE0),
+  ToolkitItem.spotlight => const Color(0xFFFCAD70),
+};
+
 /// The open toolkit cards over the board, which the teacher can drag out of the way, and the
 /// screen shade and spotlight over the whole board.
 class ToolkitLayer extends StatefulWidget {
@@ -53,7 +62,7 @@ class ToolkitLayer extends StatefulWidget {
 class _ToolkitLayerState extends State<ToolkitLayer> {
   final _pos = <ToolkitItem, Offset>{};
 
-  static const _cardWidth = 340.0;
+  static const _cardWidth = 360.0;
 
   @override
   Widget build(BuildContext context) {
@@ -211,18 +220,19 @@ class TimerBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Kx.s12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Kx.s8,
+          runSpacing: Kx.s4,
           children: [
             OutlinedButton(key: const Key('timer-plus'), onPressed: () => k.addTime(const Duration(minutes: 1)), child: Text(l.tkPlusMinute)),
-            const SizedBox(width: Kx.s8),
             FilledButton.icon(
               key: const Key('countdown-toggle'),
               onPressed: k.startPauseTimer,
               icon: Icon(k.timerRunning ? Icons.pause : Icons.play_arrow),
               label: Text(k.timerRunning ? l.pause : (k.timerDone ? l.restart : l.start)),
             ),
-            const SizedBox(width: Kx.s8),
             IconButton.filledTonal(tooltip: l.reset, onPressed: k.resetTimer, icon: const Icon(Icons.replay)),
           ],
         ),
@@ -247,8 +257,11 @@ class StopwatchBody extends StatelessWidget {
       children: [
         Text(_text(k.stopwatch), key: const Key('stopwatch-text'), style: _bigNumber(context)),
         const SizedBox(height: Kx.s8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Kx.s8,
+          runSpacing: Kx.s4,
           children: [
             FilledButton.icon(
               key: const Key('stopwatch-toggle'),
@@ -256,9 +269,7 @@ class StopwatchBody extends StatelessWidget {
               icon: Icon(k.stopwatchRunning ? Icons.pause : Icons.play_arrow),
               label: Text(k.stopwatchRunning ? l.pause : l.start),
             ),
-            const SizedBox(width: Kx.s8),
             OutlinedButton(key: const Key('stopwatch-lap'), onPressed: k.stopwatchRunning ? k.lap : null, child: Text(l.tkLap)),
-            const SizedBox(width: Kx.s8),
             IconButton.filledTonal(tooltip: l.reset, onPressed: k.resetStopwatch, icon: const Icon(Icons.replay)),
           ],
         ),
@@ -375,8 +386,11 @@ class _PickerBodyState extends State<PickerBody> {
                     TextButton(onPressed: () => _answer(s, AnswerOutcome.skipped, l.answerSkipped), child: Text(l.answerSkip)),
                   ],
                 ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Kx.s8,
+          runSpacing: Kx.s4,
           children: [
             FilledButton.icon(
               key: const Key('pick-student'),
@@ -384,7 +398,6 @@ class _PickerBodyState extends State<PickerBody> {
               icon: const Icon(Icons.casino_outlined),
               label: Text(k.current == null ? l.tkPick : l.pickAgain),
             ),
-            const SizedBox(width: Kx.s8),
             IconButton.filledTonal(tooltip: l.tkStartOver, onPressed: k.pickedCount == 0 ? null : k.resetPicks, icon: const Icon(Icons.replay)),
           ],
         ),
@@ -429,13 +442,15 @@ class DiceBody extends StatelessWidget {
         if (k.dice.length > 1)
           Text(l.tkTotal(k.dice.fold<int>(0, (a, b) => a + b)), key: const Key('dice-total'), style: context.text.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: Kx.s8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Kx.s8,
+          runSpacing: Kx.s4,
           children: [
             IconButton(key: const Key('dice-fewer'), tooltip: l.tkDiceCount(k.diceCount - 1), onPressed: k.diceCount > 1 ? () => k.setDiceCount(k.diceCount - 1) : null, icon: const Icon(Icons.remove_circle_outline)),
             Text(l.tkDiceCount(k.diceCount)),
             IconButton(key: const Key('dice-more'), tooltip: l.tkDiceCount(k.diceCount + 1), onPressed: k.diceCount < 4 ? () => k.setDiceCount(k.diceCount + 1) : null, icon: const Icon(Icons.add_circle_outline)),
-            const SizedBox(width: Kx.s8),
             FilledButton.icon(key: const Key('dice-roll'), onPressed: k.rollingDice ? null : () => unawaited(k.roll()), icon: const Icon(Icons.casino_outlined), label: Text(l.tkRoll)),
           ],
         ),
@@ -488,33 +503,11 @@ class SpinnerBody extends StatelessWidget {
   static List<String> optionsOf(ToolkitController k, AppLocalizations l) => k.spinnerOptions ?? [for (final g in ['A', 'B', 'C', 'D']) l.tkGroup(g)];
 
   Future<void> _edit(BuildContext context, List<String> options) async {
-    final l = context.l10n;
-    final text = TextEditingController(text: options.join('\n'));
-    final ok = await showDialog<bool>(
+    final edited = await showDialog<String>(
       context: context,
-      builder: (d) => BoardChromeTheme(
-        child: AlertDialog(
-          title: Text(l.tkSpinnerOptions),
-          content: SizedBox(
-            width: 380,
-            child: TextField(
-              key: const Key('spinner-options'),
-              controller: text,
-              maxLines: 10,
-              minLines: 4,
-              autofocus: true,
-              decoration: InputDecoration(border: const OutlineInputBorder(), helperText: l.tkSpinnerHint),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(d, false), child: Text(l.cancel)),
-            FilledButton(key: const Key('spinner-save'), onPressed: () => Navigator.pop(d, true), child: Text(l.save)),
-          ],
-        ),
-      ),
+      builder: (_) => BoardChromeTheme(child: _OptionsDialog(initial: options.join('\n'))),
     );
-    if (ok == true) kit.setSpinnerOptions(text.text.split('\n'));
-    text.dispose();
+    if (edited != null) kit.setSpinnerOptions(edited.split('\n'));
   }
 
   @override
@@ -531,14 +524,58 @@ class SpinnerBody extends StatelessWidget {
           height: 36,
           child: Text(k.spinnerResult ?? '', key: const Key('spinner-result'), style: context.text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Kx.s8,
+          runSpacing: Kx.s4,
           children: [
             FilledButton.icon(key: const Key('spinner-spin'), onPressed: k.spinning ? null : () => unawaited(k.spin(options)), icon: const Icon(Icons.refresh), label: Text(l.tkSpin)),
-            const SizedBox(width: Kx.s8),
             OutlinedButton.icon(key: const Key('spinner-edit'), onPressed: k.spinning ? null : () => _edit(context, options), icon: const Icon(Icons.edit_outlined), label: Text(l.edit)),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// Edits the spinner's slices, one on each line.
+class _OptionsDialog extends StatefulWidget {
+  const _OptionsDialog({required this.initial});
+  final String initial;
+
+  @override
+  State<_OptionsDialog> createState() => _OptionsDialogState();
+}
+
+class _OptionsDialogState extends State<_OptionsDialog> {
+  late final _text = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      title: Text(l.tkSpinnerOptions),
+      content: SizedBox(
+        width: 380,
+        child: TextField(
+          key: const Key('spinner-options'),
+          controller: _text,
+          maxLines: 10,
+          minLines: 4,
+          autofocus: true,
+          decoration: InputDecoration(border: const OutlineInputBorder(), helperText: l.tkSpinnerHint),
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+        FilledButton(key: const Key('spinner-save'), onPressed: () => Navigator.pop(context, _text.text), child: Text(l.save)),
       ],
     );
   }

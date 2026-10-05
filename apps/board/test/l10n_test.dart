@@ -507,11 +507,22 @@ void main() {
         await tap(find.byKey(const Key('tool-tools')));
         await tap(find.text(l.toolTimer));
         fits('timer');
-        await tap(find.byTooltip(l.closeTimer));
+        await tap(find.byKey(const Key('toolkit-close-timer')));
         await tap(find.byKey(const Key('tool-tools')));
         await tap(find.text(l.toolRandomPick));
         fits('random pick');
-        await closeDialog();
+        await tap(find.byKey(const Key('toolkit-close-picker')));
+        for (final (name, label) in [('stopwatch', l.tkStopwatch), ('dice', l.tkDice), ('spinner', l.tkSpinner), ('noise', l.tkNoiseMeter)]) {
+          await tap(find.byKey(const Key('tool-tools')));
+          await tap(find.text(label));
+          fits(name);
+          await tap(find.byKey(Key('toolkit-close-$name')));
+        }
+        await tap(find.byKey(const Key('tool-tools')));
+        await tap(find.text(l.toolScreenShade));
+        expect(find.text(l.tkDragToReveal), findsOneWidget);
+        fits('screen shade');
+        await tap(find.byKey(const Key('curtain-remove')));
         await tap(find.byKey(const Key('profile-button')));
         expect(find.text(l.yourWhiteboards), findsOneWidget);
         fits('profile menu');

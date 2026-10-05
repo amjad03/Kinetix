@@ -29,6 +29,8 @@ import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
 import '../recording/recording_ui.dart';
 import '../signin/sign_in_dialog.dart';
+import '../toolkit/toolkit_controller.dart';
+import '../toolkit/toolkit_layer.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
@@ -93,8 +95,10 @@ class _BoardScreenState extends State<BoardScreen> {
   KitTab? _kitTab;
   ToolbarAlign _align = ToolbarAlign.center;
   bool _hidden = false;
-  bool _timer = false;
-  Offset _timerPos = const Offset(40, 80);
+  /// The class toolkit: timer, stopwatch, name picker, dice, spinner, noise meter, shade and
+  /// spotlight (lib/features/toolkit).
+  late final ToolkitController _kit = ToolkitController(roster: () => board.pickable, demo: Demo.enabled)
+    ..onTimeUp = () => mounted ? showBoardMessage(context, context.l10n.timesUp) : null;
   bool _signInOpen = false;
   Size _canvasSize = const Size(1920, 1080);
   String? _boardTitle;
@@ -146,6 +150,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _secondInk.dispose();
     _ai.dispose();
     _planTimer.dispose();
+    _kit.dispose();
     super.dispose();
   }
 
@@ -699,14 +704,9 @@ class _BoardScreenState extends State<BoardScreen> {
     );
   }
 
-  void _randomPick() {
+  void _showKit(ToolkitItem t) {
     setState(() => _popover = null);
-    showDialog<void>(
-      context: context,
-      builder: (_) => BoardChromeTheme(
-        child: RandomPickerDialog(pick: board.pickStudent, onAnswer: board.recordAnswer, classSize: board.pickable.length),
-      ),
-    );
+    _kit.show(t);
   }
 
   List<ToolEntry> _tools(AppLocalizations l) => [
@@ -715,16 +715,7 @@ class _BoardScreenState extends State<BoardScreen> {
       setState(() => _popover = null);
       ConceptVideosDialog.open(context, board);
     }),
-    ToolEntry(
-      Icons.timer_outlined,
-      l.toolTimer,
-      const Color(0xFF8AB4F8),
-      () => setState(() {
-        _timer = true;
-        _popover = null;
-      }),
-    ),
-    ToolEntry(Icons.casino_outlined, l.toolRandomPick, const Color(0xFFFDD663), _randomPick),
+    for (final t in ToolkitItem.values) ToolEntry(toolkitIcon(t), toolkitName(l, t), toolkitColor(t), () => _showKit(t)),
     ToolEntry(Icons.how_to_reg_outlined, l.toolAttendance, const Color(0xFF81C995), () {
       setState(() => _popover = null);
       _attendance();
@@ -748,8 +739,6 @@ class _BoardScreenState extends State<BoardScreen> {
       _wb.tool = BoardTool.laser;
     }),
     ToolEntry(Icons.calculate_outlined, l.toolCalculator, const Color(0xFF8AB4F8), () => showComingSoon(context, l.toolCalculator), soon: true),
-    ToolEntry(Icons.highlight_outlined, l.toolSpotlight, const Color(0xFFFDD663), () => showComingSoon(context, l.toolSpotlight), soon: true),
-    ToolEntry(Icons.vignette_outlined, l.toolScreenShade, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolScreenShade), soon: true),
     ToolEntry(Icons.photo_camera_outlined, l.toolScreenshot, const Color(0xFFF28B82), () => showComingSoon(context, l.toolScreenshot), soon: true),
     ToolEntry(Icons.lock_outline, l.toolTouchLock, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolTouchLock), soon: true),
   ];
@@ -986,15 +975,10 @@ class _BoardScreenState extends State<BoardScreen> {
             ),
           ),
         ),
-        if (_timer)
-          Positioned(
-            left: _timerPos.dx,
-            top: _timerPos.dy,
-            child: GestureDetector(
-              onPanUpdate: (d) => setState(() => _timerPos += d.delta),
-              child: BoardChromeTheme(child: CountdownCard(onClose: () => setState(() => _timer = false))),
-            ),
-          ),
+        // The class toolkit: its cards, the screen shade and the spotlight (under the toolbars).
+        Positioned.fill(
+          child: ToolkitLayer(kit: _kit, insets: _wb.safeInsets, onAnswer: board.session == null ? null : board.recordAnswer),
+        ),
         if (!_hidden && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
         if (!_hidden && !rails)
           Positioned(
