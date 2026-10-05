@@ -4,7 +4,7 @@ import { RealtimeEvents } from '@kinetix/shared';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
-import { boardSessions, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
+import { boardSessions, programs, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
 @Injectable()
@@ -16,13 +16,15 @@ export class SessionsService {
       .select({
         session: boardSessions,
         teacher: { id: users.id, fullName: users.fullName, preferredLanguage: users.preferredLanguage },
-        section: { id: sections.id, displayName: sections.displayName },
+        section: { id: sections.id, displayName: sections.displayName, term: sections.term },
+        level: programs.level,
         subject: { id: subjects.id, code: subjects.code, name: subjects.name },
         slot: { id: timetableSlots.id, startsAt: timetableSlots.startsAt, endsAt: timetableSlots.endsAt },
       })
       .from(boardSessions)
       .innerJoin(users, eq(users.id, boardSessions.teacherId))
       .leftJoin(sections, eq(sections.id, boardSessions.sectionId))
+      .leftJoin(programs, eq(programs.id, sections.programId))
       .leftJoin(subjects, eq(subjects.id, boardSessions.subjectId))
       .leftJoin(timetableSlots, eq(timetableSlots.id, boardSessions.timetableSlotId))
       .where(eq(boardSessions.id, sessionId));
@@ -31,7 +33,8 @@ export class SessionsService {
       sessionId: row.session.id,
       expiresAt: row.session.expiresAt.toISOString(),
       teacher: row.teacher,
-      section: row.section,
+      // The class level lets the board choose its primary-class layout (LKG to Class 5).
+      section: row.section ? { ...row.section, level: row.level ?? undefined } : null,
       subject: row.subject,
       period: row.slot ? { slotId: row.slot.id, startsAt: row.slot.startsAt, endsAt: row.slot.endsAt } : null,
     };

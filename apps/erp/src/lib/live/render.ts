@@ -1,7 +1,7 @@
 // Draws a live board on an HTML canvas, as the board itself paints it
 // (packages/kinetix_ink: board_background.dart `BackgroundPainter`, ink_canvas.dart `paintStroke`).
 
-import type { BoardBackground, Canvas, Stroke } from './player';
+import type { BoardBackground, Box, Canvas, Stroke } from './player';
 
 /** 1 cm on the board, in canvas pixels (96 dpi). */
 export const PX_PER_CM = 96 / 2.54;
@@ -51,40 +51,74 @@ export function strokeStyle(s: Stroke, bg: BoardBackground) {
   };
 }
 
-export function drawBackground(ctx: CanvasRenderingContext2D, bg: BoardBackground, size: Canvas) {
+/**
+ * Paints the paper over `area` (board units; a canvas size means the area from the origin). The
+ * board is endless, so lines run on either side of the origin, as on the board.
+ */
+export function drawBackground(ctx: CanvasRenderingContext2D, bg: BoardBackground, area: Canvas | Box) {
+  const x0 = 'x' in area ? area.x : 0, y0 = 'y' in area ? area.y : 0;
+  const x1 = x0 + area.w, y1 = y0 + area.h;
+  const first = (from: number, origin: number, step: number) => origin + Math.floor((from - origin) / step) * step;
   ctx.fillStyle = paperColor(bg);
-  ctx.fillRect(0, 0, size.w, size.h);
+  ctx.fillRect(x0, y0, area.w, area.h);
   const line = argbToCss(linesArgb(bg));
   ctx.strokeStyle = line;
   ctx.lineWidth = 1;
   ctx.beginPath();
   switch (bg) {
     case 'ruled':
-      for (let y = 72; y < size.h; y += 44) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(size.w, y);
+      for (let y = first(y0, 72, 44); y < y1; y += 44) {
+        if (y < y0) continue;
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
       }
       break;
     case 'grid':
-      for (let x = 0; x < size.w; x += PX_PER_CM) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, size.h);
+      for (let x = first(x0, 0, PX_PER_CM); x < x1; x += PX_PER_CM) {
+        if (x < x0) continue;
+        ctx.moveTo(x, y0);
+        ctx.lineTo(x, y1);
       }
-      for (let y = 0; y < size.h; y += PX_PER_CM) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(size.w, y);
+      for (let y = first(y0, 0, PX_PER_CM); y < y1; y += PX_PER_CM) {
+        if (y < y0) continue;
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
       }
       break;
     case 'dots':
       ctx.fillStyle = argbToCss(linesArgb(bg), 0.35);
-      for (let x = PX_PER_CM; x < size.w; x += PX_PER_CM) {
-        for (let y = PX_PER_CM; y < size.h; y += PX_PER_CM) {
+      for (let x = first(x0, 0, PX_PER_CM); x < x1; x += PX_PER_CM) {
+        for (let y = first(y0, 0, PX_PER_CM); y < y1; y += PX_PER_CM) {
+          if (x <= x0 || y <= y0) continue;
           ctx.moveTo(x + 1.6, y);
           ctx.arc(x, y, 1.6, 0, Math.PI * 2);
         }
       }
       ctx.fill();
       return;
+    case 'fourLine': {
+      // Handwriting paper: a red top line, two blue lines and a dashed middle, every 120 units.
+      const band = 120, gap = band / 4;
+      for (let y = first(y0, 0, band); y < y1; y += band) {
+        ctx.strokeStyle = 'rgba(215, 38, 61, 0.333)';
+        ctx.beginPath();
+        ctx.moveTo(x0, y + gap * 0.5);
+        ctx.lineTo(x1, y + gap * 0.5);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(47, 111, 181, 0.333)';
+        ctx.beginPath();
+        ctx.moveTo(x0, y + gap * 1.5);
+        ctx.lineTo(x1, y + gap * 1.5);
+        ctx.moveTo(x0, y + gap * 3.5);
+        ctx.lineTo(x1, y + gap * 3.5);
+        for (let x = first(x0, 0, 12); x < x1; x += 12) {
+          ctx.moveTo(x, y + gap * 2.5);
+          ctx.lineTo(x + 6, y + gap * 2.5);
+        }
+        ctx.stroke();
+      }
+      return;
+    }
     default:
       return;
   }
@@ -124,6 +158,11 @@ export function drawStroke(ctx: CanvasRenderingContext2D, s: Stroke, bg: BoardBa
   if (s.shape) {
     // Shapes are exact geometry: straight segments.
     for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i], p[i + 1]);
+    if (s.fill !== undefined && n > 2) {
+      ctx.fillStyle = argbToCss(s.fill);
+      ctx.fill();
+      ctx.fillStyle = style.color;
+    }
   } else {
     // Quadratic curves through the midpoints, as on the board.
     for (let i = 1; i < n - 1; i++) {

@@ -100,7 +100,11 @@ export interface SessionContext {
   sessionId: string;
   expiresAt: string;
   teacher: { id: string; fullName: string; preferredLanguage: Language };
-  section: { id: string; displayName: string } | null;
+  /**
+   * The class open on the board. `term` is the grade (K-12; 0 and -1 for UKG and LKG where a
+   * school numbers them so) or the semester; `level` is the programme's level.
+   */
+  section: { id: string; displayName: string; term?: number; level?: 'k12' | 'ug' | 'pg' | 'diploma' | 'phd' } | null;
   subject: { id: string; code: string; name: string } | null;
   period: { slotId: string; startsAt: string; endsAt: string } | null;
 }

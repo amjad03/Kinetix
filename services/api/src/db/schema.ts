@@ -510,12 +510,21 @@ export const pushDevices = pgTable(
 );
 
 export interface WhiteboardContent {
-  /** Format version. */
-  v: 1;
+  /** Format version: 1 strokes only; 2 adds the other board elements and groups. */
+  v: 1 | 2;
   background: string;
   canvas: { w: number; h: number };
-  pages: { strokes: SerializedStroke[] }[];
+  /** Each page's elements bottom first (strokes, and in format 2 any element), and its groups. */
+  pages: { strokes: SerializedElement[]; groups?: number[][] }[];
 }
+
+/** A board element other than a stroke (format 2); its fields belong to the board's format. */
+export interface SerializedOtherElement {
+  t: 'text' | 'image' | 'math' | 'graph' | 'polygon' | 'note';
+  [field: string]: unknown;
+}
+
+export type SerializedElement = SerializedStroke | SerializedOtherElement;
 
 /** Compact stroke: tool, ARGB colour, width, optional shape, flat [x0, y0, x1, y1, …]. */
 export interface SerializedStroke {

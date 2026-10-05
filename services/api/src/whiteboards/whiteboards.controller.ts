@@ -18,7 +18,22 @@ const StrokeSchema = z.object({
   c: z.number().int(),
   w: z.number().positive().max(200),
   s: z.string().max(32).optional(),
+  /** Inside colour of a filled shape (format 2). */
+  f: z.number().int().optional(),
   p: z.array(z.number()).min(2).max(40_000),
+});
+
+/**
+ * The other board elements (format 2): text, pictures, equations, graphs, figures and notes.
+ * Their fields are the board's to define (packages/kinetix_ink serialization.dart); the API
+ * only checks the kind and keeps them as they are. The whole board is size-limited below.
+ */
+const OtherElementSchema = z.looseObject({ t: z.enum(['text', 'image', 'math', 'graph', 'polygon', 'note']) });
+
+const PageSchema = z.object({
+  strokes: z.array(z.union([StrokeSchema, OtherElementSchema])).max(10_000),
+  /** Elements that move together, as lists of positions in `strokes`. */
+  groups: z.array(z.array(z.number().int().min(0)).max(10_000)).max(2_000).optional(),
 });
 
 const SaveBody = z.object({
@@ -26,7 +41,7 @@ const SaveBody = z.object({
   background: z.string().max(32).default('plain'),
   /** Canvas size the strokes were drawn on, so viewers can scale them. */
   canvas: z.object({ w: z.number().int().min(100).max(10_000), h: z.number().int().min(100).max(10_000) }).default({ w: 1920, h: 1080 }),
-  pages: z.array(z.object({ strokes: z.array(StrokeSchema).max(10_000) })).min(1).max(100),
+  pages: z.array(PageSchema).min(1).max(100),
   /** Share with the class now: students and parents can open it in their apps. */
   share: z.boolean().default(false),
 });
@@ -46,7 +61,7 @@ export class WhiteboardsController {
   @Put(':id')
   @Auth('board')
   save(@CurrentPrincipal() p: BoardPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(SaveBody)) body: z.infer<typeof SaveBody>) {
-    const content: WhiteboardContent = { v: 1, background: body.background, canvas: body.canvas, pages: body.pages };
+    const content: WhiteboardContent = { v: 2, background: body.background, canvas: body.canvas, pages: body.pages as WhiteboardContent['pages'] };
     const sizeBytes = Buffer.byteLength(JSON.stringify(content));
     if (sizeBytes > MAX_BYTES) throw new ForbiddenException('This board is too large to save. Split it into two boards.');
 
