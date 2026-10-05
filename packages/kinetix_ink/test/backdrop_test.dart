@@ -58,6 +58,32 @@ void main() {
       expect(board.elements.single, isA<ImageElement>());
     });
 
+    test('Clear all pages clears every page, keeps backdrops, and each page undoes its own', () {
+      TextElement hi() => TextElement(id: newElementId(), position: const Offset(20, 20), text: 'Hi', color: const Color(0xFF000000), fontSize: 20, size: const Size(30, 24));
+      final board = WhiteboardController()..add(hi());
+      board.addPages([[backdrop()]]);
+      board.add(hi());
+      expect(board.canClearAllPages, isTrue);
+      board.clearAllPages();
+      expect(board.canClearAllPages, isFalse);
+      expect(board.canClearPage, isFalse);
+      expect(board.elements.single, isA<ImageElement>());
+      board.undo();
+      expect(board.elements, hasLength(2));
+      board.goToPage(0);
+      expect(board.elements, isEmpty);
+      board.undo();
+      expect(board.elements, hasLength(1));
+
+      // The message's Undo puts every page back at once.
+      final undoAll = board.clearAllPages();
+      expect(board.elements, isEmpty);
+      undoAll();
+      expect(board.elements, hasLength(1));
+      board.goToPage(1);
+      expect(board.elements, hasLength(2));
+    });
+
     test('a backdrop is saved as one', () {
       final saved = SavedBoard(background: BoardBackground.plain, canvas: const Size(1600, 900), pages: [
         [backdrop()],

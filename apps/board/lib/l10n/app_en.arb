@@ -2322,5 +2322,10 @@
   "themeLight": "Light",
   "themeDark": "Dark",
   "themeChalkboard": "Chalkboard green",
-  "themeSystem": "Follow system"
+  "themeSystem": "Follow system",
+  "clearBoardTitle": "Clear the board?",
+  "clearBoardBody": "Imported pages keep their pictures. Undo brings everything back.",
+  "clearAllPages": "Clear all pages",
+  "clearedPage": "Page cleared",
+  "clearedAllPages": "All pages cleared"
 }

@@ -541,6 +541,46 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     setElements(kept);
   }
 
+  /// Whether the open page has anything [clearPage] would take.
+  bool get canClearPage => page.elements.any(_selectable);
+
+  /// Whether any page has anything [clearAllPages] would take.
+  bool get canClearAllPages => _pages.any((p) => p.elements.any(_selectable));
+
+  /// Clears every page (keeping imported pages under the ink); each page's undo brings its
+  /// own back. Returns an undo for them all at once (for the "Undo" of a message).
+  VoidCallback clearAllPages() {
+    _finishGestures();
+    final cleared = <WhiteboardPage, _Snapshot>{};
+    for (final p in _pages) {
+      final kept = p.elements.where((e) => !_selectable(e)).toList();
+      if (p.elements.length == kept.length) continue;
+      final snap = _Snapshot(p.elements, p.groups);
+      final stack = _undo.putIfAbsent(p.id, () => []);
+      stack.add(snap);
+      if (stack.length > 100) stack.removeAt(0);
+      _redo[p.id]?.clear();
+      cleared[p] = snap;
+      p.elements = kept;
+      final ids = {for (final e in kept) e.id};
+      p.groups.removeWhere((k, _) => !ids.contains(k));
+    }
+    _selection.clear();
+    _changed();
+    return () {
+      for (final MapEntry(key: p, value: snap) in cleared.entries) {
+        final stack = _undo[p.id];
+        // Only while nothing was done on that page since.
+        if (stack == null || stack.isEmpty || !identical(stack.last, snap)) continue;
+        stack.removeLast();
+        p.elements = List.of(snap.elements);
+        p.groups = Map.of(snap.groups);
+      }
+      _selection.clear();
+      _changed();
+    };
+  }
+
   /// Places [local] (drawn around 0, 0) in a free spot in view, as one group, and selects it.
   /// For ready-made drawings, AI answers and pictures.
   List<BoardElement> insert(List<BoardElement> local, {Offset? at}) {

@@ -338,10 +338,13 @@ String aiViewName(AppLocalizations l, AiView v) => switch (v) {
 
 /// Undo and redo, the pages, and the zoom: one pill at the bottom of the board.
 class BoardPill extends StatelessWidget {
-  const BoardPill({super.key, required this.wb, required this.primary});
+  const BoardPill({super.key, required this.wb, required this.primary, this.onClear});
 
   final WhiteboardController wb;
   final bool primary;
+
+  /// Clear page (asks first, offers every page too).
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -365,6 +368,7 @@ class BoardPill extends StatelessWidget {
           children: [
             icon(const Key('undo'), Icons.undo, l.toolUndo, wb.canUndo ? wb.undo : null),
             icon(const Key('redo'), Icons.redo, l.toolRedo, wb.canRedo ? wb.redo : null),
+            if (onClear != null) icon(const Key('clear-board'), Icons.delete_sweep_outlined, l.clearPage, wb.canClearAllPages ? onClear : null),
             const ToolbarDivider(),
             icon(const Key('previous-page'), Icons.chevron_left, l.toolPrevious, wb.hasPrevious ? wb.previous : null),
             SizedBox(

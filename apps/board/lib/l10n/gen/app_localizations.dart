@@ -7299,6 +7299,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Follow system'**
   String get themeSystem;
+
+  /// No description provided for @clearBoardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the board?'**
+  String get clearBoardTitle;
+
+  /// No description provided for @clearBoardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported pages keep their pictures. Undo brings everything back.'**
+  String get clearBoardBody;
+
+  /// No description provided for @clearAllPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all pages'**
+  String get clearAllPages;
+
+  /// No description provided for @clearedPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page cleared'**
+  String get clearedPage;
+
+  /// No description provided for @clearedAllPages.
+  ///
+  /// In en, this message translates to:
+  /// **'All pages cleared'**
+  String get clearedAllPages;
 }
 
 class _AppLocalizationsDelegate

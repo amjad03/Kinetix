@@ -4133,4 +4133,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeSystem => 'Follow system';
+
+  @override
+  String get clearBoardTitle => 'Clear the board?';
+
+  @override
+  String get clearBoardBody =>
+      'Imported pages keep their pictures. Undo brings everything back.';
+
+  @override
+  String get clearAllPages => 'Clear all pages';
+
+  @override
+  String get clearedPage => 'Page cleared';
+
+  @override
+  String get clearedAllPages => 'All pages cleared';
 }

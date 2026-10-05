@@ -1199,5 +1199,10 @@
   "themeLight": "ತಿಳಿ",
   "themeDark": "ಗಾಢ",
   "themeChalkboard": "ಚಾಕ್‌ಬೋರ್ಡ್ ಹಸಿರು",
-  "themeSystem": "ಸಿಸ್ಟಮ್‌ನಂತೆ"
+  "themeSystem": "ಸಿಸ್ಟಮ್‌ನಂತೆ",
+  "clearBoardTitle": "ಬೋರ್ಡ್ ಅಳಿಸಬೇಕೇ?",
+  "clearBoardBody": "ಆಮದು ಮಾಡಿದ ಪುಟಗಳ ಚಿತ್ರಗಳು ಉಳಿಯುತ್ತವೆ. ಅನ್‌ಡೂ ಎಲ್ಲವನ್ನೂ ಮರಳಿ ತರುತ್ತದೆ.",
+  "clearAllPages": "ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಅಳಿಸಿ",
+  "clearedPage": "ಪುಟ ಅಳಿಸಲಾಗಿದೆ",
+  "clearedAllPages": "ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ"
 }

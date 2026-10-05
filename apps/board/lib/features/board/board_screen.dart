@@ -1420,7 +1420,7 @@ class _BoardScreenState extends State<BoardScreen> {
                 ),
               ),
               Expanded(
-                child: Center(child: FittedBox(child: BoardPill(wb: _wb, primary: primary))),
+                child: Center(child: FittedBox(child: BoardPill(wb: _wb, primary: primary, onClear: () => unawaited(confirmClearBoard(context, _wb))))),
               ),
               ChromeSurface(
                 radius: Kx.rFull,
@@ -1588,6 +1588,7 @@ class _BoardScreenState extends State<BoardScreen> {
               color: Kx.record,
             ),
             MoreItem(const Key('save-board'), Icons.save_outlined, l.save, _save),
+            MoreItem(const Key('clear-board'), Icons.delete_sweep_outlined, l.clearPage, () => unawaited(confirmClearBoard(context, _wb)), enabled: _wb.canClearAllPages),
             MoreItem(const Key('profile-button'), Icons.person, board.session?.teacherName.split(' ').first ?? l.guest, () => _toggle(_Popover.profile)),
             MoreItem(const Key('hide-tools'), Icons.expand_more, l.toolHide, () => setState(() => _hidden = true)),
           ]),
@@ -1630,6 +1631,7 @@ class _BoardScreenState extends State<BoardScreen> {
       onPanel: _openPanel,
       recording: _capture != null,
       onRecord: _toggleRecording,
+      onClear: () => unawaited(confirmClearBoard(context, _wb)),
     );
     final left = ChromeSurface(
       child: Row(
@@ -1724,6 +1726,7 @@ class _MainToolbar extends StatelessWidget {
     required this.onPanel,
     required this.recording,
     required this.onRecord,
+    required this.onClear,
   });
 
   final WhiteboardController wb;
@@ -1738,6 +1741,7 @@ class _MainToolbar extends StatelessWidget {
   final ValueChanged<PanelKind> onPanel;
   final bool recording;
   final VoidCallback onRecord;
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -1802,6 +1806,7 @@ class _MainToolbar extends StatelessWidget {
               ToolButton(key: const Key('tool-tools'), icon: Icons.work_outline, label: l.toolTools, selected: popover == _Popover.tools, onTap: () => onPopover(_Popover.tools)),
               ToolButton(key: const Key('undo'), icon: Icons.undo, label: l.toolUndo, enabled: wb.canUndo, onTap: wb.undo),
               ToolButton(key: const Key('redo'), icon: Icons.redo, label: l.toolRedo, enabled: wb.canRedo, onTap: wb.redo),
+              ToolButton(key: const Key('clear-board'), icon: Icons.delete_sweep_outlined, label: l.clearPage, enabled: wb.canClearAllPages, onTap: onClear),
               const ToolbarDivider(),
               ToolButton(
                 key: const Key('panel-ai'),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api_client.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
+import 'chrome.dart';
 
 /// "Save board": a title and whether to share it with the class.
 class SaveBoardDialog extends StatefulWidget {
@@ -158,5 +160,44 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
       ),
       actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l.close))],
     );
+  }
+}
+
+/// Clear: asks first, then clears this page or every page (imported pages keep their pictures).
+/// Both undo, and the message after it has an Undo too.
+Future<void> confirmClearBoard(BuildContext context, WhiteboardController wb) async {
+  final l = context.l10n;
+  final all = await showDialog<bool>(
+    context: context,
+    builder: (context) => BoardChromeTheme(
+      child: AlertDialog(
+        key: const Key('clear-dialog'),
+        icon: const Icon(Icons.delete_sweep_outlined),
+        title: Text(l.clearBoardTitle),
+        content: Text(l.clearBoardBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+          if (wb.pageCount > 1)
+            OutlinedButton(
+              key: const Key('clear-all-pages'),
+              onPressed: wb.canClearAllPages ? () => Navigator.pop(context, true) : null,
+              child: Text(l.clearAllPages),
+            ),
+          FilledButton(
+            key: const Key('clear-this-page'),
+            onPressed: wb.canClearPage ? () => Navigator.pop(context, false) : null,
+            child: Text(l.clearPage),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (all == null || !context.mounted) return;
+  if (all) {
+    final undo = wb.clearAllPages();
+    showBoardMessage(context, l.clearedAllPages, action: (l.toolUndo, undo));
+  } else {
+    wb.clearPage();
+    showBoardMessage(context, l.clearedPage, action: (l.toolUndo, wb.undo));
   }
 }

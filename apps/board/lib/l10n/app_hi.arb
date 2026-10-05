@@ -1199,5 +1199,10 @@
   "themeLight": "हल्का",
   "themeDark": "गहरा",
   "themeChalkboard": "चॉकबोर्ड हरा",
-  "themeSystem": "सिस्टम जैसा"
+  "themeSystem": "सिस्टम जैसा",
+  "clearBoardTitle": "बोर्ड साफ़ करें?",
+  "clearBoardBody": "आयात किए गए पेजों के चित्र बने रहते हैं। अनडू से सब वापस आ जाता है।",
+  "clearAllPages": "सभी पेज साफ़ करें",
+  "clearedPage": "पेज साफ़ हो गया",
+  "clearedAllPages": "सभी पेज साफ़ हो गए"
 }

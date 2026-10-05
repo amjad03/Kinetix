@@ -4112,4 +4112,20 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get themeSystem => 'सिस्टम जैसा';
+
+  @override
+  String get clearBoardTitle => 'बोर्ड साफ़ करें?';
+
+  @override
+  String get clearBoardBody =>
+      'आयात किए गए पेजों के चित्र बने रहते हैं। अनडू से सब वापस आ जाता है।';
+
+  @override
+  String get clearAllPages => 'सभी पेज साफ़ करें';
+
+  @override
+  String get clearedPage => 'पेज साफ़ हो गया';
+
+  @override
+  String get clearedAllPages => 'सभी पेज साफ़ हो गए';
 }

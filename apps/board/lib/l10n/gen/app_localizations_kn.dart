@@ -4121,4 +4121,20 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get themeSystem => 'ಸಿಸ್ಟಮ್‌ನಂತೆ';
+
+  @override
+  String get clearBoardTitle => 'ಬೋರ್ಡ್ ಅಳಿಸಬೇಕೇ?';
+
+  @override
+  String get clearBoardBody =>
+      'ಆಮದು ಮಾಡಿದ ಪುಟಗಳ ಚಿತ್ರಗಳು ಉಳಿಯುತ್ತವೆ. ಅನ್‌ಡೂ ಎಲ್ಲವನ್ನೂ ಮರಳಿ ತರುತ್ತದೆ.';
+
+  @override
+  String get clearAllPages => 'ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಅಳಿಸಿ';
+
+  @override
+  String get clearedPage => 'ಪುಟ ಅಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get clearedAllPages => 'ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ';
 }
