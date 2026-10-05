@@ -1,0 +1,739 @@
+{
+ "version": 1,
+ "models": [
+  {
+   "id": "heart",
+   "subject": "Biology",
+   "title": {
+    "en": "Human heart",
+    "hi": "मानव हृदय",
+    "kn": "ಮಾನವ ಹೃದಯ"
+   },
+   "summary": {
+    "en": "A muscular pump with four chambers. The right side sends blood to the lungs; the left side sends it to the whole body.",
+    "hi": "चार कक्षों वाला एक पेशीय पंप। दायाँ भाग रक्त को फेफड़ों में भेजता है; बायाँ भाग पूरे शरीर में।",
+    "kn": "ನಾಲ್ಕು ಕೋಣೆಗಳಿರುವ ಸ್ನಾಯುವಿನ ಪಂಪ್. ಬಲಭಾಗ ರಕ್ತವನ್ನು ಶ್ವಾಸಕೋಶಗಳಿಗೆ, ಎಡಭಾಗ ಇಡೀ ದೇಹಕ್ಕೆ ಕಳುಹಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "heart",
+    "circulation",
+    "circulatory system",
+    "double circulation",
+    "blood circulation",
+    "cardiac",
+    "atrium",
+    "ventricle",
+    "aorta",
+    "valves"
+   ],
+   "classes": [
+    7,
+    10,
+    11,
+    12
+   ],
+   "order": 1
+  },
+  {
+   "id": "brain",
+   "subject": "Biology",
+   "title": {
+    "en": "Human brain",
+    "hi": "मानव मस्तिष्क",
+    "kn": "ಮಾನವ ಮಿದುಳು"
+   },
+   "summary": {
+    "en": "The control centre of the body. The forebrain thinks and senses, the midbrain relays, and the hindbrain keeps balance and runs breathing and the heartbeat.",
+    "hi": "शरीर का नियंत्रण केंद्र। अग्रमस्तिष्क सोचता और अनुभव करता है, मध्यमस्तिष्क संदेश आगे पहुँचाता है, और पश्चमस्तिष्क संतुलन बनाए रखता है तथा श्वसन और धड़कन चलाता है।",
+    "kn": "ದೇಹದ ನಿಯಂತ್ರಣ ಕೇಂದ್ರ. ಮುಮ್ಮಿದುಳು ಯೋಚಿಸುತ್ತದೆ ಮತ್ತು ಗ್ರಹಿಸುತ್ತದೆ, ನಡುಮಿದುಳು ಸಂದೇಶ ರವಾನಿಸುತ್ತದೆ, ಹಿಮ್ಮಿದುಳು ಸಮತೋಲನ ಕಾಯುತ್ತದೆ ಹಾಗೂ ಉಸಿರಾಟ ಮತ್ತು ಹೃದಯ ಬಡಿತ ನಡೆಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "brain",
+    "nervous system",
+    "control and coordination",
+    "cerebrum",
+    "cerebellum",
+    "medulla",
+    "forebrain",
+    "midbrain",
+    "hindbrain",
+    "neural control",
+    "lobes of the brain"
+   ],
+   "classes": [
+    10,
+    11,
+    12
+   ],
+   "order": 2
+  },
+  {
+   "id": "digestive",
+   "subject": "Biology",
+   "title": {
+    "en": "Digestive system",
+    "hi": "पाचन तंत्र",
+    "kn": "ಜೀರ್ಣಾಂಗ ವ್ಯವಸ್ಥೆ"
+   },
+   "summary": {
+    "en": "A long tube from the mouth to the anus, with glands that pour in juices. Food is broken down, taken into the blood, and the rest leaves the body.",
+    "hi": "मुँह से गुदा तक एक लंबी नली, जिसमें ग्रंथियाँ पाचक रस डालती हैं। भोजन टूटता है, रक्त में अवशोषित होता है, और बचा हुआ शरीर से बाहर निकल जाता है।",
+    "kn": "ಬಾಯಿಯಿಂದ ಗುದದವರೆಗಿನ ಉದ್ದನೆಯ ನಳಿಕೆ; ಗ್ರಂಥಿಗಳು ಜೀರ್ಣರಸಗಳನ್ನು ಸುರಿಸುತ್ತವೆ. ಆಹಾರ ಒಡೆಯುತ್ತದೆ, ರಕ್ತಕ್ಕೆ ಹೀರಲ್ಪಡುತ್ತದೆ, ಉಳಿದದ್ದು ದೇಹದಿಂದ ಹೊರಹೋಗುತ್ತದೆ."
+   },
+   "keywords": [
+    "digestive system",
+    "digestion",
+    "alimentary canal",
+    "stomach",
+    "intestine",
+    "small intestine",
+    "large intestine",
+    "liver",
+    "pancreas",
+    "nutrition in animals",
+    "human digestive system"
+   ],
+   "classes": [
+    7,
+    10,
+    11
+   ],
+   "order": 3
+  },
+  {
+   "id": "lungs",
+   "subject": "Biology",
+   "title": {
+    "en": "Respiratory system",
+    "hi": "श्वसन तंत्र",
+    "kn": "ಉಸಿರಾಟದ ವ್ಯವಸ್ಥೆ"
+   },
+   "summary": {
+    "en": "Air goes down the windpipe into two lungs, through smaller and smaller tubes to tiny air sacs, where oxygen enters the blood and carbon dioxide leaves it.",
+    "hi": "हवा श्वासनली से दो फेफड़ों में जाती है, छोटी-छोटी नलियों से होकर सूक्ष्म वायु-कोषों तक, जहाँ ऑक्सीजन रक्त में जाती है और कार्बन डाइऑक्साइड बाहर आती है।",
+    "kn": "ಗಾಳಿ ಶ್ವಾಸನಾಳದ ಮೂಲಕ ಎರಡು ಶ್ವಾಸಕೋಶಗಳಿಗೆ, ಚಿಕ್ಕ ಚಿಕ್ಕ ನಳಿಕೆಗಳ ಮೂಲಕ ಸೂಕ್ಷ್ಮ ವಾಯುಕೋಶಗಳಿಗೆ ಹೋಗುತ್ತದೆ; ಅಲ್ಲಿ ಆಮ್ಲಜನಕ ರಕ್ತ ಸೇರುತ್ತದೆ, ಇಂಗಾಲದ ಡೈಆಕ್ಸೈಡ್ ಹೊರಬರುತ್ತದೆ."
+   },
+   "keywords": [
+    "lungs",
+    "lung",
+    "respiratory system",
+    "respiration",
+    "breathing",
+    "trachea",
+    "bronchi",
+    "alveoli",
+    "diaphragm",
+    "breathing and exchange of gases",
+    "human respiratory system"
+   ],
+   "classes": [
+    7,
+    10,
+    11
+   ],
+   "order": 3.5
+  },
+  {
+   "id": "eye",
+   "subject": "Biology",
+   "title": {
+    "en": "Human eye",
+    "hi": "मानव नेत्र",
+    "kn": "ಮಾನವ ಕಣ್ಣು"
+   },
+   "summary": {
+    "en": "A camera made of living tissue. The cornea and lens focus light on the retina, which turns it into signals for the brain.",
+    "hi": "जीवित ऊतकों से बना एक कैमरा। कॉर्निया और लेंस प्रकाश को रेटिना पर केंद्रित करते हैं, जो उसे मस्तिष्क के लिए संकेतों में बदलता है।",
+    "kn": "ಜೀವಂತ ಅಂಗಾಂಶಗಳಿಂದ ಮಾಡಿದ ಕ್ಯಾಮೆರಾ. ಕಾರ್ನಿಯಾ ಮತ್ತು ಮಸೂರ ಬೆಳಕನ್ನು ರೆಟಿನಾದ ಮೇಲೆ ಕೇಂದ್ರೀಕರಿಸುತ್ತವೆ; ರೆಟಿನಾ ಅದನ್ನು ಮಿದುಳಿಗೆ ಸಂಕೇತಗಳಾಗಿ ಬದಲಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "eye",
+    "human eye",
+    "vision",
+    "sight",
+    "retina",
+    "lens",
+    "cornea",
+    "iris",
+    "pupil",
+    "the human eye and the colourful world",
+    "sense organs"
+   ],
+   "classes": [
+    8,
+    10,
+    11,
+    12
+   ],
+   "order": 4
+  },
+  {
+   "id": "excretory",
+   "subject": "Biology",
+   "title": {
+    "en": "Excretory system",
+    "hi": "उत्सर्जन तंत्र",
+    "kn": "ವಿಸರ್ಜನಾಂಗ ವ್ಯವಸ್ಥೆ"
+   },
+   "summary": {
+    "en": "Two kidneys filter waste from the blood and make urine, which flows down the ureters to the bladder and leaves through the urethra.",
+    "hi": "दो वृक्क रक्त से अपशिष्ट छानकर मूत्र बनाते हैं; मूत्र मूत्रवाहिनियों से मूत्राशय में जाता है और मूत्रमार्ग से बाहर निकलता है।",
+    "kn": "ಎರಡು ಮೂತ್ರಪಿಂಡಗಳು ರಕ್ತದಿಂದ ತ್ಯಾಜ್ಯವನ್ನು ಸೋಸಿ ಮೂತ್ರ ತಯಾರಿಸುತ್ತವೆ; ಅದು ಮೂತ್ರನಾಳಗಳ ಮೂಲಕ ಮೂತ್ರಕೋಶಕ್ಕೆ ಹರಿದು ಮೂತ್ರದ್ವಾರದಿಂದ ಹೊರಹೋಗುತ್ತದೆ."
+   },
+   "keywords": [
+    "excretory system",
+    "excretion",
+    "kidney",
+    "kidneys",
+    "urinary system",
+    "ureter",
+    "urinary bladder",
+    "urine",
+    "excretion in humans"
+   ],
+   "classes": [
+    10,
+    11
+   ],
+   "order": 5
+  },
+  {
+   "id": "skeleton",
+   "subject": "Biology",
+   "title": {
+    "en": "Human skeleton",
+    "hi": "मानव कंकाल",
+    "kn": "ಮಾನವ ಅಸ್ಥಿಪಂಜರ"
+   },
+   "summary": {
+    "en": "About 206 bones give the body its shape, protect the brain, heart and lungs, and meet at joints so that we can move.",
+    "hi": "लगभग 206 हड्डियाँ शरीर को आकार देती हैं, मस्तिष्क, हृदय और फेफड़ों की रक्षा करती हैं, और जोड़ों पर मिलकर हमें चलने-फिरने देती हैं।",
+    "kn": "ಸುಮಾರು 206 ಮೂಳೆಗಳು ದೇಹಕ್ಕೆ ಆಕಾರ ನೀಡುತ್ತವೆ, ಮಿದುಳು, ಹೃದಯ ಮತ್ತು ಶ್ವಾಸಕೋಶಗಳನ್ನು ರಕ್ಷಿಸುತ್ತವೆ ಹಾಗೂ ಕೀಲುಗಳಲ್ಲಿ ಸೇರಿ ನಾವು ಚಲಿಸುವಂತೆ ಮಾಡುತ್ತವೆ."
+   },
+   "keywords": [
+    "skeleton",
+    "skeletal system",
+    "bones",
+    "joints",
+    "body movements",
+    "locomotion and movement",
+    "backbone",
+    "rib cage",
+    "skull"
+   ],
+   "classes": [
+    6,
+    11
+   ],
+   "order": 6
+  },
+  {
+   "id": "neuron",
+   "subject": "Biology",
+   "title": {
+    "en": "Neuron (nerve cell)",
+    "hi": "तंत्रिका कोशिका (न्यूरॉन)",
+    "kn": "ನರಕೋಶ (ನ್ಯೂರಾನ್)"
+   },
+   "summary": {
+    "en": "The cell that carries messages as electrical impulses. Dendrites receive, the axon sends, and the terminals pass the message on to the next cell.",
+    "hi": "वह कोशिका जो संदेशों को विद्युत आवेग के रूप में ले जाती है। द्रुमिकाएँ संदेश ग्रहण करती हैं, तंत्रिकाक्ष उसे भेजता है, और अंतिम सिरे उसे अगली कोशिका तक पहुँचाते हैं।",
+    "kn": "ಸಂದೇಶಗಳನ್ನು ವಿದ್ಯುತ್ ಆವೇಗಗಳಾಗಿ ಒಯ್ಯುವ ಕೋಶ. ಡೆಂಡ್ರೈಟ್‌ಗಳು ಸ್ವೀಕರಿಸುತ್ತವೆ, ಆಕ್ಸಾನ್ ಕಳುಹಿಸುತ್ತದೆ, ತುದಿಗಳು ಮುಂದಿನ ಕೋಶಕ್ಕೆ ದಾಟಿಸುತ್ತವೆ."
+   },
+   "keywords": [
+    "neuron",
+    "nerve cell",
+    "nervous system",
+    "nerve impulse",
+    "synapse",
+    "axon",
+    "dendrite",
+    "control and coordination",
+    "neural control"
+   ],
+   "classes": [
+    9,
+    10,
+    11
+   ],
+   "order": 7
+  },
+  {
+   "id": "animal_cell",
+   "subject": "Biology",
+   "title": {
+    "en": "Animal cell",
+    "hi": "जंतु कोशिका",
+    "kn": "ಪ್ರಾಣಿ ಕೋಶ"
+   },
+   "summary": {
+    "en": "The unit of life. A thin membrane holds the cytoplasm, in which the nucleus and many small organs (organelles) each do a job.",
+    "hi": "जीवन की इकाई। एक पतली झिल्ली कोशिकाद्रव्य को घेरे रहती है, जिसमें केंद्रक और कई छोटे अंग (कोशिकांग) अपना-अपना काम करते हैं।",
+    "kn": "ಜೀವದ ಘಟಕ. ತೆಳುವಾದ ಪೊರೆ ಕೋಶದ್ರವ್ಯವನ್ನು ಹಿಡಿದಿದೆ; ಅದರಲ್ಲಿ ಕೋಶಕೇಂದ್ರ ಮತ್ತು ಅನೇಕ ಸಣ್ಣ ಅಂಗಕಗಳು ತಮ್ಮ ತಮ್ಮ ಕೆಲಸ ಮಾಡುತ್ತವೆ."
+   },
+   "keywords": [
+    "animal cell",
+    "cell",
+    "cell structure",
+    "organelles",
+    "the fundamental unit of life",
+    "cell the unit of life",
+    "mitochondria",
+    "nucleus",
+    "golgi"
+   ],
+   "classes": [
+    8,
+    9,
+    11
+   ],
+   "order": 8
+  },
+  {
+   "id": "plant_cell",
+   "subject": "Biology",
+   "title": {
+    "en": "Plant cell",
+    "hi": "पादप कोशिका",
+    "kn": "ಸಸ್ಯ ಕೋಶ"
+   },
+   "summary": {
+    "en": "Like an animal cell, but with a stiff cell wall outside the membrane, a large vacuole full of sap, and chloroplasts that make food from sunlight.",
+    "hi": "जंतु कोशिका जैसी, पर झिल्ली के बाहर एक कठोर कोशिका भित्ति, रस से भरी एक बड़ी रिक्तिका, और सूर्य के प्रकाश से भोजन बनाने वाले हरितलवक।",
+    "kn": "ಪ್ರಾಣಿ ಕೋಶದಂತೆಯೇ, ಆದರೆ ಪೊರೆಯ ಹೊರಗೆ ಗಟ್ಟಿಯಾದ ಕೋಶಭಿತ್ತಿ, ರಸ ತುಂಬಿದ ದೊಡ್ಡ ರಸದಾನಿ ಮತ್ತು ಸೂರ್ಯನ ಬೆಳಕಿನಿಂದ ಆಹಾರ ತಯಾರಿಸುವ ಹರಿತ್ತಿನ ಕಣಗಳು."
+   },
+   "keywords": [
+    "plant cell",
+    "cell",
+    "cell wall",
+    "chloroplast",
+    "vacuole",
+    "the fundamental unit of life",
+    "cell structure",
+    "organelles"
+   ],
+   "classes": [
+    8,
+    9,
+    11
+   ],
+   "order": 9
+  },
+  {
+   "id": "flower",
+   "subject": "Biology",
+   "title": {
+    "en": "Parts of a flower",
+    "hi": "फूल के भाग",
+    "kn": "ಹೂವಿನ ಭಾಗಗಳು"
+   },
+   "summary": {
+    "en": "A flower is the reproductive part of a plant. Stamens (male) make pollen; the pistil (female) holds ovules that become seeds after fertilisation.",
+    "hi": "फूल पौधे का जनन अंग है। पुंकेसर (नर) परागकण बनाते हैं; स्त्रीकेसर (मादा) में बीजांड होते हैं जो निषेचन के बाद बीज बनते हैं।",
+    "kn": "ಹೂವು ಸಸ್ಯದ ಸಂತಾನೋತ್ಪತ್ತಿ ಭಾಗ. ಕೇಸರಗಳು (ಗಂಡು) ಪರಾಗ ತಯಾರಿಸುತ್ತವೆ; ಶಲಾಕೆ (ಹೆಣ್ಣು) ಅಂಡಕಗಳನ್ನು ಹೊಂದಿದ್ದು ಅವು ನಿಷೇಚನದ ನಂತರ ಬೀಜಗಳಾಗುತ್ತವೆ."
+   },
+   "keywords": [
+    "flower",
+    "parts of a flower",
+    "pollination",
+    "fertilisation",
+    "fertilization",
+    "stamen",
+    "pistil",
+    "carpel",
+    "ovary",
+    "ovule",
+    "anther",
+    "stigma",
+    "reproduction in plants",
+    "sexual reproduction in flowering plants",
+    "getting to know plants"
+   ],
+   "classes": [
+    6,
+    7,
+    10,
+    12
+   ],
+   "order": 10
+  },
+  {
+   "id": "dna",
+   "subject": "Biology",
+   "title": {
+    "en": "DNA",
+    "hi": "डीएनए",
+    "kn": "ಡಿಎನ್‌ಎ"
+   },
+   "summary": {
+    "en": "Two strands twisted into a double helix. Their bases pair A with T and G with C, so each strand carries the code to rebuild the other.",
+    "hi": "दो सूत्र द्विकुंडली में लिपटे हैं। क्षारक A–T और G–C जोड़े बनाते हैं, इसलिए हर सूत्र दूसरे को फिर से बनाने का कोड रखता है।",
+    "kn": "ಎರಡು ಎಳೆಗಳು ಜೋಡಿ ಸುರುಳಿಯಾಗಿ ಹೆಣೆದಿವೆ. ಕ್ಷಾರಗಳು A ಯನ್ನು T ಯೊಂದಿಗೆ, G ಯನ್ನು C ಯೊಂದಿಗೆ ಜೋಡಿಸುತ್ತವೆ; ಹಾಗಾಗಿ ಪ್ರತಿ ಎಳೆ ಇನ್ನೊಂದನ್ನು ಮರುನಿರ್ಮಿಸುವ ಸಂಕೇತ ಹೊಂದಿದೆ."
+   },
+   "keywords": [
+    "dna",
+    "double helix",
+    "genes",
+    "heredity",
+    "nucleotide",
+    "base pairing",
+    "replication",
+    "molecular basis of inheritance",
+    "chromosome",
+    "adenine",
+    "thymine",
+    "guanine",
+    "cytosine"
+   ],
+   "classes": [
+    10,
+    12
+   ],
+   "order": 11
+  },
+  {
+   "id": "electric_motor",
+   "subject": "Physics",
+   "title": {
+    "en": "Electric motor",
+    "hi": "विद्युत मोटर",
+    "kn": "ವಿದ್ಯುತ್ ಮೋಟಾರ್"
+   },
+   "summary": {
+    "en": "A current-carrying coil in a magnetic field feels a force (Fleming's left-hand rule) and turns. The split-ring commutator reverses the current every half turn so it keeps turning.",
+    "hi": "चुंबकीय क्षेत्र में धारावाही कुंडली पर बल लगता है (फ्लेमिंग का वामहस्त नियम) और वह घूमती है। विभक्त वलय दिक्परिवर्तक हर आधे चक्कर पर धारा उलट देता है ताकि वह घूमती रहे।",
+    "kn": "ಕಾಂತಕ್ಷೇತ್ರದಲ್ಲಿರುವ ವಿದ್ಯುತ್ ಹರಿಯುವ ಸುರುಳಿಯ ಮೇಲೆ ಬಲ ಬೀಳುತ್ತದೆ (ಫ್ಲೆಮಿಂಗ್‌ನ ಎಡಗೈ ನಿಯಮ), ಅದು ತಿರುಗುತ್ತದೆ. ಸೀಳು ಉಂಗುರ ದಿಕ್ಪರಿವರ್ತಕ ಪ್ರತಿ ಅರ್ಧ ಸುತ್ತಿಗೆ ವಿದ್ಯುತ್ತನ್ನು ತಿರುಗಿಸುವುದರಿಂದ ಅದು ತಿರುಗುತ್ತಲೇ ಇರುತ್ತದೆ."
+   },
+   "keywords": [
+    "electric motor",
+    "motor",
+    "magnetic effects of electric current",
+    "fleming",
+    "left hand rule",
+    "commutator",
+    "split ring",
+    "armature",
+    "force on a current carrying conductor",
+    "moving charges and magnetism"
+   ],
+   "classes": [
+    10,
+    12
+   ],
+   "order": 1
+  },
+  {
+   "id": "prism",
+   "subject": "Physics",
+   "title": {
+    "en": "Dispersion by a prism",
+    "hi": "प्रिज़्म द्वारा वर्ण-विक्षेपण",
+    "kn": "ಪಟ್ಟಕದಿಂದ ವರ್ಣ ವಿಭಜನೆ"
+   },
+   "summary": {
+    "en": "White light is a mix of colours. Entering glass, each colour bends by a different amount, so a prism spreads white light into a spectrum: VIBGYOR.",
+    "hi": "श्वेत प्रकाश रंगों का मिश्रण है। काँच में प्रवेश करने पर हर रंग अलग मात्रा में मुड़ता है, इसलिए प्रिज़्म श्वेत प्रकाश को स्पेक्ट्रम (बैं जा नी ह पी ना ला) में फैला देता है।",
+    "kn": "ಬಿಳಿ ಬೆಳಕು ಬಣ್ಣಗಳ ಮಿಶ್ರಣ. ಗಾಜನ್ನು ಪ್ರವೇಶಿಸುವಾಗ ಪ್ರತಿ ಬಣ್ಣ ಬೇರೆ ಬೇರೆ ಪ್ರಮಾಣದಲ್ಲಿ ಬಾಗುತ್ತದೆ; ಹಾಗಾಗಿ ಪಟ್ಟಕ ಬಿಳಿ ಬೆಳಕನ್ನು ವರ್ಣಪಟಲವಾಗಿ (VIBGYOR) ಹರಡುತ್ತದೆ."
+   },
+   "keywords": [
+    "prism",
+    "dispersion",
+    "spectrum",
+    "vibgyor",
+    "white light",
+    "refraction",
+    "rainbow",
+    "the human eye and the colourful world",
+    "light",
+    "ray optics"
+   ],
+   "classes": [
+    10,
+    12
+   ],
+   "order": 2
+  },
+  {
+   "id": "bar_magnet",
+   "subject": "Physics",
+   "title": {
+    "en": "Magnetic field of a bar magnet",
+    "hi": "छड़ चुंबक का चुंबकीय क्षेत्र",
+    "kn": "ದಂಡ ಕಾಂತದ ಕಾಂತಕ್ಷೇತ್ರ"
+   },
+   "summary": {
+    "en": "Field lines leave the north pole, curve round and enter the south pole. Where they crowd together (near the poles) the field is strongest. A compass needle lines up along them.",
+    "hi": "क्षेत्र रेखाएँ उत्तरी ध्रुव से निकलकर मुड़ती हैं और दक्षिणी ध्रुव में प्रवेश करती हैं। जहाँ वे पास-पास हैं (ध्रुवों के पास) वहाँ क्षेत्र सबसे प्रबल है। दिक्सूचक की सुई इनके अनुदिश रहती है।",
+    "kn": "ಕ್ಷೇತ್ರ ರೇಖೆಗಳು ಉತ್ತರ ಧ್ರುವದಿಂದ ಹೊರಟು ಬಾಗಿ ದಕ್ಷಿಣ ಧ್ರುವವನ್ನು ಪ್ರವೇಶಿಸುತ್ತವೆ. ಅವು ದಟ್ಟವಾಗಿರುವಲ್ಲಿ (ಧ್ರುವಗಳ ಬಳಿ) ಕ್ಷೇತ್ರ ಅತಿ ಪ್ರಬಲ. ದಿಕ್ಸೂಚಿಯ ಸೂಜಿ ಅವುಗಳ ಉದ್ದಕ್ಕೂ ನಿಲ್ಲುತ್ತದೆ."
+   },
+   "keywords": [
+    "magnet",
+    "bar magnet",
+    "magnetic field",
+    "field lines",
+    "compass",
+    "north pole",
+    "south pole",
+    "fun with magnets",
+    "magnetic effects of electric current",
+    "magnetism and matter"
+   ],
+   "classes": [
+    6,
+    10,
+    12
+   ],
+   "order": 3
+  },
+  {
+   "id": "atoms",
+   "subject": "Chemistry",
+   "title": {
+    "en": "Atoms: the first 20 elements",
+    "hi": "परमाणु: पहले 20 तत्व",
+    "kn": "ಪರಮಾಣುಗಳು: ಮೊದಲ 20 ಧಾತುಗಳು"
+   },
+   "summary": {
+    "en": "Bohr models: protons and neutrons in the nucleus, electrons moving in shells around it. Choose an element to see its electron configuration.",
+    "hi": "बोर मॉडल: नाभिक में प्रोटॉन और न्यूट्रॉन, और उसके चारों ओर कक्षाओं में घूमते इलेक्ट्रॉन। किसी तत्व को चुनकर उसका इलेक्ट्रॉनिक विन्यास देखें।",
+    "kn": "ಬೋರ್ ಮಾದರಿಗಳು: ಬೀಜಕೇಂದ್ರದಲ್ಲಿ ಪ್ರೋಟಾನ್-ನ್ಯೂಟ್ರಾನ್‌ಗಳು, ಸುತ್ತಲಿನ ಕವಚಗಳಲ್ಲಿ ಚಲಿಸುವ ಎಲೆಕ್ಟ್ರಾನ್‌ಗಳು. ಧಾತುವನ್ನು ಆರಿಸಿ ಅದರ ಎಲೆಕ್ಟ್ರಾನ್ ವಿನ್ಯಾಸ ನೋಡಿ."
+   },
+   "keywords": [
+    "atom",
+    "atoms",
+    "structure of the atom",
+    "bohr model",
+    "electron",
+    "proton",
+    "neutron",
+    "electronic configuration",
+    "shells",
+    "atoms and molecules",
+    "valency"
+   ],
+   "classes": [
+    9,
+    10,
+    11
+   ],
+   "order": 1
+  },
+  {
+   "id": "molecules",
+   "subject": "Chemistry",
+   "title": {
+    "en": "Molecules and their shapes",
+    "hi": "अणु और उनकी आकृतियाँ",
+    "kn": "ಅಣುಗಳು ಮತ್ತು ಅವುಗಳ ಆಕಾರಗಳು"
+   },
+   "summary": {
+    "en": "Ball-and-stick models: atoms as balls, bonds as sticks, at their real angles. Turn them to see why water is bent and methane is a tetrahedron.",
+    "hi": "गेंद-छड़ी मॉडल: परमाणु गेंद, बंध छड़ें, अपने असली कोणों पर। घुमाकर देखें कि पानी मुड़ा क्यों है और मेथेन चतुष्फलक क्यों।",
+    "kn": "ಚೆಂಡು-ಕಡ್ಡಿ ಮಾದರಿಗಳು: ಪರಮಾಣುಗಳು ಚೆಂಡುಗಳು, ಬಂಧಗಳು ಕಡ್ಡಿಗಳು, ನೈಜ ಕೋನಗಳಲ್ಲಿ. ತಿರುಗಿಸಿ ನೀರು ಏಕೆ ಬಾಗಿದೆ, ಮೀಥೇನ್ ಏಕೆ ಚತುಷ್ಫಲಕ ಎಂದು ನೋಡಿ."
+   },
+   "keywords": [
+    "molecule",
+    "molecules",
+    "chemical bonding",
+    "covalent bond",
+    "ionic bond",
+    "molecular shape",
+    "vsepr",
+    "methane",
+    "water",
+    "benzene",
+    "carbon and its compounds",
+    "hydrocarbon",
+    "ethene",
+    "ethyne",
+    "sodium chloride"
+   ],
+   "classes": [
+    9,
+    10,
+    11
+   ],
+   "order": 2
+  },
+  {
+   "id": "earth_layers",
+   "subject": "Geography",
+   "title": {
+    "en": "Layers of the Earth",
+    "hi": "पृथ्वी की परतें",
+    "kn": "ಭೂಮಿಯ ಪದರಗಳು"
+   },
+   "summary": {
+    "en": "Under the thin crust lie the mantle, the liquid outer core and the solid inner core. It gets hotter the deeper you go.",
+    "hi": "पतली भूपर्पटी के नीचे प्रावार, तरल बाहरी क्रोड और ठोस आंतरिक क्रोड हैं। जितना गहरा जाएँ, उतना गर्म।",
+    "kn": "ತೆಳುವಾದ ಭೂಹೊರಪದರದ ಕೆಳಗೆ ಪ್ರಾವಾರ, ದ್ರವ ಹೊರ ತಿರುಳು ಮತ್ತು ಘನ ಒಳ ತಿರುಳು ಇವೆ. ಆಳಕ್ಕೆ ಹೋದಂತೆ ಹೆಚ್ಚು ಬಿಸಿ."
+   },
+   "keywords": [
+    "earth layers",
+    "interior of the earth",
+    "inside our earth",
+    "crust",
+    "mantle",
+    "core",
+    "inner core",
+    "outer core",
+    "sial",
+    "sima",
+    "continents",
+    "oceans",
+    "earthquakes",
+    "the earth"
+   ],
+   "classes": [
+    7,
+    9,
+    11
+   ],
+   "order": 2
+  },
+  {
+   "id": "volcano",
+   "subject": "Geography",
+   "title": {
+    "en": "Volcano",
+    "hi": "ज्वालामुखी",
+    "kn": "ಜ್ವಾಲಾಮುಖಿ"
+   },
+   "summary": {
+    "en": "Molten rock (magma) rises from a chamber deep underground through a vent and erupts as lava, ash and gas, building the cone layer by layer.",
+    "hi": "पिघली चट्टान (मैग्मा) भूमिगत कक्ष से नली द्वारा ऊपर उठती है और लावा, राख और गैस के रूप में फूटती है, और परत दर परत शंकु बनाती है।",
+    "kn": "ಕರಗಿದ ಬಂಡೆ (ಶಿಲಾಪಾಕ) ನೆಲದಾಳದ ಕೋಣೆಯಿಂದ ನಾಳದ ಮೂಲಕ ಮೇಲೇರಿ ಲಾವಾ, ಬೂದಿ ಮತ್ತು ಅನಿಲವಾಗಿ ಸಿಡಿಯುತ್ತದೆ; ಪದರ ಪದರವಾಗಿ ಶಂಕು ನಿರ್ಮಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "volcano",
+    "volcanoes",
+    "magma",
+    "lava",
+    "eruption",
+    "crater",
+    "our changing earth",
+    "natural disasters",
+    "landforms",
+    "igneous rocks"
+   ],
+   "classes": [
+    7,
+    9,
+    11
+   ],
+   "order": 3
+  },
+  {
+   "id": "solar_system",
+   "subject": "Space",
+   "title": {
+    "en": "The solar system",
+    "hi": "सौरमंडल",
+    "kn": "ಸೌರವ್ಯೂಹ"
+   },
+   "summary": {
+    "en": "The Sun and the eight planets that go around it. Sizes and distances are not to scale: in reality the planets are far smaller and farther apart.",
+    "hi": "सूर्य और उसके चारों ओर घूमते आठ ग्रह। आकार और दूरियाँ पैमाने पर नहीं हैं: असल में ग्रह कहीं छोटे और बहुत दूर-दूर हैं।",
+    "kn": "ಸೂರ್ಯ ಮತ್ತು ಅದರ ಸುತ್ತ ಸುತ್ತುವ ಎಂಟು ಗ್ರಹಗಳು. ಗಾತ್ರ ಮತ್ತು ದೂರಗಳು ಪ್ರಮಾಣದಲ್ಲಿಲ್ಲ: ನಿಜದಲ್ಲಿ ಗ್ರಹಗಳು ಬಹಳ ಚಿಕ್ಕವು ಮತ್ತು ದೂರದೂರ."
+   },
+   "keywords": [
+    "solar system",
+    "planets",
+    "sun",
+    "orbit",
+    "stars and the solar system",
+    "mercury",
+    "venus",
+    "earth",
+    "mars",
+    "jupiter",
+    "saturn",
+    "uranus",
+    "neptune",
+    "asteroid belt"
+   ],
+   "classes": [
+    6,
+    8,
+    9
+   ],
+   "order": 1
+  },
+  {
+   "id": "seasons",
+   "subject": "Space",
+   "title": {
+    "en": "Seasons: the Earth round the Sun",
+    "hi": "ऋतुएँ: सूर्य के चारों ओर पृथ्वी",
+    "kn": "ಋತುಗಳು: ಸೂರ್ಯನ ಸುತ್ತ ಭೂಮಿ"
+   },
+   "summary": {
+    "en": "The Earth's axis is tilted 23.5° and always points the same way. As the Earth goes round the Sun, first one half and then the other leans towards the Sun: that makes the seasons.",
+    "hi": "पृथ्वी का अक्ष 23.5° झुका है और सदा एक ही दिशा में रहता है। सूर्य की परिक्रमा में पहले एक और फिर दूसरा गोलार्ध सूर्य की ओर झुकता है: इसी से ऋतुएँ बनती हैं।",
+    "kn": "ಭೂಮಿಯ ಅಕ್ಷ 23.5° ಓರೆಯಾಗಿದ್ದು ಯಾವಾಗಲೂ ಒಂದೇ ದಿಕ್ಕಿಗೆ ತೋರುತ್ತದೆ. ಸೂರ್ಯನ ಸುತ್ತ ಸುತ್ತುವಾಗ ಮೊದಲು ಒಂದು, ನಂತರ ಇನ್ನೊಂದು ಗೋಳಾರ್ಧ ಸೂರ್ಯನ ಕಡೆಗೆ ಬಾಗುತ್ತದೆ: ಇದರಿಂದ ಋತುಗಳು."
+   },
+   "keywords": [
+    "seasons",
+    "motions of the earth",
+    "revolution",
+    "rotation",
+    "axis",
+    "tilt",
+    "equinox",
+    "solstice",
+    "day and night",
+    "tropic of cancer",
+    "tropic of capricorn",
+    "the earth in the solar system"
+   ],
+   "classes": [
+    6,
+    9,
+    11
+   ],
+   "order": 2
+  },
+  {
+   "id": "solids",
+   "subject": "Maths",
+   "title": {
+    "en": "3D shapes and their nets",
+    "hi": "3D आकृतियाँ और उनके जाल",
+    "kn": "3D ಆಕೃತಿಗಳು ಮತ್ತು ಅವುಗಳ ಬಲೆಗಳು"
+   },
+   "summary": {
+    "en": "Turn each solid, unfold it into its net with \"Take apart\", and cut it to see its cross-sections.",
+    "hi": "हर ठोस को घुमाएँ, \"अलग करें\" से उसका जाल खोलें, और काटकर उसके अनुप्रस्थ काट देखें।",
+    "kn": "ಪ್ರತಿ ಘನಾಕೃತಿಯನ್ನು ತಿರುಗಿಸಿ, \"ಬಿಡಿಸಿ\" ಮೂಲಕ ಅದರ ಬಲೆಯನ್ನು ತೆರೆಯಿರಿ, ಕತ್ತರಿಸಿ ಅಡ್ಡಛೇದಗಳನ್ನು ನೋಡಿ."
+   },
+   "keywords": [
+    "solid shapes",
+    "3d shapes",
+    "nets",
+    "cube",
+    "cuboid",
+    "cylinder",
+    "cone",
+    "sphere",
+    "pyramid",
+    "prism",
+    "surface area",
+    "volume",
+    "mensuration",
+    "visualising solid shapes",
+    "conic sections",
+    "cross section"
+   ],
+   "classes": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "order": 1
+  }
+ ]
+}
