@@ -78,6 +78,7 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     for (final p in pts.skip(1)) {
       path.lineTo(p.x, p.y);
     }
+    if (s.fill != null && pts.length > 2) canvas.drawPath(path, Paint()..color = s.fill!);
   } else {
     // Quadratic curves through the midpoints give smooth ink without lagging behind the pen.
     for (var i = 1; i < pts.length - 1; i++) {

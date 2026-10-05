@@ -3,7 +3,9 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
+import 'board_background.dart';
 import 'ink_models.dart';
+import 'whiteboard_controller.dart';
 
 /// Holds the strokes on one board page and turns pointer events into ink.
 ///
@@ -357,7 +359,10 @@ class _Move extends _Action {
 }
 
 /// The pages of one board. Tool settings carry over when the teacher turns the page.
-class BoardPages extends ChangeNotifier {
+///
+/// The older page-of-strokes board (the whiteboard is [WhiteboardController]); kept for the
+/// split-screen second board and older recordings' tests.
+class BoardPages extends ChangeNotifier implements RecordableBoard {
   BoardPages({PalmMode palmMode = PalmMode.ignore}) : _palmMode = palmMode {
     _pages.add(InkController(palmMode: palmMode));
   }
@@ -432,6 +437,26 @@ class BoardPages extends ChangeNotifier {
     current.style = style;
     notifyListeners();
   }
+
+  // RecordableBoard: the recorder listens to [changes], which also fires for the open page.
+
+  @override
+  List<Object> get pageKeys => _pages;
+  @override
+  int get pageIndex => _index;
+  @override
+  List<BoardElement> elementsOf(int i) => _pages[i].strokes;
+  @override
+  Iterable<Stroke> get activeStrokes => current.activeStrokes;
+  @override
+  BoardBackground? get background => null;
+  @override
+  Rect? get visibleArea => null;
+  @override
+  List<LaserPoint> get laserPoints => const [];
+  @override
+  Listenable get changes => _changes?.$1 == current ? _changes!.$2 : (_changes = (current, Listenable.merge([this, current]))).$2;
+  (InkController, Listenable)? _changes;
 
   @override
   void dispose() {

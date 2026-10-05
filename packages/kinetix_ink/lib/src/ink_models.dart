@@ -1,5 +1,8 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui';
+
+part 'elements.dart';
 
 /// What a pointer does when it touches the board.
 enum InkTool { pen, highlighter, eraser, shape, select }
@@ -65,16 +68,28 @@ class InkStyle {
       InkStyle(tool: tool ?? this.tool, color: color ?? this.color, width: width ?? this.width, shape: shape ?? this.shape);
 }
 
-class Stroke {
-  Stroke({required this.id, required this.style, List<InkPoint>? points, this.shape}) : points = points ?? [];
+/// Pen, highlighter and shape ink: a line of points. Shapes drawn with the Shapes tool are
+/// strokes too (with [shape] set), so they erase, move and undo like handwriting, keep their
+/// kind for measurements, and show in every viewer, old or new.
+///
+/// While a stroke is being drawn its [points] grow in place; once it is on a page it is not
+/// changed again (a move makes a new stroke with [translated]), except by the older
+/// [InkController], which moves strokes in place with [translate].
+class Stroke extends BoardElement {
+  Stroke({required this.id, required this.style, List<InkPoint>? points, this.shape, this.fill}) : points = points ?? [];
 
+  @override
   final String id;
   final InkStyle style;
   final List<InkPoint> points;
 
-  /// Set when this stroke was drawn with the Shapes tool.
+  /// Set when this stroke was drawn with the Shapes tool (or along the ruler, as a line).
   final ShapeKind? shape;
 
+  /// Inside colour of a closed shape, or null for an outline.
+  final Color? fill;
+
+  @override
   Rect get bounds {
     if (points.isEmpty) return Rect.zero;
     var minX = points.first.x, maxX = minX, minY = points.first.y, maxY = minY;
@@ -87,13 +102,15 @@ class Stroke {
     return Rect.fromLTRB(minX, minY, maxX, maxY).inflate(style.width / 2);
   }
 
+  /// Moves the points in place (the older [InkController]'s select tool).
   void translate(Offset d) {
     for (var i = 0; i < points.length; i++) {
       points[i] = points[i].translate(d);
     }
   }
 
-  /// True if a circle at [c] with radius [r] touches any segment of this stroke.
+  /// True if a circle at [c] with radius [r] touches any segment of this stroke (or, for a
+  /// filled shape, lies inside it).
   bool hitBy(Offset c, double r) {
     final reach = r + style.width / 2;
     if (!bounds.inflate(r).contains(c)) return false;
@@ -101,8 +118,12 @@ class Stroke {
     for (var i = 1; i < points.length; i++) {
       if (_distanceToSegment(c, points[i - 1].offset, points[i].offset) <= reach) return true;
     }
+    if (fill != null && points.length > 2) return _insidePolygon(c, [for (final p in points) p.offset]);
     return false;
   }
+
+  @override
+  bool hitTest(Offset p, double radius) => hitBy(p, radius);
 
   /// Corners of a polygon shape (without the closing repeat), or the two ends of a line.
   List<Offset> get vertices {
@@ -111,6 +132,61 @@ class Stroke {
     if (pts.length > 1 && pts.first == pts.last) pts.removeLast();
     return pts;
   }
+
+  Stroke copyWith({String? id, InkStyle? style, List<InkPoint>? points, Color? fill, bool clearFill = false}) => Stroke(
+    id: id ?? this.id,
+    style: style ?? this.style,
+    points: points ?? List.of(this.points),
+    shape: shape,
+    fill: clearFill ? null : (fill ?? this.fill),
+  );
+
+  @override
+  Stroke translated(Offset d) => _moved(this, d, copyWith(points: [for (final p in points) p.translate(d)]));
+
+  @override
+  Stroke scaled(Offset origin, double sx, double sy) {
+    final pts = [for (final p in points) _scalePoint(p, origin, sx, sy)];
+    // Handwriting keeps its look: the line grows with the even part of the scale. A circle
+    // pulled out of round becomes an ellipse.
+    final k = math.sqrt((sx * sy).abs());
+    final kind = shape == ShapeKind.circle && (sx - sy).abs() > 0.01 ? ShapeKind.ellipse : shape;
+    return Stroke(
+      id: id,
+      style: shape == null ? style.copyWith(width: (style.width * k).clamp(0.5, 120.0)) : style,
+      points: pts,
+      shape: kind,
+      fill: fill,
+    );
+  }
+
+  @override
+  Stroke rotated(Offset center, double angle) => copyWith(points: [for (final p in points) _rotateInk(p, center, angle)]);
+
+  @override
+  Stroke recolored(Color c) => copyWith(
+    style: style.copyWith(color: style.tool == InkTool.highlighter ? c.withValues(alpha: style.color.a) : c),
+    fill: fill == null ? null : c.withValues(alpha: fill!.a),
+  );
+
+  @override
+  Stroke withId(String id) => copyWith(id: id);
+}
+
+InkPoint _scalePoint(InkPoint p, Offset o, double sx, double sy) => InkPoint(o.dx + (p.x - o.dx) * sx, o.dy + (p.y - o.dy) * sy, p.pressure);
+
+InkPoint _rotateInk(InkPoint p, Offset c, double a) {
+  final r = rotatePoint(p.offset, c, a);
+  return InkPoint(r.dx, r.dy, p.pressure);
+}
+
+bool _insidePolygon(Offset p, List<Offset> poly) {
+  var inside = false;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    final a = poly[i], c = poly[j];
+    if ((a.dy > p.dy) != (c.dy > p.dy) && p.dx < (c.dx - a.dx) * (p.dy - a.dy) / (c.dy - a.dy) + a.dx) inside = !inside;
+  }
+  return inside;
 }
 
 double _distanceToSegment(Offset p, Offset a, Offset b) {

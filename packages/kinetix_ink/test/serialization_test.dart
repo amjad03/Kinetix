@@ -23,7 +23,7 @@ void main() {
     expect(back.background, BoardBackground.grid);
     expect(back.canvas, const Size(1600, 900));
     expect(back.pageCount, 2);
-    final triangle = back.pages[0][1];
+    final triangle = back.pages[0][1] as Stroke;
     expect(triangle.shape, ShapeKind.triangle);
     expect(triangle.style.color, const Color(0xFFD93025));
     expect(triangle.vertices, hasLength(3));
