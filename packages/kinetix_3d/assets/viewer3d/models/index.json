@@ -290,6 +290,75 @@
    "order": 8
   },
   {
+   "id": "ear",
+   "subject": "Biology",
+   "title": {
+    "en": "Human ear",
+    "hi": "मानव कान",
+    "kn": "ಮಾನವ ಕಿವಿ"
+   },
+   "summary": {
+    "en": "The outer ear collects sound, the middle ear's three tiny bones pass the vibrations on, and the inner ear turns them into nerve signals. The inner ear also senses balance.",
+    "hi": "बाहरी कान ध्वनि इकट्ठा करता है, मध्य कान की तीन छोटी हड्डियाँ कंपन आगे बढ़ाती हैं, और आंतरिक कान उन्हें तंत्रिका संकेतों में बदलता है। आंतरिक कान संतुलन भी पहचानता है।",
+    "kn": "ಹೊರಕಿವಿ ಶಬ್ದವನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ, ಮಧ್ಯಕಿವಿಯ ಮೂರು ಸಣ್ಣ ಮೂಳೆಗಳು ಕಂಪನಗಳನ್ನು ಮುಂದೆ ಸಾಗಿಸುತ್ತವೆ, ಒಳಕಿವಿ ಅವುಗಳನ್ನು ನರ ಸಂಕೇತಗಳಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಒಳಕಿವಿ ಸಮತೋಲನವನ್ನೂ ಗ್ರಹಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "ear",
+    "human ear",
+    "hearing",
+    "sound",
+    "eardrum",
+    "cochlea",
+    "ossicles",
+    "semicircular canals",
+    "balance",
+    "sense organs",
+    "structure of the ear",
+    "neural control and coordination",
+    "auditory nerve"
+   ],
+   "classes": [
+    8,
+    9,
+    10,
+    11
+   ],
+   "order": 8
+  },
+  {
+   "id": "nephron",
+   "subject": "Biology",
+   "title": {
+    "en": "Nephron (kidney tubule)",
+    "hi": "वृक्काणु (नेफ्रॉन)",
+    "kn": "ನೆಫ್ರಾನ್ (ಮೂತ್ರಪಿಂಡದ ನಳಿಕೆ)"
+   },
+   "summary": {
+    "en": "Each kidney has about a million nephrons. Blood is filtered in the glomerulus; the tubule then takes back what the body needs, and what is left is urine.",
+    "hi": "हर वृक्क में लगभग दस लाख वृक्काणु होते हैं। ग्लोमेरुलस में रक्त छनता है; फिर नलिका शरीर के लिए ज़रूरी चीज़ें वापस ले लेती है, और जो बचता है वह मूत्र है।",
+    "kn": "ಪ್ರತಿ ಮೂತ್ರಪಿಂಡದಲ್ಲಿ ಸುಮಾರು ಹತ್ತು ಲಕ್ಷ ನೆಫ್ರಾನ್‌ಗಳಿವೆ. ಗ್ಲೋಮೆರುಲಸ್‌ನಲ್ಲಿ ರಕ್ತ ಸೋಸಲ್ಪಡುತ್ತದೆ; ನಂತರ ನಳಿಕೆ ದೇಹಕ್ಕೆ ಬೇಕಾದುದನ್ನು ಹಿಂಪಡೆಯುತ್ತದೆ, ಉಳಿದದ್ದು ಮೂತ್ರ."
+   },
+   "keywords": [
+    "nephron",
+    "kidney",
+    "excretion",
+    "excretory system",
+    "glomerulus",
+    "bowman's capsule",
+    "loop of henle",
+    "urine formation",
+    "filtration",
+    "reabsorption",
+    "excretory products and their elimination",
+    "life processes"
+   ],
+   "classes": [
+    10,
+    11
+   ],
+   "order": 9
+  },
+  {
    "id": "plant_cell",
    "subject": "Biology",
    "title": {
