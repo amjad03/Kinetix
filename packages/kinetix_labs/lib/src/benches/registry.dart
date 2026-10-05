@@ -4,6 +4,7 @@ import 'electronics/diode.dart';
 import 'electronics/networks.dart';
 import 'electronics/rectifier.dart';
 import 'electronics/transistor.dart';
+import 'mechanics/mechanics_benches.dart';
 import 'optics/optics_benches.dart';
 import 'buoyancy.dart';
 import 'calorimetry.dart';
@@ -90,6 +91,18 @@ final labBenches = <String, LabBench>{
     const TravellingMicroscopeBench(),
     const GratingBench(),
     const NewtonRingsBench(),
+    // Mechanics, heat and sound.
+    const SpringBench(),
+    const SpringMassBench(),
+    const InclineBench(),
+    const FrictionBench(),
+    const ProjectileBench(),
+    const CollisionBench(),
+    const SearleBench(),
+    const StokesBench(),
+    const CapillaryBench(),
+    const CoolingBench(),
+    const ResonanceTubeBench(),
   ])
     b.kind: b,
 };
