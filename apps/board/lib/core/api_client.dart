@@ -9,9 +9,15 @@ import 'models.dart';
 import 'recording/recordings.dart' show RecordingSummary;
 
 class ApiException implements Exception {
-  ApiException(this.status, this.message);
+  ApiException(this.status, this.message, {this.code, this.body = const {}});
   final int status;
   final String message;
+
+  /// The API's stable error code (services/api/src/common/error-codes.ts), when it sent one.
+  final String? code;
+
+  /// The whole error body (e.g. `attemptsLeft` after a wrong PIN).
+  final Map<String, dynamic> body;
   @override
   String toString() => message;
 }
@@ -41,6 +47,24 @@ class ApiClient {
   Future<Map<String, dynamic>> boardConfig() async => await _send('GET', '/v1/devices/me/config', useDeviceToken: true) as Map<String, dynamic>;
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
+
+  // --- Shared-board profiles (features/profiles; docs/architecture/board-profiles.md) -------
+
+  /// The teachers who have signed in on this board, with each PIN's salt and hash for offline checks.
+  Future<List<Map<String, dynamic>>> boardProfiles() async =>
+      (await _send('GET', '/v1/devices/me/profiles', useDeviceToken: true) as List<dynamic>).cast<Map<String, dynamic>>();
+
+  /// The signed-in teacher sets their PIN for this board. Answers with the new hash's parts.
+  Future<Map<String, dynamic>> setProfilePin(String pin) async => await _send('PUT', '/v1/devices/me/profiles/me/pin', body: {'pin': pin}) as Map<String, dynamic>;
+
+  /// Switches the board to [userId]'s profile: a new class session, as after pairing.
+  Future<({String sessionToken, Map<String, dynamic> session})> unlockProfile(String userId, String pin) async {
+    final j = await _send('POST', '/v1/devices/me/profiles/$userId/unlock', body: {'pin': pin}, useDeviceToken: true) as Map<String, dynamic>;
+    return (sessionToken: j['sessionToken'] as String, session: j['session'] as Map<String, dynamic>);
+  }
+
+  /// The signed-in teacher takes their profile off this board.
+  Future<void> removeMyProfile() async => _send('DELETE', '/v1/devices/me/profiles/me');
 
   /// "Go live": opens (or closes) the board to the class's students in the Student App.
   Future<void> setClassLive(bool on) async => _send('POST', '/v1/sessions/current/live', body: {'on': on});
@@ -216,6 +240,32 @@ class ApiClient {
     await _send('POST', '/v1/homework/from-board', body: {'title': title, 'instructions': ?instructions, 'dueOn': due});
   }
 
+  // --- Class questions and answer cards (features/class_check) -----------------------------
+
+  /// Opens a question in the class on the board ([id] chosen here, so a retry asks once).
+  Future<Map<String, dynamic>> openPoll(String id, Map<String, dynamic> body) async => await _send('PUT', '/v1/polls/$id', body: body) as Map<String, dynamic>;
+
+  /// Answers read from answer cards: `{cardNo, choice}` each.
+  Future<Map<String, dynamic>> pollCards(String id, List<Map<String, int>> answers) async =>
+      await _send('POST', '/v1/polls/$id/cards', body: {'answers': answers}) as Map<String, dynamic>;
+
+  Future<Map<String, dynamic>> closePoll(String id) async => await _send('POST', '/v1/polls/$id/close') as Map<String, dynamic>;
+
+  /// The answer cards of the class open on the board (card number → student).
+  Future<Map<String, dynamic>> answerCards() async => await _send('GET', '/v1/answer-cards/current') as Map<String, dynamic>;
+
+  // --- Phone remote (features/remote) ---------------------------------------------------------
+
+  /// A photo the teacher sent from the phone remote; fetched once.
+  Future<Uint8List> remotePhoto(String id) async {
+    final req = http.Request('GET', Uri.parse('$baseUrl/v1/remote/photos/$id'));
+    final token = sessionToken ?? deviceToken;
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final res = await http.Response.fromStream(await _http.send(req));
+    if (res.statusCode >= 400) _decode(res);
+    return res.bodyBytes;
+  }
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false}) async {
     final token = useDeviceToken ? deviceToken : (sessionToken ?? deviceToken);
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
@@ -240,11 +290,13 @@ class ApiClient {
   dynamic _decode(http.Response res) {
     if (res.statusCode >= 400) {
       String message = 'Request failed (${res.statusCode})';
+      var body = const <String, dynamic>{};
       try {
-        final m = (jsonDecode(res.body) as Map)['message'];
+        body = (jsonDecode(res.body) as Map).cast<String, dynamic>();
+        final m = body['message'];
         if (m is String) message = m;
       } catch (_) {}
-      throw ApiException(res.statusCode, message);
+      throw ApiException(res.statusCode, message, code: body['code'] as String?, body: body);
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
   }

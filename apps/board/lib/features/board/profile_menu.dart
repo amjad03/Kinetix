@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart' show InputMode;
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -5,6 +7,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
 import '../kiosk/kiosk_ui.dart';
+import '../profiles/profiles_ui.dart';
+import '../projector/projector_ui.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
 
@@ -123,7 +127,21 @@ class ProfileMenu extends StatelessWidget {
                   onRecordings!();
                 },
               ),
-            item(Icons.cast_outlined, l.screenProjection, () {}, soon: true),
+            // Projector mode (features/projector): show or stop the board on the second screen.
+            if (board.projector.available && board.projector.enabled)
+              item(
+                board.projector.isShowing ? Icons.cancel_presentation_outlined : Icons.cast_outlined,
+                board.projector.isShowing ? l.projectorStop : l.projectorShow,
+                () => unawaited(board.projector.isShowing ? board.projector.hide() : board.projector.show()),
+                key: const Key('menu-projector'),
+              )
+            else
+              item(Icons.cast_outlined, l.screenProjection, () {}, soon: true),
+            // Shared-board profiles (features/profiles).
+            if (s != null && board.isEnrolled) ...[
+              item(Icons.switch_account_outlined, l.switchTeacher, onSignIn, key: const Key('menu-switch-teacher')),
+              if (board.profiles.current?.pinSet == true) item(Icons.lock_outline, l.lockBoard, board.profiles.lock, key: const Key('menu-lock')),
+            ],
             const Divider(height: Kx.s16),
             item(Icons.settings_outlined, l.boardSettings, onSettings, key: const Key('menu-settings')),
             if (onHelp != null) item(Icons.help_outline, l.helpTitle, onHelp!, key: const Key('menu-help')),
@@ -271,6 +289,10 @@ class BoardSettingsDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: Kx.s24),
                 AiPenSettingsSection(board: board),
+                const SizedBox(height: Kx.s24),
+                ProjectorSettingsSection(projector: board.projector),
+                const SizedBox(height: Kx.s24),
+                ProfileSettingsSection(board: board),
                 const SizedBox(height: Kx.s24),
                 KioskSettingsSection(kiosk: board.kiosk),
               ],

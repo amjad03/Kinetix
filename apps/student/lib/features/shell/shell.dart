@@ -64,7 +64,8 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     });
     messages.realtime = () => _feed?.connected ?? false;
     messages.start().then((_) {
-      if (mounted && messages.available) _startFeed();
+      // The socket brings new messages (colleges) and questions asked on the board (everyone).
+      if (mounted) _startFeed();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // A tapped notification that opened the app (or arrived before sign-in) first.
@@ -99,8 +100,14 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       connector: widget.state.liveConnector,
       baseUrl: widget.state.api.baseUrl,
       token: token,
-      onMessage: messages.received,
-      onReconnected: messages.load,
+      onMessage: (m) {
+        if (messages.available) messages.received(m);
+      },
+      onReconnected: () {
+        if (messages.available) messages.load();
+        study.loadQuestion();
+      },
+      onPoll: study.loadQuestion,
     )..start();
   }
 
@@ -123,6 +130,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   void didChangeAppLifecycleState(AppLifecycleState s) {
     if (s != AppLifecycleState.resumed) return;
     study.loadLive();
+    study.loadQuestion();
     if (!updates.loading) updates.load();
     if (messages.available) messages.load();
     _feed?.resume();

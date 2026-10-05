@@ -1044,6 +1044,33 @@ class MessagePage {
 // ── Live class ──────────────────────────────────────────────────────────────────────────────────
 
 /// The class the teacher is teaching live right now (`GET /v1/student/live`).
+/// A question the teacher asked the class on the board (`GET /v1/student/poll`): the "Live
+/// question" banner. MCQ answers are option indexes ("0" = A); numeric ones are the number.
+class ClassQuestion {
+  ClassQuestion({required this.id, required this.numeric, required this.question, required this.options, required this.teacher, this.subject, this.myAnswer});
+
+  factory ClassQuestion.fromJson(Map<String, dynamic> j) => ClassQuestion(
+    id: j['id'] as String,
+    numeric: j['kind'] == 'numeric',
+    question: j['question'] as String? ?? '',
+    options: [for (final o in (j['options'] as List? ?? const [])) '$o'],
+    teacher: j['teacher'] as String? ?? '',
+    subject: j['subject'] as String?,
+    myAnswer: j['myAnswer'] as String?,
+  );
+
+  final String id;
+  final bool numeric;
+  final String question;
+  final List<String> options;
+  final String teacher;
+  final String? subject;
+  String? myAnswer;
+
+  /// "B" or "True" for an option index; the number itself otherwise.
+  String label(String answer) => numeric ? answer : (options.elementAtOrNull(int.tryParse(answer) ?? -1) ?? answer);
+}
+
 class LiveClass {
   LiveClass({required this.deviceId, required this.sessionId, required this.teacher, required this.startedAt, this.subject});
 

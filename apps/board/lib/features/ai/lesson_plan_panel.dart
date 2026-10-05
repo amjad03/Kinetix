@@ -98,7 +98,7 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
               if (task.error != null) AiError(message: aiErrorMessage(l, task.error!), onRetry: _generate),
               if (plan != null && !task.loading) ...[
                 const Divider(height: Kx.s24),
-                if (plan.meta.preview) AiNotice.preview(),
+                if (plan.meta.preview) AiNotice.preview(offline: plan.meta.offline),
                 _PlanView(plan: plan.result, topic: ai.lessonTopic ?? ''),
               ],
             ],

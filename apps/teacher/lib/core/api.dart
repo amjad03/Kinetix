@@ -77,6 +77,9 @@ abstract class TeacherApi {
   Future<DayTimetable> timetable({String? date});
   Future<List<TeacherClass>> classes();
   Future<List<Student>> roster(String sectionId);
+
+  /// The class's answer cards (card number per student, by roll number), to print.
+  Future<List<AnswerCard>> answerCards(String sectionId);
   Future<AttendanceSheet> attendance({required String slotId, required String date});
   Future<AttendanceSheet> submitAttendance({required String slotId, required String date, required Map<String, AttendanceStatus> marks});
   Future<BoardConnection?> activeSession();
@@ -288,6 +291,10 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<List<Student>> roster(String sectionId) async =>
       (await _send('GET', '/v1/sections/$sectionId/roster') as List).map((e) => Student.fromJson(e as Map<String, dynamic>)).toList();
+
+  @override
+  Future<List<AnswerCard>> answerCards(String sectionId) async =>
+      ((await _send('GET', '/v1/sections/$sectionId/answer-cards') as Map)['cards'] as List).map((e) => AnswerCard.fromJson(e as Map<String, dynamic>)).toList();
 
   @override
   Future<AttendanceSheet> attendance({required String slotId, required String date}) async =>

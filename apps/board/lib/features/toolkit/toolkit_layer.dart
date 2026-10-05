@@ -201,7 +201,8 @@ class TimerBody extends StatelessWidget {
               height: 156,
               child: CircularProgressIndicator(value: frac, strokeWidth: 10, color: alert ? c.error : c.primary, backgroundColor: c.surfaceContainerHighest),
             ),
-            Text(k.timerDone ? l.timesUp : clockText(left), key: const Key('countdown-text'), style: _bigNumber(context, color: alert ? c.error : c.onSurface, size: k.timerDone ? 26 : 40)),
+            // Rounded up, so 2:00 shows until a full second has gone.
+            Text(k.timerDone ? l.timesUp : clockText(Duration(seconds: (left.inMilliseconds / 1000).ceil())), key: const Key('countdown-text'), style: _bigNumber(context, color: alert ? c.error : c.onSurface, size: k.timerDone ? 26 : 40)),
           ],
         ),
         const SizedBox(height: Kx.s12),

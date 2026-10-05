@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -32,7 +33,7 @@ class ToolkitController extends ChangeNotifier {
   ToolkitController({required this.roster, this.demo = false, NoiseSource? noiseSource, math.Random? random, DateTime Function()? now})
     : _noiseSource = noiseSource, // ignore: prefer_initializing_formals
       _rnd = random ?? math.Random(),
-      _now = now ?? DateTime.now;
+      _now = now ?? clock.now;
 
   /// The students who can be picked now: the period's class, absentees left out.
   final List<Student> Function() roster;

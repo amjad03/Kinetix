@@ -45,6 +45,8 @@ accounts@demo.kinetix.in (fees). The seed prints a board enrolment code and impo
 - [System architecture](docs/architecture/overview.md)
   - [Multi-tenancy & data residency](docs/architecture/tenancy.md)
   - [Board ↔ teacher pairing (sign-in without a PIN)](docs/architecture/board-pairing.md)
+  - [Shared-board profiles (switching teacher with a PIN)](docs/architecture/board-profiles.md)
+  - [Projector mode (the board on a second screen)](docs/hardware/projector-mode.md)
   - [Offline-first sync protocol](docs/architecture/sync-protocol.md)
   - [Live classroom view & broadcast](docs/architecture/live-classroom.md)
   - [AI platform (India-hosted)](docs/architecture/ai-platform.md)

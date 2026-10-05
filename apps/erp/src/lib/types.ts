@@ -164,6 +164,16 @@ export interface DeliveryReport {
   devices: { deviceId: string; deviceName: string; lastSeenAt: string | null; displayedAt: string | null; acknowledgedAt: string | null }[];
 }
 
+/** A teacher who has signed in on a shared board (GET /v1/devices/:id/profiles). */
+export interface BoardProfile {
+  userId: string;
+  name: string;
+  pinSet: boolean;
+  locked: boolean;
+  failedAttempts: number;
+  lastUsedAt: string;
+}
+
 export interface CreatedDevice {
   id: string;
   name: string;

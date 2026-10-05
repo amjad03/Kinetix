@@ -2480,6 +2480,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Kept recordings are not deleted when the term ends'**
   String get keepRecordingTooltip;
+
+  /// Button: use this phone to control the classroom board.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone remote'**
+  String get phoneRemote;
+
+  /// No description provided for @remoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote · {board}'**
+  String remoteTitle(String board);
+
+  /// No description provided for @remoteEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'The class on this board has ended.'**
+  String get remoteEnded;
+
+  /// No description provided for @remotePhotoSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo is on the board.'**
+  String get remotePhotoSent;
+
+  /// No description provided for @remotePhotoFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the photo. Try again.'**
+  String get remotePhotoFailed;
+
+  /// No description provided for @remotePages.
+  ///
+  /// In en, this message translates to:
+  /// **'Board pages'**
+  String get remotePages;
+
+  /// No description provided for @remotePrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get remotePrevious;
+
+  /// No description provided for @remoteNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get remoteNext;
+
+  /// No description provided for @remotePageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {pages}'**
+  String remotePageOf(int page, int pages);
+
+  /// No description provided for @remoteSlides.
+  ///
+  /// In en, this message translates to:
+  /// **'Slides and PDF'**
+  String get remoteSlides;
+
+  /// No description provided for @remoteNoSlides.
+  ///
+  /// In en, this message translates to:
+  /// **'Open slides or a PDF on the board to turn them from here.'**
+  String get remoteNoSlides;
+
+  /// No description provided for @remoteSlideOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide {slide} of {slides}'**
+  String remoteSlideOf(int slide, int slides);
+
+  /// No description provided for @remotePointer.
+  ///
+  /// In en, this message translates to:
+  /// **'Pointer'**
+  String get remotePointer;
+
+  /// No description provided for @remotePointerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide your finger here to point on the board'**
+  String get remotePointerHint;
+
+  /// No description provided for @remoteClassroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Classroom tools'**
+  String get remoteClassroom;
+
+  /// No description provided for @remoteTimerMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min timer'**
+  String remoteTimerMinutes(int minutes);
+
+  /// No description provided for @remoteTimerStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop timer'**
+  String get remoteTimerStop;
+
+  /// No description provided for @remotePickStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a student'**
+  String get remotePickStudent;
+
+  /// No description provided for @remoteShowPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a photo'**
+  String get remoteShowPhoto;
+
+  /// No description provided for @remoteStartRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Record lesson'**
+  String get remoteStartRecording;
+
+  /// No description provided for @remoteStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop recording'**
+  String get remoteStopRecording;
+
+  /// No description provided for @answerCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer cards'**
+  String get answerCards;
+
+  /// No description provided for @answerCardsMenuBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Print cards so students without phones can answer on the board'**
+  String get answerCardsMenuBody;
+
+  /// No description provided for @answerCardsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.'**
+  String get answerCardsBody;
+
+  /// Printed on each card. Kept in English in Hindi and Kannada until the PDF bundles Devanagari and Kannada shaping.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the card with your answer at the top. Keep your fingers off the black pattern.'**
+  String get answerCardsPrintHint;
+
+  /// No description provided for @answerCardsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} cards for {className} are ready to print.'**
+  String answerCardsReady(int count, String className);
+
+  /// No description provided for @answerCardsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not make the cards. Try again.'**
+  String get answerCardsFailed;
+
+  /// No description provided for @print.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get print;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

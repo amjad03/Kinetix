@@ -328,6 +328,29 @@ export const otpCodes = pgTable(
   (t) => [index('otp_codes_phone_idx').on(t.tenantId, t.phone, t.createdAt)],
 );
 
+/**
+ * Teachers who have signed in on a shared board or tablet (docs/architecture/board-profiles.md).
+ * After a full sign-in a teacher may set a 4–6 digit PIN to switch to their profile on this
+ * board without the Teacher app. Only a salted PBKDF2 hash is kept (common/kiosk-pin.ts); five
+ * wrong PINs lock the profile until the teacher signs in fully again or an admin resets it.
+ */
+export const deviceProfiles = pgTable(
+  'device_profiles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    deviceId: uuid('device_id').notNull().references(() => devices.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    pinHash: text('pin_hash'),
+    pinSetAt: timestamp('pin_set_at', { withTimezone: true }),
+    failedAttempts: integer('failed_attempts').notNull().default(0),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('device_profiles_device_user_uq').on(t.deviceId, t.userId)],
+);
+
 export const sessionEndReason = pgEnum('session_end_reason', [
   'teacher_ended',
   'period_over',
@@ -384,7 +407,8 @@ export const attendanceRecords = pgTable(
   ],
 );
 
-export const participationOutcome = pgEnum('participation_outcome', ['correct', 'partial', 'incorrect', 'skipped']);
+/** `answered`: answered a class question that has no right answer (an opinion poll). */
+export const participationOutcome = pgEnum('participation_outcome', ['correct', 'partial', 'incorrect', 'skipped', 'answered']);
 
 /** A student was picked on the board (or answered a board quiz) and the teacher marked the result. */
 export const participationEvents = pgTable('participation_events', {
@@ -397,9 +421,68 @@ export const participationEvents = pgTable('participation_events', {
   topicCode: text('topic_code'),
   outcome: participationOutcome('outcome').notNull(),
   note: text('note'),
+  /** The class question (poll or answer-card check) this answer was to. */
+  pollId: uuid('poll_id').references(() => polls.id, { onDelete: 'set null' }),
   recordedBy: uuid('recorded_by').notNull().references(() => users.id),
   occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
 });
+
+/**
+ * Printed answer cards (packages/kinetix_cards): card number n of a class belongs to one
+ * student. Numbers are handed out by roll number when the class's sheet is first printed and
+ * then kept, so a reprint gives everyone the card they already have.
+ */
+export const answerCards = pgTable(
+  'answer_cards',
+  {
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    cardNo: smallint('card_no').notNull(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.sectionId, t.cardNo] }), uniqueIndex('answer_cards_student_uq').on(t.sectionId, t.studentId)],
+);
+
+export const pollKind = pgEnum('poll_kind', ['mcq', 'numeric']);
+export const pollAnswerSource = pgEnum('poll_answer_source', ['app', 'card']);
+
+/** A question the teacher asked the class on the board ("Ask the class"). */
+export const polls = pgTable(
+  'polls',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    teacherId: uuid('teacher_id').notNull().references(() => users.id),
+    kind: pollKind('kind').notNull(),
+    question: text('question').notNull(),
+    /** MCQ answer labels (A, B, C… or True / False); empty for numeric questions. */
+    options: jsonb('options').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    /** MCQ: the right option's index as text; numeric: the value. Null = no right answer. */
+    correct: text('correct'),
+    topicCode: text('topic_code'),
+    openedAt: timestamp('opened_at', { withTimezone: true }).notNull(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+  },
+  (t) => [index('polls_session_idx').on(t.boardSessionId), index('polls_section_idx').on(t.sectionId, t.openedAt)],
+);
+
+/** One student's answer to a poll; a later answer replaces an earlier one. */
+export const pollResponses = pgTable(
+  'poll_responses',
+  {
+    tenantId: tenantId(),
+    pollId: uuid('poll_id').notNull().references(() => polls.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    answer: text('answer').notNull(),
+    source: pollAnswerSource('source').notNull(),
+    answeredAt: timestamp('answered_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.pollId, t.studentId] })],
+);
 
 /** Idempotency ledger for the sync outbox. */
 export const syncOps = pgTable(
@@ -1281,6 +1364,7 @@ export const TENANT_TABLES = [
   'timetable_slots',
   'devices',
   'pairing_codes',
+  'device_profiles',
   'otp_codes',
   'board_sessions',
   'attendance_records',
@@ -1316,5 +1400,8 @@ export const TENANT_TABLES = [
   'year_plans',
   'year_plan_items',
   'lesson_plans',
+  'answer_cards',
+  'polls',
+  'poll_responses',
   'audit_log',
 ] as const;

@@ -9,6 +9,8 @@ environment:
 dependencies:
   # PowerPoint import: a .pptx is a zip of XML (lib/features/insert/pptx_render.dart).
   archive: ^4.3.0
+  # The toolkit's timer and stopwatch keep time with it (tests move it with fake_async).
+  clock: ^1.1.3
   # PBKDF2 for the kiosk IT PIN (lib/core/kiosk/kiosk_pin.dart).
   crypto: ^3.0.6
   # Pictures, PDFs and PowerPoints from the board's files (Windows) or storage (Android).
@@ -24,11 +26,13 @@ dependencies:
   # downloads once from Google; no ink leaves the panel). See lib/core/handwriting.
   google_mlkit_digital_ink_recognition: ^0.16.1
   http: ^1.6.0
-  # The gallery and camera on Android panels.
+  # The gallery and camera on Android panels, and photos of the class for answer cards.
   image_picker: ^1.2.3
   intl: ^0.20.3
   kinetix_3d:
     path: ../../packages/kinetix_3d
+  kinetix_cards:
+    path: ../../packages/kinetix_cards
   kinetix_ink:
     path: ../../packages/kinetix_ink
   kinetix_labs:

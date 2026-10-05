@@ -94,9 +94,11 @@ class AiPanelPage extends StatelessWidget {
 class AiNotice extends StatelessWidget {
   const AiNotice({super.key, required this.icon, required this.message, this.tone = AiNoticeTone.info, this.action});
 
-  static Widget preview({Key? key}) => Builder(
-    builder: (context) =>
-        AiNotice(key: key ?? const Key('ai-preview'), icon: Icons.science_outlined, message: context.l10n.aiPreviewLabel, tone: AiNoticeTone.preview),
+  /// The label for a sample answer; [offline]: from the board's offline notes (features/offline_ai).
+  static Widget preview({Key? key, bool offline = false}) => Builder(
+    builder: (context) => offline
+        ? AiNotice(key: key ?? const Key('ai-offline'), icon: Icons.cloud_off_outlined, message: context.l10n.aiOfflineLabel, tone: AiNoticeTone.preview)
+        : AiNotice(key: key ?? const Key('ai-preview'), icon: Icons.science_outlined, message: context.l10n.aiPreviewLabel, tone: AiNoticeTone.preview),
   );
 
   final IconData icon;

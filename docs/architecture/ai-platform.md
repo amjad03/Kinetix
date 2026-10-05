@@ -54,6 +54,16 @@ The night before, the Board **pre-generates** and caches AI content for the next
 timetabled chapters while it is online: an explanation, a quiz bank and homework drafts.
 In practice, "AI offline" covers almost everything a teacher needs, even on low-end devices.
 
+**Built today: offline sample answers** (`apps/board/lib/features/offline_ai`). The board carries
+74 hand-written lesson notes (ported from the prototype: number systems to the French
+Revolution, primary to senior secondary), each with a summary, key points, an example, an
+activity, common mistakes and quiz questions. When KINETIX AI cannot be reached (no network,
+or the API answers 503/504) and the question, quiz, homework or lesson-plan topic matches a
+note, the board answers from it; in demo builds it answers known topics without asking the
+demo server. These answers are labelled "Offline sample" in every board language (the notes
+themselves are English). Anything the notes do not cover keeps the normal error: nothing is
+invented, and nothing leaves the board.
+
 ## Grounding & quality
 
 - Every generation is grounded in **our curriculum library**: the syllabus topic, learning

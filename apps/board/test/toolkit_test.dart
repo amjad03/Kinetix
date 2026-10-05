@@ -4,10 +4,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/models.dart';
+import 'package:kinetix_board/features/remote/board_remote.dart';
 import 'package:kinetix_board/features/toolkit/noise_source.dart';
+import 'package:kinetix_board/features/toolkit/remote_toolkit.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
+import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 /// A microphone that reports whatever level the test sends.
@@ -381,6 +385,69 @@ void main() {
       final moved = tester.getTopLeft(find.byKey(const Key('toolkit-dice'))) - before;
       expect(moved.dx, lessThan(-260));
       expect(moved.dy, greaterThan(80));
+      k.dispose();
+    });
+  });
+
+  group('the phone remote drives the toolkit', () {
+    ImageElement page() => ImageElement(id: newElementId(), rect: const Rect.fromLTWH(0, 0, 1600, 900), bytes: Uint8List(4), backdrop: true);
+
+    test('timer, picker and imported slides', () async {
+      final wb = WhiteboardController();
+      final k = ToolkitController(roster: () => _class(3), random: math.Random(1));
+      var changes = 0;
+      final remote = ToolkitRemote(kit: k, wb: wb, onChanged: () => changes++);
+      remote.startTimer(const Duration(seconds: 90));
+      expect(k.isOpen(ToolkitItem.timer), isTrue);
+      expect(remote.timerRunning, isTrue);
+      expect(k.timerTotal, const Duration(seconds: 90));
+      remote.stopTimer();
+      expect(remote.timerRunning, isFalse);
+      expect(changes, 2);
+      remote.pickStudent();
+      expect(k.isOpen(ToolkitItem.picker), isTrue);
+      expect(k.rolling, isTrue);
+
+      // No slides on a plain page.
+      expect(remote.slide, isNull);
+      expect(remote.nextSlide(), isFalse);
+      wb.addPages([
+        [page()],
+        [page()],
+        [page()],
+      ]);
+      expect(remote.slide, (index: 0, count: 3));
+      expect(remote.previousSlide(), isFalse);
+      expect(remote.nextSlide(), isTrue);
+      expect(remote.nextSlide(), isTrue);
+      expect(remote.slide, (index: 2, count: 3));
+      expect(remote.nextSlide(), isFalse, reason: 'the deck ends; pages go on with page.next');
+      expect(remote.previousSlide(), isTrue);
+      expect(wb.pageIndex, 2);
+      remote.dispose();
+      await Future<void>.delayed(const Duration(seconds: 2));
+      k.dispose();
+    });
+
+    testWidgets('commands from the phone reach the toolkit', (tester) async {
+      final wb = WhiteboardController();
+      final k = ToolkitController(roster: () => _class(3));
+      final board = BoardController()..skipEnrollment();
+      final remote = BoardRemote(
+        board: board,
+        wb: wb,
+        toolkit: ToolkitRemote(kit: k, wb: wb),
+        hooks: RemoteHooks(recording: () => false, startRecording: () async {}, stopRecording: () async {}, showPhoto: (_) {}, onAttached: () {}),
+      );
+      await remote.handle({'type': 'timer.start', 'seconds': 120});
+      expect(k.timerRunning, isTrue);
+      expect(remote.state['timerRunning'], isTrue);
+      await remote.handle({'type': 'timer.stop'});
+      expect(k.timerRunning, isFalse);
+      await remote.handle({'type': 'picker.pick'});
+      await tester.pump(const Duration(seconds: 3));
+      expect(k.currentStudent, isNotNull);
+      remote.dispose();
       k.dispose();
     });
   });

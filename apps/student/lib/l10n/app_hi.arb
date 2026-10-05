@@ -498,5 +498,12 @@
   "conceptVideosHint": "कक्षा से पहले झलक के लिए और कक्षा के बाद दोहराने के लिए देखें।",
   "conceptVideosFromYouTube": "यूट्यूब से चलता है",
   "conceptVideosUnsupported": "वीडियो यहाँ नहीं चल सकते। अपने फ़ोन पर विद्यार्थी ऐप का उपयोग करें।",
-  "conceptVideoPlay": "{title} चलाएँ"
+  "conceptVideoPlay": "{title} चलाएँ",
+  "liveQuestion": "लाइव प्रश्न",
+  "liveQuestionTapToAnswer": "उत्तर देने के लिए टैप करें",
+  "liveQuestionYourAnswer": "आपका उत्तर: {answer} (आप बदल सकते हैं)",
+  "liveQuestionYourNumber": "आपका उत्तर",
+  "liveQuestionSend": "उत्तर भेजें",
+  "liveQuestionNotNumber": "कोई संख्या लिखें, जैसे 2.5",
+  "liveQuestionClosed": "आपके शिक्षक ने यह प्रश्न समाप्त कर दिया है।"
 }

@@ -290,7 +290,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s8, Kx.s24, Kx.s24),
       children: [
-        if (widget.ai.homeworkFromPreview) ...[AiNotice.preview(), const SizedBox(height: Kx.s16)],
+        if (widget.ai.homeworkFromPreview) ...[AiNotice.preview(offline: widget.ai.homeworkOffline), const SizedBox(height: Kx.s16)],
         TextField(
           key: const Key('homework-title'),
           controller: _title,

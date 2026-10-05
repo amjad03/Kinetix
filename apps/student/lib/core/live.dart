@@ -69,6 +69,12 @@ class LiveMessageNew extends LiveSignal {
   final String senderId;
 }
 
+/// The teacher asked the class a question on the board, or closed it (`poll.opened`,
+/// `poll.closed`): time to refresh the "Live question" banner.
+class LivePollChanged extends LiveSignal {
+  const LivePollChanged();
+}
+
 /// The connection dropped; the client keeps trying to reconnect on its own.
 class LiveDisconnected extends LiveSignal {
   const LiveDisconnected();
@@ -207,6 +213,9 @@ class SocketLiveConnection implements LiveConnection {
         _add(LiveMessageNew(conversationId: '${d['conversationId']}', messageId: '${d['messageId']}', senderId: '${d['senderId']}'));
       }
     });
+    for (final event in ['poll.opened', 'poll.closed']) {
+      socket.on(event, (_) => _add(const LivePollChanged()));
+    }
     socket.on('error', (d) {
       final message = d is Map ? '${d['message']}' : '$d';
       if (message == 'unauthorized') _add(const LiveRejected(LiveErrors.signInAgain));

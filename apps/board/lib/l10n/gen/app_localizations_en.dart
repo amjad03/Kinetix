@@ -83,8 +83,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String minutesShort(int minutes) {
-    return '$minutes min';
+  String minutesShort(int n) {
+    return '$n min';
   }
 
   @override
@@ -3337,4 +3337,238 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiPenDownloadFailed =>
       'Could not download the handwriting model. Connect to the internet once and try again.';
+
+  @override
+  String get aiOfflineLabel =>
+      'Offline sample — from the board\'s own notes (in English), because KINETIX AI cannot be reached';
+
+  @override
+  String get profilesTitle => 'Who is teaching?';
+
+  @override
+  String get profilesHint =>
+      'Teachers who have signed in on this board. Tap your name and enter your PIN.';
+
+  @override
+  String get profilesSignInFull => 'Sign in with the Teacher app';
+
+  @override
+  String get profilesLocked => 'Locked';
+
+  @override
+  String get profilesNoPin => 'No PIN yet';
+
+  @override
+  String pinEnterFor(String name) {
+    return 'Enter $name\'s PIN';
+  }
+
+  @override
+  String pinWrong(int n) {
+    return 'Wrong PIN. Tries left: $n';
+  }
+
+  @override
+  String get pinWrongNoCount => 'Wrong PIN. Try again.';
+
+  @override
+  String get pinLockedOut =>
+      'Too many wrong PINs. Sign in with the Teacher app, or ask your administrator to reset your PIN.';
+
+  @override
+  String get pinNoPin =>
+      'No PIN is set for you on this board. Sign in with the Teacher app, then set a PIN.';
+
+  @override
+  String get pinNeedsNetwork =>
+      'This board is offline and has no class open for you. Connect to the internet, or sign in with the Teacher app.';
+
+  @override
+  String get pinSetTitle => 'Set a PIN for this board';
+
+  @override
+  String get pinSetHint =>
+      '4 to 6 digits. Next time, tap your name on this board and enter your PIN instead of using the Teacher app.';
+
+  @override
+  String get pinConfirm => 'Enter the PIN again';
+
+  @override
+  String get pinMismatch => 'The two PINs are different. Try again.';
+
+  @override
+  String get pinWeak => 'Choose a PIN that is harder to guess.';
+
+  @override
+  String get pinSaved =>
+      'PIN saved. Use it to switch to your profile on this board.';
+
+  @override
+  String get pinSetAction => 'Set PIN';
+
+  @override
+  String get pinChangeAction => 'Change PIN';
+
+  @override
+  String get pinBanner =>
+      'Set a PIN to switch to your profile on this board without your phone.';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String get lockTitle => 'Board locked';
+
+  @override
+  String lockHint(String name) {
+    return '$name\'s class is still open. Enter the PIN to carry on.';
+  }
+
+  @override
+  String get switchTeacher => 'Switch teacher';
+
+  @override
+  String get lockBoard => 'Lock board';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get idleLockTitle => 'Lock when idle';
+
+  @override
+  String get idleLockHint =>
+      'For teachers with a PIN, the board locks after this many minutes without a touch. It signs out when the period ends.';
+
+  @override
+  String get idleOff => 'Off';
+
+  @override
+  String get projectorTitle => 'Projector';
+
+  @override
+  String get projectorHint =>
+      'Show the board to the class on a second screen (a projector or TV), without your tools and panels. 3D models and labs show beside it.';
+
+  @override
+  String get projectorEnabled => 'Use a second screen';
+
+  @override
+  String get projectorAuto => 'Start when a screen is connected';
+
+  @override
+  String get projectorNone => 'No second screen connected';
+
+  @override
+  String projectorShowingOn(String name) {
+    return 'Showing on $name';
+  }
+
+  @override
+  String get projectorShow => 'Show on second screen';
+
+  @override
+  String get projectorStop => 'Stop showing';
+
+  @override
+  String get projectorBlank => 'Blank the class screen';
+
+  @override
+  String get toolAskClass => 'Ask the class';
+
+  @override
+  String get askClassHint =>
+      'Students answer in the Student App, or hold up their answer card with the answer on top. No phones needed.';
+
+  @override
+  String get askQuestionLabel => 'Question (optional)';
+
+  @override
+  String get askAnswersLabel => 'Answers';
+
+  @override
+  String get askTrueFalse => 'True / False';
+
+  @override
+  String get askNumber => 'Number';
+
+  @override
+  String get askRightAnswer => 'Right answer (optional)';
+
+  @override
+  String get askNumberHint => 'For example 2.5';
+
+  @override
+  String get askNumberNoCards =>
+      'Number answers come from the Student App only (answer cards show A to D).';
+
+  @override
+  String get askStart => 'Ask';
+
+  @override
+  String get pollTrue => 'True';
+
+  @override
+  String get pollFalse => 'False';
+
+  @override
+  String get pollDefaultQuestion => 'Class check';
+
+  @override
+  String get pollNoCards =>
+      'No answer cards found in the photo. Ask the class to hold them up flat, then try again.';
+
+  @override
+  String pollCardsRead(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cards read.',
+      one: '1 card read.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pollUnknownCards(String cards) {
+    return 'Cards $cards are not in this class.';
+  }
+
+  @override
+  String get pollScanFailed => 'Could not read the photo. Try again.';
+
+  @override
+  String pollAnswered(int count, int total) {
+    return '$count of $total answered';
+  }
+
+  @override
+  String get pollEnded => 'Question ended';
+
+  @override
+  String get pollLiveInApp => 'Live in the Student App';
+
+  @override
+  String get pollNotSaved => 'Answer cards only; not saved (no class is open).';
+
+  @override
+  String get pollScanCards => 'Scan answer cards';
+
+  @override
+  String get pollShowAnswer => 'Show answer';
+
+  @override
+  String get pollEnd => 'End question';
+
+  @override
+  String get pollPutOnBoard => 'Put results on board';
+
+  @override
+  String get pollNoAnswersYet => 'No answers yet.';
+
+  @override
+  String get remoteConnected => 'Phone remote connected.';
+
+  @override
+  String get remotePhotoFailed => 'Could not show the photo from the phone.';
 }

@@ -1092,5 +1092,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "liveQuestion": "Live question",
+  "liveQuestionTapToAnswer": "Tap to answer",
+  "liveQuestionYourAnswer": "Your answer: {answer} (you can change it)",
+  "@liveQuestionYourAnswer": {"placeholders": {"answer": {"type": "String", "example": "B"}}},
+  "liveQuestionYourNumber": "Your answer",
+  "liveQuestionSend": "Send answer",
+  "liveQuestionNotNumber": "Type a number, like 2.5",
+  "liveQuestionClosed": "Your teacher has ended this question."
 }

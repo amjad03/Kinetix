@@ -17,6 +17,8 @@ import 'features/comfort/eye_comfort.dart';
 import 'features/concept_videos/concept_video_suggestions.dart';
 import 'features/enrollment/enroll_screen.dart';
 import 'features/insert/picture_library.dart';
+import 'features/profiles/profiles_ui.dart';
+import 'features/projector/projector_screen.dart';
 import 'l10n/l10n.dart';
 
 void main() {
@@ -33,6 +35,15 @@ void main() {
   // again if it should be on (docs/hardware/kiosk-mode.md).
   AppLifecycleListener(onResume: () => unawaited(board.kiosk.refresh()));
   runApp(KinetixBoardApp(controller: board));
+}
+
+/// Projector mode's second screen (features/projector): Android's Presentation and the Windows
+/// runner's projector window start a second Flutter engine here. It shows only what the board
+/// sends it.
+@pragma('vm:entry-point')
+void projectorMain() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const ProjectorApp());
 }
 
 /// A board on the in-memory demo server, open in its class (docs/product/demo-builds.md).
@@ -90,7 +101,11 @@ class KinetixBoardApp extends StatelessWidget {
             BoardStage.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
             BoardStage.needsEnrollment => EnrollScreen(controller: controller),
             // Concept videos are suggested over the board when a period starts.
-            BoardStage.board => ConceptVideoSuggestions(board: controller, child: BoardScreen(board: controller)),
+            // The lock screen and PIN offer of shared-board profiles go over it (features/profiles).
+            BoardStage.board => ConceptVideoSuggestions(
+              board: controller,
+              child: ProfileLock(board: controller, child: BoardScreen(board: controller)),
+            ),
           },
         ),
       ),

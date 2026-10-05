@@ -1,6 +1,7 @@
 'use client';
 
 import DriveFileRenameOutlineOutlined from '@mui/icons-material/DriveFileRenameOutlineOutlined';
+import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
 import KeyOutlined from '@mui/icons-material/KeyOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Alert from '@mui/material/Alert';
@@ -21,10 +22,14 @@ import { newEnrollmentCode, renameBoard } from '@/app/(dashboard)/boards/actions
 import type { CreatedDevice } from '@/lib/types';
 import { useI18n } from '@/i18n/client';
 import { EnrollmentCodeDialog } from './AddBoardDialog';
+import { BoardProfilesDialog } from './BoardProfilesDialog';
 
-type Open = null | 'rename' | 'reenrol';
+type Open = null | 'rename' | 'reenrol' | 'profiles';
 
-/** Per-board actions: rename, or issue a new enrolment code (replacing a tablet, lost code). */
+/**
+ * Per-board actions: rename, issue a new enrolment code (replacing a tablet, lost code), or see
+ * the teachers who use the board and reset their PINs.
+ */
 export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: string; enrolled: boolean; timeZone: string }) {
   const { t } = useI18n();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -69,7 +74,23 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
           </ListItemIcon>
           <ListItemText primary={t('boards.newCode')} secondary={enrolled ? t('boards.newCode.replacement') : t('boards.newCode.lost')} />
         </MenuItem>
+        {enrolled && (
+          <MenuItem
+            data-testid="board-profiles-open"
+            onClick={() => {
+              setAnchor(null);
+              setOpen('profiles');
+            }}
+          >
+            <ListItemIcon>
+              <GroupsOutlined fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('boards.profiles')} secondary={t('boards.profiles.hint')} />
+          </MenuItem>
+        )}
       </Menu>
+
+      {open === 'profiles' && <BoardProfilesDialog id={id} name={name} timeZone={timeZone} onClose={close} />}
 
       <Dialog open={open === 'rename'} onClose={pending ? undefined : close} maxWidth="xs" fullWidth>
         <form

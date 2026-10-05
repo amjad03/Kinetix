@@ -384,7 +384,7 @@ class AttendanceSheet {
 
 /// The board session the teacher is running, as returned by a claim or GET /v1/teacher/session.
 class BoardConnection {
-  BoardConnection({required this.sessionId, required this.boardName, this.sectionName, this.subjectName, this.startsAt, this.endsAt});
+  BoardConnection({required this.sessionId, required this.boardName, this.boardId, this.sectionName, this.subjectName, this.startsAt, this.endsAt});
 
   factory BoardConnection.fromJson(Map<String, dynamic> j) {
     final s = j['session'] as Map<String, dynamic>;
@@ -392,6 +392,7 @@ class BoardConnection {
     return BoardConnection(
       sessionId: s['sessionId'] as String,
       boardName: (j['board'] as Map)['name'] as String,
+      boardId: (j['board'] as Map)['id'] as String?,
       sectionName: (s['section'] as Map?)?['displayName'] as String?,
       subjectName: (s['subject'] as Map?)?['name'] as String?,
       startsAt: period == null ? null : ClockTime.parse(period['startsAt'] as String),
@@ -405,6 +406,20 @@ class BoardConnection {
   final String? subjectName;
   final ClockTime? startsAt;
   final ClockTime? endsAt;
+
+  /// The board's device id: the phone remote drives it (null from older servers).
+  final String? boardId;
+}
+
+/// One student's printed answer card: card [cardNo] belongs to them (the board reads it from a
+/// photo of the class).
+class AnswerCard {
+  const AnswerCard({required this.cardNo, required this.rollNo, required this.fullName});
+  factory AnswerCard.fromJson(Map<String, dynamic> j) =>
+      AnswerCard(cardNo: (j['cardNo'] as num).toInt(), rollNo: j['rollNo'] as String, fullName: j['fullName'] as String);
+  final int cardNo;
+  final String rollNo;
+  final String fullName;
 }
 
 class Homework {

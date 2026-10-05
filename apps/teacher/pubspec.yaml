@@ -15,6 +15,13 @@ dependencies:
     path: ../../packages/kinetix_ui
   kinetix_lesson:
     path: ../../packages/kinetix_lesson
+  # Printable answer cards (the board reads them from a photo of the class).
+  kinetix_cards:
+    path: ../../packages/kinetix_cards
+  pdf: ^3.11.3
+  printing: ^5.14.3
+  # Phone remote: a photo from the camera onto the board.
+  image_picker: ^1.2.3
   http: ^1.6.0
   intl: ^0.20.3
   mobile_scanner: ^7.4.2

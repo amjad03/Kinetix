@@ -35,6 +35,8 @@ void main() {
     expect(live.connectedWith, 'http://localhost:4000 tok');
     await tapAndSettle(tester, find.byKey(const Key('profileButton')));
     await tester.scrollUntilVisible(find.byKey(const Key('signOut')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('signOut')));
+    await tester.pumpAndSettle();
     await tapAndSettle(tester, find.byKey(const Key('signOut')));
     await tapAndSettle(tester, find.byKey(const Key('confirmSignOut')));
     expect(live.disconnects, greaterThan(0));

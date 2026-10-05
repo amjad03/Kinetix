@@ -1372,4 +1372,99 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get keepRecordingTooltip => 'ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಅವಧಿ ಮುಗಿದಾಗ ಅಳಿಸಲಾಗುವುದಿಲ್ಲ';
+
+  @override
+  String get phoneRemote => 'ಫೋನ್ ರಿಮೋಟ್';
+
+  @override
+  String remoteTitle(String board) {
+    return 'ರಿಮೋಟ್ · $board';
+  }
+
+  @override
+  String get remoteEnded => 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ತರಗತಿ ಮುಗಿದಿದೆ.';
+
+  @override
+  String get remotePhotoSent => 'ಫೋಟೋ ಬೋರ್ಡ್‌ನಲ್ಲಿದೆ.';
+
+  @override
+  String get remotePhotoFailed => 'ಫೋಟೋ ಕಳುಹಿಸಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get remotePages => 'ಬೋರ್ಡ್ ಪುಟಗಳು';
+
+  @override
+  String get remotePrevious => 'ಹಿಂದಿನದು';
+
+  @override
+  String get remoteNext => 'ಮುಂದಿನದು';
+
+  @override
+  String remotePageOf(int page, int pages) {
+    return 'ಪುಟ $page / $pages';
+  }
+
+  @override
+  String get remoteSlides => 'ಸ್ಲೈಡ್‌ಗಳು ಮತ್ತು PDF';
+
+  @override
+  String get remoteNoSlides => 'ಇಲ್ಲಿಂದ ತಿರುಗಿಸಲು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸ್ಲೈಡ್‌ಗಳು ಅಥವಾ PDF ತೆರೆಯಿರಿ.';
+
+  @override
+  String remoteSlideOf(int slide, int slides) {
+    return 'ಸ್ಲೈಡ್ $slide / $slides';
+  }
+
+  @override
+  String get remotePointer => 'ಪಾಯಿಂಟರ್';
+
+  @override
+  String get remotePointerHint => 'ಬೋರ್ಡ್‌ನಲ್ಲಿ ತೋರಿಸಲು ಇಲ್ಲಿ ಬೆರಳು ಸರಿಸಿ';
+
+  @override
+  String get remoteClassroom => 'ತರಗತಿ ಸಾಧನಗಳು';
+
+  @override
+  String remoteTimerMinutes(int minutes) {
+    return '$minutes ನಿಮಿಷದ ಟೈಮರ್';
+  }
+
+  @override
+  String get remoteTimerStop => 'ಟೈಮರ್ ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get remotePickStudent => 'ವಿದ್ಯಾರ್ಥಿಯನ್ನು ಆರಿಸಿ';
+
+  @override
+  String get remoteShowPhoto => 'ಫೋಟೋ ತೋರಿಸಿ';
+
+  @override
+  String get remoteStartRecording => 'ಪಾಠ ರೆಕಾರ್ಡ್ ಮಾಡಿ';
+
+  @override
+  String get remoteStopRecording => 'ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get answerCards => 'ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳು';
+
+  @override
+  String get answerCardsMenuBody => 'ಫೋನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಉತ್ತರಿಸಲು ಕಾರ್ಡ್‌ಗಳನ್ನು ಮುದ್ರಿಸಿ';
+
+  @override
+  String get answerCardsBody =>
+      'ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಹಾಜರಿ ಸಂಖ್ಯೆಯ ಪ್ರಕಾರ ಒಂದು ಕಾರ್ಡ್. ಬೋರ್ಡ್‌ನ \"ತರಗತಿಯನ್ನು ಕೇಳಿ\" ಯಲ್ಲಿ ಅವರು ಉತ್ತರ ಮೇಲಿರುವಂತೆ ಕಾರ್ಡ್ ಎತ್ತುತ್ತಾರೆ, ಬೋರ್ಡ್ ಒಂದೇ ಫೋಟೋದಿಂದ ಇಡೀ ತರಗತಿಯನ್ನು ಓದುತ್ತದೆ.';
+
+  @override
+  String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
+
+  @override
+  String answerCardsReady(int count, String className) {
+    return '$className ತರಗತಿಯ $count ಕಾರ್ಡ್‌ಗಳು ಮುದ್ರಣಕ್ಕೆ ಸಿದ್ಧ.';
+  }
+
+  @override
+  String get answerCardsFailed => 'ಕಾರ್ಡ್‌ಗಳನ್ನು ಮಾಡಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get print => 'ಮುದ್ರಿಸಿ';
 }

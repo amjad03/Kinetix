@@ -8,6 +8,7 @@ import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../board/connect_screen.dart';
+import '../remote/remote_screen.dart';
 import '../plans/lesson_plan_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import 'today_controller.dart';
@@ -85,7 +86,13 @@ class TodayTab extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
                 sliver: SliverToBoxAdapter(
                   child: controller.connection != null
-                      ? _ConnectedCard(connection: controller.connection!, onEnd: () => _endClass(context))
+                      ? _ConnectedCard(
+                          connection: controller.connection!,
+                          onEnd: () => _endClass(context),
+                          onRemote: controller.connection!.boardId == null
+                              ? null
+                              : () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RemoteScreen(api: api, connection: controller.connection!))),
+                        )
                       : _ConnectCard(onConnect: () => _connect(context)),
                 ),
               ),
@@ -268,10 +275,13 @@ class _ConnectCard extends StatelessWidget {
 }
 
 class _ConnectedCard extends StatelessWidget {
-  const _ConnectedCard({required this.connection, required this.onEnd});
+  const _ConnectedCard({required this.connection, required this.onEnd, this.onRemote});
 
   final BoardConnection connection;
   final VoidCallback onEnd;
+
+  /// Opens the phone remote for this board.
+  final VoidCallback? onRemote;
 
   @override
   Widget build(BuildContext context) {
@@ -322,6 +332,18 @@ class _ConnectedCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (onRemote != null) ...[
+              const SizedBox(height: Kx.s8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  key: const Key('openRemote'),
+                  onPressed: onRemote,
+                  icon: const Icon(Icons.settings_remote_outlined, size: 18),
+                  label: Text(context.l10n.phoneRemote),
+                ),
+              ),
+            ],
           ],
         ),
       ),

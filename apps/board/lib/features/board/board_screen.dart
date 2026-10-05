@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dScope, Model3dSnapshot;
+import 'package:kinetix_3d/kinetix_3d.dart' show Model3dMirror, Model3dScope, Model3dSnapshot;
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -23,9 +23,14 @@ import '../ai/ai_panel.dart';
 import '../ai/homework_panel.dart';
 import '../ai/quiz_panel.dart';
 import '../books/books_panel.dart';
+import '../class_check/class_check.dart';
 import '../concept_videos/concept_video_suggestions.dart';
 import '../kiosk/kiosk_ui.dart';
 import '../plan/plan_timer.dart';
+import '../profiles/profile_boards.dart';
+import '../profiles/profiles_ui.dart';
+import '../projector/projector_controller.dart';
+import '../projector/projector_ui.dart';
 import '../plan/todays_plan_panel.dart';
 import '../recording/recording_ui.dart';
 import '../help/help_sheet.dart';
@@ -34,9 +39,12 @@ import '../help/tour.dart';
 import '../insert/document_import.dart';
 import '../insert/insert_actions.dart';
 import '../reader/read_aloud.dart';
+import '../remote/board_remote.dart';
+import '../remote/board_toolkit.dart';
 import '../signin/sign_in_dialog.dart';
 import '../sims/sims.dart';
 import '../toolkit/toolkit_controller.dart';
+import '../toolkit/remote_toolkit.dart';
 import '../toolkit/toolkit_layer.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
@@ -117,6 +125,11 @@ class _BoardScreenState extends State<BoardScreen> {
   SessionContext? _captureTeacher;
   bool _captureStarting = false;
 
+  /// "Ask the class" (features/class_check) and the phone remote (features/remote).
+  late final ClassCheck _classCheck = ClassCheck(board);
+  late final BoardRemote _remote;
+  late final ToolkitRemote _remoteToolkit = ToolkitRemote(kit: _kit, wb: _wb, onChanged: () => _remote.sendState());
+
   /// Streams the board while school leaders or the class watch it live.
   late final LiveStream _live = LiveStream(board: _wb, send: (events) => board.sendLiveFrame(events));
 
@@ -136,6 +149,9 @@ class _BoardScreenState extends State<BoardScreen> {
       ..captureBoard = _captureForAi
       ..openSplit = _openSplit;
     _lastSessionId = board.session?.sessionId;
+    // Projector mode and shared-board profiles (features/projector, features/profiles).
+    board.projector.attach(ProjectorSource(board: _wb, background: () => _background, canvas: () => _canvasSize, captureSplit: _captureLabForProjector));
+    board.profiles.onSwitch = (from, to) => switchProfileBoard(_wb, _canvasSize, _profileBoards, from, to);
     _planTimer = PlanTimer(board);
     _pen = AiPenController(_wb, handwriting: board.handwriting)
       ..onNotice = _aiPenNotice
@@ -143,14 +159,53 @@ class _BoardScreenState extends State<BoardScreen> {
     _applyClass();
     WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_firstRunTour()));
     unawaited(_loadLetterSize());
+    _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
+  }
+
+  /// The toolkit as the phone remote drives it: the timer, the name picker and imported slides.
+  BoardToolkit _toolkit() => _remoteToolkit;
+
+  RemoteHooks _remoteHooks() => RemoteHooks(
+    recording: () => _capture != null,
+    startRecording: _toggleRecording,
+    stopRecording: _stopRecording,
+    showPhoto: (bytes) => unawaited(_addPhoto(bytes)),
+    onAttached: () {
+      if (mounted) showBoardMessage(context, context.l10n.remoteConnected);
+    },
+  );
+
+  /// A photo from the teacher's phone, on the page.
+  Future<void> _addPhoto(Uint8List bytes) async {
+    try {
+      final image = await decodeImageFromList(bytes);
+      final w = math.min(720.0, image.width.toDouble());
+      final h = w * image.height / math.max(1, image.width);
+      image.dispose();
+      _wb.insert([ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: bytes)]);
+    } catch (_) {
+      if (mounted) showBoardMessage(context, context.l10n.remotePhotoFailed);
+    }
+  }
+
+  /// "Put results on board": the question's bar chart as a picture on the page.
+  void _addPollResults(Uint8List png) {
+    final size = _pngSize(png);
+    _wb.insert([ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, size.width, size.height), bytes: png)]);
   }
 
   @override
   void dispose() {
     board.removeListener(_onBoardChanged);
+    board.projector.attach(null);
+    board.profiles.onSwitch = null;
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
     _live.stop();
+    _remote.dispose();
+    _remoteToolkit.dispose();
+    _practice?.dispose();
+    _classCheck.dispose();
     _capture?.dispose();
     _pen.dispose();
     _wb.dispose();
@@ -159,7 +214,6 @@ class _BoardScreenState extends State<BoardScreen> {
     _ai.dispose();
     _planTimer.dispose();
     _kit.dispose();
-    _practice?.dispose();
     super.dispose();
   }
 
@@ -301,12 +355,23 @@ class _BoardScreenState extends State<BoardScreen> {
     _panel = PanelKind.books;
   });
 
+  /// Sign in: "Who is teaching?" first when teachers have PINs on this board (features/profiles).
   Future<void> _signIn() async {
-    final api = board.api;
-    if (api == null) {
+    if (board.api == null) {
       showComingSoon(context, context.l10n.signInUnregistered);
       return;
     }
+    await showSignInChoice(context, board, _signInWithTeacherApp);
+  }
+
+  // Each teacher's own whiteboard when they switch with a PIN, and the lab for the projector.
+  final ProfileBoardStore _profileBoards = FileProfileBoardStore();
+  Future<Uint8List?> _captureLabForProjector() async =>
+      _panel == PanelKind.split && _splitContent == SplitContent.lab ? captureBoundaryPng(_splitKey) : null;
+
+  Future<void> _signInWithTeacherApp() async {
+    final api = board.api;
+    if (api == null || !mounted) return;
     setState(() => _signInOpen = true);
     await showDialog<void>(
       context: context,
@@ -321,6 +386,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _wb.background = b;
     _capture?.background = b;
     _live.background = b;
+    board.projector.background = b;
     setState(() {});
   }
 
@@ -815,7 +881,6 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   void _endPractice() {
-    _practice?.dispose();
     final before = _beforePractice;
     setState(() {
       _practice = null;
@@ -862,6 +927,10 @@ class _BoardScreenState extends State<BoardScreen> {
     for (final t in ToolkitItem.values) ToolEntry(toolkitIcon(t), toolkitName(l, t), toolkitColor(t), () => _showKit(t)),
     ToolEntry(Icons.science, l.simTitle, const Color(0xFFC58AF9), () => unawaited(_openSim())),
     ToolEntry(Icons.record_voice_over_outlined, l.readerTitle, const Color(0xFF81C995), _readPage),
+    ToolEntry(Icons.how_to_vote_outlined, l.toolAskClass, const Color(0xFF8AB4F8), () {
+      setState(() => _popover = null);
+      unawaited(_classCheck.ask(context));
+    }),
     ToolEntry(Icons.how_to_reg_outlined, l.toolAttendance, const Color(0xFF81C995), () {
       setState(() => _popover = null);
       _attendance();
@@ -971,6 +1040,7 @@ class _BoardScreenState extends State<BoardScreen> {
     InkLabels.answerCover = l.answerCover;
     return Model3dScope(
       onSnapshot: _addModelSnapshot,
+      mirror: Model3dMirror(wanted: () => board.projector.wantsPictures, send: board.projector.send3d),
       child: Focus(
       autofocus: true,
       onKeyEvent: _onKey,
@@ -1147,6 +1217,8 @@ class _BoardScreenState extends State<BoardScreen> {
               ),
             ),
           ),
+        Positioned.fill(child: ClassCheckOverlay(check: _classCheck, onPutOnBoard: _addPollResults)),
+        Positioned.fill(child: RemotePointer(remote: _remote)),
         if (!_hidden && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
         if (!_hidden && !rails)
           Positioned(

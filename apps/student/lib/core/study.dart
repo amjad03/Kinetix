@@ -24,7 +24,7 @@ class StudyController extends ChangeNotifier {
   DateTime get today => summary?.today ?? DateTime.now();
 
   /// Everything on Today. Each part fails on its own, so one problem never hides the rest.
-  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans()]);
+  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadQuestion(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans()]);
 
   Future<void> loadSummary() async {
     loading = true;
@@ -58,6 +58,29 @@ class StudyController extends ChangeNotifier {
       // Offline: the next refresh tries again.
     }
     return live;
+  }
+
+  // -- Live question (asked on the board) ------------------------------------------------------
+
+  /// The question open in the class now, if any (the "Live question" banner).
+  ClassQuestion? question;
+
+  Future<ClassQuestion?> loadQuestion() async {
+    try {
+      question = await api.classQuestion();
+      notifyListeners();
+    } on ApiException {
+      // Offline: the banner comes back on the next refresh.
+    }
+    return question;
+  }
+
+  /// Answers the open question. Throws [ApiException] (closed, not a number…).
+  Future<void> answerQuestion(String answer) async {
+    final q = question;
+    if (q == null) return;
+    q.myAnswer = await api.answerQuestion(q.id, answer);
+    notifyListeners();
   }
 
   // -- Results and library ----------------------------------------------------------------------
