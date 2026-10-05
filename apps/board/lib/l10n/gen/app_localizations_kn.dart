@@ -3571,4 +3571,7 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get helpErase3 =>
       'ಅಥವಾ ಬೋರ್ಡ್ ಮೇಲೆ ಎರಡು ಬೆರಳುಗಳಿಂದ ಟ್ಯಾಪ್ ಮಾಡಿ (ಅನ್‌ಡು); ಮೂರು ಬೆರಳುಗಳಿಂದ ರೀಡು.';
+
+  @override
+  String get toolMore => 'ಇನ್ನಷ್ಟು';
 }

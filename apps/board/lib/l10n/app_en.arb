@@ -2111,5 +2111,6 @@
   "remotePhotoFailed": "Could not show the photo from the phone.",
   "fingerTapsTitle": "Finger taps",
   "fingerTapsHint": "Tap the board with two fingers to undo, with three fingers to redo.",
-  "helpErase3": "Or tap the board with two fingers to undo; three fingers redo."
+  "helpErase3": "Or tap the board with two fingers to undo; three fingers redo.",
+  "toolMore": "More"
 }

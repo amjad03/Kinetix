@@ -3582,4 +3582,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpErase3 =>
       'Or tap the board with two fingers to undo; three fingers redo.';
+
+  @override
+  String get toolMore => 'More';
 }

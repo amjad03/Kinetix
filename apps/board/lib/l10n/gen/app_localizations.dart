@@ -6213,6 +6213,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Or tap the board with two fingers to undo; three fingers redo.'**
   String get helpErase3;
+
+  /// No description provided for @toolMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get toolMore;
 }
 
 class _AppLocalizationsDelegate

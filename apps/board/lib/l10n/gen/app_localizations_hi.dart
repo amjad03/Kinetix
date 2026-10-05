@@ -3562,4 +3562,7 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get helpErase3 =>
       'या बोर्ड पर दो उँगलियों से टैप करें (अनडू); तीन उँगलियों से रीडू।';
+
+  @override
+  String get toolMore => 'और';
 }
