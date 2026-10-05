@@ -1,0 +1,575 @@
+// MCA (two years), Bangalore University. Semesters 1-3.
+file: bu-mca
+curriculum: bu-pg | Bangalore University (PG) | pg
+programme: MCA
+scheme: BU MCA CBCS | 2024-25
+! The course list follows the BU two-year MCA CBCS scheme as commonly listed; confirm titles, codes and semesters against the current BU MCA regulations.
+! Semester 4 (major project and internship) and the Sem 3 elective baskets beyond Cyber Security are not written; lab courses are covered through the theory topics.
+
+# mca-1-mathematical-foundations | 1 | Mathematical Foundations of Computer Science
+## Logic and Proofs
+### Propositional and predicate logic
+= Logical equivalence, inference rules and proof techniques.
+- Rules of inference: modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism, resolution.
+- Normal forms: CNF (conjunction of clauses) and DNF (disjunction of conjunctions).
+- Proof methods: direct, contrapositive, contradiction, and mathematical induction (base case and inductive step).
+> Derive conclusions with rules of inference
+> Prove statements by induction
+hook: Every program that sorts correctly for n items also works for n + 1 items. Does it then work for every n?
+ex: Prove 1 + 2 + … + n = n(n + 1)/2. Base: n = 1 gives 1 = 1.
+ex: Step: if true for k, then 1 + … + k + (k + 1) = k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2.
+q: What does modus tollens infer from p → q and ¬q? || ¬p.
+terms: induction; contrapositive; CNF; inference rule
+## Relations and Lattices
+### Relations, partial orders and lattices
+= Equivalence relations, partial orders, Hasse diagrams and lattices.
+- An equivalence relation partitions a set into equivalence classes.
+- A partial order is reflexive, antisymmetric and transitive; a Hasse diagram draws it without loops or implied edges.
+- A lattice is a poset where every pair has a least upper bound (join) and greatest lower bound (meet).
+> Draw Hasse diagrams
+> Test whether a poset is a lattice
+## Combinatorics and Recurrences
+### Counting and recurrence relations
+= Permutations, combinations, inclusion–exclusion and solving recurrences.
+- Inclusion–exclusion: |A ∪ B ∪ C| = Σ|A| − Σ|A ∩ B| + |A ∩ B ∩ C|.
+- Linear homogeneous recurrence aₙ = c₁aₙ₋₁ + c₂aₙ₋₂ is solved by roots of r² − c₁r − c₂ = 0.
+- Generating functions encode sequences as power series.
+> Count with inclusion–exclusion
+> Solve linear recurrence relations
+## Graph Theory
+### Graphs, trees and algorithms
+= Connectivity, planar graphs, colouring and spanning trees.
+- Euler's formula for connected planar graphs: V − E + F = 2.
+- Chromatic number χ(G) is the fewest colours so adjacent vertices differ; planar graphs need at most 4.
+- Kruskal's and Prim's algorithms find minimum spanning trees.
+> Apply Euler's formula
+> Colour graphs and find MSTs
+## Automata Basics
+### Finite automata and regular languages
+= DFA, NFA, regular expressions and their equivalence.
+- A DFA has exactly one transition per symbol from each state; an NFA may have several or ε-moves.
+- Every NFA can be converted to an equivalent DFA (subset construction).
+- Regular expressions, DFAs and NFAs describe the same class: regular languages.
+> Design a DFA for a language
+> Convert an NFA to a DFA
+
+# mca-1-data-structures-algorithms | 1 | Data Structures and Algorithms
+## Analysis of Algorithms
+### Asymptotic analysis and recurrences
+= Big-O, Ω, Θ, amortised analysis and the master theorem.
+- Master theorem for T(n) = aT(n/b) + f(n): compare f(n) with n^(log_b a).
+- Amortised analysis averages cost over a sequence of operations (e.g. dynamic array doubling is O(1) amortised per push).
+- Space complexity counts extra memory used.
+> Analyse algorithms asymptotically
+> Use amortised analysis
+## Linear Structures
+### Stacks, queues, lists and hashing
+= Linear data structures and hash tables.
+- Stacks (LIFO) and queues (FIFO) via arrays or linked lists; deques allow both ends.
+- Hashing maps keys to slots: h(k) = k mod m; collisions resolved by chaining or open addressing (linear and quadratic probing, double hashing).
+- Load factor α = n ÷ m; expected search time with chaining is O(1 + α).
+> Implement a hash table with collision handling
+> Choose a linear structure for a task
+## Trees
+### Balanced search trees and heaps
+= BSTs, AVL trees, B-trees and binary heaps.
+- AVL trees keep balance factor in {−1, 0, 1} by rotations (LL, RR, LR, RL); height O(log n).
+- B-trees of order m keep nodes at least half full; used in databases and file systems.
+- A binary heap supports insert and extract-min in O(log n); heapsort is O(n log n).
+> Insert into an AVL tree with rotations
+> Build and use a heap
+hook: A BST built from sorted input becomes a linked list. How do AVL trees stop that?
+ex: Insert 10, 20, 30 into an AVL tree: 10 becomes unbalanced (balance −2, RR case).
+ex: A left rotation at 10 makes 20 the root with children 10 and 30.
+q: What is the height bound of an AVL tree with n nodes? || O(log n), about 1.44 log₂ n at most.
+terms: balance factor; rotation; heap; B-tree
+## Graph Algorithms
+### Shortest paths and spanning trees
+= BFS, DFS, topological sort, Dijkstra, Bellman–Ford and Floyd–Warshall.
+- Topological sort orders a DAG's vertices so every edge goes forward (DFS finishing times).
+- Dijkstra with a binary heap runs in O((V + E) log V); needs non-negative weights.
+- Bellman–Ford handles negative weights and detects negative cycles in O(VE).
+> Run shortest path algorithms by hand
+> Topologically sort a DAG
+## Algorithm Design
+### Greedy, dynamic programming and backtracking
+= Design paradigms with classic examples.
+- Greedy: Huffman coding, activity selection, fractional knapsack.
+- Dynamic programming: LCS, matrix chain multiplication, 0/1 knapsack, edit distance.
+- Backtracking: N-queens, subset sum, graph colouring; branch and bound for optimisation.
+> Choose a design paradigm for a problem
+> Write a DP recurrence and fill its table
+
+# mca-1-dbms | 1 | Database Management Systems
+## Data Modelling
+### ER and relational models
+= ER modelling, mapping to relations and keys.
+- ER constructs: entities, attributes, relationships, cardinality, participation, weak entities, specialisation and generalisation.
+- Mapping: each strong entity to a table; M:N relationships to a separate table with both keys.
+- Keys: super, candidate, primary, alternate, foreign.
+> Model a domain as an ER diagram
+> Map ER diagrams to relations
+## Relational Algebra and SQL
+### Relational algebra, calculus and advanced SQL
+= Query languages and advanced SQL features.
+- Relational algebra operations: σ, π, ∪, −, ×, ⋈, ÷ (division for "for all" queries).
+- SQL features: joins, nested and correlated subqueries, views, window functions (ROW_NUMBER, RANK, SUM OVER).
+- Triggers and stored procedures run logic inside the database.
+> Write complex SQL queries
+> Express queries in relational algebra
+ex: Top earner per department: SELECT * FROM (SELECT e.*, RANK() OVER (PARTITION BY dept ORDER BY salary DESC) r FROM emp e) t WHERE r = 1;
+q: Which relational algebra operator answers "students enrolled in all courses"? || Division (÷).
+## Normalisation
+### Dependencies and normal forms
+= Armstrong's axioms, closures, keys and normal forms up to BCNF and 4NF.
+- Armstrong's axioms: reflexivity, augmentation, transitivity.
+- Attribute closure X⁺ finds all attributes determined by X; X is a superkey if X⁺ contains all attributes.
+- BCNF: every non-trivial FD X → Y has X a superkey; 4NF removes non-trivial multivalued dependencies.
+> Compute attribute closures and candidate keys
+> Decompose relations into BCNF losslessly
+## Storage and Indexing
+### Indexing and query processing
+= File organisation, B+ tree and hash indexes, and query optimisation.
+- B+ trees keep all records in leaves linked for range scans.
+- Clustered index orders the data file; a table has at most one.
+- Query optimisation chooses a plan by estimated cost; push selections down early.
+> Choose an index for a workload
+> Read a query execution plan
+## Transactions
+### Concurrency control and recovery
+= Serialisability, locking, timestamps and log-based recovery.
+- Conflict serialisability is tested with a precedence graph (acyclic means serialisable).
+- Strict two-phase locking holds exclusive locks until commit, preventing cascading aborts.
+- Write-ahead logging: log records reach disk before data pages; ARIES uses analysis, redo and undo.
+> Test a schedule for serialisability
+> Explain recovery with write-ahead logging
+## NoSQL
+### NoSQL databases
+= Key-value, document, column-family and graph stores, and the CAP theorem.
+- CAP theorem: a distributed system can guarantee only two of consistency, availability and partition tolerance at once.
+- BASE: basically available, soft state, eventually consistent.
+- Examples: Redis (key-value), MongoDB (document), Cassandra (column-family), Neo4j (graph).
+> Choose a NoSQL model for an application
+> Explain the CAP trade-off
+
+# mca-1-operating-systems | 1 | Operating Systems
+## Processes and Threads
+### Process management and scheduling
+= Process concept, threads and CPU scheduling algorithms.
+- Scheduling criteria: CPU utilisation, throughput, turnaround, waiting and response time.
+- Algorithms: FCFS, SJF/SRTF, priority, round robin, multilevel feedback queue.
+- User-level vs kernel-level threads; many-to-one, one-to-one and many-to-many models.
+> Compute scheduling metrics
+> Compare threading models
+## Synchronisation
+### Synchronisation and deadlocks
+= Critical sections, semaphores, monitors and deadlock handling.
+- Peterson's solution satisfies mutual exclusion, progress and bounded waiting for two processes.
+- Monitors encapsulate shared data with condition variables (wait, signal).
+- Deadlock handling: prevention, avoidance (Banker's), detection with recovery, or ignoring (ostrich).
+> Solve synchronisation problems with semaphores
+> Apply the Banker's algorithm
+## Memory Management
+### Paging and virtual memory
+= Paging, TLBs, demand paging and replacement policies.
+- Effective access time with TLB = h(t + m) + (1 − h)(t + 2m) for hit ratio h, TLB time t and memory time m.
+- Demand paging loads pages on a page fault.
+- LRU and optimal replacement do not suffer Belady's anomaly; FIFO can.
+> Compute effective memory access time
+> Simulate page replacement policies
+## Storage and File Systems
+### File systems and disk management
+= File system structure, allocation, free-space management and RAID.
+- Inodes store file metadata and block pointers (direct, single, double, triple indirect).
+- Free space: bitmap or linked list.
+- RAID 0 stripes, RAID 1 mirrors, RAID 5 stripes with distributed parity.
+> Compute maximum file size with inodes
+> Compare RAID levels
+## Security and Virtualisation
+### Protection, security and virtual machines
+= Access control, threats and virtualisation.
+- Access matrix implemented as access control lists or capability lists.
+- Threats: malware, buffer overflow, privilege escalation, denial of service.
+- Hypervisors (type 1 and 2) and containers isolate workloads.
+> Design access control for a system
+> Explain virtualisation's role in the OS
+
+# mca-1-java | 1 | Object Oriented Programming with Java
+## Java Fundamentals
+### OOP in Java
+= Classes, objects, inheritance, polymorphism and interfaces.
+- Java is platform-independent through bytecode and the JVM.
+- Interfaces may have default and static methods (Java 8+); a class implements many interfaces.
+- Abstract classes can hold state and constructors; interfaces cannot hold instance state.
+> Design class hierarchies with interfaces
+> Use polymorphism effectively
+## Collections and Generics
+### Collections framework and generics
+= List, Set, Map, iterators and generic types.
+- ArrayList (fast random access), LinkedList (fast inserts), HashSet (unique, unordered), TreeSet (sorted), HashMap (key–value).
+- Generics give compile-time type safety: List<String>.
+- equals and hashCode must be overridden together for hash-based collections.
+> Choose a collection for a problem
+> Write generic methods and classes
+## Functional Java
+### Lambdas and streams
+= Lambda expressions, functional interfaces and the Stream API.
+- A lambda implements a functional interface (one abstract method), e.g. Comparator, Predicate, Function.
+- Streams: source, intermediate operations (filter, map, sorted) and a terminal operation (collect, reduce, forEach).
+- Streams are lazy; intermediate operations run only when a terminal operation is called.
+> Rewrite loops as stream pipelines
+> Use method references
+ex: names.stream().filter(n -> n.startsWith("A")).map(String::toUpperCase).sorted().collect(Collectors.toList());
+q: What kind of interface can a lambda implement? || A functional interface: one with a single abstract method.
+## Concurrency
+### Multithreading and concurrency utilities
+= Threads, synchronisation and java.util.concurrent.
+- ExecutorService manages thread pools; Future and CompletableFuture hold results.
+- synchronized, volatile and locks (ReentrantLock) control shared access.
+- Concurrent collections: ConcurrentHashMap, BlockingQueue.
+> Run tasks with an executor
+> Avoid race conditions
+## Database and Web
+### JDBC and servlets
+= Connecting to databases and building server-side web components.
+- JDBC steps: load driver, get Connection, create PreparedStatement, execute, process ResultSet, close.
+- PreparedStatement prevents SQL injection.
+- A servlet handles HTTP requests (doGet, doPost) in a container such as Tomcat; JSP mixes HTML with Java.
+> Perform CRUD with JDBC
+> Write a simple servlet
+
+# mca-2-computer-networks | 2 | Computer Networks
+## Network Architecture
+### Layered models and performance
+= OSI and TCP/IP models, delay and throughput.
+- Total delay = processing + queuing + transmission (L/R) + propagation (d/s).
+- Bandwidth–delay product = bandwidth × round-trip time.
+- Protocol layering gives modularity; encapsulation adds a header per layer.
+> Compute delays and bandwidth–delay product
+> Map protocols to layers
+## Link Layer
+### LANs and switching
+= Ethernet, MAC addressing, switches and VLANs.
+- A MAC address is 48 bits; ARP maps IP addresses to MAC addresses.
+- Switches learn MAC addresses and forward frames; VLANs separate broadcast domains.
+- Wi-Fi uses CSMA/CA with optional RTS/CTS.
+> Explain switch learning and forwarding
+> Explain ARP
+## Network Layer
+### IP, subnetting and routing
+= IPv4, CIDR, NAT, IPv6 and routing protocols.
+- CIDR a.b.c.d/n: 2^(32−n) addresses, 2^(32−n) − 2 usable hosts.
+- NAT maps private addresses (10/8, 172.16/12, 192.168/16) to public ones.
+- Intra-domain routing: RIP, OSPF; inter-domain: BGP.
+> Subnet an address block
+> Compare routing protocols
+q: Split 192.168.10.0/24 into 4 equal subnets. What prefix? || /26, with 64 addresses each.
+## Transport Layer
+### TCP reliability and congestion control
+= Sliding windows, flow control and congestion control.
+- TCP connection: three-way handshake (SYN, SYN-ACK, ACK); close with FIN.
+- Flow control uses the receiver's advertised window.
+- Congestion control: slow start (exponential), congestion avoidance (additive increase), multiplicative decrease on loss.
+> Trace TCP congestion window growth
+> Distinguish flow and congestion control
+## Application Layer and Security
+### Application protocols and network security
+= HTTP, DNS, email, and TLS and firewalls.
+- HTTP/1.1 persistent connections; HTTP/2 multiplexes streams; HTTP/3 runs over QUIC (UDP).
+- DNS hierarchy: root, TLD, authoritative servers; records A, AAAA, MX, CNAME.
+- TLS provides confidentiality and integrity with certificates; firewalls filter packets by rules.
+> Trace a web page request end to end
+> Explain how TLS secures traffic
+
+# mca-2-software-engineering | 2 | Software Engineering
+## Process Models
+### Plan-driven and agile processes
+= SDLC models, agile methods and DevOps.
+- Agile Manifesto values individuals, working software, customer collaboration and responding to change.
+- Scrum roles: product owner, scrum master, developers; events: sprint, planning, daily scrum, review, retrospective.
+- DevOps combines development and operations with CI/CD pipelines.
+> Choose a process model
+> Run a Scrum sprint
+## Requirements
+### Requirements engineering
+= Elicitation, specification, validation and user stories.
+- User story: "As a <role>, I want <goal> so that <benefit>", with acceptance criteria.
+- IEEE 830 / ISO 29148 describe SRS contents.
+- Requirements traceability links requirements to design, code and tests.
+> Write user stories with acceptance criteria
+> Validate requirements
+## Design
+### Architecture and design patterns
+= Architectural styles, UML and design patterns.
+- Styles: layered, client–server, MVC, microservices, event-driven.
+- SOLID principles guide object-oriented design.
+- Patterns: creational (Singleton, Factory), structural (Adapter, Decorator), behavioural (Observer, Strategy).
+> Choose an architecture for a system
+> Apply common design patterns
+## Testing
+### Testing strategies
+= Unit, integration, system and acceptance testing, and test design.
+- Test-driven development writes a failing test first, then code, then refactors.
+- Black-box: equivalence classes, boundary values, decision tables; white-box: statement and branch coverage.
+- Regression testing re-runs tests after changes.
+> Design black-box and white-box tests
+> Explain TDD
+## Project Management and Quality
+### Estimation, metrics and quality
+= Function points, COCOMO II, risk and quality models.
+- Function points measure functionality from inputs, outputs, inquiries, files and interfaces.
+- Basic COCOMO effort E = a(KLOC)^b; development time D = c(E)^d.
+- Quality models: ISO 25010; process maturity: CMMI levels 1–5.
+> Estimate effort with function points or COCOMO
+> Describe CMMI levels
+
+# mca-2-web-technologies | 2 | Web Technologies
+## Client Side
+### HTML5 and CSS3
+= Semantic HTML, forms, CSS layout and responsive design.
+- Semantic elements (header, nav, main, article, footer) improve accessibility and SEO.
+- Box model: content, padding, border, margin; flexbox and grid lay out pages.
+- Media queries adapt layouts to screen sizes.
+> Build a responsive page with flexbox or grid
+> Write accessible forms
+### JavaScript and the DOM
+= Language basics, DOM manipulation, events and asynchronous code.
+- let and const are block-scoped; === compares without type coercion.
+- The DOM is manipulated with querySelector, addEventListener and element properties.
+- Promises and async/await handle asynchronous operations such as fetch.
+> Manipulate the DOM in response to events
+> Fetch data asynchronously
+## Server Side
+### Node.js and Express
+= Server-side JavaScript and building REST APIs.
+- Node.js runs JavaScript on an event loop with non-blocking I/O.
+- Express routes map HTTP methods and paths to handlers; middleware processes requests in order.
+- REST uses resources and HTTP verbs: GET read, POST create, PUT/PATCH update, DELETE remove.
+> Build a REST API with Express
+> Use middleware
+## Data and Frameworks
+### JSON, databases and front-end frameworks
+= Data exchange and component-based front ends.
+- JSON is the standard data format for web APIs.
+- Front-end frameworks (React, Angular, Vue) build UIs from components with state.
+- Single-page applications update the page without full reloads.
+> Consume a JSON API in a front end
+> Explain components and state
+## Web Security
+### Securing web applications
+= Common vulnerabilities and defences.
+- OWASP Top 10 includes broken access control, injection, cryptographic failures and security misconfiguration.
+- Prevent XSS by escaping output; prevent SQL injection with parameterised queries; prevent CSRF with tokens.
+- Use HTTPS, secure cookies (HttpOnly, Secure, SameSite) and hashed passwords (bcrypt, argon2).
+> Identify common web vulnerabilities
+> Apply defences in code
+
+# mca-2-python-data-science | 2 | Python Programming for Data Science
+! Some BU MCA schemes have Python Programming in Sem 1 and Machine Learning in Sem 2; confirm.
+## Python Essentials
+### Python for programmers
+= Data types, comprehensions, functions and modules.
+- Lists, tuples, sets and dicts; comprehensions build them concisely.
+- Functions are first-class; decorators wrap functions.
+- Virtual environments (venv) isolate dependencies; pip installs packages.
+> Write idiomatic Python
+> Manage packages in a virtual environment
+## NumPy and pandas
+### Data handling
+= Arrays, vectorisation, DataFrames, cleaning and grouping.
+- NumPy broadcasting applies operations across arrays of compatible shapes.
+- pandas: loc (labels) and iloc (positions); dropna, fillna for missing data.
+- groupby-aggregate summarises data by category; merge joins DataFrames.
+> Clean and transform a dataset
+> Summarise data with groupby
+## Visualisation
+### Visualising data
+= Matplotlib and Seaborn plots for exploration.
+- Choose charts by question: distribution (histogram, box plot), relationship (scatter), comparison (bar), trend (line).
+- Seaborn builds statistical plots on Matplotlib.
+- Label axes, units and titles; avoid misleading scales.
+> Make exploratory plots
+> Choose the right chart for a question
+@lab lab.graph-plotter
+## Statistics for Data Science
+### Exploratory statistics
+= Descriptive statistics, correlation and sampling.
+- describe() gives count, mean, std, min, quartiles and max.
+- Correlation (Pearson) measures linear association; it does not prove causation.
+- Train–test split avoids evaluating a model on the data it learned from.
+> Explore a dataset statistically
+> Split data for modelling
+## Machine Learning with scikit-learn
+### Building models
+= Regression, classification and evaluation with scikit-learn.
+- Workflow: split, fit, predict, evaluate (fit on training data only).
+- Regression metrics: MAE, RMSE, R²; classification: accuracy, precision, recall, F1.
+- Pipelines combine preprocessing (scaling, encoding) and the model.
+> Train and evaluate a model
+> Build a preprocessing pipeline
+
+# mca-3-artificial-intelligence-ml | 3 | Artificial Intelligence and Machine Learning | year=2025-26
+## Search and Reasoning
+### Intelligent agents and search
+= Agent types, uninformed and informed search, and adversarial search.
+- A* is optimal with an admissible heuristic (never overestimates) and complete in finite graphs.
+- Minimax with alpha–beta pruning searches game trees; best-case it examines about b^(d/2) nodes.
+- Constraint satisfaction uses backtracking with heuristics (MRV, forward checking).
+> Apply A* and minimax
+> Solve a constraint satisfaction problem
+## Supervised Learning
+### Regression and classification
+= Linear and logistic regression, decision trees, SVM and ensembles.
+- Linear regression minimises squared error; regularisation (ridge L2, lasso L1) curbs overfitting.
+- Logistic regression models P(y = 1) = 1 ÷ (1 + e^(−z)).
+- Decision trees split on information gain (entropy) or Gini; random forests and gradient boosting combine many trees.
+- SVM finds the maximum-margin hyperplane; kernels handle non-linear data.
+> Choose and train a supervised model
+> Explain bias–variance trade-off
+hook: A model scores 99% on training data and 60% on new data. What went wrong?
+ex: Entropy of a node with 4 yes and 4 no = −(0.5 log₂ 0.5 + 0.5 log₂ 0.5) = 1 bit.
+ex: A split giving pure child nodes (entropy 0) has information gain 1 bit, the maximum.
+q: What does L1 regularisation tend to do to weights? || Push some exactly to zero, giving sparse models.
+terms: overfitting; regularisation; information gain; ensemble
+## Unsupervised Learning
+### Clustering and dimensionality reduction
+= k-means, hierarchical clustering and PCA.
+- k-means alternates assigning points to the nearest centroid and recomputing centroids; choose k by the elbow method or silhouette score.
+- Hierarchical clustering builds a dendrogram (agglomerative or divisive).
+- PCA projects data onto orthogonal directions of maximum variance (eigenvectors of the covariance matrix).
+> Cluster data with k-means
+> Reduce dimensions with PCA
+## Neural Networks and Deep Learning
+### Deep learning basics
+= Multilayer perceptrons, backpropagation, CNNs and RNNs.
+- Backpropagation applies the chain rule to compute gradients; gradient descent updates weights: w ← w − η ∂L/∂w.
+- CNNs use convolution and pooling for images; RNNs and LSTMs process sequences.
+- Transformers use self-attention and underlie large language models.
+> Explain how a network is trained
+> Match architectures to data types
+## Model Evaluation and Ethics
+### Evaluation, validation and responsible AI
+= Cross-validation, metrics and fairness.
+- k-fold cross-validation estimates generalisation error.
+- ROC curve plots TPR against FPR; AUC summarises it.
+- Responsible AI: fairness, transparency, privacy and accountability.
+> Evaluate models with cross-validation and ROC
+> Identify bias risks in a model
+
+# mca-3-cloud-computing | 3 | Cloud Computing | year=2025-26
+## Cloud Concepts
+### Service and deployment models
+= IaaS, PaaS, SaaS, serverless and deployment models.
+- Serverless (FaaS) runs functions on demand and bills per execution.
+- Deployment models: public, private, hybrid, multi-cloud.
+- Elasticity scales resources automatically with load.
+> Choose a service model for a workload
+> Explain elasticity and scalability
+## Virtualisation and Containers
+### Virtual machines, Docker and Kubernetes
+= Hypervisors, containers and orchestration.
+- Containers package an application with its dependencies; images are built from a Dockerfile.
+- Kubernetes orchestrates containers: pods, deployments, services, autoscaling.
+- Containers start faster and use fewer resources than VMs but share the host kernel.
+> Containerise an application
+> Describe Kubernetes objects
+## Cloud Architecture
+### Designing for the cloud
+= Availability, scalability and cost.
+- Availability zones and regions provide fault isolation; design for failure.
+- Load balancers spread traffic; auto-scaling groups add or remove instances.
+- Pay-as-you-go pricing; reserved and spot instances reduce cost.
+> Design a highly available architecture
+> Estimate cloud costs
+## Storage and Data
+### Cloud storage and databases
+= Object, block and file storage, and managed databases.
+- Object storage (S3, Blob) for unstructured data; block storage for VM disks; file storage for shared file systems.
+- Managed relational (RDS, Cloud SQL) and NoSQL (DynamoDB, Firestore) databases.
+- Content delivery networks cache content near users.
+> Choose a storage service
+> Explain CDNs
+## Security and Governance
+### Cloud security
+= Identity and access management, encryption and compliance.
+- Shared responsibility model divides security duties between provider and customer.
+- IAM follows least privilege; use roles rather than long-lived keys.
+- Encrypt data at rest and in transit; monitor with logging and audit trails.
+> Apply least-privilege IAM
+> Explain the shared responsibility model
+
+# mca-3-big-data-analytics | 3 | Big Data Analytics | year=2025-26
+## Big Data Concepts
+### Characteristics of big data
+= The Vs of big data and analytics types.
+- Volume, velocity, variety, veracity and value.
+- Analytics types: descriptive, diagnostic, predictive, prescriptive.
+- Data lakes store raw data; data warehouses store structured, modelled data.
+> Characterise a big data problem
+> Distinguish data lakes and warehouses
+## Hadoop
+### HDFS and MapReduce
+= Distributed storage and batch processing.
+- HDFS splits files into blocks (128 MB default) replicated (3 by default) across DataNodes; the NameNode keeps metadata.
+- MapReduce: map emits key–value pairs, shuffle groups by key, reduce aggregates.
+- YARN manages cluster resources.
+> Trace a MapReduce word count
+> Explain HDFS replication
+## Spark
+### Apache Spark
+= In-memory processing with RDDs and DataFrames.
+- Spark keeps data in memory across stages, so iterative jobs run much faster than MapReduce.
+- Transformations (map, filter) are lazy; actions (count, collect) trigger execution.
+- Spark SQL, MLlib, Structured Streaming and GraphX extend the core.
+> Write Spark transformations and actions
+> Explain lazy evaluation
+## NoSQL and Streaming
+### NoSQL stores and stream processing
+= Column-family and document stores, and Kafka.
+- HBase and Cassandra store wide-column data for fast writes.
+- Kafka is a distributed log: producers write to topics; consumers read by offset.
+- Windowed aggregations process unbounded streams.
+> Choose a store for a big data workload
+> Explain publish–subscribe streaming
+## Analytics and Visualisation
+### Analytics pipeline
+= ETL/ELT, data quality and dashboards.
+- ETL transforms before loading; ELT loads then transforms in the warehouse.
+- Data quality dimensions: accuracy, completeness, consistency, timeliness.
+- Dashboards present KPIs for decisions.
+> Design a data pipeline
+> Assess data quality
+
+# mca-3-cyber-security | 3 | Cyber Security (elective) | year=2025-26
+## Security Fundamentals
+### CIA triad and threats
+= Security goals, threats, vulnerabilities and attacks.
+- CIA triad: confidentiality, integrity, availability.
+- Risk = Threat × Vulnerability × Impact (qualitatively).
+- Attacks: phishing, malware, ransomware, man-in-the-middle, DDoS, SQL injection.
+> Classify threats and attacks
+> Assess risk qualitatively
+## Cryptography
+### Symmetric, asymmetric and hashing
+= Encryption algorithms, digital signatures and PKI.
+- Symmetric (AES) uses one shared key; asymmetric (RSA, ECC) uses public and private keys.
+- Hash functions (SHA-256) give fixed-size digests; they should be collision-resistant.
+- A digital signature signs a hash with the private key; certificates bind public keys to identities.
+> Choose a cryptographic primitive for a need
+> Explain digital signatures and certificates
+## Network Security
+### Firewalls, IDS and VPNs
+= Perimeter and network defences.
+- Firewalls filter traffic (packet filter, stateful, application/next-generation).
+- IDS detects intrusions (signature or anomaly based); IPS also blocks them.
+- VPNs (IPsec, TLS) create encrypted tunnels.
+> Design network defences
+> Compare IDS and IPS
+## Application and Cyber Law
+### Secure development and cyber law in India
+= Secure coding, incident response and the legal framework.
+- Secure SDLC: threat modelling, code review, testing (SAST, DAST), patching.
+- Incident response: preparation, detection, containment, eradication, recovery, lessons learned.
+- IT Act, 2000 offences (e.g. section 66 computer-related offences, 66C identity theft); CERT-In requires reporting incidents within 6 hours.
+> Plan an incident response
+> Identify offences under the IT Act

@@ -83,3 +83,12 @@ When a course is checked, add `reviewed=yes` to its `#` line in the source and r
 - PG programmes were not moved to SEP; the course list follows the BU MBA CBCS scheme as commonly listed (Sem 1-2 core, Sem 3-4 strategy plus dual specialisation). Confirm paper titles, codes and semesters against the current BU MBA regulations.
 - Specialisation electives: only Security Analysis and Portfolio Management, Consumer Behaviour and Financial Derivatives are written. Not written: other Finance, Marketing, HR, Systems, Business Analytics, Logistics and Entrepreneurship electives; internship and project.
 - Business Communication and the soft-skills paper are not written.
+
+
+## MCA (bu-mca.txt, curriculum `bu-pg`, BU MCA CBCS (2024-25))
+
+- The course list follows the BU two-year MCA CBCS scheme as commonly listed; confirm titles, codes and semesters against the current BU MCA regulations.
+- Semester 4 (major project and internship) and the Sem 3 elective baskets beyond Cyber Security are not written; lab courses are covered through the theory topics.
+
+- **Python Programming for Data Science, MCA Semester 2**
+  - Some BU MCA schemes have Python Programming in Sem 1 and Machine Learning in Sem 2; confirm.
