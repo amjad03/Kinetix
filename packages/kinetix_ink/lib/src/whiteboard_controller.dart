@@ -198,7 +198,7 @@ class _Snapshot {
 /// can write at the same time. Changes to the elements bump [committed], so finished ink is not
 /// repainted on every move.
 class WhiteboardController extends ChangeNotifier implements RecordableBoard {
-  WhiteboardController({PalmMode palmMode = PalmMode.ignore}) : _palmMode = palmMode {
+  WhiteboardController({this.palmMode = PalmMode.ignore}) {
     _pages.add(WhiteboardPage());
   }
 
@@ -432,12 +432,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   }
 
   /// How large contacts (a palm, a fist) are treated; see [PalmMode].
-  PalmMode _palmMode;
-  PalmMode get palmMode => _palmMode;
-  set palmMode(PalmMode m) {
-    _palmMode = m;
-    notifyListeners();
-  }
+  /// Read on the next touch; nothing on the board changes, so it may be set while building.
+  PalmMode palmMode;
 
   // --- Undo ---------------------------------------------------------------------------------
 
@@ -933,8 +929,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   void pointerDown(int pointer, InkPoint p, {double scale = 1, bool palm = false, double contactRadius = 0, bool forceEraser = false}) {
     _scale = scale;
     var tool = _tool;
-    if (palm && _palmMode != PalmMode.off) {
-      if (_palmMode == PalmMode.ignore) return;
+    if (palm && palmMode != PalmMode.off) {
+      if (palmMode == PalmMode.ignore) return;
       tool = BoardTool.eraser;
     }
     if (forceEraser) tool = BoardTool.eraser;

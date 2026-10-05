@@ -238,7 +238,7 @@ void main() {
       expect(board.view.value.offset.dx, closeTo(40, 0.01));
     });
 
-    testWidgets('the setting turns them off; on a panel every finger writes', (tester) async {
+    testWidgets('the setting turns them off; on a panel they do not undo', (tester) async {
       await pump(tester, fingerTaps: false);
       await stroke(tester, const Offset(200, 200));
       await tap(tester, 2);
@@ -246,7 +246,9 @@ void main() {
 
       await pump(tester, multiWriter: true);
       await tap(tester, 2);
-      expect(board.elements, hasLength(2)); // two dots, one per finger
+      // On a panel two fingers together move the board: no undo, and no dots.
+      expect(board.elements, isEmpty);
+      expect(board.canUndo, isFalse);
     });
 
     testWidgets('a broad second finger is a finger, not a palm, so pinch works with palm rejection', (tester) async {
@@ -263,6 +265,83 @@ void main() {
       await tester.pump();
       expect(board.elements, isEmpty);
       expect(board.view.value.scale, closeTo(2, 0.01));
+    });
+  });
+
+  group('broad fingers (Android reports a finger\'s tool size)', () {
+    var t = const Duration(seconds: 5);
+    var id = 60;
+
+    Future<TestPointer> down(WidgetTester tester, Offset at, double radius) async {
+      final p = TestPointer(id++, PointerDeviceKind.touch);
+      t += const Duration(milliseconds: 16);
+      await tester.sendEventToBinding(p.down(at, timeStamp: t).copyWith(radiusMajor: radius));
+      return p;
+    }
+
+    Future<void> drag(WidgetTester tester, List<TestPointer> ps, List<Offset> by) async {
+      final from = [for (final p in ps) p.location!];
+      for (var i = 1; i <= 8; i++) {
+        t += const Duration(milliseconds: 40);
+        for (var k = 0; k < ps.length; k++) {
+          await tester.sendEventToBinding(ps[k].move(from[k] + by[k] * (i / 8), timeStamp: t));
+        }
+      }
+      for (final p in ps) {
+        await tester.sendEventToBinding(p.up(timeStamp: t));
+      }
+      await tester.pump();
+    }
+
+    for (final mode in [PalmMode.ignore, PalmMode.erase]) {
+      testWidgets('${mode.name}: the hand tool pans and two fingers pinch with broad contacts', (tester) async {
+        await pump(tester);
+        board.palmMode = mode;
+        board.tool = BoardTool.hand;
+        await drag(tester, [await down(tester, const Offset(500, 400), 40)], [const Offset(-80, -50)]);
+        expect(board.view.value.offset, within(distance: 0.5, from: const Offset(-80, -50)));
+
+        board.tool = BoardTool.pen;
+        final a = await down(tester, const Offset(500, 400), 30);
+        final b = await down(tester, const Offset(600, 400), 34);
+        await drag(tester, [a, b], [const Offset(-50, 0), const Offset(50, 0)]);
+        expect(board.elements, isEmpty);
+        expect(board.view.value.scale, closeTo(2, 0.01));
+      });
+
+      testWidgets('${mode.name}: Select drags what is selected with a broad finger', (tester) async {
+        await pump(tester);
+        board.palmMode = mode;
+        board.add(const NoteElement(id: 'n', rect: Rect.fromLTWH(300, 200, 200, 100), text: 'Hi', color: Colors.yellow));
+        board.tool = BoardTool.select;
+        board.select({'n'});
+        await drag(tester, [await down(tester, const Offset(400, 250), 45)], [const Offset(60, 40)]);
+        expect(board.elements.single.bounds.topLeft, within(distance: 0.5, from: const Offset(360, 240)));
+      });
+    }
+
+    testWidgets('on a panel, two fingers landing together pinch; apart or one after another they write', (tester) async {
+      await pump(tester, multiWriter: true);
+      board.palmMode = PalmMode.erase;
+      final a = await down(tester, const Offset(500, 400), 8);
+      final b = await down(tester, const Offset(600, 400), 9);
+      await drag(tester, [a, b], [const Offset(-50, 0), const Offset(50, 0)]);
+      expect(board.elements, isEmpty);
+      expect(board.view.value.scale, closeTo(2, 0.01));
+
+      final c = await down(tester, const Offset(300, 300), 8);
+      t += const Duration(milliseconds: 400);
+      final d = await down(tester, const Offset(360, 300), 8);
+      await drag(tester, [c, d], [const Offset(0, 60), const Offset(0, 60)]);
+      expect(board.elements, hasLength(2));
+    });
+
+    test('the first contact sets the usual finger size', () {
+      final d = PalmDetector();
+      expect(d.isPalm(30), isFalse); // a thumb on a phone
+      expect(d.isPalm(34), isFalse);
+      expect(d.isPalm(120), isTrue); // a palm
+      expect(PalmDetector().isPalm(60), isTrue); // far beyond any finger, even first
     });
   });
 }

@@ -41,8 +41,17 @@ class PalmDetector {
   double get threshold => math.max(24.0, _finger * 3);
 
   /// [radius] 0 means the screen does not report contact size: never a palm.
+  ///
+  /// Screens report sizes in their own units (Android sends the finger's tool size, often over
+  /// 24 logical pixels for a thumb), so the first contact is a finger unless it is far beyond
+  /// the starting guess, and sets the guess.
   bool isPalm(double radius) {
     if (radius <= 0) return false;
+    if (_seen == 0 && radius < threshold * 2) {
+      _seen = 1;
+      _finger = radius;
+      return false;
+    }
     if (radius >= threshold) return true;
     // A finger: learn from it (quickly at first, then slowly).
     _seen++;
@@ -143,6 +152,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   final Map<int, Offset> _touches = {}; // touch pointers, screen positions
   final Set<int> _drawing = {}; // pointers handed to the controller
   final Map<int, Offset> _downAt = {};
+  final Map<int, Duration> _downTime = {};
   int? _panPointer;
   Offset? _panLast;
   bool _pinching = false;
@@ -249,16 +259,22 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       // A second or third finger that lands at once is a tap or a pinch, never a palm (phones
       // report broad contacts for thumbs).
       final joining = _joinsTap(e);
+      // Moving the board or what is selected takes any part of the hand (a broad thumb too).
+      final moving = c.tool == BoardTool.hand || c.tool == BoardTool.select;
       // A palm or fist: rubbed out or ignored by the controller, never a finger.
-      if (!joining && c.palmMode != PalmMode.off && _palm.isPalm(e.radiusMajor)) {
+      if (!joining && !moving && c.palmMode != PalmMode.off && _palm.isPalm(e.radiusMajor)) {
         _drawing.add(e.pointer);
         c.pointerDown(e.pointer, _point(e), scale: _scale, palm: true, contactRadius: e.radiusMajor / _scale);
         return;
       }
+      // Where many write at once, two fingers that land together, a hand's span apart, still
+      // move and zoom the board (two children rarely start at the same instant side by side).
+      final pair = widget.multiWriter && (_pinching || _pairsWithFirst(e));
       _touches[e.pointer] = e.localPosition;
+      _downTime[e.pointer] = e.timeStamp;
       _trackTap(e, joining);
       final navigate = c.tool == BoardTool.hand || _fingersNavigate;
-      if (navigate || !widget.multiWriter) {
+      if (navigate || !widget.multiWriter || pair) {
         if (_touches.length >= 2) {
           // A second finger means "move the board": drop what the first finger began.
           for (final p in _touches.keys) {
@@ -337,6 +353,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   void _onUp(PointerUpEvent e) {
     _hold?.cancel();
     final down = _downAt.remove(e.pointer);
+    _downTime.remove(e.pointer);
     final wasTouch = _touches.remove(e.pointer) != null;
     if (wasTouch) _endTap(e);
     if (_pinching) {
@@ -377,6 +394,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   void _onCancel(PointerCancelEvent e) {
     _hold?.cancel();
     _downAt.remove(e.pointer);
+    _downTime.remove(e.pointer);
     if (_touches.remove(e.pointer) != null) _tapStart = null;
     if (_touches.length < 2) _pinching = false;
     if (e.pointer == _panPointer) _panPointer = null;
@@ -400,6 +418,17 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   }
 
   bool get _tapsOn => widget.fingerTaps && !widget.multiWriter;
+
+  /// The furthest apart two fingers of one hand land for a pinch where many write at once.
+  static const pairReach = 160.0;
+
+  /// Whether [e] lands with the one finger on the board, at once and close by.
+  bool _pairsWithFirst(PointerDownEvent e) {
+    if (_touches.length != 1) return false;
+    final first = _touches.keys.single;
+    final at = _downTime[first];
+    return at != null && e.timeStamp - at < WhiteboardCanvas.tapTimeout && (_touches[first]! - e.localPosition).distance <= pairReach;
+  }
 
   /// Whether this finger joins a finger tap or pinch begun a moment ago.
   bool _joinsTap(PointerDownEvent e) {
