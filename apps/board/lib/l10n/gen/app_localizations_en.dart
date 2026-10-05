@@ -3594,6 +3594,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kitLaw => 'Law';
 
   @override
+  String get kitAlgorithms => 'Algorithms';
+
+  @override
+  String get kitCsLabs => 'CS labs';
+
+  @override
+  String get kitDiagrams => 'Diagrams';
+
+  @override
+  String get stCodeLab => 'Code lab';
+
+  @override
   String get kitStats => 'Statistics';
 
   @override

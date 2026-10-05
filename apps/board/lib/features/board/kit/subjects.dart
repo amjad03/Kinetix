@@ -11,10 +11,10 @@ import '../../ai/ai_controller.dart';
 enum Subject { maths, physics, chemistry, biology, science, evs, geography, history, civics, commerce, management, law, statistics, english, languages, computer, art, general }
 
 /// The subject's own tools on the left rail.
-enum SubjectTool { equation, graph, geometry, numberLine, circuit, atom, chemEquation, timeline, flowchart, code, fourLine, wordCard, grammar, sheet, reader }
+enum SubjectTool { equation, graph, geometry, numberLine, circuit, atom, chemEquation, timeline, flowchart, code, fourLine, wordCard, grammar, sheet, reader, codeLab }
 
 /// Tabs of the subject kit on the right. "This lesson" always comes first.
-enum KitTab { lesson, formulas, physics, constants, periodic, ions, dates, words, logic, binary, stars, accounts, finance, management, law, stats }
+enum KitTab { lesson, formulas, physics, constants, periodic, ions, dates, words, logic, binary, stars, accounts, finance, management, law, stats, algorithms, csLabs, diagrams }
 
 /// How a subject looks and what it brings.
 class SubjectStyle {
@@ -185,9 +185,10 @@ const subjectStyles = <Subject, SubjectStyle>{
     icon: Icons.terminal,
     accent: Color(0xFF006879),
     paper: BoardBackground.dots,
-    tools: [SubjectTool.code, SubjectTool.flowchart],
+    tools: [SubjectTool.codeLab, SubjectTool.code, SubjectTool.flowchart],
     aiFirst: [AiView.quiz, AiView.homework, AiView.readBoard],
-    tabs: [KitTab.logic, KitTab.binary],
+    // The CS kit (kit/cs, packages/kinetix_cs), then the quick logic and binary tables.
+    tabs: [KitTab.algorithms, KitTab.csLabs, KitTab.diagrams, KitTab.logic, KitTab.binary],
   ),
   Subject.art: SubjectStyle(
     subject: Subject.art,
@@ -228,6 +229,15 @@ const _aliases = <String, Subject>{
   'political': Subject.civics,
   'environmental': Subject.evs,
   'computer': Subject.computer,
+  // BCA/MCA papers named without "computer".
+  'data structure': Subject.computer,
+  'algorithm': Subject.computer,
+  'database': Subject.computer,
+  'dbms': Subject.computer,
+  'operating system': Subject.computer,
+  'software': Subject.computer,
+  'java': Subject.computer,
+  'python': Subject.computer,
   'science': Subject.science,
   'evs': Subject.evs,
   'geography': Subject.geography,
@@ -261,6 +271,9 @@ const _aliases = <String, Subject>{
   'informatics': Subject.computer,
   'coding': Subject.computer,
   'programming': Subject.computer,
+  // Last, so "BCA Mathematics" stays maths.
+  'bca': Subject.computer,
+  'mca': Subject.computer,
   'art': Subject.art,
   'drawing': Subject.art,
 };
@@ -339,6 +352,7 @@ extension SubjectNames on AppLocalizations {
     SubjectTool.grammar => stGrammar,
     SubjectTool.sheet => stSheet,
     SubjectTool.reader => stReader,
+    SubjectTool.codeLab => stCodeLab,
   };
 
   String kitTabName(KitTab t) => switch (t) {
@@ -357,6 +371,9 @@ extension SubjectNames on AppLocalizations {
     KitTab.management => kitManagement,
     KitTab.law => kitLaw,
     KitTab.stats => kitStats,
+    KitTab.algorithms => kitAlgorithms,
+    KitTab.csLabs => kitCsLabs,
+    KitTab.diagrams => kitDiagrams,
   };
 }
 
@@ -377,5 +394,6 @@ extension SubjectToolIcon on SubjectTool {
     SubjectTool.grammar => Icons.spellcheck,
     SubjectTool.sheet => Icons.table_chart_outlined,
     SubjectTool.reader => Icons.menu_book_outlined,
+    SubjectTool.codeLab => Icons.play_circle_outline,
   };
 }

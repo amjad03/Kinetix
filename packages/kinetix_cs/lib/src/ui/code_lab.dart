@@ -144,12 +144,16 @@ class _CodeLabState extends State<CodeLab> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                SegmentedButton<CodeLanguage>(
-                  key: const Key('code-language'),
-                  showSelectedIcon: false,
-                  segments: [for (final l in CodeLanguage.values) ButtonSegment(value: l, label: Text(l.label))],
-                  selected: {_lang},
-                  onSelectionChanged: (v) => _setLanguage(v.first),
+                // Scrolls sideways on phones.
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SegmentedButton<CodeLanguage>(
+                    key: const Key('code-language'),
+                    showSelectedIcon: false,
+                    segments: [for (final l in CodeLanguage.values) ButtonSegment(value: l, label: Text(l.label))],
+                    selected: {_lang},
+                    onSelectionChanged: (v) => _setLanguage(v.first),
+                  ),
                 ),
                 Chip(
                   avatar: Icon(_lang.onDevice ? Icons.offline_bolt_outlined : Icons.cloud_outlined, size: 18),
@@ -158,7 +162,9 @@ class _CodeLabState extends State<CodeLab> {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
               children: [
                 PopupMenuButton<Sample>(
                   key: const Key('code-samples'),
@@ -168,7 +174,6 @@ class _CodeLabState extends State<CodeLab> {
                   child: Chip(avatar: const Icon(Icons.library_books_outlined, size: 18), label: Text(s.t('samples'))),
                 ),
                 if (_lang == CodeLanguage.sql) ...[
-                  const SizedBox(width: 8),
                   DropdownButton<String?>(
                     key: const Key('code-database'),
                     value: _database,
@@ -179,10 +184,14 @@ class _CodeLabState extends State<CodeLab> {
                     onChanged: (v) => setState(() => _database = v),
                   ),
                 ],
-                const Spacer(),
-                Text(s.t('textSize')),
-                IconButton(tooltip: '−', icon: const Icon(Icons.text_decrease), onPressed: _font > 12 ? () => setState(() => _font -= 2) : null),
-                IconButton(tooltip: '+', icon: const Icon(Icons.text_increase), onPressed: _font < 40 ? () => setState(() => _font += 2) : null),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(s.t('textSize')),
+                    IconButton(tooltip: '−', icon: const Icon(Icons.text_decrease), onPressed: _font > 12 ? () => setState(() => _font -= 2) : null),
+                    IconButton(tooltip: '+', icon: const Icon(Icons.text_increase), onPressed: _font < 40 ? () => setState(() => _font += 2) : null),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 8),

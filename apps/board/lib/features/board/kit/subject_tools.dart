@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../core/board_controller.dart';
 import '../chrome.dart';
 import '../editors.dart';
 import 'builders.dart';
+import 'cs/cs_kit.dart';
 import 'college/college_builders.dart' show blankSheet;
 import 'college/law_reader.dart';
 import 'college/sheet_editor.dart';
@@ -13,7 +15,7 @@ import 'subjects.dart';
 /// Runs a subject tool from the left rail: asks what is needed (an equation, a function, a
 /// range) and puts the result in a free spot in view, selected, so it can be moved at once.
 class SubjectToolRunner {
-  SubjectToolRunner({required this.context, required this.wb, required this.style, required this.onOpenKit, this.primary = false});
+  SubjectToolRunner({required this.context, required this.wb, required this.style, required this.onOpenKit, this.primary = false, this.board});
 
   final BuildContext context;
   final WhiteboardController wb;
@@ -22,6 +24,9 @@ class SubjectToolRunner {
   /// Opens the subject kit at a tab (key dates for timelines).
   final void Function(KitTab tab) onOpenKit;
   final bool primary;
+
+  /// For the code lab's C, C++ and Java (the API, with the class session).
+  final BoardController? board;
 
   Color get _ink => inkColorFor(wb.penColor, wb.background) == wb.penColor ? wb.penColor : WhiteboardController.inkBlack;
   Color get _accent => style.accent;
@@ -112,6 +117,8 @@ class SubjectToolRunner {
         if (s != null) wb.insert([s]);
       case SubjectTool.reader:
         await openLawReader(context, wb, _accent);
+      case SubjectTool.codeLab:
+        await openCodeLab(context, wb: wb, accent: _accent, board: board);
     }
     if (_font == BoardFont.andika) wb.font = BoardFont.andika;
   }

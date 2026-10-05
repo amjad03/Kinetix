@@ -6238,6 +6238,30 @@ abstract class AppLocalizations {
   /// **'Law'**
   String get kitLaw;
 
+  /// No description provided for @kitAlgorithms.
+  ///
+  /// In en, this message translates to:
+  /// **'Algorithms'**
+  String get kitAlgorithms;
+
+  /// No description provided for @kitCsLabs.
+  ///
+  /// In en, this message translates to:
+  /// **'CS labs'**
+  String get kitCsLabs;
+
+  /// No description provided for @kitDiagrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagrams'**
+  String get kitDiagrams;
+
+  /// No description provided for @stCodeLab.
+  ///
+  /// In en, this message translates to:
+  /// **'Code lab'**
+  String get stCodeLab;
+
   /// No description provided for @kitStats.
   ///
   /// In en, this message translates to:

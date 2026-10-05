@@ -10,6 +10,7 @@ import '../../../l10n/l10n.dart';
 import '../../ai/ai_controller.dart';
 import '../side_panel.dart';
 import 'builders.dart';
+import 'cs/cs_kit.dart';
 import 'college/college_kit.dart';
 import 'subject_data.dart';
 import 'subjects.dart';
@@ -128,6 +129,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                 ink: _ink,
                 onOpenLab: () => widget.onSplit(SplitContent.lab),
               ),
+              KitTab.algorithms || KitTab.csLabs || KitTab.diagrams => CsKitTab(key: ValueKey(_tab), tab: _tab, wb: widget.wb, accent: _accent, board: widget.board),
             },
           ),
         ],

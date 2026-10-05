@@ -3583,6 +3583,18 @@ class AppLocalizationsKn extends AppLocalizations {
   String get kitLaw => 'ಕಾನೂನು';
 
   @override
+  String get kitAlgorithms => 'ಅಲ್ಗಾರಿದಮ್‌ಗಳು';
+
+  @override
+  String get kitCsLabs => 'CS ಲ್ಯಾಬ್‌ಗಳು';
+
+  @override
+  String get kitDiagrams => 'ರೇಖಾಚಿತ್ರಗಳು';
+
+  @override
+  String get stCodeLab => 'ಕೋಡ್ ಲ್ಯಾಬ್';
+
+  @override
   String get kitStats => 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರ';
 
   @override

@@ -409,7 +409,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   SubjectToolRunner get _subjectTools =>
-      SubjectToolRunner(context: context, wb: _wb, style: _style, primary: _primary, onOpenKit: (tab) => _openKit(tab));
+      SubjectToolRunner(context: context, wb: _wb, style: _style, primary: _primary, board: board, onOpenKit: (tab) => _openKit(tab));
 
   /// Edits a selected equation, note, text or spreadsheet.
   Future<void> _editElement(BoardElement e) async {

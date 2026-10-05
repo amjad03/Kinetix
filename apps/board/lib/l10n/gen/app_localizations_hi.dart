@@ -3574,6 +3574,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get kitLaw => 'विधि';
 
   @override
+  String get kitAlgorithms => 'एल्गोरिद्म';
+
+  @override
+  String get kitCsLabs => 'CS लैब';
+
+  @override
+  String get kitDiagrams => 'आरेख';
+
+  @override
+  String get stCodeLab => 'कोड लैब';
+
+  @override
   String get kitStats => 'सांख्यिकी';
 
   @override

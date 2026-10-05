@@ -33,6 +33,9 @@ dependencies:
     path: ../../packages/kinetix_3d
   kinetix_cards:
     path: ../../packages/kinetix_cards
+  # The CS kit: code lab (Python/JS/SQL on the board, C/C++/Java on the server), algorithms, CS labs.
+  kinetix_cs:
+    path: ../../packages/kinetix_cs
   kinetix_ink:
     path: ../../packages/kinetix_ink
   kinetix_labs:
