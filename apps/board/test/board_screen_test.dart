@@ -366,4 +366,49 @@ void main() {
       expect(find.text('05:00'), findsOneWidget);
     });
   });
+
+  group('finger taps', () {
+    Future<void> tap(WidgetTester tester, int fingers, Duration at) async {
+      final gestures = <TestGesture>[];
+      for (var i = 0; i < fingers; i++) {
+        final g = await tester.createGesture(pointer: 40 + i, kind: PointerDeviceKind.touch);
+        await g.down(Offset(700 + i * 60.0, 500), timeStamp: at + Duration(milliseconds: 20 * i));
+        gestures.add(g);
+      }
+      for (final g in gestures) {
+        await g.up(timeStamp: at + const Duration(milliseconds: 150));
+      }
+      await tester.pump();
+    }
+
+    testWidgets('two fingers undo and three redo, until Board settings turns them off', (tester) async {
+      final board = await pump(tester);
+      await stroke(tester, const Offset(500, 400));
+      final wb = whiteboard(tester);
+      expect(wb.elements, hasLength(1));
+      await tap(tester, 2, Duration.zero);
+      expect(wb.elements, isEmpty);
+      await tap(tester, 3, const Duration(seconds: 1));
+      expect(wb.elements, hasLength(1));
+
+      board.setFingerTaps(false);
+      await tester.pump();
+      await tap(tester, 2, const Duration(seconds: 2));
+      expect(wb.elements, hasLength(1));
+      expect(board.fingerTaps, isFalse);
+    });
+
+    testWidgets('the switch is in Board settings', (tester) async {
+      final board = await pump(tester);
+      await tester.tap(find.byKey(const Key('profile-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('menu-settings')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('finger-taps')));
+      await tester.tap(find.byKey(const Key('finger-taps')));
+      await tester.pumpAndSettle();
+      expect(board.fingerTaps, isFalse);
+      expect(tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).fingerTaps, isFalse);
+    });
+  });
 }

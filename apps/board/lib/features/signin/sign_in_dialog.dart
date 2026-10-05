@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/api_client.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
+import '../board/phone_chrome.dart';
 
 /// "Sign in to this board": the teacher scans the QR code or types the 6-digit code in the
 /// KINETIX Teacher app. Nothing secret is typed on the shared screen. The dialog closes itself
@@ -90,11 +91,14 @@ class _SignInDialogState extends State<SignInDialog> {
       ),
     );
 
+    // On a phone: closer to the edges, and it scrolls.
+    final phone = context.isPhone;
     return Dialog(
+      insetPadding: phone ? const EdgeInsets.all(Kx.s16) : null,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 860),
-        child: Padding(
-          padding: const EdgeInsets.all(Kx.s32),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(phone ? Kx.s16 : Kx.s32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +161,7 @@ class _SignInDialogState extends State<SignInDialog> {
                                       child: LinearProgressIndicator(value: secondsLeft / 120, borderRadius: BorderRadius.circular(4)),
                                     ),
                                     const SizedBox(width: Kx.s8),
-                                    Text(l.newCodeIn(secondsLeft), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                                    Flexible(child: Text(l.newCodeIn(secondsLeft), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant))),
                                   ],
                                 ),
                             ],

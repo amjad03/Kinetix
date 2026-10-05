@@ -186,7 +186,8 @@ class _CoachOverlayState extends State<CoachOverlay> {
         : (null, (size.height - h.center.dy - 60).clamp(margin, size.height / 2));
     if (hole == null) {
       left = (size.width - width) / 2;
-      top = size.height * 0.3;
+      // A phone on its side has no room to spare above the card.
+      top = size.height < 500 ? margin : size.height * 0.3;
     } else if (hole.right + gap + width + margin <= size.width) {
       left = hole.right + gap;
       (top, bottom) = beside(hole);
@@ -213,33 +214,37 @@ class _CoachOverlayState extends State<CoachOverlay> {
         color: c.surface,
         elevation: 8,
         borderRadius: BorderRadius.circular(Kx.rXl),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(Kx.s20, Kx.s16, Kx.s12, Kx.s8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(radius: 18, backgroundColor: c.primaryContainer, child: Icon(s.icon, size: 20, color: c.onPrimaryContainer)),
-                  const Spacer(),
-                  if (widget.steps.length > 1) Text(l.tourStepOf(_i + 1, widget.steps.length), style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
-                ],
-              ),
-              const SizedBox(height: Kx.s12),
-              Text(s.title, key: const Key('coach-title'), style: context.text.titleLarge),
-              const SizedBox(height: Kx.s4),
-              Text(s.body, style: context.text.bodyLarge?.copyWith(height: 1.4)),
-              const SizedBox(height: Kx.s8),
-              Row(
-                children: [
-                  if (!last) TextButton(key: const Key('coach-skip'), onPressed: () => Navigator.pop(context, false), child: Text(l.tourSkip)),
-                  const Spacer(),
-                  if (_i > 0) IconButton(tooltip: l.back, onPressed: _back, icon: const Icon(Icons.arrow_back)),
-                  FilledButton(key: const Key('coach-next'), onPressed: _next, child: Text(last ? (widget.finishLabel ?? l.tourGotIt) : l.tourNext)),
-                ],
-              ),
-            ],
+        // Scrolls rather than run off a short screen.
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: math.max(160, size.height - (top ?? bottom ?? 0) - margin)),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(Kx.s20, Kx.s16, Kx.s12, Kx.s8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(radius: 18, backgroundColor: c.primaryContainer, child: Icon(s.icon, size: 20, color: c.onPrimaryContainer)),
+                    const Spacer(),
+                    if (widget.steps.length > 1) Text(l.tourStepOf(_i + 1, widget.steps.length), style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+                  ],
+                ),
+                const SizedBox(height: Kx.s12),
+                Text(s.title, key: const Key('coach-title'), style: context.text.titleLarge),
+                const SizedBox(height: Kx.s4),
+                Text(s.body, style: context.text.bodyLarge?.copyWith(height: 1.4)),
+                const SizedBox(height: Kx.s8),
+                Row(
+                  children: [
+                    if (!last) TextButton(key: const Key('coach-skip'), onPressed: () => Navigator.pop(context, false), child: Text(l.tourSkip)),
+                    const Spacer(),
+                    if (_i > 0) IconButton(tooltip: l.back, onPressed: _back, icon: const Icon(Icons.arrow_back)),
+                    FilledButton(key: const Key('coach-next'), onPressed: _next, child: Text(last ? (widget.finishLabel ?? l.tourGotIt) : l.tourNext)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

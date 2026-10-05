@@ -261,6 +261,8 @@ class _QuizPresenterState extends State<QuizPresenter> {
         child: LayoutBuilder(
           builder: (context, box) {
             final scale = (box.maxWidth / 1920 < box.maxHeight / 1080 ? box.maxWidth / 1920 : box.maxHeight / 1080).clamp(0.55, 1.4);
+            // A phone: the preview mark shrinks to an icon, the arrows to icon buttons.
+            final narrow = box.maxWidth < 600;
             return ColoredBox(
               color: c.surface,
               child: Column(
@@ -285,7 +287,12 @@ class _QuizPresenterState extends State<QuizPresenter> {
                             style: context.text.titleLarge?.copyWith(color: c.onSurfaceVariant),
                           ),
                         ),
-                        if (widget.preview)
+                        if (widget.preview && narrow)
+                          Padding(
+                            padding: const EdgeInsets.only(right: Kx.s8),
+                            child: Tooltip(message: context.l10n.aiPreview, child: Icon(Icons.science_outlined, color: c.onTertiaryContainer)),
+                          )
+                        else if (widget.preview)
                           Padding(
                             padding: const EdgeInsets.only(right: Kx.s16),
                             child: Chip(
@@ -295,8 +302,8 @@ class _QuizPresenterState extends State<QuizPresenter> {
                               side: BorderSide.none,
                             ),
                           ),
-                        Text(context.l10n.questionOf(_index + 1, _qs.length), key: const Key('presenter-count'), style: context.text.titleLarge),
-                        const SizedBox(width: Kx.s16),
+                        Text(context.l10n.questionOf(_index + 1, _qs.length), key: const Key('presenter-count'), style: narrow ? context.text.titleMedium : context.text.titleLarge),
+                        SizedBox(width: narrow ? Kx.s8 : Kx.s16),
                         IconButton.filledTonal(
                           key: const Key('presenter-close'),
                           tooltip: context.l10n.close,
@@ -382,7 +389,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
                       ),
                     ),
                   ),
-                  Padding(padding: EdgeInsets.fromLTRB(32 * scale, 8, 32 * scale, 24 * scale), child: _bottomBar(context, scale, last)),
+                  Padding(padding: EdgeInsets.fromLTRB(32 * scale, 8, 32 * scale, 24 * scale), child: _bottomBar(context, scale, last, narrow: narrow)),
                 ],
               ),
             );
@@ -392,14 +399,49 @@ class _QuizPresenterState extends State<QuizPresenter> {
     );
   }
 
-  Widget _bottomBar(BuildContext context, double scale, bool last) {
+  Widget _bottomBar(BuildContext context, double scale, bool last, {bool narrow = false}) {
     final c = context.colors;
+    final l = context.l10n;
+    if (narrow) {
+      return Row(
+        children: [
+          IconButton.outlined(
+            key: const Key('presenter-previous'),
+            tooltip: l.toolPrevious,
+            style: IconButton.styleFrom(minimumSize: const Size.square(Kx.boardTarget)),
+            onPressed: _index == 0 ? null : () => _go(-1),
+            icon: const Icon(Icons.chevron_left),
+          ),
+          const SizedBox(width: Kx.s8),
+          Expanded(
+            child: FilledButton.icon(
+              key: const Key('presenter-reveal'),
+              style: FilledButton.styleFrom(
+                backgroundColor: _shown ? c.secondaryContainer : _correct,
+                foregroundColor: _shown ? c.onSecondaryContainer : Colors.white,
+                minimumSize: const Size(0, Kx.boardTarget),
+              ),
+              onPressed: _reveal,
+              icon: Icon(_shown ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+              label: Text(_shown ? l.hideAnswer : l.revealAnswer, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+          const SizedBox(width: Kx.s8),
+          IconButton.filledTonal(
+            key: const Key('presenter-next'),
+            tooltip: last ? l.finish : l.toolNext,
+            style: IconButton.styleFrom(minimumSize: const Size.square(Kx.boardTarget)),
+            onPressed: last ? () => Navigator.of(context).pop() : () => _go(1),
+            icon: Icon(last ? Icons.done : Icons.chevron_right),
+          ),
+        ],
+      );
+    }
     // Large buttons: the teacher taps them standing at the board.
     final size = Size(176 * scale, 64 * scale < Kx.boardTarget ? Kx.boardTarget : 64 * scale);
     final text = TextStyle(fontSize: (22 * scale).clamp(16, 26), fontWeight: FontWeight.w500);
     final padding = EdgeInsets.symmetric(horizontal: 28 * scale);
     final iconSize = (28 * scale).clamp(20.0, 32.0);
-    final l = context.l10n;
     return Row(
       children: [
         OutlinedButton.icon(

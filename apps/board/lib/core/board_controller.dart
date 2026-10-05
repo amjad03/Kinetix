@@ -146,6 +146,9 @@ class BoardController extends ChangeNotifier {
   /// AI pen is hidden, this is the one part of it on offer.
   bool snapShapes = false;
 
+  /// Two fingers tapped on the board undo, three redo (on unless turned off).
+  bool fingerTaps = true;
+
   /// The board's primary-class layout (big labelled tools, Andika, class stars): chosen from the
   /// period's class (LKG to Class 5) unless the Simple board setting says otherwise.
   bool get primaryMode => switch (simpleBoard) {
@@ -270,6 +273,7 @@ class BoardController extends ChangeNotifier {
       aiPenMode = AiPenMode.values.asNameMap()[await _store.setting('aiPenMode')] ?? AiPenMode.auto;
       _aiPenLanguage = BoardLanguage.tryParse(await _store.setting('aiPenLanguage'));
       snapShapes = await _store.setting('snapShapes') == 'true';
+      fingerTaps = await _store.setting('fingerTaps') != 'false';
     } catch (e) {
       debugPrint('Board settings unreadable, using defaults: $e');
     }
@@ -279,7 +283,7 @@ class BoardController extends ChangeNotifier {
   /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
   /// come back when they sign out. The board's language, touch surface, kiosk and projector
   /// stay the board's.
-  static const teacherSettings = ['eyeComfort', 'layout', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes'];
+  static const teacherSettings = ['eyeComfort', 'layout', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps'];
 
   String? _settingsTeacher;
 
@@ -299,6 +303,7 @@ class BoardController extends ChangeNotifier {
     'aiPenMode': aiPenMode.name,
     'aiPenLanguage': _aiPenLanguage?.name,
     'snapShapes': '$snapShapes',
+    'fingerTaps': '$fingerTaps',
   };
 
   void _setTeacherSettingValues(Map<String, String?> v) {
@@ -309,6 +314,7 @@ class BoardController extends ChangeNotifier {
     aiPenMode = AiPenMode.values.asNameMap()[v['aiPenMode']] ?? aiPenMode;
     if (v.containsKey('aiPenLanguage')) _aiPenLanguage = BoardLanguage.tryParse(v['aiPenLanguage']);
     if (v['snapShapes'] != null) snapShapes = v['snapShapes'] == 'true';
+    if (v['fingerTaps'] != null) fingerTaps = v['fingerTaps'] != 'false';
   }
 
   /// Applies the signed-in teacher's own settings, or puts the board's back after they sign out.
@@ -442,6 +448,12 @@ class BoardController extends ChangeNotifier {
   void setSnapShapes(bool on) {
     snapShapes = on;
     unawaited(_saveTeacherSetting('snapShapes', '$on'));
+    notifyListeners();
+  }
+
+  void setFingerTaps(bool on) {
+    fingerTaps = on;
+    unawaited(_saveTeacherSetting('fingerTaps', '$on'));
     notifyListeners();
   }
 

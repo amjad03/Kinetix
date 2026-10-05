@@ -72,6 +72,8 @@ class _ToolkitLayerState extends State<ToolkitLayer> {
       builder: (context, _) => LayoutBuilder(
         builder: (context, c) {
           final ins = widget.insets;
+          // A phone is narrower than a card: the card takes the width.
+          final cardWidth = math.min(_cardWidth, c.maxWidth - 16);
           final cards = k.open.where((t) => t != ToolkitItem.curtain && t != ToolkitItem.spotlight).toList();
           final overlays = k.isOpen(ToolkitItem.curtain) || k.isOpen(ToolkitItem.spotlight);
           return Stack(
@@ -82,15 +84,18 @@ class _ToolkitLayerState extends State<ToolkitLayer> {
                 Builder(
                   builder: (context) {
                     // New cards open at the right, two columns, clear of the toolbars.
-                    final p = _pos[t] ?? Offset(c.maxWidth - ins.right - _cardWidth - 8 - (i % 2) * (_cardWidth + 12), ins.top + 8 + (i ~/ 2) * 300.0);
+                    final p = _pos[t] ?? Offset(c.maxWidth - ins.right - cardWidth - 8 - (i % 2) * (cardWidth + 12), ins.top + 8 + (i ~/ 2) * 300.0);
+                    final top = p.dy.clamp(0, math.max(0, c.maxHeight - 120)).toDouble();
                     return Positioned(
-                      left: p.dx.clamp(0, math.max(0, c.maxWidth - _cardWidth)),
-                      top: p.dy.clamp(0, math.max(0, c.maxHeight - 120)),
+                      left: p.dx.clamp(0, math.max(0, c.maxWidth - cardWidth)),
+                      top: top,
                       child: BoardChromeTheme(
                         child: ToolkitCard(
                           key: Key('toolkit-${t.name}'),
                           item: t,
-                          width: _cardWidth,
+                          width: cardWidth,
+                          // On a short screen (a phone on its side) the card scrolls.
+                          maxHeight: math.max(120, c.maxHeight - top - ins.bottom - 8),
                           onDrag: (d) => setState(() => _pos[t] = (_pos[t] ?? p) + d),
                           onClose: () => k.close(t),
                           child: switch (t) {
@@ -124,13 +129,14 @@ class _ToolkitLayerState extends State<ToolkitLayer> {
 
 /// A floating toolkit card: drag it by its title.
 class ToolkitCard extends StatelessWidget {
-  const ToolkitCard({super.key, required this.item, required this.child, required this.onDrag, required this.onClose, this.width = 340});
+  const ToolkitCard({super.key, required this.item, required this.child, required this.onDrag, required this.onClose, this.width = 340, this.maxHeight = double.infinity});
 
   final ToolkitItem item;
   final Widget child;
   final ValueChanged<Offset> onDrag;
   final VoidCallback onClose;
   final double width;
+  final double maxHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +145,8 @@ class ToolkitCard extends StatelessWidget {
     return ChromeSurface(
       radius: Kx.rXl,
       padding: EdgeInsets.zero,
-      child: SizedBox(
-        width: width,
+      child: ConstrainedBox(
+        constraints: BoxConstraints.tightFor(width: width).copyWith(maxHeight: maxHeight),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -164,7 +170,9 @@ class ToolkitCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s16), child: child),
+            Flexible(
+              child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s16), child: child),
+            ),
           ],
         ),
       ),
@@ -562,6 +570,7 @@ class _OptionsDialogState extends State<_OptionsDialog> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return AlertDialog(
+      scrollable: true,
       title: Text(l.tkSpinnerOptions),
       content: SizedBox(
         width: 380,

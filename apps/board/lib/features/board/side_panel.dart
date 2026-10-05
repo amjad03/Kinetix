@@ -44,6 +44,7 @@ class SidePanelFrame extends StatelessWidget {
     required this.onSwapSide,
     required this.onResize,
     required this.child,
+    this.fullScreen = false,
   });
 
   /// True when the panel is on the left of the screen (the rail is then on its right edge).
@@ -55,9 +56,30 @@ class SidePanelFrame extends StatelessWidget {
   final ValueChanged<double> onResize;
   final Widget child;
 
+  /// On a phone the panel covers the board, inside the safe area, with Close on a slim strip
+  /// at the top (no resizing or swapping sides).
+  final bool fullScreen;
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    if (fullScreen) {
+      return Material(
+        color: c.surface,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(key: const Key('panel-close'), tooltip: context.l10n.close, onPressed: onClose, icon: const Icon(Icons.close)),
+              ),
+              Expanded(child: child),
+            ],
+          ),
+        ),
+      );
+    }
     final rail = Container(
       width: 44,
       color: c.surfaceContainerLow,

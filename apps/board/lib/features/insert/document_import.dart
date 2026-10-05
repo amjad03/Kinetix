@@ -169,6 +169,7 @@ class _ImportProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return AlertDialog(
+      scrollable: true,
       key: const Key('import-progress'),
       title: Text(l.importingFile(name)),
       content: SizedBox(

@@ -17,6 +17,8 @@ import 'package:kinetix_board/features/kiosk/kiosk_ui.dart';
 import 'package:kinetix_board/l10n/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/board_fonts.dart';
+
 // Kiosk mode (docs/hardware/kiosk-mode.md).
 
 /// Android behind the `kinetix/kiosk` channel, as MainActivity.kt answers it.
@@ -66,6 +68,7 @@ class _NoRealtime extends Realtime {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(loadBoardFonts);
   late FakeAndroid android;
   late List<bool> immersive;
   late DateTime now;
@@ -331,7 +334,7 @@ void main() {
   });
 
   group('exit dialog', () {
-    Future<KioskController> pump(WidgetTester tester, {KioskPolicy? policy = _on, bool demo = false, FakeKioskPlatform? platform}) async {
+    Future<KioskController> pump(WidgetTester tester, {KioskPolicy? policy = _on, bool demo = false, FakeKioskPlatform? platform, Locale? locale}) async {
       // Plugins answer outside the fake clock.
       if (policy != null) await tester.runAsync(() => cache(policy));
       // Made and started on the real clock: its futures belong to the zone it was made in.
@@ -346,14 +349,17 @@ void main() {
       }))!;
       await tester.pumpWidget(
         MaterialApp(
+          locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: Column(
-              children: [
-                KioskExitGesture(kiosk: k, child: const SizedBox(width: 200, height: 40, child: Text('10:30 am', key: Key('clock')))),
-                KioskSettingsSection(kiosk: k),
-              ],
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  KioskExitGesture(kiosk: k, child: const SizedBox(width: 200, height: 40, child: Text('10:30 am', key: Key('clock')))),
+                  KioskSettingsSection(kiosk: k),
+                ],
+              ),
             ),
           ),
         ),
@@ -409,6 +415,31 @@ void main() {
       expect(platform.lock, KioskLock.pinned);
       k.dispose();
     });
+
+    for (final lang in ['en', 'hi', 'kn']) {
+      for (final size in const [Size(360, 640), Size(390, 844), Size(844, 390)]) {
+        testWidgets('fits a phone: $lang at ${size.width.toInt()}×${size.height.toInt()}', (tester) async {
+          tester.view.physicalSize = size;
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await pump(tester, locale: Locale(lang));
+          expect(tester.takeException(), isNull, reason: 'settings');
+          await hold(tester, const Duration(milliseconds: 3100));
+          expect(find.byKey(const Key('kiosk-dialog')), findsOneWidget);
+          await tester.enterText(find.byKey(const Key('kiosk-pin')), '9999');
+          await tester.tap(find.byKey(const Key('kiosk-unlock')));
+          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: 'wrong PIN');
+          await tester.enterText(find.byKey(const Key('kiosk-pin')), '1234');
+          await tester.tap(find.byKey(const Key('kiosk-unlock')));
+          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('kiosk-open-settings')).hitTestable(), findsOneWidget);
+          expect(tester.takeException(), isNull, reason: 'unlocked');
+        });
+      }
+    }
 
     testWidgets('without a PIN it explains that the PIN is set in the ERP', (tester) async {
       await pump(tester, policy: const KioskPolicy(enabled: true));

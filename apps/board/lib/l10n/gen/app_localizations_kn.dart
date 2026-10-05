@@ -845,7 +845,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get tourPenBody =>
-      'ಬೆರಳು ಅಥವಾ ಸ್ಟೈಲಸ್‌ನಿಂದ ಬರೆಯಿರಿ. ಬಣ್ಣ ಮತ್ತು ದಪ್ಪಕ್ಕಾಗಿ ಪೆನ್ ಅನ್ನು ಮತ್ತೆ ಒತ್ತಿ.';
+      'ಬೆರಳು ಅಥವಾ ಸ್ಟೈಲಸ್‌ನಿಂದ ಬರೆಯಿರಿ. ಬಣ್ಣ ಮತ್ತು ದಪ್ಪಕ್ಕಾಗಿ ಪೆನ್ ಅನ್ನು ಮತ್ತೆ ಒತ್ತಿ. ಎರಡು ಬೆರಳುಗಳಿಂದ ಟ್ಯಾಪ್ ಮಾಡಿದರೆ ಅನ್‌ಡು, ಮೂರರಿಂದ ರೀಡು.';
 
   @override
   String get tourEraseTitle => 'ಅಳಿಸಿ';
@@ -4088,4 +4088,18 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get sheetValues => 'ಮೌಲ್ಯಗಳು (ಉದಾ. B2:B6)';
+
+  @override
+  String get fingerTapsTitle => 'ಬೆರಳುಗಳ ಟ್ಯಾಪ್';
+
+  @override
+  String get fingerTapsHint =>
+      'ಬೋರ್ಡ್ ಮೇಲೆ ಎರಡು ಬೆರಳುಗಳಿಂದ ಟ್ಯಾಪ್ ಮಾಡಿದರೆ ಅನ್‌ಡು, ಮೂರು ಬೆರಳುಗಳಿಂದ ಟ್ಯಾಪ್ ಮಾಡಿದರೆ ರೀಡು.';
+
+  @override
+  String get helpErase3 =>
+      'ಅಥವಾ ಬೋರ್ಡ್ ಮೇಲೆ ಎರಡು ಬೆರಳುಗಳಿಂದ ಟ್ಯಾಪ್ ಮಾಡಿ (ಅನ್‌ಡು); ಮೂರು ಬೆರಳುಗಳಿಂದ ರೀಡು.';
+
+  @override
+  String get toolMore => 'ಇನ್ನಷ್ಟು';
 }

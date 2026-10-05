@@ -46,10 +46,10 @@
       }
     }
   },
-  "minutesShort": "{minutes} min",
+  "minutesShort": "{n} min",
   "@minutesShort": {
     "placeholders": {
-      "minutes": {
+      "n": {
         "type": "int"
       }
     }
@@ -552,7 +552,7 @@
   "tourWelcomeTitle": "Welcome to your board",
   "tourWelcomeBody": "A one-minute look at the buttons you will use in every class.",
   "tourPenTitle": "Write and draw",
-  "tourPenBody": "Write with a finger or the stylus. Tap the pen again for colours and thickness.",
+  "tourPenBody": "Write with a finger or the stylus. Tap the pen again for colours and thickness. Tap with two fingers to undo, three to redo.",
   "tourEraseTitle": "Rub out",
   "tourEraseBody": "Rub over the ink. Undo is at the bottom of the board.",
   "tourInsertTitle": "Add to the board",
@@ -1965,7 +1965,9 @@
   "zoomOut": "Zoom out",
   "zoomReset": "Back to 100%",
   "aiPen": "AI pen",
-  "@aiPen": {"description": "The pen that turns rough drawings into clean shapes and handwriting into text and typeset maths."},
+  "@aiPen": {
+    "description": "The pen that turns rough drawings into clean shapes and handwriting into text and typeset maths."
+  },
   "aiPenTitle": "AI pen: shapes, maths and words from your handwriting",
   "aiPenModeAuto": "After a pause",
   "aiPenModeAutoHint": "Write as usual; about a second after you stop, it is converted.",
@@ -1989,9 +1991,23 @@
   "aiPenConvertInk": "Convert with AI pen",
   "aiPenWordsStayInk": "Shapes and maths convert on this board. Words stay as ink: this board has no handwriting reader.",
   "aiPenModelNeeded": "Words stay as ink until the {language} handwriting model is downloaded (Board settings → AI pen).",
-  "@aiPenModelNeeded": {"placeholders": {"language": {"type": "String", "example": "हिन्दी"}}},
+  "@aiPenModelNeeded": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "हिन्दी"
+      }
+    }
+  },
   "aiPenLanguageUnsupported": "This board cannot read {language} handwriting. Words stay as ink; shapes and maths still convert.",
-  "@aiPenLanguageUnsupported": {"placeholders": {"language": {"type": "String", "example": "ಕನ್ನಡ"}}},
+  "@aiPenLanguageUnsupported": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "ಕನ್ನಡ"
+      }
+    }
+  },
   "aiPenNothingToConvert": "Nothing to convert: select handwriting or drawings first.",
   "aiPenSettingsTitle": "AI pen",
   "aiPenSettingsHint": "Handwriting is read on this board: nothing you write leaves it. Shapes and maths work in every language with no download.",
@@ -2054,14 +2070,6 @@
   "idleLockTitle": "Lock when idle",
   "idleLockHint": "For teachers with a PIN, the board locks after this many minutes without a touch. It signs out when the period ends.",
   "idleOff": "Off",
-  "minutesShort": "{n} min",
-  "@minutesShort": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "projectorTitle": "Projector",
   "projectorHint": "Show the board to the class on a second screen (a projector or TV), without your tools and panels. 3D models and labs show beside it.",
   "projectorEnabled": "Use a second screen",
@@ -2093,12 +2101,34 @@
   "pollDefaultQuestion": "Class check",
   "pollNoCards": "No answer cards found in the photo. Ask the class to hold them up flat, then try again.",
   "pollCardsRead": "{count, plural, =1{1 card read.} other{{count} cards read.}}",
-  "@pollCardsRead": {"placeholders": {"count": {"type": "int"}}},
+  "@pollCardsRead": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "pollUnknownCards": "Cards {cards} are not in this class.",
-  "@pollUnknownCards": {"placeholders": {"cards": {"type": "String", "example": "42, 57"}}},
+  "@pollUnknownCards": {
+    "placeholders": {
+      "cards": {
+        "type": "String",
+        "example": "42, 57"
+      }
+    }
+  },
   "pollScanFailed": "Could not read the photo. Try again.",
   "pollAnswered": "{count} of {total} answered",
-  "@pollAnswered": {"placeholders": {"count": {"type": "int"}, "total": {"type": "int"}}},
+  "@pollAnswered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "pollEnded": "Question ended",
   "pollLiveInApp": "Live in the Student App",
   "pollNotSaved": "Answer cards only; not saved (no class is open).",
@@ -2282,5 +2312,9 @@
   "chartLine": "Line",
   "chartPie": "Pie",
   "sheetLabels": "Labels (e.g. A2:A6)",
-  "sheetValues": "Values (e.g. B2:B6)"
+  "sheetValues": "Values (e.g. B2:B6)",
+  "fingerTapsTitle": "Finger taps",
+  "fingerTapsHint": "Tap the board with two fingers to undo, with three fingers to redo.",
+  "helpErase3": "Or tap the board with two fingers to undo; three fingers redo.",
+  "toolMore": "More"
 }

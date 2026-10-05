@@ -9,6 +9,7 @@ import '../../core/board_controller.dart';
 import '../../demo/demo.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
+import '../board/phone_chrome.dart';
 import '../signin/sign_in_dialog.dart';
 import 'profiles_controller.dart';
 
@@ -61,11 +62,13 @@ class _PinPadState extends State<PinPad> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final l = context.l10n;
+    // Smaller keys on a phone, still well over a fingertip.
+    final phone = context.isPhone;
     Widget key(Widget child, VoidCallback? onTap, {Key? k}) => Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(phone ? 4 : 6),
       child: SizedBox(
-        width: 84,
-        height: 64,
+        width: phone ? 64 : 84,
+        height: phone ? 52 : 64,
         child: FilledButton.tonal(key: k, onPressed: onTap, style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd))), child: child),
       ),
     );
@@ -266,10 +269,11 @@ Future<void> showSignInChoice(BuildContext context, BoardController board, Futur
     builder: (dialog) => BoardChromeTheme(
       child: Dialog(
         key: const Key('profile-switcher'),
+        insetPadding: dialog.isPhone ? const EdgeInsets.all(Kx.s16) : null,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 820),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(Kx.s32),
+            padding: EdgeInsets.all(dialog.isPhone ? Kx.s16 : Kx.s32),
             child: ListenableBuilder(
               listenable: board.profiles,
               builder: (_, _) => ProfileSwitcher(
@@ -293,7 +297,13 @@ Future<void> showSignInChoice(BuildContext context, BoardController board, Futur
 Future<bool> showSetPinDialog(BuildContext context, ProfilesController profiles) async {
   final saved = await showDialog<bool>(
     context: context,
-    builder: (dialog) => BoardChromeTheme(child: Dialog(key: const Key('set-pin'), child: _SetPin(profiles: profiles))),
+    builder: (dialog) => BoardChromeTheme(
+      child: Dialog(
+        key: const Key('set-pin'),
+        insetPadding: dialog.isPhone ? const EdgeInsets.all(Kx.s16) : null,
+        child: SingleChildScrollView(child: _SetPin(profiles: profiles)),
+      ),
+    ),
   );
   if (saved == true && context.mounted) showBoardMessage(context, context.l10n.pinSaved);
   return saved == true;
@@ -314,7 +324,7 @@ class _SetPinState extends State<_SetPin> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return Padding(
-      padding: const EdgeInsets.all(Kx.s32),
+      padding: EdgeInsets.all(context.isPhone ? Kx.s16 : Kx.s32),
       child: PinPad(
         key: ValueKey(_first == null),
         title: _first == null ? l.pinSetTitle : l.pinConfirm,
@@ -413,30 +423,51 @@ class _ProfileLockState extends State<ProfileLock> {
 
   Widget _pinOffer(BuildContext context, String sessionId) {
     final l = context.l10n;
+    final buttons = [
+      TextButton(onPressed: () => setState(() => _offered.add(sessionId)), child: Text(l.notNow)),
+      FilledButton(
+        key: const Key('pin-offer-set'),
+        onPressed: () async {
+          setState(() => _offered.add(sessionId));
+          await showSetPinDialog(context, _profiles);
+        },
+        child: Text(l.pinSetAction),
+      ),
+    ];
+    // On a phone the words go above the buttons.
+    final narrow = MediaQuery.sizeOf(context).width < 640;
     return BoardChromeTheme(
       child: Card(
         key: const Key('pin-offer'),
         elevation: 6,
+        margin: const EdgeInsets.symmetric(horizontal: Kx.s8),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s8, Kx.s8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.pin_outlined),
-              const SizedBox(width: Kx.s12),
-              ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: Text(l.pinBanner)),
-              const SizedBox(width: Kx.s12),
-              TextButton(onPressed: () => setState(() => _offered.add(sessionId)), child: Text(l.notNow)),
-              FilledButton(
-                key: const Key('pin-offer-set'),
-                onPressed: () async {
-                  setState(() => _offered.add(sessionId));
-                  await showSetPinDialog(context, _profiles);
-                },
-                child: Text(l.pinSetAction),
-              ),
-            ],
-          ),
+          child: narrow
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.pin_outlined),
+                        const SizedBox(width: Kx.s12),
+                        Expanded(child: Text(l.pinBanner)),
+                      ],
+                    ),
+                    Wrap(alignment: WrapAlignment.end, spacing: Kx.s8, children: buttons),
+                  ],
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.pin_outlined),
+                    const SizedBox(width: Kx.s12),
+                    ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: Text(l.pinBanner)),
+                    const SizedBox(width: Kx.s12),
+                    ...buttons,
+                  ],
+                ),
         ),
       ),
     );
@@ -453,7 +484,7 @@ class _ProfileLockState extends State<ProfileLock> {
         color: c.surface,
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(Kx.s32),
+            padding: context.isPhone ? MediaQuery.paddingOf(context) + const EdgeInsets.all(Kx.s16) : const EdgeInsets.all(Kx.s32),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 820),
               child: _switching
