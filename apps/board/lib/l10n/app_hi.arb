@@ -550,5 +550,20 @@
   "kioskOpenSettings": "Android सेटिंग्स खोलें",
   "kioskPausedBody": "कियोस्क मोड {time} तक रुका है।",
   "kioskLockNow": "अभी फिर लॉक करें",
-  "kioskDemoBody": "यह डेमो बिल्ड है: कियोस्क मोड बंद है और PIN की ज़रूरत नहीं है।"
+  "kioskDemoBody": "यह डेमो बिल्ड है: कियोस्क मोड बंद है और PIN की ज़रूरत नहीं है।",
+  "toolConceptVideos": "कॉन्सेप्ट वीडियो",
+  "conceptVideosTitle": "कॉन्सेप्ट वीडियो",
+  "conceptVideosForPeriod": "इस पीरियड के कॉन्सेप्ट वीडियो",
+  "conceptVideosNext": "अगला पीरियड {time} बजे",
+  "conceptVideosSkip": "छोड़ें",
+  "conceptVideosNone": "इस विषय के लिए अभी कोई कॉन्सेप्ट वीडियो नहीं है।",
+  "conceptVideosNoPeriod": "इस बोर्ड पर अभी या आज बाद में कोई कक्षा नहीं है।",
+  "conceptVideosSignIn": "अपनी कक्षा के कॉन्सेप्ट वीडियो देखने के लिए साइन इन करें।",
+  "conceptVideosCouldNotLoad": "कॉन्सेप्ट वीडियो लोड नहीं हो सके।",
+  "conceptVideosUnsupported": "इस डिवाइस पर वीडियो नहीं चल सकते। बोर्ड का Android या Windows ऐप उपयोग करें।",
+  "conceptVideosFromYouTube": "यूट्यूब से चलता है",
+  "conceptVideosSourceLessonPlan": "आज की पाठ योजना से",
+  "conceptVideosSourceYearPlan": "वार्षिक योजना से",
+  "conceptVideosSourceSyllabus": "पाठ्यक्रम का अगला विषय",
+  "conceptVideosPlay": "{title} चलाएँ"
 }

@@ -550,5 +550,20 @@
   "kioskOpenSettings": "Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ",
   "kioskPausedBody": "ಕಿಯೋಸ್ಕ್ ಮೋಡ್ {time} ವರೆಗೆ ನಿಂತಿದೆ.",
   "kioskLockNow": "ಈಗಲೇ ಮತ್ತೆ ಲಾಕ್ ಮಾಡಿ",
-  "kioskDemoBody": "ಇದು ಡೆಮೊ ಬಿಲ್ಡ್: ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಆಫ್ ಆಗಿದೆ ಮತ್ತು PIN ಬೇಕಿಲ್ಲ."
+  "kioskDemoBody": "ಇದು ಡೆಮೊ ಬಿಲ್ಡ್: ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಆಫ್ ಆಗಿದೆ ಮತ್ತು PIN ಬೇಕಿಲ್ಲ.",
+  "toolConceptVideos": "ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು",
+  "conceptVideosTitle": "ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು",
+  "conceptVideosForPeriod": "ಈ ಪೀರಿಯಡ್‌ನ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು",
+  "conceptVideosNext": "ಮುಂದಿನ ಪೀರಿಯಡ್ {time} ಕ್ಕೆ",
+  "conceptVideosSkip": "ಬಿಟ್ಟುಬಿಡಿ",
+  "conceptVideosNone": "ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳಿಲ್ಲ.",
+  "conceptVideosNoPeriod": "ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಈಗ ಅಥವಾ ಇಂದು ನಂತರ ತರಗತಿ ಇಲ್ಲ.",
+  "conceptVideosSignIn": "ನಿಮ್ಮ ತರಗತಿಯ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳನ್ನು ನೋಡಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.",
+  "conceptVideosCouldNotLoad": "ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.",
+  "conceptVideosUnsupported": "ಈ ಸಾಧನದಲ್ಲಿ ವೀಡಿಯೊಗಳು ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ಬೋರ್ಡ್‌ನ Android ಅಥವಾ Windows ಆ್ಯಪ್ ಬಳಸಿ.",
+  "conceptVideosFromYouTube": "ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ",
+  "conceptVideosSourceLessonPlan": "ಇಂದಿನ ಪಾಠ ಯೋಜನೆಯಿಂದ",
+  "conceptVideosSourceYearPlan": "ವಾರ್ಷಿಕ ಯೋಜನೆಯಿಂದ",
+  "conceptVideosSourceSyllabus": "ಪಠ್ಯಕ್ರಮದ ಮುಂದಿನ ವಿಷಯ",
+  "conceptVideosPlay": "{title} ಪ್ಲೇ ಮಾಡಿ"
 }

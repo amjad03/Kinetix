@@ -31,6 +31,10 @@ dependencies:
   record: ^7.1.1
   shared_preferences: ^2.5.5
   socket_io_client: ^3.1.6
+  # Concept videos: YouTube's embedded player in a WebView (Android; WebView2 on Windows).
+  webview_flutter: ^4.14.1
+  webview_flutter_android: ^4.14.1
+  webview_windows: ^0.4.0
 
 dev_dependencies:
   flutter_test:

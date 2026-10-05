@@ -2013,4 +2013,56 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get kioskDemoBody =>
       'This is a demo build: kiosk mode is off and no PIN is needed.';
+
+  @override
+  String get toolConceptVideos => 'Concept videos';
+
+  @override
+  String get conceptVideosTitle => 'Concept videos';
+
+  @override
+  String get conceptVideosForPeriod => 'Concept videos for this period';
+
+  @override
+  String conceptVideosNext(String time) {
+    return 'Next period at $time';
+  }
+
+  @override
+  String get conceptVideosSkip => 'Skip';
+
+  @override
+  String get conceptVideosNone => 'No concept videos for this topic yet.';
+
+  @override
+  String get conceptVideosNoPeriod =>
+      'No class on this board now or later today.';
+
+  @override
+  String get conceptVideosSignIn =>
+      'Sign in to see concept videos for your class.';
+
+  @override
+  String get conceptVideosCouldNotLoad => 'Couldn\'t load the concept videos.';
+
+  @override
+  String get conceptVideosUnsupported =>
+      'Videos can\'t play on this device. Use the board\'s Android or Windows app.';
+
+  @override
+  String get conceptVideosFromYouTube => 'Plays from YouTube';
+
+  @override
+  String get conceptVideosSourceLessonPlan => 'From today\'s lesson plan';
+
+  @override
+  String get conceptVideosSourceYearPlan => 'From the year plan';
+
+  @override
+  String get conceptVideosSourceSyllabus => 'Next topic in the syllabus';
+
+  @override
+  String conceptVideosPlay(String title) {
+    return 'Play $title';
+  }
 }

@@ -181,6 +181,13 @@ class ApiClient {
     return j is Map<String, dynamic> && j.isNotEmpty ? PeriodLessonPlan.fromJson(j) : null;
   }
 
+  /// Concept videos (YouTube) for the board's current or next period today, as JSON
+  /// (features/concept_videos parses it). Works with the device token too.
+  Future<Map<String, dynamic>> conceptVideosNow() async => await _send('GET', '/v1/devices/me/concept-videos') as Map<String, dynamic>;
+
+  /// A topic's concept videos, the class's language first, as JSON.
+  Future<Map<String, dynamic>> topicConceptVideos(String topicId) async => await _send('GET', '/v1/content/topics/$topicId/videos') as Map<String, dynamic>;
+
   Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id') as Map<String, dynamic>);
 
   Future<AiResult<HomeworkDraft>> homeworkDraft(

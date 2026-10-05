@@ -2011,4 +2011,57 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get kioskDemoBody =>
       'ಇದು ಡೆಮೊ ಬಿಲ್ಡ್: ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಆಫ್ ಆಗಿದೆ ಮತ್ತು PIN ಬೇಕಿಲ್ಲ.';
+
+  @override
+  String get toolConceptVideos => 'ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು';
+
+  @override
+  String get conceptVideosTitle => 'ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು';
+
+  @override
+  String get conceptVideosForPeriod => 'ಈ ಪೀರಿಯಡ್‌ನ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು';
+
+  @override
+  String conceptVideosNext(String time) {
+    return 'ಮುಂದಿನ ಪೀರಿಯಡ್ $time ಕ್ಕೆ';
+  }
+
+  @override
+  String get conceptVideosSkip => 'ಬಿಟ್ಟುಬಿಡಿ';
+
+  @override
+  String get conceptVideosNone => 'ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳಿಲ್ಲ.';
+
+  @override
+  String get conceptVideosNoPeriod =>
+      'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಈಗ ಅಥವಾ ಇಂದು ನಂತರ ತರಗತಿ ಇಲ್ಲ.';
+
+  @override
+  String get conceptVideosSignIn =>
+      'ನಿಮ್ಮ ತರಗತಿಯ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳನ್ನು ನೋಡಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+
+  @override
+  String get conceptVideosCouldNotLoad =>
+      'ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.';
+
+  @override
+  String get conceptVideosUnsupported =>
+      'ಈ ಸಾಧನದಲ್ಲಿ ವೀಡಿಯೊಗಳು ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ಬೋರ್ಡ್‌ನ Android ಅಥವಾ Windows ಆ್ಯಪ್ ಬಳಸಿ.';
+
+  @override
+  String get conceptVideosFromYouTube => 'ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ';
+
+  @override
+  String get conceptVideosSourceLessonPlan => 'ಇಂದಿನ ಪಾಠ ಯೋಜನೆಯಿಂದ';
+
+  @override
+  String get conceptVideosSourceYearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆಯಿಂದ';
+
+  @override
+  String get conceptVideosSourceSyllabus => 'ಪಠ್ಯಕ್ರಮದ ಮುಂದಿನ ವಿಷಯ';
+
+  @override
+  String conceptVideosPlay(String title) {
+    return '$title ಪ್ಲೇ ಮಾಡಿ';
+  }
 }
