@@ -201,4 +201,13 @@ void main() {
       expect(find.byKey(const Key('comingUpCard')), findsNothing);
     });
   });
+
+  testWidgets('a recording deleted with its term says until when it can be watched', (tester) async {
+    await pumpApp(tester);
+    final card = find.byKey(const Key('recordingsCard'));
+    await scrollTo(tester, card);
+    // expiresOn 2027-01-10 is the day it is deleted: available until the day before.
+    expect(find.descendant(of: find.byKey(const Key('recording-r1')), matching: find.text('Available until Sat 9 Jan')), findsOneWidget);
+    expect(find.byKey(const Key('available-until-r2')), findsNothing);
+  });
 }

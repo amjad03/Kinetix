@@ -1708,4 +1708,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notInDemo => 'Not available in the demo.';
+
+  @override
+  String recordingAvailableUntil(String date) {
+    return 'Available until $date';
+  }
 }

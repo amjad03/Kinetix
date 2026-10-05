@@ -2708,6 +2708,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not available in the demo.'**
   String get notInDemo;
+
+  /// A shared recording: the last day it can be watched.
+  ///
+  /// In en, this message translates to:
+  /// **'Available until {date}'**
+  String recordingAvailableUntil(String date);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -69,6 +69,10 @@ Owner decision: a recording is kept until the end of its semester, plus a grace 
 - **Keep:** the teacher who recorded it (Teacher App or board) can call
   `POST /v1/recordings/:id/keep {keep: true|false}` (audited `recording.kept` / `recording.unkept`).
   No approval is needed for the pilot. Kept recordings are never deleted automatically.
+- **In the apps:** the Teacher App's Recordings tab shows "Deleted on {date}" (highlighted
+  within seven days) or "Kept", with a Keep / Don't keep button (applied at once, undone if the
+  server refuses). The Parent and Student apps show "Available until {expiresOn − 1 day}" on
+  shared recordings.
 - **Warning:** seven days before `expiresOn` the teacher gets one in-app notification (kind
   `recording`, dedupe key `recording-expiry:<id>`, with a push; the Teacher App opens its
   Recordings tab). It is sent once, even if the dates change later.
@@ -86,7 +90,6 @@ Owner decision: a recording is kept until the end of its semester, plus a grace 
 
 ## Not built yet
 
-- Deleting a recording by hand from the apps. The Teacher App does not show `expiresOn` or a
-  Keep button yet.
+- Deleting a recording by hand from the apps.
 - Slides, PDFs and videos shown in split screen are not in the event log yet.
 - Kannada and Hindi speech models need benchmarking on classroom audio.

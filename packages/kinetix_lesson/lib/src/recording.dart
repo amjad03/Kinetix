@@ -50,6 +50,8 @@ class RecordingInfo {
     this.missed = false,
     this.transcript,
     this.summary,
+    this.keep = false,
+    this.expiresOn,
   });
 
   factory RecordingInfo.fromJson(Map<String, dynamic> j) => RecordingInfo(
@@ -69,6 +71,8 @@ class RecordingInfo {
     missed: j['missed'] as bool? ?? false,
     transcript: (j['transcript'] as String?)?.trim().isEmpty ?? true ? null : (j['transcript'] as String).trim(),
     summary: LessonSummary.fromJson(j['summary']),
+    keep: j['keep'] as bool? ?? false,
+    expiresOn: _date(j['expiresOn']),
   );
 
   final String id;
@@ -92,10 +96,18 @@ class RecordingInfo {
   final String? transcript;
   final LessonSummary? summary;
 
+  /// The teacher keeps it past the end of its term: it is never deleted automatically.
+  final bool keep;
+
+  /// The day it will be deleted (end of term plus the grace period), or null when it is kept
+  /// or has no term. A calendar date, not an instant.
+  final DateTime? expiresOn;
+
   bool get isShared => sharedAt != null;
   bool get isFinished => finishedAt != null;
 
-  RecordingInfo copyWith({DateTime? sharedAt, bool? missed}) => RecordingInfo(
+  /// [expiresOn] is only replaced when [replaceExpiresOn] is true (it may become null).
+  RecordingInfo copyWith({DateTime? sharedAt, bool? missed, bool? keep, DateTime? expiresOn, bool replaceExpiresOn = false}) => RecordingInfo(
     id: id,
     title: title,
     startedAt: startedAt,
@@ -112,7 +124,16 @@ class RecordingInfo {
     missed: missed ?? this.missed,
     transcript: transcript,
     summary: summary,
+    keep: keep ?? this.keep,
+    expiresOn: replaceExpiresOn ? expiresOn : this.expiresOn,
   );
+
+  /// "2026-12-31" as a local calendar date.
+  static DateTime? _date(Object? v) {
+    if (v is! String) return null;
+    final m = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(v);
+    return m == null ? null : DateTime(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
+  }
 
   static DateTime? _instant(Object? v) => v is String ? DateTime.tryParse(v)?.toLocal() : null;
 }

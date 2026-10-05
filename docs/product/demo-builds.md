@@ -27,7 +27,7 @@ screen (docs/operations/mobile-release.md).
   calendar (Gandhi Jayanti, Dasara holidays, Kannada Rajyotsava, mid-semester exams, sports day,
   Christmas), homework (including a checked hand-in with a remark), marks (Unit test 1), attendance
   history, the Corporate Accounting syllabus with coverage, the year plan and today's lesson plan,
-  recordings, a shared board, fees (part-paid tuition, an overdue exam fee and a receipt), library
+  recordings (one kept, one deleted within a week, the others at the end of the term), a shared board, fees (part-paid tuition, an overdue exam fee and a receipt), library
   loans (Diya's overdue book with a fine), messages between Rajesh and Anita, and consent.
 - Changes work for the session and are forgotten when the app is closed: taking attendance,
   assigning and checking homework, handing in work, entering and publishing marks, marking topics

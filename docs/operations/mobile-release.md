@@ -2,10 +2,10 @@
 
 | App | Package / bundle id | Platforms | Channel |
 | --- | --- | --- | --- |
-| Teacher | Android `in.kinetix.kinetix_teacher`, iOS `in.kinetix.kinetixTeacher` | Android, iOS | Play (internal → closed → production), App Store (TestFlight) |
-| Parent | Android `in.kinetix.kinetix_parent`, iOS `in.kinetix.kinetixParent` | Android, iOS | Play, App Store |
-| Student | Android `in.kinetix.kinetix_student`, iOS `in.kinetix.kinetixStudent` | Android, iOS | Play, App Store |
-| Board | Android `in.kinetix.kinetix_board`, Windows MSIX identity `in.kinetix.board` | Windows (interactive flat panels with a PC), Android panels | MSIX / APK via MDM — not a store app |
+| Teacher | Android `in.kinetix.teacher`, iOS `in.kinetix.teacher` | Android, iOS | Play (internal → closed → production), App Store (TestFlight) |
+| Parent | Android `in.kinetix.parent`, iOS `in.kinetix.parent` | Android, iOS | Play, App Store |
+| Student | Android `in.kinetix.student`, iOS `in.kinetix.student` | Android, iOS | Play, App Store |
+| Board | Android `in.kinetix.board`, Windows MSIX identity `in.kinetix.board` | Windows (interactive flat panels with a PC), Android panels | MSIX / APK via MDM — not a store app |
 
 The ids are permanent once published: change them (e.g. to a company-owned domain) **before** the
 first upload if `in.kinetix` is not ours. The Flutter SDK is pinned in
@@ -81,11 +81,9 @@ push, payments (Parent), recording (Board) and live class work on a minified bui
   (key from `key.properties`, from base64 env vars, and the clear failure without a key), but no
   full `flutter build appbundle --release` has run yet (the environment that wrote it had no
   Android SDK). Run the Release workflow (or a local build) once and install the APK on a device.
-- **Application ids**: the published ids are permanent. The current ones (table above) are
-  `in.kinetix.kinetix_<app>` on Android and `in.kinetix.kinetix<App>` on iOS; if we want
-  `in.kinetix.<app>` (or a company-owned domain), change `applicationId` (and `namespace`) in
-  `android/app/build.gradle.kts`, `PRODUCT_BUNDLE_IDENTIFIER` in `ios/Runner.xcodeproj`, the
-  Firebase apps and `FIREBASE_IOS_BUNDLE_ID` **before** the first upload.
+- **Application ids** are `in.kinetix.<app>` on Android and iOS (permanent once published). The
+  Android code namespace is `app.kinetix.<app>`, because `in` is a Java keyword and cannot be a
+  package name (the application id may still start with `in.`).
 - Code-signing certificate for the Board's Windows installer (below) — buy and set `publisher`.
 - Store listings need a privacy policy URL (docs/product/privacy-notice.md, published), the Play
   **Data safety** form and Apple's privacy labels (phone number, name, school records, audio for
@@ -104,7 +102,7 @@ flutter build appbundle --release --dart-define=KINETIX_API_URL=https://… \
   --dart-define=FIREBASE_MESSAGING_SENDER_ID=… \
   --dart-define=FIREBASE_PROJECT_ID=… \
   --dart-define=FIREBASE_STORAGE_BUCKET=…          # Teacher app
-# iOS builds also: --dart-define=FIREBASE_IOS_BUNDLE_ID=in.kinetix.kinetixParent and the iOS FIREBASE_APP_ID
+# iOS builds also: --dart-define=FIREBASE_IOS_BUNDLE_ID=in.kinetix.parent and the iOS FIREBASE_APP_ID
 ```
 
 Without them the apps run and simply don't register for push. Keep the values in a
@@ -132,7 +130,7 @@ only; Firebase never receives names, marks or messages.
    profile with the Push Notifications capability), then
    `flutter build ipa --release --dart-define=KINETIX_API_URL=https://… --dart-define-from-file=firebase.prod.json`
    and upload `build/ios/ipa/*.ipa` with Transporter or `xcrun altool`.
-   - Bundle ids `in.kinetix.kinetixTeacher` / `…Parent` / `…Student`; display names "KINETIX
+   - Bundle ids `in.kinetix.teacher` / `…Parent` / `…Student`; display names "KINETIX
      Teacher" / "KINETIX Parent" / "KINETIX Student"; minimum iOS 15.0 (what Firebase 12 and
      mobile_scanner 7 need). Version and build from `pubspec.yaml`.
    - Push: the **Release** configuration signs with `Runner/Runner-Release.entitlements`

@@ -1961,5 +1961,30 @@
   "notInDemo": "Not available in the demo.",
   "@notInDemo": {
     "description": "Shown for features that need a real server (live video, audio, playback)."
+  },
+  "recordingKept": "Kept",
+  "@recordingKept": {
+    "description": "Pill: the teacher keeps this recording past the end of its term."
+  },
+  "recordingDeletedOn": "Deleted on {date}",
+  "@recordingDeletedOn": {
+    "description": "Pill: the day the recording is deleted (end of term plus grace).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "keepRecording": "Keep",
+  "@keepRecording": {
+    "description": "Button: keep the recording after its term ends."
+  },
+  "dontKeepRecording": "Don't keep",
+  "@dontKeepRecording": {
+    "description": "Button: let a kept recording be deleted with its term."
+  },
+  "keepRecordingTooltip": "Kept recordings are not deleted when the term ends",
+  "@keepRecordingTooltip": {
+    "description": "Tooltip of the Keep button."
   }
 }

@@ -1349,4 +1349,21 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get notInDemo => 'डेमो में उपलब्ध नहीं है।';
+
+  @override
+  String get recordingKept => 'रखी गई';
+
+  @override
+  String recordingDeletedOn(String date) {
+    return '$date को हटाई जाएगी';
+  }
+
+  @override
+  String get keepRecording => 'रखें';
+
+  @override
+  String get dontKeepRecording => 'न रखें';
+
+  @override
+  String get keepRecordingTooltip => 'रखी गई रिकॉर्डिंग सत्र समाप्त होने पर नहीं हटाई जातीं';
 }

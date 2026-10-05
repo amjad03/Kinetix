@@ -2450,6 +2450,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not available in the demo.'**
   String get notInDemo;
+
+  /// Pill: the teacher keeps this recording past the end of its term.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get recordingKept;
+
+  /// Pill: the day the recording is deleted (end of term plus grace).
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted on {date}'**
+  String recordingDeletedOn(String date);
+
+  /// Button: keep the recording after its term ends.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get keepRecording;
+
+  /// Button: let a kept recording be deleted with its term.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t keep'**
+  String get dontKeepRecording;
+
+  /// Tooltip of the Keep button.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept recordings are not deleted when the term ends'**
+  String get keepRecordingTooltip;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

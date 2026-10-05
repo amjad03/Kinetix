@@ -241,6 +241,13 @@ void main() {
           await tapAndSettle(tester, find.byKey(const Key('navRecordings')));
           await tapAndSettle(tester, find.byKey(const Key('share-r1')));
           await tapAndSettle(tester, find.byKey(const Key('confirmShare')));
+          // Keep / Don't keep: kept, deleted on a date, and soon.
+          await clearSnackBars(tester);
+          for (final key in ['keep-r1', 'keep-r2']) {
+            await Scrollable.ensureVisible(tester.element(find.byKey(Key(key))), alignment: 0.5);
+            await tester.pumpAndSettle();
+            await tapAndSettle(tester, find.byKey(Key(key)));
+          }
           await tester.drag(find.byType(CustomScrollView).last, const Offset(0, -600));
           await tester.pumpAndSettle();
 

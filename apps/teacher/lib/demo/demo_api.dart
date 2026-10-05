@@ -368,12 +368,19 @@ class DemoTeacherApi extends FakeTeacherApi {
     _coverage[costing.id] = {'k1': TopicCoverage(coveredOn: _today.subtract(const Duration(days: 8)), coveredBy: 'Anita Sharma')};
     _plans[subject.id] = _buildPlan(subject.id);
 
+    // Retention: r1 is kept; r2 is deleted within a week with its term; the others later.
     recordings = [
-      _recording('r1', 'Forfeiture of shares', daysAgo: 1, shared: true, transcript: 'done'),
-      _recording('r2', 'Issue at premium and discount', daysAgo: 3, shared: true, transcript: 'done'),
-      _recording('r3', 'Pro-rata allotment', daysAgo: 6, transcript: 'queued'),
-      _recording('r4', 'Cost sheet: worked example', daysAgo: 8, subjectName: costing.name),
+      _recording('r1', 'Forfeiture of shares', daysAgo: 1, shared: true, transcript: 'done', keep: true),
+      _recording('r2', 'Issue at premium and discount', daysAgo: 3, shared: true, transcript: 'done', expiresIn: 5),
+      _recording('r3', 'Pro-rata allotment', daysAgo: 6, transcript: 'queued', expiresIn: 40),
+      _recording('r4', 'Cost sheet: worked example', daysAgo: 8, subjectName: costing.name, expiresIn: 40),
     ];
+    termExpiry = {
+      'r1': _today.add(const Duration(days: 40)),
+      'r2': _today.add(const Duration(days: 5)),
+      'r3': _today.add(const Duration(days: 40)),
+      'r4': _today.add(const Duration(days: 40)),
+    };
 
     draft = const LessonDraft(
       topicIds: ['t5'],
@@ -403,6 +410,8 @@ class DemoTeacherApi extends FakeTeacherApi {
     bool shared = false,
     String transcript = 'none',
     String? subjectName,
+    bool keep = false,
+    int? expiresIn,
   }) {
     final start = _today.subtract(Duration(days: daysAgo)).add(const Duration(hours: 10));
     return {
@@ -420,6 +429,8 @@ class DemoTeacherApi extends FakeTeacherApi {
       'summaryState': 'none',
       'sharedAt': shared ? start.add(const Duration(hours: 1)).toUtc().toIso8601String() : null,
       'finishedAt': start.add(const Duration(minutes: 48)).toUtc().toIso8601String(),
+      'keep': keep,
+      'expiresOn': expiresIn == null ? null : isoDate(_today.add(Duration(days: expiresIn))),
     };
   }
 

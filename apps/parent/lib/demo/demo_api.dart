@@ -81,9 +81,9 @@ class DemoParentApi extends FakeParentApi {
     subjectOfHomework = {'h1': corpAcc, 'h2': costing, 'h3': corpAcc, 'h4': dmaths};
 
     recordings = [
-      FakeParentApi.recordingJson('r1', 'Forfeiture of shares', subject: corpAcc.name, startedAt: _at(-1, 10)),
-      FakeParentApi.recordingJson('r2', 'Issue at premium and discount', subject: corpAcc.name, startedAt: _at(-3, 10), missed: true),
-      FakeParentApi.recordingJson('r3', 'Cost sheet: worked example', subject: costing.name, startedAt: _at(-8, 9)),
+      FakeParentApi.recordingJson('r1', 'Forfeiture of shares', subject: corpAcc.name, startedAt: _at(-1, 10), keep: true),
+      FakeParentApi.recordingJson('r2', 'Issue at premium and discount', subject: corpAcc.name, startedAt: _at(-3, 10), missed: true, expiresOn: _iso(5)),
+      FakeParentApi.recordingJson('r3', 'Cost sheet: worked example', subject: costing.name, startedAt: _at(-8, 9), expiresOn: _iso(40)),
     ].map((j) => RecordingInfo.fromJson({...j, 'hasAudio': false, 'durationMs': 20000})).toList();
 
     summaries = {
@@ -451,6 +451,8 @@ class DemoParentApi extends FakeParentApi {
       ...FakeParentApi.recordingJson(r.id, r.title, subject: r.subjectName!, startedAt: r.startedAt.toUtc().toIso8601String()),
       'hasAudio': false,
       'durationMs': 20000,
+      'keep': r.keep,
+      'expiresOn': r.expiresOn == null ? null : isoDate(r.expiresOn!),
       'missed': null,
       'transcript': 'Sample transcript (demo): today we look at how companies forfeit and re-issue shares.',
       'summary': {

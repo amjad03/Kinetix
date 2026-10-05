@@ -1355,4 +1355,21 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get notInDemo => 'ಡೆಮೊದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get recordingKept => 'ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String recordingDeletedOn(String date) {
+    return '$date ರಂದು ಅಳಿಸಲಾಗುವುದು';
+  }
+
+  @override
+  String get keepRecording => 'ಉಳಿಸಿ';
+
+  @override
+  String get dontKeepRecording => 'ಉಳಿಸಬೇಡಿ';
+
+  @override
+  String get keepRecordingTooltip => 'ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಅವಧಿ ಮುಗಿದಾಗ ಅಳಿಸಲಾಗುವುದಿಲ್ಲ';
 }

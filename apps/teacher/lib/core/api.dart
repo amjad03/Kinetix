@@ -105,6 +105,10 @@ abstract class TeacherApi {
   /// Shares a finished recording with its class (families of absent students are notified).
   Future<RecordingInfo> shareRecording(String id);
 
+  /// Keeps a recording past the end of its term ([keep]), or lets it be deleted with the term
+  /// again. Returns the recording with its new `keep` and `expiresOn`.
+  Future<RecordingInfo> keepRecording(String id, {required bool keep});
+
   /// A class's tests and assignments, latest first (no marks or stats).
   Future<List<Assessment>> assessments(String sectionId);
 
@@ -355,6 +359,10 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<RecordingInfo> shareRecording(String id) async =>
       RecordingInfo.fromJson(await _send('POST', '/v1/recordings/$id/share') as Map<String, dynamic>);
+
+  @override
+  Future<RecordingInfo> keepRecording(String id, {required bool keep}) async =>
+      RecordingInfo.fromJson(await _send('POST', '/v1/recordings/$id/keep', body: {'keep': keep}) as Map<String, dynamic>);
 
   @override
   Future<List<Assessment>> assessments(String sectionId) async => (await _send('GET', '/v1/assessments?sectionId=$sectionId') as List)

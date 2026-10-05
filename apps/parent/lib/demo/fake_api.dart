@@ -164,7 +164,7 @@ class FakeParentApi implements ParentApi {
 
   /// Shared with Aarav's class, newest first: he missed the older one.
   late List<RecordingInfo> recordings = [
-    recordingJson('r1', 'Cost sheets', subject: 'Cost Accounting', startedAt: '2026-10-04T03:30:00Z'),
+    recordingJson('r1', 'Cost sheets', subject: 'Cost Accounting', startedAt: '2026-10-04T03:30:00Z', expiresOn: '2027-01-10'),
     recordingJson('r2', 'Issue of shares', subject: 'Corporate Accounting', startedAt: '2026-10-01T04:30:00Z', missed: true),
   ].map(RecordingInfo.fromJson).toList();
 
@@ -174,6 +174,8 @@ class FakeParentApi implements ParentApi {
     required String subject,
     required String startedAt,
     bool missed = false,
+    bool keep = false,
+    String? expiresOn,
   }) => {
     'id': id,
     'title': title,
@@ -189,6 +191,8 @@ class FakeParentApi implements ParentApi {
     'sharedAt': startedAt,
     'finishedAt': startedAt,
     'missed': missed,
+    'keep': keep,
+    'expiresOn': expiresOn,
   };
 
   Map<String, dynamic> recordingJsonFor(String id, {bool missed = false}) =>

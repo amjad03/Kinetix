@@ -98,6 +98,13 @@ class RecordingRow extends StatelessWidget {
                     [?r.teacherName, context.fmt.relativeDay(r.startedAt, today), LessonFmt.length(r.duration, LessonStrings.of(context))].join(' · '),
                     style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
+                  // Deleted on expiresOn (end of term plus grace): watchable until the day before.
+                  if (r.expiresOn case final expires?)
+                    Text(
+                      context.l10n.recordingAvailableUntil(context.fmt.shortDay(DateTime(expires.year, expires.month, expires.day - 1))),
+                      key: Key('available-until-${r.id}'),
+                      style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                    ),
                 ],
               ),
             ),

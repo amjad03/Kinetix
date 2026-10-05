@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
+import 'package:kinetix_teacher/core/api.dart';
 import 'package:kinetix_teacher/app.dart';
 import 'package:kinetix_teacher/core/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,5 +99,53 @@ void main() {
   testWidgets('no recordings yet', (tester) async {
     await pumpRecordings(tester, (api) => api.recordings = []);
     expect(find.textContaining('No recordings yet.'), findsOneWidget);
+  });
+
+  group('retention', () {
+    testWidgets('shows when each recording is deleted, highlighted within a week, or that it is kept', (tester) async {
+      await pumpRecordings(tester, (api) {
+        api.recordings.add(FakeTeacherApi.recordingJson('r5', 'Underwriting', expiresOn: FakeTeacherApi.inDays(30)));
+      });
+      expect(inCard('r1', find.byKey(const Key('expires-soon-r1'))), findsOneWidget);
+      expect(inCard('r1', find.textContaining('Deleted on')), findsOneWidget);
+      expect(inCard('r1', find.text('Keep')), findsOneWidget);
+      expect(inCard('r2', find.text('Kept')), findsOneWidget);
+      expect(inCard('r2', find.text("Don't keep")), findsOneWidget);
+      await tester.scrollUntilVisible(find.byKey(const Key('recording-r5')), 200, scrollable: find.byType(Scrollable).first);
+      expect(inCard('r5', find.byKey(const Key('expires-r5'))), findsOneWidget);
+      // Uploading, or without a class (no term): nothing to keep.
+      expect(find.byKey(const Key('keep-r3')), findsNothing);
+      expect(find.byKey(const Key('keep-r4')), findsNothing);
+    });
+
+    testWidgets('Keep shows at once and is confirmed by the server', (tester) async {
+      final gate = Completer<void>();
+      final api = await pumpRecordings(tester, (api) => api.keepGate = gate);
+      await tester.tap(find.byKey(const Key('keep-r1')));
+      await tester.pump();
+      expect(inCard('r1', find.text('Kept')), findsOneWidget);
+      expect(inCard('r1', find.textContaining('Deleted on')), findsNothing);
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('keep r1 true'));
+      expect(inCard('r1', find.text('Kept')), findsOneWidget);
+      expect(inCard('r1', find.text("Don't keep")), findsOneWidget);
+
+      // Don't keep: the term's date comes back.
+      await tester.tap(find.byKey(const Key('keep-r2')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('keep r2 false'));
+      expect(inCard('r2', find.byKey(const Key('expires-r2'))), findsOneWidget);
+      expect(inCard('r2', find.text('Keep')), findsOneWidget);
+    });
+
+    testWidgets('a refused Keep is undone and explained', (tester) async {
+      await pumpRecordings(tester, (api) => api.keepError = ApiException(403, 'Only the teacher who recorded it can keep it'));
+      await tester.tap(find.byKey(const Key('keep-r1')));
+      await tester.pumpAndSettle();
+      expect(find.text('Only the teacher who recorded it can keep it'), findsOneWidget);
+      expect(inCard('r1', find.text('Kept')), findsNothing);
+      expect(inCard('r1', find.byKey(const Key('expires-soon-r1'))), findsOneWidget);
+    });
   });
 }

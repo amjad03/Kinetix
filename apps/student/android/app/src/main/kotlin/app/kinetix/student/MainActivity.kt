@@ -1,4 +1,4 @@
-package `in`.kinetix.kinetix_student
+package app.kinetix.student
 
 import io.flutter.embedding.android.FlutterActivity
 

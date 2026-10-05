@@ -288,6 +288,8 @@ class FakeTeacherApi implements TeacherApi {
     String transcriptState = 'none',
     bool hasAudio = true,
     String? sectionId = 'sec1',
+    bool keep = false,
+    DateTime? expiresOn,
   }) => {
     'id': id,
     'title': title,
@@ -302,17 +304,47 @@ class FakeTeacherApi implements TeacherApi {
     'summaryState': 'none',
     'sharedAt': shared ? '2026-10-04T05:30:00Z' : null,
     'finishedAt': finished ? '2026-10-04T05:29:00Z' : null,
+    'keep': keep,
+    'expiresOn': expiresOn == null ? null : isoDate(expiresOn),
   };
 
+  /// Today plus [days], for retention dates (the app compares them with the phone's date).
+  static DateTime inDays(int days) {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day + days);
+  }
+
+  /// r1 is deleted in 5 days with its term; r2 is kept (it would go in 60 days).
   late List<Map<String, dynamic>> recordings = [
-    recordingJson('r1', 'Issue of shares', transcriptState: 'queued'),
-    recordingJson('r2', 'Forfeiture of shares', shared: true, transcriptState: 'done'),
+    recordingJson('r1', 'Issue of shares', transcriptState: 'queued', expiresOn: inDays(5)),
+    recordingJson('r2', 'Forfeiture of shares', shared: true, transcriptState: 'done', keep: true),
     recordingJson('r3', 'Cost sheets', finished: false),
     recordingJson('r4', 'Practice on the board', sectionId: null, hasAudio: false),
   ];
 
   /// Set to make sharing fail with this message.
   String? shareError;
+
+  /// When each recording's term ends it (expiresOn when not kept); null: no term.
+  late Map<String, DateTime?> termExpiry = {'r1': inDays(5), 'r2': inDays(60)};
+
+  /// Set to make keeping fail with this error.
+  ApiException? keepError;
+
+  /// When set, keeping waits for it (to see the optimistic state).
+  Completer<void>? keepGate;
+
+  @override
+  Future<RecordingInfo> keepRecording(String id, {required bool keep}) async {
+    calls.add('keep $id $keep');
+    if (keepGate != null) await keepGate!.future;
+    if (keepError != null) throw keepError!;
+    final j = recordings.firstWhere((r) => r['id'] == id);
+    final expires = termExpiry[id];
+    j['keep'] = keep;
+    j['expiresOn'] = keep || expires == null ? null : isoDate(expires);
+    return RecordingInfo.fromJson(j);
+  }
 
   @override
   Future<List<RecordingInfo>> myRecordings() async {

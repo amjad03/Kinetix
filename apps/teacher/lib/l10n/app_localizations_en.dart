@@ -1349,4 +1349,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notInDemo => 'Not available in the demo.';
+
+  @override
+  String get recordingKept => 'Kept';
+
+  @override
+  String recordingDeletedOn(String date) {
+    return 'Deleted on $date';
+  }
+
+  @override
+  String get keepRecording => 'Keep';
+
+  @override
+  String get dontKeepRecording => 'Don\'t keep';
+
+  @override
+  String get keepRecordingTooltip => 'Kept recordings are not deleted when the term ends';
 }

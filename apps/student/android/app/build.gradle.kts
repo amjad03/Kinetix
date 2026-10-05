@@ -51,7 +51,7 @@ val useTestSigning = releaseSigningProblem != null && testSigning
 val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
 
 android {
-    namespace = "`in`.kinetix.kinetix_student"
+    namespace = "app.kinetix.student"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -62,7 +62,7 @@ android {
 
     defaultConfig {
         // Permanent once published (docs/operations/mobile-release.md).
-        applicationId = "`in`.kinetix.kinetix_student"
+        applicationId = "in.kinetix.student"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.

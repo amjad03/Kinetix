@@ -1162,5 +1162,14 @@
   "notInDemo": "Not available in the demo.",
   "@notInDemo": {
     "description": "Shown for features that need a real server (live video, audio, playback)."
+  },
+  "recordingAvailableUntil": "Available until {date}",
+  "@recordingAvailableUntil": {
+    "description": "A shared recording: the last day it can be watched.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

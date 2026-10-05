@@ -20,6 +20,9 @@ class RecordingsController extends ChangeNotifier {
   /// Recordings being shared right now (their buttons show progress).
   final sharing = <String>{};
 
+  /// Recordings whose Keep / Don't keep is on its way to the server.
+  final keeping = <String>{};
+
   Future<void> load() async {
     loading = true;
     error = null;
@@ -45,6 +48,29 @@ class RecordingsController extends ChangeNotifier {
       sharing.remove(r.id);
       notifyListeners();
     }
+  }
+
+  /// Keeps [r] past the end of its term, or lets it go again. Shown at once; put back and
+  /// rethrown ([ApiException]) when the server refuses.
+  Future<void> toggleKeep(RecordingInfo r) async {
+    final keep = !r.keep;
+    keeping.add(r.id);
+    // Kept recordings have no deletion date; the server says the new one when un-kept.
+    _replace(r.copyWith(keep: keep, expiresOn: keep ? null : r.expiresOn, replaceExpiresOn: true));
+    try {
+      _replace(await api.keepRecording(r.id, keep: keep));
+    } catch (_) {
+      _replace(r);
+      rethrow;
+    } finally {
+      keeping.remove(r.id);
+      notifyListeners();
+    }
+  }
+
+  void _replace(RecordingInfo r) {
+    items = [for (final i in items ?? const <RecordingInfo>[]) i.id == r.id ? r : i];
+    notifyListeners();
   }
 }
 
@@ -76,6 +102,16 @@ class RecordingsTab extends StatelessWidget {
     try {
       await controller.share(r);
       messenger.showSnackBar(SnackBar(content: Text(l.sharedWith(cls))));
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
+    }
+  }
+
+  Future<void> _toggleKeep(BuildContext context, RecordingInfo r) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
+    try {
+      await controller.toggleKeep(r);
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
     }
@@ -128,6 +164,9 @@ class RecordingsTab extends StatelessWidget {
                       return RecordingCard(
                         recording: r,
                         sharing: controller.sharing.contains(r.id),
+                        keeping: controller.keeping.contains(r.id),
+                        // Only recordings with a term can be deleted, so only they can be kept.
+                        onKeep: r.isFinished && (r.keep || r.expiresOn != null) ? () => _toggleKeep(context, r) : null,
                         onPlay: r.isFinished ? () => _play(context, r) : null,
                         onShare: r.isFinished && !r.isShared && r.sectionId != null ? () => _share(context, r) : null,
                       );
@@ -144,12 +183,31 @@ class RecordingsTab extends StatelessWidget {
 
 /// One recording: title, class and subject, when and how long, and its status.
 class RecordingCard extends StatelessWidget {
-  const RecordingCard({super.key, required this.recording, required this.onPlay, required this.onShare, this.sharing = false});
+  const RecordingCard({
+    super.key,
+    required this.recording,
+    required this.onPlay,
+    required this.onShare,
+    this.onKeep,
+    this.sharing = false,
+    this.keeping = false,
+    this.today,
+  });
 
   final RecordingInfo recording;
   final VoidCallback? onPlay;
   final VoidCallback? onShare;
+
+  /// Keep / Don't keep; null when the recording cannot be deleted anyway.
+  final VoidCallback? onKeep;
   final bool sharing;
+  final bool keeping;
+
+  /// For tests; the phone's date otherwise.
+  final DateTime? today;
+
+  /// A deletion this close is highlighted.
+  static const soon = Duration(days: 7);
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +240,24 @@ class RecordingCard extends StatelessWidget {
         Processing.none => const SizedBox.shrink(),
       },
       if (!r.hasAudio && r.isFinished) Pill(l.noSound, icon: Icons.volume_off_outlined, background: neutral.$1, foreground: neutral.$2),
+      if (r.keep)
+        Pill(l.recordingKept, key: Key('kept-${r.id}'), icon: Icons.bookmark, background: goodBg, foreground: good)
+      else if (r.expiresOn case final expires?)
+        expires.difference(DateUtils.dateOnly(today ?? DateTime.now())) <= soon
+            ? Pill(
+                l.recordingDeletedOn(fmt.shortDay(expires)),
+                key: Key('expires-soon-${r.id}'),
+                icon: Icons.auto_delete_outlined,
+                background: c.errorContainer,
+                foreground: c.onErrorContainer,
+              )
+            : Pill(
+                l.recordingDeletedOn(fmt.shortDay(expires)),
+                key: Key('expires-${r.id}'),
+                icon: Icons.auto_delete_outlined,
+                background: neutral.$1,
+                foreground: neutral.$2,
+              ),
     ];
 
     return Card(
@@ -228,16 +304,32 @@ class RecordingCard extends StatelessWidget {
                 padding: const EdgeInsets.only(right: Kx.s8),
                 child: Wrap(spacing: Kx.s8, runSpacing: Kx.s8, crossAxisAlignment: WrapCrossAlignment.center, children: pills),
               ),
-              if (onShare != null || sharing)
+              if (onShare != null || sharing || onKeep != null)
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    key: Key('share-${r.id}'),
-                    onPressed: sharing ? null : onShare,
-                    icon: sharing
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.share_outlined),
-                    label: Text(l.shareWithClass),
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    children: [
+                      if (onKeep != null)
+                        Tooltip(
+                          message: l.keepRecordingTooltip,
+                          child: TextButton.icon(
+                            key: Key('keep-${r.id}'),
+                            onPressed: keeping ? null : onKeep,
+                            icon: Icon(r.keep ? Icons.bookmark_remove_outlined : Icons.bookmark_add_outlined),
+                            label: Text(r.keep ? l.dontKeepRecording : l.keepRecording),
+                          ),
+                        ),
+                      if (onShare != null || sharing)
+                        TextButton.icon(
+                          key: Key('share-${r.id}'),
+                          onPressed: sharing ? null : onShare,
+                          icon: sharing
+                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.share_outlined),
+                          label: Text(l.shareWithClass),
+                        ),
+                    ],
                   ),
                 ),
             ],

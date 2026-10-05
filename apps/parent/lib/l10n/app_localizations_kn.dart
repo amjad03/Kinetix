@@ -1586,4 +1586,9 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get notInDemo => 'ಡೆಮೊದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.';
+
+  @override
+  String recordingAvailableUntil(String date) {
+    return '$date ರವರೆಗೆ ಲಭ್ಯ';
+  }
 }
