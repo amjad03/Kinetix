@@ -29,6 +29,22 @@ describe('decodeElement (board format v2)', () => {
     expect(filled && isStroke(filled) ? filled.fill : null).toBe(0x2e000000);
   });
 
+  it('reads sheets as the board shows them', () => {
+    const s = decodeElement({
+      t: 'sheet',
+      r: [0, 0, 320, 136],
+      n: [2, 2],
+      d: ['Sales', '=B1*2', '10', '20'],
+      out: ['Sales', '₹20.00', '10', '20'],
+      c: 0xff7a4f00,
+      ch: { k: 'bar', l: 'A2:A2', v: 'B2:B2' },
+      cv: { l: ['10'], v: [20] },
+    });
+    expect(s).toMatchObject({ kind: 'sheet', rows: 2, cols: 2, cells: ['Sales', '₹20.00', '10', '20'], header: true, widths: [140, 140] });
+    expect(s && 'chart' in s ? s.chart : null).toEqual({ kind: 'bar', labels: ['10'], values: [20] });
+    expect(decodeElement({ t: 'sheet', r: [0, 0, 1, 1] })).toBeNull();
+  });
+
   it('skips unknown kinds and incomplete elements', () => {
     expect(decodeElement({ t: 'hologram' })).toBeNull();
     expect(decodeElement({ t: 'text', x: 0 })).toBeNull();

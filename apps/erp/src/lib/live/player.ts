@@ -129,8 +129,26 @@ export interface NoteElement {
   rotation: number;
 }
 
+/**
+ * A spreadsheet. The board sends each cell as it shows it (`out`) and its chart's labels and
+ * numbers (`cv`), so the web view needs no formula engine.
+ */
+export interface SheetElement {
+  kind: 'sheet';
+  box: Box;
+  rows: number;
+  cols: number;
+  /** Each cell as shown, row by row. */
+  cells: string[];
+  color: number;
+  widths: number[];
+  header: boolean;
+  chart: { kind: 'bar' | 'line' | 'pie'; labels: string[]; values: number[] } | null;
+  rotation: number;
+}
+
 /** Anything on a page. Strokes have no `kind` (they keep the version 1 shape). */
-export type BoardElement = Stroke | TextElement | ImageElement | MathElement | GraphElement | PolygonElement | NoteElement;
+export type BoardElement = Stroke | TextElement | ImageElement | MathElement | GraphElement | PolygonElement | NoteElement | SheetElement;
 
 export const isStroke = (e: BoardElement): e is Stroke => !('kind' in e);
 
@@ -262,6 +280,25 @@ export function decodeElement(raw: unknown, images?: Map<number, string>): Board
         language: typeof j.lg === 'string' ? j.lg : null,
         rotation,
       };
+    }
+    case 'sheet': {
+      const b = box(j.r);
+      const n = j.n;
+      if (!b || !Array.isArray(n) || n.length !== 2 || !n.every(isNum)) return null;
+      const rows = Math.max(1, int(n[0]));
+      const cols = Math.max(1, int(n[1]));
+      const src = Array.isArray(j.out) ? j.out : Array.isArray(j.d) ? j.d : [];
+      const cells = Array.from({ length: rows * cols }, (_, i) => (typeof src[i] === 'string' ? (src[i] as string) : ''));
+      const cw = Array.isArray(j.cw) ? j.cw : [];
+      const widths = Array.from({ length: cols }, (_, i) => (isNum(cw[i]) ? (cw[i] as number) : 140));
+      const ch = j.ch as Record<string, unknown> | undefined;
+      const cv = j.cv as Record<string, unknown> | undefined;
+      const kind: 'bar' | 'line' | 'pie' | null = ch && (ch.k === 'bar' || ch.k === 'line' || ch.k === 'pie') ? ch.k : null;
+      const chart =
+        kind && cv && Array.isArray(cv.l) && Array.isArray(cv.v) && cv.v.every(isNum)
+          ? { kind, labels: cv.l.map((l) => String(l)), values: [...(cv.v as number[])] }
+          : null;
+      return { kind: 'sheet', box: b, rows, cols, cells, color: argb(j.c, 0xff7a4f00), widths, header: j.h !== false, chart, rotation };
     }
     default:
       return null;
