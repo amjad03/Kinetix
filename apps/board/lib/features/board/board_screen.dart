@@ -9,6 +9,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../core/recording/lesson_capture.dart';
+import '../kiosk/kiosk_ui.dart';
 import '../recording/recording_ui.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -1086,28 +1087,33 @@ class _TopBarState extends State<_TopBar> {
             const SizedBox(width: Kx.s8),
           ],
           if (widget.recording != null) ...[widget.recording!, const SizedBox(width: Kx.s8)],
-          ChromeSurface(
-            radius: Kx.rSm,
-            padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (board.pendingOps > 0)
-                  Padding(
-                    padding: const EdgeInsets.only(right: Kx.s8),
-                    child: Tooltip(
-                      message: l.pendingSync(board.pendingOps),
-                      child: Icon(Icons.cloud_upload_outlined, color: c.onSurface, size: 20),
+          // Holding the clock for 3 seconds is IT's way out of kiosk mode (docs/hardware/kiosk-mode.md).
+          KioskExitGesture(
+            key: const Key('kiosk-exit-gesture'),
+            kiosk: board.kiosk,
+            child: ChromeSurface(
+              radius: Kx.rSm,
+              padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (board.pendingOps > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(right: Kx.s8),
+                      child: Tooltip(
+                        message: l.pendingSync(board.pendingOps),
+                        child: Icon(Icons.cloud_upload_outlined, color: c.onSurface, size: 20),
+                      ),
                     ),
-                  ),
-                if (board.isEnrolled)
-                  Tooltip(
-                    message: board.online ? l.connectedCloud : l.offlineSaved,
-                    child: Icon(board.online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined, color: c.onSurface, size: 20),
-                  ),
-                const SizedBox(width: Kx.s12),
-                Text(_clockText(context, DateTime.now()), style: context.text.labelLarge?.copyWith(color: c.onSurface)),
-              ],
+                  if (board.isEnrolled)
+                    Tooltip(
+                      message: board.online ? l.connectedCloud : l.offlineSaved,
+                      child: Icon(board.online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined, color: c.onSurface, size: 20),
+                    ),
+                  const SizedBox(width: Kx.s12),
+                  Text(_clockText(context, DateTime.now()), style: context.text.labelLarge?.copyWith(color: c.onSurface)),
+                ],
+              ),
             ),
           ),
           if (s != null) ...[

@@ -56,6 +56,18 @@ export interface TenantSettings {
   grievanceOfficer?: { name: string; email?: string; phone?: string } | null;
   /** Days lesson recordings are kept after their semester ends (default 7, 0–90). */
   recordingRetentionGraceDays?: number;
+  /**
+   * Kiosk mode on boards (docs/hardware/kiosk-mode.md): on unless turned off. pinHash is the IT
+   * PIN's salted hash (src/common/kiosk-pin.ts), never the PIN; null until one is set.
+   */
+  boardKiosk?: BoardKioskSettings;
+}
+
+export interface BoardKioskSettings {
+  enabled: boolean;
+  pinHash: string | null;
+  /** When the PIN was last set (ISO time), for the ERP. */
+  pinSetAt?: string | null;
 }
 
 export const campuses = pgTable('campuses', {

@@ -3,6 +3,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
+import '../kiosk/kiosk_ui.dart';
 import 'chrome.dart';
 
 /// The menu that opens from the avatar in the bottom-left corner.
@@ -116,9 +117,14 @@ class ProfileMenu extends StatelessWidget {
             const Divider(height: Kx.s16),
             item(Icons.settings_outlined, l.boardSettings, onSettings, key: const Key('menu-settings')),
             item(Icons.school_outlined, l.guidedTour, () {}, soon: true),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s8),
-              child: Text('KINETIX Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+            // Also IT's way out of kiosk mode: hold for 3 seconds.
+            KioskExitGesture(
+              key: const Key('kiosk-exit-version'),
+              kiosk: board.kiosk,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s8),
+                child: Text('KINETIX Board 0.2.0', style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+              ),
             ),
           ],
         ),
@@ -141,8 +147,8 @@ extension TouchProfileText on TouchProfile {
   };
 }
 
-/// Board settings: the board's language and the touch surface type (tablet, interactive
-/// panel, IR touch frame).
+/// Board settings: the board's language, the touch surface type (tablet, interactive
+/// panel, IR touch frame) and kiosk mode.
 class BoardSettingsDialog extends StatelessWidget {
   const BoardSettingsDialog({super.key, required this.board});
 
@@ -204,6 +210,8 @@ class BoardSettingsDialog extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: Kx.s24),
+                KioskSettingsSection(kiosk: board.kiosk),
               ],
             ),
           ),

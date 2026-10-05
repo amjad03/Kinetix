@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { hashKioskPin, KIOSK_PIN, kioskPinParts } from '../common/kiosk-pin.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -169,14 +170,23 @@ const SettingsBody = z
       .object({ name: z.string().trim().min(1).max(120), email: z.email().optional(), phone: z.string().trim().max(20).optional() })
       .nullable(),
     recordingRetentionGraceDays: z.number().int().min(0).max(90),
+    /** Kiosk mode on boards. `pin` sets the IT PIN (4–8 digits; only its hash is kept) or removes it (null). */
+    boardKiosk: z
+      .object({ enabled: z.boolean(), pin: z.string().regex(KIOSK_PIN, 'The PIN must be 4 to 8 digits').nullable() })
+      .partial()
+      .strict()
+      .refine((k) => k.enabled !== undefined || k.pin !== undefined, 'Nothing to change'),
   })
   .partial()
   .strict();
 
-/** Institution settings: live view, the "being viewed" sign, class audio for leaders, PIN fallback, recording retention. */
+/** Institution settings: live view, the "being viewed" sign, class audio for leaders, PIN fallback, recording retention, board kiosk mode. */
 @Controller('v1/admin/settings')
 export class SettingsController {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly clock: Clock,
+  ) {}
 
   @Get()
   @Auth('user', STAFF_ADMIN_ROLES)
@@ -190,9 +200,22 @@ export class SettingsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
       const before = t?.settings ?? {};
-      const settings: TenantSettings = { ...before, ...b };
+      const { boardKiosk: kiosk, ...rest } = b;
+      const settings: TenantSettings = { ...before, ...rest };
+      const changed: Record<string, unknown> = Object.fromEntries(Object.entries(rest).filter(([k, v]) => before[k as keyof TenantSettings] !== v));
+      if (kiosk) {
+        const prev = { enabled: before.boardKiosk?.enabled ?? true, pinHash: before.boardKiosk?.pinHash ?? null, pinSetAt: before.boardKiosk?.pinSetAt ?? null };
+        const next = { ...prev, ...(kiosk.enabled !== undefined ? { enabled: kiosk.enabled } : {}) };
+        if (kiosk.pin !== undefined) {
+          next.pinHash = kiosk.pin === null ? null : hashKioskPin(kiosk.pin);
+          next.pinSetAt = kiosk.pin === null ? null : this.clock.now().toISOString();
+        }
+        settings.boardKiosk = next;
+        // Never the PIN or its hash: only that it was set or removed.
+        const kioskChanged = { ...(next.enabled !== prev.enabled ? { enabled: next.enabled } : {}), ...(kiosk.pin !== undefined ? { pin: kiosk.pin === null ? 'removed' : 'set' } : {}) };
+        if (Object.keys(kioskChanged).length) changed.boardKiosk = kioskChanged;
+      }
       await tx.update(tenants).set({ settings }).where(eq(tenants.id, p.tenantId));
-      const changed = Object.fromEntries(Object.entries(b).filter(([k, v]) => before[k as keyof TenantSettings] !== v));
       if (Object.keys(changed).length) await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'settings.updated', subjectType: 'tenant', subjectId: p.tenantId, data: changed });
       return withDefaults(settings);
     });
@@ -208,5 +231,16 @@ function withDefaults(s: TenantSettings) {
     pinFallbackEnabled: s.pinFallbackEnabled ?? false,
     grievanceOfficer: s.grievanceOfficer ?? null,
     recordingRetentionGraceDays: s.recordingRetentionGraceDays ?? DEFAULT_RETENTION_GRACE_DAYS,
+    // Whether an IT PIN is set, never the PIN or its hash.
+    boardKiosk: { enabled: s.boardKiosk?.enabled ?? true, pinSet: kioskPinParts(s.boardKiosk?.pinHash) !== null, pinSetAt: s.boardKiosk?.pinSetAt ?? null },
   };
+}
+
+/**
+ * What a board needs to run kiosk mode (GET /v1/devices/me/config): on or off, and the IT PIN's
+ * salt and hash with the parameters to check a typed PIN offline. Never the PIN.
+ */
+export function boardKioskConfig(s: TenantSettings) {
+  const pin = kioskPinParts(s.boardKiosk?.pinHash);
+  return { enabled: s.boardKiosk?.enabled ?? true, algo: pin?.algo ?? null, iterations: pin?.iterations ?? null, pinSalt: pin?.salt ?? null, pinHash: pin?.hash ?? null };
 }

@@ -1922,4 +1922,95 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get demoBoardBody =>
       'This board is in a demo class with sample data. Nothing is sent to a server.';
+
+  @override
+  String get kioskTitle => 'Kiosk mode';
+
+  @override
+  String get kioskSettingsHint =>
+      'Keeps students in KINETIX Board and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.';
+
+  @override
+  String get kioskStatusLocked => 'On: this device is locked to KINETIX Board.';
+
+  @override
+  String get kioskStatusPinned =>
+      'On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).';
+
+  @override
+  String get kioskStatusOff => 'Off';
+
+  @override
+  String kioskStatusPaused(String time) {
+    return 'Paused by IT until $time';
+  }
+
+  @override
+  String get kioskStatusUnsupported =>
+      'Not available on this device. On Windows, use Assigned Access (see the kiosk guide).';
+
+  @override
+  String get kioskDemoHint =>
+      'Demo builds never lock this device. Try screen pinning to see what kiosk mode is like: press and hold the clock for 3 seconds to leave.';
+
+  @override
+  String get kioskTry => 'Try kiosk (screen pinning)';
+
+  @override
+  String get kioskStopTrial => 'Stop kiosk trial';
+
+  @override
+  String get kioskExitTitle => 'Leave kiosk mode';
+
+  @override
+  String get kioskEnterPin =>
+      'For IT staff: enter the IT PIN set in KINETIX ERP.';
+
+  @override
+  String get kioskPinLabel => 'IT PIN';
+
+  @override
+  String get kioskUnlock => 'Unlock';
+
+  @override
+  String kioskWrongPin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wrong PIN. $count attempts left.',
+      one: 'Wrong PIN. 1 attempt left.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kioskLockedOut(String time) {
+    return 'Too many wrong PINs. Try again after $time.';
+  }
+
+  @override
+  String get kioskNoPin =>
+      'No IT PIN has been set for this institution yet. Set one in KINETIX ERP → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.';
+
+  @override
+  String get kioskLeave => 'Leave kiosk for 10 minutes';
+
+  @override
+  String get kioskLeaveHint =>
+      'The board locks again by itself after 10 minutes, or when it restarts.';
+
+  @override
+  String get kioskOpenSettings => 'Open Android settings';
+
+  @override
+  String kioskPausedBody(String time) {
+    return 'Kiosk mode is paused until $time.';
+  }
+
+  @override
+  String get kioskLockNow => 'Lock again now';
+
+  @override
+  String get kioskDemoBody =>
+      'This is a demo build: kiosk mode is off and no PIN is needed.';
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -22,11 +24,11 @@ void main() {
   // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
   // (unless it is a demo build: --dart-define=KINETIX_DEMO=true, which needs no server).
   if (!checkServerConfig()) return;
-  if (Demo.enabled) {
-    runApp(KinetixBoardApp(controller: demoBoard(DemoBoardServer())));
-    return;
-  }
-  runApp(KinetixBoardApp(controller: BoardController()..start()));
+  final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
+  // Back in front (from Android settings, or the user unpinned the screen): kiosk mode locks
+  // again if it should be on (docs/hardware/kiosk-mode.md).
+  AppLifecycleListener(onResume: () => unawaited(board.kiosk.refresh()));
+  runApp(KinetixBoardApp(controller: board));
 }
 
 /// A board on the in-memory demo server, open in its class (docs/product/demo-builds.md).

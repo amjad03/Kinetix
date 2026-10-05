@@ -37,6 +37,9 @@ class ApiClient {
   Future<PairingCode> newPairingCode() async =>
       PairingCode.fromJson(await _send('POST', '/v1/devices/me/pairing-codes', useDeviceToken: true));
 
+  /// What the institution has set for its boards: kiosk mode and the IT PIN's hash (the `kiosk` object).
+  Future<Map<String, dynamic>> boardConfig() async => await _send('GET', '/v1/devices/me/config', useDeviceToken: true) as Map<String, dynamic>;
+
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
 
   /// "Go live": opens (or closes) the board to the class's students in the Student App.

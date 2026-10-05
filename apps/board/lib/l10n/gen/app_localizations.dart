@@ -3267,6 +3267,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This board is in a demo class with sample data. Nothing is sent to a server.'**
   String get demoBoardBody;
+
+  /// Board kiosk mode (docs/hardware/kiosk-mode.md): the device locked to the board app.
+  ///
+  /// In en, this message translates to:
+  /// **'Kiosk mode'**
+  String get kioskTitle;
+
+  /// No description provided for @kioskSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps students in KINETIX Board and opens it again after a power cut. Your institution turns it on and sets the IT PIN in KINETIX ERP → Settings.'**
+  String get kioskSettingsHint;
+
+  /// No description provided for @kioskStatusLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'On: this device is locked to KINETIX Board.'**
+  String get kioskStatusLocked;
+
+  /// No description provided for @kioskStatusPinned.
+  ///
+  /// In en, this message translates to:
+  /// **'On: screen pinning. For a full lock, make KINETIX Board the device owner (see the kiosk guide).'**
+  String get kioskStatusPinned;
+
+  /// No description provided for @kioskStatusOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get kioskStatusOff;
+
+  /// No description provided for @kioskStatusPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused by IT until {time}'**
+  String kioskStatusPaused(String time);
+
+  /// No description provided for @kioskStatusUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this device. On Windows, use Assigned Access (see the kiosk guide).'**
+  String get kioskStatusUnsupported;
+
+  /// No description provided for @kioskDemoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo builds never lock this device. Try screen pinning to see what kiosk mode is like: press and hold the clock for 3 seconds to leave.'**
+  String get kioskDemoHint;
+
+  /// No description provided for @kioskTry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try kiosk (screen pinning)'**
+  String get kioskTry;
+
+  /// No description provided for @kioskStopTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop kiosk trial'**
+  String get kioskStopTrial;
+
+  /// No description provided for @kioskExitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave kiosk mode'**
+  String get kioskExitTitle;
+
+  /// No description provided for @kioskEnterPin.
+  ///
+  /// In en, this message translates to:
+  /// **'For IT staff: enter the IT PIN set in KINETIX ERP.'**
+  String get kioskEnterPin;
+
+  /// No description provided for @kioskPinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'IT PIN'**
+  String get kioskPinLabel;
+
+  /// No description provided for @kioskUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get kioskUnlock;
+
+  /// No description provided for @kioskWrongPin.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Wrong PIN. 1 attempt left.} other{Wrong PIN. {count} attempts left.}}'**
+  String kioskWrongPin(int count);
+
+  /// No description provided for @kioskLockedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong PINs. Try again after {time}.'**
+  String kioskLockedOut(String time);
+
+  /// No description provided for @kioskNoPin.
+  ///
+  /// In en, this message translates to:
+  /// **'No IT PIN has been set for this institution yet. Set one in KINETIX ERP → Settings → Board kiosk mode; the board picks it up when it is next online. Until then, kiosk mode can only be removed as the kiosk guide describes.'**
+  String get kioskNoPin;
+
+  /// No description provided for @kioskLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave kiosk for 10 minutes'**
+  String get kioskLeave;
+
+  /// No description provided for @kioskLeaveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The board locks again by itself after 10 minutes, or when it restarts.'**
+  String get kioskLeaveHint;
+
+  /// No description provided for @kioskOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Android settings'**
+  String get kioskOpenSettings;
+
+  /// No description provided for @kioskPausedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Kiosk mode is paused until {time}.'**
+  String kioskPausedBody(String time);
+
+  /// No description provided for @kioskLockNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock again now'**
+  String get kioskLockNow;
+
+  /// No description provided for @kioskDemoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a demo build: kiosk mode is off and no PIN is needed.'**
+  String get kioskDemoBody;
 }
 
 class _AppLocalizationsDelegate

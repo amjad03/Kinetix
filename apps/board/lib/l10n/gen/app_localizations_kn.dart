@@ -1920,4 +1920,95 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get demoBoardBody =>
       'ಈ ಬೋರ್ಡ್ ಮಾದರಿ ಡೇಟಾ ಇರುವ ಡೆಮೊ ತರಗತಿಯಲ್ಲಿದೆ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ.';
+
+  @override
+  String get kioskTitle => 'ಕಿಯೋಸ್ಕ್ ಮೋಡ್';
+
+  @override
+  String get kioskSettingsHint =>
+      'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು KINETIX Board ನಲ್ಲೇ ಇರಿಸುತ್ತದೆ ಮತ್ತು ವಿದ್ಯುತ್ ಹೋದ ನಂತರ ಅದನ್ನು ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ. ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇದನ್ನು KINETIX ERP → ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಮಾಡಿ IT PIN ಹೊಂದಿಸುತ್ತದೆ.';
+
+  @override
+  String get kioskStatusLocked => 'ಆನ್: ಈ ಸಾಧನ KINETIX Board ಗೆ ಲಾಕ್ ಆಗಿದೆ.';
+
+  @override
+  String get kioskStatusPinned =>
+      'ಆನ್: ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್. ಪೂರ್ಣ ಲಾಕ್‌ಗಾಗಿ KINETIX Board ಅನ್ನು ಡಿವೈಸ್ ಓನರ್ ಮಾಡಿ (ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ).';
+
+  @override
+  String get kioskStatusOff => 'ಆಫ್';
+
+  @override
+  String kioskStatusPaused(String time) {
+    return 'IT $time ವರೆಗೆ ನಿಲ್ಲಿಸಿದೆ';
+  }
+
+  @override
+  String get kioskStatusUnsupported =>
+      'ಈ ಸಾಧನದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. Windows ನಲ್ಲಿ Assigned Access ಬಳಸಿ (ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ).';
+
+  @override
+  String get kioskDemoHint =>
+      'ಡೆಮೊ ಬಿಲ್ಡ್‌ಗಳು ಈ ಸಾಧನವನ್ನು ಎಂದೂ ಲಾಕ್ ಮಾಡುವುದಿಲ್ಲ. ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಹೇಗಿದೆ ಎಂದು ನೋಡಲು ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್ ಪ್ರಯತ್ನಿಸಿ: ಹೊರಬರಲು ಗಡಿಯಾರವನ್ನು 3 ಸೆಕೆಂಡ್ ಒತ್ತಿ ಹಿಡಿಯಿರಿ.';
+
+  @override
+  String get kioskTry => 'ಕಿಯೋಸ್ಕ್ ಪ್ರಯತ್ನಿಸಿ (ಸ್ಕ್ರೀನ್ ಪಿನ್ನಿಂಗ್)';
+
+  @override
+  String get kioskStopTrial => 'ಕಿಯೋಸ್ಕ್ ಪ್ರಯೋಗ ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get kioskExitTitle => 'ಕಿಯೋಸ್ಕ್ ಮೋಡ್‌ನಿಂದ ಹೊರಬನ್ನಿ';
+
+  @override
+  String get kioskEnterPin =>
+      'IT ಸಿಬ್ಬಂದಿಗೆ: KINETIX ERP ನಲ್ಲಿ ಹೊಂದಿಸಿದ IT PIN ನಮೂದಿಸಿ.';
+
+  @override
+  String get kioskPinLabel => 'IT PIN';
+
+  @override
+  String get kioskUnlock => 'ಅನ್‌ಲಾಕ್ ಮಾಡಿ';
+
+  @override
+  String kioskWrongPin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ತಪ್ಪು PIN. ಇನ್ನು $count ಪ್ರಯತ್ನಗಳು ಉಳಿದಿವೆ.',
+      one: 'ತಪ್ಪು PIN. ಇನ್ನು 1 ಪ್ರಯತ್ನ ಉಳಿದಿದೆ.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kioskLockedOut(String time) {
+    return 'ಹಲವು ಬಾರಿ ತಪ್ಪು PIN. $time ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  }
+
+  @override
+  String get kioskNoPin =>
+      'ಈ ಸಂಸ್ಥೆಗೆ ಇನ್ನೂ IT PIN ಹೊಂದಿಸಿಲ್ಲ. KINETIX ERP → ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಬೋರ್ಡ್ ಕಿಯೋಸ್ಕ್ ಮೋಡ್‌ನಲ್ಲಿ ಒಂದನ್ನು ಹೊಂದಿಸಿ; ಬೋರ್ಡ್ ಮುಂದಿನ ಬಾರಿ ಆನ್‌ಲೈನ್ ಆದಾಗ ಅದನ್ನು ಪಡೆಯುತ್ತದೆ. ಅಲ್ಲಿಯವರೆಗೆ ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಅನ್ನು ಕಿಯೋಸ್ಕ್ ಮಾರ್ಗದರ್ಶಿಯಲ್ಲಿ ಹೇಳಿದಂತೆ ಮಾತ್ರ ತೆಗೆಯಬಹುದು.';
+
+  @override
+  String get kioskLeave => '10 ನಿಮಿಷ ಕಿಯೋಸ್ಕ್‌ನಿಂದ ಹೊರಬನ್ನಿ';
+
+  @override
+  String get kioskLeaveHint =>
+      '10 ನಿಮಿಷಗಳ ನಂತರ, ಅಥವಾ ಮರುಪ್ರಾರಂಭವಾದಾಗ, ಬೋರ್ಡ್ ತಾನಾಗಿಯೇ ಮತ್ತೆ ಲಾಕ್ ಆಗುತ್ತದೆ.';
+
+  @override
+  String get kioskOpenSettings => 'Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ';
+
+  @override
+  String kioskPausedBody(String time) {
+    return 'ಕಿಯೋಸ್ಕ್ ಮೋಡ್ $time ವರೆಗೆ ನಿಂತಿದೆ.';
+  }
+
+  @override
+  String get kioskLockNow => 'ಈಗಲೇ ಮತ್ತೆ ಲಾಕ್ ಮಾಡಿ';
+
+  @override
+  String get kioskDemoBody =>
+      'ಇದು ಡೆಮೊ ಬಿಲ್ಡ್: ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಆಫ್ ಆಗಿದೆ ಮತ್ತು PIN ಬೇಕಿಲ್ಲ.';
 }

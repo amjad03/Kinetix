@@ -1917,4 +1917,95 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get demoBoardBody =>
       'यह बोर्ड नमूना डेटा वाली एक डेमो कक्षा में है। कुछ भी सर्वर पर नहीं भेजा जाता।';
+
+  @override
+  String get kioskTitle => 'कियोस्क मोड';
+
+  @override
+  String get kioskSettingsHint =>
+      'विद्यार्थियों को KINETIX Board में ही रखता है और बिजली जाने के बाद इसे फिर खोल देता है। आपकी संस्था इसे KINETIX ERP → सेटिंग्स में चालू करती है और IT PIN तय करती है।';
+
+  @override
+  String get kioskStatusLocked => 'चालू: यह डिवाइस KINETIX Board पर लॉक है।';
+
+  @override
+  String get kioskStatusPinned =>
+      'चालू: स्क्रीन पिनिंग। पूरे लॉक के लिए KINETIX Board को डिवाइस ओनर बनाएँ (कियोस्क गाइड देखें)।';
+
+  @override
+  String get kioskStatusOff => 'बंद';
+
+  @override
+  String kioskStatusPaused(String time) {
+    return 'IT ने $time तक रोका है';
+  }
+
+  @override
+  String get kioskStatusUnsupported =>
+      'इस डिवाइस पर उपलब्ध नहीं। Windows पर Assigned Access का उपयोग करें (कियोस्क गाइड देखें)।';
+
+  @override
+  String get kioskDemoHint =>
+      'डेमो बिल्ड इस डिवाइस को कभी लॉक नहीं करते। कियोस्क मोड कैसा है यह देखने के लिए स्क्रीन पिनिंग आज़माएँ: बाहर आने के लिए घड़ी को 3 सेकंड दबाए रखें।';
+
+  @override
+  String get kioskTry => 'कियोस्क आज़माएँ (स्क्रीन पिनिंग)';
+
+  @override
+  String get kioskStopTrial => 'कियोस्क ट्रायल बंद करें';
+
+  @override
+  String get kioskExitTitle => 'कियोस्क मोड से बाहर निकलें';
+
+  @override
+  String get kioskEnterPin =>
+      'IT स्टाफ़ के लिए: KINETIX ERP में तय किया गया IT PIN डालें।';
+
+  @override
+  String get kioskPinLabel => 'IT PIN';
+
+  @override
+  String get kioskUnlock => 'अनलॉक करें';
+
+  @override
+  String kioskWrongPin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'गलत PIN। $count प्रयास बाकी।',
+      one: 'गलत PIN। 1 प्रयास बाकी।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kioskLockedOut(String time) {
+    return 'बहुत बार गलत PIN डाला गया। $time के बाद फिर कोशिश करें।';
+  }
+
+  @override
+  String get kioskNoPin =>
+      'इस संस्था के लिए अभी कोई IT PIN तय नहीं है। KINETIX ERP → सेटिंग्स → बोर्ड कियोस्क मोड में एक PIN तय करें; बोर्ड अगली बार ऑनलाइन होने पर उसे ले लेगा। तब तक कियोस्क मोड केवल कियोस्क गाइड में बताए तरीके से हटाया जा सकता है।';
+
+  @override
+  String get kioskLeave => '10 मिनट के लिए कियोस्क से बाहर निकलें';
+
+  @override
+  String get kioskLeaveHint =>
+      '10 मिनट बाद, या दोबारा शुरू होने पर, बोर्ड अपने-आप फिर लॉक हो जाता है।';
+
+  @override
+  String get kioskOpenSettings => 'Android सेटिंग्स खोलें';
+
+  @override
+  String kioskPausedBody(String time) {
+    return 'कियोस्क मोड $time तक रुका है।';
+  }
+
+  @override
+  String get kioskLockNow => 'अभी फिर लॉक करें';
+
+  @override
+  String get kioskDemoBody =>
+      'यह डेमो बिल्ड है: कियोस्क मोड बंद है और PIN की ज़रूरत नहीं है।';
 }

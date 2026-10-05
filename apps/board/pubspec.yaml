@@ -7,6 +7,8 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  # PBKDF2 for the kiosk IT PIN (lib/core/kiosk/kiosk_pin.dart).
+  crypto: ^3.0.6
   flutter:
     sdk: flutter
   flutter_localizations:

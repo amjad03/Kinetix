@@ -14,6 +14,7 @@ import 'api_client.dart';
 import 'class_audio/class_audio.dart';
 import 'class_audio/mic_capture.dart';
 import 'device_store.dart';
+import 'kiosk/kiosk_controller.dart';
 import 'models.dart';
 import 'outbox_store.dart';
 import 'realtime.dart';
@@ -41,11 +42,13 @@ class BoardController extends ChangeNotifier {
     Recordings? recordings,
     OutboxStore? outboxStore,
     MicCapture Function()? micFactory,
+    KioskController? kiosk,
   }) : _store = store ?? DeviceStore(),
       _outboxStore = outboxStore ?? FileOutboxStore(),
       _apiFactory = apiFactory ?? ((url) => ApiClient(baseUrl: url)),
       _realtimeFactory = realtimeFactory ?? Realtime.new,
       recordings = recordings ?? Recordings() {
+    this.kiosk = kiosk ?? KioskController(store: _store);
     this.recordings.attach(api: () => api, session: () => session);
     classAudio = ClassAudio(
       mic: micFactory ?? RecordMicCapture.new,
@@ -53,6 +56,12 @@ class BoardController extends ChangeNotifier {
       emit: (event, data) => _realtime?.emit(event, data),
     )..addListener(notifyListeners);
   }
+
+  /// Kiosk mode: the device locked to the board (docs/hardware/kiosk-mode.md).
+  late final KioskController kiosk;
+
+  /// A demo build (no institution: kiosk mode is never forced on).
+  bool _demo = false;
 
   /// Class audio: the teacher's microphone to the live class (off at the start of every class).
   late final ClassAudio classAudio;
@@ -156,6 +165,8 @@ class BoardController extends ChangeNotifier {
       debugPrint('Device store unreadable: $e');
     }
     await _loadSettings();
+    // The policy this board last had from its institution, until it hears a newer one.
+    unawaited(kiosk.start());
     if (saved.server == null || saved.token == null) {
       stage = BoardStage.needsEnrollment;
     } else {
@@ -189,7 +200,9 @@ class BoardController extends ChangeNotifier {
     required String sessionToken,
     required SessionContext session,
   }) async {
+    _demo = true;
     await _loadSettings();
+    unawaited(kiosk.start(demo: true));
     _connect(serverUrl, deviceToken);
     this.deviceName = deviceName;
     stage = BoardStage.board;
@@ -381,6 +394,7 @@ class BoardController extends ChangeNotifier {
     rt.on(RealtimeEvents.liveSnapshotRequest, (_) => onLiveSnapshotRequest?.call());
     rt.onReady = () {
       online = true;
+      unawaited(_fetchConfig());
       classAudio.reconnected();
       notifyListeners();
       unawaited(_fetchPendingBroadcasts());
@@ -389,6 +403,19 @@ class BoardController extends ChangeNotifier {
     };
     rt.connect(deviceToken);
     _realtime = rt;
+    unawaited(_fetchConfig());
+  }
+
+  /// The institution's settings for its boards (kiosk mode). Offline: the cached ones stay.
+  Future<void> _fetchConfig() async {
+    final api = this.api;
+    if (_demo || api == null || api.deviceToken == null) return;
+    try {
+      final kioskConfig = (await api.boardConfig())['kiosk'];
+      if (kioskConfig is Map<String, dynamic>) await kiosk.applyPolicy(KioskPolicy.fromConfig(kioskConfig));
+    } catch (e) {
+      debugPrint('Board config not fetched: $e');
+    }
   }
 
   @visibleForTesting
@@ -479,6 +506,7 @@ class BoardController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _sessionTimer?.cancel();
+    kiosk.dispose();
     classAudio.removeListener(notifyListeners);
     classAudio.dispose();
     _realtime?.dispose();

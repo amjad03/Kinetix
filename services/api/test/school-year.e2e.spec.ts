@@ -91,7 +91,7 @@ describe('school year', () => {
   });
 
   it('lets the principal change institution settings, audited', async () => {
-    expect((await http().get('/v1/admin/settings').set(auth('principal')).expect(200)).body).toEqual({ liveViewEnabled: false, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false, grievanceOfficer: null, recordingRetentionGraceDays: 7 });
+    expect((await http().get('/v1/admin/settings').set(auth('principal')).expect(200)).body).toEqual({ liveViewEnabled: false, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false, grievanceOfficer: null, recordingRetentionGraceDays: 7, boardKiosk: { enabled: true, pinSet: false, pinSetAt: null } });
     await http().put('/v1/admin/settings').set(auth('teacher')).send({ liveViewEnabled: true }).expect(403);
     await http().put('/v1/admin/settings').set(auth('principal')).send({ unknown: true }).expect(400);
     const after = (await http().put('/v1/admin/settings').set(auth('principal')).send({ liveViewEnabled: true, classroomAudioToViewers: true }).expect(200)).body;

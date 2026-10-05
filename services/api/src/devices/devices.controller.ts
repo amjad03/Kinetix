@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Patch, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Patch, Post, UnauthorizedException } from '@nestjs/common';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
@@ -11,7 +11,8 @@ import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService } from '../db/db.service.js';
-import { campuses, devices, pairingCodes, rooms } from '../db/schema.js';
+import { boardKioskConfig } from '../calendar/calendar.controller.js';
+import { campuses, devices, pairingCodes, rooms, tenants } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 
 export const PAIRING_TTL_MS = 120_000;
@@ -180,6 +181,20 @@ export class DevicesController {
       });
       const qrPayload = `kinetix://pair?c=${code}&s=${secret}&d=${p.deviceId}`;
       return { code, qrPayload, expiresAt };
+    });
+  }
+
+  /**
+   * The institution's settings a board applies by itself: kiosk mode and the IT PIN's hash
+   * (docs/hardware/kiosk-mode.md). Boards fetch it on start and whenever they reconnect, and keep
+   * it so kiosk mode and the PIN work offline.
+   */
+  @Get('me/config')
+  @Auth(['device', 'board'])
+  config(@CurrentPrincipal() p: DevicePrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [t] = await tx.select({ settings: tenants.settings }).from(tenants).where(eq(tenants.id, p.tenantId));
+      return { kiosk: boardKioskConfig(t?.settings ?? {}) };
     });
   }
 
