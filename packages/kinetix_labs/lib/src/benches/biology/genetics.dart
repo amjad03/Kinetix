@@ -47,6 +47,9 @@ class CrossBench extends LabBench {
         LabSlider('trial', tr('Trial'), 1, 10, divisions: 9),
       ];
 
+  /// Critical χ² at 5 % for [classes] phenotype classes (one class: always fits).
+  static double critical(int classes) => classes < 2 ? double.infinity : Genetics.chi05[classes - 2];
+
   static (Map<String, int>, Map<String, double>) counts(LabParams p) {
     final parts = cross(p).split('×');
     final n = pInt(p, 'n', 400);
@@ -61,7 +64,7 @@ class CrossBench extends LabBench {
     final (obs, exp) = counts(p);
     final n = pInt(p, 'n', 400);
     final chi = Genetics.chiSquare(obs, exp);
-    final ok = chi < Genetics.chi05[exp.length - 2];
+    final ok = chi < critical(exp.length);
     return LabReading.row([
       cross(p),
       n,
@@ -128,7 +131,7 @@ class CrossBench extends LabBench {
       k++;
     }
     canvas.drawLine(chart.bottomLeft, chart.bottomRight, stroke(LabInk.ink, 1.5));
-    label(canvas, 'χ² = ${Genetics.chiSquare(obs, exp).toStringAsFixed(2)}  (5 %: ${Genetics.chi05[exp.length - 2]})', Offset(chart.center.dx, chart.bottom + 40), size: 14, bold: true);
+    label(canvas, exp.length < 2 ? tr('All one kind') : 'χ² = ${Genetics.chiSquare(obs, exp).toStringAsFixed(2)}  (5 %: ${critical(exp.length)})', Offset(chart.center.dx, chart.bottom + 40), size: 14, bold: true);
   }
 }
 
