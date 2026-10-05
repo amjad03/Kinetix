@@ -244,6 +244,6 @@ abstract final class Photosynthesis {
     final lightPart = i / (i + 0.25);
     final co2 = bicarbonate / (bicarbonate + 0.3);
     final t = Enzyme.temperature(celsius, denature: 40) / Enzyme.temperature(30, denature: 40);
-    return math.max(0, 48 * lightPart * co2 * t - 2);
+    return math.max(0, 80 * lightPart * co2 * t - 2);
   }
 }

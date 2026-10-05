@@ -1,4 +1,8 @@
 import '../core/bench.dart';
+import 'biology/cells.dart';
+import 'biology/dna.dart';
+import 'biology/genetics.dart';
+import 'biology/physiology.dart';
 import 'chemistry/physchem.dart';
 import 'chemistry/spot_tests.dart';
 import 'chemistry/titrations.dart';
@@ -7,6 +11,8 @@ import 'electronics/diode.dart';
 import 'electronics/networks.dart';
 import 'electronics/rectifier.dart';
 import 'electronics/transistor.dart';
+import 'forensics/evidence.dart';
+import 'forensics/fingerprints.dart';
 import 'mechanics/mechanics_benches.dart';
 import 'mechanics/modern_benches.dart';
 import 'optics/optics_benches.dart';
@@ -124,6 +130,27 @@ final labBenches = <String, LabBench>{
     const OstwaldBench(),
     const FlameTestBench(),
     const SpotTestBench(),
+    // Biology.
+    const StomataBench(),
+    const MitosisBench(),
+    const PollenBench(),
+    const PhotosynthesisBench(),
+    const AmylaseBench(),
+    const MichaelisBench(),
+    const GrowthBench(),
+    const CrossBench(),
+    const HardyWeinbergBench(),
+    const DriftBench(),
+    const GelBench(),
+    const PcrBench(),
+    // Forensics.
+    const FingerprintBench(),
+    const BloodTypingBench(),
+    const GlassDensityBench(),
+    const GlassIndexBench(),
+    const HairFibreBench(),
+    const FootprintBench(),
+    const BallisticsBench(),
   ])
     b.kind: b,
 };
