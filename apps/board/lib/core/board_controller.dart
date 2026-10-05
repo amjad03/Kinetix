@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../features/board/kit/subjects.dart';
 import '../features/comfort/eye_comfort.dart';
+import '../features/profiles/profiles_controller.dart';
+import '../features/projector/projector_controller.dart';
 import '../l10n/l10n.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -17,6 +19,7 @@ import 'class_audio/mic_capture.dart';
 import 'device_store.dart';
 import 'handwriting/handwriting.dart';
 import 'kiosk/kiosk_controller.dart';
+import 'secret_store.dart';
 import 'models.dart';
 import 'outbox_store.dart';
 import 'realtime.dart';
@@ -63,6 +66,8 @@ class BoardController extends ChangeNotifier {
     MicCapture Function()? micFactory,
     KioskController? kiosk,
     HandwritingRecognizer? handwriting,
+    SecretStore? profileSecrets,
+    ProjectorController? projector,
   }) : _store = store ?? DeviceStore(),
       handwriting = handwriting ?? platformHandwriting(),
       _outboxStore = outboxStore ?? FileOutboxStore(),
@@ -70,6 +75,8 @@ class BoardController extends ChangeNotifier {
       _realtimeFactory = realtimeFactory ?? Realtime.new,
       recordings = recordings ?? Recordings() {
     this.kiosk = kiosk ?? KioskController(store: _store);
+    profiles = ProfilesController(board: this, store: _store, secrets: profileSecrets);
+    this.projector = projector ?? ProjectorController(store: _store);
     this.recordings.attach(api: () => api, session: () => session);
     classAudio = ClassAudio(
       mic: micFactory ?? RecordMicCapture.new,
@@ -80,6 +87,12 @@ class BoardController extends ChangeNotifier {
 
   /// Kiosk mode: the device locked to the board (docs/hardware/kiosk-mode.md).
   late final KioskController kiosk;
+
+  /// Teachers who use this board, switching with a PIN (features/profiles).
+  late final ProfilesController profiles;
+
+  /// Projector mode: the board on a second screen for the class (features/projector).
+  late final ProjectorController projector;
 
   /// A demo build (no institution: kiosk mode is never forced on).
   bool _demo = false;
@@ -231,6 +244,8 @@ class BoardController extends ChangeNotifier {
     await _loadSettings();
     // The policy this board last had from its institution, until it hears a newer one.
     unawaited(kiosk.start());
+    unawaited(profiles.start());
+    unawaited(projector.start());
     if (saved.server == null || saved.token == null) {
       stage = BoardStage.needsEnrollment;
     } else {
@@ -260,6 +275,66 @@ class BoardController extends ChangeNotifier {
     }
   }
 
+  /// Settings each teacher keeps for themselves on a shared board (features/profiles): while a
+  /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
+  /// come back when they sign out. The board's language, touch surface, kiosk and projector
+  /// stay the board's.
+  static const teacherSettings = ['eyeComfort', 'layout', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes'];
+
+  String? _settingsTeacher;
+
+  /// The board's own teacher settings while a teacher's are applied.
+  Map<String, String?>? _boardSettings;
+
+  Future<void> _saveTeacherSetting(String key, String value) {
+    final t = session?.teacherId;
+    return _store.setSetting(t == null ? key : 'profile.$t.$key', value).catchError((Object e) => debugPrint('Setting not saved: $e'));
+  }
+
+  Map<String, String?> _teacherSettingValues() => {
+    'eyeComfort': eyeComfort.encode(),
+    'layout': layout.name,
+    'simpleBoard': simpleBoard.name,
+    'inputMode': inputMode.name,
+    'aiPenMode': aiPenMode.name,
+    'aiPenLanguage': _aiPenLanguage?.name,
+    'snapShapes': '$snapShapes',
+  };
+
+  void _setTeacherSettingValues(Map<String, String?> v) {
+    if (v.containsKey('eyeComfort')) eyeComfort = EyeComfortSettings.decode(v['eyeComfort']);
+    layout = BoardLayout.values.asNameMap()[v['layout']] ?? layout;
+    simpleBoard = SimpleBoard.values.asNameMap()[v['simpleBoard']] ?? simpleBoard;
+    inputMode = InputMode.values.asNameMap()[v['inputMode']] ?? inputMode;
+    aiPenMode = AiPenMode.values.asNameMap()[v['aiPenMode']] ?? aiPenMode;
+    if (v.containsKey('aiPenLanguage')) _aiPenLanguage = BoardLanguage.tryParse(v['aiPenLanguage']);
+    if (v['snapShapes'] != null) snapShapes = v['snapShapes'] == 'true';
+  }
+
+  /// Applies the signed-in teacher's own settings, or puts the board's back after they sign out.
+  Future<void> _applyTeacherSettings() async {
+    final t = session?.teacherId;
+    if (t == _settingsTeacher) return;
+    if (_boardSettings != null) _setTeacherSettingValues(_boardSettings!);
+    _boardSettings = null;
+    _settingsTeacher = t;
+    if (t != null) {
+      _boardSettings = _teacherSettingValues();
+      final own = <String, String?>{};
+      try {
+        for (final k in teacherSettings) {
+          final v = await _store.setting('profile.$t.$k');
+          if (v != null) own[k] = v;
+        }
+      } catch (e) {
+        debugPrint('Teacher settings unreadable: $e');
+      }
+      if (_settingsTeacher != t) return; // another teacher already
+      _setTeacherSettingValues(own);
+    }
+    if (!_disposed) notifyListeners();
+  }
+
   /// Demo builds (docs/product/demo-builds.md): no enrolment. The board connects to the demo
   /// server at [serverUrl] (the API and realtime factories decide what that is) and opens in its
   /// class, signed in as [session]'s teacher.
@@ -273,6 +348,8 @@ class BoardController extends ChangeNotifier {
     _demo = true;
     await _loadSettings();
     unawaited(kiosk.start(demo: true));
+    unawaited(profiles.start());
+    unawaited(projector.start());
     _connect(serverUrl, deviceToken);
     this.deviceName = deviceName;
     stage = BoardStage.board;
@@ -313,7 +390,7 @@ class BoardController extends ChangeNotifier {
 
   void setEyeComfort(EyeComfortSettings s) {
     eyeComfort = s;
-    unawaited(_store.setSetting('eyeComfort', s.encode()));
+    unawaited(_saveTeacherSetting('eyeComfort', s.encode()));
     notifyListeners();
   }
 
@@ -334,37 +411,37 @@ class BoardController extends ChangeNotifier {
 
   void setLayout(BoardLayout l) {
     layout = l;
-    unawaited(_store.setSetting('layout', l.name));
+    unawaited(_saveTeacherSetting('layout', l.name));
     notifyListeners();
   }
 
   void setSimpleBoard(SimpleBoard s) {
     simpleBoard = s;
-    unawaited(_store.setSetting('simpleBoard', s.name));
+    unawaited(_saveTeacherSetting('simpleBoard', s.name));
     notifyListeners();
   }
 
   void setInputMode(InputMode m) {
     inputMode = m;
-    unawaited(_store.setSetting('inputMode', m.name));
+    unawaited(_saveTeacherSetting('inputMode', m.name));
     notifyListeners();
   }
 
   void setAiPenMode(AiPenMode m) {
     aiPenMode = m;
-    unawaited(_store.setSetting('aiPenMode', m.name));
+    unawaited(_saveTeacherSetting('aiPenMode', m.name));
     notifyListeners();
   }
 
   void setAiPenLanguage(BoardLanguage l) {
     _aiPenLanguage = l;
-    unawaited(_store.setSetting('aiPenLanguage', l.name));
+    unawaited(_saveTeacherSetting('aiPenLanguage', l.name));
     notifyListeners();
   }
 
   void setSnapShapes(bool on) {
     snapShapes = on;
-    unawaited(_store.setSetting('snapShapes', '$on'));
+    unawaited(_saveTeacherSetting('snapShapes', '$on'));
     notifyListeners();
   }
 
@@ -541,6 +618,10 @@ class BoardController extends ChangeNotifier {
     }
   }
 
+  /// Opens a teacher's class on the board with a session the board got another way than
+  /// pairing: a teacher's PIN on a shared board (features/profiles).
+  void openSession(String sessionToken, SessionContext ctx) => onPaired(sessionToken, ctx);
+
   @visibleForTesting
   void onPaired(String sessionToken, SessionContext ctx) {
     api?.sessionToken = sessionToken;
@@ -554,6 +635,7 @@ class BoardController extends ChangeNotifier {
     notifyListeners();
     unawaited(_loadRoster());
     unawaited(recordings.kick()); // recordings this teacher made earlier on this board
+    unawaited(_applyTeacherSettings());
   }
 
   Future<void> _loadRoster() async {
@@ -575,6 +657,7 @@ class BoardController extends ChangeNotifier {
     roster = [];
     attendance.clear();
     notifyListeners();
+    unawaited(_applyTeacherSettings());
   }
 
   void _showBroadcast(BroadcastMessage m) {
@@ -630,6 +713,8 @@ class BoardController extends ChangeNotifier {
     _disposed = true;
     _sessionTimer?.cancel();
     kiosk.dispose();
+    profiles.dispose();
+    projector.dispose();
     classAudio.removeListener(notifyListeners);
     classAudio.dispose();
     _realtime?.dispose();

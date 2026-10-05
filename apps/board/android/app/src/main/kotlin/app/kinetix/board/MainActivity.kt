@@ -30,5 +30,24 @@ class MainActivity : FlutterActivity() {
                 result.error("kiosk", e.message, null)
             }
         }
+        // Projector mode: the board on a second display (Projector.kt).
+        val projectorChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/projector")
+        val p = Projector(this, projectorChannel)
+        projector = p
+        projectorChannel.setMethodCallHandler { call, result ->
+            try {
+                p.handle(call.method, call.arguments, result)
+            } catch (e: Exception) {
+                result.error("projector", e.message, null)
+            }
+        }
+    }
+
+    private var projector: Projector? = null
+
+    override fun onDestroy() {
+        projector?.dispose()
+        projector = null
+        super.onDestroy()
     }
 }

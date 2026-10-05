@@ -113,7 +113,7 @@ class _QuizPanelState extends State<QuizPanel> {
               if (task.error != null) AiError(message: aiErrorMessage(l, task.error!), onRetry: _generate),
               if (quiz != null && !task.loading) ...[
                 const Divider(height: Kx.s32),
-                if (task.value!.meta.preview) ...[AiNotice.preview(), const SizedBox(height: Kx.s16)],
+                if (task.value!.meta.preview) ...[AiNotice.preview(offline: task.value!.meta.offline), const SizedBox(height: Kx.s16)],
                 Text(l.quizHeader(quiz.questions.length, quiz.topic), style: context.text.titleLarge),
                 const SizedBox(height: Kx.s4),
                 Text(l.quizDraftNote, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),

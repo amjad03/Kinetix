@@ -35,6 +35,20 @@ class SessionContext {
     );
   }
 
+  /// The shape [SessionContext.fromJson] reads, for keeping a teacher's session on a shared
+  /// board (features/profiles).
+  Map<String, dynamic> toJson() {
+    final period = periodLabel?.split('–');
+    return {
+      'sessionId': sessionId,
+      'expiresAt': expiresAt.toUtc().toIso8601String(),
+      'teacher': {'id': teacherId, 'fullName': teacherName, 'preferredLanguage': language},
+      'section': sectionName == null ? null : {'displayName': sectionName, 'term': classTerm, 'level': programLevel},
+      'subject': subjectName == null ? null : {'name': subjectName},
+      'period': period == null || period.length != 2 ? null : {'startsAt': period[0], 'endsAt': period[1]},
+    };
+  }
+
   final String sessionId;
   final DateTime expiresAt;
   final String teacherId;
@@ -174,7 +188,7 @@ enum AiDifficulty { easy, medium, hard }
 /// How an AI answer was produced. [preview] means no AI server is connected and the
 /// result is a fixed placeholder that must be labelled as such.
 class AiMeta {
-  AiMeta({required this.cached, required this.preview, this.sources = const []});
+  AiMeta({required this.cached, required this.preview, this.sources = const [], this.offline = false});
 
   factory AiMeta.fromJson(Map<String, dynamic> j) => AiMeta(
         cached: j['cached'] as bool? ?? false,
@@ -187,6 +201,10 @@ class AiMeta {
 
   final bool cached;
   final bool preview;
+
+  /// Answered on the board from its offline notes (features/offline_ai), not by KINETIX AI:
+  /// labelled "Offline sample". Always also [preview].
+  final bool offline;
 
   /// Syllabus topics the answer was grounded in.
   final List<({String topicId, String title})> sources;

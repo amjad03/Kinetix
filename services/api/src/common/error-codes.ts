@@ -25,6 +25,12 @@ export const ERROR_CODES: Record<string, string> = {
   "Only the institution's administrator can reset an administrator's password": 'PASSWORD_RESET_NOT_ALLOWED',
   'This code is invalid or has expired. Use the new code on the board.': 'PAIRING_CODE_INVALID',
   'You are not a teacher at the campus this board belongs to': 'PAIRING_WRONG_CAMPUS',
+  // Shared-board profiles (board-profiles/).
+  'Wrong PIN': 'PROFILE_PIN_WRONG',
+  'Too many wrong PINs. Sign in with the Teacher app, or ask your administrator to reset your PIN.': 'PROFILE_LOCKED',
+  'No PIN is set for this teacher on this board': 'PROFILE_NO_PIN',
+  'Choose a PIN that is harder to guess': 'PROFILE_PIN_WEAK',
+  'The PIN must be 4 to 6 digits': 'PROFILE_PIN_FORMAT',
   'You do not teach this class': 'NOT_YOUR_CLASS',
   'That subject is not taught in this class': 'SUBJECT_NOT_IN_CLASS',
   'Some students are not in this class': 'STUDENTS_NOT_IN_CLASS',

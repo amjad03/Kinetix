@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dScope, Model3dSnapshot;
+import 'package:kinetix_3d/kinetix_3d.dart' show Model3dMirror, Model3dScope, Model3dSnapshot;
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart' show LabReport;
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -27,6 +27,10 @@ import '../class_check/class_check.dart';
 import '../concept_videos/concept_video_suggestions.dart';
 import '../kiosk/kiosk_ui.dart';
 import '../plan/plan_timer.dart';
+import '../profiles/profile_boards.dart';
+import '../profiles/profiles_ui.dart';
+import '../projector/projector_controller.dart';
+import '../projector/projector_ui.dart';
 import '../plan/todays_plan_panel.dart';
 import '../recording/recording_ui.dart';
 import '../remote/board_remote.dart';
@@ -135,6 +139,9 @@ class _BoardScreenState extends State<BoardScreen> {
       ..captureBoard = _captureForAi
       ..openSplit = _openSplit;
     _lastSessionId = board.session?.sessionId;
+    // Projector mode and shared-board profiles (features/projector, features/profiles).
+    board.projector.attach(ProjectorSource(board: _wb, background: () => _background, canvas: () => _canvasSize, captureSplit: _captureLabForProjector));
+    board.profiles.onSwitch = (from, to) => switchProfileBoard(_wb, _canvasSize, _profileBoards, from, to);
     _planTimer = PlanTimer(board);
     _pen = AiPenController(_wb, handwriting: board.handwriting)
       ..onNotice = _aiPenNotice
@@ -192,6 +199,8 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void dispose() {
     board.removeListener(_onBoardChanged);
+    board.projector.attach(null);
+    board.profiles.onSwitch = null;
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
     _live.stop();
@@ -345,12 +354,23 @@ class _BoardScreenState extends State<BoardScreen> {
     _panel = PanelKind.books;
   });
 
+  /// Sign in: "Who is teaching?" first when teachers have PINs on this board (features/profiles).
   Future<void> _signIn() async {
-    final api = board.api;
-    if (api == null) {
+    if (board.api == null) {
       showComingSoon(context, context.l10n.signInUnregistered);
       return;
     }
+    await showSignInChoice(context, board, _signInWithTeacherApp);
+  }
+
+  // Each teacher's own whiteboard when they switch with a PIN, and the lab for the projector.
+  final ProfileBoardStore _profileBoards = FileProfileBoardStore();
+  Future<Uint8List?> _captureLabForProjector() async =>
+      _panel == PanelKind.split && _splitContent == SplitContent.lab ? captureBoundaryPng(_splitKey) : null;
+
+  Future<void> _signInWithTeacherApp() async {
+    final api = board.api;
+    if (api == null || !mounted) return;
     setState(() => _signInOpen = true);
     await showDialog<void>(
       context: context,
@@ -365,6 +385,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _wb.background = b;
     _capture?.background = b;
     _live.background = b;
+    board.projector.background = b;
     setState(() {});
   }
 
@@ -898,6 +919,7 @@ class _BoardScreenState extends State<BoardScreen> {
     InkLabels.answerCover = l.answerCover;
     return Model3dScope(
       onSnapshot: _addModelSnapshot,
+      mirror: Model3dMirror(wanted: () => board.projector.wantsPictures, send: board.projector.send3d),
       child: Focus(
       autofocus: true,
       onKeyEvent: _onKey,

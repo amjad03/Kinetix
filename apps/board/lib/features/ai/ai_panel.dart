@@ -225,7 +225,7 @@ class _ExplanationCard extends StatelessWidget {
               IconButton(key: const Key('ai-explanation-close'), tooltip: l.clear, onPressed: onClose, icon: const Icon(Icons.close)),
             ],
           ),
-          if (result.meta.preview) ...[const SizedBox(height: Kx.s8), AiNotice.preview()],
+          if (result.meta.preview) ...[const SizedBox(height: Kx.s8), AiNotice.preview(offline: result.meta.offline)],
           if (result.meta.sources.isNotEmpty) ...[
             const SizedBox(height: Kx.s8),
             Row(

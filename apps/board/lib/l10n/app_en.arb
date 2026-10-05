@@ -1651,6 +1651,81 @@
   "aiPenModelDownloading": "Downloading…",
   "aiPenModelUnsupported": "Not available on this board",
   "aiPenDownloadFailed": "Could not download the handwriting model. Connect to the internet once and try again.",
+  "aiOfflineLabel": "Offline sample — from the board's own notes (in English), because KINETIX AI cannot be reached",
+  "profilesTitle": "Who is teaching?",
+  "profilesHint": "Teachers who have signed in on this board. Tap your name and enter your PIN.",
+  "profilesSignInFull": "Sign in with the Teacher app",
+  "profilesLocked": "Locked",
+  "profilesNoPin": "No PIN yet",
+  "pinEnterFor": "Enter {name}'s PIN",
+  "@pinEnterFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pinWrong": "Wrong PIN. Tries left: {n}",
+  "@pinWrong": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "pinWrongNoCount": "Wrong PIN. Try again.",
+  "pinLockedOut": "Too many wrong PINs. Sign in with the Teacher app, or ask your administrator to reset your PIN.",
+  "pinNoPin": "No PIN is set for you on this board. Sign in with the Teacher app, then set a PIN.",
+  "pinNeedsNetwork": "This board is offline and has no class open for you. Connect to the internet, or sign in with the Teacher app.",
+  "pinSetTitle": "Set a PIN for this board",
+  "pinSetHint": "4 to 6 digits. Next time, tap your name on this board and enter your PIN instead of using the Teacher app.",
+  "pinConfirm": "Enter the PIN again",
+  "pinMismatch": "The two PINs are different. Try again.",
+  "pinWeak": "Choose a PIN that is harder to guess.",
+  "pinSaved": "PIN saved. Use it to switch to your profile on this board.",
+  "pinSetAction": "Set PIN",
+  "pinChangeAction": "Change PIN",
+  "pinBanner": "Set a PIN to switch to your profile on this board without your phone.",
+  "notNow": "Not now",
+  "lockTitle": "Board locked",
+  "lockHint": "{name}'s class is still open. Enter the PIN to carry on.",
+  "@lockHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchTeacher": "Switch teacher",
+  "lockBoard": "Lock board",
+  "signOut": "Sign out",
+  "idleLockTitle": "Lock when idle",
+  "idleLockHint": "For teachers with a PIN, the board locks after this many minutes without a touch. It signs out when the period ends.",
+  "idleOff": "Off",
+  "minutesShort": "{n} min",
+  "@minutesShort": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "projectorTitle": "Projector",
+  "projectorHint": "Show the board to the class on a second screen (a projector or TV), without your tools and panels. 3D models and labs show beside it.",
+  "projectorEnabled": "Use a second screen",
+  "projectorAuto": "Start when a screen is connected",
+  "projectorNone": "No second screen connected",
+  "projectorShowingOn": "Showing on {name}",
+  "@projectorShowingOn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projectorShow": "Show on second screen",
+  "projectorStop": "Stop showing",
+  "projectorBlank": "Blank the class screen",
   "toolAskClass": "Ask the class",
   "askClassHint": "Students answer in the Student App, or hold up their answer card with the answer on top. No phones needed.",
   "askQuestionLabel": "Question (optional)",

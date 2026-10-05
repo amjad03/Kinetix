@@ -4,6 +4,7 @@
 
 #include "flutter/generated_plugin_registrant.h"
 #include "handwriting_channel.h"
+#include "projector_window.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -27,6 +28,8 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   RegisterHandwritingChannel(flutter_controller_->engine()->messenger(), GetHandle());
+  // Projector mode: the board on a second monitor (projector_window.h).
+  RegisterProjectorChannel(flutter_controller_->engine()->messenger(), GetHandle());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -43,6 +46,7 @@ bool FlutterWindow::OnCreate() {
 
 void FlutterWindow::OnDestroy() {
   UnregisterHandwritingChannel();
+  UnregisterProjectorChannel();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -70,6 +74,9 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
   }
 
   switch (message) {
+    case WM_DISPLAYCHANGE:
+      ProjectorDisplaysChanged();
+      break;
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
