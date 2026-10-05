@@ -66,7 +66,10 @@ class LabGraph {
   /// Draw the best straight line y = mx + c (least squares, with an intercept).
   final bool line;
 
-  const LabGraph(this.x, this.y, {this.throughOrigin = false, this.line = false, this.refY, this.include, this.fromZero = true});
+  /// Join the points in order of x (a characteristic curve).
+  final bool curve;
+
+  const LabGraph(this.x, this.y, {this.throughOrigin = false, this.line = false, this.curve = false, this.refY, this.include, this.fromZero = true});
 
   List<Offset> points(List<List<Object>> rows) => [
         for (final r in rows)
@@ -234,6 +237,26 @@ abstract class LabBench {
   /// A button was pressed. Changing a choice also comes here (as
   /// 'set:key') so a bench can reset what depends on it.
   LabParams act(String action, LabParams p) => p;
+}
+
+/// A small least-recently-used cache for benches that simulate (a
+/// simulation is pure in its params, so its result can be kept).
+class LabCache<K, V> {
+  final int size;
+  final _map = <K, V>{};
+  LabCache(this.size);
+
+  V? operator [](K k) {
+    final v = _map.remove(k);
+    if (v != null) _map[k] = v;
+    return v;
+  }
+
+  void operator []=(K k, V v) {
+    _map.remove(k);
+    _map[k] = v;
+    if (_map.length > size) _map.remove(_map.keys.first);
+  }
 }
 
 /// Reading params safely (they may come from the projector or a saved file).
@@ -436,7 +459,7 @@ void paintLabGraph(Canvas canvas, Rect rect, LabGraph graph, List<List<Object>> 
     final f = LabGraph.fit(pts);
     if (f != null) canvas.drawLine(map(minX, f.at(minX)), map(maxX, f.at(maxX)), stroke(LabInk.blue.withValues(alpha: 0.7), 2.5));
   }
-  if (!graph.throughOrigin && !graph.line && !graph.fromZero && pts.length > 1) {
+  if ((graph.curve || (!graph.throughOrigin && !graph.line && !graph.fromZero)) && pts.length > 1) {
     // A smooth line through the points in order of x.
     final sorted = [...pts]..sort((a, b) => a.dx.compareTo(b.dx));
     final path = Path()..moveTo(map(sorted.first.dx, sorted.first.dy).dx, map(sorted.first.dx, sorted.first.dy).dy);

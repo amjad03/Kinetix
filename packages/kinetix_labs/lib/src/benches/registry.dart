@@ -1,4 +1,9 @@
 import '../core/bench.dart';
+import 'electronics/bridges.dart';
+import 'electronics/diode.dart';
+import 'electronics/networks.dart';
+import 'electronics/rectifier.dart';
+import 'electronics/transistor.dart';
 import 'buoyancy.dart';
 import 'calorimetry.dart';
 import 'circle.dart';
@@ -65,6 +70,19 @@ final labBenches = <String, LabBench>{
     const CalorimetryBench(),
     const SonometerBench(),
     const TranspirationBench(),
+    // Electronics and electricity (circuit engine).
+    const DiodeBench(),
+    const PlanckBench(),
+    const RectifierBench(),
+    const TransistorBench(),
+    const LogicBench(),
+    const RcBench(),
+    const RlcBench(),
+    const OpAmpBench(),
+    const AstableBench(),
+    const KirchhoffBench(),
+    const MeterBridgeBench(),
+    const PotentiometerBench(),
   ])
     b.kind: b,
 };

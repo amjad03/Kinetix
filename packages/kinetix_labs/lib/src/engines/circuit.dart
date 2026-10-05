@@ -142,15 +142,15 @@ class Circuit {
           p._stamp(ctx);
         }
         final next = _solveReal(ctx.a, ctx.b);
-        // Damped Newton: limit how far any node voltage jumps per step.
-        var maxStep = 0.0;
+        // Junctions limit their own steps (see [_pnLimit]); here only check
+        // that every unknown has settled.
+        var settled = true;
         for (var i = 0; i < size; i++) {
-          var d = next[i] - x[i];
-          if (i < n && d.abs() > 2.0 && ctx.nonlinear) d = d.sign * 2.0;
-          maxStep = math.max(maxStep, d.abs() / (1 + x[i].abs()));
-          x[i] += d;
+          final d = (next[i] - x[i]).abs();
+          if (d > (i < n ? 1e-7 : 1e-10) + 1e-7 * next[i].abs()) settled = false;
+          x[i] = next[i];
         }
-        if (!ctx.nonlinear || maxStep < 1e-9) {
+        if (!ctx.nonlinear || (settled && !ctx.limited)) {
           converged = true;
           break;
         }
@@ -182,6 +182,9 @@ class _Stamp {
   late List<double> x;
   bool nonlinear = false;
 
+  /// A junction limited its voltage step this iteration (not converged yet).
+  bool limited = false;
+
   _Stamp(this.c, this.size, this.mode, this.time, this.h, this.prev, this.rows);
 
   void reset(List<double> guess) {
@@ -189,6 +192,7 @@ class _Stamp {
     b = List.filled(size, 0.0);
     x = guess;
     nonlinear = false;
+    limited = false;
   }
 
   int n(String name) => c.node(name);
@@ -224,16 +228,16 @@ class _Stamp {
   }
 
   /// A nonlinear device: [i0] are the currents into the device at each of
-  /// its [nodes] at the present guess, [jac] their derivatives with respect
-  /// to the node voltages.
-  void device(List<int> nodes, List<double> i0, List<List<double>> jac) {
+  /// its [nodes] when they are at voltages [at], [jac] their derivatives with
+  /// respect to the node voltages.
+  void device(List<int> nodes, List<double> i0, List<List<double>> jac, List<double> at) {
     nonlinear = true;
     for (var k = 0; k < nodes.length; k++) {
       final r = nodes[k];
       if (r == 0) continue;
       var lin = i0[k];
       for (var j = 0; j < nodes.length; j++) {
-        lin -= jac[k][j] * v(nodes[j]);
+        lin -= jac[k][j] * at[j];
         if (nodes[j] > 0) a[r - 1][nodes[j] - 1] += jac[k][j];
       }
       b[r - 1] -= lin;
@@ -456,8 +460,33 @@ class Inductor extends Part {
   double _current(Solution s) => _i;
 }
 
+/// Limits a junction's voltage step between Newton iterations the way SPICE
+/// does (pnjlim): above the critical voltage a big jump becomes a
+/// logarithmic one, so the exponential cannot run away. A Zener's reverse
+/// breakdown is limited the same way, mirrored.
+double _pnLimit(_Stamp s, double v, double old, double nvt, double isat, double? breakdown) {
+  final vcrit = nvt * math.log(nvt / (math.sqrt2 * isat));
+  var out = v;
+  if (v > vcrit && (v - old).abs() > 2 * nvt) {
+    out = old > 0 ? old + nvt * math.log(1 + (v - old) / nvt) : nvt * math.log(v / nvt);
+    if (out.isNaN) out = vcrit;
+  }
+  if (breakdown != null) {
+    const nz = 0.02;
+    final r = -out - breakdown, ro = -old - breakdown;
+    if (r > 0 && (r - ro).abs() > 2 * nz) {
+      final lim = ro > 0 ? ro + nz * math.log(1 + (r - ro) / nz) : nz * math.log(1 + r / nz);
+      out = -(breakdown + lim);
+    }
+  }
+  if ((out - v).abs() > 1e-12) s.limited = true;
+  return out;
+}
+
 /// Exponential with a linear tail, so Newton steps never overflow.
-double _limExp(double x) => x < 40 ? math.exp(x) : math.exp(40) * (1 + x - 40);
+const _xMax = 200.0;
+double _limExp(double x) => x < _xMax ? math.exp(x) : math.exp(_xMax) * (1 + x - _xMax);
+double _dLimExp(double x) => math.exp(math.min(x, _xMax));
 
 /// A pn junction diode (Shockley): I = Is(e^(V/nVt) − 1), with an optional
 /// reverse breakdown at −[breakdown] volts (a Zener).
@@ -496,7 +525,7 @@ class Diode extends Part {
     final nvt = n * vt;
     final e = _limExp(v / nvt);
     var i = isat * (e - 1);
-    var g = isat * (v / nvt < 40 ? e : math.exp(40)) / nvt;
+    var g = isat * _dLimExp(v / nvt) / nvt;
     final bv = breakdown;
     if (bv != null) {
       // Reverse breakdown: a steep exponential past −Vz.
@@ -504,7 +533,7 @@ class Diode extends Part {
       final x = (-v - bv) / nz;
       final ez = _limExp(x);
       i -= 1e-3 * ez;
-      g += 1e-3 * (x < 40 ? ez : math.exp(40)) / nz;
+      g += 1e-3 * _dLimExp(x) / nz;
     }
     return (i, g + 1e-12);
   }
@@ -512,13 +541,15 @@ class Diode extends Part {
   @override
   void _stamp(_Stamp s) {
     final a = s.n(anode), k = s.n(cathode);
-    final v = s.v(a) - s.v(k);
+    final v = _vj = _pnLimit(s, s.v(a) - s.v(k), _vj, n * vt, isat, breakdown);
     final (i, g) = iv(v);
     s.device([a, k], [i, -i], [
       [g, -g],
       [-g, g],
-    ]);
+    ], [s.v(k) + v, s.v(k)]);
   }
+
+  double _vj = 0;
 
   @override
   double _current(Solution s) => iv(s.vab(anode, cathode)).$1;
@@ -540,8 +571,8 @@ class Npn extends Part {
   (double ic, double ib, double dIcBe, double dIcBc, double dIbBe, double dIbBc) _model(double vbe, double vbc) {
     final ef = _limExp(vbe / vt), er = _limExp(vbc / vt);
     final f = isat * (ef - 1), r = isat * (er - 1);
-    final gf = isat * (vbe / vt < 40 ? ef : math.exp(40)) / vt;
-    final gr = isat * (vbc / vt < 40 ? er : math.exp(40)) / vt;
+    final gf = isat * _dLimExp(vbe / vt) / vt;
+    final gr = isat * _dLimExp(vbc / vt) / vt;
     final vce = vbe - vbc;
     final early = 1 + math.max(vce, 0) / earlyV;
     final dEarly = vce > 0 ? 1 / earlyV : 0.0;
@@ -553,14 +584,18 @@ class Npn extends Part {
   @override
   void _stamp(_Stamp s) {
     final nc = s.n(c), nb = s.n(b), ne = s.n(e);
-    final vbe = s.v(nb) - s.v(ne), vbc = s.v(nb) - s.v(nc);
+    final vbe = _vbe = _pnLimit(s, s.v(nb) - s.v(ne), _vbe, vt, isat, null);
+    final vbc = _vbc = _pnLimit(s, s.v(nb) - s.v(nc), _vbc, vt, isat, null);
     final (ic, ib, icBe, icBc, ibBe, ibBc) = _model(vbe, vbc);
     // d/dV for [Vc, Vb, Ve]: Vbe = Vb − Ve, Vbc = Vb − Vc.
     final dIc = [-icBc, icBe + icBc, -icBe];
     final dIb = [-ibBc, ibBe + ibBc, -ibBe];
     final dIe = [for (var k = 0; k < 3; k++) -(dIc[k] + dIb[k])];
-    s.device([nc, nb, ne], [ic, ib, -(ic + ib)], [dIc, dIb, dIe]);
+    final ve = s.v(ne);
+    s.device([nc, nb, ne], [ic, ib, -(ic + ib)], [dIc, dIb, dIe], [ve + vbe - vbc, ve + vbe, ve]);
   }
+
+  double _vbe = 0, _vbc = 0;
 
   /// Collector current.
   @override
