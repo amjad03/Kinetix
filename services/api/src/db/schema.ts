@@ -788,6 +788,40 @@ export interface TopicResource {
   title: string;
 }
 
+export interface LessonQuestion {
+  q: string;
+  a: string;
+}
+
+/** How to teach a topic: what the teacher says and does, beyond the notes. */
+export interface LessonText {
+  /** A question or situation to open the lesson with. */
+  hook: string;
+  /** A worked example; `exampleTex` is its key line in LaTeX, when there is one. */
+  example: string;
+  exampleTex?: string;
+  /** Something the class does. */
+  activity: string;
+  /** Questions to check understanding, with their answers. */
+  questions: LessonQuestion[];
+  homework: string;
+  /** Words students should learn. */
+  terms: string[];
+}
+
+/** The lesson in another language, with the topic's title, notes and outcomes in it too. */
+export interface LessonVariant extends LessonText {
+  title?: string;
+  notes: string[];
+  outcomes: string[];
+}
+
+/** A topic's lesson in the course's language, with Hindi and Kannada versions where written. */
+export interface TopicLesson extends LessonText {
+  hi?: LessonVariant;
+  kn?: LessonVariant;
+}
+
 export const topics = pgTable(
   'topics',
   {
@@ -804,6 +838,8 @@ export const topics = pgTable(
     outcomes: jsonb('outcomes').$type<string[]>().notNull().default([]),
     /** 3D models and virtual labs on the board for this topic (ids from kinetix_3d / kinetix_labs). */
     resources: jsonb('resources').$type<TopicResource[]>().notNull().default([]),
+    /** The full lesson (hook, example, activity, questions, homework, terms); null when not written. */
+    lesson: jsonb('lesson').$type<TopicLesson>(),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: updatedAt(),
   },

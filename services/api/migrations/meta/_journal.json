@@ -239,6 +239,13 @@
       "when": 1791183098213,
       "tag": "0033_ai_usage_provider_cost",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791205038499,
+      "tag": "0035_topic_lessons",
+      "breakpoints": true
     }
   ]
 }
