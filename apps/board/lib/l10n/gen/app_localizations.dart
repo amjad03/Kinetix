@@ -2506,6 +2506,30 @@ abstract class AppLocalizations {
   /// **'Could not save. Check the board is online.'**
   String get booksMarkFailed;
 
+  /// No description provided for @booksHook.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with'**
+  String get booksHook;
+
+  /// No description provided for @booksTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Words to learn'**
+  String get booksTerms;
+
+  /// No description provided for @booksExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked example'**
+  String get booksExample;
+
+  /// No description provided for @booksActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Class activity'**
+  String get booksActivity;
+
   /// No description provided for @mathHint.
   ///
   /// In en, this message translates to:
@@ -3405,6 +3429,954 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This is a demo build: kiosk mode is off and no PIN is needed.'**
   String get kioskDemoBody;
+
+  /// No description provided for @toolConceptVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos'**
+  String get toolConceptVideos;
+
+  /// No description provided for @conceptVideosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos'**
+  String get conceptVideosTitle;
+
+  /// No description provided for @conceptVideosForPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos for this period'**
+  String get conceptVideosForPeriod;
+
+  /// No description provided for @conceptVideosNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next period at {time}'**
+  String conceptVideosNext(String time);
+
+  /// No description provided for @conceptVideosSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get conceptVideosSkip;
+
+  /// No description provided for @conceptVideosNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No concept videos for this topic yet.'**
+  String get conceptVideosNone;
+
+  /// No description provided for @conceptVideosNoPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No class on this board now or later today.'**
+  String get conceptVideosNoPeriod;
+
+  /// No description provided for @conceptVideosSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see concept videos for your class.'**
+  String get conceptVideosSignIn;
+
+  /// No description provided for @conceptVideosCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the concept videos.'**
+  String get conceptVideosCouldNotLoad;
+
+  /// No description provided for @conceptVideosUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos can\'t play on this device. Use the board\'s Android or Windows app.'**
+  String get conceptVideosUnsupported;
+
+  /// No description provided for @conceptVideosFromYouTube.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays from YouTube'**
+  String get conceptVideosFromYouTube;
+
+  /// No description provided for @conceptVideosSourceLessonPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'From today\'s lesson plan'**
+  String get conceptVideosSourceLessonPlan;
+
+  /// No description provided for @conceptVideosSourceYearPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'From the year plan'**
+  String get conceptVideosSourceYearPlan;
+
+  /// No description provided for @conceptVideosSourceSyllabus.
+  ///
+  /// In en, this message translates to:
+  /// **'Next topic in the syllabus'**
+  String get conceptVideosSourceSyllabus;
+
+  /// No description provided for @conceptVideosPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play {title}'**
+  String conceptVideosPlay(String title);
+
+  /// No description provided for @answerCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to show the answer'**
+  String get answerCover;
+
+  /// No description provided for @answerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The answer, kept covered until you show it'**
+  String get answerHint;
+
+  /// No description provided for @bgFourLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Four-line'**
+  String get bgFourLine;
+
+  /// No description provided for @bringToFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring to front'**
+  String get bringToFront;
+
+  /// No description provided for @sendToBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to back'**
+  String get sendToBack;
+
+  /// No description provided for @circuitAmmeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Ammeter'**
+  String get circuitAmmeter;
+
+  /// No description provided for @circuitBattery.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery'**
+  String get circuitBattery;
+
+  /// No description provided for @circuitBulb.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulb'**
+  String get circuitBulb;
+
+  /// No description provided for @circuitCell.
+  ///
+  /// In en, this message translates to:
+  /// **'Cell'**
+  String get circuitCell;
+
+  /// No description provided for @circuitEarth.
+  ///
+  /// In en, this message translates to:
+  /// **'Earth'**
+  String get circuitEarth;
+
+  /// No description provided for @circuitLed.
+  ///
+  /// In en, this message translates to:
+  /// **'LED'**
+  String get circuitLed;
+
+  /// No description provided for @circuitResistor.
+  ///
+  /// In en, this message translates to:
+  /// **'Resistor'**
+  String get circuitResistor;
+
+  /// No description provided for @circuitSwitchClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch (closed)'**
+  String get circuitSwitchClosed;
+
+  /// No description provided for @circuitSwitchOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch (open)'**
+  String get circuitSwitchOpen;
+
+  /// No description provided for @circuitVoltmeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Voltmeter'**
+  String get circuitVoltmeter;
+
+  /// No description provided for @circuitWire.
+  ///
+  /// In en, this message translates to:
+  /// **'Wire'**
+  String get circuitWire;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @paste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get paste;
+
+  /// No description provided for @duplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicate;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @group.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get group;
+
+  /// No description provided for @ungroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Ungroup'**
+  String get ungroup;
+
+  /// No description provided for @fill.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill'**
+  String get fill;
+
+  /// No description provided for @noFill.
+  ///
+  /// In en, this message translates to:
+  /// **'No fill'**
+  String get noFill;
+
+  /// No description provided for @fillShapes.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill shapes'**
+  String get fillShapes;
+
+  /// No description provided for @equationLatex.
+  ///
+  /// In en, this message translates to:
+  /// **'Equation (LaTeX)'**
+  String get equationLatex;
+
+  /// No description provided for @equationPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Type below, or tap a sign'**
+  String get equationPreview;
+
+  /// No description provided for @putOnBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Put on the board'**
+  String get putOnBoard;
+
+  /// No description provided for @flowDecision.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision'**
+  String get flowDecision;
+
+  /// No description provided for @flowInputOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Input / output'**
+  String get flowInputOutput;
+
+  /// No description provided for @flowProcess.
+  ///
+  /// In en, this message translates to:
+  /// **'Process'**
+  String get flowProcess;
+
+  /// No description provided for @flowStartEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Start / end'**
+  String get flowStartEnd;
+
+  /// No description provided for @graphCannotRead.
+  ///
+  /// In en, this message translates to:
+  /// **'This function cannot be read'**
+  String get graphCannotRead;
+
+  /// No description provided for @graphFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'Function'**
+  String get graphFunction;
+
+  /// No description provided for @graphHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 2x^2 - 3, sin(x), sqrt(x)'**
+  String get graphHint;
+
+  /// No description provided for @graphXRange.
+  ///
+  /// In en, this message translates to:
+  /// **'x from − to +'**
+  String get graphXRange;
+
+  /// No description provided for @graphYRange.
+  ///
+  /// In en, this message translates to:
+  /// **'y from − to +'**
+  String get graphYRange;
+
+  /// No description provided for @hideProtractor.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide protractor'**
+  String get hideProtractor;
+
+  /// No description provided for @hideRuler.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide ruler'**
+  String get hideRuler;
+
+  /// No description provided for @turn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn'**
+  String get turn;
+
+  /// No description provided for @typeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type…'**
+  String get typeHint;
+
+  /// No description provided for @inputTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing with'**
+  String get inputTitle;
+
+  /// No description provided for @inputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen: only the pen writes and fingers move the board. Auto: fingers write until a pen is used.'**
+  String get inputHint;
+
+  /// No description provided for @inputAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get inputAuto;
+
+  /// No description provided for @inputPen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen'**
+  String get inputPen;
+
+  /// No description provided for @inputFinger.
+  ///
+  /// In en, this message translates to:
+  /// **'Finger'**
+  String get inputFinger;
+
+  /// No description provided for @insertAnswerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Covered until you tap it in class'**
+  String get insertAnswerHint;
+
+  /// No description provided for @insertEquationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fractions, roots and powers, typeset'**
+  String get insertEquationHint;
+
+  /// No description provided for @insertModelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens beside the board; put a picture of it on the board'**
+  String get insertModelHint;
+
+  /// No description provided for @tapToPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the board to place it'**
+  String get tapToPlace;
+
+  /// No description provided for @laserHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Points without drawing'**
+  String get laserHint;
+
+  /// No description provided for @kitAddWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a word'**
+  String get kitAddWord;
+
+  /// No description provided for @kitAiForLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI for this lesson'**
+  String get kitAiForLesson;
+
+  /// No description provided for @kitAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get kitAll;
+
+  /// No description provided for @kitAtomBall.
+  ///
+  /// In en, this message translates to:
+  /// **'Atom ball'**
+  String get kitAtomBall;
+
+  /// No description provided for @kitBinary.
+  ///
+  /// In en, this message translates to:
+  /// **'Binary'**
+  String get kitBinary;
+
+  /// No description provided for @kitBohrModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bohr model'**
+  String get kitBohrModel;
+
+  /// No description provided for @kitDecimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Decimal number'**
+  String get kitDecimal;
+
+  /// No description provided for @kitDrawTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw timeline ({count})'**
+  String kitDrawTimeline(int count);
+
+  /// No description provided for @kitElementCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Element card'**
+  String get kitElementCard;
+
+  /// No description provided for @kitIndia.
+  ///
+  /// In en, this message translates to:
+  /// **'India'**
+  String get kitIndia;
+
+  /// No description provided for @kitWorld.
+  ///
+  /// In en, this message translates to:
+  /// **'World'**
+  String get kitWorld;
+
+  /// No description provided for @kitMore.
+  ///
+  /// In en, this message translates to:
+  /// **'In this kit'**
+  String get kitMore;
+
+  /// No description provided for @kitMoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The tabs above hold this subject’s material. Tap anything to put it on the board.'**
+  String get kitMoreHint;
+
+  /// No description provided for @kitPickEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick events for a timeline'**
+  String get kitPickEvents;
+
+  /// No description provided for @kitSearchFormulas.
+  ///
+  /// In en, this message translates to:
+  /// **'Search formulas'**
+  String get kitSearchFormulas;
+
+  /// No description provided for @kitSeeAndDo.
+  ///
+  /// In en, this message translates to:
+  /// **'See and do'**
+  String get kitSeeAndDo;
+
+  /// No description provided for @kitShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Kit'**
+  String get kitShort;
+
+  /// No description provided for @kitStarGive.
+  ///
+  /// In en, this message translates to:
+  /// **'Give a star'**
+  String get kitStarGive;
+
+  /// No description provided for @kitStarRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a star back'**
+  String get kitStarRemove;
+
+  /// No description provided for @kitStarOfTheDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Star of the day: {name}'**
+  String kitStarOfTheDay(String name);
+
+  /// No description provided for @kitStarsNoClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a timetabled class to give its children stars.'**
+  String get kitStarsNoClass;
+
+  /// No description provided for @kitWordsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Words you write on the board appear here. Tap one for a big word card.'**
+  String get kitWordsHint;
+
+  /// No description provided for @kitThisLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson'**
+  String get kitThisLesson;
+
+  /// No description provided for @kitFormulas.
+  ///
+  /// In en, this message translates to:
+  /// **'Formulas'**
+  String get kitFormulas;
+
+  /// No description provided for @kitConstants.
+  ///
+  /// In en, this message translates to:
+  /// **'Constants'**
+  String get kitConstants;
+
+  /// No description provided for @kitPeriodic.
+  ///
+  /// In en, this message translates to:
+  /// **'Periodic table'**
+  String get kitPeriodic;
+
+  /// No description provided for @kitIons.
+  ///
+  /// In en, this message translates to:
+  /// **'Ions'**
+  String get kitIons;
+
+  /// No description provided for @kitDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Key dates'**
+  String get kitDates;
+
+  /// No description provided for @kitWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Word wall'**
+  String get kitWords;
+
+  /// No description provided for @kitLogic.
+  ///
+  /// In en, this message translates to:
+  /// **'Logic gates'**
+  String get kitLogic;
+
+  /// No description provided for @kitStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Class stars'**
+  String get kitStars;
+
+  /// No description provided for @kitValency.
+  ///
+  /// In en, this message translates to:
+  /// **'Valency {valency}'**
+  String kitValency(int valency);
+
+  /// No description provided for @kitPeriodicHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an element for its card, Bohr model or atom ball.'**
+  String get kitPeriodicHint;
+
+  /// No description provided for @kitLogicHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to write the truth table on the board.'**
+  String get kitLogicHint;
+
+  /// No description provided for @subjectKit.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} kit'**
+  String subjectKit(String subject);
+
+  /// No description provided for @layoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get layoutTitle;
+
+  /// No description provided for @layoutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rails put the tools at the sides of the board; the toolbar puts them along the bottom.'**
+  String get layoutHint;
+
+  /// No description provided for @layoutRails.
+  ///
+  /// In en, this message translates to:
+  /// **'Rails'**
+  String get layoutRails;
+
+  /// No description provided for @layoutBottomBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom toolbar'**
+  String get layoutBottomBar;
+
+  /// No description provided for @simpleBoardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple board'**
+  String get simpleBoardTitle;
+
+  /// No description provided for @simpleBoardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Big tools with their names, Andika letters and class stars, for LKG to Class 5. Auto turns it on for those classes.'**
+  String get simpleBoardHint;
+
+  /// No description provided for @simpleBoardAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get simpleBoardAuto;
+
+  /// No description provided for @simpleBoardOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get simpleBoardOn;
+
+  /// No description provided for @simpleBoardOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get simpleBoardOff;
+
+  /// No description provided for @noteAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Covered answer'**
+  String get noteAnswer;
+
+  /// No description provided for @noteSticky.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticky note'**
+  String get noteSticky;
+
+  /// No description provided for @numberFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get numberFrom;
+
+  /// No description provided for @numberTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get numberTo;
+
+  /// No description provided for @numberStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step'**
+  String get numberStep;
+
+  /// No description provided for @openLab.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the lab'**
+  String get openLab;
+
+  /// No description provided for @openModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the 3D model'**
+  String get openModel;
+
+  /// No description provided for @readWithAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Read with AI'**
+  String get readWithAi;
+
+  /// No description provided for @snapshotAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture put on the board. Tap it to open it again.'**
+  String get snapshotAdded;
+
+  /// No description provided for @snapshotToBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Put on board'**
+  String get snapshotToBoard;
+
+  /// No description provided for @stChemEquation.
+  ///
+  /// In en, this message translates to:
+  /// **'Chemical equation'**
+  String get stChemEquation;
+
+  /// No description provided for @stCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code block'**
+  String get stCode;
+
+  /// No description provided for @stEquation.
+  ///
+  /// In en, this message translates to:
+  /// **'Equation'**
+  String get stEquation;
+
+  /// No description provided for @stGraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Graph'**
+  String get stGraph;
+
+  /// No description provided for @stNumberLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Number line'**
+  String get stNumberLine;
+
+  /// No description provided for @stWordCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Word card'**
+  String get stWordCard;
+
+  /// No description provided for @stGeometry.
+  ///
+  /// In en, this message translates to:
+  /// **'Geometry'**
+  String get stGeometry;
+
+  /// No description provided for @stCircuits.
+  ///
+  /// In en, this message translates to:
+  /// **'Circuits'**
+  String get stCircuits;
+
+  /// No description provided for @stAtoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Atoms'**
+  String get stAtoms;
+
+  /// No description provided for @stTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get stTimeline;
+
+  /// No description provided for @stFlowchart.
+  ///
+  /// In en, this message translates to:
+  /// **'Flowchart'**
+  String get stFlowchart;
+
+  /// No description provided for @stFourLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Four-line paper'**
+  String get stFourLine;
+
+  /// No description provided for @stGrammar.
+  ///
+  /// In en, this message translates to:
+  /// **'Grammar colours'**
+  String get stGrammar;
+
+  /// No description provided for @subjectMaths.
+  ///
+  /// In en, this message translates to:
+  /// **'Maths'**
+  String get subjectMaths;
+
+  /// No description provided for @subjectPhysics.
+  ///
+  /// In en, this message translates to:
+  /// **'Physics'**
+  String get subjectPhysics;
+
+  /// No description provided for @subjectChemistry.
+  ///
+  /// In en, this message translates to:
+  /// **'Chemistry'**
+  String get subjectChemistry;
+
+  /// No description provided for @subjectBiology.
+  ///
+  /// In en, this message translates to:
+  /// **'Biology'**
+  String get subjectBiology;
+
+  /// No description provided for @subjectScience.
+  ///
+  /// In en, this message translates to:
+  /// **'Science'**
+  String get subjectScience;
+
+  /// No description provided for @subjectEvs.
+  ///
+  /// In en, this message translates to:
+  /// **'EVS'**
+  String get subjectEvs;
+
+  /// No description provided for @subjectGeography.
+  ///
+  /// In en, this message translates to:
+  /// **'Geography'**
+  String get subjectGeography;
+
+  /// No description provided for @subjectHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get subjectHistory;
+
+  /// No description provided for @subjectCivics.
+  ///
+  /// In en, this message translates to:
+  /// **'Civics'**
+  String get subjectCivics;
+
+  /// No description provided for @subjectCommerce.
+  ///
+  /// In en, this message translates to:
+  /// **'Commerce'**
+  String get subjectCommerce;
+
+  /// No description provided for @subjectEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get subjectEnglish;
+
+  /// No description provided for @subjectLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get subjectLanguages;
+
+  /// No description provided for @subjectComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'Computer science'**
+  String get subjectComputer;
+
+  /// No description provided for @subjectArt.
+  ///
+  /// In en, this message translates to:
+  /// **'Art'**
+  String get subjectArt;
+
+  /// No description provided for @subjectGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get subjectGeneral;
+
+  /// No description provided for @toolCompass.
+  ///
+  /// In en, this message translates to:
+  /// **'Compass'**
+  String get toolCompass;
+
+  /// No description provided for @toolInsert.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get toolInsert;
+
+  /// No description provided for @toolLaser.
+  ///
+  /// In en, this message translates to:
+  /// **'Laser pointer'**
+  String get toolLaser;
+
+  /// No description provided for @toolMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the board'**
+  String get toolMove;
+
+  /// No description provided for @toolText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get toolText;
+
+  /// No description provided for @zoomFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Show everything'**
+  String get zoomFit;
+
+  /// No description provided for @zoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get zoomIn;
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get zoomOut;
+
+  /// No description provided for @zoomReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to 100%'**
+  String get zoomReset;
 }
 
 class _AppLocalizationsDelegate

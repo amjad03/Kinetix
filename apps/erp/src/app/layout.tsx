@@ -4,7 +4,8 @@ import { I18nProvider } from '@/i18n/client';
 import { BCP47 } from '@/i18n/locales';
 import { MESSAGES } from '@/i18n/messages';
 import { getI18n } from '@/i18n/server';
-import { googleSans, notoDevanagari, notoKannada } from '@/theme/fonts';
+import { notoDevanagari, notoKannada, sansFlex, sansFlexDisplay } from '@/theme/fonts';
+import '@/theme/tokens.css';
 import { ThemeRegistry } from '@/theme/ThemeRegistry';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f4f3fa' },
+    { media: '(prefers-color-scheme: light)', color: '#f4f7f4' },
     { media: '(prefers-color-scheme: dark)', color: '#121318' },
   ],
 };
@@ -26,7 +27,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const { locale } = await getI18n();
   return (
-    <html lang={BCP47[locale]} className={`${googleSans.variable} ${notoDevanagari.variable} ${notoKannada.variable}`} suppressHydrationWarning>
+    <html lang={BCP47[locale]} className={`${sansFlex.variable} ${sansFlexDisplay.variable} ${notoDevanagari.variable} ${notoKannada.variable}`} suppressHydrationWarning>
       <body>
         <I18nProvider locale={locale} messages={MESSAGES[locale]}>
           <ThemeRegistry locale={locale}>{children}</ThemeRegistry>

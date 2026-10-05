@@ -1713,4 +1713,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String recordingAvailableUntil(String date) {
     return '$date तक उपलब्ध';
   }
+
+  @override
+  String get conceptVideos => 'कॉन्सेप्ट वीडियो';
+
+  @override
+  String get conceptVideosHint => 'कक्षा से पहले झलक के लिए और कक्षा के बाद दोहराने के लिए देखें।';
+
+  @override
+  String get conceptVideosFromYouTube => 'यूट्यूब से चलता है';
+
+  @override
+  String get conceptVideosUnsupported => 'वीडियो यहाँ नहीं चल सकते। अपने फ़ोन पर विद्यार्थी ऐप का उपयोग करें।';
+
+  @override
+  String conceptVideoPlay(String title) {
+    return '$title चलाएँ';
+  }
 }

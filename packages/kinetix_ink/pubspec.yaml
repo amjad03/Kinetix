@@ -1,5 +1,5 @@
 name: kinetix_ink
-description: KINETIX ink engine — multi-touch strokes, shapes with measurements, selection, pages, the saved-board format and a read-only viewer. Shared by the Board and the family apps.
+description: KINETIX ink engine — the endless whiteboard (strokes, shapes, text, pictures, equations, graphs, notes), its tools, the saved-board and lesson formats, and read-only viewers. Shared by the Board and the family apps.
 publish_to: none
 version: 0.1.0
 
@@ -10,6 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Typesets equations on the board and in every viewer (MIT; KaTeX fonts, OFL).
+  flutter_math_fork: ^0.7.4
+  kinetix_ui:
+    path: ../kinetix_ui
 
 dev_dependencies:
   flutter_test:

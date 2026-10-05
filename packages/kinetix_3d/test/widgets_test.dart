@@ -21,7 +21,7 @@ void main() {
   for (final dark in [true, false]) {
     for (final size in _sizes) {
       testWidgets('every model renders at ${size.width.toInt()}×${size.height.toInt()} (${dark ? 'dark' : 'light'})', (tester) async {
-        for (final id in ModelCatalogue.ids) {
+        for (final id in ModelCatalogue.nativeIds) {
           await _pump(tester, ModelView(key: ValueKey(id), id: id), size: size, dark: dark);
           expect(tester.takeException(), isNull, reason: id);
           expect(find.byKey(const ValueKey('kx3d-canvas')), findsOneWidget, reason: id);

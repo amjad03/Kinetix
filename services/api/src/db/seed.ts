@@ -387,12 +387,14 @@ async function main() {
     enrollmentCodeHash: hmac(env.PAIRING_HMAC_SECRET, `enroll:${code}`),
     enrollmentExpiresAt: new Date(Date.now() + 30 * 24 * 3600_000),
   });
+  // The demo administrator is also on the KINETIX platform team, to try Platform › Concept videos.
+  await db.insert(s.platformAdmins).values({ userId: admin.id, note: 'Demo' }).onConflictDoNothing();
 
   console.log(`
 Seeded tenant "demo-college".
   Staff logins (password "${PASSWORD}"):
     principal@demo.kinetix.in   (principal: can circulate messages)
-    admin@demo.kinetix.in       (tenant admin)
+    admin@demo.kinetix.in       (tenant admin; also on the KINETIX platform team: concept videos)
     accounts@demo.kinetix.in    (accountant: fees)
     library@demo.kinetix.in     (librarian)
     anita@demo.kinetix.in       (teacher, BCom Sem 3 A)

@@ -1,6 +1,6 @@
 import { argbFromHex, Hct } from '@material/material-color-utilities';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, M3_ROLES, m3Scheme, SEED, withAlpha } from './scheme';
+import { BRAND_LIGHT, brandScheme, contrastRatio, M3_ROLES, m3Scheme, SEED, withAlpha } from './scheme';
 import { paletteFor } from './palette';
 
 const tone = (hex: string) => Hct.fromInt(argbFromHex(hex)).tone;
@@ -16,12 +16,14 @@ describe('m3Scheme (ColorScheme.fromSeed, TonalSpot)', () => {
 
   it('matches the Flutter fromSeed values for #0B57D0', () => {
     // Same numbers Flutter's ColorScheme.fromSeed(seedColor: Color(0xFF0B57D0)) yields.
-    expect(light.primary).toBe('#495d92');
-    expect(light.onPrimary).toBe('#ffffff');
-    expect(light.primaryContainer).toBe('#dae2ff');
-    expect(light.surface).toBe('#faf8ff');
-    expect(dark.primary).toBe('#b2c5ff');
-    expect(dark.surface).toBe('#121318');
+    const blueLight = m3Scheme('#0B57D0', false);
+    const blueDark = m3Scheme('#0B57D0', true);
+    expect(blueLight.primary).toBe('#495d92');
+    expect(blueLight.onPrimary).toBe('#ffffff');
+    expect(blueLight.primaryContainer).toBe('#dae2ff');
+    expect(blueLight.surface).toBe('#faf8ff');
+    expect(blueDark.primary).toBe('#b2c5ff');
+    expect(blueDark.surface).toBe('#121318');
   });
 
   it('keeps the seed hue for primary and uses M3 tones', () => {
@@ -46,6 +48,26 @@ describe('m3Scheme (ColorScheme.fromSeed, TonalSpot)', () => {
       expect(contrastRatio(s.onSurfaceVariant, s.surfaceContainerHigh)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(s.onSecondaryContainer, s.secondaryContainer)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(s.onErrorContainer, s.errorContainer)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
+describe('brandScheme (the KINETIX design tokens)', () => {
+  it('uses chalkboard green and marigold for AI in light, as kinetix_ui does', () => {
+    const light = brandScheme(false);
+    expect(light.primary).toBe('#006545');
+    expect(light.tertiary).toBe('#835400');
+    expect(light.surface).toBe('#f4f7f4');
+    expect(light.surfaceContainerLowest).toBe('#ffffff');
+    for (const [role, value] of Object.entries(BRAND_LIGHT)) expect(light[role as keyof typeof light]).toBe(value);
+  });
+
+  it('keeps every role readable (WCAG AA)', () => {
+    for (const s of [brandScheme(false), brandScheme(true)]) {
+      expect(contrastRatio(s.onPrimary, s.primary)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.onSurface, s.surface)).toBeGreaterThanOrEqual(7);
+      expect(contrastRatio(s.onPrimaryContainer, s.primaryContainer)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.onTertiaryContainer, s.tertiaryContainer)).toBeGreaterThanOrEqual(4.5);
     }
   });
 });

@@ -91,9 +91,11 @@ export class ContentController {
           notes: topics.notes,
           outcomes: topics.outcomes,
           resources: topics.resources,
+          /** Hook, example, activity, questions, homework and terms, with kn/hi versions; null when not written. */
+          lesson: topics.lesson,
           own: isNotNull(topics.tenantId).mapWith(Boolean),
           chapter: { id: chapters.id, title: chapters.title },
-          course: { id: courses.id, title: courses.title, reviewed: courses.reviewed },
+          course: { id: courses.id, title: courses.title, language: courses.language, reviewed: courses.reviewed },
         })
         .from(topics)
         .innerJoin(chapters, eq(chapters.id, topics.chapterId))

@@ -88,8 +88,8 @@ void main() {
     expect((a - b).distance, greaterThan(5));
   });
 
-  test('every catalogue model renders without errors', () {
-    for (final e in ModelCatalogue.entries) {
+  test('every model the Dart renderer draws renders without errors', () {
+    for (final e in ModelCatalogue.all.where((e) => e.native)) {
       final model = e.buildModel();
       final r = SceneRenderer(model);
       _render(r, OrbitCamera(yaw: model.initialYaw, pitch: model.initialPitch), size: const Size(1920, 1080));
@@ -99,12 +99,27 @@ void main() {
   });
 
   test('catalogue ids are stable and unique', () {
-    expect(ModelCatalogue.ids, [
+    // Lessons and the content library link these: none may go away or change.
+    const linked = [
       'solid.cube', 'solid.cuboid', 'solid.sphere', 'solid.hemisphere', 'solid.cylinder', 'solid.cone', 'solid.frustum',
       'solid.square-pyramid', 'solid.triangular-prism', 'solid.tetrahedron',
       'chem.water', 'chem.methane', 'chem.co2', 'chem.nacl', 'astro.solar-system', 'astro.earth',
-    ]);
-    expect(ModelCatalogue.ids.toSet(), hasLength(ModelCatalogue.ids.length));
+      // The prototype's models, under their old ids.
+      'heart', 'brain', 'digestive', 'lungs', 'eye', 'excretory', 'skeleton', 'neuron', 'animal_cell', 'plant_cell', 'flower', 'dna',
+      'electric_motor', 'prism', 'bar_magnet', 'atoms', 'molecules', 'earth_layers', 'volcano', 'solar_system', 'seasons', 'solids',
+    ];
+    for (final id in linked) {
+      expect(ModelCatalogue.byId(id), isNotNull, reason: id);
+    }
+    final all = [for (final e in ModelCatalogue.all) e.id];
+    expect(all.toSet(), hasLength(all.length));
+    // The solids keep the Dart renderer (live measurements); the old Dart-only ids open the viewer's version.
+    expect(ModelCatalogue.byId('solid.cone')!.solid, SolidKind.cone);
+    expect(ModelCatalogue.byId('chem.water')!.viewerId, 'molecules');
+    expect(ModelCatalogue.byId('chem.water')!.variant, 'h2o');
+    expect(ModelCatalogue.byId('chem.water')!.native, isTrue);
+    expect(ModelCatalogue.ids, contains('heart'));
+    expect(ModelCatalogue.ids, isNot(contains('chem.water')), reason: 'kept for links, not listed twice');
   });
 
   test('the world map puts India and the Sahara on land, the oceans in water', () {

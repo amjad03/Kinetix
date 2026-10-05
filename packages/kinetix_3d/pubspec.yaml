@@ -1,7 +1,7 @@
 name: kinetix_3d
-description: KINETIX 3D models — a small pure-Dart software 3D engine, solids with live measurements, procedural science models (molecules, Solar System, Earth) and a minimal glTF binary loader. No WebView, no plugins, works offline on Android, Windows and Linux.
+description: KINETIX 3D models — the three.js teaching models (anatomy, cells, physics, chemistry, geography, space, solids) in a WebView on Android and Windows with labels in English, Hindi and Kannada, a laser pointer and snapshots for the board; plus a small pure-Dart software 3D engine (solids with live measurements, procedural models, a minimal glTF loader) for everywhere else. Works offline.
 publish_to: none
-version: 0.1.0
+version: 0.2.0
 
 environment:
   sdk: ^3.9.0
@@ -12,8 +12,22 @@ dependencies:
     sdk: flutter
   kinetix_ui:
     path: ../kinetix_ui
+  # The viewer runs in the system WebView on Android and in Edge WebView2 on Windows
+  # (the concept videos use the same two).
+  webview_flutter: ^4.14.1
+  webview_windows: ^0.4.0
 
 dev_dependencies:
+  flutter_localizations:
+    sdk: flutter
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+flutter:
+  # The three.js viewer page, its models and the library's pictures (built by
+  # tool/models; credits in NOTICE and assets/viewer3d/CREDITS.txt).
+  assets:
+    - assets/viewer3d/
+    - assets/viewer3d/models/
+    - assets/viewer3d/thumbs/

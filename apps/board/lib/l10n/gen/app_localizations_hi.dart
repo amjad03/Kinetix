@@ -1459,6 +1459,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get booksMarkFailed => 'सहेजा नहीं जा सका। देखें कि बोर्ड ऑनलाइन है।';
 
   @override
+  String get booksHook => 'ऐसे शुरू करें';
+
+  @override
+  String get booksTerms => 'सीखने के शब्द';
+
+  @override
+  String get booksExample => 'हल किया हुआ उदाहरण';
+
+  @override
+  String get booksActivity => 'कक्षा गतिविधि';
+
+  @override
   String get mathHint => 'कोई सवाल या समीकरण लिखें';
 
   @override
@@ -2008,4 +2020,503 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get kioskDemoBody =>
       'यह डेमो बिल्ड है: कियोस्क मोड बंद है और PIN की ज़रूरत नहीं है।';
+
+  @override
+  String get toolConceptVideos => 'कॉन्सेप्ट वीडियो';
+
+  @override
+  String get conceptVideosTitle => 'कॉन्सेप्ट वीडियो';
+
+  @override
+  String get conceptVideosForPeriod => 'इस पीरियड के कॉन्सेप्ट वीडियो';
+
+  @override
+  String conceptVideosNext(String time) {
+    return 'अगला पीरियड $time बजे';
+  }
+
+  @override
+  String get conceptVideosSkip => 'छोड़ें';
+
+  @override
+  String get conceptVideosNone =>
+      'इस विषय के लिए अभी कोई कॉन्सेप्ट वीडियो नहीं है।';
+
+  @override
+  String get conceptVideosNoPeriod =>
+      'इस बोर्ड पर अभी या आज बाद में कोई कक्षा नहीं है।';
+
+  @override
+  String get conceptVideosSignIn =>
+      'अपनी कक्षा के कॉन्सेप्ट वीडियो देखने के लिए साइन इन करें।';
+
+  @override
+  String get conceptVideosCouldNotLoad => 'कॉन्सेप्ट वीडियो लोड नहीं हो सके।';
+
+  @override
+  String get conceptVideosUnsupported =>
+      'इस डिवाइस पर वीडियो नहीं चल सकते। बोर्ड का Android या Windows ऐप उपयोग करें।';
+
+  @override
+  String get conceptVideosFromYouTube => 'यूट्यूब से चलता है';
+
+  @override
+  String get conceptVideosSourceLessonPlan => 'आज की पाठ योजना से';
+
+  @override
+  String get conceptVideosSourceYearPlan => 'वार्षिक योजना से';
+
+  @override
+  String get conceptVideosSourceSyllabus => 'पाठ्यक्रम का अगला विषय';
+
+  @override
+  String conceptVideosPlay(String title) {
+    return '$title चलाएँ';
+  }
+
+  @override
+  String get answerCover => 'उत्तर देखने के लिए टैप करें';
+
+  @override
+  String get answerHint => 'उत्तर, जो दिखाने तक ढका रहेगा';
+
+  @override
+  String get bgFourLine => 'चार-रेखा';
+
+  @override
+  String get bringToFront => 'सबसे आगे लाएँ';
+
+  @override
+  String get sendToBack => 'सबसे पीछे भेजें';
+
+  @override
+  String get circuitAmmeter => 'एमीटर';
+
+  @override
+  String get circuitBattery => 'बैटरी';
+
+  @override
+  String get circuitBulb => 'बल्ब';
+
+  @override
+  String get circuitCell => 'सेल';
+
+  @override
+  String get circuitEarth => 'अर्थ';
+
+  @override
+  String get circuitLed => 'एलईडी';
+
+  @override
+  String get circuitResistor => 'प्रतिरोधक';
+
+  @override
+  String get circuitSwitchClosed => 'स्विच (बंद)';
+
+  @override
+  String get circuitSwitchOpen => 'स्विच (खुला)';
+
+  @override
+  String get circuitVoltmeter => 'वोल्टमीटर';
+
+  @override
+  String get circuitWire => 'तार';
+
+  @override
+  String get copy => 'कॉपी करें';
+
+  @override
+  String get paste => 'चिपकाएँ';
+
+  @override
+  String get duplicate => 'दोहराएँ';
+
+  @override
+  String get delete => 'हटाएँ';
+
+  @override
+  String get edit => 'बदलें';
+
+  @override
+  String get group => 'समूह बनाएँ';
+
+  @override
+  String get ungroup => 'समूह तोड़ें';
+
+  @override
+  String get fill => 'रंग भरें';
+
+  @override
+  String get noFill => 'रंग हटाएँ';
+
+  @override
+  String get fillShapes => 'आकृतियों में रंग भरें';
+
+  @override
+  String get equationLatex => 'समीकरण (LaTeX)';
+
+  @override
+  String get equationPreview => 'नीचे लिखें, या कोई चिह्न टैप करें';
+
+  @override
+  String get putOnBoard => 'बोर्ड पर लगाएँ';
+
+  @override
+  String get flowDecision => 'निर्णय';
+
+  @override
+  String get flowInputOutput => 'इनपुट / आउटपुट';
+
+  @override
+  String get flowProcess => 'प्रक्रिया';
+
+  @override
+  String get flowStartEnd => 'शुरू / अंत';
+
+  @override
+  String get graphCannotRead => 'यह फलन पढ़ा नहीं जा सका';
+
+  @override
+  String get graphFunction => 'फलन';
+
+  @override
+  String get graphHint => 'जैसे 2x^2 - 3, sin(x), sqrt(x)';
+
+  @override
+  String get graphXRange => 'x, − से + तक';
+
+  @override
+  String get graphYRange => 'y, − से + तक';
+
+  @override
+  String get hideProtractor => 'चाँदा हटाएँ';
+
+  @override
+  String get hideRuler => 'स्केल हटाएँ';
+
+  @override
+  String get turn => 'घुमाएँ';
+
+  @override
+  String get typeHint => 'लिखें…';
+
+  @override
+  String get inputTitle => 'किससे लिखें';
+
+  @override
+  String get inputHint =>
+      'पेन: केवल पेन लिखता है, उँगलियाँ बोर्ड खिसकाती हैं। अपने-आप: पेन उठाने तक उँगलियाँ लिखती हैं।';
+
+  @override
+  String get inputAuto => 'अपने-आप';
+
+  @override
+  String get inputPen => 'पेन';
+
+  @override
+  String get inputFinger => 'उँगली';
+
+  @override
+  String get insertAnswerHint => 'कक्षा में टैप करने तक ढका रहता है';
+
+  @override
+  String get insertEquationHint => 'भिन्न, मूल और घात, सुंदर लिखावट में';
+
+  @override
+  String get insertModelHint =>
+      'बोर्ड के साथ खुलता है; उसकी तस्वीर बोर्ड पर लगाएँ';
+
+  @override
+  String get tapToPlace => 'रखने के लिए बोर्ड पर टैप करें';
+
+  @override
+  String get laserHint => 'बिना लिखे इशारा करता है';
+
+  @override
+  String get kitAddWord => 'शब्द जोड़ें';
+
+  @override
+  String get kitAiForLesson => 'इस पाठ के लिए KINETIX AI';
+
+  @override
+  String get kitAll => 'सभी';
+
+  @override
+  String get kitAtomBall => 'परमाणु गेंद';
+
+  @override
+  String get kitBinary => 'द्विआधारी';
+
+  @override
+  String get kitBohrModel => 'बोर मॉडल';
+
+  @override
+  String get kitDecimal => 'दशमलव संख्या';
+
+  @override
+  String kitDrawTimeline(int count) {
+    return 'समयरेखा बनाएँ ($count)';
+  }
+
+  @override
+  String get kitElementCard => 'तत्व कार्ड';
+
+  @override
+  String get kitIndia => 'भारत';
+
+  @override
+  String get kitWorld => 'विश्व';
+
+  @override
+  String get kitMore => 'इस किट में';
+
+  @override
+  String get kitMoreHint =>
+      'ऊपर के टैब में इस विषय की सामग्री है। बोर्ड पर लगाने के लिए किसी पर भी टैप करें।';
+
+  @override
+  String get kitPickEvents => 'समयरेखा के लिए घटनाएँ चुनें';
+
+  @override
+  String get kitSearchFormulas => 'सूत्र खोजें';
+
+  @override
+  String get kitSeeAndDo => 'देखें और करें';
+
+  @override
+  String get kitShort => 'किट';
+
+  @override
+  String get kitStarGive => 'एक स्टार दें';
+
+  @override
+  String get kitStarRemove => 'एक स्टार वापस लें';
+
+  @override
+  String kitStarOfTheDay(String name) {
+    return 'आज का स्टार: $name';
+  }
+
+  @override
+  String get kitStarsNoClass =>
+      'बच्चों को स्टार देने के लिए समय-सारणी वाली कक्षा के साथ साइन इन करें।';
+
+  @override
+  String get kitWordsHint =>
+      'बोर्ड पर लिखे शब्द यहाँ दिखते हैं। बड़े शब्द-कार्ड के लिए किसी पर टैप करें।';
+
+  @override
+  String get kitThisLesson => 'यह पाठ';
+
+  @override
+  String get kitFormulas => 'सूत्र';
+
+  @override
+  String get kitConstants => 'स्थिरांक';
+
+  @override
+  String get kitPeriodic => 'आवर्त सारणी';
+
+  @override
+  String get kitIons => 'आयन';
+
+  @override
+  String get kitDates => 'मुख्य तिथियाँ';
+
+  @override
+  String get kitWords => 'शब्द दीवार';
+
+  @override
+  String get kitLogic => 'लॉजिक गेट';
+
+  @override
+  String get kitStars => 'कक्षा के स्टार';
+
+  @override
+  String kitValency(int valency) {
+    return 'संयोजकता $valency';
+  }
+
+  @override
+  String get kitPeriodicHint =>
+      'कार्ड, बोर मॉडल या परमाणु गेंद के लिए किसी तत्व पर टैप करें।';
+
+  @override
+  String get kitLogicHint => 'सत्य सारणी बोर्ड पर लिखने के लिए टैप करें।';
+
+  @override
+  String subjectKit(String subject) {
+    return '$subject किट';
+  }
+
+  @override
+  String get layoutTitle => 'लेआउट';
+
+  @override
+  String get layoutHint =>
+      'रेल में औज़ार बोर्ड के किनारों पर होते हैं; टूलबार में नीचे।';
+
+  @override
+  String get layoutRails => 'रेल';
+
+  @override
+  String get layoutBottomBar => 'नीचे का टूलबार';
+
+  @override
+  String get simpleBoardTitle => 'सरल बोर्ड';
+
+  @override
+  String get simpleBoardHint =>
+      'LKG से कक्षा 5 के लिए नाम सहित बड़े औज़ार, Andika अक्षर और कक्षा के स्टार। अपने-आप उन कक्षाओं में चालू करता है।';
+
+  @override
+  String get simpleBoardAuto => 'अपने-आप';
+
+  @override
+  String get simpleBoardOn => 'चालू';
+
+  @override
+  String get simpleBoardOff => 'बंद';
+
+  @override
+  String get noteAnswer => 'ढका उत्तर';
+
+  @override
+  String get noteSticky => 'चिपकने वाला नोट';
+
+  @override
+  String get numberFrom => 'से';
+
+  @override
+  String get numberTo => 'तक';
+
+  @override
+  String get numberStep => 'अंतराल';
+
+  @override
+  String get openLab => 'प्रयोगशाला खोलें';
+
+  @override
+  String get openModel => '3D मॉडल खोलें';
+
+  @override
+  String get readWithAi => 'AI से पढ़ें';
+
+  @override
+  String get snapshotAdded =>
+      'तस्वीर बोर्ड पर लगी। फिर खोलने के लिए उस पर टैप करें।';
+
+  @override
+  String get snapshotToBoard => 'बोर्ड पर लगाएँ';
+
+  @override
+  String get stChemEquation => 'रासायनिक समीकरण';
+
+  @override
+  String get stCode => 'कोड ब्लॉक';
+
+  @override
+  String get stEquation => 'समीकरण';
+
+  @override
+  String get stGraph => 'ग्राफ़';
+
+  @override
+  String get stNumberLine => 'संख्या रेखा';
+
+  @override
+  String get stWordCard => 'शब्द कार्ड';
+
+  @override
+  String get stGeometry => 'ज्यामिति';
+
+  @override
+  String get stCircuits => 'परिपथ';
+
+  @override
+  String get stAtoms => 'परमाणु';
+
+  @override
+  String get stTimeline => 'समयरेखा';
+
+  @override
+  String get stFlowchart => 'फ़्लोचार्ट';
+
+  @override
+  String get stFourLine => 'चार-रेखा कागज़';
+
+  @override
+  String get stGrammar => 'व्याकरण के रंग';
+
+  @override
+  String get subjectMaths => 'गणित';
+
+  @override
+  String get subjectPhysics => 'भौतिकी';
+
+  @override
+  String get subjectChemistry => 'रसायन';
+
+  @override
+  String get subjectBiology => 'जीव विज्ञान';
+
+  @override
+  String get subjectScience => 'विज्ञान';
+
+  @override
+  String get subjectEvs => 'पर्यावरण अध्ययन';
+
+  @override
+  String get subjectGeography => 'भूगोल';
+
+  @override
+  String get subjectHistory => 'इतिहास';
+
+  @override
+  String get subjectCivics => 'नागरिक शास्त्र';
+
+  @override
+  String get subjectCommerce => 'वाणिज्य';
+
+  @override
+  String get subjectEnglish => 'अंग्रेज़ी';
+
+  @override
+  String get subjectLanguages => 'भाषाएँ';
+
+  @override
+  String get subjectComputer => 'कंप्यूटर विज्ञान';
+
+  @override
+  String get subjectArt => 'कला';
+
+  @override
+  String get subjectGeneral => 'कक्षा';
+
+  @override
+  String get toolCompass => 'परकार';
+
+  @override
+  String get toolInsert => 'जोड़ें';
+
+  @override
+  String get toolLaser => 'लेज़र पॉइंटर';
+
+  @override
+  String get toolMove => 'बोर्ड खिसकाएँ';
+
+  @override
+  String get toolText => 'टेक्स्ट';
+
+  @override
+  String get zoomFit => 'सब दिखाएँ';
+
+  @override
+  String get zoomIn => 'बड़ा करें';
+
+  @override
+  String get zoomOut => 'छोटा करें';
+
+  @override
+  String get zoomReset => '100% पर लौटें';
 }

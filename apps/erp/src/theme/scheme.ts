@@ -1,7 +1,44 @@
 import { argbFromHex, Hct, hexFromArgb, MaterialDynamicColors, SchemeTonalSpot } from '@material/material-color-utilities';
 
-/** KINETIX seed colour. Brand colour is not final: change it here only (mirrors `Kx.seed` in kinetix_ui). */
-export const SEED = '#0B57D0';
+/** KINETIX seed colour, chalkboard green (mirrors `Kx.seed` in kinetix_ui). */
+export const SEED = '#16805A';
+
+/**
+ * The light scheme's hand-tuned roles (mirrors `KinetixTheme.lightScheme` in kinetix_ui and
+ * tokens.css): quiet, nearly neutral surfaces, the brand green `#006545` and marigold for AI.
+ */
+export const BRAND_LIGHT: Partial<M3Scheme> = {
+  primary: '#006545',
+  onPrimary: '#ffffff',
+  primaryContainer: '#b4f0d2',
+  onPrimaryContainer: '#002114',
+  secondary: '#4d6357',
+  secondaryContainer: '#d3e8da',
+  onSecondaryContainer: '#0e1f16',
+  tertiary: '#835400',
+  onTertiary: '#ffffff',
+  tertiaryContainer: '#ffddb5',
+  onTertiaryContainer: '#2a1800',
+  error: '#ba1a1a',
+  errorContainer: '#ffdad6',
+  onErrorContainer: '#410002',
+  surface: '#f4f7f4',
+  onSurface: '#171d19',
+  onSurfaceVariant: '#4e5852',
+  surfaceContainerLowest: '#ffffff',
+  surfaceContainerLow: '#f0f4f0',
+  surfaceContainer: '#ecf1ec',
+  surfaceContainerHigh: '#e4eae4',
+  surfaceContainerHighest: '#dee4de',
+  inverseSurface: '#2c322e',
+  inverseOnSurface: '#edf2ec',
+  inversePrimary: '#8dd7b1',
+  outline: '#707973',
+  outlineVariant: '#d7ded8',
+};
+
+/** Marigold for AI in the dark scheme (as `KinetixTheme.dark` in kinetix_ui). */
+const BRAND_DARK: Partial<M3Scheme> = { tertiary: '#ffb95c' };
 
 /** Material 3 colour roles that the dashboard uses. */
 export const M3_ROLES = [
@@ -53,6 +90,11 @@ export function m3Scheme(seed: string = SEED, dark = false): M3Scheme {
   const out = {} as M3Scheme;
   for (const role of M3_ROLES) out[role] = hexFromArgb(MaterialDynamicColors[role].getArgb(scheme));
   return out;
+}
+
+/** The KINETIX scheme: generated from [SEED], with the brand's hand-tuned roles on top. */
+export function brandScheme(dark = false): M3Scheme {
+  return { ...m3Scheme(SEED, dark), ...(dark ? BRAND_DARK : BRAND_LIGHT) };
 }
 
 /** Fixed semantic colours from the design system. They do not follow the theme. */

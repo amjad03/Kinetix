@@ -63,6 +63,14 @@ export const ERROR_CODES: Record<string, string> = {
   'Enter a Razorpay key id (rzp_live_… or rzp_test_…)': 'PAYMENTS_BAD_KEY_ID',
   'This secret is too short': 'PAYMENTS_SECRET_TOO_SHORT',
   'Payment keys cannot be stored on this server yet (SECRETS_ENCRYPTION_KEY is not set)': 'SECRETS_KEY_MISSING',
+  // Concept videos: the platform team's area (platform/).
+  'Only the KINETIX platform team can do this': 'NOT_PLATFORM_ADMIN',
+  'That is not a YouTube video link': 'VIDEO_BAD_LINK',
+  "Couldn't get the video's title from YouTube. Type a title and add it again.": 'VIDEO_TITLE_UNAVAILABLE',
+  'This video is already on this topic': 'VIDEO_DUPLICATE',
+  'That is not a YouTube playlist link': 'PLAYLIST_BAD_LINK',
+  'Playlist import needs a YouTube Data API key on the server (YOUTUBE_API_KEY). Add videos one link at a time, or ask for the key to be set.': 'PLAYLIST_IMPORT_UNAVAILABLE',
+  'That playlist was not found, or it is private': 'PLAYLIST_NOT_FOUND',
   // Bulk import (import/): errors for the whole file…
   'Upload a CSV file': 'IMPORT_NO_FILE',
   'The file is not UTF-8 text. Save it as "CSV UTF-8" and try again.': 'IMPORT_NOT_UTF8',

@@ -1722,4 +1722,21 @@ class AppLocalizationsKn extends AppLocalizations {
   String recordingAvailableUntil(String date) {
     return '$date ರವರೆಗೆ ಲಭ್ಯ';
   }
+
+  @override
+  String get conceptVideos => 'ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳು';
+
+  @override
+  String get conceptVideosHint => 'ತರಗತಿಗೆ ಮೊದಲು ಮುನ್ನೋಟಕ್ಕಾಗಿ ಮತ್ತು ತರಗತಿಯ ನಂತರ ಪುನರಾವರ್ತನೆಗಾಗಿ ನೋಡಿ.';
+
+  @override
+  String get conceptVideosFromYouTube => 'ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ';
+
+  @override
+  String get conceptVideosUnsupported => 'ವೀಡಿಯೊಗಳು ಇಲ್ಲಿ ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ಬಳಸಿ.';
+
+  @override
+  String conceptVideoPlay(String title) {
+    return '$title ಪ್ಲೇ ಮಾಡಿ';
+  }
 }

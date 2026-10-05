@@ -1457,6 +1457,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get booksMarkFailed => 'Could not save. Check the board is online.';
 
   @override
+  String get booksHook => 'Start with';
+
+  @override
+  String get booksTerms => 'Words to learn';
+
+  @override
+  String get booksExample => 'Worked example';
+
+  @override
+  String get booksActivity => 'Class activity';
+
+  @override
   String get mathHint => 'Type a sum or an equation';
 
   @override
@@ -2013,4 +2025,502 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get kioskDemoBody =>
       'This is a demo build: kiosk mode is off and no PIN is needed.';
+
+  @override
+  String get toolConceptVideos => 'Concept videos';
+
+  @override
+  String get conceptVideosTitle => 'Concept videos';
+
+  @override
+  String get conceptVideosForPeriod => 'Concept videos for this period';
+
+  @override
+  String conceptVideosNext(String time) {
+    return 'Next period at $time';
+  }
+
+  @override
+  String get conceptVideosSkip => 'Skip';
+
+  @override
+  String get conceptVideosNone => 'No concept videos for this topic yet.';
+
+  @override
+  String get conceptVideosNoPeriod =>
+      'No class on this board now or later today.';
+
+  @override
+  String get conceptVideosSignIn =>
+      'Sign in to see concept videos for your class.';
+
+  @override
+  String get conceptVideosCouldNotLoad => 'Couldn\'t load the concept videos.';
+
+  @override
+  String get conceptVideosUnsupported =>
+      'Videos can\'t play on this device. Use the board\'s Android or Windows app.';
+
+  @override
+  String get conceptVideosFromYouTube => 'Plays from YouTube';
+
+  @override
+  String get conceptVideosSourceLessonPlan => 'From today\'s lesson plan';
+
+  @override
+  String get conceptVideosSourceYearPlan => 'From the year plan';
+
+  @override
+  String get conceptVideosSourceSyllabus => 'Next topic in the syllabus';
+
+  @override
+  String conceptVideosPlay(String title) {
+    return 'Play $title';
+  }
+
+  @override
+  String get answerCover => 'Tap to show the answer';
+
+  @override
+  String get answerHint => 'The answer, kept covered until you show it';
+
+  @override
+  String get bgFourLine => 'Four-line';
+
+  @override
+  String get bringToFront => 'Bring to front';
+
+  @override
+  String get sendToBack => 'Send to back';
+
+  @override
+  String get circuitAmmeter => 'Ammeter';
+
+  @override
+  String get circuitBattery => 'Battery';
+
+  @override
+  String get circuitBulb => 'Bulb';
+
+  @override
+  String get circuitCell => 'Cell';
+
+  @override
+  String get circuitEarth => 'Earth';
+
+  @override
+  String get circuitLed => 'LED';
+
+  @override
+  String get circuitResistor => 'Resistor';
+
+  @override
+  String get circuitSwitchClosed => 'Switch (closed)';
+
+  @override
+  String get circuitSwitchOpen => 'Switch (open)';
+
+  @override
+  String get circuitVoltmeter => 'Voltmeter';
+
+  @override
+  String get circuitWire => 'Wire';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get paste => 'Paste';
+
+  @override
+  String get duplicate => 'Duplicate';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get group => 'Group';
+
+  @override
+  String get ungroup => 'Ungroup';
+
+  @override
+  String get fill => 'Fill';
+
+  @override
+  String get noFill => 'No fill';
+
+  @override
+  String get fillShapes => 'Fill shapes';
+
+  @override
+  String get equationLatex => 'Equation (LaTeX)';
+
+  @override
+  String get equationPreview => 'Type below, or tap a sign';
+
+  @override
+  String get putOnBoard => 'Put on the board';
+
+  @override
+  String get flowDecision => 'Decision';
+
+  @override
+  String get flowInputOutput => 'Input / output';
+
+  @override
+  String get flowProcess => 'Process';
+
+  @override
+  String get flowStartEnd => 'Start / end';
+
+  @override
+  String get graphCannotRead => 'This function cannot be read';
+
+  @override
+  String get graphFunction => 'Function';
+
+  @override
+  String get graphHint => 'For example 2x^2 - 3, sin(x), sqrt(x)';
+
+  @override
+  String get graphXRange => 'x from − to +';
+
+  @override
+  String get graphYRange => 'y from − to +';
+
+  @override
+  String get hideProtractor => 'Hide protractor';
+
+  @override
+  String get hideRuler => 'Hide ruler';
+
+  @override
+  String get turn => 'Turn';
+
+  @override
+  String get typeHint => 'Type…';
+
+  @override
+  String get inputTitle => 'Writing with';
+
+  @override
+  String get inputHint =>
+      'Pen: only the pen writes and fingers move the board. Auto: fingers write until a pen is used.';
+
+  @override
+  String get inputAuto => 'Auto';
+
+  @override
+  String get inputPen => 'Pen';
+
+  @override
+  String get inputFinger => 'Finger';
+
+  @override
+  String get insertAnswerHint => 'Covered until you tap it in class';
+
+  @override
+  String get insertEquationHint => 'Fractions, roots and powers, typeset';
+
+  @override
+  String get insertModelHint =>
+      'Opens beside the board; put a picture of it on the board';
+
+  @override
+  String get tapToPlace => 'Tap the board to place it';
+
+  @override
+  String get laserHint => 'Points without drawing';
+
+  @override
+  String get kitAddWord => 'Add a word';
+
+  @override
+  String get kitAiForLesson => 'KINETIX AI for this lesson';
+
+  @override
+  String get kitAll => 'All';
+
+  @override
+  String get kitAtomBall => 'Atom ball';
+
+  @override
+  String get kitBinary => 'Binary';
+
+  @override
+  String get kitBohrModel => 'Bohr model';
+
+  @override
+  String get kitDecimal => 'Decimal number';
+
+  @override
+  String kitDrawTimeline(int count) {
+    return 'Draw timeline ($count)';
+  }
+
+  @override
+  String get kitElementCard => 'Element card';
+
+  @override
+  String get kitIndia => 'India';
+
+  @override
+  String get kitWorld => 'World';
+
+  @override
+  String get kitMore => 'In this kit';
+
+  @override
+  String get kitMoreHint =>
+      'The tabs above hold this subject’s material. Tap anything to put it on the board.';
+
+  @override
+  String get kitPickEvents => 'Pick events for a timeline';
+
+  @override
+  String get kitSearchFormulas => 'Search formulas';
+
+  @override
+  String get kitSeeAndDo => 'See and do';
+
+  @override
+  String get kitShort => 'Kit';
+
+  @override
+  String get kitStarGive => 'Give a star';
+
+  @override
+  String get kitStarRemove => 'Take a star back';
+
+  @override
+  String kitStarOfTheDay(String name) {
+    return 'Star of the day: $name';
+  }
+
+  @override
+  String get kitStarsNoClass =>
+      'Sign in with a timetabled class to give its children stars.';
+
+  @override
+  String get kitWordsHint =>
+      'Words you write on the board appear here. Tap one for a big word card.';
+
+  @override
+  String get kitThisLesson => 'This lesson';
+
+  @override
+  String get kitFormulas => 'Formulas';
+
+  @override
+  String get kitConstants => 'Constants';
+
+  @override
+  String get kitPeriodic => 'Periodic table';
+
+  @override
+  String get kitIons => 'Ions';
+
+  @override
+  String get kitDates => 'Key dates';
+
+  @override
+  String get kitWords => 'Word wall';
+
+  @override
+  String get kitLogic => 'Logic gates';
+
+  @override
+  String get kitStars => 'Class stars';
+
+  @override
+  String kitValency(int valency) {
+    return 'Valency $valency';
+  }
+
+  @override
+  String get kitPeriodicHint =>
+      'Tap an element for its card, Bohr model or atom ball.';
+
+  @override
+  String get kitLogicHint => 'Tap to write the truth table on the board.';
+
+  @override
+  String subjectKit(String subject) {
+    return '$subject kit';
+  }
+
+  @override
+  String get layoutTitle => 'Layout';
+
+  @override
+  String get layoutHint =>
+      'Rails put the tools at the sides of the board; the toolbar puts them along the bottom.';
+
+  @override
+  String get layoutRails => 'Rails';
+
+  @override
+  String get layoutBottomBar => 'Bottom toolbar';
+
+  @override
+  String get simpleBoardTitle => 'Simple board';
+
+  @override
+  String get simpleBoardHint =>
+      'Big tools with their names, Andika letters and class stars, for LKG to Class 5. Auto turns it on for those classes.';
+
+  @override
+  String get simpleBoardAuto => 'Auto';
+
+  @override
+  String get simpleBoardOn => 'On';
+
+  @override
+  String get simpleBoardOff => 'Off';
+
+  @override
+  String get noteAnswer => 'Covered answer';
+
+  @override
+  String get noteSticky => 'Sticky note';
+
+  @override
+  String get numberFrom => 'From';
+
+  @override
+  String get numberTo => 'To';
+
+  @override
+  String get numberStep => 'Step';
+
+  @override
+  String get openLab => 'Open the lab';
+
+  @override
+  String get openModel => 'Open the 3D model';
+
+  @override
+  String get readWithAi => 'Read with AI';
+
+  @override
+  String get snapshotAdded =>
+      'Picture put on the board. Tap it to open it again.';
+
+  @override
+  String get snapshotToBoard => 'Put on board';
+
+  @override
+  String get stChemEquation => 'Chemical equation';
+
+  @override
+  String get stCode => 'Code block';
+
+  @override
+  String get stEquation => 'Equation';
+
+  @override
+  String get stGraph => 'Graph';
+
+  @override
+  String get stNumberLine => 'Number line';
+
+  @override
+  String get stWordCard => 'Word card';
+
+  @override
+  String get stGeometry => 'Geometry';
+
+  @override
+  String get stCircuits => 'Circuits';
+
+  @override
+  String get stAtoms => 'Atoms';
+
+  @override
+  String get stTimeline => 'Timeline';
+
+  @override
+  String get stFlowchart => 'Flowchart';
+
+  @override
+  String get stFourLine => 'Four-line paper';
+
+  @override
+  String get stGrammar => 'Grammar colours';
+
+  @override
+  String get subjectMaths => 'Maths';
+
+  @override
+  String get subjectPhysics => 'Physics';
+
+  @override
+  String get subjectChemistry => 'Chemistry';
+
+  @override
+  String get subjectBiology => 'Biology';
+
+  @override
+  String get subjectScience => 'Science';
+
+  @override
+  String get subjectEvs => 'EVS';
+
+  @override
+  String get subjectGeography => 'Geography';
+
+  @override
+  String get subjectHistory => 'History';
+
+  @override
+  String get subjectCivics => 'Civics';
+
+  @override
+  String get subjectCommerce => 'Commerce';
+
+  @override
+  String get subjectEnglish => 'English';
+
+  @override
+  String get subjectLanguages => 'Languages';
+
+  @override
+  String get subjectComputer => 'Computer science';
+
+  @override
+  String get subjectArt => 'Art';
+
+  @override
+  String get subjectGeneral => 'Class';
+
+  @override
+  String get toolCompass => 'Compass';
+
+  @override
+  String get toolInsert => 'Add';
+
+  @override
+  String get toolLaser => 'Laser pointer';
+
+  @override
+  String get toolMove => 'Move the board';
+
+  @override
+  String get toolText => 'Text';
+
+  @override
+  String get zoomFit => 'Show everything';
+
+  @override
+  String get zoomIn => 'Zoom in';
+
+  @override
+  String get zoomOut => 'Zoom out';
+
+  @override
+  String get zoomReset => 'Back to 100%';
 }

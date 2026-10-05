@@ -52,7 +52,7 @@ void main() {
   /// A captured lesson with one stroke, saved to disk with [audioBytes] of "audio".
   Future<CapturedLesson> capture(Recordings recs, String id, {int audioBytes = 0, String? sessionId = 's1'}) async {
     final pages = BoardPages();
-    final c = await recs.newCapture(id: id, pages: pages, background: BoardBackground.plain, canvas: const Size(1920, 1080));
+    final c = await recs.newCapture(id: id, board: pages, background: BoardBackground.plain, canvas: const Size(1920, 1080));
     if (audioBytes > 0) File(c.audioPath).writeAsBytesSync(List.filled(audioBytes, 7));
     final lesson = await c.start();
     expect(lesson, 'this board cannot record sound');
@@ -79,7 +79,7 @@ void main() {
     final events = server.requests[1];
     expect(events.headers['content-type'], 'application/octet-stream');
     final log = jsonDecode(utf8.decode(events.bodyBytes)) as Map<String, dynamic>;
-    expect(log['v'], 1);
+    expect(log['v'], 2); // the lesson stream format (packages/kinetix_ink lesson.dart)
     expect(log['canvas'], {'w': 1920, 'h': 1080});
     expect((log['events'] as List).map((e) => (e as List)[1]), containsAll(['L', 'b', 'e']));
     final audio = server.requests[2];
@@ -175,7 +175,7 @@ void main() {
     final c = await capture(recs, '66666666-6666-4666-8666-666666666666');
     await recs.save(c, title: 'Old lesson', share: false, teacher: session!);
     await recs.kick();
-    await recs.newCapture(id: 'orphan', pages: BoardPages(), background: BoardBackground.plain, canvas: const Size(10, 10));
+    await recs.newCapture(id: 'orphan', board: BoardPages(), background: BoardBackground.plain, canvas: const Size(10, 10));
     expect(Directory('${dir.path}/orphan').existsSync(), isTrue);
 
     final later = Recordings(store: FileRecordingStore(() async => dir), clock: () => DateTime.now().add(const Duration(days: 8)));

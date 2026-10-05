@@ -97,7 +97,7 @@ export class RecordingsController {
     });
   }
 
-  /** The ink event log: `{"v": 1, "canvas": {...}, "events": [...]}`. Sent as raw JSON. */
+  /** The ink event log: `{"v": 2, "canvas": {...}, "events": [...]}` (version 1 from older boards). Sent as raw JSON. */
   @Put(':id/events')
   @HttpCode(204)
   @Auth('board')
@@ -110,8 +110,8 @@ export class RecordingsController {
     } catch {
       throw new BadRequestException('The event log is not valid JSON');
     }
-    const ok = z.object({ v: z.literal(1), events: z.array(z.unknown()) }).safeParse(parsed);
-    if (!ok.success) throw new BadRequestException('The event log must have v = 1 and an events list');
+    const ok = z.object({ v: z.union([z.literal(1), z.literal(2)]), events: z.array(z.unknown()) }).safeParse(parsed);
+    if (!ok.success) throw new BadRequestException('The event log must have v = 1 or 2 and an events list');
     const key = `tenants/${p.tenantId}/recordings/${id}/events.json`;
     const bytes = await this.storage.put(key, bufferStream(buf), MAX_EVENTS_BYTES, 'application/json');
     await this.db.withTenant(p.tenantId, (tx) => tx.update(recordings).set({ eventsKey: key, eventsBytes: bytes, updatedAt: new Date() }).where(eq(recordings.id, rec.id)));

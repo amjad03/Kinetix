@@ -7,6 +7,9 @@
 #   create-institution --slug … --name … (see src/db/create-institution.ts)
 #                   create a real institution and its first administrator, as the owner role
 #                   (DATABASE_URL); prints the administrator's temporary password once, then exits
+#   platform-admin add|remove|list --tenant … --login … (see src/db/platform-admin.ts)
+#                   manage the KINETIX platform team (concept videos for every institution), as the
+#                   owner role (DATABASE_URL), then exit
 #   rotate-secrets  re-encrypt stored secrets (institutions' Razorpay keys) with the current
 #                   SECRETS_ENCRYPTION_KEY, as the owner role (DATABASE_URL), then exit
 #   db-bootstrap    create/update the kinetix_owner and kinetix_app roles and the database, as the
@@ -31,6 +34,10 @@ case "${1:-serve}" in
   create-institution)
     shift
     exec node --enable-source-maps dist/db/create-institution.js "$@"
+    ;;
+  platform-admin)
+    shift
+    exec node --enable-source-maps dist/db/platform-admin.js "$@"
     ;;
   rotate-secrets)
     exec node --enable-source-maps dist/db/rotate-secrets.js

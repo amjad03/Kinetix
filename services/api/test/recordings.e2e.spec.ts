@@ -171,7 +171,7 @@ describe('lesson recordings', () => {
     const fresh = randomUUID();
     await http().put(`/v1/recordings/${fresh}`).set(auth('board')).send({ title: 'X', startedAt: clock.at.toISOString() }).expect(200);
     await http().put(`/v1/recordings/${fresh}/events`).set(auth('board')).set('content-type', 'application/octet-stream').send(Buffer.from('not json')).expect(400);
-    await http().put(`/v1/recordings/${fresh}/events`).set(auth('board')).set('content-type', 'application/octet-stream').send(Buffer.from('{"v":2,"events":[]}')).expect(400);
+    await http().put(`/v1/recordings/${fresh}/events`).set(auth('board')).set('content-type', 'application/octet-stream').send(Buffer.from('{"v":3,"events":[]}')).expect(400);
     await http().put(`/v1/recordings/${fresh}/audio`).set(auth('board')).set('content-type', 'video/mp4').send(audio).expect(400);
     await http().put(`/v1/recordings/${fresh}/audio`).set(auth('teacher')).set('content-type', 'audio/mp4').send(audio).expect(403);
   });

@@ -4,19 +4,26 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../l10n/l10n.dart';
 
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
-/// They use [KinetixTheme.boardChrome] (Material 3, dark) so they read clearly over a bright
-/// canvas from the back of a classroom.
+///
+/// The rails layout follows the KINETIX design (docs/design/design-system.md): white floating
+/// surfaces with a soft shadow, in [KinetixTheme.board]. The bottom-toolbar layout keeps
+/// [KinetixTheme.boardChrome] (Material 3, dark), which reads clearly over a bright canvas.
 
-/// Wraps [child] in the board chrome theme.
+/// Wraps [child] in the board chrome theme of the layout in use.
 class BoardChromeTheme extends StatelessWidget {
   const BoardChromeTheme({super.key, required this.child});
 
   final Widget child;
 
-  static final _theme = KinetixTheme.boardChrome();
+  static final _dark = KinetixTheme.boardChrome();
+  static final _light = KinetixTheme.board();
+
+  /// True for the light chrome of the rails layout. The board screen sets it as it builds:
+  /// dialogs are built under the navigator, outside the board screen, and need it too.
+  static bool light = false;
 
   @override
-  Widget build(BuildContext context) => Theme(data: _theme, child: child);
+  Widget build(BuildContext context) => Theme(data: light ? _light : _dark, child: child);
 }
 
 /// A floating, rounded surface (toolbar pill, popover card).
@@ -30,6 +37,14 @@ class ChromeSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    if (c.brightness == Brightness.light) {
+      // Light chrome: white with the soft floating shadow, no Material elevation.
+      return Container(
+        decoration: Kx.floating(radius: radius, color: c.surfaceContainerLowest),
+        clipBehavior: Clip.antiAlias,
+        child: Material(type: MaterialType.transparency, child: Padding(padding: padding, child: child)),
+      );
+    }
     return Material(
       color: c.surfaceContainer,
       elevation: 6,

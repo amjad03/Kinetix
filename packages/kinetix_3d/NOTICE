@@ -1,0 +1,73 @@
+KINETIX 3D (packages/kinetix_3d)
+================================
+
+This package ships third-party work. The viewer shows a short credit line under
+every model and the full credits in "About this model"; the same text is in
+assets/viewer3d/CREDITS.txt, which is bundled with the app.
+
+
+1. BodyParts3D: human anatomy models
+------------------------------------
+
+The heart, brain, digestive system, lungs (respiratory system), eye, excretory
+system and skeleton models are made from BodyParts3D,
+(c) The Database Center for Life Science (DBCLS), licensed under
+Creative Commons Attribution 4.0 International
+(https://creativecommons.org/licenses/by/4.0/).
+Source: https://dbarchive.biosciencedbc.jp/en/bodyparts3d/
+
+KINETIX simplified the meshes, cut vessels short, split the ventricle wall into
+left, right and septum, and added names, notes and animations in English, Hindi
+and Kannada (tool/models/recipes). The model files derived from BodyParts3D
+(assets/viewer3d/models/{heart,brain,digestive,lungs,eye,excretory,skeleton}.*)
+are shared under the same licence, CC BY 4.0.
+
+
+2. three.js: the 3D viewer
+--------------------------
+
+assets/viewer3d/viewer.js bundles three.js r180 (https://threejs.org), including
+its OrbitControls, GLTFLoader, RoomEnvironment and the meshoptimizer decoder,
+under the MIT License:
+
+Copyright (c) 2010-2025 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+The meshoptimizer decoder in three.js is (c) Arseny Kapoulkine, MIT License.
+
+
+3. Natural Earth
+----------------
+
+The coastlines on the Earth models (Earth's layers, seasons) come from
+Natural Earth (https://www.naturalearthdata.com), which is in the public domain.
+
+
+4. Built by KINETIX
+-------------------
+
+All other models (cells, neuron, flower, DNA, electric motor, prism, bar
+magnet, atoms, molecules, solids and nets, Earth's layers, volcano, solar
+system, seasons, atomic orbitals, hybridisation, crystal lattices, electric
+circuit, AC generator, transformer, simple machines, ear, nephron) are built
+in code by KINETIX (tool/models/recipes) and use no downloaded assets.
+
+The build tools (tool/models) use three.js, esbuild, glTF-Transform and
+meshoptimizer as development dependencies only (see tool/models/package.json).

@@ -15,9 +15,11 @@ import { Clock, zonedToInstant } from '../src/common/time.js';
 import { enrollmentCode, hmac } from '../src/common/crypto.js';
 import * as s from '../src/db/schema.js';
 
+const TEST_DB = process.env.KINETIX_TEST_DB || 'kinetix_test';
+
 export const env = {
-  DATABASE_URL: 'postgres://kinetix_owner:kinetix_owner@localhost:5432/kinetix_test',
-  APP_DATABASE_URL: 'postgres://kinetix_app:kinetix_app@localhost:5432/kinetix_test',
+  DATABASE_URL: `postgres://kinetix_owner:kinetix_owner@localhost:5432/${TEST_DB}`,
+  APP_DATABASE_URL: `postgres://kinetix_app:kinetix_app@localhost:5432/${TEST_DB}`,
   JWT_SECRET: 'test-secret-test-secret',
   PAIRING_HMAC_SECRET: 'pairing-test-secret',
   PORT: '0',

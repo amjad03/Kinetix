@@ -245,12 +245,12 @@ class Recordings extends ChangeNotifier {
 
   // --- Capturing ---------------------------------------------------------------------------
 
-  /// A new capture of [pages], ready to [LessonCapture.start].
-  Future<LessonCapture> newCapture({required String id, required BoardPages pages, required BoardBackground background, required Size canvas}) async {
+  /// A new capture of [board], ready to [LessonCapture.start].
+  Future<LessonCapture> newCapture({required String id, required RecordableBoard board, required BoardBackground background, required Size canvas}) async {
     final audioPath = await _store.prepare(id);
     return LessonCapture(
       id: id,
-      pages: pages,
+      board: board,
       background: background,
       canvas: canvas,
       voice: _voice(),

@@ -33,6 +33,7 @@ import {
   requestText,
   TaskOutputs,
   type Grounding,
+  type Language,
   type TaskInput,
   type TaskName,
   type TaskOutput,
@@ -118,7 +119,7 @@ export class AiService {
     const p = this.provider;
     const { grounding, key, cached, sources } = await this.db.withTenant(caller.tenantId, async (tx) => {
       const words = requestText(input);
-      const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' ? '' : words);
+      const { grounding, sources } = await this.grounding(tx, caller, task === 'readBoard' ? '' : words, task, (input as { language?: Language }).language ?? 'en');
       const key = this.cacheKey(task, input, grounding);
       const forMinors = grounding.institutionKind === 'school';
 
@@ -227,7 +228,7 @@ export class AiService {
     }
   }
 
-  private async grounding(tx: Tx, caller: AiCaller, request: string): Promise<{ grounding: Grounding; sources: { topicId: string; title: string }[] }> {
+  private async grounding(tx: Tx, caller: AiCaller, request: string, task: TaskName, language: Language): Promise<{ grounding: Grounding; sources: { topicId: string; title: string }[] }> {
     const [tenant] = await tx.select({ name: tenants.name, kind: tenants.kind }).from(tenants).where(eq(tenants.id, caller.tenantId));
     const g: Grounding = { institution: tenant?.name ?? 'an Indian institution', institutionKind: tenant?.kind ?? 'school' };
     if (caller.sectionId) {
@@ -246,8 +247,22 @@ export class AiService {
       : courseId
         ? await this.content.matchTopics(tx, courseId, request)
         : [];
-    const notes = found.flatMap((t) => t.notes).slice(0, 12);
+    // The notes in the answer's language when the lesson has them in it.
+    const inLanguage = (t: (typeof found)[number]) => (language === 'en' ? undefined : t.lesson?.[language]);
+    const notes = found.flatMap((t) => (inLanguage(t)?.notes.length ? inLanguage(t)!.notes : t.notes)).slice(0, 12);
     if (notes.length) g.notes = notes;
+    // The lesson the curriculum team wrote for the best topic: its terms and worked example, and
+    // for a lesson plan how it opens and what the class does.
+    const best = found.find((t) => t.lesson);
+    if (best?.lesson) {
+      const l = inLanguage(best)?.notes.length ? { ...best.lesson, ...inLanguage(best)! } : best.lesson;
+      const lesson: NonNullable<Grounding['lesson']> = {};
+      if (l.terms.length) lesson.terms = l.terms.slice(0, 15);
+      if (l.example) lesson.example = l.example;
+      if (task === 'lessonPlan' && l.hook) lesson.hook = l.hook;
+      if (task === 'lessonPlan' && l.activity) lesson.activity = l.activity;
+      if (Object.keys(lesson).length) g.lesson = lesson;
+    }
     return { grounding: g, sources: found.map((t) => ({ topicId: t.id, title: t.title })) };
   }
 

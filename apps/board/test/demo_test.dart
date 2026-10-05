@@ -36,6 +36,9 @@ void main() {
     );
     await tester.pumpWidget(KinetixBoardApp(controller: board));
     await tester.pumpAndSettle();
+    // The period's concept videos are suggested first (concept_videos_test.dart); skip them.
+    await tester.tap(find.byKey(const Key('conceptVideoSkip')));
+    await tester.pumpAndSettle();
   }
 
   Future<void> tapKey(WidgetTester tester, String key) async {

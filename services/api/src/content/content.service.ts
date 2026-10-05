@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
-import { chapters, courses, subjects, topics } from '../db/schema.js';
+import { chapters, courses, subjects, topics, type TopicLesson } from '../db/schema.js';
 
 const STOPWORDS = new Set(
   'the and for with from that this what how why are was were into about using use of to in on by an a is it its be as at or explain chapter topic class lesson give write questions question quiz homework'.split(' '),
@@ -22,6 +22,7 @@ export interface GroundingTopic {
   id: string;
   title: string;
   notes: string[];
+  lesson: TopicLesson | null;
 }
 
 /**
@@ -65,20 +66,20 @@ export class ContentService {
 
   /**
    * The topics of a course that best match a free-text request, for grounding AI answers.
-   * Simple keyword overlap on titles and summaries; embeddings replace this once the library
-   * is large.
+   * Simple keyword overlap on titles, summaries and the lesson's key terms; embeddings replace
+   * this once the library is large.
    */
   async matchTopics(tx: Tx, courseId: string, text: string, limit = 2): Promise<GroundingTopic[]> {
     const want = keywords(text);
     if (want.size === 0) return [];
     const rows = await tx
-      .select({ id: topics.id, title: topics.title, summary: topics.summary, notes: topics.notes, chapter: chapters.title })
+      .select({ id: topics.id, title: topics.title, summary: topics.summary, notes: topics.notes, lesson: topics.lesson, chapter: chapters.title })
       .from(topics)
       .innerJoin(chapters, eq(chapters.id, topics.chapterId))
       .where(eq(chapters.courseId, courseId));
     return rows
       .map((r) => {
-        const have = keywords(`${r.title} ${r.chapter} ${r.summary}`);
+        const have = keywords(`${r.title} ${r.chapter} ${r.summary} ${r.lesson?.terms.join(' ') ?? ''}`);
         let score = 0;
         for (const w of want) if (have.has(w)) score++;
         return { r, score };
@@ -88,11 +89,11 @@ export class ContentService {
       // Keep only strong matches: a weak second topic adds noise to the prompt.
       .filter((x, _, all) => x.score * 2 > all[0].score)
       .slice(0, limit)
-      .map(({ r }) => ({ id: r.id, title: r.title, notes: r.notes }));
+      .map(({ r }) => ({ id: r.id, title: r.title, notes: r.notes, lesson: r.lesson }));
   }
 
   async topicsById(tx: Tx, ids: string[]): Promise<GroundingTopic[]> {
     if (ids.length === 0) return [];
-    return tx.select({ id: topics.id, title: topics.title, notes: topics.notes }).from(topics).where(inArray(topics.id, ids));
+    return tx.select({ id: topics.id, title: topics.title, notes: topics.notes, lesson: topics.lesson }).from(topics).where(inArray(topics.id, ids));
   }
 }

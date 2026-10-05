@@ -1,7 +1,7 @@
 import { createTheme, type Shadows } from '@mui/material/styles';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
 import { paletteFor, type KxColors } from './palette';
-import { m3Scheme, SEED, type M3Scheme } from './scheme';
+import { brandScheme, type M3Scheme } from './scheme';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -15,7 +15,10 @@ declare module '@mui/material/styles' {
 }
 
 export const FONT_STACK =
-  'var(--font-google-sans), "Google Sans", var(--font-noto-devanagari), var(--font-noto-kannada), Roboto, "Segoe UI", Arial, sans-serif';
+  'var(--font-sans-flex), "Google Sans Flex", var(--font-noto-devanagari), var(--font-noto-kannada), Roboto, "Segoe UI", Arial, sans-serif';
+
+/** Headlines: the display cut of the same family. */
+export const DISPLAY_STACK = `var(--font-sans-flex-display), ${FONT_STACK}`;
 
 /** M3 shape scale. Cards 16 (we use 12 for dense admin cards), dialogs 28, pills full. */
 export const SHAPE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 28, full: 999 } as const;
@@ -33,9 +36,9 @@ const type = (size: number, line: number, weight = 400, tracking = 0) => ({
   letterSpacing: tracking ? `${tracking}px` : 0,
 });
 
-export function buildTheme(seed: string = SEED) {
-  const light = m3Scheme(seed, false);
-  const dark = m3Scheme(seed, true);
+export function buildTheme() {
+  const light = brandScheme(false);
+  const dark = brandScheme(true);
 
   return createTheme({
     cssVariables: { colorSchemeSelector: 'media', cssVarPrefix: 'kx' },
@@ -45,10 +48,10 @@ export function buildTheme(seed: string = SEED) {
     typography: {
       fontFamily: FONT_STACK,
       // M3 type scale.
-      h1: type(36, 44), // display small
-      h2: type(32, 40), // headline large
-      h3: type(28, 36), // headline medium
-      h4: type(24, 32), // headline small
+      h1: { ...type(36, 44), fontFamily: DISPLAY_STACK }, // display small
+      h2: { ...type(32, 40), fontFamily: DISPLAY_STACK }, // headline large
+      h3: { ...type(28, 36), fontFamily: DISPLAY_STACK }, // headline medium
+      h4: { ...type(24, 32), fontFamily: DISPLAY_STACK }, // headline small
       h5: type(22, 28), // title large
       h6: type(16, 24, 500, 0.1), // title medium
       subtitle1: type(16, 24, 500, 0.1),

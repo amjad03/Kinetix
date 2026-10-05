@@ -1,0 +1,85 @@
+/*
+ * KINETIX design tokens for the web (docs/design/design-system.md). The same values as
+ * packages/kinetix_ui (`KxColor`, `Kx`, `KxFonts`), so the ERP, the Board and the apps look
+ * like one product. MUI reads its palette from theme.ts; these variables are for plain CSS,
+ * canvases (the live board view) and anything outside MUI.
+ */
+:root {
+  /* Colour roles */
+  --kx-bg: #f4f7f4;
+  --kx-rail: #ecf1ec;
+  --kx-surface: #ffffff;
+  --kx-surface-hi: #e4eae4;
+  --kx-line: #d7ded8;
+  --kx-outline: #707973;
+  --kx-text: #171d19;
+  --kx-muted: #4e5852;
+
+  /* Brand: chalkboard green. The one strong action on a screen. */
+  --kx-accent: #006545;
+  --kx-on-accent: #ffffff;
+  --kx-accent-container: #b4f0d2;
+  --kx-on-accent-container: #002114;
+  --kx-secondary-container: #d3e8da;
+  --kx-on-secondary-container: #0e1f16;
+
+  /* AI: marigold. Only AI uses it. */
+  --kx-spark: #835400;
+  --kx-spark-container: #ffddb5;
+  --kx-on-spark-container: #2a1800;
+
+  --kx-inverse: #2c322e;
+  --kx-on-inverse: #edf2ec;
+  --kx-danger: #ba1a1a;
+  --kx-danger-container: #ffdad6;
+
+  /* Fixed semantic colours */
+  --kx-live: #e8710a;
+  --kx-record: #d93025;
+  --kx-success: #188038;
+
+  /* The board */
+  --kx-paper: #fbfaf6;
+  --kx-ink: #1b1f24;
+  --kx-chalkboard: #1f3a30;
+
+  /* Type: Google Sans Flex for the interface, its display cut for headlines. */
+  --kx-font: var(--font-sans-flex), 'Google Sans Flex', var(--font-noto-devanagari), var(--font-noto-kannada), Roboto, 'Segoe UI', Arial, sans-serif;
+  --kx-font-display: var(--font-sans-flex-display), var(--kx-font);
+
+  /* Shape: inputs 12, cards 16–20, sheets and dialogs 28, buttons full. */
+  --kx-radius-sm: 8px;
+  --kx-radius-md: 12px;
+  --kx-radius-lg: 16px;
+  --kx-radius-xl: 28px;
+  --kx-radius-full: 999px;
+
+  /* Floating surfaces over the board: white with a soft two-layer shadow. */
+  --kx-shadow-floating: 0 1px 3px rgba(0, 0, 0, 0.1), 0 4px 12px 1px rgba(0, 0, 0, 0.08);
+
+  /* Motion */
+  --kx-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --kx-ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+  --kx-duration-fast: 200ms;
+  --kx-duration-medium: 350ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kx-bg: #0f1511;
+    --kx-rail: #1b211d;
+    --kx-surface: #171d19;
+    --kx-surface-hi: #252b27;
+    --kx-line: #3f4943;
+    --kx-outline: #89938c;
+    --kx-text: #dee4de;
+    --kx-muted: #bfc9c1;
+    --kx-accent: #8dd7b1;
+    --kx-on-accent: #00382a;
+    --kx-accent-container: #00513a;
+    --kx-on-accent-container: #a9f2cc;
+    --kx-spark: #ffb95c;
+    --kx-spark-container: #633f00;
+    --kx-on-spark-container: #ffddb5;
+  }
+}

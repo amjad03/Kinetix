@@ -510,12 +510,21 @@ export const pushDevices = pgTable(
 );
 
 export interface WhiteboardContent {
-  /** Format version. */
-  v: 1;
+  /** Format version: 1 strokes only; 2 adds the other board elements and groups. */
+  v: 1 | 2;
   background: string;
   canvas: { w: number; h: number };
-  pages: { strokes: SerializedStroke[] }[];
+  /** Each page's elements bottom first (strokes, and in format 2 any element), and its groups. */
+  pages: { strokes: SerializedElement[]; groups?: number[][] }[];
 }
+
+/** A board element other than a stroke (format 2); its fields belong to the board's format. */
+export interface SerializedOtherElement {
+  t: 'text' | 'image' | 'math' | 'graph' | 'polygon' | 'note';
+  [field: string]: unknown;
+}
+
+export type SerializedElement = SerializedStroke | SerializedOtherElement;
 
 /** Compact stroke: tool, ARGB colour, width, optional shape, flat [x0, y0, x1, y1, …]. */
 export interface SerializedStroke {
@@ -788,6 +797,40 @@ export interface TopicResource {
   title: string;
 }
 
+export interface LessonQuestion {
+  q: string;
+  a: string;
+}
+
+/** How to teach a topic: what the teacher says and does, beyond the notes. */
+export interface LessonText {
+  /** A question or situation to open the lesson with. */
+  hook: string;
+  /** A worked example; `exampleTex` is its key line in LaTeX, when there is one. */
+  example: string;
+  exampleTex?: string;
+  /** Something the class does. */
+  activity: string;
+  /** Questions to check understanding, with their answers. */
+  questions: LessonQuestion[];
+  homework: string;
+  /** Words students should learn. */
+  terms: string[];
+}
+
+/** The lesson in another language, with the topic's title, notes and outcomes in it too. */
+export interface LessonVariant extends LessonText {
+  title?: string;
+  notes: string[];
+  outcomes: string[];
+}
+
+/** A topic's lesson in the course's language, with Hindi and Kannada versions where written. */
+export interface TopicLesson extends LessonText {
+  hi?: LessonVariant;
+  kn?: LessonVariant;
+}
+
 export const topics = pgTable(
   'topics',
   {
@@ -804,10 +847,49 @@ export const topics = pgTable(
     outcomes: jsonb('outcomes').$type<string[]>().notNull().default([]),
     /** 3D models and virtual labs on the board for this topic (ids from kinetix_3d / kinetix_labs). */
     resources: jsonb('resources').$type<TopicResource[]>().notNull().default([]),
+    /** The full lesson (hook, example, activity, questions, homework, terms); null when not written. */
+    lesson: jsonb('lesson').$type<TopicLesson>(),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: updatedAt(),
   },
   (t) => [index('topics_chapter_idx').on(t.chapterId, t.position)],
+);
+
+/**
+ * The KINETIX platform team: people who look after the global library for every institution
+ * (concept videos today). Each is an ordinary user of some institution (usually KINETIX's own),
+ * added with `pnpm platform:admin`. The app role has no access to this table at all; only
+ * SystemLookups reads it (owner role).
+ */
+export const platformAdmins = pgTable('platform_admins', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  note: text('note'),
+  createdAt: createdAt(),
+});
+
+/**
+ * Concept videos: short explainers from the KINETIX YouTube channel, linked to global topics by
+ * the platform team and shown to every institution (board, Student App). Only the YouTube id is
+ * kept; the apps play it with YouTube's own embedded player and never download it.
+ * Read-only for the app role; the platform endpoints write it as the owner.
+ */
+export const conceptVideos = pgTable(
+  'concept_videos',
+  {
+    id: id(),
+    topicId: uuid('topic_id').notNull().references(() => topics.id, { onDelete: 'cascade' }),
+    youtubeVideoId: text('youtube_video_id').notNull(),
+    title: text('title').notNull(),
+    language: language('language').notNull().default('en'),
+    durationSeconds: integer('duration_seconds'),
+    channelTitle: text('channel_title'),
+    /** The playlist it was imported from, if any. */
+    playlistId: text('playlist_id'),
+    position: smallint('position').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('concept_videos_topic_video_uq').on(t.topicId, t.youtubeVideoId), index('concept_videos_topic_idx').on(t.topicId, t.position)],
 );
 
 // ---------------------------------------------------------------------------------------------

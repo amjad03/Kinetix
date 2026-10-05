@@ -9,9 +9,9 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 /// and every [interval] the new events go out as one frame. A viewer who joins gets a full
 /// snapshot first. Nothing is stored on the board or in the cloud.
 class LiveStream {
-  LiveStream({required this.pages, required this.send, this.interval = const Duration(milliseconds: 150)});
+  LiveStream({required this.board, required this.send, this.interval = const Duration(milliseconds: 150)});
 
-  final BoardPages pages;
+  final RecordableBoard board;
   final void Function(List<List<Object?>> events) send;
   final Duration interval;
 
@@ -27,7 +27,7 @@ class LiveStream {
       _flush();
       return;
     }
-    _recorder = LessonRecorder(pages: pages, background: background, canvas: canvas)..start();
+    _recorder = LessonRecorder(board: board, background: background, canvas: canvas)..start();
     _flush();
     _timer = Timer.periodic(interval, (_) => _flush());
   }

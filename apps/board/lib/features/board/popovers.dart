@@ -23,34 +23,54 @@ const inkPalette = [
 
 const _widths = [2.0, 4.0, 7.0, 12.0];
 
-/// Write: pen or highlighter, colour and thickness.
-class WritePopover extends StatelessWidget {
-  const WritePopover({super.key, required this.ink, required this.background});
+/// Highlighter colours: see-through over ink.
+const highlighterPalette = [
+  Color(0xFFFFD84D), // yellow
+  Color(0xFF39D98A), // green
+  Color(0xFFFF7AB8), // pink
+  Color(0xFF57B8FF), // blue
+  Color(0xFFFFA64D), // orange
+];
 
-  final InkController ink;
-  final BoardBackground background;
+/// Write: pen or highlighter, colour and thickness. With something selected, a colour
+/// recolours it.
+class WritePopover extends StatelessWidget {
+  const WritePopover({super.key, required this.wb});
+
+  final WhiteboardController wb;
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ink,
+      listenable: wb,
       builder: (context, _) {
-        final style = ink.style;
-        final tool = style.tool == InkTool.highlighter ? InkTool.highlighter : InkTool.pen;
+        final hl = wb.tool == BoardTool.highlighter;
+        final color = hl ? wb.highlighterColor : wb.penColor;
+        final width = hl ? wb.highlighterWidth : wb.penWidth;
         final l = context.l10n;
+        void setColor(Color c) {
+          if (wb.selection.isNotEmpty) {
+            wb.recolorSelection(c);
+          } else if (hl) {
+            wb.setHighlighter(color: c);
+          } else {
+            wb.setPen(color: c);
+          }
+        }
+
         return PopoverCard(
           title: l.toolWrite,
           width: 460,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SegmentedButton<InkTool>(
+              SegmentedButton<bool>(
                 segments: [
-                  ButtonSegment(value: InkTool.pen, icon: const Icon(Icons.edit_outlined), label: Text(l.pen)),
-                  ButtonSegment(value: InkTool.highlighter, icon: const Icon(Icons.border_color_outlined), label: Text(l.highlighter)),
+                  ButtonSegment(value: false, icon: const Icon(Icons.edit_outlined), label: Text(l.pen)),
+                  ButtonSegment(value: true, icon: const Icon(Icons.border_color_outlined), label: Text(l.highlighter)),
                 ],
-                selected: {tool},
-                onSelectionChanged: (s) => ink.style = style.copyWith(tool: s.first),
+                selected: {hl},
+                onSelectionChanged: (s) => s.first ? wb.setHighlighter() : wb.setPen(),
               ),
               const SizedBox(height: Kx.s20),
               Text(l.colour, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
@@ -59,12 +79,8 @@ class WritePopover extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  for (final c in inkPalette)
-                    _Swatch(
-                      color: inkColorFor(c, background),
-                      selected: style.color == c,
-                      onTap: () => ink.style = style.copyWith(color: c, tool: tool),
-                    ),
+                  for (final c in hl ? highlighterPalette : inkPalette)
+                    _Swatch(color: inkColorFor(c, wb.background), selected: color == c, onTap: () => setColor(c)),
                 ],
               ),
               const SizedBox(height: Kx.s20),
@@ -72,14 +88,14 @@ class WritePopover extends StatelessWidget {
               const SizedBox(height: Kx.s8),
               Row(
                 children: [
-                  for (final w in _widths)
+                  for (final w in hl ? const [4.0, 6.0, 9.0] : _widths)
                     Padding(
                       padding: const EdgeInsets.only(right: Kx.s8),
                       child: _WidthChip(
-                        width: w,
-                        color: inkColorFor(style.color, BoardBackground.chalkboard),
-                        selected: style.width == w,
-                        onTap: () => ink.style = style.copyWith(width: w, tool: tool),
+                        width: hl ? w * 1.6 : w,
+                        color: inkColorFor(color, BoardBackground.chalkboard),
+                        selected: width == w,
+                        onTap: () => hl ? wb.setHighlighter(width: w) : wb.setPen(width: w),
                       ),
                     ),
                 ],
@@ -160,9 +176,9 @@ class _WidthChip extends StatelessWidget {
 
 /// Erase: eraser size and clearing the page.
 class ErasePopover extends StatefulWidget {
-  const ErasePopover({super.key, required this.ink, required this.onCleared});
+  const ErasePopover({super.key, required this.wb, required this.onCleared});
 
-  final InkController ink;
+  final WhiteboardController wb;
   final VoidCallback onCleared;
 
   @override
@@ -172,7 +188,7 @@ class ErasePopover extends StatefulWidget {
 class _ErasePopoverState extends State<ErasePopover> {
   @override
   Widget build(BuildContext context) {
-    final ink = widget.ink;
+    final wb = widget.wb;
     final l = context.l10n;
     return PopoverCard(
       title: l.toolErase,
@@ -188,8 +204,8 @@ class _ErasePopoverState extends State<ErasePopover> {
               ButtonSegment(value: 18, label: Text(l.sizeMedium)),
               ButtonSegment(value: 36, label: Text(l.sizeLarge)),
             ],
-            selected: {ink.eraserRadius},
-            onSelectionChanged: (s) => setState(() => ink.eraserRadius = s.first),
+            selected: {wb.eraserRadius},
+            onSelectionChanged: (s) => setState(() => wb.update(() => wb.eraserRadius = s.first)),
           ),
           const SizedBox(height: Kx.s8),
           Text(
@@ -201,10 +217,10 @@ class _ErasePopoverState extends State<ErasePopover> {
             width: double.infinity,
             child: FilledButton.tonalIcon(
               key: const Key('clear-page'),
-              onPressed: ink.isEmpty
+              onPressed: wb.elements.isEmpty
                   ? null
                   : () {
-                      ink.clear();
+                      wb.clearPage();
                       widget.onCleared();
                     },
               icon: const Icon(Icons.delete_sweep_outlined),
@@ -263,12 +279,15 @@ class ThemePopover extends StatelessWidget {
   }
 }
 
-/// Shapes: 2D shapes with optional measurements. 3D solids are on the way.
+/// Shapes: 2D shapes, filled or not, with optional measurements. 3D solids are on the way.
 class ShapesPopover extends StatefulWidget {
-  const ShapesPopover({super.key, required this.ink, required this.onPicked});
+  const ShapesPopover({super.key, required this.wb, required this.onPicked, this.primary = false});
 
-  final InkController ink;
+  final WhiteboardController wb;
   final VoidCallback onPicked;
+
+  /// The little ones get the first few shapes and no measurements.
+  final bool primary;
 
   @override
   State<ShapesPopover> createState() => _ShapesPopoverState();
@@ -298,6 +317,7 @@ String backgroundName(AppLocalizations l, BoardBackground b) => switch (b) {
   BoardBackground.grid => l.bgGrid,
   BoardBackground.dots => l.bgDots,
   BoardBackground.chalkboard => l.bgChalkboard,
+  BoardBackground.fourLine => l.bgFourLine,
 };
 
 /// An icon for a shape, drawn from the same geometry the board uses, so it always matches.
@@ -347,10 +367,11 @@ class _ShapesPopoverState extends State<ShapesPopover> {
 
   @override
   Widget build(BuildContext context) {
-    final ink = widget.ink;
+    final wb = widget.wb;
     final l = context.l10n;
+    const primaryShapes = {ShapeKind.line, ShapeKind.arrow, ShapeKind.circle, ShapeKind.triangle, ShapeKind.rectangle};
     return ListenableBuilder(
-      listenable: ink,
+      listenable: wb,
       builder: (context, _) => PopoverCard(
         title: l.toolShapes,
         width: 440,
@@ -376,15 +397,16 @@ class _ShapesPopoverState extends State<ShapesPopover> {
                     runSpacing: Kx.s8,
                     children: [
                       for (final e in shapeNames(l).entries)
+                        if (!widget.primary || primaryShapes.contains(e.key))
                         Tooltip(
                           message: e.value,
                           child: IconButton.filledTonal(
                             key: Key('shape-${e.key.name}'),
-                            isSelected: ink.style.tool == InkTool.shape && ink.style.shape == e.key,
+                            isSelected: wb.tool == BoardTool.shape && wb.shapeKind == e.key,
                             iconSize: 26,
                             style: IconButton.styleFrom(minimumSize: const Size(52, 52)),
                             onPressed: () {
-                              ink.style = ink.style.copyWith(tool: InkTool.shape, shape: e.key);
+                              wb.setShape(e.key);
                               widget.onPicked();
                             },
                             icon: ShapeGlyph(e.key),
@@ -395,18 +417,27 @@ class _ShapesPopoverState extends State<ShapesPopover> {
                   const SizedBox(height: Kx.s12),
                   const Divider(),
                   SwitchListTile(
+                    key: const Key('shape-fill'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(l.showLengths),
-                    subtitle: Text(l.showLengthsHint),
-                    value: ink.showLengths,
-                    onChanged: (v) => ink.showLengths = v,
+                    title: Text(l.fillShapes),
+                    value: wb.shapeFill,
+                    onChanged: (v) => wb.update(() => wb.shapeFill = v),
                   ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l.showAngles),
-                    value: ink.showAngles,
-                    onChanged: (v) => ink.showAngles = v,
-                  ),
+                  if (!widget.primary) ...[
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l.showLengths),
+                      subtitle: Text(l.showLengthsHint),
+                      value: wb.showLengths,
+                      onChanged: (v) => wb.showLengths = v,
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l.showAngles),
+                      value: wb.showAngles,
+                      onChanged: (v) => wb.showAngles = v,
+                    ),
+                  ],
                 ],
               ),
       ),

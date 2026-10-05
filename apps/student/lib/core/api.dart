@@ -111,6 +111,9 @@ abstract class StudentApi {
   Future<List<TopicHit>> searchTopics(String query);
   Future<TopicDetail> topic(String id);
 
+  /// The topic's concept videos (KINETIX YouTube channel), the class's language first.
+  Future<List<ConceptVideo>> conceptVideos(String topicId);
+
   /// The subject's syllabus, or null when the subject is not linked to a library course yet.
   Future<CourseOutline?> syllabus(String subjectId);
 
@@ -319,6 +322,12 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id'));
+
+  @override
+  Future<List<ConceptVideo>> conceptVideos(String topicId) async {
+    final j = await _send('GET', '/v1/content/topics/$topicId/videos') as Map<String, dynamic>;
+    return [for (final v in j['videos'] as List<dynamic>) ConceptVideo.fromJson(v as Map<String, dynamic>)];
+  }
 
   @override
   Future<CourseOutline?> syllabus(String subjectId) async {

@@ -43,13 +43,13 @@ void phone(WidgetTester tester, {Size size = const Size(412, 892), double textSc
 
 bool _fontsLoaded = false;
 
-/// Loads the real bundled fonts (Google Sans, Noto Sans Devanagari and Kannada), so text in
+/// Loads the real bundled fonts (Google Sans Flex, Noto Sans Devanagari and Kannada), so text in
 /// layout tests has its true width and height instead of the test font's squares.
 Future<void> loadAppFonts() async {
   if (_fontsLoaded) return;
   _fontsLoaded = true;
   final dir = Directory('../../packages/kinetix_ui/fonts');
-  for (final family in ['GoogleSans', 'NotoSansDevanagari', 'NotoSansKannada']) {
+  for (final family in ['SansFlex', 'NotoSansDevanagari', 'NotoSansKannada']) {
     final loader = FontLoader('packages/kinetix_ui/$family');
     for (final f in dir.listSync().whereType<File>().where((f) => f.path.contains('$family-') && f.path.endsWith('.ttf'))) {
       loader.addFont(Future.value(ByteData.sublistView(f.readAsBytesSync())));
