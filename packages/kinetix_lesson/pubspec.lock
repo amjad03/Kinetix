@@ -228,6 +228,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  kinetix_math:
+    dependency: transitive
+    description:
+      path: "../kinetix_math"
+      relative: true
+    source: path
+    version: "0.1.0"
   kinetix_ui:
     dependency: "direct main"
     description:
