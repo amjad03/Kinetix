@@ -16,8 +16,9 @@ import calendar from './calendar';
 import today from './today';
 import plans from './plans';
 import importArea from './import';
+import account from './account';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account } as const;
 
 type Areas = typeof AREAS;
 type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;

@@ -6,6 +6,7 @@ import { errorText } from '@/i18n/errors';
 import { getI18n } from '@/i18n/server';
 import { canSee, homeFor, type Section } from './access';
 import { API_URL, SESSION_COOKIE } from './config';
+import { CHANGE_PASSWORD_PATH } from './password';
 import type { ActionResult, Me } from './types';
 
 export class ApiError extends Error {
@@ -88,7 +89,12 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
     throw new ApiError(0, "Can't reach KINETIX Cloud. Check your connection and try again.", 'NETWORK');
   }
   if (res.status === 401 && !opts.anonymous) redirect('/auth/end?reason=expired');
-  if (!res.ok) throw await errorFrom(res);
+  if (!res.ok) {
+    const err = await errorFrom(res);
+    // Signed in with a temporary password: the API allows nothing else until it is changed.
+    if (err.code === 'PASSWORD_CHANGE_REQUIRED') redirect(CHANGE_PASSWORD_PATH);
+    throw err;
+  }
   if (res.status === 204) return undefined as T;
   // A handler that returns null sends an empty body.
   const text = await res.text();

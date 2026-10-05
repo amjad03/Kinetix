@@ -4,8 +4,10 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { Clock } from '../common/time.js';
 import { DbService } from '../db/db.service.js';
 import { boardSessions, devices } from '../db/schema.js';
-import { AUTH_META, type AuthRequirement } from './auth.decorators.js';
+import { ALLOW_PASSWORD_CHANGE_META, AUTH_META, type AuthRequirement } from './auth.decorators.js';
 import type { Principal } from './principal.js';
+
+export const PASSWORD_CHANGE_REQUIRED = 'Change your temporary password first';
 import { TokensService } from './tokens.service.js';
 
 @Injectable()
@@ -32,6 +34,10 @@ export class AuthGuard implements CanActivate {
     if (!requirement.kinds.includes(principal.kind)) {
       throw new ForbiddenException(`This endpoint does not accept ${principal.kind} tokens`);
     }
+    // Carried in the token (no lookup per request); the change endpoint issues a token without it.
+    if (principal.kind === 'user' && principal.mustChangePassword && !this.reflector.getAllAndOverride<boolean>(ALLOW_PASSWORD_CHANGE_META, [ctx.getHandler(), ctx.getClass()])) {
+      throw new ForbiddenException(PASSWORD_CHANGE_REQUIRED);
+    }
     if (principal.kind === 'user' && requirement.roles?.length) {
       if (!principal.roles.some((r) => requirement.roles!.includes(r))) {
         throw new ForbiddenException('Insufficient role');
@@ -46,7 +52,7 @@ export class AuthGuard implements CanActivate {
     const c = this.tokens.verify(token);
     switch (c.typ) {
       case 'user':
-        return { kind: 'user', tenantId: c.tid, userId: c.sub, roles: c.roles };
+        return { kind: 'user', tenantId: c.tid, userId: c.sub, roles: c.roles, ...(c.pwc ? { mustChangePassword: true as const } : {}) };
       case 'device': {
         const ok = await this.db.withTenant(c.tid, async (tx) => {
           const [d] = await tx

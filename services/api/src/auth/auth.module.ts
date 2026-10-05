@@ -7,12 +7,13 @@ import { REDIS } from '../redis/redis.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';
 import { OtpService } from './otp.service.js';
+import { MePasswordController, PasswordResetController } from './password.controller.js';
 import { ConsoleSmsSender, Msg91SmsSender, SmsSender } from './sms-sender.js';
 import { TokensService } from './tokens.service.js';
 
 @Global()
 @Module({
-  controllers: [AuthController],
+  controllers: [AuthController, MePasswordController, PasswordResetController],
   providers: [
     TokensService,
     OtpService,

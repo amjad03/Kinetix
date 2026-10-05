@@ -8,6 +8,8 @@ export interface UserClaims {
   sub: string;
   tid: string;
   roles: RoleName[];
+  /** Signed in with a temporary password: only changing it (and GET /v1/me, sign-out) is allowed. */
+  pwc?: true;
 }
 
 export interface DeviceClaims {

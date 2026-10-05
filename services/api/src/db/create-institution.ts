@@ -10,14 +10,15 @@
  *     --admin-name "Admin Office" --admin-email office@sjc.example.in [--admin-phone 98450 12345] [--otp-only]
  *
  * (Docker: `kinetix-api create-institution --slug …`.) The administrator's temporary password is
- * printed once and never stored in clear; with --otp-only there is no password and the
- * administrator signs in with a code sent to --admin-phone.
+ * printed once and never stored in clear; the ERP asks for a new one at the first sign-in
+ * (users.password_must_change). With --otp-only there is no password and the administrator signs
+ * in with a code sent to --admin-phone.
  */
-import { randomInt } from 'node:crypto';
 import argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
+import { temporaryPassword } from '../auth/password-policy.js';
 import { normalizePhone } from '../auth/phone.js';
 import * as s from './schema.js';
 
@@ -93,11 +94,7 @@ export function parseArgs(argv: string[]): InstitutionArgs {
   };
 }
 
-/** A temporary password: 14 characters without look-alikes (0/O, 1/l/I). */
-export function temporaryPassword(): string {
-  const alphabet = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({ length: 14 }, () => alphabet[randomInt(alphabet.length)]).join('');
-}
+export { temporaryPassword };
 
 export class SlugTakenError extends Error {}
 
@@ -112,7 +109,7 @@ export async function createInstitution(db: NodePgDatabase<typeof s>, a: Institu
     const tenantId = tenant.id;
     const [campus] = await tx.insert(s.campuses).values({ tenantId, name: a.campus, city: a.city }).returning();
     const [year] = await tx.insert(s.academicYears).values({ tenantId, label: a.yearLabel, startsOn: a.yearStart, endsOn: a.yearEnd, isCurrent: true }).returning();
-    const [admin] = await tx.insert(s.users).values({ tenantId, fullName: a.adminName, email: a.adminEmail, phone: a.adminPhone, passwordHash }).returning();
+    const [admin] = await tx.insert(s.users).values({ tenantId, fullName: a.adminName, email: a.adminEmail, phone: a.adminPhone, passwordHash, passwordMustChange: !!password }).returning();
     await tx.insert(s.userRoles).values({ tenantId, userId: admin.id, role: 'tenant_admin', campusId: null });
     await tx.insert(s.auditLog).values({ tenantId, actorType: 'system', action: 'institution.created', subjectType: 'tenant', subjectId: tenantId, data: { slug: a.slug, adminUserId: admin.id, otpOnly: a.otpOnly } });
     return { tenant, campus, year, admin, password };
@@ -141,7 +138,8 @@ Created "${r.tenant.name}" (${r.tenant.kind}), slug "${r.tenant.slug}", time zon
   Administrator: ${r.admin.fullName} <${r.admin.email}>${r.admin.phone ? `, ${r.admin.phone}` : ''} (tenant_admin)
 ${
   r.password
-    ? `  Temporary password (shown only this once; give it to the administrator in person or by phone):
+    ? `  Temporary password (shown only this once; give it to the administrator in person or by phone;
+  they choose their own password when they first sign in):
       ${r.password}`
     : `  No password: the administrator signs in with a code sent to ${r.admin.phone}.`
 }

@@ -37,7 +37,9 @@ describe('bulk import', () => {
     tenantId = inst.tenant.id;
     other = await createTenant(owner);
     const login = async (tenant: string, login: string, password: string) => (await http().post('/v1/auth/login').send({ tenant, login, password }).expect(201)).body.accessToken as string;
-    tokens.admin = await login(slug, 'admin@imp.example.in', inst.password!);
+    // The new administrator first replaces the temporary password.
+    const temp = await login(slug, 'admin@imp.example.in', inst.password!);
+    tokens.admin = (await http().post('/v1/me/password').set('authorization', `Bearer ${temp}`).send({ currentPassword: inst.password, newPassword: 'Import-office-2026' }).expect(200)).body.accessToken as string;
     tokens.otherPrincipal = await login(other.slug, other.principal.email!, 'pw');
     tokens.otherTeacher = await login(other.slug, other.teacher.email!, 'pw');
   });

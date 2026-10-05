@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, ForbiddenException, Get, NotFoun
 import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterStudent, TeacherClass, TeacherTimetableResponse } from '@kinetix/shared';
 import { and, asc, desc, eq, gt, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
+import { AllowDuringPasswordChange, Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { BoardPrincipal, RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
@@ -55,8 +55,10 @@ export class MeController {
     return this.me(p);
   }
 
+  /** Also with a temporary password, so the apps can show who is signed in and ask for a new one. */
   @Get()
   @Auth('user')
+  @AllowDuringPasswordChange()
   me(@CurrentPrincipal() p: UserPrincipal): Promise<MeResponse> {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [u] = await tx.select().from(users).where(eq(users.id, p.userId));
@@ -71,6 +73,9 @@ export class MeController {
         preferredLanguage: u.preferredLanguage,
         roles: [...new Set(roles.map((r) => r.role as RoleName))],
         tenant,
+        // As the token says (AuthGuard enforces the token): true until the user changes the temporary password.
+        mustChangePassword: !!p.mustChangePassword,
+        hasPassword: !!u.passwordHash,
       };
     });
   }

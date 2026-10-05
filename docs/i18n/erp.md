@@ -16,7 +16,7 @@ and client components (dialogs, tables with filters) equally.
 
 | File | What it is |
 |---|---|
-| `src/i18n/messages/*.ts` | The dictionary, one file per area (`common`, `today`, `calendar`, `settings`, `department`, `plans`, `results`, `school`, `messages`, `boards`, `fees`, `library`, `syllabus`, `admin`, `import`). Each file holds the English strings **and** their Hindi and Kannada translations, side by side. |
+| `src/i18n/messages/*.ts` | The dictionary, one file per area (`common`, `today`, `calendar`, `settings`, `department`, `plans`, `results`, `school`, `messages`, `boards`, `fees`, `library`, `syllabus`, `admin`, `import`, `account`). Each file holds the English strings **and** their Hindi and Kannada translations, side by side. |
 | `src/i18n/define.ts` | `area(en, { hi, kn })`: TypeScript refuses a translation that misses or adds a key. |
 | `src/i18n/messages/index.ts` | Merges the areas into `MESSAGES.en / .hi / .kn`, and the `MessageKey` type. |
 | `src/i18n/translate.ts` | `createT(locale, messages)`: `t('key', { name })` fills `{name}` (numbers with Indian grouping); `t.plural('key', n)` picks `key_one` / `key_other` with `Intl.PluralRules`. |
@@ -26,7 +26,7 @@ and client components (dialogs, tables with filters) equally.
 | `src/i18n/errors.ts` | API error codes (`services/api/src/common/error-codes.ts`) the ERP words itself. |
 | `src/app/language/actions.ts` | The language menu's server action. |
 
-There are 1,366 strings. Server data (names, class, subject, course, homework and calendar titles,
+There are 1,396 strings. Server data (names, class, subject, course, homework and calendar titles,
 board names, notice text written by staff) is shown as the API sends it.
 
 ## Which language is shown

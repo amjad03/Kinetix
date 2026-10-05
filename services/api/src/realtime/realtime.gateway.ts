@@ -106,6 +106,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       const token = socket.handshake.auth?.token;
       if (typeof token !== 'string') throw new Error('missing token');
       const principal = await this.auth.resolve(token);
+      if (principal.kind === 'user' && principal.mustChangePassword) throw new Error('temporary password not changed');
       socket.data.principal = principal;
       if (principal.kind === 'user') {
         // Every user gets their own room (new messages); only leaders and students may watch classes.

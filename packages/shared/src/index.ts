@@ -162,6 +162,10 @@ export interface MeResponse {
   preferredLanguage: Language;
   roles: RoleName[];
   tenant: { name: string; slug: string };
+  /** Signed in with a temporary password: the user must choose a new one (POST /v1/me/password) before anything else. */
+  mustChangePassword: boolean;
+  /** False for phone-code-only accounts, which may set a first password without a current one. */
+  hasPassword: boolean;
 }
 
 export interface TeacherPeriod {

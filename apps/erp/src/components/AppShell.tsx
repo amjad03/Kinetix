@@ -34,6 +34,7 @@ import LocalLibrary from '@mui/icons-material/LocalLibrary';
 import LocalLibraryOutlined from '@mui/icons-material/LocalLibraryOutlined';
 import LiveTv from '@mui/icons-material/LiveTv';
 import LiveTvOutlined from '@mui/icons-material/LiveTvOutlined';
+import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuBook from '@mui/icons-material/MenuBook';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
@@ -197,8 +198,14 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
             </MenuItem>
           ))}
           <Divider />
+          <MenuItem component={Link} href="/account/password" onClick={() => setAnchor(null)} sx={{ mt: 1, px: 3 }} data-testid="change-password">
+            <ListItemIcon>
+              <LockOutlined fontSize="small" />
+            </ListItemIcon>
+            {t('shell.changePassword')}
+          </MenuItem>
           <form action={signOut}>
-            <MenuItem component="button" type="submit" sx={{ width: '100%', mt: 1, px: 3 }}>
+            <MenuItem component="button" type="submit" sx={{ width: '100%', px: 3 }}>
               <ListItemIcon>
                 <LogoutOutlined fontSize="small" />
               </ListItemIcon>

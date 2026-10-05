@@ -48,7 +48,13 @@ describe('create-institution', () => {
 
     const login = await http().post('/v1/auth/login').send({ tenant: slug, login: 'office@srividya.example.in', password: r.password }).expect(201);
     expect(login.body.user.roles).toEqual(['tenant_admin']);
-    const token = login.body.accessToken as string;
+    // The temporary password must be changed before anything else.
+    expect(login.body.mustChangePassword).toBe(true);
+    const temp = login.body.accessToken as string;
+    const blocked = await http().get('/v1/admin/structure').set('authorization', `Bearer ${temp}`).expect(403);
+    expect(blocked.body.code).toBe('PASSWORD_CHANGE_REQUIRED');
+    const changed = await http().post('/v1/me/password').set('authorization', `Bearer ${temp}`).send({ currentPassword: r.password, newPassword: 'Mysuru-campus-2026' }).expect(200);
+    const token = changed.body.accessToken as string;
     const structure = await http().get('/v1/admin/structure').set('authorization', `Bearer ${token}`).expect(200);
     expect(structure.body.campuses).toEqual([{ id: r.campus.id, name: 'Main Campus' }]);
     // The administrator can import straight away: there is a current academic year.

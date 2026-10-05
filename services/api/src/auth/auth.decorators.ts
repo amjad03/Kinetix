@@ -13,6 +13,14 @@ export interface AuthRequirement {
 export const Auth = (kinds: PrincipalKind | PrincipalKind[], roles: RoleName[] = []) =>
   SetMetadata(AUTH_META, { kinds: Array.isArray(kinds) ? kinds : [kinds], roles } satisfies AuthRequirement);
 
+export const ALLOW_PASSWORD_CHANGE_META = 'kinetix:allow-pwc';
+
+/**
+ * Lets a user who must change a temporary password call this endpoint anyway (GET /v1/me,
+ * POST /v1/me/password, sign-out). Every other endpoint answers 403 PASSWORD_CHANGE_REQUIRED.
+ */
+export const AllowDuringPasswordChange = () => SetMetadata(ALLOW_PASSWORD_CHANGE_META, true);
+
 export const CurrentPrincipal = createParamDecorator((_: unknown, ctx: ExecutionContext): Principal => {
   return ctx.switchToHttp().getRequest().principal;
 });

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, HttpCode, Post } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
+import { AllowDuringPasswordChange, Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
@@ -31,9 +31,11 @@ export class PushController {
     );
   }
 
+  /** Sign-out: allowed with a temporary password too. */
   @Delete()
   @HttpCode(204)
   @Auth('user')
+  @AllowDuringPasswordChange()
   async remove(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(RegisterBody.pick({ token: true }))) body: { token: string }) {
     await this.db.withTenant(p.tenantId, (tx) => tx.delete(pushDevices).where(and(eq(pushDevices.token, body.token), eq(pushDevices.userId, p.userId))));
   }

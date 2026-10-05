@@ -5,8 +5,10 @@ import { redirect } from 'next/navigation';
 import { getI18n } from '@/i18n/server';
 import { errorText } from '@/i18n/errors';
 import { api, ApiError } from '@/lib/api';
-import { SESSION_COOKIE, SESSION_MAX_AGE, TENANT_COOKIE } from '@/lib/config';
+import { SESSION_COOKIE, TENANT_COOKIE } from '@/lib/config';
 import { canUseErp, landingFor } from '@/lib/access';
+import { changePasswordUrl } from '@/lib/password';
+import { secureCookies, storeSession } from '@/lib/session';
 import type { LoginResponse } from '@/lib/types';
 
 export interface LoginState {
@@ -32,12 +34,13 @@ export async function signIn(_prev: LoginState, form: FormData): Promise<LoginSt
   }
   if (!canUseErp(res.user.roles)) return { error: t('login.notForRole'), fields };
 
-  const jar = await cookies();
-  const secure = process.env.NODE_ENV === 'production' && process.env.KINETIX_INSECURE_COOKIES !== '1';
-  jar.set(SESSION_COOKIE, res.accessToken, { httpOnly: true, sameSite: 'lax', secure, path: '/', maxAge: SESSION_MAX_AGE });
+  await storeSession(res.accessToken);
   // Not secret: lets the sign-in page remember the institution code.
-  jar.set(TENANT_COOKIE, tenant, { httpOnly: true, sameSite: 'lax', secure, path: '/', maxAge: 365 * 86_400 });
-  redirect(landingFor(res.user.roles, String(form.get('next') ?? '')));
+  (await cookies()).set(TENANT_COOKIE, tenant, { httpOnly: true, sameSite: 'lax', secure: secureCookies(), path: '/', maxAge: 365 * 86_400 });
+  const next = String(form.get('next') ?? '');
+  // A temporary password (new institution, or reset by the principal): choose a new one before anything else.
+  if (res.mustChangePassword) redirect(changePasswordUrl(next));
+  redirect(landingFor(res.user.roles, next));
 }
 
 export async function signOut() {

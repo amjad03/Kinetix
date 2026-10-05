@@ -88,3 +88,19 @@ Commercial SMS in India must be sent from a sender id (header) and template regi
 | SIM swap / SMS interception | Inherent to SMS OTP. Disabled users get no codes; staff with admin rights should prefer password (and SSO / a second factor later). |
 | Logs leaking codes | Only the console sender logs codes (development); phone numbers in logs are masked. |
 | Distributed attacks across instances | With `REDIS_URL`, all limits are shared; without it each instance has its own budget (single-instance deployments only). |
+
+## Passwords
+
+Password sign-in (`POST /v1/auth/login`) and phone sign-in answer `{accessToken, mustChangePassword, user}`. `mustChangePassword` is `true` only after a **password** sign-in with a temporary password (`users.password_must_change`: set for the first administrator by `create-institution` and by an admin reset); phone sign-in always answers `false`.
+
+**Forced change.** While it is true, the token carries the claim `pwc` and `AuthGuard` lets it call only endpoints marked `@AllowDuringPasswordChange()`: `GET /v1/me` (which reports `mustChangePassword` and `hasPassword`), `POST /v1/me/password` and sign-out (`DELETE /v1/push/devices`). Everything else answers **`403 PASSWORD_CHANGE_REQUIRED`**, and the realtime socket refuses the token. The flag travels in the token, so there is no database lookup per request; the change endpoint returns a new token without it. A flagged token issued before the change stays restricted until it expires (12 h). Conversely, resetting someone's password does not end sessions they already have.
+
+**`POST /v1/me/password`** `{currentPassword, newPassword}` → `200 {accessToken, mustChangePassword: false}`; replace the stored token with the new one. Any signed-in user with a password; a phone-only account (no password yet) may omit `currentPassword` to set a first one. Rate-limited like login (10 a minute per user). Audited as `auth.password_changed` (`data: {wasTemporary, firstPassword}`). Policy: at least 10 characters, not the current password, not containing the email's local part (when 3+ characters), not one of the 20 most common passwords (`auth/password-policy.ts`). Errors: `403 WRONG_PASSWORD`, `400 CURRENT_PASSWORD_REQUIRED`, `PASSWORD_TOO_SHORT`, `PASSWORD_UNCHANGED`, `PASSWORD_CONTAINS_LOGIN`, `PASSWORD_TOO_WEAK`, `429 RATE_LIMITED`.
+
+**Admin reset.** `POST /v1/admin/users/:id/reset-password` (principal or `tenant_admin`) → `200 {userId, temporaryPassword, mustChangePassword: true}`. The temporary password (14 characters, no look-alikes) is returned once and stored only as an argon2 hash; the person must change it at their next sign-in. Only a `tenant_admin` may reset another administrator (`403 PASSWORD_RESET_NOT_ALLOWED`); nobody resets their own (`400 PASSWORD_RESET_SELF`, use Change password). Audited as `auth.password_reset`. The ERP has no button for it yet; call it with the principal's token, for example with the staff ids from `GET /v1/admin/staff`:
+
+```bash
+curl -X POST -H "authorization: Bearer $TOKEN" https://api.example.in/v1/admin/users/$USER_ID/reset-password
+```
+
+**ERP.** After sign-in with `mustChangePassword`, and from the dashboard layout whenever `GET /v1/me` says so, the ERP sends the user to **Change password** (`/account/password`), which is also in the account menu. It shows the rules, checks length, match and email name before sending, words API errors by code in English, Hindi and Kannada, stores the new token and continues to the page the user was going to.

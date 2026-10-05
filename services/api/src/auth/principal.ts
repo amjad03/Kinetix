@@ -15,6 +15,8 @@ export interface UserPrincipal {
   tenantId: string;
   userId: string;
   roles: RoleName[];
+  /** From the token: the user signed in with a temporary password and must change it (AuthGuard). */
+  mustChangePassword?: true;
 }
 
 /** An enrolled board, not signed in by a teacher. */

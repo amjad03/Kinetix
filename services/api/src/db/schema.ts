@@ -76,6 +76,8 @@ export const users = pgTable(
     phone: text('phone'),
     email: text('email'),
     passwordHash: text('password_hash'),
+    /** Set with a temporary password (new institution, admin reset): the user must choose their own before anything else. */
+    passwordMustChange: boolean('password_must_change').notNull().default(false),
     preferredLanguage: language('preferred_language').notNull().default('en'),
     status: userStatus('status').notNull().default('active'),
     createdAt: createdAt(),

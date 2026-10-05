@@ -29,6 +29,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
     },
     // Signs in itself, to check where a head of department lands (and, for plans, as Ravi and the principal).
+    // Adds a vice principal and resets their password through the API, then signs in as them.
+    { name: 'password', testMatch: /password\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     { name: 'hod', testMatch: /(department|plans)\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     {
       name: 'fees',

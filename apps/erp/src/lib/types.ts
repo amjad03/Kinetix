@@ -9,7 +9,15 @@ export const BOARD_ADMIN_ROLES: RoleName[] = ['principal', 'tenant_admin'];
 
 export interface LoginResponse {
   accessToken: string;
+  /** Signed in with a temporary password: the token only allows choosing a new one (POST /v1/me/password). */
+  mustChangePassword?: boolean;
   user: { id: string; fullName: string; preferredLanguage?: string; roles: RoleName[] };
+}
+
+/** POST /v1/me/password: a new token without the temporary-password restriction. */
+export interface PasswordChangedResponse {
+  accessToken: string;
+  mustChangePassword: false;
 }
 
 export interface Me {
@@ -21,6 +29,10 @@ export interface Me {
   preferredLanguage?: string;
   roles: RoleName[];
   tenant: { name: string; slug: string };
+  /** The session's token is limited to changing the temporary password (the ERP shows nothing else). */
+  mustChangePassword?: boolean;
+  /** False for phone-code-only accounts, which set a first password without a current one. */
+  hasPassword?: boolean;
 }
 
 export interface Structure {

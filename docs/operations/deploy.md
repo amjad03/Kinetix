@@ -172,7 +172,8 @@ from four CSV files. The demo seed is never used for a real institution.
    first `tenant_admin`, audited as `institution.created`. It **refuses a slug that already exists**
    (exit code 1, nothing changed) and bad arguments (exit code 2). The administrator's
    **temporary password is printed once** in the task log (`/kinetix/$ENV/jobs`); give it to them in
-   person or by phone, never by email. With `--otp-only` (needs `--admin-phone`) there is no password
+   person or by phone, never by email. At the first sign-in the ERP asks them to choose their own
+   password before anything else (see [Passwords](../architecture/auth-otp.md#passwords)). With `--otp-only` (needs `--admin-phone`) there is no password
    and the administrator signs in with a code sent by SMS.
 3. **Sign in as the administrator** (ERP, institution = the slug) and open **Import**. Each step:
    download the template, choose the filled-in file, **Check file** (a dry run: every row is

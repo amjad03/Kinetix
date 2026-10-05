@@ -6,6 +6,7 @@ import { Logo } from '@/components/Logo';
 import { ErrorState } from '@/components/States';
 import { getMe, load } from '@/lib/api';
 import { canUseErp } from '@/lib/access';
+import { CHANGE_PASSWORD_PATH } from '@/lib/password';
 import { getI18n } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     );
   }
   if (!canUseErp(me.data.roles)) redirect('/auth/end?reason=denied');
+  // Signed in with a temporary password: nothing else until a new one is chosen.
+  if (me.data.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
   return (
     <AppShell user={{ fullName: me.data.fullName, email: me.data.email, roles: me.data.roles }} school={me.data.tenant.name}>
       {children}
