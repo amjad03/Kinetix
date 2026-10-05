@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:ui';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
+import '../lesson_test.dart' show FakeStopwatch;
 import 'pen_helpers.dart';
 
 /// Reads successive lines as the next entry of [script], and remembers what it was told.
@@ -212,6 +216,29 @@ void main() {
     expect(pen.toShape(wb.elements.single.id), isTrue);
     expect((wb.elements.single as Stroke).shape, ShapeKind.circle);
     expect(sizes, isNotEmpty);
+  });
+
+  test('recordings and the live view show what the AI pen made, and the ink before it', () async {
+    final clock = FakeStopwatch();
+    // One recorder for the recording, one for the live view (as the board has).
+    final rec = LessonRecorder(board: wb, background: BoardBackground.plain, canvas: const Size(1280, 720), stopwatch: clock)..start();
+    final stream = LessonRecorder(board: wb, background: BoardBackground.plain, canvas: const Size(1280, 720))..start();
+    final live = LessonPlayer.live();
+    drawAll(wb, [...write('x', const Offset(400, 100)), ...write('2', const Offset(436, 82), h: 22)]);
+    draw(wb, sketch(const [Offset(200, 300), Offset(340, 520), Offset(60, 520)]));
+    live.applyLive(stream.drain());
+    expect(live.elements.whereType<Stroke>(), hasLength(4), reason: 'the ink as written');
+    clock.advance(900);
+    await pen.convertPending();
+    clock.advance(100);
+    live.applyLive(stream.drain());
+    List<String> snapshot(List<BoardElement> els) => [for (final e in els) jsonEncode(encodeElement(e))];
+    expect(snapshot(live.elements), snapshot(wb.elements));
+    expect(live.elements.whereType<MathElement>().single.latex, 'x^{2}');
+    expect(live.elements.whereType<Stroke>().single.shape, ShapeKind.triangle);
+    final lesson = Lesson.fromJson(jsonDecode(jsonEncode(rec.stop())) as Map<String, dynamic>);
+    final player = LessonPlayer(lesson)..seek(lesson.duration);
+    expect(snapshot(player.elements), snapshot(wb.elements));
   });
 
   testWidgets('auto mode converts about a second after the last stroke', (tester) async {

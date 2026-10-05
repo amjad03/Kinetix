@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import '../ink_models.dart';
 import 'ink_parser.dart' show inkBounds, isPenInk;
@@ -110,37 +111,47 @@ List<List<Stroke>> clusterWriting(List<Stroke> strokes) {
   for (var i = 0; i < letters.length; i++) {
     unitMap.putIfAbsent(find(i), () => []).add(letters[i]);
   }
-  final units = unitMap.values.toList()..sort((a, b) => inkBounds(a).center.dy.compareTo(inkBounds(b).center.dy));
+  // Full-size symbols find the rows first; small ones (powers, dots) then join them.
+  bool small(List<Stroke> u) => inkBounds(u).height < median * 0.95;
+  final units = unitMap.values.toList()..sort((a, b) => small(a) != small(b) ? (small(a) ? 1 : -1) : inkBounds(a).center.dy.compareTo(inkBounds(b).center.dy));
 
-  // Rows: a unit joins a row when their heights mostly overlap.
+  // Rows: a unit joins a row when their heights mostly overlap, or when it is a small symbol
+  // raised or lowered just beside the row (a power, a subscript).
   final rows = <List<List<Stroke>>>[];
-  final bands = <({double top, double bottom})>[];
+  final bands = <Rect>[];
   for (final u in units) {
     final ub = inkBounds(u);
     var placed = false;
     for (var i = 0; i < rows.length; i++) {
       final band = bands[i];
       final overlap = math.min(band.bottom, ub.bottom) - math.max(band.top, ub.top);
-      final bandH = band.bottom - band.top;
-      if (overlap > math.min(bandH, ub.height) * 0.35 || (ub.center.dy - (band.top + band.bottom) / 2).abs() < median * 0.6) {
+      final level = overlap > math.min(band.height, ub.height) * 0.35 || (ub.center.dy - band.center.dy).abs() < median * 0.6;
+      final script =
+          ub.height < median * 0.95 &&
+          ub.left < band.right + median &&
+          ub.right > band.left &&
+          ub.bottom > band.top - median * 0.3 &&
+          ub.top < band.bottom + median * 0.3;
+      if (level || script) {
         rows[i].add(u);
-        bands[i] = (top: math.min(band.top, ub.top), bottom: math.max(band.bottom, ub.bottom));
+        bands[i] = band.expandToInclude(ub);
         placed = true;
         break;
       }
     }
     if (!placed) {
       rows.add([u]);
-      bands.add((top: ub.top, bottom: ub.bottom));
+      bands.add(ub);
     }
   }
 
   // Each row splits where there is a wide gap; within a chunk the strokes keep the order they
   // were written in, which handwriting recognisers rely on.
   final order = {for (final (i, s) in ink.indexed) s.id: i};
+  final byTop = [for (var i = 0; i < rows.length; i++) i]..sort((a, b) => bands[a].center.dy.compareTo(bands[b].center.dy));
   final out = <List<Stroke>>[];
   void emit(List<Stroke> chunk) => out.add(chunk..sort((a, b) => order[a.id]!.compareTo(order[b.id]!)));
-  for (final row in rows) {
+  for (final row in [for (final i in byTop) rows[i]]) {
     row.sort((a, b) => inkBounds(a).left.compareTo(inkBounds(b).left));
     var chunk = <Stroke>[...row.first];
     var right = inkBounds(row.first).right;

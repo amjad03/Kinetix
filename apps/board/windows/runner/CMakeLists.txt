@@ -30,9 +30,21 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_BUILD=${FLUTT
 # Disable Windows macros that collide with C++ standard library functions.
 target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 
+# The AI pen's handwriting reader (Windows.UI.Input.Inking through C++/WinRT; see
+# handwriting_channel.h). A library of its own: C++/WinRT needs C++20 coroutine headers and
+# exceptions, which the runner's standard settings (_HAS_EXCEPTIONS=0) leave out.
+add_library(kinetix_handwriting STATIC "handwriting_channel.cpp")
+target_compile_features(kinetix_handwriting PRIVATE cxx_std_20)
+target_compile_options(kinetix_handwriting PRIVATE /W4 /EHsc /bigobj /permissive-)
+target_compile_definitions(kinetix_handwriting PRIVATE "NOMINMAX" "WIN32_LEAN_AND_MEAN")
+target_include_directories(kinetix_handwriting PRIVATE "${CMAKE_SOURCE_DIR}")
+target_link_libraries(kinetix_handwriting PRIVATE flutter flutter_wrapper_app)
+target_link_libraries(kinetix_handwriting PUBLIC "windowsapp.lib")
+
 # Add dependency libraries and include directories. Add any application-specific
 # dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
+target_link_libraries(${BINARY_NAME} PRIVATE kinetix_handwriting)
 target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib")
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 

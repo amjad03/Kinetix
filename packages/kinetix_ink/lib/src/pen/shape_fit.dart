@@ -409,7 +409,7 @@ Fit tidyFit(Fit f) {
       final a = (o[0] - c).distance, b = (o[o.length ~/ 4] - c).distance;
       final dir = o[0] - c;
       final deg = (math.atan2(dir.dy, dir.dx) * 180 / math.pi) % 180;
-      if (deg.abs() < 10 || (deg - 180).abs() < 10)
+      if (deg.abs() < 10 || (deg - 180).abs() < 10) {
         return Fit(
           f.kind,
           o,
@@ -417,7 +417,8 @@ Fit tidyFit(Fit f) {
           f.coverage,
           oval: Rect.fromCenter(center: c, width: 2 * a, height: 2 * b),
         );
-      if ((deg - 90).abs() < 10)
+      }
+      if ((deg - 90).abs() < 10) {
         return Fit(
           f.kind,
           o,
@@ -425,6 +426,7 @@ Fit tidyFit(Fit f) {
           f.coverage,
           oval: Rect.fromCenter(center: c, width: 2 * b, height: 2 * a),
         );
+      }
       return f;
     case FitKind.rectangle:
       var r = f.outline;
