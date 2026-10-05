@@ -220,8 +220,11 @@ class EmbedLink {
 
 /// A picture: a photo, a diagram, or a snapshot of a 3D model or lab ([link]). [bytes] is
 /// PNG or JPEG; boards keep pictures small (the board scales them down when they are added).
+///
+/// A [backdrop] is an imported PDF page or slide: it sits under the page's ink and cannot be
+/// selected, moved or rubbed out, so the teacher writes over it freely.
 class ImageElement extends BoardElement {
-  const ImageElement({required this.id, required this.rect, required this.bytes, this.rotation = 0, this.link});
+  const ImageElement({required this.id, required this.rect, required this.bytes, this.rotation = 0, this.link, this.backdrop = false});
 
   @override
   final String id;
@@ -230,6 +233,7 @@ class ImageElement extends BoardElement {
   @override
   final double rotation;
   final EmbedLink? link;
+  final bool backdrop;
 
   @override
   Rect get frame => rect;
@@ -239,7 +243,7 @@ class ImageElement extends BoardElement {
   bool hitTest(Offset p, double radius) => rect.inflate(radius).contains(unturn(p, rect, rotation));
 
   ImageElement copyWith({String? id, Rect? rect, double? rotation}) =>
-      ImageElement(id: id ?? this.id, rect: rect ?? this.rect, bytes: bytes, rotation: rotation ?? this.rotation, link: link);
+      ImageElement(id: id ?? this.id, rect: rect ?? this.rect, bytes: bytes, rotation: rotation ?? this.rotation, link: link, backdrop: backdrop);
 
   @override
   ImageElement translated(Offset d) => _moved(this, d, copyWith(rect: rect.shift(d)));

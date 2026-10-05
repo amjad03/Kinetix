@@ -150,6 +150,7 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     if (imageRef?.call(e.bytes) case final ref?) 'ref': ref else 'd': base64Encode(e.bytes),
     if (e.link != null) 'ln': e.link!.toJson(),
     if (e.rotation != 0) 'a': _round3(e.rotation),
+    if (e.backdrop) 'bg': true,
   },
   MathElement() => {
     't': 'math',
@@ -220,7 +221,7 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
         final rect = _readRect(j['r']);
         final bytes = j['d'] is String ? base64Decode(j['d'] as String) : (j['ref'] != null ? image?.call(j['ref'] as Object) : null);
         if (rect == null || bytes == null) return null;
-        return ImageElement(id: id, rect: rect, bytes: bytes, rotation: angle, link: EmbedLink.fromJson(j['ln']));
+        return ImageElement(id: id, rect: rect, bytes: bytes, rotation: angle, link: EmbedLink.fromJson(j['ln']), backdrop: j['bg'] == true);
       case 'math':
         final tex = j['tex'];
         if (tex is! String) return null;

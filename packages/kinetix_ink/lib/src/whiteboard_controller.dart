@@ -248,6 +248,19 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _changed(content: false);
   }
 
+  /// Adds [pages] after the open page (an imported PDF or slide deck, one board page each)
+  /// and opens the first of them.
+  void addPages(List<List<BoardElement>> pages) {
+    if (pages.isEmpty) return;
+    _finishGestures();
+    page.view = _autoView ? null : view.value;
+    _pages.insertAll(_index + 1, [for (final els in pages) WhiteboardPage(elements: List.of(els))]);
+    _index++;
+    _selection.clear();
+    _showPage();
+    _changed();
+  }
+
   /// A copy of page [i] (new ids) after it, opened.
   void duplicatePage(int i) {
     final src = _pages[i];
@@ -264,7 +277,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// Removes page [i] (a board keeps at least one page: the last one is cleared instead).
   void deletePage(int i) {
     if (_pages.length == 1) {
-      clearPage();
+      if (page.elements.isNotEmpty) setElements([]);
       return;
     }
     _finishGestures();
@@ -525,9 +538,11 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   BoardElement? byId(String id) => page.elements.where((e) => e.id == id).firstOrNull;
 
+  /// Clears the page, keeping an imported page under the ink.
   void clearPage() {
-    if (page.elements.isEmpty) return;
-    setElements([]);
+    final kept = page.elements.where((e) => !_selectable(e)).toList();
+    if (page.elements.length == kept.length) return;
+    setElements(kept);
   }
 
   /// Places [local] (drawn around 0, 0) in a free spot in view, as one group, and selects it.
@@ -585,7 +600,10 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   void selectAll() {
     if (_tool != BoardTool.select) tool = BoardTool.select;
-    select({for (final e in page.elements) e.id});
+    select({
+      for (final e in page.elements)
+        if (_selectable(e)) e.id,
+    });
   }
 
   /// The box around the selection, wide enough to clear any measurement labels.
@@ -1111,6 +1129,10 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// so a hand resting on them cannot wipe them.
   static bool _erasable(BoardElement e) => e is Stroke || e is PolygonElement || e is TextElement || e is MathElement;
 
+  /// Imported pages ([ImageElement.backdrop]) stay put under the ink: taps, loops and Select
+  /// all pass over them.
+  static bool _selectable(BoardElement e) => !(e is ImageElement && e.backdrop);
+
   void _eraseAt(Offset c, int pointer) {
     final r = _eraseRadius[pointer] ?? eraserRadius / _scale;
     final hit = <String>{
@@ -1138,7 +1160,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (_lasso.isNotEmpty) {
       if (_lassoSpan() * _scale < 8 && down != null) {
         // A tap: the topmost thing under it (with its group), or nothing.
-        final hit = page.elements.reversed.where((e) => e.hitTest(down, 8 / _scale)).firstOrNull;
+        final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
         _selection.clear();
         if (hit != null) _selection.addAll(page.expandGroups({hit.id}));
       } else {
@@ -1151,7 +1173,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       _push(_moveSnapshot!);
     } else if (!_selectMoved && down != null) {
       // A tap inside the selection's box: pick what is under it (with its group).
-      final hit = page.elements.reversed.where((e) => e.hitTest(down, 8 / _scale)).firstOrNull;
+      final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
       _selection.clear();
       if (hit != null) _selection.addAll(page.expandGroups({hit.id}));
     }
@@ -1180,6 +1202,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (_area(poly) < box.width * box.height * 0.25) poly = [box.topLeft, box.topRight, box.bottomRight, box.bottomLeft];
     final picked = <String>{};
     for (final e in page.elements) {
+      if (!_selectable(e)) continue;
       final samples = switch (e) {
         Stroke(:final points) => [for (var i = 0; i < points.length; i += math.max(1, points.length ~/ 12)) points[i].offset],
         _ => [e.bounds.center, e.bounds.topLeft, e.bounds.bottomRight, e.bounds.topRight, e.bounds.bottomLeft],
