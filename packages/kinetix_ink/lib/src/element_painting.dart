@@ -5,6 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import 'code_highlight.dart';
+
 import 'board_background.dart';
 import 'graph_expr.dart';
 import 'ink_canvas.dart';
@@ -235,9 +237,11 @@ void paintNote(Canvas canvas, NoteElement s) {
       }
       // Lines are never wrapped (code means what its lines say).
       final tp = _noteCache[s] ??= TextPainter(
-        text: TextSpan(
-          text: s.text.replaceAll('\t', '    '),
-          style: TextStyle(fontFamily: KxFonts.code, fontFamilyFallback: KxFonts.fallback, fontSize: s.fontSize * 0.85, height: 1.35, color: const Color(0xFFD7E3F4)),
+        // Coloured like an editor; notes saved without a language are guessed.
+        text: highlightCode(
+          s.text.replaceAll('\t', '    '),
+          s.language,
+          TextStyle(fontFamily: KxFonts.code, fontFamilyFallback: KxFonts.fallback, fontSize: s.fontSize * 0.85, height: 1.35),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

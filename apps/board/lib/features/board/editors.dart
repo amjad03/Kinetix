@@ -147,7 +147,7 @@ class NoteEditorDialog extends StatefulWidget {
 }
 
 class _NoteEditorDialogState extends State<NoteEditorDialog> {
-  late final _text = TextEditingController(text: widget.initial ?? '');
+  late final _text = widget.kind == NoteKind.code ? CodeEditingController(text: widget.initial ?? '') : TextEditingController(text: widget.initial ?? '');
 
   @override
   void dispose() {
@@ -171,8 +171,14 @@ class _NoteEditorDialogState extends State<NoteEditorDialog> {
           minLines: code ? 6 : 3,
           maxLines: code ? 14 : 6,
           maxLength: code ? 4000 : 400,
-          style: code ? const TextStyle(fontFamily: KxFonts.code) : null,
-          decoration: InputDecoration(hintText: widget.kind == NoteKind.answer ? l.answerHint : null),
+          style: code ? TextStyle(fontFamily: KxFonts.code, color: CodeTheme.dark.plain) : null,
+          cursorColor: code ? CodeTheme.dark.plain : null,
+          decoration: InputDecoration(
+            hintText: widget.kind == NoteKind.answer ? l.answerHint : null,
+            // Code is coloured as on its card, so it sits on the card's dark colour.
+            filled: code ? true : null,
+            fillColor: code ? CodeTheme.dark.background : null,
+          ),
         ),
       ),
       actions: [

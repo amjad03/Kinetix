@@ -475,14 +475,14 @@ class NoteElement extends BoardElement {
   @override
   bool hitTest(Offset p, double radius) => rect.inflate(radius).contains(unturn(p, rect, rotation));
 
-  NoteElement copyWith({String? id, Rect? rect, String? text, Color? color, double? fontSize, NoteKind? kind, double? rotation}) => NoteElement(
+  NoteElement copyWith({String? id, Rect? rect, String? text, Color? color, double? fontSize, NoteKind? kind, String? language, double? rotation}) => NoteElement(
     id: id ?? this.id,
     rect: rect ?? this.rect,
     text: text ?? this.text,
     color: color ?? this.color,
     fontSize: fontSize ?? this.fontSize,
     kind: kind ?? this.kind,
-    language: language,
+    language: language ?? this.language,
     rotation: rotation ?? this.rotation,
   );
 

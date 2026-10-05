@@ -5,6 +5,7 @@
 library;
 
 export 'src/board_background.dart';
+export 'src/code_highlight.dart';
 export 'src/element_painting.dart';
 export 'src/geometry_tools.dart';
 export 'src/graph_expr.dart';
