@@ -1411,5 +1411,34 @@
     }
   },
   "kioskLockNow": "Lock again now",
-  "kioskDemoBody": "This is a demo build: kiosk mode is off and no PIN is needed."
+  "kioskDemoBody": "This is a demo build: kiosk mode is off and no PIN is needed.",
+  "toolConceptVideos": "Concept videos",
+  "conceptVideosTitle": "Concept videos",
+  "conceptVideosForPeriod": "Concept videos for this period",
+  "conceptVideosNext": "Next period at {time}",
+  "@conceptVideosNext": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "conceptVideosSkip": "Skip",
+  "conceptVideosNone": "No concept videos for this topic yet.",
+  "conceptVideosNoPeriod": "No class on this board now or later today.",
+  "conceptVideosSignIn": "Sign in to see concept videos for your class.",
+  "conceptVideosCouldNotLoad": "Couldn't load the concept videos.",
+  "conceptVideosUnsupported": "Videos can't play on this device. Use the board's Android or Windows app.",
+  "conceptVideosFromYouTube": "Plays from YouTube",
+  "conceptVideosSourceLessonPlan": "From today's lesson plan",
+  "conceptVideosSourceYearPlan": "From the year plan",
+  "conceptVideosSourceSyllabus": "Next topic in the syllabus",
+  "conceptVideosPlay": "Play {title}",
+  "@conceptVideosPlay": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

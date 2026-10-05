@@ -3429,6 +3429,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This is a demo build: kiosk mode is off and no PIN is needed.'**
   String get kioskDemoBody;
+
+  /// No description provided for @toolConceptVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos'**
+  String get toolConceptVideos;
+
+  /// No description provided for @conceptVideosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos'**
+  String get conceptVideosTitle;
+
+  /// No description provided for @conceptVideosForPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos for this period'**
+  String get conceptVideosForPeriod;
+
+  /// No description provided for @conceptVideosNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next period at {time}'**
+  String conceptVideosNext(String time);
+
+  /// No description provided for @conceptVideosSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get conceptVideosSkip;
+
+  /// No description provided for @conceptVideosNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No concept videos for this topic yet.'**
+  String get conceptVideosNone;
+
+  /// No description provided for @conceptVideosNoPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No class on this board now or later today.'**
+  String get conceptVideosNoPeriod;
+
+  /// No description provided for @conceptVideosSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see concept videos for your class.'**
+  String get conceptVideosSignIn;
+
+  /// No description provided for @conceptVideosCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the concept videos.'**
+  String get conceptVideosCouldNotLoad;
+
+  /// No description provided for @conceptVideosUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos can\'t play on this device. Use the board\'s Android or Windows app.'**
+  String get conceptVideosUnsupported;
+
+  /// No description provided for @conceptVideosFromYouTube.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays from YouTube'**
+  String get conceptVideosFromYouTube;
+
+  /// No description provided for @conceptVideosSourceLessonPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'From today\'s lesson plan'**
+  String get conceptVideosSourceLessonPlan;
+
+  /// No description provided for @conceptVideosSourceYearPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'From the year plan'**
+  String get conceptVideosSourceYearPlan;
+
+  /// No description provided for @conceptVideosSourceSyllabus.
+  ///
+  /// In en, this message translates to:
+  /// **'Next topic in the syllabus'**
+  String get conceptVideosSourceSyllabus;
+
+  /// No description provided for @conceptVideosPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play {title}'**
+  String conceptVideosPlay(String title);
 }
 
 class _AppLocalizationsDelegate

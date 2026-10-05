@@ -50,6 +50,32 @@ converted from the KINETIX prototype's lesson library by
 | `POST /v1/content/courses/:id/chapters`, `POST /v1/content/chapters/:id/topics`, `PATCH`/`DELETE /v1/content/topics/:id` | teaching staff, admins (own rows only) |
 | `PUT /v1/admin/subjects/:id/course` | principal, admin |
 
+## Concept videos
+
+Short explainers from the KINETIX YouTube channel, linked to **global** topics by the KINETIX
+platform team (not by institutions) and shown to every institution: on the board when a period
+starts (and from its Concept videos button), and on the Student App's topic page.
+
+- `concept_videos` keeps only the YouTube id, a title, the language, the duration (when known) and
+  the order. The apps play videos with YouTube's embedded player (youtube-nocookie.com) in a
+  WebView; nothing is downloaded or cached (YouTube's terms).
+- Ordering: the class's language first (`?lang=`, else the course's language), then English, then
+  the rest; the platform team's order within each language.
+- The platform team is the `platform_admins` table (users of KINETIX's own institution). The app
+  role cannot read it and may only read `concept_videos`; the platform endpoints write through the
+  owner role behind `PlatformAdminGuard`. Manage the team with
+  `pnpm platform:admin add|remove|list --tenant <slug> --login <email or mobile>` (Docker:
+  `kinetix-api platform-admin …`). The demo seed puts `admin@demo.kinetix.in` on the team.
+- Titles come from YouTube's oEmbed (no key). With `YOUTUBE_API_KEY` the platform also reads
+  durations and imports playlists (playlistItems.list, one quota unit per 50 videos), guessing each
+  video's topic in the chosen chapter by title keywords.
+
+| Route | Who |
+|---|---|
+| `GET /v1/content/topics/:id/videos?lang` | anyone signed in, boards |
+| `GET /v1/devices/me/concept-videos?lang` | boards: the open class's period, else the current or next one today (the teacher's, or the room's); topic from the lesson plan, else the year plan's week, else the next untaught syllabus topic |
+| `/v1/platform/…`: library tree and search, a topic's videos (add, edit, delete, reorder), playlist preview and import | the platform team |
+
 ## AI grounding
 
 When the board asks KINETIX AI anything, the gateway finds the open class's course, matches the

@@ -33,6 +33,8 @@ export interface Me {
   mustChangePassword?: boolean;
   /** False for phone-code-only accounts, which set a first password without a current one. */
   hasPassword?: boolean;
+  /** The KINETIX platform team (Platform › Concept videos); absent for everyone else. */
+  platformAdmin?: boolean;
 }
 
 export interface Structure {
@@ -556,4 +558,62 @@ export interface LessonPlanList {
   from: string;
   to: string;
   plans: LessonPlan[];
+}
+
+// Platform › Concept videos (the KINETIX platform team; services/api/src/platform). Same shapes as
+// @kinetix/shared.
+
+export type VideoLanguage = 'en' | 'hi' | 'kn';
+
+export interface ConceptVideo {
+  id: string;
+  topicId: string;
+  youtubeVideoId: string;
+  title: string;
+  language: VideoLanguage;
+  durationSeconds: number | null;
+  channelTitle: string | null;
+  position: number;
+}
+
+/** GET /v1/platform/library */
+export interface PlatformLibraryCurriculum {
+  code: string;
+  name: string;
+  level: string;
+  courses: { id: string; code: string; title: string; term: number; language: VideoLanguage; topics: number; topicsWithVideos: number; videos: number }[];
+}
+
+/** GET /v1/platform/library/courses/:id */
+export interface PlatformCourseTree {
+  id: string;
+  curriculumCode: string;
+  code: string;
+  title: string;
+  term: number;
+  language: VideoLanguage;
+  chapters: { id: string; title: string; topics: { id: string; title: string; videos: number }[] }[];
+}
+
+/** GET /v1/platform/library/search?q */
+export interface PlatformTopicHit {
+  id: string;
+  title: string;
+  chapter: { id: string; title: string };
+  course: { id: string; title: string; curriculumCode: string };
+  videos: number;
+}
+
+/** GET /v1/platform/topics/:id/videos */
+export interface PlatformTopicVideos {
+  topic: { id: string; title: string; chapter: { id: string; title: string }; course: { id: string; title: string }; courseLanguage: VideoLanguage };
+  videos: ConceptVideo[];
+}
+
+/** POST /v1/platform/playlists/preview */
+export interface PlaylistPreview {
+  playlistId: string;
+  chapter: { id: string; title: string };
+  topics: { id: string; title: string }[];
+  videos: { youtubeVideoId: string; title: string; position: number; durationSeconds: number | null; suggestedTopicId: string | null; alreadyOn: string[] }[];
 }

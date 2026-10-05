@@ -144,3 +144,19 @@ export async function requireSection(section: Section): Promise<Me | null> {
   if (!canSee(me.roles, section)) redirect(homeFor(me.roles));
   return me;
 }
+
+/**
+ * For Platform pages: the signed-in user if they are on the KINETIX platform team (GET /v1/me
+ * platformAdmin); anyone else goes back to their home page. The API checks again.
+ */
+export async function requirePlatformAdmin(): Promise<Me | null> {
+  let me: Me;
+  try {
+    me = await getMe();
+  } catch (e) {
+    unstable_rethrow(e);
+    return null; // the layout shows the error
+  }
+  if (!me.platformAdmin) redirect(homeFor(me.roles));
+  return me;
+}

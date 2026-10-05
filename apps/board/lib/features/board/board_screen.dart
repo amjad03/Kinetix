@@ -29,6 +29,7 @@ import 'profile_menu.dart';
 import '../books/books_panel.dart';
 import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
+import '../concept_videos/concept_video_suggestions.dart';
 import 'live_stream.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
@@ -479,6 +480,10 @@ class _BoardScreenState extends State<BoardScreen> {
 
   List<ToolEntry> _tools(AppLocalizations l) => [
     ToolEntry(Icons.event_note_outlined, l.toolTodaysPlan, const Color(0xFF81C995), () => _openPanel(PanelKind.plan)),
+    ToolEntry(Icons.smart_display_outlined, l.toolConceptVideos, const Color(0xFFF28B82), () {
+      setState(() => _popover = null);
+      ConceptVideosDialog.open(context, board);
+    }),
     ToolEntry(
       Icons.timer_outlined,
       l.toolTimer,

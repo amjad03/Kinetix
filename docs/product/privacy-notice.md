@@ -36,6 +36,10 @@ until the semester they were recorded in ends, plus a few days set by the instit
 it chooses otherwise, at most 90), and are then deleted. A teacher may keep a particular
 recording for longer, for example to teach the same lesson again.
 
+Concept videos (short explainers on the board and in the Student App) are played from YouTube,
+so Google receives the device's network address when one plays; no student personal data is sent
+to YouTube or Google.
+
 ## Contact
 
 The institution's grievance officer (named in the app under Profile → Privacy) answers

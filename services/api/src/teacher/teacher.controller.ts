@@ -8,6 +8,7 @@ import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
+import { SystemLookups } from '../db/system-lookups.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { attendanceRecords, boardSessions, devices, guardians, homework, sections, students, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
@@ -45,7 +46,10 @@ const HomeworkBody = z.object({
 /** The signed-in user's profile. Used by every app after login. */
 @Controller('v1/me')
 export class MeController {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly system: SystemLookups,
+  ) {}
 
   /** The user's language for the apps and for notifications sent to them (en, hi, kn). */
   @Patch()
@@ -76,6 +80,8 @@ export class MeController {
         // As the token says (AuthGuard enforces the token): true until the user changes the temporary password.
         mustChangePassword: !!p.mustChangePassword,
         hasPassword: !!u.passwordHash,
+        // The KINETIX platform team (the ERP shows its Platform area); absent for everyone else.
+        ...((await this.system.isPlatformAdmin(u.id)) ? { platformAdmin: true } : {}),
       };
     });
   }

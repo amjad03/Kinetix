@@ -3050,6 +3050,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Available until {date}'**
   String recordingAvailableUntil(String date);
+
+  /// No description provided for @conceptVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept videos'**
+  String get conceptVideos;
+
+  /// No description provided for @conceptVideosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch before class to preview, and after class to revise.'**
+  String get conceptVideosHint;
+
+  /// No description provided for @conceptVideosFromYouTube.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays from YouTube'**
+  String get conceptVideosFromYouTube;
+
+  /// No description provided for @conceptVideosUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos can\'t play here. Use the Student App on your phone.'**
+  String get conceptVideosUnsupported;
+
+  /// No description provided for @conceptVideoPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play {title}'**
+  String conceptVideoPlay(String title);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

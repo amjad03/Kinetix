@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DbService } from './db.service.js';
-import { devices, feePayments, tenants } from './schema.js';
+import { devices, feePayments, platformAdmins, tenants, users } from './schema.js';
 
 /**
  * The only queries allowed to bypass row-level security. Each one answers
  * "which tenant does this belong to?" for a request that has no tenant context yet.
- * Keep this list short and never return more than the tenant identity.
+ * Keep this list short and never return more than the tenant identity (or, for the platform
+ * team, a yes or no).
  */
 @Injectable()
 export class SystemLookups {
@@ -26,6 +27,16 @@ export class SystemLookups {
       .from(devices)
       .where(eq(devices.enrollmentCodeHash, codeHash));
     return row;
+  }
+
+  /** Whether an active user is on the KINETIX platform team (PlatformAdminGuard, GET /v1/me). */
+  async isPlatformAdmin(userId: string): Promise<boolean> {
+    const [row] = await this.db.system
+      .select({ userId: platformAdmins.userId })
+      .from(platformAdmins)
+      .innerJoin(users, eq(users.id, platformAdmins.userId))
+      .where(and(eq(platformAdmins.userId, userId), eq(users.status, 'active')));
+    return !!row;
   }
 
   /** The tenant of an online payment, for the payment gateway's webhook. */

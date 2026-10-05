@@ -38,6 +38,8 @@ import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuBook from '@mui/icons-material/MenuBook';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
+import OndemandVideo from '@mui/icons-material/OndemandVideo';
+import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
 import Payments from '@mui/icons-material/Payments';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import Today from '@mui/icons-material/Today';
@@ -66,7 +68,7 @@ import { canSee, homeFor, type Section } from '@/lib/access';
 import { initials } from './initials';
 import { Logo, LogoMark } from './Logo';
 
-const NAV: { href: string; label: MessageKey; section: Section; icon: typeof TodayOutlined; active: typeof Today }[] = [
+const NAV: { href: string; label: MessageKey; section: Section | 'platform'; icon: typeof TodayOutlined; active: typeof Today }[] = [
   { href: '/', label: 'nav.today', section: 'school', icon: TodayOutlined, active: Today },
   { href: '/department', label: 'nav.department', section: 'department', icon: InsightsOutlined, active: Insights },
   { href: '/classes', label: 'nav.classes', section: 'school', icon: ClassOutlined, active: Class },
@@ -86,6 +88,8 @@ const NAV: { href: string; label: MessageKey; section: Section; icon: typeof Tod
   { href: '/departments', label: 'nav.departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
   { href: '/import', label: 'nav.import', section: 'import', icon: UploadFileOutlined, active: UploadFile },
   { href: '/settings', label: 'nav.settings', section: 'settings', icon: SettingsOutlined, active: Settings },
+  // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.
+  { href: '/platform/concept-videos', label: 'nav.conceptVideos', section: 'platform', icon: OndemandVideoOutlined, active: OndemandVideo },
 ];
 
 const ROLE_LABEL: Record<string, MessageKey> = {
@@ -101,6 +105,8 @@ export interface ShellUser {
   fullName: string;
   email: string | null;
   roles: string[];
+  /** On the KINETIX platform team: Platform › Concept videos. */
+  platformAdmin?: boolean;
 }
 
 function isActive(pathname: string, href: string) {
@@ -118,7 +124,7 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
     .filter(Boolean)
     .map((k) => t(k))
     .join(' · ');
-  const nav = NAV.filter((item) => canSee(user.roles, item.section));
+  const nav = NAV.filter((item) => (item.section === 'platform' ? !!user.platformAdmin : canSee(user.roles, item.section)));
   const home = homeFor(user.roles);
 
   return (

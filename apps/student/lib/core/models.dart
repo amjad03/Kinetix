@@ -540,6 +540,39 @@ class TopicDetail {
   TopicRef get ref => TopicRef(id: id, title: title);
 }
 
+/// A concept video from the KINETIX YouTube channel (`GET /v1/content/topics/:id/videos`), in the
+/// class's language first. Only the YouTube id is kept; it plays in YouTube's embedded player.
+class ConceptVideo {
+  const ConceptVideo({required this.id, required this.youtubeVideoId, required this.title, required this.language, this.durationSeconds});
+
+  factory ConceptVideo.fromJson(Map<String, dynamic> j) => ConceptVideo(
+    id: j['id'] as String,
+    youtubeVideoId: j['youtubeVideoId'] as String,
+    title: j['title'] as String,
+    language: j['language'] as String? ?? 'en',
+    durationSeconds: (j['durationSeconds'] as num?)?.toInt(),
+  );
+
+  final String id;
+  final String youtubeVideoId;
+  final String title;
+
+  /// en, hi or kn.
+  final String language;
+  final int? durationSeconds;
+
+  /// YouTube's own thumbnail (i.ytimg.com).
+  String get thumbnailUrl => 'https://i.ytimg.com/vi/$youtubeVideoId/mqdefault.jpg';
+
+  /// 4:05 or 1:02:03; empty when unknown.
+  String get durationLabel {
+    final t = durationSeconds;
+    if (t == null || t <= 0) return '';
+    final h = t ~/ 3600, m = (t % 3600) ~/ 60, sec = (t % 60).toString().padLeft(2, '0');
+    return h > 0 ? '$h:${m.toString().padLeft(2, '0')}:$sec' : '$m:$sec';
+  }
+}
+
 class OutlineTopic {
   OutlineTopic({required this.id, required this.title, required this.summary});
 
