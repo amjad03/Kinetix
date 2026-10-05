@@ -12,8 +12,10 @@ The model files derived from BodyParts3D are shared under the same terms.
 The coastlines on the Earth model come from Natural Earth
 (https://www.naturalearthdata.com), which is in the public domain.
 
-The cells, neuron, shapes, atoms, molecules, solar system, Earth's layers
-and volcano are built in code by KINETIX.
+The cells, neuron, shapes, atoms, molecules, solar system, Earth's layers,
+volcano, orbitals, hybridisation, crystal lattices, electric circuit, AC
+generator, transformer, simple machines, ear and nephron are built in code
+by KINETIX.
 
 The viewer uses three.js (https://threejs.org), MIT License:
 

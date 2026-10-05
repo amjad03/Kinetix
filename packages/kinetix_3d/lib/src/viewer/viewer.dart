@@ -817,8 +817,8 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 
   Widget _panel(ViewerManifest m, Viewer3dStrings s) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(color: cs.surfaceContainerLow, border: Border(left: BorderSide(color: cs.outlineVariant))),
+    return DecoratedBox(
+      decoration: BoxDecoration(border: Border(left: BorderSide(color: cs.outlineVariant))),
       child: Column(children: [if (m.variants.isNotEmpty) _variants(m), _tabBar(s, compact: false), Expanded(child: _tabBody(m, s))]),
     );
   }
@@ -886,13 +886,17 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 
   Widget _tabBody(ViewerManifest m, Viewer3dStrings s) {
     final tab = _tabs(s).any((e) => e.$1 == _tab) ? _tab : _Tab.parts;
-    return switch (tab) {
-      _Tab.parts => _partsTab(m, s),
-      _Tab.cut => _cutTab(m, s),
-      _Tab.apart => _apartTab(s),
-      _Tab.animate => _animateTab(m, s),
-      _Tab.views => _viewsTab(m, s),
-    };
+    // A Material of its own, so list tiles show their ink.
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: switch (tab) {
+        _Tab.parts => _partsTab(m, s),
+        _Tab.cut => _cutTab(m, s),
+        _Tab.apart => _apartTab(s),
+        _Tab.animate => _animateTab(m, s),
+        _Tab.views => _viewsTab(m, s),
+      },
+    );
   }
 
   Widget _title(String t) => Padding(
@@ -989,9 +993,8 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         Slider(key: const ValueKey('cut-depth'), min: -half, max: half, value: _cutOffset.clamp(-half, half), onChanged: _moveCut),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(children: [
+          child: Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.spaceBetween, children: [
             TextButton.icon(key: const ValueKey('cut-flip'), onPressed: _flipCut, icon: const Icon(Icons.flip), label: Text(s.otherHalf)),
-            const Spacer(),
             FilledButton.tonal(key: const ValueKey('slice-off'), onPressed: () => _setSlice(null), child: Text(s.closeCut)),
           ]),
         ),
