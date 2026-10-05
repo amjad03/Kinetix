@@ -1,7 +1,9 @@
 /**
  * Adds, removes or lists members of the KINETIX platform team (platform_admins), who look after
  * the global library for every institution (concept videos in the ERP's Platform area). A member
- * is an existing user, usually of KINETIX's own institution, found by email or mobile number.
+ * is an existing user, usually of KINETIX's own institution, found by email or mobile number. To
+ * sign in to the ERP they also need an ERP role there (tenant_admin, say); Platform › Concept
+ * videos then appears in their menu.
  * Runs as the owner role (DATABASE_URL): the app role cannot touch platform_admins.
  *
  *   node dist/db/platform-admin.js add --tenant kinetix --login meera@kinetix.in [--note "Curriculum team"]
