@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+!services/api/src/coverage/
 .env
 *.log
 .DS_Store
