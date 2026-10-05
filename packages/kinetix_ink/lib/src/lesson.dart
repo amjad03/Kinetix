@@ -410,6 +410,12 @@ class LessonRecorder {
       _syncView();
       _syncLaser();
     }
+    // A board that knows its paper: follow it without being told.
+    final bg = board.background;
+    if (bg != null && bg != _background) {
+      _background = bg;
+      _events.add([t, 'k', bg.name]);
+    }
   }
 
   /// Notes a move for the player, carrying the rounding left over so positions never drift.

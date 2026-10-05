@@ -11,6 +11,8 @@ class SessionContext {
     this.sectionName,
     this.subjectName,
     this.periodLabel,
+    this.classTerm,
+    this.programLevel,
   });
 
   factory SessionContext.fromJson(Map<String, dynamic> j) {
@@ -28,6 +30,8 @@ class SessionContext {
       sectionName: section?['displayName'] as String?,
       subjectName: subject?['name'] as String?,
       periodLabel: period == null ? null : '${hhmm(period['startsAt'] as String)}–${hhmm(period['endsAt'] as String)}',
+      classTerm: (section?['term'] as num?)?.toInt(),
+      programLevel: section?['level'] as String?,
     );
   }
 
@@ -39,6 +43,12 @@ class SessionContext {
   final String? sectionName;
   final String? subjectName;
   final String? periodLabel;
+
+  /// The class's grade (K-12) or semester, when the server sends it.
+  final int? classTerm;
+
+  /// `k12`, `ug`, `pg`, `diploma` or `phd`, when the server sends it.
+  final String? programLevel;
 
   /// "BCom Sem 3 A · Corporate Accounting", or null for a session with no timetabled class.
   String? get classLabel {

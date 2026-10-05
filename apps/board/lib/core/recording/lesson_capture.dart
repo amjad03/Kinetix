@@ -29,13 +29,13 @@ class CapturedLesson {
 class LessonCapture extends ChangeNotifier {
   LessonCapture({
     required this.id,
-    required BoardPages pages,
+    required RecordableBoard board,
     required BoardBackground background,
     required Size canvas,
     required this.voice,
     required this.audioPath,
     this.sessionId,
-  }) : _ink = LessonRecorder(pages: pages, background: background, canvas: canvas);
+  }) : _ink = LessonRecorder(board: board, background: background, canvas: canvas);
 
   final String id;
   final String? sessionId;

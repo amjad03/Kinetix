@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
+import '../features/board/kit/subjects.dart';
 import '../features/comfort/eye_comfort.dart';
 import '../l10n/l10n.dart';
 
@@ -31,6 +32,23 @@ enum TouchProfile {
 
   const TouchProfile(this.palmMode);
   final PalmMode palmMode;
+}
+
+/// How the board's tools are laid out (Board settings → Layout).
+enum BoardLayout {
+  /// Tools on a rail at the left, AI and the subject kit on a rail at the right.
+  rails,
+
+  /// One labelled toolbar along the bottom, as on Teachmint boards.
+  bottomBar,
+}
+
+/// The Simple board: big labelled tools, Andika and class stars, for LKG to Class 5.
+enum SimpleBoard {
+  /// On for primary classes (from the period's class), off otherwise.
+  auto,
+  on,
+  off,
 }
 
 /// Top-level state of the board: enrolment, then the board itself, with or without a teacher.
@@ -87,6 +105,27 @@ class BoardController extends ChangeNotifier {
 
   EyeComfortSettings eyeComfort = const EyeComfortSettings();
   TouchProfile touchProfile = TouchProfile.tablet;
+
+  /// Where the tools sit. Rails unless the board was set otherwise.
+  BoardLayout layout = BoardLayout.rails;
+
+  /// The Simple board setting; see [primaryMode].
+  SimpleBoard simpleBoard = SimpleBoard.auto;
+
+  /// Who may write: fingers, a pen, or fingers until a pen is used.
+  InputMode inputMode = InputMode.auto;
+
+  /// The board's primary-class layout (big labelled tools, Andika, class stars): chosen from the
+  /// period's class (LKG to Class 5) unless the Simple board setting says otherwise.
+  bool get primaryMode => switch (simpleBoard) {
+    SimpleBoard.on => true,
+    SimpleBoard.off => false,
+    SimpleBoard.auto => isPrimaryClass(session),
+  };
+
+  /// Every finger writes its own line on interactive panels and IR frames, where several
+  /// children write at once; on a tablet two fingers move and zoom the board.
+  bool get multiWriter => touchProfile != TouchProfile.tablet;
 
   /// The board's own language for its buttons and messages (Board settings → Language).
   BoardLanguage boardLanguage = BoardLanguage.en;
@@ -185,6 +224,9 @@ class BoardController extends ChangeNotifier {
       touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
       eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
       boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
+      layout = BoardLayout.values.asNameMap()[await _store.setting('layout')] ?? BoardLayout.rails;
+      simpleBoard = SimpleBoard.values.asNameMap()[await _store.setting('simpleBoard')] ?? SimpleBoard.auto;
+      inputMode = InputMode.values.asNameMap()[await _store.setting('inputMode')] ?? InputMode.auto;
     } catch (e) {
       debugPrint('Board settings unreadable, using defaults: $e');
     }
@@ -259,6 +301,24 @@ class BoardController extends ChangeNotifier {
   void setTouchProfile(TouchProfile p) {
     touchProfile = p;
     unawaited(_store.setSetting('touchProfile', p.name));
+    notifyListeners();
+  }
+
+  void setLayout(BoardLayout l) {
+    layout = l;
+    unawaited(_store.setSetting('layout', l.name));
+    notifyListeners();
+  }
+
+  void setSimpleBoard(SimpleBoard s) {
+    simpleBoard = s;
+    unawaited(_store.setSetting('simpleBoard', s.name));
+    notifyListeners();
+  }
+
+  void setInputMode(InputMode m) {
+    inputMode = m;
+    unawaited(_store.setSetting('inputMode', m.name));
     notifyListeners();
   }
 

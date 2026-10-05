@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -332,7 +333,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   // --- Tools --------------------------------------------------------------------------------
 
-  static const inkBlack = Color(0xFF1B1F24);
+  static const inkBlack = Color(0xFF1B1B1F);
   static const chalkWhite = Color(0xFFFFFFFF);
 
   BoardTool _tool = BoardTool.pen;
@@ -699,11 +700,12 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   Size _viewport = Size.zero;
   Size get viewport => _viewport;
 
-  /// Set by the canvas when its size changes.
+  /// Set by the canvas when its size changes (during layout: the view follows a moment later,
+  /// outside the frame).
   set viewport(Size s) {
     if (s == _viewport) return;
     _viewport = s;
-    if (_autoView) view.value = _startView();
+    if (_autoView) scheduleMicrotask(() => _autoView ? view.value = _startView() : null);
   }
 
   /// Edges of the canvas covered by floating toolbars. The start view, fitting and placement
@@ -713,7 +715,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   set safeInsets(EdgeInsets e) {
     if (e == _safeInsets) return;
     _safeInsets = e;
-    if (_autoView && !_viewport.isEmpty) view.value = _startView();
+    if (_autoView && !_viewport.isEmpty) scheduleMicrotask(() => _autoView ? view.value = _startView() : null);
   }
 
   /// The part of the canvas the toolbars leave free, in screen pixels.

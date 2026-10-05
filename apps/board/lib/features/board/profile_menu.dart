@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show InputMode;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
@@ -147,8 +148,9 @@ extension TouchProfileText on TouchProfile {
   };
 }
 
-/// Board settings: the board's language, the touch surface type (tablet, interactive
-/// panel, IR touch frame) and kiosk mode.
+/// Board settings: the board's language, the layout of its tools, the Simple board, who may
+/// write (pen or fingers), the touch surface type (tablet, interactive panel, IR touch frame)
+/// and kiosk mode.
 class BoardSettingsDialog extends StatelessWidget {
   const BoardSettingsDialog({super.key, required this.board});
 
@@ -188,6 +190,53 @@ class BoardSettingsDialog extends StatelessWidget {
                   ],
                   selected: {board.language},
                   onSelectionChanged: (s) => board.setBoardLanguage(s.single),
+                ),
+                const SizedBox(height: Kx.s24),
+                Text(l.layoutTitle, style: context.text.titleSmall),
+                const SizedBox(height: Kx.s4),
+                Text(l.layoutHint, style: hint),
+                const SizedBox(height: Kx.s12),
+                SegmentedButton<BoardLayout>(
+                  key: const Key('board-layout'),
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(value: BoardLayout.rails, icon: const Icon(Icons.view_sidebar_outlined), label: Text(l.layoutRails, key: const Key('layout-rails'))),
+                    ButtonSegment(value: BoardLayout.bottomBar, icon: const Icon(Icons.call_to_action_outlined), label: Text(l.layoutBottomBar, key: const Key('layout-bottomBar'))),
+                  ],
+                  selected: {board.layout},
+                  onSelectionChanged: (s) => board.setLayout(s.single),
+                ),
+                const SizedBox(height: Kx.s24),
+                Text(l.simpleBoardTitle, style: context.text.titleSmall),
+                const SizedBox(height: Kx.s4),
+                Text(l.simpleBoardHint, style: hint),
+                const SizedBox(height: Kx.s12),
+                SegmentedButton<SimpleBoard>(
+                  key: const Key('simple-board'),
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(value: SimpleBoard.auto, label: Text(l.simpleBoardAuto, key: const Key('simple-auto'))),
+                    ButtonSegment(value: SimpleBoard.on, label: Text(l.simpleBoardOn, key: const Key('simple-on'))),
+                    ButtonSegment(value: SimpleBoard.off, label: Text(l.simpleBoardOff, key: const Key('simple-off'))),
+                  ],
+                  selected: {board.simpleBoard},
+                  onSelectionChanged: (s) => board.setSimpleBoard(s.single),
+                ),
+                const SizedBox(height: Kx.s24),
+                Text(l.inputTitle, style: context.text.titleSmall),
+                const SizedBox(height: Kx.s4),
+                Text(l.inputHint, style: hint),
+                const SizedBox(height: Kx.s12),
+                SegmentedButton<InputMode>(
+                  key: const Key('input-mode'),
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(value: InputMode.auto, label: Text(l.inputAuto, key: const Key('input-auto'))),
+                    ButtonSegment(value: InputMode.pen, icon: const Icon(Icons.draw_outlined), label: Text(l.inputPen, key: const Key('input-pen'))),
+                    ButtonSegment(value: InputMode.finger, icon: const Icon(Icons.touch_app_outlined), label: Text(l.inputFinger, key: const Key('input-finger'))),
+                  ],
+                  selected: {board.inputMode},
+                  onSelectionChanged: (s) => board.setInputMode(s.single),
                 ),
                 const SizedBox(height: Kx.s24),
                 Text(l.touchScreen, style: context.text.titleSmall),

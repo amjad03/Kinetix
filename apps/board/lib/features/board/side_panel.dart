@@ -9,7 +9,7 @@ import '../../l10n/l10n.dart';
 import 'chrome.dart';
 
 /// What the side panel shows. Opening any of these splits the screen with the whiteboard.
-enum PanelKind { ai, books, quiz, homework, split, plan }
+enum PanelKind { ai, books, quiz, homework, split, plan, kit }
 
 /// Content for the split-screen pane.
 enum SplitContent { whiteboard, document, video, web, model3d, lab }
@@ -180,6 +180,8 @@ class SplitPanel extends StatelessWidget {
     this.itemId,
     this.preset,
     this.onItem,
+    this.onSnapshot,
+    this.snapshotKey,
   });
 
   final SplitContent? content;
@@ -191,6 +193,12 @@ class SplitPanel extends StatelessWidget {
   final String? itemId;
   final String? preset;
   final void Function(String? id, String? preset)? onItem;
+
+  /// Puts a picture of the 3D model or lab on the board, linked so it opens again from there.
+  final VoidCallback? onSnapshot;
+
+  /// Marks the model or lab view, for the picture ([RepaintBoundary]).
+  final GlobalKey? snapshotKey;
 
   static bool isBuilt(SplitContent c) => c == SplitContent.whiteboard || c == SplitContent.model3d || c == SplitContent.lab;
 
@@ -223,13 +231,17 @@ class SplitPanel extends StatelessWidget {
             content: kind,
             title: title,
             onBack: () => id != null ? onItem?.call(null, null) : onContent(null),
+            onSnapshot: id == null ? null : onSnapshot,
           ),
           Expanded(
             child: id == null
                 ? _CataloguePicker(kind: kind, onPick: (id) => onItem?.call(id, null))
-                : current == SplitContent.model3d
-                ? ModelView(key: ValueKey(id), id: id)
-                : LabView(key: ValueKey('$id/$preset'), id: id, preset: preset),
+                : RepaintBoundary(
+                    key: snapshotKey,
+                    child: current == SplitContent.model3d
+                        ? ModelView(key: ValueKey(id), id: id)
+                        : LabView(key: ValueKey('$id/$preset'), id: id, preset: preset),
+                  ),
           ),
         ],
       );
@@ -323,11 +335,12 @@ class _CataloguePicker extends StatelessWidget {
 }
 
 class _SplitHeader extends StatelessWidget {
-  const _SplitHeader({required this.content, required this.onBack, this.title});
+  const _SplitHeader({required this.content, required this.onBack, this.title, this.onSnapshot});
 
   final SplitContent content;
   final VoidCallback onBack;
   final String? title;
+  final VoidCallback? onSnapshot;
 
   @override
   Widget build(BuildContext context) {
@@ -341,6 +354,13 @@ class _SplitHeader extends StatelessWidget {
             Icon(content.icon, size: 20, color: context.colors.onSurfaceVariant),
             const SizedBox(width: Kx.s8),
             Expanded(child: Text(title ?? content.label(context.l10n), style: context.text.titleSmall, overflow: TextOverflow.ellipsis)),
+            if (onSnapshot != null)
+              TextButton.icon(
+                key: const Key('split-snapshot'),
+                onPressed: onSnapshot,
+                icon: const Icon(Icons.add_photo_alternate_outlined),
+                label: Text(context.l10n.snapshotToBoard),
+              ),
           ],
         ),
       ),
