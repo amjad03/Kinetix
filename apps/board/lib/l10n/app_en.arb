@@ -552,7 +552,7 @@
   "tourWelcomeTitle": "Welcome to your board",
   "tourWelcomeBody": "A one-minute look at the buttons you will use in every class.",
   "tourPenTitle": "Write and draw",
-  "tourPenBody": "Write with a finger or the stylus. Tap the pen again for colours and thickness.",
+  "tourPenBody": "Write with a finger or the stylus. Tap the pen again for colours and thickness. Tap with two fingers to undo, three to redo.",
   "tourEraseTitle": "Rub out",
   "tourEraseBody": "Rub over the ink. Undo is at the bottom of the board.",
   "tourInsertTitle": "Add to the board",
@@ -2108,5 +2108,8 @@
   "pollPutOnBoard": "Put results on board",
   "pollNoAnswersYet": "No answers yet.",
   "remoteConnected": "Phone remote connected.",
-  "remotePhotoFailed": "Could not show the photo from the phone."
+  "remotePhotoFailed": "Could not show the photo from the phone.",
+  "fingerTapsTitle": "Finger taps",
+  "fingerTapsHint": "Tap the board with two fingers to undo, with three fingers to redo.",
+  "helpErase3": "Or tap the board with two fingers to undo; three fingers redo."
 }

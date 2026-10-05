@@ -1513,7 +1513,7 @@ abstract class AppLocalizations {
   /// No description provided for @tourPenBody.
   ///
   /// In en, this message translates to:
-  /// **'Write with a finger or the stylus. Tap the pen again for colours and thickness.'**
+  /// **'Write with a finger or the stylus. Tap the pen again for colours and thickness. Tap with two fingers to undo, three to redo.'**
   String get tourPenBody;
 
   /// No description provided for @tourEraseTitle.
@@ -6195,6 +6195,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not show the photo from the phone.'**
   String get remotePhotoFailed;
+
+  /// No description provided for @fingerTapsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finger taps'**
+  String get fingerTapsTitle;
+
+  /// No description provided for @fingerTapsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the board with two fingers to undo, with three fingers to redo.'**
+  String get fingerTapsHint;
+
+  /// No description provided for @helpErase3.
+  ///
+  /// In en, this message translates to:
+  /// **'Or tap the board with two fingers to undo; three fingers redo.'**
+  String get helpErase3;
 }
 
 class _AppLocalizationsDelegate

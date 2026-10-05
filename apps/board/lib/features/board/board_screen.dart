@@ -1159,6 +1159,7 @@ class _BoardScreenState extends State<BoardScreen> {
             images: _images,
             inputMode: board.inputMode,
             multiWriter: board.multiWriter,
+            fingerTaps: board.fingerTaps,
             editMath: _editMath,
             editNote: _editNote,
             labels: _canvasLabels(l),

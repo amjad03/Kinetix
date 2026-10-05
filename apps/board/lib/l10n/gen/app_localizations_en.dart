@@ -855,7 +855,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tourPenBody =>
-      'Write with a finger or the stylus. Tap the pen again for colours and thickness.';
+      'Write with a finger or the stylus. Tap the pen again for colours and thickness. Tap with two fingers to undo, three to redo.';
 
   @override
   String get tourEraseTitle => 'Rub out';
@@ -3571,4 +3571,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remotePhotoFailed => 'Could not show the photo from the phone.';
+
+  @override
+  String get fingerTapsTitle => 'Finger taps';
+
+  @override
+  String get fingerTapsHint =>
+      'Tap the board with two fingers to undo, with three fingers to redo.';
+
+  @override
+  String get helpErase3 =>
+      'Or tap the board with two fingers to undo; three fingers redo.';
 }

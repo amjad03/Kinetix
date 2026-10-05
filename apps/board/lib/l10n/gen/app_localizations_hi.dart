@@ -843,7 +843,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get tourPenBody =>
-      'उँगली या स्टाइलस से लिखें। रंग और मोटाई के लिए पेन को फिर दबाएँ।';
+      'उँगली या स्टाइलस से लिखें। रंग और मोटाई के लिए पेन को फिर दबाएँ। दो उँगलियों से टैप करें तो अनडू, तीन से रीडू।';
 
   @override
   String get tourEraseTitle => 'मिटाएँ';
@@ -3551,4 +3551,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get remotePhotoFailed => 'फ़ोन से आई फ़ोटो नहीं दिखाई जा सकी।';
+
+  @override
+  String get fingerTapsTitle => 'उँगलियों से टैप';
+
+  @override
+  String get fingerTapsHint =>
+      'बोर्ड पर दो उँगलियों से टैप करें तो अनडू, तीन उँगलियों से टैप करें तो रीडू।';
+
+  @override
+  String get helpErase3 =>
+      'या बोर्ड पर दो उँगलियों से टैप करें (अनडू); तीन उँगलियों से रीडू।';
 }
