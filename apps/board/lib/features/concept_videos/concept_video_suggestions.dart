@@ -5,6 +5,9 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
+import '../search/filter_bar.dart';
+import '../search/fuzzy.dart';
+import '../search/search_strings.dart';
 import '../board/phone_chrome.dart';
 import 'concept_video_player.dart';
 import 'concept_videos.dart';
@@ -281,6 +284,7 @@ class ConceptVideosDialog extends StatefulWidget {
 
 class _ConceptVideosDialogState extends State<ConceptVideosDialog> {
   Future<PeriodVideos>? _load;
+  String _q = '';
 
   @override
   void initState() {
@@ -344,10 +348,21 @@ class _ConceptVideosDialogState extends State<ConceptVideosDialog> {
             const SizedBox(height: Kx.s8),
             if (v.videos.isEmpty)
               _message(l.conceptVideosNone, key: const Key('conceptVideosNone'))
-            else
+            else ...[
+              if (v.videos.length > 3)
+                ModuleSearchField(
+                  key: const Key('videos-search'),
+                  hint: SearchStrings.of(context).searchVideos,
+                  padding: const EdgeInsets.only(bottom: Kx.s8),
+                  onChanged: (q) => setState(() => _q = q),
+                ),
               Flexible(
-                child: ListView(shrinkWrap: true, children: [for (final x in v.videos) ConceptVideoTile(video: x)]),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [for (final x in matching(v.videos, (x) => [x.title, ?x.topicTitle], _q)) ConceptVideoTile(video: x)],
+                ),
               ),
+            ],
           ],
         );
       },

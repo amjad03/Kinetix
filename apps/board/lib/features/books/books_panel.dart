@@ -7,6 +7,9 @@ import '../../core/api_client.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
+import '../search/filter_bar.dart';
+import '../search/fuzzy.dart';
+import '../search/search_strings.dart';
 import '../ai/ai_controller.dart';
 import '../ai/ai_widgets.dart';
 import '../board/chrome.dart' show showBoardMessage;
@@ -44,6 +47,9 @@ class _BooksPanelState extends State<BooksPanel> {
   String? _sessionId;
   Future<TopicDetail>? _topic;
   final Set<String> _open = {};
+
+  /// What the syllabus is searched for.
+  String _q = '';
 
   /// Taught topics of the open class; null while loading, in a free session, or offline.
   Coverage? _coverage;
@@ -205,6 +211,20 @@ class _BooksPanelState extends State<BooksPanel> {
     );
   }
 
+  /// The chapters to list (with their number) and, while searching, the topics found in each:
+  /// all of a chapter whose title matches, else those that match; chapters with neither drop out.
+  List<(int, SyllabusChapter, List<SyllabusTopic>?)> _visibleChapters(Syllabus s) {
+    if (normalizeSearch(_q).isEmpty) return [for (final (i, ch) in s.chapters.indexed) (i, ch, null)];
+    bool hit(List<String> texts) => SearchTarget([for (final (n, t) in texts.indexed) SearchField(t, n == 0 ? 1 : 0.6)]).score(_q) > 0;
+    return [
+      for (final (i, ch) in s.chapters.indexed)
+        if (hit([ch.title]))
+          (i, ch, ch.topics)
+        else if (ch.topics.where((t) => hit([t.title, t.summary])).toList() case final found when found.isNotEmpty)
+          (i, ch, found),
+    ];
+  }
+
   Widget _outline(Syllabus s) {
     final c = context.colors;
     final l = context.l10n;
@@ -231,8 +251,14 @@ class _BooksPanelState extends State<BooksPanel> {
             child: LinearProgressIndicator(value: _coverage!.covered / _coverage!.total, minHeight: 8),
           ),
         ],
-        const SizedBox(height: Kx.s16),
-        for (final (i, ch) in s.chapters.indexed)
+        ModuleSearchField(
+          key: const Key('books-search'),
+          hint: SearchStrings.of(context).searchTopics,
+          initial: _q,
+          padding: const EdgeInsets.only(top: Kx.s12, bottom: Kx.s12),
+          onChanged: (v) => setState(() => _q = v),
+        ),
+        for (final (i, ch, found) in _visibleChapters(s))
           Card(
             margin: const EdgeInsets.only(bottom: Kx.s8),
             color: c.surfaceContainer,
@@ -259,8 +285,9 @@ class _BooksPanelState extends State<BooksPanel> {
                   trailing: ch.topics.isEmpty ? null : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
                   onTap: ch.topics.isEmpty ? null : () => setState(() => _open.contains(ch.id) ? _open.remove(ch.id) : _open.add(ch.id)),
                 ),
-                if (_open.contains(ch.id))
-                  for (final t in ch.topics)
+                // While searching, the topics found show without opening their chapter.
+                if (_open.contains(ch.id) || found != null)
+                  for (final t in found ?? ch.topics)
                     ListTile(
                       key: Key('topic-${t.id}'),
                       contentPadding: const EdgeInsets.only(left: 24, right: Kx.s16),
