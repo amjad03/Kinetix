@@ -1,9 +1,11 @@
 // KINETIX 3D viewer: one model at a time, driven by the app.
 //
 // The app loads index.html?model=<id>&lang=<en|hi|kn>, then sends commands
-// with kx.cmd({...}) (WebView) or postMessage({kxcmd: {...}}) (web). The
-// viewer answers with JSON messages through the KX channel (WebView) or
-// postMessage({kx: '...'}) to the parent page (web).
+// with kx.cmd({...}) (WebView, WebView2) or postMessage({kxcmd: {...}})
+// (web). The viewer answers with JSON messages through the KX channel
+// (Android WebView), window.chrome.webview (WebView2 on Windows) or
+// postMessage({kx: '...'}) to the parent page (web). The protocol is
+// written down in lib/src/viewer/protocol.dart.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -32,6 +34,7 @@ function send(msg) {
   if (channel) msg.ch = channel;
   const text = JSON.stringify(msg);
   if (window.KX && window.KX.postMessage) window.KX.postMessage(text);
+  else if (window.chrome && window.chrome.webview) window.chrome.webview.postMessage(text);
   else if (window.parent !== window) window.parent.postMessage({ kx: text }, '*');
 }
 
@@ -220,6 +223,9 @@ function layoutLabels() {
   // All labels: the main parts, plus a minor one if it is the one picked.
   if (state.labels === 'all') shown = visibleParts().filter((p) => (!p.info.minor || p.info.id === state.picked || state.shown.has(p.info.id)) && cutAnchor(p) !== null);
   else if (state.labels === 'picked' && state.picked && parts.get(state.picked)?.group.visible) shown = [parts.get(state.picked)];
+  // The part under the laser is named whatever the label setting.
+  const lit = laser.part && parts.get(laser.part);
+  if (lit && lit.group.visible && !shown.includes(lit)) shown.push(lit);
   const o = new THREE.Vector3(0, 0, 0).project(camera);
   const centre = { x: (o.x * 0.5 + 0.5) * w, y: (-o.y * 0.5 + 0.5) * h };
   const now = performance.now();
@@ -270,7 +276,7 @@ function drawLabels() {
     dot.setAttribute('class', i.dim ? 'dim' : '');
     overlay.appendChild(dot);
     const el = document.createElement('div');
-    el.className = `label ${i.side < 0 ? 'left' : 'right'}${i.dim ? ' dim' : ''}${i.p.info.id === state.picked ? ' picked' : ''}`;
+    el.className = `label ${i.side < 0 ? 'left' : 'right'}${i.dim ? ' dim' : ''}${i.p.info.id === state.picked ? ' picked' : ''}${i.p.info.id === laser.part ? ' laser' : ''}`;
     el.textContent = name(i.p.info);
     el.style.top = `${i.ly}px`;
     el.style.left = `${i.lx}px`;
@@ -505,8 +511,13 @@ renderer.domElement.addEventListener('pointerup', (e) => {
 
 function pick(id) {
   state.picked = id;
-  for (const p of parts.values()) setGlow(p, p.info.id === id ? 0.35 : 0);
+  for (const p of parts.values()) setGlow(p, glowFor(p));
   send({ event: 'pick', part: id });
+}
+
+/** How brightly [p] glows: picked, under the laser, or lit by an animation step. */
+function glowFor(p) {
+  return Math.max(p.info.id === state.picked ? 0.35 : 0, p.info.id === laser.part ? 0.55 : 0, p.animGlow || 0);
 }
 
 function setGlow(p, amount) {
@@ -654,7 +665,8 @@ function stopAnimation() {
     m.depthWrite = !p.info.opacity;
     m.needsUpdate = true;
     p.back.visible = true;
-    setGlow(p, p.info.id === state.picked ? 0.35 : 0);
+    p.animGlow = 0;
+    setGlow(p, glowFor(p));
   }
   if (was.steps) send({ event: 'animation', id: null });
 }
@@ -686,7 +698,8 @@ function showFlowStep(step) {
       p.back.visible = false;
     }
     m.needsUpdate = true;
-    setGlow(p, lit ? (tour ? 0.25 : 0.45) : 0);
+    p.animGlow = lit ? (tour ? 0.25 : 0.45) : 0;
+    setGlow(p, glowFor(p));
   }
   send({ event: 'animation', id: a.id, step, steps: a.steps.length });
 }
@@ -757,6 +770,100 @@ function groupPivot(ids) {
     pivots.set(key, box.getCenter(new THREE.Vector3()));
   }
   return pivots.get(key);
+}
+
+// ------------------------------------------------------------------ laser
+
+// The teacher points with a laser over the model. The app draws the trail
+// (it answers the finger at once) and sends its points here: the part under
+// the tip lights up and is named, and the trail goes into the pictures for
+// the students' screen. The tip is looked at again every few frames, so the
+// part under it changes as the model turns or moves under a still finger.
+const laser = { tip: null, trail: [], part: null, fade: 1200, lastPick: 0, until: 0 };
+
+/** The part (id) under the screen point [x], [y] (CSS pixels), if any. */
+function partAt(x, y) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2((x / rect.width) * 2 - 1, -(y / rect.height) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const hit = raycaster.intersectObjects(pickables(), false).filter(visibleHit)[0];
+  return hit ? hit.object.userData.part : null;
+}
+
+function setLaserPart(id) {
+  if (id === laser.part) return;
+  const was = laser.part && parts.get(laser.part);
+  laser.part = id;
+  if (was) setGlow(was, glowFor(was));
+  const now = id && parts.get(id);
+  if (now) setGlow(now, glowFor(now));
+  lastLabels = 0; // name it on the next frame
+  send({ event: 'laser', part: id });
+}
+
+/** [c.pts]: new points of the trail ([x, y] from 0 to 1 across the view), the last one the tip; [c.up]: the finger lifted; [c.off]: laser put away. */
+function laserCommand(c) {
+  const now = performance.now();
+  if (c.fade) laser.fade = c.fade;
+  if (c.off) {
+    laser.tip = null;
+    laser.trail = [];
+    setLaserPart(null);
+    return;
+  }
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
+  for (const [x, y] of c.pts || []) {
+    laser.tip = { x: x * w, y: y * h };
+    laser.trail.push([x * w, y * h, now, true]);
+  }
+  if (c.up) {
+    laser.tip = null;
+    // A break in the trail: the next stroke does not join this one.
+    if (laser.trail.length) laser.trail[laser.trail.length - 1][3] = false;
+  }
+  laser.until = now + laser.fade;
+  laserTick(now, true);
+}
+
+function laserTick(now, force = false) {
+  laser.trail = laser.trail.filter((p) => now - p[2] < laser.fade);
+  if (laser.tip) {
+    if (force || now - laser.lastPick > 80) {
+      laser.lastPick = now;
+      setLaserPart(partAt(laser.tip.x, laser.tip.y));
+    }
+  } else if (laser.part && now > laser.until) {
+    // The part stays lit while the trail fades, then goes back.
+    setLaserPart(null);
+  }
+}
+
+/** The trail, drawn into a picture [s] times the size of the screen. */
+function drawLaser2d(g, s, now) {
+  const pts = laser.trail;
+  if (!pts.length) return;
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    if (a[3] === false) continue; // the finger lifted here
+    const life = Math.max(0, 1 - (now - b[2]) / laser.fade);
+    g.strokeStyle = `rgba(255, 46, 46, ${life * 0.35})`;
+    g.lineWidth = 14 * s * life + 2;
+    g.beginPath();
+    g.moveTo(a[0] * s, a[1] * s);
+    g.lineTo(b[0] * s, b[1] * s);
+    g.stroke();
+    g.strokeStyle = `rgba(255, 70, 60, ${life})`;
+    g.lineWidth = 4 * s;
+    g.stroke();
+  }
+  if (laser.tip) {
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.arc(laser.tip.x * s, laser.tip.y * s, 4 * s, 0, Math.PI * 2);
+    g.fill();
+  }
 }
 
 // ------------------------------------------------------------------ snapshot
@@ -842,7 +949,7 @@ function mirrorTick(now) {
     mirror.key = key;
     mirror.until = now + 1500;
   }
-  if (!state.anim && !state.autoRotate && now > mirror.until) return;
+  if (!state.anim && !state.autoRotate && !laser.trail.length && now > mirror.until) return;
   mirror.last = now;
   send({ event: 'frame', jpg: mirrorFrame(mirror.maxWidth) });
 }
@@ -868,6 +975,7 @@ function mirrorFrame(maxWidth) {
   const g = c.getContext('2d');
   g.putImageData(img, 0, 0);
   drawLabels2d(g, w / renderer.domElement.clientWidth, w);
+  drawLaser2d(g, w / renderer.domElement.clientWidth, performance.now());
   return c.toDataURL('image/jpeg', 0.72);
 }
 
@@ -908,6 +1016,7 @@ function render(now) {
     }
   }
   tickAnimation(now);
+  laserTick(now);
   planeHint.tick(now);
   controls.update();
   renderer.render(scene, camera);
@@ -965,6 +1074,24 @@ const commands = {
   },
   pick: (c) => pick(c.part ?? null),
   view: (c) => view(c.dir),
+  // Turning the model without touching it (two fingers while the laser is
+  // out): [dx] round the vertical axis and [dy] up or down, in radians;
+  // [scale] above 1 comes closer.
+  orbit: (c) => {
+    flight = null;
+    stopAutoRotate();
+    const off = camera.position.clone().sub(controls.target);
+    const s = new THREE.Spherical().setFromVector3(off);
+    s.theta -= c.dx || 0;
+    s.phi = Math.max(0.05, Math.min(Math.PI - 0.05, s.phi - (c.dy || 0)));
+    if (c.scale) s.radius = Math.max(modelSize * 0.3, Math.min(modelSize * 30, s.radius / c.scale));
+    off.setFromSpherical(s);
+    camera.position.copy(controls.target).add(off);
+    controls.update();
+  },
+  laser: laserCommand,
+  // For tests: which part is at a point of the view ([x], [y] from 0 to 1).
+  partAt: (c) => send({ event: 'partAt', part: partAt(c.x * renderer.domElement.clientWidth, c.y * renderer.domElement.clientHeight) }),
   reset: () => {
     state.explode = 0;
     applyExplode();
@@ -1044,6 +1171,8 @@ const commands = {
       animation: state.anim ? { id: state.anim.id, step: state.anim.step } : null,
       visible: visibleParts().map((p) => p.info.id),
       lang: state.lang,
+      variant: state.variant,
+      laser: laser.part,
     }),
 };
 

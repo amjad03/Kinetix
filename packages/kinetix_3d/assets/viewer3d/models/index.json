@@ -423,6 +423,37 @@
    "order": 1
   },
   {
+   "id": "ac_generator",
+   "subject": "Physics",
+   "title": {
+    "en": "AC generator",
+    "hi": "प्रत्यावर्ती धारा जनित्र",
+    "kn": "ಪರ್ಯಾಯ ವಿದ್ಯುತ್ ಜನಕ"
+   },
+   "summary": {
+    "en": "Turning a coil in a magnetic field induces a current in it (electromagnetic induction). Slip rings carry it out; it reverses every half turn, so it is alternating current.",
+    "hi": "चुंबकीय क्षेत्र में कुंडली घुमाने से उसमें धारा प्रेरित होती है (विद्युत चुंबकीय प्रेरण)। सर्पी वलय इसे बाहर ले जाते हैं; यह हर आधे चक्कर में उलटती है, इसलिए यह प्रत्यावर्ती धारा है।",
+    "kn": "ಕಾಂತಕ್ಷೇತ್ರದಲ್ಲಿ ಸುರುಳಿಯನ್ನು ತಿರುಗಿಸಿದರೆ ಅದರಲ್ಲಿ ವಿದ್ಯುತ್ ಪ್ರೇರಿತವಾಗುತ್ತದೆ (ವಿದ್ಯುತ್ಕಾಂತೀಯ ಪ್ರೇರಣೆ). ಜಾರು ಉಂಗುರಗಳು ಅದನ್ನು ಹೊರಗೆ ಒಯ್ಯುತ್ತವೆ; ಪ್ರತಿ ಅರ್ಧ ಸುತ್ತಿಗೆ ಅದು ದಿಕ್ಕು ಬದಲಿಸುತ್ತದೆ, ಹಾಗಾಗಿ ಇದು ಪರ್ಯಾಯ ವಿದ್ಯುತ್."
+   },
+   "keywords": [
+    "generator",
+    "ac generator",
+    "electric generator",
+    "dynamo",
+    "electromagnetic induction",
+    "slip rings",
+    "alternating current",
+    "fleming right hand rule",
+    "magnetic effects of electric current",
+    "induced current"
+   ],
+   "classes": [
+    10,
+    12
+   ],
+   "order": 2
+  },
+  {
    "id": "prism",
    "subject": "Physics",
    "title": {
@@ -484,6 +515,107 @@
     12
    ],
    "order": 3
+  },
+  {
+   "id": "electric_circuit",
+   "subject": "Physics",
+   "title": {
+    "en": "A simple electric circuit",
+    "hi": "एक सरल विद्युत परिपथ",
+    "kn": "ಸರಳ ವಿದ್ಯುತ್ ಮಂಡಲ"
+   },
+   "summary": {
+    "en": "A battery drives a current through a closed loop: a plug key, an ammeter, a bulb and a resistor in series, with a voltmeter across the resistor. V = IR (Ohm's law).",
+    "hi": "बैटरी एक बंद पथ में धारा चलाती है: श्रेणी में प्लग कुंजी, ऐमीटर, बल्ब और प्रतिरोधक, और प्रतिरोधक के सिरों पर वोल्टमीटर। V = IR (ओम का नियम)।",
+    "kn": "ಬ್ಯಾಟರಿ ಮುಚ್ಚಿದ ಪಥದಲ್ಲಿ ವಿದ್ಯುತ್ ಹರಿಸುತ್ತದೆ: ಸರಣಿಯಲ್ಲಿ ಪ್ಲಗ್ ಕೀ, ಆಮ್ಮೀಟರ್, ಬಲ್ಬ್ ಮತ್ತು ರೋಧಕ, ರೋಧಕದ ಅಡ್ಡಲಾಗಿ ವೋಲ್ಟ್‌ಮೀಟರ್. V = IR (ಓಮ್‌ನ ನಿಯಮ)."
+   },
+   "keywords": [
+    "electric circuit",
+    "circuit",
+    "electricity",
+    "electric current",
+    "ohm's law",
+    "ammeter",
+    "voltmeter",
+    "resistor",
+    "resistance",
+    "potential difference",
+    "cell",
+    "battery",
+    "bulb",
+    "series circuit",
+    "current electricity"
+   ],
+   "classes": [
+    6,
+    7,
+    10
+   ],
+   "order": 3
+  },
+  {
+   "id": "transformer",
+   "subject": "Physics",
+   "title": {
+    "en": "Transformer",
+    "hi": "ट्रांसफ़ॉर्मर",
+    "kn": "ಪರಿವರ್ತಕ (ಟ್ರಾನ್ಸ್‌ಫಾರ್ಮರ್)"
+   },
+   "summary": {
+    "en": "An alternating current in the primary coil makes a changing magnetic flux in the iron core, which induces a voltage in the secondary coil. Vs / Vp = Ns / Np.",
+    "hi": "प्राथमिक कुंडली में प्रत्यावर्ती धारा लोहे के क्रोड में बदलता चुंबकीय फ्लक्स बनाती है, जो द्वितीयक कुंडली में वोल्टता प्रेरित करता है। Vs / Vp = Ns / Np।",
+    "kn": "ಪ್ರಾಥಮಿಕ ಸುರುಳಿಯಲ್ಲಿನ ಪರ್ಯಾಯ ವಿದ್ಯುತ್ ಕಬ್ಬಿಣದ ಕೋರ್‌ನಲ್ಲಿ ಬದಲಾಗುವ ಕಾಂತೀಯ ಫ್ಲಕ್ಸ್ ಉಂಟುಮಾಡುತ್ತದೆ, ಅದು ದ್ವಿತೀಯ ಸುರುಳಿಯಲ್ಲಿ ವೋಲ್ಟೇಜ್ ಪ್ರೇರಿಸುತ್ತದೆ. Vs / Vp = Ns / Np."
+   },
+   "keywords": [
+    "transformer",
+    "step up transformer",
+    "step down transformer",
+    "mutual induction",
+    "electromagnetic induction",
+    "alternating current",
+    "turns ratio",
+    "primary coil",
+    "secondary coil",
+    "power transmission"
+   ],
+   "classes": [
+    12
+   ],
+   "order": 4
+  },
+  {
+   "id": "simple_machines",
+   "subject": "Physics",
+   "title": {
+    "en": "Simple machines",
+    "hi": "सरल मशीनें",
+    "kn": "ಸರಳ ಯಂತ್ರಗಳು"
+   },
+   "summary": {
+    "en": "A lever, a pulley and an inclined plane: each lets a smaller effort move a load, or changes the direction of the push. Mechanical advantage = load ÷ effort.",
+    "hi": "उत्तोलक, घिरनी और आनत तल: हर एक कम प्रयास से भार हिलाने देता है, या बल की दिशा बदल देता है। यांत्रिक लाभ = भार ÷ प्रयास।",
+    "kn": "ಸನ್ನೆ, ರಾಟೆ ಮತ್ತು ಓರೆ ತಲ: ಪ್ರತಿಯೊಂದೂ ಕಡಿಮೆ ಪ್ರಯತ್ನದಿಂದ ಹೊರೆ ಸರಿಸಲು ಅಥವಾ ಬಲದ ದಿಕ್ಕು ಬದಲಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ. ಯಾಂತ್ರಿಕ ಲಾಭ = ಹೊರೆ ÷ ಪ್ರಯತ್ನ."
+   },
+   "keywords": [
+    "simple machines",
+    "lever",
+    "fulcrum",
+    "pulley",
+    "inclined plane",
+    "mechanical advantage",
+    "load",
+    "effort",
+    "work and energy",
+    "force and pressure",
+    "moments",
+    "principle of moments"
+   ],
+   "classes": [
+    6,
+    7,
+    9
+   ],
+   "order": 5
   },
   {
    "id": "atoms",
@@ -554,6 +686,105 @@
     11
    ],
    "order": 2
+  },
+  {
+   "id": "orbitals",
+   "subject": "Chemistry",
+   "title": {
+    "en": "Atomic orbitals (s, p, d)",
+    "hi": "परमाणु कक्षक (s, p, d)",
+    "kn": "ಪರಮಾಣು ಕಕ್ಷೀಯಗಳು (s, p, d)"
+   },
+   "summary": {
+    "en": "The shapes of s, p and d orbitals: the regions round the nucleus where an electron is most likely to be found. Colours show the sign of the wave function.",
+    "hi": "s, p और d कक्षकों की आकृतियाँ: नाभिक के चारों ओर वे क्षेत्र जहाँ इलेक्ट्रॉन के मिलने की संभावना सबसे अधिक है। रंग तरंग फलन का चिह्न दिखाते हैं।",
+    "kn": "s, p ಮತ್ತು d ಕಕ್ಷೀಯಗಳ ಆಕಾರಗಳು: ಬೀಜಕೇಂದ್ರದ ಸುತ್ತ ಎಲೆಕ್ಟ್ರಾನ್ ಸಿಗುವ ಸಾಧ್ಯತೆ ಹೆಚ್ಚಿರುವ ಪ್ರದೇಶಗಳು. ಬಣ್ಣಗಳು ತರಂಗ ಫಲನದ ಚಿಹ್ನೆಯನ್ನು ತೋರಿಸುತ್ತವೆ."
+   },
+   "keywords": [
+    "orbital",
+    "orbitals",
+    "atomic orbital",
+    "s orbital",
+    "p orbital",
+    "d orbital",
+    "quantum numbers",
+    "structure of atom",
+    "nodal plane",
+    "shapes of orbitals",
+    "azimuthal quantum number"
+   ],
+   "classes": [
+    11,
+    12
+   ],
+   "order": 3
+  },
+  {
+   "id": "hybridisation",
+   "subject": "Chemistry",
+   "title": {
+    "en": "Hybridisation of orbitals",
+    "hi": "कक्षकों का संकरण",
+    "kn": "ಕಕ್ಷೀಯಗಳ ಸಂಕರಣ"
+   },
+   "summary": {
+    "en": "Orbitals of a central atom mix into equal hybrid orbitals that point as far apart as they can. The number of hybrids sets the shape of the molecule.",
+    "hi": "केंद्रीय परमाणु के कक्षक मिलकर समान संकर कक्षक बनाते हैं जो एक-दूसरे से यथासंभव दूर होते हैं। संकरों की संख्या अणु की आकृति तय करती है।",
+    "kn": "ಕೇಂದ್ರ ಪರಮಾಣುವಿನ ಕಕ್ಷೀಯಗಳು ಸೇರಿ ಸಾಧ್ಯವಾದಷ್ಟು ದೂರ ತೋರುವ ಸಮಾನ ಸಂಕರ ಕಕ್ಷೀಯಗಳಾಗುತ್ತವೆ. ಸಂಕರಗಳ ಸಂಖ್ಯೆ ಅಣುವಿನ ಆಕಾರವನ್ನು ನಿರ್ಧರಿಸುತ್ತದೆ."
+   },
+   "keywords": [
+    "hybridisation",
+    "hybridization",
+    "hybrid orbitals",
+    "sp3",
+    "sp2",
+    "sp",
+    "vsepr",
+    "chemical bonding and molecular structure",
+    "molecular geometry",
+    "bond angle",
+    "tetrahedral",
+    "trigonal planar",
+    "octahedral"
+   ],
+   "classes": [
+    11,
+    12
+   ],
+   "order": 4
+  },
+  {
+   "id": "crystal_lattices",
+   "subject": "Chemistry",
+   "title": {
+    "en": "Cubic crystal lattices",
+    "hi": "घनीय क्रिस्टल जालक",
+    "kn": "ಘನೀಯ ಹರಳು ಜಾಲಕಗಳು"
+   },
+   "summary": {
+    "en": "Unit cells of cubic crystals: simple cubic, body-centred, face-centred and rock salt. Count the atoms each cell really holds, and each atom's nearest neighbours.",
+    "hi": "घनीय क्रिस्टलों की एकक कोष्ठिकाएँ: सरल घनीय, अंतःकेंद्रित, फलक-केंद्रित और सेंधा नमक। गिनें कि हर कोष्ठिका में वास्तव में कितने परमाणु हैं, और हर परमाणु के निकटतम पड़ोसी।",
+    "kn": "ಘನೀಯ ಹರಳುಗಳ ಏಕಕ ಕೋಶಗಳು: ಸರಳ ಘನೀಯ, ಕಾಯ ಕೇಂದ್ರಿತ, ಮುಖ ಕೇಂದ್ರಿತ ಮತ್ತು ಕಲ್ಲುಪ್ಪು. ಪ್ರತಿ ಕೋಶದಲ್ಲಿ ನಿಜವಾಗಿ ಎಷ್ಟು ಪರಮಾಣುಗಳಿವೆ, ಪ್ರತಿ ಪರಮಾಣುವಿನ ಹತ್ತಿರದ ನೆರೆಯವು ಯಾವುವು ಎಂದು ಎಣಿಸಿ."
+   },
+   "keywords": [
+    "crystal lattice",
+    "unit cell",
+    "solid state",
+    "the solid state",
+    "simple cubic",
+    "body centred cubic",
+    "face centred cubic",
+    "bcc",
+    "fcc",
+    "packing efficiency",
+    "coordination number",
+    "sodium chloride",
+    "close packing"
+   ],
+   "classes": [
+    12
+   ],
+   "order": 5
   },
   {
    "id": "earth_layers",
