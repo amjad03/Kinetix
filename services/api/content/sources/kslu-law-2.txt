@@ -1,0 +1,384 @@
+// Law papers, Karnataka State Law University. LLB (3-year) semesters 4-6.
+file: kslu-law
+curriculum: kslu-law | Karnataka State Law University | ug
+programme: LLB
+scheme: KSLU CBCS | 2025-26
+
+# llb-4-public-international-law | 4 | Public International Law
+## Nature and Sources
+### Nature and sources of international law
+= Whether international law is law, and its sources.
+- Sources (Article 38(1), ICJ Statute): treaties, custom, general principles of law; judicial decisions and teachings as subsidiary means.
+- Custom needs state practice and opinio juris (North Sea Continental Shelf, 1969).
+- Jus cogens norms (e.g. prohibition of genocide, torture) cannot be derogated from.
+> Identify sources of international law
+> Explain the elements of custom
+## States and Recognition
+### Statehood, recognition and jurisdiction
+= Criteria of statehood, recognition theories and state jurisdiction.
+- Montevideo Convention criteria: population, territory, government, capacity to enter relations.
+- Recognition: constitutive and declaratory theories; de jure and de facto.
+- Jurisdiction principles: territorial, nationality, protective, universal.
+> Apply criteria of statehood
+> Distinguish theories of recognition
+## Treaties and the Sea
+### Law of treaties and law of the sea
+= Vienna Convention, 1969 and UNCLOS, 1982.
+- Pacta sunt servanda (Article 26, VCLT); reservations; rebus sic stantibus (fundamental change of circumstances).
+- UNCLOS zones: territorial sea up to 12 nautical miles, contiguous zone 24, exclusive economic zone 200.
+- Innocent passage is allowed through the territorial sea.
+> Apply treaty rules
+> Identify maritime zones and rights
+## International Institutions and Disputes
+### The United Nations and the ICJ
+= UN organs, peaceful settlement and use of force.
+- Principal UN organs: General Assembly, Security Council, ECOSOC, Trusteeship Council, ICJ, Secretariat.
+- Article 2(4) of the UN Charter prohibits the use of force; exceptions are self-defence (Article 51) and Security Council action (Chapter VII).
+- ICJ jurisdiction rests on consent (special agreement, compromissory clause, optional clause).
+> Explain the prohibition on the use of force
+> Describe how the ICJ gets jurisdiction
+
+# llb-4-company-law | 4 | Company Law
+## Corporate Personality
+### Incorporation and lifting the veil
+= Separate legal personality and when courts pierce it.
+- A company is a separate legal person (Salomon v Salomon, 1897).
+- The veil is lifted for fraud, sham companies, tax evasion and enemy character; section 7(7) and others allow statutory lifting.
+- Kinds: private, public, OPC, small, Section 8 (charitable), producer companies.
+> Explain corporate personality
+> Identify when the veil is lifted
+## Constitution and Capital
+### MOA, AOA and share capital
+= Constitutional documents, doctrines and capital.
+- Ultra vires acts are void (Ashbury Railway Carriage v Riche, 1875).
+- Indoor management (Royal British Bank v Turquand) protects outsiders; constructive notice applies to public documents.
+- Share capital: equity and preference; buy-back (section 68); reduction of capital (section 66).
+> Apply ultra vires and indoor management
+> Explain capital alteration
+## Management and Meetings
+### Directors, meetings and governance
+= Directors' duties, meetings and minority protection.
+- Directors' duties (section 166): act in good faith, with due care, avoid conflicts.
+- Oppression and mismanagement remedies (sections 241–244) before the NCLT; class actions (section 245).
+- Related party transactions (section 188) need approval.
+> State directors' duties
+> Advise minority shareholders
+## Insolvency and Winding Up
+### Insolvency and Bankruptcy Code, 2016
+= Corporate insolvency resolution and liquidation.
+- CIRP starts on default of at least ₹1 crore; financial or operational creditors may apply to the NCLT.
+- A resolution professional runs the company; the committee of creditors approves a resolution plan by 66% vote.
+- Timeline: 180 days, extendable by 90, with an outer limit of 330 days.
+> Describe the CIRP
+> Explain the waterfall in liquidation (section 53)
+
+# llb-4-evidence-bsa | 4 | Law of Evidence (Bharatiya Sakshya Adhiniyam, 2023)
+! Section numbers are of the BSA; Indian Evidence Act equivalents may still be expected.
+## Relevancy
+### Facts in issue and relevant facts
+= Relevancy, res gestae and motive.
+- Evidence may be given only of facts in issue and relevant facts.
+- Res gestae: facts forming part of the same transaction are relevant (section 4).
+- Motive, preparation and conduct are relevant (section 6).
+> Distinguish facts in issue and relevant facts
+> Apply res gestae
+## Admissions and Confessions
+### Admissions, confessions and dying declarations
+= When statements are admissible against their makers.
+- A confession to a police officer is not provable (section 23); a confession under inducement, threat or promise is irrelevant (section 22).
+- Information leading to the discovery of a fact is admissible (proviso to section 23, formerly section 27).
+- A dying declaration as to the cause of death is relevant (section 26(a)); it can alone support conviction if reliable.
+> Decide admissibility of confessions
+> Evaluate a dying declaration
+hook: An accused tells police, "I threw the knife in the well." The knife is found there. What can the court hear?
+q: Is a confession made to a police officer admissible? || No (section 23), except the part that leads to discovery of a fact.
+terms: admission; confession; discovery; dying declaration
+## Documentary and Electronic Evidence
+### Documents and electronic records
+= Primary and secondary evidence and electronic records.
+- Primary evidence is the document itself; secondary evidence is admissible in listed cases.
+- Electronic records are documents and can be primary evidence (sections 57, 61).
+- A certificate under section 63 (formerly 65B; Arjun Panditrao Khotkar, 2020) is needed for electronic records as secondary evidence.
+> Prove documents and electronic records
+> Prepare a section 63 certificate
+## Burden of Proof and Witnesses
+### Burden, presumptions and examination of witnesses
+= Who must prove, presumptions, and examination-in-chief and cross-examination.
+- Burden of proof lies on the person who asserts (section 104).
+- Presumptions: "may presume", "shall presume", "conclusive proof".
+- Leading questions are not allowed in examination-in-chief but are allowed in cross-examination.
+> Allocate the burden of proof
+> Conduct examination and cross-examination
+
+# llb-4-ipr | 4 | Intellectual Property Rights Law
+## Introduction
+### Nature of IP and international framework
+= Kinds of IP and TRIPS.
+- IP rights: copyright, patents, trademarks, designs, geographical indications, trade secrets.
+- TRIPS Agreement (WTO) sets minimum standards.
+- IP rights are territorial and time-limited (except trademarks, renewable).
+> Classify IP rights
+> Explain TRIPS obligations
+## Patents
+### Patents Act, 1970
+= Patentability, exclusions and term.
+- Patentable invention: novelty, inventive step, industrial application.
+- Section 3(d) bars new forms of known substances without enhanced efficacy (Novartis v Union of India, 2013).
+- Term: 20 years from filing; compulsory licences (section 84).
+> Test patentability
+> Explain section 3(d)
+## Copyright
+### Copyright Act, 1957
+= Works, rights, term and fair dealing.
+- Protects original literary, dramatic, musical, artistic works, films and sound recordings.
+- Term: author's life plus 60 years for literary works.
+- Fair dealing for private use, research, criticism and reporting (section 52).
+> Identify protected works
+> Apply fair dealing
+## Trademarks and Designs
+### Trade Marks Act, 1999 and Designs Act, 2000
+= Registration, infringement and passing off.
+- A trademark must be capable of distinguishing goods or services; registration lasts 10 years, renewable.
+- Infringement for registered marks; passing off protects unregistered goodwill.
+- Design registration lasts 10 years, extendable by 5.
+> Assess trademark infringement
+> Distinguish infringement and passing off
+
+# llb-5-cpc-limitation | 5 | Civil Procedure Code and Limitation Act
+## Suits and Jurisdiction
+### Jurisdiction and bars to suits
+= Civil jurisdiction, res sub judice and res judicata.
+- Civil courts try all suits of a civil nature unless barred (section 9).
+- Res sub judice (section 10) stays a later suit on the same matter; res judicata (section 11) bars re-litigation of decided matters.
+- Place of suing (sections 15–20): the lowest competent court; where the defendant resides or the cause of action arises.
+> Decide which court has jurisdiction
+> Apply res judicata
+## Pleadings and Trial
+### Plaint, written statement and interim orders
+= Pleadings, appearance and interim relief.
+- Plaint (Order VII); rejection of plaint (Order VII Rule 11).
+- Written statement within 30 days, extendable to 90 days (120 days, non-extendable, in commercial suits).
+- Temporary injunctions (Order XXXIX Rules 1–2) need a prima facie case, balance of convenience and irreparable injury.
+> Draft the structure of a plaint
+> Apply the test for temporary injunction
+## Judgment, Appeal and Execution
+### Decree, appeal, review, revision and execution
+= Post-trial remedies.
+- Decree (section 2(2)); first appeal (section 96); second appeal on a substantial question of law (section 100).
+- Review (section 114, Order XLVII); revision (section 115); inherent powers (section 151).
+- Execution of decrees by the court that passed it or to which it is sent (section 38).
+> Choose the right post-decree remedy
+> Explain execution procedure
+## Limitation
+### Limitation Act, 1963
+= Bar of limitation, extension and computation.
+- A suit filed after the limitation period is dismissed even if limitation is not pleaded (section 3).
+- Condonation of delay for appeals and applications on sufficient cause (section 5); not for suits.
+- Common periods: suit on contract 3 years; residuary 3 years (Article 113); possession of immovable property based on title 12 years.
+> Compute limitation periods
+> Apply section 5 condonation
+
+# llb-5-criminal-procedure-bnss | 5 | Criminal Procedure (Bharatiya Nagarik Suraksha Sanhita, 2023)
+! Section numbers are of the BNSS; CrPC equivalents may still be expected.
+## Pre-trial Process
+### FIR, investigation and arrest
+= Information to police, investigation and arrest powers.
+- FIR for cognizable offences (section 173); e-FIR and zero FIR are recognised.
+- Preliminary enquiry is allowed for offences punishable with 3 to 7 years (section 173(3)).
+- Arrest without warrant (section 35); notice of appearance instead of arrest in suitable cases; arrest memo and informing relatives (D. K. Basu guidelines).
+> Explain registration of FIR
+> State safeguards on arrest
+## Custody and Bail
+### Remand and bail
+= Police and judicial custody, default bail and anticipatory bail.
+- Police custody up to 15 days in total, which may be taken in parts within the first 40 or 60 days (section 187).
+- Default bail if the charge-sheet is not filed within 60 or 90 days.
+- Bailable and non-bailable offences; anticipatory bail (section 482); "bail is the rule, jail the exception".
+> Compute remand and default bail periods
+> Advise on anticipatory bail
+## Trial
+### Charges and trials
+= Charge, trial procedures and plea bargaining.
+- Trials: sessions, warrant, summons and summary trials.
+- Plea bargaining (Chapter XXIII) is available for offences punishable up to 7 years, except specified offences.
+- Trial in absentia of proclaimed offenders is now possible in specified cases.
+> Identify the trial procedure for an offence
+> Explain plea bargaining
+## Appeals and Other Provisions
+### Appeals, revision and maintenance
+= Post-trial remedies and miscellaneous proceedings.
+- Appeals against conviction and acquittal; revision by Sessions Courts and High Courts.
+- Maintenance of wives, children and parents (section 144).
+- Victim compensation scheme (section 396).
+> Choose post-trial remedies
+> Advise on maintenance and victim compensation
+
+# llb-5-interpretation | 5 | Interpretation of Statutes
+## Rules of Interpretation
+### Literal, golden and mischief rules
+= Primary rules of statutory interpretation.
+- Literal rule: plain meaning of words.
+- Golden rule: modify literal meaning to avoid absurdity.
+- Mischief rule (Heydon's case, 1584): find the mischief the law was meant to remedy; purposive interpretation is its modern form.
+> Apply the three rules to a statute
+> Choose an approach for an ambiguous provision
+## Subsidiary Rules
+### Maxims of interpretation
+= Ejusdem generis, noscitur a sociis and others.
+- Ejusdem generis: general words following specific ones take their colour.
+- Noscitur a sociis: a word is known by its companions.
+- Expressio unius est exclusio alterius: express mention of one excludes others.
+> Apply interpretive maxims
+> Interpret general words in a list
+## Aids to Interpretation
+### Internal and external aids
+= Preamble, headings, definitions and legislative history.
+- Internal aids: title, preamble, headings, definitions, provisos, explanations, schedules.
+- External aids: parliamentary debates, committee reports, dictionaries, earlier statutes.
+- General Clauses Act, 1897 supplies common definitions and rules.
+> Use internal and external aids
+> Apply the General Clauses Act
+## Interpretation of Special Statutes
+### Penal, taxing and beneficial statutes
+= Strict and liberal construction.
+- Penal and taxing statutes are construed strictly in favour of the subject.
+- Beneficial and welfare legislation is construed liberally.
+- Presumption of constitutionality; reading down to save a statute.
+> Construe penal and taxing statutes
+> Apply the presumption of constitutionality
+
+# llb-5-professional-ethics | 5 | Professional Ethics and Accounting for Lawyers (Clinical)
+## The Legal Profession
+### Advocates Act, 1961
+= Enrolment, Bar Councils and rights of advocates.
+- State Bar Councils enrol advocates; the Bar Council of India sets standards and the All India Bar Examination.
+- Only enrolled advocates may practise in courts (section 30).
+- Misconduct leads to disciplinary proceedings (section 35).
+> Describe the regulation of advocates
+> Identify professional misconduct
+## Duties of Advocates
+### BCI Rules on professional conduct
+= Duties to court, client, opponent and colleagues.
+- Duties to the court: act with dignity, not influence the court by illegal means.
+- Duties to the client: not withdraw without sufficient cause, keep confidences, avoid conflicts.
+- Advertising and solicitation are prohibited (Rule 36).
+> Apply the BCI Rules to cases
+> Explain the bar on advertising
+## Contempt and Bar–Bench Relations
+### Contempt of court
+= Civil and criminal contempt and defences.
+- Contempt of Courts Act, 1971: civil (wilful disobedience) and criminal (scandalising, prejudicing proceedings).
+- Truth is a defence if in the public interest and bona fide (2006 amendment).
+- Mutual respect between bar and bench sustains justice.
+> Distinguish civil and criminal contempt
+> Identify defences to contempt
+## Accounts for Lawyers
+### Accountancy for lawyers
+= Client money, books of account and fees.
+- Advocates must keep accounts of clients' money separately.
+- Fees cannot be contingent on the result (no share in the subject matter).
+- Receipts and statements of account must be given to clients.
+> Maintain client accounts
+> Explain rules on fees
+
+# llb-6-adr | 6 | Alternative Dispute Resolution (Clinical)
+## ADR Overview
+### Forms of ADR
+= Arbitration, conciliation, mediation, negotiation and Lok Adalats.
+- Section 89 CPC lets courts refer disputes to ADR.
+- Negotiation and mediation are non-binding until settled; arbitration gives a binding award.
+- ADR is quicker, cheaper and confidential.
+> Choose an ADR method
+> Explain section 89 CPC
+## Arbitration
+### Arbitration and Conciliation Act, 1996
+= Arbitration agreement, tribunal, award and challenge.
+- An arbitration agreement must be in writing (section 7); courts refer parties to arbitration (section 8).
+- Appointment of arbitrators (section 11); the tribunal rules on its own jurisdiction (section 16, kompetenz-kompetenz).
+- Award within 12 months of completion of pleadings, extendable by 6 months (section 29A); set aside under section 34; enforced under section 36.
+> Draft an arbitration clause
+> State grounds to set aside an award
+## Mediation and Conciliation
+### Mediation Act, 2023
+= Pre-litigation mediation and mediated settlement agreements.
+- Mediation is voluntary; a mediated settlement agreement is final and enforceable like a court judgment.
+- Mediation should be completed within 120 days, extendable by 60.
+- Online mediation is recognised.
+> Explain the mediation process
+> Describe enforcement of settlements
+## Lok Adalats and Legal Aid
+### Legal Services Authorities Act, 1987
+= Lok Adalats and free legal aid.
+- A Lok Adalat award is deemed a civil court decree and final; no appeal lies.
+- Permanent Lok Adalats handle public utility services disputes.
+- Free legal aid is a right under Article 39A and Article 21 (Hussainara Khatoon).
+> Explain Lok Adalat procedure
+> Identify who is entitled to legal aid
+
+# llb-6-drafting | 6 | Drafting, Pleading and Conveyancing (Clinical)
+## Principles of Drafting
+### General principles
+= Clarity, precision and structure in legal drafting.
+- Use plain, precise language; define terms; avoid ambiguity.
+- Structure: title, parties, recitals, operative part, schedules, execution.
+- Stamp duty and registration requirements affect validity and admissibility.
+> Apply principles of legal drafting
+> Structure a legal document
+## Civil Pleadings
+### Plaint and written statement
+= Drafting civil pleadings.
+- Order VI: pleadings state material facts, not evidence or law.
+- A plaint states the court, parties, cause of action, jurisdiction, valuation, relief and verification.
+- A written statement must deny specifically; non-denial is admission (Order VIII Rule 5).
+> Draft a plaint for recovery of money
+> Draft a written statement
+## Criminal Pleadings
+### Complaints, bail and petitions
+= Drafting in criminal matters.
+- Private complaint to a magistrate (BNSS section 223).
+- Bail applications state grounds: nature of offence, antecedents, custody period, cooperation.
+- Writ petitions under Article 226: facts, grounds, prayer, affidavit.
+> Draft a bail application
+> Draft a writ petition
+## Conveyancing
+### Deeds and agreements
+= Sale deed, lease deed, gift deed, will and power of attorney.
+- A sale deed contains parties, recitals of title, consideration, conveyance, covenants and schedule of property.
+- A will need not be registered but must be attested by two witnesses.
+- A power of attorney authorises an agent; one relating to immovable property is usually registered.
+> Draft a sale deed and a will
+> Draft a power of attorney
+
+# llb-6-human-rights | 6 | Human Rights Law
+## Concept and History
+### Human rights: concept and generations
+= Nature, generations and the international bill of rights.
+- Human rights are universal, inalienable, indivisible and interdependent.
+- Generations: civil and political; economic, social and cultural; collective (development, environment).
+- International Bill of Rights: UDHR (1948), ICCPR and ICESCR (1966).
+> Explain the nature of human rights
+> Describe the International Bill of Rights
+## International Mechanisms
+### UN human rights system
+= Charter-based and treaty-based bodies.
+- Human Rights Council and its Universal Periodic Review.
+- Treaty bodies, e.g. the Human Rights Committee under the ICCPR.
+- Conventions: CEDAW, CRC, CAT, CRPD.
+> Distinguish charter and treaty bodies
+> Identify key conventions
+## Human Rights in India
+### Protection of Human Rights Act, 1993
+= NHRC, SHRCs and human rights courts.
+- The NHRC inquires into violations and recommends action; its chair is a former Chief Justice of India or Supreme Court judge.
+- The NHRC cannot inquire into matters more than one year old.
+- Human rights courts are designated sessions courts.
+> Explain the role of the NHRC
+> Advise on filing a complaint
+## Rights of Vulnerable Groups
+### Protection of vulnerable groups
+= Women, children, SC/ST, persons with disabilities and transgender persons.
+- POCSO Act, 2012 protects children from sexual offences.
+- SC/ST (Prevention of Atrocities) Act, 1989; Rights of Persons with Disabilities Act, 2016.
+- NALSA (2014) recognised transgender persons; Transgender Persons (Protection of Rights) Act, 2019.
+> Identify protective laws for vulnerable groups
+> Apply them to cases

@@ -120,3 +120,23 @@ When a course is checked, add `reviewed=yes` to its `#` line in the source and r
 
 - SIMS's MSc is listed as MSc Forensic Science (secondary sources). Paper titles and semesters are the KINETIX team's reading of typical BU/Indian MSc Forensic Science schemes; confirm against the BU MSc Forensic Science regulations.
 - Not written: Sem 4 dissertation/internship, practicals as separate courses, and electives beyond those below.
+
+
+## LLB (kslu-law-1.txt, curriculum `kslu-law`, KSLU CBCS (2024-25))
+
+- Soundarya College of Law is affiliated to Karnataka State Law University (KSLU), Hubballi, not Bangalore University; its programmes are LLB (3-year), BA LLB and BCom LLB (5-year).
+- Courses are the core law papers, numbered by their LLB (3-year) semester. BA LLB and BCom LLB study the same law papers in different semesters (law papers from Sem 1, BA/BCom papers in Sem 1-6); link each 5-year subject to the matching law course by code. The 5-year programmes' BA and BCom papers (e.g. political science, sociology, economics, accountancy) are not written.
+- Paper titles and placement follow the common KSLU scheme; confirm against the current KSLU regulations, including optional papers (e.g. Banking Law, Insurance Law, Land Laws, Taxation) that are not written.
+- Criminal law papers follow the BNS, BNSS and BSA, in force from 1 July 2024; check whether the KSLU syllabus still teaches the IPC, CrPC and Evidence Act alongside them.
+
+- **Criminal Law I: Bharatiya Nyaya Sanhita, 2023, LLB Semester 1**
+  - Section numbers are of the BNS; the IPC equivalents may still be expected in examinations.
+- **Labour and Industrial Law, LLB Semester 3**
+  - The four labour codes were brought into force in late 2025; confirm whether the KSLU syllabus teaches the codes, the earlier Acts, or both.
+
+## LLB (kslu-law-2.txt, curriculum `kslu-law`, KSLU CBCS (2025-26))
+
+- **Law of Evidence (Bharatiya Sakshya Adhiniyam, 2023), LLB Semester 4**
+  - Section numbers are of the BSA; Indian Evidence Act equivalents may still be expected.
+- **Criminal Procedure (Bharatiya Nagarik Suraksha Sanhita, 2023), LLB Semester 5**
+  - Section numbers are of the BNSS; CrPC equivalents may still be expected.
