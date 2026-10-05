@@ -113,6 +113,8 @@ class PictureLibrary {
         if (tag.contains(q) || q.contains(tag)) s += 10;
       }
       if (s > 0 && p.shelves.any(prefer.contains)) s += 5;
+      // Diagrams before stickers of the same thing.
+      if (s > 0 && !p.isSticker) s += 3;
       return s;
     }
 

@@ -94,22 +94,39 @@ class _CoachOverlayState extends State<CoachOverlay> {
 
   CoachStep get _step => widget.steps[_i];
 
-  Rect? get _hole {
-    final key = _step.target;
-    if (key == null || !widget.boardContext.mounted) return null;
-    return screenRectOf(widget.boardContext, key)?.inflate(8);
+  /// The control's place on screen, measured after each frame (not while building).
+  Rect? _hole;
+
+  @override
+  void initState() {
+    super.initState();
+    _measure();
+  }
+
+  void _measure() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = _step.target;
+      final r = key == null || !widget.boardContext.mounted ? null : screenRectOf(widget.boardContext, key)?.inflate(8);
+      if (r != _hole) setState(() => _hole = r);
+    });
+  }
+
+  void _go(int i) {
+    setState(() => _i = i);
+    _measure();
   }
 
   void _next() {
     if (_i < widget.steps.length - 1) {
-      setState(() => _i++);
+      _go(_i + 1);
     } else {
       Navigator.pop(context, true);
     }
   }
 
   void _back() {
-    if (_i > 0) setState(() => _i--);
+    if (_i > 0) _go(_i - 1);
   }
 
   @override
@@ -162,15 +179,20 @@ class _CoachOverlayState extends State<CoachOverlay> {
     const gap = 16.0, margin = 16.0;
     final width = math.min(380.0, size.width - 2 * margin);
     double? left, top, bottom;
+    // Beside a control: level with it, hanging down from one in the top half and standing up
+    // from one in the bottom half, so the card stays on screen.
+    (double?, double?) beside(Rect h) => h.center.dy < size.height / 2
+        ? ((h.center.dy - 60).clamp(margin, size.height / 2), null)
+        : (null, (size.height - h.center.dy - 60).clamp(margin, size.height / 2));
     if (hole == null) {
       left = (size.width - width) / 2;
       top = size.height * 0.3;
     } else if (hole.right + gap + width + margin <= size.width) {
       left = hole.right + gap;
-      top = (hole.center.dy - 90).clamp(margin, math.max(margin, size.height - 280));
+      (top, bottom) = beside(hole);
     } else if (hole.left - gap - width >= margin) {
       left = hole.left - gap - width;
-      top = (hole.center.dy - 90).clamp(margin, math.max(margin, size.height - 280));
+      (top, bottom) = beside(hole);
     } else {
       left = (hole.center.dx - width / 2).clamp(margin, size.width - width - margin);
       if (hole.center.dy > size.height / 2) {

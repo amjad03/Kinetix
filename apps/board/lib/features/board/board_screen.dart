@@ -777,11 +777,18 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   void _openHelp() {
+    // The controls on screen now (the profile button is under the menu that opened help).
+    final onScreen = {
+      const Key('profile-button'),
+      for (final (_, topics) in helpTopics(context.l10n))
+        for (final t in topics)
+          if (t.target != null && screenRectOf(context, t.target!) != null) t.target!,
+    };
     setState(() => _popover = null);
     unawaited(
       HelpSheet.show(
         context,
-        canShow: (key) => screenRectOf(context, key) != null || key == const Key('profile-button'),
+        canShow: onScreen.contains,
         onShowMe: (t) => unawaited(_showMe(t.target!, t.icon, t.title, t.steps.join(' '))),
         onTour: () => unawaited(_startTour()),
         onPractice: _practice == null ? _startPractice : null,
