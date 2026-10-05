@@ -1,0 +1,1117 @@
+{
+ "curricula": [
+  {
+   "code": "bu-ug",
+   "name": "Bangalore University (UG)",
+   "level": "ug"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-jour-1-communication",
+   "title": "Journalism: Introduction to Communication, BA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Communication Concepts",
+     "topics": [
+      {
+       "title": "Nature and process of communication",
+       "summary": "Definitions, elements and types of communication.",
+       "notes": [
+        "Elements: source, message, channel, receiver, feedback, noise.",
+        "Types: intrapersonal, interpersonal, group, public and mass communication.",
+        "The 7 Cs: clear, concise, concrete, correct, coherent, complete, courteous."
+       ],
+       "outcomes": [
+        "Describe the communication process",
+        "Distinguish types of communication"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Models of Communication",
+     "topics": [
+      {
+       "title": "Communication models",
+       "summary": "Linear, interactive and transactional models.",
+       "notes": [
+        "Lasswell: who says what, in which channel, to whom, with what effect.",
+        "Shannon–Weaver: information source, transmitter, channel (with noise), receiver, destination.",
+        "Schramm's model adds a shared field of experience; Osgood–Schramm is circular."
+       ],
+       "outcomes": [
+        "Compare communication models",
+        "Apply Lasswell's model to a news story"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Mass Communication",
+     "topics": [
+      {
+       "title": "Functions and theories of mass media",
+       "summary": "Functions of media and early effects theories.",
+       "notes": [
+        "Functions (Lasswell, Wright): surveillance, correlation, transmission of culture, entertainment.",
+        "Hypodermic needle (magic bullet) theory assumed powerful direct effects; two-step flow (Lazarsfeld) found opinion leaders mediate.",
+        "Agenda setting (McCombs and Shaw): media tell people what to think about."
+       ],
+       "outcomes": [
+        "Explain functions of mass media",
+        "Compare media effects theories"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Media in India",
+     "topics": [
+      {
+       "title": "Indian media landscape",
+       "summary": "Print, broadcast and digital media in India.",
+       "notes": [
+        "Print is regulated through the Press and Registration of Periodicals Act, 2023 (replacing the PRB Act, 1867).",
+        "Prasar Bharati runs Doordarshan and All India Radio (Akashvani).",
+        "Digital news grows through mobile phones and regional languages."
+       ],
+       "outcomes": [
+        "Describe India's media landscape",
+        "Identify regulators of each medium"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-jour-2-reporting",
+   "title": "Journalism: Reporting, BA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "News",
+     "topics": [
+      {
+       "title": "Concept of news and news values",
+       "summary": "What makes news and the elements of a news story.",
+       "notes": [
+        "News values: timeliness, proximity, prominence, impact, conflict, human interest, novelty.",
+        "The 5 Ws and 1 H: who, what, when, where, why, how.",
+        "Inverted pyramid: most important facts first."
+       ],
+       "outcomes": [
+        "Identify news values in events",
+        "Write a lead with the 5 Ws and 1 H"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A minister falls ill; a farmer in your district finds a 3 kg mango. Which is front-page news, and why?",
+        "example": "Lead: \"Bengaluru recorded 120 mm of rain on Monday, the city's heaviest single-day October rainfall in a decade, flooding underpasses in five wards.\"",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What does the inverted pyramid put first?",
+          "a": "The most important information."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "lead",
+         "news values",
+         "inverted pyramid",
+         "beat"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Reporting Techniques",
+     "topics": [
+      {
+       "title": "Sources and interviews",
+       "summary": "News sources, interviewing and verification.",
+       "notes": [
+        "Sources: primary (eyewitnesses, documents) and secondary; on record, off record, background.",
+        "Interview types: news, personality, investigative; prepare, listen, follow up.",
+        "Verify facts with at least two independent sources."
+       ],
+       "outcomes": [
+        "Conduct and write up an interview",
+        "Verify information"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Beats",
+     "topics": [
+      {
+       "title": "Reporting beats",
+       "summary": "Crime, courts, politics, business, sports and development reporting.",
+       "notes": [
+        "Beat reporters cultivate sources in one area.",
+        "Court reporting must avoid contempt and identify victims of sexual offences only as the law permits (they must not be named).",
+        "Development journalism reports on social and economic progress."
+       ],
+       "outcomes": [
+        "Report on a beat accurately",
+        "Follow legal limits in crime and court reporting"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Writing for News",
+     "topics": [
+      {
+       "title": "News writing styles",
+       "summary": "Hard news, features and the structure of stories.",
+       "notes": [
+        "Hard news is timely and factual; features add depth, colour and human interest.",
+        "Attribution: say who said it; quotes must be accurate.",
+        "Headlines are short, active and accurate."
+       ],
+       "outcomes": [
+        "Write hard news and feature stories",
+        "Write accurate headlines"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-jour-3-editing-media-law",
+   "title": "Journalism: Editing and Media Laws, BA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Editing",
+     "topics": [
+      {
+       "title": "Copy editing and headlines",
+       "summary": "Role of the copy editor, editing symbols and headline writing.",
+       "notes": [
+        "Copy editors check accuracy, clarity, style, grammar and legal risks.",
+        "Style books keep usage consistent.",
+        "Page layout uses grids, hierarchy and white space."
+       ],
+       "outcomes": [
+        "Edit copy for accuracy and style",
+        "Design a news page layout"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Press Freedom",
+     "topics": [
+      {
+       "title": "Constitutional framework",
+       "summary": "Article 19(1)(a) and reasonable restrictions.",
+       "notes": [
+        "Freedom of the press is part of freedom of speech and expression under Article 19(1)(a) (Romesh Thappar, 1950).",
+        "Article 19(2) allows reasonable restrictions: sovereignty, security, public order, decency, contempt of court, defamation, incitement.",
+        "The Press Council of India (Press Council Act, 1978) adjudicates complaints against and by the press."
+       ],
+       "outcomes": [
+        "Explain press freedom and its limits",
+        "Describe the Press Council's role"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Media Laws",
+     "topics": [
+      {
+       "title": "Defamation, contempt and other laws",
+       "summary": "Laws journalists must know.",
+       "notes": [
+        "Defamation is a civil wrong and a crime (BNS section 356); truth for public good and fair comment are defences.",
+        "Contempt of Courts Act, 1971; Official Secrets Act, 1923; Right to Information Act, 2005.",
+        "Copyright Act, 1957 protects original works; fair dealing allows reporting current events."
+       ],
+       "outcomes": [
+        "Avoid defamation and contempt",
+        "Use RTI for reporting"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Ethics",
+     "topics": [
+      {
+       "title": "Journalism ethics",
+       "summary": "Codes of conduct, privacy and fake news.",
+       "notes": [
+        "PCI Norms of Journalistic Conduct: accuracy, fairness, right of reply, privacy.",
+        "Paid news and conflicts of interest undermine credibility.",
+        "Fact-checking counters misinformation and deepfakes."
+       ],
+       "outcomes": [
+        "Apply ethical codes to cases",
+        "Fact-check a viral claim"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-jour-4-broadcast",
+   "title": "Journalism: Broadcast Journalism, BA Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Radio",
+     "topics": [
+      {
+       "title": "Radio journalism",
+       "summary": "Characteristics of radio and radio formats.",
+       "notes": [
+        "Radio is immediate, portable and reaches non-literate audiences; community radio serves local communities.",
+        "Formats: news bulletin, talk, interview, discussion, feature, documentary, phone-in.",
+        "Write for the ear: short sentences, simple words, round figures."
+       ],
+       "outcomes": [
+        "Write a radio news script",
+        "Plan a radio programme"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Television",
+     "topics": [
+      {
+       "title": "Television news",
+       "summary": "TV news production, packages and anchoring.",
+       "notes": [
+        "Package elements: voice-over, sound bites, B-roll, piece to camera.",
+        "Production roles: producer, reporter, camera person, editor, anchor.",
+        "Script format: two columns (video, audio)."
+       ],
+       "outcomes": [
+        "Script a TV news package",
+        "Describe the production team"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Video Production",
+     "topics": [
+      {
+       "title": "Shooting and editing",
+       "summary": "Shot types, camera movement and editing principles.",
+       "notes": [
+        "Shots: extreme long, long, mid, close-up, extreme close-up.",
+        "Movements: pan, tilt, zoom, track, crane.",
+        "180-degree rule keeps screen direction consistent."
+       ],
+       "outcomes": [
+        "Plan shots for a story",
+        "Edit video for continuity"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Broadcast Regulation",
+     "topics": [
+      {
+       "title": "Regulation of broadcasting",
+       "summary": "Laws and bodies governing broadcasting in India.",
+       "notes": [
+        "Cable Television Networks (Regulation) Act, 1995 and its programme and advertising codes.",
+        "TRAI regulates carriage and tariffs; MIB licenses channels.",
+        "Self-regulation: News Broadcasting and Digital Standards Authority."
+       ],
+       "outcomes": [
+        "Explain broadcast regulation",
+        "Apply programme codes"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-jour-5-advertising-pr",
+   "title": "Journalism: Advertising and Public Relations, BA Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024 (BU scheme to confirm), 2026-27)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Advertising",
+     "topics": [
+      {
+       "title": "Advertising concepts",
+       "summary": "Functions, types and models of advertising.",
+       "notes": [
+        "Types: product, institutional, public service, comparative.",
+        "AIDA (attention, interest, desire, action) and DAGMAR (defined goals for measured results).",
+        "Advertising agency departments: account services, creative, media, production."
+       ],
+       "outcomes": [
+        "Explain advertising models",
+        "Describe agency structure"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Creative and Media",
+     "topics": [
+      {
+       "title": "Copywriting and media planning",
+       "summary": "Ad copy, visualisation and media selection.",
+       "notes": [
+        "Copy elements: headline, body copy, slogan, call to action.",
+        "Media planning metrics: reach, frequency, GRP, CPM (cost per thousand).",
+        "ASCI's code governs truthful and decent advertising."
+       ],
+       "outcomes": [
+        "Write ad copy for a product",
+        "Plan a media mix"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Public Relations",
+     "topics": [
+      {
+       "title": "PR principles and tools",
+       "summary": "Definition, publics and PR tools.",
+       "notes": [
+        "PR is managing communication between an organisation and its publics.",
+        "Tools: press releases, press conferences, events, house journals, social media.",
+        "Crisis communication: respond quickly, be honest, show concern."
+       ],
+       "outcomes": [
+        "Write a press release",
+        "Plan crisis communication"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Corporate Communication",
+     "topics": [
+      {
+       "title": "Corporate communication and CSR",
+       "summary": "Reputation management and CSR communication.",
+       "notes": [
+        "Corporate identity, image and reputation.",
+        "Internal communication engages employees.",
+        "CSR communication must avoid exaggeration (greenwashing)."
+       ],
+       "outcomes": [
+        "Build a reputation management plan",
+        "Communicate CSR responsibly"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-jour-6-digital-media",
+   "title": "Journalism: Digital and Development Media, BA Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024 (BU scheme to confirm), 2026-27)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Digital Journalism",
+     "topics": [
+      {
+       "title": "Online news",
+       "summary": "Characteristics of digital journalism and multimedia storytelling.",
+       "notes": [
+        "Digital news is immediate, interactive, multimedia and hypertextual.",
+        "SEO helps stories be found; avoid clickbait.",
+        "Mobile journalism (MoJo) uses smartphones to report."
+       ],
+       "outcomes": [
+        "Write a story for the web",
+        "Produce a mobile journalism story"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Social Media and Data",
+     "topics": [
+      {
+       "title": "Social media and data journalism",
+       "summary": "Social media for news and data-driven stories.",
+       "notes": [
+        "Verify user-generated content (reverse image search, metadata, geolocation).",
+        "Data journalism: obtain, clean, analyse and visualise data.",
+        "IT Rules, 2021 set a code of ethics for digital news publishers."
+       ],
+       "outcomes": [
+        "Verify social media content",
+        "Tell a story with data"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Development Communication",
+     "topics": [
+      {
+       "title": "Media for development",
+       "summary": "Development communication and participatory approaches.",
+       "notes": [
+        "Development communication uses media to promote social change (health, agriculture, education).",
+        "Diffusion of innovations (Rogers): innovators, early adopters, early majority, late majority, laggards.",
+        "Participatory communication involves communities in planning."
+       ],
+       "outcomes": [
+        "Plan a development communication campaign",
+        "Apply diffusion of innovations"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Media and Society",
+     "topics": [
+      {
+       "title": "Media effects and audiences",
+       "summary": "Uses and gratifications, cultivation and media literacy.",
+       "notes": [
+        "Uses and gratifications: audiences actively choose media to meet needs.",
+        "Cultivation theory (Gerbner): heavy TV viewing shapes perceptions of reality.",
+        "Media literacy helps audiences evaluate messages critically."
+       ],
+       "outcomes": [
+        "Apply audience theories",
+        "Teach media literacy skills"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-psy-1-foundations",
+   "title": "Psychology: Foundations of Psychology, BA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction",
+     "topics": [
+      {
+       "title": "Psychology as a science",
+       "summary": "Definition, schools and methods of psychology.",
+       "notes": [
+        "Psychology is the scientific study of behaviour and mental processes.",
+        "Schools: structuralism (Wundt, first lab 1879), functionalism (James), psychoanalysis (Freud), behaviourism (Watson, Skinner), humanistic, cognitive.",
+        "Methods: experiment, observation, survey, case study, correlational."
+       ],
+       "outcomes": [
+        "Trace the schools of psychology",
+        "Choose a research method"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Biological Bases",
+     "topics": [
+      {
+       "title": "Nervous system and behaviour",
+       "summary": "Neurons, the nervous system and the brain.",
+       "notes": [
+        "Neurons transmit signals by action potentials and neurotransmitters across synapses.",
+        "CNS: brain and spinal cord; PNS: somatic and autonomic (sympathetic, parasympathetic).",
+        "Brain lobes: frontal (planning, movement), parietal (touch), temporal (hearing, memory), occipital (vision)."
+       ],
+       "outcomes": [
+        "Describe neural transmission",
+        "Relate brain areas to functions"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "neuron",
+         "title": "Neuron (nerve cell)"
+        },
+        {
+         "kind": "model3d",
+         "id": "brain",
+         "title": "Human brain"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Sensation and Perception",
+     "topics": [
+      {
+       "title": "Sensation and perception",
+       "summary": "Thresholds, attention and perceptual organisation.",
+       "notes": [
+        "Absolute threshold and difference threshold (Weber's law: ΔI ÷ I = k).",
+        "Gestalt principles: proximity, similarity, closure, continuity, figure–ground.",
+        "Depth cues: binocular (disparity, convergence) and monocular (linear perspective, interposition)."
+       ],
+       "outcomes": [
+        "Apply Gestalt principles",
+        "Explain depth perception"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "eye",
+         "title": "Human eye"
+        },
+        {
+         "kind": "model3d",
+         "id": "ear",
+         "title": "Human ear"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Consciousness",
+     "topics": [
+      {
+       "title": "States of consciousness",
+       "summary": "Sleep, dreams and altered states.",
+       "notes": [
+        "Sleep cycles of about 90 minutes: NREM stages and REM (dreaming).",
+        "Circadian rhythms follow a roughly 24-hour cycle.",
+        "Altered states: hypnosis, meditation, drug-induced."
+       ],
+       "outcomes": [
+        "Describe sleep stages",
+        "Explain circadian rhythms"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-psy-2-cognitive",
+   "title": "Psychology: Learning, Memory and Cognition, BA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Learning",
+     "topics": [
+      {
+       "title": "Classical and operant conditioning",
+       "summary": "Pavlov's and Skinner's learning principles.",
+       "notes": [
+        "Classical conditioning: a neutral stimulus paired with an unconditioned stimulus comes to elicit a conditioned response.",
+        "Operant conditioning: reinforcement increases behaviour; punishment decreases it.",
+        "Observational learning (Bandura's Bobo doll study)."
+       ],
+       "outcomes": [
+        "Distinguish classical and operant conditioning",
+        "Apply reinforcement principles"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Why does your mouth water when you hear a packet of chips being opened?",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is negative reinforcement?",
+          "a": "Increasing a behaviour by removing an unpleasant stimulus."
+         },
+         {
+          "q": "In Pavlov's experiment, what was the conditioned stimulus?",
+          "a": "The bell (or metronome)."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "conditioning",
+         "reinforcement",
+         "extinction",
+         "generalisation"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Memory",
+     "topics": [
+      {
+       "title": "Models of memory and forgetting",
+       "summary": "Atkinson–Shiffrin model, working memory and forgetting.",
+       "notes": [
+        "Sensory memory → short-term memory (about 7 ± 2 items, around 20 seconds) → long-term memory.",
+        "Baddeley's working memory: central executive, phonological loop, visuospatial sketchpad, episodic buffer.",
+        "Forgetting: decay, interference (proactive, retroactive), retrieval failure; Ebbinghaus forgetting curve."
+       ],
+       "outcomes": [
+        "Explain memory models",
+        "Apply strategies to improve memory"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Thinking",
+     "topics": [
+      {
+       "title": "Problem solving and decision making",
+       "summary": "Concepts, reasoning, heuristics and biases.",
+       "notes": [
+        "Algorithms guarantee solutions; heuristics are shortcuts.",
+        "Biases: availability, representativeness, anchoring, confirmation bias.",
+        "Functional fixedness and mental set block problem solving."
+       ],
+       "outcomes": [
+        "Identify cognitive biases",
+        "Use problem-solving strategies"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Intelligence",
+     "topics": [
+      {
+       "title": "Theories and measurement of intelligence",
+       "summary": "Theories of intelligence and IQ.",
+       "notes": [
+        "Spearman's g; Thurstone's primary abilities; Gardner's multiple intelligences; Sternberg's triarchic theory.",
+        "IQ = (Mental age ÷ Chronological age) × 100 (ratio IQ); modern tests use deviation IQ (mean 100, SD 15).",
+        "Emotional intelligence includes perceiving, using, understanding and managing emotions."
+       ],
+       "outcomes": [
+        "Compare theories of intelligence",
+        "Compute a ratio IQ"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-psy-3-developmental",
+   "title": "Psychology: Developmental Psychology, BA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Development Basics",
+     "topics": [
+      {
+       "title": "Principles and methods",
+       "summary": "Nature and nurture, stages and research designs.",
+       "notes": [
+        "Development is lifelong, multidirectional and shaped by heredity and environment.",
+        "Designs: cross-sectional, longitudinal, sequential.",
+        "Critical and sensitive periods."
+       ],
+       "outcomes": [
+        "Explain nature–nurture interaction",
+        "Compare developmental research designs"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Cognitive Development",
+     "topics": [
+      {
+       "title": "Piaget and Vygotsky",
+       "summary": "Stages of cognitive development and sociocultural theory.",
+       "notes": [
+        "Piaget: sensorimotor (0–2), preoperational (2–7), concrete operational (7–11), formal operational (11+).",
+        "Key concepts: schema, assimilation, accommodation, object permanence, conservation.",
+        "Vygotsky: zone of proximal development and scaffolding."
+       ],
+       "outcomes": [
+        "Identify Piaget's stages",
+        "Apply scaffolding in teaching"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Socio-emotional Development",
+     "topics": [
+      {
+       "title": "Erikson and attachment",
+       "summary": "Psychosocial stages and attachment styles.",
+       "notes": [
+        "Erikson's eight stages, e.g. trust vs mistrust (infancy), identity vs role confusion (adolescence).",
+        "Attachment (Bowlby, Ainsworth's strange situation): secure, avoidant, ambivalent, disorganised.",
+        "Parenting styles (Baumrind): authoritative, authoritarian, permissive, neglectful."
+       ],
+       "outcomes": [
+        "Describe Erikson's stages",
+        "Classify attachment styles"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Adolescence and Adulthood",
+     "topics": [
+      {
+       "title": "Later development",
+       "summary": "Adolescence, adulthood and ageing.",
+       "notes": [
+        "Puberty brings physical and hormonal change; identity formation (Marcia's statuses).",
+        "Moral development (Kohlberg): pre-conventional, conventional, post-conventional.",
+        "Ageing: crystallised intelligence stays stable; fluid intelligence declines."
+       ],
+       "outcomes": [
+        "Apply Kohlberg's stages",
+        "Describe changes in adulthood"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-psy-4-social",
+   "title": "Psychology: Social Psychology, BA Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Social Cognition",
+     "topics": [
+      {
+       "title": "Attribution and social perception",
+       "summary": "How we explain behaviour and form impressions.",
+       "notes": [
+        "Fundamental attribution error: overemphasising personality in others' behaviour.",
+        "Self-serving bias: credit success to self, failure to circumstances.",
+        "Primacy effect in impression formation."
+       ],
+       "outcomes": [
+        "Identify attribution errors",
+        "Explain impression formation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Attitudes",
+     "topics": [
+      {
+       "title": "Attitudes and persuasion",
+       "summary": "Attitude formation, change and cognitive dissonance.",
+       "notes": [
+        "Cognitive dissonance (Festinger): inconsistency motivates change in attitudes or behaviour.",
+        "Elaboration likelihood model: central route (arguments) vs peripheral route (cues).",
+        "Prejudice is an attitude; discrimination is behaviour."
+       ],
+       "outcomes": [
+        "Explain cognitive dissonance",
+        "Apply the elaboration likelihood model"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Social Influence",
+     "topics": [
+      {
+       "title": "Conformity, compliance and obedience",
+       "summary": "Classic studies of social influence.",
+       "notes": [
+        "Asch: people conform to a group's wrong judgement.",
+        "Milgram: about 65% obeyed to the highest shock level.",
+        "Compliance techniques: foot-in-the-door, door-in-the-face."
+       ],
+       "outcomes": [
+        "Describe classic social influence studies",
+        "Recognise compliance techniques"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Group Processes",
+     "topics": [
+      {
+       "title": "Groups and pro-social behaviour",
+       "summary": "Social facilitation, loafing, groupthink and helping.",
+       "notes": [
+        "Social facilitation improves simple tasks in the presence of others; social loafing reduces individual effort in groups.",
+        "Bystander effect: more bystanders, less likelihood of help (diffusion of responsibility).",
+        "Group polarisation strengthens initial views."
+       ],
+       "outcomes": [
+        "Explain group effects on performance",
+        "Explain the bystander effect"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-psy-5-abnormal",
+   "title": "Psychology: Psychopathology, BA Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024 (BU scheme to confirm), 2026-27)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Concepts of Abnormality",
+     "topics": [
+      {
+       "title": "Defining abnormality and classification",
+       "summary": "Criteria of abnormality and DSM-5-TR and ICD-11.",
+       "notes": [
+        "Criteria: statistical rarity, deviance, distress, dysfunction, danger.",
+        "Classification systems: DSM-5-TR (APA) and ICD-11 (WHO).",
+        "Biopsychosocial model: biological, psychological and social causes interact."
+       ],
+       "outcomes": [
+        "Apply criteria of abnormality",
+        "Describe classification systems"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Anxiety and Mood Disorders",
+     "topics": [
+      {
+       "title": "Anxiety and depression",
+       "summary": "Symptoms and causes of anxiety and mood disorders.",
+       "notes": [
+        "Anxiety disorders: generalised anxiety, panic, phobias, social anxiety; OCD is classified separately in DSM-5.",
+        "Major depressive disorder: depressed mood or loss of interest for at least two weeks with other symptoms.",
+        "Bipolar disorder involves manic or hypomanic episodes."
+       ],
+       "outcomes": [
+        "Identify symptoms of anxiety and mood disorders",
+        "Explain causal factors"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Psychotic and Other Disorders",
+     "topics": [
+      {
+       "title": "Schizophrenia and personality disorders",
+       "summary": "Psychotic disorders and personality disorders.",
+       "notes": [
+        "Schizophrenia: positive symptoms (delusions, hallucinations) and negative symptoms (flat affect, avolition).",
+        "Personality disorders are grouped in clusters A (odd), B (dramatic), C (anxious).",
+        "Neurodevelopmental disorders include ADHD and autism spectrum disorder."
+       ],
+       "outcomes": [
+        "Distinguish positive and negative symptoms",
+        "Describe personality disorder clusters"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Mental Health Law",
+     "topics": [
+      {
+       "title": "Mental Healthcare Act, 2017",
+       "summary": "Rights of persons with mental illness in India.",
+       "notes": [
+        "Every person has a right to access mental healthcare.",
+        "Attempted suicide is presumed to be under severe stress and is not to be punished (section 115).",
+        "Advance directives and nominated representatives."
+       ],
+       "outcomes": [
+        "Explain rights under the Act",
+        "Describe advance directives"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "ba-psy-6-counselling",
+   "title": "Psychology: Counselling and Therapies, BA Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024 (BU scheme to confirm), 2026-27)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Counselling",
+     "topics": [
+      {
+       "title": "Counselling process and skills",
+       "summary": "Stages and skills of counselling.",
+       "notes": [
+        "Stages: relationship building, assessment, goal setting, intervention, termination and follow-up.",
+        "Core conditions (Rogers): empathy, unconditional positive regard, genuineness.",
+        "Skills: active listening, paraphrasing, reflection of feeling, summarising."
+       ],
+       "outcomes": [
+        "Demonstrate basic counselling skills",
+        "Describe the counselling process"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Therapies",
+     "topics": [
+      {
+       "title": "Psychotherapies",
+       "summary": "Psychodynamic, behavioural, cognitive and humanistic therapies.",
+       "notes": [
+        "Psychoanalysis: free association, dream analysis, transference.",
+        "Behaviour therapy: systematic desensitisation, exposure, token economy.",
+        "CBT (Beck) and REBT (Ellis) challenge irrational thoughts."
+       ],
+       "outcomes": [
+        "Compare therapy approaches",
+        "Apply cognitive restructuring"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Psychological Assessment",
+     "topics": [
+      {
+       "title": "Tests and assessment",
+       "summary": "Psychological testing and test properties.",
+       "notes": [
+        "Good tests are standardised, reliable, valid and normed.",
+        "Types: intelligence, personality (MMPI, 16PF), projective (Rorschach, TAT), aptitude.",
+        "Ethics: informed consent, confidentiality, competence."
+       ],
+       "outcomes": [
+        "Evaluate a psychological test",
+        "Follow testing ethics"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Health Psychology",
+     "topics": [
+      {
+       "title": "Stress and well-being",
+       "summary": "Stress, coping and positive psychology.",
+       "notes": [
+        "General adaptation syndrome (Selye): alarm, resistance, exhaustion.",
+        "Coping: problem-focused and emotion-focused.",
+        "Positive psychology (Seligman) studies well-being (PERMA)."
+       ],
+       "outcomes": [
+        "Explain the stress response",
+        "Suggest coping strategies"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

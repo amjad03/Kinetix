@@ -13,6 +13,12 @@ For each course, a subject teacher should check:
 
 When a course is checked, add `reviewed=yes` to its `#` line in the source and rebuild.
 
+## BA (bu-ba.txt, curriculum `bu-ug`, SEP 2024 (2024-25))
+
+- SIMS's BA is listed with Journalism (secondary sources); the combination was not confirmed. Journalism and Psychology are written for all six semesters as a common combination; other optionals (English, Political Science, Economics, History, Sociology) are not written.
+- Paper titles per semester are the KINETIX team's reading of the BU NEP/SEP pattern; confirm against the BU SEP BA Journalism and Psychology syllabi.
+
+
 ## BBA (bu-bba.txt, curriculum `bu-ug`, SEP 2024 (2024-25))
 
 - The BBA course list follows the BU NEP 2021 BBA structure as carried into SEP 2024 (Sem 1-4) and the NEP Sem 5-6 papers; no BU SEP BBA scheme document could be reached. Confirm every paper title, semester and code.
