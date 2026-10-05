@@ -17,7 +17,8 @@ row-level security in [docs/architecture/tenancy.md](../architecture/tenancy.md)
 - Third parties that receive personal data, and what: **MSG91** (phone number + sign-in code; Indian
   provider, DLT-registered template), **Firebase Cloud Messaging** (device token + ids only — pushes
   carry no names, marks or messages), **Razorpay** (payer details for fee payments; Indian
-  provider, PCI-DSS). List them in the privacy notice and the data-processing agreements.
+  provider, PCI-DSS; each institution's own Razorpay account, so the institution is Razorpay's
+  merchant and we only pass the order). List them in the privacy notice and the data-processing agreements.
 - Build tooling (GitHub, Docker Hub base images) never sees production data.
 
 ## DPDP Act 2023 (summary of our obligations as data fiduciary / processor)
@@ -59,10 +60,9 @@ requirements are still being phased in.
 | Secret (`kinetix/<env>/…`) | Contents | Source | Rotation |
 | --- | --- | --- | --- |
 | `db` | `DATABASE_URL` (owner), `APP_DATABASE_URL` (RLS-bound app), `ADMIN_DATABASE_URL` (RDS master) | Terraform `random_password` | yearly, or on suspicion |
-| `app` | `JWT_SECRET`, `PAIRING_HMAC_SECRET` | Terraform | yearly, or on suspicion |
+| `app` | `JWT_SECRET`, `PAIRING_HMAC_SECRET`, `SECRETS_ENCRYPTION_KEY` (master key for institutions' Razorpay secrets in the database), `SECRETS_ENCRYPTION_OLD_KEYS` (empty except during a rotation) | Terraform | yearly, or on suspicion |
 | `redis` | `REDIS_URL` with AUTH token | Terraform | yearly |
 | `msg91` | auth key, template id, sender id | by hand | when MSG91 key is regenerated |
-| `razorpay` | key id/secret, webhook secret | by hand | yearly, or on suspicion |
 | `fcm` | Firebase service-account JSON | by hand | yearly (create new key, then delete the old one in Google Cloud) |
 
 Never put secrets in tfvars, images, GitHub variables, tickets or chat. GitHub holds no AWS keys
@@ -81,6 +81,30 @@ aws ecs update-service --cluster kinetix-prod --service api --force-new-deployme
 #   docs/architecture/board-pairing.md before rotating it.
 # Redis: -replace=random_password.redis_auth (ElastiCache applies the new AUTH token), then force a new deployment.
 ```
+
+**Institutions' Razorpay keys** are not in Secrets Manager: each institution enters its own in ERP →
+Settings → *Online payments*. The key secret and webhook secret are stored in
+`payment_gateway_accounts` encrypted with AES-256-GCM under `SECRETS_ENCRYPTION_KEY` (bound to the
+institution and field, versioned `v<n>.…`), are never returned by the API or written to the audit
+log (`payments.razorpay_updated` records the key id, mode and which secrets changed), and only the
+principal and tenant_admin can change them. An institution rotates its own keys by generating new
+ones in Razorpay and saving them in the ERP.
+
+**Rotating `SECRETS_ENCRYPTION_KEY`** (no downtime; payments keep working throughout):
+
+```bash
+OLD=$(aws secretsmanager get-secret-value --secret-id kinetix/prod/app --query SecretString --output text | jq -r .SECRETS_ENCRYPTION_KEY)
+terraform apply -var-file=environments/prod.tfvars -replace=random_bytes.secrets_encryption \
+  -var secrets_encryption_key_version=2 -var "secrets_encryption_old_keys=1:$OLD"
+aws ecs update-service --cluster kinetix-prod --service api --force-new-deployment   # new key + old key
+run_task kinetix-prod-api '["rotate-secrets"]' api   # "Secrets on key version 2: N of N institutions re-encrypted."
+terraform apply -var-file=environments/prod.tfvars -var secrets_encryption_key_version=2   # drop the old key
+aws ecs update-service --cluster kinetix-prod --service api --force-new-deployment
+```
+
+Keep `secrets_encryption_key_version` at the new value in the tfvars afterwards. Locally:
+`pnpm --filter @kinetix/api secrets:rotate` with `SECRETS_ENCRYPTION_KEY_VERSION` and
+`SECRETS_ENCRYPTION_OLD_KEYS` set.
 
 Between the password change and the redeploy, running tasks keep their open connections; new
 connections fail — rotate in a quiet hour.

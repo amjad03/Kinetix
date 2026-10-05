@@ -39,6 +39,13 @@ val releaseSigningProblem: String? = when {
     else -> null
 }
 
+// Throwaway test builds only (CI APKs to try on a phone, docs/product/demo-builds.md): with no
+// release key and -Pkinetix.testSigning=true (or KINETIX_TEST_SIGNING=true), release builds are
+// signed with the debug key instead of failing. Such an APK can never be published, and a real
+// release cannot be installed over it.
+val testSigning = ((findProperty("kinetix.testSigning") as String?) ?: System.getenv("KINETIX_TEST_SIGNING"))?.toBoolean() ?: false
+val useTestSigning = releaseSigningProblem != null && testSigning
+
 // R8 (code + resource shrinking) stays off until a minified release has been smoke-tested on a
 // device; turn it on with -Pkinetix.minify=true (keep rules in proguard-rules.pro).
 val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
@@ -76,8 +83,8 @@ android {
 
     buildTypes {
         release {
-            // Never the debug key: without a release key the build stops (below).
-            signingConfig = signingConfigs.findByName("release")
+            // Never the debug key (unless test signing was asked for): without a release key the build stops (below).
+            signingConfig = if (useTestSigning) signingConfigs.getByName("debug") else signingConfigs.findByName("release")
             isMinifyEnabled = minifyRelease
             isShrinkResources = minifyRelease
         }
@@ -86,7 +93,16 @@ android {
 
 // Fail a release build early and clearly instead of producing an unsigned or debug-signed app.
 tasks.configureEach {
-    if (name == "preReleaseBuild" && releaseSigningProblem != null) {
+    if (name == "preReleaseBuild" && useTestSigning) {
+        doFirst {
+            val line = "!".repeat(78)
+            logger.warn(
+                "\n$line\n!! TEST SIGNING: this release build is signed with the DEBUG key ($releaseSigningProblem).\n" +
+                    "!! Only for throwaway test installs. Never publish it or hand it to users.\n$line",
+            )
+        }
+    }
+    if (name == "preReleaseBuild" && releaseSigningProblem != null && !useTestSigning) {
         val problem = "Release signing is not configured ($releaseSigningProblem). See docs/operations/mobile-release.md."
         doFirst { throw GradleException(problem) }
     }

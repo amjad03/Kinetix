@@ -53,10 +53,31 @@ class DemoParentApi extends FakeParentApi {
       'c1': [corpAcc, costing],
       'c2': [dmaths],
     };
-    final ex42 = _hw('h1', 'Exercise 4.2: Issue of shares', 'Solve questions 1 to 5 from the textbook. Show journal entries for each.', 2, corpAcc.name, 'Anita Sharma');
+    final ex42 = _hw(
+      'h1',
+      'Exercise 4.2: Issue of shares',
+      'Solve questions 1 to 5 from the textbook. Show journal entries for each.',
+      2,
+      corpAcc.name,
+      'Anita Sharma',
+    );
     final costSheet = _hw('h2', 'Cost sheet practice', 'Prepare a cost sheet for the case on page 112.', 5, costing.name, 'Anita Sharma');
-    final forfeiture = _hw('h3', 'Forfeiture of shares: notes', 'Read chapter 4.3 and write a one-page summary.', -3, corpAcc.name, 'Anita Sharma');
-    final sets = _hw('h4', 'Sets and relations: worksheet 3', 'All questions. Draw Venn diagrams where needed.', 3, dmaths.name, 'Ravi Kumar');
+    final forfeiture = _hw(
+      'h3',
+      'Forfeiture of shares: notes',
+      'Read chapter 4.3 and write a one-page summary.',
+      -3,
+      corpAcc.name,
+      'Anita Sharma',
+    );
+    final sets = _hw(
+      'h4',
+      'Sets and relations: worksheet 3',
+      'All questions. Draw Venn diagrams where needed.',
+      3,
+      dmaths.name,
+      'Ravi Kumar',
+    );
     subjectOfHomework = {'h1': corpAcc, 'h2': costing, 'h3': corpAcc, 'h4': dmaths};
 
     recordings = [
@@ -114,7 +135,8 @@ class DemoParentApi extends FakeParentApi {
     submissions = {
       'h3/c1': {
         'status': 'checked',
-        'text': 'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the '
+        'text':
+            'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the '
             'called-up amount, calls in arrears credited, and the amount received credited to Share Forfeiture account.',
         'files': [],
         'submittedAt': _day(-4).add(const Duration(hours: 19)).toUtc().toIso8601String(),
@@ -140,7 +162,8 @@ class DemoParentApi extends FakeParentApi {
         id: 'n3',
         kind: NotificationKind.absence,
         title: 'Aarav was marked absent',
-        body: 'Aarav Patel was marked absent for Corporate Accounting (10:00–10:55) on ${_iso(-5)}. '
+        body:
+            'Aarav Patel was marked absent for Corporate Accounting (10:00–10:55) on ${_iso(-5)}. '
             'If this is wrong, please contact the class teacher.',
         data: {'studentId': 'c1', 'date': _iso(-5)},
         createdAt: now.subtract(const Duration(days: 5)),
@@ -184,9 +207,17 @@ class DemoParentApi extends FakeParentApi {
             id: 'ch1',
             title: 'Issue of Shares',
             topics: [
-              OutlineTopic(id: 't1', title: 'Kinds of shares and share capital', summary: 'Equity and preference shares; authorised, issued and called-up capital.'),
+              OutlineTopic(
+                id: 't1',
+                title: 'Kinds of shares and share capital',
+                summary: 'Equity and preference shares; authorised, issued and called-up capital.',
+              ),
               OutlineTopic(id: 't2', title: 'Issue at par, premium and discount', summary: 'Journal entries for each kind of issue.'),
-              OutlineTopic(id: 't3', title: 'Over-subscription and pro-rata allotment', summary: 'Refunds and adjusting excess application money.'),
+              OutlineTopic(
+                id: 't3',
+                title: 'Over-subscription and pro-rata allotment',
+                summary: 'Refunds and adjusting excess application money.',
+              ),
             ],
           ),
           OutlineChapter(
@@ -200,7 +231,9 @@ class DemoParentApi extends FakeParentApi {
           OutlineChapter(
             id: 'ch3',
             title: 'Valuation of Goodwill',
-            topics: [OutlineTopic(id: 't6', title: 'Methods of valuing goodwill', summary: 'Average profit, super profit and capitalisation.')],
+            topics: [
+              OutlineTopic(id: 't6', title: 'Methods of valuing goodwill', summary: 'Average profit, super profit and capitalisation.'),
+            ],
           ),
         ],
       ),
@@ -226,7 +259,8 @@ class DemoParentApi extends FakeParentApi {
         'total': 6,
         'percent': 67,
         'topics': [
-          for (final (i, t) in ['t1', 't2', 't3', 't4'].indexed) {'topicId': t, 'coveredOn': _iso(-14 + i * 3), 'coveredBy': 'Anita Sharma'},
+          for (final (i, t) in ['t1', 't2', 't3', 't4'].indexed)
+            {'topicId': t, 'coveredOn': _iso(-14 + i * 3), 'coveredBy': 'Anita Sharma'},
         ],
       },
       'sec1|sub2': {
@@ -261,10 +295,19 @@ class DemoParentApi extends FakeParentApi {
 
     invoices = {
       'c1': [
-        FeeInvoice(id: 'i1', title: 'Semester 3 tuition fee', amountPaise: 4250000, paidPaise: 1000000, dueOn: _day(10), status: FeeStatus.due),
+        FeeInvoice(
+          id: 'i1',
+          title: 'Semester 3 tuition fee',
+          amountPaise: 4250000,
+          paidPaise: 1000000,
+          dueOn: _day(10),
+          status: FeeStatus.due,
+        ),
         FeeInvoice(id: 'i2', title: 'Exam fee (Nov 2026)', amountPaise: 185000, paidPaise: 0, dueOn: _day(-2), status: FeeStatus.due),
       ],
-      'c2': [FeeInvoice(id: 'i3', title: 'Semester 1 tuition fee', amountPaise: 4800000, paidPaise: 0, dueOn: _day(10), status: FeeStatus.due)],
+      'c2': [
+        FeeInvoice(id: 'i3', title: 'Semester 1 tuition fee', amountPaise: 4800000, paidPaise: 0, dueOn: _day(10), status: FeeStatus.due),
+      ],
     };
     feePayments = {
       'c1': [

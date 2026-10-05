@@ -75,9 +75,27 @@ class DemoTeacherApi extends FakeTeacherApi {
     ];
 
     calendarEvents = [
-      CalendarEvent(id: 'e1', kind: CalendarKind.holiday, title: 'Gandhi Jayanti', startsOn: DateTime(2026, 10, 2), endsOn: DateTime(2026, 10, 2)),
-      CalendarEvent(id: 'e2', kind: CalendarKind.holiday, title: 'Dasara holidays', startsOn: DateTime(2026, 10, 19), endsOn: DateTime(2026, 10, 21)),
-      CalendarEvent(id: 'e3', kind: CalendarKind.holiday, title: 'Kannada Rajyotsava', startsOn: DateTime(2026, 11, 1), endsOn: DateTime(2026, 11, 1)),
+      CalendarEvent(
+        id: 'e1',
+        kind: CalendarKind.holiday,
+        title: 'Gandhi Jayanti',
+        startsOn: DateTime(2026, 10, 2),
+        endsOn: DateTime(2026, 10, 2),
+      ),
+      CalendarEvent(
+        id: 'e2',
+        kind: CalendarKind.holiday,
+        title: 'Dasara holidays',
+        startsOn: DateTime(2026, 10, 19),
+        endsOn: DateTime(2026, 10, 21),
+      ),
+      CalendarEvent(
+        id: 'e3',
+        kind: CalendarKind.holiday,
+        title: 'Kannada Rajyotsava',
+        startsOn: DateTime(2026, 11, 1),
+        endsOn: DateTime(2026, 11, 1),
+      ),
       CalendarEvent(
         id: 'e4',
         kind: CalendarKind.exam,
@@ -86,8 +104,20 @@ class DemoTeacherApi extends FakeTeacherApi {
         endsOn: DateTime(2026, 11, 20),
         programs: const ['BCom'],
       ),
-      CalendarEvent(id: 'e5', kind: CalendarKind.event, title: 'Annual sports day', startsOn: DateTime(2026, 12, 12), endsOn: DateTime(2026, 12, 12)),
-      CalendarEvent(id: 'e6', kind: CalendarKind.holiday, title: 'Christmas', startsOn: DateTime(2026, 12, 25), endsOn: DateTime(2026, 12, 25)),
+      CalendarEvent(
+        id: 'e5',
+        kind: CalendarKind.event,
+        title: 'Annual sports day',
+        startsOn: DateTime(2026, 12, 12),
+        endsOn: DateTime(2026, 12, 12),
+      ),
+      CalendarEvent(
+        id: 'e6',
+        kind: CalendarKind.holiday,
+        title: 'Christmas',
+        startsOn: DateTime(2026, 12, 25),
+        endsOn: DateTime(2026, 12, 25),
+      ),
     ];
     holidays = {
       for (final e in calendarEvents.where((e) => e.kind == CalendarKind.holiday))
@@ -131,7 +161,8 @@ class DemoTeacherApi extends FakeTeacherApi {
             rollNo: s.rollNo,
             status: SubmissionStatus.checked,
             submittedAt: at,
-            text: 'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the '
+            text:
+                'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the '
                 'called-up amount, calls in arrears credited, and the amount received credited to Share Forfeiture account.',
             remark: 'Clear and complete. Well done.',
           ),
@@ -329,7 +360,10 @@ class DemoTeacherApi extends FakeTeacherApi {
     // The first topics were taught over the last two weeks, as in the seed.
     _coverage[subject.id] = {
       for (final (i, t) in ['t1', 't2', 't3', 't4'].indexed)
-        t: TopicCoverage(coveredOn: _today.subtract(Duration(days: 14 - i * 3)), coveredBy: 'Anita Sharma'),
+        t: TopicCoverage(
+          coveredOn: _today.subtract(Duration(days: 14 - i * 3)),
+          coveredBy: 'Anita Sharma',
+        ),
     };
     _coverage[costing.id] = {'k1': TopicCoverage(coveredOn: _today.subtract(const Duration(days: 8)), coveredBy: 'Anita Sharma')};
     _plans[subject.id] = _buildPlan(subject.id);
@@ -362,7 +396,14 @@ class DemoTeacherApi extends FakeTeacherApi {
     );
   }
 
-  Map<String, dynamic> _recording(String id, String title, {required int daysAgo, bool shared = false, String transcript = 'none', String? subjectName}) {
+  Map<String, dynamic> _recording(
+    String id,
+    String title, {
+    required int daysAgo,
+    bool shared = false,
+    String transcript = 'none',
+    String? subjectName,
+  }) {
     final start = _today.subtract(Duration(days: daysAgo)).add(const Duration(hours: 10));
     return {
       'id': id,
@@ -456,7 +497,13 @@ class DemoTeacherApi extends FakeTeacherApi {
       final c = d.add(Duration(days: i));
       if (_periods(c).isNotEmpty) next = isoDate(c);
     }
-    return DayTimetable(date: isoDate(d), today: isoDate(_today), periods: _periods(d), nextTeachingDate: next, holiday: holidays[isoDate(d)]);
+    return DayTimetable(
+      date: isoDate(d),
+      today: isoDate(_today),
+      periods: _periods(d),
+      nextTeachingDate: next,
+      holiday: holidays[isoDate(d)],
+    );
   }
 
   @override
@@ -469,7 +516,11 @@ class DemoTeacherApi extends FakeTeacherApi {
   }
 
   @override
-  Future<AttendanceSheet> submitAttendance({required String slotId, required String date, required Map<String, AttendanceStatus> marks}) async {
+  Future<AttendanceSheet> submitAttendance({
+    required String slotId,
+    required String date,
+    required Map<String, AttendanceStatus> marks,
+  }) async {
     _sheets['$slotId $date'] = {...marks};
     return super.submitAttendance(slotId: slotId, date: date, marks: marks);
   }
@@ -650,7 +701,9 @@ class DemoTeacherApi extends FakeTeacherApi {
         expected: expected,
         dueThisWeek: items.where((i) => i.weekOf == week).length,
         behindBy: behind,
-        status: done == 0 ? PlanStatus.notStarted : (behind > 0 ? PlanStatus.behind : (done > expected ? PlanStatus.ahead : PlanStatus.onTrack)),
+        status: done == 0
+            ? PlanStatus.notStarted
+            : (behind > 0 ? PlanStatus.behind : (done > expected ? PlanStatus.ahead : PlanStatus.onTrack)),
       ),
       items: items,
     );

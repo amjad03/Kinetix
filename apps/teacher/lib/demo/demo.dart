@@ -44,7 +44,10 @@ Widget demoAppBuilder(BuildContext context, Widget? child) {
         left: 0,
         right: 0,
         child: const IgnorePointer(
-          child: Material(type: MaterialType.transparency, child: Center(child: DemoChip())),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Center(child: DemoChip()),
+          ),
         ),
       ),
     ],

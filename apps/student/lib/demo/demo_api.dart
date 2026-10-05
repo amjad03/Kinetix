@@ -55,7 +55,13 @@ class DemoStudentApi extends FakeStudentApi {
       email: demoLogin,
     );
     final now = _clock();
-    final ex42 = _hw('h1', 'Exercise 4.2: Issue of shares', 'Solve questions 1 to 5 from the textbook. Show journal entries for each.', 2, corpAcc.name);
+    final ex42 = _hw(
+      'h1',
+      'Exercise 4.2: Issue of shares',
+      'Solve questions 1 to 5 from the textbook. Show journal entries for each.',
+      2,
+      corpAcc.name,
+    );
     final costSheet = _hw('h2', 'Cost sheet practice', 'Prepare a cost sheet for the case on page 112.', 5, costing.name);
     final forfeiture = _hw('h3', 'Forfeiture of shares: notes', 'Read chapter 4.3 and write a one-page summary.', -3, corpAcc.name);
     subjectOfHomework = {'h1': corpAcc, 'h2': costing, 'h3': corpAcc};
@@ -101,7 +107,8 @@ class DemoStudentApi extends FakeStudentApi {
     submissions = {
       'h3/s1': {
         'status': 'checked',
-        'text': 'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the '
+        'text':
+            'Forfeiture is the cancellation of shares when a shareholder fails to pay calls. Share capital is debited with the '
             'called-up amount, calls in arrears credited, and the amount received credited to Share Forfeiture account.',
         'files': [],
         'submittedAt': _at(-4, 19),
@@ -151,25 +158,39 @@ class DemoStudentApi extends FakeStudentApi {
 
     const caTitle = 'Corporate Accounting, BCom Semester 3', costTitle = 'Cost Accounting, BCom Semester 3';
     final ca = [
-      ('ch1', 'Issue of Shares', [
-        ('t1', 'Kinds of shares and share capital', 'Equity and preference shares; authorised, issued and called-up capital.'),
-        ('t2', 'Issue at par, premium and discount', 'Journal entries for each kind of issue.'),
-        ('t3', 'Over-subscription and pro-rata allotment', 'Refunds and adjusting excess application money.'),
-      ]),
-      ('ch2', 'Forfeiture and Re-issue of Shares', [
-        ('t4', 'Forfeiture of shares', 'Cancelling shares when calls are not paid.'),
-        ('t5', 'Re-issue of forfeited shares', 'Re-issue at a discount and the transfer to capital reserve.'),
-      ]),
-      ('ch3', 'Underwriting of Shares', [
-        ('t6', 'Underwriting and underwriting commission', 'What underwriting is, its kinds, and the commission allowed by law.'),
-      ]),
+      (
+        'ch1',
+        'Issue of Shares',
+        [
+          ('t1', 'Kinds of shares and share capital', 'Equity and preference shares; authorised, issued and called-up capital.'),
+          ('t2', 'Issue at par, premium and discount', 'Journal entries for each kind of issue.'),
+          ('t3', 'Over-subscription and pro-rata allotment', 'Refunds and adjusting excess application money.'),
+        ],
+      ),
+      (
+        'ch2',
+        'Forfeiture and Re-issue of Shares',
+        [
+          ('t4', 'Forfeiture of shares', 'Cancelling shares when calls are not paid.'),
+          ('t5', 'Re-issue of forfeited shares', 'Re-issue at a discount and the transfer to capital reserve.'),
+        ],
+      ),
+      (
+        'ch3',
+        'Underwriting of Shares',
+        [('t6', 'Underwriting and underwriting commission', 'What underwriting is, its kinds, and the commission allowed by law.')],
+      ),
       ('ch4', 'Valuation of Goodwill', [('t7', 'Methods of valuing goodwill', 'Average profit, super profit and capitalisation.')]),
     ];
     final cost = [
-      ('cc1', 'Introduction to Cost Accounting', [
-        ('k1', 'Cost concepts and classification', 'Direct and indirect costs; fixed and variable.'),
-        ('k2', 'Cost sheet', 'Prime cost, works cost, cost of production and cost of sales.'),
-      ]),
+      (
+        'cc1',
+        'Introduction to Cost Accounting',
+        [
+          ('k1', 'Cost concepts and classification', 'Direct and indirect costs; fixed and variable.'),
+          ('k2', 'Cost sheet', 'Prime cost, works cost, cost of production and cost of sales.'),
+        ],
+      ),
     ];
     CourseOutline outline(String id, String title, List<(String, String, List<(String, String, String)>)> chapters) {
       for (final (_, chapter, topics) in chapters) {
@@ -192,7 +213,11 @@ class DemoStudentApi extends FakeStudentApi {
         reviewed: true,
         chapters: [
           for (final (cid, chapter, topics) in chapters)
-            OutlineChapter(id: cid, title: chapter, topics: [for (final (tid, t, s) in topics) OutlineTopic(id: tid, title: t, summary: s)]),
+            OutlineChapter(
+              id: cid,
+              title: chapter,
+              topics: [for (final (tid, t, s) in topics) OutlineTopic(id: tid, title: t, summary: s)],
+            ),
         ],
       );
     }
@@ -205,7 +230,8 @@ class DemoStudentApi extends FakeStudentApi {
         'total': 7,
         'percent': 57,
         'topics': [
-          for (final (i, t) in ['t1', 't2', 't3', 't4'].indexed) {'topicId': t, 'coveredOn': _iso(-14 + i * 3), 'coveredBy': 'Anita Sharma'},
+          for (final (i, t) in ['t1', 't2', 't3', 't4'].indexed)
+            {'topicId': t, 'coveredOn': _iso(-14 + i * 3), 'coveredBy': 'Anita Sharma'},
         ],
       },
       'sub2': {
@@ -243,11 +269,25 @@ class DemoStudentApi extends FakeStudentApi {
       duePaise: 3435000,
       onlinePayments: 'demo',
       invoices: [
-        FeeInvoice(id: 'i1', title: 'Semester 3 tuition fee', amountPaise: 4250000, paidPaise: 1000000, dueOn: _day(10), status: InvoiceStatus.due),
+        FeeInvoice(
+          id: 'i1',
+          title: 'Semester 3 tuition fee',
+          amountPaise: 4250000,
+          paidPaise: 1000000,
+          dueOn: _day(10),
+          status: InvoiceStatus.due,
+        ),
         FeeInvoice(id: 'i2', title: 'Exam fee (Nov 2026)', amountPaise: 185000, paidPaise: 0, dueOn: _day(-2), status: InvoiceStatus.due),
       ],
       payments: [
-        FeePayment(id: 'p1', invoiceId: 'i1', amountPaise: 1000000, method: 'cash', receiptNo: 'RCPT/2026-27/00002', paidAt: _day(-6).add(const Duration(hours: 11))),
+        FeePayment(
+          id: 'p1',
+          invoiceId: 'i1',
+          amountPaise: 1000000,
+          method: 'cash',
+          receiptNo: 'RCPT/2026-27/00002',
+          paidAt: _day(-6).add(const Duration(hours: 11)),
+        ),
       ],
     );
 

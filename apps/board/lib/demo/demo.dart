@@ -27,7 +27,14 @@ class DemoChip extends StatelessWidget {
         backgroundColor: colors.tertiary,
         side: BorderSide.none,
         visualDensity: VisualDensity.compact,
-        label: Text(l.demoChip, style: context.text.labelLarge?.copyWith(color: colors.onTertiary, fontWeight: FontWeight.w700, letterSpacing: 1)),
+        label: Text(
+          l.demoChip,
+          style: context.text.labelLarge?.copyWith(
+            color: colors.onTertiary,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1,
+          ),
+        ),
       ),
     );
   }

@@ -31,6 +31,11 @@ affect what was done before the change.
 All data and all AI processing stay in India. Data is kept for the student's time at the
 institution and then for the period the institution's records policy requires.
 
+Lesson recordings (the teacher's board and voice, with their transcript and summary) are kept
+until the semester they were recorded in ends, plus a few days set by the institution (7 unless
+it chooses otherwise, at most 90), and are then deleted. A teacher may keep a particular
+recording for longer, for example to teach the same lesson again.
+
 ## Contact
 
 The institution's grievance officer (named in the app under Profile → Privacy) answers

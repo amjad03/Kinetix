@@ -25,6 +25,13 @@ tenants ─┬─ campuses
 
 `programs.curriculum_code` links a program to the **global curriculum library** (`cbse`, `kseab`, `cisce`, `bu-ug`…). That library will hold boards → grades/semesters → subjects → units → chapters → topics → learning outcomes, and belongs to no tenant. It is not built yet.
 
+`academic_terms` (academic year, name, starts_on, ends_on, program_ids — null = every program)
+are the semesters, or one term for a school's whole year. A term lies inside its academic year,
+and terms of the same programs never overlap, so a class has at most one term on a date
+(`termFor(tx, date, programId)` in services/api/src/terms/terms.ts). Lesson recordings are kept
+until their term ends (see docs/architecture/lesson-recording.md), and a year plan without an end
+date runs to the end of the current term.
+
 Electives and combined classes (common in UG) will need a `section_students` join table, so that one student can belong to several teaching groups. **This is planned, not built.**
 
 ## Classroom
@@ -70,7 +77,8 @@ row-level security shows them to everyone and an institution's own rows only to 
 ai_usage (task, outcome, provider, model, prompt_version, tokens, latency)   — metering
 ai_cache (key = sha256(task, version, grounding, input), result, hits)        — per tenant
 recordings (id chosen by the board, owner, session, slot, section, subject, events_key,
-            audio_key, duration, transcript, summary, transcript/summary state, shared_at)
+            audio_key, duration, transcript, summary, transcript/summary state, shared_at,
+            keep, expiry_notified_at)                                         — deleted after their term
 jobs (kind, payload, state, attempts, run_after, locked_at)                   — Postgres queue
 push_devices (user, token, platform, app)
 ```
@@ -122,6 +130,7 @@ topic_coverage (section, topic, covered_on, covered_by, board_session)          
 homework_submissions (homework, student, text, files, status, remark, checked_*) — files in object storage
 consents (student, purpose, granted, notice_version, given_by)                   — append-only; latest counts
 tenants.settings                                                                  — editable column for the app role
+                                                                                    (incl. recordingRetentionGraceDays, default 7)
 ```
 
 Holidays apply wherever the timetable is turned into days: the teacher's day, the principal's

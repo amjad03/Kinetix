@@ -54,8 +54,39 @@ Apps:    Parent / Student / Teacher apps: GET /:id (summary, transcript), /:id/e
 - **Access:** the teacher who recorded it; school leaders; and, once shared, the class's
   students and their guardians. Families never see a recording that is still uploading.
 
+## Retention: until the semester ends
+
+Owner decision: a recording is kept until the end of its semester, plus a grace period.
+
+- **Its term:** the `academic_terms` row of the recording's class's program on the day it was
+  recorded (in the institution's time zone). A term made for the program wins over one for
+  every program. Recordings without a class (recorded outside a timetabled period) or without a
+  term are **kept**, and listed as "no term" for the principal
+  (`GET /v1/admin/recordings/retention`, shown in ERP Settings → Class recordings).
+- **When:** `expiresOn` = the term's last day + `recordingRetentionGraceDays` (tenant setting,
+  default 7, 0–90, `PUT /v1/admin/settings`) + 1: the day it is deleted. Recording responses
+  (`GET /v1/recordings`, `GET /v1/recordings/:id`) carry `expiresOn` (or null) and `keep`.
+- **Keep:** the teacher who recorded it (Teacher App or board) can call
+  `POST /v1/recordings/:id/keep {keep: true|false}` (audited `recording.kept` / `recording.unkept`).
+  No approval is needed for the pilot. Kept recordings are never deleted automatically.
+- **Warning:** seven days before `expiresOn` the teacher gets one in-app notification (kind
+  `recording`, dedupe key `recording-expiry:<id>`, with a push; the Teacher App opens its
+  Recordings tab). It is sent once, even if the dates change later.
+- **Daily job:** `recording.retention`, one per institution in the Postgres queue. Each run
+  queues the next a day later; every API process checks hourly (and at start) that each tenant
+  has one queued (`JobsService.registerDaily` / `ensureDaily`, under an advisory lock). A run
+  deletes the files first (events log and audio; if that fails the row stays and the next run
+  retries), then the row, withdraws the notifications about it (families' "Lesson recording"
+  and the teacher's warning), drops queued transcription/summary jobs and the cached AI summary,
+  and writes the audit entry `recording.expired` (actor `system`, with the term, dates and bytes).
+  Transcript and summary are columns of the row, so they go with it; nothing else references
+  a recording.
+- **Year plans:** a plan generated without an end date ends with the class's current term
+  (else about 16 weeks, within the academic year).
+
 ## Not built yet
 
-- Retention per institution (delete after N days), and deleting a recording from the apps.
+- Deleting a recording by hand from the apps. The Teacher App does not show `expiresOn` or a
+  Keep button yet.
 - Slides, PDFs and videos shown in split screen are not in the event log yet.
 - Kannada and Hindi speech models need benchmarking on classroom audio.

@@ -16,7 +16,7 @@ and client components (dialogs, tables with filters) equally.
 
 | File | What it is |
 |---|---|
-| `src/i18n/messages/*.ts` | The dictionary, one file per area (`common`, `today`, `calendar`, `settings`, `department`, `plans`, `results`, `school`, `messages`, `boards`, `fees`, `library`, `syllabus`, `admin`, `import`, `account`). Each file holds the English strings **and** their Hindi and Kannada translations, side by side. |
+| `src/i18n/messages/*.ts` | The dictionary, one file per area (`common`, `today`, `calendar`, `settings`, `department`, `plans`, `results`, `school`, `messages`, `boards`, `fees`, `library`, `syllabus`, `admin`, `import`, `account`, `payments`). Each file holds the English strings **and** their Hindi and Kannada translations, side by side. |
 | `src/i18n/define.ts` | `area(en, { hi, kn })`: TypeScript refuses a translation that misses or adds a key. |
 | `src/i18n/messages/index.ts` | Merges the areas into `MESSAGES.en / .hi / .kn`, and the `MessageKey` type. |
 | `src/i18n/translate.ts` | `createT(locale, messages)`: `t('key', { name })` fills `{name}` (numbers with Indian grouping); `t.plural('key', n)` picks `key_one` / `key_other` with `Intl.PluralRules`. |
@@ -54,7 +54,7 @@ board names, notice text written by staff) is shown as the API sends it.
 ## Errors
 
 API error bodies carry `code`. `errorText()` words the codes the ERP can meet (wrong login,
-inactive account, calendar range, live view off, board offline, marks empty, lesson-plan review refused and the other plan errors, forbidden, not
+inactive account, calendar range, live view off, board offline, marks empty, lesson-plan review refused and the other plan errors, Razorpay settings (`PAYMENTS_*`, `SECRETS_KEY_MISSING`), forbidden, not
 found, rate limited, network, server error…). For other codes, English shows the API's message
 as is; Hindi and Kannada show a translated general line ("भरी गई जानकारी जाँचें।") followed by the
 API's English detail in brackets, because the detail names what was wrong. Live-view refusals
@@ -124,3 +124,4 @@ Most uncertain first.
 | `live.end.idle`, `live.slow` | | Technical; check they read naturally. |
 | `ai.legend.*`, `ai.tokensNote` | टोकन / ಟೋಕನ್ | "Token" kept as a loan word. |
 | `nav.import`, `import.*` | आयात / ಆಮದು; प्रोग्राम / ಕಾರ್ಯಕ್ರಮ; ಕೊಠಡಿ ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ | Bulk import. आयात / ಆಮದು are trade words ("import"); is अपलोड / ಅಪ್‌ಲೋಡ್ more natural for office staff? Column and value names typed into the files (`roll_no`, `ug`, `en`, `Mon`, CSV) stay in Latin script, so `i18n.test.ts` allows them. |
+| `payments.*` | की आईडी / की सीक्रेट / वेबहुक; ಕೀ ಐಡಿ / ಕೀ ಸೀಕ್ರೆಟ್ / ವೆಬ್‌ಹುಕ್ | Razorpay settings. The dashboard's menu names are translated loosely; Razorpay's own dashboard is in English, so should the menu paths stay in English? Razorpay, KYC, API and URL stay in Latin script (`i18n.test.ts` allows them). |

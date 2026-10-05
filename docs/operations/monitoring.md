@@ -77,6 +77,8 @@ and the error-log metric is worth adding once traffic is real.
 
 - External uptime check from outside AWS (e.g. a CloudWatch Synthetics canary or a third-party
   pinger against `/ready` and the ERP login page) — recommended before go-live (small cost).
-- SMS delivery (MSG91 dashboard), push delivery (Firebase console), Razorpay webhooks (Razorpay
-  dashboard): check those consoles weekly during the pilot.
+- SMS delivery (MSG91 dashboard), push delivery (Firebase console), Razorpay webhooks (each
+  institution's own Razorpay dashboard, so ask the accounts office; 401s on
+  `/v1/fees/webhooks/razorpay/<slug>` in the API logs mean the webhook secret there differs from
+  the one saved in ERP → Settings): check those consoles weekly during the pilot.
 - AI/ASR servers: hosted outside this stack; monitor them where they run.

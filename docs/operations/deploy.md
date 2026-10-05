@@ -67,12 +67,15 @@ The image modes are documented in `services/api/docker-entrypoint.sh`:
    ```bash
    aws secretsmanager put-secret-value --secret-id kinetix/prod/msg91 --secret-string \
      '{"MSG91_AUTH_KEY":"…","MSG91_TEMPLATE_ID":"…","MSG91_SENDER_ID":"KINTIX"}'
-   aws secretsmanager put-secret-value --secret-id kinetix/prod/razorpay --secret-string \
-     '{"RAZORPAY_KEY_ID":"rzp_live_…","RAZORPAY_KEY_SECRET":"…","RAZORPAY_WEBHOOK_SECRET":"…"}'
    aws secretsmanager put-secret-value --secret-id kinetix/prod/fcm \
      --secret-string "$(jq -n --rawfile sa service-account.json '{FCM_SERVICE_ACCOUNT:$sa}')"
    ```
-   The Razorpay webhook URL is `https://<api_domain>/v1/fees/webhooks/razorpay`.
+   There are **no platform Razorpay keys**: each institution receives fees in its own Razorpay
+   account and enters its keys in the ERP (see [Onboarding](#onboarding-a-real-institution), step 4,
+   and [fees-payments.md](../architecture/fees-payments.md)). With `payments_provider = "razorpay"`
+   the API only needs `SECRETS_ENCRYPTION_KEY`, which Terraform generates into the `app` secret and
+   which encrypts those keys in the database. Losing it makes every institution re-enter its keys;
+   rotating it is in [security.md](security.md#secrets).
 
 ## First deploy of an environment
 
@@ -208,7 +211,18 @@ from four CSV files. The demo seed is never used for a real institution.
 4. **Set up the rest** in the ERP: **Departments** (heads of department; the import already created
    departments and placed subjects and staff in them), **Calendar** (holidays, exams), **Settings**
    (live view and its indicator, classroom audio, consent texts, grievance officer), fees if used,
-   and **Syllabus** (link subjects to courses). Corrections to the timetable are made in ERP →
+   and **Syllabus** (link subjects to courses).
+   **Online fee payments** go straight to the institution's **own Razorpay account** (we take no
+   commission and never hold the money). The institution: (a) creates a Razorpay account in its own
+   name and completes Razorpay's KYC (PAN, bank account, registration documents; a few days);
+   (b) in the Razorpay dashboard, *Account & Settings → API keys*, generates live keys; (c) under
+   *Webhooks*, adds the URL shown in ERP → Settings → *Online payments (Razorpay)*
+   (`https://<api_domain>/v1/fees/webhooks/razorpay/<slug>`) with a secret of its choice and the
+   events `payment.captured` and `order.paid`; (d) the principal or administrator enters the key id,
+   key secret and webhook secret in that Settings section and presses **Test connection**. Until then
+   families see "Please pay at the fees counter" (API code `PAYMENTS_NOT_CONFIGURED`) and the
+   accounts office records cash, cheque, transfer and UPI as before. Test keys (`rzp_test_…`) work
+   for a dry run on staging. Corrections to the timetable are made in ERP →
    Timetable one period at a time, or by importing again.
 5. **Boards**: for each classroom, ERP → Boards → *Add board* gives an enrolment code; enter it on
    the board with the server address `https://<api_domain>`.
