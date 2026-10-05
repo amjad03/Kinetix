@@ -106,6 +106,9 @@ class _BoardScreenState extends State<BoardScreen> {
   PanelKind? _panel;
   bool _panelOnLeft = false;
   double _panelFraction = 0.45;
+
+  /// The board's share of a phone's split screen (the rest is the model, lab or page).
+  double _phoneSplit = 0.4;
   SplitContent? _splitContent;
   String? _splitItem;
   String? _splitPreset;
@@ -1119,6 +1122,53 @@ class _BoardScreenState extends State<BoardScreen> {
         return _boardArea(context, compact: compact || area.maxWidth < 1500, short: compact || area.maxHeight < 900);
       },
     );
+    if (phone && _panel == PanelKind.split) {
+      // The split screen on a phone: the board above and the model, lab or page below in
+      // portrait, side by side in landscape. Each half keeps clear of the system bars on its
+      // own sides only.
+      final portrait = size.maxHeight >= size.maxWidth;
+      final half = BoardChromeTheme(
+        child: SidePanelFrame(
+          fullScreen: true,
+          onLeft: false,
+          onClose: () => setState(() => _panel = null),
+          onSwapSide: () {},
+          onResize: (_) {},
+          child: ReadAloudScope(read: _read, child: LabSpeech(speak: _speak, child: _panelContent())),
+        ),
+      );
+      final split = MediaQuery.removePadding(context: context, removeTop: portrait, removeLeft: !portrait, child: half);
+      final boardHalf = MediaQuery.removePadding(context: context, removeBottom: portrait, removeRight: !portrait, child: board(true));
+      // The bar between the halves drags to give either more room.
+      final extent = portrait ? size.maxHeight : size.maxWidth;
+      final divider = GestureDetector(
+        key: const Key('phone-split-divider'),
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: portrait ? (d) => setState(() => _phoneSplit = (_phoneSplit + d.delta.dy / extent).clamp(0.25, 0.75)) : null,
+        onHorizontalDragUpdate: portrait ? null : (d) => setState(() => _phoneSplit = (_phoneSplit + d.delta.dx / extent).clamp(0.25, 0.75)),
+        child: Container(
+          width: portrait ? null : 16,
+          height: portrait ? 16 : null,
+          color: context.colors.surfaceContainerHigh,
+          alignment: Alignment.center,
+          child: Container(
+            width: portrait ? 40 : 4,
+            height: portrait ? 4 : 40,
+            decoration: BoxDecoration(color: context.colors.outline, borderRadius: BorderRadius.circular(2)),
+          ),
+        ),
+      );
+      return Flex(
+        key: const Key('phone-split'),
+        direction: portrait ? Axis.vertical : Axis.horizontal,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(flex: (_phoneSplit * 1000).round(), child: boardHalf),
+          divider,
+          Expanded(flex: ((1 - _phoneSplit) * 1000).round(), child: split),
+        ],
+      );
+    }
     if (phone) {
       // On a phone a panel opens full screen over the board, which stays as it was under it.
       return Stack(
@@ -1580,6 +1630,13 @@ class _BoardScreenState extends State<BoardScreen> {
           ]),
           (l.helpGroupClass, [
             MoreItem(const Key('tool-tools'), Icons.work_outline, l.toolTools, () => _toggle(_Popover.tools)),
+            MoreItem(
+              const Key('more-split-screen'),
+              screen.height >= screen.width ? Icons.horizontal_split_outlined : Icons.vertical_split_outlined,
+              l.toolSplitScreen,
+              () => _openPanel(PanelKind.split),
+              selected: _panel == PanelKind.split,
+            ),
             MoreItem(
               const Key('record'),
               _capture != null ? Icons.stop_circle_outlined : Icons.fiber_manual_record,
