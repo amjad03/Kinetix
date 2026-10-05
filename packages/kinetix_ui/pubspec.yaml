@@ -1,5 +1,5 @@
 name: kinetix_ui
-description: KINETIX design system — Material 3 theme, tokens and bundled fonts shared by the Board and the mobile apps.
+description: KINETIX design system — Material 3 theme in chalkboard green, design tokens and bundled fonts shared by the Board and the mobile apps.
 publish_to: none
 version: 0.1.0
 
@@ -17,15 +17,48 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
+  # All SIL Open Font License; see fonts/NOTICE.md for each font's copyright and use.
   fonts:
-    # Google Sans (OFL), subset to Latin + symbols incl. ₹. Static instances cut from the variable font.
-    - family: GoogleSans
+    # Google Sans Flex (OFL), static instances cut from the variable font: interface text.
+    - family: SansFlex
       fonts:
-        - asset: fonts/GoogleSans-400.ttf
-        - asset: fonts/GoogleSans-500.ttf
+        - asset: fonts/SansFlex-400.ttf
+        - asset: fonts/SansFlex-500.ttf
           weight: 500
-        - asset: fonts/GoogleSans-700.ttf
+        - asset: fonts/SansFlex-600.ttf
+          weight: 600
+        - asset: fonts/SansFlex-700.ttf
           weight: 700
+    # The display cut, for headlines.
+    - family: SansFlexDisplay
+      fonts:
+        - asset: fonts/SansFlexDisplay-400.ttf
+        - asset: fonts/SansFlexDisplay-500.ttf
+          weight: 500
+    # Board text; also Greek letters and symbols the interface font lacks.
+    - family: Inter
+      fonts:
+        - asset: fonts/Inter-400.ttf
+        - asset: fonts/Inter-500.ttf
+          weight: 500
+        - asset: fonts/Inter-700.ttf
+          weight: 700
+    # Board text for LKG to Class 5: single-storey a and g, as children learn to write them.
+    - family: Andika
+      fonts:
+        - asset: fonts/Andika-400.ttf
+        - asset: fonts/Andika-700.ttf
+          weight: 700
+    # Code blocks (the NL cut: no ligatures, so != reads as typed).
+    - family: JetBrainsMono
+      fonts:
+        - asset: fonts/JetBrainsMono-400.ttf
+        - asset: fonts/JetBrainsMono-700.ttf
+          weight: 700
+    # Only the maths signs Inter lacks (angle, perpendicular, parallel, therefore...).
+    - family: NotoSansMath
+      fonts:
+        - asset: fonts/NotoSansMath-400.ttf
     - family: NotoSansKannada
       fonts:
         - asset: fonts/NotoSansKannada-400.ttf
