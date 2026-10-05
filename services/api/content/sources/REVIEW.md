@@ -77,3 +77,9 @@ When a course is checked, add `reviewed=yes` to its `#` line in the source and r
   - Check slab rates and rebate against the Finance Act in force for the assessment year taught.
 - **Goods and Services Tax, BCom Semester 6**
   - GST rates were rationalised from 22 September 2025 (5% and 18% main slabs, 40% for specified goods); confirm rates taught.
+
+## MBA (bu-mba.txt, curriculum `bu-pg`, BU MBA CBCS (2024-25))
+
+- PG programmes were not moved to SEP; the course list follows the BU MBA CBCS scheme as commonly listed (Sem 1-2 core, Sem 3-4 strategy plus dual specialisation). Confirm paper titles, codes and semesters against the current BU MBA regulations.
+- Specialisation electives: only Security Analysis and Portfolio Management, Consumer Behaviour and Financial Derivatives are written. Not written: other Finance, Marketing, HR, Systems, Business Analytics, Logistics and Entrepreneurship electives; internship and project.
+- Business Communication and the soft-skills paper are not written.

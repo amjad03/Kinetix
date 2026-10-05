@@ -1,0 +1,1669 @@
+{
+ "curricula": [
+  {
+   "code": "bu-pg",
+   "name": "Bangalore University (PG)",
+   "level": "pg"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-1-management-ob",
+   "title": "Management and Organisational Behaviour, MBA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Management Concepts",
+     "topics": [
+      {
+       "title": "Evolution of management thought",
+       "summary": "Classical, neo-classical, systems and contingency theories.",
+       "notes": [
+        "Classical: Taylor (scientific management), Fayol (administrative principles), Weber (bureaucracy).",
+        "Neo-classical: Hawthorne studies, human relations, McGregor's Theory X and Y.",
+        "Systems theory views the organisation as an open system of interrelated parts; contingency theory says the best approach depends on the situation.",
+        "Drucker emphasised management by objectives and knowledge workers."
+       ],
+       "outcomes": [
+        "Trace the evolution of management thought",
+        "Apply contingency thinking to a case"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Individual Behaviour",
+     "topics": [
+      {
+       "title": "Personality, perception and attitudes",
+       "summary": "Personality theories, attribution and job attitudes.",
+       "notes": [
+        "Big Five and MBTI are common personality frameworks.",
+        "Attribution theory: behaviour is judged as internally or externally caused using distinctiveness, consensus and consistency; the fundamental attribution error overweights internal causes.",
+        "Job satisfaction, organisational commitment and engagement predict performance and turnover."
+       ],
+       "outcomes": [
+        "Use attribution theory to explain judgements of others",
+        "Link attitudes to work outcomes"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Motivation theories",
+       "summary": "Content and process theories of motivation.",
+       "notes": [
+        "Content: Maslow, Herzberg's two-factor theory, McClelland's needs for achievement, affiliation and power, Alderfer's ERG.",
+        "Process: Vroom's expectancy (M = E × I × V), Adams' equity theory, Locke's goal-setting theory.",
+        "Goal-setting: specific, difficult goals with feedback lead to higher performance."
+       ],
+       "outcomes": [
+        "Compare content and process theories",
+        "Design a motivation scheme for a team"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Group and Leadership",
+     "topics": [
+      {
+       "title": "Leadership theories",
+       "summary": "Trait, behavioural, contingency and transformational leadership.",
+       "notes": [
+        "Behavioural studies: Ohio State (initiating structure, consideration), Michigan (employee- vs production-oriented), Blake and Mouton's managerial grid.",
+        "Fiedler's contingency model matches style (LPC) to situational favourableness; Hersey–Blanchard matches style to follower readiness.",
+        "Transformational leaders inspire and change followers; transactional leaders exchange rewards for performance."
+       ],
+       "outcomes": [
+        "Compare leadership theories",
+        "Choose a leadership style for a situation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Organisational Dynamics",
+     "topics": [
+      {
+       "title": "Culture, power and change",
+       "summary": "Organisational culture, power and politics, and change management.",
+       "notes": [
+        "Schein's levels of culture: artefacts, espoused values, basic assumptions.",
+        "French and Raven's bases of power: legitimate, reward, coercive, expert, referent.",
+        "Kotter's eight steps to lead change begin with creating urgency and end with anchoring changes in culture."
+       ],
+       "outcomes": [
+        "Diagnose an organisation's culture",
+        "Plan change with Kotter's model"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-1-managerial-economics",
+   "title": "Managerial Economics, MBA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Demand and Forecasting",
+     "topics": [
+      {
+       "title": "Demand analysis and elasticity",
+       "summary": "Demand functions, elasticities and their managerial use.",
+       "notes": [
+        "Point price elasticity e = (dQ/dP) × (P/Q); arc elasticity uses average P and Q.",
+        "Total revenue is maximised where price elasticity equals −1 (MR = 0).",
+        "MR = P(1 + 1/e), linking pricing to elasticity.",
+        "Advertising and income elasticity guide promotion and market expansion."
+       ],
+       "outcomes": [
+        "Compute point and arc elasticity",
+        "Relate elasticity to marginal revenue and pricing"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A cinema raises ticket prices and earns less. What did it not know about its customers?",
+        "example": "Q = 100 − 2P. At P = 20, Q = 60; e = −2 × 20 ÷ 60 = −0.67 (inelastic): raising price raises revenue.\nRevenue is maximum where e = −1: P = 25, Q = 50, TR = ₹1,250.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "If e = −2 and P = ₹100, what is MR?",
+          "a": "MR = 100(1 − 1/2) = ₹50."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "point elasticity",
+         "marginal revenue",
+         "revenue maximisation"
+        ]
+       }
+      },
+      {
+       "title": "Demand forecasting",
+       "summary": "Survey and statistical methods of forecasting demand.",
+       "notes": [
+        "Survey methods: buyers' intentions, expert opinion (Delphi), sales force composite.",
+        "Statistical methods: trend projection, moving averages, exponential smoothing, regression.",
+        "Exponential smoothing: Fₜ₊₁ = αAₜ + (1 − α)Fₜ."
+       ],
+       "outcomes": [
+        "Choose a forecasting method",
+        "Forecast with exponential smoothing"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Production and Cost",
+     "topics": [
+      {
+       "title": "Production and cost functions",
+       "summary": "Cobb–Douglas production, economies of scale and cost curves.",
+       "notes": [
+        "Cobb–Douglas: Q = A Lᵅ Kᵝ; α + β > 1, = 1 or < 1 gives increasing, constant or decreasing returns to scale.",
+        "Least-cost combination: MPL ÷ w = MPK ÷ r.",
+        "Long-run average cost is the envelope of short-run curves; economies of scale lower it."
+       ],
+       "outcomes": [
+        "Identify returns to scale from a production function",
+        "Find the least-cost input combination"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Market Structure and Pricing",
+     "topics": [
+      {
+       "title": "Pricing under market structures",
+       "summary": "Equilibrium in competitive, monopoly and oligopoly markets, and pricing practices.",
+       "notes": [
+        "Profit maximisation: MR = MC.",
+        "A monopolist with constant MC charges P = MC ÷ (1 + 1/e).",
+        "Oligopoly models: Cournot (quantity), Bertrand (price), kinked demand; game theory and the prisoners' dilemma.",
+        "Pricing practices: cost-plus, peak-load, transfer pricing, price discrimination."
+       ],
+       "outcomes": [
+        "Find the profit-maximising price and output",
+        "Analyse a duopoly as a game"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Macroeconomics for Managers",
+     "topics": [
+      {
+       "title": "National income, inflation and policy",
+       "summary": "GDP, business cycles, and monetary and fiscal policy.",
+       "notes": [
+        "GDP = C + I + G + (X − M).",
+        "Monetary policy (RBI): repo rate, CRR, SLR, open market operations; fiscal policy: taxes and government spending.",
+        "The multiplier = 1 ÷ (1 − MPC)."
+       ],
+       "outcomes": [
+        "Explain the effect of policy on business",
+        "Compute the investment multiplier"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-1-accounting-for-managers",
+   "title": "Accounting for Managers, MBA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Financial Accounting Framework",
+     "topics": [
+      {
+       "title": "Accounting framework and standards",
+       "summary": "Concepts, the accounting cycle and Ind AS.",
+       "notes": [
+        "Accounting cycle: transactions, journal, ledger, trial balance, adjustments, financial statements.",
+        "Accrual basis records revenue when earned and expenses when incurred.",
+        "Ind AS are converged with IFRS; the Conceptual Framework defines assets, liabilities, equity, income and expenses."
+       ],
+       "outcomes": [
+        "Explain the accounting cycle",
+        "Apply the accrual concept"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Financial Statements",
+     "topics": [
+      {
+       "title": "Reading financial statements",
+       "summary": "Balance sheet, statement of profit and loss and cash flow statement.",
+       "notes": [
+        "The balance sheet shows financial position at a date; the statement of profit and loss shows performance over a period.",
+        "Cash flow statement (Ind AS 7) separates operating, investing and financing cash flows.",
+        "Profit is not cash: depreciation, credit sales and working capital changes cause differences."
+       ],
+       "outcomes": [
+        "Interpret the three financial statements",
+        "Reconcile profit with operating cash flow"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Financial Statement Analysis",
+     "topics": [
+      {
+       "title": "Ratio and DuPont analysis",
+       "summary": "Liquidity, solvency, efficiency and profitability ratios, and the DuPont identity.",
+       "notes": [
+        "ROE = Net profit ÷ Equity.",
+        "DuPont: ROE = Net profit margin × Asset turnover × Equity multiplier (Assets ÷ Equity).",
+        "Interest coverage = EBIT ÷ Interest.",
+        "Compare ratios over time (trend) and with peers (cross-section)."
+       ],
+       "outcomes": [
+        "Compute and interpret key ratios",
+        "Decompose ROE with DuPont analysis"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Two companies both earn 20% ROE. One is a supermarket, the other a luxury brand. How can that be?",
+        "example": "Supermarket: margin 2%, turnover 5, equity multiplier 2: ROE = 0.02 × 5 × 2 = 20%.\nLuxury brand: margin 20%, turnover 0.5, multiplier 2: ROE = 20%.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Net profit ₹10 lakh, sales ₹100 lakh, assets ₹50 lakh, equity ₹25 lakh. ROE by DuPont?",
+          "a": "10% × 2 × 2 = 40%."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "ROE",
+         "asset turnover",
+         "equity multiplier",
+         "DuPont"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Cost and Management Accounting",
+     "topics": [
+      {
+       "title": "Cost behaviour and CVP",
+       "summary": "Fixed and variable costs, contribution and break-even analysis.",
+       "notes": [
+        "Contribution margin ratio = Contribution ÷ Sales.",
+        "Break-even sales = Fixed costs ÷ CM ratio; margin of safety = (Actual − BE sales) ÷ Actual sales.",
+        "Operating leverage = Contribution ÷ Operating profit."
+       ],
+       "outcomes": [
+        "Do a break-even and target-profit analysis",
+        "Explain operating leverage"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "lab.break-even",
+         "title": "Break-even analysis"
+        }
+       ]
+      },
+      {
+       "title": "Budgeting and variance analysis",
+       "summary": "Master budget, flexible budget and standard costing variances.",
+       "notes": [
+        "Master budget: sales, production, cost and cash budgets leading to budgeted statements.",
+        "Flexible budget variance compares actual with a budget flexed to actual activity.",
+        "Material price variance = AQ(SP − AP); usage variance = SP(SQ − AQ)."
+       ],
+       "outcomes": [
+        "Prepare a flexible budget",
+        "Compute and interpret variances"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-1-statistics-for-management",
+   "title": "Statistics for Management, MBA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Descriptive Statistics",
+     "topics": [
+      {
+       "title": "Summarising data",
+       "summary": "Central tendency, dispersion and shape.",
+       "notes": [
+        "Mean, median and mode; weighted mean = Σwx ÷ Σw.",
+        "Standard deviation and coefficient of variation; z-score = (x − μ) ÷ σ.",
+        "Skewness and kurtosis describe shape; box plots show quartiles and outliers (beyond 1.5 × IQR)."
+       ],
+       "outcomes": [
+        "Summarise a dataset numerically and graphically",
+        "Identify outliers"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Probability",
+     "topics": [
+      {
+       "title": "Probability and Bayes' theorem",
+       "summary": "Rules of probability, conditional probability and Bayes' theorem.",
+       "notes": [
+        "P(A ∪ B) = P(A) + P(B) − P(A ∩ B); P(A | B) = P(A ∩ B) ÷ P(B).",
+        "Bayes: P(A | B) = P(B | A) P(A) ÷ P(B).",
+        "Independent events: P(A ∩ B) = P(A) P(B)."
+       ],
+       "outcomes": [
+        "Apply conditional probability to business cases",
+        "Revise probabilities with Bayes' theorem"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "probability",
+         "title": "Probability with coins and dice"
+        }
+       ],
+       "lesson": {
+        "hook": "A test is 95% accurate and 1% of products are defective. If the test flags a product, how likely is it really defective?",
+        "example": "P(D) = 0.01, P(+|D) = 0.95, P(+|not D) = 0.05. P(+) = 0.0095 + 0.0495 = 0.059.\nP(D|+) = 0.0095 ÷ 0.059 ≈ 0.16: only 16%.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "P(A) = 0.5, P(B) = 0.4, independent. P(A and B)?",
+          "a": "0.2"
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "conditional probability",
+         "prior",
+         "posterior",
+         "Bayes' theorem"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Probability Distributions",
+     "topics": [
+      {
+       "title": "Binomial, Poisson and normal",
+       "summary": "Discrete and continuous distributions for business problems.",
+       "notes": [
+        "Binomial: mean np, variance np(1 − p); Poisson: mean = variance = λ.",
+        "Normal: z = (x − μ) ÷ σ; P(−1.96 < z < 1.96) = 0.95.",
+        "Poisson approximates the binomial when n is large and p small (λ = np)."
+       ],
+       "outcomes": [
+        "Compute binomial, Poisson and normal probabilities",
+        "Choose a suitable distribution"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sampling and Estimation",
+     "topics": [
+      {
+       "title": "Sampling distributions and confidence intervals",
+       "summary": "Central limit theorem, standard error and interval estimates.",
+       "notes": [
+        "Central limit theorem: for large n, the sample mean is approximately normal with mean μ and standard error σ ÷ √n.",
+        "95% confidence interval for μ: x̄ ± 1.96 σ ÷ √n (use t with n − 1 df when σ is unknown and n small).",
+        "Sample size for a mean: n = (zσ ÷ E)²."
+       ],
+       "outcomes": [
+        "Construct confidence intervals",
+        "Determine sample size"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Hypothesis Testing and Regression",
+     "topics": [
+      {
+       "title": "Tests and simple regression",
+       "summary": "z, t, chi-square and ANOVA tests, and regression analysis.",
+       "notes": [
+        "Steps: state H₀ and H₁, choose α, compute the test statistic, compare with the critical value or use the p-value.",
+        "One-way ANOVA: F = MS between ÷ MS within.",
+        "Least squares: b = Σ(x − x̄)(y − ȳ) ÷ Σ(x − x̄)²; R² is the share of variation explained."
+       ],
+       "outcomes": [
+        "Run and interpret common tests",
+        "Fit and interpret a regression model"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-1-legal-environment",
+   "title": "Legal Environment of Business, MBA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Law of Contract",
+     "topics": [
+      {
+       "title": "Indian Contract Act, 1872",
+       "summary": "Essentials of a valid contract, void and voidable agreements, and remedies.",
+       "notes": [
+        "A contract is an agreement enforceable by law (section 2(h)); essentials: offer and acceptance, consideration, capacity, free consent, lawful object, not expressly void.",
+        "A minor's agreement is void (Mohori Bibee v Dharmodas Ghose).",
+        "Consent caused by coercion, undue influence, fraud or misrepresentation makes a contract voidable.",
+        "Remedies for breach: damages (Hadley v Baxendale), specific performance, injunction, quantum meruit."
+       ],
+       "outcomes": [
+        "Test the validity of a contract",
+        "Identify remedies for breach"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sale of Goods and Negotiable Instruments",
+     "topics": [
+      {
+       "title": "Sale of goods and negotiable instruments",
+       "summary": "Conditions and warranties, caveat emptor, and cheques and bills.",
+       "notes": [
+        "Sale of Goods Act, 1930: a condition is essential to the contract; a warranty is collateral.",
+        "Caveat emptor (let the buyer beware) has exceptions such as fitness for purpose and merchantable quality.",
+        "Negotiable Instruments Act, 1881: promissory note, bill of exchange, cheque; section 138 makes dishonour of a cheque for insufficient funds an offence."
+       ],
+       "outcomes": [
+        "Distinguish conditions and warranties",
+        "Explain the consequences of cheque dishonour"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Company Law",
+     "topics": [
+      {
+       "title": "Companies Act, 2013 essentials",
+       "summary": "Incorporation, directors, meetings and corporate governance.",
+       "notes": [
+        "Corporate social responsibility (section 135): companies above set thresholds (net worth ₹500 crore, turnover ₹1,000 crore or net profit ₹5 crore) spend 2% of average net profit.",
+        "Independent directors and audit committees strengthen governance.",
+        "NCLT handles company law matters; IBC 2016 governs insolvency resolution."
+       ],
+       "outcomes": [
+        "Explain key governance provisions",
+        "State the CSR obligation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Consumer and Competition Law",
+     "topics": [
+      {
+       "title": "Consumer Protection Act, 2019 and Competition Act, 2002",
+       "summary": "Consumer rights, redressal commissions and anti-competitive practices.",
+       "notes": [
+        "Consumer commissions' pecuniary jurisdiction: district up to ₹50 lakh, state ₹50 lakh–₹2 crore, national above ₹2 crore (by value of goods or services paid).",
+        "The Central Consumer Protection Authority acts against unfair trade practices and misleading advertisements.",
+        "The Competition Act prohibits anti-competitive agreements, abuse of dominance and regulates combinations; the CCI enforces it."
+       ],
+       "outcomes": [
+        "Identify the right consumer forum",
+        "Recognise anti-competitive practices"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Information Technology and IPR",
+     "topics": [
+      {
+       "title": "IT Act and intellectual property",
+       "summary": "Electronic contracts, data protection and intellectual property rights.",
+       "notes": [
+        "The IT Act, 2000 recognises electronic records and digital signatures.",
+        "The Digital Personal Data Protection Act, 2023 governs processing of personal data with consent.",
+        "IPRs: patents (20 years), trademarks (10 years, renewable), copyright (life plus 60 years for authors), designs, geographical indications."
+       ],
+       "outcomes": [
+        "Explain the protection given by each IPR",
+        "State key duties under data protection law"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-2-financial-management",
+   "title": "Financial Management, MBA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Valuation and Risk",
+     "topics": [
+      {
+       "title": "Risk, return and CAPM",
+       "summary": "Measuring risk and return, diversification and the capital asset pricing model.",
+       "notes": [
+        "Expected return E(R) = Σ pᵢ Rᵢ; risk is the standard deviation of returns.",
+        "Diversification removes unsystematic risk; systematic (market) risk remains, measured by beta.",
+        "CAPM: E(Rᵢ) = Rf + βᵢ(Rm − Rf).",
+        "A stock is undervalued if its expected return exceeds the CAPM required return."
+       ],
+       "outcomes": [
+        "Compute expected return and risk",
+        "Apply CAPM to find required return"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Why does a power utility's share move less than the Sensex, while a tech share swings more?",
+        "example": "Rf = 7%, Rm = 13%, β = 1.5: required return = 7 + 1.5 × 6 = 16%.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is the required return on a stock with β = 0?",
+          "a": "The risk-free rate."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "beta",
+         "systematic risk",
+         "CAPM",
+         "market risk premium"
+        ]
+       }
+      },
+      {
+       "title": "Valuation of bonds and shares",
+       "summary": "Present value models for bonds and equity.",
+       "notes": [
+        "Bond value = Σ C ÷ (1 + k)ᵗ + F ÷ (1 + k)ⁿ; bond prices fall when yields rise.",
+        "Gordon growth model: P₀ = D₁ ÷ (k − g), for k > g.",
+        "Yield to maturity is the discount rate equating bond price and its cash flows."
+       ],
+       "outcomes": [
+        "Value bonds and shares",
+        "Explain the price–yield relationship"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Capital Budgeting",
+     "topics": [
+      {
+       "title": "Capital budgeting under certainty and risk",
+       "summary": "NPV, IRR, MIRR and risk analysis.",
+       "notes": [
+        "NPV and IRR can conflict for mutually exclusive projects; NPV is preferred.",
+        "MIRR assumes reinvestment at the cost of capital.",
+        "Risk techniques: sensitivity analysis, scenario analysis, decision trees, risk-adjusted discount rate, certainty equivalents."
+       ],
+       "outcomes": [
+        "Evaluate projects with NPV, IRR and MIRR",
+        "Analyse project risk"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Cost of Capital and Capital Structure",
+     "topics": [
+      {
+       "title": "WACC and capital structure theories",
+       "summary": "Cost of each source, WACC, and NI, NOI, traditional and MM approaches.",
+       "notes": [
+        "WACC = Σ wᵢkᵢ, using market value weights where possible.",
+        "MM without taxes: firm value is independent of capital structure; with taxes, V_L = V_U + tD.",
+        "Trade-off theory balances tax shields against financial distress costs; pecking order prefers internal funds, then debt, then equity."
+       ],
+       "outcomes": [
+        "Compute WACC",
+        "Compare capital structure theories"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Dividend and Working Capital",
+     "topics": [
+      {
+       "title": "Dividend policy and working capital management",
+       "summary": "Dividend models, and managing cash, receivables and inventory.",
+       "notes": [
+        "Walter: if r > k retain all earnings; if r < k pay out all.",
+        "MM dividend irrelevance holds in perfect markets.",
+        "Receivables policy weighs extra contribution from credit sales against the cost of funds and bad debts.",
+        "Cash conversion cycle = Inventory days + Receivable days − Payable days."
+       ],
+       "outcomes": [
+        "Apply dividend models",
+        "Evaluate a credit policy change"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-2-marketing-management",
+   "title": "Marketing Management, MBA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Marketing Strategy",
+     "topics": [
+      {
+       "title": "Marketing and value creation",
+       "summary": "Marketing concept, value delivery and strategic planning.",
+       "notes": [
+        "Value proposition: the set of benefits promised to customers.",
+        "Marketing plan: situation analysis, objectives, strategy (STP and mix), action programmes, budgets, controls.",
+        "Customer equity is the total lifetime value of all customers."
+       ],
+       "outcomes": [
+        "Write a value proposition",
+        "Outline a marketing plan"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Understanding Customers",
+     "topics": [
+      {
+       "title": "Consumer and business buying behaviour",
+       "summary": "Buying decision process and organisational buying.",
+       "notes": [
+        "Consumer decision process: problem recognition, search, evaluation, decision, post-purchase (cognitive dissonance).",
+        "Business buying centre roles: initiators, users, influencers, deciders, approvers, buyers, gatekeepers.",
+        "Buy classes: straight rebuy, modified rebuy, new task."
+       ],
+       "outcomes": [
+        "Map a consumer decision journey",
+        "Identify roles in a buying centre"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Brand and Product",
+     "topics": [
+      {
+       "title": "Brand equity and product strategy",
+       "summary": "Brand elements, brand equity models and product line decisions.",
+       "notes": [
+        "Keller's customer-based brand equity pyramid: salience, performance and imagery, judgements and feelings, resonance.",
+        "Brand strategies: line extension, brand extension, multibrands, new brands.",
+        "Product line decisions: stretching (up, down) and filling."
+       ],
+       "outcomes": [
+        "Analyse a brand with Keller's pyramid",
+        "Recommend brand and product line strategies"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Pricing and Channels",
+     "topics": [
+      {
+       "title": "Pricing strategy and channel management",
+       "summary": "Pricing objectives and methods, channel conflict and omnichannel retail.",
+       "notes": [
+        "Price elasticity, costs and competitors' prices set the pricing range.",
+        "Channel conflict may be vertical, horizontal or multichannel.",
+        "Omnichannel retail integrates stores, online and mobile into one customer experience."
+       ],
+       "outcomes": [
+        "Set a price using value and cost",
+        "Manage channel conflict"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Communication and Digital Marketing",
+     "topics": [
+      {
+       "title": "Integrated communications and digital marketing",
+       "summary": "Communication process, media planning and digital channels.",
+       "notes": [
+        "Media planning: reach, frequency, GRP = Reach × Frequency.",
+        "Digital funnel metrics: impressions, CTR, conversion rate, CAC, ROAS = Revenue ÷ Ad spend.",
+        "Content, social, search and influencer marketing build owned, earned and paid media."
+       ],
+       "outcomes": [
+        "Plan a media schedule",
+        "Evaluate a digital campaign with funnel metrics"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-2-human-resource-management",
+   "title": "Human Resource Management, MBA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Strategic HRM",
+     "topics": [
+      {
+       "title": "HR strategy and planning",
+       "summary": "Linking HR with strategy, HR planning and HR analytics.",
+       "notes": [
+        "Best-fit vs best-practice approaches to HRM.",
+        "Workforce planning forecasts demand and supply (Markov analysis, trend analysis).",
+        "HR analytics uses data on hiring, performance and attrition to make decisions."
+       ],
+       "outcomes": [
+        "Align HR plans with business strategy",
+        "Use basic HR analytics"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Talent Acquisition",
+     "topics": [
+      {
+       "title": "Recruitment, selection and onboarding",
+       "summary": "Employer branding, selection methods and induction.",
+       "notes": [
+        "Employer branding attracts candidates by communicating the employee value proposition.",
+        "Structured interviews and work-sample tests have higher validity than unstructured interviews.",
+        "Onboarding integrates new hires and reduces early attrition."
+       ],
+       "outcomes": [
+        "Design a selection process with valid tools",
+        "Plan an onboarding programme"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Learning and Development",
+     "topics": [
+      {
+       "title": "Training and talent management",
+       "summary": "Training cycle, evaluation and talent pipelines.",
+       "notes": [
+        "Training cycle: needs analysis, design, delivery, evaluation (Kirkpatrick's four levels; Phillips adds ROI).",
+        "Talent management identifies high potentials (9-box grid) and plans succession.",
+        "Competency mapping defines the knowledge, skills and behaviours for each role."
+       ],
+       "outcomes": [
+        "Evaluate training with Kirkpatrick's levels",
+        "Use a 9-box grid"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Performance and Compensation",
+     "topics": [
+      {
+       "title": "Performance management and reward",
+       "summary": "Performance management systems, pay structures and incentives.",
+       "notes": [
+        "Performance management sets goals (OKRs or KPIs), gives continuous feedback and reviews.",
+        "Pay structure is built from job evaluation and market surveys; compa-ratio = Actual pay ÷ Midpoint of range.",
+        "Variable pay links reward to individual, team or company performance."
+       ],
+       "outcomes": [
+        "Design a performance management cycle",
+        "Compute a compa-ratio"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Employee Relations",
+     "topics": [
+      {
+       "title": "Industrial relations and labour codes",
+       "summary": "Unions, collective bargaining, dispute resolution and India's labour codes.",
+       "notes": [
+        "Dispute resolution: negotiation, conciliation, arbitration, adjudication.",
+        "The four labour codes: Code on Wages, 2019; Industrial Relations Code, 2020; Code on Social Security, 2020; Occupational Safety, Health and Working Conditions Code, 2020.",
+        "Grievance redressal committees resolve individual complaints."
+       ],
+       "outcomes": [
+        "Explain dispute resolution mechanisms",
+        "Name the four labour codes and their scope"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-2-operations-research",
+   "title": "Quantitative Techniques and Operations Research, MBA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Linear Programming",
+     "topics": [
+      {
+       "title": "Formulation and graphical solution",
+       "summary": "Formulating LP models and solving two-variable problems graphically.",
+       "notes": [
+        "An LP has decision variables, a linear objective, linear constraints and non-negativity.",
+        "The optimum of a bounded feasible LP lies at a corner point.",
+        "Special cases: unbounded, infeasible, multiple optima, redundant constraints."
+       ],
+       "outcomes": [
+        "Formulate a product-mix problem",
+        "Solve two-variable LPs graphically"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "lab.graph-plotter",
+         "title": "Graph plotter"
+        }
+       ],
+       "lesson": {
+        "hook": "A furniture maker has 240 carpentry hours and 100 painting hours. How many tables and chairs make the most profit?",
+        "example": "Tables (₹70 profit) need 4 h carpentry and 2 h painting; chairs (₹50) 3 h and 1 h. Max Z = 70x + 50y.\n4x + 3y ≤ 240, 2x + y ≤ 100. Corners: (0,0), (50,0), (30,40), (0,80). Z = 0; 3,500; 4,100; 4,000. Best: 30 tables, 40 chairs.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Why check only corner points?",
+          "a": "A linear objective reaches its optimum at a vertex of the feasible region."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "decision variable",
+         "constraint",
+         "feasible region",
+         "corner point"
+        ]
+       }
+      },
+      {
+       "title": "Simplex method and duality",
+       "summary": "Standard form, simplex iterations and the dual problem.",
+       "notes": [
+        "Slack variables convert ≤ constraints into equations; surplus and artificial variables handle ≥ constraints (Big-M or two-phase).",
+        "The entering variable has the most negative Cj − Zj (maximisation); the leaving variable has the minimum ratio.",
+        "Every LP has a dual; shadow prices give the value of one more unit of a resource."
+       ],
+       "outcomes": [
+        "Solve an LP by the simplex method",
+        "Interpret shadow prices"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Transportation and Assignment",
+     "topics": [
+      {
+       "title": "Transportation and assignment problems",
+       "summary": "Initial solutions, optimality test and the Hungarian method.",
+       "notes": [
+        "Initial basic feasible solution: north-west corner, least cost, Vogel's approximation method.",
+        "Optimality: MODI (u–v) method; a solution needs m + n − 1 occupied cells.",
+        "Assignment: Hungarian method (row and column reduction, cover zeros with minimum lines)."
+       ],
+       "outcomes": [
+        "Solve a transportation problem with VAM and MODI",
+        "Solve an assignment problem"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Decision Theory and Games",
+     "topics": [
+      {
+       "title": "Decision making under uncertainty and game theory",
+       "summary": "Maximin, maximax, regret and expected value criteria, and two-person zero-sum games.",
+       "notes": [
+        "Under risk, choose the act with the highest expected monetary value; EVPI = expected value with perfect information − best EMV.",
+        "Under uncertainty: maximin (pessimist), maximax (optimist), minimax regret, Hurwicz, Laplace.",
+        "A game has a saddle point when maximin = minimax; otherwise use mixed strategies."
+       ],
+       "outcomes": [
+        "Apply decision criteria to a payoff table",
+        "Solve a 2 × 2 game"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Network Analysis and Queuing",
+     "topics": [
+      {
+       "title": "PERT, CPM and queuing",
+       "summary": "Critical path, project duration and basic queuing models.",
+       "notes": [
+        "The critical path is the longest path; its activities have zero float.",
+        "PERT expected time tₑ = (a + 4m + b) ÷ 6; variance = ((b − a) ÷ 6)².",
+        "M/M/1 queue: utilisation ρ = λ ÷ μ; average number in the system L = λ ÷ (μ − λ)."
+       ],
+       "outcomes": [
+        "Find the critical path and project duration",
+        "Compute M/M/1 queue measures"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-2-research-methodology",
+   "title": "Research Methodology, MBA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Research Foundations",
+     "topics": [
+      {
+       "title": "Research process and design",
+       "summary": "Types of research, problem formulation and research designs.",
+       "notes": [
+        "Research designs: exploratory, descriptive (cross-sectional, longitudinal), causal (experiments).",
+        "A good research problem is specific, researchable and significant.",
+        "Validity: internal (cause and effect) and external (generalisability)."
+       ],
+       "outcomes": [
+        "Formulate research questions and hypotheses",
+        "Choose a research design"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Measurement and Scaling",
+     "topics": [
+      {
+       "title": "Measurement, scales and reliability",
+       "summary": "Levels of measurement, attitude scales and reliability.",
+       "notes": [
+        "Levels: nominal, ordinal, interval, ratio.",
+        "Attitude scales: Likert, semantic differential, Thurstone.",
+        "Cronbach's alpha above about 0.7 indicates acceptable internal consistency."
+       ],
+       "outcomes": [
+        "Construct attitude scales",
+        "Assess reliability with Cronbach's alpha"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sampling and Data Collection",
+     "topics": [
+      {
+       "title": "Sampling design and fieldwork",
+       "summary": "Sampling frames, techniques and sample size.",
+       "notes": [
+        "Probability sampling allows estimates of sampling error.",
+        "Sample size for a proportion: n = z² p(1 − p) ÷ e².",
+        "Data collection: surveys (online, telephone, personal), observation, interviews, focus groups."
+       ],
+       "outcomes": [
+        "Determine sample size",
+        "Choose a data collection method"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Data Analysis",
+     "topics": [
+      {
+       "title": "Multivariate analysis basics",
+       "summary": "Univariate tests and an overview of multivariate techniques.",
+       "notes": [
+        "Parametric tests (t, ANOVA) assume normality; non-parametric alternatives include Mann–Whitney and Kruskal–Wallis.",
+        "Multiple regression: Y = b₀ + b₁X₁ + … + bₖXₖ; check multicollinearity (VIF).",
+        "Factor analysis reduces variables; cluster analysis groups cases; discriminant analysis classifies them."
+       ],
+       "outcomes": [
+        "Select the right analysis technique",
+        "Interpret a multiple regression output"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Reporting",
+     "topics": [
+      {
+       "title": "Research report and ethics",
+       "summary": "Writing the report and ethical research.",
+       "notes": [
+        "Report structure: executive summary, introduction, methodology, findings, limitations, recommendations.",
+        "Ethics: informed consent, confidentiality, no harm, honest reporting.",
+        "Plagiarism checks and proper citation are required for academic work."
+       ],
+       "outcomes": [
+        "Write a structured research report",
+        "Apply research ethics"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-3-strategic-management",
+   "title": "Strategic Management, MBA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Strategic Intent",
+     "topics": [
+      {
+       "title": "Vision, mission and strategic intent",
+       "summary": "Strategic intent, stakeholders and corporate governance.",
+       "notes": [
+        "Strategic intent (Hamel and Prahalad) is an ambitious goal that stretches the organisation.",
+        "Stakeholder mapping uses power and interest.",
+        "Good governance aligns management with shareholders and other stakeholders."
+       ],
+       "outcomes": [
+        "Write vision and mission statements",
+        "Map stakeholders by power and interest"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Environmental and Internal Analysis",
+     "topics": [
+      {
+       "title": "External analysis and core competencies",
+       "summary": "PESTEL, five forces, resource-based view and VRIO.",
+       "notes": [
+        "PESTEL scans the macro environment; Porter's five forces analyse industry attractiveness.",
+        "Resource-based view: sustainable advantage comes from valuable, rare, inimitable resources.",
+        "VRIO: valuable, rare, inimitable, organised to exploit."
+       ],
+       "outcomes": [
+        "Analyse an industry with five forces",
+        "Apply VRIO to a firm's resources"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Strategy Formulation",
+     "topics": [
+      {
+       "title": "Business and corporate strategy",
+       "summary": "Generic strategies, growth strategies and portfolio analysis.",
+       "notes": [
+        "Porter's generic strategies: cost leadership, differentiation, focus; being \"stuck in the middle\" is risky.",
+        "Growth: concentration, integration (vertical, horizontal), diversification (related, unrelated), mergers and acquisitions, strategic alliances.",
+        "Portfolio tools: BCG matrix, GE–McKinsey nine-cell matrix."
+       ],
+       "outcomes": [
+        "Choose growth strategies for a firm",
+        "Analyse a portfolio with BCG and GE matrices"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Strategy Implementation",
+     "topics": [
+      {
+       "title": "Implementing strategy",
+       "summary": "Structure, resource allocation, leadership and culture.",
+       "notes": [
+        "Structures: functional, divisional, matrix, network.",
+        "McKinsey 7-S aligns hard and soft elements.",
+        "Blue ocean strategy creates uncontested market space (value innovation)."
+       ],
+       "outcomes": [
+        "Match structure to strategy",
+        "Identify a blue ocean move"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Strategic Evaluation",
+     "topics": [
+      {
+       "title": "Strategic control",
+       "summary": "Premise, implementation and strategic surveillance controls; balanced scorecard.",
+       "notes": [
+        "Strategic controls: premise control, implementation control, strategic surveillance, special alert control.",
+        "Balanced scorecard links strategy to measures in four perspectives.",
+        "Strategy maps show cause-and-effect links between objectives."
+       ],
+       "outcomes": [
+        "Design strategic controls",
+        "Build a strategy map"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-3-security-analysis",
+   "title": "Security Analysis and Portfolio Management (Finance elective), MBA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Investment Environment",
+     "topics": [
+      {
+       "title": "Investment and securities markets",
+       "summary": "Investment vs speculation, instruments and Indian securities markets.",
+       "notes": [
+        "Investment seeks returns commensurate with risk over time; speculation seeks short-term gains at high risk.",
+        "Instruments: equity, bonds, mutual funds, derivatives, REITs and InvITs.",
+        "SEBI regulates markets; trading on NSE and BSE settles on T+1."
+       ],
+       "outcomes": [
+        "Compare investment alternatives",
+        "Describe how securities are traded in India"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Fundamental Analysis",
+     "topics": [
+      {
+       "title": "Economy, industry and company analysis",
+       "summary": "Top-down fundamental analysis and valuation multiples.",
+       "notes": [
+        "E-I-C framework: economy, industry, company.",
+        "Industry life cycle: pioneering, expansion, stabilisation, decline.",
+        "Valuation multiples: P/E = Price ÷ EPS; P/B = Price ÷ Book value per share; EV/EBITDA."
+       ],
+       "outcomes": [
+        "Carry out E-I-C analysis",
+        "Value a share with multiples"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Technical Analysis and Market Efficiency",
+     "topics": [
+      {
+       "title": "Technical analysis and EMH",
+       "summary": "Charts, indicators and the efficient market hypothesis.",
+       "notes": [
+        "Dow theory: primary, secondary and minor trends.",
+        "Indicators: moving averages, RSI (above 70 overbought, below 30 oversold), MACD.",
+        "EMH forms: weak (past prices), semi-strong (public information), strong (all information)."
+       ],
+       "outcomes": [
+        "Read basic chart patterns and indicators",
+        "Explain the forms of market efficiency"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Portfolio Theory",
+     "topics": [
+      {
+       "title": "Markowitz and portfolio risk",
+       "summary": "Portfolio return and risk, diversification and the efficient frontier.",
+       "notes": [
+        "Portfolio return = Σ wᵢ Rᵢ.",
+        "Two-asset risk: σp² = w₁²σ₁² + w₂²σ₂² + 2w₁w₂ρσ₁σ₂.",
+        "Diversification benefit is greatest when correlation is low or negative."
+       ],
+       "outcomes": [
+        "Compute two-asset portfolio risk and return",
+        "Explain the efficient frontier"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "w = 0.5 each; σ₁ = 20%, σ₂ = 30%, ρ = 0.2.\nσp² = 0.25 × 400 + 0.25 × 900 + 2 × 0.25 × 0.2 × 600 = 100 + 225 + 60 = 385; σp ≈ 19.6%.",
+        "activity": "",
+        "questions": [],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Portfolio Evaluation",
+     "topics": [
+      {
+       "title": "Performance measures",
+       "summary": "Sharpe, Treynor and Jensen's alpha.",
+       "notes": [
+        "Sharpe ratio = (Rp − Rf) ÷ σp.",
+        "Treynor ratio = (Rp − Rf) ÷ βp.",
+        "Jensen's alpha = Rp − [Rf + βp(Rm − Rf)]."
+       ],
+       "outcomes": [
+        "Evaluate portfolio performance",
+        "Choose between Sharpe and Treynor measures"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-3-consumer-behaviour",
+   "title": "Consumer Behaviour (Marketing elective), MBA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction",
+     "topics": [
+      {
+       "title": "Consumer behaviour and research",
+       "summary": "Scope of consumer behaviour and consumer research.",
+       "notes": [
+        "Consumer behaviour studies how people select, buy, use and dispose of products.",
+        "Research methods: surveys, ethnography, experiments, neuromarketing.",
+        "Insights guide segmentation, positioning and product design."
+       ],
+       "outcomes": [
+        "Explain why marketers study consumer behaviour",
+        "Choose a consumer research method"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Individual Influences",
+     "topics": [
+      {
+       "title": "Motivation, perception and learning",
+       "summary": "Needs, perception, learning and memory in buying.",
+       "notes": [
+        "Perception: selective exposure, attention and retention; just noticeable difference (Weber's law).",
+        "Learning: classical and operant conditioning, cognitive learning.",
+        "Involvement: high-involvement purchases involve extensive problem solving."
+       ],
+       "outcomes": [
+        "Apply Weber's law to pricing and packaging",
+        "Distinguish high- and low-involvement decisions"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Attitudes and personality",
+       "summary": "Attitude models and personality in consumption.",
+       "notes": [
+        "Tri-component attitude model: cognitive, affective, conative.",
+        "Fishbein's multi-attribute model: A = Σ bᵢ eᵢ.",
+        "Brand personality (Aaker): sincerity, excitement, competence, sophistication, ruggedness."
+       ],
+       "outcomes": [
+        "Compute a multi-attribute attitude score",
+        "Describe a brand's personality"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Group and Cultural Influences",
+     "topics": [
+      {
+       "title": "Reference groups, family and culture",
+       "summary": "Social influences on buying.",
+       "notes": [
+        "Reference groups and opinion leaders shape choices; influencers act as digital opinion leaders.",
+        "Family life cycle and household decision roles affect purchases.",
+        "Culture, subculture and social class influence values and consumption."
+       ],
+       "outcomes": [
+        "Analyse group influence on a purchase",
+        "Explain the diffusion of innovations"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Decision Making",
+     "topics": [
+      {
+       "title": "Consumer decision models",
+       "summary": "Decision process models and post-purchase behaviour.",
+       "notes": [
+        "Models: Nicosia, Howard–Sheth, Engel–Kollat–Blackwell.",
+        "Decision rules: compensatory and non-compensatory (conjunctive, lexicographic).",
+        "Cognitive dissonance after purchase is reduced by reassurance and service."
+       ],
+       "outcomes": [
+        "Apply decision rules to brand choice",
+        "Plan to reduce post-purchase dissonance"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-4-business-ethics-governance",
+   "title": "Business Ethics and Corporate Governance, MBA Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Business Ethics",
+     "topics": [
+      {
+       "title": "Ethical theories and dilemmas",
+       "summary": "Normative theories and resolving ethical dilemmas.",
+       "notes": [
+        "Theories: utilitarianism (greatest good), deontology (duty), virtue ethics, justice and rights.",
+        "An ethical dilemma is a choice between conflicting values.",
+        "Frameworks: identify facts and stakeholders, options, consequences, principles, decide and review."
+       ],
+       "outcomes": [
+        "Analyse a dilemma with ethical theories",
+        "Apply a decision framework"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Corporate Governance",
+     "topics": [
+      {
+       "title": "Governance principles and mechanisms",
+       "summary": "Agency theory, board structure and SEBI LODR requirements.",
+       "notes": [
+        "Agency theory: separation of ownership and control creates conflicts of interest.",
+        "Board committees: audit, nomination and remuneration, stakeholders' relationship, risk management.",
+        "SEBI LODR: at least half independent directors if the chair is executive (one-third if non-executive), with at least one woman independent director for the top 1,000 listed companies."
+       ],
+       "outcomes": [
+        "Describe governance mechanisms",
+        "Explain the role of board committees"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "CSR and Sustainability",
+     "topics": [
+      {
+       "title": "CSR and ESG",
+       "summary": "Section 135 CSR, ESG and sustainability reporting.",
+       "notes": [
+        "CSR spending: 2% of average net profit of the last three years for qualifying companies.",
+        "ESG covers environmental, social and governance performance; BRSR is mandatory for the top 1,000 listed companies.",
+        "Triple bottom line: people, planet, profit."
+       ],
+       "outcomes": [
+        "Explain CSR obligations",
+        "Interpret ESG disclosures"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Ethics in Functional Areas",
+     "topics": [
+      {
+       "title": "Ethics in marketing, finance and HR",
+       "summary": "Common ethical issues across business functions.",
+       "notes": [
+        "Marketing: misleading advertising, data privacy, dark patterns.",
+        "Finance: insider trading (SEBI PIT Regulations), window dressing, conflicts of interest.",
+        "HR: discrimination, harassment (POSH Act, 2013), whistleblower protection."
+       ],
+       "outcomes": [
+        "Identify ethical issues in each function",
+        "Recommend safeguards"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mba-4-financial-derivatives",
+   "title": "Financial Derivatives (Finance elective), MBA Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MBA CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction to Derivatives",
+     "topics": [
+      {
+       "title": "Derivatives and their markets",
+       "summary": "Forwards, futures, options and swaps, and their uses.",
+       "notes": [
+        "A derivative's value depends on an underlying asset.",
+        "Uses: hedging, speculation, arbitrage.",
+        "Exchange-traded derivatives are standardised with a clearing house; OTC derivatives are customised and carry counterparty risk."
+       ],
+       "outcomes": [
+        "Distinguish types of derivatives",
+        "Explain hedging, speculation and arbitrage"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Forwards and Futures",
+     "topics": [
+      {
+       "title": "Pricing and hedging with futures",
+       "summary": "Cost-of-carry pricing, margins and hedging.",
+       "notes": [
+        "Futures price F = S × e^(rT) (cost of carry, no income); with dividend yield q, F = S × e^((r − q)T).",
+        "Futures are marked to market daily; initial and maintenance margins apply.",
+        "Hedge ratio = β × Portfolio value ÷ (Futures price × Lot size) for index futures."
+       ],
+       "outcomes": [
+        "Price a futures contract",
+        "Hedge a portfolio with index futures"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Options",
+     "topics": [
+      {
+       "title": "Option payoffs and strategies",
+       "summary": "Calls, puts, payoffs and common strategies.",
+       "notes": [
+        "Call payoff = max(S − K, 0); put payoff = max(K − S, 0).",
+        "Put–call parity: C + K e^(−rT) = P + S.",
+        "Strategies: covered call, protective put, straddle, strangle, bull and bear spreads."
+       ],
+       "outcomes": [
+        "Draw payoff diagrams",
+        "Choose an option strategy for a view"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Option pricing",
+       "summary": "Binomial model and Black–Scholes.",
+       "notes": [
+        "One-step binomial: risk-neutral probability p = (e^(rT) − d) ÷ (u − d).",
+        "Black–Scholes: C = S N(d₁) − K e^(−rT) N(d₂).",
+        "Greeks: delta, gamma, theta, vega, rho."
+       ],
+       "outcomes": [
+        "Value an option with a one-step binomial tree",
+        "Interpret the Greeks"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Swaps",
+     "topics": [
+      {
+       "title": "Interest rate and currency swaps",
+       "summary": "Plain vanilla swaps and their uses.",
+       "notes": [
+        "An interest rate swap exchanges fixed for floating payments on a notional principal.",
+        "Comparative advantage in borrowing makes swaps beneficial to both parties.",
+        "Currency swaps exchange principal and interest in different currencies."
+       ],
+       "outcomes": [
+        "Explain how a swap reduces borrowing cost",
+        "Value the cash flows of a simple swap"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
