@@ -65,7 +65,7 @@ describe('content library', () => {
     expect(outline.body.chapters.map((c: { title: string }) => c.title)).toContain('Valuation of Goodwill');
     expect(outline.body.reviewed).toBe(false);
 
-    const found = await http().get('/v1/content/search?q=goodwill').set(auth('parent')).expect(200);
+    const found = await http().get(`/v1/content/search?q=goodwill&courseId=${courseId}`).set(auth('parent')).expect(200);
     expect(found.body[0]).toMatchObject({ title: 'Methods of valuing goodwill', chapterTitle: 'Valuation of Goodwill' });
     const topic = await http().get(`/v1/content/topics/${found.body[0].id}`).set(auth('board')).expect(200);
     expect(topic.body.notes.join(' ')).toContain('Super profit');

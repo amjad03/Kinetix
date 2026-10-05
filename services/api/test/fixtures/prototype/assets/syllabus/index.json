@@ -1,0 +1,8 @@
+{"boards":[{"id":"cbse"},{"id":"karnataka"},{"id":"early"}],"books":[
+ {"id":"cbse-10-science-science","board":"cbse","grade":10,"subject":"Science","book":"Science","language":"en","sources":[],"chapters":["Chemical Reactions and Equations","Light – Reflection and Refraction","Our Environment"],"ready":[1,2]},
+ {"id":"cbse-10-english-first-flight","board":"cbse","grade":10,"subject":"English","book":"First Flight","language":"en","sources":[],"chapters":["A Letter to God"],"ready":[1]},
+ {"id":"cbse-10-english-footprints-without-feet","board":"cbse","grade":10,"subject":"English","book":"Footprints without Feet","language":"en","sources":[],"chapters":["A Triumph of Surgery"]},
+ {"id":"cbse-6-sanskrit-deepakam","board":"cbse","grade":6,"subject":"Sanskrit","book":"Deepakam","language":"sa","sources":[],"chapters":["वयं वर्णमालां पठामः"]},
+ {"id":"karnataka-10-science","board":"karnataka","grade":10,"subject":"Science","book":"Science (Parts 1 and 2)","language":"en","sources":[],"chapters":[{"title":"Chemical Reactions and Equations","kn":"ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು ಮತ್ತು ಸಮೀಕರಣಗಳು"},{"title":"Acids, Bases and Salts","kn":"ಆಮ್ಲಗಳು, ಪ್ರತ್ಯಾಮ್ಲಗಳು ಮತ್ತು ಲವಣಗಳು"}],"ready":[1,2]},
+ {"id":"early-lkg-english","board":"early","grade":-1,"subject":"English","book":"Little Readers LKG","language":"en","sources":[],"chapters":["Hello! This Is Me"],"ready":[1]}
+]}
