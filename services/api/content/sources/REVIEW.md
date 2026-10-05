@@ -13,6 +13,18 @@ For each course, a subject teacher should check:
 
 When a course is checked, add `reviewed=yes` to its `#` line in the source and rebuild.
 
+## BBA (bu-bba.txt, curriculum `bu-ug`, SEP 2024 (2024-25))
+
+- The BBA course list follows the BU NEP 2021 BBA structure as carried into SEP 2024 (Sem 1-4) and the NEP Sem 5-6 papers; no BU SEP BBA scheme document could be reached. Confirm every paper title, semester and code.
+- Not written: languages, AECC, skill and open electives; elective streams in Sem 5-6 (Finance, Marketing, Human Resources, Business Analytics, Logistics) beyond the core papers below.
+
+- **Business Economics, BBA Semester 1**
+  - May be titled Managerial Economics or placed in Sem 2; confirm.
+- **Business Mathematics, BBA Semester 2**
+  - Confirm whether Sem 2 has Business Mathematics or Business Statistics under SEP.
+- **Entrepreneurship Development, BBA Semester 5**
+  - Check the MSME limits against the latest notification.
+
 ## BCA (bu-bca-1.txt, curriculum `bu-ug`, SEP 2024 (2024-25))
 
 - Course list follows the SEP 2024 BCA scheme as published by Bengaluru City University (where Data Structures is 24BCA21, OOP with Java 24BCA22 and DBMS 24BCA31) and the earlier BU NEP 2021 BCA scheme; confirm Bangalore University's own SEP course list and codes, which were not reachable online.
