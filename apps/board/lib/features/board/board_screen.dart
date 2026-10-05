@@ -51,6 +51,7 @@ import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'editors.dart';
 import 'insert_popover.dart';
+import 'kit/college/sheet_editor.dart';
 import 'kit/kit_panel.dart';
 import 'kit/subject_tools.dart';
 import 'kit/subjects.dart';
@@ -410,7 +411,7 @@ class _BoardScreenState extends State<BoardScreen> {
   SubjectToolRunner get _subjectTools =>
       SubjectToolRunner(context: context, wb: _wb, style: _style, primary: _primary, onOpenKit: (tab) => _openKit(tab));
 
-  /// Edits a selected equation, note or text.
+  /// Edits a selected equation, note, text or spreadsheet.
   Future<void> _editElement(BoardElement e) async {
     switch (e) {
       case MathElement():
@@ -424,6 +425,9 @@ class _BoardScreenState extends State<BoardScreen> {
       case TextElement():
         _wb.clearSelection();
         _canvasKey.currentState?.startText(e.position, existing: e);
+      case SheetElement():
+        final s = await editSheet(context, e);
+        if (s != null) _wb.replace(s);
       default:
         break;
     }

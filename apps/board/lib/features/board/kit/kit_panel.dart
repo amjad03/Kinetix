@@ -10,6 +10,7 @@ import '../../../l10n/l10n.dart';
 import '../../ai/ai_controller.dart';
 import '../side_panel.dart';
 import 'builders.dart';
+import 'college/college_kit.dart';
 import 'subject_data.dart';
 import 'subjects.dart';
 
@@ -119,6 +120,14 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
               KitTab.logic => _logic(),
               KitTab.binary => _BinaryTab(onInsert: (t) => _insertText(t, size: 28, bold: true)),
               KitTab.stars => _StarsTab(board: widget.board, accent: _accent, onInsert: (t) => _insertText(t, size: 34, bold: true, color: _accent)),
+              KitTab.accounts || KitTab.finance || KitTab.management || KitTab.law || KitTab.stats => CollegeKitTab(
+                key: ValueKey(_tab),
+                tab: _tab,
+                wb: widget.wb,
+                accent: _accent,
+                ink: _ink,
+                onOpenLab: () => widget.onSplit(SplitContent.lab),
+              ),
             },
           ),
         ],

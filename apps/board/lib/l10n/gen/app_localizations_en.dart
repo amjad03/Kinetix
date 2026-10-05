@@ -3571,4 +3571,521 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remotePhotoFailed => 'Could not show the photo from the phone.';
+
+  @override
+  String get subjectManagement => 'Management';
+
+  @override
+  String get subjectLaw => 'Law';
+
+  @override
+  String get subjectStatistics => 'Statistics';
+
+  @override
+  String get kitAccounts => 'Accounts';
+
+  @override
+  String get kitFinance => 'Calculators';
+
+  @override
+  String get kitManagement => 'Frameworks';
+
+  @override
+  String get kitLaw => 'Law';
+
+  @override
+  String get kitStats => 'Statistics';
+
+  @override
+  String get stSheet => 'Spreadsheet';
+
+  @override
+  String get stReader => 'Act and case reader';
+
+  @override
+  String get accFormats => 'Formats';
+
+  @override
+  String get accJournal => 'Journal';
+
+  @override
+  String get accLedger => 'Ledger (T-account)';
+
+  @override
+  String get accTrialBalance => 'Trial balance';
+
+  @override
+  String get accFinalAccounts => 'Trading and profit & loss account';
+
+  @override
+  String get accBalanceSheet => 'Balance sheet (Schedule III)';
+
+  @override
+  String get accCashBook => 'Cash book';
+
+  @override
+  String get accBrs => 'Bank reconciliation statement';
+
+  @override
+  String get accBlankSheet => 'Blank spreadsheet';
+
+  @override
+  String get calcDepreciation => 'Depreciation (SLM / WDV)';
+
+  @override
+  String get calcRatios => 'Accounting ratios';
+
+  @override
+  String get calcNpv => 'NPV, IRR and payback';
+
+  @override
+  String get calcBreakEven => 'Break-even point';
+
+  @override
+  String get calcGst => 'GST (CGST / SGST / IGST)';
+
+  @override
+  String get calcInterest => 'Simple and compound interest';
+
+  @override
+  String get calcEmi => 'EMI';
+
+  @override
+  String get calcWorkOut => 'Work it out';
+
+  @override
+  String get calcPutOnBoard => 'Put on the board';
+
+  @override
+  String get calcCheckInputs => 'Check the numbers';
+
+  @override
+  String get calcOpenLab => 'Open the break-even lab';
+
+  @override
+  String get methodSlm => 'Straight line';
+
+  @override
+  String get methodWdv => 'Written-down value';
+
+  @override
+  String get interestSimple => 'Simple';
+
+  @override
+  String get interestCompound => 'Compound';
+
+  @override
+  String get fCost => 'Cost (₹)';
+
+  @override
+  String get fScrap => 'Scrap value (₹)';
+
+  @override
+  String get fLife => 'Useful life (years)';
+
+  @override
+  String get fRate => 'Rate (% a year)';
+
+  @override
+  String get fYears => 'Years';
+
+  @override
+  String get fMonths => 'Months';
+
+  @override
+  String get fPrincipal => 'Principal (₹)';
+
+  @override
+  String get fAmount => 'Amount (₹)';
+
+  @override
+  String get fGstRate => 'GST rate (%)';
+
+  @override
+  String get fInterState => 'Inter-state supply (IGST)';
+
+  @override
+  String get fInclusive => 'Amount includes GST';
+
+  @override
+  String get fOutlay => 'Initial outlay (₹)';
+
+  @override
+  String get fCashFlows => 'Cash inflows, year by year (₹)';
+
+  @override
+  String get fDiscountRate => 'Cost of capital (%)';
+
+  @override
+  String get fFixedCost => 'Fixed cost (₹)';
+
+  @override
+  String get fVariableCost => 'Variable cost a unit (₹)';
+
+  @override
+  String get fPrice => 'Selling price a unit (₹)';
+
+  @override
+  String get fUnits => 'Units sold';
+
+  @override
+  String get fCompounding => 'Times compounded a year';
+
+  @override
+  String get fCurrentAssets => 'Current assets';
+
+  @override
+  String get fCurrentLiabilities => 'Current liabilities';
+
+  @override
+  String get fInventory => 'Inventory';
+
+  @override
+  String get fPrepaid => 'Prepaid expenses';
+
+  @override
+  String get fDebt => 'Long-term debt';
+
+  @override
+  String get fEquity => 'Shareholders’ funds';
+
+  @override
+  String get fRevenue => 'Revenue from operations';
+
+  @override
+  String get fGrossProfit => 'Gross profit';
+
+  @override
+  String get fNetProfit => 'Net profit';
+
+  @override
+  String get fCogs => 'Cost of revenue from operations';
+
+  @override
+  String get fAvgInventory => 'Average inventory';
+
+  @override
+  String get fReceivables => 'Trade receivables';
+
+  @override
+  String get fEbit => 'Profit before interest and tax';
+
+  @override
+  String get fInterest => 'Interest';
+
+  @override
+  String get fTotalAssets => 'Total assets';
+
+  @override
+  String get mgSwot => 'SWOT analysis';
+
+  @override
+  String get mgPestle => 'PESTLE analysis';
+
+  @override
+  String get mgPorter => 'Porter’s five forces';
+
+  @override
+  String get mgBcg => 'BCG matrix';
+
+  @override
+  String get mgAnsoff => 'Ansoff matrix';
+
+  @override
+  String get mgValueChain => 'Value chain';
+
+  @override
+  String get mg7s => 'McKinsey 7S';
+
+  @override
+  String get mgMaslow => 'Maslow’s hierarchy of needs';
+
+  @override
+  String get mg4p => 'Marketing mix (4 Ps)';
+
+  @override
+  String get mg7p => 'Marketing mix (7 Ps)';
+
+  @override
+  String get mgGantt => 'Gantt chart';
+
+  @override
+  String get mgPert => 'PERT / CPM (critical path)';
+
+  @override
+  String get mgDecisionTree => 'Decision tree';
+
+  @override
+  String get mgFishbone => 'Fishbone diagram';
+
+  @override
+  String get mgMindMap => 'Mind map';
+
+  @override
+  String get mgCaseStudy => 'Case study frame';
+
+  @override
+  String get mgStrategy => 'Strategy';
+
+  @override
+  String get mgMarketing => 'Marketing and people';
+
+  @override
+  String get mgProjects => 'Projects and decisions';
+
+  @override
+  String get pertActivities => 'Activities';
+
+  @override
+  String get pertHint =>
+      'One activity a line: its letter, its time (or optimistic, likely, pessimistic), then the activities before it. For example: C 2 A';
+
+  @override
+  String get pertInvalid =>
+      'Check the activities: one needs an activity that is not listed, or they go round in a loop.';
+
+  @override
+  String get lawReader => 'Read an act or a judgment';
+
+  @override
+  String get lawPaste => 'Paste text';
+
+  @override
+  String get lawImportPdf => 'Import a PDF';
+
+  @override
+  String get lawEditText => 'Edit the text';
+
+  @override
+  String get lawRead => 'Read';
+
+  @override
+  String get lawAddNote => 'Add a note';
+
+  @override
+  String get lawSendToBoard => 'Put highlights on the board';
+
+  @override
+  String get lawSamples => 'Sample sections';
+
+  @override
+  String get lawReaderEmpty =>
+      'Paste the text of an act or a judgment, or import a PDF. Then tap a paragraph to highlight it.';
+
+  @override
+  String get lawNoText =>
+      'No text found in this PDF. It may be a scanned copy.';
+
+  @override
+  String get lawNothingHighlighted => 'Highlight a paragraph first';
+
+  @override
+  String get lawCaseBrief => 'Case brief';
+
+  @override
+  String get lawIrac => 'IRAC frame';
+
+  @override
+  String get lawTimeline => 'Timeline of events';
+
+  @override
+  String get lawTimelineHint =>
+      'One event a line: the date, then what happened';
+
+  @override
+  String get lawArgumentMap => 'Argument map';
+
+  @override
+  String get lawFrames => 'Frames';
+
+  @override
+  String get stData => 'Data';
+
+  @override
+  String get stDataHint => 'Numbers, separated by spaces, commas or new lines';
+
+  @override
+  String get stDescriptive => 'Descriptive statistics';
+
+  @override
+  String get stBoxPlot => 'Box plot';
+
+  @override
+  String get stHistogram => 'Histogram';
+
+  @override
+  String get stDistributions => 'Probability distributions';
+
+  @override
+  String get stNormal => 'Normal';
+
+  @override
+  String get stBinomial => 'Binomial';
+
+  @override
+  String get stPoisson => 'Poisson';
+
+  @override
+  String get stT => 't';
+
+  @override
+  String get stChiSquare => 'Chi-square';
+
+  @override
+  String get stMean => 'Mean (μ)';
+
+  @override
+  String get stSd => 'Standard deviation (σ)';
+
+  @override
+  String get stTrials => 'Trials (n)';
+
+  @override
+  String get stProbability => 'Probability of success (p)';
+
+  @override
+  String get stLambda => 'Mean (λ)';
+
+  @override
+  String get stDf => 'Degrees of freedom';
+
+  @override
+  String get stFrom => 'From';
+
+  @override
+  String get stTo => 'To';
+
+  @override
+  String get stRegression => 'Correlation and regression';
+
+  @override
+  String get stPairsHint => 'One pair a line: x, y';
+
+  @override
+  String get stTests => 'Tests of hypotheses';
+
+  @override
+  String get stZTest => 'z test (one mean)';
+
+  @override
+  String get stTTest1 => 't test (one mean)';
+
+  @override
+  String get stTTest2 => 't test (two means)';
+
+  @override
+  String get stChiTest => 'Chi-square test';
+
+  @override
+  String get stAnova => 'One-way ANOVA';
+
+  @override
+  String get stSampleMean => 'Sample mean (x̄)';
+
+  @override
+  String get stSampleSize => 'Sample size (n)';
+
+  @override
+  String get stMu0 => 'Hypothesised mean (μ₀)';
+
+  @override
+  String get stAlpha => 'Level of significance (α)';
+
+  @override
+  String get stSample1 => 'Sample 1';
+
+  @override
+  String get stSample2 => 'Sample 2';
+
+  @override
+  String get stObservedHint =>
+      'Observed frequencies, one row a line (one row tests goodness of fit)';
+
+  @override
+  String get stExpectedHint => 'Expected frequencies (leave blank for equal)';
+
+  @override
+  String get stGroupsHint => 'One group a line';
+
+  @override
+  String get stIndex => 'Index numbers';
+
+  @override
+  String get stIndexHint => 'One item a line: p₀, q₀, p₁, q₁';
+
+  @override
+  String get stMovingAverage => 'Moving average';
+
+  @override
+  String get stPeriod => 'Period';
+
+  @override
+  String get stSeriesHint => 'Values in time order';
+
+  @override
+  String get stDrawChart => 'Draw the chart too';
+
+  @override
+  String get sheetTitle => 'Spreadsheet';
+
+  @override
+  String get sheetCellHint =>
+      'A number, words, or a formula such as =SUM(B2:B6)';
+
+  @override
+  String get sheetAddRow => 'Add a row';
+
+  @override
+  String get sheetAddColumn => 'Add a column';
+
+  @override
+  String get sheetRemoveRow => 'Remove the last row';
+
+  @override
+  String get sheetRemoveColumn => 'Remove the last column';
+
+  @override
+  String get sheetHeading => 'First row is a heading';
+
+  @override
+  String get sheetFormat => 'Column format';
+
+  @override
+  String get fmtGeneral => 'General';
+
+  @override
+  String get fmtNumber => '1,23,456.00';
+
+  @override
+  String get fmtInr => '₹ (Indian)';
+
+  @override
+  String get fmtLakh => '₹ lakh';
+
+  @override
+  String get fmtCrore => '₹ crore';
+
+  @override
+  String get fmtPercent => 'Percent';
+
+  @override
+  String get sheetChart => 'Chart';
+
+  @override
+  String get chartNone => 'No chart';
+
+  @override
+  String get chartBar => 'Bars';
+
+  @override
+  String get chartLine => 'Line';
+
+  @override
+  String get chartPie => 'Pie';
+
+  @override
+  String get sheetLabels => 'Labels (e.g. A2:A6)';
+
+  @override
+  String get sheetValues => 'Values (e.g. B2:B6)';
 }

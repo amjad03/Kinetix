@@ -56,7 +56,7 @@ class SelectionActions extends StatelessWidget {
     if (els.isEmpty) return const SizedBox.shrink();
     final single = els.length == 1 ? els.single : null;
     final link = single is ImageElement ? single.link : null;
-    final editable = single is MathElement || single is NoteElement || single is TextElement;
+    final editable = single is MathElement || single is NoteElement || single is TextElement || single is SheetElement;
     final readings = single == null ? null : onReadings?.call(single);
     final size = MediaQuery.sizeOf(context);
     Widget btn(IconData icon, String label, VoidCallback f, {Key? key, bool text = false, bool ai = false}) => Tooltip(
