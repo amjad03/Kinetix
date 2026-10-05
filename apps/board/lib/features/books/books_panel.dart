@@ -11,6 +11,7 @@ import '../ai/ai_controller.dart';
 import '../ai/ai_widgets.dart';
 import '../board/chrome.dart' show showBoardMessage;
 import '../board/side_panel.dart';
+import '../reader/read_aloud.dart' show ReadAloudScope;
 
 const _booksAccent = Color(0xFF8AB4F8);
 
@@ -395,6 +396,21 @@ class _BooksPanelState extends State<BooksPanel> {
                   icon: const Icon(Icons.quiz_outlined),
                   label: Text(l.booksQuiz),
                 ),
+                // The lesson in the immersive reader, read aloud (lib/features/reader).
+                if (ReadAloudScope.maybeOf(context) case final reader?)
+                  OutlinedButton.icon(
+                    key: const Key('topic-read-aloud'),
+                    onPressed: () => reader.read(title, [
+                      if (t.summary.isNotEmpty) t.summary,
+                      if (lesson != null && lesson.hook.isNotEmpty) lesson.hook,
+                      ...notes,
+                      if (lesson != null && lesson.example.isNotEmpty) lesson.example,
+                      if (lesson != null && lesson.activity.isNotEmpty) lesson.activity,
+                      if (lesson != null) ...[for (final (i, q) in lesson.questions.indexed) '${i + 1}. ${q.q}'],
+                    ]),
+                    icon: const Icon(Icons.record_voice_over_outlined),
+                    label: Text(l.readAloud),
+                  ),
                 if (_coverage != null) _taughtButton(t.id, large: true),
               ],
             ),

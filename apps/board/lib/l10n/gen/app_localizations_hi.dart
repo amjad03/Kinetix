@@ -576,6 +576,568 @@ class AppLocalizationsHi extends AppLocalizations {
   String get tkSpotlightSize => 'स्पॉटलाइट का आकार';
 
   @override
+  String get simTitle => 'सिमुलेशन';
+
+  @override
+  String get simHint => 'लोलक, प्रक्षेप्य, ग्राफ़, भिन्न, तरंगें, पाइथागोरस';
+
+  @override
+  String get simOthers => 'अन्य सिमुलेशन';
+
+  @override
+  String get simPendulum => 'सरल लोलक';
+
+  @override
+  String get simProjectile => 'प्रक्षेप्य गति';
+
+  @override
+  String get simGrapher => 'फलन ग्राफ़';
+
+  @override
+  String get simFractions => 'भिन्न पट्टियाँ';
+
+  @override
+  String get simWave => 'तरंगें';
+
+  @override
+  String get simPythagoras => 'पाइथागोरस प्रमेय';
+
+  @override
+  String get simLength => 'लंबाई';
+
+  @override
+  String get simGravity => 'गुरुत्व';
+
+  @override
+  String get simStartAngle => 'प्रारंभिक कोण';
+
+  @override
+  String get simSpeed => 'चाल';
+
+  @override
+  String get simAngle => 'कोण';
+
+  @override
+  String get simAmplitude => 'आयाम';
+
+  @override
+  String get simFrequency => 'आवृत्ति';
+
+  @override
+  String get simWavelength => 'तरंगदैर्ध्य';
+
+  @override
+  String simRange(String metres) {
+    return 'परास $metres मी';
+  }
+
+  @override
+  String simMaxHeight(String metres) {
+    return 'अधिकतम ऊँचाई $metres मी';
+  }
+
+  @override
+  String simFlightTime(String seconds) {
+    return 'समय $seconds से.';
+  }
+
+  @override
+  String simTop(int number) {
+    return 'ऊपर $number';
+  }
+
+  @override
+  String simBottom(int number) {
+    return 'नीचे $number';
+  }
+
+  @override
+  String simSide(String name) {
+    return 'भुजा $name';
+  }
+
+  @override
+  String get simBadExpression => 'वह व्यंजक पढ़ा नहीं जा सका';
+
+  @override
+  String get simDraw => 'बनाएँ';
+
+  @override
+  String get readAloud => 'ज़ोर से पढ़ें';
+
+  @override
+  String get readerTitle => 'इमर्सिव रीडर';
+
+  @override
+  String readerPageTitle(int number) {
+    return 'पेज $number';
+  }
+
+  @override
+  String get readerNothing =>
+      'इस पेज पर पढ़ने के लिए टाइप किया हुआ कुछ नहीं है। टेक्स्ट टाइप करें, नोट जोड़ें या AI पेन से लिखावट बदलें।';
+
+  @override
+  String readerNoVoice(String language) {
+    return 'इस बोर्ड में $language आवाज़ नहीं है। डिवाइस की टेक्स्ट-टू-स्पीच सेटिंग में जोड़ें (Windows: Settings → Time & language → Speech)।';
+  }
+
+  @override
+  String get readerPrevious => 'पिछला अनुच्छेद';
+
+  @override
+  String get readerNext => 'अगला अनुच्छेद';
+
+  @override
+  String get readerPaper => 'कागज़';
+
+  @override
+  String get readerCream => 'क्रीम';
+
+  @override
+  String get readerContrast => 'उच्च कंट्रास्ट';
+
+  @override
+  String get readerBlue => 'हल्का नीला';
+
+  @override
+  String get readerLineFocus => 'पंक्ति पर ध्यान';
+
+  @override
+  String get readerSlower => 'धीमे';
+
+  @override
+  String get readerHint =>
+      'पेज का टेक्स्ट, बड़े अक्षरों में, शब्द-दर-शब्द ज़ोर से';
+
+  @override
+  String get insertPicture => 'चित्र';
+
+  @override
+  String get insertPictureHintGallery => 'गैलरी से';
+
+  @override
+  String get insertPictureHintFiles => 'इस बोर्ड की फ़ाइलों से';
+
+  @override
+  String get insertPhoto => 'फ़ोटो लें';
+
+  @override
+  String get insertPhotoHint => 'इस बोर्ड के कैमरे से';
+
+  @override
+  String get pictureCouldNotOpen => 'वह चित्र नहीं खुल सका।';
+
+  @override
+  String get libTitle => 'चित्र संग्रह';
+
+  @override
+  String get libHint => 'आरेख, मानचित्र और स्टिकर, मुफ़्त उपयोग के लिए';
+
+  @override
+  String get libSearch => 'चित्र खोजें (हृदय, भारत का मानचित्र, ज्वालामुखी…)';
+
+  @override
+  String get libAll => 'सभी';
+
+  @override
+  String get libBiology => 'जीव विज्ञान';
+
+  @override
+  String get libChemistry => 'रसायन विज्ञान';
+
+  @override
+  String get libPhysics => 'भौतिकी';
+
+  @override
+  String get libMaths => 'गणित';
+
+  @override
+  String get libGeography => 'भूगोल';
+
+  @override
+  String get libHistory => 'इतिहास';
+
+  @override
+  String get libEnglish => 'भाषाएँ';
+
+  @override
+  String get libComputers => 'कंप्यूटर';
+
+  @override
+  String get libEvs => 'पर्यावरण अध्ययन और प्राथमिक';
+
+  @override
+  String get libStickers => 'स्टिकर';
+
+  @override
+  String get libNothingFound => 'कोई चित्र नहीं मिला। कोई और शब्द आज़माएँ।';
+
+  @override
+  String get libCredits =>
+      'चित्र विकिमीडिया कॉमन्स (सार्वजनिक डोमेन, CC0, CC BY, CC BY-SA) और Microsoft Fluent Emoji (MIT) से। किसी चित्र के लेखक और लाइसेंस के लिए ⓘ दबाएँ; श्रेय चित्र के साथ बोर्ड पर जाता है।';
+
+  @override
+  String get importTitle => 'PDF या PowerPoint';
+
+  @override
+  String get importHint => 'हर पेज या स्लाइड लिखने के लिए एक बोर्ड पेज बनती है';
+
+  @override
+  String importingFile(String name) {
+    return '$name खुल रही है';
+  }
+
+  @override
+  String get importReading => 'फ़ाइल पढ़ी जा रही है…';
+
+  @override
+  String importPageOf(int done, int total) {
+    return 'पेज $done / $total';
+  }
+
+  @override
+  String importedPages(int count) {
+    return 'इस पेज के बाद $count पेज जोड़े गए';
+  }
+
+  @override
+  String get importOldPpt =>
+      'यह पुरानी PowerPoint फ़ाइल (.ppt) है। इसे PowerPoint में .pptx या PDF के रूप में सहेजें, फिर यहाँ खोलें।';
+
+  @override
+  String get importNotSupported =>
+      'बोर्ड PDF और PowerPoint (.pptx) फ़ाइलें खोलता है।';
+
+  @override
+  String get importPdfFailed =>
+      'यह PDF नहीं खुल सकी। हो सकता है यह खराब हो या पासवर्ड से सुरक्षित हो।';
+
+  @override
+  String get importPptxFailed =>
+      'यह PowerPoint नहीं खुल सकी। इसे PowerPoint में PDF के रूप में सहेजें और वह PDF खोलें।';
+
+  @override
+  String tourStepOf(int step, int total) {
+    return '$total में से $step';
+  }
+
+  @override
+  String get tourSkip => 'छोड़ें';
+
+  @override
+  String get tourNext => 'आगे';
+
+  @override
+  String get tourGotIt => 'समझ गया';
+
+  @override
+  String get tourWelcomeTitle => 'आपके बोर्ड में स्वागत है';
+
+  @override
+  String get tourWelcomeBody =>
+      'हर कक्षा में काम आने वाले बटनों पर एक मिनट की नज़र।';
+
+  @override
+  String get tourPenTitle => 'लिखें और बनाएँ';
+
+  @override
+  String get tourPenBody =>
+      'उँगली या स्टाइलस से लिखें। रंग और मोटाई के लिए पेन को फिर दबाएँ।';
+
+  @override
+  String get tourEraseTitle => 'मिटाएँ';
+
+  @override
+  String get tourEraseBody => 'स्याही पर रगड़ें। अनडू बोर्ड के नीचे है।';
+
+  @override
+  String get tourInsertTitle => 'बोर्ड पर जोड़ें';
+
+  @override
+  String get tourInsertBody =>
+      'समीकरण, नोट, चित्र, चित्र संग्रह, PDF या PowerPoint, 3D मॉडल, लैब और सिमुलेशन।';
+
+  @override
+  String get tourToolsTitle => 'कक्षा के टूल';
+
+  @override
+  String get tourToolsBody =>
+      'टाइमर, स्टॉपवॉच, नाम चुनने वाला, पासा, चक्री, शोर मीटर, स्क्रीन शेड, स्पॉटलाइट और इमर्सिव रीडर।';
+
+  @override
+  String get tourAiTitle => 'KINETIX AI';
+
+  @override
+  String get tourAiBody =>
+      'पाठ के बारे में पूछें, क्विज़ या गृहकार्य बनाएँ, या बोर्ड पर लिखा सवाल हल करें।';
+
+  @override
+  String get tourBooksTitle => 'किताबें';
+
+  @override
+  String get tourBooksBody =>
+      'आपका पाठ्यक्रम: हर विषय-वस्तु का पाठ, मुख्य बातें और प्रश्न, चाहें तो ज़ोर से पढ़कर।';
+
+  @override
+  String get tourPagesTitle => 'पेज';
+
+  @override
+  String get tourPagesBody =>
+      'अगले पेज पर जाएँ; आख़िरी पेज पर यह नया पेज जोड़ता है।';
+
+  @override
+  String get tourRecordTitle => 'पाठ रिकॉर्ड करें';
+
+  @override
+  String get tourRecordBody =>
+      'बोर्ड और आपकी आवाज़ रिकॉर्ड करता है, ताकि छात्र फिर से देख सकें।';
+
+  @override
+  String get tourHelpTitle => 'मदद हमेशा यहाँ है';
+
+  @override
+  String get tourHelpBody =>
+      'मदद, यह टूर दोबारा और पाँच मिनट के अभ्यास के लिए यह मेनू खोलें। कीबोर्ड पर ? भी दबा सकते हैं।';
+
+  @override
+  String get tourPractise => 'अभी अभ्यास करें';
+
+  @override
+  String get helpTitle => 'मदद';
+
+  @override
+  String get helpSubtitle => 'छोटे जवाब, और बोर्ड पर बटन दिखाकर।';
+
+  @override
+  String get helpShowAround => 'मुझे घुमाकर दिखाएँ';
+
+  @override
+  String get helpPractise => '5 मिनट में अभ्यास करें';
+
+  @override
+  String get helpSearch => 'मैं कैसे…';
+
+  @override
+  String get helpNothing =>
+      'कुछ नहीं मिला। कोई और शब्द आज़माएँ, या मुझे घुमाकर दिखाएँ।';
+
+  @override
+  String get helpShowMe => 'मुझे दिखाएँ';
+
+  @override
+  String get helpGroupWriting => 'बोर्ड पर लिखना';
+
+  @override
+  String get helpGroupContent => 'पेज और सामग्री';
+
+  @override
+  String get helpGroupClass => 'पढ़ाने के टूल';
+
+  @override
+  String get helpGroupAi => 'KINETIX AI और किताबें';
+
+  @override
+  String get helpGroupSettings => 'सेटिंग';
+
+  @override
+  String get helpWriteTitle => 'लिखें और बनाएँ';
+
+  @override
+  String get helpWrite1 => 'बाईं ओर पेन दबाएँ और उँगली या स्टाइलस से लिखें।';
+
+  @override
+  String get helpWrite2 => 'दो उँगलियों से बोर्ड खिसकाएँ और ज़ूम करें।';
+
+  @override
+  String get helpEraseTitle => 'मिटाएँ या अनडू करें';
+
+  @override
+  String get helpErase1 =>
+      'इरेज़र दबाएँ और स्याही पर रगड़ें। पेज साफ़ करने के लिए उसे फिर दबाएँ।';
+
+  @override
+  String get helpErase2 => 'गलती हुई? नीचे अनडू दबाएँ।';
+
+  @override
+  String get helpShapesTitle => 'आकृतियाँ';
+
+  @override
+  String get helpShapes1 => 'आकृतियाँ दबाएँ, एक चुनें और बोर्ड पर खींचें।';
+
+  @override
+  String get helpShapes2 =>
+      'आकार बदलने, घुमाने, रंगने या कॉपी करने के लिए उसे चुनें।';
+
+  @override
+  String get helpTextTitle => 'टेक्स्ट टाइप करें';
+
+  @override
+  String get helpText1 =>
+      'T दबाएँ, फिर बोर्ड पर वहाँ दबाएँ जहाँ टेक्स्ट चाहिए।';
+
+  @override
+  String get helpPagesTitle => 'पेज पलटें और जोड़ें';
+
+  @override
+  String get helpPages1 =>
+      'नीचे के तीर पेज पलटते हैं; आख़िरी पेज पर + नया पेज जोड़ता है।';
+
+  @override
+  String get helpPages2 =>
+      'बोर्ड रखने और कक्षा से साझा करने के लिए नीचे बाईं ओर से सहेजें।';
+
+  @override
+  String get helpPictureTitle => 'चित्र जोड़ें';
+
+  @override
+  String get helpPicture1 =>
+      '+ (जोड़ें) दबाएँ, फिर इस बोर्ड से चित्र के लिए चित्र, या चित्र संग्रह।';
+
+  @override
+  String get helpPicture2 => 'संग्रह के चित्रों के नीचे उनका श्रेय रहता है।';
+
+  @override
+  String get helpImportTitle => 'PDF या PowerPoint खोलें';
+
+  @override
+  String get helpImport1 =>
+      '+ (जोड़ें) दबाएँ, फिर PDF या PowerPoint, और फ़ाइल चुनें।';
+
+  @override
+  String get helpImport2 =>
+      'हर पेज या स्लाइड एक बोर्ड पेज बनती है जिस पर लिख सकते हैं; यह बिना इंटरनेट के चलता है।';
+
+  @override
+  String get helpSimsTitle => 'सिमुलेशन';
+
+  @override
+  String get helpSims1 => '+ (जोड़ें) या टूल्स दबाएँ, फिर सिमुलेशन।';
+
+  @override
+  String get helpSims2 =>
+      'स्लाइडर खिसकाएँ और कक्षा लोलक, प्रक्षेप्य या तरंग को बदलते देखती है।';
+
+  @override
+  String get helpToolkitTitle => 'टाइमर, नाम चुनने वाला और पासा';
+
+  @override
+  String get helpToolkit1 => 'टूल्स दबाएँ और एक चुनें; वह बोर्ड पर तैरता है।';
+
+  @override
+  String get helpToolkit2 => 'उसे हटाने के लिए उसके नाम से खींचें।';
+
+  @override
+  String get helpShadeTitle => 'स्क्रीन शेड और स्पॉटलाइट';
+
+  @override
+  String get helpShade1 =>
+      'शेड बोर्ड को ढकता है; पंक्ति-दर-पंक्ति दिखाने के लिए उसका हैंडल नीचे खींचें।';
+
+  @override
+  String get helpShade2 =>
+      'स्पॉटलाइट एक घेरे को छोड़ सब अँधेरा कर देती है, जिसे आप खींच सकते हैं।';
+
+  @override
+  String get helpReadTitle => 'ज़ोर से पढ़ें';
+
+  @override
+  String get helpRead1 =>
+      'टेक्स्ट चुनें और ज़ोर से पढ़ें दबाएँ, या पेज के लिए टूल्स → इमर्सिव रीडर।';
+
+  @override
+  String get helpRead2 =>
+      'किताबें और लैब भी पाठ और चरण ज़ोर से पढ़ते हैं, अंग्रेज़ी, हिन्दी या कन्नड़ में, जहाँ बोर्ड में वह आवाज़ हो।';
+
+  @override
+  String get helpRecordTitle => 'पाठ रिकॉर्ड करें';
+
+  @override
+  String get helpRecord1 =>
+      'बोर्ड और आपकी आवाज़ रिकॉर्ड करने के लिए लाल बटन दबाएँ।';
+
+  @override
+  String get helpRecord2 => 'रोकने और सहेजने के लिए फिर दबाएँ।';
+
+  @override
+  String get helpAiTitle => 'KINETIX AI से पूछें';
+
+  @override
+  String get helpAi1 =>
+      'दाईं ओर AI बटन दबाएँ: पूछें, क्विज़, गृहकार्य, गणित हल करने वाला।';
+
+  @override
+  String get helpAi2 =>
+      'बोर्ड पर कुछ चुनें और उसके बारे में पूछने के लिए AI से पढ़ें दबाएँ।';
+
+  @override
+  String get helpBooksTitle => 'किताबों से पाठ';
+
+  @override
+  String get helpBooks1 => 'दाईं ओर किताबें दबाएँ और एक विषय-वस्तु खोलें।';
+
+  @override
+  String get helpBooks2 =>
+      'ज़ोर से पढ़ें पाठ को बड़े अक्षरों में खोलकर शब्द-दर-शब्द पढ़ता है।';
+
+  @override
+  String get helpSettingsTitle => 'भाषा, लेआउट और टच';
+
+  @override
+  String get helpSettings1 => 'नीचे बाईं ओर मेनू खोलें, फिर बोर्ड सेटिंग।';
+
+  @override
+  String get practiceTitle => 'अभ्यास बोर्ड';
+
+  @override
+  String get practiceNotSaved => 'यहाँ कुछ भी नहीं रखा जाता। सब कुछ आज़माएँ।';
+
+  @override
+  String practiceCount(int done, int total) {
+    return 'अभ्यास: $total में से $done पूरे';
+  }
+
+  @override
+  String get practiceReady => 'आप तैयार हैं!';
+
+  @override
+  String get practiceDoneBody =>
+      'आपने कक्षा के लिए ज़रूरी सब कर लिया। मदद नीचे बाईं ओर के मेनू में है।';
+
+  @override
+  String get practiceShowList => 'सूची दिखाएँ';
+
+  @override
+  String get practiceHideList => 'सूची छिपाएँ';
+
+  @override
+  String get practiceFinish => 'अभ्यास पूरा करें';
+
+  @override
+  String get practiceEnd => 'अभ्यास बंद करें';
+
+  @override
+  String get practiceWrite => 'पेन से कुछ लिखें';
+
+  @override
+  String get practiceErase => 'उसे मिटाएँ, या अनडू दबाएँ';
+
+  @override
+  String get practiceShape => 'एक आकृति बनाएँ';
+
+  @override
+  String get practicePage => 'नए पेज पर जाएँ';
+
+  @override
+  String get practicePicture => 'चित्र संग्रह से एक चित्र जोड़ें';
+
+  @override
+  String get practiceTimer => 'टूल्स से टाइमर शुरू करें';
+
+  @override
+  String get practiceEnded => 'अभ्यास खत्म: आपका बोर्ड पहले जैसा है।';
+
+  @override
   String get pen => 'पेन';
 
   @override

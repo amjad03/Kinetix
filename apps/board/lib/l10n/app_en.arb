@@ -379,6 +379,278 @@
   "tkRemoveShade": "Remove shade",
   "tkEndSpotlight": "End spotlight",
   "tkSpotlightSize": "Spotlight size",
+  "simTitle": "Simulations",
+  "simHint": "Pendulum, projectile, graphs, fractions, waves, Pythagoras",
+  "simOthers": "Other simulations",
+  "simPendulum": "Simple pendulum",
+  "simProjectile": "Projectile motion",
+  "simGrapher": "Function grapher",
+  "simFractions": "Fraction bars",
+  "simWave": "Waves",
+  "simPythagoras": "Pythagoras theorem",
+  "simLength": "Length",
+  "simGravity": "Gravity",
+  "simStartAngle": "Start angle",
+  "simSpeed": "Speed",
+  "simAngle": "Angle",
+  "simAmplitude": "Amplitude",
+  "simFrequency": "Frequency",
+  "simWavelength": "Wavelength",
+  "simRange": "Range {metres} m",
+  "@simRange": {
+    "placeholders": {
+      "metres": {
+        "type": "String"
+      }
+    }
+  },
+  "simMaxHeight": "Max height {metres} m",
+  "@simMaxHeight": {
+    "placeholders": {
+      "metres": {
+        "type": "String"
+      }
+    }
+  },
+  "simFlightTime": "Time {seconds} s",
+  "@simFlightTime": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "simTop": "Top {number}",
+  "@simTop": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    },
+    "description": "Numerator of fraction 1 or 2 in the fraction bars."
+  },
+  "simBottom": "Bottom {number}",
+  "@simBottom": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    },
+    "description": "Denominator of fraction 1 or 2."
+  },
+  "simSide": "Side {name}",
+  "@simSide": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "simBadExpression": "Cannot read that expression",
+  "simDraw": "Draw",
+  "readAloud": "Read aloud",
+  "readerTitle": "Immersive reader",
+  "@readerTitle": {
+    "description": "The full-screen reader that reads the page aloud and marks each word."
+  },
+  "readerPageTitle": "Page {number}",
+  "@readerPageTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "readerNothing": "There is no typed text on this page to read. Type text, add a note or convert handwriting with the AI pen.",
+  "readerNoVoice": "This board has no {language} voice. Add one in the device’s text-to-speech settings (Windows: Settings → Time & language → Speech).",
+  "@readerNoVoice": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "readerPrevious": "Previous paragraph",
+  "readerNext": "Next paragraph",
+  "readerPaper": "Paper",
+  "readerCream": "Cream",
+  "readerContrast": "High contrast",
+  "readerBlue": "Blue tint",
+  "readerLineFocus": "Line focus",
+  "readerSlower": "Slower",
+  "readerHint": "The page’s text, large, read aloud word by word",
+  "insertPicture": "Picture",
+  "insertPictureHintGallery": "From the gallery",
+  "insertPictureHintFiles": "From this board’s files",
+  "insertPhoto": "Take a photo",
+  "insertPhotoHint": "With this board’s camera",
+  "pictureCouldNotOpen": "Could not open that picture.",
+  "libTitle": "Picture library",
+  "libHint": "Diagrams, maps and stickers, free to use",
+  "libSearch": "Search pictures (heart, map of India, volcano…)",
+  "libAll": "All",
+  "libBiology": "Biology",
+  "libChemistry": "Chemistry",
+  "libPhysics": "Physics",
+  "libMaths": "Maths",
+  "libGeography": "Geography",
+  "libHistory": "History",
+  "libEnglish": "Languages",
+  "libComputers": "Computers",
+  "libEvs": "EVS and primary",
+  "libStickers": "Stickers",
+  "libNothingFound": "No picture matches. Try another word.",
+  "libCredits": "Pictures from Wikimedia Commons (public domain, CC0, CC BY, CC BY-SA) and Microsoft Fluent Emoji (MIT). Tap ⓘ for a picture’s author and licence; the credit goes on the board with it.",
+  "importTitle": "PDF or PowerPoint",
+  "importHint": "Each page or slide becomes a board page to write on",
+  "importingFile": "Opening {name}",
+  "@importingFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importReading": "Reading the file…",
+  "importPageOf": "Page {done} of {total}",
+  "@importPageOf": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importedPages": "{count, plural, =1{Added 1 page after this one} other{Added {count} pages after this one}}",
+  "@importedPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importOldPpt": "This is an old PowerPoint file (.ppt). Save it as .pptx or PDF in PowerPoint, then open it here.",
+  "importNotSupported": "The board opens PDF and PowerPoint (.pptx) files.",
+  "importPdfFailed": "Could not open this PDF. It may be damaged or protected with a password.",
+  "importPptxFailed": "Could not open this PowerPoint. Save it as PDF in PowerPoint and open the PDF instead.",
+  "tourStepOf": "{step} of {total}",
+  "@tourStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tourSkip": "Skip",
+  "tourNext": "Next",
+  "tourGotIt": "Got it",
+  "tourWelcomeTitle": "Welcome to your board",
+  "tourWelcomeBody": "A one-minute look at the buttons you will use in every class.",
+  "tourPenTitle": "Write and draw",
+  "tourPenBody": "Write with a finger or the stylus. Tap the pen again for colours and thickness.",
+  "tourEraseTitle": "Rub out",
+  "tourEraseBody": "Rub over the ink. Undo is at the bottom of the board.",
+  "tourInsertTitle": "Add to the board",
+  "tourInsertBody": "Equations, notes, pictures, the picture library, a PDF or PowerPoint, 3D models, labs and simulations.",
+  "tourToolsTitle": "Class tools",
+  "tourToolsBody": "Timer, stopwatch, name picker, dice, spinner, noise meter, screen shade, spotlight and the immersive reader.",
+  "tourAiTitle": "KINETIX AI",
+  "tourAiBody": "Ask about the lesson, make a quiz or homework, or solve a sum written on the board.",
+  "tourBooksTitle": "Books",
+  "tourBooksBody": "Your syllabus: each topic’s lesson, key facts and questions, read aloud if you like.",
+  "tourPagesTitle": "Pages",
+  "tourPagesBody": "Go to the next page; on the last page this adds a new one.",
+  "tourRecordTitle": "Record the lesson",
+  "tourRecordBody": "Records the board and your voice, for students to watch again.",
+  "tourHelpTitle": "Help is always here",
+  "tourHelpBody": "Open this menu for Help, this tour again, and a five-minute practice. Press ? on a keyboard too.",
+  "tourPractise": "Practise now",
+  "helpTitle": "Help",
+  "helpSubtitle": "Short answers, and the button shown on the board.",
+  "helpShowAround": "Show me around",
+  "helpPractise": "Practise in 5 minutes",
+  "helpSearch": "How do I…",
+  "helpNothing": "Nothing found. Try another word, or Show me around.",
+  "helpShowMe": "Show me",
+  "helpGroupWriting": "Writing on the board",
+  "helpGroupContent": "Pages and content",
+  "helpGroupClass": "Teaching tools",
+  "helpGroupAi": "KINETIX AI and Books",
+  "helpGroupSettings": "Settings",
+  "helpWriteTitle": "Write and draw",
+  "helpWrite1": "Tap the pen on the left and write with a finger or the stylus.",
+  "helpWrite2": "Two fingers move and zoom the board.",
+  "helpEraseTitle": "Rub out or undo",
+  "helpErase1": "Tap the eraser and rub over the ink. Tap it again to clear the page.",
+  "helpErase2": "Made a mistake? Tap Undo at the bottom.",
+  "helpShapesTitle": "Shapes",
+  "helpShapes1": "Tap Shapes, pick one and drag on the board.",
+  "helpShapes2": "Select it to resize, turn, colour or copy it.",
+  "helpTextTitle": "Type text",
+  "helpText1": "Tap T, then tap the board where the text should go.",
+  "helpPagesTitle": "Turn and add pages",
+  "helpPages1": "The arrows at the bottom turn pages; on the last page, + adds one.",
+  "helpPages2": "Save the board from the bottom left to keep it and share it with the class.",
+  "helpPictureTitle": "Add a picture",
+  "helpPicture1": "Tap + (Add), then Picture for one from this board, or Picture library.",
+  "helpPicture2": "Library pictures carry their credit under them.",
+  "helpImportTitle": "Open a PDF or PowerPoint",
+  "helpImport1": "Tap + (Add), then PDF or PowerPoint, and pick the file.",
+  "helpImport2": "Each page or slide becomes a board page you can write over; it works without the internet.",
+  "helpSimsTitle": "Simulations",
+  "helpSims1": "Tap + (Add) or Tools, then Simulations.",
+  "helpSims2": "Move the sliders and the class sees the pendulum, the projectile or the wave change.",
+  "helpToolkitTitle": "Timer, name picker and dice",
+  "helpToolkit1": "Tap Tools and pick one; it floats over the board.",
+  "helpToolkit2": "Drag it by its name to move it out of the way.",
+  "helpShadeTitle": "Screen shade and spotlight",
+  "helpShade1": "The shade covers the board; drag its handle down to reveal it line by line.",
+  "helpShade2": "The spotlight darkens all but a circle you drag around.",
+  "helpReadTitle": "Read aloud",
+  "helpRead1": "Select text and tap Read aloud, or Tools → Immersive reader for the page.",
+  "helpRead2": "Books and the labs read lessons and steps aloud too, in English, Hindi or Kannada where the board has the voice.",
+  "helpRecordTitle": "Record a lesson",
+  "helpRecord1": "Tap the red button to record the board and your voice.",
+  "helpRecord2": "Tap it again to stop and save.",
+  "helpAiTitle": "Ask KINETIX AI",
+  "helpAi1": "Tap the AI buttons on the right: ask, quiz, homework, the maths solver.",
+  "helpAi2": "Select something on the board and tap Read with AI to ask about it.",
+  "helpBooksTitle": "Lessons from Books",
+  "helpBooks1": "Tap Books on the right and open a topic.",
+  "helpBooks2": "Read aloud opens the lesson large, read word by word.",
+  "helpSettingsTitle": "Language, layout and touch",
+  "helpSettings1": "Open the menu at the bottom left, then Board settings.",
+  "practiceTitle": "Practice board",
+  "practiceNotSaved": "Nothing here is kept. Try everything.",
+  "practiceCount": "Practice: {done} of {total} done",
+  "@practiceCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "practiceReady": "You're ready!",
+  "practiceDoneBody": "You have done everything a class needs. Help is in the menu at the bottom left.",
+  "practiceShowList": "Show the list",
+  "practiceHideList": "Hide the list",
+  "practiceFinish": "Finish practice",
+  "practiceEnd": "End practice",
+  "practiceWrite": "Write something with the pen",
+  "practiceErase": "Rub it out, or tap Undo",
+  "practiceShape": "Draw a shape",
+  "practicePage": "Go to a new page",
+  "practicePicture": "Add a picture from the picture library",
+  "practiceTimer": "Start a timer from Tools",
+  "practiceEnded": "Practice over: your board is back as it was.",
   "pen": "Pen",
   "highlighter": "Highlighter",
   "colour": "Colour",

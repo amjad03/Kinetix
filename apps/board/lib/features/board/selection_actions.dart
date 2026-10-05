@@ -20,6 +20,7 @@ class SelectionActions extends StatelessWidget {
     this.onSolve,
     this.onConvertInk,
     this.onReadings,
+    this.onReadAloud,
   });
 
   final WhiteboardController wb;
@@ -44,6 +45,9 @@ class SelectionActions extends StatelessWidget {
 
   /// Shows the AI pen's readings of [e], when the AI pen made it (null otherwise).
   final VoidCallback? Function(BoardElement e)? onReadings;
+
+  /// Reads the selected text aloud in the immersive reader (null when nothing selected has text).
+  final VoidCallback? onReadAloud;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +97,7 @@ class SelectionActions extends StatelessWidget {
           if (readings != null) btn(Icons.auto_awesome_outlined, l.aiPenReadings, readings, key: const Key('sel-readings'), ai: true),
           if (onConvertInk != null && els.any(isPenInk)) btn(Icons.draw_outlined, l.aiPenConvertInk, onConvertInk!, key: const Key('sel-convert'), ai: true),
           if (editable && onEdit != null) btn(Icons.edit_outlined, l.edit, () => onEdit!(single!), key: const Key('sel-edit')),
+          if (onReadAloud != null) btn(Icons.record_voice_over_outlined, l.readAloud, onReadAloud!, key: const Key('sel-read-aloud')),
           gap(),
           Builder(builder: (ctx) => btn(Icons.palette_outlined, l.colour, () => _pickColour(ctx), key: const Key('sel-colour'))),
           if (wb.selectionFillable)

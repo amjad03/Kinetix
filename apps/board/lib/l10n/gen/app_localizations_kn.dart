@@ -577,6 +577,573 @@ class AppLocalizationsKn extends AppLocalizations {
   String get tkSpotlightSize => 'ಸ್ಪಾಟ್‌ಲೈಟ್ ಗಾತ್ರ';
 
   @override
+  String get simTitle => 'ಅನುಕರಣೆಗಳು';
+
+  @override
+  String get simHint => 'ಲೋಲಕ, ಪ್ರಕ್ಷೇಪಕ, ಗ್ರಾಫ್, ಭಿನ್ನರಾಶಿ, ಅಲೆಗಳು, ಪೈಥಾಗೊರಸ್';
+
+  @override
+  String get simOthers => 'ಇತರ ಅನುಕರಣೆಗಳು';
+
+  @override
+  String get simPendulum => 'ಸರಳ ಲೋಲಕ';
+
+  @override
+  String get simProjectile => 'ಪ್ರಕ್ಷೇಪಕ ಚಲನೆ';
+
+  @override
+  String get simGrapher => 'ಫಲನ ಗ್ರಾಫ್';
+
+  @override
+  String get simFractions => 'ಭಿನ್ನರಾಶಿ ಪಟ್ಟಿಗಳು';
+
+  @override
+  String get simWave => 'ಅಲೆಗಳು';
+
+  @override
+  String get simPythagoras => 'ಪೈಥಾಗೊರಸ್ ಪ್ರಮೇಯ';
+
+  @override
+  String get simLength => 'ಉದ್ದ';
+
+  @override
+  String get simGravity => 'ಗುರುತ್ವ';
+
+  @override
+  String get simStartAngle => 'ಆರಂಭಿಕ ಕೋನ';
+
+  @override
+  String get simSpeed => 'ವೇಗ';
+
+  @override
+  String get simAngle => 'ಕೋನ';
+
+  @override
+  String get simAmplitude => 'ವಿಸ್ತಾರ';
+
+  @override
+  String get simFrequency => 'ಆವರ್ತನ';
+
+  @override
+  String get simWavelength => 'ತರಂಗಾಂತರ';
+
+  @override
+  String simRange(String metres) {
+    return 'ವ್ಯಾಪ್ತಿ $metres ಮೀ';
+  }
+
+  @override
+  String simMaxHeight(String metres) {
+    return 'ಗರಿಷ್ಠ ಎತ್ತರ $metres ಮೀ';
+  }
+
+  @override
+  String simFlightTime(String seconds) {
+    return 'ಸಮಯ $seconds ಸೆ.';
+  }
+
+  @override
+  String simTop(int number) {
+    return 'ಮೇಲೆ $number';
+  }
+
+  @override
+  String simBottom(int number) {
+    return 'ಕೆಳಗೆ $number';
+  }
+
+  @override
+  String simSide(String name) {
+    return 'ಬಾಹು $name';
+  }
+
+  @override
+  String get simBadExpression => 'ಆ ಅಭಿವ್ಯಕ್ತಿಯನ್ನು ಓದಲಾಗುತ್ತಿಲ್ಲ';
+
+  @override
+  String get simDraw => 'ಬಿಡಿಸಿ';
+
+  @override
+  String get readAloud => 'ಗಟ್ಟಿಯಾಗಿ ಓದಿ';
+
+  @override
+  String get readerTitle => 'ಇಮರ್ಸಿವ್ ರೀಡರ್';
+
+  @override
+  String readerPageTitle(int number) {
+    return 'ಪುಟ $number';
+  }
+
+  @override
+  String get readerNothing =>
+      'ಈ ಪುಟದಲ್ಲಿ ಓದಲು ಟೈಪ್ ಮಾಡಿದ ಪಠ್ಯ ಇಲ್ಲ. ಪಠ್ಯ ಟೈಪ್ ಮಾಡಿ, ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ ಅಥವಾ AI ಪೆನ್‌ನಿಂದ ಕೈಬರಹ ಬದಲಿಸಿ.';
+
+  @override
+  String readerNoVoice(String language) {
+    return 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ $language ಧ್ವನಿ ಇಲ್ಲ. ಸಾಧನದ ಪಠ್ಯದಿಂದ ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸೇರಿಸಿ (Windows: Settings → Time & language → Speech).';
+  }
+
+  @override
+  String get readerPrevious => 'ಹಿಂದಿನ ಪ್ಯಾರಾ';
+
+  @override
+  String get readerNext => 'ಮುಂದಿನ ಪ್ಯಾರಾ';
+
+  @override
+  String get readerPaper => 'ಕಾಗದ';
+
+  @override
+  String get readerCream => 'ಕ್ರೀಮ್';
+
+  @override
+  String get readerContrast => 'ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್';
+
+  @override
+  String get readerBlue => 'ತಿಳಿ ನೀಲಿ';
+
+  @override
+  String get readerLineFocus => 'ಸಾಲಿನ ಮೇಲೆ ಗಮನ';
+
+  @override
+  String get readerSlower => 'ನಿಧಾನ';
+
+  @override
+  String get readerHint => 'ಪುಟದ ಪಠ್ಯ, ದೊಡ್ಡದಾಗಿ, ಪದ ಪದವಾಗಿ ಗಟ್ಟಿಯಾಗಿ';
+
+  @override
+  String get insertPicture => 'ಚಿತ್ರ';
+
+  @override
+  String get insertPictureHintGallery => 'ಗ್ಯಾಲರಿಯಿಂದ';
+
+  @override
+  String get insertPictureHintFiles => 'ಈ ಬೋರ್ಡ್‌ನ ಫೈಲ್‌ಗಳಿಂದ';
+
+  @override
+  String get insertPhoto => 'ಫೋಟೋ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get insertPhotoHint => 'ಈ ಬೋರ್ಡ್‌ನ ಕ್ಯಾಮೆರಾದಿಂದ';
+
+  @override
+  String get pictureCouldNotOpen => 'ಆ ಚಿತ್ರವನ್ನು ತೆರೆಯಲಾಗಲಿಲ್ಲ.';
+
+  @override
+  String get libTitle => 'ಚಿತ್ರ ಸಂಗ್ರಹ';
+
+  @override
+  String get libHint =>
+      'ರೇಖಾಚಿತ್ರಗಳು, ನಕ್ಷೆಗಳು ಮತ್ತು ಸ್ಟಿಕ್ಕರ್‌ಗಳು, ಉಚಿತ ಬಳಕೆಗೆ';
+
+  @override
+  String get libSearch => 'ಚಿತ್ರ ಹುಡುಕಿ (ಹೃದಯ, ಭಾರತದ ನಕ್ಷೆ, ಜ್ವಾಲಾಮುಖಿ…)';
+
+  @override
+  String get libAll => 'ಎಲ್ಲಾ';
+
+  @override
+  String get libBiology => 'ಜೀವಶಾಸ್ತ್ರ';
+
+  @override
+  String get libChemistry => 'ರಸಾಯನಶಾಸ್ತ್ರ';
+
+  @override
+  String get libPhysics => 'ಭೌತಶಾಸ್ತ್ರ';
+
+  @override
+  String get libMaths => 'ಗಣಿತ';
+
+  @override
+  String get libGeography => 'ಭೂಗೋಳ';
+
+  @override
+  String get libHistory => 'ಇತಿಹಾಸ';
+
+  @override
+  String get libEnglish => 'ಭಾಷೆಗಳು';
+
+  @override
+  String get libComputers => 'ಕಂಪ್ಯೂಟರ್';
+
+  @override
+  String get libEvs => 'ಪರಿಸರ ಅಧ್ಯಯನ ಮತ್ತು ಪ್ರಾಥಮಿಕ';
+
+  @override
+  String get libStickers => 'ಸ್ಟಿಕ್ಕರ್‌ಗಳು';
+
+  @override
+  String get libNothingFound => 'ಯಾವುದೇ ಚಿತ್ರ ಸಿಗಲಿಲ್ಲ. ಬೇರೆ ಪದ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get libCredits =>
+      'ಚಿತ್ರಗಳು ವಿಕಿಮೀಡಿಯಾ ಕಾಮನ್ಸ್ (ಸಾರ್ವಜನಿಕ ಡೊಮೇನ್, CC0, CC BY, CC BY-SA) ಮತ್ತು Microsoft Fluent Emoji (MIT) ಇಂದ. ಚಿತ್ರದ ಲೇಖಕ ಮತ್ತು ಪರವಾನಗಿಗಾಗಿ ⓘ ಒತ್ತಿ; ಶ್ರೇಯ ಚಿತ್ರದೊಂದಿಗೆ ಬೋರ್ಡ್‌ಗೆ ಹೋಗುತ್ತದೆ.';
+
+  @override
+  String get importTitle => 'PDF ಅಥವಾ PowerPoint';
+
+  @override
+  String get importHint =>
+      'ಪ್ರತಿ ಪುಟ ಅಥವಾ ಸ್ಲೈಡ್ ಬರೆಯಲು ಒಂದು ಬೋರ್ಡ್ ಪುಟವಾಗುತ್ತದೆ';
+
+  @override
+  String importingFile(String name) {
+    return '$name ತೆರೆಯಲಾಗುತ್ತಿದೆ';
+  }
+
+  @override
+  String get importReading => 'ಫೈಲ್ ಓದಲಾಗುತ್ತಿದೆ…';
+
+  @override
+  String importPageOf(int done, int total) {
+    return 'ಪುಟ $done / $total';
+  }
+
+  @override
+  String importedPages(int count) {
+    return 'ಈ ಪುಟದ ನಂತರ $count ಪುಟಗಳನ್ನು ಸೇರಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get importOldPpt =>
+      'ಇದು ಹಳೆಯ PowerPoint ಫೈಲ್ (.ppt). ಅದನ್ನು PowerPoint‌ನಲ್ಲಿ .pptx ಅಥವಾ PDF ಆಗಿ ಉಳಿಸಿ, ನಂತರ ಇಲ್ಲಿ ತೆರೆಯಿರಿ.';
+
+  @override
+  String get importNotSupported =>
+      'ಬೋರ್ಡ್ PDF ಮತ್ತು PowerPoint (.pptx) ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯುತ್ತದೆ.';
+
+  @override
+  String get importPdfFailed =>
+      'ಈ PDF ತೆರೆಯಲಾಗಲಿಲ್ಲ. ಅದು ಹಾಳಾಗಿರಬಹುದು ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ರಕ್ಷಿತವಾಗಿರಬಹುದು.';
+
+  @override
+  String get importPptxFailed =>
+      'ಈ PowerPoint ತೆರೆಯಲಾಗಲಿಲ್ಲ. ಅದನ್ನು PowerPoint‌ನಲ್ಲಿ PDF ಆಗಿ ಉಳಿಸಿ, ಆ PDF ತೆರೆಯಿರಿ.';
+
+  @override
+  String tourStepOf(int step, int total) {
+    return '$total ರಲ್ಲಿ $step';
+  }
+
+  @override
+  String get tourSkip => 'ಬಿಟ್ಟುಬಿಡಿ';
+
+  @override
+  String get tourNext => 'ಮುಂದೆ';
+
+  @override
+  String get tourGotIt => 'ಅರ್ಥವಾಯಿತು';
+
+  @override
+  String get tourWelcomeTitle => 'ನಿಮ್ಮ ಬೋರ್ಡ್‌ಗೆ ಸ್ವಾಗತ';
+
+  @override
+  String get tourWelcomeBody =>
+      'ಪ್ರತಿ ತರಗತಿಯಲ್ಲಿ ಬಳಸುವ ಬಟನ್‌ಗಳ ಒಂದು ನಿಮಿಷದ ಪರಿಚಯ.';
+
+  @override
+  String get tourPenTitle => 'ಬರೆಯಿರಿ ಮತ್ತು ಬಿಡಿಸಿ';
+
+  @override
+  String get tourPenBody =>
+      'ಬೆರಳು ಅಥವಾ ಸ್ಟೈಲಸ್‌ನಿಂದ ಬರೆಯಿರಿ. ಬಣ್ಣ ಮತ್ತು ದಪ್ಪಕ್ಕಾಗಿ ಪೆನ್ ಅನ್ನು ಮತ್ತೆ ಒತ್ತಿ.';
+
+  @override
+  String get tourEraseTitle => 'ಅಳಿಸಿ';
+
+  @override
+  String get tourEraseBody => 'ಶಾಯಿಯ ಮೇಲೆ ಉಜ್ಜಿ. ಅನ್‌ಡು ಬೋರ್ಡ್‌ನ ಕೆಳಗಿದೆ.';
+
+  @override
+  String get tourInsertTitle => 'ಬೋರ್ಡ್‌ಗೆ ಸೇರಿಸಿ';
+
+  @override
+  String get tourInsertBody =>
+      'ಸಮೀಕರಣಗಳು, ಟಿಪ್ಪಣಿಗಳು, ಚಿತ್ರಗಳು, ಚಿತ್ರ ಸಂಗ್ರಹ, PDF ಅಥವಾ PowerPoint, 3D ಮಾದರಿಗಳು, ಲ್ಯಾಬ್‌ಗಳು ಮತ್ತು ಅನುಕರಣೆಗಳು.';
+
+  @override
+  String get tourToolsTitle => 'ತರಗತಿ ಉಪಕರಣಗಳು';
+
+  @override
+  String get tourToolsBody =>
+      'ಟೈಮರ್, ಸ್ಟಾಪ್‌ವಾಚ್, ಹೆಸರು ಆಯ್ಕೆ, ದಾಳ, ಚಕ್ರ, ಶಬ್ದ ಮಾಪಕ, ಸ್ಕ್ರೀನ್ ಶೇಡ್, ಸ್ಪಾಟ್‌ಲೈಟ್ ಮತ್ತು ಇಮರ್ಸಿವ್ ರೀಡರ್.';
+
+  @override
+  String get tourAiTitle => 'KINETIX AI';
+
+  @override
+  String get tourAiBody =>
+      'ಪಾಠದ ಬಗ್ಗೆ ಕೇಳಿ, ರಸಪ್ರಶ್ನೆ ಅಥವಾ ಮನೆಗೆಲಸ ಮಾಡಿ, ಅಥವಾ ಬೋರ್ಡ್ ಮೇಲೆ ಬರೆದ ಲೆಕ್ಕ ಬಿಡಿಸಿ.';
+
+  @override
+  String get tourBooksTitle => 'ಪುಸ್ತಕಗಳು';
+
+  @override
+  String get tourBooksBody =>
+      'ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮ: ಪ್ರತಿ ವಿಷಯದ ಪಾಠ, ಮುಖ್ಯ ಅಂಶಗಳು ಮತ್ತು ಪ್ರಶ್ನೆಗಳು, ಬೇಕಿದ್ದರೆ ಗಟ್ಟಿಯಾಗಿ ಓದಿ.';
+
+  @override
+  String get tourPagesTitle => 'ಪುಟಗಳು';
+
+  @override
+  String get tourPagesBody =>
+      'ಮುಂದಿನ ಪುಟಕ್ಕೆ ಹೋಗಿ; ಕೊನೆಯ ಪುಟದಲ್ಲಿ ಇದು ಹೊಸ ಪುಟ ಸೇರಿಸುತ್ತದೆ.';
+
+  @override
+  String get tourRecordTitle => 'ಪಾಠವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ';
+
+  @override
+  String get tourRecordBody =>
+      'ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತೆ ನೋಡಲು ಬೋರ್ಡ್ ಮತ್ತು ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get tourHelpTitle => 'ಸಹಾಯ ಯಾವಾಗಲೂ ಇಲ್ಲಿದೆ';
+
+  @override
+  String get tourHelpBody =>
+      'ಸಹಾಯ, ಈ ಪರಿಚಯ ಮತ್ತೆ ಮತ್ತು ಐದು ನಿಮಿಷದ ಅಭ್ಯಾಸಕ್ಕಾಗಿ ಈ ಮೆನು ತೆರೆಯಿರಿ. ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ? ಒತ್ತಬಹುದು.';
+
+  @override
+  String get tourPractise => 'ಈಗ ಅಭ್ಯಾಸ ಮಾಡಿ';
+
+  @override
+  String get helpTitle => 'ಸಹಾಯ';
+
+  @override
+  String get helpSubtitle => 'ಚಿಕ್ಕ ಉತ್ತರಗಳು, ಮತ್ತು ಬೋರ್ಡ್ ಮೇಲೆ ಬಟನ್ ತೋರಿಸಿ.';
+
+  @override
+  String get helpShowAround => 'ನನಗೆ ಸುತ್ತಿ ತೋರಿಸಿ';
+
+  @override
+  String get helpPractise => '5 ನಿಮಿಷದಲ್ಲಿ ಅಭ್ಯಾಸ ಮಾಡಿ';
+
+  @override
+  String get helpSearch => 'ನಾನು ಹೇಗೆ…';
+
+  @override
+  String get helpNothing =>
+      'ಏನೂ ಸಿಗಲಿಲ್ಲ. ಬೇರೆ ಪದ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ನನಗೆ ಸುತ್ತಿ ತೋರಿಸಿ.';
+
+  @override
+  String get helpShowMe => 'ನನಗೆ ತೋರಿಸಿ';
+
+  @override
+  String get helpGroupWriting => 'ಬೋರ್ಡ್ ಮೇಲೆ ಬರೆಯುವುದು';
+
+  @override
+  String get helpGroupContent => 'ಪುಟಗಳು ಮತ್ತು ವಿಷಯ';
+
+  @override
+  String get helpGroupClass => 'ಬೋಧನಾ ಉಪಕರಣಗಳು';
+
+  @override
+  String get helpGroupAi => 'KINETIX AI ಮತ್ತು ಪುಸ್ತಕಗಳು';
+
+  @override
+  String get helpGroupSettings => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
+
+  @override
+  String get helpWriteTitle => 'ಬರೆಯಿರಿ ಮತ್ತು ಬಿಡಿಸಿ';
+
+  @override
+  String get helpWrite1 =>
+      'ಎಡಭಾಗದ ಪೆನ್ ಒತ್ತಿ, ಬೆರಳು ಅಥವಾ ಸ್ಟೈಲಸ್‌ನಿಂದ ಬರೆಯಿರಿ.';
+
+  @override
+  String get helpWrite2 => 'ಎರಡು ಬೆರಳುಗಳಿಂದ ಬೋರ್ಡ್ ಸರಿಸಿ ಮತ್ತು ಜೂಮ್ ಮಾಡಿ.';
+
+  @override
+  String get helpEraseTitle => 'ಅಳಿಸಿ ಅಥವಾ ಅನ್‌ಡು ಮಾಡಿ';
+
+  @override
+  String get helpErase1 =>
+      'ಎರೇಸರ್ ಒತ್ತಿ ಶಾಯಿಯ ಮೇಲೆ ಉಜ್ಜಿ. ಪುಟ ತೆರವುಗೊಳಿಸಲು ಮತ್ತೆ ಒತ್ತಿ.';
+
+  @override
+  String get helpErase2 => 'ತಪ್ಪಾಯಿತೇ? ಕೆಳಗೆ ಅನ್‌ಡು ಒತ್ತಿ.';
+
+  @override
+  String get helpShapesTitle => 'ಆಕೃತಿಗಳು';
+
+  @override
+  String get helpShapes1 =>
+      'ಆಕೃತಿಗಳು ಒತ್ತಿ, ಒಂದನ್ನು ಆರಿಸಿ ಬೋರ್ಡ್ ಮೇಲೆ ಎಳೆಯಿರಿ.';
+
+  @override
+  String get helpShapes2 =>
+      'ಗಾತ್ರ ಬದಲಿಸಲು, ತಿರುಗಿಸಲು, ಬಣ್ಣ ಹಚ್ಚಲು ಅಥವಾ ನಕಲಿಸಲು ಅದನ್ನು ಆರಿಸಿ.';
+
+  @override
+  String get helpTextTitle => 'ಪಠ್ಯ ಟೈಪ್ ಮಾಡಿ';
+
+  @override
+  String get helpText1 => 'T ಒತ್ತಿ, ನಂತರ ಪಠ್ಯ ಬೇಕಾದಲ್ಲಿ ಬೋರ್ಡ್ ಮೇಲೆ ಒತ್ತಿ.';
+
+  @override
+  String get helpPagesTitle => 'ಪುಟ ತಿರುಗಿಸಿ ಮತ್ತು ಸೇರಿಸಿ';
+
+  @override
+  String get helpPages1 =>
+      'ಕೆಳಗಿನ ಬಾಣಗಳು ಪುಟ ತಿರುಗಿಸುತ್ತವೆ; ಕೊನೆಯ ಪುಟದಲ್ಲಿ + ಹೊಸದನ್ನು ಸೇರಿಸುತ್ತದೆ.';
+
+  @override
+  String get helpPages2 =>
+      'ಬೋರ್ಡ್ ಉಳಿಸಲು ಮತ್ತು ತರಗತಿಯೊಂದಿಗೆ ಹಂಚಲು ಕೆಳಗಿನ ಎಡಭಾಗದಿಂದ ಉಳಿಸಿ.';
+
+  @override
+  String get helpPictureTitle => 'ಚಿತ್ರ ಸೇರಿಸಿ';
+
+  @override
+  String get helpPicture1 =>
+      '+ (ಸೇರಿಸಿ) ಒತ್ತಿ, ನಂತರ ಈ ಬೋರ್ಡ್‌ನಿಂದ ಚಿತ್ರಕ್ಕಾಗಿ ಚಿತ್ರ, ಅಥವಾ ಚಿತ್ರ ಸಂಗ್ರಹ.';
+
+  @override
+  String get helpPicture2 => 'ಸಂಗ್ರಹದ ಚಿತ್ರಗಳ ಕೆಳಗೆ ಅವುಗಳ ಶ್ರೇಯ ಇರುತ್ತದೆ.';
+
+  @override
+  String get helpImportTitle => 'PDF ಅಥವಾ PowerPoint ತೆರೆಯಿರಿ';
+
+  @override
+  String get helpImport1 =>
+      '+ (ಸೇರಿಸಿ) ಒತ್ತಿ, ನಂತರ PDF ಅಥವಾ PowerPoint, ಮತ್ತು ಫೈಲ್ ಆರಿಸಿ.';
+
+  @override
+  String get helpImport2 =>
+      'ಪ್ರತಿ ಪುಟ ಅಥವಾ ಸ್ಲೈಡ್ ಮೇಲೆ ಬರೆಯಬಹುದಾದ ಬೋರ್ಡ್ ಪುಟವಾಗುತ್ತದೆ; ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get helpSimsTitle => 'ಅನುಕರಣೆಗಳು';
+
+  @override
+  String get helpSims1 => '+ (ಸೇರಿಸಿ) ಅಥವಾ ಉಪಕರಣಗಳು ಒತ್ತಿ, ನಂತರ ಅನುಕರಣೆಗಳು.';
+
+  @override
+  String get helpSims2 =>
+      'ಸ್ಲೈಡರ್ ಸರಿಸಿ, ತರಗತಿ ಲೋಲಕ, ಪ್ರಕ್ಷೇಪಕ ಅಥವಾ ಅಲೆ ಬದಲಾಗುವುದನ್ನು ನೋಡುತ್ತದೆ.';
+
+  @override
+  String get helpToolkitTitle => 'ಟೈಮರ್, ಹೆಸರು ಆಯ್ಕೆ ಮತ್ತು ದಾಳ';
+
+  @override
+  String get helpToolkit1 =>
+      'ಉಪಕರಣಗಳು ಒತ್ತಿ ಒಂದನ್ನು ಆರಿಸಿ; ಅದು ಬೋರ್ಡ್ ಮೇಲೆ ತೇಲುತ್ತದೆ.';
+
+  @override
+  String get helpToolkit2 => 'ಅದನ್ನು ಸರಿಸಲು ಅದರ ಹೆಸರಿನಿಂದ ಎಳೆಯಿರಿ.';
+
+  @override
+  String get helpShadeTitle => 'ಸ್ಕ್ರೀನ್ ಶೇಡ್ ಮತ್ತು ಸ್ಪಾಟ್‌ಲೈಟ್';
+
+  @override
+  String get helpShade1 =>
+      'ಶೇಡ್ ಬೋರ್ಡ್ ಮುಚ್ಚುತ್ತದೆ; ಸಾಲು ಸಾಲಾಗಿ ತೋರಿಸಲು ಅದರ ಹಿಡಿಕೆಯನ್ನು ಕೆಳಗೆ ಎಳೆಯಿರಿ.';
+
+  @override
+  String get helpShade2 =>
+      'ಸ್ಪಾಟ್‌ಲೈಟ್ ನೀವು ಎಳೆಯುವ ವೃತ್ತ ಬಿಟ್ಟು ಉಳಿದೆಲ್ಲವನ್ನೂ ಕತ್ತಲಾಗಿಸುತ್ತದೆ.';
+
+  @override
+  String get helpReadTitle => 'ಗಟ್ಟಿಯಾಗಿ ಓದಿ';
+
+  @override
+  String get helpRead1 =>
+      'ಪಠ್ಯ ಆರಿಸಿ ಗಟ್ಟಿಯಾಗಿ ಓದಿ ಒತ್ತಿ, ಅಥವಾ ಪುಟಕ್ಕಾಗಿ ಉಪಕರಣಗಳು → ಇಮರ್ಸಿವ್ ರೀಡರ್.';
+
+  @override
+  String get helpRead2 =>
+      'ಪುಸ್ತಕಗಳು ಮತ್ತು ಲ್ಯಾಬ್‌ಗಳೂ ಪಾಠ ಮತ್ತು ಹಂತಗಳನ್ನು ಓದುತ್ತವೆ, ಬೋರ್ಡ್‌ನಲ್ಲಿ ಧ್ವನಿ ಇದ್ದರೆ ಇಂಗ್ಲಿಷ್, ಹಿಂದಿ ಅಥವಾ ಕನ್ನಡದಲ್ಲಿ.';
+
+  @override
+  String get helpRecordTitle => 'ಪಾಠ ರೆಕಾರ್ಡ್ ಮಾಡಿ';
+
+  @override
+  String get helpRecord1 =>
+      'ಬೋರ್ಡ್ ಮತ್ತು ನಿಮ್ಮ ಧ್ವನಿ ರೆಕಾರ್ಡ್ ಮಾಡಲು ಕೆಂಪು ಬಟನ್ ಒತ್ತಿ.';
+
+  @override
+  String get helpRecord2 => 'ನಿಲ್ಲಿಸಿ ಉಳಿಸಲು ಮತ್ತೆ ಒತ್ತಿ.';
+
+  @override
+  String get helpAiTitle => 'KINETIX AI ಅನ್ನು ಕೇಳಿ';
+
+  @override
+  String get helpAi1 =>
+      'ಬಲಭಾಗದ AI ಬಟನ್‌ಗಳನ್ನು ಒತ್ತಿ: ಕೇಳಿ, ರಸಪ್ರಶ್ನೆ, ಮನೆಗೆಲಸ, ಗಣಿತ ಪರಿಹಾರಕ.';
+
+  @override
+  String get helpAi2 =>
+      'ಬೋರ್ಡ್ ಮೇಲೆ ಏನನ್ನಾದರೂ ಆರಿಸಿ, ಅದರ ಬಗ್ಗೆ ಕೇಳಲು AI ಯಿಂದ ಓದಿ ಒತ್ತಿ.';
+
+  @override
+  String get helpBooksTitle => 'ಪುಸ್ತಕಗಳಿಂದ ಪಾಠಗಳು';
+
+  @override
+  String get helpBooks1 => 'ಬಲಭಾಗದಲ್ಲಿ ಪುಸ್ತಕಗಳು ಒತ್ತಿ ಒಂದು ವಿಷಯ ತೆರೆಯಿರಿ.';
+
+  @override
+  String get helpBooks2 =>
+      'ಗಟ್ಟಿಯಾಗಿ ಓದಿ ಪಾಠವನ್ನು ದೊಡ್ಡದಾಗಿ ತೆರೆದು ಪದ ಪದವಾಗಿ ಓದುತ್ತದೆ.';
+
+  @override
+  String get helpSettingsTitle => 'ಭಾಷೆ, ವಿನ್ಯಾಸ ಮತ್ತು ಸ್ಪರ್ಶ';
+
+  @override
+  String get helpSettings1 =>
+      'ಕೆಳಗಿನ ಎಡಭಾಗದ ಮೆನು ತೆರೆಯಿರಿ, ನಂತರ ಬೋರ್ಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು.';
+
+  @override
+  String get practiceTitle => 'ಅಭ್ಯಾಸ ಬೋರ್ಡ್';
+
+  @override
+  String get practiceNotSaved =>
+      'ಇಲ್ಲಿ ಏನನ್ನೂ ಉಳಿಸುವುದಿಲ್ಲ. ಎಲ್ಲವನ್ನೂ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String practiceCount(int done, int total) {
+    return 'ಅಭ್ಯಾಸ: $total ರಲ್ಲಿ $done ಮುಗಿದಿದೆ';
+  }
+
+  @override
+  String get practiceReady => 'ನೀವು ಸಿದ್ಧರಿದ್ದೀರಿ!';
+
+  @override
+  String get practiceDoneBody =>
+      'ತರಗತಿಗೆ ಬೇಕಾದ ಎಲ್ಲವನ್ನೂ ನೀವು ಮಾಡಿದ್ದೀರಿ. ಸಹಾಯ ಕೆಳಗಿನ ಎಡಭಾಗದ ಮೆನುವಿನಲ್ಲಿದೆ.';
+
+  @override
+  String get practiceShowList => 'ಪಟ್ಟಿ ತೋರಿಸಿ';
+
+  @override
+  String get practiceHideList => 'ಪಟ್ಟಿ ಮರೆಮಾಡಿ';
+
+  @override
+  String get practiceFinish => 'ಅಭ್ಯಾಸ ಮುಗಿಸಿ';
+
+  @override
+  String get practiceEnd => 'ಅಭ್ಯಾಸ ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get practiceWrite => 'ಪೆನ್‌ನಿಂದ ಏನಾದರೂ ಬರೆಯಿರಿ';
+
+  @override
+  String get practiceErase => 'ಅದನ್ನು ಅಳಿಸಿ, ಅಥವಾ ಅನ್‌ಡು ಒತ್ತಿ';
+
+  @override
+  String get practiceShape => 'ಒಂದು ಆಕೃತಿ ಬಿಡಿಸಿ';
+
+  @override
+  String get practicePage => 'ಹೊಸ ಪುಟಕ್ಕೆ ಹೋಗಿ';
+
+  @override
+  String get practicePicture => 'ಚಿತ್ರ ಸಂಗ್ರಹದಿಂದ ಒಂದು ಚಿತ್ರ ಸೇರಿಸಿ';
+
+  @override
+  String get practiceTimer => 'ಉಪಕರಣಗಳಿಂದ ಟೈಮರ್ ಪ್ರಾರಂಭಿಸಿ';
+
+  @override
+  String get practiceEnded => 'ಅಭ್ಯಾಸ ಮುಗಿಯಿತು: ನಿಮ್ಮ ಬೋರ್ಡ್ ಮೊದಲಿನಂತಿದೆ.';
+
+  @override
   String get pen => 'ಪೆನ್';
 
   @override

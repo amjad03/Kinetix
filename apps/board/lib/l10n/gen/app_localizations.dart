@@ -1042,6 +1042,1008 @@ abstract class AppLocalizations {
   /// **'Spotlight size'**
   String get tkSpotlightSize;
 
+  /// No description provided for @simTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulations'**
+  String get simTitle;
+
+  /// No description provided for @simHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pendulum, projectile, graphs, fractions, waves, Pythagoras'**
+  String get simHint;
+
+  /// No description provided for @simOthers.
+  ///
+  /// In en, this message translates to:
+  /// **'Other simulations'**
+  String get simOthers;
+
+  /// No description provided for @simPendulum.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple pendulum'**
+  String get simPendulum;
+
+  /// No description provided for @simProjectile.
+  ///
+  /// In en, this message translates to:
+  /// **'Projectile motion'**
+  String get simProjectile;
+
+  /// No description provided for @simGrapher.
+  ///
+  /// In en, this message translates to:
+  /// **'Function grapher'**
+  String get simGrapher;
+
+  /// No description provided for @simFractions.
+  ///
+  /// In en, this message translates to:
+  /// **'Fraction bars'**
+  String get simFractions;
+
+  /// No description provided for @simWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Waves'**
+  String get simWave;
+
+  /// No description provided for @simPythagoras.
+  ///
+  /// In en, this message translates to:
+  /// **'Pythagoras theorem'**
+  String get simPythagoras;
+
+  /// No description provided for @simLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get simLength;
+
+  /// No description provided for @simGravity.
+  ///
+  /// In en, this message translates to:
+  /// **'Gravity'**
+  String get simGravity;
+
+  /// No description provided for @simStartAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start angle'**
+  String get simStartAngle;
+
+  /// No description provided for @simSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get simSpeed;
+
+  /// No description provided for @simAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Angle'**
+  String get simAngle;
+
+  /// No description provided for @simAmplitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Amplitude'**
+  String get simAmplitude;
+
+  /// No description provided for @simFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get simFrequency;
+
+  /// No description provided for @simWavelength.
+  ///
+  /// In en, this message translates to:
+  /// **'Wavelength'**
+  String get simWavelength;
+
+  /// No description provided for @simRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Range {metres} m'**
+  String simRange(String metres);
+
+  /// No description provided for @simMaxHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Max height {metres} m'**
+  String simMaxHeight(String metres);
+
+  /// No description provided for @simFlightTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time {seconds} s'**
+  String simFlightTime(String seconds);
+
+  /// Numerator of fraction 1 or 2 in the fraction bars.
+  ///
+  /// In en, this message translates to:
+  /// **'Top {number}'**
+  String simTop(int number);
+
+  /// Denominator of fraction 1 or 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom {number}'**
+  String simBottom(int number);
+
+  /// No description provided for @simSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side {name}'**
+  String simSide(String name);
+
+  /// No description provided for @simBadExpression.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot read that expression'**
+  String get simBadExpression;
+
+  /// No description provided for @simDraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get simDraw;
+
+  /// No description provided for @readAloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get readAloud;
+
+  /// The full-screen reader that reads the page aloud and marks each word.
+  ///
+  /// In en, this message translates to:
+  /// **'Immersive reader'**
+  String get readerTitle;
+
+  /// No description provided for @readerPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {number}'**
+  String readerPageTitle(int number);
+
+  /// No description provided for @readerNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no typed text on this page to read. Type text, add a note or convert handwriting with the AI pen.'**
+  String get readerNothing;
+
+  /// No description provided for @readerNoVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'This board has no {language} voice. Add one in the device’s text-to-speech settings (Windows: Settings → Time & language → Speech).'**
+  String readerNoVoice(String language);
+
+  /// No description provided for @readerPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous paragraph'**
+  String get readerPrevious;
+
+  /// No description provided for @readerNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next paragraph'**
+  String get readerNext;
+
+  /// No description provided for @readerPaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper'**
+  String get readerPaper;
+
+  /// No description provided for @readerCream.
+  ///
+  /// In en, this message translates to:
+  /// **'Cream'**
+  String get readerCream;
+
+  /// No description provided for @readerContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get readerContrast;
+
+  /// No description provided for @readerBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue tint'**
+  String get readerBlue;
+
+  /// No description provided for @readerLineFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Line focus'**
+  String get readerLineFocus;
+
+  /// No description provided for @readerSlower.
+  ///
+  /// In en, this message translates to:
+  /// **'Slower'**
+  String get readerSlower;
+
+  /// No description provided for @readerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The page’s text, large, read aloud word by word'**
+  String get readerHint;
+
+  /// No description provided for @insertPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture'**
+  String get insertPicture;
+
+  /// No description provided for @insertPictureHintGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'From the gallery'**
+  String get insertPictureHintGallery;
+
+  /// No description provided for @insertPictureHintFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'From this board’s files'**
+  String get insertPictureHintFiles;
+
+  /// No description provided for @insertPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get insertPhoto;
+
+  /// No description provided for @insertPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'With this board’s camera'**
+  String get insertPhotoHint;
+
+  /// No description provided for @pictureCouldNotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open that picture.'**
+  String get pictureCouldNotOpen;
+
+  /// No description provided for @libTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture library'**
+  String get libTitle;
+
+  /// No description provided for @libHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagrams, maps and stickers, free to use'**
+  String get libHint;
+
+  /// No description provided for @libSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search pictures (heart, map of India, volcano…)'**
+  String get libSearch;
+
+  /// No description provided for @libAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get libAll;
+
+  /// No description provided for @libBiology.
+  ///
+  /// In en, this message translates to:
+  /// **'Biology'**
+  String get libBiology;
+
+  /// No description provided for @libChemistry.
+  ///
+  /// In en, this message translates to:
+  /// **'Chemistry'**
+  String get libChemistry;
+
+  /// No description provided for @libPhysics.
+  ///
+  /// In en, this message translates to:
+  /// **'Physics'**
+  String get libPhysics;
+
+  /// No description provided for @libMaths.
+  ///
+  /// In en, this message translates to:
+  /// **'Maths'**
+  String get libMaths;
+
+  /// No description provided for @libGeography.
+  ///
+  /// In en, this message translates to:
+  /// **'Geography'**
+  String get libGeography;
+
+  /// No description provided for @libHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get libHistory;
+
+  /// No description provided for @libEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get libEnglish;
+
+  /// No description provided for @libComputers.
+  ///
+  /// In en, this message translates to:
+  /// **'Computers'**
+  String get libComputers;
+
+  /// No description provided for @libEvs.
+  ///
+  /// In en, this message translates to:
+  /// **'EVS and primary'**
+  String get libEvs;
+
+  /// No description provided for @libStickers.
+  ///
+  /// In en, this message translates to:
+  /// **'Stickers'**
+  String get libStickers;
+
+  /// No description provided for @libNothingFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No picture matches. Try another word.'**
+  String get libNothingFound;
+
+  /// No description provided for @libCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Pictures from Wikimedia Commons (public domain, CC0, CC BY, CC BY-SA) and Microsoft Fluent Emoji (MIT). Tap ⓘ for a picture’s author and licence; the credit goes on the board with it.'**
+  String get libCredits;
+
+  /// No description provided for @importTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF or PowerPoint'**
+  String get importTitle;
+
+  /// No description provided for @importHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each page or slide becomes a board page to write on'**
+  String get importHint;
+
+  /// No description provided for @importingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening {name}'**
+  String importingFile(String name);
+
+  /// No description provided for @importReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the file…'**
+  String get importReading;
+
+  /// No description provided for @importPageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {done} of {total}'**
+  String importPageOf(int done, int total);
+
+  /// No description provided for @importedPages.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added 1 page after this one} other{Added {count} pages after this one}}'**
+  String importedPages(int count);
+
+  /// No description provided for @importOldPpt.
+  ///
+  /// In en, this message translates to:
+  /// **'This is an old PowerPoint file (.ppt). Save it as .pptx or PDF in PowerPoint, then open it here.'**
+  String get importOldPpt;
+
+  /// No description provided for @importNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'The board opens PDF and PowerPoint (.pptx) files.'**
+  String get importNotSupported;
+
+  /// No description provided for @importPdfFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open this PDF. It may be damaged or protected with a password.'**
+  String get importPdfFailed;
+
+  /// No description provided for @importPptxFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open this PowerPoint. Save it as PDF in PowerPoint and open the PDF instead.'**
+  String get importPptxFailed;
+
+  /// No description provided for @tourStepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{step} of {total}'**
+  String tourStepOf(int step, int total);
+
+  /// No description provided for @tourSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get tourSkip;
+
+  /// No description provided for @tourNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get tourNext;
+
+  /// No description provided for @tourGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get tourGotIt;
+
+  /// No description provided for @tourWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to your board'**
+  String get tourWelcomeTitle;
+
+  /// No description provided for @tourWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A one-minute look at the buttons you will use in every class.'**
+  String get tourWelcomeBody;
+
+  /// No description provided for @tourPenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write and draw'**
+  String get tourPenTitle;
+
+  /// No description provided for @tourPenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Write with a finger or the stylus. Tap the pen again for colours and thickness.'**
+  String get tourPenBody;
+
+  /// No description provided for @tourEraseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rub out'**
+  String get tourEraseTitle;
+
+  /// No description provided for @tourEraseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Rub over the ink. Undo is at the bottom of the board.'**
+  String get tourEraseBody;
+
+  /// No description provided for @tourInsertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to the board'**
+  String get tourInsertTitle;
+
+  /// No description provided for @tourInsertBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Equations, notes, pictures, the picture library, a PDF or PowerPoint, 3D models, labs and simulations.'**
+  String get tourInsertBody;
+
+  /// No description provided for @tourToolsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Class tools'**
+  String get tourToolsTitle;
+
+  /// No description provided for @tourToolsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer, stopwatch, name picker, dice, spinner, noise meter, screen shade, spotlight and the immersive reader.'**
+  String get tourToolsBody;
+
+  /// No description provided for @tourAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI'**
+  String get tourAiTitle;
+
+  /// No description provided for @tourAiBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about the lesson, make a quiz or homework, or solve a sum written on the board.'**
+  String get tourAiBody;
+
+  /// No description provided for @tourBooksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get tourBooksTitle;
+
+  /// No description provided for @tourBooksBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your syllabus: each topic’s lesson, key facts and questions, read aloud if you like.'**
+  String get tourBooksBody;
+
+  /// No description provided for @tourPagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get tourPagesTitle;
+
+  /// No description provided for @tourPagesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the next page; on the last page this adds a new one.'**
+  String get tourPagesBody;
+
+  /// No description provided for @tourRecordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record the lesson'**
+  String get tourRecordTitle;
+
+  /// No description provided for @tourRecordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Records the board and your voice, for students to watch again.'**
+  String get tourRecordBody;
+
+  /// No description provided for @tourHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help is always here'**
+  String get tourHelpTitle;
+
+  /// No description provided for @tourHelpBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open this menu for Help, this tour again, and a five-minute practice. Press ? on a keyboard too.'**
+  String get tourHelpBody;
+
+  /// No description provided for @tourPractise.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise now'**
+  String get tourPractise;
+
+  /// No description provided for @helpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get helpTitle;
+
+  /// No description provided for @helpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Short answers, and the button shown on the board.'**
+  String get helpSubtitle;
+
+  /// No description provided for @helpShowAround.
+  ///
+  /// In en, this message translates to:
+  /// **'Show me around'**
+  String get helpShowAround;
+
+  /// No description provided for @helpPractise.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise in 5 minutes'**
+  String get helpPractise;
+
+  /// No description provided for @helpSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I…'**
+  String get helpSearch;
+
+  /// No description provided for @helpNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found. Try another word, or Show me around.'**
+  String get helpNothing;
+
+  /// No description provided for @helpShowMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Show me'**
+  String get helpShowMe;
+
+  /// No description provided for @helpGroupWriting.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing on the board'**
+  String get helpGroupWriting;
+
+  /// No description provided for @helpGroupContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages and content'**
+  String get helpGroupContent;
+
+  /// No description provided for @helpGroupClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching tools'**
+  String get helpGroupClass;
+
+  /// No description provided for @helpGroupAi.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX AI and Books'**
+  String get helpGroupAi;
+
+  /// No description provided for @helpGroupSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get helpGroupSettings;
+
+  /// No description provided for @helpWriteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write and draw'**
+  String get helpWriteTitle;
+
+  /// No description provided for @helpWrite1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the pen on the left and write with a finger or the stylus.'**
+  String get helpWrite1;
+
+  /// No description provided for @helpWrite2.
+  ///
+  /// In en, this message translates to:
+  /// **'Two fingers move and zoom the board.'**
+  String get helpWrite2;
+
+  /// No description provided for @helpEraseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rub out or undo'**
+  String get helpEraseTitle;
+
+  /// No description provided for @helpErase1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the eraser and rub over the ink. Tap it again to clear the page.'**
+  String get helpErase1;
+
+  /// No description provided for @helpErase2.
+  ///
+  /// In en, this message translates to:
+  /// **'Made a mistake? Tap Undo at the bottom.'**
+  String get helpErase2;
+
+  /// No description provided for @helpShapesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shapes'**
+  String get helpShapesTitle;
+
+  /// No description provided for @helpShapes1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Shapes, pick one and drag on the board.'**
+  String get helpShapes1;
+
+  /// No description provided for @helpShapes2.
+  ///
+  /// In en, this message translates to:
+  /// **'Select it to resize, turn, colour or copy it.'**
+  String get helpShapes2;
+
+  /// No description provided for @helpTextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type text'**
+  String get helpTextTitle;
+
+  /// No description provided for @helpText1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap T, then tap the board where the text should go.'**
+  String get helpText1;
+
+  /// No description provided for @helpPagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn and add pages'**
+  String get helpPagesTitle;
+
+  /// No description provided for @helpPages1.
+  ///
+  /// In en, this message translates to:
+  /// **'The arrows at the bottom turn pages; on the last page, + adds one.'**
+  String get helpPages1;
+
+  /// No description provided for @helpPages2.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the board from the bottom left to keep it and share it with the class.'**
+  String get helpPages2;
+
+  /// No description provided for @helpPictureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a picture'**
+  String get helpPictureTitle;
+
+  /// No description provided for @helpPicture1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + (Add), then Picture for one from this board, or Picture library.'**
+  String get helpPicture1;
+
+  /// No description provided for @helpPicture2.
+  ///
+  /// In en, this message translates to:
+  /// **'Library pictures carry their credit under them.'**
+  String get helpPicture2;
+
+  /// No description provided for @helpImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a PDF or PowerPoint'**
+  String get helpImportTitle;
+
+  /// No description provided for @helpImport1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + (Add), then PDF or PowerPoint, and pick the file.'**
+  String get helpImport1;
+
+  /// No description provided for @helpImport2.
+  ///
+  /// In en, this message translates to:
+  /// **'Each page or slide becomes a board page you can write over; it works without the internet.'**
+  String get helpImport2;
+
+  /// No description provided for @helpSimsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulations'**
+  String get helpSimsTitle;
+
+  /// No description provided for @helpSims1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + (Add) or Tools, then Simulations.'**
+  String get helpSims1;
+
+  /// No description provided for @helpSims2.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the sliders and the class sees the pendulum, the projectile or the wave change.'**
+  String get helpSims2;
+
+  /// No description provided for @helpToolkitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer, name picker and dice'**
+  String get helpToolkitTitle;
+
+  /// No description provided for @helpToolkit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Tools and pick one; it floats over the board.'**
+  String get helpToolkit1;
+
+  /// No description provided for @helpToolkit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag it by its name to move it out of the way.'**
+  String get helpToolkit2;
+
+  /// No description provided for @helpShadeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen shade and spotlight'**
+  String get helpShadeTitle;
+
+  /// No description provided for @helpShade1.
+  ///
+  /// In en, this message translates to:
+  /// **'The shade covers the board; drag its handle down to reveal it line by line.'**
+  String get helpShade1;
+
+  /// No description provided for @helpShade2.
+  ///
+  /// In en, this message translates to:
+  /// **'The spotlight darkens all but a circle you drag around.'**
+  String get helpShade2;
+
+  /// No description provided for @helpReadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get helpReadTitle;
+
+  /// No description provided for @helpRead1.
+  ///
+  /// In en, this message translates to:
+  /// **'Select text and tap Read aloud, or Tools → Immersive reader for the page.'**
+  String get helpRead1;
+
+  /// No description provided for @helpRead2.
+  ///
+  /// In en, this message translates to:
+  /// **'Books and the labs read lessons and steps aloud too, in English, Hindi or Kannada where the board has the voice.'**
+  String get helpRead2;
+
+  /// No description provided for @helpRecordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a lesson'**
+  String get helpRecordTitle;
+
+  /// No description provided for @helpRecord1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the red button to record the board and your voice.'**
+  String get helpRecord1;
+
+  /// No description provided for @helpRecord2.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap it again to stop and save.'**
+  String get helpRecord2;
+
+  /// No description provided for @helpAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask KINETIX AI'**
+  String get helpAiTitle;
+
+  /// No description provided for @helpAi1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the AI buttons on the right: ask, quiz, homework, the maths solver.'**
+  String get helpAi1;
+
+  /// No description provided for @helpAi2.
+  ///
+  /// In en, this message translates to:
+  /// **'Select something on the board and tap Read with AI to ask about it.'**
+  String get helpAi2;
+
+  /// No description provided for @helpBooksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons from Books'**
+  String get helpBooksTitle;
+
+  /// No description provided for @helpBooks1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Books on the right and open a topic.'**
+  String get helpBooks1;
+
+  /// No description provided for @helpBooks2.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud opens the lesson large, read word by word.'**
+  String get helpBooks2;
+
+  /// No description provided for @helpSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, layout and touch'**
+  String get helpSettingsTitle;
+
+  /// No description provided for @helpSettings1.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the menu at the bottom left, then Board settings.'**
+  String get helpSettings1;
+
+  /// No description provided for @practiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice board'**
+  String get practiceTitle;
+
+  /// No description provided for @practiceNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here is kept. Try everything.'**
+  String get practiceNotSaved;
+
+  /// No description provided for @practiceCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice: {done} of {total} done'**
+  String practiceCount(int done, int total);
+
+  /// No description provided for @practiceReady.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re ready!'**
+  String get practiceReady;
+
+  /// No description provided for @practiceDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have done everything a class needs. Help is in the menu at the bottom left.'**
+  String get practiceDoneBody;
+
+  /// No description provided for @practiceShowList.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the list'**
+  String get practiceShowList;
+
+  /// No description provided for @practiceHideList.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the list'**
+  String get practiceHideList;
+
+  /// No description provided for @practiceFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish practice'**
+  String get practiceFinish;
+
+  /// No description provided for @practiceEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End practice'**
+  String get practiceEnd;
+
+  /// No description provided for @practiceWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Write something with the pen'**
+  String get practiceWrite;
+
+  /// No description provided for @practiceErase.
+  ///
+  /// In en, this message translates to:
+  /// **'Rub it out, or tap Undo'**
+  String get practiceErase;
+
+  /// No description provided for @practiceShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw a shape'**
+  String get practiceShape;
+
+  /// No description provided for @practicePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to a new page'**
+  String get practicePage;
+
+  /// No description provided for @practicePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a picture from the picture library'**
+  String get practicePicture;
+
+  /// No description provided for @practiceTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a timer from Tools'**
+  String get practiceTimer;
+
+  /// No description provided for @practiceEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice over: your board is back as it was.'**
+  String get practiceEnded;
+
   /// No description provided for @pen.
   ///
   /// In en, this message translates to:

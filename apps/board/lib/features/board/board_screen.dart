@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:kinetix_3d/kinetix_3d.dart' show Model3dScope, Model3dSnapshot;
 import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_labs/kinetix_labs.dart' show LabReport;
+import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api_client.dart';
@@ -28,7 +28,14 @@ import '../kiosk/kiosk_ui.dart';
 import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
 import '../recording/recording_ui.dart';
+import '../help/help_sheet.dart';
+import '../help/practice.dart';
+import '../help/tour.dart';
+import '../insert/document_import.dart';
+import '../insert/insert_actions.dart';
+import '../reader/read_aloud.dart';
 import '../signin/sign_in_dialog.dart';
+import '../sims/sims.dart';
 import '../toolkit/toolkit_controller.dart';
 import '../toolkit/toolkit_layer.dart';
 import 'ai_pen_ui.dart';
@@ -134,6 +141,7 @@ class _BoardScreenState extends State<BoardScreen> {
       ..onNotice = _aiPenNotice
       ..onLetterSize = (px) => board.saveLetterSize(board.session?.teacherId, px);
     _applyClass();
+    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_firstRunTour()));
     unawaited(_loadLetterSize());
   }
 
@@ -151,6 +159,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _ai.dispose();
     _planTimer.dispose();
     _kit.dispose();
+    _practice?.dispose();
     super.dispose();
   }
 
@@ -704,6 +713,134 @@ class _BoardScreenState extends State<BoardScreen> {
     );
   }
 
+  // --- Simulations -------------------------------------------------------------------------
+
+  ActiveSim? _sim;
+
+  /// The simulation window's offset from the top right of the board.
+  Offset _simPos = const Offset(96, 72);
+
+  Future<void> _openSim([SimKind? kind]) async {
+    setState(() => _popover = null);
+    final k = kind ?? await showDialog<SimKind>(context: context, builder: (_) => const BoardChromeTheme(child: SimPickerDialog()));
+    if (k != null && mounted) setState(() => _sim = ActiveSim.of(k));
+  }
+
+  Widget _simWindow() => LayoutBuilder(
+    builder: (context, c) {
+      final w = math.min(600.0, c.maxWidth - 32), h = math.min(580.0, c.maxHeight - 96);
+      final right = _simPos.dx.clamp(8.0, math.max(8.0, c.maxWidth - w - 8)).toDouble();
+      final top = _simPos.dy.clamp(8.0, math.max(8.0, c.maxHeight - h - 8)).toDouble();
+      return Stack(
+        children: [
+          Positioned(
+            right: right,
+            top: top,
+            width: w,
+            height: h,
+            child: SimWindow(
+              sim: _sim!,
+              onChanged: (s) => setState(() => _sim = s),
+              onClose: () => setState(() => _sim = null),
+              onDrag: (d) => setState(() => _simPos = Offset(right - d.dx, top + d.dy)),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  // --- Help, the tour and practice (lib/features/help) ----------------------------------------
+
+  PracticeTracker? _practice;
+
+  /// The board as it was before practice, put back when practice ends.
+  SavedBoard? _beforePractice;
+
+  /// The first time this board opens, the tour starts by itself.
+  Future<void> _firstRunTour() async {
+    if (!BoardTour.autoStart || await BoardTour.seen() || !mounted) return;
+    await BoardTour.markSeen();
+    if (mounted) await _startTour();
+  }
+
+  Future<void> _startTour() async {
+    setState(() {
+      _popover = null;
+      _hidden = false;
+    });
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    final l = context.l10n;
+    final done = await BoardTour.show(context, boardTourSteps(l), finishLabel: _practice == null ? l.tourPractise : null);
+    if (done && mounted && _practice == null) _startPractice();
+  }
+
+  void _openHelp() {
+    setState(() => _popover = null);
+    unawaited(
+      HelpSheet.show(
+        context,
+        canShow: (key) => screenRectOf(context, key) != null || key == const Key('profile-button'),
+        onShowMe: (t) => unawaited(_showMe(t.target!, t.icon, t.title, t.steps.join(' '))),
+        onTour: () => unawaited(_startTour()),
+        onPractice: _practice == null ? _startPractice : null,
+      ),
+    );
+  }
+
+  /// Points at one control on the board.
+  Future<void> _showMe(Key target, IconData icon, String title, String body) async {
+    setState(() => _hidden = false);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) await BoardTour.show(context, [CoachStep(target: target, icon: icon, title: title, body: body)]);
+  }
+
+  /// A practice page with a checklist; the board comes back as it was afterwards.
+  void _startPractice() {
+    final l = context.l10n;
+    _beforePractice = _wb.toSaved(_canvasSize);
+    _wb.load(SavedBoard(background: _background, canvas: _canvasSize, pages: [practicePage(l, dark: _background.isDark)]));
+    setState(() {
+      _popover = null;
+      _practice = PracticeTracker(wb: _wb, kit: _kit);
+    });
+  }
+
+  void _endPractice() {
+    _practice?.dispose();
+    final before = _beforePractice;
+    setState(() {
+      _practice = null;
+      _beforePractice = null;
+    });
+    for (final t in ToolkitItem.values) {
+      _kit.close(t);
+    }
+    if (before != null) _wb.load(before);
+    showBoardMessage(context, context.l10n.practiceEnded);
+  }
+
+  // --- Read aloud ----------------------------------------------------------------------------
+
+  /// The immersive reader on [paragraphs].
+  void _read(String title, List<String> paragraphs) {
+    setState(() => _popover = null);
+    unawaited(ImmersiveReader.open(context, title: title, paragraphs: paragraphs));
+  }
+
+  /// Reads a lab's step, aim or result once.
+  Future<void> _speak(String text) async {
+    final missing = await speakOnce(text);
+    if (missing != null && mounted) showBoardMessage(context, context.l10n.readerNoVoice(voiceLanguageName(context.l10n, missing)));
+  }
+
+  /// Reads what is selected, else the whole page.
+  void _readPage() {
+    final selected = _wb.selectedElements;
+    _read(context.l10n.readerPageTitle(_wb.pageIndex + 1), readableElements(selected.isNotEmpty ? selected : _wb.elements));
+  }
+
   void _showKit(ToolkitItem t) {
     setState(() => _popover = null);
     _kit.show(t);
@@ -716,6 +853,8 @@ class _BoardScreenState extends State<BoardScreen> {
       ConceptVideosDialog.open(context, board);
     }),
     for (final t in ToolkitItem.values) ToolEntry(toolkitIcon(t), toolkitName(l, t), toolkitColor(t), () => _showKit(t)),
+    ToolEntry(Icons.science, l.simTitle, const Color(0xFFC58AF9), () => unawaited(_openSim())),
+    ToolEntry(Icons.record_voice_over_outlined, l.readerTitle, const Color(0xFF81C995), _readPage),
     ToolEntry(Icons.how_to_reg_outlined, l.toolAttendance, const Color(0xFF81C995), () {
       setState(() => _popover = null);
       _attendance();
@@ -770,6 +909,7 @@ class _BoardScreenState extends State<BoardScreen> {
       LogicalKeyboardKey.keyA when ctrl => done(_wb.selectAll),
       LogicalKeyboardKey.keyG when ctrl => done(shift ? _wb.ungroupSelection : _wb.groupSelection),
       LogicalKeyboardKey.keyS when ctrl => done(() => unawaited(_save())),
+      LogicalKeyboardKey.slash when shift => done(_openHelp),
       LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace => done(_wb.deleteSelection),
       LogicalKeyboardKey.escape => done(() {
         setState(() => _popover = null);
@@ -852,7 +992,11 @@ class _BoardScreenState extends State<BoardScreen> {
                   final f = _panelFraction + (_panelOnLeft ? dx : -dx) / size.maxWidth;
                   _panelFraction = f.clamp(0.3, 0.7);
                 }),
-                child: _panelContent(),
+                // Read aloud for Books and the labs' steps (lib/features/reader).
+                child: ReadAloudScope(
+                  read: _read,
+                  child: LabSpeech(speak: _speak, child: _panelContent()),
+                ),
               ),
             ),
           );
@@ -950,6 +1094,7 @@ class _BoardScreenState extends State<BoardScreen> {
               onSolve: _solveMath,
               onConvertInk: primary ? null : () => unawaited(_convertSelection()),
               onReadings: (e) => _pen.conversions.containsKey(e.id) ? () => _pen.inspecting.value = e.id : null,
+              onReadAloud: readableElements(_wb.selectedElements).isEmpty ? null : _readPage,
             ),
           ),
         ),
@@ -979,6 +1124,22 @@ class _BoardScreenState extends State<BoardScreen> {
         Positioned.fill(
           child: ToolkitLayer(kit: _kit, insets: _wb.safeInsets, onAnswer: board.session == null ? null : board.recordAnswer),
         ),
+        if (_sim != null) Positioned.fill(child: _simWindow()),
+        if (_practice != null)
+          Positioned(
+            right: rails ? railW + Kx.s24 : Kx.s16,
+            bottom: rails ? 84 : 100,
+            child: BoardChromeTheme(
+              child: PracticePanel(
+                tracker: _practice!,
+                onFinish: _endPractice,
+                onShowMe: (t) {
+                  final (text, icon, key) = practiceText(context.l10n, t);
+                  unawaited(_showMe(key, icon, text, ''));
+                },
+              ),
+            ),
+          ),
         if (!_hidden && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
         if (!_hidden && !rails)
           Positioned(
@@ -1155,6 +1316,7 @@ class _BoardScreenState extends State<BoardScreen> {
         onGraph: () => unawaited(_subjectTools.run(SubjectTool.graph, Rect.zero)),
         onModel3d: () => _openSplit(SplitContent.model3d),
         onLab: () => _openSplit(SplitContent.lab),
+        extras: insertExtras(context, wb: _wb, subject: board.session?.subjectName, onSimulation: () => unawaited(_openSim())),
       ),
       _Popover.eyeComfort => EyeComfortPopover(
         settings: board.eyeComfort,
@@ -1168,6 +1330,9 @@ class _BoardScreenState extends State<BoardScreen> {
         onNewPage: _wb.addPage,
         onWhiteboards: _openWhiteboards,
         onRecordings: _openRecordings,
+        onImport: () => unawaited(importDocument(context, _wb)),
+        onHelp: _openHelp,
+        onTour: () => unawaited(_startTour()),
         onSettings: () => showDialog<void>(
           context: context,
           builder: (_) => BoardChromeTheme(child: BoardSettingsDialog(board: board)),

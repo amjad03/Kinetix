@@ -40,6 +40,18 @@ class LabMirror {
 
 enum _Tab { controls, readings, steps, guide, viva }
 
+/// Read aloud for every [LabScreen] below it that has no `speak` of its own
+/// (the board puts its voices here, for labs opened from the catalogue).
+class LabSpeech extends InheritedWidget {
+  const LabSpeech({super.key, required this.speak, required super.child});
+  final void Function(String text) speak;
+
+  static void Function(String text)? maybeOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<LabSpeech>()?.speak;
+
+  @override
+  bool updateShouldNotify(LabSpeech old) => old.speak != speak;
+}
+
 /// A virtual lab: the bench with its controls, the observation table and
 /// graph, the procedure, the guide (aim, principle, apparatus, precautions)
 /// and viva questions. Fills whatever space it gets: side panel when wide,
@@ -539,9 +551,12 @@ class LabScreenState extends State<LabScreen> {
         child: Text(text, style: context.text.titleSmall?.copyWith(color: context.colors.primary, fontWeight: FontWeight.w600)),
       );
 
-  Widget _readAloud(String text) => widget.speak == null
-      ? const SizedBox.shrink()
-      : IconButton(tooltip: tr('Read aloud'), icon: const Icon(Icons.volume_up_outlined, size: 20), onPressed: () => widget.speak!(text));
+  Widget _readAloud(String text) {
+    final speak = widget.speak ?? LabSpeech.maybeOf(context);
+    return speak == null
+        ? const SizedBox.shrink()
+        : IconButton(tooltip: tr('Read aloud'), icon: const Icon(Icons.volume_up_outlined, size: 20), onPressed: () => speak(text));
+  }
 
   Widget _para(String text, {Key? key, Color? color}) => Text(text, key: key, style: context.text.bodyLarge?.copyWith(height: 1.4, color: color));
 

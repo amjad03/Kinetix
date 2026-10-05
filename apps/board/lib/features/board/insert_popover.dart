@@ -3,6 +3,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../insert/insert_entries.dart';
 import 'chrome.dart';
 import 'editors.dart';
 
@@ -21,6 +22,7 @@ class InsertPopover extends StatelessWidget {
     required this.onModel3d,
     required this.onLab,
     required this.onClose,
+    this.extras = const [],
   });
 
   final WhiteboardController wb;
@@ -30,6 +32,9 @@ class InsertPopover extends StatelessWidget {
   final VoidCallback onModel3d;
   final VoidCallback onLab;
   final VoidCallback onClose;
+
+  /// Pictures, the picture library, PDF and PowerPoint, simulations (lib/features/insert).
+  final List<InsertExtra> extras;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +98,7 @@ class InsertPopover extends StatelessWidget {
             if (!primary) KxMenuItem(key: const Key('insert-graph'), icon: Icons.show_chart, title: l.stGraph, hint: l.graphHint, onTap: () => then(onGraph)),
             KxMenuItem(key: const Key('insert-model3d'), icon: Icons.view_in_ar_outlined, title: l.splitModel3d, hint: l.insertModelHint, onTap: () => then(onModel3d)),
             KxMenuItem(key: const Key('insert-lab'), icon: Icons.science_outlined, title: l.splitLab, hint: l.insertModelHint, onTap: () => then(onLab)),
+            for (final e in extras) KxMenuItem(key: e.key, icon: e.icon, title: e.title, hint: e.hint, onTap: () => then(e.onTap)),
             if (!primary)
               KxMenuItem(
                 key: const Key('insert-laser'),

@@ -19,6 +19,9 @@ class ProfileMenu extends StatelessWidget {
     required this.onSettings,
     required this.onClose,
     this.onRecordings,
+    this.onImport,
+    this.onHelp,
+    this.onTour,
   });
 
   final BoardController board;
@@ -26,6 +29,11 @@ class ProfileMenu extends StatelessWidget {
   final VoidCallback onNewPage;
   final VoidCallback onWhiteboards;
   final VoidCallback? onRecordings;
+
+  /// Opens a PDF or PowerPoint (lib/features/insert); Help, the tour and practice (lib/features/help).
+  final VoidCallback? onImport;
+  final VoidCallback? onHelp;
+  final VoidCallback? onTour;
   final VoidCallback onSettings;
   final VoidCallback onClose;
 
@@ -99,7 +107,7 @@ class ProfileMenu extends StatelessWidget {
               ),
             const Divider(height: Kx.s16),
             item(Icons.note_add_outlined, l.toolNewPage, onNewPage),
-            item(Icons.folder_open_outlined, l.importFiles, () {}, soon: true),
+            item(Icons.folder_open_outlined, l.importFiles, onImport ?? () {}, soon: onImport == null, key: const Key('menu-import')),
             item(Icons.dashboard_outlined, l.yourWhiteboards, onWhiteboards, key: const Key('menu-whiteboards')),
             if (onRecordings != null)
               ListTile(
@@ -118,7 +126,8 @@ class ProfileMenu extends StatelessWidget {
             item(Icons.cast_outlined, l.screenProjection, () {}, soon: true),
             const Divider(height: Kx.s16),
             item(Icons.settings_outlined, l.boardSettings, onSettings, key: const Key('menu-settings')),
-            item(Icons.school_outlined, l.guidedTour, () {}, soon: true),
+            if (onHelp != null) item(Icons.help_outline, l.helpTitle, onHelp!, key: const Key('menu-help')),
+            item(Icons.school_outlined, l.guidedTour, onTour ?? () {}, soon: onTour == null, key: const Key('menu-tour')),
             // Also IT's way out of kiosk mode: hold for 3 seconds.
             KioskExitGesture(
               key: const Key('kiosk-exit-version'),

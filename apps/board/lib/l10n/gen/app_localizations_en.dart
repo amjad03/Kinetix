@@ -581,6 +581,578 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tkSpotlightSize => 'Spotlight size';
 
   @override
+  String get simTitle => 'Simulations';
+
+  @override
+  String get simHint =>
+      'Pendulum, projectile, graphs, fractions, waves, Pythagoras';
+
+  @override
+  String get simOthers => 'Other simulations';
+
+  @override
+  String get simPendulum => 'Simple pendulum';
+
+  @override
+  String get simProjectile => 'Projectile motion';
+
+  @override
+  String get simGrapher => 'Function grapher';
+
+  @override
+  String get simFractions => 'Fraction bars';
+
+  @override
+  String get simWave => 'Waves';
+
+  @override
+  String get simPythagoras => 'Pythagoras theorem';
+
+  @override
+  String get simLength => 'Length';
+
+  @override
+  String get simGravity => 'Gravity';
+
+  @override
+  String get simStartAngle => 'Start angle';
+
+  @override
+  String get simSpeed => 'Speed';
+
+  @override
+  String get simAngle => 'Angle';
+
+  @override
+  String get simAmplitude => 'Amplitude';
+
+  @override
+  String get simFrequency => 'Frequency';
+
+  @override
+  String get simWavelength => 'Wavelength';
+
+  @override
+  String simRange(String metres) {
+    return 'Range $metres m';
+  }
+
+  @override
+  String simMaxHeight(String metres) {
+    return 'Max height $metres m';
+  }
+
+  @override
+  String simFlightTime(String seconds) {
+    return 'Time $seconds s';
+  }
+
+  @override
+  String simTop(int number) {
+    return 'Top $number';
+  }
+
+  @override
+  String simBottom(int number) {
+    return 'Bottom $number';
+  }
+
+  @override
+  String simSide(String name) {
+    return 'Side $name';
+  }
+
+  @override
+  String get simBadExpression => 'Cannot read that expression';
+
+  @override
+  String get simDraw => 'Draw';
+
+  @override
+  String get readAloud => 'Read aloud';
+
+  @override
+  String get readerTitle => 'Immersive reader';
+
+  @override
+  String readerPageTitle(int number) {
+    return 'Page $number';
+  }
+
+  @override
+  String get readerNothing =>
+      'There is no typed text on this page to read. Type text, add a note or convert handwriting with the AI pen.';
+
+  @override
+  String readerNoVoice(String language) {
+    return 'This board has no $language voice. Add one in the device’s text-to-speech settings (Windows: Settings → Time & language → Speech).';
+  }
+
+  @override
+  String get readerPrevious => 'Previous paragraph';
+
+  @override
+  String get readerNext => 'Next paragraph';
+
+  @override
+  String get readerPaper => 'Paper';
+
+  @override
+  String get readerCream => 'Cream';
+
+  @override
+  String get readerContrast => 'High contrast';
+
+  @override
+  String get readerBlue => 'Blue tint';
+
+  @override
+  String get readerLineFocus => 'Line focus';
+
+  @override
+  String get readerSlower => 'Slower';
+
+  @override
+  String get readerHint => 'The page’s text, large, read aloud word by word';
+
+  @override
+  String get insertPicture => 'Picture';
+
+  @override
+  String get insertPictureHintGallery => 'From the gallery';
+
+  @override
+  String get insertPictureHintFiles => 'From this board’s files';
+
+  @override
+  String get insertPhoto => 'Take a photo';
+
+  @override
+  String get insertPhotoHint => 'With this board’s camera';
+
+  @override
+  String get pictureCouldNotOpen => 'Could not open that picture.';
+
+  @override
+  String get libTitle => 'Picture library';
+
+  @override
+  String get libHint => 'Diagrams, maps and stickers, free to use';
+
+  @override
+  String get libSearch => 'Search pictures (heart, map of India, volcano…)';
+
+  @override
+  String get libAll => 'All';
+
+  @override
+  String get libBiology => 'Biology';
+
+  @override
+  String get libChemistry => 'Chemistry';
+
+  @override
+  String get libPhysics => 'Physics';
+
+  @override
+  String get libMaths => 'Maths';
+
+  @override
+  String get libGeography => 'Geography';
+
+  @override
+  String get libHistory => 'History';
+
+  @override
+  String get libEnglish => 'Languages';
+
+  @override
+  String get libComputers => 'Computers';
+
+  @override
+  String get libEvs => 'EVS and primary';
+
+  @override
+  String get libStickers => 'Stickers';
+
+  @override
+  String get libNothingFound => 'No picture matches. Try another word.';
+
+  @override
+  String get libCredits =>
+      'Pictures from Wikimedia Commons (public domain, CC0, CC BY, CC BY-SA) and Microsoft Fluent Emoji (MIT). Tap ⓘ for a picture’s author and licence; the credit goes on the board with it.';
+
+  @override
+  String get importTitle => 'PDF or PowerPoint';
+
+  @override
+  String get importHint =>
+      'Each page or slide becomes a board page to write on';
+
+  @override
+  String importingFile(String name) {
+    return 'Opening $name';
+  }
+
+  @override
+  String get importReading => 'Reading the file…';
+
+  @override
+  String importPageOf(int done, int total) {
+    return 'Page $done of $total';
+  }
+
+  @override
+  String importedPages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added $count pages after this one',
+      one: 'Added 1 page after this one',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importOldPpt =>
+      'This is an old PowerPoint file (.ppt). Save it as .pptx or PDF in PowerPoint, then open it here.';
+
+  @override
+  String get importNotSupported =>
+      'The board opens PDF and PowerPoint (.pptx) files.';
+
+  @override
+  String get importPdfFailed =>
+      'Could not open this PDF. It may be damaged or protected with a password.';
+
+  @override
+  String get importPptxFailed =>
+      'Could not open this PowerPoint. Save it as PDF in PowerPoint and open the PDF instead.';
+
+  @override
+  String tourStepOf(int step, int total) {
+    return '$step of $total';
+  }
+
+  @override
+  String get tourSkip => 'Skip';
+
+  @override
+  String get tourNext => 'Next';
+
+  @override
+  String get tourGotIt => 'Got it';
+
+  @override
+  String get tourWelcomeTitle => 'Welcome to your board';
+
+  @override
+  String get tourWelcomeBody =>
+      'A one-minute look at the buttons you will use in every class.';
+
+  @override
+  String get tourPenTitle => 'Write and draw';
+
+  @override
+  String get tourPenBody =>
+      'Write with a finger or the stylus. Tap the pen again for colours and thickness.';
+
+  @override
+  String get tourEraseTitle => 'Rub out';
+
+  @override
+  String get tourEraseBody =>
+      'Rub over the ink. Undo is at the bottom of the board.';
+
+  @override
+  String get tourInsertTitle => 'Add to the board';
+
+  @override
+  String get tourInsertBody =>
+      'Equations, notes, pictures, the picture library, a PDF or PowerPoint, 3D models, labs and simulations.';
+
+  @override
+  String get tourToolsTitle => 'Class tools';
+
+  @override
+  String get tourToolsBody =>
+      'Timer, stopwatch, name picker, dice, spinner, noise meter, screen shade, spotlight and the immersive reader.';
+
+  @override
+  String get tourAiTitle => 'KINETIX AI';
+
+  @override
+  String get tourAiBody =>
+      'Ask about the lesson, make a quiz or homework, or solve a sum written on the board.';
+
+  @override
+  String get tourBooksTitle => 'Books';
+
+  @override
+  String get tourBooksBody =>
+      'Your syllabus: each topic’s lesson, key facts and questions, read aloud if you like.';
+
+  @override
+  String get tourPagesTitle => 'Pages';
+
+  @override
+  String get tourPagesBody =>
+      'Go to the next page; on the last page this adds a new one.';
+
+  @override
+  String get tourRecordTitle => 'Record the lesson';
+
+  @override
+  String get tourRecordBody =>
+      'Records the board and your voice, for students to watch again.';
+
+  @override
+  String get tourHelpTitle => 'Help is always here';
+
+  @override
+  String get tourHelpBody =>
+      'Open this menu for Help, this tour again, and a five-minute practice. Press ? on a keyboard too.';
+
+  @override
+  String get tourPractise => 'Practise now';
+
+  @override
+  String get helpTitle => 'Help';
+
+  @override
+  String get helpSubtitle =>
+      'Short answers, and the button shown on the board.';
+
+  @override
+  String get helpShowAround => 'Show me around';
+
+  @override
+  String get helpPractise => 'Practise in 5 minutes';
+
+  @override
+  String get helpSearch => 'How do I…';
+
+  @override
+  String get helpNothing =>
+      'Nothing found. Try another word, or Show me around.';
+
+  @override
+  String get helpShowMe => 'Show me';
+
+  @override
+  String get helpGroupWriting => 'Writing on the board';
+
+  @override
+  String get helpGroupContent => 'Pages and content';
+
+  @override
+  String get helpGroupClass => 'Teaching tools';
+
+  @override
+  String get helpGroupAi => 'KINETIX AI and Books';
+
+  @override
+  String get helpGroupSettings => 'Settings';
+
+  @override
+  String get helpWriteTitle => 'Write and draw';
+
+  @override
+  String get helpWrite1 =>
+      'Tap the pen on the left and write with a finger or the stylus.';
+
+  @override
+  String get helpWrite2 => 'Two fingers move and zoom the board.';
+
+  @override
+  String get helpEraseTitle => 'Rub out or undo';
+
+  @override
+  String get helpErase1 =>
+      'Tap the eraser and rub over the ink. Tap it again to clear the page.';
+
+  @override
+  String get helpErase2 => 'Made a mistake? Tap Undo at the bottom.';
+
+  @override
+  String get helpShapesTitle => 'Shapes';
+
+  @override
+  String get helpShapes1 => 'Tap Shapes, pick one and drag on the board.';
+
+  @override
+  String get helpShapes2 => 'Select it to resize, turn, colour or copy it.';
+
+  @override
+  String get helpTextTitle => 'Type text';
+
+  @override
+  String get helpText1 => 'Tap T, then tap the board where the text should go.';
+
+  @override
+  String get helpPagesTitle => 'Turn and add pages';
+
+  @override
+  String get helpPages1 =>
+      'The arrows at the bottom turn pages; on the last page, + adds one.';
+
+  @override
+  String get helpPages2 =>
+      'Save the board from the bottom left to keep it and share it with the class.';
+
+  @override
+  String get helpPictureTitle => 'Add a picture';
+
+  @override
+  String get helpPicture1 =>
+      'Tap + (Add), then Picture for one from this board, or Picture library.';
+
+  @override
+  String get helpPicture2 => 'Library pictures carry their credit under them.';
+
+  @override
+  String get helpImportTitle => 'Open a PDF or PowerPoint';
+
+  @override
+  String get helpImport1 =>
+      'Tap + (Add), then PDF or PowerPoint, and pick the file.';
+
+  @override
+  String get helpImport2 =>
+      'Each page or slide becomes a board page you can write over; it works without the internet.';
+
+  @override
+  String get helpSimsTitle => 'Simulations';
+
+  @override
+  String get helpSims1 => 'Tap + (Add) or Tools, then Simulations.';
+
+  @override
+  String get helpSims2 =>
+      'Move the sliders and the class sees the pendulum, the projectile or the wave change.';
+
+  @override
+  String get helpToolkitTitle => 'Timer, name picker and dice';
+
+  @override
+  String get helpToolkit1 =>
+      'Tap Tools and pick one; it floats over the board.';
+
+  @override
+  String get helpToolkit2 => 'Drag it by its name to move it out of the way.';
+
+  @override
+  String get helpShadeTitle => 'Screen shade and spotlight';
+
+  @override
+  String get helpShade1 =>
+      'The shade covers the board; drag its handle down to reveal it line by line.';
+
+  @override
+  String get helpShade2 =>
+      'The spotlight darkens all but a circle you drag around.';
+
+  @override
+  String get helpReadTitle => 'Read aloud';
+
+  @override
+  String get helpRead1 =>
+      'Select text and tap Read aloud, or Tools → Immersive reader for the page.';
+
+  @override
+  String get helpRead2 =>
+      'Books and the labs read lessons and steps aloud too, in English, Hindi or Kannada where the board has the voice.';
+
+  @override
+  String get helpRecordTitle => 'Record a lesson';
+
+  @override
+  String get helpRecord1 =>
+      'Tap the red button to record the board and your voice.';
+
+  @override
+  String get helpRecord2 => 'Tap it again to stop and save.';
+
+  @override
+  String get helpAiTitle => 'Ask KINETIX AI';
+
+  @override
+  String get helpAi1 =>
+      'Tap the AI buttons on the right: ask, quiz, homework, the maths solver.';
+
+  @override
+  String get helpAi2 =>
+      'Select something on the board and tap Read with AI to ask about it.';
+
+  @override
+  String get helpBooksTitle => 'Lessons from Books';
+
+  @override
+  String get helpBooks1 => 'Tap Books on the right and open a topic.';
+
+  @override
+  String get helpBooks2 =>
+      'Read aloud opens the lesson large, read word by word.';
+
+  @override
+  String get helpSettingsTitle => 'Language, layout and touch';
+
+  @override
+  String get helpSettings1 =>
+      'Open the menu at the bottom left, then Board settings.';
+
+  @override
+  String get practiceTitle => 'Practice board';
+
+  @override
+  String get practiceNotSaved => 'Nothing here is kept. Try everything.';
+
+  @override
+  String practiceCount(int done, int total) {
+    return 'Practice: $done of $total done';
+  }
+
+  @override
+  String get practiceReady => 'You\'re ready!';
+
+  @override
+  String get practiceDoneBody =>
+      'You have done everything a class needs. Help is in the menu at the bottom left.';
+
+  @override
+  String get practiceShowList => 'Show the list';
+
+  @override
+  String get practiceHideList => 'Hide the list';
+
+  @override
+  String get practiceFinish => 'Finish practice';
+
+  @override
+  String get practiceEnd => 'End practice';
+
+  @override
+  String get practiceWrite => 'Write something with the pen';
+
+  @override
+  String get practiceErase => 'Rub it out, or tap Undo';
+
+  @override
+  String get practiceShape => 'Draw a shape';
+
+  @override
+  String get practicePage => 'Go to a new page';
+
+  @override
+  String get practicePicture => 'Add a picture from the picture library';
+
+  @override
+  String get practiceTimer => 'Start a timer from Tools';
+
+  @override
+  String get practiceEnded => 'Practice over: your board is back as it was.';
+
+  @override
   String get pen => 'Pen';
 
   @override

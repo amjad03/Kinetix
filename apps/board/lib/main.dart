@@ -16,6 +16,7 @@ import 'features/broadcast/broadcast_overlay.dart';
 import 'features/comfort/eye_comfort.dart';
 import 'features/concept_videos/concept_video_suggestions.dart';
 import 'features/enrollment/enroll_screen.dart';
+import 'features/insert/picture_library.dart';
 import 'l10n/l10n.dart';
 
 void main() {
@@ -25,6 +26,8 @@ void main() {
   // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
   // (unless it is a demo build: --dart-define=KINETIX_DEMO=true, which needs no server).
   if (!checkServerConfig()) return;
+  // The picture library's credits on the licence page.
+  registerPictureLibraryLicence();
   final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
   // Back in front (from Android settings, or the user unpinned the screen): kiosk mode locks
   // again if it should be on (docs/hardware/kiosk-mode.md).
