@@ -3,6 +3,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Lesson recording: the teacher's voice. Without it the board records ink only. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Kiosk mode: open the board again after a reboot or power cut (docs/hardware/kiosk-mode.md). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:label="KINETIX Board"
         android:name="${applicationName}"
@@ -12,6 +14,7 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
+            android:lockTaskMode="if_whitelisted"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -28,7 +31,36 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Kiosk mode: the board can be the home app (set by the device owner, or chosen in
+                 Settings → Apps → Default apps → Home app). -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
         </activity>
+        <!-- Kiosk mode: device admin, so the board can be provisioned as device owner:
+             adb shell dpm set-device-owner in.kinetix.board/app.kinetix.board.KioskAdminReceiver -->
+        <receiver
+            android:name=".KioskAdminReceiver"
+            android:exported="true"
+            android:label="KINETIX Board kiosk"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/kiosk_admin"/>
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+            </intent-filter>
+        </receiver>
+        <!-- Kiosk mode: opens the board after a reboot while kiosk mode is on. -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

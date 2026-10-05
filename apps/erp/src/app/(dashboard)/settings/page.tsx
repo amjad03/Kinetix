@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { PageHeader } from '@/components/PageHeader';
 import { ConsentSummaryView } from '@/components/settings/ConsentSummary';
 import { GrievanceOfficerForm } from '@/components/settings/GrievanceOfficerForm';
+import { KioskSection } from '@/components/settings/KioskSection';
 import { RazorpayForm } from '@/components/settings/RazorpayForm';
 import { RecordingRetentionSection } from '@/components/settings/RecordingRetentionSection';
 import { SettingsForm } from '@/components/settings/SettingsForm';
@@ -10,7 +11,7 @@ import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { webhookUrl, type RazorpayAccount } from '@/lib/payments';
-import type { ConsentSummary, InstitutionSettings } from '@/lib/settings';
+import { DEFAULT_BOARD_KIOSK, type ConsentSummary, type InstitutionSettings } from '@/lib/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.settings') };
@@ -32,6 +33,7 @@ export default async function SettingsPage() {
       ) : (
         <>
           <SettingsForm initial={settings.data} />
+          <KioskSection initial={settings.data.boardKiosk ?? DEFAULT_BOARD_KIOSK} />
           <GrievanceOfficerForm initial={settings.data.grievanceOfficer ?? null} />
         </>
       )}

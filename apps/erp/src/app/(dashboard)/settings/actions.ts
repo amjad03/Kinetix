@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import { razorpayBody, razorpayProblem, type RazorpayAccount, type RazorpayInput, type RazorpayTestResult } from '@/lib/payments';
-import { grievanceBody, grievanceProblem, SETTING_KEYS, type InstitutionSettings, type SettingKey } from '@/lib/settings';
+import { grievanceBody, grievanceProblem, kioskPinProblem, SETTING_KEYS, type InstitutionSettings, type SettingKey } from '@/lib/settings';
 import type { ActionResult } from '@/lib/types';
 
 /** Changes one institution setting (PUT /v1/admin/settings takes a partial body). */
@@ -25,6 +25,28 @@ export async function saveGrievanceOfficer(input: { name: string; email: string;
     if (problem) return { ok: false, error: (await getI18n()).t(`grievance.problem.${problem}`) };
   }
   const res = await act(() => api<InstitutionSettings>('/v1/admin/settings', { method: 'PUT', body: { grievanceOfficer: input ? grievanceBody(input) : null } }));
+  if (res.ok) revalidatePath('/settings');
+  return res;
+}
+
+/**
+ * Board kiosk mode: on or off, and the IT PIN (set, or removed with null). The PIN goes to the API
+ * once, which keeps only a salted hash; it is never logged or sent back.
+ */
+export async function saveBoardKiosk(change: { enabled?: boolean; pin?: { pin: string; confirm: string } | null }): Promise<ActionResult<InstitutionSettings>> {
+  const body: { enabled?: boolean; pin?: string | null } = {};
+  if (change.enabled !== undefined) {
+    if (typeof change.enabled !== 'boolean') return { ok: false, error: (await getI18n()).t('error.VALIDATION') };
+    body.enabled = change.enabled;
+  }
+  if (change.pin === null) body.pin = null;
+  else if (change.pin) {
+    const problem = kioskPinProblem(String(change.pin.pin), String(change.pin.confirm));
+    if (problem) return { ok: false, error: (await getI18n()).t(`kiosk.problem.${problem}`) };
+    body.pin = change.pin.pin;
+  }
+  if (!Object.keys(body).length) return { ok: false, error: (await getI18n()).t('error.VALIDATION') };
+  const res = await act(() => api<InstitutionSettings>('/v1/admin/settings', { method: 'PUT', body: { boardKiosk: body } }));
   if (res.ok) revalidatePath('/settings');
   return res;
 }

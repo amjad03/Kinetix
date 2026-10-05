@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { consentShares, grievanceBody, grievanceProblem, needsConfirm, settingDisabled, type InstitutionSettings } from './settings';
+import { consentShares, DEFAULT_BOARD_KIOSK, grievanceBody, grievanceProblem, kioskPinProblem, needsConfirm, settingDisabled, type InstitutionSettings } from './settings';
 
 const s: InstitutionSettings = { liveViewEnabled: true, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false };
 
@@ -36,5 +36,23 @@ describe('settings', () => {
     expect(grievanceProblem({ ...ok, name: 'x'.repeat(121) })).toBe('nameLong');
     expect(grievanceProblem({ ...ok, email: 'not-an-email' })).toBe('email');
     expect(grievanceProblem({ ...ok, phone: '1'.repeat(21) })).toBe('phone');
+  });
+});
+
+describe('board kiosk IT PIN', () => {
+  it('takes 4 to 8 digits, typed the same twice', () => {
+    expect(kioskPinProblem('1234', '1234')).toBeNull();
+    expect(kioskPinProblem('48291537', '48291537')).toBeNull();
+    expect(kioskPinProblem('123', '123')).toBe('length');
+    expect(kioskPinProblem('123456789', '123456789')).toBe('length');
+    expect(kioskPinProblem('', '')).toBe('length');
+    expect(kioskPinProblem('12a4', '12a4')).toBe('digits');
+    expect(kioskPinProblem('12 34', '12 34')).toBe('digits');
+    expect(kioskPinProblem('١٢٣٤', '١٢٣٤')).toBe('digits');
+    expect(kioskPinProblem('1234', '1243')).toBe('mismatch');
+  });
+
+  it('is on, without a PIN, until the institution changes it', () => {
+    expect(DEFAULT_BOARD_KIOSK).toEqual({ enabled: true, pinSet: false, pinSetAt: null });
   });
 });

@@ -13,6 +13,28 @@ export interface InstitutionSettings {
   classroomAudioToViewers: boolean;
   pinFallbackEnabled: boolean;
   grievanceOfficer?: GrievanceOfficer | null;
+  /** Kiosk mode on boards (docs/hardware/kiosk-mode.md). The API never returns the PIN or its hash. */
+  boardKiosk?: BoardKiosk;
+}
+
+export interface BoardKiosk {
+  enabled: boolean;
+  pinSet: boolean;
+  /** When the IT PIN was last set (ISO), or null. */
+  pinSetAt: string | null;
+}
+
+/** Kiosk mode is on unless the institution turned it off. */
+export const DEFAULT_BOARD_KIOSK: BoardKiosk = { enabled: true, pinSet: false, pinSetAt: null };
+
+export type KioskPinProblem = 'digits' | 'length' | 'mismatch';
+
+/** Checks a new IT PIN the way the API does (4–8 digits), and that it was typed the same twice. */
+export function kioskPinProblem(pin: string, confirm: string): KioskPinProblem | null {
+  if (!/^\d*$/.test(pin)) return 'digits';
+  if (pin.length < 4 || pin.length > 8) return 'length';
+  if (pin !== confirm) return 'mismatch';
+  return null;
 }
 
 /** The on/off settings. */

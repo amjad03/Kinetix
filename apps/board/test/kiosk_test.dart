@@ -332,13 +332,18 @@ void main() {
 
   group('exit dialog', () {
     Future<KioskController> pump(WidgetTester tester, {KioskPolicy? policy = _on, bool demo = false, FakeKioskPlatform? platform}) async {
-      if (policy != null) await cache(policy);
-      final k = KioskController(
-        platform: platform ?? FakeKioskPlatform(),
-        store: DeviceStore(secrets: MemorySecretStore()),
-        verify: (pin, p) async => verifyKioskPinSync(pin, p),
-      );
-      await tester.runAsync(() => k.start(demo: demo));
+      // Plugins answer outside the fake clock.
+      if (policy != null) await tester.runAsync(() => cache(policy));
+      // Made and started on the real clock: its futures belong to the zone it was made in.
+      final k = (await tester.runAsync(() async {
+        final k = KioskController(
+          platform: platform ?? FakeKioskPlatform(),
+          store: DeviceStore(secrets: MemorySecretStore()),
+          verify: (pin, p) async => verifyKioskPinSync(pin, p),
+        );
+        await k.start(demo: demo);
+        return k;
+      }))!;
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
