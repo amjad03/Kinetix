@@ -70,7 +70,7 @@ class CsStrings {
     'why_noServer': ['C, C++ and Java run on the KINETIX server, which this app is not connected to.', 'C, C++ और Java KINETIX सर्वर पर चलते हैं, जिससे यह ऐप जुड़ा नहीं है।', 'C, C++ ಮತ್ತು Java KINETIX ಸರ್ವರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತವೆ; ಈ ಆ್ಯಪ್ ಅದಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ.'],
     'why_noWebView': ['This device cannot run Python and JavaScript (no WebView). SQL still works.', 'यह डिवाइस Python और JavaScript नहीं चला सकता (WebView नहीं है)। SQL चलता है।', 'ಈ ಸಾಧನ Python ಮತ್ತು JavaScript ನಡೆಸಲಾರದು (WebView ಇಲ್ಲ). SQL ನಡೆಯುತ್ತದೆ.'],
     'why_offline': ['No connection to the server. Python, JavaScript and SQL still work offline.', 'सर्वर से कनेक्शन नहीं। Python, JavaScript और SQL बिना इंटरनेट चलते हैं।', 'ಸರ್ವರ್ ಸಂಪರ್ಕವಿಲ್ಲ. Python, JavaScript ಮತ್ತು SQL ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ನಡೆಯುತ್ತವೆ.'],
-    'why_server': ['The code runner is not available right now. Try again soon.', 'कोड रनर अभी उपलब्ध नहीं है। थोड़ी देर में फिर कोशिश करें।', 'ಕೋಡ್ ರನ್ನರ್ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.'],
+    'why_server': ['The code runner is not available right now. Try again in a little while.', 'कोड रनर अभी उपलब्ध नहीं है। थोड़ी देर में फिर कोशिश करें।', 'ಕೋಡ್ ರನ್ನರ್ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.'],
     'sampleHello': ['Hello, name', 'नमस्ते, नाम', 'ನಮಸ್ಕಾರ, ಹೆಸರು'],
     'sampleFactorial': ['Factorial (recursion)', 'फ़ैक्टोरियल (रिकर्शन)', 'ಫ್ಯಾಕ್ಟೋರಿಯಲ್ (ರಿಕರ್ಷನ್)'],
     'samplePrimes': ['Prime numbers', 'अभाज्य संख्याएँ', 'ಅವಿಭಾಜ್ಯ ಸಂಖ್ಯೆಗಳು'],

@@ -12,6 +12,7 @@ import '../board/side_panel.dart';
 import 'math_panel.dart';
 import 'read_board_panel.dart';
 import 'quiz_panel.dart';
+import 'voice_input.dart';
 
 /// KINETIX AI: ask anything, plus the smart tools. Each tool opens as a page inside the
 /// panel; the back arrow returns here.
@@ -53,10 +54,46 @@ class _AiHomeState extends State<_AiHome> {
 
   AiController get ai => widget.ai;
 
+  VoiceInput? _voice;
+  bool _listening = false;
+
   @override
   void dispose() {
+    _voice?.dispose();
     _question.dispose();
     super.dispose();
+  }
+
+  /// The mic: a spoken question in the AI's language, recognised on the board; asked when the
+  /// teacher stops speaking.
+  Future<void> _toggleVoice() async {
+    final l = context.l10n;
+    if (_listening) {
+      await _voice?.stop();
+      return;
+    }
+    final voice = _voice ??= VoiceInput.create();
+    setState(() => _listening = true);
+    final started = await voice.listen(
+      ai.language,
+      onWords: (words, done) {
+        if (!mounted) return;
+        _question.text = words;
+        if (!done) return;
+        setState(() => _listening = false);
+        _ask(words);
+      },
+      onProblem: (p) {
+        if (!mounted) return;
+        setState(() => _listening = false);
+        showBoardMessage(context, switch (p) {
+          VoiceProblem.unavailable => l.aiVoiceUnavailable,
+          VoiceProblem.language => l.aiVoiceLanguage(ai.language.label),
+          VoiceProblem.noSpeech => l.aiVoiceNothingHeard,
+        });
+      },
+    );
+    if (!started && mounted) setState(() => _listening = false);
   }
 
   void _ask(String q, {bool fresh = false}) {
@@ -96,8 +133,6 @@ class _AiHomeState extends State<_AiHome> {
         ],
       ),
     );
-    ChromeTile soon(IconData i, String t, Color col) =>
-        ChromeTile(icon: i, label: t, color: col, soon: true, width: tileWidth, onTap: () => showComingSoon(context, l.aiToolSoon(t)));
     ChromeTile open(IconData i, String t, Color col, SplitContent c, [String? id]) => ChromeTile(
       key: Key('ai-open-${id ?? c.name}'),
       icon: i,
@@ -126,7 +161,14 @@ class _AiHomeState extends State<_AiHome> {
             textStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 18)),
             leading: const Padding(padding: EdgeInsets.only(left: 8), child: Icon(Icons.auto_awesome_outlined)),
             trailing: [
-              IconButton(tooltip: l.aiSpeak, onPressed: () => showComingSoon(context, l.aiVoiceQuestions), icon: const Icon(Icons.mic_none)),
+              IconButton(
+                key: const Key('ai-voice'),
+                tooltip: _listening ? l.aiListening : l.aiSpeak,
+                isSelected: _listening,
+                onPressed: _toggleVoice,
+                icon: const Icon(Icons.mic_none),
+                selectedIcon: Icon(Icons.mic, color: Kx.record),
+              ),
               IconButton(key: const Key('ai-ask-send'), tooltip: l.aiAsk, onPressed: () => _ask(_question.text), icon: const Icon(Icons.arrow_upward)),
             ],
             onSubmitted: _ask,
@@ -170,7 +212,6 @@ class _AiHomeState extends State<_AiHome> {
             },
           ),
           group(l.aiGroupTeach, [
-            soon(Icons.summarize_outlined, l.aiSummary, const Color(0xFF8AB4F8)),
             tool(Icons.quiz_outlined, l.aiQuickQuiz, const Color(0xFF81C995), AiView.quiz),
             tool(Icons.co_present_outlined, l.aiLessonPlan, const Color(0xFFFDD663), AiView.lessonPlan),
             tool(Icons.assignment_outlined, l.toolHomework, const Color(0xFFF28B82), AiView.homework),
@@ -182,9 +223,15 @@ class _AiHomeState extends State<_AiHome> {
             open(Icons.science_outlined, l.aiSimulations, const Color(0xFFC58AF9), SplitContent.lab),
           ]),
           group(l.aiGroupLookUp, [
-            soon(Icons.menu_book_outlined, l.aiTextbook, const Color(0xFFFDD663)),
-            soon(Icons.public, l.aiWikipedia, const Color(0xFFDADCE0)),
-            soon(Icons.translate, l.aiDictionary, const Color(0xFF78D9EC)),
+            if (ai.openBooks != null)
+              ChromeTile(
+                key: const Key('ai-open-books'),
+                icon: Icons.menu_book_outlined,
+                label: l.aiTextbook,
+                color: const Color(0xFFFDD663),
+                width: tileWidth,
+                onTap: ai.openBooks,
+              ),
             tool(Icons.document_scanner_outlined, l.aiReadBoard, const Color(0xFFFCAD70), AiView.readBoard),
           ]),
         ],

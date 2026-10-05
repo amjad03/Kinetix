@@ -61,14 +61,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get topicLabel => 'विषय-वस्तु';
 
   @override
-  String get soon => 'जल्द';
-
-  @override
-  String comingSoonFeature(String feature) {
-    return '$feature जल्द ही अगले अपडेट में आ रहा है।';
-  }
-
-  @override
   String get guest => 'अतिथि';
 
   @override
@@ -300,9 +292,6 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get signInUnregistered => 'बिना पंजीकरण वाले बोर्ड पर साइन इन';
-
-  @override
   String get recordNeedsSignIn =>
       'पाठ रिकॉर्ड करने के लिए Teacher App से साइन इन करें। पहले शिक्षक को इस बोर्ड से जुड़ना होगा।';
 
@@ -418,9 +407,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String signedOutRecordingPending(String name) {
     return 'साइन आउट हो गया। पाठ की रिकॉर्डिंग इस बोर्ड पर सहेजी गई है और $name के अगली बार साइन इन करने पर अपलोड होगी।';
   }
-
-  @override
-  String get attendanceWithoutClass => 'बिना समय-सारणी वाली कक्षा में उपस्थिति';
 
   @override
   String get defaultBoardName => 'बोर्ड';
@@ -1272,24 +1258,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get splitWhiteboard => 'व्हाइटबोर्ड';
 
   @override
-  String get splitDocument => 'PDF / PPT';
-
-  @override
-  String get splitVideo => 'वीडियो';
-
-  @override
-  String get splitWeb => 'वेब पेज';
-
-  @override
   String get splitModel3d => '3D मॉडल';
 
   @override
   String get splitLab => 'वर्चुअल लैब';
-
-  @override
-  String viewerComingSoon(String viewer) {
-    return '$viewer व्यूअर जल्द ही अगले अपडेट में आ रहा है।';
-  }
 
   @override
   String get splitChoose => 'चुनें कि व्हाइटबोर्ड के बगल में क्या दिखाना है।';
@@ -1629,11 +1601,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'KINETIX AI से पूछने के लिए Teacher App से साइन इन करें।';
 
   @override
-  String aiToolSoon(String tool) {
-    return 'KINETIX AI $tool';
-  }
-
-  @override
   String get aiAskHint => 'किसी भी विषय-वस्तु के बारे में पूछें';
 
   @override
@@ -1643,9 +1610,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get aiSpeak => 'बोलें';
-
-  @override
-  String get aiVoiceQuestions => 'बोलकर सवाल पूछना';
 
   @override
   String get aiAsk => 'पूछें';
@@ -1667,9 +1631,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get aiGroupLookUp => 'खोजें';
 
   @override
-  String get aiSummary => 'सारांश';
-
-  @override
   String get aiQuickQuiz => 'झटपट क्विज़';
 
   @override
@@ -1689,12 +1650,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get aiTextbook => 'पाठ्यपुस्तक';
-
-  @override
-  String get aiWikipedia => 'विकिपीडिया';
-
-  @override
-  String get aiDictionary => 'शब्दकोश';
 
   @override
   String get aiReadBoard => 'बोर्ड पढ़ें';
@@ -2065,9 +2020,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get booksAddedByInstitution => 'आपके संस्थान ने जोड़ा';
-
-  @override
-  String get booksNotesSoon => 'नोट्स जल्द आ रहे हैं';
 
   @override
   String booksTopicCount(int count) {
@@ -4128,4 +4080,47 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get clearedAllPages => 'सभी पेज साफ़ हो गए';
+
+  @override
+  String get calcCannotWorkOut => 'इसकी गणना नहीं हो सकती';
+
+  @override
+  String get screenshotSaved => 'बोर्ड की तस्वीर सहेजी गई';
+
+  @override
+  String screenshotFailed(String error) {
+    return 'तस्वीर सहेजी नहीं जा सकी: $error';
+  }
+
+  @override
+  String get touchLocked => 'टच लॉक है';
+
+  @override
+  String get touchUnlockHold => 'अनलॉक करने के लिए दबाकर रखें';
+
+  @override
+  String get aiListening => 'सुन रहा है… रोकने के लिए टैप करें';
+
+  @override
+  String get aiVoiceUnavailable =>
+      'इस डिवाइस पर आवाज़ से सवाल पूछना उपलब्ध नहीं है, या माइक्रोफ़ोन बंद है।';
+
+  @override
+  String aiVoiceLanguage(String language) {
+    return '$language में बोली पहचान इस डिवाइस पर अभी नहीं है: डिवाइस की वॉइस टाइपिंग (ऑफ़लाइन स्पीच) सेटिंग में जोड़ें।';
+  }
+
+  @override
+  String get aiVoiceNothingHeard => 'कुछ सुनाई नहीं दिया। माइक दबाकर बोलें।';
+
+  @override
+  String get booksAskAiChapter => 'KINETIX AI से समझने के लिए टैप करें';
+
+  @override
+  String get signInNeedsEnrolment =>
+      'यह बोर्ड आपके संस्थान में पंजीकृत होने के बाद साइन इन काम करता है।';
+
+  @override
+  String get attendanceNeedsClass =>
+      'हाज़िरी छात्र सूची वाली समय-सारिणी की कक्षा के साथ खुलती है।';
 }

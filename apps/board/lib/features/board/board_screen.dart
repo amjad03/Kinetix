@@ -63,6 +63,9 @@ import 'rails.dart';
 import 'selection_actions.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
+import 'board_shot.dart';
+import 'calculator.dart';
+import 'touch_lock.dart';
 
 enum _Popover { write, aiPen, erase, theme, shapes, tools, eyeComfort, profile, insert }
 
@@ -153,7 +156,8 @@ class _BoardScreenState extends State<BoardScreen> {
     board.classAudio.onUnavailable = _classAudioUnavailable;
     _ai = AiController(board)
       ..captureBoard = _captureForAi
-      ..openSplit = _openSplit;
+      ..openSplit = _openSplit
+      ..openBooks = (() => _openPanel(PanelKind.books));
     _lastSessionId = board.session?.sessionId;
     // Projector mode and shared-board profiles (features/projector, features/profiles).
     board.projector.attach(ProjectorSource(board: _wb, background: () => _background, canvas: () => _canvasSize, captureSplit: _captureLabForProjector));
@@ -230,6 +234,21 @@ class _BoardScreenState extends State<BoardScreen> {
     final elements = selected.isNotEmpty ? selected : _wb.elements;
     final area = selected.isNotEmpty ? contentBounds(selected).inflate(24) : (_wb.visibleArea ?? Offset.zero & _canvasSize);
     return base64Encode(await renderPagePng(elements, _background, _canvasSize, area: area));
+  }
+
+  /// Touch lock (Tools): the board takes no touches until the lock is held.
+  bool _touchLocked = false;
+
+  /// Screenshot (Tools): what the board shows now, as a PNG.
+  Future<Uint8List> _captureScreen() =>
+      renderPagePng(_wb.elements, _background, _canvasSize, area: _wb.visibleArea ?? Offset.zero & _canvasSize, maxWidth: 2400);
+
+  /// The calculator (Tools); its sum and answer go on the board as text.
+  Future<void> _calculator() async {
+    final text = await BoardCalculator.show(context);
+    if (text == null || !mounted) return;
+    final ink = _background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    _wb.insert([TextElement(id: newElementId(), position: Offset.zero, text: text, color: ink, fontSize: 40, size: measureBoardText(text, 40))]);
   }
 
   /// Opens a 3D model or lab (or their picker, with no id) next to the whiteboard.
@@ -364,7 +383,7 @@ class _BoardScreenState extends State<BoardScreen> {
   /// Sign in: "Who is teaching?" first when teachers have PINs on this board (features/profiles).
   Future<void> _signIn() async {
     if (board.api == null) {
-      showComingSoon(context, context.l10n.signInUnregistered);
+      showBoardMessage(context, context.l10n.signInNeedsEnrolment);
       return;
     }
     await showSignInChoice(context, board, _signInWithTeacherApp);
@@ -794,7 +813,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   void _attendance() {
     if (board.roster.isEmpty) {
-      showComingSoon(context, context.l10n.attendanceWithoutClass);
+      showBoardMessage(context, context.l10n.attendanceNeedsClass);
       return;
     }
     showDialog<void>(
@@ -989,9 +1008,18 @@ class _BoardScreenState extends State<BoardScreen> {
       setState(() => _popover = null);
       _wb.tool = BoardTool.laser;
     }),
-    ToolEntry(Icons.calculate_outlined, l.toolCalculator, const Color(0xFF8AB4F8), () => showComingSoon(context, l.toolCalculator), soon: true),
-    ToolEntry(Icons.photo_camera_outlined, l.toolScreenshot, const Color(0xFFF28B82), () => showComingSoon(context, l.toolScreenshot), soon: true),
-    ToolEntry(Icons.lock_outline, l.toolTouchLock, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolTouchLock), soon: true),
+    ToolEntry(Icons.calculate_outlined, l.toolCalculator, const Color(0xFF8AB4F8), () {
+      setState(() => _popover = null);
+      unawaited(_calculator());
+    }),
+    ToolEntry(Icons.photo_camera_outlined, l.toolScreenshot, const Color(0xFFF28B82), () {
+      setState(() => _popover = null);
+      unawaited(BoardShot.take(context, _captureScreen));
+    }),
+    ToolEntry(Icons.lock_outline, l.toolTouchLock, const Color(0xFFDADCE0), () => setState(() {
+      _popover = null;
+      _touchLocked = true;
+    })),
   ];
 
   // --- Keyboard ------------------------------------------------------------------------------
@@ -1082,7 +1110,13 @@ class _BoardScreenState extends State<BoardScreen> {
       child: Scaffold(
         body: ListenableBuilder(
           listenable: board,
-          builder: (context, _) => LayoutBuilder(builder: (context, size) => _layout(context, size)),
+          builder: (context, _) => Stack(
+            children: [
+              Positioned.fill(child: LayoutBuilder(builder: (context, size) => _layout(context, size))),
+              // Touch lock (Tools): over everything, the board and its panels, until held.
+              if (_touchLocked) Positioned.fill(child: BoardChromeTheme(child: TouchLockOverlay(onUnlock: () => setState(() => _touchLocked = false)))),
+            ],
+          ),
         ),
       ),
       ),

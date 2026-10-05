@@ -11,24 +11,18 @@ import 'chrome.dart';
 /// What the side panel shows. Opening any of these splits the screen with the whiteboard.
 enum PanelKind { ai, books, quiz, homework, split, plan, kit }
 
-/// Content for the split-screen pane.
-enum SplitContent { whiteboard, document, video, web, model3d, lab }
+/// What the split screen shows beside the board: a second whiteboard, a 3D model or a lab.
+enum SplitContent { whiteboard, model3d, lab }
 
 extension SplitContentInfo on SplitContent {
   String label(AppLocalizations l) => switch (this) {
     SplitContent.whiteboard => l.splitWhiteboard,
-    SplitContent.document => l.splitDocument,
-    SplitContent.video => l.splitVideo,
-    SplitContent.web => l.splitWeb,
     SplitContent.model3d => l.splitModel3d,
     SplitContent.lab => l.splitLab,
   };
 
   IconData get icon => switch (this) {
     SplitContent.whiteboard => Icons.draw_outlined,
-    SplitContent.document => Icons.slideshow_outlined,
-    SplitContent.video => Icons.smart_display_outlined,
-    SplitContent.web => Icons.public,
     SplitContent.model3d => Icons.view_in_ar_outlined,
     SplitContent.lab => Icons.science_outlined,
   };
@@ -222,8 +216,6 @@ class SplitPanel extends StatelessWidget {
   /// Marks the model or lab view, for the picture ([RepaintBoundary]).
   final GlobalKey? snapshotKey;
 
-  static bool isBuilt(SplitContent c) => c == SplitContent.whiteboard || c == SplitContent.model3d || c == SplitContent.lab;
-
   @override
   Widget build(BuildContext context) {
     final current = content;
@@ -268,17 +260,6 @@ class SplitPanel extends StatelessWidget {
         ],
       );
     }
-    if (current != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SplitHeader(content: current, onBack: () => onContent(null)),
-          Expanded(
-            child: KxEmptyState(icon: current.icon, message: context.l10n.viewerComingSoon(current.label(context.l10n))),
-          ),
-        ],
-      );
-    }
     return PanelPage(
       icon: Icons.vertical_split_outlined,
       title: context.l10n.toolSplitScreen,
@@ -299,7 +280,6 @@ class SplitPanel extends StatelessWidget {
                   key: Key('split-${s.name}'),
                   icon: s.icon,
                   label: s.label(context.l10n),
-                  soon: !isBuilt(s),
                   onTap: () => onContent(s),
                 ),
             ],

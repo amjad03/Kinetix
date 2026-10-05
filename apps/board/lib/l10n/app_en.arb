@@ -23,18 +23,6 @@
   "@topicLabel": {
     "description": "A topic of a chapter (glossary: Chapter / Topic)."
   },
-  "soon": "Soon",
-  "@soon": {
-    "description": "Small badge on features that are not built yet."
-  },
-  "comingSoonFeature": "{feature} is coming in an upcoming build.",
-  "@comingSoonFeature": {
-    "placeholders": {
-      "feature": {
-        "type": "String"
-      }
-    }
-  },
   "guest": "Guest",
   "practiceBoard": "Practice board",
   "noClassTimetabled": "No class is timetabled now",
@@ -184,7 +172,6 @@
       }
     }
   },
-  "signInUnregistered": "Sign-in on an unregistered board",
   "recordNeedsSignIn": "Sign in with the Teacher app to record lessons. The teacher must connect to this board first.",
   "recordingStarted": "Recording the board and your voice.",
   "recordingNoSound": "Recording the board without sound: {reason}",
@@ -278,7 +265,6 @@
       }
     }
   },
-  "attendanceWithoutClass": "Attendance without a timetabled class",
   "defaultBoardName": "Board",
   "@defaultBoardName": {
     "description": "Default title of a saved board with no subject: \"Board · 4 Oct\"."
@@ -695,19 +681,8 @@
   "dragToResize": "Drag to resize",
   "moveToOtherSide": "Move to the other side",
   "splitWhiteboard": "Whiteboard",
-  "splitDocument": "PDF / PPT",
-  "splitVideo": "Video",
-  "splitWeb": "Web page",
   "splitModel3d": "3D model",
   "splitLab": "Virtual lab",
-  "viewerComingSoon": "The {viewer} viewer is coming in an upcoming build.",
-  "@viewerComingSoon": {
-    "placeholders": {
-      "viewer": {
-        "type": "String"
-      }
-    }
-  },
   "splitChoose": "Choose what to show next to the whiteboard.",
   "chooseSomethingElse": "Choose something else",
   "signInWithTeacherApp": "Sign in with Teacher app",
@@ -952,14 +927,6 @@
   "enrollRegister": "Register board",
   "enrollSkip": "Skip for now and use the practice board",
   "aiAskNeedsSignIn": "Sign in with the Teacher app to ask KINETIX AI.",
-  "aiToolSoon": "KINETIX AI {tool}",
-  "@aiToolSoon": {
-    "placeholders": {
-      "tool": {
-        "type": "String"
-      }
-    }
-  },
   "aiAskHint": "Ask anything about a topic",
   "aiAskHintClass": "Ask anything about {classLabel}",
   "@aiAskHintClass": {
@@ -970,14 +937,12 @@
     }
   },
   "aiSpeak": "Speak",
-  "aiVoiceQuestions": "Voice questions",
   "aiAsk": "Ask",
   "aiDisclaimer": "Answers follow your syllabus. Check before sharing with the class.",
   "aiPreparing": "KINETIX AI is preparing an explanation…",
   "aiGroupTeach": "Teach",
   "aiGroupMathsScience": "Maths & science",
   "aiGroupLookUp": "Look up",
-  "aiSummary": "Summary",
   "aiQuickQuiz": "Quick quiz",
   "aiLessonPlan": "Lesson plan",
   "aiMathSolver": "Math solver",
@@ -985,8 +950,6 @@
   "ai3dModels": "3D models",
   "aiSimulations": "Simulations",
   "aiTextbook": "Textbook",
-  "aiWikipedia": "Wikipedia",
-  "aiDictionary": "Dictionary",
   "aiReadBoard": "Read board",
   "aiAskAgain": "Ask again for a new answer",
   "aiBasedOnSyllabus": "Based on your syllabus: {sources}",
@@ -1224,7 +1187,6 @@
   "booksDraft": "Draft content: check against your textbook before teaching from it.",
   "booksDraftShort": "Draft content: check against your textbook.",
   "booksAddedByInstitution": "Added by your institution",
-  "booksNotesSoon": "Notes coming soon",
   "booksTopicCount": "{count, plural, =1{1 topic} other{{count} topics}}",
   "@booksTopicCount": {
     "placeholders": {
@@ -2327,5 +2289,31 @@
   "clearBoardBody": "Imported pages keep their pictures. Undo brings everything back.",
   "clearAllPages": "Clear all pages",
   "clearedPage": "Page cleared",
-  "clearedAllPages": "All pages cleared"
+  "clearedAllPages": "All pages cleared",
+  "calcCannotWorkOut": "That cannot be worked out",
+  "screenshotSaved": "Picture of the board saved",
+  "screenshotFailed": "Could not save the picture: {error}",
+  "@screenshotFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "touchLocked": "Touch is locked",
+  "touchUnlockHold": "Hold to unlock",
+  "aiListening": "Listening… tap to stop",
+  "aiVoiceUnavailable": "Voice questions are not available on this device, or the microphone is off.",
+  "aiVoiceLanguage": "Speech in {language} is not on this device yet: add it in the device's voice typing (offline speech) settings.",
+  "@aiVoiceLanguage": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiVoiceNothingHeard": "Nothing was heard. Tap the mic and speak.",
+  "booksAskAiChapter": "Tap for KINETIX AI to explain it",
+  "signInNeedsEnrolment": "Sign-in works once this board is enrolled with your institution.",
+  "attendanceNeedsClass": "Attendance opens with a timetabled class that has a student list."
 }

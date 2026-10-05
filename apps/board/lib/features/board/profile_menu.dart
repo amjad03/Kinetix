@@ -46,16 +46,15 @@ class ProfileMenu extends StatelessWidget {
     final c = context.colors;
     final s = board.session;
     final l = context.l10n;
-    Widget item(IconData icon, String label, VoidCallback onTap, {bool soon = false, Key? key}) => ListTile(
+    Widget item(IconData icon, String label, VoidCallback onTap, {Key? key}) => ListTile(
       key: key,
       leading: Icon(icon),
       title: Text(label),
-      trailing: soon ? Text(l.soon, style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)) : null,
       dense: false,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd)),
       onTap: () {
         onClose();
-        soon ? showComingSoon(context, label) : onTap();
+        onTap();
       },
     );
 
@@ -111,7 +110,7 @@ class ProfileMenu extends StatelessWidget {
               ),
             const Divider(height: Kx.s16),
             item(Icons.note_add_outlined, l.toolNewPage, onNewPage),
-            item(Icons.folder_open_outlined, l.importFiles, onImport ?? () {}, soon: onImport == null, key: const Key('menu-import')),
+            if (onImport != null) item(Icons.folder_open_outlined, l.importFiles, onImport!, key: const Key('menu-import')),
             item(Icons.dashboard_outlined, l.yourWhiteboards, onWhiteboards, key: const Key('menu-whiteboards')),
             if (onRecordings != null)
               ListTile(
@@ -136,7 +135,7 @@ class ProfileMenu extends StatelessWidget {
                 key: const Key('menu-projector'),
               )
             else
-              item(Icons.cast_outlined, l.screenProjection, () {}, soon: true),
+              item(Icons.cast_outlined, l.screenProjection, () => unawaited(showProjectorDialog(context, board.projector, theme: (d) => BoardChromeTheme(child: d))), key: const Key('menu-projector')),
             // Shared-board profiles (features/profiles).
             if (s != null && board.isEnrolled) ...[
               item(Icons.switch_account_outlined, l.switchTeacher, onSignIn, key: const Key('menu-switch-teacher')),
@@ -145,7 +144,7 @@ class ProfileMenu extends StatelessWidget {
             const Divider(height: Kx.s16),
             item(Icons.settings_outlined, l.boardSettings, onSettings, key: const Key('menu-settings')),
             if (onHelp != null) item(Icons.help_outline, l.helpTitle, onHelp!, key: const Key('menu-help')),
-            item(Icons.school_outlined, l.guidedTour, onTour ?? () {}, soon: onTour == null, key: const Key('menu-tour')),
+            if (onTour != null) item(Icons.school_outlined, l.guidedTour, onTour!, key: const Key('menu-tour')),
             // Also IT's way out of kiosk mode: hold for 3 seconds.
             KioskExitGesture(
               key: const Key('kiosk-exit-version'),

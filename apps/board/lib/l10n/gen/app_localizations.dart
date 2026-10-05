@@ -202,18 +202,6 @@ abstract class AppLocalizations {
   /// **'Topic'**
   String get topicLabel;
 
-  /// Small badge on features that are not built yet.
-  ///
-  /// In en, this message translates to:
-  /// **'Soon'**
-  String get soon;
-
-  /// No description provided for @comingSoonFeature.
-  ///
-  /// In en, this message translates to:
-  /// **'{feature} is coming in an upcoming build.'**
-  String comingSoonFeature(String feature);
-
   /// No description provided for @guest.
   ///
   /// In en, this message translates to:
@@ -568,12 +556,6 @@ abstract class AppLocalizations {
   /// **'Welcome, {name}.'**
   String welcomeTeacher(String name);
 
-  /// No description provided for @signInUnregistered.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign-in on an unregistered board'**
-  String get signInUnregistered;
-
   /// No description provided for @recordNeedsSignIn.
   ///
   /// In en, this message translates to:
@@ -753,12 +735,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Signed out. The lesson recording is saved on this board and uploads when {name} next signs in.'**
   String signedOutRecordingPending(String name);
-
-  /// No description provided for @attendanceWithoutClass.
-  ///
-  /// In en, this message translates to:
-  /// **'Attendance without a timetabled class'**
-  String get attendanceWithoutClass;
 
   /// Default title of a saved board with no subject: "Board · 4 Oct".
   ///
@@ -2308,24 +2284,6 @@ abstract class AppLocalizations {
   /// **'Whiteboard'**
   String get splitWhiteboard;
 
-  /// No description provided for @splitDocument.
-  ///
-  /// In en, this message translates to:
-  /// **'PDF / PPT'**
-  String get splitDocument;
-
-  /// No description provided for @splitVideo.
-  ///
-  /// In en, this message translates to:
-  /// **'Video'**
-  String get splitVideo;
-
-  /// No description provided for @splitWeb.
-  ///
-  /// In en, this message translates to:
-  /// **'Web page'**
-  String get splitWeb;
-
   /// No description provided for @splitModel3d.
   ///
   /// In en, this message translates to:
@@ -2337,12 +2295,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Virtual lab'**
   String get splitLab;
-
-  /// No description provided for @viewerComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'The {viewer} viewer is coming in an upcoming build.'**
-  String viewerComingSoon(String viewer);
 
   /// No description provided for @splitChoose.
   ///
@@ -2908,12 +2860,6 @@ abstract class AppLocalizations {
   /// **'Sign in with the Teacher app to ask KINETIX AI.'**
   String get aiAskNeedsSignIn;
 
-  /// No description provided for @aiToolSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'KINETIX AI {tool}'**
-  String aiToolSoon(String tool);
-
   /// No description provided for @aiAskHint.
   ///
   /// In en, this message translates to:
@@ -2931,12 +2877,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Speak'**
   String get aiSpeak;
-
-  /// No description provided for @aiVoiceQuestions.
-  ///
-  /// In en, this message translates to:
-  /// **'Voice questions'**
-  String get aiVoiceQuestions;
 
   /// No description provided for @aiAsk.
   ///
@@ -2973,12 +2913,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Look up'**
   String get aiGroupLookUp;
-
-  /// No description provided for @aiSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Summary'**
-  String get aiSummary;
 
   /// No description provided for @aiQuickQuiz.
   ///
@@ -3021,18 +2955,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Textbook'**
   String get aiTextbook;
-
-  /// No description provided for @aiWikipedia.
-  ///
-  /// In en, this message translates to:
-  /// **'Wikipedia'**
-  String get aiWikipedia;
-
-  /// No description provided for @aiDictionary.
-  ///
-  /// In en, this message translates to:
-  /// **'Dictionary'**
-  String get aiDictionary;
 
   /// No description provided for @aiReadBoard.
   ///
@@ -3603,12 +3525,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Added by your institution'**
   String get booksAddedByInstitution;
-
-  /// No description provided for @booksNotesSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Notes coming soon'**
-  String get booksNotesSoon;
 
   /// No description provided for @booksTopicCount.
   ///
@@ -7329,6 +7245,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All pages cleared'**
   String get clearedAllPages;
+
+  /// No description provided for @calcCannotWorkOut.
+  ///
+  /// In en, this message translates to:
+  /// **'That cannot be worked out'**
+  String get calcCannotWorkOut;
+
+  /// No description provided for @screenshotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture of the board saved'**
+  String get screenshotSaved;
+
+  /// No description provided for @screenshotFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the picture: {error}'**
+  String screenshotFailed(String error);
+
+  /// No description provided for @touchLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch is locked'**
+  String get touchLocked;
+
+  /// No description provided for @touchUnlockHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to unlock'**
+  String get touchUnlockHold;
+
+  /// No description provided for @aiListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening… tap to stop'**
+  String get aiListening;
+
+  /// No description provided for @aiVoiceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice questions are not available on this device, or the microphone is off.'**
+  String get aiVoiceUnavailable;
+
+  /// No description provided for @aiVoiceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech in {language} is not on this device yet: add it in the device\'s voice typing (offline speech) settings.'**
+  String aiVoiceLanguage(String language);
+
+  /// No description provided for @aiVoiceNothingHeard.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was heard. Tap the mic and speak.'**
+  String get aiVoiceNothingHeard;
+
+  /// No description provided for @booksAskAiChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap for KINETIX AI to explain it'**
+  String get booksAskAiChapter;
+
+  /// No description provided for @signInNeedsEnrolment.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in works once this board is enrolled with your institution.'**
+  String get signInNeedsEnrolment;
+
+  /// No description provided for @attendanceNeedsClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance opens with a timetabled class that has a student list.'**
+  String get attendanceNeedsClass;
 }
 
 class _AppLocalizationsDelegate

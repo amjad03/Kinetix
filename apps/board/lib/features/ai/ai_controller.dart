@@ -122,6 +122,9 @@ class AiController extends ChangeNotifier {
   /// Opens a 3D model or lab next to the whiteboard (the board screen sets this).
   void Function(SplitContent content, [String? id, String? preset])? openSplit;
 
+  /// Opens Books, the class textbooks (the board screen sets this).
+  VoidCallback? openBooks;
+
   /// Renders the open board page as a PNG (base64). Set by the board screen.
   Future<String> Function()? captureBoard;
 

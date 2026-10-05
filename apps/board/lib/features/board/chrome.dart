@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
-import '../../l10n/l10n.dart';
 
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
 ///
@@ -244,7 +243,6 @@ class ChromeTile extends StatelessWidget {
     required this.label,
     this.onTap,
     this.color,
-    this.soon = false,
     this.selected = false,
     this.width = 104,
   });
@@ -253,7 +251,6 @@ class ChromeTile extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final Color? color;
-  final bool soon;
   final bool selected;
   final double width;
 
@@ -280,10 +277,10 @@ class ChromeTile extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: tint.withValues(alpha: soon ? 0.12 : 0.18),
+                        color: tint.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(Kx.rMd),
                       ),
-                      child: Icon(icon, color: soon ? c.onSurfaceVariant : tint, size: 22),
+                      child: Icon(icon, color: tint, size: 22),
                     ),
                     const SizedBox(height: Kx.s8),
                     // Two lines, so longer Hindi and Kannada names still fit the tile.
@@ -294,25 +291,12 @@ class ChromeTile extends StatelessWidget {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12.5, height: 1.15, fontWeight: FontWeight.w500, color: soon ? c.onSurfaceVariant : c.onSurface),
+                        style: TextStyle(fontSize: 12.5, height: 1.15, fontWeight: FontWeight.w500, color: c.onSurface),
                       ),
                     ),
                   ],
                 ),
               ),
-              if (soon)
-                Positioned(
-                  top: 6,
-                  right: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                    decoration: BoxDecoration(color: c.surfaceContainerHighest, borderRadius: BorderRadius.circular(6)),
-                    child: Text(
-                      context.l10n.soon,
-                      style: TextStyle(fontSize: 9.5, color: c.onSurfaceVariant, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -339,5 +323,3 @@ void showBoardMessage(BuildContext context, String text, {(String, VoidCallback)
     );
 }
 
-/// Shows a short message that a feature is on the way, so no button is silently dead.
-void showComingSoon(BuildContext context, String feature) => showBoardMessage(context, context.l10n.comingSoonFeature(feature));

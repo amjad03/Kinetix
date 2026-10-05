@@ -49,9 +49,11 @@ dependencies:
   pdfrx: ^2.6.5
   qr_flutter: ^4.1.0
   record: ^7.1.1
+  share_plus: ^13.3.1
   shared_preferences: ^2.5.5
   socket_io_client: ^3.1.6
   # Concept videos: YouTube's embedded player in a WebView (Android; WebView2 on Windows).
+  speech_to_text: ^7.5.0
   webview_flutter: ^4.14.1
   webview_flutter_android: ^4.14.1
   webview_windows: ^0.4.0

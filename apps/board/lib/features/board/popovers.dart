@@ -451,12 +451,11 @@ class _ShapesPopoverState extends State<ShapesPopover> {
 
 /// A classroom tool in the Tools popover.
 class ToolEntry {
-  const ToolEntry(this.icon, this.label, this.color, this.onTap, {this.soon = false});
+  const ToolEntry(this.icon, this.label, this.color, this.onTap);
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
-  final bool soon;
 }
 
 class ToolsPopover extends StatelessWidget {
@@ -472,7 +471,7 @@ class ToolsPopover extends StatelessWidget {
       child: Wrap(
         spacing: Kx.s12,
         runSpacing: Kx.s12,
-        children: [for (final t in tools) ChromeTile(icon: t.icon, label: t.label, color: t.color, soon: t.soon, onTap: t.onTap)],
+        children: [for (final t in tools) ChromeTile(icon: t.icon, label: t.label, color: t.color, onTap: t.onTap)],
       ),
     );
   }

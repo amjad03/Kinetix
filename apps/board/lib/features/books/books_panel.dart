@@ -251,13 +251,24 @@ class _BooksPanelState extends State<BooksPanel> {
                   subtitle: Text(
                     [
                       if (ch.own) l.booksAddedByInstitution,
-                      ch.topics.isEmpty ? l.booksNotesSoon : l.booksTopicCount(ch.topics.length),
+                      if (ch.topics.isNotEmpty) l.booksTopicCount(ch.topics.length) else if (widget.ai.canUseAi) l.booksAskAiChapter,
                       if (_coverage != null && ch.topics.isNotEmpty)
                         l.booksChapterTaught(ch.topics.where((t) => _coverage!.topics.containsKey(t.id)).length, ch.topics.length),
                     ].join(' · '),
                   ),
-                  trailing: ch.topics.isEmpty ? null : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
-                  onTap: ch.topics.isEmpty ? null : () => setState(() => _open.contains(ch.id) ? _open.remove(ch.id) : _open.add(ch.id)),
+                  trailing: ch.topics.isEmpty
+                      ? (widget.ai.canUseAi ? const Icon(Icons.auto_awesome_outlined) : null)
+                      : Icon(_open.contains(ch.id) ? Icons.expand_less : Icons.expand_more),
+                  // A chapter without topic notes yet: KINETIX AI explains the chapter.
+                  onTap: ch.topics.isEmpty
+                      ? (widget.ai.canUseAi
+                            ? () {
+                                widget.ai.open(AiView.home);
+                                widget.onOpenPanel(PanelKind.ai);
+                                widget.ai.ask(widget.ai.contentL10n.aiExplainTopic(ch.title));
+                              }
+                            : null)
+                      : () => setState(() => _open.contains(ch.id) ? _open.remove(ch.id) : _open.add(ch.id)),
                 ),
                 if (_open.contains(ch.id))
                   for (final t in ch.topics)

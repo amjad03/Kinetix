@@ -69,6 +69,25 @@ class ProjectorSettingsSection extends StatelessWidget {
   }
 }
 
+/// Screen projection from the profile menu: projector mode's settings and status, looking
+/// again for a second screen (an HDMI projector or a wireless display).
+Future<void> showProjectorDialog(BuildContext context, ProjectorController projector, {required Widget Function(Widget) theme}) {
+  unawaited(projector.refresh());
+  return showDialog<void>(
+    context: context,
+    builder: (context) => theme(
+      AlertDialog(
+        key: const Key('projector-dialog'),
+        icon: const Icon(Icons.cast_outlined),
+        title: Text(context.l10n.screenProjection),
+        scrollable: true,
+        content: SizedBox(width: 480, child: ProjectorSettingsSection(projector: projector)),
+        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(context.l10n.done))],
+      ),
+    ),
+  );
+}
+
 /// A PNG of what [key]'s repaint boundary shows (the lab in the split pane), at most [maxWidth]
 /// pixels wide; null when it is not on screen.
 Future<Uint8List?> captureBoundaryPng(GlobalKey key, {double maxWidth = 1280}) async {

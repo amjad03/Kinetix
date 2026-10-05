@@ -61,14 +61,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get topicLabel => 'Topic';
 
   @override
-  String get soon => 'Soon';
-
-  @override
-  String comingSoonFeature(String feature) {
-    return '$feature is coming in an upcoming build.';
-  }
-
-  @override
   String get guest => 'Guest';
 
   @override
@@ -299,9 +291,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get signInUnregistered => 'Sign-in on an unregistered board';
-
-  @override
   String get recordNeedsSignIn =>
       'Sign in with the Teacher app to record lessons. The teacher must connect to this board first.';
 
@@ -416,9 +405,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String signedOutRecordingPending(String name) {
     return 'Signed out. The lesson recording is saved on this board and uploads when $name next signs in.';
   }
-
-  @override
-  String get attendanceWithoutClass => 'Attendance without a timetabled class';
 
   @override
   String get defaultBoardName => 'Board';
@@ -1288,24 +1274,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splitWhiteboard => 'Whiteboard';
 
   @override
-  String get splitDocument => 'PDF / PPT';
-
-  @override
-  String get splitVideo => 'Video';
-
-  @override
-  String get splitWeb => 'Web page';
-
-  @override
   String get splitModel3d => '3D model';
 
   @override
   String get splitLab => 'Virtual lab';
-
-  @override
-  String viewerComingSoon(String viewer) {
-    return 'The $viewer viewer is coming in an upcoming build.';
-  }
 
   @override
   String get splitChoose => 'Choose what to show next to the whiteboard.';
@@ -1644,11 +1616,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in with the Teacher app to ask KINETIX AI.';
 
   @override
-  String aiToolSoon(String tool) {
-    return 'KINETIX AI $tool';
-  }
-
-  @override
   String get aiAskHint => 'Ask anything about a topic';
 
   @override
@@ -1658,9 +1625,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiSpeak => 'Speak';
-
-  @override
-  String get aiVoiceQuestions => 'Voice questions';
 
   @override
   String get aiAsk => 'Ask';
@@ -1682,9 +1646,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiGroupLookUp => 'Look up';
 
   @override
-  String get aiSummary => 'Summary';
-
-  @override
   String get aiQuickQuiz => 'Quick quiz';
 
   @override
@@ -1704,12 +1665,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiTextbook => 'Textbook';
-
-  @override
-  String get aiWikipedia => 'Wikipedia';
-
-  @override
-  String get aiDictionary => 'Dictionary';
 
   @override
   String get aiReadBoard => 'Read board';
@@ -2080,9 +2035,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get booksAddedByInstitution => 'Added by your institution';
-
-  @override
-  String get booksNotesSoon => 'Notes coming soon';
 
   @override
   String booksTopicCount(int count) {
@@ -4149,4 +4101,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearedAllPages => 'All pages cleared';
+
+  @override
+  String get calcCannotWorkOut => 'That cannot be worked out';
+
+  @override
+  String get screenshotSaved => 'Picture of the board saved';
+
+  @override
+  String screenshotFailed(String error) {
+    return 'Could not save the picture: $error';
+  }
+
+  @override
+  String get touchLocked => 'Touch is locked';
+
+  @override
+  String get touchUnlockHold => 'Hold to unlock';
+
+  @override
+  String get aiListening => 'Listening… tap to stop';
+
+  @override
+  String get aiVoiceUnavailable =>
+      'Voice questions are not available on this device, or the microphone is off.';
+
+  @override
+  String aiVoiceLanguage(String language) {
+    return 'Speech in $language is not on this device yet: add it in the device\'s voice typing (offline speech) settings.';
+  }
+
+  @override
+  String get aiVoiceNothingHeard => 'Nothing was heard. Tap the mic and speak.';
+
+  @override
+  String get booksAskAiChapter => 'Tap for KINETIX AI to explain it';
+
+  @override
+  String get signInNeedsEnrolment =>
+      'Sign-in works once this board is enrolled with your institution.';
+
+  @override
+  String get attendanceNeedsClass =>
+      'Attendance opens with a timetabled class that has a student list.';
 }
