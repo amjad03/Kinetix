@@ -4102,4 +4102,23 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get toolMore => 'ಇನ್ನಷ್ಟು';
+
+  @override
+  String get appThemeTitle => 'ಆ್ಯಪ್ ಥೀಮ್';
+
+  @override
+  String get appThemeHint =>
+      'ಟೂಲ್‌ಬಾರ್, ಪ್ಯಾನೆಲ್ ಮತ್ತು ಡೈಲಾಗ್‌ಗಳ ಬಣ್ಣಗಳು, ಯಾವುದೇ ಸಾಧನವಾಗಿರಲಿ. ಚಾಕ್‌ಬೋರ್ಡ್ ಹಸಿರು ಬೋರ್ಡನ್ನೂ ಹಸಿರಾಗಿಸುತ್ತದೆ.';
+
+  @override
+  String get themeLight => 'ತಿಳಿ';
+
+  @override
+  String get themeDark => 'ಗಾಢ';
+
+  @override
+  String get themeChalkboard => 'ಚಾಕ್‌ಬೋರ್ಡ್ ಹಸಿರು';
+
+  @override
+  String get themeSystem => 'ಸಿಸ್ಟಮ್‌ನಂತೆ';
 }

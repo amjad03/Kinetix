@@ -73,15 +73,33 @@ abstract final class KinetixTheme {
   static ThemeData light() => _build(lightScheme);
   static ThemeData dark() => _build(ColorScheme.fromSeed(seedColor: Kx.seed, brightness: Brightness.dark).copyWith(tertiary: const Color(0xFFFFB95C)));
 
-  /// The board's floating chrome in the rails layout: white surfaces over the board, larger
+  /// The board's light floating chrome: white surfaces over the board, larger
   /// touch targets for a teacher standing at the panel.
   static ThemeData board() => _build(lightScheme, large: true);
 
-  /// The board's dark chrome (the bottom-toolbar layout, split-screen 3D models and labs): reads
+  /// The board's dark chrome (the Dark app theme, split-screen 3D models and labs): reads
   /// clearly over a bright canvas from the back of a classroom.
   static ThemeData boardChrome() => _build(
     ColorScheme.fromSeed(seedColor: Kx.seed, brightness: Brightness.dark).copyWith(tertiary: const Color(0xFFFFB95C)),
     large: true,
+  );
+
+  /// Chalkboard green: dark green surfaces and chalk-coloured accents. [large] for the board's
+  /// chrome (larger touch targets).
+  static ThemeData chalkboard({bool large = false}) => _build(chalkboardScheme, large: large);
+
+  static final chalkboardScheme = ColorScheme.fromSeed(seedColor: const Color(0xFF2F6B4F), brightness: Brightness.dark).copyWith(
+    primary: const Color(0xFFA8E6C1),
+    onPrimary: const Color(0xFF0B3520),
+    tertiary: const Color(0xFFFFE08A),
+    surface: const Color(0xFF1E3A2B),
+    onSurface: const Color(0xFFEFF5EC),
+    onSurfaceVariant: const Color(0xFFC3D3C5),
+    surfaceContainerLowest: const Color(0xFF163022),
+    surfaceContainerLow: const Color(0xFF213F2F),
+    surfaceContainer: const Color(0xFF254634),
+    surfaceContainerHigh: const Color(0xFF2B4F3B),
+    surfaceContainerHighest: const Color(0xFF325843),
   );
 
   static ThemeData _build(ColorScheme scheme, {bool large = false}) {

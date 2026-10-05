@@ -4114,4 +4114,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toolMore => 'More';
+
+  @override
+  String get appThemeTitle => 'App theme';
+
+  @override
+  String get appThemeHint =>
+      'Colours of the toolbars, panels and dialogs, whatever the device. Chalkboard green turns the board green too.';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get themeChalkboard => 'Chalkboard green';
+
+  @override
+  String get themeSystem => 'Follow system';
 }

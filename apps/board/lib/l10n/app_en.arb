@@ -2316,5 +2316,11 @@
   "fingerTapsTitle": "Finger taps",
   "fingerTapsHint": "Tap the board with two fingers to undo, with three fingers to redo.",
   "helpErase3": "Or tap the board with two fingers to undo; three fingers redo.",
-  "toolMore": "More"
+  "toolMore": "More",
+  "appThemeTitle": "App theme",
+  "appThemeHint": "Colours of the toolbars, panels and dialogs, whatever the device. Chalkboard green turns the board green too.",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeChalkboard": "Chalkboard green",
+  "themeSystem": "Follow system"
 }

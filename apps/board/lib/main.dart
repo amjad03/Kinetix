@@ -83,17 +83,24 @@ class KinetixBoardApp extends StatelessWidget {
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => ListenableBuilder(
           listenable: controller,
-          builder: (context, _) => EyeComfortFilter(
-            settings: controller.eyeComfort,
-            child: BoardChromeTheme(
-              child: BroadcastOverlay(
-                messages: controller.broadcasts,
-                acknowledged: controller.acknowledgedEmergencies,
-                onDismiss: controller.dismissBroadcast,
-                child: Theme(data: KinetixTheme.light(), child: child!),
+          builder: (context, _) {
+            // The teacher's App theme, whatever the device or the layout.
+            final look = controller.theme.resolve(MediaQuery.platformBrightnessOf(context));
+            return BoardLook(
+              look: look,
+              child: EyeComfortFilter(
+                settings: controller.eyeComfort,
+                child: BoardChromeTheme(
+                  child: BroadcastOverlay(
+                    messages: controller.broadcasts,
+                    acknowledged: controller.acknowledgedEmergencies,
+                    onDismiss: controller.dismissBroadcast,
+                    child: Theme(data: boardAppTheme(look), child: child!),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
         home: ListenableBuilder(
           listenable: controller,

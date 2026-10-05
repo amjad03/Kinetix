@@ -47,6 +47,21 @@ enum BoardLayout {
   bottomBar,
 }
 
+/// How the board's screens, toolbars and dialogs look (Board settings → App theme).
+enum BoardTheme {
+  light,
+  dark,
+
+  /// Dark green chrome, and a chalkboard to write on.
+  chalkboard,
+
+  /// Light or dark, as the device is set.
+  system;
+
+  /// Light, dark or chalkboard, with the device's own setting for [system].
+  BoardTheme resolve(Brightness platform) => this == system ? (platform == Brightness.dark ? dark : light) : this;
+}
+
 /// The Simple board: big labelled tools, Andika and class stars, for LKG to Class 5.
 enum SimpleBoard {
   /// On for primary classes (from the period's class), off otherwise.
@@ -124,6 +139,10 @@ class BoardController extends ChangeNotifier {
 
   /// Where the tools sit. Rails unless the board was set otherwise.
   BoardLayout layout = BoardLayout.rails;
+
+  /// How the screens look (Board settings → App theme): light unless the teacher picks another,
+  /// whatever the device or the layout.
+  BoardTheme theme = BoardTheme.light;
 
   /// The Simple board setting; see [primaryMode].
   SimpleBoard simpleBoard = SimpleBoard.auto;
@@ -268,6 +287,7 @@ class BoardController extends ChangeNotifier {
       eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
       boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
       layout = BoardLayout.values.asNameMap()[await _store.setting('layout')] ?? BoardLayout.rails;
+      theme = BoardTheme.values.asNameMap()[await _store.setting('theme')] ?? BoardTheme.light;
       simpleBoard = SimpleBoard.values.asNameMap()[await _store.setting('simpleBoard')] ?? SimpleBoard.auto;
       inputMode = InputMode.values.asNameMap()[await _store.setting('inputMode')] ?? InputMode.auto;
       aiPenMode = AiPenMode.values.asNameMap()[await _store.setting('aiPenMode')] ?? AiPenMode.auto;
@@ -283,7 +303,7 @@ class BoardController extends ChangeNotifier {
   /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
   /// come back when they sign out. The board's language, touch surface, kiosk and projector
   /// stay the board's.
-  static const teacherSettings = ['eyeComfort', 'layout', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps'];
+  static const teacherSettings = ['eyeComfort', 'layout', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps'];
 
   String? _settingsTeacher;
 
@@ -298,6 +318,7 @@ class BoardController extends ChangeNotifier {
   Map<String, String?> _teacherSettingValues() => {
     'eyeComfort': eyeComfort.encode(),
     'layout': layout.name,
+    'theme': theme.name,
     'simpleBoard': simpleBoard.name,
     'inputMode': inputMode.name,
     'aiPenMode': aiPenMode.name,
@@ -309,6 +330,7 @@ class BoardController extends ChangeNotifier {
   void _setTeacherSettingValues(Map<String, String?> v) {
     if (v.containsKey('eyeComfort')) eyeComfort = EyeComfortSettings.decode(v['eyeComfort']);
     layout = BoardLayout.values.asNameMap()[v['layout']] ?? layout;
+    theme = BoardTheme.values.asNameMap()[v['theme']] ?? theme;
     simpleBoard = SimpleBoard.values.asNameMap()[v['simpleBoard']] ?? simpleBoard;
     inputMode = InputMode.values.asNameMap()[v['inputMode']] ?? inputMode;
     aiPenMode = AiPenMode.values.asNameMap()[v['aiPenMode']] ?? aiPenMode;
@@ -418,6 +440,12 @@ class BoardController extends ChangeNotifier {
   void setLayout(BoardLayout l) {
     layout = l;
     unawaited(_saveTeacherSetting('layout', l.name));
+    notifyListeners();
+  }
+
+  void setTheme(BoardTheme t) {
+    theme = t;
+    unawaited(_saveTeacherSetting('theme', t.name));
     notifyListeners();
   }
 

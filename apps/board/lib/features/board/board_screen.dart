@@ -144,6 +144,7 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void initState() {
     super.initState();
+    _theme = board.theme;
     board.addListener(_onBoardChanged);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
@@ -294,6 +295,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   void _onBoardChanged() {
+    _followTheme();
     if (board.liveViewers == 0 && _live.isStreaming) _live.stop();
     _applyClass();
     final id = board.session?.sessionId;
@@ -381,6 +383,21 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
     );
     if (mounted) setState(() => _signInOpen = false);
+  }
+
+  late BoardTheme _theme;
+
+  /// Chalkboard green writes on a chalkboard; leaving it puts plain paper back.
+  void _followTheme() {
+    final t = board.theme;
+    if (t == _theme) return;
+    final was = _theme;
+    _theme = t;
+    if (t == BoardTheme.chalkboard && _background != BoardBackground.chalkboard) {
+      _setBackground(BoardBackground.chalkboard);
+    } else if (was == BoardTheme.chalkboard && _background == BoardBackground.chalkboard) {
+      _setBackground(BoardBackground.plain);
+    }
   }
 
   void _setBackground(BoardBackground b) {
@@ -1052,7 +1069,6 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    BoardChromeTheme.light = _rails;
     InkLabels.answerCover = l.answerCover;
     return Model3dScope(
       onSnapshot: _addModelSnapshot,

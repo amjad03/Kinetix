@@ -1,29 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
 
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
 ///
-/// The rails layout follows the KINETIX design (docs/design/design-system.md): white floating
-/// surfaces with a soft shadow, in [KinetixTheme.board]. The bottom-toolbar layout keeps
-/// [KinetixTheme.boardChrome] (Material 3, dark), which reads clearly over a bright canvas.
+/// The chrome follows the KINETIX design (docs/design/design-system.md) in the teacher's App
+/// theme (Board settings), whatever the layout or the device: white floating surfaces with a
+/// soft shadow in [KinetixTheme.board], Material 3 dark in [KinetixTheme.boardChrome], or
+/// chalkboard green.
 
-/// Wraps [child] in the board chrome theme of the layout in use.
+/// The app's own theme (screens, panels and dialogs) for a resolved [BoardTheme].
+ThemeData boardAppTheme(BoardTheme t) => _appThemes[t.resolve(Brightness.light)]!;
+
+final _appThemes = {
+  BoardTheme.light: KinetixTheme.light(),
+  BoardTheme.dark: KinetixTheme.dark(),
+  BoardTheme.chalkboard: KinetixTheme.chalkboard(),
+};
+
+/// Wraps [child] in the board chrome theme of the teacher's App theme.
 class BoardChromeTheme extends StatelessWidget {
   const BoardChromeTheme({super.key, required this.child});
 
   final Widget child;
 
-  static final _dark = KinetixTheme.boardChrome();
-  static final _light = KinetixTheme.board();
-
-  /// True for the light chrome of the rails layout. The board screen sets it as it builds:
-  /// dialogs are built under the navigator, outside the board screen, and need it too.
-  static bool light = false;
+  static final _themes = {
+    BoardTheme.light: KinetixTheme.board(),
+    BoardTheme.dark: KinetixTheme.boardChrome(),
+    BoardTheme.chalkboard: KinetixTheme.chalkboard(large: true),
+  };
 
   @override
-  Widget build(BuildContext context) => Theme(data: light ? _light : _dark, child: child);
+  Widget build(BuildContext context) => Theme(data: _themes[BoardLook.of(context).resolve(Brightness.light)]!, child: child);
+}
+
+/// The App theme in use, resolved (never [BoardTheme.system]). The app puts it above its
+/// navigator, so the board, its sheets and its dialogs all see it.
+class BoardLook extends InheritedWidget {
+  const BoardLook({super.key, required this.look, required super.child});
+
+  final BoardTheme look;
+
+  /// Light where no app sets it (tests of one widget).
+  static BoardTheme of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<BoardLook>()?.look ?? BoardTheme.light;
+
+  @override
+  bool updateShouldNotify(BoardLook oldWidget) => oldWidget.look != look;
 }
 
 /// A floating, rounded surface (toolbar pill, popover card).

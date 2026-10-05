@@ -4093,4 +4093,23 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get toolMore => 'और';
+
+  @override
+  String get appThemeTitle => 'ऐप थीम';
+
+  @override
+  String get appThemeHint =>
+      'टूलबार, पैनल और डायलॉग के रंग, डिवाइस कोई भी हो। चॉकबोर्ड हरा बोर्ड को भी हरा कर देता है।';
+
+  @override
+  String get themeLight => 'हल्का';
+
+  @override
+  String get themeDark => 'गहरा';
+
+  @override
+  String get themeChalkboard => 'चॉकबोर्ड हरा';
+
+  @override
+  String get themeSystem => 'सिस्टम जैसा';
 }

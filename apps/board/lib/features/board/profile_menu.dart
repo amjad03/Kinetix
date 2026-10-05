@@ -235,6 +235,37 @@ class BoardSettingsDialog extends StatelessWidget {
                   onSelectionChanged: (s) => board.setLayout(s.single),
                 ),
                 const SizedBox(height: Kx.s24),
+                Text(l.appThemeTitle, style: context.text.titleSmall),
+                const SizedBox(height: Kx.s4),
+                Text(l.appThemeHint, style: hint),
+                const SizedBox(height: Kx.s12),
+                Wrap(
+                  key: const Key('board-theme'),
+                  spacing: Kx.s8,
+                  runSpacing: Kx.s8,
+                  children: [
+                    for (final t in BoardTheme.values)
+                      ChoiceChip(
+                        key: Key('theme-${t.name}'),
+                        label: Text(switch (t) {
+                          BoardTheme.light => l.themeLight,
+                          BoardTheme.dark => l.themeDark,
+                          BoardTheme.chalkboard => l.themeChalkboard,
+                          BoardTheme.system => l.themeSystem,
+                        }),
+                        avatar: Icon(switch (t) {
+                          BoardTheme.light => Icons.light_mode_outlined,
+                          BoardTheme.dark => Icons.dark_mode_outlined,
+                          BoardTheme.chalkboard => Icons.school_outlined,
+                          BoardTheme.system => Icons.brightness_auto_outlined,
+                        }),
+                        showCheckmark: false,
+                        selected: board.theme == t,
+                        onSelected: (_) => board.setTheme(t),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: Kx.s24),
                 Text(l.simpleBoardTitle, style: context.text.titleSmall),
                 const SizedBox(height: Kx.s4),
                 Text(l.simpleBoardHint, style: hint),
