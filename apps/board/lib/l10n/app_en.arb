@@ -299,6 +299,86 @@
   "toolScreenShade": "Screen shade",
   "toolScreenshot": "Screenshot",
   "toolTouchLock": "Touch lock",
+  "tkStopwatch": "Stopwatch",
+  "tkDice": "Dice",
+  "tkSpinner": "Spinner",
+  "tkNoiseMeter": "Noise meter",
+  "tkDragCard": "Drag to move",
+  "tkPlusMinute": "+1 min",
+  "tkLap": "Lap",
+  "@tkLap": {
+    "description": "Stopwatch: record the time now and keep running."
+  },
+  "tkLapN": "Lap {number}: {time}",
+  "@tkLapN": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tkPick": "Pick",
+  "tkReady": "Ready?",
+  "tkPickedOf": "{picked} of {total} picked",
+  "@tkPickedOf": {
+    "placeholders": {
+      "picked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tkNoRepeat": "Don't repeat until everyone is picked",
+  "tkStartOver": "Start the round again",
+  "tkDemoClass": "Demo class",
+  "tkRoll": "Roll",
+  "@tkRoll": {
+    "description": "Roll the dice."
+  },
+  "tkDiceCount": "{count, plural, =1{1 die} other{{count} dice}}",
+  "@tkDiceCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tkTotal": "Total: {total}",
+  "@tkTotal": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tkSpin": "Spin",
+  "tkSpinnerOptions": "Spinner options",
+  "tkSpinnerHint": "One option on each line",
+  "tkGroup": "Group {letter}",
+  "@tkGroup": {
+    "placeholders": {
+      "letter": {
+        "type": "String"
+      }
+    }
+  },
+  "tkTooLoud": "Too loud!",
+  "tkCalm": "Nice and calm",
+  "tkLimit": "Limit",
+  "tkNoisePermission": "Allow the microphone to use the noise meter.",
+  "tkNoiseNoMic": "This board has no microphone.",
+  "tkNoiseUnavailable": "The noise meter cannot use the microphone now. Turn off class audio or recording and try again.",
+  "tkNoiseLocal": "Only the sound level is measured, on this board. Nothing is recorded.",
+  "tkDragToReveal": "Drag to reveal",
+  "tkRevealAll": "Reveal all",
+  "tkRemoveShade": "Remove shade",
+  "tkEndSpotlight": "End spotlight",
+  "tkSpotlightSize": "Spotlight size",
   "pen": "Pen",
   "highlighter": "Highlighter",
   "colour": "Colour",

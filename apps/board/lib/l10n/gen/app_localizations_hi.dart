@@ -465,6 +465,117 @@ class AppLocalizationsHi extends AppLocalizations {
   String get toolTouchLock => 'टच लॉक';
 
   @override
+  String get tkStopwatch => 'स्टॉपवॉच';
+
+  @override
+  String get tkDice => 'पासा';
+
+  @override
+  String get tkSpinner => 'चक्री';
+
+  @override
+  String get tkNoiseMeter => 'शोर मीटर';
+
+  @override
+  String get tkDragCard => 'हटाने के लिए खींचें';
+
+  @override
+  String get tkPlusMinute => '+1 मिनट';
+
+  @override
+  String get tkLap => 'लैप';
+
+  @override
+  String tkLapN(int number, String time) {
+    return 'लैप $number: $time';
+  }
+
+  @override
+  String get tkPick => 'चुनें';
+
+  @override
+  String get tkReady => 'तैयार?';
+
+  @override
+  String tkPickedOf(int picked, int total) {
+    return '$total में से $picked चुने गए';
+  }
+
+  @override
+  String get tkNoRepeat => 'सबकी बारी आने तक दोबारा न चुनें';
+
+  @override
+  String get tkStartOver => 'फिर से शुरू करें';
+
+  @override
+  String get tkDemoClass => 'डेमो कक्षा';
+
+  @override
+  String get tkRoll => 'फेंकें';
+
+  @override
+  String tkDiceCount(int count) {
+    return '$count पासे';
+  }
+
+  @override
+  String tkTotal(int total) {
+    return 'कुल: $total';
+  }
+
+  @override
+  String get tkSpin => 'घुमाएँ';
+
+  @override
+  String get tkSpinnerOptions => 'चक्री के विकल्प';
+
+  @override
+  String get tkSpinnerHint => 'हर पंक्ति में एक विकल्प';
+
+  @override
+  String tkGroup(String letter) {
+    return 'समूह $letter';
+  }
+
+  @override
+  String get tkTooLoud => 'बहुत शोर!';
+
+  @override
+  String get tkCalm => 'अच्छा और शांत';
+
+  @override
+  String get tkLimit => 'सीमा';
+
+  @override
+  String get tkNoisePermission => 'शोर मीटर के लिए माइक्रोफ़ोन की अनुमति दें।';
+
+  @override
+  String get tkNoiseNoMic => 'इस बोर्ड में माइक्रोफ़ोन नहीं है।';
+
+  @override
+  String get tkNoiseUnavailable =>
+      'शोर मीटर अभी माइक्रोफ़ोन इस्तेमाल नहीं कर सकता। कक्षा की आवाज़ या रिकॉर्डिंग बंद करके फिर कोशिश करें।';
+
+  @override
+  String get tkNoiseLocal =>
+      'सिर्फ़ आवाज़ का स्तर इसी बोर्ड पर मापा जाता है। कुछ भी रिकॉर्ड नहीं होता।';
+
+  @override
+  String get tkDragToReveal => 'दिखाने के लिए खींचें';
+
+  @override
+  String get tkRevealAll => 'सब दिखाएँ';
+
+  @override
+  String get tkRemoveShade => 'शेड हटाएँ';
+
+  @override
+  String get tkEndSpotlight => 'स्पॉटलाइट बंद करें';
+
+  @override
+  String get tkSpotlightSize => 'स्पॉटलाइट का आकार';
+
+  @override
   String get pen => 'पेन';
 
   @override

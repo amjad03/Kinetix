@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The board talks to KINETIX Cloud in release builds too. -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Lesson recording: the teacher's voice. Without it the board records ink only. -->
+    <!-- Lesson recording: the teacher's voice. Without it the board records ink only. The noise
+         meter reads the sound level from it on the board; nothing is recorded or sent. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- Kiosk mode: open the board again after a reboot or power cut (docs/hardware/kiosk-mode.md). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -82,6 +83,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Read aloud: the device's text-to-speech engines (flutter_tts, Android 11+). -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
 </manifest>

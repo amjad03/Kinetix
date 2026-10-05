@@ -463,6 +463,124 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolTouchLock => 'Touch lock';
 
   @override
+  String get tkStopwatch => 'Stopwatch';
+
+  @override
+  String get tkDice => 'Dice';
+
+  @override
+  String get tkSpinner => 'Spinner';
+
+  @override
+  String get tkNoiseMeter => 'Noise meter';
+
+  @override
+  String get tkDragCard => 'Drag to move';
+
+  @override
+  String get tkPlusMinute => '+1 min';
+
+  @override
+  String get tkLap => 'Lap';
+
+  @override
+  String tkLapN(int number, String time) {
+    return 'Lap $number: $time';
+  }
+
+  @override
+  String get tkPick => 'Pick';
+
+  @override
+  String get tkReady => 'Ready?';
+
+  @override
+  String tkPickedOf(int picked, int total) {
+    return '$picked of $total picked';
+  }
+
+  @override
+  String get tkNoRepeat => 'Don\'t repeat until everyone is picked';
+
+  @override
+  String get tkStartOver => 'Start the round again';
+
+  @override
+  String get tkDemoClass => 'Demo class';
+
+  @override
+  String get tkRoll => 'Roll';
+
+  @override
+  String tkDiceCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dice',
+      one: '1 die',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tkTotal(int total) {
+    return 'Total: $total';
+  }
+
+  @override
+  String get tkSpin => 'Spin';
+
+  @override
+  String get tkSpinnerOptions => 'Spinner options';
+
+  @override
+  String get tkSpinnerHint => 'One option on each line';
+
+  @override
+  String tkGroup(String letter) {
+    return 'Group $letter';
+  }
+
+  @override
+  String get tkTooLoud => 'Too loud!';
+
+  @override
+  String get tkCalm => 'Nice and calm';
+
+  @override
+  String get tkLimit => 'Limit';
+
+  @override
+  String get tkNoisePermission =>
+      'Allow the microphone to use the noise meter.';
+
+  @override
+  String get tkNoiseNoMic => 'This board has no microphone.';
+
+  @override
+  String get tkNoiseUnavailable =>
+      'The noise meter cannot use the microphone now. Turn off class audio or recording and try again.';
+
+  @override
+  String get tkNoiseLocal =>
+      'Only the sound level is measured, on this board. Nothing is recorded.';
+
+  @override
+  String get tkDragToReveal => 'Drag to reveal';
+
+  @override
+  String get tkRevealAll => 'Reveal all';
+
+  @override
+  String get tkRemoveShade => 'Remove shade';
+
+  @override
+  String get tkEndSpotlight => 'End spotlight';
+
+  @override
+  String get tkSpotlightSize => 'Spotlight size';
+
+  @override
   String get pen => 'Pen';
 
   @override

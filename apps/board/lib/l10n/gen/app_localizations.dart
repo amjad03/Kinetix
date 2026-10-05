@@ -844,6 +844,204 @@ abstract class AppLocalizations {
   /// **'Touch lock'**
   String get toolTouchLock;
 
+  /// No description provided for @tkStopwatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopwatch'**
+  String get tkStopwatch;
+
+  /// No description provided for @tkDice.
+  ///
+  /// In en, this message translates to:
+  /// **'Dice'**
+  String get tkDice;
+
+  /// No description provided for @tkSpinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Spinner'**
+  String get tkSpinner;
+
+  /// No description provided for @tkNoiseMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Noise meter'**
+  String get tkNoiseMeter;
+
+  /// No description provided for @tkDragCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move'**
+  String get tkDragCard;
+
+  /// No description provided for @tkPlusMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'+1 min'**
+  String get tkPlusMinute;
+
+  /// Stopwatch: record the time now and keep running.
+  ///
+  /// In en, this message translates to:
+  /// **'Lap'**
+  String get tkLap;
+
+  /// No description provided for @tkLapN.
+  ///
+  /// In en, this message translates to:
+  /// **'Lap {number}: {time}'**
+  String tkLapN(int number, String time);
+
+  /// No description provided for @tkPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick'**
+  String get tkPick;
+
+  /// No description provided for @tkReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready?'**
+  String get tkReady;
+
+  /// No description provided for @tkPickedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{picked} of {total} picked'**
+  String tkPickedOf(int picked, int total);
+
+  /// No description provided for @tkNoRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t repeat until everyone is picked'**
+  String get tkNoRepeat;
+
+  /// No description provided for @tkStartOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the round again'**
+  String get tkStartOver;
+
+  /// No description provided for @tkDemoClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo class'**
+  String get tkDemoClass;
+
+  /// Roll the dice.
+  ///
+  /// In en, this message translates to:
+  /// **'Roll'**
+  String get tkRoll;
+
+  /// No description provided for @tkDiceCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 die} other{{count} dice}}'**
+  String tkDiceCount(int count);
+
+  /// No description provided for @tkTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {total}'**
+  String tkTotal(int total);
+
+  /// No description provided for @tkSpin.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin'**
+  String get tkSpin;
+
+  /// No description provided for @tkSpinnerOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Spinner options'**
+  String get tkSpinnerOptions;
+
+  /// No description provided for @tkSpinnerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One option on each line'**
+  String get tkSpinnerHint;
+
+  /// No description provided for @tkGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group {letter}'**
+  String tkGroup(String letter);
+
+  /// No description provided for @tkTooLoud.
+  ///
+  /// In en, this message translates to:
+  /// **'Too loud!'**
+  String get tkTooLoud;
+
+  /// No description provided for @tkCalm.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice and calm'**
+  String get tkCalm;
+
+  /// No description provided for @tkLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit'**
+  String get tkLimit;
+
+  /// No description provided for @tkNoisePermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the microphone to use the noise meter.'**
+  String get tkNoisePermission;
+
+  /// No description provided for @tkNoiseNoMic.
+  ///
+  /// In en, this message translates to:
+  /// **'This board has no microphone.'**
+  String get tkNoiseNoMic;
+
+  /// No description provided for @tkNoiseUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The noise meter cannot use the microphone now. Turn off class audio or recording and try again.'**
+  String get tkNoiseUnavailable;
+
+  /// No description provided for @tkNoiseLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the sound level is measured, on this board. Nothing is recorded.'**
+  String get tkNoiseLocal;
+
+  /// No description provided for @tkDragToReveal.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reveal'**
+  String get tkDragToReveal;
+
+  /// No description provided for @tkRevealAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal all'**
+  String get tkRevealAll;
+
+  /// No description provided for @tkRemoveShade.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove shade'**
+  String get tkRemoveShade;
+
+  /// No description provided for @tkEndSpotlight.
+  ///
+  /// In en, this message translates to:
+  /// **'End spotlight'**
+  String get tkEndSpotlight;
+
+  /// No description provided for @tkSpotlightSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlight size'**
+  String get tkSpotlightSize;
+
   /// No description provided for @pen.
   ///
   /// In en, this message translates to:

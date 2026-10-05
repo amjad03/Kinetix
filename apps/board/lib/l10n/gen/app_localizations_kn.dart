@@ -466,6 +466,117 @@ class AppLocalizationsKn extends AppLocalizations {
   String get toolTouchLock => 'ಟಚ್ ಲಾಕ್';
 
   @override
+  String get tkStopwatch => 'ಸ್ಟಾಪ್‌ವಾಚ್';
+
+  @override
+  String get tkDice => 'ದಾಳ';
+
+  @override
+  String get tkSpinner => 'ಚಕ್ರ';
+
+  @override
+  String get tkNoiseMeter => 'ಶಬ್ದ ಮಾಪಕ';
+
+  @override
+  String get tkDragCard => 'ಸರಿಸಲು ಎಳೆಯಿರಿ';
+
+  @override
+  String get tkPlusMinute => '+1 ನಿಮಿಷ';
+
+  @override
+  String get tkLap => 'ಲ್ಯಾಪ್';
+
+  @override
+  String tkLapN(int number, String time) {
+    return 'ಲ್ಯಾಪ್ $number: $time';
+  }
+
+  @override
+  String get tkPick => 'ಆರಿಸಿ';
+
+  @override
+  String get tkReady => 'ಸಿದ್ಧವೇ?';
+
+  @override
+  String tkPickedOf(int picked, int total) {
+    return '$total ರಲ್ಲಿ $picked ಆಯ್ಕೆ';
+  }
+
+  @override
+  String get tkNoRepeat => 'ಎಲ್ಲರ ಸರದಿ ಮುಗಿಯುವವರೆಗೆ ಮತ್ತೆ ಆರಿಸಬೇಡಿ';
+
+  @override
+  String get tkStartOver => 'ಮತ್ತೆ ಮೊದಲಿನಿಂದ';
+
+  @override
+  String get tkDemoClass => 'ಡೆಮೊ ತರಗತಿ';
+
+  @override
+  String get tkRoll => 'ಉರುಳಿಸಿ';
+
+  @override
+  String tkDiceCount(int count) {
+    return '$count ದಾಳಗಳು';
+  }
+
+  @override
+  String tkTotal(int total) {
+    return 'ಒಟ್ಟು: $total';
+  }
+
+  @override
+  String get tkSpin => 'ತಿರುಗಿಸಿ';
+
+  @override
+  String get tkSpinnerOptions => 'ಚಕ್ರದ ಆಯ್ಕೆಗಳು';
+
+  @override
+  String get tkSpinnerHint => 'ಪ್ರತಿ ಸಾಲಿನಲ್ಲಿ ಒಂದು ಆಯ್ಕೆ';
+
+  @override
+  String tkGroup(String letter) {
+    return 'ಗುಂಪು $letter';
+  }
+
+  @override
+  String get tkTooLoud => 'ತುಂಬಾ ಗದ್ದಲ!';
+
+  @override
+  String get tkCalm => 'ಚೆನ್ನಾಗಿದೆ, ಶಾಂತವಾಗಿದೆ';
+
+  @override
+  String get tkLimit => 'ಮಿತಿ';
+
+  @override
+  String get tkNoisePermission => 'ಶಬ್ದ ಮಾಪಕಕ್ಕೆ ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ನೀಡಿ.';
+
+  @override
+  String get tkNoiseNoMic => 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಮೈಕ್ರೊಫೋನ್ ಇಲ್ಲ.';
+
+  @override
+  String get tkNoiseUnavailable =>
+      'ಶಬ್ದ ಮಾಪಕ ಈಗ ಮೈಕ್ರೊಫೋನ್ ಬಳಸಲಾಗದು. ತರಗತಿ ಧ್ವನಿ ಅಥವಾ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get tkNoiseLocal =>
+      'ಧ್ವನಿಯ ಮಟ್ಟವನ್ನು ಮಾತ್ರ ಈ ಬೋರ್ಡ್‌ನಲ್ಲೇ ಅಳೆಯಲಾಗುತ್ತದೆ. ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡುವುದಿಲ್ಲ.';
+
+  @override
+  String get tkDragToReveal => 'ತೋರಿಸಲು ಎಳೆಯಿರಿ';
+
+  @override
+  String get tkRevealAll => 'ಎಲ್ಲಾ ತೋರಿಸಿ';
+
+  @override
+  String get tkRemoveShade => 'ಶೇಡ್ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get tkEndSpotlight => 'ಸ್ಪಾಟ್‌ಲೈಟ್ ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get tkSpotlightSize => 'ಸ್ಪಾಟ್‌ಲೈಟ್ ಗಾತ್ರ';
+
+  @override
   String get pen => 'ಪೆನ್';
 
   @override
