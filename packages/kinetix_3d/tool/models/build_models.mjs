@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { readBp3d, merge, weld, simplify, clip, bounds, centroid, triangles, openEdges, translate, cutPlane, components, compact } from './lib/mesh.mjs';
 import { writeGlb } from './lib/glb.mjs';
 import { envelope } from './lib/volume.mjs';
+import { writeCatalogue } from './write_catalogue.mjs';
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -353,3 +354,5 @@ for (const f of readdirSync(join(here, 'recipes')).filter((f) => f.endsWith('.mj
   await build(recipe, bp3d);
 }
 writeIndex();
+// The same list for the app's Dart catalogue.
+writeCatalogue();
