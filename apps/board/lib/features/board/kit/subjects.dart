@@ -5,16 +5,16 @@ import '../../../core/models.dart';
 import '../../../l10n/l10n.dart';
 import '../../ai/ai_controller.dart';
 
-/// Subjects taught from LKG to Class 12 and in college. The class's subject reshapes the
+/// Subjects taught from LKG to Class 12 and in college (B.Com, BBA, MBA, LLB, BSc). The class's subject reshapes the
 /// board: its accent colour, its paper, the subject tools on the left rail, the order of the AI
 /// tools on the right, and the tabs of its kit (ported from the KINETIX prototype).
-enum Subject { maths, physics, chemistry, biology, science, evs, geography, history, civics, commerce, english, languages, computer, art, general }
+enum Subject { maths, physics, chemistry, biology, science, evs, geography, history, civics, commerce, management, law, statistics, english, languages, computer, art, general }
 
 /// The subject's own tools on the left rail.
-enum SubjectTool { equation, graph, geometry, numberLine, circuit, atom, chemEquation, timeline, flowchart, code, fourLine, wordCard, grammar }
+enum SubjectTool { equation, graph, geometry, numberLine, circuit, atom, chemEquation, timeline, flowchart, code, fourLine, wordCard, grammar, sheet, reader }
 
 /// Tabs of the subject kit on the right. "This lesson" always comes first.
-enum KitTab { lesson, formulas, physics, constants, periodic, ions, dates, words, logic, binary, stars }
+enum KitTab { lesson, formulas, physics, constants, periodic, ions, dates, words, logic, binary, stars, accounts, finance, management, law, stats }
 
 /// How a subject looks and what it brings.
 class SubjectStyle {
@@ -131,9 +131,36 @@ const subjectStyles = <Subject, SubjectStyle>{
     icon: Icons.account_balance_wallet_outlined,
     accent: Color(0xFF7A4F00),
     paper: BoardBackground.ruled,
-    tools: [SubjectTool.equation, SubjectTool.graph, SubjectTool.flowchart],
+    tools: [SubjectTool.sheet, SubjectTool.equation, SubjectTool.graph, SubjectTool.flowchart],
     aiFirst: [AiView.quiz, AiView.homework, AiView.math],
-    tabs: [KitTab.formulas],
+    tabs: [KitTab.accounts, KitTab.finance, KitTab.stats, KitTab.formulas],
+  ),
+  Subject.management: SubjectStyle(
+    subject: Subject.management,
+    icon: Icons.insights_outlined,
+    accent: Color(0xFF7D3A8C),
+    paper: BoardBackground.plain,
+    tools: [SubjectTool.sheet, SubjectTool.flowchart, SubjectTool.graph],
+    aiFirst: [AiView.quiz, AiView.lessonPlan, AiView.homework],
+    tabs: [KitTab.management, KitTab.finance, KitTab.stats],
+  ),
+  Subject.law: SubjectStyle(
+    subject: Subject.law,
+    icon: Icons.balance_outlined,
+    accent: Color(0xFF8C2F2F),
+    paper: BoardBackground.ruled,
+    tools: [SubjectTool.reader, SubjectTool.timeline, SubjectTool.flowchart],
+    aiFirst: [AiView.quiz, AiView.lessonPlan, AiView.homework],
+    tabs: [KitTab.law, KitTab.dates],
+  ),
+  Subject.statistics: SubjectStyle(
+    subject: Subject.statistics,
+    icon: Icons.query_stats,
+    accent: Color(0xFF3F5AA8),
+    paper: BoardBackground.grid,
+    tools: [SubjectTool.sheet, SubjectTool.graph, SubjectTool.equation],
+    aiFirst: [AiView.math, AiView.quiz, AiView.homework],
+    tabs: [KitTab.stats, KitTab.formulas],
   ),
   Subject.english: SubjectStyle(
     subject: Subject.english,
@@ -183,6 +210,15 @@ const subjectStyles = <Subject, SubjectStyle>{
 };
 
 const _aliases = <String, Subject>{
+  // College subjects first: "Business Statistics", "Business Law", "Biostatistics".
+  'statistic': Subject.statistics,
+  'econometric': Subject.statistics,
+  'quantitative': Subject.statistics,
+  'law': Subject.law,
+  'legal': Subject.law,
+  'jurisprudence': Subject.law,
+  'constitution': Subject.law,
+  'tort': Subject.law,
   'math': Subject.maths,
   'physics': Subject.physics,
   'chemistry': Subject.chemistry,
@@ -200,6 +236,19 @@ const _aliases = <String, Subject>{
   'economics': Subject.commerce,
   'account': Subject.commerce,
   'commerce': Subject.commerce,
+  // Accounts and finance before management: "Management Accounting", "Financial Management".
+  'financ': Subject.commerce,
+  'tax': Subject.commerce,
+  'audit': Subject.commerce,
+  'costing': Subject.commerce,
+  'management': Subject.management,
+  'marketing': Subject.management,
+  'human resource': Subject.management,
+  'organisational': Subject.management,
+  'organizational': Subject.management,
+  'strateg': Subject.management,
+  'entrepreneur': Subject.management,
+  'operations research': Subject.management,
   'business': Subject.commerce,
   'english': Subject.english,
   'hindi': Subject.languages,
@@ -264,6 +313,9 @@ extension SubjectNames on AppLocalizations {
     Subject.history => subjectHistory,
     Subject.civics => subjectCivics,
     Subject.commerce => subjectCommerce,
+    Subject.management => subjectManagement,
+    Subject.law => subjectLaw,
+    Subject.statistics => subjectStatistics,
     Subject.english => subjectEnglish,
     Subject.languages => subjectLanguages,
     Subject.computer => subjectComputer,
@@ -285,6 +337,8 @@ extension SubjectNames on AppLocalizations {
     SubjectTool.fourLine => stFourLine,
     SubjectTool.wordCard => stWordCard,
     SubjectTool.grammar => stGrammar,
+    SubjectTool.sheet => stSheet,
+    SubjectTool.reader => stReader,
   };
 
   String kitTabName(KitTab t) => switch (t) {
@@ -298,6 +352,11 @@ extension SubjectNames on AppLocalizations {
     KitTab.logic => kitLogic,
     KitTab.binary => kitBinary,
     KitTab.stars => kitStars,
+    KitTab.accounts => kitAccounts,
+    KitTab.finance => kitFinance,
+    KitTab.management => kitManagement,
+    KitTab.law => kitLaw,
+    KitTab.stats => kitStats,
   };
 }
 
@@ -316,5 +375,7 @@ extension SubjectToolIcon on SubjectTool {
     SubjectTool.fourLine => Icons.format_line_spacing,
     SubjectTool.wordCard => Icons.style_outlined,
     SubjectTool.grammar => Icons.spellcheck,
+    SubjectTool.sheet => Icons.table_chart_outlined,
+    SubjectTool.reader => Icons.menu_book_outlined,
   };
 }

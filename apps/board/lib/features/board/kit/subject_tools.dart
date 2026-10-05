@@ -5,6 +5,9 @@ import '../../../l10n/l10n.dart';
 import '../chrome.dart';
 import '../editors.dart';
 import 'builders.dart';
+import 'college/college_builders.dart' show blankSheet;
+import 'college/law_reader.dart';
+import 'college/sheet_editor.dart';
 import 'subjects.dart';
 
 /// Runs a subject tool from the left rail: asks what is needed (an equation, a function, a
@@ -104,6 +107,11 @@ class SubjectToolRunner {
         wb.background = wb.background == BoardBackground.fourLine ? style.paper : BoardBackground.fourLine;
       case SubjectTool.grammar:
         wb.insert(grammarLegend(_ink));
+      case SubjectTool.sheet:
+        final s = await editSheet(context, blankSheet(_accent));
+        if (s != null) wb.insert([s]);
+      case SubjectTool.reader:
+        await openLawReader(context, wb, _accent);
     }
     if (_font == BoardFont.andika) wb.font = BoardFont.andika;
   }

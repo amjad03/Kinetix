@@ -603,7 +603,7 @@ export interface WhiteboardContent {
 
 /** A board element other than a stroke (format 2); its fields belong to the board's format. */
 export interface SerializedOtherElement {
-  t: 'text' | 'image' | 'math' | 'graph' | 'polygon' | 'note';
+  t: 'text' | 'image' | 'math' | 'graph' | 'polygon' | 'note' | 'sheet';
   [field: string]: unknown;
 }
 

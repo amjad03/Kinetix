@@ -4,9 +4,10 @@ import 'dart:ui';
 
 import 'board_background.dart';
 import 'ink_models.dart';
+import 'sheet_formula.dart';
 
 /// The saved-board format version. 1: pages of strokes. 2: a page's `strokes` may also hold the
-/// other board elements (text, pictures, equations, graphs, figures, notes, each with its own
+/// other board elements (text, pictures, equations, graphs, figures, notes, sheets, each with its own
 /// `t`), and a page may list its `groups`. Readers skip kinds they do not know, so a board
 /// saved by a newer app still opens in an older one, without the new kinds.
 const int boardFormatVersion = 2;
@@ -191,7 +192,29 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     if (e.language != null) 'lg': e.language,
     if (e.rotation != 0) 'a': _round3(e.rotation),
   },
+  SheetElement() => encodeSheet(e),
 };
+
+/// A sheet: what was typed (`d`, row by row) and its layout; the reader works the values out
+/// again. `out` (each cell as shown) and `cv` (the chart's labels and numbers) are for viewers
+/// without a formula engine (the web live view); the board ignores them.
+Map<String, dynamic> encodeSheet(SheetElement e) {
+  final chart = e.chart == null ? null : sheetChartData(e);
+  return {
+    't': 'sheet',
+    'r': _rect(e.rect),
+    'n': [e.rows, e.cols],
+    'd': e.cells,
+    'c': e.color.toARGB32(),
+    if (e.formats.any((f) => f != SheetFormat.general)) 'fm': [for (final f in e.formats) f.name],
+    if (e.widths.any((w) => w != SheetElement.defaultColumnWidth)) 'cw': [for (final w in e.widths) _round1(w)],
+    if (!e.header) 'h': false,
+    if (e.chart != null) 'ch': {'k': e.chart!.kind.name, 'l': e.chart!.labels, 'v': e.chart!.values},
+    'out': [for (var r = 0; r < e.rows; r++) for (var c = 0; c < e.cols; c++) displaySheetCell(e, r, c)],
+    if (chart != null) 'cv': {'l': chart.labels, 'v': chart.values},
+    if (e.rotation != 0) 'a': _round3(e.rotation),
+  };
+}
 
 /// Reads an element written by [encodeElement]. Returns null for a kind this app does not know
 /// or a malformed one, so newer boards still open. [image] resolves a `ref` to bytes.
@@ -271,6 +294,27 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
           fontSize: n('fs', 22),
           kind: NoteKind.values.asNameMap()[j['k']] ?? NoteKind.note,
           language: j['lg'] as String?,
+          rotation: angle,
+        );
+      case 'sheet':
+        final rect = _readRect(j['r']);
+        final dims = (j['n'] as List<dynamic>?)?.cast<num>();
+        final cells = (j['d'] as List<dynamic>?)?.map((v) => v is String ? v : '$v').toList();
+        if (rect == null || dims == null || dims.length != 2 || cells == null) return null;
+        final rows = dims[0].toInt().clamp(1, SheetElement.maxRows), cols = dims[1].toInt().clamp(1, SheetElement.maxCols);
+        final ch = j['ch'];
+        final kind = ch is Map ? SheetChartKind.values.asNameMap()[ch['k']] : null;
+        return SheetElement(
+          id: id,
+          rect: rect,
+          rows: rows,
+          cols: cols,
+          cells: cells,
+          color: color(),
+          formats: [for (final f in (j['fm'] as List<dynamic>? ?? const [])) SheetFormat.values.asNameMap()[f] ?? SheetFormat.general],
+          widths: [for (final w in (j['cw'] as List<dynamic>? ?? const [])) (w as num).toDouble().clamp(40.0, 600.0)],
+          header: j['h'] != false,
+          chart: kind == null ? null : SheetChart(kind: kind, labels: '${ch['l'] ?? ''}', values: '${ch['v'] ?? ''}'),
           rotation: angle,
         );
     }

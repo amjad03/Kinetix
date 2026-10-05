@@ -3560,4 +3560,520 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get remotePhotoFailed => 'ಫೋನ್‌ನಿಂದ ಬಂದ ಫೋಟೋ ತೋರಿಸಲಾಗಲಿಲ್ಲ.';
+
+  @override
+  String get subjectManagement => 'ನಿರ್ವಹಣೆ';
+
+  @override
+  String get subjectLaw => 'ಕಾನೂನು';
+
+  @override
+  String get subjectStatistics => 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರ';
+
+  @override
+  String get kitAccounts => 'ಲೆಕ್ಕಪತ್ರ';
+
+  @override
+  String get kitFinance => 'ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳು';
+
+  @override
+  String get kitManagement => 'ಚೌಕಟ್ಟುಗಳು';
+
+  @override
+  String get kitLaw => 'ಕಾನೂನು';
+
+  @override
+  String get kitStats => 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರ';
+
+  @override
+  String get stSheet => 'ಸ್ಪ್ರೆಡ್‌ಶೀಟ್';
+
+  @override
+  String get stReader => 'ಕಾಯಿದೆ ಮತ್ತು ತೀರ್ಪು ಓದುಗ';
+
+  @override
+  String get accFormats => 'ನಮೂನೆಗಳು';
+
+  @override
+  String get accJournal => 'ಜರ್ನಲ್ (ದಿನಚರಿ)';
+
+  @override
+  String get accLedger => 'ಖಾತೆ ಪುಸ್ತಕ (T-ಖಾತೆ)';
+
+  @override
+  String get accTrialBalance => 'ತಾಳೆ ಪಟ್ಟಿ';
+
+  @override
+  String get accFinalAccounts => 'ವ್ಯಾಪಾರ ಮತ್ತು ಲಾಭ-ನಷ್ಟ ಖಾತೆ';
+
+  @override
+  String get accBalanceSheet => 'ಆಸ್ತಿ-ಹೊಣೆ ತಃಖ್ತೆ (ಅನುಸೂಚಿ III)';
+
+  @override
+  String get accCashBook => 'ನಗದು ಪುಸ್ತಕ';
+
+  @override
+  String get accBrs => 'ಬ್ಯಾಂಕ್ ಹೊಂದಾಣಿಕೆ ಪಟ್ಟಿ';
+
+  @override
+  String get accBlankSheet => 'ಖಾಲಿ ಸ್ಪ್ರೆಡ್‌ಶೀಟ್';
+
+  @override
+  String get calcDepreciation => 'ಸವಕಳಿ (SLM / WDV)';
+
+  @override
+  String get calcRatios => 'ಲೆಕ್ಕಪತ್ರ ಅನುಪಾತಗಳು';
+
+  @override
+  String get calcNpv => 'NPV, IRR ಮತ್ತು ಮರುಪಾವತಿ ಅವಧಿ';
+
+  @override
+  String get calcBreakEven => 'ಸಮ-ಚ್ಛೇದ ಬಿಂದು';
+
+  @override
+  String get calcGst => 'GST (CGST / SGST / IGST)';
+
+  @override
+  String get calcInterest => 'ಸರಳ ಬಡ್ಡಿ ಮತ್ತು ಚಕ್ರಬಡ್ಡಿ';
+
+  @override
+  String get calcEmi => 'EMI (ಮಾಸಿಕ ಕಂತು)';
+
+  @override
+  String get calcWorkOut => 'ಲೆಕ್ಕ ಮಾಡಿ';
+
+  @override
+  String get calcPutOnBoard => 'ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ';
+
+  @override
+  String get calcCheckInputs => 'ಸಂಖ್ಯೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ';
+
+  @override
+  String get calcOpenLab => 'ಸಮ-ಚ್ಛೇದ ಪ್ರಯೋಗಾಲಯ ತೆರೆಯಿರಿ';
+
+  @override
+  String get methodSlm => 'ನೇರ ರೇಖೆ';
+
+  @override
+  String get methodWdv => 'ಇಳಿಕೆ ಮೌಲ್ಯ';
+
+  @override
+  String get interestSimple => 'ಸರಳ';
+
+  @override
+  String get interestCompound => 'ಚಕ್ರಬಡ್ಡಿ';
+
+  @override
+  String get fCost => 'ವೆಚ್ಚ (₹)';
+
+  @override
+  String get fScrap => 'ಉಳಿಕೆ ಮೌಲ್ಯ (₹)';
+
+  @override
+  String get fLife => 'ಉಪಯುಕ್ತ ಆಯುಷ್ಯ (ವರ್ಷ)';
+
+  @override
+  String get fRate => 'ದರ (% ವಾರ್ಷಿಕ)';
+
+  @override
+  String get fYears => 'ವರ್ಷಗಳು';
+
+  @override
+  String get fMonths => 'ತಿಂಗಳುಗಳು';
+
+  @override
+  String get fPrincipal => 'ಅಸಲು (₹)';
+
+  @override
+  String get fAmount => 'ಮೊತ್ತ (₹)';
+
+  @override
+  String get fGstRate => 'GST ದರ (%)';
+
+  @override
+  String get fInterState => 'ಅಂತರ-ರಾಜ್ಯ ಪೂರೈಕೆ (IGST)';
+
+  @override
+  String get fInclusive => 'ಮೊತ್ತದಲ್ಲಿ GST ಸೇರಿದೆ';
+
+  @override
+  String get fOutlay => 'ಆರಂಭಿಕ ಹೂಡಿಕೆ (₹)';
+
+  @override
+  String get fCashFlows => 'ವರ್ಷವಾರು ನಗದು ಒಳಹರಿವು (₹)';
+
+  @override
+  String get fDiscountRate => 'ಬಂಡವಾಳದ ವೆಚ್ಚ (%)';
+
+  @override
+  String get fFixedCost => 'ಸ್ಥಿರ ವೆಚ್ಚ (₹)';
+
+  @override
+  String get fVariableCost => 'ಪ್ರತಿ ಘಟಕದ ಬದಲಾಗುವ ವೆಚ್ಚ (₹)';
+
+  @override
+  String get fPrice => 'ಪ್ರತಿ ಘಟಕದ ಮಾರಾಟ ಬೆಲೆ (₹)';
+
+  @override
+  String get fUnits => 'ಮಾರಾಟವಾದ ಘಟಕಗಳು';
+
+  @override
+  String get fCompounding => 'ವರ್ಷಕ್ಕೆ ಚಕ್ರಬಡ್ಡಿ ಸೇರುವ ಬಾರಿ';
+
+  @override
+  String get fCurrentAssets => 'ಚಾಲ್ತಿ ಆಸ್ತಿಗಳು';
+
+  @override
+  String get fCurrentLiabilities => 'ಚಾಲ್ತಿ ಹೊಣೆಗಾರಿಕೆಗಳು';
+
+  @override
+  String get fInventory => 'ದಾಸ್ತಾನು';
+
+  @override
+  String get fPrepaid => 'ಮುಂಗಡ ಪಾವತಿಸಿದ ವೆಚ್ಚಗಳು';
+
+  @override
+  String get fDebt => 'ದೀರ್ಘಾವಧಿ ಸಾಲ';
+
+  @override
+  String get fEquity => 'ಷೇರುದಾರರ ನಿಧಿ';
+
+  @override
+  String get fRevenue => 'ಕಾರ್ಯಾಚರಣೆಯ ಆದಾಯ';
+
+  @override
+  String get fGrossProfit => 'ಒಟ್ಟು ಲಾಭ';
+
+  @override
+  String get fNetProfit => 'ನಿವ್ವಳ ಲಾಭ';
+
+  @override
+  String get fCogs => 'ಕಾರ್ಯಾಚರಣೆಯ ಆದಾಯದ ವೆಚ್ಚ';
+
+  @override
+  String get fAvgInventory => 'ಸರಾಸರಿ ದಾಸ್ತಾನು';
+
+  @override
+  String get fReceivables => 'ವ್ಯಾಪಾರ ಸ್ವೀಕಾರಾರ್ಹಗಳು';
+
+  @override
+  String get fEbit => 'ಬಡ್ಡಿ ಮತ್ತು ತೆರಿಗೆ ಮುಂಚಿನ ಲಾಭ';
+
+  @override
+  String get fInterest => 'ಬಡ್ಡಿ';
+
+  @override
+  String get fTotalAssets => 'ಒಟ್ಟು ಆಸ್ತಿಗಳು';
+
+  @override
+  String get mgSwot => 'SWOT ವಿಶ್ಲೇಷಣೆ';
+
+  @override
+  String get mgPestle => 'PESTLE ವಿಶ್ಲೇಷಣೆ';
+
+  @override
+  String get mgPorter => 'ಪೋರ್ಟರ್‌ನ ಐದು ಶಕ್ತಿಗಳು';
+
+  @override
+  String get mgBcg => 'BCG ಮ್ಯಾಟ್ರಿಕ್ಸ್';
+
+  @override
+  String get mgAnsoff => 'ಆನ್ಸಾಫ್ ಮ್ಯಾಟ್ರಿಕ್ಸ್';
+
+  @override
+  String get mgValueChain => 'ಮೌಲ್ಯ ಸರಪಳಿ';
+
+  @override
+  String get mg7s => 'ಮೆಕಿನ್ಸೆ 7S';
+
+  @override
+  String get mgMaslow => 'ಮಾಸ್ಲೋನ ಅಗತ್ಯಗಳ ಶ್ರೇಣಿ';
+
+  @override
+  String get mg4p => 'ಮಾರುಕಟ್ಟೆ ಮಿಶ್ರಣ (4P)';
+
+  @override
+  String get mg7p => 'ಮಾರುಕಟ್ಟೆ ಮಿಶ್ರಣ (7P)';
+
+  @override
+  String get mgGantt => 'ಗ್ಯಾಂಟ್ ಚಾರ್ಟ್';
+
+  @override
+  String get mgPert => 'PERT / CPM (ನಿರ್ಣಾಯಕ ಮಾರ್ಗ)';
+
+  @override
+  String get mgDecisionTree => 'ನಿರ್ಧಾರ ವೃಕ್ಷ';
+
+  @override
+  String get mgFishbone => 'ಮೀನಿನ ಮೂಳೆ ರೇಖಾಚಿತ್ರ';
+
+  @override
+  String get mgMindMap => 'ಮೈಂಡ್ ಮ್ಯಾಪ್';
+
+  @override
+  String get mgCaseStudy => 'ಕೇಸ್ ಸ್ಟಡಿ ಚೌಕಟ್ಟು';
+
+  @override
+  String get mgStrategy => 'ತಂತ್ರ';
+
+  @override
+  String get mgMarketing => 'ಮಾರುಕಟ್ಟೆ ಮತ್ತು ಜನರು';
+
+  @override
+  String get mgProjects => 'ಯೋಜನೆಗಳು ಮತ್ತು ನಿರ್ಧಾರಗಳು';
+
+  @override
+  String get pertActivities => 'ಚಟುವಟಿಕೆಗಳು';
+
+  @override
+  String get pertHint =>
+      'ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ಚಟುವಟಿಕೆ: ಅದರ ಅಕ್ಷರ, ಅದರ ಸಮಯ (ಅಥವಾ ಆಶಾವಾದಿ, ಸಂಭಾವ್ಯ, ನಿರಾಶಾವಾದಿ), ನಂತರ ಅದಕ್ಕಿಂತ ಮೊದಲಿನ ಚಟುವಟಿಕೆಗಳು. ಉದಾಹರಣೆ: C 2 A';
+
+  @override
+  String get pertInvalid =>
+      'ಚಟುವಟಿಕೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ: ಒಂದಕ್ಕೆ ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲದ ಚಟುವಟಿಕೆ ಬೇಕಾಗಿದೆ, ಅಥವಾ ಅವು ಸುತ್ತುತ್ತಾ ಒಂದು ಚಕ್ರವಾಗುತ್ತವೆ.';
+
+  @override
+  String get lawReader => 'ಕಾಯಿದೆ ಅಥವಾ ತೀರ್ಪು ಓದಿ';
+
+  @override
+  String get lawPaste => 'ಪಠ್ಯ ಅಂಟಿಸಿ';
+
+  @override
+  String get lawImportPdf => 'PDF ಆಮದು ಮಾಡಿ';
+
+  @override
+  String get lawEditText => 'ಪಠ್ಯ ಸಂಪಾದಿಸಿ';
+
+  @override
+  String get lawRead => 'ಓದಿ';
+
+  @override
+  String get lawAddNote => 'ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ';
+
+  @override
+  String get lawSendToBoard => 'ಹೈಲೈಟ್‌ಗಳನ್ನು ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ';
+
+  @override
+  String get lawSamples => 'ಮಾದರಿ ವಿಭಾಗಗಳು';
+
+  @override
+  String get lawReaderEmpty =>
+      'ಕಾಯಿದೆ ಅಥವಾ ತೀರ್ಪಿನ ಪಠ್ಯವನ್ನು ಅಂಟಿಸಿ, ಅಥವಾ PDF ಆಮದು ಮಾಡಿ. ನಂತರ ಹೈಲೈಟ್ ಮಾಡಲು ಪ್ಯಾರಾಗ್ರಾಫ್ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String get lawNoText =>
+      'ಈ PDF ನಲ್ಲಿ ಪಠ್ಯ ಸಿಗಲಿಲ್ಲ. ಇದು ಸ್ಕ್ಯಾನ್ ಮಾಡಿದ ಪ್ರತಿ ಆಗಿರಬಹುದು.';
+
+  @override
+  String get lawNothingHighlighted => 'ಮೊದಲು ಒಂದು ಪ್ಯಾರಾಗ್ರಾಫ್ ಹೈಲೈಟ್ ಮಾಡಿ';
+
+  @override
+  String get lawCaseBrief => 'ಕೇಸ್ ಸಂಕ್ಷಿಪ್ತ';
+
+  @override
+  String get lawIrac => 'IRAC ಚೌಕಟ್ಟು';
+
+  @override
+  String get lawTimeline => 'ಘಟನೆಗಳ ಕಾಲರೇಖೆ';
+
+  @override
+  String get lawTimelineHint => 'ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ಘಟನೆ: ದಿನಾಂಕ, ನಂತರ ಏನಾಯಿತು';
+
+  @override
+  String get lawArgumentMap => 'ವಾದ ನಕ್ಷೆ';
+
+  @override
+  String get lawFrames => 'ಚೌಕಟ್ಟುಗಳು';
+
+  @override
+  String get stData => 'ದತ್ತಾಂಶ';
+
+  @override
+  String get stDataHint =>
+      'ಸ್ಪೇಸ್, ಅಲ್ಪವಿರಾಮ ಅಥವಾ ಹೊಸ ಸಾಲಿನಿಂದ ಬೇರ್ಪಡಿಸಿದ ಸಂಖ್ಯೆಗಳು';
+
+  @override
+  String get stDescriptive => 'ವಿವರಣಾತ್ಮಕ ಸಂಖ್ಯಾಶಾಸ್ತ್ರ';
+
+  @override
+  String get stBoxPlot => 'ಬಾಕ್ಸ್ ಪ್ಲಾಟ್';
+
+  @override
+  String get stHistogram => 'ಸ್ತಂಭಾಲೇಖ';
+
+  @override
+  String get stDistributions => 'ಸಂಭವನೀಯತೆ ವಿತರಣೆಗಳು';
+
+  @override
+  String get stNormal => 'ಸಾಮಾನ್ಯ';
+
+  @override
+  String get stBinomial => 'ದ್ವಿಪದ';
+
+  @override
+  String get stPoisson => 'ಪಾಯಿಸನ್';
+
+  @override
+  String get stT => 't';
+
+  @override
+  String get stChiSquare => 'ಕೈ-ವರ್ಗ';
+
+  @override
+  String get stMean => 'ಸರಾಸರಿ (μ)';
+
+  @override
+  String get stSd => 'ಪ್ರಮಾಣಿತ ವಿಚಲನೆ (σ)';
+
+  @override
+  String get stTrials => 'ಪ್ರಯೋಗಗಳು (n)';
+
+  @override
+  String get stProbability => 'ಯಶಸ್ಸಿನ ಸಂಭವನೀಯತೆ (p)';
+
+  @override
+  String get stLambda => 'ಸರಾಸರಿ (λ)';
+
+  @override
+  String get stDf => 'ಸ್ವಾತಂತ್ರ್ಯ ಮಟ್ಟಗಳು';
+
+  @override
+  String get stFrom => 'ಇಂದ';
+
+  @override
+  String get stTo => 'ವರೆಗೆ';
+
+  @override
+  String get stRegression => 'ಸಹಸಂಬಂಧ ಮತ್ತು ಹಿಂಚಲನೆ';
+
+  @override
+  String get stPairsHint => 'ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ಜೋಡಿ: x, y';
+
+  @override
+  String get stTests => 'ಊಹಾ ಪರೀಕ್ಷೆಗಳು';
+
+  @override
+  String get stZTest => 'z ಪರೀಕ್ಷೆ (ಒಂದು ಸರಾಸರಿ)';
+
+  @override
+  String get stTTest1 => 't ಪರೀಕ್ಷೆ (ಒಂದು ಸರಾಸರಿ)';
+
+  @override
+  String get stTTest2 => 't ಪರೀಕ್ಷೆ (ಎರಡು ಸರಾಸರಿಗಳು)';
+
+  @override
+  String get stChiTest => 'ಕೈ-ವರ್ಗ ಪರೀಕ್ಷೆ';
+
+  @override
+  String get stAnova => 'ಏಕಮುಖ ANOVA';
+
+  @override
+  String get stSampleMean => 'ಮಾದರಿ ಸರಾಸರಿ (x̄)';
+
+  @override
+  String get stSampleSize => 'ಮಾದರಿ ಗಾತ್ರ (n)';
+
+  @override
+  String get stMu0 => 'ಊಹಿತ ಸರಾಸರಿ (μ₀)';
+
+  @override
+  String get stAlpha => 'ಮಹತ್ವದ ಮಟ್ಟ (α)';
+
+  @override
+  String get stSample1 => 'ಮಾದರಿ 1';
+
+  @override
+  String get stSample2 => 'ಮಾದರಿ 2';
+
+  @override
+  String get stObservedHint =>
+      'ಗಮನಿಸಿದ ಆವರ್ತನಗಳು, ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ಸಾಲು (ಒಂದೇ ಸಾಲಿದ್ದರೆ ಹೊಂದಾಣಿಕೆ ಪರೀಕ್ಷೆ)';
+
+  @override
+  String get stExpectedHint => 'ನಿರೀಕ್ಷಿತ ಆವರ್ತನಗಳು (ಸಮಾನವಾದರೆ ಖಾಲಿ ಬಿಡಿ)';
+
+  @override
+  String get stGroupsHint => 'ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ಗುಂಪು';
+
+  @override
+  String get stIndex => 'ಸೂಚ್ಯಂಕಗಳು';
+
+  @override
+  String get stIndexHint => 'ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ವಸ್ತು: p₀, q₀, p₁, q₁';
+
+  @override
+  String get stMovingAverage => 'ಚಲಿಸುವ ಸರಾಸರಿ';
+
+  @override
+  String get stPeriod => 'ಅವಧಿ';
+
+  @override
+  String get stSeriesHint => 'ಕಾಲಾನುಕ್ರಮದಲ್ಲಿ ಮೌಲ್ಯಗಳು';
+
+  @override
+  String get stDrawChart => 'ಚಾರ್ಟ್ ಕೂಡ ಬರೆಯಿರಿ';
+
+  @override
+  String get sheetTitle => 'ಸ್ಪ್ರೆಡ್‌ಶೀಟ್';
+
+  @override
+  String get sheetCellHint => 'ಸಂಖ್ಯೆ, ಪದಗಳು, ಅಥವಾ =SUM(B2:B6) ನಂತಹ ಸೂತ್ರ';
+
+  @override
+  String get sheetAddRow => 'ಸಾಲು ಸೇರಿಸಿ';
+
+  @override
+  String get sheetAddColumn => 'ಕಾಲಮ್ ಸೇರಿಸಿ';
+
+  @override
+  String get sheetRemoveRow => 'ಕೊನೆಯ ಸಾಲು ತೆಗೆಯಿರಿ';
+
+  @override
+  String get sheetRemoveColumn => 'ಕೊನೆಯ ಕಾಲಮ್ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get sheetHeading => 'ಮೊದಲ ಸಾಲು ಶೀರ್ಷಿಕೆ';
+
+  @override
+  String get sheetFormat => 'ಕಾಲಮ್ ನಮೂನೆ';
+
+  @override
+  String get fmtGeneral => 'ಸಾಮಾನ್ಯ';
+
+  @override
+  String get fmtNumber => '1,23,456.00';
+
+  @override
+  String get fmtInr => '₹ (ಭಾರತೀಯ)';
+
+  @override
+  String get fmtLakh => '₹ ಲಕ್ಷ';
+
+  @override
+  String get fmtCrore => '₹ ಕೋಟಿ';
+
+  @override
+  String get fmtPercent => 'ಶೇಕಡಾ';
+
+  @override
+  String get sheetChart => 'ಚಾರ್ಟ್';
+
+  @override
+  String get chartNone => 'ಚಾರ್ಟ್ ಇಲ್ಲ';
+
+  @override
+  String get chartBar => 'ಸ್ತಂಭಗಳು';
+
+  @override
+  String get chartLine => 'ರೇಖೆ';
+
+  @override
+  String get chartPie => 'ಪೈ';
+
+  @override
+  String get sheetLabels => 'ಲೇಬಲ್‌ಗಳು (ಉದಾ. A2:A6)';
+
+  @override
+  String get sheetValues => 'ಮೌಲ್ಯಗಳು (ಉದಾ. B2:B6)';
 }
