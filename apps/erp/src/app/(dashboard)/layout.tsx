@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Signed in with a temporary password: nothing else until a new one is chosen.
   if (me.data.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
   return (
-    <AppShell user={{ fullName: me.data.fullName, email: me.data.email, roles: me.data.roles }} school={me.data.tenant.name}>
+    <AppShell user={{ fullName: me.data.fullName, email: me.data.email, roles: me.data.roles, platformAdmin: !!me.data.platformAdmin }} school={me.data.tenant.name}>
       {children}
     </AppShell>
   );
