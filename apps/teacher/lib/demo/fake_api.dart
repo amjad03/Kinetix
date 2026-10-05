@@ -230,6 +230,11 @@ class FakeTeacherApi implements TeacherApi {
   Future<List<Student>> roster(String sectionId) async => students;
 
   @override
+  Future<List<AnswerCard>> answerCards(String sectionId) async => [
+    for (final (i, s) in students.indexed) AnswerCard(cardNo: i + 1, rollNo: s.rollNo, fullName: s.fullName),
+  ];
+
+  @override
   Future<AttendanceSheet> attendance({required String slotId, required String date}) async =>
       AttendanceSheet(taken: existingMarks.isNotEmpty, records: existingMarks);
 
@@ -253,6 +258,7 @@ class FakeTeacherApi implements TeacherApi {
     return active = BoardConnection(
       sessionId: 'sess1',
       boardName: 'Room 204 Board',
+      boardId: 'board1',
       sectionName: section.name,
       subjectName: subject.name,
       startsAt: ClockTime.parse('10:00:00'),

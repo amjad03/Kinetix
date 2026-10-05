@@ -1366,4 +1366,99 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keepRecordingTooltip => 'Kept recordings are not deleted when the term ends';
+
+  @override
+  String get phoneRemote => 'Phone remote';
+
+  @override
+  String remoteTitle(String board) {
+    return 'Remote · $board';
+  }
+
+  @override
+  String get remoteEnded => 'The class on this board has ended.';
+
+  @override
+  String get remotePhotoSent => 'Photo is on the board.';
+
+  @override
+  String get remotePhotoFailed => 'Could not send the photo. Try again.';
+
+  @override
+  String get remotePages => 'Board pages';
+
+  @override
+  String get remotePrevious => 'Previous';
+
+  @override
+  String get remoteNext => 'Next';
+
+  @override
+  String remotePageOf(int page, int pages) {
+    return 'Page $page of $pages';
+  }
+
+  @override
+  String get remoteSlides => 'Slides and PDF';
+
+  @override
+  String get remoteNoSlides => 'Open slides or a PDF on the board to turn them from here.';
+
+  @override
+  String remoteSlideOf(int slide, int slides) {
+    return 'Slide $slide of $slides';
+  }
+
+  @override
+  String get remotePointer => 'Pointer';
+
+  @override
+  String get remotePointerHint => 'Slide your finger here to point on the board';
+
+  @override
+  String get remoteClassroom => 'Classroom tools';
+
+  @override
+  String remoteTimerMinutes(int minutes) {
+    return '$minutes min timer';
+  }
+
+  @override
+  String get remoteTimerStop => 'Stop timer';
+
+  @override
+  String get remotePickStudent => 'Pick a student';
+
+  @override
+  String get remoteShowPhoto => 'Show a photo';
+
+  @override
+  String get remoteStartRecording => 'Record lesson';
+
+  @override
+  String get remoteStopRecording => 'Stop recording';
+
+  @override
+  String get answerCards => 'Answer cards';
+
+  @override
+  String get answerCardsMenuBody => 'Print cards so students without phones can answer on the board';
+
+  @override
+  String get answerCardsBody =>
+      'Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.';
+
+  @override
+  String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
+
+  @override
+  String answerCardsReady(int count, String className) {
+    return '$count cards for $className are ready to print.';
+  }
+
+  @override
+  String get answerCardsFailed => 'Could not make the cards. Try again.';
+
+  @override
+  String get print => 'Print';
 }

@@ -548,6 +548,7 @@ class DemoTeacherApi extends FakeTeacherApi {
     return active = BoardConnection(
       sessionId: 'demo-session',
       boardName: 'Room 204 Board',
+      boardId: 'demo-board',
       sectionName: section.name,
       subjectName: (now?.subject ?? subject).name,
       startsAt: now?.startsAt ?? ClockTime.parse('10:00:00'),

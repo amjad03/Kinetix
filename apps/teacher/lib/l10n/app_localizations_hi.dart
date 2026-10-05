@@ -1366,4 +1366,99 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get keepRecordingTooltip => 'रखी गई रिकॉर्डिंग सत्र समाप्त होने पर नहीं हटाई जातीं';
+
+  @override
+  String get phoneRemote => 'फ़ोन रिमोट';
+
+  @override
+  String remoteTitle(String board) {
+    return 'रिमोट · $board';
+  }
+
+  @override
+  String get remoteEnded => 'इस बोर्ड पर कक्षा समाप्त हो गई है।';
+
+  @override
+  String get remotePhotoSent => 'फ़ोटो बोर्ड पर है।';
+
+  @override
+  String get remotePhotoFailed => 'फ़ोटो नहीं भेजी जा सकी। फिर कोशिश करें।';
+
+  @override
+  String get remotePages => 'बोर्ड के पेज';
+
+  @override
+  String get remotePrevious => 'पिछला';
+
+  @override
+  String get remoteNext => 'अगला';
+
+  @override
+  String remotePageOf(int page, int pages) {
+    return 'पेज $page / $pages';
+  }
+
+  @override
+  String get remoteSlides => 'स्लाइड और PDF';
+
+  @override
+  String get remoteNoSlides => 'यहाँ से बदलने के लिए बोर्ड पर स्लाइड या PDF खोलें।';
+
+  @override
+  String remoteSlideOf(int slide, int slides) {
+    return 'स्लाइड $slide / $slides';
+  }
+
+  @override
+  String get remotePointer => 'पॉइंटर';
+
+  @override
+  String get remotePointerHint => 'बोर्ड पर इंगित करने के लिए यहाँ उँगली चलाएँ';
+
+  @override
+  String get remoteClassroom => 'कक्षा उपकरण';
+
+  @override
+  String remoteTimerMinutes(int minutes) {
+    return '$minutes मिनट टाइमर';
+  }
+
+  @override
+  String get remoteTimerStop => 'टाइमर रोकें';
+
+  @override
+  String get remotePickStudent => 'विद्यार्थी चुनें';
+
+  @override
+  String get remoteShowPhoto => 'फ़ोटो दिखाएँ';
+
+  @override
+  String get remoteStartRecording => 'पाठ रिकॉर्ड करें';
+
+  @override
+  String get remoteStopRecording => 'रिकॉर्डिंग रोकें';
+
+  @override
+  String get answerCards => 'उत्तर कार्ड';
+
+  @override
+  String get answerCardsMenuBody => 'कार्ड प्रिंट करें ताकि बिना फ़ोन वाले विद्यार्थी बोर्ड पर उत्तर दे सकें';
+
+  @override
+  String get answerCardsBody =>
+      'हर विद्यार्थी को रोल नंबर के अनुसार एक कार्ड मिलता है। बोर्ड पर \"कक्षा से पूछें\" में वे उत्तर को ऊपर रखकर कार्ड उठाते हैं, और बोर्ड एक फ़ोटो से पूरी कक्षा पढ़ लेता है।';
+
+  @override
+  String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
+
+  @override
+  String answerCardsReady(int count, String className) {
+    return '$className के $count कार्ड प्रिंट के लिए तैयार हैं।';
+  }
+
+  @override
+  String get answerCardsFailed => 'कार्ड नहीं बन सके। फिर कोशिश करें।';
+
+  @override
+  String get print => 'प्रिंट';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../cards/answer_cards_screen.dart';
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
 import '../calendar/calendar_screen.dart';
@@ -119,6 +120,14 @@ class ProfileTab extends StatelessWidget {
               subtitle: Text(l.calendarBody),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CalendarScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openAnswerCards'),
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l.answerCards),
+              subtitle: Text(l.answerCardsMenuBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => AnswerCardsScreen(api: state.api))),
             ),
             ListTile(
               key: const Key('openSyllabus'),
