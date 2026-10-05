@@ -167,9 +167,14 @@ store.
 - **Android panels**: `flutter build apk --release --split-per-abi --dart-define=KINETIX_API_URL=https://…` (most panels are arm64-v8a;
   some are armeabi-v7a). Distribute through the institution's MDM (or the panel vendor's
   management console); sideloading by USB is the fallback. Same release keystore as above.
-- **Kiosk mode is an open product decision**: locking the panel to the Board app (Windows Assigned
-  Access / Android lock-task via MDM) versus letting teachers use other apps. Until decided, the
-  app runs full screen without locking the device.
+- **Kiosk mode** ([hardware/kiosk-mode.md](../hardware/kiosk-mode.md)): on by default, set per
+  institution in ERP → Settings → Board kiosk mode together with the IT PIN. On Android the board
+  locks fully only as device owner (`adb shell dpm set-device-owner
+  in.kinetix.board/app.kinetix.board.KioskAdminReceiver` for a pilot, an MDM for fleets) and
+  otherwise falls back to screen pinning; set the owner **before** handing the panel over, since
+  removing it means a factory reset. The APK declares a device admin receiver, a home activity and
+  `RECEIVE_BOOT_COMPLETED` for this. On Windows use Assigned Access (or Shell Launcher with
+  `kinetix_board.exe --kiosk` for borderless full screen). Demo builds never lock.
 - After installing, enrol each board from ERP → Boards (deploy.md, *Onboarding*).
 
 ## CI: the Release workflow

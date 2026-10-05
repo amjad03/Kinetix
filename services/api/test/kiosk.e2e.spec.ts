@@ -16,7 +16,7 @@ describe('board kiosk setting', () => {
   let device: string;
   const http = () => request(app.getHttpServer());
   const login = async (email: string) => (await http().post('/v1/auth/login').send({ tenant: t.slug, login: email, password: 'pw' }).expect(201)).body.accessToken as string;
-  const put = (body: unknown, token = principal) => http().put('/v1/admin/settings').set('authorization', `Bearer ${token}`).send(body);
+  const put = (body: object, token = principal) => http().put('/v1/admin/settings').set('authorization', `Bearer ${token}`).send(body);
   const stored = async () => (await owner.query(`select settings from tenants where id = $1`, [t.tenantId])).rows[0].settings;
   const audits = async () => (await owner.query(`select data from audit_log where tenant_id = $1 and action = 'settings.updated' order by id`, [t.tenantId])).rows.map((r) => r.data);
   const config = async (token = device) => (await http().get('/v1/devices/me/config').set('authorization', `Bearer ${token}`).expect(200)).body;

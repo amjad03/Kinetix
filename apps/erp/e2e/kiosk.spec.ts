@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { open } from './helpers';
+import { open, setLanguageCookie } from './helpers';
 
 // Settings → Board kiosk mode (docs/hardware/kiosk-mode.md). Signed in as the principal
 // (principal.setup.ts). Puts everything back: kiosk mode on, no IT PIN.
@@ -7,7 +7,7 @@ test.describe.configure({ mode: 'serial' });
 
 const API_URL = process.env.KINETIX_API_URL ?? 'http://localhost:4000';
 
-test('the principal sets the IT PIN; it is never shown again, and boards get only its hash', async ({ page, request }) => {
+test('the principal sets the IT PIN; it is never shown again or sent back', async ({ page, request }) => {
   await open(page, '/settings');
   const card = page.getByTestId('kiosk');
   await expect(card).toHaveAttribute('data-enabled', 'true');
@@ -44,7 +44,7 @@ test('the principal sets the IT PIN; it is never shown again, and boards get onl
   expect(await page.content()).not.toContain('482915');
   await expect(page.getByTestId('kiosk-pin-save')).toHaveText('Change PIN');
 
-  // What a board gets: a salted hash and its parameters.
+  // The API says only that a PIN is set (what boards get is checked in services/api/test/kiosk.e2e.spec.ts).
   const login = await request.post(`${API_URL}/v1/auth/login`, { data: { tenant: 'demo-college', login: 'principal@demo.kinetix.in', password: 'kinetix123' } });
   const token = (await login.json()).accessToken as string;
   const settings = await (await request.get(`${API_URL}/v1/admin/settings`, { headers: { authorization: `Bearer ${token}` } })).json();
@@ -75,8 +75,8 @@ test('the principal removes the PIN', async ({ page }) => {
 });
 
 test('the section is translated', async ({ page }) => {
-  await page.context().addCookies([{ name: 'kx_lang', value: 'hi', url: page.url() === 'about:blank' ? (process.env.ERP_URL ?? 'http://localhost:3000') : page.url() }]);
+  await setLanguageCookie(page, 'hi');
   await open(page, '/settings');
   await expect(page.getByTestId('kiosk')).toContainText('बोर्ड को KINETIX Board पर लॉक करें');
-  await page.context().addCookies([{ name: 'kx_lang', value: 'en', url: process.env.ERP_URL ?? 'http://localhost:3000' }]);
+  await setLanguageCookie(page, 'en');
 });

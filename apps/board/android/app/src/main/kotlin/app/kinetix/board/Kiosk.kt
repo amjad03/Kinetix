@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.BatteryManager
 import android.provider.Settings
 import android.view.WindowManager
@@ -24,6 +25,14 @@ class Kiosk(private val activity: Activity) {
     private val dpm = activity.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     private val am = activity.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     private val admin = ComponentName(activity, KioskAdminReceiver::class.java)
+
+    /** The HOME entry point (an activity-alias, disabled unless kiosk mode is on). */
+    private val homeAlias = ComponentName(activity, "app.kinetix.board.KioskHome")
+
+    private fun setHomeAlias(enabled: Boolean) {
+        val state = if (enabled) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        activity.packageManager.setComponentEnabledSetting(homeAlias, state, PackageManager.DONT_KILL_APP)
+    }
 
     private val deviceOwner: Boolean
         get() = dpm.isDeviceOwnerApp(activity.packageName)
@@ -46,7 +55,8 @@ class Kiosk(private val activity: Activity) {
                 addCategory(Intent.CATEGORY_HOME)
                 addCategory(Intent.CATEGORY_DEFAULT)
             }
-            dpm.addPersistentPreferredActivity(admin, home, ComponentName(activity, MainActivity::class.java))
+            setHomeAlias(true)
+            dpm.addPersistentPreferredActivity(admin, home, homeAlias)
             val plugged = BatteryManager.BATTERY_PLUGGED_AC or BatteryManager.BATTERY_PLUGGED_USB or BatteryManager.BATTERY_PLUGGED_WIRELESS
             try {
                 dpm.setGlobalSetting(admin, Settings.Global.STAY_ON_WHILE_PLUGGED_IN, plugged.toString())
@@ -73,11 +83,12 @@ class Kiosk(private val activity: Activity) {
             dpm.setKeyguardDisabled(admin, false)
             dpm.setStatusBarDisabled(admin, false)
             dpm.clearPackagePersistentPreferredActivities(admin, activity.packageName)
+            setHomeAlias(false)
             try {
                 dpm.setGlobalSetting(admin, Settings.Global.STAY_ON_WHILE_PLUGGED_IN, "0")
             } catch (e: SecurityException) {
             }
-            dpm.setLockTaskPackages(admin, arrayOf())
+            dpm.setLockTaskPackages(admin, emptyArray<String>())
         }
         return mapOf("deviceOwner" to owner, "lockTask" to "none")
     }

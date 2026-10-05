@@ -24,7 +24,7 @@ export default defineConfig({
     { name: 'auth', testMatch: /auth\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     {
       name: 'dashboard',
-      testMatch: /(dashboard|live|syllabus|ai|results|timetable|library-principal|conversations|departments|calendar|terms|settings|payments|i18n|import)\.spec\.ts/,
+      testMatch: /(dashboard|live|syllabus|ai|results|timetable|library-principal|conversations|departments|calendar|terms|settings|kiosk|payments|i18n|import)\.spec\.ts/,
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
     },

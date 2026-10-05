@@ -31,14 +31,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Kiosk mode: the board can be the home app (set by the device owner, or chosen in
-                 Settings → Apps → Default apps → Home app). -->
+        </activity>
+        <!-- Kiosk mode: the board as the home app. Disabled until kiosk mode is entered as device
+             owner (Kiosk.kt enables it), so ordinary installs never ask which home app to use. -->
+        <activity-alias
+            android:name=".KioskHome"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.HOME"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
-        </activity>
+        </activity-alias>
         <!-- Kiosk mode: device admin, so the board can be provisioned as device owner:
              adb shell dpm set-device-owner in.kinetix.board/app.kinetix.board.KioskAdminReceiver -->
         <receiver
