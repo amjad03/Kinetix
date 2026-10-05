@@ -328,6 +328,29 @@ export const otpCodes = pgTable(
   (t) => [index('otp_codes_phone_idx').on(t.tenantId, t.phone, t.createdAt)],
 );
 
+/**
+ * Teachers who have signed in on a shared board or tablet (docs/architecture/board-profiles.md).
+ * After a full sign-in a teacher may set a 4–6 digit PIN to switch to their profile on this
+ * board without the Teacher app. Only a salted PBKDF2 hash is kept (common/kiosk-pin.ts); five
+ * wrong PINs lock the profile until the teacher signs in fully again or an admin resets it.
+ */
+export const deviceProfiles = pgTable(
+  'device_profiles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    deviceId: uuid('device_id').notNull().references(() => devices.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    pinHash: text('pin_hash'),
+    pinSetAt: timestamp('pin_set_at', { withTimezone: true }),
+    failedAttempts: integer('failed_attempts').notNull().default(0),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('device_profiles_device_user_uq').on(t.deviceId, t.userId)],
+);
+
 export const sessionEndReason = pgEnum('session_end_reason', [
   'teacher_ended',
   'period_over',
@@ -1281,6 +1304,7 @@ export const TENANT_TABLES = [
   'timetable_slots',
   'devices',
   'pairing_codes',
+  'device_profiles',
   'otp_codes',
   'board_sessions',
   'attendance_records',

@@ -9,8 +9,8 @@ import { hmac, safeEqual } from '../common/crypto.js';
 import { RateLimiter } from '../common/rate-limiter.js';
 import { Clock } from '../common/time.js';
 import { ENV, type Env } from '../config/env.js';
-import { DbService } from '../db/db.service.js';
-import { boardSessions, devices, pairingCodes, userRoles, users } from '../db/schema.js';
+import { DbService, type Tx } from '../db/db.service.js';
+import { boardSessions, deviceProfiles, devices, pairingCodes, userRoles, users } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
@@ -20,6 +20,8 @@ const AD_HOC_SESSION_MS = 2 * 3600_000;
 /** Grace after the period ends before the board signs the teacher out. */
 const PERIOD_GRACE_MS = 15 * 60_000;
 const TEACHING_ROLES = ['teacher', 'hod', 'principal'] as const;
+
+type Device = typeof devices.$inferSelect;
 
 export interface ClaimInput {
   /** Typed 6-digit code. */
@@ -60,15 +62,7 @@ export class PairingService {
       const [device] = await tx.select().from(devices).where(eq(devices.id, code.deviceId));
       if (!device) throw invalid;
 
-      const [teacher] = await tx.select().from(users).where(eq(users.id, p.userId));
-      if (!teacher || teacher.status !== 'active') throw new ForbiddenException('Your account is not active');
-      const roles = await tx
-        .select({ campusId: userRoles.campusId })
-        .from(userRoles)
-        .where(and(eq(userRoles.userId, p.userId), inArray(userRoles.role, [...TEACHING_ROLES])));
-      if (!roles.some((r) => r.campusId === null || r.campusId === device.campusId)) {
-        throw new ForbiddenException('You are not a teacher at the campus this board belongs to');
-      }
+      await this.checkTeacher(tx, device, p.userId);
 
       // Single use: whoever flips claimed_at first wins.
       const [won] = await tx
@@ -78,42 +72,7 @@ export class PairingService {
         .returning({ id: pairingCodes.id });
       if (!won) throw invalid;
 
-      const replaced = await this.sessions.endActiveOnDevice(tx, p.tenantId, device.id, 'taken_over');
-
-      const slot = await this.timetable.currentSlotForTeacher(tx, p.userId, device.roomId);
-      const expiresAt = slot
-        ? new Date(slot.endsAtInstant.getTime() + PERIOD_GRACE_MS)
-        : new Date(now.getTime() + AD_HOC_SESSION_MS);
-
-      const [session] = await tx
-        .insert(boardSessions)
-        .values({
-          tenantId: p.tenantId,
-          deviceId: device.id,
-          teacherId: p.userId,
-          timetableSlotId: slot?.id,
-          sectionId: slot?.sectionId,
-          subjectId: slot?.subjectId,
-          startedAt: now,
-          expiresAt,
-        })
-        .returning();
-
-      await audit(tx, {
-        tenantId: p.tenantId,
-        actorType: 'user',
-        actorId: p.userId,
-        action: 'board.paired',
-        subjectType: 'device',
-        subjectId: device.id,
-        data: { sessionId: session.id, method: parsed.secret ? 'qr' : 'code', replacedSessions: replaced },
-      });
-
-      const context = await this.sessions.context(tx, session.id);
-      const sessionToken = this.tokens.signBoard(
-        { sub: p.userId, tid: p.tenantId, did: device.id, cid: device.campusId, sid: session.id },
-        expiresAt,
-      );
+      const { context, sessionToken } = await this.openSession(tx, device, p.userId, parsed.secret ? 'qr' : 'code');
       return { device, context, sessionToken };
     });
 
@@ -124,6 +83,76 @@ export class PairingService {
       board: { id: result.device.id, name: result.device.name },
       session: result.context,
     };
+  }
+
+  /** Throws unless [teacherId] is active and may teach at the campus [device] belongs to. */
+  async checkTeacher(tx: Tx, device: Device, teacherId: string): Promise<void> {
+    const [teacher] = await tx.select().from(users).where(eq(users.id, teacherId));
+    if (!teacher || teacher.status !== 'active') throw new ForbiddenException('Your account is not active');
+    const roles = await tx
+      .select({ campusId: userRoles.campusId })
+      .from(userRoles)
+      .where(and(eq(userRoles.userId, teacherId), inArray(userRoles.role, [...TEACHING_ROLES])));
+    if (!roles.some((r) => r.campusId === null || r.campusId === device.campusId)) {
+      throw new ForbiddenException('You are not a teacher at the campus this board belongs to');
+    }
+  }
+
+  /**
+   * Starts a class on [device] for [teacherId], who has proved who they are (a pairing code
+   * from the Teacher app, or their PIN on a shared board: board-profiles/) and passed
+   * [checkTeacher]. Ends whatever class was open on the board, finds the teacher's period in
+   * its room, and keeps the teacher in the board's list of profiles.
+   */
+  async openSession(tx: Tx, device: Device, teacherId: string, method: 'qr' | 'code' | 'pin') {
+    const now = this.clock.now();
+    const replaced = await this.sessions.endActiveOnDevice(tx, device.tenantId, device.id, 'taken_over');
+
+    const slot = await this.timetable.currentSlotForTeacher(tx, teacherId, device.roomId);
+    const expiresAt = slot
+      ? new Date(slot.endsAtInstant.getTime() + PERIOD_GRACE_MS)
+      : new Date(now.getTime() + AD_HOC_SESSION_MS);
+
+    const [session] = await tx
+      .insert(boardSessions)
+      .values({
+        tenantId: device.tenantId,
+        deviceId: device.id,
+        teacherId,
+        timetableSlotId: slot?.id,
+        sectionId: slot?.sectionId,
+        subjectId: slot?.subjectId,
+        startedAt: now,
+        expiresAt,
+      })
+      .returning();
+
+    // The board's list of teachers who use it. A full sign-in also lifts a lockout from wrong
+    // PINs: the teacher has just proved who they are.
+    await tx
+      .insert(deviceProfiles)
+      .values({ tenantId: device.tenantId, deviceId: device.id, userId: teacherId, lastUsedAt: now })
+      .onConflictDoUpdate({
+        target: [deviceProfiles.deviceId, deviceProfiles.userId],
+        set: method === 'pin' ? { lastUsedAt: now } : { lastUsedAt: now, failedAttempts: 0, lockedAt: null },
+      });
+
+    await audit(tx, {
+      tenantId: device.tenantId,
+      actorType: 'user',
+      actorId: teacherId,
+      action: 'board.paired',
+      subjectType: 'device',
+      subjectId: device.id,
+      data: { sessionId: session.id, method, replacedSessions: replaced },
+    });
+
+    const context = await this.sessions.context(tx, session.id);
+    const sessionToken = this.tokens.signBoard(
+      { sub: teacherId, tid: device.tenantId, did: device.id, cid: device.campusId, sid: session.id },
+      expiresAt,
+    );
+    return { session, context, sessionToken };
   }
 
   private parse(input: ClaimInput): { code: string; secret?: string; deviceId?: string } {
