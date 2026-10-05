@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/board_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../ai/ai_controller.dart';
+import '../../search/formula_browser.dart';
 import '../side_panel.dart';
 import 'builders.dart';
 import 'cs/cs_kit.dart';
@@ -50,7 +51,6 @@ class SubjectKitPanel extends StatefulWidget {
 
 class _SubjectKitPanelState extends State<SubjectKitPanel> {
   late KitTab _tab;
-  String _q = '';
 
   List<KitTab> get _tabs => kitTabsFor(widget.style, primary: widget.primary);
   Color get _accent => widget.style.accent;
@@ -98,10 +98,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                       label: Text(l.kitTabName(t)),
                       selected: _tab == t,
                       selectedColor: widget.style.container,
-                      onSelected: (_) => setState(() {
-                        _tab = t;
-                        _q = '';
-                      }),
+                      onSelected: (_) => setState(() => _tab = t),
                     ),
                   ),
               ],
@@ -111,9 +108,18 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
           Expanded(
             child: switch (_tab) {
               KitTab.lesson => _lesson(),
-              KitTab.formulas => _formulas(mathsFormulas),
-              KitTab.physics => _formulas(physicsFormulas),
-              KitTab.constants => _list([for (final c in physicsConstants) (c.name, c.tex)]),
+              // Subject and chapter dropdowns and a search (lib/features/search/formula_browser.dart).
+              KitTab.formulas || KitTab.physics || KitTab.constants => FormulaBrowser(
+                key: ValueKey(_tab),
+                initialSet: switch (_tab) {
+                  KitTab.physics => FormulaSet.physics,
+                  KitTab.constants => FormulaSet.constants,
+                  _ => FormulaSet.maths,
+                },
+                prefer: widget.board.session?.subjectName ?? '',
+                searchHint: l.kitSearchFormulas,
+                onInsert: (tex) => _insertMath(tex, fs: _tab == KitTab.constants ? 34 : 40),
+              ),
               KitTab.periodic => _periodic(),
               KitTab.ions => _ions(),
               KitTab.dates => _DatesTab(onDraw: (ev) => _insert(timeline(ev, _ink, _accent))),
@@ -140,14 +146,6 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
   Widget _section(String t) => Padding(
     padding: const EdgeInsets.fromLTRB(4, Kx.s16, 4, Kx.s8),
     child: Text(t, style: context.text.titleSmall),
-  );
-
-  Widget _search(String hint) => Padding(
-    padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s12, Kx.s12, 4),
-    child: TextField(
-      onChanged: (v) => setState(() => _q = v.trim().toLowerCase()),
-      decoration: InputDecoration(hintText: hint, isDense: true, prefixIcon: const Icon(Icons.search, size: 20)),
-    ),
   );
 
   Widget _tex(String tex, {double size = 17}) => SingleChildScrollView(
@@ -218,62 +216,6 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
   }
 
   // --- Formulas and lists ---------------------------------------------------------------------
-
-  Widget _formulas(List<Formula> all) {
-    // The chapter being taught comes first, when the subject name says which.
-    final subject = (widget.board.session?.subjectName ?? '').toLowerCase();
-    final found = all.where((f) => _q.isEmpty || f.name.toLowerCase().contains(_q) || f.chapter.toLowerCase().contains(_q));
-    bool first(Formula f) => subject.isNotEmpty && subject.contains(f.chapter.toLowerCase());
-    // Stable: the sheet's own order within each part.
-    final list = [...found.where(first), ...found.where((f) => !first(f))];
-    String? last;
-    final l = context.l10n;
-    return Column(
-      children: [
-        _search(l.kitSearchFormulas),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(Kx.s12, 0, Kx.s12, Kx.s12),
-            children: [
-              for (final f in list) ...[
-                if (f.chapter != last) _section(last = f.chapter),
-                _Tap(
-                  key: Key('formula-${f.name}'),
-                  onTap: () => _insertMath(f.tex),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(f.name, style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
-                      const SizedBox(height: 4),
-                      _tex(f.tex),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _list(List<(String, String)> items) => ListView(
-    padding: const EdgeInsets.all(Kx.s12),
-    children: [
-      for (final (name, tex) in items)
-        _Tap(
-          onTap: () => _insertMath(tex, fs: 34),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
-              const SizedBox(height: 4),
-              _tex(tex, size: 15),
-            ],
-          ),
-        ),
-    ],
-  );
 
   Widget _ions() => ListView(
     padding: const EdgeInsets.all(Kx.s12),
@@ -449,7 +391,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
 
 /// A tappable row that puts something on the board.
 class _Tap extends StatelessWidget {
-  const _Tap({super.key, required this.child, required this.onTap});
+  const _Tap({required this.child, required this.onTap});
 
   final Widget child;
   final VoidCallback onTap;
