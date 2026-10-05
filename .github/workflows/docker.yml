@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths:
       - 'services/api/**'
+      - 'services/code-runner/**'
       - 'apps/erp/**'
       - 'packages/shared/**'
       - 'pnpm-lock.yaml'
@@ -44,6 +45,8 @@ jobs:
             dockerfile: services/api/Dockerfile
           - name: erp
             dockerfile: apps/erp/Dockerfile
+          - name: code-runner
+            dockerfile: services/code-runner/Dockerfile
     env:
       AWS_REGION: ap-south-1
       AWS_ROLE_ARN: ${{ secrets.AWS_ECR_ROLE_ARN }}

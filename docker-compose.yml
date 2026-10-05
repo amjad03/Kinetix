@@ -1,6 +1,6 @@
 # Production-like local stack: Postgres (owner + RLS app role), Redis, the API, the ERP and a
 # one-off migrate job. The demo seed is a profile:
-#   docker compose up -d --build                          # postgres, redis, migrate, api, erp
+#   docker compose up -d --build                          # postgres, redis, migrate, api, erp, code-runner
 #   docker compose --profile seed run --rm seed           # demo institution (once, on a fresh DB)
 #   open http://localhost:3000  (institution demo-college, principal@demo.kinetix.in / kinetix123)
 # Secrets below are local-only defaults; override them in a .env file next to this one.
@@ -21,6 +21,9 @@ x-api-env: &api-env
   SMS_PROVIDER: console
   STORAGE_DRIVER: local
   LOG_FORMAT: ${LOG_FORMAT:-text}
+  # C, C++ and Java for the code lab, on the code runner's Unix socket (shared volume).
+  CODE_RUNNER_URL: unix:/run/kx-runner/runner.sock
+  CODE_RUNNER_TOKEN: ${CODE_RUNNER_TOKEN:-local-compose-runner-token}
   # AI_BASE_URL / ASR_BASE_URL are left unset: AI tasks return labelled previews. A real model
   # server (an open decision: AWS Mumbai GPU or an Indian GPU cloud) must be hosted in India.
 
@@ -88,9 +91,45 @@ services:
     ports: ["127.0.0.1:${API_PORT:-4000}:4000"]
     volumes:
       - objects:/app/services/api/.data/objects
+      - runner-sock:/run/kx-runner
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  # Compiles and runs students' C, C++ and Java (services/code-runner). Locked down: no network
+  # at all (the API talks to it over a Unix socket on a shared volume), read-only root, only
+  # /tmp writable, a non-root user, no capabilities, no new privileges, a seccomp profile, and
+  # caps on memory, CPU and processes; each program has its own limits on top
+  # (docs/operations/code-runner.md).
+  code-runner:
+    image: kinetix-code-runner:${KINETIX_TAG:-local}
+    build:
+      context: .
+      dockerfile: services/code-runner/Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+    network_mode: none
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=./infra/docker/code-runner-seccomp.json
+    tmpfs:
+      - /tmp:rw,exec,nosuid,nodev,size=256m,mode=1777
+    environment:
+      CODE_RUNNER_SOCKET: /run/kx-runner/runner.sock
+      CODE_RUNNER_TOKEN: ${CODE_RUNNER_TOKEN:-local-compose-runner-token}
+      RUN_CONCURRENCY: "2"
+    volumes:
+      - runner-sock:/run/kx-runner
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 2
+    pids_limit: 256
+    ulimits:
+      nofile: { soft: 1024, hard: 1024 }
     restart: unless-stopped
 
   erp:
@@ -115,3 +154,4 @@ volumes:
   pgdata:
   redisdata:
   objects:
+  runner-sock:

@@ -140,6 +140,12 @@ only; Firebase never receives names, marks or messages.
    testers** (pilot staff and parents) need a short Beta App Review per version.
 4. Submit for App Store review with the privacy labels and a demo account on staging.
 
+## Python for the code lab (Board, Student App)
+
+Before a release build of the Board or the Student App, put Pyodide's core in place (the
+Release workflow does this): `bash packages/kinetix_cs/tool/fetch_pyodide.sh`. It adds about
+5.5 MB to the package; see code-runner.md.
+
 ## Board
 
 The Board runs on the classroom panel and is installed by us or the institution's IT, not through a

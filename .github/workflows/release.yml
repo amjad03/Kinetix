@@ -89,6 +89,8 @@ jobs:
       - name: Build
         if: steps.check.outputs.signed == 'true'
         run: |
+          # Python for the code lab (Pyodide core, pinned checksum; docs/operations/code-runner.md).
+          bash "$GITHUB_WORKSPACE/packages/kinetix_cs/tool/fetch_pyodide.sh"
           flutter pub get --enforce-lockfile
           defines=(--dart-define="KINETIX_API_URL=$KINETIX_API_URL")
           if [ -n "$FIREBASE_JSON" ]; then
@@ -137,6 +139,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+      - run: bash "$GITHUB_WORKSPACE/packages/kinetix_cs/tool/fetch_pyodide.sh"
+        shell: bash
       - run: flutter pub get --enforce-lockfile
       - run: flutter build windows --release --dart-define="KINETIX_API_URL=$KINETIX_API_URL"
       - name: Package MSIX

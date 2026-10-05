@@ -53,6 +53,9 @@ locals {
       AI_FALLBACK_PROVIDER  = var.ai_fallback_provider
       ASR_FALLBACK_PROVIDER = var.asr_fallback_provider
       ASR_MONTHLY_HOURS     = tostring(var.asr_monthly_hours)
+      # C, C++ and Java for the code lab (code_runner.tf).
+      CODE_RUNNER_URL            = local.code_runner_url
+      CODE_RUN_TENANT_PER_MINUTE = tostring(var.code_run_tenant_per_minute)
     },
     var.ai_base_url != "" ? { AI_BASE_URL = var.ai_base_url } : {},
     var.asr_base_url != "" ? { ASR_BASE_URL = var.asr_base_url } : {},

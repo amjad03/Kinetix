@@ -46,6 +46,20 @@ const EnvSchema = z.object({
   SARVAM_INR_PER_M_INPUT: z.coerce.number().min(0).default(29.28),
   SARVAM_INR_PER_M_OUTPUT: z.coerce.number().min(0).default(73.2),
   SARVAM_INR_PER_AUDIO_HOUR: z.coerce.number().min(0).default(30),
+  /**
+   * The code runner (services/code-runner) that compiles and runs C, C++ and Java for the code
+   * lab: `unix:/run/kx-runner/runner.sock` (docker-compose) or `http://host:8080` (ECS). Unset:
+   * those languages answer 503 CODE_RUNNER_UNAVAILABLE (Python, JavaScript and SQL run on the
+   * device and never come here).
+   */
+  CODE_RUNNER_URL: z.string().regex(/^(unix:\/|https?:\/\/)/).optional(),
+  /** Shared with the runner, which refuses requests without it. */
+  CODE_RUNNER_TOKEN: z.string().optional(),
+  /** Runs each institution may start per minute, and each person (or board). */
+  CODE_RUN_TENANT_PER_MINUTE: z.coerce.number().int().positive().default(120),
+  CODE_RUN_USER_PER_MINUTE: z.coerce.number().int().positive().default(20),
+  /** How long the API waits for the runner (compile + run + queue). */
+  CODE_RUNNER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   /** Where recordings are kept: local disk in development, S3 in ap-south-1 in production. */
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
   STORAGE_DIR: z.string().default('.data/objects'),

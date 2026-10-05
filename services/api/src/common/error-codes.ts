@@ -38,6 +38,9 @@ export const ERROR_CODES: Record<string, string> = {
   'The due date has already passed': 'HOMEWORK_DUE_PASSED',
   'Enter marks before publishing': 'MARKS_EMPTY',
   'The recording is still uploading': 'RECORDING_UPLOADING',
+  // The code lab (code/).
+  'The code runner is not available on this server': 'CODE_RUNNER_UNAVAILABLE',
+  'The code runner is busy. Try again in a moment.': 'CODE_RUNNER_BUSY',
   'This recording was not made with a class, so there is no one to share it with': 'RECORDING_NO_CLASS',
   'Open a class on the board first': 'BOARD_NO_CLASS',
   'Write an answer or add a photo': 'SUBMISSION_EMPTY',

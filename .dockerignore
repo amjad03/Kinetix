@@ -15,6 +15,7 @@
 !services/api/content
 !services/api/docker-entrypoint.sh
 !infra/docker/db-bootstrap.mjs
+!services/code-runner/server.mjs
 !apps/erp/package.json
 !apps/erp/next.config.ts
 !apps/erp/next-env.d.ts

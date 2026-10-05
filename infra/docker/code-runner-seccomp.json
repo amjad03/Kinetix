@@ -1,0 +1,28 @@
+{
+  "comment": "KINETIX code runner (services/code-runner). Docker applies one profile, so this one denies everything Docker's default profile denies, plus io_uring, the new mount API, chroot, personality, and every socket that is not a Unix socket (the runner listens on one; programs get none). clone3 answers ENOSYS so glibc falls back to clone. See docs/operations/code-runner.md.",
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_X86", "SCMP_ARCH_X32", "SCMP_ARCH_AARCH64", "SCMP_ARCH_ARM"],
+  "syscalls": [
+    {
+      "names": [
+        "_sysctl", "acct", "add_key", "bpf", "chroot", "clock_adjtime", "clock_settime", "create_module", "delete_module",
+        "fanotify_init", "finit_module", "fsconfig", "fsmount", "fsopen", "fspick", "get_kernel_syms", "get_mempolicy",
+        "init_module", "io_uring_enter", "io_uring_register", "io_uring_setup", "ioperm", "iopl", "kcmp", "kexec_file_load",
+        "kexec_load", "keyctl", "lookup_dcookie", "mbind", "mount", "mount_setattr", "move_mount", "move_pages",
+        "name_to_handle_at", "nfsservctl", "open_by_handle_at", "open_tree", "perf_event_open", "personality",
+        "pidfd_getfd", "pivot_root", "process_madvise", "process_vm_readv", "process_vm_writev", "ptrace", "query_module",
+        "quotactl", "reboot", "request_key", "set_mempolicy", "setns", "settimeofday", "stime", "swapoff", "swapon",
+        "sysfs", "syslog", "umount", "umount2", "unshare", "uselib", "userfaultfd", "ustat", "vhangup", "vm86", "vm86old"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1
+    },
+    { "names": ["clone3"], "action": "SCMP_ACT_ERRNO", "errnoRet": 38 },
+    {
+      "names": ["socket", "socketpair"],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "args": [{ "index": 0, "value": 1, "op": "SCMP_CMP_NE" }]
+    }
+  ]
+}

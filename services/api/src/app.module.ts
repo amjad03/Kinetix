@@ -18,6 +18,7 @@ import { RedisModule } from './redis/redis.module.js';
 import { ImportModule } from './import/import.module.js';
 import { HealthModule } from './health/health.controller.js';
 import { CalendarModule } from './calendar/calendar.module.js';
+import { CodeModule } from './code/code.module.js';
 import { ConsentModule } from './consent/consent.module.js';
 import { PlansModule } from './plans/plans.module.js';
 import { PlatformModule } from './platform/platform.module.js';
@@ -77,6 +78,7 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     LibraryModule,
     MarksModule,
     MessagesModule,
+    CodeModule,
     PlatformModule,
   ],
 })

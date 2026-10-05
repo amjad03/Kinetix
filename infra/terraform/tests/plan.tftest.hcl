@@ -75,6 +75,10 @@ run "staging_defaults" {
     condition     = length(aws_iam_role.github_ecr) == 0
     error_message = "no GitHub role without github_repository"
   }
+  assert {
+    condition     = aws_ecs_service.code_runner.network_configuration[0].assign_public_ip == false && contains(keys(local.api_environment), "CODE_RUNNER_URL") && contains(keys(local.api_secrets), "CODE_RUNNER_TOKEN")
+    error_message = "the code runner is private, found by the API, and keyed"
+  }
 }
 
 run "prod_providers_and_github" {

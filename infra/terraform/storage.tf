@@ -117,7 +117,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "objects" {
 # Container registries (pushed by .github/workflows/docker.yml)
 # ---------------------------------------------------------------------------------------------
 resource "aws_ecr_repository" "app" {
-  for_each             = toset(["api", "erp"])
+  for_each             = toset(["api", "erp", "code-runner"])
   name                 = "${local.name}-${each.key}"
   image_tag_mutability = "MUTABLE" # :main moves; deploy by the immutable git-SHA tag
   force_delete         = false

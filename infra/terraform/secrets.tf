@@ -54,6 +54,8 @@ resource "aws_secretsmanager_secret_version" "app" {
     PAIRING_HMAC_SECRET         = random_password.pairing_hmac.result
     SECRETS_ENCRYPTION_KEY      = random_bytes.secrets_encryption.base64
     SECRETS_ENCRYPTION_OLD_KEYS = var.secrets_encryption_old_keys
+    # The API's key to the code runner (code_runner.tf).
+    CODE_RUNNER_TOKEN = random_password.code_runner.result
   })
 }
 
@@ -123,6 +125,7 @@ locals {
       # Encrypts institutions' Razorpay secrets at rest (each institution's own account).
       SECRETS_ENCRYPTION_KEY      = "${aws_secretsmanager_secret.app.arn}:SECRETS_ENCRYPTION_KEY::"
       SECRETS_ENCRYPTION_OLD_KEYS = "${aws_secretsmanager_secret.app.arn}:SECRETS_ENCRYPTION_OLD_KEYS::"
+      CODE_RUNNER_TOKEN           = "${aws_secretsmanager_secret.app.arn}:CODE_RUNNER_TOKEN::"
     },
     var.sms_provider == "msg91" ? {
       for k in local.manual_secrets.msg91.keys : k => "${aws_secretsmanager_secret.manual["msg91"].arn}:${k}::"

@@ -356,3 +356,31 @@ variable "github_oidc_provider_arn" {
   type        = string
   default     = ""
 }
+
+variable "code_runner_cpu" {
+  description = "The code runner's CPU units (C, C++ and Java for the code lab)."
+  type        = number
+  default     = 1024
+}
+
+variable "code_runner_memory" {
+  type    = number
+  default = 2048
+}
+
+variable "code_runner_count" {
+  description = "Code runner tasks. Each runs code_runner_concurrency programs at once."
+  type        = number
+  default     = 1
+}
+
+variable "code_runner_concurrency" {
+  type    = number
+  default = 2
+}
+
+variable "code_run_tenant_per_minute" {
+  description = "Code runs (C, C++, Java) each institution may start per minute."
+  type        = number
+  default     = 120
+}
