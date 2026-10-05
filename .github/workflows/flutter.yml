@@ -51,6 +51,7 @@ jobs:
           - packages/kinetix_math
           - packages/kinetix_3d
           - packages/kinetix_labs
+          - packages/kinetix_cs
     defaults:
       run:
         working-directory: ${{ matrix.package }}
