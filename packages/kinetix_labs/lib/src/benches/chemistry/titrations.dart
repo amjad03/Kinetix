@@ -328,10 +328,14 @@ class ConductometricBench extends LabBench {
     for (final acid in [tr('Hydrochloric acid'), tr('Acetic acid')]) {
       final s = [for (final r in rows) if (r[0] == acid) r]..sort((a, b) => (a[1] as num).compareTo(b[1] as num));
       if (s.length < 6) continue;
-      // Fit lines to the first and last thirds and intersect them.
-      final n = s.length ~/ 3;
-      LinearFit? fit(List<List<Object>> part) => LinearFit.of([for (final r in part) (r[1] as num).toDouble()], [for (final r in part) (r[2] as num).toDouble()]);
-      final a = fit(s.sublist(0, math.max(2, n))), b = fit(s.sublist(s.length - math.max(2, n)));
+      // Fit lines to the straight parts before and after the bend and
+      // intersect them (the very first readings of a weak acid curve, so
+      // they are left out).
+      final n = s.length;
+      // Conductances corrected for dilution: G × (V₀ + v) ÷ V₀.
+      LinearFit? fit(List<List<Object>> part) =>
+          LinearFit.of([for (final r in part) (r[1] as num).toDouble()], [for (final r in part) (r[2] as num) * (acidMl + (r[1] as num)) / acidMl]);
+      final a = fit(s.sublist((n * 0.15).floor(), math.max((n * 0.15).floor() + 2, (n * 0.42).floor()))), b = fit(s.sublist(n - math.max(2, n ~/ 3)));
       if (a == null || b == null || (a.slope - b.slope).abs() < 1e-9) continue;
       final veq = (b.intercept - a.intercept) / (a.slope - b.slope);
       out.add(tr('{a}: the two straight parts meet at {v} mL, the equivalence point, so the acid is {c} M.', {'a': acid, 'v': veq.toStringAsFixed(2), 'c': (veq * base / acidMl).toStringAsFixed(4)}));
