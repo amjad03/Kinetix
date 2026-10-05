@@ -107,11 +107,14 @@ const deviceOutputLimit = 64 * 1024;
 /// while Python loads, `{id, event: out|err, text}` as the program prints, and
 /// `{id, event: done, status, ms}` at the end (status ok, runtime_error or stopped).
 class RunnerSession {
-  RunnerSession(this._eval, {this.timeLimit = deviceTimeLimit, this.outputLimit = deviceOutputLimit});
+  RunnerSession(this._eval, {this.timeLimit = deviceTimeLimit, this.startLimit = const Duration(seconds: 60), this.outputLimit = deviceOutputLimit});
 
   /// Runs a line of JavaScript in the page.
   final void Function(String js) _eval;
   final Duration timeLimit;
+
+  /// How long Python may take to start (slow panels, first run).
+  final Duration startLimit;
   final int outputLimit;
 
   int _nextId = 0;
@@ -126,12 +129,15 @@ class RunnerSession {
   Future<RunResult> run(RunRequest r) {
     _finish(RunStatus.stopped);
     final run = _current = _Run(++_nextId);
-    run.timer = Timer(timeLimit, () {
-      _eval('kx.stop(${run.id})');
-      _finish(RunStatus.timeout);
-    });
+    run.timer = Timer(timeLimit, () => _timeout(run));
     _eval('kx.run(${jsonEncode({'id': run.id, 'lang': r.language.id, 'code': r.source, 'stdin': r.stdin})})');
     return run.done.future;
+  }
+
+  void _timeout(_Run run) {
+    if (_current != run) return;
+    _eval('kx.stop(${run.id})');
+    _finish(RunStatus.timeout);
   }
 
   void stop() {
@@ -141,17 +147,19 @@ class RunnerSession {
     _finish(RunStatus.stopped);
   }
 
-  /// A message from the page.
-  void receive(String message) {
-    final Map<String, dynamic> m;
-    try {
-      m = jsonDecode(message) as Map<String, dynamic>;
-    } catch (_) {
-      return;
-    }
+  /// A message from the page: JSON text (WebView2 may encode it twice, or hand over the map).
+  void receive(Object? message) {
+    final m = decodePageMessage(message);
+    if (m == null) return;
     final event = m['event'];
-    if (event == 'loading') {
-      _loading.add('${m['text'] ?? ''}');
+    if (event == 'loading' || event == 'loaded') {
+      _loading.add(event == 'loading' ? '${m['text'] ?? ''}' : '');
+      // Python takes a few seconds to start the first time: that is not the program's time.
+      final run = _current;
+      if (run != null) {
+        run.timer?.cancel();
+        run.timer = Timer(event == 'loading' ? startLimit : timeLimit, () => _timeout(run));
+      }
       return;
     }
     final run = _current;
@@ -185,6 +193,19 @@ class RunnerSession {
     _finish(RunStatus.stopped);
     _loading.close();
   }
+}
+
+/// A message from the runner page as a map, or null.
+Map<String, dynamic>? decodePageMessage(Object? message) {
+  Object? decoded = message;
+  for (var i = 0; i < 2 && decoded is String; i++) {
+    try {
+      decoded = jsonDecode(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+  return decoded is Map ? decoded.cast<String, dynamic>() : null;
 }
 
 class _Run {

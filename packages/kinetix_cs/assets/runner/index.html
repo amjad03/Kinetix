@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KINETIX code runner</title>
+<!-- Runs Python (Pyodide) and JavaScript for the code lab, in a Web Worker so Stop can end
+     any program. Served from the app on 127.0.0.1; nothing is fetched from the internet.
+     The protocol is described in lib/src/runner/protocol.dart (RunnerSession). -->
+</head>
+<body style="background:#1e2430">
+<script>
+(function () {
+  'use strict';
+  function send(m) {
+    var s = JSON.stringify(m);
+    if (window.KX && window.KX.postMessage) window.KX.postMessage(s);
+    else if (window.chrome && window.chrome.webview) window.chrome.webview.postMessage(s);
+  }
+  var workers = {};
+  var current = null;
+  function worker(lang) {
+    var kind = lang === 'python' ? 'python' : 'js';
+    if (!workers[kind]) {
+      var w = new Worker('worker.js?lang=' + kind);
+      w.onmessage = function (e) { send(e.data); if (e.data.event === 'done' && current && current.id === e.data.id) current = null; };
+      w.onerror = function (e) { if (current) { send({ id: current.id, event: 'err', text: String(e.message) + '\n' }); send({ id: current.id, event: 'done', status: 'runtime_error' }); current = null; } };
+      workers[kind] = w;
+      if (kind === 'python') w.postMessage({ cmd: 'load' });
+    }
+    return workers[kind];
+  }
+  window.kx = {
+    run: function (job) {
+      current = { id: job.id, kind: job.lang === 'python' ? 'python' : 'js' };
+      worker(job.lang).postMessage({ cmd: 'run', id: job.id, code: job.code, stdin: job.stdin || '' });
+    },
+    // A worker cannot be interrupted, only ended: the next run starts a fresh one.
+    stop: function (id) {
+      if (!current || current.id !== id) return;
+      workers[current.kind].terminate();
+      delete workers[current.kind];
+      current = null;
+    },
+    // Starts Python early, while the teacher is still typing.
+    warm: function () { worker('python'); },
+  };
+  send({ event: 'ready' });
+})();
+</script>
+</body>
+</html>

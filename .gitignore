@@ -22,3 +22,7 @@ key.properties
 *.keystore
 *.p12
 *.pfx
+
+# Pyodide is fetched at build time (packages/kinetix_cs/tool/fetch_pyodide.sh), not committed.
+packages/kinetix_cs/assets/runner/pyodide/*
+!packages/kinetix_cs/assets/runner/pyodide/.keep
