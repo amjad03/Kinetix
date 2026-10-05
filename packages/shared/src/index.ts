@@ -166,6 +166,8 @@ export interface MeResponse {
   mustChangePassword: boolean;
   /** False for phone-code-only accounts, which may set a first password without a current one. */
   hasPassword: boolean;
+  /** Present (true) only for the KINETIX platform team, who look after the global library. */
+  platformAdmin?: true;
 }
 
 export interface TeacherPeriod {
@@ -252,4 +254,76 @@ export interface CreateHomeworkRequest {
   instructions?: string;
   dueOn: string;
   boardSessionId?: string;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Concept videos (the KINETIX YouTube channel, linked to library topics by the platform team)
+// ---------------------------------------------------------------------------------------------
+
+/** A concept video: played with YouTube's embedded player (youtube-nocookie.com), never downloaded. */
+export interface ConceptVideo {
+  id: string;
+  topicId: string;
+  youtubeVideoId: string;
+  title: string;
+  language: Language;
+  durationSeconds: number | null;
+  channelTitle: string | null;
+  position: number;
+}
+
+/** GET /v1/content/topics/:id/videos?lang=: the class's language first, then English, then the rest. */
+export interface TopicConceptVideos {
+  topicId: string;
+  /** The language put first: `lang`, else the topic's course language. */
+  language: Language;
+  videos: ConceptVideo[];
+}
+
+/** Where a period's topic came from: the saved lesson plan, the year plan's week, or the next untaught syllabus topic. */
+export type PeriodTopicSource = 'lesson_plan' | 'year_plan' | 'syllabus';
+
+/** GET /v1/devices/me/concept-videos: the board's current (or next) period today and its topic's videos. */
+export interface PeriodConceptVideos {
+  period: {
+    slotId: string;
+    date: string;
+    startsAt: string;
+    endsAt: string;
+    /** In progress now; false for the next period later today. */
+    isNow: boolean;
+    section: { id: string; displayName: string };
+    subject: { id: string; name: string };
+  } | null;
+  source: PeriodTopicSource | null;
+  topics: { id: string; title: string }[];
+  language: Language;
+  videos: (ConceptVideo & { topicTitle: string })[];
+}
+
+/** Platform team, GET /v1/platform/library: the global library and how many topics have videos. */
+export interface PlatformLibraryCurriculum {
+  code: string;
+  name: string;
+  level: string;
+  courses: { id: string; code: string; title: string; term: number; language: Language; topics: number; topicsWithVideos: number; videos: number }[];
+}
+
+/** GET /v1/platform/library/courses/:id (global chapters and topics only). */
+export interface PlatformCourseTree {
+  id: string;
+  curriculumCode: string;
+  code: string;
+  title: string;
+  term: number;
+  language: Language;
+  chapters: { id: string; title: string; topics: { id: string; title: string; videos: number }[] }[];
+}
+
+/** POST /v1/platform/playlists/preview: a playlist's videos, each with a best-guess topic of the chapter. */
+export interface PlaylistPreview {
+  playlistId: string;
+  chapter: { id: string; title: string };
+  topics: { id: string; title: string }[];
+  videos: { youtubeVideoId: string; title: string; position: number; durationSeconds: number | null; suggestedTopicId: string | null; alreadyOn: string[] }[];
 }

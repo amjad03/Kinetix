@@ -19,6 +19,7 @@ import { HealthModule } from './health/health.controller.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { ConsentModule } from './consent/consent.module.js';
 import { PlansModule } from './plans/plans.module.js';
+import { PlatformModule } from './platform/platform.module.js';
 import { CoverageModule } from './coverage/coverage.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
@@ -70,6 +71,7 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     LibraryModule,
     MarksModule,
     MessagesModule,
+    PlatformModule,
   ],
 })
 export class AppModule {}

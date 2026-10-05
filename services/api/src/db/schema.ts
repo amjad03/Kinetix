@@ -810,6 +810,43 @@ export const topics = pgTable(
   (t) => [index('topics_chapter_idx').on(t.chapterId, t.position)],
 );
 
+/**
+ * The KINETIX platform team: people who look after the global library for every institution
+ * (concept videos today). Each is an ordinary user of some institution (usually KINETIX's own),
+ * added with `pnpm platform:admin`. The app role has no access to this table at all; only
+ * SystemLookups reads it (owner role).
+ */
+export const platformAdmins = pgTable('platform_admins', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  note: text('note'),
+  createdAt: createdAt(),
+});
+
+/**
+ * Concept videos: short explainers from the KINETIX YouTube channel, linked to global topics by
+ * the platform team and shown to every institution (board, Student App). Only the YouTube id is
+ * kept; the apps play it with YouTube's own embedded player and never download it.
+ * Read-only for the app role; the platform endpoints write it as the owner.
+ */
+export const conceptVideos = pgTable(
+  'concept_videos',
+  {
+    id: id(),
+    topicId: uuid('topic_id').notNull().references(() => topics.id, { onDelete: 'cascade' }),
+    youtubeVideoId: text('youtube_video_id').notNull(),
+    title: text('title').notNull(),
+    language: language('language').notNull().default('en'),
+    durationSeconds: integer('duration_seconds'),
+    channelTitle: text('channel_title'),
+    /** The playlist it was imported from, if any. */
+    playlistId: text('playlist_id'),
+    position: smallint('position').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('concept_videos_topic_video_uq').on(t.topicId, t.youtubeVideoId), index('concept_videos_topic_idx').on(t.topicId, t.position)],
+);
+
 // ---------------------------------------------------------------------------------------------
 // Fees and payments. Amounts are integer paise.
 // ---------------------------------------------------------------------------------------------

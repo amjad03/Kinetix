@@ -32,6 +32,7 @@ import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { termFor } from '../terms/terms.js';
 import { mondayOf, periodDates, planProgress, spreadTopics } from './planner.js';
+import { yearPlanTopicIds } from './suggest.js';
 
 /** A semester is about 16 teaching weeks; a plan without an end date (and no term set up) covers that. */
 const DEFAULT_WEEKS = 16;
@@ -330,17 +331,7 @@ export class PlansController {
     const [subject] = await tx.select({ id: subjects.id, name: subjects.name }).from(subjects).where(eq(subjects.id, slot.subjectId));
     const [saved] = await this.withTopics(tx, await this.lessonQuery(tx).where(and(eq(lessonPlans.timetableSlotId, slot.id), eq(lessonPlans.date, date))));
     // Suggested: that week's untaught topics in the year plan, else the next untaught ones.
-    const [plan] = await tx.select({ id: yearPlans.id }).from(yearPlans).where(and(eq(yearPlans.sectionId, slot.sectionId), eq(yearPlans.subjectId, slot.subjectId)));
-    let suggestedTopicIds: string[] = [];
-    if (plan) {
-      const items = await tx.select({ topicId: yearPlanItems.topicId, weekOf: yearPlanItems.weekOf }).from(yearPlanItems).where(eq(yearPlanItems.planId, plan.id)).orderBy(asc(yearPlanItems.weekOf));
-      const covered = new Set(
-        (await tx.select({ topicId: topicCoverage.topicId }).from(topicCoverage).where(eq(topicCoverage.sectionId, slot.sectionId))).map((r) => r.topicId),
-      );
-      const open = items.filter((i) => !covered.has(i.topicId));
-      const week = open.filter((i) => i.weekOf === mondayOf(date));
-      suggestedTopicIds = (week.length ? week : open.slice(0, 1)).map((i) => i.topicId);
-    }
+    const suggestedTopicIds = await yearPlanTopicIds(tx, slot.sectionId, slot.subjectId, date);
     return {
       slot: { id: slot.id, startsAt: slot.startsAt, endsAt: slot.endsAt, sectionId: slot.sectionId, section: slot.section, subjectId: slot.subjectId },
       subject,
