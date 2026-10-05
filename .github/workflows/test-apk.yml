@@ -53,6 +53,9 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
       - run: flutter pub get --enforce-lockfile
+      # Python for the Code lab (board and Student App); not committed, pinned by checksum.
+      - if: matrix.app == 'board' || matrix.app == 'student'
+        run: bash "$GITHUB_WORKSPACE/packages/kinetix_cs/tool/fetch_pyodide.sh"
       # One test key for every run, so a new build installs over the previous one.
       - uses: actions/cache@v4
         with:
