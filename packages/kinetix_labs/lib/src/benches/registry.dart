@@ -5,6 +5,7 @@ import 'electronics/networks.dart';
 import 'electronics/rectifier.dart';
 import 'electronics/transistor.dart';
 import 'mechanics/mechanics_benches.dart';
+import 'mechanics/modern_benches.dart';
 import 'optics/optics_benches.dart';
 import 'buoyancy.dart';
 import 'calorimetry.dart';
@@ -103,6 +104,11 @@ final labBenches = <String, LabBench>{
     const CapillaryBench(),
     const CoolingBench(),
     const ResonanceTubeBench(),
+    // Degree-level physics.
+    const EmBench(),
+    const PhotoelectricBench(),
+    const HallBench(),
+    const HysteresisBench(),
   ])
     b.kind: b,
 };

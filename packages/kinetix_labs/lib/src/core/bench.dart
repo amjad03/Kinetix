@@ -69,7 +69,11 @@ class LabGraph {
   /// Join the points in order of x (a characteristic curve).
   final bool curve;
 
-  const LabGraph(this.x, this.y, {this.throughOrigin = false, this.line = false, this.curve = false, this.refY, this.include, this.fromZero = true});
+  /// Join the points in the order they were recorded (a loop, such as a
+  /// hysteresis curve).
+  final bool inOrder;
+
+  const LabGraph(this.x, this.y, {this.throughOrigin = false, this.line = false, this.curve = false, this.inOrder = false, this.refY, this.include, this.fromZero = true});
 
   List<Offset> points(List<List<Object>> rows) => [
         for (final r in rows)
@@ -459,9 +463,9 @@ void paintLabGraph(Canvas canvas, Rect rect, LabGraph graph, List<List<Object>> 
     final f = LabGraph.fit(pts);
     if (f != null) canvas.drawLine(map(minX, f.at(minX)), map(maxX, f.at(maxX)), stroke(LabInk.blue.withValues(alpha: 0.7), 2.5));
   }
-  if ((graph.curve || (!graph.throughOrigin && !graph.line && !graph.fromZero)) && pts.length > 1) {
+  if ((graph.curve || graph.inOrder || (!graph.throughOrigin && !graph.line && !graph.fromZero)) && pts.length > 1) {
     // A smooth line through the points in order of x.
-    final sorted = [...pts]..sort((a, b) => a.dx.compareTo(b.dx));
+    final sorted = graph.inOrder ? pts : ([...pts]..sort((a, b) => a.dx.compareTo(b.dx)));
     final path = Path()..moveTo(map(sorted.first.dx, sorted.first.dy).dx, map(sorted.first.dx, sorted.first.dy).dy);
     for (final p in sorted.skip(1)) {
       final q = map(p.dx, p.dy);
