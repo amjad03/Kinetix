@@ -75,7 +75,7 @@ class ToolRail extends StatelessWidget {
           key: key,
           size: size,
           icon: icon,
-          tooltip: primary ? label : '$label  ($letter)',
+          tooltip: label,
           label: primary ? label : null,
           badge: primary ? letter : null,
           selected: selected,

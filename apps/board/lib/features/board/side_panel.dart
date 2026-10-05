@@ -231,7 +231,7 @@ class SplitPanel extends StatelessWidget {
             content: kind,
             title: title,
             onBack: () => id != null ? onItem?.call(null, null) : onContent(null),
-            onSnapshot: id == null ? null : onSnapshot,
+            onSnapshot: id == null || current == SplitContent.model3d ? null : onSnapshot,
           ),
           Expanded(
             child: id == null

@@ -2076,4 +2076,451 @@ class AppLocalizationsKn extends AppLocalizations {
   String conceptVideosPlay(String title) {
     return '$title ಪ್ಲೇ ಮಾಡಿ';
   }
+
+  @override
+  String get answerCover => 'ಉತ್ತರ ನೋಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ';
+
+  @override
+  String get answerHint => 'ತೋರಿಸುವವರೆಗೆ ಮುಚ್ಚಿರುವ ಉತ್ತರ';
+
+  @override
+  String get bgFourLine => 'ನಾಲ್ಕು-ಗೆರೆ';
+
+  @override
+  String get bringToFront => 'ಮುಂದಕ್ಕೆ ತನ್ನಿ';
+
+  @override
+  String get sendToBack => 'ಹಿಂದಕ್ಕೆ ಕಳುಹಿಸಿ';
+
+  @override
+  String get circuitAmmeter => 'ಆಮ್ಮೀಟರ್';
+
+  @override
+  String get circuitBattery => 'ಬ್ಯಾಟರಿ';
+
+  @override
+  String get circuitBulb => 'ಬಲ್ಬ್';
+
+  @override
+  String get circuitCell => 'ಕೋಶ';
+
+  @override
+  String get circuitEarth => 'ಭೂಸಂಪರ್ಕ';
+
+  @override
+  String get circuitLed => 'ಎಲ್‌ಇಡಿ';
+
+  @override
+  String get circuitResistor => 'ರೋಧಕ';
+
+  @override
+  String get circuitSwitchClosed => 'ಸ್ವಿಚ್ (ಮುಚ್ಚಿದ)';
+
+  @override
+  String get circuitSwitchOpen => 'ಸ್ವಿಚ್ (ತೆರೆದ)';
+
+  @override
+  String get circuitVoltmeter => 'ವೋಲ್ಟ್‌ಮೀಟರ್';
+
+  @override
+  String get circuitWire => 'ತಂತಿ';
+
+  @override
+  String get copy => 'ನಕಲಿಸಿ';
+
+  @override
+  String get paste => 'ಅಂಟಿಸಿ';
+
+  @override
+  String get duplicate => 'ಪ್ರತಿ ಮಾಡಿ';
+
+  @override
+  String get delete => 'ಅಳಿಸಿ';
+
+  @override
+  String get edit => 'ಬದಲಿಸಿ';
+
+  @override
+  String get group => 'ಗುಂಪು ಮಾಡಿ';
+
+  @override
+  String get ungroup => 'ಗುಂಪು ಬಿಡಿಸಿ';
+
+  @override
+  String get fill => 'ಬಣ್ಣ ತುಂಬಿ';
+
+  @override
+  String get noFill => 'ಬಣ್ಣ ತೆಗೆಯಿರಿ';
+
+  @override
+  String get fillShapes => 'ಆಕೃತಿಗಳಿಗೆ ಬಣ್ಣ ತುಂಬಿ';
+
+  @override
+  String get equationLatex => 'ಸಮೀಕರಣ (LaTeX)';
+
+  @override
+  String get equationPreview => 'ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಚಿಹ್ನೆ ಟ್ಯಾಪ್ ಮಾಡಿ';
+
+  @override
+  String get putOnBoard => 'ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ';
+
+  @override
+  String get flowDecision => 'ನಿರ್ಧಾರ';
+
+  @override
+  String get flowInputOutput => 'ಇನ್‌ಪುಟ್ / ಔಟ್‌ಪುಟ್';
+
+  @override
+  String get flowProcess => 'ಪ್ರಕ್ರಿಯೆ';
+
+  @override
+  String get flowStartEnd => 'ಪ್ರಾರಂಭ / ಅಂತ್ಯ';
+
+  @override
+  String get graphCannotRead => 'ಈ ಫಲನವನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ';
+
+  @override
+  String get graphFunction => 'ಫಲನ';
+
+  @override
+  String get graphHint => 'ಉದಾ: 2x^2 - 3, sin(x), sqrt(x)';
+
+  @override
+  String get graphXRange => 'x, − ಇಂದ + ವರೆಗೆ';
+
+  @override
+  String get graphYRange => 'y, − ಇಂದ + ವರೆಗೆ';
+
+  @override
+  String get hideProtractor => 'ಕೋನಮಾಪಕ ಮರೆಮಾಡಿ';
+
+  @override
+  String get hideRuler => 'ಅಳತೆಪಟ್ಟಿ ಮರೆಮಾಡಿ';
+
+  @override
+  String get turn => 'ತಿರುಗಿಸಿ';
+
+  @override
+  String get typeHint => 'ಟೈಪ್ ಮಾಡಿ…';
+
+  @override
+  String get inputTitle => 'ಯಾವುದರಿಂದ ಬರೆಯುವುದು';
+
+  @override
+  String get inputHint =>
+      'ಪೆನ್: ಪೆನ್ ಮಾತ್ರ ಬರೆಯುತ್ತದೆ, ಬೆರಳುಗಳು ಬೋರ್ಡ್ ಸರಿಸುತ್ತವೆ. ಸ್ವಯಂ: ಪೆನ್ ಬಳಸುವವರೆಗೆ ಬೆರಳುಗಳು ಬರೆಯುತ್ತವೆ.';
+
+  @override
+  String get inputAuto => 'ಸ್ವಯಂ';
+
+  @override
+  String get inputPen => 'ಪೆನ್';
+
+  @override
+  String get inputFinger => 'ಬೆರಳು';
+
+  @override
+  String get insertAnswerHint => 'ತರಗತಿಯಲ್ಲಿ ಟ್ಯಾಪ್ ಮಾಡುವವರೆಗೆ ಮುಚ್ಚಿರುತ್ತದೆ';
+
+  @override
+  String get insertEquationHint => 'ಭಿನ್ನರಾಶಿ, ಮೂಲ ಮತ್ತು ಘಾತ, ಮುದ್ರಣದಂತೆ';
+
+  @override
+  String get insertModelHint =>
+      'ಬೋರ್ಡ್ ಪಕ್ಕ ತೆರೆಯುತ್ತದೆ; ಅದರ ಚಿತ್ರವನ್ನು ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ';
+
+  @override
+  String get tapToPlace => 'ಇಡಲು ಬೋರ್ಡ್ ಟ್ಯಾಪ್ ಮಾಡಿ';
+
+  @override
+  String get laserHint => 'ಬರೆಯದೆ ತೋರಿಸುತ್ತದೆ';
+
+  @override
+  String get kitAddWord => 'ಪದ ಸೇರಿಸಿ';
+
+  @override
+  String get kitAiForLesson => 'ಈ ಪಾಠಕ್ಕೆ KINETIX AI';
+
+  @override
+  String get kitAll => 'ಎಲ್ಲ';
+
+  @override
+  String get kitAtomBall => 'ಪರಮಾಣು ಚೆಂಡು';
+
+  @override
+  String get kitBinary => 'ದ್ವಿಮಾನ';
+
+  @override
+  String get kitBohrModel => 'ಬೋರ್ ಮಾದರಿ';
+
+  @override
+  String get kitDecimal => 'ದಶಮಾಂಶ ಸಂಖ್ಯೆ';
+
+  @override
+  String kitDrawTimeline(int count) {
+    return 'ಕಾಲರೇಖೆ ಬರೆಯಿರಿ ($count)';
+  }
+
+  @override
+  String get kitElementCard => 'ಧಾತು ಕಾರ್ಡ್';
+
+  @override
+  String get kitIndia => 'ಭಾರತ';
+
+  @override
+  String get kitWorld => 'ಜಗತ್ತು';
+
+  @override
+  String get kitMore => 'ಈ ಕಿಟ್‌ನಲ್ಲಿ';
+
+  @override
+  String get kitMoreHint =>
+      'ಮೇಲಿನ ಟ್ಯಾಬ್‌ಗಳಲ್ಲಿ ಈ ವಿಷಯದ ಸಾಮಗ್ರಿ ಇದೆ. ಬೋರ್ಡ್‌ಗೆ ಹಾಕಲು ಯಾವುದನ್ನಾದರೂ ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String get kitPickEvents => 'ಕಾಲರೇಖೆಗೆ ಘಟನೆಗಳನ್ನು ಆರಿಸಿ';
+
+  @override
+  String get kitSearchFormulas => 'ಸೂತ್ರಗಳನ್ನು ಹುಡುಕಿ';
+
+  @override
+  String get kitSeeAndDo => 'ನೋಡಿ ಮತ್ತು ಮಾಡಿ';
+
+  @override
+  String get kitShort => 'ಕಿಟ್';
+
+  @override
+  String get kitStarGive => 'ಒಂದು ನಕ್ಷತ್ರ ಕೊಡಿ';
+
+  @override
+  String get kitStarRemove => 'ಒಂದು ನಕ್ಷತ್ರ ಹಿಂಪಡೆಯಿರಿ';
+
+  @override
+  String kitStarOfTheDay(String name) {
+    return 'ಇಂದಿನ ನಕ್ಷತ್ರ: $name';
+  }
+
+  @override
+  String get kitStarsNoClass =>
+      'ಮಕ್ಕಳಿಗೆ ನಕ್ಷತ್ರ ಕೊಡಲು ವೇಳಾಪಟ್ಟಿಯ ತರಗತಿಯೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+
+  @override
+  String get kitWordsHint =>
+      'ಬೋರ್ಡ್‌ನಲ್ಲಿ ಬರೆದ ಪದಗಳು ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ. ದೊಡ್ಡ ಪದ ಕಾರ್ಡ್‌ಗಾಗಿ ಒಂದನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String get kitThisLesson => 'ಈ ಪಾಠ';
+
+  @override
+  String get kitFormulas => 'ಸೂತ್ರಗಳು';
+
+  @override
+  String get kitConstants => 'ಸ್ಥಿರಾಂಕಗಳು';
+
+  @override
+  String get kitPeriodic => 'ಆವರ್ತಕ ಕೋಷ್ಟಕ';
+
+  @override
+  String get kitIons => 'ಅಯಾನುಗಳು';
+
+  @override
+  String get kitDates => 'ಮುಖ್ಯ ದಿನಾಂಕಗಳು';
+
+  @override
+  String get kitWords => 'ಪದಗೋಡೆ';
+
+  @override
+  String get kitLogic => 'ತರ್ಕ ದ್ವಾರಗಳು';
+
+  @override
+  String get kitStars => 'ತರಗತಿಯ ನಕ್ಷತ್ರಗಳು';
+
+  @override
+  String kitValency(int valency) {
+    return 'ವೇಲೆನ್ಸಿ $valency';
+  }
+
+  @override
+  String get kitPeriodicHint =>
+      'ಕಾರ್ಡ್, ಬೋರ್ ಮಾದರಿ ಅಥವಾ ಪರಮಾಣು ಚೆಂಡಿಗೆ ಧಾತುವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String get kitLogicHint =>
+      'ಸತ್ಯ ಕೋಷ್ಟಕವನ್ನು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಬರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String subjectKit(String subject) {
+    return '$subject ಕಿಟ್';
+  }
+
+  @override
+  String get layoutTitle => 'ವಿನ್ಯಾಸ';
+
+  @override
+  String get layoutHint =>
+      'ರೈಲುಗಳಲ್ಲಿ ಉಪಕರಣಗಳು ಬೋರ್ಡ್‌ನ ಬದಿಗಳಲ್ಲಿ; ಟೂಲ್‌ಬಾರ್‌ನಲ್ಲಿ ಕೆಳಗೆ.';
+
+  @override
+  String get layoutRails => 'ರೈಲುಗಳು';
+
+  @override
+  String get layoutBottomBar => 'ಕೆಳಗಿನ ಟೂಲ್‌ಬಾರ್';
+
+  @override
+  String get simpleBoardTitle => 'ಸರಳ ಬೋರ್ಡ್';
+
+  @override
+  String get simpleBoardHint =>
+      'LKG ಯಿಂದ 5ನೇ ತರಗತಿಗೆ ಹೆಸರಿನೊಂದಿಗೆ ದೊಡ್ಡ ಉಪಕರಣಗಳು, Andika ಅಕ್ಷರ ಮತ್ತು ತರಗತಿಯ ನಕ್ಷತ್ರಗಳು. ಸ್ವಯಂ ಆ ತರಗತಿಗಳಿಗೆ ಆನ್ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get simpleBoardAuto => 'ಸ್ವಯಂ';
+
+  @override
+  String get simpleBoardOn => 'ಆನ್';
+
+  @override
+  String get simpleBoardOff => 'ಆಫ್';
+
+  @override
+  String get noteAnswer => 'ಮುಚ್ಚಿದ ಉತ್ತರ';
+
+  @override
+  String get noteSticky => 'ಅಂಟು ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get numberFrom => 'ಇಂದ';
+
+  @override
+  String get numberTo => 'ವರೆಗೆ';
+
+  @override
+  String get numberStep => 'ಹೆಜ್ಜೆ';
+
+  @override
+  String get openLab => 'ಪ್ರಯೋಗಾಲಯ ತೆರೆಯಿರಿ';
+
+  @override
+  String get openModel => '3D ಮಾದರಿ ತೆರೆಯಿರಿ';
+
+  @override
+  String get readWithAi => 'AI ಮೂಲಕ ಓದಿ';
+
+  @override
+  String get snapshotAdded =>
+      'ಚಿತ್ರ ಬೋರ್ಡ್‌ಗೆ ಹಾಕಲಾಗಿದೆ. ಮತ್ತೆ ತೆರೆಯಲು ಅದನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.';
+
+  @override
+  String get snapshotToBoard => 'ಬೋರ್ಡ್‌ಗೆ ಹಾಕಿ';
+
+  @override
+  String get stChemEquation => 'ರಾಸಾಯನಿಕ ಸಮೀಕರಣ';
+
+  @override
+  String get stCode => 'ಕೋಡ್ ಬ್ಲಾಕ್';
+
+  @override
+  String get stEquation => 'ಸಮೀಕರಣ';
+
+  @override
+  String get stGraph => 'ಗ್ರಾಫ್';
+
+  @override
+  String get stNumberLine => 'ಸಂಖ್ಯಾ ರೇಖೆ';
+
+  @override
+  String get stWordCard => 'ಪದ ಕಾರ್ಡ್';
+
+  @override
+  String get stGeometry => 'ರೇಖಾಗಣಿತ';
+
+  @override
+  String get stCircuits => 'ಸರ್ಕ್ಯೂಟ್‌ಗಳು';
+
+  @override
+  String get stAtoms => 'ಪರಮಾಣುಗಳು';
+
+  @override
+  String get stTimeline => 'ಕಾಲರೇಖೆ';
+
+  @override
+  String get stFlowchart => 'ಹರಿವು ನಕ್ಷೆ';
+
+  @override
+  String get stFourLine => 'ನಾಲ್ಕು-ಗೆರೆ ಕಾಗದ';
+
+  @override
+  String get stGrammar => 'ವ್ಯಾಕರಣ ಬಣ್ಣಗಳು';
+
+  @override
+  String get subjectMaths => 'ಗಣಿತ';
+
+  @override
+  String get subjectPhysics => 'ಭೌತಶಾಸ್ತ್ರ';
+
+  @override
+  String get subjectChemistry => 'ರಸಾಯನಶಾಸ್ತ್ರ';
+
+  @override
+  String get subjectBiology => 'ಜೀವಶಾಸ್ತ್ರ';
+
+  @override
+  String get subjectScience => 'ವಿಜ್ಞಾನ';
+
+  @override
+  String get subjectEvs => 'ಪರಿಸರ ಅಧ್ಯಯನ';
+
+  @override
+  String get subjectGeography => 'ಭೂಗೋಳ';
+
+  @override
+  String get subjectHistory => 'ಇತಿಹಾಸ';
+
+  @override
+  String get subjectCivics => 'ಪೌರನೀತಿ';
+
+  @override
+  String get subjectCommerce => 'ವಾಣಿಜ್ಯ';
+
+  @override
+  String get subjectEnglish => 'ಇಂಗ್ಲಿಷ್';
+
+  @override
+  String get subjectLanguages => 'ಭಾಷೆಗಳು';
+
+  @override
+  String get subjectComputer => 'ಕಂಪ್ಯೂಟರ್ ವಿಜ್ಞಾನ';
+
+  @override
+  String get subjectArt => 'ಕಲೆ';
+
+  @override
+  String get subjectGeneral => 'ತರಗತಿ';
+
+  @override
+  String get toolCompass => 'ಕೈವಾರ';
+
+  @override
+  String get toolInsert => 'ಸೇರಿಸಿ';
+
+  @override
+  String get toolLaser => 'ಲೇಸರ್ ಪಾಯಿಂಟರ್';
+
+  @override
+  String get toolMove => 'ಬೋರ್ಡ್ ಸರಿಸಿ';
+
+  @override
+  String get toolText => 'ಪಠ್ಯ';
+
+  @override
+  String get zoomFit => 'ಎಲ್ಲವನ್ನೂ ತೋರಿಸಿ';
+
+  @override
+  String get zoomIn => 'ದೊಡ್ಡದು ಮಾಡಿ';
+
+  @override
+  String get zoomOut => 'ಚಿಕ್ಕದು ಮಾಡಿ';
+
+  @override
+  String get zoomReset => '100% ಗೆ ಹಿಂತಿರುಗಿ';
 }

@@ -1,46 +1,62 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:kinetix_3d/kinetix_3d.dart' show Model3dScope, Model3dSnapshot;
+import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/api_client.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../core/recording/lesson_capture.dart';
-import '../kiosk/kiosk_ui.dart';
-import '../recording/recording_ui.dart';
-
-import 'package:kinetix_ink/kinetix_ink.dart';
-
+import '../../demo/demo.dart';
+import '../../l10n/l10n.dart';
 import '../ai/ai_controller.dart';
 import '../ai/ai_panel.dart';
 import '../ai/homework_panel.dart';
 import '../ai/quiz_panel.dart';
-import '../signin/sign_in_dialog.dart';
-import '../../core/api_client.dart';
-import '../../demo/demo.dart';
-import '../../l10n/l10n.dart';
-import 'chrome.dart';
-import 'classroom_tools.dart';
-import 'popovers.dart';
-import 'profile_menu.dart';
 import '../books/books_panel.dart';
+import '../concept_videos/concept_video_suggestions.dart';
+import '../kiosk/kiosk_ui.dart';
 import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
-import '../concept_videos/concept_video_suggestions.dart';
+import '../recording/recording_ui.dart';
+import '../signin/sign_in_dialog.dart';
+import 'chrome.dart';
+import 'classroom_tools.dart';
+import 'editors.dart';
+import 'insert_popover.dart';
+import 'kit/kit_panel.dart';
+import 'kit/subject_tools.dart';
+import 'kit/subjects.dart';
 import 'live_stream.dart';
+import 'popovers.dart';
+import 'profile_menu.dart';
+import 'rails.dart';
+import 'selection_actions.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
 
-enum _Popover { write, erase, theme, shapes, tools, eyeComfort, profile }
+enum _Popover { write, erase, theme, shapes, tools, eyeComfort, profile, insert }
 
 enum ToolbarAlign { left, center, right }
 
-/// The teaching screen, laid out like the Teachmint X board (status strip on top, labelled
-/// floating toolbar at the bottom, profile on the left, pages on the right, panels on the side)
-/// and styled with Material 3.
+/// The teaching screen: the endless whiteboard ([WhiteboardController]) with its tools in one of
+/// two layouts (Board settings → Layout):
+///
+/// * rails (the default): drawing and subject tools on a rail at the left, KINETIX AI and the
+///   subject kit on a rail at the right, undo, pages and zoom at the bottom (docs/DESIGN);
+/// * the bottom toolbar: one labelled toolbar along the bottom, as on Teachmint boards.
+///
+/// Both share the status strip on top, the side panels and every action. For LKG to Class 5
+/// (or the Simple board) the rails grow big labelled buttons, board text is in Andika and the
+/// kit has class stars.
 class BoardScreen extends StatefulWidget {
   const BoardScreen({super.key, required this.board});
 
@@ -51,13 +67,17 @@ class BoardScreen extends StatefulWidget {
 }
 
 class _BoardScreenState extends State<BoardScreen> {
-  late final BoardPages _pages = BoardPages(palmMode: widget.board.touchProfile.palmMode);
+  late final WhiteboardController _wb = WhiteboardController(palmMode: widget.board.touchProfile.palmMode);
+  final _images = BoardImages();
+  final _canvasKey = GlobalKey<WhiteboardCanvasState>();
   final _secondInk = InkController();
   late final AiController _ai;
 
+  /// The model or lab view in the split pane, for a picture of it.
+  final _splitKey = GlobalKey();
+
   /// Today's plan step timer: keeps running while other panels are open or the panel is closed.
   late final PlanTimer _planTimer;
-  BoardBackground _background = BoardBackground.plain;
   _Popover? _popover;
   PanelKind? _panel;
   bool _panelOnLeft = false;
@@ -65,6 +85,7 @@ class _BoardScreenState extends State<BoardScreen> {
   SplitContent? _splitContent;
   String? _splitItem;
   String? _splitPreset;
+  KitTab? _kitTab;
   ToolbarAlign _align = ToolbarAlign.center;
   bool _hidden = false;
   bool _timer = false;
@@ -73,17 +94,21 @@ class _BoardScreenState extends State<BoardScreen> {
   Size _canvasSize = const Size(1920, 1080);
   String? _boardTitle;
   String? _lastSessionId;
+  bool? _lastPrimary;
 
   /// The lesson being recorded, and the teacher who is recording it.
   LessonCapture? _capture;
   SessionContext? _captureTeacher;
   bool _captureStarting = false;
 
-  /// Streams the board while school leaders watch it live.
-  late final LiveStream _live = LiveStream(pages: _pages, send: (events) => board.sendLiveFrame(events));
+  /// Streams the board while school leaders or the class watch it live.
+  late final LiveStream _live = LiveStream(board: _wb, send: (events) => board.sendLiveFrame(events));
 
   BoardController get board => widget.board;
-  InkController get ink => _pages.current;
+  BoardBackground get _background => _wb.background;
+  bool get _primary => board.primaryMode;
+  bool get _rails => board.layout == BoardLayout.rails;
+  SubjectStyle get _style => styleOf(board.session?.subjectName);
 
   @override
   void initState() {
@@ -92,10 +117,11 @@ class _BoardScreenState extends State<BoardScreen> {
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
     _ai = AiController(board)
-      ..captureBoard = (() async => base64Encode(await renderPagePng(ink.strokes, _background, _canvasSize)))
+      ..captureBoard = _captureForAi
       ..openSplit = _openSplit;
     _lastSessionId = board.session?.sessionId;
     _planTimer = PlanTimer(board);
+    _applyClass();
   }
 
   @override
@@ -105,15 +131,26 @@ class _BoardScreenState extends State<BoardScreen> {
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
     _live.stop();
     _capture?.dispose();
-    _pages.dispose();
+    _wb.dispose();
+    _images.dispose();
     _secondInk.dispose();
     _ai.dispose();
     _planTimer.dispose();
     super.dispose();
   }
 
+  /// The page (or what is selected) as a PNG for KINETIX AI: what the class sees, not the whole
+  /// endless board.
+  Future<String> _captureForAi() async {
+    final selected = _wb.selectedElements;
+    final elements = selected.isNotEmpty ? selected : _wb.elements;
+    final area = selected.isNotEmpty ? contentBounds(selected).inflate(24) : (_wb.visibleArea ?? Offset.zero & _canvasSize);
+    return base64Encode(await renderPagePng(elements, _background, _canvasSize, area: area));
+  }
+
   /// Opens a 3D model or lab (or their picker, with no id) next to the whiteboard.
   void _openSplit(SplitContent content, [String? id, String? preset]) => setState(() {
+    _popover = null;
     _panel = PanelKind.split;
     _splitContent = content;
     _splitItem = id;
@@ -129,31 +166,46 @@ class _BoardScreenState extends State<BoardScreen> {
 
   void _startLive() => _live.start(background: _background, canvas: _canvasSize);
 
+  /// The board's look for the class open now: Andika and the subject's paper.
+  void _applyClass() {
+    final primary = _primary;
+    if (primary != _lastPrimary) {
+      _lastPrimary = primary;
+      _wb.font = primary ? BoardFont.andika : BoardFont.inter;
+      if (primary) _wb.textSize = 40;
+    }
+  }
+
   void _onBoardChanged() {
-    _pages.palmMode = board.touchProfile.palmMode;
+    _wb.palmMode = board.touchProfile.palmMode;
     if (board.liveViewers == 0 && _live.isStreaming) _live.stop();
+    _applyClass();
     final id = board.session?.sessionId;
     if (id == _lastSessionId) return;
     _lastSessionId = id;
     if (_signInOpen && id != null) Navigator.of(context).pop();
+    // A new class on a clean board starts on its subject's paper.
+    if (id != null && _wb.isBlank) _wb.background = _style.paper;
     // The period ended (or the teacher signed out elsewhere) mid-recording: keep what was
     // recorded; it uploads when this teacher next signs in.
     if (id == null && _capture != null) unawaited(_stopRecording());
     final s = board.session;
     // The teacher's language may differ from the board's: the new strings arrive with the
     // next frame, so the message is shown then.
-    unawaited(WidgetsBinding.instance.endOfFrame.then((_) {
-      if (!mounted) return;
-      final l = context.l10n;
-      showBoardMessage(context, s == null ? l.signedOutGuest : '${l.welcomeTeacher(s.teacherName.split(' ').first)} ${s.classLabel ?? ''}'.trim());
-    }));
+    unawaited(
+      WidgetsBinding.instance.endOfFrame.then((_) {
+        if (!mounted) return;
+        final l = context.l10n;
+        showBoardMessage(context, s == null ? l.signedOutGuest : '${l.welcomeTeacher(s.teacherName.split(' ').first)} ${s.classLabel ?? ''}'.trim());
+      }),
+    );
   }
 
   void _toggle(_Popover p) => setState(() => _popover = _popover == p ? null : p);
 
-  void _selectTool(InkTool t, _Popover? popover) {
-    final wasSelected = ink.style.tool == t;
-    ink.style = ink.style.copyWith(tool: t);
+  void _selectTool(BoardTool t, _Popover? popover) {
+    final wasSelected = _wb.tool == t;
+    _wb.tool = t;
     // A second tap on the active tool opens its options, like Google's drawing tools.
     setState(() => _popover = (wasSelected && popover != null && _popover != popover) ? popover : null);
   }
@@ -162,6 +214,21 @@ class _BoardScreenState extends State<BoardScreen> {
     _popover = null;
     _booksTopic = null;
     _panel = _panel == k ? null : k;
+  });
+
+  /// Opens the AI panel at one of its tools.
+  void _openAi(AiView v) {
+    _ai.open(v);
+    setState(() {
+      _popover = null;
+      _panel = PanelKind.ai;
+    });
+  }
+
+  void _openKit([KitTab? tab]) => setState(() {
+    _popover = null;
+    _kitTab = tab;
+    _panel = PanelKind.kit;
   });
 
   /// The topic Books opens at, when it is opened from Today's plan.
@@ -189,10 +256,117 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   void _setBackground(BoardBackground b) {
-    setState(() => _background = b);
+    _wb.background = b;
     _capture?.background = b;
     _live.background = b;
+    setState(() {});
   }
+
+  // --- Writing on the board --------------------------------------------------------------------
+
+  Future<String?> _editMath(String? latex) =>
+      showDialog<String>(context: context, builder: (_) => BoardChromeTheme(child: MathEditorDialog(initial: latex)));
+
+  Future<String?> _editNote(String? text, NoteKind kind) =>
+      showDialog<String>(context: context, builder: (_) => BoardChromeTheme(child: NoteEditorDialog(initial: text, kind: kind)));
+
+  /// An equation, written in the editor and put in view.
+  Future<void> _newEquation() async {
+    final tex = await _editMath(null);
+    if (tex != null && tex.isNotEmpty) {
+      const fs = 40.0;
+      _wb.insert([MathElement(id: newElementId(), position: Offset.zero, latex: tex, color: _wb.penColor, fontSize: fs, size: estimateMathSize(tex, fs))]);
+    }
+  }
+
+  SubjectToolRunner get _subjectTools =>
+      SubjectToolRunner(context: context, wb: _wb, style: _style, primary: _primary, onOpenKit: (tab) => _openKit(tab));
+
+  /// Edits a selected equation, note or text.
+  Future<void> _editElement(BoardElement e) async {
+    switch (e) {
+      case MathElement():
+        final tex = await _editMath(e.latex);
+        if (tex == null) return;
+        tex.isEmpty ? _wb.removeIds({e.id}) : _wb.replace(e.copyWith(latex: tex, size: estimateMathSize(tex, e.fontSize)));
+      case NoteElement():
+        final text = await _editNote(e.text, e.kind);
+        if (text == null) return;
+        text.trim().isEmpty ? _wb.removeIds({e.id}) : _wb.replace(e.copyWith(text: text));
+      case TextElement():
+        _wb.clearSelection();
+        _canvasKey.currentState?.startText(e.position, existing: e);
+      default:
+        break;
+    }
+  }
+
+  /// Reads what is selected with KINETIX AI.
+  void _readSelectionWithAi() {
+    if (!_ai.canUseAi) {
+      showBoardMessage(context, context.l10n.aiAskNeedsSignIn);
+      return;
+    }
+    _openAi(AiView.readBoard);
+    unawaited(_ai.readBoard());
+  }
+
+  /// Puts a picture of the 3D model or lab in the split pane on the board, linked to it, so a
+  /// tap on the picture opens it again.
+  Future<void> _snapshotSplit() async {
+    final boundary = _splitKey.currentContext?.findRenderObject();
+    final kind = _splitContent, id = _splitItem;
+    if (boundary is! RenderRepaintBoundary || id == null || (kind != SplitContent.model3d && kind != SplitContent.lab)) return;
+    try {
+      final ratio = math.min(1.0, 1280 / math.max(1, boundary.size.width));
+      final image = await boundary.toImage(pixelRatio: ratio);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      final size = Size(image.width.toDouble(), image.height.toDouble());
+      image.dispose();
+      if (data == null || !mounted) return;
+      final w = math.min(560.0, size.width);
+      _wb.insert([
+        ImageElement(
+          id: newElementId(),
+          rect: Rect.fromLTWH(0, 0, w, w * size.height / math.max(1, size.width)),
+          bytes: Uint8List.view(data.buffer),
+          link: EmbedLink(kind: kind == SplitContent.lab ? EmbedLink.lab : EmbedLink.model3d, id: id, preset: _splitPreset),
+        ),
+      ]);
+      showBoardMessage(context, context.l10n.snapshotAdded);
+    } catch (e) {
+      debugPrint('Snapshot failed: $e');
+    }
+  }
+
+  /// A "Put on board" picture from the 3D viewer: the picture, linked to its model, and the
+  /// model's credit under it where it has one.
+  void _addModelSnapshot(Model3dSnapshot s) {
+    final decoded = _pngSize(s.png);
+    final w = math.min(560.0, decoded.width);
+    final h = w * decoded.height / math.max(1, decoded.width);
+    final ink = _background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    _wb.insert([
+      ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId)),
+      if (s.credit.isNotEmpty)
+        TextElement(id: newElementId(), position: Offset(0, h + 6), text: s.credit, color: ink, fontSize: 14, size: measureBoardText(s.credit, 14)),
+    ]);
+    if (mounted) showBoardMessage(context, context.l10n.snapshotAdded);
+  }
+
+  /// A PNG's size from its header (640 × 480 when it cannot be read).
+  static Size _pngSize(Uint8List png) {
+    if (png.length < 24) return const Size(640, 480);
+    final d = ByteData.sublistView(png);
+    final w = d.getUint32(16), h = d.getUint32(20);
+    return w == 0 || h == 0 ? const Size(640, 480) : Size(w.toDouble(), h.toDouble());
+  }
+
+  void _openLink(EmbedLink link) => switch (link.kind) {
+    EmbedLink.lab => _openSplit(SplitContent.lab, link.id, link.preset),
+    EmbedLink.model3d => _openSplit(SplitContent.model3d, link.id, link.preset),
+    _ => null,
+  };
 
   // --- Lesson recording ----------------------------------------------------------------------
 
@@ -207,7 +381,7 @@ class _BoardScreenState extends State<BoardScreen> {
     if (_captureStarting) return;
     _captureStarting = true;
     try {
-      final capture = await board.recordings.newCapture(id: board.newId(), pages: _pages, background: _background, canvas: _canvasSize);
+      final capture = await board.recordings.newCapture(id: board.newId(), board: _wb, background: _background, canvas: _canvasSize);
       final noSound = await capture.start();
       if (!mounted || board.session?.sessionId != s.sessionId) {
         await capture.stop();
@@ -267,9 +441,7 @@ class _BoardScreenState extends State<BoardScreen> {
       if (mounted) {
         showBoardMessage(
           context,
-          board.session?.teacherId == teacher.teacherId
-              ? context.l10n.recordingSavedUploading
-              : context.l10n.recordingSavedLater(teacher.teacherName.split(' ').first),
+          board.session?.teacherId == teacher.teacherId ? context.l10n.recordingSavedUploading : context.l10n.recordingSavedLater(teacher.teacherName.split(' ').first),
         );
       }
     } catch (e) {
@@ -286,8 +458,13 @@ class _BoardScreenState extends State<BoardScreen> {
     );
   }
 
+  // --- Saving --------------------------------------------------------------------------------
+
   /// The board as it stands, ready to save.
-  SavedBoard _snapshot() => SavedBoard(background: _background, canvas: _canvasSize, pages: _pages.allStrokes);
+  SavedBoard _snapshot() {
+    _canvasKey.currentState?.commitText();
+    return _wb.toSaved(_canvasSize);
+  }
 
   Future<void> _save() async {
     setState(() => _popover = null);
@@ -295,17 +472,14 @@ class _BoardScreenState extends State<BoardScreen> {
       showBoardMessage(context, context.l10n.saveNeedsSignIn);
       return;
     }
-    if (_pages.isBlank) {
+    if (_wb.isBlank) {
       showBoardMessage(context, context.l10n.nothingToSave);
       return;
     }
     final choice = await showDialog<({String title, bool share})>(
       context: context,
       builder: (_) => BoardChromeTheme(
-        child: SaveBoardDialog(
-          initialTitle: _boardTitle ?? _defaultTitle(),
-          classLabel: board.session?.sectionName,
-        ),
+        child: SaveBoardDialog(initialTitle: _boardTitle ?? _defaultTitle(), classLabel: board.session?.sectionName),
       ),
     );
     if (choice == null || !mounted) return;
@@ -341,7 +515,7 @@ class _BoardScreenState extends State<BoardScreen> {
         child: WhiteboardsDialog(
           api: api,
           onOpen: (summary) async {
-            if (!_pages.isBlank) {
+            if (!_wb.isBlank) {
               final replace = await showDialog<bool>(
                 context: context,
                 builder: (context) => BoardChromeTheme(
@@ -360,12 +534,9 @@ class _BoardScreenState extends State<BoardScreen> {
             }
             try {
               final saved = await api.whiteboard(summary.id);
-              _pages.load(saved.pages);
+              _wb.load(saved);
               board.whiteboardId = summary.id;
-              setState(() {
-                _background = saved.background;
-                _boardTitle = summary.title;
-              });
+              setState(() => _boardTitle = summary.title);
               _capture?.background = saved.background;
               _live.background = saved.background;
               if (mounted) showBoardMessage(context, context.l10n.openedBoard(summary.title));
@@ -379,7 +550,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Future<void> _endClass() async {
-    final hasInk = !_pages.isBlank;
+    final hasInk = !_wb.isBlank;
     final canShare = board.session?.sectionName != null;
     var save = hasInk;
     var share = hasInk && canShare;
@@ -451,7 +622,7 @@ class _BoardScreenState extends State<BoardScreen> {
         showBoardMessage(context, context.l10n.signedOutRecordingPending(name));
       }
     }
-    _pages.load([]);
+    _wb.load(const SavedBoard(background: BoardBackground.plain, canvas: Size.zero, pages: []));
     _boardTitle = null;
   }
 
@@ -500,8 +671,22 @@ class _BoardScreenState extends State<BoardScreen> {
     }),
     ToolEntry(Icons.vertical_split_outlined, l.toolSplitScreen, const Color(0xFFC58AF9), () => _openPanel(PanelKind.split)),
     ToolEntry(Icons.visibility_outlined, l.toolEyeComfort, const Color(0xFFFCAD70), () => setState(() => _popover = _Popover.eyeComfort)),
-    ToolEntry(Icons.straighten, l.toolRuler, const Color(0xFF78D9EC), () => showComingSoon(context, l.toolRuler), soon: true),
-    ToolEntry(Icons.architecture, l.toolProtractor, const Color(0xFF78D9EC), () => showComingSoon(context, l.toolProtractor), soon: true),
+    ToolEntry(Icons.straighten, l.toolRuler, const Color(0xFF78D9EC), () {
+      setState(() => _popover = null);
+      _wb.toggleRuler();
+    }),
+    ToolEntry(Icons.architecture, l.toolProtractor, const Color(0xFF78D9EC), () {
+      setState(() => _popover = null);
+      _wb.toggleProtractor();
+    }),
+    ToolEntry(Icons.radio_button_unchecked, l.toolCompass, const Color(0xFF78D9EC), () {
+      setState(() => _popover = null);
+      _wb.tool = BoardTool.compass;
+    }),
+    ToolEntry(Icons.flare, l.toolLaser, const Color(0xFFF28B82), () {
+      setState(() => _popover = null);
+      _wb.tool = BoardTool.laser;
+    }),
     ToolEntry(Icons.calculate_outlined, l.toolCalculator, const Color(0xFF8AB4F8), () => showComingSoon(context, l.toolCalculator), soon: true),
     ToolEntry(Icons.highlight_outlined, l.toolSpotlight, const Color(0xFFFDD663), () => showComingSoon(context, l.toolSpotlight), soon: true),
     ToolEntry(Icons.vignette_outlined, l.toolScreenShade, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolScreenShade), soon: true),
@@ -509,23 +694,95 @@ class _BoardScreenState extends State<BoardScreen> {
     ToolEntry(Icons.lock_outline, l.toolTouchLock, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolTouchLock), soon: true),
   ];
 
+  // --- Keyboard ------------------------------------------------------------------------------
+
+  /// Keyboard shortcuts, as on the KINETIX prototype: tool letters, Ctrl+Z/Y/C/X/V/D/A/G,
+  /// Delete, arrows to nudge, page keys, + − 0 to zoom, Esc. Not while typing.
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    final typing = FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null;
+    if (typing) return KeyEventResult.ignored;
+    final keys = HardwareKeyboard.instance;
+    final ctrl = keys.isControlPressed || keys.isMetaPressed;
+    final shift = keys.isShiftPressed;
+    final k = event.logicalKey;
+    bool done(VoidCallback f) {
+      f();
+      return true;
+    }
+
+    final handled = switch (k) {
+      LogicalKeyboardKey.keyZ when ctrl => done(shift ? _wb.redo : _wb.undo),
+      LogicalKeyboardKey.keyY when ctrl => done(_wb.redo),
+      LogicalKeyboardKey.keyC when ctrl => done(_wb.copySelection),
+      LogicalKeyboardKey.keyX when ctrl => done(_wb.cutSelection),
+      LogicalKeyboardKey.keyV when ctrl => done(_wb.paste),
+      LogicalKeyboardKey.keyD when ctrl => done(_wb.duplicateSelection),
+      LogicalKeyboardKey.keyA when ctrl => done(_wb.selectAll),
+      LogicalKeyboardKey.keyG when ctrl => done(shift ? _wb.ungroupSelection : _wb.groupSelection),
+      LogicalKeyboardKey.keyS when ctrl => done(() => unawaited(_save())),
+      LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace => done(_wb.deleteSelection),
+      LogicalKeyboardKey.escape => done(() {
+        setState(() => _popover = null);
+        _wb.clearSelection();
+      }),
+      LogicalKeyboardKey.pageDown => done(_wb.hasNext ? _wb.next : _wb.addPage),
+      LogicalKeyboardKey.pageUp => done(_wb.previous),
+      LogicalKeyboardKey.equal || LogicalKeyboardKey.add || LogicalKeyboardKey.numpadAdd => done(() => _wb.zoomBy(1.25)),
+      LogicalKeyboardKey.minus || LogicalKeyboardKey.numpadSubtract => done(() => _wb.zoomBy(1 / 1.25)),
+      LogicalKeyboardKey.digit0 || LogicalKeyboardKey.numpad0 => done(_wb.resetZoom),
+      LogicalKeyboardKey.keyF when !ctrl => done(_wb.fitContent),
+      LogicalKeyboardKey.arrowLeft || LogicalKeyboardKey.arrowRight || LogicalKeyboardKey.arrowUp || LogicalKeyboardKey.arrowDown
+          when _wb.selection.isNotEmpty =>
+        done(() {
+          final step = shift ? 10.0 : 1.0;
+          final d = switch (k) {
+            LogicalKeyboardKey.arrowLeft => Offset(-step, 0),
+            LogicalKeyboardKey.arrowRight => Offset(step, 0),
+            LogicalKeyboardKey.arrowUp => Offset(0, -step),
+            _ => Offset(0, step),
+          };
+          _wb.transformSelection((e) => e.translated(d));
+        }),
+      _ when !ctrl => switch (k) {
+        LogicalKeyboardKey.keyV => done(() => _wb.tool = BoardTool.select),
+        LogicalKeyboardKey.keyH when !_primary => done(() => _wb.tool = BoardTool.hand),
+        LogicalKeyboardKey.keyP => done(() => _wb.tool = BoardTool.pen),
+        LogicalKeyboardKey.keyI => done(() => _wb.tool = BoardTool.highlighter),
+        LogicalKeyboardKey.keyE => done(() => _wb.tool = BoardTool.eraser),
+        LogicalKeyboardKey.keyT => done(() => _wb.tool = BoardTool.text),
+        LogicalKeyboardKey.keyS => done(() => _wb.tool = BoardTool.shape),
+        LogicalKeyboardKey.keyM => done(() => _wb.tool = BoardTool.math),
+        LogicalKeyboardKey.keyN => done(() => _wb.tool = BoardTool.note),
+        LogicalKeyboardKey.keyL when !_primary => done(() => _wb.tool = BoardTool.laser),
+        LogicalKeyboardKey.keyC => done(() => _wb.tool = BoardTool.compass),
+        LogicalKeyboardKey.keyR => done(_wb.toggleRuler),
+        LogicalKeyboardKey.keyA when !_primary => done(() => _openPanel(PanelKind.ai)),
+        _ => false,
+      },
+      _ => false,
+    };
+    return handled ? KeyEventResult.handled : KeyEventResult.ignored;
+  }
+
+  // --- Layout --------------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyZ, control: true): () => ink.undo(),
-        const SingleActivator(LogicalKeyboardKey.keyY, control: true): () => ink.redo(),
-        const SingleActivator(LogicalKeyboardKey.delete): () => ink.deleteSelection(),
-        const SingleActivator(LogicalKeyboardKey.escape): () => setState(() => _popover = null),
-      },
+    final l = context.l10n;
+    BoardChromeTheme.light = _rails;
+    InkLabels.answerCover = l.answerCover;
+    return Model3dScope(
+      onSnapshot: _addModelSnapshot,
       child: Focus(
-        autofocus: true,
-        child: Scaffold(
-          body: ListenableBuilder(
-            listenable: Listenable.merge([board, _pages]),
-            builder: (context, _) => LayoutBuilder(builder: (context, size) => _layout(context, size)),
-          ),
+      autofocus: true,
+      onKeyEvent: _onKey,
+      child: Scaffold(
+        body: ListenableBuilder(
+          listenable: board,
+          builder: (context, _) => LayoutBuilder(builder: (context, size) => _layout(context, size)),
         ),
+      ),
       ),
     );
   }
@@ -560,7 +817,7 @@ class _BoardScreenState extends State<BoardScreen> {
             builder: (context, area) {
               _canvasSize = area.biggest;
               _capture?.fitCanvas(_canvasSize);
-              return _boardArea(context, compact: area.maxWidth < 1500);
+              return _boardArea(context, compact: area.maxWidth < 1500, short: area.maxHeight < 900);
             },
           ),
         ),
@@ -582,6 +839,17 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.plan => TodaysPlanPanel(board: board, timer: _planTimer, onOpenTopic: _openTopic),
     PanelKind.quiz => QuizPanel(ai: _ai),
     PanelKind.homework => HomeworkPanel(ai: _ai),
+    PanelKind.kit => SubjectKitPanel(
+      key: ValueKey('kit-${_style.subject.name}-$_kitTab'),
+      board: board,
+      wb: _wb,
+      style: _style,
+      primary: _primary,
+      initialTab: _kitTab,
+      onAi: _openAi,
+      onPanel: (k) => setState(() => _panel = k),
+      onSplit: _openSplit,
+    ),
     PanelKind.split => SplitPanel(
       content: _splitContent,
       onContent: (c) => setState(() {
@@ -596,14 +864,41 @@ class _BoardScreenState extends State<BoardScreen> {
       }),
       secondInk: _secondInk,
       background: _background,
+      snapshotKey: _splitKey,
+      onSnapshot: _snapshotSplit,
     ),
   };
 
-  Widget _boardArea(BuildContext context, {required bool compact}) {
+  WhiteboardCanvasLabels _canvasLabels(AppLocalizations l) =>
+      WhiteboardCanvasLabels(typeHint: l.typeHint, hideRuler: l.hideRuler, hideProtractor: l.hideProtractor, turn: l.turn);
+
+  Widget _boardArea(BuildContext context, {required bool compact, required bool short}) {
+    final l = context.l10n;
+    final rails = _rails;
+    final primary = _primary;
+    final railW = RailSizes.rail(primary: primary, compact: compact || short);
+    // The board keeps clear of the floating toolbars (start view, fit, placement).
+    _wb.safeInsets = _hidden ? const EdgeInsets.only(top: 64) : (rails ? EdgeInsets.fromLTRB(railW + 12, 64, railW + 12, 84) : const EdgeInsets.fromLTRB(0, 64, 0, 100));
     return Stack(
       children: [
         Positioned.fill(
-          child: InkCanvas(key: ValueKey(_pages.index), controller: ink, background: _background),
+          child: WhiteboardCanvas(
+            key: _canvasKey,
+            controller: _wb,
+            images: _images,
+            inputMode: board.inputMode,
+            multiWriter: board.multiWriter,
+            editMath: _editMath,
+            editNote: _editNote,
+            labels: _canvasLabels(l),
+            selectionActions: (context, box) => SelectionActions(
+              wb: _wb,
+              box: box,
+              onOpenLink: _openLink,
+              onEdit: _editElement,
+              onAskAi: _readSelectionWithAi,
+            ),
+          ),
         ),
         Positioned(
           top: 0,
@@ -621,7 +916,6 @@ class _BoardScreenState extends State<BoardScreen> {
             ),
           ),
         ),
-        _SelectionActions(ink: ink),
         if (_timer)
           Positioned(
             left: _timerPos.dx,
@@ -629,6 +923,16 @@ class _BoardScreenState extends State<BoardScreen> {
             child: GestureDetector(
               onPanUpdate: (d) => setState(() => _timerPos += d.delta),
               child: BoardChromeTheme(child: CountdownCard(onClose: () => setState(() => _timer = false))),
+            ),
+          ),
+        if (!_hidden && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
+        if (!_hidden && !rails)
+          Positioned(
+            left: Kx.s12,
+            right: Kx.s12,
+            bottom: Kx.s12,
+            child: BoardChromeTheme(
+              child: ToolbarDensity(compact: compact, child: _bottomChrome(compact)),
             ),
           ),
         if (_popover != null)
@@ -639,16 +943,7 @@ class _BoardScreenState extends State<BoardScreen> {
               onTap: () => setState(() => _popover = null),
             ),
           ),
-        if (_popover != null) _popoverLayer(),
-        if (!_hidden)
-          Positioned(
-            left: Kx.s12,
-            right: Kx.s12,
-            bottom: Kx.s12,
-            child: BoardChromeTheme(
-              child: ToolbarDensity(compact: compact, child: _bottomChrome(compact)),
-            ),
-          ),
+        if (_popover != null) _popoverLayer(railW),
         if (_hidden)
           Positioned(
             right: Kx.s16,
@@ -656,7 +951,7 @@ class _BoardScreenState extends State<BoardScreen> {
             child: BoardChromeTheme(
               child: FloatingActionButton.small(
                 key: const Key('show-tools'),
-                tooltip: context.l10n.showTools,
+                tooltip: l.showTools,
                 onPressed: () => setState(() => _hidden = false),
                 child: const Icon(Icons.expand_less),
               ),
@@ -666,13 +961,143 @@ class _BoardScreenState extends State<BoardScreen> {
     );
   }
 
-  Widget _popoverLayer() {
+  /// The rails and the pills of the rails layout.
+  List<Widget> _railsChrome(BuildContext context, {required bool compact, required bool primary}) {
+    final l = context.l10n;
+    final style = _style;
+    final runner = _subjectTools;
+    final railPopover = switch (_popover) {
+      _Popover.write => RailPopover.write,
+      _Popover.erase => RailPopover.erase,
+      _Popover.shapes => RailPopover.shapes,
+      _Popover.insert => RailPopover.insert,
+      _Popover.tools => RailPopover.tools,
+      _Popover.theme => RailPopover.theme,
+      _ => null,
+    };
+    return [
+      Positioned(
+        left: Kx.s12,
+        top: 64,
+        bottom: 84,
+        child: BoardChromeTheme(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ToolRail(
+              wb: _wb,
+              style: style,
+              primary: primary,
+              compact: compact,
+              popover: railPopover,
+              onPopover: (p) => _toggle(switch (p) {
+                RailPopover.write => _Popover.write,
+                RailPopover.erase => _Popover.erase,
+                RailPopover.shapes => _Popover.shapes,
+                RailPopover.insert => _Popover.insert,
+                RailPopover.tools => _Popover.tools,
+                RailPopover.theme => _Popover.theme,
+              }),
+              onSubjectTool: (t, anchor) {
+                setState(() => _popover = null);
+                unawaited(runner.run(t, anchor));
+              },
+              subjectToolActive: runner.isActive,
+            ),
+          ),
+        ),
+      ),
+      Positioned(
+        right: Kx.s12,
+        top: 64,
+        bottom: 84,
+        child: BoardChromeTheme(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: AiRail(
+              ai: _ai,
+              style: style,
+              primary: primary,
+              compact: compact,
+              panel: _panel,
+              aiView: _ai.view,
+              onAi: _openAi,
+              onPanel: (k) => k == PanelKind.ai && _panel != PanelKind.ai ? _openAi(AiView.home) : _openPanel(k),
+            ),
+          ),
+        ),
+      ),
+      Positioned(
+        left: Kx.s12,
+        right: Kx.s12,
+        bottom: Kx.s12,
+        child: BoardChromeTheme(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              ChromeSurface(
+                radius: Kx.rFull,
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Builder(
+                      builder: (context) => IconButton(
+                        key: const Key('profile-button'),
+                        tooltip: board.session?.teacherName ?? l.guest,
+                        onPressed: () => _toggle(_Popover.profile),
+                        icon: board.session == null ? const Icon(Icons.person) : KxAvatar(name: board.session!.teacherName, size: 32),
+                      ),
+                    ),
+                    IconButton(key: const Key('save-board'), tooltip: l.save, onPressed: _save, icon: const Icon(Icons.save_outlined)),
+                    IconButton(
+                      key: const Key('record'),
+                      tooltip: _capture != null ? l.toolStop : l.toolRecord,
+                      onPressed: _toggleRecording,
+                      icon: Icon(_capture != null ? Icons.stop_circle_outlined : Icons.fiber_manual_record, color: Kx.record),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Center(child: FittedBox(child: BoardPill(wb: _wb, primary: primary))),
+              ),
+              ChromeSurface(
+                radius: Kx.rFull,
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                child: IconButton(
+                  key: const Key('hide-tools'),
+                  tooltip: l.toolHide,
+                  onPressed: () => setState(() {
+                    _hidden = true;
+                    _popover = null;
+                  }),
+                  icon: const Icon(Icons.expand_more),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Widget _popoverLayer(double railW) {
+    final l = context.l10n;
     final Widget card = switch (_popover!) {
-      _Popover.write => WritePopover(ink: ink, background: _background),
-      _Popover.erase => ErasePopover(ink: ink, onCleared: () => setState(() => _popover = null)),
+      _Popover.write => WritePopover(wb: _wb),
+      _Popover.erase => ErasePopover(wb: _wb, onCleared: () => setState(() => _popover = null)),
       _Popover.theme => ThemePopover(background: _background, onChanged: _setBackground),
-      _Popover.shapes => ShapesPopover(ink: ink, onPicked: () {}),
-      _Popover.tools => ToolsPopover(tools: _tools(context.l10n)),
+      _Popover.shapes => ShapesPopover(wb: _wb, primary: _primary, onPicked: () {}),
+      _Popover.tools => ToolsPopover(tools: _tools(l)),
+      _Popover.insert => InsertPopover(
+        wb: _wb,
+        primary: _primary,
+        onClose: () => setState(() => _popover = null),
+        onEquation: () => unawaited(_newEquation()),
+        onGraph: () => unawaited(_subjectTools.run(SubjectTool.graph, Rect.zero)),
+        onModel3d: () => _openSplit(SplitContent.model3d),
+        onLab: () => _openSplit(SplitContent.lab),
+      ),
       _Popover.eyeComfort => EyeComfortPopover(
         settings: board.eyeComfort,
         onChanged: board.setEyeComfort,
@@ -682,7 +1107,7 @@ class _BoardScreenState extends State<BoardScreen> {
       _Popover.profile => ProfileMenu(
         board: board,
         onSignIn: _signIn,
-        onNewPage: _pages.addPage,
+        onNewPage: _wb.addPage,
         onWhiteboards: _openWhiteboards,
         onRecordings: _openRecordings,
         onSettings: () => showDialog<void>(
@@ -692,6 +1117,18 @@ class _BoardScreenState extends State<BoardScreen> {
         onClose: () => setState(() => _popover = null),
       ),
     };
+    if (_rails && _popover != _Popover.profile) {
+      // Beside the left rail.
+      return Positioned(
+        left: Kx.s12 + railW + Kx.s8,
+        top: 64,
+        bottom: 84,
+        right: Kx.s16,
+        child: BoardChromeTheme(
+          child: Align(alignment: Alignment.centerLeft, child: SingleChildScrollView(child: card)),
+        ),
+      );
+    }
     final alignment = _popover == _Popover.profile
         ? Alignment.bottomLeft
         : switch (_align) {
@@ -702,7 +1139,7 @@ class _BoardScreenState extends State<BoardScreen> {
     return Positioned(
       left: Kx.s16,
       right: Kx.s16,
-      bottom: 96,
+      bottom: _rails ? 76 : 96,
       top: 64,
       child: BoardChromeTheme(
         child: Align(
@@ -716,7 +1153,7 @@ class _BoardScreenState extends State<BoardScreen> {
   Widget _bottomChrome(bool compact) {
     final l = context.l10n;
     final toolbar = _MainToolbar(
-      ink: ink,
+      wb: _wb,
       compact: compact,
       popover: _popover,
       panel: _panel,
@@ -746,44 +1183,42 @@ class _BoardScreenState extends State<BoardScreen> {
         ],
       ),
     );
-    final right = ChromeSurface(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ToolButton(
-            key: const Key('hide-tools'),
-            icon: Icons.expand_more,
-            label: l.toolHide,
-            onTap: () => setState(() {
-              _hidden = true;
-              _popover = null;
-            }),
-          ),
-          ToolButton(icon: Icons.chevron_left, label: l.toolPrevious, enabled: _pages.hasPrevious, onTap: _pages.previous),
-          SizedBox(
-            width: 52,
-            // Builder: this sits inside the chrome theme, not the canvas theme of this State's context.
-            child: Builder(
-              builder: (context) => Text(
-                '${_pages.index + 1}/${_pages.count}',
-                key: const Key('page-indicator'),
-                textAlign: TextAlign.center,
-                style: context.text.titleMedium,
+    final right = ListenableBuilder(
+      listenable: _wb,
+      builder: (context, _) => ChromeSurface(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ToolButton(
+              key: const Key('hide-tools'),
+              icon: Icons.expand_more,
+              label: l.toolHide,
+              onTap: () => setState(() {
+                _hidden = true;
+                _popover = null;
+              }),
+            ),
+            ToolButton(icon: Icons.chevron_left, label: l.toolPrevious, enabled: _wb.hasPrevious, onTap: _wb.previous),
+            SizedBox(
+              width: 52,
+              // Builder: this sits inside the chrome theme, not the canvas theme of this State's context.
+              child: Builder(
+                builder: (context) => Text('${_wb.pageIndex + 1}/${_wb.pageCount}', key: const Key('page-indicator'), textAlign: TextAlign.center, style: context.text.titleMedium),
               ),
             ),
-          ),
-          ToolButton(
-            key: const Key('next-page'),
-            icon: _pages.hasNext ? Icons.chevron_right : Icons.add,
-            label: _pages.hasNext ? l.toolNext : l.toolNewPage,
-            onTap: _pages.hasNext ? _pages.next : _pages.addPage,
-          ),
-          ToolButton(
-            icon: Icons.swap_horiz,
-            label: l.toolSwitch,
-            onTap: () => setState(() => _align = _align == ToolbarAlign.right ? ToolbarAlign.center : ToolbarAlign.right),
-          ),
-        ],
+            ToolButton(
+              key: const Key('next-page'),
+              icon: _wb.hasNext ? Icons.chevron_right : Icons.add,
+              label: _wb.hasNext ? l.toolNext : l.toolNewPage,
+              onTap: _wb.hasNext ? _wb.next : _wb.addPage,
+            ),
+            ToolButton(
+              icon: Icons.swap_horiz,
+              label: l.toolSwitch,
+              onTap: () => setState(() => _align = _align == ToolbarAlign.right ? ToolbarAlign.center : ToolbarAlign.right),
+            ),
+          ],
+        ),
       ),
     );
     return Row(
@@ -811,7 +1246,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
 class _MainToolbar extends StatelessWidget {
   const _MainToolbar({
-    required this.ink,
+    required this.wb,
     required this.compact,
     required this.popover,
     required this.panel,
@@ -822,11 +1257,11 @@ class _MainToolbar extends StatelessWidget {
     required this.onRecord,
   });
 
-  final InkController ink;
+  final WhiteboardController wb;
   final bool compact;
   final _Popover? popover;
   final PanelKind? panel;
-  final void Function(InkTool, _Popover?) onTool;
+  final void Function(BoardTool, _Popover?) onTool;
   final ValueChanged<_Popover> onPopover;
   final ValueChanged<PanelKind> onPanel;
   final bool recording;
@@ -834,102 +1269,103 @@ class _MainToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tool = ink.style.tool;
     final l = context.l10n;
     return ListenableBuilder(
-      listenable: ink,
-      builder: (context, _) => ChromeSurface(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ToolButton(
-              key: const Key('record'),
-              icon: recording ? Icons.stop_circle_outlined : Icons.fiber_manual_record,
-              label: recording ? l.toolStop : l.toolRecord,
-              iconColor: Kx.record,
-              selected: recording,
-              onTap: onRecord,
-            ),
-            ToolButton(key: const Key('tool-theme'), icon: Icons.texture, label: l.toolTheme, selected: popover == _Popover.theme, onTap: () => onPopover(_Popover.theme)),
-            ToolButton(
-              key: const Key('tool-write'),
-              icon: tool == InkTool.highlighter ? Icons.border_color_outlined : Icons.edit_outlined,
-              label: l.toolWrite,
-              selected: tool == InkTool.pen || tool == InkTool.highlighter,
-              onTap: () {
-                if (tool == InkTool.pen || tool == InkTool.highlighter) {
-                  onPopover(_Popover.write);
-                } else {
-                  onTool(InkTool.pen, _Popover.write);
-                }
-              },
-            ),
-            ToolButton(
-              key: const Key('tool-erase'),
-              icon: Icons.auto_fix_normal,
-              label: l.toolErase,
-              selected: tool == InkTool.eraser,
-              onTap: () => tool == InkTool.eraser ? onPopover(_Popover.erase) : onTool(InkTool.eraser, _Popover.erase),
-            ),
-            ToolButton(
-              key: const Key('tool-select'),
-              icon: Icons.highlight_alt,
-              label: l.toolSelect,
-              selected: tool == InkTool.select,
-              onTap: () => onTool(InkTool.select, null),
-            ),
-            ToolButton(
-              key: const Key('tool-shapes'),
-              icon: Icons.category_outlined,
-              label: l.toolShapes,
-              selected: tool == InkTool.shape || popover == _Popover.shapes,
-              onTap: () => onPopover(_Popover.shapes),
-            ),
-            ToolButton(
-              key: const Key('tool-tools'),
-              icon: Icons.work_outline,
-              label: l.toolTools,
-              selected: popover == _Popover.tools,
-              onTap: () => onPopover(_Popover.tools),
-            ),
-            ToolButton(key: const Key('undo'), icon: Icons.undo, label: l.toolUndo, enabled: ink.canUndo, onTap: ink.undo),
-            ToolButton(key: const Key('redo'), icon: Icons.redo, label: l.toolRedo, enabled: ink.canRedo, onTap: ink.redo),
-            const ToolbarDivider(),
-            ToolButton(
-              key: const Key('panel-ai'),
-              icon: Icons.auto_awesome,
-              label: l.toolAi,
-              accent: const Color(0xFF8E44EC),
-              selected: panel == PanelKind.ai,
-              onTap: () => onPanel(PanelKind.ai),
-            ),
-            ToolButton(
-              key: const Key('panel-books'),
-              icon: Icons.menu_book,
-              label: l.toolBooks,
-              accent: const Color(0xFF1A73E8),
-              selected: panel == PanelKind.books,
-              onTap: () => onPanel(PanelKind.books),
-            ),
-            ToolButton(
-              key: const Key('panel-quiz'),
-              icon: Icons.quiz,
-              label: l.toolQuiz,
-              accent: const Color(0xFF188038),
-              selected: panel == PanelKind.quiz,
-              onTap: () => onPanel(PanelKind.quiz),
-            ),
-            ToolButton(
-              key: const Key('panel-homework'),
-              icon: Icons.assignment,
-              label: l.toolHomework,
-              accent: const Color(0xFFD93025),
-              selected: panel == PanelKind.homework,
-              onTap: () => onPanel(PanelKind.homework),
-            ),
-          ],
-        ),
-      ),
+      listenable: wb,
+      builder: (context, _) {
+        final tool = wb.tool;
+        final writing = tool == BoardTool.pen || tool == BoardTool.highlighter;
+        return ChromeSurface(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ToolButton(
+                key: const Key('record'),
+                icon: recording ? Icons.stop_circle_outlined : Icons.fiber_manual_record,
+                label: recording ? l.toolStop : l.toolRecord,
+                iconColor: Kx.record,
+                selected: recording,
+                onTap: onRecord,
+              ),
+              ToolButton(key: const Key('tool-theme'), icon: Icons.texture, label: l.toolTheme, selected: popover == _Popover.theme, onTap: () => onPopover(_Popover.theme)),
+              ToolButton(
+                key: const Key('tool-write'),
+                icon: tool == BoardTool.highlighter ? Icons.border_color_outlined : Icons.edit_outlined,
+                label: l.toolWrite,
+                selected: writing,
+                onTap: () => writing ? onPopover(_Popover.write) : onTool(BoardTool.pen, _Popover.write),
+              ),
+              ToolButton(
+                key: const Key('tool-erase'),
+                icon: Icons.auto_fix_normal,
+                label: l.toolErase,
+                selected: tool == BoardTool.eraser,
+                onTap: () => tool == BoardTool.eraser ? onPopover(_Popover.erase) : onTool(BoardTool.eraser, _Popover.erase),
+              ),
+              ToolButton(key: const Key('tool-select'), icon: Icons.highlight_alt, label: l.toolSelect, selected: tool == BoardTool.select, onTap: () => onTool(BoardTool.select, null)),
+              ToolButton(key: const Key('tool-text'), icon: Icons.title, label: l.toolText, selected: tool == BoardTool.text, onTap: () => onTool(BoardTool.text, null)),
+              ToolButton(
+                key: const Key('tool-shapes'),
+                icon: Icons.category_outlined,
+                label: l.toolShapes,
+                selected: tool == BoardTool.shape || popover == _Popover.shapes,
+                onTap: () => onPopover(_Popover.shapes),
+              ),
+              ToolButton(
+                key: const Key('tool-insert'),
+                icon: Icons.add_box_outlined,
+                label: l.toolInsert,
+                selected: popover == _Popover.insert || tool == BoardTool.note || tool == BoardTool.math || tool == BoardTool.laser,
+                onTap: () => onPopover(_Popover.insert),
+              ),
+              ToolButton(key: const Key('tool-tools'), icon: Icons.work_outline, label: l.toolTools, selected: popover == _Popover.tools, onTap: () => onPopover(_Popover.tools)),
+              ToolButton(key: const Key('undo'), icon: Icons.undo, label: l.toolUndo, enabled: wb.canUndo, onTap: wb.undo),
+              ToolButton(key: const Key('redo'), icon: Icons.redo, label: l.toolRedo, enabled: wb.canRedo, onTap: wb.redo),
+              const ToolbarDivider(),
+              ToolButton(
+                key: const Key('panel-ai'),
+                icon: Icons.auto_awesome,
+                label: l.toolAi,
+                accent: const Color(0xFF835400),
+                selected: panel == PanelKind.ai,
+                onTap: () => onPanel(PanelKind.ai),
+              ),
+              ToolButton(
+                key: const Key('panel-books'),
+                icon: Icons.menu_book,
+                label: l.toolBooks,
+                accent: const Color(0xFF1A73E8),
+                selected: panel == PanelKind.books,
+                onTap: () => onPanel(PanelKind.books),
+              ),
+              ToolButton(
+                key: const Key('panel-quiz'),
+                icon: Icons.quiz,
+                label: l.toolQuiz,
+                accent: const Color(0xFF188038),
+                selected: panel == PanelKind.quiz,
+                onTap: () => onPanel(PanelKind.quiz),
+              ),
+              ToolButton(
+                key: const Key('panel-homework'),
+                icon: Icons.assignment,
+                label: l.toolHomework,
+                accent: const Color(0xFFD93025),
+                selected: panel == PanelKind.homework,
+                onTap: () => onPanel(PanelKind.homework),
+              ),
+              ToolButton(
+                key: const Key('panel-kit'),
+                icon: Icons.backpack_outlined,
+                label: l.kitShort,
+                accent: const Color(0xFF006545),
+                selected: panel == PanelKind.kit,
+                onTap: () => onPanel(PanelKind.kit),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1142,36 +1578,3 @@ class _TopBarState extends State<_TopBar> {
 String _clockText(BuildContext context, DateTime now) =>
     '${DateFormat('EEE d MMM', context.dateLocale).format(now)} · ${DateFormat('h:mm a', dateLocaleFor(const Locale('en'))).format(now)}';
 
-/// Floating "Delete" action above a selection.
-class _SelectionActions extends StatelessWidget {
-  const _SelectionActions({required this.ink});
-
-  final InkController ink;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ink,
-      builder: (context, _) {
-        final b = ink.selectionBounds;
-        if (b == null || ink.marquee != null) return const SizedBox.shrink();
-        return Positioned(
-          left: b.center.dx - 70,
-          top: (b.top - 64).clamp(60.0, double.infinity),
-          child: BoardChromeTheme(
-            child: ChromeSurface(
-              radius: Kx.rXl,
-              padding: const EdgeInsets.all(4),
-              child: TextButton.icon(
-                key: const Key('delete-selection'),
-                onPressed: ink.deleteSelection,
-                icon: const Icon(Icons.delete_outline),
-                label: Text(context.l10n.deleteSelection(ink.selection.length)),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}

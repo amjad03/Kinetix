@@ -211,11 +211,10 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
   Widget _formulas(List<Formula> all) {
     // The chapter being taught comes first, when the subject name says which.
     final subject = (widget.board.session?.subjectName ?? '').toLowerCase();
-    final list = all.where((f) => _q.isEmpty || f.name.toLowerCase().contains(_q) || f.chapter.toLowerCase().contains(_q)).toList()
-      ..sort((a, b) {
-        int rank(Formula f) => subject.isNotEmpty && subject.contains(f.chapter.toLowerCase()) ? 0 : 1;
-        return rank(a).compareTo(rank(b));
-      });
+    final found = all.where((f) => _q.isEmpty || f.name.toLowerCase().contains(_q) || f.chapter.toLowerCase().contains(_q));
+    bool first(Formula f) => subject.isNotEmpty && subject.contains(f.chapter.toLowerCase());
+    // Stable: the sheet's own order within each part.
+    final list = [...found.where(first), ...found.where((f) => !first(f))];
     String? last;
     final l = context.l10n;
     return Column(
