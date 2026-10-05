@@ -81,3 +81,12 @@ key still fails as before; with a key configured, the flag changes nothing.
   in memory and stands in for the realtime connection.
 - `Demo.enabled` (lib/demo/demo.dart) is `KINETIX_DEMO` at run time; tests set it to see the demo
   UI. Each app has a `test/demo_test.dart` smoke test.
+
+## Getting the test APKs
+
+The `Test APKs` workflow (.github/workflows/test-apk.yml) builds all four apps in demo mode on
+every push to the development branch that touches the apps, and publishes them as the
+`test-build` pre-release on the repository's Releases page. Open that page on an Android phone,
+download the APK, allow installing apps from the browser when asked, and open it. New builds
+install over older ones. Set the repository variable `KINETIX_API_URL` once a server exists to
+make the same APKs talk to it as well.
