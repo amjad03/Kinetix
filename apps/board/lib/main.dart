@@ -16,6 +16,9 @@ import 'features/enrollment/enroll_screen.dart';
 import 'l10n/l10n.dart';
 
 void main() {
+  // Plugins (saved settings, secure storage, the outbox) can only be used once Flutter's engine
+  // binding exists; the controllers below start reading them before runApp.
+  WidgetsFlutterBinding.ensureInitialized();
   // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
   // (unless it is a demo build: --dart-define=KINETIX_DEMO=true, which needs no server).
   if (!checkServerConfig()) return;

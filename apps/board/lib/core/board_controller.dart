@@ -143,8 +143,18 @@ class BoardController extends ChangeNotifier {
   bool get isSignedIn => session != null;
 
   Future<void> start() async {
-    _outbox.addAll(await _outboxStore.load());
-    final saved = await _store.load();
+    try {
+      _outbox.addAll(await _outboxStore.load());
+    } catch (e) {
+      debugPrint('Outbox unreadable: $e');
+    }
+    ({String? server, String? token, String? name}) saved = (server: null, token: null, name: null);
+    try {
+      saved = await _store.load();
+    } catch (e) {
+      // Storage unreadable: ask to enrol again rather than spin on the loading screen.
+      debugPrint('Device store unreadable: $e');
+    }
     await _loadSettings();
     if (saved.server == null || saved.token == null) {
       stage = BoardStage.needsEnrollment;
@@ -157,10 +167,16 @@ class BoardController extends ChangeNotifier {
     unawaited(recordings.load());
   }
 
+  /// Settings saved on this board; the defaults when storage cannot be read (the board must
+  /// never stay on its loading screen because of a storage problem).
   Future<void> _loadSettings() async {
-    touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
-    eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
-    boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
+    try {
+      touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
+      eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
+      boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
+    } catch (e) {
+      debugPrint('Board settings unreadable, using defaults: $e');
+    }
   }
 
   /// Demo builds (docs/product/demo-builds.md): no enrolment. The board connects to the demo
