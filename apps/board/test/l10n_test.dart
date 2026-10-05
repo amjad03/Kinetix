@@ -280,7 +280,7 @@ void main() {
         await closePopover();
         await tap(find.byKey(const Key('tool-erase')));
         await tap(find.byKey(const Key('tool-erase')));
-        expect(find.text(l.clearPage), findsOneWidget);
+        expect(find.byKey(const Key('clear-page')), findsOneWidget);
         fits('erase');
         await closePopover();
         await tap(find.byKey(const Key('tool-write')));

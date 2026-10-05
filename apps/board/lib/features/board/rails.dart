@@ -107,14 +107,15 @@ class ToolRail extends StatelessWidget {
             selected: tool == BoardTool.select,
             onTap: () => pick(BoardTool.select, null),
           ),
-          button(
-            key: const Key('tool-hand'),
-            icon: const Icon(Icons.pan_tool_outlined),
-            label: l.toolMove,
-            letter: 'H',
-            selected: tool == BoardTool.hand,
-            onTap: () => pick(BoardTool.hand, null),
-          ),
+          if (!primary)
+            button(
+              key: const Key('tool-hand'),
+              icon: const Icon(Icons.pan_tool_outlined),
+              label: l.toolMove,
+              letter: 'H',
+              selected: tool == BoardTool.hand,
+              onTap: () => pick(BoardTool.hand, null),
+            ),
           button(
             key: const Key('tool-write'),
             icon: _PenIcon(color: inkColorFor(wb.penColor, wb.background)),

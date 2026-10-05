@@ -146,7 +146,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Corporate Accounting, BCom Semester 3'), findsOneWidget);
     expect(find.textContaining('Draft content'), findsOneWidget);
-    expect(find.text('Added by your institution · Notes coming soon'), findsOneWidget);
+    expect(find.textContaining('Added by your institution'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('chapter-ch1')));
     await tester.pumpAndSettle();

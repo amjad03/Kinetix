@@ -105,14 +105,16 @@ void main() {
         final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
         final mid = Offset(size.width / 2, size.height / 2);
 
-        // The Move tool: one broad finger drags the board.
-        await tap(tester, 'tool-hand');
-        expect(wb.tool, BoardTool.hand);
+        // The Move tool: one broad finger drags the board (the Simple board has none: two fingers move it).
         var before = wb.view.value;
-        final f = await down(tester, mid);
-        await moveAll(tester, [f], [const Offset(-90, -60)]);
-        await upAll(tester, [f]);
-        expect(wb.view.value.offset - before.offset, within(distance: 1, from: const Offset(-90, -60)), reason: 'Move tool pans');
+        if (!simple) {
+          await tap(tester, 'tool-hand');
+          expect(wb.tool, BoardTool.hand);
+          final f = await down(tester, mid);
+          await moveAll(tester, [f], [const Offset(-90, -60)]);
+          await upAll(tester, [f]);
+          expect(wb.view.value.offset - before.offset, within(distance: 1, from: const Offset(-90, -60)), reason: 'Move tool pans');
+        }
 
         // The pen: two fingers pinch and pan, and draw nothing.
         await tap(tester, 'tool-write');

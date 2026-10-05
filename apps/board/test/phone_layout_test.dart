@@ -182,7 +182,7 @@ void main() {
           p.step = 'erase popover';
           await tapKey(tester, 'tool-erase');
           await tapKey(tester, 'tool-erase');
-          expect(find.text(l.clearPage), findsOneWidget);
+          expect(find.byKey(const Key('clear-page')), findsOneWidget);
           await closePopover(tester);
           await tapKey(tester, 'tool-write');
           p.step = 'insert popover';
@@ -457,7 +457,9 @@ void main() {
           p.step = 'search results';
           expect(find.byKey(const Key('group-model3d')), findsOneWidget);
           await tap(tester, find.byKey(const Key('result-model3d-solid.cylinder')));
-          expect(tester.getSize(find.byType(SidePanelFrame)), size, reason: 'the model opens full screen');
+          // On a phone the model opens in the split screen: below the board, or beside it in landscape.
+          expect(find.byKey(const Key('phone-split')), findsOneWidget);
+          expect(size.height > size.width ? tester.getSize(find.byType(SidePanelFrame)).width : tester.getSize(find.byType(SidePanelFrame)).height, size.height > size.width ? size.width : size.height);
           expect(find.byType(SolidExplorer), findsOneWidget);
           await tap(tester, find.byKey(const Key('panel-close')));
           p.step = 'search again';

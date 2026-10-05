@@ -1108,7 +1108,7 @@ class _BoardScreenState extends State<BoardScreen> {
         }),
       _ when !ctrl => switch (k) {
         LogicalKeyboardKey.keyV => done(() => _wb.tool = BoardTool.select),
-        LogicalKeyboardKey.keyH => done(() => _wb.tool = BoardTool.hand),
+        LogicalKeyboardKey.keyH when !_primary => done(() => _wb.tool = BoardTool.hand),
         LogicalKeyboardKey.keyP => done(() => _wb.tool = BoardTool.pen),
         LogicalKeyboardKey.keyI => done(() => _wb.tool = BoardTool.highlighter),
         LogicalKeyboardKey.keyW when !_primary => done(() => _wb.tool = BoardTool.aiPen),
@@ -1679,7 +1679,7 @@ class _BoardScreenState extends State<BoardScreen> {
         top: PhonePagesBar(wb: _wb, primary: primary),
         groups: [
           (l.helpGroupWriting, [
-            MoreItem(const Key('tool-hand'), Icons.pan_tool_outlined, l.toolMove, () => _selectTool(BoardTool.hand, null), selected: tool == BoardTool.hand),
+            if (!primary) MoreItem(const Key('tool-hand'), Icons.pan_tool_outlined, l.toolMove, () => _selectTool(BoardTool.hand, null), selected: tool == BoardTool.hand),
             MoreItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _selectTool(BoardTool.highlighter, null), selected: tool == BoardTool.highlighter),
             if (!primary) MoreItem(const Key('tool-ai-pen'), Icons.draw_outlined, l.aiPen, () => _selectTool(BoardTool.aiPen, _Popover.aiPen), selected: tool == BoardTool.aiPen),
             MoreItem(const Key('tool-text'), Icons.title, l.toolText, () => _selectTool(BoardTool.text, null), selected: tool == BoardTool.text),
@@ -1913,7 +1913,7 @@ class _MainToolbar extends StatelessWidget {
                 onTap: () => tool == BoardTool.eraser ? onPopover(_Popover.erase) : onTool(BoardTool.eraser, _Popover.erase),
               ),
               ToolButton(key: const Key('tool-select'), icon: Icons.highlight_alt, label: l.toolSelect, selected: tool == BoardTool.select, onTap: () => onTool(BoardTool.select, null)),
-              ToolButton(key: const Key('tool-hand'), icon: Icons.pan_tool_outlined, label: l.toolMove, selected: tool == BoardTool.hand, onTap: () => onTool(BoardTool.hand, null)),
+              if (!primary) ToolButton(key: const Key('tool-hand'), icon: Icons.pan_tool_outlined, label: l.toolMove, selected: tool == BoardTool.hand, onTap: () => onTool(BoardTool.hand, null)),
               ToolButton(key: const Key('tool-text'), icon: Icons.title, label: l.toolText, selected: tool == BoardTool.text, onTap: () => onTool(BoardTool.text, null)),
               ToolButton(
                 key: const Key('tool-shapes'),
