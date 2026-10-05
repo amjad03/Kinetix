@@ -64,6 +64,7 @@ class _AskClassDialogState extends State<AskClassDialog> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return AlertDialog(
+      scrollable: true,
       title: Text(l.toolAskClass),
       content: SizedBox(
         width: 480,

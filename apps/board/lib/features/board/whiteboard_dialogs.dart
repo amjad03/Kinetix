@@ -33,6 +33,7 @@ class _SaveBoardDialogState extends State<SaveBoardDialog> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.save_outlined),
       title: Text(l.saveBoard),
       content: SizedBox(

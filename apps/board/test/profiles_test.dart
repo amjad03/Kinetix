@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ import 'package:kinetix_board/l10n/l10n.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/board_fonts.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -108,6 +111,7 @@ void main() {
 
   BoardProfile profile(BoardController b, String id) => b.profiles.profileOf(id)!;
 
+  setUpAll(loadBoardFonts);
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('Switching teacher with a PIN', () {
@@ -250,14 +254,15 @@ void main() {
   });
 
   group('Lock screen', () {
-    Future<BoardController> pump(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
+    Future<BoardController> pump(WidgetTester tester, {Size size = const Size(1920, 1080), Locale? locale}) async {
+      tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final board = await tester.runAsync(enrolled);
       await tester.pumpWidget(
         MaterialApp(
           theme: KinetixTheme.light(),
+          locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ProfileLock(board: board!, child: const Scaffold(body: Center(child: Text('the board')))),
@@ -318,5 +323,44 @@ void main() {
       expect(find.byKey(const Key('profile-lock')), findsNothing);
       board.dispose();
     });
+
+    for (final lang in ['en', 'hi', 'kn']) {
+      for (final size in const [Size(360, 640), Size(390, 844), Size(844, 390)]) {
+        testWidgets('the lock screen, the PIN pad, the teachers and Set PIN fit a phone: $lang at ${size.width.toInt()}×${size.height.toInt()}', (tester) async {
+          final board = await pump(tester, size: size, locale: Locale(lang));
+          await tester.runAsync(() => board.profiles.unlock(board.profiles.profileOf('t1')!, '4829'));
+          board.profiles.lock();
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('profile-lock')), findsOneWidget);
+          for (final k in ['pin-1', 'pin-0', 'pin-ok', 'pin-delete', 'lock-switch']) {
+            await tester.ensureVisible(find.byKey(Key(k)));
+            await tester.pumpAndSettle();
+            expect(find.byKey(Key(k)).hitTestable(), findsOneWidget, reason: k);
+          }
+          await typePin(tester, '1111');
+          expect(tester.takeException(), isNull, reason: 'wrong PIN');
+          await tester.ensureVisible(find.byKey(const Key('lock-switch')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('lock-switch')));
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('profile-t2')).hitTestable(), findsOneWidget);
+          expect(tester.takeException(), isNull, reason: 'teachers');
+          await tester.tap(find.byKey(const Key('profile-t2')));
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.byKey(const Key('pin-ok')));
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('pin-ok')).hitTestable(), findsOneWidget);
+          expect(tester.takeException(), isNull, reason: 'their PIN');
+
+          // Setting a PIN (Meena has none).
+          final context = tester.element(find.byKey(const Key('profile-lock')));
+          unawaited(showSetPinDialog(context, board.profiles));
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('set-pin')), findsOneWidget);
+          expect(tester.takeException(), isNull, reason: 'set PIN');
+          board.dispose();
+        });
+      }
+    }
   });
 }

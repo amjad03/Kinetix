@@ -56,6 +56,7 @@ import 'kit/kit_panel.dart';
 import 'kit/subject_tools.dart';
 import 'kit/subjects.dart';
 import 'live_stream.dart';
+import 'phone_chrome.dart';
 import 'popovers.dart';
 import 'profile_menu.dart';
 import 'rails.dart';
@@ -664,6 +665,7 @@ class _BoardScreenState extends State<BoardScreen> {
                 context: context,
                 builder: (context) => BoardChromeTheme(
                   child: AlertDialog(
+                    scrollable: true,
                     icon: const Icon(Icons.warning_amber_rounded),
                     title: Text(context.l10n.replaceBoardTitle),
                     content: Text(context.l10n.replaceBoardBody),
@@ -703,6 +705,7 @@ class _BoardScreenState extends State<BoardScreen> {
       builder: (context) => BoardChromeTheme(
         child: StatefulBuilder(
           builder: (context, setDialog) => AlertDialog(
+            scrollable: true,
             icon: const Icon(Icons.logout),
             title: Text(context.l10n.endClassTitle),
             content: SizedBox(
@@ -842,11 +845,20 @@ class _BoardScreenState extends State<BoardScreen> {
     await WidgetsBinding.instance.endOfFrame;
     if (!mounted) return;
     final l = context.l10n;
-    final done = await BoardTour.show(context, boardTourSteps(l), finishLabel: _practice == null ? l.tourPractise : null);
+    final steps = [for (final s in boardTourSteps(l)) _onScreen(s)];
+    final done = await BoardTour.show(context, steps, finishLabel: _practice == null ? l.tourPractise : null);
     if (done && mounted && _practice == null) _startPractice();
   }
 
+  /// On a phone most controls are in the More sheet: a step about one points at More.
+  CoachStep _onScreen(CoachStep s) {
+    final target = s.target;
+    if (target == null || !context.isPhone || screenRectOf(context, target) != null) return s;
+    return CoachStep(target: const Key('phone-more'), icon: s.icon, title: s.title, body: s.body);
+  }
+
   void _openHelp() {
+    final phone = context.isPhone;
     // The controls on screen now (the profile button is under the menu that opened help).
     final onScreen = {
       const Key('profile-button'),
@@ -858,7 +870,8 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(
       HelpSheet.show(
         context,
-        canShow: onScreen.contains,
+        // On a phone, "Show me" points at More for what is in the More sheet.
+        canShow: (k) => phone || onScreen.contains(k),
         onShowMe: (t) => unawaited(_showMe(t.target!, t.icon, t.title, t.steps.join(' '))),
         onTour: () => unawaited(_startTour()),
         onPractice: _practice == null ? _startPractice : null,
@@ -870,7 +883,7 @@ class _BoardScreenState extends State<BoardScreen> {
   Future<void> _showMe(Key target, IconData icon, String title, String body) async {
     setState(() => _hidden = false);
     await WidgetsBinding.instance.endOfFrame;
-    if (mounted) await BoardTour.show(context, [CoachStep(target: target, icon: icon, title: title, body: body)]);
+    if (mounted) await BoardTour.show(context, [_onScreen(CoachStep(target: target, icon: icon, title: title, body: body))]);
   }
 
   /// A practice page with a checklist; the board comes back as it was afterwards.
@@ -1059,13 +1072,15 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Widget _layout(BuildContext context, BoxConstraints size) {
-    final panelWidth = size.maxWidth * _panelFraction;
+    final phone = context.isPhone;
+    final panelWidth = phone ? size.maxWidth : size.maxWidth * _panelFraction;
     final panel = _panel == null
         ? null
         : SizedBox(
             width: panelWidth,
             child: BoardChromeTheme(
               child: SidePanelFrame(
+                fullScreen: phone,
                 onLeft: _panelOnLeft,
                 onClose: () => setState(() => _panel = null),
                 onSwapSide: () => setState(() => _panelOnLeft = !_panelOnLeft),
@@ -1082,20 +1097,28 @@ class _BoardScreenState extends State<BoardScreen> {
             ),
           );
 
+    Widget board(bool compact) => LayoutBuilder(
+      builder: (context, area) {
+        _canvasSize = area.biggest;
+        _capture?.fitCanvas(_canvasSize);
+        return _boardArea(context, compact: compact || area.maxWidth < 1500, short: compact || area.maxHeight < 900);
+      },
+    );
+    if (phone) {
+      // On a phone a panel opens full screen over the board, which stays as it was under it.
+      return Stack(
+        children: [
+          Positioned.fill(child: board(true)),
+          if (panel != null) Positioned.fill(child: panel),
+        ],
+      );
+    }
     // The panel takes full height; everything for the board lives in the board area.
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (panel != null && _panelOnLeft) panel,
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, area) {
-              _canvasSize = area.biggest;
-              _capture?.fitCanvas(_canvasSize);
-              return _boardArea(context, compact: area.maxWidth < 1500, short: area.maxHeight < 900);
-            },
-          ),
-        ),
+        Expanded(child: board(false)),
         if (panel != null && !_panelOnLeft) panel,
       ],
     );
@@ -1152,8 +1175,16 @@ class _BoardScreenState extends State<BoardScreen> {
     final rails = _rails;
     final primary = _primary;
     final railW = RailSizes.rail(primary: primary, compact: compact || short);
+    // On a phone the chrome keeps inside the notches and the system bars.
+    final phone = context.isPhone;
+    final safe = phone ? MediaQuery.paddingOf(context) : EdgeInsets.zero;
+    final phoneBottom = safe.bottom + phoneBarHeight + 2 * Kx.s8;
     // The board keeps clear of the floating toolbars (start view, fit, placement).
-    _wb.safeInsets = _hidden ? const EdgeInsets.only(top: 64) : (rails ? EdgeInsets.fromLTRB(railW + 12, 64, railW + 12, 84) : const EdgeInsets.fromLTRB(0, 64, 0, 100));
+    _wb.safeInsets = phone
+        ? EdgeInsets.fromLTRB(safe.left, safe.top + 56, safe.right, _hidden ? safe.bottom : phoneBottom)
+        : _hidden
+        ? const EdgeInsets.only(top: 64)
+        : (rails ? EdgeInsets.fromLTRB(railW + 12, 64, railW + 12, 84) : const EdgeInsets.fromLTRB(0, 64, 0, 100));
     return Stack(
       children: [
         Positioned.fill(
@@ -1163,6 +1194,7 @@ class _BoardScreenState extends State<BoardScreen> {
             images: _images,
             inputMode: board.inputMode,
             multiWriter: board.multiWriter,
+            fingerTaps: board.fingerTaps,
             editMath: _editMath,
             editNote: _editNote,
             labels: _canvasLabels(l),
@@ -1191,6 +1223,8 @@ class _BoardScreenState extends State<BoardScreen> {
           right: 0,
           child: BoardChromeTheme(
             child: _TopBar(
+              compact: phone,
+              safe: safe,
               board: board,
               onSignIn: _signIn,
               onEndClass: _endClass,
@@ -1208,8 +1242,9 @@ class _BoardScreenState extends State<BoardScreen> {
         if (_sim != null) Positioned.fill(child: _simWindow()),
         if (_practice != null)
           Positioned(
-            right: rails ? railW + Kx.s24 : Kx.s16,
-            bottom: rails ? 84 : 100,
+            left: phone ? Kx.s8 + safe.left : null,
+            right: phone ? Kx.s8 + safe.right : (rails ? railW + Kx.s24 : Kx.s16),
+            bottom: phone ? phoneBottom : (rails ? 84 : 100),
             child: BoardChromeTheme(
               child: PracticePanel(
                 tracker: _practice!,
@@ -1221,10 +1256,17 @@ class _BoardScreenState extends State<BoardScreen> {
               ),
             ),
           ),
-        Positioned.fill(child: ClassCheckOverlay(check: _classCheck, onPutOnBoard: _addPollResults)),
+        Positioned.fill(child: ClassCheckOverlay(check: _classCheck, onPutOnBoard: _addPollResults, insets: _wb.safeInsets)),
         Positioned.fill(child: RemotePointer(remote: _remote)),
-        if (!_hidden && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
-        if (!_hidden && !rails)
+        if (!_hidden && phone)
+          Positioned(
+            left: Kx.s8 + safe.left,
+            right: Kx.s8 + safe.right,
+            bottom: Kx.s8 + safe.bottom,
+            child: BoardChromeTheme(child: Center(child: _phoneBar())),
+          ),
+        if (!_hidden && !phone && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
+        if (!_hidden && !phone && !rails)
           Positioned(
             left: Kx.s12,
             right: Kx.s12,
@@ -1241,11 +1283,11 @@ class _BoardScreenState extends State<BoardScreen> {
               onTap: () => setState(() => _popover = null),
             ),
           ),
-        if (_popover != null) _popoverLayer(railW),
+        if (_popover != null) _popoverLayer(railW, phone: phone, safe: safe),
         if (_hidden)
           Positioned(
-            right: Kx.s16,
-            bottom: Kx.s16,
+            right: Kx.s16 + safe.right,
+            bottom: Kx.s16 + safe.bottom,
             child: BoardChromeTheme(
               child: FloatingActionButton.small(
                 key: const Key('show-tools'),
@@ -1382,7 +1424,7 @@ class _BoardScreenState extends State<BoardScreen> {
     ];
   }
 
-  Widget _popoverLayer(double railW) {
+  Widget _popoverLayer(double railW, {required bool phone, required EdgeInsets safe}) {
     final l = context.l10n;
     final Widget card = switch (_popover!) {
       _Popover.write => WritePopover(wb: _wb, footer: SnapShapesSwitch(board: board)),
@@ -1423,6 +1465,18 @@ class _BoardScreenState extends State<BoardScreen> {
         onClose: () => setState(() => _popover = null),
       ),
     };
+    if (phone) {
+      // Across the phone, above its bar.
+      return Positioned(
+        left: Kx.s8 + safe.left,
+        right: Kx.s8 + safe.right,
+        top: safe.top + 56,
+        bottom: safe.bottom + phoneBarHeight + 2 * Kx.s8,
+        child: BoardChromeTheme(
+          child: Align(alignment: Alignment.bottomCenter, child: SingleChildScrollView(reverse: true, child: card)),
+        ),
+      );
+    }
     if (_rails && _popover != _Popover.profile) {
       // Beside the left rail.
       return Positioned(
@@ -1452,6 +1506,95 @@ class _BoardScreenState extends State<BoardScreen> {
           alignment: alignment,
           child: SingleChildScrollView(reverse: true, child: card),
         ),
+      ),
+    );
+  }
+
+  /// The phone's bar; a second tap on the pen or the eraser opens its options.
+  Widget _phoneBar() => PhoneToolbar(
+    wb: _wb,
+    writeOpen: _popover == _Popover.write || _popover == _Popover.aiPen,
+    eraseOpen: _popover == _Popover.erase,
+    insertOpen: _popover == _Popover.insert,
+    onTool: (t) => _selectTool(t, switch (t) {
+      BoardTool.pen || BoardTool.highlighter => _Popover.write,
+      BoardTool.aiPen => _Popover.aiPen,
+      BoardTool.eraser => _Popover.erase,
+      _ => null,
+    }),
+    onInsert: () => _toggle(_Popover.insert),
+    onMore: _openMore,
+  );
+
+  /// The phone's More sheet: the rest of the left rail, the class tools, and KINETIX AI, Books
+  /// and the kit (which open full screen).
+  void _openMore() {
+    final l = context.l10n;
+    final primary = _primary;
+    final style = _style;
+    final runner = _subjectTools;
+    final tool = _wb.tool;
+    final screen = MediaQuery.sizeOf(context);
+    const ai = Color(0xFF835400);
+    setState(() => _popover = null);
+    unawaited(
+      BoardMoreSheet.show(
+        context,
+        top: PhonePagesBar(wb: _wb, primary: primary),
+        groups: [
+          (l.helpGroupWriting, [
+            if (!primary) MoreItem(const Key('tool-hand'), Icons.pan_tool_outlined, l.toolMove, () => _selectTool(BoardTool.hand, null), selected: tool == BoardTool.hand),
+            MoreItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _selectTool(BoardTool.highlighter, null), selected: tool == BoardTool.highlighter),
+            if (!primary) MoreItem(const Key('tool-ai-pen'), Icons.draw_outlined, l.aiPen, () => _selectTool(BoardTool.aiPen, _Popover.aiPen), selected: tool == BoardTool.aiPen),
+            MoreItem(const Key('tool-text'), Icons.title, l.toolText, () => _selectTool(BoardTool.text, null), selected: tool == BoardTool.text),
+            MoreItem(const Key('tool-shapes'), Icons.interests_outlined, l.toolShapes, () => _toggle(_Popover.shapes), selected: tool == BoardTool.shape),
+            MoreItem(const Key('tool-theme'), Icons.texture, l.toolTheme, () => _toggle(_Popover.theme)),
+            for (final t in style.tools.take(primary ? 3 : 5))
+              MoreItem(
+                Key('subject-${t.name}'),
+                t.icon,
+                l.subjectToolName(t),
+                // Its menus open from the left edge, a third of the way down.
+                () => unawaited(runner.run(t, Rect.fromLTWH(0, screen.height / 3, 0, 48))),
+                color: style.accent,
+                selected: runner.isActive(t),
+              ),
+          ]),
+          (l.helpGroupClass, [
+            MoreItem(const Key('tool-tools'), Icons.work_outline, l.toolTools, () => _toggle(_Popover.tools)),
+            MoreItem(
+              const Key('record'),
+              _capture != null ? Icons.stop_circle_outlined : Icons.fiber_manual_record,
+              _capture != null ? l.toolStop : l.toolRecord,
+              _toggleRecording,
+              color: Kx.record,
+            ),
+            MoreItem(const Key('save-board'), Icons.save_outlined, l.save, _save),
+            MoreItem(const Key('profile-button'), Icons.person, board.session?.teacherName.split(' ').first ?? l.guest, () => _toggle(_Popover.profile)),
+            MoreItem(const Key('hide-tools'), Icons.expand_more, l.toolHide, () => setState(() => _hidden = true)),
+          ]),
+          (l.helpGroupAi, [
+            MoreItem(const Key('panel-ai'), Icons.auto_awesome, primary ? l.aiAsk : l.toolAi, () => _openAi(AiView.home), color: ai),
+            for (final v in aiOrderFor(style, primary: primary))
+              MoreItem(
+                Key(switch (v) {
+                  AiView.quiz => 'panel-quiz',
+                  AiView.homework => 'panel-homework',
+                  _ => 'ai-rail-${v.name}',
+                }),
+                aiViewIcon(v),
+                aiViewName(l, v),
+                () => switch (v) {
+                  AiView.quiz => _openPanel(PanelKind.quiz),
+                  AiView.homework => _openPanel(PanelKind.homework),
+                  _ => _openAi(v),
+                },
+                color: ai,
+              ),
+            MoreItem(const Key('panel-books'), Icons.menu_book, l.toolBooks, () => _openPanel(PanelKind.books), color: const Color(0xFF1A73E8)),
+            MoreItem(const Key('panel-kit'), style.icon, l.subjectKit(l.subjectName(style.subject)), () => _openPanel(PanelKind.kit), color: style.accent),
+          ]),
+        ],
       ),
     );
   }
@@ -1691,9 +1834,21 @@ class _MainToolbar extends StatelessWidget {
 
 /// The status strip across the top of the board.
 class _TopBar extends StatefulWidget {
-  const _TopBar({required this.board, required this.onSignIn, required this.onEndClass, required this.onAttendance, this.recording});
+  const _TopBar({
+    required this.board,
+    required this.onSignIn,
+    required this.onEndClass,
+    required this.onAttendance,
+    this.recording,
+    this.compact = false,
+    this.safe = EdgeInsets.zero,
+  });
 
   final BoardController board;
+
+  /// On a phone: the time without the date, End class as an icon, inside [safe].
+  final bool compact;
+  final EdgeInsets safe;
   final VoidCallback onSignIn;
   final VoidCallback onEndClass;
   final VoidCallback onAttendance;
@@ -1755,8 +1910,12 @@ class _TopBarState extends State<_TopBar> {
     final s = board.session;
     final marked = board.attendance.length;
     final l = context.l10n;
+    final compact = widget.compact;
+    final gap = compact ? Kx.s4 : Kx.s8;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, 0),
+      padding: compact
+          ? EdgeInsets.fromLTRB(Kx.s8 + widget.safe.left, Kx.s4 + widget.safe.top, Kx.s8 + widget.safe.right, 0)
+          : const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, 0),
       child: Row(
         children: [
           // Chips scroll rather than overflow when a side panel narrows the board.
@@ -1829,31 +1988,37 @@ class _TopBarState extends State<_TopBar> {
               ),
             ),
           ),
-          const SizedBox(width: Kx.s8),
-          if (Demo.enabled) ...[const DemoChip(), const SizedBox(width: Kx.s8)],
+          SizedBox(width: gap),
+          if (Demo.enabled) ...[const DemoChip(), SizedBox(width: gap)],
           // Privacy: whenever the microphone is going out to the class, the teacher sees it.
           // Kept outside the scrolling chips so it can never scroll out of view.
           if (board.classAudio.sending) ...[
             Tooltip(
               message: l.micOnTooltip,
-              child: Chip(
-                key: const Key('mic-on'),
-                backgroundColor: Kx.record,
-                side: BorderSide.none,
-                avatar: const Icon(Icons.mic, size: 18, color: Colors.white),
-                label: Text(l.micOn, style: context.text.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-              ),
+              child: compact
+                  ? const CircleAvatar(key: Key('mic-on'), radius: 16, backgroundColor: Kx.record, child: Icon(Icons.mic, size: 18, color: Colors.white))
+                  : Chip(
+                      key: const Key('mic-on'),
+                      backgroundColor: Kx.record,
+                      side: BorderSide.none,
+                      avatar: const Icon(Icons.mic, size: 18, color: Colors.white),
+                      label: Text(l.micOn, style: context.text.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                    ),
             ),
-            const SizedBox(width: Kx.s8),
+            SizedBox(width: gap),
           ],
-          if (widget.recording != null) ...[widget.recording!, const SizedBox(width: Kx.s8)],
+          if (widget.recording != null) ...[
+            // On a phone the indicator gives way to the chips rather than overflow.
+            if (compact) Flexible(child: FittedBox(child: widget.recording)) else widget.recording!,
+            SizedBox(width: gap),
+          ],
           // Holding the clock for 3 seconds is IT's way out of kiosk mode (docs/hardware/kiosk-mode.md).
           KioskExitGesture(
             key: const Key('kiosk-exit-gesture'),
             kiosk: board.kiosk,
             child: ChromeSurface(
               radius: Kx.rSm,
-              padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),
+              padding: EdgeInsets.symmetric(horizontal: compact ? Kx.s8 : Kx.s12, vertical: Kx.s8),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1870,13 +2035,21 @@ class _TopBarState extends State<_TopBar> {
                       message: board.online ? l.connectedCloud : l.offlineSaved,
                       child: Icon(board.online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined, color: c.onSurface, size: 20),
                     ),
-                  const SizedBox(width: Kx.s12),
-                  Text(_clockText(context, DateTime.now()), style: context.text.labelLarge?.copyWith(color: c.onSurface)),
+                  SizedBox(width: compact ? Kx.s8 : Kx.s12),
+                  Text(compact ? _timeText(DateTime.now()) : _clockText(context, DateTime.now()), style: context.text.labelLarge?.copyWith(color: c.onSurface)),
                 ],
               ),
             ),
           ),
-          if (s != null) ...[
+          if (s != null && compact) ...[
+            SizedBox(width: gap),
+            IconButton.filledTonal(
+              key: const Key('end-class'),
+              tooltip: l.endClass,
+              onPressed: widget.onEndClass,
+              icon: const Icon(Icons.logout, size: 20),
+            ),
+          ] else if (s != null) ...[
             const SizedBox(width: Kx.s12),
             FilledButton.tonalIcon(
               key: const Key('end-class'),
@@ -1894,6 +2067,7 @@ class _TopBarState extends State<_TopBar> {
 
 /// "Sun 4 Oct · 12:18 pm": day and month in the board's language; the time with am/pm as
 /// classrooms write it (intl's Kannada data abbreviates pm to a bare "p").
-String _clockText(BuildContext context, DateTime now) =>
-    '${DateFormat('EEE d MMM', context.dateLocale).format(now)} · ${DateFormat('h:mm a', dateLocaleFor(const Locale('en'))).format(now)}';
+String _clockText(BuildContext context, DateTime now) => '${DateFormat('EEE d MMM', context.dateLocale).format(now)} · ${_timeText(now)}';
+
+String _timeText(DateTime now) => DateFormat('h:mm a', dateLocaleFor(const Locale('en'))).format(now);
 

@@ -21,7 +21,7 @@ List<(String, List<HelpTopic>)> helpTopics(AppLocalizations l) => [
     l.helpGroupWriting,
     [
       HelpTopic('write', Icons.edit_outlined, l.helpWriteTitle, [l.helpWrite1, l.helpWrite2], target: const Key('tool-write')),
-      HelpTopic('erase', Icons.undo, l.helpEraseTitle, [l.helpErase1, l.helpErase2], target: const Key('tool-erase')),
+      HelpTopic('erase', Icons.undo, l.helpEraseTitle, [l.helpErase1, l.helpErase2, l.helpErase3], target: const Key('tool-erase')),
       HelpTopic('shapes', Icons.interests_outlined, l.helpShapesTitle, [l.helpShapes1, l.helpShapes2], target: const Key('tool-shapes')),
       HelpTopic('text', Icons.title, l.helpTextTitle, [l.helpText1], target: const Key('tool-text')),
     ],

@@ -107,6 +107,7 @@ class _KioskExitDialogState extends State<KioskExitDialog> {
 
     if (kiosk.demo) {
       return AlertDialog(
+        scrollable: true,
         key: const Key('kiosk-dialog'),
         icon: const Icon(Icons.lock_outline),
         title: Text(l.kioskExitTitle),
@@ -122,6 +123,7 @@ class _KioskExitDialogState extends State<KioskExitDialog> {
     }
     if (kiosk.paused) {
       return AlertDialog(
+        scrollable: true,
         key: const Key('kiosk-dialog'),
         icon: const Icon(Icons.lock_open_outlined),
         title: Text(l.kioskTitle),
@@ -134,6 +136,7 @@ class _KioskExitDialogState extends State<KioskExitDialog> {
     }
     if (!kiosk.pinSet) {
       return AlertDialog(
+        scrollable: true,
         key: const Key('kiosk-dialog'),
         icon: const Icon(Icons.lock_outline),
         title: Text(l.kioskExitTitle),
@@ -143,6 +146,7 @@ class _KioskExitDialogState extends State<KioskExitDialog> {
     }
     if (_unlocked) {
       return AlertDialog(
+        scrollable: true,
         key: const Key('kiosk-dialog'),
         icon: const Icon(Icons.lock_open_outlined),
         title: Text(l.kioskExitTitle),
@@ -157,6 +161,7 @@ class _KioskExitDialogState extends State<KioskExitDialog> {
     }
     final lockedOut = kiosk.isLockedOut;
     return AlertDialog(
+      scrollable: true,
       key: const Key('kiosk-dialog'),
       icon: const Icon(Icons.lock_outline),
       title: Text(l.kioskExitTitle),

@@ -5,6 +5,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
+import '../board/phone_chrome.dart';
 import 'concept_video_player.dart';
 import 'concept_videos.dart';
 
@@ -109,13 +110,23 @@ class _ConceptVideoSuggestionsState extends State<ConceptVideoSuggestions> {
       widget.child,
       ListenableBuilder(
         listenable: _suggester,
-        builder: (context, _) => !_suggester.visible
-            ? const SizedBox.shrink()
-            : Positioned(
-                top: 88,
-                right: Kx.s24,
-                child: ConceptVideoCard(videos: _suggester.current!, onSkip: _suggester.skip),
-              ),
+        builder: (context, _) {
+          if (!_suggester.visible) return const SizedBox.shrink();
+          // Under the top bar, and on a phone within its width and above its bar.
+          final size = MediaQuery.sizeOf(context);
+          final safe = MediaQuery.paddingOf(context);
+          final phone = isPhoneSize(size);
+          final top = phone ? safe.top + 56 : 88.0;
+          final right = phone ? Kx.s8 + safe.right : Kx.s24;
+          return Positioned(
+            top: top,
+            right: right,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: size.width - right - Kx.s8 - safe.left, maxHeight: size.height - top - Kx.s8 - safe.bottom),
+              child: ConceptVideoCard(videos: _suggester.current!, onSkip: _suggester.skip),
+            ),
+          );
+        },
       ),
     ],
   );
@@ -166,11 +177,14 @@ class ConceptVideoCard extends StatelessWidget {
                 style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
               ),
               const SizedBox(height: Kx.s12),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 340),
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [for (final v in videos.videos.take(6)) ConceptVideoTile(video: v)],
+              // The list gives way on a short screen (a phone on its side).
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 340),
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [for (final v in videos.videos.take(6)) ConceptVideoTile(video: v)],
+                  ),
                 ),
               ),
               const SizedBox(height: Kx.s8),

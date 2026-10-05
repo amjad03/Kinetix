@@ -6,7 +6,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 void main() {
   late WhiteboardController board;
 
-  Future<void> pump(WidgetTester tester, {InputMode mode = InputMode.auto, bool multiWriter = false, Future<String?> Function(String?)? editMath}) async {
+  Future<void> pump(WidgetTester tester, {InputMode mode = InputMode.auto, bool multiWriter = false, bool fingerTaps = true, Future<String?> Function(String?)? editMath}) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -19,6 +19,7 @@ void main() {
             controller: board,
             inputMode: mode,
             multiWriter: multiWriter,
+            fingerTaps: fingerTaps,
             editMath: editMath,
             selectionActions: (context, box) => Stack(
               children: [Positioned(left: box.left, top: box.bottom + 20, child: const Text('selection-actions'))],
@@ -182,5 +183,86 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1200));
     await tester.pump(const Duration(milliseconds: 100));
     expect(board.laser.value, isEmpty);
+  });
+
+  group('finger taps', () {
+    /// Fingers that land [gap] apart (the first after [start]), stay [hold] and lift together,
+    /// each moving [move] on the way.
+    Future<void> tap(WidgetTester tester, int fingers, {Duration gap = const Duration(milliseconds: 30), Duration hold = const Duration(milliseconds: 120), Offset move = Offset.zero, Duration start = Duration.zero}) async {
+      final gestures = <TestGesture>[];
+      var t = start;
+      for (var i = 0; i < fingers; i++) {
+        final g = await tester.createGesture(pointer: 20 + i, kind: PointerDeviceKind.touch);
+        await g.down(Offset(400 + i * 60.0, 400), timeStamp: t);
+        gestures.add(g);
+        if (i < fingers - 1) t += gap;
+      }
+      t += hold;
+      if (move != Offset.zero) {
+        for (var i = 0; i < gestures.length; i++) {
+          await gestures[i].moveTo(Offset(400 + i * 60.0, 400) + move, timeStamp: t);
+        }
+      }
+      for (final g in gestures) {
+        await g.up(timeStamp: t);
+      }
+      await tester.pump();
+    }
+
+    testWidgets('two fingers undo, three redo, and leave no dot behind', (tester) async {
+      await pump(tester);
+      await stroke(tester, const Offset(200, 200));
+      await stroke(tester, const Offset(200, 300), pointer: 2);
+      expect(board.elements, hasLength(2));
+      await tap(tester, 2);
+      expect(board.elements, hasLength(1));
+      await tap(tester, 2, start: const Duration(seconds: 1));
+      expect(board.elements, isEmpty);
+      await tap(tester, 3, start: const Duration(seconds: 2));
+      expect(board.elements, hasLength(1));
+      expect(board.view.value.scale, 1);
+    });
+
+    testWidgets('slow, moving or held fingers are a pinch, not a tap', (tester) async {
+      await pump(tester);
+      await stroke(tester, const Offset(200, 200));
+      // Held too long.
+      await tap(tester, 2, hold: const Duration(milliseconds: 400));
+      expect(board.elements, hasLength(1));
+      // The second finger came too late.
+      await tap(tester, 2, gap: const Duration(milliseconds: 300), start: const Duration(seconds: 1));
+      expect(board.elements, hasLength(1));
+      // Moved: a pan.
+      await tap(tester, 2, move: const Offset(40, 0), start: const Duration(seconds: 2));
+      expect(board.elements, hasLength(1));
+      expect(board.view.value.offset.dx, closeTo(40, 0.01));
+    });
+
+    testWidgets('the setting turns them off; on a panel every finger writes', (tester) async {
+      await pump(tester, fingerTaps: false);
+      await stroke(tester, const Offset(200, 200));
+      await tap(tester, 2);
+      expect(board.elements, hasLength(1));
+
+      await pump(tester, multiWriter: true);
+      await tap(tester, 2);
+      expect(board.elements, hasLength(2)); // two dots, one per finger
+    });
+
+    testWidgets('a broad second finger is a finger, not a palm, so pinch works with palm rejection', (tester) async {
+      await pump(tester);
+      board.palmMode = PalmMode.ignore;
+      final a = TestPointer(30, PointerDeviceKind.touch);
+      final b = TestPointer(31, PointerDeviceKind.touch);
+      await tester.sendEventToBinding(a.down(const Offset(500, 400)));
+      await tester.sendEventToBinding(b.down(const Offset(600, 400), timeStamp: const Duration(milliseconds: 40)).copyWith(radiusMajor: 40));
+      await tester.sendEventToBinding(a.move(const Offset(450, 400), timeStamp: const Duration(milliseconds: 300)));
+      await tester.sendEventToBinding(b.move(const Offset(650, 400), timeStamp: const Duration(milliseconds: 300)));
+      await tester.sendEventToBinding(a.up(timeStamp: const Duration(milliseconds: 400)));
+      await tester.sendEventToBinding(b.up(timeStamp: const Duration(milliseconds: 400)));
+      await tester.pump();
+      expect(board.elements, isEmpty);
+      expect(board.view.value.scale, closeTo(2, 0.01));
+    });
   });
 }

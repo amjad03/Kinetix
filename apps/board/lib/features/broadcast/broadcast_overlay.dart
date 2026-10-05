@@ -31,9 +31,9 @@ class BroadcastOverlay extends StatelessWidget {
         child,
         if (banner != null)
           Positioned(
-            top: 12,
-            left: 0,
-            right: 0,
+            top: 12 + MediaQuery.paddingOf(context).top,
+            left: 8,
+            right: 8,
             child: Center(
               child: _Banner(key: ValueKey(banner.id), message: banner, onDismiss: onDismiss),
             ),
@@ -94,13 +94,16 @@ class _BannerState extends State<_Banner> {
           children: [
             const Icon(Icons.campaign_outlined, color: Colors.white),
             const SizedBox(width: 12),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: Text(
-                '${m.title} — ${m.body}',
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+            // Gives way on a phone.
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: Text(
+                  '${m.title} — ${m.body}',
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
             IconButton(
@@ -124,27 +127,33 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.black45,
-      child: Center(
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(context.l10n.broadcastFrom(message.senderName), style: Theme.of(context).textTheme.labelLarge),
-                  const SizedBox(height: 8),
-                  Text(message.title, style: Theme.of(context).textTheme.headlineMedium),
-                  const SizedBox(height: 12),
-                  Text(message.body, style: const TextStyle(fontSize: 22, height: 1.4)),
-                  const SizedBox(height: 24),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton(onPressed: () => onDismiss(message, acknowledge: true), child: Text(context.l10n.ok)),
+      // Scrolls on a short screen (a phone on its side).
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(8),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 640),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.l10n.broadcastFrom(message.senderName), style: Theme.of(context).textTheme.labelLarge),
+                      const SizedBox(height: 8),
+                      Text(message.title, style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(height: 12),
+                      Text(message.body, style: const TextStyle(fontSize: 22, height: 1.4)),
+                      const SizedBox(height: 24),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FilledButton(onPressed: () => onDismiss(message, acknowledge: true), child: Text(context.l10n.ok)),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

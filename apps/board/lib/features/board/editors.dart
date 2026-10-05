@@ -74,6 +74,7 @@ class _MathEditorDialogState extends State<MathEditorDialog> {
     final l = context.l10n;
     final keys = widget.chemistry ? [..._chemistry, ..._maths.take(4)] : _maths;
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.functions),
       title: Text(widget.chemistry ? l.stChemEquation : l.stEquation),
       content: SizedBox(
@@ -160,6 +161,7 @@ class _NoteEditorDialogState extends State<NoteEditorDialog> {
     final l = context.l10n;
     final code = widget.kind == NoteKind.code;
     return AlertDialog(
+      scrollable: true,
       icon: Icon(noteIcon(widget.kind)),
       title: Text(noteName(l, widget.kind)),
       content: SizedBox(
@@ -298,6 +300,7 @@ class _NumberLineDialogState extends State<NumberLineDialog> {
       ),
     );
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.linear_scale),
       title: Text(l.stNumberLine),
       content: SizedBox(

@@ -534,9 +534,13 @@ class SimPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    // Two to a row on a phone: the dialog's width less its insets (40) and padding (24).
+    final room = MediaQuery.sizeOf(context).width - 2 * 40 - 2 * 24;
+    final tile = room < 520 ? (room - Kx.s12) / 2 : 160.0;
     return AlertDialog(
       icon: const Icon(Icons.science_outlined),
       title: Text(l.simTitle),
+      scrollable: true,
       content: SizedBox(
         width: 520,
         child: Wrap(
@@ -545,7 +549,7 @@ class SimPickerDialog extends StatelessWidget {
           children: [
             for (final k in SimKind.values)
               SizedBox(
-                width: 160,
+                width: tile,
                 child: OutlinedButton(
                   key: Key('open-sim-${k.name}'),
                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: Kx.s16, horizontal: Kx.s8)),
