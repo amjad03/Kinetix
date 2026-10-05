@@ -10,6 +10,7 @@ import '../content/library.dart';
 import '../core/bench.dart';
 import '../core/i18n.dart';
 import '../core/lab.dart';
+import 'lab_screen.dart';
 
 /// A lab as it stands (its settings and readings), for the board and for
 /// export: [toPng] is the "Put on board" picture, [toCsv] the readings.
@@ -28,6 +29,24 @@ class LabReport {
     final b = l == null ? null : labBenches[l.bench];
     if (l == null || b == null) return null;
     return LabReport(lab: l, bench: b, params: {...b.defaults, ...l.setup});
+  }
+
+  /// The report of the lab open somewhere under [context] (its settings and
+  /// readings as they stand), or null when no bench lab is open there (the
+  /// hand-built simulations have no report: picture those instead).
+  static LabReport? findIn(BuildContext context) {
+    LabReport? found;
+    void visit(Element e) {
+      if (found != null) return;
+      if (e is StatefulElement && e.state is LabScreenState) {
+        found = (e.state as LabScreenState).report;
+        return;
+      }
+      e.visitChildElements(visit);
+    }
+
+    if (context is Element) visit(context);
+    return found;
   }
 
   /// A file name for the readings, e.g. `ohms-law-readings.csv`.

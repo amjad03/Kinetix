@@ -83,4 +83,29 @@ void main() {
     expect(find.text('Graph plotter'), findsWidgets);
     board.dispose();
   });
+
+  testWidgets("a bench lab goes on the board as its report (the lab's LabReport picture)", (tester) async {
+    final board = await pump(tester);
+    await openSplit(tester);
+    await tester.tap(find.byKey(const Key('split-lab')));
+    await tester.pumpAndSettle();
+    final pick = find.byKey(const Key('pick-glass-slab'));
+    await tester.scrollUntilVisible(pick, 200, scrollable: find.descendant(of: find.byKey(const Key('catalogue-lab')), matching: find.byType(Scrollable)).first);
+    await tester.tap(pick);
+    await settle(tester);
+    expect(find.byType(LabScreen), findsOneWidget);
+    final report = LabReport.findIn(tester.element(find.byType(LabView)));
+    expect(report?.lab.id, 'glass-slab');
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('split-snapshot')));
+      for (var i = 0; i < 50 && find.textContaining('Picture put on the board').evaluate().isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        await tester.pump();
+      }
+    });
+    await tester.pump();
+    expect(find.textContaining('Picture put on the board'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    board.dispose();
+  });
 }

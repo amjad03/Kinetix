@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:kinetix_3d/kinetix_3d.dart' show Model3dScope, Model3dSnapshot;
 import 'package:kinetix_ink/kinetix_ink.dart';
+import 'package:kinetix_labs/kinetix_labs.dart' show LabReport;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api_client.dart';
@@ -318,18 +319,30 @@ class _BoardScreenState extends State<BoardScreen> {
     final kind = _splitContent, id = _splitItem;
     if (boundary is! RenderRepaintBoundary || id == null || (kind != SplitContent.model3d && kind != SplitContent.lab)) return;
     try {
-      final ratio = math.min(1.0, 1280 / math.max(1, boundary.size.width));
-      final image = await boundary.toImage(pixelRatio: ratio);
-      final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      final size = Size(image.width.toDouble(), image.height.toDouble());
-      image.dispose();
-      if (data == null || !mounted) return;
+      Uint8List bytes;
+      Size size;
+      // A bench lab gives its report (aim, the experiment, readings, graph and result);
+      // the hand-built simulations are pictured as they are.
+      final report = kind == SplitContent.lab ? LabReport.findIn(_splitKey.currentContext!) : null;
+      if (report != null) {
+        bytes = await report.toPng();
+        size = _pngSize(bytes);
+      } else {
+        final ratio = math.min(1.0, 1280 / math.max(1, boundary.size.width));
+        final image = await boundary.toImage(pixelRatio: ratio);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        size = Size(image.width.toDouble(), image.height.toDouble());
+        image.dispose();
+        if (data == null) return;
+        bytes = Uint8List.view(data.buffer);
+      }
+      if (!mounted) return;
       final w = math.min(560.0, size.width);
       _wb.insert([
         ImageElement(
           id: newElementId(),
           rect: Rect.fromLTWH(0, 0, w, w * size.height / math.max(1, size.width)),
-          bytes: Uint8List.view(data.buffer),
+          bytes: bytes,
           link: EmbedLink(kind: kind == SplitContent.lab ? EmbedLink.lab : EmbedLink.model3d, id: id, preset: _splitPreset),
         ),
       ]);
