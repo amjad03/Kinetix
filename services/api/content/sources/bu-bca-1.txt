@@ -1,0 +1,553 @@
+// BCA, Bangalore University. Semesters 1-3.
+file: bu-bca
+curriculum: bu-ug | Bangalore University (UG) | ug
+programme: BCA
+scheme: SEP 2024 | 2024-25
+! Course list follows the SEP 2024 BCA scheme as published by Bengaluru City University (where Data Structures is 24BCA21, OOP with Java 24BCA22 and DBMS 24BCA31) and the earlier BU NEP 2021 BCA scheme; confirm Bangalore University's own SEP course list and codes, which were not reachable online.
+! Language, AECC (Constitution, Environmental Studies), skill-enhancement and lab courses are not included; labs are covered through the theory topics.
+! Common electives not written: Business Intelligence, Mobile Application Development, Cyber Security, Data Mining, Internet of Things. Computer Multimedia and Animation (NEP Sem 4) is not written.
+
+# bca-1-discrete-mathematics | 1 | Discrete Structures
+! Code kept as bca-1-discrete-mathematics (the demo college links it); title follows SEP "Discrete Structures".
+## Sets, Relations and Functions
+### Set operations and relations
+= Union, intersection, complement, De Morgan's laws, and properties of relations.
+- De Morgan's laws: (A ∪ B)′ = A′ ∩ B′ and (A ∩ B)′ = A′ ∪ B′.
+- |A ∪ B| = |A| + |B| − |A ∩ B| for finite sets.
+- A relation R on a set A is reflexive if aRa for every a; symmetric if aRb implies bRa; transitive if aRb and bRc imply aRc. A relation with all three properties is an equivalence relation.
+> Apply set identities
+> Decide whether a relation is an equivalence relation
+hook: In a class of 60, 35 like cricket and 30 like football. Can you be sure some like both?
+ex: Class of 60: |C| = 35, |F| = 30, |C ∩ F| = 10.
+ex: |C ∪ F| = 35 + 30 − 10 = 55, so 60 − 55 = 5 students like neither.
+q: If |A| = 20, |B| = 15 and |A ∪ B| = 28, find |A ∩ B|. || 20 + 15 − 28 = 7.
+q: Is "is a sibling of" (excluding oneself) an equivalence relation? || No: it is not reflexive.
+terms: union; intersection; complement; relation; equivalence relation
+### Functions
+= One-one, onto and bijective functions, composition and inverse.
+- A function f: A → B assigns exactly one element of B to each element of A.
+- f is one-one (injective) if f(a) = f(b) implies a = b; onto (surjective) if every element of B has a pre-image; bijective if both.
+- Only a bijection has an inverse f⁻¹: B → A.
+- Composition: (g ∘ f)(x) = g(f(x)); in general g ∘ f ≠ f ∘ g.
+> Classify a function as injective, surjective or bijective
+> Find compositions and inverses
+## Mathematical Logic
+### Propositions and truth tables
+= Connectives, truth tables, tautologies and logical equivalence.
+- The conditional p → q is false only when p is true and q is false; p → q is equivalent to ¬p ∨ q.
+- The biconditional p ↔ q is true when p and q have the same truth value.
+- A tautology is true for every assignment of truth values; a contradiction is false for every assignment.
+> Build truth tables
+> Test whether two statements are logically equivalent
+### Quantifiers and counting
+= Predicates, universal and existential quantifiers, and the basic counting principles.
+- ∀x P(x) is true when P(x) holds for every x; ∃x P(x) when it holds for at least one x.
+- Negation: ¬∀x P(x) ≡ ∃x ¬P(x) and ¬∃x P(x) ≡ ∀x ¬P(x).
+- Permutations: nPr = n! ÷ (n − r)!; combinations: nCr = n! ÷ (r!(n − r)!).
+- Pigeonhole principle: if n + 1 objects go into n boxes, some box holds at least two.
+> Negate quantified statements
+> Count arrangements and selections
+## Matrices
+### Matrix operations and determinants
+= Types of matrices, addition, multiplication, transpose, determinant and inverse.
+- Matrices A (m × n) and B (n × p) can be multiplied; AB is m × p, and in general AB ≠ BA.
+- For a 2 × 2 matrix [a b; c d], the determinant is ad − bc.
+- A square matrix has an inverse if and only if its determinant is non-zero: A⁻¹ = adj(A) ÷ |A|.
+- (AB)ᵀ = BᵀAᵀ; a matrix is symmetric if Aᵀ = A.
+> Multiply matrices and find determinants
+> Find the inverse of a 2 × 2 or 3 × 3 matrix
+## Graph Theory
+### Graphs and degrees
+= Vertices, edges, degree, and the handshaking lemma.
+- Handshaking lemma: the sum of the degrees of all vertices of a graph is twice the number of edges.
+- Consequently, every graph has an even number of vertices of odd degree.
+- A graph is simple if it has no loops or parallel edges; the complete graph Kₙ has n(n − 1)/2 edges.
+> Use the handshaking lemma
+> Count the edges of complete and regular graphs
+### Euler and Hamilton graphs, and trees
+= Euler circuits, Hamiltonian cycles, and the properties of trees.
+- A connected graph has an Euler circuit if and only if every vertex has even degree; it has an Euler path (not circuit) if exactly two vertices have odd degree.
+- A Hamiltonian cycle visits every vertex exactly once; no simple degree test decides it in general.
+- A tree is a connected graph with no cycles; a tree with n vertices has n − 1 edges.
+- A spanning tree of a connected graph includes all its vertices with the fewest edges.
+> Decide whether a graph has an Euler path or circuit
+> Identify trees and spanning trees
+
+# bca-1-problem-solving-c | 1 | Problem Solving Techniques (C Programming)
+## Algorithms and Flowcharts
+### Algorithms, flowcharts and pseudocode
+= What an algorithm is, its properties, and how to express it.
+- An algorithm is a finite sequence of unambiguous steps that solves a problem; it has input, output, definiteness, finiteness and effectiveness.
+- A flowchart uses standard symbols: oval (start/stop), parallelogram (input/output), rectangle (process), diamond (decision).
+- Pseudocode states the steps in structured English, independent of any language.
+- Fundamental algorithms: exchanging two values, counting, summation, factorial, Fibonacci series, reversing digits.
+> Write an algorithm and a flowchart for a simple problem
+> Trace an algorithm by hand
+hook: How would you tell a robot to find the largest of three numbers?
+ex: Algorithm to swap a and b: 1. temp ← a  2. a ← b  3. b ← temp.
+ex: Trace a = 4, b = 9: temp = 4, a = 9, b = 4.
+q: List the five properties of an algorithm. || Input, output, definiteness, finiteness, effectiveness.
+q: Which flowchart symbol is used for a decision? || The diamond.
+terms: algorithm; flowchart; pseudocode; trace
+### Factoring and array techniques
+= Classic problem-solving algorithms on numbers and arrays.
+- The smallest divisor of n need only be searched up to √n; if none divides n, n is prime.
+- GCD by Euclid's algorithm: gcd(a, b) = gcd(b, a mod b), and gcd(a, 0) = a.
+- Array techniques: finding the maximum, reversing in place (swap a[i] with a[n−1−i]), removing duplicates, counting frequencies.
+> Implement Euclid's algorithm
+> Apply standard array techniques
+## Introduction to C
+### Structure of a C program, tokens and data types
+= The parts of a C program, its tokens, and basic data types.
+- A C program has preprocessor directives, global declarations, the main() function and other functions; execution starts at main().
+- Tokens: keywords, identifiers, constants, strings, operators and special symbols.
+- Basic types: int, char, float, double; qualifiers short, long, signed, unsigned. sizeof gives a type's size in bytes.
+- Symbolic constants are defined with #define or const.
+> Identify the parts and tokens of a C program
+> Declare and initialise variables of suitable types
+### Operators, expressions and I/O
+= Operators, precedence, type conversion and formatted input/output.
+- Operator classes: arithmetic, relational, logical, assignment, increment/decrement, conditional (?:), bitwise and special.
+- Integer division truncates: 7 / 2 is 3, and 7 % 2 is 1.
+- printf and scanf use format specifiers: %d int, %f float, %lf double, %c char, %s string; scanf needs the address (&x) of non-array variables.
+- Unformatted I/O: getchar, putchar, gets (unsafe, prefer fgets), puts.
+> Evaluate expressions using precedence rules
+> Read and print data with printf and scanf
+q: What is the value of 5 + 3 * 2 % 4 in C? || 3 * 2 = 6, 6 % 4 = 2, 5 + 2 = 7.
+## Control Structures
+### Decision making and loops
+= if, if-else, switch, while, do-while, for, break and continue.
+- switch selects among integer or character cases; without break, control falls through to the next case.
+- while tests before the body; do-while runs the body at least once; for combines initialisation, test and update.
+- break leaves the innermost loop or switch; continue skips to the next iteration.
+> Choose the right control structure for a problem
+> Write nested loops to print patterns
+hook: An ATM keeps asking for your PIN until it is right or you have tried three times. Which loop is that?
+ex: Sum of digits of 472: while (n > 0) { s += n % 10; n /= 10; }
+ex: Trace: s = 2, n = 47; s = 9, n = 4; s = 13, n = 0. Sum is 13.
+q: How many times does for (i = 0; i < 10; i += 3) run? || For i = 0, 3, 6, 9: four times.
+q: Which loop always executes at least once? || do-while.
+hw: Write a program that prints all prime numbers between 1 and 100.
+terms: selection; iteration; fall-through
+## Arrays, Strings and Functions
+### Arrays and strings
+= One- and two-dimensional arrays, and strings as character arrays.
+- Array indices run from 0 to n − 1; C does not check bounds.
+- A 2-D array int a[3][4] is stored row by row (row-major order).
+- A string is a char array ending in '\0'; string.h gives strlen, strcpy, strcat, strcmp.
+> Process arrays with loops (search, sum, matrix operations)
+> Manipulate strings with library functions
+### Functions and recursion
+= Defining functions, parameter passing, scope and recursion.
+- A function has a prototype (declaration), a definition and calls; return gives one value back.
+- C passes arguments by value; to change a caller's variable, pass its address (call by reference through pointers).
+- Storage classes: auto, register, static (keeps its value between calls) and extern.
+- A recursive function calls itself and needs a base case: fact(n) = n × fact(n − 1), fact(0) = 1.
+> Write and call functions with parameters
+> Write recursive functions with a correct base case
+## Pointers, Structures and Files
+### Pointers
+= Addresses, pointer arithmetic, and pointers with arrays and functions.
+- & gives the address of a variable; * dereferences a pointer.
+- For int *p, p + 1 points to the next int (address increases by sizeof(int)).
+- An array name is a pointer to its first element: a[i] is *(a + i).
+- malloc, calloc, realloc and free (stdlib.h) manage dynamic memory.
+> Use pointers to pass arguments by reference
+> Allocate and free memory dynamically
+### Structures, unions and command-line arguments
+= Grouping data with struct and union, and reading arguments from main.
+- A struct groups members of different types; members are accessed with . (or -> through a pointer).
+- A union's members share one memory location; its size is that of its largest member.
+- main(int argc, char *argv[]) receives command-line arguments; argv[0] is the program name.
+> Define structures and arrays of structures
+> Use command-line arguments
+
+# bca-1-computer-architecture | 1 | Computer Architecture
+## Number Systems and Codes
+### Number systems and conversions
+= Binary, octal, decimal and hexadecimal numbers and converting between them.
+- Bases: binary 2, octal 8, decimal 10, hexadecimal 16 (digits 0–9, A–F).
+- Decimal to binary: divide repeatedly by 2 and read the remainders from bottom to top.
+- One octal digit is three bits; one hexadecimal digit is four bits.
+- Two's complement of a binary number = one's complement + 1; it represents negative numbers.
+> Convert numbers between bases
+> Do binary arithmetic using complements
+hook: Why does a computer show 255 as FF?
+ex: 45 to binary: 45/2 = 22 r1, 22/2 = 11 r0, 11/2 = 5 r1, 5/2 = 2 r1, 2/2 = 1 r0, 1/2 = 0 r1.
+ex: Reading upward: 101101. Check: 32 + 8 + 4 + 1 = 45.
+q: Convert 1011 1110 to hexadecimal. || 1011 = B, 1110 = E, so BE.
+q: Find the 8-bit two's complement of 0000 0101. || One's complement 1111 1010, plus 1: 1111 1011.
+terms: radix; bit; one's complement; two's complement
+### Codes
+= BCD, excess-3, Gray code, ASCII and Unicode.
+- BCD codes each decimal digit in 4 bits: 59 is 0101 1001.
+- Excess-3 code = BCD + 3 (0011); it is self-complementing.
+- In Gray code successive values differ in one bit; binary to Gray: g = b XOR (b shifted right by one).
+- ASCII is a 7-bit code (128 characters); Unicode covers all scripts.
+> Represent numbers in BCD, excess-3 and Gray code
+> Convert between binary and Gray code
+## Boolean Algebra and Logic Gates
+### Logic gates
+= AND, OR, NOT, NAND, NOR, XOR and XNOR, with their truth tables.
+- AND outputs 1 only if all inputs are 1; OR outputs 1 if any input is 1; NOT inverts.
+- NAND and NOR are universal gates: any circuit can be built from either alone.
+- XOR outputs 1 when the inputs differ; XNOR when they are equal.
+> Write truth tables of the basic and universal gates
+> Build NOT, AND and OR from NAND gates
+@lab logic-gates
+### Boolean algebra and K-maps
+= Boolean laws, De Morgan's theorems, SOP/POS forms and Karnaugh-map simplification.
+- De Morgan: (A·B)′ = A′ + B′ and (A + B)′ = A′·B′.
+- Absorption: A + AB = A; A(A + B) = A.
+- Sum of products (minterms) and product of sums (maxterms) are canonical forms.
+- In a K-map, group adjacent 1s in powers of two (1, 2, 4, 8) as large as possible; each group gives one product term.
+> Simplify expressions using Boolean laws
+> Minimise functions of up to four variables with K-maps
+q: Simplify A·B + A·B′. || A(B + B′) = A·1 = A.
+## Combinational and Sequential Circuits
+### Combinational circuits
+= Adders, subtractors, multiplexers, demultiplexers, encoders and decoders.
+- Half adder: Sum = A XOR B, Carry = A·B. Full adder adds three bits: Sum = A XOR B XOR Cin.
+- A multiplexer selects one of 2ⁿ inputs using n select lines; a demultiplexer does the reverse.
+- A decoder converts n inputs to up to 2ⁿ outputs; an encoder does the reverse.
+> Design a half adder and a full adder
+> Explain multiplexers and decoders
+@lab logic-gates
+### Flip-flops, registers and counters
+= SR, JK, D and T flip-flops, and their use in registers and counters.
+- A flip-flop stores one bit; it changes state on a clock edge.
+- SR: S = R = 1 is not allowed. JK: J = K = 1 toggles. D: output follows D. T: toggles when T = 1.
+- Shift registers move bits on each clock (SISO, SIPO, PISO, PIPO).
+- An n-bit ripple counter counts 0 to 2ⁿ − 1; each flip-flop is clocked by the previous one.
+> Write characteristic tables of flip-flops
+> Explain registers and counters
+## Computer Organisation
+### CPU, instructions and addressing modes
+= Basic computer organisation, registers, instruction cycle and addressing modes.
+- Main units: input, output, memory, ALU and control unit; ALU and control unit form the CPU.
+- Key registers: PC (address of next instruction), IR (current instruction), MAR, MDR, accumulator.
+- Instruction cycle: fetch, decode, execute (and store).
+- Addressing modes: immediate, direct, indirect, register, register indirect, indexed, relative.
+> Describe the instruction cycle
+> Distinguish addressing modes with examples
+### Memory organisation
+= Memory hierarchy, RAM and ROM, cache and virtual memory.
+- Hierarchy (fastest to slowest): registers, cache, main memory, secondary storage.
+- RAM is volatile (SRAM for cache, DRAM for main memory); ROM, PROM, EPROM and EEPROM are non-volatile.
+- Cache works by locality of reference; hit ratio = hits ÷ (hits + misses).
+- Cache mapping: direct, associative and set-associative.
+> Explain the memory hierarchy
+> Compute a cache hit ratio
+
+# bca-2-data-structures | 2 | Data Structures
+## Introduction and Complexity
+### Data structures and algorithm analysis
+= Classification of data structures, abstract data types and Big-O notation.
+- Linear structures: arrays, stacks, queues, linked lists; non-linear: trees and graphs.
+- An abstract data type specifies data and operations, not implementation.
+- Big-O gives an upper bound on growth: O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ).
+- Time–space trade-off: faster algorithms often need more memory.
+> Classify data structures
+> Find the time complexity of simple loops
+hook: Finding a name in a phone book of a million names: page by page, or by opening in the middle?
+ex: for (i = 0; i < n; i++) for (j = 0; j < n; j++) count++; runs n × n times: O(n²).
+ex: while (n > 1) n = n / 2; runs about log₂ n times: O(log n).
+q: What is the complexity of a single loop over n elements? || O(n).
+terms: ADT; time complexity; Big-O
+## Arrays, Searching and Sorting
+### Searching
+= Linear and binary search.
+- Linear search checks each element: O(n); works on unsorted data.
+- Binary search needs sorted data; it compares with the middle element and halves the range: O(log n).
+- mid = low + (high − low) / 2 avoids overflow.
+> Implement linear and binary search
+> Compare their complexities
+q: How many comparisons at most does binary search need for 1,024 elements? || log₂ 1024 = 10, plus one: about 11.
+### Sorting
+= Bubble, selection, insertion, merge and quick sort.
+- Bubble, selection and insertion sort are O(n²); insertion sort is O(n) on nearly sorted data.
+- Merge sort divides, sorts and merges: O(n log n) always, but needs O(n) extra space.
+- Quick sort partitions around a pivot: O(n log n) on average, O(n²) in the worst case.
+- A sort is stable if equal keys keep their relative order (merge and insertion are stable; quick and selection are not).
+> Trace each sorting algorithm on an example
+> Choose a sort for a given situation
+ex: Bubble sort 5 1 4 2, pass 1: 1 5 4 2 → 1 4 5 2 → 1 4 2 5 (largest at the end).
+ex: Pass 2: 1 4 2 5 → 1 2 4 5. Pass 3 makes no swaps, so it stops.
+## Stacks and Queues
+### Stacks
+= LIFO stacks, push and pop, and expression conversion and evaluation.
+- A stack is last in, first out: push adds to the top, pop removes from the top.
+- Overflow: push on a full stack; underflow: pop on an empty stack.
+- Uses: function calls and recursion, undo, infix to postfix conversion, postfix evaluation, bracket matching.
+- Postfix evaluation: push operands; on an operator pop two, apply, push the result.
+> Implement a stack with an array and a linked list
+> Convert infix to postfix and evaluate postfix
+q: Evaluate the postfix 2 3 4 * +. || 3 × 4 = 12, then 2 + 12 = 14.
+### Queues
+= Linear, circular and priority queues, and deques.
+- A queue is first in, first out: insert at the rear, delete at the front.
+- A circular queue reuses freed space: rear = (rear + 1) % size.
+- A priority queue serves the highest priority first; a deque allows insertion and deletion at both ends.
+> Implement linear and circular queues
+> Explain priority queues and deques
+## Linked Lists
+### Singly, doubly and circular linked lists
+= Nodes and pointers; insertion, deletion and traversal.
+- A node holds data and a pointer to the next node; the list is reached through a head pointer.
+- Insertion and deletion are O(1) once the position is known; access by index is O(n).
+- A doubly linked list has next and previous pointers; a circular list's last node points back to the first.
+- Linked lists grow dynamically, unlike fixed-size arrays.
+> Insert and delete nodes at any position
+> Compare arrays and linked lists
+## Trees and Graphs
+### Binary trees and binary search trees
+= Tree terminology, traversals and BST operations.
+- A binary tree node has at most two children; a tree of height h has at most 2^(h+1) − 1 nodes (root at height 0).
+- Traversals: inorder (L, root, R), preorder (root, L, R), postorder (L, R, root).
+- In a BST, left subtree keys < node < right subtree keys; inorder traversal gives sorted order.
+- BST search, insert and delete are O(h): O(log n) when balanced, O(n) when skewed.
+> Traverse a binary tree in all three orders
+> Insert into and delete from a BST
+### Graph representation and traversal
+= Adjacency matrix and list, BFS and DFS.
+- Adjacency matrix uses O(V²) space; adjacency list uses O(V + E).
+- BFS visits level by level using a queue; DFS goes deep first using a stack or recursion.
+- BFS finds shortest paths (by number of edges) in unweighted graphs.
+> Represent a graph both ways
+> Trace BFS and DFS
+
+# bca-2-oop-java | 2 | Object Oriented Programming using Java
+## Object-Oriented Concepts and Java Basics
+### OOP principles
+= Objects, classes, encapsulation, inheritance, polymorphism and abstraction.
+- A class is a blueprint; an object is an instance with state (fields) and behaviour (methods).
+- Encapsulation hides data behind methods; abstraction shows only essential features.
+- Inheritance lets a class reuse another's members; polymorphism lets one interface have many forms.
+> Explain the four pillars of OOP with examples
+> Contrast procedural and object-oriented programming
+### Java platform and language basics
+= JDK, JRE, JVM, bytecode, data types and control statements.
+- javac compiles source to platform-independent bytecode (.class); the JVM interprets or JIT-compiles it ("write once, run anywhere").
+- JDK = JRE + development tools; JRE = JVM + class libraries.
+- Primitive types: byte, short, int, long, float, double, char (16-bit Unicode), boolean.
+- Arrays are objects with a length field; Java checks array bounds at run time.
+> Compile and run a Java program
+> Use Java's data types, operators and control statements
+## Classes and Objects
+### Classes, constructors and methods
+= Defining classes, constructors, overloading, this and static.
+- A constructor has the class's name and no return type; if none is written Java supplies a default one.
+- Method overloading: same name, different parameter lists (compile-time polymorphism).
+- this refers to the current object; static members belong to the class, not to objects.
+- Access modifiers: private, default (package), protected, public.
+> Write classes with constructors and overloaded methods
+> Use static members correctly
+hook: Every student has a name and marks, but each student's values differ. How does one class describe them all?
+ex: class Student { String name; int marks; Student(String n, int m) { name = n; marks = m; } boolean passed() { return marks >= 40; } }
+ex: Student s = new Student("Asha", 72); s.passed() returns true.
+q: What is printed by: int[] a = {1, 2, 3}; System.out.println(a.length); || 3
+q: Can a constructor return a value? || No; it has no return type.
+terms: class; object; constructor; overloading
+## Inheritance, Interfaces and Packages
+### Inheritance and polymorphism
+= extends, super, method overriding, abstract classes and final.
+- Java supports single, multilevel and hierarchical inheritance of classes; multiple inheritance only through interfaces.
+- super calls the parent's constructor or methods.
+- Overriding: a subclass method with the same signature; the call is resolved at run time (dynamic method dispatch).
+- An abstract class cannot be instantiated; final prevents overriding (methods) or inheritance (classes).
+> Use inheritance and overriding
+> Explain dynamic method dispatch
+### Interfaces and packages
+= Defining and implementing interfaces; creating and importing packages.
+- An interface declares methods a class must implement; a class can implement many interfaces.
+- Interface fields are public static final; methods are abstract unless default or static.
+- Packages group classes and control access; import brings them into scope.
+> Implement interfaces
+> Organise classes in packages
+## Exceptions, Threads and I/O
+### Exception handling
+= try, catch, finally, throw and throws; checked and unchecked exceptions.
+- Checked exceptions (e.g. IOException) must be caught or declared with throws; unchecked ones extend RuntimeException.
+- finally runs whether or not an exception occurs.
+- Custom exceptions extend Exception.
+> Handle exceptions with try-catch-finally
+> Define and throw custom exceptions
+### Multithreading
+= Creating threads, thread life cycle and synchronisation.
+- Create a thread by extending Thread or implementing Runnable; start() runs run() on a new thread.
+- Life cycle: new, runnable, running, blocked/waiting, terminated.
+- synchronized methods or blocks let only one thread at a time hold an object's lock.
+> Create and run threads
+> Prevent race conditions with synchronisation
+### Event handling and GUI basics
+= AWT/Swing components and the delegation event model.
+- In the delegation event model a source generates events and registered listeners handle them.
+- Swing components (JFrame, JButton, JTextField) are lightweight; layout managers (FlowLayout, BorderLayout, GridLayout) arrange them.
+- ActionListener's actionPerformed handles button clicks.
+> Build a simple Swing form
+> Handle button events
+! Confirm whether the SEP Java course still covers AWT/Swing or applets.
+
+# bca-3-dbms | 3 | Database Management Systems | year=2025-26
+## Introduction to Databases
+### Database systems and architecture
+= Files versus DBMS, the three-schema architecture, data independence and DBMS users.
+- A DBMS reduces redundancy and inconsistency, enforces integrity and security, and supports concurrent access.
+- Three-schema architecture: internal (physical), conceptual (logical) and external (view) levels.
+- Logical data independence: change the conceptual schema without changing views; physical: change storage without changing the conceptual schema.
+- Data models: hierarchical, network, relational, object-oriented.
+> Explain the advantages of a DBMS over files
+> Describe the three-schema architecture
+hook: A college keeps student details in three separate Excel files. A student changes phone number. What can go wrong?
+q: What is physical data independence? || Changing how data is stored without changing the conceptual schema or programs.
+terms: DBMS; schema; instance; data independence
+## Entity-Relationship Model
+### ER diagrams
+= Entities, attributes, relationships, cardinality and participation.
+- Entity sets are rectangles, attributes ovals, relationship sets diamonds; key attributes are underlined.
+- Attribute kinds: simple/composite, single/multivalued (double oval), derived (dashed oval).
+- Cardinality ratios: 1:1, 1:N, M:N; total participation is a double line.
+- A weak entity (double rectangle) has no key of its own and depends on an owner entity.
+> Draw an ER diagram from a description
+> Convert an ER diagram to tables
+## Relational Model
+### Keys and integrity constraints
+= Relations, tuples, attributes, and the kinds of keys.
+- A relation is a table; a tuple is a row; an attribute is a column; the domain is the set of allowed values.
+- Super key: any set of attributes that identifies a tuple; candidate key: a minimal super key; primary key: the chosen candidate key.
+- A foreign key refers to the primary key of another relation (referential integrity).
+- Entity integrity: a primary key cannot be NULL.
+> Identify candidate, primary and foreign keys
+> Explain entity and referential integrity
+### Relational algebra
+= Select, project, union, difference, Cartesian product and join.
+- σ (select) picks rows; π (project) picks columns.
+- Union, intersection and difference need union-compatible relations.
+- A natural join combines rows with equal values in common attributes.
+> Write relational algebra queries
+> Translate simple English queries into algebra and SQL
+q: Write the algebra for the names of students with marks over 80. || π name (σ marks > 80 (Student)).
+## Normalisation
+### Functional dependencies and normal forms
+= Anomalies, functional dependencies, and 1NF, 2NF, 3NF and BCNF.
+- Redundancy causes insertion, deletion and update anomalies.
+- X → Y means each X value determines exactly one Y value.
+- 1NF: atomic values. 2NF: 1NF and no partial dependency on a composite key. 3NF: 2NF and no transitive dependency of non-key attributes. BCNF: every determinant is a candidate key.
+- Decomposition should be lossless and preserve dependencies.
+> Find functional dependencies in a table
+> Normalise a relation to 3NF
+hook: Why does one student's address appear 6 times in the marks table?
+ex: Marks(RollNo, Subject, Name, Grade): key (RollNo, Subject); RollNo → Name is a partial dependency.
+ex: 2NF: Student(RollNo, Name) and Marks(RollNo, Subject, Grade).
+q: Which normal form removes transitive dependencies? || Third normal form (3NF).
+terms: functional dependency; partial dependency; transitive dependency; normal form
+## SQL
+### DDL, DML and constraints
+= Creating tables and changing data with SQL.
+- DDL: CREATE, ALTER, DROP, TRUNCATE; DML: INSERT, UPDATE, DELETE; DCL: GRANT, REVOKE; TCL: COMMIT, ROLLBACK, SAVEPOINT.
+- Constraints: PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL, CHECK, DEFAULT.
+- DELETE removes chosen rows and can be rolled back; TRUNCATE removes all rows quickly; DROP removes the table.
+> Create tables with constraints
+> Insert, update and delete rows
+### Queries, joins and aggregates
+= SELECT with WHERE, ORDER BY, GROUP BY, HAVING, joins and subqueries.
+- Clause order: SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY.
+- WHERE filters rows before grouping; HAVING filters groups after aggregation.
+- Aggregates: COUNT, SUM, AVG, MIN, MAX.
+- Joins: INNER, LEFT/RIGHT/FULL OUTER; a subquery is a query inside another.
+> Write queries with joins and aggregates
+> Use subqueries
+ex: SELECT dept, AVG(salary) FROM emp GROUP BY dept HAVING AVG(salary) > 50000 ORDER BY dept;
+q: What is the difference between WHERE and HAVING? || WHERE filters rows before grouping; HAVING filters groups after aggregation.
+## Transactions and Concurrency
+### Transactions and concurrency control
+= ACID properties, schedules, serialisability, locking and recovery.
+- ACID: atomicity, consistency, isolation, durability.
+- A schedule is serialisable if it is equivalent to some serial schedule.
+- Two-phase locking (growing then shrinking phase) guarantees conflict serialisability.
+- Problems without control: lost update, dirty read, unrepeatable read. Recovery uses logs (undo/redo) and checkpoints.
+> Explain the ACID properties
+> Explain two-phase locking
+
+# bca-3-csharp-dotnet | 3 | C# and .NET Framework | year=2025-26
+! In the BU NEP scheme this was Sem 3; confirm it is still a core course in the BU SEP scheme.
+## The .NET Framework
+### .NET architecture
+= CLR, CTS, CLS, MSIL, JIT compilation and assemblies.
+- Source code compiles to MSIL (CIL); the CLR's JIT compiler turns it into native code at run time.
+- The CTS defines the types all .NET languages share; the CLS is the subset every language must support.
+- The CLR provides memory management (garbage collection), type safety and exception handling.
+- An assembly (.exe or .dll) contains IL code, metadata and a manifest.
+> Describe the .NET execution model
+> Explain the roles of the CLR, CTS and CLS
+## C# Fundamentals
+### C# language basics
+= Types, boxing, control statements, arrays and strings.
+- Value types (int, double, struct, enum) live on the stack; reference types (class, string, array) on the heap.
+- Boxing converts a value type to object; unboxing converts it back with a cast.
+- foreach iterates over arrays and collections; strings are immutable.
+> Write C# programs with control structures and arrays
+> Explain boxing and unboxing
+## Object-Oriented C#
+### Classes, inheritance and interfaces in C#
+= Properties, constructors, inheritance, virtual/override, interfaces, delegates and events.
+- Properties wrap fields with get and set accessors.
+- A method must be virtual in the base class to be overridden with override.
+- A delegate is a type-safe reference to a method; events are built on delegates.
+> Use properties, inheritance and interfaces
+> Use delegates and events
+## Windows and Web Applications
+### Windows Forms and ADO.NET
+= Building forms with controls, and connecting to a database with ADO.NET.
+- Windows Forms apps use controls (Button, TextBox, Label, DataGridView) with event handlers.
+- ADO.NET objects: Connection, Command, DataReader (connected, forward-only) and DataAdapter with DataSet (disconnected).
+- ASP.NET builds web pages with server controls and code-behind files.
+> Build a simple Windows Forms application
+> Read and update a database with ADO.NET
+
+# bca-3-computer-networks | 3 | Computer Networks | year=2025-26
+## Introduction
+### Network models
+= Network types, topologies and the OSI and TCP/IP models.
+- Network types: PAN, LAN, MAN, WAN; topologies: bus, star, ring, mesh, tree.
+- OSI layers (bottom up): physical, data link, network, transport, session, presentation, application.
+- TCP/IP layers: network access, internet, transport, application.
+- Each layer adds a header (encapsulation); units: bits, frames, packets, segments.
+> Name the OSI layers and their functions
+> Compare the OSI and TCP/IP models
+## Physical Layer
+### Transmission media and signals
+= Guided and unguided media, bandwidth, and multiplexing.
+- Guided media: twisted pair, coaxial cable, optical fibre; unguided: radio, microwave, infrared.
+- Optical fibre uses total internal reflection; it has high bandwidth and is immune to electromagnetic interference.
+- Multiplexing shares a link: FDM (frequency), TDM (time), WDM (wavelength, for fibre).
+- Switching: circuit, message and packet switching.
+> Compare transmission media
+> Explain multiplexing
+## Data Link Layer
+### Error detection and flow control
+= Framing, parity, CRC, and stop-and-wait and sliding-window protocols.
+- Single parity detects odd numbers of bit errors; CRC divides by a generator polynomial and appends the remainder.
+- Hamming code can correct single-bit errors.
+- Stop-and-wait sends one frame per acknowledgement; sliding window (Go-Back-N, Selective Repeat) sends several.
+- MAC protocols: ALOHA, CSMA/CD (Ethernet), CSMA/CA (Wi-Fi).
+> Compute a CRC
+> Explain sliding-window protocols
+## Network Layer
+### IP addressing and routing
+= IPv4 addresses, classes, subnetting and routing algorithms.
+- An IPv4 address is 32 bits, written as four decimal octets; IPv6 is 128 bits.
+- Classful ranges: A 1–126, B 128–191, C 192–223 (first octet); CIDR notation /n gives the network prefix length.
+- A /24 network has 2⁸ − 2 = 254 usable host addresses.
+- Routing: distance vector (Bellman-Ford, RIP) and link state (Dijkstra, OSPF).
+> Find network and broadcast addresses from an IP and mask
+> Explain routing algorithms
+q: How many usable hosts does a /26 subnet have? || 2⁶ − 2 = 62.
+## Transport and Application Layers
+### TCP, UDP and application protocols
+= Ports, TCP and UDP, and DNS, HTTP, SMTP and FTP.
+- TCP is connection-oriented and reliable (three-way handshake, acknowledgements); UDP is connectionless and faster.
+- Well-known ports: HTTP 80, HTTPS 443, FTP 21, SMTP 25, DNS 53, SSH 22.
+- DNS maps domain names to IP addresses.
+> Compare TCP and UDP
+> Describe common application protocols

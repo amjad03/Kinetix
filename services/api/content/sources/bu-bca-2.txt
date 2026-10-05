@@ -1,0 +1,382 @@
+// BCA, Bangalore University. Semesters 4-6.
+file: bu-bca
+curriculum: bu-ug | Bangalore University (UG) | ug
+programme: BCA
+scheme: SEP 2024 | 2025-26
+! Semesters 5 and 6 follow the BU NEP 2021 BCA scheme (Design and Analysis of Algorithms, Statistical Computing and R, Software Engineering, AI, PHP and MySQL); the SEP Sem 5-6 syllabus (from 2026-27) should be checked when published.
+
+# bca-4-python | 4 | Python Programming
+## Python Basics
+### Data types, operators and control flow
+= Variables, built-in types, operators, if-elif-else, while and for.
+- Python is interpreted and dynamically typed; indentation marks blocks.
+- Built-in types: int, float, complex, bool, str, list, tuple, set, dict, None.
+- // is floor division, ** is power, % is remainder; 7 // 2 is 3 and 2 ** 3 is 8.
+- range(start, stop, step) stops before stop; for loops may have an else that runs if no break occurs.
+> Write programs with conditions and loops
+> Use Python's operators correctly
+hook: The same 'find the average' program in C needs 15 lines. How short can it be in Python?
+ex: marks = [72, 85, 64]; print(sum(marks) / len(marks)) prints 73.666…
+ex: for i in range(1, 10, 3): print(i) prints 1, 4, 7.
+q: What does 17 // 5 give? And 17 % 5? || 3 and 2.
+q: What does list(range(5, 0, -2)) give? || [5, 3, 1]
+terms: interpreter; dynamic typing; indentation
+## Functions and Modules
+### Functions, arguments and scope
+= def, return, default and keyword arguments, *args, **kwargs, lambda and recursion.
+- Default arguments are evaluated once, when the function is defined (so avoid mutable defaults).
+- *args collects extra positional arguments as a tuple; **kwargs collects keyword arguments as a dict.
+- lambda creates a small anonymous function: lambda x: x * x.
+- LEGB rule for names: local, enclosing, global, built-in.
+> Define functions with different argument kinds
+> Use map, filter and lambda
+### Modules and packages
+= import, standard modules and creating your own modules.
+- A module is a .py file; a package is a folder of modules (with __init__.py).
+- import math; from math import sqrt; import numpy as np.
+- if __name__ == '__main__': runs code only when the file is executed directly.
+> Import and write modules
+> Use the __name__ == '__main__' guard
+## Data Structures in Python
+### Strings, lists and tuples
+= Indexing, slicing, methods, list comprehensions and immutability.
+- Indexing starts at 0; negative indices count from the end; s[a:b] runs from a up to b − 1.
+- Lists are mutable; tuples and strings are immutable.
+- List comprehension: [x * x for x in range(5) if x % 2 == 0] gives [0, 4, 16].
+- Common list methods: append, extend, insert, remove, pop, sort, reverse.
+> Slice strings and lists
+> Write list comprehensions
+q: For s = 'PYTHON', what is s[1:4]? || 'YTH'
+### Sets and dictionaries
+= Set operations, dictionary methods and iteration.
+- A set holds unique, unordered items: | union, & intersection, − difference.
+- A dict maps unique, immutable keys to values; d.get(k, default) avoids KeyError.
+- Iterate with for k, v in d.items().
+> Use sets and dictionaries to solve problems
+> Count word frequencies with a dictionary
+## Files and Exceptions
+### File handling and exception handling
+= Opening, reading and writing files, and try-except-else-finally.
+- Modes: 'r' read, 'w' write (truncates), 'a' append, 'b' binary.
+- with open(name) as f: closes the file automatically.
+- try-except catches errors; else runs if no exception; finally always runs; raise throws an exception.
+> Read and write text and CSV files
+> Handle exceptions
+## Object-Oriented Python and Libraries
+### Classes and objects in Python
+= class, __init__, self, inheritance and special methods.
+- __init__ initialises a new object; self is the instance.
+- Inheritance: class Child(Parent); super().__init__() calls the parent's constructor.
+- Special methods such as __str__ and __len__ customise built-in behaviour.
+> Write classes with inheritance
+> Customise objects with special methods
+### NumPy, pandas and Matplotlib
+= Arrays, data frames and plotting for data analysis.
+- NumPy arrays are homogeneous and support vectorised operations: np.array([1, 2]) * 2 gives [2, 4].
+- pandas: Series (1-D) and DataFrame (2-D); read_csv, head, describe, groupby.
+- Matplotlib's pyplot draws line, bar, scatter and pie charts.
+> Load and summarise a dataset with pandas
+> Plot data with Matplotlib
+@lab lab.graph-plotter
+! Confirm whether GUI (Tkinter) and database connectivity are in the SEP Python syllabus.
+
+# bca-4-operating-systems | 4 | Operating Systems
+## Introduction
+### Operating system concepts
+= Functions and types of operating systems, system calls and OS structure.
+- An OS manages processes, memory, files, devices and security, and provides the user interface.
+- Types: batch, multiprogramming, time-sharing, real-time, distributed, mobile.
+- System calls are the interface between programs and the kernel (e.g. fork, exec, read, write).
+- Kernel designs: monolithic, layered, microkernel.
+> Describe the functions and types of operating systems
+> Explain how a system call works
+## Process Management
+### Processes and threads
+= Process states, the PCB, context switching and threads.
+- Process states: new, ready, running, waiting, terminated.
+- The PCB stores a process's state, program counter, registers, scheduling and memory information.
+- A context switch saves one process's state and loads another's; it is pure overhead.
+- Threads of one process share code, data and files but have their own stack and registers.
+> Draw the process state diagram
+> Compare processes and threads
+### CPU scheduling
+= FCFS, SJF, priority and round robin scheduling; waiting and turnaround time.
+- Turnaround time = Completion time − Arrival time; Waiting time = Turnaround time − Burst time.
+- FCFS can suffer the convoy effect; SJF gives the minimum average waiting time.
+- Round robin gives each process a time quantum in turn; good for time-sharing.
+- Priority scheduling can starve low-priority processes; aging fixes this.
+> Draw Gantt charts and compute average waiting times
+> Compare scheduling algorithms
+hook: Three people at a photocopier: one has 100 pages, two have 1 page each. Who should go first?
+ex: FCFS, all arriving at 0: P1 = 24, P2 = 3, P3 = 3. Waiting: 0, 24, 27; average 17.
+ex: SJF order P2, P3, P1: waiting 0, 3, 6; average 3.
+q: In round robin with quantum 4, how many turns does a 10 ms process need? || Three (4 + 4 + 2).
+terms: burst time; turnaround time; waiting time; Gantt chart
+## Synchronisation and Deadlocks
+### Process synchronisation
+= Race conditions, critical sections, semaphores and classic problems.
+- A critical-section solution needs mutual exclusion, progress and bounded waiting.
+- A semaphore S is an integer with wait (P: S − 1, block if negative) and signal (V: S + 1).
+- Classic problems: producer–consumer, readers–writers, dining philosophers.
+> Use semaphores for mutual exclusion
+> Explain the producer–consumer problem
+### Deadlocks
+= Deadlock conditions, prevention, avoidance (Banker's algorithm), detection and recovery.
+- Four necessary conditions: mutual exclusion, hold and wait, no preemption, circular wait.
+- Prevention breaks one condition; avoidance (Banker's algorithm) grants a request only if the state stays safe.
+- Need = Max − Allocation; a safe sequence exists if every process can finish in some order.
+> Apply the Banker's algorithm
+> State and break the conditions for deadlock
+## Memory and File Management
+### Memory management and virtual memory
+= Contiguous allocation, paging, segmentation and page replacement.
+- Paging divides memory into fixed frames and processes into pages; it removes external fragmentation.
+- Logical address = (page number, offset); the page table maps pages to frames.
+- Page replacement: FIFO, optimal, LRU; FIFO can show Belady's anomaly.
+- Thrashing: the system spends more time paging than executing.
+> Translate logical addresses with a page table
+> Count page faults for FIFO and LRU
+### File systems and disk scheduling
+= File access and allocation methods, directories and disk scheduling.
+- Access methods: sequential, direct, indexed.
+- Allocation: contiguous, linked, indexed.
+- Disk scheduling: FCFS, SSTF, SCAN, C-SCAN; seek time dominates disk access.
+> Compare file allocation methods
+> Compute total head movement for disk scheduling algorithms
+
+# bca-5-algorithms | 5 | Design and Analysis of Algorithms | scheme=NEP 2021; year=2023-24
+## Algorithm Analysis
+### Asymptotic notation and recurrences
+= O, Ω and Θ notation, and solving recurrences.
+- f(n) = O(g(n)) is an upper bound, Ω a lower bound and Θ a tight bound.
+- Master theorem for T(n) = aT(n/b) + f(n): compare f(n) with n^(log_b a).
+- T(n) = 2T(n/2) + n gives Θ(n log n); T(n) = T(n/2) + 1 gives Θ(log n).
+> Express running times in asymptotic notation
+> Solve recurrences with the master theorem
+## Divide and Conquer
+### Divide and conquer
+= Binary search, merge sort, quick sort and Strassen's multiplication.
+- Divide the problem, solve subproblems recursively, combine the results.
+- Merge sort: T(n) = 2T(n/2) + n = Θ(n log n).
+- Strassen's method multiplies matrices in O(n^2.81) using 7 multiplications instead of 8.
+> Analyse divide-and-conquer algorithms
+> Write recurrences for divide-and-conquer algorithms
+## Greedy Method
+### Greedy algorithms
+= Fractional knapsack, minimum spanning trees and Dijkstra's shortest paths.
+- A greedy algorithm makes the locally best choice at each step.
+- Fractional knapsack: take items in decreasing order of value per weight.
+- Prim's and Kruskal's algorithms find minimum spanning trees; Kruskal adds the cheapest edge that forms no cycle.
+- Dijkstra's algorithm finds shortest paths from one source when edge weights are non-negative.
+> Solve fractional knapsack problems
+> Find minimum spanning trees and shortest paths
+## Dynamic Programming
+### Dynamic programming
+= Overlapping subproblems and optimal substructure; 0/1 knapsack, Floyd-Warshall, LCS.
+- DP stores solutions of overlapping subproblems (memoisation or tabulation).
+- 0/1 knapsack: K[i][w] = max(K[i−1][w], vᵢ + K[i−1][w − wᵢ]).
+- Floyd–Warshall finds all-pairs shortest paths in Θ(n³).
+> Formulate DP recurrences
+> Solve 0/1 knapsack by a table
+## Backtracking and Complexity Classes
+### Backtracking, branch and bound, and NP
+= N-queens, subset sum, and the classes P, NP and NP-complete.
+- Backtracking builds solutions step by step and abandons a partial solution that cannot succeed.
+- Branch and bound prunes using bounds on the best possible solution.
+- P: solvable in polynomial time; NP: solutions verifiable in polynomial time; NP-complete problems (e.g. SAT, travelling salesman decision) are the hardest in NP.
+> Solve N-queens by backtracking
+> Explain P, NP and NP-completeness
+
+# bca-5-statistics-r | 5 | Statistical Computing and R Programming | scheme=NEP 2021; year=2023-24
+## R Basics
+### R data types and structures
+= Vectors, matrices, lists, factors and data frames.
+- The basic object is a vector; c(2, 4, 6) creates one; operations are vectorised.
+- Indexing starts at 1; x[-1] drops the first element.
+- matrix(), list(), factor() and data.frame() create the other structures; str() shows structure.
+- Assignment uses <- (or =).
+> Create and manipulate R vectors and data frames
+> Import a CSV file into a data frame
+## Descriptive Statistics
+### Measures of central tendency and dispersion
+= Mean, median, mode, range, variance and standard deviation.
+- Mean x̄ = Σx ÷ n; median is the middle value of sorted data; mode is the most frequent value.
+- Sample variance s² = Σ(x − x̄)² ÷ (n − 1); standard deviation s = √s².
+- Coefficient of variation = (s ÷ x̄) × 100; lower CV means more consistent.
+- R: mean(x), median(x), var(x), sd(x), summary(x), quantile(x).
+> Compute summary statistics by hand and in R
+> Compare the consistency of two data sets
+hook: Two batsmen both average 50. One scores 48–52 every match; the other 0 or 100. Who would you pick?
+ex: x = 2, 4, 4, 4, 5, 5, 7, 9: mean = 40 ÷ 8 = 5.
+ex: Σ(x − 5)² = 9 + 1 + 1 + 1 + 0 + 0 + 4 + 16 = 32; s² = 32 ÷ 7 ≈ 4.57; s ≈ 2.14.
+q: What does sd(c(1, 1, 1)) return in R? || 0
+terms: mean; median; variance; standard deviation
+## Probability Distributions
+### Binomial, Poisson and normal distributions
+= The common distributions and their R functions.
+- Binomial: P(X = r) = nCr pʳ qⁿ⁻ʳ; mean np, variance npq.
+- Poisson: P(X = r) = e^(−λ) λʳ ÷ r!; mean = variance = λ.
+- Normal: bell-shaped, symmetric about μ; about 68%, 95% and 99.7% of values lie within 1, 2 and 3 σ.
+- R functions: dbinom, pbinom, dpois, pnorm, qnorm, rnorm (d density, p cumulative, q quantile, r random).
+> Compute probabilities from these distributions
+> Use R's d, p, q and r functions
+@lab probability
+## Correlation, Regression and Tests
+### Correlation and regression
+= Karl Pearson's correlation and the least-squares regression line.
+- r = Σ(x − x̄)(y − ȳ) ÷ √(Σ(x − x̄)² Σ(y − ȳ)²); −1 ≤ r ≤ 1.
+- Regression line of y on x: y − ȳ = b(x − x̄), with b = r × (sᵧ ÷ sₓ).
+- R: cor(x, y), lm(y ~ x), summary(model).
+> Fit and interpret a regression line in R
+> Compute and interpret Pearson's r
+### Hypothesis testing
+= Null and alternative hypotheses, t-test and chi-square test.
+- Reject H₀ when the p-value is below the significance level α (often 0.05).
+- t.test compares means; chisq.test tests independence in a contingency table.
+- Type I error: rejecting a true H₀; Type II: accepting a false H₀.
+> Run and interpret t and chi-square tests in R
+> State null and alternative hypotheses
+
+# bca-5-software-engineering | 5 | Software Engineering | scheme=NEP 2021; year=2023-24
+## Software Process Models
+### Software life cycle models
+= SDLC phases and the waterfall, prototype, spiral, incremental and agile models.
+- SDLC phases: requirements, design, implementation, testing, deployment, maintenance.
+- Waterfall suits stable requirements; prototyping helps when requirements are unclear.
+- The spiral model is risk-driven; agile delivers working software in short iterations (Scrum sprints).
+> Choose a process model for a project
+> Explain the phases of the SDLC
+## Requirements Engineering
+### Requirements and the SRS
+= Functional and non-functional requirements, elicitation and the SRS document.
+- Functional requirements say what the system does; non-functional ones say how well (performance, security, usability).
+- Elicitation: interviews, questionnaires, observation, use cases.
+- A good SRS is correct, complete, unambiguous, consistent and verifiable.
+> Write functional and non-functional requirements
+> Describe the qualities of a good SRS
+## Software Design
+### Design concepts and modelling
+= Modularity, coupling and cohesion, DFDs and UML diagrams.
+- Aim for low coupling between modules and high cohesion within them.
+- DFDs show data flow: processes, data stores, external entities and flows; level 0 is the context diagram.
+- UML: use case, class, sequence, activity and state diagrams.
+> Draw DFDs and use case diagrams
+> Judge a design by coupling and cohesion
+## Testing and Quality
+### Software testing
+= Levels and techniques of testing.
+- Levels: unit, integration, system, acceptance testing.
+- Black-box testing uses the specification (equivalence partitioning, boundary value analysis); white-box testing uses the code (statement, branch, path coverage).
+- Cyclomatic complexity V(G) = E − N + 2 (edges, nodes) = number of decisions + 1.
+> Design test cases by boundary value analysis
+> Compute cyclomatic complexity
+## Project Management
+### Estimation, risk and maintenance
+= COCOMO, risk management, configuration management and maintenance.
+- Basic COCOMO: Effort = a(KLOC)^b person-months; organic projects a = 2.4, b = 1.05.
+- Risk management: identify, analyse, plan and monitor risks.
+- Maintenance types: corrective, adaptive, perfective, preventive.
+> Estimate effort with basic COCOMO
+> Classify maintenance activities
+
+# bca-5-cloud-computing | 5 | Cloud Computing (elective) | scheme=NEP 2021; year=2023-24
+## Cloud Fundamentals
+### Cloud computing concepts
+= Characteristics, service models and deployment models.
+- NIST characteristics: on-demand self-service, broad network access, resource pooling, rapid elasticity, measured service.
+- Service models: IaaS (e.g. virtual machines), PaaS (platforms), SaaS (applications such as e-mail).
+- Deployment models: public, private, hybrid, community.
+> Classify cloud services by service and deployment model
+> State the NIST characteristics of cloud computing
+## Virtualisation
+### Virtualisation and containers
+= Hypervisors, virtual machines and containers.
+- A type 1 hypervisor runs on bare metal; type 2 runs on a host OS.
+- Containers share the host kernel and are lighter than VMs.
+- Virtualisation enables consolidation, isolation and live migration.
+> Compare VMs and containers
+> Distinguish type 1 and type 2 hypervisors
+## Cloud Services and Security
+### Cloud platforms, storage and security
+= Major providers, storage types and the shared responsibility model.
+- Major platforms: AWS, Microsoft Azure, Google Cloud.
+- Storage: object (e.g. S3), block and file storage.
+- Shared responsibility: the provider secures the cloud; the customer secures what they put in it.
+> Explain the shared responsibility model
+> Choose a storage type for an application
+
+# bca-6-ai-ml | 6 | Artificial Intelligence and Machine Learning | scheme=NEP 2021; year=2023-24
+## Introduction to AI
+### AI, agents and problem solving
+= Definitions of AI, intelligent agents and state-space search.
+- An agent perceives its environment through sensors and acts through actuators.
+- A problem is defined by an initial state, actions, a goal test and path cost.
+- The Turing test judges whether a machine's conversation is indistinguishable from a human's.
+> Formulate a problem as a state-space search
+> Describe agent types and environments
+## Search
+### Uninformed and informed search
+= BFS, DFS, heuristic search and A*.
+- BFS is complete and optimal for unit costs; DFS uses less memory but may not terminate on infinite paths.
+- A* expands the node with the lowest f(n) = g(n) + h(n); it is optimal if h never overestimates (admissible).
+- Hill climbing can get stuck at local maxima.
+> Trace A* on a small graph
+> Compare BFS, DFS and heuristic search
+## Knowledge Representation
+### Logic and knowledge representation
+= Propositional and predicate logic, rules and semantic networks.
+- Knowledge can be represented by logic, production rules, semantic networks and frames.
+- Inference: modus ponens (from p and p → q, infer q); resolution.
+- Forward chaining reasons from facts to goals; backward chaining from goals to facts.
+> Represent knowledge in logic and rules
+> Apply forward and backward chaining
+## Machine Learning
+### Supervised and unsupervised learning
+= Regression, classification, clustering and model evaluation.
+- Supervised learning uses labelled data (regression, classification); unsupervised finds structure in unlabelled data (clustering).
+- Algorithms: linear regression, decision trees, k-nearest neighbours, naive Bayes, k-means.
+- Accuracy = (TP + TN) ÷ total; precision = TP ÷ (TP + FP); recall = TP ÷ (TP + FN).
+- Overfitting: a model fits training data but generalises poorly; use train/test splits and cross-validation.
+> Choose a learning approach for a problem
+> Evaluate a classifier with a confusion matrix
+### Neural networks
+= Perceptrons, activation functions and multilayer networks.
+- A perceptron computes a weighted sum plus bias and applies an activation function.
+- Activations: step, sigmoid, ReLU, softmax.
+- Multilayer networks are trained by backpropagation and gradient descent.
+> Explain how a neural network learns
+> Compute a perceptron's output
+
+# bca-6-php-mysql | 6 | Web Programming with PHP and MySQL | scheme=NEP 2021; year=2023-24
+## Web Basics
+### HTML, CSS and JavaScript essentials
+= Structure, style and behaviour of web pages.
+- HTML gives structure (headings, lists, tables, forms); CSS styles it (selectors, box model); JavaScript adds behaviour.
+- Form method GET sends data in the URL; POST sends it in the request body.
+- The client–server model: the browser requests, the web server responds over HTTP.
+> Build a styled web form
+> Explain GET and POST
+## PHP Fundamentals
+### PHP syntax, variables and control structures
+= Embedding PHP, variables, data types, operators, arrays and functions.
+- PHP runs on the server; code sits inside <?php ... ?>; variables start with $.
+- Arrays: indexed, associative ($a['name']) and multidimensional; foreach iterates them.
+- String functions: strlen, str_replace, substr, strtoupper; . concatenates strings.
+> Write PHP scripts with arrays and functions
+> Use associative arrays
+## Forms, Sessions and Cookies
+### Handling forms and state
+= $_GET, $_POST, validation, sessions and cookies.
+- Superglobals $_GET, $_POST and $_REQUEST hold form data.
+- Validate and sanitise input (htmlspecialchars, filter_var) to prevent XSS.
+- session_start() begins a session ($_SESSION); setcookie() stores data in the browser.
+> Process and validate a form
+> Use sessions for a login
+## PHP with MySQL
+### Database access with PHP
+= Connecting with mysqli or PDO, CRUD operations and prepared statements.
+- Connect with mysqli_connect or new PDO(dsn, user, password).
+- Prepared statements with bound parameters prevent SQL injection.
+- CRUD: INSERT, SELECT, UPDATE, DELETE from PHP pages.
+> Build a CRUD application with PHP and MySQL
+> Prevent SQL injection with prepared statements

@@ -1,0 +1,544 @@
+// BCom (Regular), Bangalore University. Semesters 1-3.
+file: bu-bcom
+curriculum: bu-ug | Bangalore University (UG) | ug
+programme: BCom
+scheme: SEP 2024 | 2024-25
+! Paper numbers (COM-1.1, 2.1, 2.3, 2.4, 3.1-3.4) are from secondary listings of the BU SEP BCom curriculum; check the titles and numbers of every paper against the approved BU SEP course curriculum (Sem I-IV).
+! Languages, AECC, the Constitution, skill and certification courses, and open electives are not included.
+
+# bcom-1-financial-accounting | 1 | Financial Accounting | ucode=COM-1.1
+## Theoretical Framework of Accounting
+### Accounting concepts, conventions and standards
+= The basic assumptions and principles of accounting and the role of accounting standards.
+- Accounting identifies, measures, records, classifies, summarises and communicates financial information.
+- Concepts: business entity, money measurement, going concern, accrual, dual aspect (Assets = Liabilities + Capital), consistency, matching, cost.
+- Conventions: conservatism (prudence), materiality, full disclosure, consistency.
+- In India, Ind AS (converged with IFRS) apply to listed and large companies; other entities follow the AS issued by the ICAI.
+> Explain the main accounting concepts and conventions
+> State why accounting standards are needed
+hook: A shop owner lends ₹10,000 of his own money to his shop. Is that the shop's money or his?
+q: Which concept says a business is separate from its owner? || The business entity concept.
+q: Which convention says "anticipate no profit, provide for all losses"? || Conservatism (prudence).
+terms: going concern; accrual; matching; Ind AS
+## Single Entry System
+### Conversion of single entry into double entry
+= Finding profit by the statement of affairs method and converting incomplete records.
+- Single entry is an incomplete system: usually only cash and personal accounts are kept.
+- Statement of affairs = Assets − Liabilities = Capital at a date.
+- Profit = Closing capital + Drawings − Additional capital − Opening capital.
+- Missing figures (credit sales, credit purchases) are found from total debtors, total creditors and cash accounts.
+> Find profit by the statement of affairs method
+> Prepare final accounts from incomplete records
+ex: Opening capital ₹1,00,000, closing capital ₹1,40,000, drawings ₹20,000, additional capital ₹15,000.
+ex: Profit = 1,40,000 + 20,000 − 15,000 − 1,00,000 = ₹45,000.
+q: Why is drawings added back to closing capital? || Drawings reduced capital but are not a loss, so they are added back to find the profit earned.
+## Consignment Accounts
+### Consignment and valuation of stock
+= Accounting by consignor and consignee, commission and the valuation of unsold stock.
+- In a consignment the consignor sends goods to an agent (consignee) who sells them on commission; ownership stays with the consignor.
+- Pro forma invoice shows the goods' details; account sales is the consignee's statement of sales, expenses and commission.
+- Del credere commission is extra commission for bearing the risk of bad debts.
+- Unsold stock is valued at cost plus a proportion of non-recurring expenses (freight, insurance, carriage to the consignee's place); selling expenses are not added.
+- Normal loss is absorbed in the cost of the remaining goods; abnormal loss is credited to the consignment account and charged to profit and loss.
+> Prepare the consignment account and consignee's account
+> Value closing stock with normal and abnormal losses
+## Hire Purchase System
+### Hire purchase accounting
+= Hire purchase and instalment purchase, interest calculation and journal entries.
+- Under hire purchase the hirer gets possession at once but ownership passes only on payment of the last instalment.
+- Under an instalment sale, ownership passes at once.
+- Cash price = Total instalments − Total interest; interest is charged on the outstanding cash price.
+- The hirer records the asset at full cash price and charges depreciation on it.
+> Calculate interest when the rate is given
+> Pass journal entries in the books of the hirer and vendor
+ex: Cash price ₹30,000; down payment ₹6,000; balance in 3 annual instalments at 10% interest.
+ex: Year 1 interest = 10% × 24,000 = ₹2,400.
+## Accounting for Sale on Approval or Return and Royalty
+### Sale or return
+= Recording goods sent on sale or return basis.
+- Goods sent on approval are not a sale until the customer accepts them or the return period ends.
+- When few such transactions occur, entries are reversed at year end for goods not yet approved.
+- Unapproved goods are included in closing stock at cost (or net realisable value if lower).
+> Record goods sent on sale or return
+> Adjust closing stock for unapproved goods
+### Royalty accounts
+= Royalty, minimum rent, short workings and their recoupment.
+- Royalty is payment to the owner of a right (mine, patent, copyright) based on output or sales.
+- Minimum rent (dead rent) is payable even if the royalty is lower.
+- Short working = Minimum rent − Actual royalty; it can be recouped from later excess royalty within the agreed period.
+- Short workings not recouped within the period are written off to profit and loss.
+> Prepare the royalty analytical table
+> Pass entries in the lessee's books
+
+# bcom-1-corporate-law | 1 | Corporate Law | ucode=COM-1.2
+! Secondary listings disagree on the second Sem 1 paper (Corporate Law, Corporate Administration, Principles of Management); confirm.
+## Introduction to Companies
+### Company: meaning, features and kinds
+= Definition under the Companies Act, 2013, features and kinds of companies.
+- Section 2(20) defines a company as one incorporated under this Act or any previous company law.
+- Features: separate legal entity, perpetual succession, limited liability, common seal (optional since 2015), transferable shares.
+- A private company needs at least 2 members (maximum 200) and 2 directors; a public company at least 7 members and 3 directors.
+- A one person company (section 2(62)) has one member; small companies and producer companies are other kinds.
+> State the features of a company
+> Distinguish private, public and one person companies
+## Formation of a Company
+### Incorporation, MOA and AOA
+= Promotion, incorporation, the memorandum and articles of association.
+- A promoter conceives the idea and takes steps to form the company; pre-incorporation contracts do not bind the company unless adopted.
+- The memorandum (MOA) has clauses: name, registered office, objects, liability, capital and subscription.
+- The articles (AOA) are the internal rules; they are subordinate to the MOA and the Act.
+- Doctrine of indoor management protects outsiders dealing in good faith; constructive notice assumes they know the public documents.
+- Acts beyond the objects clause are ultra vires and void (Ashbury Railway Carriage v Riche).
+> Describe the stages of company formation
+> Distinguish MOA and AOA
+### Prospectus
+= Meaning, contents and liability for misstatement.
+- A prospectus (section 2(70)) invites the public to subscribe for securities.
+- A shelf prospectus is valid for one year; a red herring prospectus omits the price or quantity.
+- A statement in lieu of prospectus is filed by a company that does not invite the public.
+- Misstatement attracts civil liability (section 35) and criminal liability (section 34).
+> Explain kinds of prospectus
+> State the liability for misstatement
+## Company Management
+### Directors
+= Appointment, qualifications, duties and kinds of directors.
+- A public company needs at least 3 directors, a private company 2 and an OPC 1; the maximum is 15 unless a special resolution allows more.
+- Every director needs a DIN; at least one director must have stayed in India 182 days in the previous calendar year.
+- Listed public companies must have at least one-third independent directors (section 149).
+- Certain classes of companies must have at least one woman director.
+> State the rules on number and appointment of directors
+> Explain the duties of directors
+## Company Meetings and Winding Up
+### Meetings and resolutions
+= Kinds of meetings, quorum, and ordinary and special resolutions.
+- AGM (section 96): first within 9 months of the end of the first financial year; then within 6 months of year end, with no more than 15 months between two AGMs.
+- Quorum of a public company (section 103): 5 members if up to 1,000 members, 15 if 1,000–5,000, 30 above 5,000; private company: 2.
+- The board meets within 30 days of incorporation and at least four times a year, with no more than 120 days between meetings.
+- Ordinary resolution: votes for exceed votes against; special resolution: votes for are at least three times votes against.
+> State the rules for convening meetings
+> Distinguish ordinary and special resolutions
+### Winding up
+= Modes of winding up and the role of the liquidator.
+- Under the Companies Act, 2013 a company is wound up by the Tribunal (NCLT); voluntary winding up is under the Insolvency and Bankruptcy Code, 2016 (section 59).
+- Grounds for winding up by the Tribunal include a special resolution, acts against sovereignty, fraud and failure to file accounts for five years.
+- The official liquidator or company liquidator realises the assets and pays creditors in the order of priority.
+> Explain the modes of winding up
+> List the grounds for winding up by the Tribunal
+
+# bcom-1-principles-of-management | 1 | Principles of Management
+! May be titled "Management Principles and Applications" or placed in another semester under SEP; confirm.
+## Introduction to Management
+### Nature and evolution of management
+= Meaning, functions and levels of management, and the classical theories.
+- Management is getting things done through others by planning, organising, staffing, directing and controlling.
+- Levels: top (policy), middle (departmental), lower (supervisory).
+- F. W. Taylor's scientific management: time and motion study, differential piece rate, functional foremanship.
+- Henri Fayol gave 14 principles, including division of work, unity of command, scalar chain and esprit de corps.
+> Describe the functions and levels of management
+> Compare Taylor's and Fayol's contributions
+## Planning
+### Planning and decision making
+= Nature, types and steps of planning, MBO and decision making.
+- Planning decides in advance what to do, how, when and by whom; it is the primary function.
+- Types of plans: objectives, strategies, policies, procedures, rules, programmes, budgets.
+- MBO (Peter Drucker): superior and subordinate jointly set objectives and review performance against them.
+- Decision making: identify the problem, develop alternatives, evaluate, choose, implement, follow up.
+> Explain the steps in planning
+> Describe MBO
+## Organising and Staffing
+### Organisation structure
+= Departmentation, span of control, delegation and centralisation.
+- Formal organisation is the deliberate structure; informal organisation arises from social relations.
+- Span of control is the number of subordinates one manager supervises effectively.
+- Delegation transfers authority, not ultimate responsibility; authority should match responsibility.
+- Structures: line, line and staff, functional, divisional, matrix.
+> Draw and compare organisation structures
+> Explain delegation and decentralisation
+## Directing and Controlling
+### Motivation and leadership
+= Maslow's and Herzberg's theories and leadership styles.
+- Maslow's hierarchy: physiological, safety, social, esteem, self-actualisation needs.
+- Herzberg: hygiene factors prevent dissatisfaction; motivators (achievement, recognition) motivate.
+- McGregor's Theory X assumes people dislike work; Theory Y assumes they seek responsibility.
+- Leadership styles: autocratic, democratic (participative), laissez-faire.
+> Apply motivation theories to workplace cases
+> Compare leadership styles
+### Controlling
+= Steps in control and control techniques.
+- Steps: set standards, measure performance, compare, take corrective action.
+- Management by exception: attend only to significant deviations.
+- Techniques: budgetary control, standard costing, ratio analysis, break-even analysis, PERT/CPM.
+> State the steps in controlling
+> Relate planning and controlling
+
+# bcom-2-advanced-financial-accounting | 2 | Advanced Financial Accounting | ucode=COM-2.1
+## Branch Accounts
+### Dependent branches
+= Debtors system and stock and debtors system for branches.
+- A dependent branch keeps no full books; the head office records its transactions.
+- Under the debtors system, a branch account (nominal in nature) shows the branch's profit or loss.
+- When goods are invoiced at a price above cost, the loading is removed: loading = invoice price × mark-up ÷ (100 + mark-up).
+- Under the stock and debtors system separate branch stock, debtors, expenses and adjustment accounts are kept.
+> Prepare a branch account under the debtors system
+> Remove loading from goods sent at invoice price
+hook: A Bengaluru shop opens a branch in Mysuru. How does head office know whether the branch made money?
+ex: Goods sent at cost plus 25%; invoice price ₹1,00,000. Loading = 1,00,000 × 25 ÷ 125 = ₹20,000; cost ₹80,000.
+q: Goods invoiced at ₹60,000 at cost plus 20%. Find the loading. || 60,000 × 20 ÷ 120 = ₹10,000.
+terms: dependent branch; invoice price; loading
+## Departmental Accounts
+### Departmental accounts and allocation of expenses
+= Trading and profit and loss accounts by department and the bases of apportionment.
+- Departmental accounts show each department's results to judge its performance.
+- Common expenses are apportioned on suitable bases: rent by floor area, power by horsepower or units, advertising by sales, wages by hours or employees.
+- Inter-departmental transfers at a profit leave unrealised profit in closing stock, which is removed as a stock reserve.
+> Apportion common expenses on fair bases
+> Prepare departmental trading and profit and loss accounts
+## Insurance Claims
+### Claims for loss of stock
+= Estimating stock lost by fire and computing the claim with the average clause.
+- Stock on the date of fire is estimated with a memorandum trading account using the normal gross profit ratio.
+- Stock lost = Estimated stock − Salvage.
+- Average clause: Claim = Loss of stock × (Policy value ÷ Value of stock on the date of fire), when the stock is under-insured.
+- Abnormal items (slow-moving stock) are dealt with separately at their own gross profit rate.
+> Estimate stock destroyed by fire
+> Compute an insurance claim under the average clause
+ex: Stock on the date of fire ₹2,00,000; salvage ₹20,000; policy ₹1,50,000.
+ex: Loss = 1,80,000. Claim = 1,80,000 × 1,50,000 ÷ 2,00,000 = ₹1,35,000.
+## Dissolution of Partnership Firms
+### Dissolution and the Garner v Murray rule
+= Realisation account, insolvency of a partner and the Garner v Murray decision.
+- On dissolution, assets and outside liabilities go to the realisation account; profit or loss on realisation is shared in the profit-sharing ratio.
+- Order of settlement (section 48, Partnership Act, 1932): outside creditors, partners' loans, partners' capital, then any surplus in the profit-sharing ratio.
+- Garner v Murray: the solvent partners bear an insolvent partner's capital deficiency in the ratio of their capitals before dissolution, after making good their share of the realisation loss in cash.
+> Close the books of a dissolved firm
+> Apply the Garner v Murray rule
+### Piecemeal distribution
+= Paying partners as assets are realised, by the proportionate capital and maximum loss methods.
+- Cash is applied first to realisation expenses and outside liabilities, then to partners.
+- Proportionate capital (surplus capital) method: pay first the partners whose capitals exceed their share in the profit ratio.
+- Maximum loss method: treat each instalment as if no more cash will come.
+> Prepare a statement of piecemeal distribution
+> Compare the two methods
+
+# bcom-2-human-resource-management | 2 | Human Resource Management | ucode=COM-2.3
+## Introduction to HRM
+### Nature, scope and functions of HRM
+= Meaning, objectives and functions of HRM and the role of the HR manager.
+- HRM is the management of people at work: acquiring, developing, motivating and retaining them.
+- Managerial functions: planning, organising, directing, controlling; operative functions: procurement, development, compensation, integration, maintenance.
+- HRM differs from personnel management by treating people as assets and linking HR to strategy.
+> Explain the scope and functions of HRM
+> Distinguish HRM from personnel management
+## Acquisition of Human Resources
+### HR planning, recruitment and selection
+= Human resource planning, sources of recruitment and the selection process.
+- HR planning forecasts demand for and supply of employees and plans to close the gap.
+- Job analysis yields the job description (duties) and job specification (qualifications).
+- Recruitment sources: internal (promotion, transfer) and external (advertisement, campus, agencies, e-recruitment).
+- Selection steps: screening, tests, interviews, reference checks, medical examination, offer, induction.
+> Describe the selection process
+> Compare internal and external recruitment
+## Training and Development
+### Training methods
+= Need, methods and evaluation of training.
+- Training improves skills for the present job; development prepares people for future roles.
+- On-the-job methods: job rotation, coaching, apprenticeship; off-the-job: lectures, case studies, role play, simulation.
+- Kirkpatrick's four levels of evaluation: reaction, learning, behaviour, results.
+> Choose training methods for a need
+> Evaluate a training programme
+## Performance and Compensation
+### Performance appraisal and compensation
+= Methods of appraisal and components of pay.
+- Traditional appraisal methods: ranking, paired comparison, graphic rating scale, checklist; modern: MBO, BARS, 360-degree feedback.
+- Common errors: halo effect, central tendency, leniency, recency bias.
+- Compensation includes basic pay, allowances (DA, HRA), incentives and fringe benefits.
+> Compare appraisal methods
+> Identify rating errors
+## Employee Relations
+### Industrial relations and employee welfare
+= Grievances, discipline, trade unions and welfare measures.
+- A grievance procedure resolves employee complaints in stages, from the supervisor upwards.
+- Collective bargaining is negotiation between employers and unions on terms of employment.
+- India's four labour codes (wages, industrial relations, social security, occupational safety) consolidate earlier labour laws.
+> Describe the grievance procedure
+> Explain collective bargaining
+
+# bcom-2-quantitative-techniques | 2 | Quantitative Techniques for Business Decisions | ucode=COM-2.4
+## Commercial Arithmetic
+### Ratios, percentages and interest
+= Ratio and proportion, percentages, simple and compound interest.
+- Simple interest SI = PNR ÷ 100.
+- Compound amount A = P(1 + r/100)ⁿ; with compounding k times a year, A = P(1 + r/(100k))^(nk).
+- Effective annual rate = (1 + r/(100k))^k − 1.
+- Percentage change = (New − Old) ÷ Old × 100.
+> Compute simple and compound interest
+> Compare nominal and effective rates
+hook: Is 12% a year compounded monthly the same as 12% compounded yearly?
+ex: ₹10,000 at 12% for 2 years. Yearly: 10,000 × 1.12² = ₹12,544.
+ex: Monthly: 10,000 × 1.01²⁴ ≈ ₹12,697. Monthly compounding earns ₹153 more.
+q: Find SI on ₹5,000 at 8% for 3 years. || 5,000 × 3 × 8 ÷ 100 = ₹1,200.
+q: What is the effective rate of 10% compounded half-yearly? || (1.05)² − 1 = 10.25%.
+terms: principal; compound interest; effective rate
+### Annuities
+= Present and future values of annuities and loan instalments (EMI).
+- Future value of an ordinary annuity: A = P[(1 + i)ⁿ − 1] ÷ i.
+- Present value of an ordinary annuity: V = P[1 − (1 + i)⁻ⁿ] ÷ i.
+- EMI = L × i(1 + i)ⁿ ÷ ((1 + i)ⁿ − 1), where i is the rate per period.
+> Find the present and future value of an annuity
+> Compute an EMI
+## Matrices and Determinants
+### Matrices in business
+= Matrix operations, determinants, inverse and solving equations.
+- Matrices of compatible orders can be added and multiplied; AB ≠ BA in general.
+- A 2 × 2 determinant |a b; c d| = ad − bc.
+- A system AX = B with |A| ≠ 0 has the unique solution X = A⁻¹B; Cramer's rule gives x = Δx ÷ Δ.
+> Solve simultaneous equations by matrices and Cramer's rule
+> Use matrices for cost and revenue problems
+## Measures of Central Tendency
+### Mean, median and mode
+= Averages of ungrouped and grouped data.
+- Arithmetic mean of a frequency distribution: x̄ = Σfx ÷ N; by the step-deviation method x̄ = A + (Σfd′ ÷ N) × c.
+- Median = L + ((N/2 − cf) ÷ f) × c.
+- Mode = L + ((f₁ − f₀) ÷ (2f₁ − f₀ − f₂)) × c.
+- Empirical relation: Mode ≈ 3 Median − 2 Mean.
+> Compute mean, median and mode of grouped data
+> Choose a suitable average
+## Measures of Dispersion
+### Range, quartile deviation and standard deviation
+= Absolute and relative measures of dispersion.
+- Range = L − S; coefficient of range = (L − S) ÷ (L + S).
+- Quartile deviation = (Q₃ − Q₁) ÷ 2.
+- Standard deviation σ = √(Σf(x − x̄)² ÷ N).
+- Coefficient of variation = σ ÷ x̄ × 100; the series with the lower CV is more consistent.
+> Compute standard deviation and CV
+> Compare the consistency of two series
+
+# bcom-3-corporate-accounting | 3 | Corporate Accounting | ucode=COM-3.1; year=2025-26
+! The demo college and tests rely on these four units and one topic per unit; add units (e.g. amalgamation, if in Sem 3) as more topics only after updating test/concept-videos.e2e.spec.ts.
+## Underwriting of Shares
+### Underwriting and underwriting commission
+= What underwriting is, its kinds, marked and unmarked applications, and the commission allowed by law.
+- Underwriting is an agreement under which the underwriter undertakes to take up the shares or debentures not subscribed by the public, in return for a commission.
+- Complete underwriting covers the whole issue; partial underwriting covers part of it; firm underwriting means the underwriter also applies for a fixed number of shares regardless of public subscription.
+- Marked applications carry the stamp of a particular underwriter and are credited to that underwriter; unmarked applications are shared among underwriters in the ratio of their gross liability.
+- Under the Companies Act, 2013 (section 40) and its rules, underwriting commission may not exceed 5% of the issue price of shares or 2.5% of the issue price of debentures, or the rate authorised by the articles, whichever is less.
+> Compute each underwriter's net liability with marked and unmarked applications
+> Calculate underwriting commission and pass the journal entries
+hook: A company issues 1,00,000 shares but the public applies for only 80,000. Who buys the rest?
+ex: Issue 1,00,000 shares underwritten by A 60% and B 40%. Marked: A 40,000, B 20,000; unmarked 20,000.
+ex: Gross: A 60,000, B 40,000. Unmarked in 3:2: A 12,000, B 8,000. Net: A 60,000 − 40,000 − 12,000 = 8,000; B 40,000 − 20,000 − 8,000 = 12,000.
+q: What is the maximum underwriting commission on shares? || 5% of the issue price, or the rate in the articles if lower.
+terms: underwriter; marked application; gross liability; net liability
+## Valuation of Goodwill
+### Methods of valuing goodwill
+= Average profit, super profit, capitalisation and annuity methods.
+- Goodwill is the value of a firm's reputation and its ability to earn more than normal profits; it is an intangible asset.
+- Average profit method: Goodwill = Average maintainable profit × Number of years' purchase.
+- Super profit method: Normal profit = Capital employed × Normal rate of return ÷ 100; Super profit = Average maintainable profit − Normal profit; Goodwill = Super profit × Number of years' purchase.
+- Capitalisation of average profit: Capitalised value = Average profit × 100 ÷ Normal rate of return; Goodwill = Capitalised value − Net assets (capital employed).
+- Capitalisation of super profit: Goodwill = Super profit × 100 ÷ Normal rate of return.
+- Annuity method: Goodwill = Super profit × present value of an annuity of ₹1 for the given years at the given rate.
+> Value goodwill by the average profit, super profit and capitalisation methods
+> Adjust past profits to find maintainable profit
+hook: Two shops have identical stock and furniture, yet one sells for ₹5 lakh more. What is the buyer paying for?
+ex: Capital employed ₹5,00,000; normal return 10%; average profit ₹70,000; 3 years' purchase.
+ex: Normal profit = ₹50,000; super profit = ₹20,000; goodwill = 20,000 × 3 = ₹60,000.
+ex: Capitalising super profit: 20,000 × 100 ÷ 10 = ₹2,00,000.
+q: Average profit ₹40,000, 4 years' purchase. Goodwill by the average profit method? || ₹1,60,000.
+q: Why are abnormal gains removed from past profits? || Goodwill depends on maintainable (future) profit, and abnormal gains will not recur.
+hw: Value goodwill by all four methods for the data in the class example with an annuity factor of 2.4869 (3 years at 10%).
+terms: goodwill; super profit; years' purchase; capitalisation
+## Valuation of Shares
+### Net assets, yield and fair value methods
+= Intrinsic (net assets) value, yield value and fair value of equity shares.
+- Net assets (intrinsic value) method: Value per equity share = Net assets available to equity shareholders ÷ Number of equity shares.
+- Net assets available to equity shareholders = Total assets at realisable value (including goodwill) − Outside liabilities − Preference share capital (and any preference dividend in arrears where applicable).
+- Yield method: Value per share = (Expected rate of return ÷ Normal rate of return) × Paid-up value per share.
+- Fair value = (Intrinsic value + Yield value) ÷ 2.
+> Value equity shares by the net assets and yield methods
+> Find the fair value of a share
+q: Expected return 15%, normal return 10%, paid-up value ₹100. Yield value? || 15 ÷ 10 × 100 = ₹150.
+## Company Final Accounts
+### Schedule III formats
+= Preparing the statement of profit and loss and the balance sheet in the Schedule III format.
+- Company financial statements follow Schedule III of the Companies Act, 2013.
+- The balance sheet has two parts: Equity and Liabilities (shareholders' funds, non-current liabilities, current liabilities) and Assets (non-current assets, current assets).
+- Details are given in notes to accounts, which are referred to by number on the face of the statements.
+- Managerial remuneration of a public company may not exceed 11% of net profit (section 197) without approval in general meeting.
+> Prepare a company's statement of profit and loss and balance sheet with notes
+> Classify items as current and non-current
+
+# bcom-3-financial-management | 3 | Financial Management | ucode=COM-3.2; year=2025-26
+## Introduction to Financial Management
+### Objectives and functions of finance
+= Finance functions, profit versus wealth maximisation and the finance manager's role.
+- Three finance decisions: investment, financing and dividend (plus liquidity).
+- Wealth maximisation (maximising the market value of shares) is preferred to profit maximisation because it considers time value and risk.
+- Agency problem: managers may pursue their own goals rather than shareholders'.
+> Explain the three finance decisions
+> Compare profit and wealth maximisation
+### Time value of money
+= Compounding and discounting, and the present value of annuities.
+- Future value FV = PV(1 + r)ⁿ; present value PV = FV ÷ (1 + r)ⁿ.
+- A rupee today is worth more than a rupee tomorrow because it can be invested.
+- PV of an annuity = A × [1 − (1 + r)⁻ⁿ] ÷ r.
+- Rule of 72: money doubles in about 72 ÷ r years.
+> Compute present and future values
+> Value an annuity
+hook: Would you take ₹1,00,000 today or ₹1,10,000 a year from now?
+ex: PV of ₹1,10,000 in one year at 12% = 1,10,000 ÷ 1.12 = ₹98,214, which is less than ₹1,00,000: take the money today.
+q: How long does money take to double at 8%? || About 72 ÷ 8 = 9 years.
+terms: compounding; discounting; present value; annuity
+## Capital Budgeting
+### Capital budgeting techniques
+= Payback, ARR, NPV, IRR and profitability index.
+- Payback period = Initial investment ÷ Annual cash inflow (for even cash flows).
+- ARR = Average annual profit after tax ÷ Average investment × 100.
+- NPV = PV of cash inflows − Initial outlay; accept if NPV > 0.
+- IRR is the rate at which NPV = 0; accept if IRR exceeds the cost of capital.
+- Profitability index = PV of inflows ÷ Initial outlay; accept if PI > 1.
+> Evaluate projects with NPV, IRR, payback and PI
+> Explain why NPV is preferred
+ex: Outlay ₹1,00,000; inflows ₹40,000 a year for 3 years; cost of capital 10%.
+ex: PV = 40,000 × 2.487 = ₹99,480; NPV = −₹520: reject. Payback = 2.5 years.
+q: A project's IRR is 14% and cost of capital 12%. Accept? || Yes: IRR exceeds the cost of capital.
+## Cost of Capital and Capital Structure
+### Cost of capital
+= Cost of debt, preference and equity, and the weighted average cost of capital.
+- After-tax cost of debt Kd = I(1 − t) ÷ Net proceeds.
+- Cost of preference capital Kp = Preference dividend ÷ Net proceeds.
+- Cost of equity (dividend growth model) Ke = D₁ ÷ P₀ + g.
+- WACC = Σ(weight × cost of each source).
+> Compute specific costs and WACC
+> Explain why debt is the cheapest source
+### Leverage and capital structure
+= Operating, financial and combined leverage, and EBIT–EPS analysis.
+- Operating leverage = Contribution ÷ EBIT; financial leverage = EBIT ÷ EBT; combined leverage = Contribution ÷ EBT.
+- EPS = (EBIT − Interest)(1 − t) ÷ Number of equity shares.
+- Trading on equity: using debt raises EPS when the return on investment exceeds the interest rate.
+- Capital structure theories: net income, net operating income, traditional, Modigliani–Miller.
+> Compute leverages
+> Choose a financing plan by EBIT–EPS analysis
+## Dividend and Working Capital Decisions
+### Dividend policy and working capital
+= Dividend theories and working capital management.
+- Walter's model: P = (D + (r/k)(E − D)) ÷ k; if r > k, retaining profits raises the share price.
+- Gordon's model: P = E(1 − b) ÷ (k − br); MM hold that dividend policy is irrelevant in perfect markets.
+- Working capital = Current assets − Current liabilities; operating cycle = raw material + WIP + finished goods + debtors periods − creditors period.
+> Apply Walter's and Gordon's models
+> Estimate working capital requirements
+
+# bcom-3-cost-accounting | 3 | Cost Accounting | ucode=COM-3.3; year=2025-26
+## Introduction to Cost Accounting and the Cost Sheet
+### Cost concepts and the cost sheet
+= Elements of cost, classification and preparing a cost sheet.
+- Elements of cost: materials, labour and expenses, each direct or indirect; indirect ones form overheads.
+- Prime cost = Direct materials + Direct labour + Direct expenses.
+- Works (factory) cost = Prime cost + Factory overheads (adjusted for opening and closing WIP).
+- Cost of production = Works cost + Office and administration overheads; Cost of sales = Cost of production + Opening − Closing finished goods + Selling and distribution overheads.
+- Profit = Sales − Cost of sales.
+> Classify costs by element, behaviour and function
+> Prepare a cost sheet and a quotation
+hook: A bakery sells a cake for ₹500. How does it know whether that price covers flour, wages, rent and delivery?
+ex: Materials ₹40,000, labour ₹25,000, direct expenses ₹5,000: prime cost ₹70,000.
+ex: Factory overheads ₹14,000: works cost ₹84,000. Office overheads ₹6,000: cost of production ₹90,000.
+ex: Selling overheads ₹10,000: cost of sales ₹1,00,000. Sales ₹1,20,000: profit ₹20,000.
+q: What is added to prime cost to get works cost? || Factory (works) overheads, adjusted for work in progress.
+terms: prime cost; works cost; cost of production; cost of sales
+## Materials
+### Stock levels and EOQ
+= Economic order quantity and the reorder, minimum and maximum stock levels.
+- Economic order quantity: EOQ = √(2AO ÷ C), where A is annual consumption in units, O the cost of placing one order and C the carrying cost per unit per year.
+- Reorder level = Maximum consumption × Maximum reorder period.
+- Minimum level = Reorder level − (Normal consumption × Normal reorder period).
+- Maximum level = Reorder level + Reorder quantity − (Minimum consumption × Minimum reorder period).
+- Average stock level = (Minimum level + Maximum level) ÷ 2, or Minimum level + ½ Reorder quantity.
+> Calculate EOQ and stock levels
+> Explain the ABC and VED techniques of inventory control
+ex: A = 8,000 units, O = ₹50, C = ₹2. EOQ = √(2 × 8,000 × 50 ÷ 2) = √4,00,000 = 632 units.
+q: Maximum consumption 500 units a week, maximum reorder period 6 weeks. Reorder level? || 3,000 units.
+### Pricing of material issues
+= FIFO, LIFO, simple and weighted average methods.
+- FIFO issues the earliest prices first; closing stock is at recent prices.
+- Weighted average price = Total cost of stock ÷ Total units, recomputed after each receipt.
+- LIFO is not permitted under AS 2 / Ind AS 2 for financial statements but may be studied for costing.
+> Prepare a stores ledger under FIFO and weighted average
+> Compare the effect of pricing methods on profit
+## Labour
+### Incentive plans
+= Time rate, piece rate and the Halsey and Rowan premium plans.
+- Time saved = Time allowed − Time taken.
+- Halsey plan: Bonus = 50% × Time saved × Rate per hour; Earnings = Time taken × Rate + Bonus.
+- Rowan plan: Bonus = (Time taken ÷ Time allowed) × Time saved × Rate per hour; Earnings = Time taken × Rate + Bonus.
+- Taylor's differential piece rate pays a lower rate below standard output and a higher rate at or above it.
+> Compute earnings under Halsey and Rowan plans
+> Compare incentive plans for worker and employer
+### Labour turnover
+= Measuring and controlling labour turnover.
+- Separation method: Number separated ÷ Average number of workers × 100.
+- Replacement method: Number replaced ÷ Average number of workers × 100.
+- Flux method: (Separations + Replacements) ÷ Average number × 100.
+> Compute labour turnover rates
+> Suggest ways to reduce labour turnover
+## Overheads
+### Allocation, apportionment and absorption
+= Distributing overheads to departments and absorbing them into products.
+- Allocation charges a whole overhead to one cost centre; apportionment shares it on a fair basis (rent by area, power by horsepower-hours).
+- Secondary distribution reallocates service department costs to production departments: direct, step or repeated distribution (or simultaneous equations).
+- Machine hour rate = Machine overheads ÷ Machine hours; labour hour rate = Overheads ÷ Labour hours.
+- Under-absorption or over-absorption is the difference between overheads absorbed and actually incurred.
+> Prepare a primary and secondary distribution summary
+> Compute a machine hour rate
+## Marginal Costing
+### Marginal costing and break-even analysis
+= Contribution, P/V ratio, break-even point and margin of safety.
+- Contribution = Sales − Variable cost.
+- P/V ratio = Contribution ÷ Sales × 100.
+- Break-even point (units) = Fixed cost ÷ Contribution per unit; break-even sales (₹) = Fixed cost ÷ P/V ratio.
+- Margin of safety = Actual sales − Break-even sales; also Profit ÷ P/V ratio.
+> Find the break-even point and margin of safety
+> Find the sales needed for a target profit
+@lab lab.break-even
+hook: A food truck pays ₹30,000 a month in fixed costs. How many plates must it sell before it makes a rupee?
+ex: Price ₹100, variable cost ₹60, fixed cost ₹30,000. Contribution ₹40 a plate; P/V ratio 40%.
+ex: BEP = 30,000 ÷ 40 = 750 plates (₹75,000). For profit ₹10,000: (30,000 + 10,000) ÷ 40 = 1,000 plates.
+q: Sales ₹2,00,000, P/V ratio 25%, fixed cost ₹30,000. Find profit and margin of safety. || Contribution ₹50,000, profit ₹20,000; MOS = 20,000 ÷ 25% = ₹80,000.
+terms: contribution; P/V ratio; break-even point; margin of safety
+! Marginal costing may sit in Management Accounting rather than Cost Accounting under SEP; confirm.
+
+# bcom-3-indian-financial-system | 3 | Indian Financial System | ucode=COM-3.4; year=2025-26
+! Some listings show Indian Financial System in Sem 1; confirm its semester.
+## Overview of the Financial System
+### Structure of the Indian financial system
+= Components and functions of a financial system.
+- Components: financial institutions, financial markets, financial instruments and financial services, under regulators.
+- Functions: mobilising savings, allocating capital, providing payment systems, pricing and sharing risk.
+- Regulators: RBI (banking, money market), SEBI (securities), IRDAI (insurance), PFRDA (pensions).
+> Describe the structure of the Indian financial system
+> Name the regulators and what they regulate
+## Financial Markets
+### Money market and capital market
+= Money market instruments, the primary and secondary capital markets, and stock exchanges.
+- The money market deals in short-term funds (up to one year): call money, treasury bills, commercial paper, certificates of deposit, repos.
+- The capital market deals in long-term funds: the primary market issues new securities (IPO, FPO, rights, private placement); the secondary market trades existing ones.
+- India's main stock exchanges are the BSE (Sensex) and NSE (Nifty 50); trades settle on T+1.
+- Depositories NSDL and CDSL hold securities in demat form.
+> Distinguish money market and capital market instruments
+> Explain how an IPO works
+## Financial Institutions
+### RBI, banks and NBFCs
+= Functions of the Reserve Bank, commercial banks and non-banking financial companies.
+- RBI functions: monetary authority, issuer of currency, banker to government, banker's bank, regulator of banks, manager of foreign exchange.
+- Monetary policy tools: repo rate, reverse repo / standing deposit facility, CRR, SLR, open market operations.
+- NBFCs lend and invest but cannot accept demand deposits or issue cheques drawn on themselves.
+> Explain the RBI's monetary policy tools
+> Distinguish banks and NBFCs
+## Financial Services
+### Mutual funds, leasing and venture capital
+= Fund-based and fee-based financial services.
+- A mutual fund pools investors' money; NAV = (Market value of assets − Liabilities) ÷ Units outstanding.
+- Fund types: open-ended and close-ended; equity, debt, hybrid, index funds and ETFs; SIPs invest a fixed sum regularly.
+- Leasing: a finance lease transfers substantially all risks and rewards; an operating lease does not.
+- Venture capital funds early-stage, high-risk businesses for equity.
+> Compute a mutual fund's NAV
+> Compare fund-based and fee-based services

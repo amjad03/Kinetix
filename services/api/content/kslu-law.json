@@ -1,0 +1,2209 @@
+{
+ "curricula": [
+  {
+   "code": "kslu-law",
+   "name": "Karnataka State Law University",
+   "level": "ug"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-1-contract-1",
+   "title": "Law of Contract I: General Principles, LLB Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Formation of Contract",
+     "topics": [
+      {
+       "title": "Offer, acceptance and communication",
+       "summary": "Proposal, acceptance, communication and revocation under the Indian Contract Act, 1872.",
+       "notes": [
+        "A proposal (section 2(a)) becomes a promise when accepted (2(b)); an agreement enforceable by law is a contract (2(h)).",
+        "An invitation to treat (display of goods, advertisements, auction calls) is not an offer (Pharmaceutical Society v Boots; Harvey v Facey).",
+        "A general offer can be accepted by anyone performing its conditions (Carlill v Carbolic Smoke Ball Co.; Lalman Shukla v Gauri Dutt: knowledge of the offer is needed).",
+        "Communication of acceptance is complete against the proposer when posted, and against the acceptor when it reaches the proposer (section 4)."
+       ],
+       "outcomes": [
+        "Distinguish offers from invitations to treat",
+        "Decide when a contract is concluded by post or electronically"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A shop tags a TV at ₹1,000 by mistake. Can a customer insist on buying it at that price?",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Is a price list an offer?",
+          "a": "No, it is an invitation to treat."
+         },
+         {
+          "q": "When is acceptance by post complete against the proposer?",
+          "a": "When the letter of acceptance is posted, putting it out of the acceptor's power."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "proposal",
+         "acceptance",
+         "invitation to treat",
+         "general offer"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Consideration and Capacity",
+     "topics": [
+      {
+       "title": "Consideration and competence to contract",
+       "summary": "Consideration, privity, and minors and persons of unsound mind.",
+       "notes": [
+        "Consideration may move from the promisee or any other person (section 2(d); Chinnaya v Ramayya).",
+        "An agreement without consideration is void except as section 25 allows (natural love and affection in writing and registered, past voluntary service, promise to pay a time-barred debt in writing).",
+        "A minor's agreement is void ab initio (Mohori Bibee v Dharmodas Ghose, 1903); no estoppel against a minor.",
+        "Persons of unsound mind cannot contract while unsound (section 12)."
+       ],
+       "outcomes": [
+        "Apply the rules of consideration",
+        "Advise on contracts with minors"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Free Consent",
+     "topics": [
+      {
+       "title": "Coercion, undue influence, fraud, misrepresentation and mistake",
+       "summary": "Factors vitiating consent and their effect.",
+       "notes": [
+        "Consent is free unless caused by coercion (15), undue influence (16), fraud (17), misrepresentation (18) or mistake (20–22).",
+        "Coercion, undue influence, fraud and misrepresentation make the contract voidable (sections 19, 19A).",
+        "A bilateral mistake of fact essential to the agreement makes it void (section 20); a mistake of Indian law does not (section 21)."
+       ],
+       "outcomes": [
+        "Identify the factor vitiating consent",
+        "State the effect on the contract"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Void Agreements, Discharge and Remedies",
+     "topics": [
+      {
+       "title": "Void agreements and discharge",
+       "summary": "Unlawful objects, restraint of trade, wagers and frustration.",
+       "notes": [
+        "Agreements in restraint of trade are void (section 27) except sale of goodwill; post-employment restraints are void in India.",
+        "Wagering agreements are void (section 30).",
+        "Frustration: a contract becomes void when performance becomes impossible or unlawful (section 56; Satyabrata Ghose v Mugneeram Bangur)."
+       ],
+       "outcomes": [
+        "Identify void agreements",
+        "Apply the doctrine of frustration"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Breach and remedies",
+       "summary": "Damages, quasi-contracts and specific relief.",
+       "notes": [
+        "Damages for loss arising naturally or within the parties' contemplation (section 73; Hadley v Baxendale); remote losses are not recoverable.",
+        "Liquidated damages and penalties: reasonable compensation up to the stated sum (section 74).",
+        "Quasi-contracts (sections 68–72): e.g. payment by mistake must be repaid (section 72).",
+        "After the 2018 amendment of the Specific Relief Act, 1963, specific performance is the general rule, not discretionary."
+       ],
+       "outcomes": [
+        "Compute damages for breach",
+        "Advise on specific performance"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-1-constitutional-law-1",
+   "title": "Constitutional Law I, LLB Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Nature of the Constitution",
+     "topics": [
+      {
+       "title": "Salient features and the Preamble",
+       "summary": "Making of the Constitution, its features and the Preamble.",
+       "notes": [
+        "The Constitution was adopted on 26 November 1949 and came into force on 26 January 1950.",
+        "Features: written, federal with a strong centre, parliamentary government, fundamental rights, independent judiciary, rigid and flexible amendment.",
+        "The Preamble is part of the Constitution (Kesavananda Bharati, 1973); \"socialist\", \"secular\" and \"integrity\" were added by the 42nd Amendment, 1976."
+       ],
+       "outcomes": [
+        "Explain the salient features",
+        "Discuss the status of the Preamble"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Fundamental Rights: Equality",
+     "topics": [
+      {
+       "title": "Articles 12–18",
+       "summary": "State, judicial review, equality and reservation.",
+       "notes": [
+        "\"State\" under Article 12 includes instrumentalities of the State (Ajay Hasia; Pradeep Kumar Biswas).",
+        "Article 14 permits reasonable classification (intelligible differentia with a rational nexus) and forbids arbitrariness (E. P. Royappa).",
+        "Indra Sawhney (1992): 50% ceiling on reservation, creamy layer exclusion; Janhit Abhiyan (2022) upheld the EWS quota."
+       ],
+       "outcomes": [
+        "Apply the test of reasonable classification",
+        "Explain the law on reservation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Fundamental Rights: Freedoms and Life",
+     "topics": [
+      {
+       "title": "Articles 19–22",
+       "summary": "Freedoms, protections in criminal matters and right to life.",
+       "notes": [
+        "Article 19(1) freedoms are subject to reasonable restrictions in 19(2)–(6).",
+        "Article 20: no ex post facto criminal law, no double jeopardy, no self-incrimination.",
+        "Article 21: procedure must be fair, just and reasonable (Maneka Gandhi, 1978); privacy is a fundamental right (K. S. Puttaswamy, 2017).",
+        "Article 22: an arrested person must be produced before a magistrate within 24 hours."
+       ],
+       "outcomes": [
+        "Apply Article 21 jurisprudence",
+        "Explain safeguards against arrest"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Can the government seize your passport without telling you why?",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Which case held that the procedure under Article 21 must be fair, just and reasonable?",
+          "a": "Maneka Gandhi v Union of India (1978)."
+         },
+         {
+          "q": "Which case recognised privacy as a fundamental right?",
+          "a": "Justice K. S. Puttaswamy v Union of India (2017)."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "due process",
+         "reasonable restriction",
+         "double jeopardy"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Remedies, DPSP and Duties",
+     "topics": [
+      {
+       "title": "Constitutional remedies, directive principles and duties",
+       "summary": "Writs, Article 32 and 226, DPSPs and fundamental duties.",
+       "notes": [
+        "Article 32 is a fundamental right to move the Supreme Court; High Courts issue writs under Article 226 (wider: \"for any other purpose\").",
+        "Writs: habeas corpus, mandamus, prohibition, certiorari, quo warranto.",
+        "DPSPs (Part IV) are not enforceable but fundamental in governance; harmony with fundamental rights is a basic feature (Minerva Mills, 1980).",
+        "Fundamental duties (Article 51A) were added by the 42nd Amendment."
+       ],
+       "outcomes": [
+        "Choose the right writ",
+        "Relate DPSPs to fundamental rights"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-1-torts",
+   "title": "Law of Torts, Motor Vehicles Act and Consumer Protection, LLB Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "General Principles",
+     "topics": [
+      {
+       "title": "Nature of tort",
+       "summary": "Definition, elements and maxims.",
+       "notes": [
+        "A tort is a civil wrong, other than breach of contract or trust, remedied by unliquidated damages.",
+        "Injuria sine damno is actionable (Ashby v White); damnum sine injuria is not (Gloucester Grammar School case).",
+        "General defences: volenti non fit injuria, inevitable accident, act of God, private defence, necessity, statutory authority."
+       ],
+       "outcomes": [
+        "Identify the elements of a tort",
+        "Apply general defences"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Specific Torts",
+     "topics": [
+      {
+       "title": "Negligence",
+       "summary": "Duty of care, breach, causation and damage.",
+       "notes": [
+        "Duty of care: neighbour principle (Donoghue v Stevenson, 1932).",
+        "Breach is judged by the reasonable person standard; res ipsa loquitur infers negligence from the facts.",
+        "Medical negligence: the Bolam test as applied in Jacob Mathew v State of Punjab (2005)."
+       ],
+       "outcomes": [
+        "Establish the elements of negligence",
+        "Apply res ipsa loquitur"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Strict and absolute liability, nuisance and defamation",
+       "summary": "Rylands v Fletcher, absolute liability and other torts.",
+       "notes": [
+        "Strict liability (Rylands v Fletcher, 1868) for escape of dangerous things, with exceptions.",
+        "Absolute liability for hazardous industries, with no exceptions (M. C. Mehta v Union of India, 1987, the Oleum gas case).",
+        "Defamation: libel (permanent form) and slander (transient); defences are truth, fair comment and privilege."
+       ],
+       "outcomes": [
+        "Distinguish strict and absolute liability",
+        "Apply defences to defamation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Vicarious Liability and the State",
+     "topics": [
+      {
+       "title": "Vicarious liability",
+       "summary": "Master and servant, and liability of the State.",
+       "notes": [
+        "An employer is liable for torts of employees in the course of employment.",
+        "State liability: sovereign functions (Kasturilal, 1965) narrowed by later cases awarding compensation for violation of fundamental rights (Rudul Sah; Nilabati Behera).",
+        "Constitutional tort: compensation under Articles 32 and 226."
+       ],
+       "outcomes": [
+        "Decide when an employer is vicariously liable",
+        "Explain State liability in India"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Motor Vehicles and Consumer Law",
+     "topics": [
+      {
+       "title": "Motor accident claims and consumer protection",
+       "summary": "MV Act claims and the Consumer Protection Act, 2019.",
+       "notes": [
+        "Claims tribunals (MACT) decide motor accident compensation; no-fault liability is ₹5 lakh for death and ₹2.5 lakh for grievous hurt (section 164).",
+        "Compensation by the multiplier method (Sarla Verma; Pranay Sethi).",
+        "Consumer Protection Act, 2019: consumer rights, product liability, unfair trade practices, e-commerce; district, state and national commissions."
+       ],
+       "outcomes": [
+        "Compute compensation by the multiplier method",
+        "File a consumer complaint in the right forum"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-1-family-law-1",
+   "title": "Family Law I: Hindu Law, LLB Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Sources and Application",
+     "topics": [
+      {
+       "title": "Sources and schools of Hindu law",
+       "summary": "Sources, schools and who is a Hindu.",
+       "notes": [
+        "Sources: Shruti, Smriti, commentaries and digests, custom, legislation and judicial decisions.",
+        "Schools: Mitakshara and Dayabhaga.",
+        "The codified Acts apply to Hindus, Buddhists, Jains and Sikhs."
+       ],
+       "outcomes": [
+        "Identify sources of Hindu law",
+        "Distinguish Mitakshara and Dayabhaga"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Marriage and Divorce",
+     "topics": [
+      {
+       "title": "Hindu Marriage Act, 1955",
+       "summary": "Conditions of marriage, void and voidable marriages, and matrimonial remedies.",
+       "notes": [
+        "Conditions (section 5): monogamy, sound mind, age 21 (groom) and 18 (bride), not within prohibited degrees or sapindas (unless custom permits).",
+        "Saptapadi completes the marriage where it is the essential ceremony (section 7).",
+        "Divorce grounds (section 13) include cruelty, desertion for two years, conversion and mental disorder; divorce by mutual consent under section 13B (the six-month period may be waived: Amardeep Singh, 2017).",
+        "The Supreme Court can grant divorce for irretrievable breakdown under Article 142 (Shilpa Sailesh, 2023)."
+       ],
+       "outcomes": [
+        "Test the validity of a Hindu marriage",
+        "Advise on matrimonial remedies"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Adoption, Maintenance and Guardianship",
+     "topics": [
+      {
+       "title": "HAMA and HMGA",
+       "summary": "Adoption, maintenance and guardianship under the 1956 Acts.",
+       "notes": [
+        "Hindu Adoptions and Maintenance Act, 1956: who may adopt and be adopted; a single woman may adopt.",
+        "Wife, children and aged parents are entitled to maintenance; also BNSS section 144 (formerly CrPC 125) for all communities.",
+        "Hindu Minority and Guardianship Act, 1956: welfare of the minor is paramount; the mother can be natural guardian (Githa Hariharan, 1999)."
+       ],
+       "outcomes": [
+        "State the rules of valid adoption",
+        "Advise on maintenance claims"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Succession",
+     "topics": [
+      {
+       "title": "Hindu Succession Act, 1956",
+       "summary": "Coparcenary, intestate succession and the 2005 amendment.",
+       "notes": [
+        "Since the 2005 amendment, a daughter is a coparcener by birth (section 6); applies regardless of whether the father was alive in 2005 (Vineeta Sharma, 2020).",
+        "Class I heirs (son, daughter, widow, mother and others) take simultaneously and equally.",
+        "A Hindu female's property is her absolute property (section 14)."
+       ],
+       "outcomes": [
+        "Distribute an intestate Hindu male's property",
+        "Explain a daughter's coparcenary rights"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-1-criminal-law-bns",
+   "title": "Criminal Law I: Bharatiya Nyaya Sanhita, 2023, LLB Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "General Principles",
+     "topics": [
+      {
+       "title": "Crime and its elements",
+       "summary": "Actus reus, mens rea and stages of crime.",
+       "notes": [
+        "Actus non facit reum nisi mens sit rea: the act is not guilty unless the mind is guilty.",
+        "Stages: intention, preparation, attempt (punishable, section 62), commission.",
+        "Joint liability: common intention (section 3(5)) and common object of an unlawful assembly (section 190)."
+       ],
+       "outcomes": [
+        "Identify actus reus and mens rea",
+        "Distinguish preparation and attempt"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "General Exceptions",
+     "topics": [
+      {
+       "title": "General exceptions and private defence",
+       "summary": "Mistake, accident, infancy, insanity, intoxication and private defence.",
+       "notes": [
+        "Nothing is an offence by a child under 7 (section 20); a child of 7–12 lacking maturity of understanding is also exempt (section 21).",
+        "Insanity (section 22) follows the M'Naghten rules: incapacity to know the nature of the act or that it is wrong.",
+        "Private defence (sections 34–44) extends to causing death in cases listed in sections 38 (body) and 41 (property)."
+       ],
+       "outcomes": [
+        "Apply the general exceptions",
+        "Decide the limits of private defence"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Offences against the Body",
+     "topics": [
+      {
+       "title": "Culpable homicide and murder",
+       "summary": "Distinguishing culpable homicide from murder and their punishments.",
+       "notes": [
+        "Culpable homicide (section 100); murder (section 101) with exceptions such as grave and sudden provocation and exceeding private defence.",
+        "Murder is punished under section 103; murder by a group of five or more on grounds such as race, caste or religion (mob lynching) is punishable under section 103(2).",
+        "Reg v Govinda guides the distinction between culpable homicide and murder."
+       ],
+       "outcomes": [
+        "Distinguish culpable homicide and murder",
+        "Apply the exceptions to murder"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Two men fight; one dies after a single blow to the head. Murder, culpable homicide, or neither?",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Which BNS section defines murder?",
+          "a": "Section 101."
+         },
+         {
+          "q": "Name one exception that reduces murder to culpable homicide.",
+          "a": "Grave and sudden provocation (others: private defence exceeded in good faith, sudden fight, consent)."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "culpable homicide",
+         "murder",
+         "provocation",
+         "mob lynching"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Offences against Property and New Offences",
+     "topics": [
+      {
+       "title": "Theft, extortion, robbery, cheating and organised crime",
+       "summary": "Property offences and offences new in the BNS.",
+       "notes": [
+        "Theft (section 303) needs dishonest intention, movable property, without consent, and moving it; snatching is a separate offence (section 304).",
+        "Robbery (section 309) is theft or extortion with violence; dacoity (section 310) is robbery by five or more.",
+        "Cheating (section 318) and criminal breach of trust (section 316).",
+        "New offences: organised crime (section 111), petty organised crime (112), terrorist act (113)."
+       ],
+       "outcomes": [
+        "Distinguish theft, extortion, robbery and dacoity",
+        "Identify the new offences in the BNS"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-2-contract-2",
+   "title": "Law of Contract II: Special Contracts, LLB Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Indemnity and Guarantee",
+     "topics": [
+      {
+       "title": "Indemnity and guarantee",
+       "summary": "Contracts of indemnity and guarantee and the surety's rights.",
+       "notes": [
+        "Indemnity (section 124): a promise to save another from loss.",
+        "Guarantee (section 126): three parties — creditor, principal debtor, surety; the surety's liability is co-extensive with the debtor's (section 128).",
+        "The surety is discharged by variance in terms, release of the principal debtor, or the creditor's act impairing the surety's remedy."
+       ],
+       "outcomes": [
+        "Distinguish indemnity and guarantee",
+        "Identify when a surety is discharged"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Bailment and Pledge",
+     "topics": [
+      {
+       "title": "Bailment and pledge",
+       "summary": "Duties of bailor and bailee and pledge.",
+       "notes": [
+        "Bailment (section 148): delivery of goods for a purpose, to be returned.",
+        "The bailee must take the care a person of ordinary prudence takes of his own goods (section 151).",
+        "Pledge (section 172) is bailment as security for a debt; the pawnee may sell after reasonable notice."
+       ],
+       "outcomes": [
+        "State the duties of a bailee",
+        "Explain the pawnee's rights"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Agency",
+     "topics": [
+      {
+       "title": "Contract of agency",
+       "summary": "Creation, authority and termination of agency.",
+       "notes": [
+        "An agent is employed to act for another in dealings with third persons (section 182).",
+        "Agency by express or implied authority, ratification, necessity, or estoppel.",
+        "Agency coupled with an interest cannot be revoked to the agent's prejudice (section 202)."
+       ],
+       "outcomes": [
+        "Identify how agency arises",
+        "Decide the principal's liability for an agent's acts"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sale of Goods and Partnership",
+     "topics": [
+      {
+       "title": "Sale of Goods Act, 1930 and Partnership Act, 1932",
+       "summary": "Conditions and warranties, transfer of property, and partnership.",
+       "notes": [
+        "Implied conditions: title, description, quality or fitness, sample.",
+        "Nemo dat quod non habet: no one gives what he does not have, with exceptions.",
+        "Partnership (section 4): agreement to share profits of a business carried on by all or any acting for all; partners are jointly and severally liable.",
+        "LLP Act, 2008 gives limited liability with partnership flexibility."
+       ],
+       "outcomes": [
+        "Apply implied conditions and warranties",
+        "Explain partners' liability"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-2-constitutional-law-2",
+   "title": "Constitutional Law II, LLB Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Union and State Executive",
+     "topics": [
+      {
+       "title": "President, Governor and Council of Ministers",
+       "summary": "Executive powers and the parliamentary system.",
+       "notes": [
+        "The President acts on the advice of the Council of Ministers (Article 74; Shamsher Singh, 1974).",
+        "Ordinance power (Article 123) is subject to judicial review (Krishna Kumar Singh, 2017).",
+        "Pardoning power: President (Article 72) and Governor (Article 161)."
+       ],
+       "outcomes": [
+        "Explain the President's position",
+        "Discuss the ordinance power"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Legislature",
+     "topics": [
+      {
+       "title": "Parliament and legislative procedure",
+       "summary": "Composition, privileges and law-making.",
+       "notes": [
+        "Money bills (Article 110) can be introduced only in the Lok Sabha; the Rajya Sabha can only recommend within 14 days.",
+        "Anti-defection law: Tenth Schedule (52nd Amendment, 1985).",
+        "Parliamentary privileges (Article 105)."
+       ],
+       "outcomes": [
+        "Trace the passage of a bill",
+        "Explain the anti-defection law"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Judiciary",
+     "topics": [
+      {
+       "title": "Supreme Court and High Courts",
+       "summary": "Jurisdiction, independence and appointments.",
+       "notes": [
+        "Jurisdictions of the Supreme Court: original (Article 131), appellate (132–136), advisory (143).",
+        "Special leave petition (Article 136) is discretionary.",
+        "Collegium system (Second and Third Judges cases); the NJAC was struck down (2015)."
+       ],
+       "outcomes": [
+        "Identify the Supreme Court's jurisdictions",
+        "Explain judicial appointments"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Federalism, Emergency and Amendment",
+     "topics": [
+      {
+       "title": "Centre–State relations, emergencies and amendment",
+       "summary": "Distribution of powers, emergencies and Article 368.",
+       "notes": [
+        "Seventh Schedule: Union, State and Concurrent Lists; residuary power with the Union (Article 248).",
+        "Emergencies: national (352), State (356, President's rule; S. R. Bommai, 1994), financial (360).",
+        "Basic structure doctrine limits amending power (Kesavananda Bharati, 1973)."
+       ],
+       "outcomes": [
+        "Resolve conflicts between Union and State laws",
+        "Explain the basic structure doctrine"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-2-family-law-2",
+   "title": "Family Law II: Muslim Law and Other Personal Laws, LLB Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Muslim Law: Sources and Marriage",
+     "topics": [
+      {
+       "title": "Sources and nikah",
+       "summary": "Sources of Muslim law, schools and marriage.",
+       "notes": [
+        "Sources: Quran, Sunna, Ijma, Qiyas; schools: Sunni (Hanafi, Maliki, Shafi'i, Hanbali) and Shia.",
+        "Nikah is a contract; essentials: offer and acceptance, competence, witnesses (Sunni law).",
+        "Mahr (dower) is the wife's right: prompt or deferred."
+       ],
+       "outcomes": [
+        "Explain sources of Muslim law",
+        "State the essentials of a valid nikah"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Dissolution of Muslim Marriage",
+     "topics": [
+      {
+       "title": "Talaq and other modes",
+       "summary": "Forms of talaq and the statutory position.",
+       "notes": [
+        "Talaq-e-biddat (instant triple talaq) was held invalid (Shayara Bano, 2017) and made an offence by the Muslim Women (Protection of Rights on Marriage) Act, 2019.",
+        "Talaq-e-ahsan and hasan; khula (at the wife's instance) and mubarat (mutual).",
+        "Dissolution of Muslim Marriages Act, 1939 gives the wife judicial grounds."
+       ],
+       "outcomes": [
+        "Distinguish forms of talaq",
+        "State the wife's grounds for divorce"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Maintenance and Inheritance",
+     "topics": [
+      {
+       "title": "Maintenance and succession",
+       "summary": "Maintenance of divorced women and inheritance rules.",
+       "notes": [
+        "Shah Bano (1985) and Danial Latifi (2001): reasonable and fair provision for a divorced wife.",
+        "Divorced Muslim women can also claim maintenance under BNSS section 144 (Mohd. Abdul Samad, 2024).",
+        "Inheritance: sharers, residuaries and distant kindred; a bequest is limited to one-third of the estate."
+       ],
+       "outcomes": [
+        "Advise on maintenance after divorce",
+        "Apply the one-third rule on wills"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Other Personal Laws",
+     "topics": [
+      {
+       "title": "Christian, Parsi and secular laws",
+       "summary": "Indian Succession Act, Special Marriage Act and the uniform civil code debate.",
+       "notes": [
+        "Indian Succession Act, 1925 governs Christian (and testamentary) succession.",
+        "Special Marriage Act, 1954 provides a civil marriage for any two persons, with 30 days' notice.",
+        "Article 44 directs the State to endeavour to secure a uniform civil code; Uttarakhand enacted one in 2024."
+       ],
+       "outcomes": [
+        "Compare personal laws on succession",
+        "Discuss the uniform civil code"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-2-environmental-law",
+   "title": "Environmental Law, LLB Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Constitutional Framework",
+     "topics": [
+      {
+       "title": "Environment and the Constitution",
+       "summary": "Articles 21, 48A and 51A(g), and public interest litigation.",
+       "notes": [
+        "Right to a healthy environment is part of Article 21 (Subhash Kumar, 1991).",
+        "Article 48A (State duty) and 51A(g) (citizens' duty) protect the environment.",
+        "PIL widened access to courts in environmental matters (M. C. Mehta cases)."
+       ],
+       "outcomes": [
+        "Explain the constitutional basis of environmental rights",
+        "Describe the role of PIL"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Principles",
+     "topics": [
+      {
+       "title": "Environmental principles",
+       "summary": "Sustainable development, precautionary, polluter pays and public trust.",
+       "notes": [
+        "Precautionary and polluter pays principles are part of Indian law (Vellore Citizens' Welfare Forum, 1996).",
+        "Public trust doctrine: the State holds natural resources in trust (M. C. Mehta v Kamal Nath, 1997).",
+        "Inter-generational equity and sustainable development balance growth and environment."
+       ],
+       "outcomes": [
+        "Apply environmental principles to cases",
+        "Explain the public trust doctrine"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Pollution Laws",
+     "topics": [
+      {
+       "title": "Water, Air and Environment Protection Acts",
+       "summary": "Pollution control boards and the EPA, 1986.",
+       "notes": [
+        "Water Act, 1974 and Air Act, 1981 created the Central and State Pollution Control Boards; consent to establish and operate is required.",
+        "Environment (Protection) Act, 1986 is an umbrella law; EIA Notification, 2006 requires prior environmental clearance.",
+        "Hazardous wastes, plastic waste and e-waste are governed by rules under the EPA."
+       ],
+       "outcomes": [
+        "Describe the consent mechanism",
+        "Explain EIA requirements"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Forests, Wildlife and the NGT",
+     "topics": [
+      {
+       "title": "Forest and wildlife laws and the National Green Tribunal",
+       "summary": "Forest (Conservation) Act, Wild Life Act and NGT.",
+       "notes": [
+        "Forest (Conservation) Act, 1980 (renamed Van (Sanrakshan Evam Samvardhan) Adhiniyam in 2023) needs approval for diverting forest land.",
+        "Wild Life (Protection) Act, 1972 lists protected species in schedules and creates protected areas.",
+        "NGT Act, 2010: the Tribunal decides environmental cases on the principles of sustainable development, precaution and polluter pays."
+       ],
+       "outcomes": [
+        "Explain forest diversion rules",
+        "Describe the NGT's jurisdiction"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-3-jurisprudence",
+   "title": "Jurisprudence, LLB Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Schools of Jurisprudence",
+     "topics": [
+      {
+       "title": "Natural law and positivism",
+       "summary": "Natural law and the analytical school.",
+       "notes": [
+        "Natural law: law derives from reason or morality (Aquinas; modern: Fuller's inner morality of law).",
+        "Austin: law is the command of the sovereign backed by sanction.",
+        "Hart: law is a union of primary rules (duties) and secondary rules (recognition, change, adjudication).",
+        "Kelsen's pure theory: a hierarchy of norms resting on the grundnorm."
+       ],
+       "outcomes": [
+        "Compare natural law and positivism",
+        "Explain Hart's rule of recognition"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Historical, sociological and realist schools",
+       "summary": "Savigny, Pound and legal realism.",
+       "notes": [
+        "Savigny: law grows from the Volksgeist (spirit of the people).",
+        "Pound: law as social engineering balancing interests.",
+        "Realists (Holmes, Llewellyn): law is what courts actually do."
+       ],
+       "outcomes": [
+        "Explain the historical school",
+        "Apply Pound's theory of interests"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sources of Law",
+     "topics": [
+      {
+       "title": "Legislation, precedent and custom",
+       "summary": "Sources of law and the doctrine of precedent.",
+       "notes": [
+        "Precedent: ratio decidendi binds; obiter dicta persuade; Article 141 binds all courts by the Supreme Court's law.",
+        "A valid custom must be ancient, certain, reasonable and continuous.",
+        "Delegated legislation must stay within the parent Act."
+       ],
+       "outcomes": [
+        "Distinguish ratio and obiter",
+        "Test the validity of a custom"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Legal Concepts",
+     "topics": [
+      {
+       "title": "Rights, duties and legal personality",
+       "summary": "Hohfeld's analysis, possession, ownership and persons.",
+       "notes": [
+        "Hohfeld's jural correlatives: right–duty, privilege–no-right, power–liability, immunity–disability.",
+        "Possession has corpus (control) and animus (intention).",
+        "Legal persons include corporations, idols (Ram Janmabhoomi case) and, by some courts, rivers."
+       ],
+       "outcomes": [
+        "Apply Hohfeld's scheme",
+        "Explain legal personality"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-3-property-law",
+   "title": "Property Law (Transfer of Property Act, 1882), LLB Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "General Principles of Transfer",
+     "topics": [
+      {
+       "title": "Transfer of property",
+       "summary": "Definition, transferable interests and conditions.",
+       "notes": [
+        "Transfer of property (section 5) is an act by which a living person conveys property to others.",
+        "Not transferable (section 6) include spes successionis, mere right to sue, and public offices.",
+        "Conditions absolutely restraining alienation are void (section 10); rule against perpetuity (section 14)."
+       ],
+       "outcomes": [
+        "Identify transferable property",
+        "Apply the rule against perpetuity"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Doctrines protecting transferees",
+       "summary": "Ostensible owner, part performance and lis pendens.",
+       "notes": [
+        "Transfer by ostensible owner (section 41) protects a bona fide purchaser.",
+        "Lis pendens (section 52): property in litigation cannot be transferred to affect the parties' rights.",
+        "Part performance (section 53A) protects a transferee in possession under a written contract."
+       ],
+       "outcomes": [
+        "Apply section 41, 52 and 53A",
+        "Advise a purchaser of disputed property"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sale and Mortgage",
+     "topics": [
+      {
+       "title": "Sale and mortgages",
+       "summary": "Sale of immovable property and kinds of mortgage.",
+       "notes": [
+        "Sale of tangible immovable property worth ₹100 or more must be by registered instrument (section 54).",
+        "A contract for sale creates no interest in the property.",
+        "Mortgages (section 58): simple, by conditional sale, usufructuary, English, by deposit of title deeds, anomalous; right of redemption (section 60)."
+       ],
+       "outcomes": [
+        "Distinguish sale and contract for sale",
+        "Classify mortgages"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Lease, Gift and Easements",
+     "topics": [
+      {
+       "title": "Lease, gift and easements",
+       "summary": "Leases, gifts and easementary rights.",
+       "notes": [
+        "Lease (section 105): transfer of a right to enjoy property for a term for a price.",
+        "Gift (section 122) of immovable property must be by registered instrument, accepted during the donor's lifetime.",
+        "Easements Act, 1882: easement by prescription after 20 years' peaceable and open enjoyment."
+       ],
+       "outcomes": [
+        "Advise on creating a lease or gift",
+        "Establish an easement by prescription"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-3-administrative-law",
+   "title": "Administrative Law, LLB Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Nature of Administrative Law",
+     "topics": [
+      {
+       "title": "Rule of law and separation of powers",
+       "summary": "Dicey's rule of law and separation of powers in India.",
+       "notes": [
+        "Dicey: supremacy of law, equality before law, constitution as the result of ordinary law.",
+        "India has functional separation of powers (Ram Jawaya Kapur, 1955); judicial review is a basic feature.",
+        "Administrative law governs the powers and procedures of administrative authorities."
+       ],
+       "outcomes": [
+        "Explain the rule of law",
+        "Discuss separation of powers in India"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Delegated Legislation",
+     "topics": [
+      {
+       "title": "Delegated legislation and its control",
+       "summary": "Reasons, limits and parliamentary and judicial control.",
+       "notes": [
+        "Essential legislative functions cannot be delegated (In re Delhi Laws Act, 1951).",
+        "Controls: parliamentary (laying), judicial (ultra vires), procedural (publication, consultation).",
+        "Sub-delegation needs authority in the parent Act."
+       ],
+       "outcomes": [
+        "Test the validity of delegated legislation",
+        "Describe controls on delegation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Natural Justice",
+     "topics": [
+      {
+       "title": "Principles of natural justice",
+       "summary": "Rule against bias and the right to a hearing.",
+       "notes": [
+        "Nemo judex in causa sua: no one should be a judge in his own cause (A. K. Kraipak, 1969).",
+        "Audi alteram partem: hear the other side; notice and opportunity (Maneka Gandhi).",
+        "Exceptions: emergency, confidentiality, legislative action; reasoned decisions are required."
+       ],
+       "outcomes": [
+        "Identify breaches of natural justice",
+        "Advise on the exceptions"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Judicial Review and Remedies",
+     "topics": [
+      {
+       "title": "Judicial review of administrative action",
+       "summary": "Grounds of review, writs and other remedies.",
+       "notes": [
+        "Grounds (CCSU case): illegality, irrationality (Wednesbury unreasonableness), procedural impropriety; proportionality in rights cases.",
+        "Legitimate expectation protects reasonable expectations from arbitrary change.",
+        "Other remedies: Lokpal and Lokayuktas Act, 2013; RTI Act, 2005; tribunals under Articles 323A and 323B."
+       ],
+       "outcomes": [
+        "Apply grounds of judicial review",
+        "Choose a remedy against administrative action"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-3-labour-law",
+   "title": "Labour and Industrial Law, LLB Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Industrial Relations",
+     "topics": [
+      {
+       "title": "Industry, workman and industrial disputes",
+       "summary": "Key definitions and dispute resolution.",
+       "notes": [
+        "\"Industry\" was defined broadly by the triple test in Bangalore Water Supply v A. Rajappa (1978).",
+        "The Industrial Relations Code, 2020 consolidates the Industrial Disputes Act, 1947, the Trade Unions Act, 1926 and the Industrial Employment (Standing Orders) Act, 1946.",
+        "Dispute resolution machinery: grievance redressal committee, conciliation, tribunals, arbitration."
+       ],
+       "outcomes": [
+        "Apply the definition of industry",
+        "Trace the dispute resolution process"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Strikes, Lay-off and Retrenchment",
+     "topics": [
+      {
+       "title": "Strikes, lockouts and retrenchment",
+       "summary": "Conditions for strikes and protection against job loss.",
+       "notes": [
+        "Under the IR Code, 14 days' notice is required before a strike or lockout in any establishment.",
+        "Retrenchment compensation is 15 days' average pay for every completed year of service; \"last in, first out\" applies.",
+        "Prior government permission for lay-off, retrenchment and closure applies to establishments with 300 or more workers."
+       ],
+       "outcomes": [
+        "State the conditions for a lawful strike",
+        "Compute retrenchment compensation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Wages and Social Security",
+     "topics": [
+      {
+       "title": "Code on Wages and Code on Social Security",
+       "summary": "Minimum wages, payment of wages, bonus and social security.",
+       "notes": [
+        "The Code on Wages, 2019 introduces a national floor wage and covers minimum wages, payment of wages, bonus and equal remuneration.",
+        "The Code on Social Security, 2020 covers EPF, ESI, gratuity, maternity benefit and gig and platform workers.",
+        "Gratuity is payable after five years' continuous service at 15 days' wages per year (fixed-term employees after one year)."
+       ],
+       "outcomes": [
+        "Explain coverage of wage and social security laws",
+        "Compute gratuity"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Working Conditions",
+     "topics": [
+      {
+       "title": "Occupational safety, health and working conditions",
+       "summary": "OSH Code, working hours and welfare.",
+       "notes": [
+        "The OSH Code, 2020 consolidates the Factories Act, Mines Act and others.",
+        "Daily working hours are capped at 8 hours (weekly 48), with overtime at twice the wage rate.",
+        "Welfare provisions: canteens, crèches, first aid, safety committees."
+       ],
+       "outcomes": [
+        "Apply working hour limits",
+        "List welfare duties of employers"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-4-public-international-law",
+   "title": "Public International Law, LLB Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Nature and Sources",
+     "topics": [
+      {
+       "title": "Nature and sources of international law",
+       "summary": "Whether international law is law, and its sources.",
+       "notes": [
+        "Sources (Article 38(1), ICJ Statute): treaties, custom, general principles of law; judicial decisions and teachings as subsidiary means.",
+        "Custom needs state practice and opinio juris (North Sea Continental Shelf, 1969).",
+        "Jus cogens norms (e.g. prohibition of genocide, torture) cannot be derogated from."
+       ],
+       "outcomes": [
+        "Identify sources of international law",
+        "Explain the elements of custom"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "States and Recognition",
+     "topics": [
+      {
+       "title": "Statehood, recognition and jurisdiction",
+       "summary": "Criteria of statehood, recognition theories and state jurisdiction.",
+       "notes": [
+        "Montevideo Convention criteria: population, territory, government, capacity to enter relations.",
+        "Recognition: constitutive and declaratory theories; de jure and de facto.",
+        "Jurisdiction principles: territorial, nationality, protective, universal."
+       ],
+       "outcomes": [
+        "Apply criteria of statehood",
+        "Distinguish theories of recognition"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Treaties and the Sea",
+     "topics": [
+      {
+       "title": "Law of treaties and law of the sea",
+       "summary": "Vienna Convention, 1969 and UNCLOS, 1982.",
+       "notes": [
+        "Pacta sunt servanda (Article 26, VCLT); reservations; rebus sic stantibus (fundamental change of circumstances).",
+        "UNCLOS zones: territorial sea up to 12 nautical miles, contiguous zone 24, exclusive economic zone 200.",
+        "Innocent passage is allowed through the territorial sea."
+       ],
+       "outcomes": [
+        "Apply treaty rules",
+        "Identify maritime zones and rights"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "International Institutions and Disputes",
+     "topics": [
+      {
+       "title": "The United Nations and the ICJ",
+       "summary": "UN organs, peaceful settlement and use of force.",
+       "notes": [
+        "Principal UN organs: General Assembly, Security Council, ECOSOC, Trusteeship Council, ICJ, Secretariat.",
+        "Article 2(4) of the UN Charter prohibits the use of force; exceptions are self-defence (Article 51) and Security Council action (Chapter VII).",
+        "ICJ jurisdiction rests on consent (special agreement, compromissory clause, optional clause)."
+       ],
+       "outcomes": [
+        "Explain the prohibition on the use of force",
+        "Describe how the ICJ gets jurisdiction"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-4-company-law",
+   "title": "Company Law, LLB Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Corporate Personality",
+     "topics": [
+      {
+       "title": "Incorporation and lifting the veil",
+       "summary": "Separate legal personality and when courts pierce it.",
+       "notes": [
+        "A company is a separate legal person (Salomon v Salomon, 1897).",
+        "The veil is lifted for fraud, sham companies, tax evasion and enemy character; section 7(7) and others allow statutory lifting.",
+        "Kinds: private, public, OPC, small, Section 8 (charitable), producer companies."
+       ],
+       "outcomes": [
+        "Explain corporate personality",
+        "Identify when the veil is lifted"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Constitution and Capital",
+     "topics": [
+      {
+       "title": "MOA, AOA and share capital",
+       "summary": "Constitutional documents, doctrines and capital.",
+       "notes": [
+        "Ultra vires acts are void (Ashbury Railway Carriage v Riche, 1875).",
+        "Indoor management (Royal British Bank v Turquand) protects outsiders; constructive notice applies to public documents.",
+        "Share capital: equity and preference; buy-back (section 68); reduction of capital (section 66)."
+       ],
+       "outcomes": [
+        "Apply ultra vires and indoor management",
+        "Explain capital alteration"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Management and Meetings",
+     "topics": [
+      {
+       "title": "Directors, meetings and governance",
+       "summary": "Directors' duties, meetings and minority protection.",
+       "notes": [
+        "Directors' duties (section 166): act in good faith, with due care, avoid conflicts.",
+        "Oppression and mismanagement remedies (sections 241–244) before the NCLT; class actions (section 245).",
+        "Related party transactions (section 188) need approval."
+       ],
+       "outcomes": [
+        "State directors' duties",
+        "Advise minority shareholders"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Insolvency and Winding Up",
+     "topics": [
+      {
+       "title": "Insolvency and Bankruptcy Code, 2016",
+       "summary": "Corporate insolvency resolution and liquidation.",
+       "notes": [
+        "CIRP starts on default of at least ₹1 crore; financial or operational creditors may apply to the NCLT.",
+        "A resolution professional runs the company; the committee of creditors approves a resolution plan by 66% vote.",
+        "Timeline: 180 days, extendable by 90, with an outer limit of 330 days."
+       ],
+       "outcomes": [
+        "Describe the CIRP",
+        "Explain the waterfall in liquidation (section 53)"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-4-evidence-bsa",
+   "title": "Law of Evidence (Bharatiya Sakshya Adhiniyam, 2023), LLB Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Relevancy",
+     "topics": [
+      {
+       "title": "Facts in issue and relevant facts",
+       "summary": "Relevancy, res gestae and motive.",
+       "notes": [
+        "Evidence may be given only of facts in issue and relevant facts.",
+        "Res gestae: facts forming part of the same transaction are relevant (section 4).",
+        "Motive, preparation and conduct are relevant (section 6)."
+       ],
+       "outcomes": [
+        "Distinguish facts in issue and relevant facts",
+        "Apply res gestae"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Admissions and Confessions",
+     "topics": [
+      {
+       "title": "Admissions, confessions and dying declarations",
+       "summary": "When statements are admissible against their makers.",
+       "notes": [
+        "A confession to a police officer is not provable (section 23); a confession under inducement, threat or promise is irrelevant (section 22).",
+        "Information leading to the discovery of a fact is admissible (proviso to section 23, formerly section 27).",
+        "A dying declaration as to the cause of death is relevant (section 26(a)); it can alone support conviction if reliable."
+       ],
+       "outcomes": [
+        "Decide admissibility of confessions",
+        "Evaluate a dying declaration"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "An accused tells police, \"I threw the knife in the well.\" The knife is found there. What can the court hear?",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Is a confession made to a police officer admissible?",
+          "a": "No (section 23), except the part that leads to discovery of a fact."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "admission",
+         "confession",
+         "discovery",
+         "dying declaration"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Documentary and Electronic Evidence",
+     "topics": [
+      {
+       "title": "Documents and electronic records",
+       "summary": "Primary and secondary evidence and electronic records.",
+       "notes": [
+        "Primary evidence is the document itself; secondary evidence is admissible in listed cases.",
+        "Electronic records are documents and can be primary evidence (sections 57, 61).",
+        "A certificate under section 63 (formerly 65B; Arjun Panditrao Khotkar, 2020) is needed for electronic records as secondary evidence."
+       ],
+       "outcomes": [
+        "Prove documents and electronic records",
+        "Prepare a section 63 certificate"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Burden of Proof and Witnesses",
+     "topics": [
+      {
+       "title": "Burden, presumptions and examination of witnesses",
+       "summary": "Who must prove, presumptions, and examination-in-chief and cross-examination.",
+       "notes": [
+        "Burden of proof lies on the person who asserts (section 104).",
+        "Presumptions: \"may presume\", \"shall presume\", \"conclusive proof\".",
+        "Leading questions are not allowed in examination-in-chief but are allowed in cross-examination."
+       ],
+       "outcomes": [
+        "Allocate the burden of proof",
+        "Conduct examination and cross-examination"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-4-ipr",
+   "title": "Intellectual Property Rights Law, LLB Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction",
+     "topics": [
+      {
+       "title": "Nature of IP and international framework",
+       "summary": "Kinds of IP and TRIPS.",
+       "notes": [
+        "IP rights: copyright, patents, trademarks, designs, geographical indications, trade secrets.",
+        "TRIPS Agreement (WTO) sets minimum standards.",
+        "IP rights are territorial and time-limited (except trademarks, renewable)."
+       ],
+       "outcomes": [
+        "Classify IP rights",
+        "Explain TRIPS obligations"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Patents",
+     "topics": [
+      {
+       "title": "Patents Act, 1970",
+       "summary": "Patentability, exclusions and term.",
+       "notes": [
+        "Patentable invention: novelty, inventive step, industrial application.",
+        "Section 3(d) bars new forms of known substances without enhanced efficacy (Novartis v Union of India, 2013).",
+        "Term: 20 years from filing; compulsory licences (section 84)."
+       ],
+       "outcomes": [
+        "Test patentability",
+        "Explain section 3(d)"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Copyright",
+     "topics": [
+      {
+       "title": "Copyright Act, 1957",
+       "summary": "Works, rights, term and fair dealing.",
+       "notes": [
+        "Protects original literary, dramatic, musical, artistic works, films and sound recordings.",
+        "Term: author's life plus 60 years for literary works.",
+        "Fair dealing for private use, research, criticism and reporting (section 52)."
+       ],
+       "outcomes": [
+        "Identify protected works",
+        "Apply fair dealing"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Trademarks and Designs",
+     "topics": [
+      {
+       "title": "Trade Marks Act, 1999 and Designs Act, 2000",
+       "summary": "Registration, infringement and passing off.",
+       "notes": [
+        "A trademark must be capable of distinguishing goods or services; registration lasts 10 years, renewable.",
+        "Infringement for registered marks; passing off protects unregistered goodwill.",
+        "Design registration lasts 10 years, extendable by 5."
+       ],
+       "outcomes": [
+        "Assess trademark infringement",
+        "Distinguish infringement and passing off"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-5-cpc-limitation",
+   "title": "Civil Procedure Code and Limitation Act, LLB Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Suits and Jurisdiction",
+     "topics": [
+      {
+       "title": "Jurisdiction and bars to suits",
+       "summary": "Civil jurisdiction, res sub judice and res judicata.",
+       "notes": [
+        "Civil courts try all suits of a civil nature unless barred (section 9).",
+        "Res sub judice (section 10) stays a later suit on the same matter; res judicata (section 11) bars re-litigation of decided matters.",
+        "Place of suing (sections 15–20): the lowest competent court; where the defendant resides or the cause of action arises."
+       ],
+       "outcomes": [
+        "Decide which court has jurisdiction",
+        "Apply res judicata"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Pleadings and Trial",
+     "topics": [
+      {
+       "title": "Plaint, written statement and interim orders",
+       "summary": "Pleadings, appearance and interim relief.",
+       "notes": [
+        "Plaint (Order VII); rejection of plaint (Order VII Rule 11).",
+        "Written statement within 30 days, extendable to 90 days (120 days, non-extendable, in commercial suits).",
+        "Temporary injunctions (Order XXXIX Rules 1–2) need a prima facie case, balance of convenience and irreparable injury."
+       ],
+       "outcomes": [
+        "Draft the structure of a plaint",
+        "Apply the test for temporary injunction"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Judgment, Appeal and Execution",
+     "topics": [
+      {
+       "title": "Decree, appeal, review, revision and execution",
+       "summary": "Post-trial remedies.",
+       "notes": [
+        "Decree (section 2(2)); first appeal (section 96); second appeal on a substantial question of law (section 100).",
+        "Review (section 114, Order XLVII); revision (section 115); inherent powers (section 151).",
+        "Execution of decrees by the court that passed it or to which it is sent (section 38)."
+       ],
+       "outcomes": [
+        "Choose the right post-decree remedy",
+        "Explain execution procedure"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Limitation",
+     "topics": [
+      {
+       "title": "Limitation Act, 1963",
+       "summary": "Bar of limitation, extension and computation.",
+       "notes": [
+        "A suit filed after the limitation period is dismissed even if limitation is not pleaded (section 3).",
+        "Condonation of delay for appeals and applications on sufficient cause (section 5); not for suits.",
+        "Common periods: suit on contract 3 years; residuary 3 years (Article 113); possession of immovable property based on title 12 years."
+       ],
+       "outcomes": [
+        "Compute limitation periods",
+        "Apply section 5 condonation"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-5-criminal-procedure-bnss",
+   "title": "Criminal Procedure (Bharatiya Nagarik Suraksha Sanhita, 2023), LLB Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Pre-trial Process",
+     "topics": [
+      {
+       "title": "FIR, investigation and arrest",
+       "summary": "Information to police, investigation and arrest powers.",
+       "notes": [
+        "FIR for cognizable offences (section 173); e-FIR and zero FIR are recognised.",
+        "Preliminary enquiry is allowed for offences punishable with 3 to 7 years (section 173(3)).",
+        "Arrest without warrant (section 35); notice of appearance instead of arrest in suitable cases; arrest memo and informing relatives (D. K. Basu guidelines)."
+       ],
+       "outcomes": [
+        "Explain registration of FIR",
+        "State safeguards on arrest"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Custody and Bail",
+     "topics": [
+      {
+       "title": "Remand and bail",
+       "summary": "Police and judicial custody, default bail and anticipatory bail.",
+       "notes": [
+        "Police custody up to 15 days in total, which may be taken in parts within the first 40 or 60 days (section 187).",
+        "Default bail if the charge-sheet is not filed within 60 or 90 days.",
+        "Bailable and non-bailable offences; anticipatory bail (section 482); \"bail is the rule, jail the exception\"."
+       ],
+       "outcomes": [
+        "Compute remand and default bail periods",
+        "Advise on anticipatory bail"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Trial",
+     "topics": [
+      {
+       "title": "Charges and trials",
+       "summary": "Charge, trial procedures and plea bargaining.",
+       "notes": [
+        "Trials: sessions, warrant, summons and summary trials.",
+        "Plea bargaining (Chapter XXIII) is available for offences punishable up to 7 years, except specified offences.",
+        "Trial in absentia of proclaimed offenders is now possible in specified cases."
+       ],
+       "outcomes": [
+        "Identify the trial procedure for an offence",
+        "Explain plea bargaining"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Appeals and Other Provisions",
+     "topics": [
+      {
+       "title": "Appeals, revision and maintenance",
+       "summary": "Post-trial remedies and miscellaneous proceedings.",
+       "notes": [
+        "Appeals against conviction and acquittal; revision by Sessions Courts and High Courts.",
+        "Maintenance of wives, children and parents (section 144).",
+        "Victim compensation scheme (section 396)."
+       ],
+       "outcomes": [
+        "Choose post-trial remedies",
+        "Advise on maintenance and victim compensation"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-5-interpretation",
+   "title": "Interpretation of Statutes, LLB Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Rules of Interpretation",
+     "topics": [
+      {
+       "title": "Literal, golden and mischief rules",
+       "summary": "Primary rules of statutory interpretation.",
+       "notes": [
+        "Literal rule: plain meaning of words.",
+        "Golden rule: modify literal meaning to avoid absurdity.",
+        "Mischief rule (Heydon's case, 1584): find the mischief the law was meant to remedy; purposive interpretation is its modern form."
+       ],
+       "outcomes": [
+        "Apply the three rules to a statute",
+        "Choose an approach for an ambiguous provision"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Subsidiary Rules",
+     "topics": [
+      {
+       "title": "Maxims of interpretation",
+       "summary": "Ejusdem generis, noscitur a sociis and others.",
+       "notes": [
+        "Ejusdem generis: general words following specific ones take their colour.",
+        "Noscitur a sociis: a word is known by its companions.",
+        "Expressio unius est exclusio alterius: express mention of one excludes others."
+       ],
+       "outcomes": [
+        "Apply interpretive maxims",
+        "Interpret general words in a list"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Aids to Interpretation",
+     "topics": [
+      {
+       "title": "Internal and external aids",
+       "summary": "Preamble, headings, definitions and legislative history.",
+       "notes": [
+        "Internal aids: title, preamble, headings, definitions, provisos, explanations, schedules.",
+        "External aids: parliamentary debates, committee reports, dictionaries, earlier statutes.",
+        "General Clauses Act, 1897 supplies common definitions and rules."
+       ],
+       "outcomes": [
+        "Use internal and external aids",
+        "Apply the General Clauses Act"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Interpretation of Special Statutes",
+     "topics": [
+      {
+       "title": "Penal, taxing and beneficial statutes",
+       "summary": "Strict and liberal construction.",
+       "notes": [
+        "Penal and taxing statutes are construed strictly in favour of the subject.",
+        "Beneficial and welfare legislation is construed liberally.",
+        "Presumption of constitutionality; reading down to save a statute."
+       ],
+       "outcomes": [
+        "Construe penal and taxing statutes",
+        "Apply the presumption of constitutionality"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-5-professional-ethics",
+   "title": "Professional Ethics and Accounting for Lawyers (Clinical), LLB Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "The Legal Profession",
+     "topics": [
+      {
+       "title": "Advocates Act, 1961",
+       "summary": "Enrolment, Bar Councils and rights of advocates.",
+       "notes": [
+        "State Bar Councils enrol advocates; the Bar Council of India sets standards and the All India Bar Examination.",
+        "Only enrolled advocates may practise in courts (section 30).",
+        "Misconduct leads to disciplinary proceedings (section 35)."
+       ],
+       "outcomes": [
+        "Describe the regulation of advocates",
+        "Identify professional misconduct"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Duties of Advocates",
+     "topics": [
+      {
+       "title": "BCI Rules on professional conduct",
+       "summary": "Duties to court, client, opponent and colleagues.",
+       "notes": [
+        "Duties to the court: act with dignity, not influence the court by illegal means.",
+        "Duties to the client: not withdraw without sufficient cause, keep confidences, avoid conflicts.",
+        "Advertising and solicitation are prohibited (Rule 36)."
+       ],
+       "outcomes": [
+        "Apply the BCI Rules to cases",
+        "Explain the bar on advertising"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Contempt and Bar–Bench Relations",
+     "topics": [
+      {
+       "title": "Contempt of court",
+       "summary": "Civil and criminal contempt and defences.",
+       "notes": [
+        "Contempt of Courts Act, 1971: civil (wilful disobedience) and criminal (scandalising, prejudicing proceedings).",
+        "Truth is a defence if in the public interest and bona fide (2006 amendment).",
+        "Mutual respect between bar and bench sustains justice."
+       ],
+       "outcomes": [
+        "Distinguish civil and criminal contempt",
+        "Identify defences to contempt"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Accounts for Lawyers",
+     "topics": [
+      {
+       "title": "Accountancy for lawyers",
+       "summary": "Client money, books of account and fees.",
+       "notes": [
+        "Advocates must keep accounts of clients' money separately.",
+        "Fees cannot be contingent on the result (no share in the subject matter).",
+        "Receipts and statements of account must be given to clients."
+       ],
+       "outcomes": [
+        "Maintain client accounts",
+        "Explain rules on fees"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-6-adr",
+   "title": "Alternative Dispute Resolution (Clinical), LLB Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "ADR Overview",
+     "topics": [
+      {
+       "title": "Forms of ADR",
+       "summary": "Arbitration, conciliation, mediation, negotiation and Lok Adalats.",
+       "notes": [
+        "Section 89 CPC lets courts refer disputes to ADR.",
+        "Negotiation and mediation are non-binding until settled; arbitration gives a binding award.",
+        "ADR is quicker, cheaper and confidential."
+       ],
+       "outcomes": [
+        "Choose an ADR method",
+        "Explain section 89 CPC"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Arbitration",
+     "topics": [
+      {
+       "title": "Arbitration and Conciliation Act, 1996",
+       "summary": "Arbitration agreement, tribunal, award and challenge.",
+       "notes": [
+        "An arbitration agreement must be in writing (section 7); courts refer parties to arbitration (section 8).",
+        "Appointment of arbitrators (section 11); the tribunal rules on its own jurisdiction (section 16, kompetenz-kompetenz).",
+        "Award within 12 months of completion of pleadings, extendable by 6 months (section 29A); set aside under section 34; enforced under section 36."
+       ],
+       "outcomes": [
+        "Draft an arbitration clause",
+        "State grounds to set aside an award"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Mediation and Conciliation",
+     "topics": [
+      {
+       "title": "Mediation Act, 2023",
+       "summary": "Pre-litigation mediation and mediated settlement agreements.",
+       "notes": [
+        "Mediation is voluntary; a mediated settlement agreement is final and enforceable like a court judgment.",
+        "Mediation should be completed within 120 days, extendable by 60.",
+        "Online mediation is recognised."
+       ],
+       "outcomes": [
+        "Explain the mediation process",
+        "Describe enforcement of settlements"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Lok Adalats and Legal Aid",
+     "topics": [
+      {
+       "title": "Legal Services Authorities Act, 1987",
+       "summary": "Lok Adalats and free legal aid.",
+       "notes": [
+        "A Lok Adalat award is deemed a civil court decree and final; no appeal lies.",
+        "Permanent Lok Adalats handle public utility services disputes.",
+        "Free legal aid is a right under Article 39A and Article 21 (Hussainara Khatoon)."
+       ],
+       "outcomes": [
+        "Explain Lok Adalat procedure",
+        "Identify who is entitled to legal aid"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-6-drafting",
+   "title": "Drafting, Pleading and Conveyancing (Clinical), LLB Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Principles of Drafting",
+     "topics": [
+      {
+       "title": "General principles",
+       "summary": "Clarity, precision and structure in legal drafting.",
+       "notes": [
+        "Use plain, precise language; define terms; avoid ambiguity.",
+        "Structure: title, parties, recitals, operative part, schedules, execution.",
+        "Stamp duty and registration requirements affect validity and admissibility."
+       ],
+       "outcomes": [
+        "Apply principles of legal drafting",
+        "Structure a legal document"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Civil Pleadings",
+     "topics": [
+      {
+       "title": "Plaint and written statement",
+       "summary": "Drafting civil pleadings.",
+       "notes": [
+        "Order VI: pleadings state material facts, not evidence or law.",
+        "A plaint states the court, parties, cause of action, jurisdiction, valuation, relief and verification.",
+        "A written statement must deny specifically; non-denial is admission (Order VIII Rule 5)."
+       ],
+       "outcomes": [
+        "Draft a plaint for recovery of money",
+        "Draft a written statement"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Criminal Pleadings",
+     "topics": [
+      {
+       "title": "Complaints, bail and petitions",
+       "summary": "Drafting in criminal matters.",
+       "notes": [
+        "Private complaint to a magistrate (BNSS section 223).",
+        "Bail applications state grounds: nature of offence, antecedents, custody period, cooperation.",
+        "Writ petitions under Article 226: facts, grounds, prayer, affidavit."
+       ],
+       "outcomes": [
+        "Draft a bail application",
+        "Draft a writ petition"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Conveyancing",
+     "topics": [
+      {
+       "title": "Deeds and agreements",
+       "summary": "Sale deed, lease deed, gift deed, will and power of attorney.",
+       "notes": [
+        "A sale deed contains parties, recitals of title, consideration, conveyance, covenants and schedule of property.",
+        "A will need not be registered but must be attested by two witnesses.",
+        "A power of attorney authorises an agent; one relating to immovable property is usually registered."
+       ],
+       "outcomes": [
+        "Draft a sale deed and a will",
+        "Draft a power of attorney"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "kslu-law",
+   "code": "llb-6-human-rights",
+   "title": "Human Rights Law, LLB Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public KSLU syllabus (KSLU CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Concept and History",
+     "topics": [
+      {
+       "title": "Human rights: concept and generations",
+       "summary": "Nature, generations and the international bill of rights.",
+       "notes": [
+        "Human rights are universal, inalienable, indivisible and interdependent.",
+        "Generations: civil and political; economic, social and cultural; collective (development, environment).",
+        "International Bill of Rights: UDHR (1948), ICCPR and ICESCR (1966)."
+       ],
+       "outcomes": [
+        "Explain the nature of human rights",
+        "Describe the International Bill of Rights"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "International Mechanisms",
+     "topics": [
+      {
+       "title": "UN human rights system",
+       "summary": "Charter-based and treaty-based bodies.",
+       "notes": [
+        "Human Rights Council and its Universal Periodic Review.",
+        "Treaty bodies, e.g. the Human Rights Committee under the ICCPR.",
+        "Conventions: CEDAW, CRC, CAT, CRPD."
+       ],
+       "outcomes": [
+        "Distinguish charter and treaty bodies",
+        "Identify key conventions"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Human Rights in India",
+     "topics": [
+      {
+       "title": "Protection of Human Rights Act, 1993",
+       "summary": "NHRC, SHRCs and human rights courts.",
+       "notes": [
+        "The NHRC inquires into violations and recommends action; its chair is a former Chief Justice of India or Supreme Court judge.",
+        "The NHRC cannot inquire into matters more than one year old.",
+        "Human rights courts are designated sessions courts."
+       ],
+       "outcomes": [
+        "Explain the role of the NHRC",
+        "Advise on filing a complaint"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Rights of Vulnerable Groups",
+     "topics": [
+      {
+       "title": "Protection of vulnerable groups",
+       "summary": "Women, children, SC/ST, persons with disabilities and transgender persons.",
+       "notes": [
+        "POCSO Act, 2012 protects children from sexual offences.",
+        "SC/ST (Prevention of Atrocities) Act, 1989; Rights of Persons with Disabilities Act, 2016.",
+        "NALSA (2014) recognised transgender persons; Transgender Persons (Protection of Rights) Act, 2019."
+       ],
+       "outcomes": [
+        "Identify protective laws for vulnerable groups",
+        "Apply them to cases"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

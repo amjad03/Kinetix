@@ -1,0 +1,826 @@
+{
+ "curricula": [
+  {
+   "code": "bu-pg",
+   "name": "Bangalore University (PG)",
+   "level": "pg"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-1-organisational-behaviour",
+   "title": "Management Concepts and Organisational Behaviour, MCom Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Management Thought",
+     "topics": [
+      {
+       "title": "Approaches to management",
+       "summary": "Classical, behavioural, quantitative, systems and contingency approaches.",
+       "notes": [
+        "Classical: scientific management (Taylor), administrative (Fayol), bureaucratic (Weber).",
+        "Behavioural: human relations (Mayo), Maslow, McGregor.",
+        "Systems and contingency approaches treat management as situational and open to the environment."
+       ],
+       "outcomes": [
+        "Compare management approaches",
+        "Apply a contingency view to a case"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Individual Behaviour",
+     "topics": [
+      {
+       "title": "Perception, personality and learning",
+       "summary": "Individual determinants of behaviour at work.",
+       "notes": [
+        "Perceptual shortcuts: halo effect, stereotyping, contrast effect, projection.",
+        "Personality: Big Five; locus of control (internal vs external).",
+        "Reinforcement schedules: continuous, fixed/variable interval, fixed/variable ratio."
+       ],
+       "outcomes": [
+        "Identify perceptual errors",
+        "Choose a reinforcement schedule"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Motivation and Leadership",
+     "topics": [
+      {
+       "title": "Motivation and leadership theories",
+       "summary": "Content and process theories and leadership models.",
+       "notes": [
+        "Herzberg, McClelland, Vroom (M = E × I × V), Adams (equity), Locke (goal setting).",
+        "Leadership: trait, behavioural, situational (Hersey–Blanchard), path–goal, transformational.",
+        "Emotional intelligence (Goleman): self-awareness, self-regulation, motivation, empathy, social skill."
+       ],
+       "outcomes": [
+        "Apply motivation theories",
+        "Choose a leadership approach"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Group Dynamics and Change",
+     "topics": [
+      {
+       "title": "Groups, conflict and change",
+       "summary": "Teams, conflict and organisational change and development.",
+       "notes": [
+        "Group cohesiveness raises productivity when group norms support organisational goals.",
+        "Conflict can be functional or dysfunctional.",
+        "Organisational development interventions: sensitivity training, survey feedback, team building."
+       ],
+       "outcomes": [
+        "Manage conflict constructively",
+        "Plan an OD intervention"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-1-managerial-economics",
+   "title": "Managerial Economics, MCom Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Demand and Supply",
+     "topics": [
+      {
+       "title": "Demand analysis and forecasting",
+       "summary": "Elasticities, demand estimation and forecasting.",
+       "notes": [
+        "Point elasticity e = (dQ/dP)(P/Q).",
+        "Demand estimation by regression: Q = a + bP + cY + …",
+        "Forecasting: survey methods, trend projection, barometric indicators, econometric models."
+       ],
+       "outcomes": [
+        "Estimate and interpret elasticities",
+        "Forecast demand with a trend equation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Production and Costs",
+     "topics": [
+      {
+       "title": "Production and cost analysis",
+       "summary": "Isoquants, economies of scope and break-even analysis.",
+       "notes": [
+        "An isoquant shows input combinations giving the same output; MRTS = MPL ÷ MPK.",
+        "Economies of scope: cheaper to produce products together than separately.",
+        "Learning curve: unit cost falls by a constant percentage each time cumulative output doubles."
+       ],
+       "outcomes": [
+        "Find the optimal input combination",
+        "Apply learning curve effects"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Pricing",
+     "topics": [
+      {
+       "title": "Pricing strategies and market structures",
+       "summary": "Pricing under competition and monopoly, and pricing practices.",
+       "notes": [
+        "Monopoly mark-up: (P − MC) ÷ P = −1 ÷ e (Lerner index).",
+        "Third-degree price discrimination charges more in the market with less elastic demand.",
+        "Game theory: Nash equilibrium is a set of strategies where no player gains by changing alone."
+       ],
+       "outcomes": [
+        "Price with the Lerner rule",
+        "Find a Nash equilibrium"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Macro Environment",
+     "topics": [
+      {
+       "title": "Macroeconomic policy and business",
+       "summary": "Monetary and fiscal policy, inflation and business cycles.",
+       "notes": [
+        "Inflation types: demand-pull, cost-push; Phillips curve trade-off in the short run.",
+        "RBI's monetary policy committee sets the repo rate to target 4% CPI inflation within a 2–6% band.",
+        "Fiscal deficit = Total expenditure − (Revenue receipts + non-debt capital receipts)."
+       ],
+       "outcomes": [
+        "Explain how policy affects business",
+        "Compute the fiscal deficit"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-1-advanced-cost-accounting",
+   "title": "Advanced Cost and Management Accounting, MCom Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Activity-Based Costing",
+     "topics": [
+      {
+       "title": "ABC system",
+       "summary": "Activities, cost drivers and ABC vs traditional costing.",
+       "notes": [
+        "ABC assigns overheads to activities, then to products by cost drivers (set-ups, orders, inspections).",
+        "Activity cost driver rate = Activity cost pool ÷ Cost driver volume.",
+        "ABC corrects cross-subsidisation where low-volume products are under-costed."
+       ],
+       "outcomes": [
+        "Compute product costs under ABC",
+        "Compare ABC with traditional absorption costing"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A factory makes 10,000 standard shirts and 100 custom ones. Why might the custom shirts look profitable but not be?",
+        "example": "Set-up cost ₹60,000 for 30 set-ups: ₹2,000 per set-up. Custom line uses 20 set-ups = ₹40,000 for 100 shirts: ₹400 each.\nSpread by labour hours instead, the custom shirts might get only ₹20 each of set-up cost.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is a cost driver?",
+          "a": "A factor whose change causes a change in the cost of an activity."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "activity",
+         "cost pool",
+         "cost driver",
+         "cross-subsidisation"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Strategic Cost Management",
+     "topics": [
+      {
+       "title": "Target, life cycle and kaizen costing",
+       "summary": "Modern costing techniques for strategy.",
+       "notes": [
+        "Target cost = Target price − Target profit.",
+        "Life cycle costing covers costs from design to disposal.",
+        "Kaizen costing seeks continuous small cost reductions during production."
+       ],
+       "outcomes": [
+        "Compute target cost and cost gap",
+        "Explain life cycle costing"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Decision Making",
+     "topics": [
+      {
+       "title": "Relevant costing",
+       "summary": "Relevant costs, make or buy, special orders and limiting factors.",
+       "notes": [
+        "Relevant costs are future, incremental cash costs; sunk costs are irrelevant.",
+        "Opportunity cost is relevant when resources are scarce.",
+        "With one limiting factor, rank products by contribution per unit of that factor."
+       ],
+       "outcomes": [
+        "Make make-or-buy and special order decisions",
+        "Allocate scarce resources"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "lab.break-even",
+         "title": "Break-even analysis"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Performance Measurement",
+     "topics": [
+      {
+       "title": "Responsibility accounting and transfer pricing",
+       "summary": "Responsibility centres, ROI, residual income and transfer pricing.",
+       "notes": [
+        "Centres: cost, revenue, profit and investment centres.",
+        "ROI = Operating profit ÷ Capital employed; residual income = Profit − (Capital × Cost of capital).",
+        "Transfer price range: minimum = marginal cost + opportunity cost; maximum = external market price."
+       ],
+       "outcomes": [
+        "Evaluate divisions by ROI and RI",
+        "Set a transfer price"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-2-corporate-financial-reporting",
+   "title": "Corporate Financial Reporting, MCom Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Ind AS Framework",
+     "topics": [
+      {
+       "title": "Ind AS and IFRS",
+       "summary": "Conceptual framework and key Ind AS.",
+       "notes": [
+        "Ind AS 1 presentation; Ind AS 8 accounting policies, estimates and errors; Ind AS 10 events after the reporting period.",
+        "Ind AS 115 revenue: five steps — identify contract, performance obligations, transaction price, allocate, recognise.",
+        "Ind AS 116 leases: lessees recognise right-of-use assets and lease liabilities for most leases."
+       ],
+       "outcomes": [
+        "Apply the five-step revenue model",
+        "Account for a lease under Ind AS 116"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Business Combinations",
+     "topics": [
+      {
+       "title": "Ind AS 103 and consolidation",
+       "summary": "Acquisition method, goodwill and consolidated statements.",
+       "notes": [
+        "Acquisition method: identify acquirer, acquisition date, measure assets and liabilities at fair value, recognise goodwill or bargain purchase.",
+        "Goodwill = Consideration + NCI + previously held interest − Net identifiable assets.",
+        "Ind AS 110: control means power, exposure to variable returns and ability to use power to affect returns."
+       ],
+       "outcomes": [
+        "Compute goodwill on acquisition",
+        "Prepare a simple consolidated balance sheet"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Financial Instruments",
+     "topics": [
+      {
+       "title": "Ind AS 109 and 32",
+       "summary": "Classification, measurement and impairment of financial instruments.",
+       "notes": [
+        "Financial assets: amortised cost, FVOCI or FVTPL depending on business model and cash flow characteristics.",
+        "Expected credit loss model for impairment.",
+        "Compound instruments (convertible debentures) are split into liability and equity components."
+       ],
+       "outcomes": [
+        "Classify financial assets",
+        "Split a compound instrument"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Corporate Reporting",
+     "topics": [
+      {
+       "title": "Integrated and sustainability reporting",
+       "summary": "Non-financial reporting frameworks.",
+       "notes": [
+        "BRSR is mandatory for the top 1,000 listed companies; BRSR Core needs reasonable assurance for the top companies in phases.",
+        "Integrated reporting (IIRC) covers six capitals.",
+        "ISSB standards (IFRS S1, S2) set global sustainability disclosure baselines."
+       ],
+       "outcomes": [
+        "Explain BRSR requirements",
+        "Describe the six capitals"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-2-business-research-methods",
+   "title": "Business Research Methods, MCom Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Research Design",
+     "topics": [
+      {
+       "title": "Research problem and design",
+       "summary": "Problem formulation, hypotheses and designs.",
+       "notes": [
+        "Research questions should be specific and answerable.",
+        "Designs: exploratory, descriptive, causal.",
+        "Variables: independent, dependent, moderating, mediating."
+       ],
+       "outcomes": [
+        "Formulate hypotheses",
+        "Choose a research design"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Sampling and Measurement",
+     "topics": [
+      {
+       "title": "Sampling and scales",
+       "summary": "Sampling techniques, sample size and measurement validity.",
+       "notes": [
+        "n = z²σ² ÷ e² for estimating a mean.",
+        "Validity types: content, construct, criterion; reliability: test–retest, internal consistency.",
+        "Scales: Likert, semantic differential, rank order."
+       ],
+       "outcomes": [
+        "Determine sample size",
+        "Assess reliability and validity"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Data Analysis",
+     "topics": [
+      {
+       "title": "Parametric and non-parametric tests",
+       "summary": "t, F, chi-square and non-parametric tests.",
+       "notes": [
+        "Paired t-test compares before–after means.",
+        "Chi-square test of independence: χ² = Σ (O − E)² ÷ E with (r − 1)(c − 1) df.",
+        "Non-parametric: sign test, Wilcoxon, Mann–Whitney, Kruskal–Wallis."
+       ],
+       "outcomes": [
+        "Choose and run a suitable test",
+        "Interpret test output"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "Observed 30 and 20 against expected 25 and 25: χ² = 25/25 + 25/25 = 2; with 1 df, below 3.84, so not significant at 5%.",
+        "activity": "",
+        "questions": [],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Report Writing",
+     "topics": [
+      {
+       "title": "Research report",
+       "summary": "Writing, presenting and referencing research.",
+       "notes": [
+        "Structure: introduction, review, methodology, analysis, findings, conclusions.",
+        "Tables and figures need numbers, titles and sources.",
+        "Cite with a consistent style (APA)."
+       ],
+       "outcomes": [
+        "Write a research report",
+        "Present findings clearly"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-2-international-business",
+   "title": "International Business, MCom Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Global Environment",
+     "topics": [
+      {
+       "title": "Globalisation and trade theories",
+       "summary": "Globalisation, trade theories and protectionism.",
+       "notes": [
+        "Comparative advantage and Heckscher–Ohlin factor endowment theory.",
+        "Tariff and non-tariff barriers (quotas, standards, anti-dumping duties).",
+        "Product life cycle theory of trade (Vernon)."
+       ],
+       "outcomes": [
+        "Explain trade patterns with theory",
+        "Evaluate protectionist measures"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Foreign Investment",
+     "topics": [
+      {
+       "title": "FDI and multinational enterprises",
+       "summary": "Types and theories of FDI and India's FDI policy.",
+       "notes": [
+        "FDI types: horizontal, vertical, conglomerate; greenfield vs brownfield.",
+        "Dunning's OLI paradigm: ownership, location, internalisation advantages.",
+        "India's FDI is through the automatic route or the government route depending on sector caps."
+       ],
+       "outcomes": [
+        "Apply the OLI paradigm",
+        "Explain India's FDI routes"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Foreign Exchange",
+     "topics": [
+      {
+       "title": "Exchange rates and risk",
+       "summary": "Exchange rate determination and exposure management.",
+       "notes": [
+        "Purchasing power parity: exchange rate changes offset inflation differentials.",
+        "Interest rate parity: F = S × (1 + i_d) ÷ (1 + i_f).",
+        "Hedging: forwards, futures, options and natural hedges."
+       ],
+       "outcomes": [
+        "Compute forward rates by interest rate parity",
+        "Hedge transaction exposure"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Trade Policy and Institutions",
+     "topics": [
+      {
+       "title": "India's trade policy and the WTO",
+       "summary": "Foreign Trade Policy, export promotion and WTO agreements.",
+       "notes": [
+        "Foreign Trade Policy 2023 aims at export growth and ease of doing business; DGFT administers it.",
+        "Export promotion: SEZs, EOUs, export credit (ECGC, EXIM Bank).",
+        "WTO agreements: GATT, GATS, TRIPS, TRIMs."
+       ],
+       "outcomes": [
+        "Describe export promotion measures",
+        "Explain WTO agreements"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-3-direct-taxes",
+   "title": "Direct Taxes and Tax Planning, MCom Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Tax Planning Concepts",
+     "topics": [
+      {
+       "title": "Tax planning, avoidance and evasion",
+       "summary": "Distinguishing planning, avoidance and evasion, and GAAR.",
+       "notes": [
+        "Tax planning uses provisions as intended; avoidance exploits loopholes; evasion is illegal.",
+        "GAAR (Chapter X-A) lets authorities deny benefits of impermissible avoidance arrangements.",
+        "McDowell and Vodafone judgments shaped the Indian position on avoidance."
+       ],
+       "outcomes": [
+        "Distinguish planning, avoidance and evasion",
+        "Explain GAAR"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Corporate Taxation",
+     "topics": [
+      {
+       "title": "Taxation of companies",
+       "summary": "Corporate tax rates, MAT and concessional regimes.",
+       "notes": [
+        "Section 115BAA: 22% (effective about 25.17%) for domestic companies forgoing certain deductions; MAT does not apply.",
+        "Section 115BAB (new manufacturing companies) 15% for companies set up before its sunset date.",
+        "MAT (section 115JB) at 15% of book profit for companies under the normal regime."
+       ],
+       "outcomes": [
+        "Compute a company's tax liability",
+        "Compare tax regimes for companies"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Tax Planning for Decisions",
+     "topics": [
+      {
+       "title": "Tax-based managerial decisions",
+       "summary": "Make or buy, lease or buy, and capital structure.",
+       "notes": [
+        "Interest is tax-deductible; dividends are not, so debt gives a tax shield (Interest × tax rate).",
+        "Lease or buy: compare after-tax present values of costs.",
+        "Depreciation tax shield = Depreciation × tax rate."
+       ],
+       "outcomes": [
+        "Compare lease and buy after tax",
+        "Value a tax shield"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Assessment and Procedures",
+     "topics": [
+      {
+       "title": "Returns, assessment and appeals",
+       "summary": "Filing returns, assessment types and appeals.",
+       "notes": [
+        "Assessment types: summary (143(1)), scrutiny (143(3)), best judgement (144), reassessment (147–148A).",
+        "Faceless assessment and appeals schemes.",
+        "Appeals: CIT(A), ITAT, High Court, Supreme Court."
+       ],
+       "outcomes": [
+        "Describe assessment procedures",
+        "Trace the appeal route"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-3-advanced-financial-management",
+   "title": "Advanced Financial Management (Finance elective), MCom Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Valuation",
+     "topics": [
+      {
+       "title": "Corporate valuation",
+       "summary": "DCF, relative valuation and EVA.",
+       "notes": [
+        "Free cash flow to firm = EBIT(1 − t) + Depreciation − Capex − ΔWorking capital.",
+        "Firm value = PV of FCFF at WACC + terminal value (FCFF × (1 + g) ÷ (WACC − g)).",
+        "EVA = NOPAT − WACC × Capital employed."
+       ],
+       "outcomes": [
+        "Value a firm by DCF",
+        "Compute EVA"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Mergers and Acquisitions",
+     "topics": [
+      {
+       "title": "M&A analysis",
+       "summary": "Synergy, exchange ratios and takeover regulation.",
+       "notes": [
+        "Synergy = V(AB) − (V(A) + V(B)).",
+        "Exchange ratio based on EPS, market price or book value.",
+        "SEBI SAST Regulations: open offer triggered at 25% voting rights."
+       ],
+       "outcomes": [
+        "Compute synergy and exchange ratios",
+        "Explain takeover rules"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Risk Management",
+     "topics": [
+      {
+       "title": "Derivatives for corporate risk",
+       "summary": "Using futures, options and swaps to manage risk.",
+       "notes": [
+        "Hedge ratio for minimum variance: h = ρ σS ÷ σF.",
+        "Options give the right, not the obligation; premiums are the cost of protection.",
+        "Interest rate swaps change fixed to floating exposure or vice versa."
+       ],
+       "outcomes": [
+        "Compute a minimum-variance hedge ratio",
+        "Choose a hedging instrument"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Financial Restructuring",
+     "topics": [
+      {
+       "title": "Restructuring and insolvency",
+       "summary": "Buybacks, demergers and the IBC.",
+       "notes": [
+        "Buyback limit: 25% of paid-up capital and free reserves (with debt–equity not above 2:1 after buyback).",
+        "Demergers separate business units into new companies.",
+        "IBC: corporate insolvency resolution within 180 days (extendable to 330 days including litigation)."
+       ],
+       "outcomes": [
+        "Evaluate a buyback",
+        "Describe the insolvency resolution process"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "mcom-4-indirect-taxes",
+   "title": "Indirect Taxes: GST and Customs, MCom Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MCom CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "GST Framework",
+     "topics": [
+      {
+       "title": "Constitutional and legal framework",
+       "summary": "GST laws, the GST Council and dual structure.",
+       "notes": [
+        "Laws: CGST Act, SGST Acts, IGST Act, UTGST Act, GST (Compensation to States) Act.",
+        "Article 246A gives both Centre and States power to levy GST.",
+        "Inter-state supplies attract IGST, settled between Centre and States."
+       ],
+       "outcomes": [
+        "Explain the legal framework of GST",
+        "Classify supplies for CGST, SGST or IGST"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Valuation and ITC",
+     "topics": [
+      {
+       "title": "Value of supply and input tax credit",
+       "summary": "Transaction value, inclusions and ITC rules.",
+       "notes": [
+        "Value of supply is the transaction value plus taxes other than GST, incidental expenses and subsidies linked to price (section 15).",
+        "Discounts before or at supply recorded on the invoice are excluded.",
+        "ITC is reversed if payment to the supplier is not made within 180 days."
+       ],
+       "outcomes": [
+        "Compute the value of supply",
+        "Compute eligible ITC"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Procedures",
+     "topics": [
+      {
+       "title": "Registration, invoicing, returns and e-invoicing",
+       "summary": "Compliance under GST.",
+       "notes": [
+        "E-invoicing applies above a turnover threshold (₹5 crore).",
+        "Reverse charge applies to notified supplies (e.g. GTA, legal services to businesses).",
+        "Annual return GSTR-9; reconciliation statement GSTR-9C for larger taxpayers."
+       ],
+       "outcomes": [
+        "Prepare a compliance calendar",
+        "Identify reverse charge supplies"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Customs",
+     "topics": [
+      {
+       "title": "Customs law",
+       "summary": "Types of customs duty and valuation of imports.",
+       "notes": [
+        "Basic customs duty, IGST on imports, social welfare surcharge, safeguard and anti-dumping duties.",
+        "Assessable value = CIF value (transaction value + freight + insurance).",
+        "Baggage, warehousing and drawback provisions."
+       ],
+       "outcomes": [
+        "Compute customs duty on an import",
+        "Explain duty drawback"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

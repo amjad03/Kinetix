@@ -57,6 +57,16 @@ async function main() {
   const [corpAcc] = await db.insert(s.subjects).values({ tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.1', name: 'Corporate Accounting', courseId: await course('bcom-3-corporate-accounting') }).returning();
   const [costing] = await db.insert(s.subjects).values({ tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.3', name: 'Cost Accounting', courseId: await course('bcom-3-cost-accounting') }).returning();
   const [dmaths] = await db.insert(s.subjects).values({ tenantId, programId: bca.id, term: 1, code: 'BCA-1.2', name: 'Discrete Mathematics', courseId: await course('bca-1-discrete-mathematics') }).returning();
+  // The rest of each semester's core papers, linked to the BU syllabus in the content library.
+  const moreSubjects = await db
+    .insert(s.subjects)
+    .values([
+      { tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.2', name: 'Financial Management', courseId: await course('bcom-3-financial-management') },
+      { tenantId, programId: bcom.id, term: 3, code: 'BCOM-3.4', name: 'Indian Financial System', courseId: await course('bcom-3-indian-financial-system') },
+      { tenantId, programId: bca.id, term: 1, code: 'BCA-1.1', name: 'Problem Solving Techniques (C)', courseId: await course('bca-1-problem-solving-c') },
+      { tenantId, programId: bca.id, term: 1, code: 'BCA-1.3', name: 'Computer Architecture', courseId: await course('bca-1-computer-architecture') },
+    ])
+    .returning();
 
   const staff = async (fullName: string, email: string, roles: (typeof s.roleName.enumValues)[number][], lang: 'en' | 'hi' | 'kn' = 'en') => {
     const [u] = await db.insert(s.users).values({ tenantId, fullName, email, passwordHash: hash, preferredLanguage: lang }).returning();
@@ -78,8 +88,9 @@ async function main() {
     { tenantId, departmentId: commerce.id, userId: ravi.id },
     { tenantId, departmentId: compsci.id, userId: ravi.id },
   ]);
-  await db.update(s.subjects).set({ departmentId: commerce.id }).where(inArray(s.subjects.id, [corpAcc.id, costing.id]));
-  await db.update(s.subjects).set({ departmentId: compsci.id }).where(eq(s.subjects.id, dmaths.id));
+  const more = (prefix: string) => moreSubjects.filter((x) => x.code.startsWith(prefix)).map((x) => x.id);
+  await db.update(s.subjects).set({ departmentId: commerce.id }).where(inArray(s.subjects.id, [corpAcc.id, costing.id, ...more('BCOM')]));
+  await db.update(s.subjects).set({ departmentId: compsci.id }).where(inArray(s.subjects.id, [dmaths.id, ...more('BCA')]));
 
   const names = ['Aarav Patel', 'Ananya Gowda', 'Bhavya Reddy', 'Chetan Naik', 'Deepika Hegde', 'Farhan Khan', 'Gauri Shetty', 'Harsh Jain', 'Ishita Rao', 'Karthik Murthy', 'Lakshmi Iyer', 'Manoj Bhat'];
   await db.insert(s.students).values(names.map((fullName, i) => ({ tenantId, sectionId: bcom3a.id, rollNo: `U03BC${(i + 1).toString().padStart(3, '0')}`, fullName })));

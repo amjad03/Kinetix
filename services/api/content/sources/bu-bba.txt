@@ -1,0 +1,691 @@
+// BBA, Bangalore University. Semesters 1-6.
+file: bu-bba
+curriculum: bu-ug | Bangalore University (UG) | ug
+programme: BBA
+scheme: SEP 2024 | 2024-25
+! The BBA course list follows the BU NEP 2021 BBA structure as carried into SEP 2024 (Sem 1-4) and the NEP Sem 5-6 papers; no BU SEP BBA scheme document could be reached. Confirm every paper title, semester and code.
+! Not written: languages, AECC, skill and open electives; elective streams in Sem 5-6 (Finance, Marketing, Human Resources, Business Analytics, Logistics) beyond the core papers below.
+
+# bba-1-management-principles | 1 | Management Principles and Practice
+## Introduction to Management
+### Management: concept, functions and skills
+= Meaning and nature of management, managerial roles and skills.
+- Management is a process of planning, organising, staffing, directing and controlling to achieve goals efficiently and effectively.
+- Efficiency is doing things right (minimum resources); effectiveness is doing the right things (achieving goals).
+- Mintzberg's managerial roles: interpersonal, informational, decisional.
+- Katz's skills: technical (lower levels), human (all levels), conceptual (top level).
+> Explain the functions and roles of a manager
+> Relate managerial skills to levels of management
+## Evolution of Management Thought
+### Classical, behavioural and modern approaches
+= Scientific management, administrative theory, bureaucracy, Hawthorne studies and systems and contingency approaches.
+- Taylor's scientific management: science not rule of thumb, harmony, cooperation, maximum output, development of workers.
+- Fayol's 14 principles include division of work, authority and responsibility, unity of command, unity of direction, scalar chain and equity.
+- Max Weber's bureaucracy: hierarchy, rules, impersonality, merit-based appointment.
+- The Hawthorne studies (Elton Mayo) showed social factors affect productivity; systems and contingency approaches see the organisation as open and its best practice as situational.
+> Compare classical and behavioural approaches
+> Apply Fayol's principles to a case
+## Planning and Decision Making
+### Planning, objectives and decisions
+= Types of plans, steps in planning, MBO and decision-making models.
+- Strategic plans are long-term and set by top management; tactical plans by middle managers; operational plans for day-to-day work.
+- SMART objectives are specific, measurable, achievable, relevant and time-bound.
+- Programmed decisions handle routine problems; non-programmed decisions handle new, unstructured ones.
+- Simon's bounded rationality: managers "satisfice" rather than optimise.
+> Write SMART objectives
+> Distinguish programmed and non-programmed decisions
+## Organising
+### Structure, authority and delegation
+= Organisation design, centralisation and delegation.
+- Departmentation by function, product, territory, customer or process.
+- A narrow span of control creates a tall structure; a wide span a flat one.
+- Centralisation keeps decision authority at the top; decentralisation spreads it systematically.
+- Authority can be delegated but accountability cannot.
+> Design a structure for a growing firm
+> Explain the elements of delegation
+## Directing and Controlling
+### Communication, coordination and control
+= Communication process and barriers, coordination and the control process.
+- Communication process: sender, encoding, message, channel, decoding, receiver, feedback.
+- Barriers: semantic, psychological, organisational and physical.
+- Coordination is the essence of management: it synchronises group efforts.
+- Control process: set standards, measure, compare, correct; feedforward control acts before problems occur.
+> Identify communication barriers and remedies
+> Describe the control process
+
+# bba-1-business-accounting | 1 | Fundamentals of Business Accounting
+## Introduction to Accounting
+### Accounting principles and the accounting equation
+= Meaning, users and branches of accounting, and the accounting equation.
+- Users: owners, managers, creditors, investors, employees, government.
+- Branches: financial, cost, management and tax accounting.
+- Accounting equation: Assets = Liabilities + Capital; every transaction keeps it balanced.
+- Golden rules: personal — debit the receiver, credit the giver; real — debit what comes in, credit what goes out; nominal — debit expenses and losses, credit incomes and gains.
+> Apply the accounting equation to transactions
+> Classify accounts and apply the golden rules
+hook: You start a business with ₹50,000 and buy goods for ₹20,000 on credit. What do you own and what do you owe?
+ex: Capital ₹50,000: Assets (cash) 50,000 = Capital 50,000.
+ex: Goods ₹20,000 on credit: Assets 70,000 = Liabilities 20,000 + Capital 50,000.
+q: Which account is debited when rent is paid? || Rent account (nominal: debit expenses).
+terms: asset; liability; capital; debit; credit
+## Journal, Ledger and Trial Balance
+### Recording and posting
+= Journal entries, subsidiary books, ledger posting and the trial balance.
+- The journal is the book of original entry; entries are posted to ledger accounts and balanced.
+- Subsidiary books: purchases, sales, returns, cash book, bills books and the journal proper.
+- A trial balance lists ledger balances; equal totals show arithmetical accuracy but not the absence of all errors.
+- Errors not disclosed by a trial balance: omission, commission (some), principle and compensating errors.
+> Journalise transactions and post them to the ledger
+> Prepare a trial balance
+## Bank Reconciliation Statement
+### Bank reconciliation
+= Reasons for differences between cash book and pass book and the reconciliation statement.
+- Causes: cheques issued but not presented, cheques deposited but not cleared, bank charges, interest and direct credits or debits not yet in the cash book.
+- Starting from the cash book (debit) balance: add cheques issued but not presented; deduct cheques deposited but not cleared.
+- An overdraft is a credit balance in the cash book.
+> Prepare a bank reconciliation statement
+> Explain the causes of difference
+ex: Cash book balance ₹25,000; cheques issued not presented ₹4,000; deposited not cleared ₹6,000; bank charges ₹200.
+ex: Pass book balance = 25,000 + 4,000 − 6,000 − 200 = ₹22,800.
+## Final Accounts of Sole Traders
+### Trading and profit and loss account and balance sheet
+= Preparing final accounts with adjustments.
+- Gross profit = Net sales − Cost of goods sold (Opening stock + Purchases + Direct expenses − Closing stock).
+- Common adjustments: closing stock, outstanding and prepaid expenses, accrued and advance income, depreciation, bad debts and provision for doubtful debts.
+- Each adjustment is recorded twice: once in the trading or profit and loss account and once in the balance sheet.
+> Prepare final accounts with adjustments
+> Treat outstanding and prepaid items correctly
+## Depreciation
+### Methods of depreciation
+= Causes of depreciation and the straight-line and written-down value methods.
+- Depreciation is the allocation of the depreciable amount of an asset over its useful life.
+- Straight-line: annual depreciation = (Cost − Residual value) ÷ Useful life.
+- Written-down value: a fixed rate on the opening book value; the charge falls each year.
+- Profit or loss on sale = Sale price − Book value on the date of sale.
+> Compute depreciation by both methods
+> Prepare an asset account with a sale
+
+# bba-1-business-economics | 1 | Business Economics
+! May be titled Managerial Economics or placed in Sem 2; confirm.
+## Introduction
+### Nature and scope of business economics
+= Micro and macro economics, and economics for managerial decisions.
+- Business economics applies economic theory to business decisions: demand, cost, pricing, investment.
+- Microeconomics studies individual units; macroeconomics studies the economy as a whole.
+- Basic problems: what, how and for whom to produce, arising from scarcity.
+- Opportunity cost is the value of the next best alternative forgone.
+> Explain the scope of business economics
+> Apply opportunity cost to decisions
+## Demand Analysis
+### Demand and elasticity
+= Law of demand, determinants, and price, income and cross elasticity.
+- Law of demand: other things equal, quantity demanded rises as price falls.
+- Price elasticity Ep = % change in quantity demanded ÷ % change in price; elastic if |Ep| > 1.
+- If demand is elastic, a price cut raises total revenue; if inelastic, it lowers it.
+- Income elasticity is negative for inferior goods; cross elasticity is positive for substitutes and negative for complements.
+> Compute price elasticity of demand
+> Relate elasticity to pricing decisions
+hook: Petrol prices rise 10% but people buy almost as much. Mangoes rise 10% and sales collapse. Why?
+ex: Price rises from ₹10 to ₹12 (20%); quantity falls from 100 to 70 (30%). Ep = 30 ÷ 20 = 1.5: elastic.
+q: If Ep = 0.4 and price rises, what happens to total revenue? || It rises, because demand is inelastic.
+terms: elasticity; substitutes; complements; inferior goods
+## Production and Cost
+### Production function and costs
+= Laws of variable proportions, returns to scale and cost curves.
+- Law of variable proportions: as more of a variable input is added to fixed inputs, marginal product eventually falls.
+- Returns to scale (all inputs varied): increasing, constant or decreasing.
+- Total cost = Fixed cost + Variable cost; marginal cost = change in total cost from one more unit.
+- Short-run average and marginal cost curves are U-shaped; MC cuts AC at its minimum.
+> Explain the law of variable proportions
+> Derive cost curves from cost data
+## Market Structures
+### Pricing under different markets
+= Perfect competition, monopoly, monopolistic competition and oligopoly.
+- Profit is maximised where MR = MC (and MC cuts MR from below).
+- Perfect competition: many firms, homogeneous product, price takers (P = MR = AR).
+- Monopoly: single seller, price maker; may practise price discrimination.
+- Monopolistic competition: differentiated products and selling costs; oligopoly: few interdependent firms (kinked demand curve).
+> Apply the MR = MC rule
+> Compare market structures
+## Macroeconomic Environment
+### National income and inflation
+= Concepts and measurement of national income, and inflation.
+- GDP is the market value of final goods and services produced within a country in a year.
+- Methods: product (value added), income and expenditure (C + I + G + (X − M)).
+- Inflation is a sustained rise in the general price level; India's RBI targets 4% CPI inflation (±2%).
+- Business cycle phases: expansion, peak, recession, trough.
+> Distinguish GDP, GNP and NNP
+> Explain the causes and effects of inflation
+
+# bba-2-financial-accounting-reporting | 2 | Financial Accounting and Reporting
+## Accounting Standards and IFRS
+### Accounting standards in India
+= AS, Ind AS and IFRS convergence.
+- Ind AS (notified under the Companies Act) are converged with IFRS; they apply in phases to listed and large companies.
+- Other companies follow the Accounting Standards (AS) notified for them.
+- Key standards: Ind AS 1 (presentation), Ind AS 2 (inventories), Ind AS 16 (property, plant and equipment), Ind AS 115 (revenue).
+> Explain why accounting standards matter
+> Name key Ind AS and their subjects
+## Company Accounts: Shares
+### Issue and forfeiture of shares
+= Issue at par and premium, calls, forfeiture and reissue.
+- Securities premium can be used only for purposes in section 52 (e.g. issuing bonus shares, writing off preliminary expenses).
+- Shares are issued at par or premium; issue at a discount is barred except sweat equity.
+- On forfeiture, share capital is debited with the called-up amount, and the amount received is credited to share forfeiture.
+- On reissue, any discount is debited to forfeiture; the balance of forfeiture on reissued shares goes to capital reserve.
+> Pass entries for issue, calls and forfeiture
+> Compute the transfer to capital reserve on reissue
+ex: 100 shares of ₹10 forfeited after ₹6 paid; reissued at ₹8 fully paid.
+ex: Forfeiture ₹600; discount on reissue ₹200; capital reserve ₹400.
+## Final Accounts of Companies
+### Financial statements under Schedule III
+= Balance sheet and statement of profit and loss of a company.
+- Schedule III (Division I for AS, Division II for Ind AS) prescribes the format.
+- Equity and liabilities: shareholders' funds, non-current liabilities, current liabilities.
+- Statement of profit and loss shows revenue from operations, other income, expenses, tax and profit for the period.
+> Prepare a company balance sheet with notes
+> Classify items in the Schedule III format
+## Financial Reporting
+### Annual report and corporate reporting
+= Contents of the annual report and recent reporting trends.
+- The annual report contains the directors' report, auditor's report, financial statements and notes, and management discussion and analysis.
+- Listed companies publish a Business Responsibility and Sustainability Report (BRSR).
+- Integrated reporting combines financial and non-financial (environmental, social, governance) information.
+> Read the main parts of an annual report
+> Explain BRSR and integrated reporting
+
+# bba-2-organisational-behaviour | 2 | Organisational Behaviour
+## Introduction to OB
+### Nature and models of OB
+= Meaning, levels and models of organisational behaviour.
+- OB studies how individuals, groups and structure affect behaviour in organisations.
+- Levels of analysis: individual, group, organisation.
+- Models of OB: autocratic, custodial, supportive, collegial.
+> Explain the scope of OB
+> Compare the models of OB
+## Individual Behaviour
+### Personality, perception and learning
+= Determinants of personality, the perception process and learning theories.
+- Big Five personality traits: openness, conscientiousness, extraversion, agreeableness, neuroticism.
+- Perception errors: stereotyping, halo effect, selective perception, projection.
+- Learning theories: classical conditioning, operant conditioning (reinforcement), social learning.
+> Identify perceptual errors at work
+> Apply reinforcement to shape behaviour
+### Attitudes and motivation
+= Job satisfaction, attitudes and process theories of motivation.
+- Attitudes have cognitive, affective and behavioural components.
+- Vroom's expectancy theory: Motivation = Expectancy × Instrumentality × Valence.
+- Adams' equity theory: people compare their output–input ratio with others'.
+> Apply expectancy and equity theories
+> Explain the components of attitudes
+## Group Behaviour
+### Groups and teams
+= Group formation, team types and group decision making.
+- Tuckman's stages: forming, storming, norming, performing, adjourning.
+- Groupthink is pressure for conformity that suppresses dissent.
+- Team types: problem-solving, self-managed, cross-functional, virtual.
+> Describe stages of group development
+> Suggest ways to avoid groupthink
+## Organisational Dynamics
+### Conflict, stress and change
+= Conflict management styles, stress and Lewin's change model.
+- Thomas–Kilmann conflict styles: competing, collaborating, compromising, avoiding, accommodating.
+- Stressors may be environmental, organisational or individual.
+- Lewin's model of change: unfreeze, change (move), refreeze; resistance arises from habit, fear and self-interest.
+> Choose a conflict style for a situation
+> Plan a change using Lewin's model
+
+# bba-2-business-mathematics | 2 | Business Mathematics
+! Confirm whether Sem 2 has Business Mathematics or Business Statistics under SEP.
+## Number Systems and Equations
+### Ratios, proportions and equations
+= Ratio, proportion, percentages and solving linear and quadratic equations.
+- If a : b = c : d then ad = bc.
+- Quadratic ax² + bx + c = 0: x = (−b ± √(b² − 4ac)) ÷ 2a.
+- Simultaneous linear equations can be solved by substitution, elimination or matrices.
+> Solve linear and quadratic equations
+> Use ratios to share profits and costs
+## Commercial Arithmetic
+### Interest, discount and annuities
+= Simple and compound interest, discounting bills and annuities.
+- SI = PNR ÷ 100; CI = P(1 + r/100)ⁿ − P.
+- True discount = Amount × r × t ÷ (100 + r × t); banker's discount = Amount × r × t ÷ 100.
+- Present value of an annuity = A[1 − (1 + i)⁻ⁿ] ÷ i.
+> Compute interest, discount and annuities
+> Compare loan options by EMI
+@lab lab.graph-plotter
+## Matrices
+### Matrices and determinants
+= Matrix algebra and solving equations by the inverse method.
+- A matrix is invertible only if its determinant is non-zero.
+- A⁻¹ = adj A ÷ |A|.
+- AX = B gives X = A⁻¹B.
+> Find the inverse of a 3 × 3 matrix
+> Solve business problems with matrices
+## Progressions and Logarithms
+### Arithmetic and geometric progressions
+= nth term and sum of AP and GP, and logarithms.
+- AP: tₙ = a + (n − 1)d; Sₙ = n/2 [2a + (n − 1)d].
+- GP: tₙ = arⁿ⁻¹; Sₙ = a(rⁿ − 1) ÷ (r − 1), r ≠ 1.
+- log(mn) = log m + log n; log(m/n) = log m − log n; log mⁿ = n log m.
+> Sum arithmetic and geometric series
+> Use logarithms in calculations
+## Linear Programming
+### Formulating and solving LPP graphically
+= Objective function, constraints and the graphical method.
+- An LPP maximises or minimises a linear objective function subject to linear constraints and non-negativity.
+- The feasible region is the set of points satisfying all constraints.
+- The optimum lies at a corner point of the feasible region.
+> Formulate an LPP from a business problem
+> Solve a two-variable LPP graphically
+@lab lab.graph-plotter
+ex: Max Z = 3x + 5y subject to x + y ≤ 4, x + 3y ≤ 6, x, y ≥ 0.
+ex: Corners (0,0), (4,0), (3,1), (0,2): Z = 0, 12, 14, 10. Maximum Z = 14 at (3, 1).
+
+# bba-3-cost-accounting | 3 | Cost Accounting
+## Introduction and Cost Sheet
+### Cost concepts and cost sheet
+= Cost objects, cost centres, classification and the cost sheet.
+- A cost centre is a location or activity for which costs are collected; a cost unit is the unit of output costed.
+- Costs by behaviour: fixed, variable, semi-variable; by traceability: direct and indirect.
+- Cost sheet: prime cost, works cost, cost of production, cost of sales, profit.
+> Prepare a cost sheet
+> Classify costs by behaviour
+ex: Materials 50,000 + labour 30,000 + direct expenses 5,000 = prime cost ₹85,000; works overheads 15,000: works cost ₹1,00,000.
+## Material Cost Control
+### Inventory control techniques
+= EOQ, stock levels and ABC analysis.
+- EOQ = √(2AO ÷ C).
+- ABC analysis: A items (high value, few) get tight control; C items (low value, many) simple control.
+- JIT aims to keep minimal inventory by receiving goods only as needed.
+> Compute EOQ and stock levels
+> Apply ABC analysis
+## Labour Cost Control
+### Wage systems and incentives
+= Time and piece wages, idle time and overtime.
+- Normal idle time is part of labour cost; abnormal idle time goes to costing profit and loss.
+- Halsey bonus = 50% of time saved × rate; Rowan bonus = time taken ÷ time allowed × time saved × rate.
+- Overtime premium is charged to the job only if overtime was at the customer's request.
+> Compute wages under incentive plans
+> Treat idle time and overtime correctly
+## Overheads
+### Overhead distribution and absorption
+= Allocation, apportionment and absorption rates.
+- Apportion common overheads on fair bases (area, horsepower, value of assets, number of workers).
+- Service department costs are redistributed to production departments.
+- Absorption rate = Budgeted overheads ÷ Budgeted base (machine hours, labour hours).
+> Prepare an overhead distribution summary
+> Compute and apply absorption rates
+## Marginal Costing
+### CVP analysis
+= Contribution, P/V ratio, break-even and decision making.
+- BEP (units) = Fixed cost ÷ Contribution per unit.
+- Sales for target profit = (Fixed cost + Target profit) ÷ P/V ratio.
+- With a limiting factor, rank products by contribution per unit of the limiting factor.
+> Compute break-even point and margin of safety
+> Make a make-or-buy decision with marginal costing
+@lab lab.break-even
+
+# bba-3-business-statistics | 3 | Statistics for Business Decisions
+## Collection and Presentation of Data
+### Data, classification and diagrams
+= Primary and secondary data, frequency distributions and charts.
+- Primary data is collected first-hand (surveys, interviews); secondary data from published sources.
+- Class width = upper limit − lower limit; class mark = (lower + upper) ÷ 2.
+- Diagrams: bar, pie; graphs: histogram, frequency polygon, ogive (cumulative frequency curve).
+> Build a frequency distribution
+> Choose a suitable chart
+## Central Tendency and Dispersion
+### Averages and spread
+= Mean, median, mode, standard deviation and coefficient of variation.
+- x̄ = Σfx ÷ N; median = L + ((N/2 − cf) ÷ f) × h.
+- σ = √(Σfd² ÷ N − (Σfd ÷ N)²) × h by the step-deviation method.
+- CV = σ ÷ x̄ × 100.
+> Compute averages and standard deviation
+> Compare series using CV
+hook: Two salespeople both average ₹1 lakh a month. Who is more reliable?
+ex: A: σ = ₹10,000, CV 10%; B: σ = ₹30,000, CV 30%. A is more consistent.
+q: Which average is best for data with extreme values? || The median.
+terms: mean; median; mode; standard deviation; CV
+## Skewness
+### Skewness and kurtosis
+= Measures of the shape of a distribution.
+- Karl Pearson's coefficient of skewness = (Mean − Mode) ÷ σ, or 3(Mean − Median) ÷ σ.
+- Bowley's coefficient = (Q₃ + Q₁ − 2 Median) ÷ (Q₃ − Q₁).
+- Positive skew: mean > median > mode; kurtosis measures peakedness (normal β₂ = 3).
+> Compute Karl Pearson's and Bowley's coefficients
+> Interpret skewness
+## Correlation and Regression
+### Correlation and regression for business
+= Measuring and using relationships between variables.
+- r ranges from −1 to +1; r² is the proportion of variation explained.
+- Regression of y on x predicts y from x; byx = r σy ÷ σx.
+- Spearman's R = 1 − 6Σd² ÷ n(n² − 1).
+> Compute correlation coefficients
+> Forecast with a regression line
+## Index Numbers and Time Series
+### Index numbers and trends
+= Weighted index numbers and trend fitting.
+- Laspeyres uses base-year quantities; Paasche current-year quantities; Fisher is their geometric mean.
+- Deflating: real value = money value ÷ price index × 100.
+- Trend by least squares: y = a + bx.
+> Construct weighted index numbers
+> Fit a straight-line trend
+
+# bba-3-marketing-management | 3 | Marketing Management
+## Marketing Fundamentals
+### Core marketing concepts
+= Needs, value, exchange, and the holistic marketing concept.
+- Customer value = Perceived benefits − Perceived costs.
+- Holistic marketing: relationship, integrated, internal and performance (socially responsible) marketing.
+- Customer lifetime value is the present value of profits from a customer over the relationship.
+> Explain the core concepts of marketing
+> Compute a simple customer lifetime value
+## Consumer and Market Analysis
+### Consumer behaviour and STP
+= Factors influencing buying, and segmentation, targeting and positioning.
+- Influences: cultural, social, personal and psychological factors.
+- Effective segments are measurable, substantial, accessible, differentiable and actionable.
+- Positioning is built on points of difference and points of parity.
+> Segment and target a market
+> Develop a positioning strategy
+## Product and Pricing Decisions
+### Product strategy and pricing
+= Product mix, new product development, PLC and pricing strategies.
+- Product mix has width (lines), length (items), depth (variants) and consistency.
+- New product development: idea generation, screening, concept testing, business analysis, product development, test marketing, commercialisation.
+- Pricing: skimming, penetration, psychological, bundle and dynamic pricing.
+> Plan strategy across the PLC
+> Choose a pricing strategy
+## Distribution and Promotion
+### Channels and integrated marketing communication
+= Channel design and the promotion mix.
+- Intensive, selective or exclusive distribution.
+- IMC coordinates advertising, sales promotion, PR, personal selling, direct and digital marketing.
+- Push strategy promotes to intermediaries; pull strategy to final consumers.
+> Choose a distribution intensity
+> Plan an IMC campaign
+## Contemporary Marketing
+### Digital, rural and green marketing
+= Digital marketing, the rural market in India and sustainable marketing.
+- Digital marketing metrics: reach, click-through rate (clicks ÷ impressions), conversion rate, cost per acquisition.
+- Rural marketing challenges: dispersed markets, low incomes, poor infrastructure; the 4 As: availability, affordability, acceptability, awareness.
+- Green marketing promotes environmentally safe products; greenwashing is false environmental claims.
+> Compute basic digital marketing metrics
+> Plan for rural markets with the 4 As
+
+# bba-4-financial-management | 4 | Financial Management | year=2025-26
+## Introduction
+### Finance function and goals
+= Investment, financing and dividend decisions and wealth maximisation.
+- The finance manager raises funds, invests them and decides on dividends.
+- Shareholder wealth maximisation considers timing and risk of returns.
+- Risk and return: higher expected return comes with higher risk.
+> Explain the finance decisions
+> Justify wealth maximisation
+## Time Value of Money
+### Compounding and discounting
+= Future and present values of sums and annuities.
+- FV = PV(1 + r)ⁿ; PV = FV ÷ (1 + r)ⁿ.
+- PV of an annuity = A[1 − (1 + r)⁻ⁿ] ÷ r; perpetuity PV = A ÷ r.
+- Effective rate = (1 + r/m)^m − 1.
+> Compute present and future values
+> Value annuities and perpetuities
+hook: A lottery offers ₹10 lakh today or ₹1 lakh a year for 15 years. Which is worth more at 8%?
+ex: PV = 1,00,000 × [1 − 1.08⁻¹⁵] ÷ 0.08 = 1,00,000 × 8.559 = ₹8,55,900. Take ₹10 lakh today.
+q: PV of ₹5,000 a year forever at 10%? || 5,000 ÷ 0.10 = ₹50,000.
+terms: present value; annuity; perpetuity; discount rate
+## Investment Decisions
+### Capital budgeting
+= Payback, NPV, IRR and profitability index.
+- NPV = Σ CFₜ ÷ (1 + k)ᵗ − Initial outlay.
+- IRR: the discount rate that makes NPV zero.
+- Payback ignores cash flows after the payback period and the time value of money (discounted payback fixes the latter).
+> Evaluate projects using NPV and IRR
+> Rank mutually exclusive projects
+## Financing Decisions
+### Cost of capital and leverage
+= Specific costs, WACC, and operating and financial leverage.
+- Kd = I(1 − t) ÷ NP; Ke = D₁ ÷ P₀ + g (or by CAPM: Rf + β(Rm − Rf)).
+- WACC weights each source by its proportion in the capital structure.
+- DOL = Contribution ÷ EBIT; DFL = EBIT ÷ EBT.
+> Compute WACC
+> Compute leverage and interpret risk
+## Working Capital Management
+### Managing working capital
+= Operating cycle, financing and cash management.
+- Gross working capital = Current assets; net working capital = Current assets − Current liabilities.
+- Operating cycle = Inventory period + Receivables period − Payables period.
+- Baumol's model: optimal cash balance C = √(2bT ÷ i).
+> Estimate working capital needs
+> Compute the operating cycle
+
+# bba-4-human-resource-management | 4 | Human Resource Management | year=2025-26
+## Introduction to HRM
+### HRM and strategic HRM
+= Functions of HRM and aligning HR with strategy.
+- HRM functions: acquisition, development, motivation and maintenance of people.
+- Strategic HRM aligns HR practices with business strategy.
+- HR metrics: attrition rate, cost per hire, time to fill, training ROI.
+> Explain HRM functions
+> Compute basic HR metrics
+## Acquisition
+### Job analysis, recruitment and selection
+= Job description and specification, recruitment sources and selection tests.
+- Job analysis methods: observation, interview, questionnaire.
+- Selection tests: aptitude, personality, interest, achievement; interviews may be structured or unstructured.
+- Reliability is consistency of a test; validity is whether it measures what it should.
+> Write a job description
+> Design a selection process
+## Development
+### Training and career development
+= Training needs analysis, methods and career planning.
+- Training needs analysis at organisation, task and person levels.
+- E-learning and simulations scale training at lower cost.
+- Career planning matches individual goals with organisational opportunities; succession planning prepares replacements.
+> Conduct a training needs analysis
+> Explain succession planning
+## Performance and Rewards
+### Appraisal and compensation
+= Appraisal methods, job evaluation and incentives.
+- 360-degree feedback gathers ratings from supervisors, peers, subordinates and customers.
+- Job evaluation (ranking, grading, point method) fixes the relative worth of jobs.
+- Incentives: individual (piece rate, commission) and group (profit sharing, ESOPs).
+> Compare appraisal methods
+> Explain job evaluation
+## Employee Relations
+### Welfare, safety and discipline
+= Welfare measures, health and safety, and disciplinary procedure.
+- Welfare may be statutory (canteens, first aid) or voluntary (housing, education).
+- Discipline follows natural justice: charge-sheet, show-cause notice, enquiry, decision.
+- Exit interviews help understand reasons for leaving.
+> Describe a disciplinary procedure
+> Distinguish statutory and voluntary welfare
+
+# bba-4-business-research-methods | 4 | Business Research Methods | year=2025-26
+## Introduction to Research
+### Research process and types
+= Meaning, types and steps of business research.
+- Types: exploratory, descriptive, causal (experimental); basic and applied.
+- Research process: define the problem, review literature, form hypotheses, design, collect data, analyse, report.
+- A hypothesis is a testable statement about the relationship between variables.
+> Describe the research process
+> Write a testable hypothesis
+## Research Design and Sampling
+### Sampling methods
+= Probability and non-probability sampling and sample size.
+- Probability sampling: simple random, systematic, stratified, cluster.
+- Non-probability: convenience, judgement, quota, snowball.
+- Sampling error falls as sample size rises.
+> Choose a sampling method
+> Distinguish sampling and non-sampling errors
+## Data Collection
+### Questionnaires and scales
+= Primary data methods, questionnaire design and measurement scales.
+- Scales: nominal, ordinal, interval, ratio.
+- A Likert scale measures agreement on (usually) five points.
+- Good questions are clear, unbiased, single-barrelled and not leading.
+> Design a questionnaire
+> Identify the scale of a variable
+## Data Analysis
+### Hypothesis testing basics
+= Null hypothesis, significance and common tests.
+- Reject H₀ if the p-value < α (e.g. 0.05).
+- t-test (small samples, means), z-test (large samples), chi-square (association), ANOVA (several means).
+- Type I error is rejecting a true H₀; its probability is α.
+> Choose a test for a research question
+> Interpret a p-value
+## Report Writing
+### Research report
+= Structure and presentation of a research report.
+- Structure: title, abstract, introduction, literature review, methodology, analysis, findings, conclusions, references, appendices.
+- Cite sources consistently (e.g. APA style).
+- Plagiarism is presenting others' work as one's own.
+> Structure a research report
+> Cite sources correctly
+
+# bba-5-entrepreneurship | 5 | Entrepreneurship Development | scheme=NEP 2021; year=2023-24
+## Entrepreneurship
+### Entrepreneur and entrepreneurship
+= Concept, traits, types and functions of entrepreneurs.
+- An entrepreneur identifies opportunities, bears risk and organises resources to create value.
+- Traits: need for achievement, risk taking, innovation, persistence.
+- Types: innovative, imitative, Fabian, drone; intrapreneurs innovate inside existing firms.
+> Describe the traits and types of entrepreneurs
+> Distinguish entrepreneur and intrapreneur
+## Idea Generation and Feasibility
+### Opportunity and feasibility analysis
+= Sources of ideas, screening and the feasibility study.
+- Sources of ideas: customer problems, trends, technology, hobbies, existing businesses.
+- Feasibility: market, technical, financial and organisational.
+- A business model canvas has nine blocks, including customer segments, value proposition, channels and revenue streams.
+> Screen business ideas
+> Prepare a business model canvas
+## Business Plan
+### Writing a business plan
+= Contents of a business plan and project report.
+- Sections: executive summary, business description, market analysis, marketing plan, operations, management, financial projections.
+- Financial projections include projected profit and loss, cash flows and break-even.
+- A pitch deck summarises the plan for investors.
+> Write a business plan outline
+> Prepare a break-even projection
+@lab lab.break-even
+## Institutional Support
+### Support for entrepreneurs in India
+= MSMEs, Startup India and financing sources.
+- MSME classification (from 2025): micro up to ₹2.5 crore investment and ₹10 crore turnover; small up to ₹25 crore and ₹100 crore; medium up to ₹125 crore and ₹500 crore.
+- Startup India gives recognition, tax benefits (section 80-IAC) and funds of funds.
+- Funding sources: bootstrapping, angel investors, venture capital, bank loans, MUDRA loans.
+> Identify support schemes for a start-up
+> Compare funding sources
+! Check the MSME limits against the latest notification.
+
+# bba-5-operations-management | 5 | Production and Operations Management | scheme=NEP 2021; year=2023-24
+## Introduction
+### Operations function
+= Scope of operations management and production systems.
+- Operations transform inputs into goods and services.
+- Production systems: job, batch, mass and continuous (process) production.
+- Productivity = Output ÷ Input.
+> Classify production systems
+> Compute productivity
+## Facility Location and Layout
+### Location and layout
+= Factors in plant location and types of layout.
+- Location factors: markets, raw materials, labour, transport, utilities, government incentives.
+- Layouts: process (functional), product (line), fixed position, cellular.
+- A product layout suits mass production; a process layout suits varied jobs.
+> Evaluate locations with a factor-rating method
+> Choose a layout
+## Planning and Control
+### Production planning and scheduling
+= Aggregate planning, routing, scheduling and dispatching.
+- Production planning and control: routing, scheduling, dispatching, follow-up.
+- Gantt charts show schedules against time.
+- Johnson's rule sequences n jobs on two machines to minimise total time.
+> Sequence jobs by Johnson's rule
+> Draw a Gantt chart
+## Materials and Quality
+### Inventory and quality management
+= Inventory control, statistical quality control and TQM.
+- EOQ = √(2DS ÷ H).
+- Control charts: x̄ and R charts (variables), p and c charts (attributes).
+- TQM principles: customer focus, continuous improvement (kaizen), employee involvement; Six Sigma targets 3.4 defects per million.
+> Interpret a control chart
+> Explain TQM and Six Sigma
+## Contemporary Operations
+### Lean, supply chain and maintenance
+= Lean operations, supply chain management and maintenance.
+- Lean eliminates waste (muda); JIT and kanban pull production.
+- A supply chain links suppliers, manufacturers, distributors, retailers and customers; the bullwhip effect amplifies demand swings upstream.
+- Maintenance: preventive, breakdown, predictive.
+> Identify the seven wastes
+> Explain the bullwhip effect
+
+# bba-6-strategic-management | 6 | Strategic Management | scheme=NEP 2021; year=2023-24
+## Introduction
+### Strategy and the strategic management process
+= Vision, mission, objectives and the process of strategic management.
+- Process: environmental scanning, strategy formulation, implementation, evaluation and control.
+- Vision is the desired future; mission is the organisation's purpose and scope.
+- Levels of strategy: corporate, business, functional.
+> Draft vision and mission statements
+> Describe the strategic management process
+## Environmental Analysis
+### SWOT, PESTLE and Porter's five forces
+= Tools for internal and external analysis.
+- SWOT: internal strengths and weaknesses, external opportunities and threats.
+- Porter's five forces: rivalry, threat of new entrants, threat of substitutes, bargaining power of buyers and of suppliers.
+- Value chain: primary activities (inbound logistics, operations, outbound logistics, marketing and sales, service) and support activities.
+> Do a SWOT and five-forces analysis
+> Identify value chain activities
+## Strategy Formulation
+### Corporate and business strategies
+= Growth, stability and retrenchment, and Porter's generic strategies.
+- Ansoff matrix: market penetration, market development, product development, diversification.
+- Porter's generic strategies: cost leadership, differentiation, focus.
+- BCG matrix: stars, cash cows, question marks, dogs (market growth vs relative share).
+> Classify strategies with Ansoff and BCG
+> Choose a generic strategy
+## Implementation and Control
+### Implementing and evaluating strategy
+= Structure, leadership, culture and the balanced scorecard.
+- Structure follows strategy (Chandler).
+- McKinsey 7-S: strategy, structure, systems, shared values, style, staff, skills.
+- Balanced scorecard perspectives: financial, customer, internal processes, learning and growth.
+> Apply the 7-S framework
+> Build a balanced scorecard
+
+# bba-6-international-business | 6 | International Business | scheme=NEP 2021; year=2023-24
+## Introduction
+### Nature of international business
+= Drivers of globalisation and modes of entry.
+- Drivers: market, cost, government and competitive factors.
+- Entry modes: exporting, licensing, franchising, contract manufacturing, joint ventures, wholly owned subsidiaries.
+- Risk and control increase from exporting to wholly owned subsidiaries.
+> Compare modes of entry
+> Explain drivers of globalisation
+## Trade Theories
+### Theories of international trade
+= Mercantilism, absolute and comparative advantage, and Porter's diamond.
+- Absolute advantage (Smith): produce what you make more efficiently than others.
+- Comparative advantage (Ricardo): specialise where your opportunity cost is lowest; trade benefits both.
+- Porter's diamond: factor conditions, demand conditions, related industries, firm strategy and rivalry.
+> Apply comparative advantage
+> Use Porter's diamond
+## International Institutions
+### WTO, IMF and World Bank
+= Roles of global economic institutions and trade blocs.
+- WTO principles: most-favoured nation, national treatment, transparency.
+- The IMF supports balance of payments stability; the World Bank funds development.
+- Regional blocs: EU, ASEAN, SAARC, USMCA.
+> Explain the role of the WTO
+> Distinguish IMF and World Bank roles
+## Foreign Exchange and Trade Procedures
+### Exchange rates and export procedure
+= Exchange rate systems, balance of payments and export documents.
+- Balance of payments: current account (trade, services, transfers) and capital/financial account.
+- Rupee depreciation makes exports cheaper and imports dearer.
+- Export documents: commercial invoice, packing list, bill of lading or airway bill, certificate of origin, shipping bill; letters of credit reduce payment risk.
+> Read a balance of payments summary
+> Describe the export procedure

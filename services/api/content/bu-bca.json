@@ -1,0 +1,2330 @@
+{
+ "curricula": [
+  {
+   "code": "bu-ug",
+   "name": "Bangalore University (UG)",
+   "level": "ug"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-1-discrete-mathematics",
+   "title": "Discrete Structures, BCA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Sets, Relations and Functions",
+     "topics": [
+      {
+       "title": "Set operations and relations",
+       "summary": "Union, intersection, complement, De Morgan's laws, and properties of relations.",
+       "notes": [
+        "De Morgan's laws: (A ∪ B)′ = A′ ∩ B′ and (A ∩ B)′ = A′ ∪ B′.",
+        "|A ∪ B| = |A| + |B| − |A ∩ B| for finite sets.",
+        "A relation R on a set A is reflexive if aRa for every a; symmetric if aRb implies bRa; transitive if aRb and bRc imply aRc. A relation with all three properties is an equivalence relation."
+       ],
+       "outcomes": [
+        "Apply set identities",
+        "Decide whether a relation is an equivalence relation"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "In a class of 60, 35 like cricket and 30 like football. Can you be sure some like both?",
+        "example": "Class of 60: |C| = 35, |F| = 30, |C ∩ F| = 10.\n|C ∪ F| = 35 + 30 − 10 = 55, so 60 − 55 = 5 students like neither.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "If |A| = 20, |B| = 15 and |A ∪ B| = 28, find |A ∩ B|.",
+          "a": "20 + 15 − 28 = 7."
+         },
+         {
+          "q": "Is \"is a sibling of\" (excluding oneself) an equivalence relation?",
+          "a": "No: it is not reflexive."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "union",
+         "intersection",
+         "complement",
+         "relation",
+         "equivalence relation"
+        ]
+       }
+      },
+      {
+       "title": "Functions",
+       "summary": "One-one, onto and bijective functions, composition and inverse.",
+       "notes": [
+        "A function f: A → B assigns exactly one element of B to each element of A.",
+        "f is one-one (injective) if f(a) = f(b) implies a = b; onto (surjective) if every element of B has a pre-image; bijective if both.",
+        "Only a bijection has an inverse f⁻¹: B → A.",
+        "Composition: (g ∘ f)(x) = g(f(x)); in general g ∘ f ≠ f ∘ g."
+       ],
+       "outcomes": [
+        "Classify a function as injective, surjective or bijective",
+        "Find compositions and inverses"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Mathematical Logic",
+     "topics": [
+      {
+       "title": "Propositions and truth tables",
+       "summary": "Connectives, truth tables, tautologies and logical equivalence.",
+       "notes": [
+        "The conditional p → q is false only when p is true and q is false; p → q is equivalent to ¬p ∨ q.",
+        "The biconditional p ↔ q is true when p and q have the same truth value.",
+        "A tautology is true for every assignment of truth values; a contradiction is false for every assignment."
+       ],
+       "outcomes": [
+        "Build truth tables",
+        "Test whether two statements are logically equivalent"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Quantifiers and counting",
+       "summary": "Predicates, universal and existential quantifiers, and the basic counting principles.",
+       "notes": [
+        "∀x P(x) is true when P(x) holds for every x; ∃x P(x) when it holds for at least one x.",
+        "Negation: ¬∀x P(x) ≡ ∃x ¬P(x) and ¬∃x P(x) ≡ ∀x ¬P(x).",
+        "Permutations: nPr = n! ÷ (n − r)!; combinations: nCr = n! ÷ (r!(n − r)!).",
+        "Pigeonhole principle: if n + 1 objects go into n boxes, some box holds at least two."
+       ],
+       "outcomes": [
+        "Negate quantified statements",
+        "Count arrangements and selections"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Matrices",
+     "topics": [
+      {
+       "title": "Matrix operations and determinants",
+       "summary": "Types of matrices, addition, multiplication, transpose, determinant and inverse.",
+       "notes": [
+        "Matrices A (m × n) and B (n × p) can be multiplied; AB is m × p, and in general AB ≠ BA.",
+        "For a 2 × 2 matrix [a b; c d], the determinant is ad − bc.",
+        "A square matrix has an inverse if and only if its determinant is non-zero: A⁻¹ = adj(A) ÷ |A|.",
+        "(AB)ᵀ = BᵀAᵀ; a matrix is symmetric if Aᵀ = A."
+       ],
+       "outcomes": [
+        "Multiply matrices and find determinants",
+        "Find the inverse of a 2 × 2 or 3 × 3 matrix"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Graph Theory",
+     "topics": [
+      {
+       "title": "Graphs and degrees",
+       "summary": "Vertices, edges, degree, and the handshaking lemma.",
+       "notes": [
+        "Handshaking lemma: the sum of the degrees of all vertices of a graph is twice the number of edges.",
+        "Consequently, every graph has an even number of vertices of odd degree.",
+        "A graph is simple if it has no loops or parallel edges; the complete graph Kₙ has n(n − 1)/2 edges."
+       ],
+       "outcomes": [
+        "Use the handshaking lemma",
+        "Count the edges of complete and regular graphs"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Euler and Hamilton graphs, and trees",
+       "summary": "Euler circuits, Hamiltonian cycles, and the properties of trees.",
+       "notes": [
+        "A connected graph has an Euler circuit if and only if every vertex has even degree; it has an Euler path (not circuit) if exactly two vertices have odd degree.",
+        "A Hamiltonian cycle visits every vertex exactly once; no simple degree test decides it in general.",
+        "A tree is a connected graph with no cycles; a tree with n vertices has n − 1 edges.",
+        "A spanning tree of a connected graph includes all its vertices with the fewest edges."
+       ],
+       "outcomes": [
+        "Decide whether a graph has an Euler path or circuit",
+        "Identify trees and spanning trees"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-1-problem-solving-c",
+   "title": "Problem Solving Techniques (C Programming), BCA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Algorithms and Flowcharts",
+     "topics": [
+      {
+       "title": "Algorithms, flowcharts and pseudocode",
+       "summary": "What an algorithm is, its properties, and how to express it.",
+       "notes": [
+        "An algorithm is a finite sequence of unambiguous steps that solves a problem; it has input, output, definiteness, finiteness and effectiveness.",
+        "A flowchart uses standard symbols: oval (start/stop), parallelogram (input/output), rectangle (process), diamond (decision).",
+        "Pseudocode states the steps in structured English, independent of any language.",
+        "Fundamental algorithms: exchanging two values, counting, summation, factorial, Fibonacci series, reversing digits."
+       ],
+       "outcomes": [
+        "Write an algorithm and a flowchart for a simple problem",
+        "Trace an algorithm by hand"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "How would you tell a robot to find the largest of three numbers?",
+        "example": "Algorithm to swap a and b: 1. temp ← a  2. a ← b  3. b ← temp.\nTrace a = 4, b = 9: temp = 4, a = 9, b = 4.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "List the five properties of an algorithm.",
+          "a": "Input, output, definiteness, finiteness, effectiveness."
+         },
+         {
+          "q": "Which flowchart symbol is used for a decision?",
+          "a": "The diamond."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "algorithm",
+         "flowchart",
+         "pseudocode",
+         "trace"
+        ]
+       }
+      },
+      {
+       "title": "Factoring and array techniques",
+       "summary": "Classic problem-solving algorithms on numbers and arrays.",
+       "notes": [
+        "The smallest divisor of n need only be searched up to √n; if none divides n, n is prime.",
+        "GCD by Euclid's algorithm: gcd(a, b) = gcd(b, a mod b), and gcd(a, 0) = a.",
+        "Array techniques: finding the maximum, reversing in place (swap a[i] with a[n−1−i]), removing duplicates, counting frequencies."
+       ],
+       "outcomes": [
+        "Implement Euclid's algorithm",
+        "Apply standard array techniques"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Introduction to C",
+     "topics": [
+      {
+       "title": "Structure of a C program, tokens and data types",
+       "summary": "The parts of a C program, its tokens, and basic data types.",
+       "notes": [
+        "A C program has preprocessor directives, global declarations, the main() function and other functions; execution starts at main().",
+        "Tokens: keywords, identifiers, constants, strings, operators and special symbols.",
+        "Basic types: int, char, float, double; qualifiers short, long, signed, unsigned. sizeof gives a type's size in bytes.",
+        "Symbolic constants are defined with #define or const."
+       ],
+       "outcomes": [
+        "Identify the parts and tokens of a C program",
+        "Declare and initialise variables of suitable types"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Operators, expressions and I/O",
+       "summary": "Operators, precedence, type conversion and formatted input/output.",
+       "notes": [
+        "Operator classes: arithmetic, relational, logical, assignment, increment/decrement, conditional (?:), bitwise and special.",
+        "Integer division truncates: 7 / 2 is 3, and 7 % 2 is 1.",
+        "printf and scanf use format specifiers: %d int, %f float, %lf double, %c char, %s string; scanf needs the address (&x) of non-array variables.",
+        "Unformatted I/O: getchar, putchar, gets (unsafe, prefer fgets), puts."
+       ],
+       "outcomes": [
+        "Evaluate expressions using precedence rules",
+        "Read and print data with printf and scanf"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is the value of 5 + 3 * 2 % 4 in C?",
+          "a": "3 * 2 = 6, 6 % 4 = 2, 5 + 2 = 7."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Control Structures",
+     "topics": [
+      {
+       "title": "Decision making and loops",
+       "summary": "if, if-else, switch, while, do-while, for, break and continue.",
+       "notes": [
+        "switch selects among integer or character cases; without break, control falls through to the next case.",
+        "while tests before the body; do-while runs the body at least once; for combines initialisation, test and update.",
+        "break leaves the innermost loop or switch; continue skips to the next iteration."
+       ],
+       "outcomes": [
+        "Choose the right control structure for a problem",
+        "Write nested loops to print patterns"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "An ATM keeps asking for your PIN until it is right or you have tried three times. Which loop is that?",
+        "example": "Sum of digits of 472: while (n > 0) { s += n % 10; n /= 10; }\nTrace: s = 2, n = 47; s = 9, n = 4; s = 13, n = 0. Sum is 13.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "How many times does for (i = 0; i < 10; i += 3) run?",
+          "a": "For i = 0, 3, 6, 9: four times."
+         },
+         {
+          "q": "Which loop always executes at least once?",
+          "a": "do-while."
+         }
+        ],
+        "homework": "Write a program that prints all prime numbers between 1 and 100.",
+        "terms": [
+         "selection",
+         "iteration",
+         "fall-through"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Arrays, Strings and Functions",
+     "topics": [
+      {
+       "title": "Arrays and strings",
+       "summary": "One- and two-dimensional arrays, and strings as character arrays.",
+       "notes": [
+        "Array indices run from 0 to n − 1; C does not check bounds.",
+        "A 2-D array int a[3][4] is stored row by row (row-major order).",
+        "A string is a char array ending in '\\0'; string.h gives strlen, strcpy, strcat, strcmp."
+       ],
+       "outcomes": [
+        "Process arrays with loops (search, sum, matrix operations)",
+        "Manipulate strings with library functions"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Functions and recursion",
+       "summary": "Defining functions, parameter passing, scope and recursion.",
+       "notes": [
+        "A function has a prototype (declaration), a definition and calls; return gives one value back.",
+        "C passes arguments by value; to change a caller's variable, pass its address (call by reference through pointers).",
+        "Storage classes: auto, register, static (keeps its value between calls) and extern.",
+        "A recursive function calls itself and needs a base case: fact(n) = n × fact(n − 1), fact(0) = 1."
+       ],
+       "outcomes": [
+        "Write and call functions with parameters",
+        "Write recursive functions with a correct base case"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Pointers, Structures and Files",
+     "topics": [
+      {
+       "title": "Pointers",
+       "summary": "Addresses, pointer arithmetic, and pointers with arrays and functions.",
+       "notes": [
+        "& gives the address of a variable; * dereferences a pointer.",
+        "For int *p, p + 1 points to the next int (address increases by sizeof(int)).",
+        "An array name is a pointer to its first element: a[i] is *(a + i).",
+        "malloc, calloc, realloc and free (stdlib.h) manage dynamic memory."
+       ],
+       "outcomes": [
+        "Use pointers to pass arguments by reference",
+        "Allocate and free memory dynamically"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Structures, unions and command-line arguments",
+       "summary": "Grouping data with struct and union, and reading arguments from main.",
+       "notes": [
+        "A struct groups members of different types; members are accessed with . (or -> through a pointer).",
+        "A union's members share one memory location; its size is that of its largest member.",
+        "main(int argc, char *argv[]) receives command-line arguments; argv[0] is the program name."
+       ],
+       "outcomes": [
+        "Define structures and arrays of structures",
+        "Use command-line arguments"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-1-computer-architecture",
+   "title": "Computer Architecture, BCA Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Number Systems and Codes",
+     "topics": [
+      {
+       "title": "Number systems and conversions",
+       "summary": "Binary, octal, decimal and hexadecimal numbers and converting between them.",
+       "notes": [
+        "Bases: binary 2, octal 8, decimal 10, hexadecimal 16 (digits 0–9, A–F).",
+        "Decimal to binary: divide repeatedly by 2 and read the remainders from bottom to top.",
+        "One octal digit is three bits; one hexadecimal digit is four bits.",
+        "Two's complement of a binary number = one's complement + 1; it represents negative numbers."
+       ],
+       "outcomes": [
+        "Convert numbers between bases",
+        "Do binary arithmetic using complements"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Why does a computer show 255 as FF?",
+        "example": "45 to binary: 45/2 = 22 r1, 22/2 = 11 r0, 11/2 = 5 r1, 5/2 = 2 r1, 2/2 = 1 r0, 1/2 = 0 r1.\nReading upward: 101101. Check: 32 + 8 + 4 + 1 = 45.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Convert 1011 1110 to hexadecimal.",
+          "a": "1011 = B, 1110 = E, so BE."
+         },
+         {
+          "q": "Find the 8-bit two's complement of 0000 0101.",
+          "a": "One's complement 1111 1010, plus 1: 1111 1011."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "radix",
+         "bit",
+         "one's complement",
+         "two's complement"
+        ]
+       }
+      },
+      {
+       "title": "Codes",
+       "summary": "BCD, excess-3, Gray code, ASCII and Unicode.",
+       "notes": [
+        "BCD codes each decimal digit in 4 bits: 59 is 0101 1001.",
+        "Excess-3 code = BCD + 3 (0011); it is self-complementing.",
+        "In Gray code successive values differ in one bit; binary to Gray: g = b XOR (b shifted right by one).",
+        "ASCII is a 7-bit code (128 characters); Unicode covers all scripts."
+       ],
+       "outcomes": [
+        "Represent numbers in BCD, excess-3 and Gray code",
+        "Convert between binary and Gray code"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Boolean Algebra and Logic Gates",
+     "topics": [
+      {
+       "title": "Logic gates",
+       "summary": "AND, OR, NOT, NAND, NOR, XOR and XNOR, with their truth tables.",
+       "notes": [
+        "AND outputs 1 only if all inputs are 1; OR outputs 1 if any input is 1; NOT inverts.",
+        "NAND and NOR are universal gates: any circuit can be built from either alone.",
+        "XOR outputs 1 when the inputs differ; XNOR when they are equal."
+       ],
+       "outcomes": [
+        "Write truth tables of the basic and universal gates",
+        "Build NOT, AND and OR from NAND gates"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "logic-gates",
+         "title": "Logic gates and truth tables"
+        }
+       ]
+      },
+      {
+       "title": "Boolean algebra and K-maps",
+       "summary": "Boolean laws, De Morgan's theorems, SOP/POS forms and Karnaugh-map simplification.",
+       "notes": [
+        "De Morgan: (A·B)′ = A′ + B′ and (A + B)′ = A′·B′.",
+        "Absorption: A + AB = A; A(A + B) = A.",
+        "Sum of products (minterms) and product of sums (maxterms) are canonical forms.",
+        "In a K-map, group adjacent 1s in powers of two (1, 2, 4, 8) as large as possible; each group gives one product term."
+       ],
+       "outcomes": [
+        "Simplify expressions using Boolean laws",
+        "Minimise functions of up to four variables with K-maps"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Simplify A·B + A·B′.",
+          "a": "A(B + B′) = A·1 = A."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Combinational and Sequential Circuits",
+     "topics": [
+      {
+       "title": "Combinational circuits",
+       "summary": "Adders, subtractors, multiplexers, demultiplexers, encoders and decoders.",
+       "notes": [
+        "Half adder: Sum = A XOR B, Carry = A·B. Full adder adds three bits: Sum = A XOR B XOR Cin.",
+        "A multiplexer selects one of 2ⁿ inputs using n select lines; a demultiplexer does the reverse.",
+        "A decoder converts n inputs to up to 2ⁿ outputs; an encoder does the reverse."
+       ],
+       "outcomes": [
+        "Design a half adder and a full adder",
+        "Explain multiplexers and decoders"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "logic-gates",
+         "title": "Logic gates and truth tables"
+        }
+       ]
+      },
+      {
+       "title": "Flip-flops, registers and counters",
+       "summary": "SR, JK, D and T flip-flops, and their use in registers and counters.",
+       "notes": [
+        "A flip-flop stores one bit; it changes state on a clock edge.",
+        "SR: S = R = 1 is not allowed. JK: J = K = 1 toggles. D: output follows D. T: toggles when T = 1.",
+        "Shift registers move bits on each clock (SISO, SIPO, PISO, PIPO).",
+        "An n-bit ripple counter counts 0 to 2ⁿ − 1; each flip-flop is clocked by the previous one."
+       ],
+       "outcomes": [
+        "Write characteristic tables of flip-flops",
+        "Explain registers and counters"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Computer Organisation",
+     "topics": [
+      {
+       "title": "CPU, instructions and addressing modes",
+       "summary": "Basic computer organisation, registers, instruction cycle and addressing modes.",
+       "notes": [
+        "Main units: input, output, memory, ALU and control unit; ALU and control unit form the CPU.",
+        "Key registers: PC (address of next instruction), IR (current instruction), MAR, MDR, accumulator.",
+        "Instruction cycle: fetch, decode, execute (and store).",
+        "Addressing modes: immediate, direct, indirect, register, register indirect, indexed, relative."
+       ],
+       "outcomes": [
+        "Describe the instruction cycle",
+        "Distinguish addressing modes with examples"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Memory organisation",
+       "summary": "Memory hierarchy, RAM and ROM, cache and virtual memory.",
+       "notes": [
+        "Hierarchy (fastest to slowest): registers, cache, main memory, secondary storage.",
+        "RAM is volatile (SRAM for cache, DRAM for main memory); ROM, PROM, EPROM and EEPROM are non-volatile.",
+        "Cache works by locality of reference; hit ratio = hits ÷ (hits + misses).",
+        "Cache mapping: direct, associative and set-associative."
+       ],
+       "outcomes": [
+        "Explain the memory hierarchy",
+        "Compute a cache hit ratio"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-2-data-structures",
+   "title": "Data Structures, BCA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction and Complexity",
+     "topics": [
+      {
+       "title": "Data structures and algorithm analysis",
+       "summary": "Classification of data structures, abstract data types and Big-O notation.",
+       "notes": [
+        "Linear structures: arrays, stacks, queues, linked lists; non-linear: trees and graphs.",
+        "An abstract data type specifies data and operations, not implementation.",
+        "Big-O gives an upper bound on growth: O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ).",
+        "Time–space trade-off: faster algorithms often need more memory."
+       ],
+       "outcomes": [
+        "Classify data structures",
+        "Find the time complexity of simple loops"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Finding a name in a phone book of a million names: page by page, or by opening in the middle?",
+        "example": "for (i = 0; i < n; i++) for (j = 0; j < n; j++) count++; runs n × n times: O(n²).\nwhile (n > 1) n = n / 2; runs about log₂ n times: O(log n).",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is the complexity of a single loop over n elements?",
+          "a": "O(n)."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "ADT",
+         "time complexity",
+         "Big-O"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Arrays, Searching and Sorting",
+     "topics": [
+      {
+       "title": "Searching",
+       "summary": "Linear and binary search.",
+       "notes": [
+        "Linear search checks each element: O(n); works on unsorted data.",
+        "Binary search needs sorted data; it compares with the middle element and halves the range: O(log n).",
+        "mid = low + (high − low) / 2 avoids overflow."
+       ],
+       "outcomes": [
+        "Implement linear and binary search",
+        "Compare their complexities"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "How many comparisons at most does binary search need for 1,024 elements?",
+          "a": "log₂ 1024 = 10, plus one: about 11."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      },
+      {
+       "title": "Sorting",
+       "summary": "Bubble, selection, insertion, merge and quick sort.",
+       "notes": [
+        "Bubble, selection and insertion sort are O(n²); insertion sort is O(n) on nearly sorted data.",
+        "Merge sort divides, sorts and merges: O(n log n) always, but needs O(n) extra space.",
+        "Quick sort partitions around a pivot: O(n log n) on average, O(n²) in the worst case.",
+        "A sort is stable if equal keys keep their relative order (merge and insertion are stable; quick and selection are not)."
+       ],
+       "outcomes": [
+        "Trace each sorting algorithm on an example",
+        "Choose a sort for a given situation"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "Bubble sort 5 1 4 2, pass 1: 1 5 4 2 → 1 4 5 2 → 1 4 2 5 (largest at the end).\nPass 2: 1 4 2 5 → 1 2 4 5. Pass 3 makes no swaps, so it stops.",
+        "activity": "",
+        "questions": [],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Stacks and Queues",
+     "topics": [
+      {
+       "title": "Stacks",
+       "summary": "LIFO stacks, push and pop, and expression conversion and evaluation.",
+       "notes": [
+        "A stack is last in, first out: push adds to the top, pop removes from the top.",
+        "Overflow: push on a full stack; underflow: pop on an empty stack.",
+        "Uses: function calls and recursion, undo, infix to postfix conversion, postfix evaluation, bracket matching.",
+        "Postfix evaluation: push operands; on an operator pop two, apply, push the result."
+       ],
+       "outcomes": [
+        "Implement a stack with an array and a linked list",
+        "Convert infix to postfix and evaluate postfix"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Evaluate the postfix 2 3 4 * +.",
+          "a": "3 × 4 = 12, then 2 + 12 = 14."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      },
+      {
+       "title": "Queues",
+       "summary": "Linear, circular and priority queues, and deques.",
+       "notes": [
+        "A queue is first in, first out: insert at the rear, delete at the front.",
+        "A circular queue reuses freed space: rear = (rear + 1) % size.",
+        "A priority queue serves the highest priority first; a deque allows insertion and deletion at both ends."
+       ],
+       "outcomes": [
+        "Implement linear and circular queues",
+        "Explain priority queues and deques"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Linked Lists",
+     "topics": [
+      {
+       "title": "Singly, doubly and circular linked lists",
+       "summary": "Nodes and pointers; insertion, deletion and traversal.",
+       "notes": [
+        "A node holds data and a pointer to the next node; the list is reached through a head pointer.",
+        "Insertion and deletion are O(1) once the position is known; access by index is O(n).",
+        "A doubly linked list has next and previous pointers; a circular list's last node points back to the first.",
+        "Linked lists grow dynamically, unlike fixed-size arrays."
+       ],
+       "outcomes": [
+        "Insert and delete nodes at any position",
+        "Compare arrays and linked lists"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Trees and Graphs",
+     "topics": [
+      {
+       "title": "Binary trees and binary search trees",
+       "summary": "Tree terminology, traversals and BST operations.",
+       "notes": [
+        "A binary tree node has at most two children; a tree of height h has at most 2^(h+1) − 1 nodes (root at height 0).",
+        "Traversals: inorder (L, root, R), preorder (root, L, R), postorder (L, R, root).",
+        "In a BST, left subtree keys < node < right subtree keys; inorder traversal gives sorted order.",
+        "BST search, insert and delete are O(h): O(log n) when balanced, O(n) when skewed."
+       ],
+       "outcomes": [
+        "Traverse a binary tree in all three orders",
+        "Insert into and delete from a BST"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Graph representation and traversal",
+       "summary": "Adjacency matrix and list, BFS and DFS.",
+       "notes": [
+        "Adjacency matrix uses O(V²) space; adjacency list uses O(V + E).",
+        "BFS visits level by level using a queue; DFS goes deep first using a stack or recursion.",
+        "BFS finds shortest paths (by number of edges) in unweighted graphs."
+       ],
+       "outcomes": [
+        "Represent a graph both ways",
+        "Trace BFS and DFS"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-2-oop-java",
+   "title": "Object Oriented Programming using Java, BCA Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Object-Oriented Concepts and Java Basics",
+     "topics": [
+      {
+       "title": "OOP principles",
+       "summary": "Objects, classes, encapsulation, inheritance, polymorphism and abstraction.",
+       "notes": [
+        "A class is a blueprint; an object is an instance with state (fields) and behaviour (methods).",
+        "Encapsulation hides data behind methods; abstraction shows only essential features.",
+        "Inheritance lets a class reuse another's members; polymorphism lets one interface have many forms."
+       ],
+       "outcomes": [
+        "Explain the four pillars of OOP with examples",
+        "Contrast procedural and object-oriented programming"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Java platform and language basics",
+       "summary": "JDK, JRE, JVM, bytecode, data types and control statements.",
+       "notes": [
+        "javac compiles source to platform-independent bytecode (.class); the JVM interprets or JIT-compiles it (\"write once, run anywhere\").",
+        "JDK = JRE + development tools; JRE = JVM + class libraries.",
+        "Primitive types: byte, short, int, long, float, double, char (16-bit Unicode), boolean.",
+        "Arrays are objects with a length field; Java checks array bounds at run time."
+       ],
+       "outcomes": [
+        "Compile and run a Java program",
+        "Use Java's data types, operators and control statements"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Classes and Objects",
+     "topics": [
+      {
+       "title": "Classes, constructors and methods",
+       "summary": "Defining classes, constructors, overloading, this and static.",
+       "notes": [
+        "A constructor has the class's name and no return type; if none is written Java supplies a default one.",
+        "Method overloading: same name, different parameter lists (compile-time polymorphism).",
+        "this refers to the current object; static members belong to the class, not to objects.",
+        "Access modifiers: private, default (package), protected, public."
+       ],
+       "outcomes": [
+        "Write classes with constructors and overloaded methods",
+        "Use static members correctly"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Every student has a name and marks, but each student's values differ. How does one class describe them all?",
+        "example": "class Student { String name; int marks; Student(String n, int m) { name = n; marks = m; } boolean passed() { return marks >= 40; } }\nStudent s = new Student(\"Asha\", 72); s.passed() returns true.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is printed by: int[] a = {1, 2, 3}; System.out.println(a.length);",
+          "a": "3"
+         },
+         {
+          "q": "Can a constructor return a value?",
+          "a": "No; it has no return type."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "class",
+         "object",
+         "constructor",
+         "overloading"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Inheritance, Interfaces and Packages",
+     "topics": [
+      {
+       "title": "Inheritance and polymorphism",
+       "summary": "extends, super, method overriding, abstract classes and final.",
+       "notes": [
+        "Java supports single, multilevel and hierarchical inheritance of classes; multiple inheritance only through interfaces.",
+        "super calls the parent's constructor or methods.",
+        "Overriding: a subclass method with the same signature; the call is resolved at run time (dynamic method dispatch).",
+        "An abstract class cannot be instantiated; final prevents overriding (methods) or inheritance (classes)."
+       ],
+       "outcomes": [
+        "Use inheritance and overriding",
+        "Explain dynamic method dispatch"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Interfaces and packages",
+       "summary": "Defining and implementing interfaces; creating and importing packages.",
+       "notes": [
+        "An interface declares methods a class must implement; a class can implement many interfaces.",
+        "Interface fields are public static final; methods are abstract unless default or static.",
+        "Packages group classes and control access; import brings them into scope."
+       ],
+       "outcomes": [
+        "Implement interfaces",
+        "Organise classes in packages"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Exceptions, Threads and I/O",
+     "topics": [
+      {
+       "title": "Exception handling",
+       "summary": "try, catch, finally, throw and throws; checked and unchecked exceptions.",
+       "notes": [
+        "Checked exceptions (e.g. IOException) must be caught or declared with throws; unchecked ones extend RuntimeException.",
+        "finally runs whether or not an exception occurs.",
+        "Custom exceptions extend Exception."
+       ],
+       "outcomes": [
+        "Handle exceptions with try-catch-finally",
+        "Define and throw custom exceptions"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Multithreading",
+       "summary": "Creating threads, thread life cycle and synchronisation.",
+       "notes": [
+        "Create a thread by extending Thread or implementing Runnable; start() runs run() on a new thread.",
+        "Life cycle: new, runnable, running, blocked/waiting, terminated.",
+        "synchronized methods or blocks let only one thread at a time hold an object's lock."
+       ],
+       "outcomes": [
+        "Create and run threads",
+        "Prevent race conditions with synchronisation"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Event handling and GUI basics",
+       "summary": "AWT/Swing components and the delegation event model.",
+       "notes": [
+        "In the delegation event model a source generates events and registered listeners handle them.",
+        "Swing components (JFrame, JButton, JTextField) are lightweight; layout managers (FlowLayout, BorderLayout, GridLayout) arrange them.",
+        "ActionListener's actionPerformed handles button clicks."
+       ],
+       "outcomes": [
+        "Build a simple Swing form",
+        "Handle button events"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-3-dbms",
+   "title": "Database Management Systems, BCA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction to Databases",
+     "topics": [
+      {
+       "title": "Database systems and architecture",
+       "summary": "Files versus DBMS, the three-schema architecture, data independence and DBMS users.",
+       "notes": [
+        "A DBMS reduces redundancy and inconsistency, enforces integrity and security, and supports concurrent access.",
+        "Three-schema architecture: internal (physical), conceptual (logical) and external (view) levels.",
+        "Logical data independence: change the conceptual schema without changing views; physical: change storage without changing the conceptual schema.",
+        "Data models: hierarchical, network, relational, object-oriented."
+       ],
+       "outcomes": [
+        "Explain the advantages of a DBMS over files",
+        "Describe the three-schema architecture"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A college keeps student details in three separate Excel files. A student changes phone number. What can go wrong?",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is physical data independence?",
+          "a": "Changing how data is stored without changing the conceptual schema or programs."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "DBMS",
+         "schema",
+         "instance",
+         "data independence"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Entity-Relationship Model",
+     "topics": [
+      {
+       "title": "ER diagrams",
+       "summary": "Entities, attributes, relationships, cardinality and participation.",
+       "notes": [
+        "Entity sets are rectangles, attributes ovals, relationship sets diamonds; key attributes are underlined.",
+        "Attribute kinds: simple/composite, single/multivalued (double oval), derived (dashed oval).",
+        "Cardinality ratios: 1:1, 1:N, M:N; total participation is a double line.",
+        "A weak entity (double rectangle) has no key of its own and depends on an owner entity."
+       ],
+       "outcomes": [
+        "Draw an ER diagram from a description",
+        "Convert an ER diagram to tables"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Relational Model",
+     "topics": [
+      {
+       "title": "Keys and integrity constraints",
+       "summary": "Relations, tuples, attributes, and the kinds of keys.",
+       "notes": [
+        "A relation is a table; a tuple is a row; an attribute is a column; the domain is the set of allowed values.",
+        "Super key: any set of attributes that identifies a tuple; candidate key: a minimal super key; primary key: the chosen candidate key.",
+        "A foreign key refers to the primary key of another relation (referential integrity).",
+        "Entity integrity: a primary key cannot be NULL."
+       ],
+       "outcomes": [
+        "Identify candidate, primary and foreign keys",
+        "Explain entity and referential integrity"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Relational algebra",
+       "summary": "Select, project, union, difference, Cartesian product and join.",
+       "notes": [
+        "σ (select) picks rows; π (project) picks columns.",
+        "Union, intersection and difference need union-compatible relations.",
+        "A natural join combines rows with equal values in common attributes."
+       ],
+       "outcomes": [
+        "Write relational algebra queries",
+        "Translate simple English queries into algebra and SQL"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Write the algebra for the names of students with marks over 80.",
+          "a": "π name (σ marks > 80 (Student))."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Normalisation",
+     "topics": [
+      {
+       "title": "Functional dependencies and normal forms",
+       "summary": "Anomalies, functional dependencies, and 1NF, 2NF, 3NF and BCNF.",
+       "notes": [
+        "Redundancy causes insertion, deletion and update anomalies.",
+        "X → Y means each X value determines exactly one Y value.",
+        "1NF: atomic values. 2NF: 1NF and no partial dependency on a composite key. 3NF: 2NF and no transitive dependency of non-key attributes. BCNF: every determinant is a candidate key.",
+        "Decomposition should be lossless and preserve dependencies."
+       ],
+       "outcomes": [
+        "Find functional dependencies in a table",
+        "Normalise a relation to 3NF"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Why does one student's address appear 6 times in the marks table?",
+        "example": "Marks(RollNo, Subject, Name, Grade): key (RollNo, Subject); RollNo → Name is a partial dependency.\n2NF: Student(RollNo, Name) and Marks(RollNo, Subject, Grade).",
+        "activity": "",
+        "questions": [
+         {
+          "q": "Which normal form removes transitive dependencies?",
+          "a": "Third normal form (3NF)."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "functional dependency",
+         "partial dependency",
+         "transitive dependency",
+         "normal form"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "SQL",
+     "topics": [
+      {
+       "title": "DDL, DML and constraints",
+       "summary": "Creating tables and changing data with SQL.",
+       "notes": [
+        "DDL: CREATE, ALTER, DROP, TRUNCATE; DML: INSERT, UPDATE, DELETE; DCL: GRANT, REVOKE; TCL: COMMIT, ROLLBACK, SAVEPOINT.",
+        "Constraints: PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL, CHECK, DEFAULT.",
+        "DELETE removes chosen rows and can be rolled back; TRUNCATE removes all rows quickly; DROP removes the table."
+       ],
+       "outcomes": [
+        "Create tables with constraints",
+        "Insert, update and delete rows"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Queries, joins and aggregates",
+       "summary": "SELECT with WHERE, ORDER BY, GROUP BY, HAVING, joins and subqueries.",
+       "notes": [
+        "Clause order: SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY.",
+        "WHERE filters rows before grouping; HAVING filters groups after aggregation.",
+        "Aggregates: COUNT, SUM, AVG, MIN, MAX.",
+        "Joins: INNER, LEFT/RIGHT/FULL OUTER; a subquery is a query inside another."
+       ],
+       "outcomes": [
+        "Write queries with joins and aggregates",
+        "Use subqueries"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "SELECT dept, AVG(salary) FROM emp GROUP BY dept HAVING AVG(salary) > 50000 ORDER BY dept;",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is the difference between WHERE and HAVING?",
+          "a": "WHERE filters rows before grouping; HAVING filters groups after aggregation."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Transactions and Concurrency",
+     "topics": [
+      {
+       "title": "Transactions and concurrency control",
+       "summary": "ACID properties, schedules, serialisability, locking and recovery.",
+       "notes": [
+        "ACID: atomicity, consistency, isolation, durability.",
+        "A schedule is serialisable if it is equivalent to some serial schedule.",
+        "Two-phase locking (growing then shrinking phase) guarantees conflict serialisability.",
+        "Problems without control: lost update, dirty read, unrepeatable read. Recovery uses logs (undo/redo) and checkpoints."
+       ],
+       "outcomes": [
+        "Explain the ACID properties",
+        "Explain two-phase locking"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-3-csharp-dotnet",
+   "title": "C# and .NET Framework, BCA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "The .NET Framework",
+     "topics": [
+      {
+       "title": ".NET architecture",
+       "summary": "CLR, CTS, CLS, MSIL, JIT compilation and assemblies.",
+       "notes": [
+        "Source code compiles to MSIL (CIL); the CLR's JIT compiler turns it into native code at run time.",
+        "The CTS defines the types all .NET languages share; the CLS is the subset every language must support.",
+        "The CLR provides memory management (garbage collection), type safety and exception handling.",
+        "An assembly (.exe or .dll) contains IL code, metadata and a manifest."
+       ],
+       "outcomes": [
+        "Describe the .NET execution model",
+        "Explain the roles of the CLR, CTS and CLS"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "C# Fundamentals",
+     "topics": [
+      {
+       "title": "C# language basics",
+       "summary": "Types, boxing, control statements, arrays and strings.",
+       "notes": [
+        "Value types (int, double, struct, enum) live on the stack; reference types (class, string, array) on the heap.",
+        "Boxing converts a value type to object; unboxing converts it back with a cast.",
+        "foreach iterates over arrays and collections; strings are immutable."
+       ],
+       "outcomes": [
+        "Write C# programs with control structures and arrays",
+        "Explain boxing and unboxing"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Object-Oriented C#",
+     "topics": [
+      {
+       "title": "Classes, inheritance and interfaces in C#",
+       "summary": "Properties, constructors, inheritance, virtual/override, interfaces, delegates and events.",
+       "notes": [
+        "Properties wrap fields with get and set accessors.",
+        "A method must be virtual in the base class to be overridden with override.",
+        "A delegate is a type-safe reference to a method; events are built on delegates."
+       ],
+       "outcomes": [
+        "Use properties, inheritance and interfaces",
+        "Use delegates and events"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Windows and Web Applications",
+     "topics": [
+      {
+       "title": "Windows Forms and ADO.NET",
+       "summary": "Building forms with controls, and connecting to a database with ADO.NET.",
+       "notes": [
+        "Windows Forms apps use controls (Button, TextBox, Label, DataGridView) with event handlers.",
+        "ADO.NET objects: Connection, Command, DataReader (connected, forward-only) and DataAdapter with DataSet (disconnected).",
+        "ASP.NET builds web pages with server controls and code-behind files."
+       ],
+       "outcomes": [
+        "Build a simple Windows Forms application",
+        "Read and update a database with ADO.NET"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-3-computer-networks",
+   "title": "Computer Networks, BCA Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction",
+     "topics": [
+      {
+       "title": "Network models",
+       "summary": "Network types, topologies and the OSI and TCP/IP models.",
+       "notes": [
+        "Network types: PAN, LAN, MAN, WAN; topologies: bus, star, ring, mesh, tree.",
+        "OSI layers (bottom up): physical, data link, network, transport, session, presentation, application.",
+        "TCP/IP layers: network access, internet, transport, application.",
+        "Each layer adds a header (encapsulation); units: bits, frames, packets, segments."
+       ],
+       "outcomes": [
+        "Name the OSI layers and their functions",
+        "Compare the OSI and TCP/IP models"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Physical Layer",
+     "topics": [
+      {
+       "title": "Transmission media and signals",
+       "summary": "Guided and unguided media, bandwidth, and multiplexing.",
+       "notes": [
+        "Guided media: twisted pair, coaxial cable, optical fibre; unguided: radio, microwave, infrared.",
+        "Optical fibre uses total internal reflection; it has high bandwidth and is immune to electromagnetic interference.",
+        "Multiplexing shares a link: FDM (frequency), TDM (time), WDM (wavelength, for fibre).",
+        "Switching: circuit, message and packet switching."
+       ],
+       "outcomes": [
+        "Compare transmission media",
+        "Explain multiplexing"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Data Link Layer",
+     "topics": [
+      {
+       "title": "Error detection and flow control",
+       "summary": "Framing, parity, CRC, and stop-and-wait and sliding-window protocols.",
+       "notes": [
+        "Single parity detects odd numbers of bit errors; CRC divides by a generator polynomial and appends the remainder.",
+        "Hamming code can correct single-bit errors.",
+        "Stop-and-wait sends one frame per acknowledgement; sliding window (Go-Back-N, Selective Repeat) sends several.",
+        "MAC protocols: ALOHA, CSMA/CD (Ethernet), CSMA/CA (Wi-Fi)."
+       ],
+       "outcomes": [
+        "Compute a CRC",
+        "Explain sliding-window protocols"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Network Layer",
+     "topics": [
+      {
+       "title": "IP addressing and routing",
+       "summary": "IPv4 addresses, classes, subnetting and routing algorithms.",
+       "notes": [
+        "An IPv4 address is 32 bits, written as four decimal octets; IPv6 is 128 bits.",
+        "Classful ranges: A 1–126, B 128–191, C 192–223 (first octet); CIDR notation /n gives the network prefix length.",
+        "A /24 network has 2⁸ − 2 = 254 usable host addresses.",
+        "Routing: distance vector (Bellman-Ford, RIP) and link state (Dijkstra, OSPF)."
+       ],
+       "outcomes": [
+        "Find network and broadcast addresses from an IP and mask",
+        "Explain routing algorithms"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "How many usable hosts does a /26 subnet have?",
+          "a": "2⁶ − 2 = 62."
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Transport and Application Layers",
+     "topics": [
+      {
+       "title": "TCP, UDP and application protocols",
+       "summary": "Ports, TCP and UDP, and DNS, HTTP, SMTP and FTP.",
+       "notes": [
+        "TCP is connection-oriented and reliable (three-way handshake, acknowledgements); UDP is connectionless and faster.",
+        "Well-known ports: HTTP 80, HTTPS 443, FTP 21, SMTP 25, DNS 53, SSH 22.",
+        "DNS maps domain names to IP addresses."
+       ],
+       "outcomes": [
+        "Compare TCP and UDP",
+        "Describe common application protocols"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-4-python",
+   "title": "Python Programming, BCA Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Python Basics",
+     "topics": [
+      {
+       "title": "Data types, operators and control flow",
+       "summary": "Variables, built-in types, operators, if-elif-else, while and for.",
+       "notes": [
+        "Python is interpreted and dynamically typed; indentation marks blocks.",
+        "Built-in types: int, float, complex, bool, str, list, tuple, set, dict, None.",
+        "// is floor division, ** is power, % is remainder; 7 // 2 is 3 and 2 ** 3 is 8.",
+        "range(start, stop, step) stops before stop; for loops may have an else that runs if no break occurs."
+       ],
+       "outcomes": [
+        "Write programs with conditions and loops",
+        "Use Python's operators correctly"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "The same 'find the average' program in C needs 15 lines. How short can it be in Python?",
+        "example": "marks = [72, 85, 64]; print(sum(marks) / len(marks)) prints 73.666…\nfor i in range(1, 10, 3): print(i) prints 1, 4, 7.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What does 17 // 5 give? And 17 % 5?",
+          "a": "3 and 2."
+         },
+         {
+          "q": "What does list(range(5, 0, -2)) give?",
+          "a": "[5, 3, 1]"
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "interpreter",
+         "dynamic typing",
+         "indentation"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Functions and Modules",
+     "topics": [
+      {
+       "title": "Functions, arguments and scope",
+       "summary": "def, return, default and keyword arguments, *args, **kwargs, lambda and recursion.",
+       "notes": [
+        "Default arguments are evaluated once, when the function is defined (so avoid mutable defaults).",
+        "*args collects extra positional arguments as a tuple; **kwargs collects keyword arguments as a dict.",
+        "lambda creates a small anonymous function: lambda x: x * x.",
+        "LEGB rule for names: local, enclosing, global, built-in."
+       ],
+       "outcomes": [
+        "Define functions with different argument kinds",
+        "Use map, filter and lambda"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Modules and packages",
+       "summary": "import, standard modules and creating your own modules.",
+       "notes": [
+        "A module is a .py file; a package is a folder of modules (with __init__.py).",
+        "import math; from math import sqrt; import numpy as np.",
+        "if __name__ == '__main__': runs code only when the file is executed directly."
+       ],
+       "outcomes": [
+        "Import and write modules",
+        "Use the __name__ == '__main__' guard"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Data Structures in Python",
+     "topics": [
+      {
+       "title": "Strings, lists and tuples",
+       "summary": "Indexing, slicing, methods, list comprehensions and immutability.",
+       "notes": [
+        "Indexing starts at 0; negative indices count from the end; s[a:b] runs from a up to b − 1.",
+        "Lists are mutable; tuples and strings are immutable.",
+        "List comprehension: [x * x for x in range(5) if x % 2 == 0] gives [0, 4, 16].",
+        "Common list methods: append, extend, insert, remove, pop, sort, reverse."
+       ],
+       "outcomes": [
+        "Slice strings and lists",
+        "Write list comprehensions"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "",
+        "example": "",
+        "activity": "",
+        "questions": [
+         {
+          "q": "For s = 'PYTHON', what is s[1:4]?",
+          "a": "'YTH'"
+         }
+        ],
+        "homework": "",
+        "terms": []
+       }
+      },
+      {
+       "title": "Sets and dictionaries",
+       "summary": "Set operations, dictionary methods and iteration.",
+       "notes": [
+        "A set holds unique, unordered items: | union, & intersection, − difference.",
+        "A dict maps unique, immutable keys to values; d.get(k, default) avoids KeyError.",
+        "Iterate with for k, v in d.items()."
+       ],
+       "outcomes": [
+        "Use sets and dictionaries to solve problems",
+        "Count word frequencies with a dictionary"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Files and Exceptions",
+     "topics": [
+      {
+       "title": "File handling and exception handling",
+       "summary": "Opening, reading and writing files, and try-except-else-finally.",
+       "notes": [
+        "Modes: 'r' read, 'w' write (truncates), 'a' append, 'b' binary.",
+        "with open(name) as f: closes the file automatically.",
+        "try-except catches errors; else runs if no exception; finally always runs; raise throws an exception."
+       ],
+       "outcomes": [
+        "Read and write text and CSV files",
+        "Handle exceptions"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Object-Oriented Python and Libraries",
+     "topics": [
+      {
+       "title": "Classes and objects in Python",
+       "summary": "class, __init__, self, inheritance and special methods.",
+       "notes": [
+        "__init__ initialises a new object; self is the instance.",
+        "Inheritance: class Child(Parent); super().__init__() calls the parent's constructor.",
+        "Special methods such as __str__ and __len__ customise built-in behaviour."
+       ],
+       "outcomes": [
+        "Write classes with inheritance",
+        "Customise objects with special methods"
+       ],
+       "resources": []
+      },
+      {
+       "title": "NumPy, pandas and Matplotlib",
+       "summary": "Arrays, data frames and plotting for data analysis.",
+       "notes": [
+        "NumPy arrays are homogeneous and support vectorised operations: np.array([1, 2]) * 2 gives [2, 4].",
+        "pandas: Series (1-D) and DataFrame (2-D); read_csv, head, describe, groupby.",
+        "Matplotlib's pyplot draws line, bar, scatter and pie charts."
+       ],
+       "outcomes": [
+        "Load and summarise a dataset with pandas",
+        "Plot data with Matplotlib"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "lab.graph-plotter",
+         "title": "Graph plotter"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-4-operating-systems",
+   "title": "Operating Systems, BCA Semester 4",
+   "term": 4,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (SEP 2024, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction",
+     "topics": [
+      {
+       "title": "Operating system concepts",
+       "summary": "Functions and types of operating systems, system calls and OS structure.",
+       "notes": [
+        "An OS manages processes, memory, files, devices and security, and provides the user interface.",
+        "Types: batch, multiprogramming, time-sharing, real-time, distributed, mobile.",
+        "System calls are the interface between programs and the kernel (e.g. fork, exec, read, write).",
+        "Kernel designs: monolithic, layered, microkernel."
+       ],
+       "outcomes": [
+        "Describe the functions and types of operating systems",
+        "Explain how a system call works"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Process Management",
+     "topics": [
+      {
+       "title": "Processes and threads",
+       "summary": "Process states, the PCB, context switching and threads.",
+       "notes": [
+        "Process states: new, ready, running, waiting, terminated.",
+        "The PCB stores a process's state, program counter, registers, scheduling and memory information.",
+        "A context switch saves one process's state and loads another's; it is pure overhead.",
+        "Threads of one process share code, data and files but have their own stack and registers."
+       ],
+       "outcomes": [
+        "Draw the process state diagram",
+        "Compare processes and threads"
+       ],
+       "resources": []
+      },
+      {
+       "title": "CPU scheduling",
+       "summary": "FCFS, SJF, priority and round robin scheduling; waiting and turnaround time.",
+       "notes": [
+        "Turnaround time = Completion time − Arrival time; Waiting time = Turnaround time − Burst time.",
+        "FCFS can suffer the convoy effect; SJF gives the minimum average waiting time.",
+        "Round robin gives each process a time quantum in turn; good for time-sharing.",
+        "Priority scheduling can starve low-priority processes; aging fixes this."
+       ],
+       "outcomes": [
+        "Draw Gantt charts and compute average waiting times",
+        "Compare scheduling algorithms"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Three people at a photocopier: one has 100 pages, two have 1 page each. Who should go first?",
+        "example": "FCFS, all arriving at 0: P1 = 24, P2 = 3, P3 = 3. Waiting: 0, 24, 27; average 17.\nSJF order P2, P3, P1: waiting 0, 3, 6; average 3.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "In round robin with quantum 4, how many turns does a 10 ms process need?",
+          "a": "Three (4 + 4 + 2)."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "burst time",
+         "turnaround time",
+         "waiting time",
+         "Gantt chart"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Synchronisation and Deadlocks",
+     "topics": [
+      {
+       "title": "Process synchronisation",
+       "summary": "Race conditions, critical sections, semaphores and classic problems.",
+       "notes": [
+        "A critical-section solution needs mutual exclusion, progress and bounded waiting.",
+        "A semaphore S is an integer with wait (P: S − 1, block if negative) and signal (V: S + 1).",
+        "Classic problems: producer–consumer, readers–writers, dining philosophers."
+       ],
+       "outcomes": [
+        "Use semaphores for mutual exclusion",
+        "Explain the producer–consumer problem"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Deadlocks",
+       "summary": "Deadlock conditions, prevention, avoidance (Banker's algorithm), detection and recovery.",
+       "notes": [
+        "Four necessary conditions: mutual exclusion, hold and wait, no preemption, circular wait.",
+        "Prevention breaks one condition; avoidance (Banker's algorithm) grants a request only if the state stays safe.",
+        "Need = Max − Allocation; a safe sequence exists if every process can finish in some order."
+       ],
+       "outcomes": [
+        "Apply the Banker's algorithm",
+        "State and break the conditions for deadlock"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Memory and File Management",
+     "topics": [
+      {
+       "title": "Memory management and virtual memory",
+       "summary": "Contiguous allocation, paging, segmentation and page replacement.",
+       "notes": [
+        "Paging divides memory into fixed frames and processes into pages; it removes external fragmentation.",
+        "Logical address = (page number, offset); the page table maps pages to frames.",
+        "Page replacement: FIFO, optimal, LRU; FIFO can show Belady's anomaly.",
+        "Thrashing: the system spends more time paging than executing."
+       ],
+       "outcomes": [
+        "Translate logical addresses with a page table",
+        "Count page faults for FIFO and LRU"
+       ],
+       "resources": []
+      },
+      {
+       "title": "File systems and disk scheduling",
+       "summary": "File access and allocation methods, directories and disk scheduling.",
+       "notes": [
+        "Access methods: sequential, direct, indexed.",
+        "Allocation: contiguous, linked, indexed.",
+        "Disk scheduling: FCFS, SSTF, SCAN, C-SCAN; seek time dominates disk access."
+       ],
+       "outcomes": [
+        "Compare file allocation methods",
+        "Compute total head movement for disk scheduling algorithms"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-5-algorithms",
+   "title": "Design and Analysis of Algorithms, BCA Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Algorithm Analysis",
+     "topics": [
+      {
+       "title": "Asymptotic notation and recurrences",
+       "summary": "O, Ω and Θ notation, and solving recurrences.",
+       "notes": [
+        "f(n) = O(g(n)) is an upper bound, Ω a lower bound and Θ a tight bound.",
+        "Master theorem for T(n) = aT(n/b) + f(n): compare f(n) with n^(log_b a).",
+        "T(n) = 2T(n/2) + n gives Θ(n log n); T(n) = T(n/2) + 1 gives Θ(log n)."
+       ],
+       "outcomes": [
+        "Express running times in asymptotic notation",
+        "Solve recurrences with the master theorem"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Divide and Conquer",
+     "topics": [
+      {
+       "title": "Divide and conquer",
+       "summary": "Binary search, merge sort, quick sort and Strassen's multiplication.",
+       "notes": [
+        "Divide the problem, solve subproblems recursively, combine the results.",
+        "Merge sort: T(n) = 2T(n/2) + n = Θ(n log n).",
+        "Strassen's method multiplies matrices in O(n^2.81) using 7 multiplications instead of 8."
+       ],
+       "outcomes": [
+        "Analyse divide-and-conquer algorithms",
+        "Write recurrences for divide-and-conquer algorithms"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Greedy Method",
+     "topics": [
+      {
+       "title": "Greedy algorithms",
+       "summary": "Fractional knapsack, minimum spanning trees and Dijkstra's shortest paths.",
+       "notes": [
+        "A greedy algorithm makes the locally best choice at each step.",
+        "Fractional knapsack: take items in decreasing order of value per weight.",
+        "Prim's and Kruskal's algorithms find minimum spanning trees; Kruskal adds the cheapest edge that forms no cycle.",
+        "Dijkstra's algorithm finds shortest paths from one source when edge weights are non-negative."
+       ],
+       "outcomes": [
+        "Solve fractional knapsack problems",
+        "Find minimum spanning trees and shortest paths"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Dynamic Programming",
+     "topics": [
+      {
+       "title": "Dynamic programming",
+       "summary": "Overlapping subproblems and optimal substructure; 0/1 knapsack, Floyd-Warshall, LCS.",
+       "notes": [
+        "DP stores solutions of overlapping subproblems (memoisation or tabulation).",
+        "0/1 knapsack: K[i][w] = max(K[i−1][w], vᵢ + K[i−1][w − wᵢ]).",
+        "Floyd–Warshall finds all-pairs shortest paths in Θ(n³)."
+       ],
+       "outcomes": [
+        "Formulate DP recurrences",
+        "Solve 0/1 knapsack by a table"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Backtracking and Complexity Classes",
+     "topics": [
+      {
+       "title": "Backtracking, branch and bound, and NP",
+       "summary": "N-queens, subset sum, and the classes P, NP and NP-complete.",
+       "notes": [
+        "Backtracking builds solutions step by step and abandons a partial solution that cannot succeed.",
+        "Branch and bound prunes using bounds on the best possible solution.",
+        "P: solvable in polynomial time; NP: solutions verifiable in polynomial time; NP-complete problems (e.g. SAT, travelling salesman decision) are the hardest in NP."
+       ],
+       "outcomes": [
+        "Solve N-queens by backtracking",
+        "Explain P, NP and NP-completeness"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-5-statistics-r",
+   "title": "Statistical Computing and R Programming, BCA Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "R Basics",
+     "topics": [
+      {
+       "title": "R data types and structures",
+       "summary": "Vectors, matrices, lists, factors and data frames.",
+       "notes": [
+        "The basic object is a vector; c(2, 4, 6) creates one; operations are vectorised.",
+        "Indexing starts at 1; x[-1] drops the first element.",
+        "matrix(), list(), factor() and data.frame() create the other structures; str() shows structure.",
+        "Assignment uses <- (or =)."
+       ],
+       "outcomes": [
+        "Create and manipulate R vectors and data frames",
+        "Import a CSV file into a data frame"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Descriptive Statistics",
+     "topics": [
+      {
+       "title": "Measures of central tendency and dispersion",
+       "summary": "Mean, median, mode, range, variance and standard deviation.",
+       "notes": [
+        "Mean x̄ = Σx ÷ n; median is the middle value of sorted data; mode is the most frequent value.",
+        "Sample variance s² = Σ(x − x̄)² ÷ (n − 1); standard deviation s = √s².",
+        "Coefficient of variation = (s ÷ x̄) × 100; lower CV means more consistent.",
+        "R: mean(x), median(x), var(x), sd(x), summary(x), quantile(x)."
+       ],
+       "outcomes": [
+        "Compute summary statistics by hand and in R",
+        "Compare the consistency of two data sets"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Two batsmen both average 50. One scores 48–52 every match; the other 0 or 100. Who would you pick?",
+        "example": "x = 2, 4, 4, 4, 5, 5, 7, 9: mean = 40 ÷ 8 = 5.\nΣ(x − 5)² = 9 + 1 + 1 + 1 + 0 + 0 + 4 + 16 = 32; s² = 32 ÷ 7 ≈ 4.57; s ≈ 2.14.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What does sd(c(1, 1, 1)) return in R?",
+          "a": "0"
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "mean",
+         "median",
+         "variance",
+         "standard deviation"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Probability Distributions",
+     "topics": [
+      {
+       "title": "Binomial, Poisson and normal distributions",
+       "summary": "The common distributions and their R functions.",
+       "notes": [
+        "Binomial: P(X = r) = nCr pʳ qⁿ⁻ʳ; mean np, variance npq.",
+        "Poisson: P(X = r) = e^(−λ) λʳ ÷ r!; mean = variance = λ.",
+        "Normal: bell-shaped, symmetric about μ; about 68%, 95% and 99.7% of values lie within 1, 2 and 3 σ.",
+        "R functions: dbinom, pbinom, dpois, pnorm, qnorm, rnorm (d density, p cumulative, q quantile, r random)."
+       ],
+       "outcomes": [
+        "Compute probabilities from these distributions",
+        "Use R's d, p, q and r functions"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "probability",
+         "title": "Probability with coins and dice"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Correlation, Regression and Tests",
+     "topics": [
+      {
+       "title": "Correlation and regression",
+       "summary": "Karl Pearson's correlation and the least-squares regression line.",
+       "notes": [
+        "r = Σ(x − x̄)(y − ȳ) ÷ √(Σ(x − x̄)² Σ(y − ȳ)²); −1 ≤ r ≤ 1.",
+        "Regression line of y on x: y − ȳ = b(x − x̄), with b = r × (sᵧ ÷ sₓ).",
+        "R: cor(x, y), lm(y ~ x), summary(model)."
+       ],
+       "outcomes": [
+        "Fit and interpret a regression line in R",
+        "Compute and interpret Pearson's r"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Hypothesis testing",
+       "summary": "Null and alternative hypotheses, t-test and chi-square test.",
+       "notes": [
+        "Reject H₀ when the p-value is below the significance level α (often 0.05).",
+        "t.test compares means; chisq.test tests independence in a contingency table.",
+        "Type I error: rejecting a true H₀; Type II: accepting a false H₀."
+       ],
+       "outcomes": [
+        "Run and interpret t and chi-square tests in R",
+        "State null and alternative hypotheses"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-5-software-engineering",
+   "title": "Software Engineering, BCA Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Software Process Models",
+     "topics": [
+      {
+       "title": "Software life cycle models",
+       "summary": "SDLC phases and the waterfall, prototype, spiral, incremental and agile models.",
+       "notes": [
+        "SDLC phases: requirements, design, implementation, testing, deployment, maintenance.",
+        "Waterfall suits stable requirements; prototyping helps when requirements are unclear.",
+        "The spiral model is risk-driven; agile delivers working software in short iterations (Scrum sprints)."
+       ],
+       "outcomes": [
+        "Choose a process model for a project",
+        "Explain the phases of the SDLC"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Requirements Engineering",
+     "topics": [
+      {
+       "title": "Requirements and the SRS",
+       "summary": "Functional and non-functional requirements, elicitation and the SRS document.",
+       "notes": [
+        "Functional requirements say what the system does; non-functional ones say how well (performance, security, usability).",
+        "Elicitation: interviews, questionnaires, observation, use cases.",
+        "A good SRS is correct, complete, unambiguous, consistent and verifiable."
+       ],
+       "outcomes": [
+        "Write functional and non-functional requirements",
+        "Describe the qualities of a good SRS"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Software Design",
+     "topics": [
+      {
+       "title": "Design concepts and modelling",
+       "summary": "Modularity, coupling and cohesion, DFDs and UML diagrams.",
+       "notes": [
+        "Aim for low coupling between modules and high cohesion within them.",
+        "DFDs show data flow: processes, data stores, external entities and flows; level 0 is the context diagram.",
+        "UML: use case, class, sequence, activity and state diagrams."
+       ],
+       "outcomes": [
+        "Draw DFDs and use case diagrams",
+        "Judge a design by coupling and cohesion"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Testing and Quality",
+     "topics": [
+      {
+       "title": "Software testing",
+       "summary": "Levels and techniques of testing.",
+       "notes": [
+        "Levels: unit, integration, system, acceptance testing.",
+        "Black-box testing uses the specification (equivalence partitioning, boundary value analysis); white-box testing uses the code (statement, branch, path coverage).",
+        "Cyclomatic complexity V(G) = E − N + 2 (edges, nodes) = number of decisions + 1."
+       ],
+       "outcomes": [
+        "Design test cases by boundary value analysis",
+        "Compute cyclomatic complexity"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Project Management",
+     "topics": [
+      {
+       "title": "Estimation, risk and maintenance",
+       "summary": "COCOMO, risk management, configuration management and maintenance.",
+       "notes": [
+        "Basic COCOMO: Effort = a(KLOC)^b person-months; organic projects a = 2.4, b = 1.05.",
+        "Risk management: identify, analyse, plan and monitor risks.",
+        "Maintenance types: corrective, adaptive, perfective, preventive."
+       ],
+       "outcomes": [
+        "Estimate effort with basic COCOMO",
+        "Classify maintenance activities"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-5-cloud-computing",
+   "title": "Cloud Computing (elective), BCA Semester 5",
+   "term": 5,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Cloud Fundamentals",
+     "topics": [
+      {
+       "title": "Cloud computing concepts",
+       "summary": "Characteristics, service models and deployment models.",
+       "notes": [
+        "NIST characteristics: on-demand self-service, broad network access, resource pooling, rapid elasticity, measured service.",
+        "Service models: IaaS (e.g. virtual machines), PaaS (platforms), SaaS (applications such as e-mail).",
+        "Deployment models: public, private, hybrid, community."
+       ],
+       "outcomes": [
+        "Classify cloud services by service and deployment model",
+        "State the NIST characteristics of cloud computing"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Virtualisation",
+     "topics": [
+      {
+       "title": "Virtualisation and containers",
+       "summary": "Hypervisors, virtual machines and containers.",
+       "notes": [
+        "A type 1 hypervisor runs on bare metal; type 2 runs on a host OS.",
+        "Containers share the host kernel and are lighter than VMs.",
+        "Virtualisation enables consolidation, isolation and live migration."
+       ],
+       "outcomes": [
+        "Compare VMs and containers",
+        "Distinguish type 1 and type 2 hypervisors"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Cloud Services and Security",
+     "topics": [
+      {
+       "title": "Cloud platforms, storage and security",
+       "summary": "Major providers, storage types and the shared responsibility model.",
+       "notes": [
+        "Major platforms: AWS, Microsoft Azure, Google Cloud.",
+        "Storage: object (e.g. S3), block and file storage.",
+        "Shared responsibility: the provider secures the cloud; the customer secures what they put in it."
+       ],
+       "outcomes": [
+        "Explain the shared responsibility model",
+        "Choose a storage type for an application"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-6-ai-ml",
+   "title": "Artificial Intelligence and Machine Learning, BCA Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Introduction to AI",
+     "topics": [
+      {
+       "title": "AI, agents and problem solving",
+       "summary": "Definitions of AI, intelligent agents and state-space search.",
+       "notes": [
+        "An agent perceives its environment through sensors and acts through actuators.",
+        "A problem is defined by an initial state, actions, a goal test and path cost.",
+        "The Turing test judges whether a machine's conversation is indistinguishable from a human's."
+       ],
+       "outcomes": [
+        "Formulate a problem as a state-space search",
+        "Describe agent types and environments"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Search",
+     "topics": [
+      {
+       "title": "Uninformed and informed search",
+       "summary": "BFS, DFS, heuristic search and A*.",
+       "notes": [
+        "BFS is complete and optimal for unit costs; DFS uses less memory but may not terminate on infinite paths.",
+        "A* expands the node with the lowest f(n) = g(n) + h(n); it is optimal if h never overestimates (admissible).",
+        "Hill climbing can get stuck at local maxima."
+       ],
+       "outcomes": [
+        "Trace A* on a small graph",
+        "Compare BFS, DFS and heuristic search"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Knowledge Representation",
+     "topics": [
+      {
+       "title": "Logic and knowledge representation",
+       "summary": "Propositional and predicate logic, rules and semantic networks.",
+       "notes": [
+        "Knowledge can be represented by logic, production rules, semantic networks and frames.",
+        "Inference: modus ponens (from p and p → q, infer q); resolution.",
+        "Forward chaining reasons from facts to goals; backward chaining from goals to facts."
+       ],
+       "outcomes": [
+        "Represent knowledge in logic and rules",
+        "Apply forward and backward chaining"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Machine Learning",
+     "topics": [
+      {
+       "title": "Supervised and unsupervised learning",
+       "summary": "Regression, classification, clustering and model evaluation.",
+       "notes": [
+        "Supervised learning uses labelled data (regression, classification); unsupervised finds structure in unlabelled data (clustering).",
+        "Algorithms: linear regression, decision trees, k-nearest neighbours, naive Bayes, k-means.",
+        "Accuracy = (TP + TN) ÷ total; precision = TP ÷ (TP + FP); recall = TP ÷ (TP + FN).",
+        "Overfitting: a model fits training data but generalises poorly; use train/test splits and cross-validation."
+       ],
+       "outcomes": [
+        "Choose a learning approach for a problem",
+        "Evaluate a classifier with a confusion matrix"
+       ],
+       "resources": []
+      },
+      {
+       "title": "Neural networks",
+       "summary": "Perceptrons, activation functions and multilayer networks.",
+       "notes": [
+        "A perceptron computes a weighted sum plus bias and applies an activation function.",
+        "Activations: step, sigmoid, ReLU, softmax.",
+        "Multilayer networks are trained by backpropagation and gradient descent."
+       ],
+       "outcomes": [
+        "Explain how a neural network learns",
+        "Compute a perceptron's output"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-ug",
+   "code": "bca-6-php-mysql",
+   "title": "Web Programming with PHP and MySQL, BCA Semester 6",
+   "term": 6,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (NEP 2021, 2023-24)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Web Basics",
+     "topics": [
+      {
+       "title": "HTML, CSS and JavaScript essentials",
+       "summary": "Structure, style and behaviour of web pages.",
+       "notes": [
+        "HTML gives structure (headings, lists, tables, forms); CSS styles it (selectors, box model); JavaScript adds behaviour.",
+        "Form method GET sends data in the URL; POST sends it in the request body.",
+        "The client–server model: the browser requests, the web server responds over HTTP."
+       ],
+       "outcomes": [
+        "Build a styled web form",
+        "Explain GET and POST"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "PHP Fundamentals",
+     "topics": [
+      {
+       "title": "PHP syntax, variables and control structures",
+       "summary": "Embedding PHP, variables, data types, operators, arrays and functions.",
+       "notes": [
+        "PHP runs on the server; code sits inside <?php ... ?>; variables start with $.",
+        "Arrays: indexed, associative ($a['name']) and multidimensional; foreach iterates them.",
+        "String functions: strlen, str_replace, substr, strtoupper; . concatenates strings."
+       ],
+       "outcomes": [
+        "Write PHP scripts with arrays and functions",
+        "Use associative arrays"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Forms, Sessions and Cookies",
+     "topics": [
+      {
+       "title": "Handling forms and state",
+       "summary": "$_GET, $_POST, validation, sessions and cookies.",
+       "notes": [
+        "Superglobals $_GET, $_POST and $_REQUEST hold form data.",
+        "Validate and sanitise input (htmlspecialchars, filter_var) to prevent XSS.",
+        "session_start() begins a session ($_SESSION); setcookie() stores data in the browser."
+       ],
+       "outcomes": [
+        "Process and validate a form",
+        "Use sessions for a login"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "PHP with MySQL",
+     "topics": [
+      {
+       "title": "Database access with PHP",
+       "summary": "Connecting with mysqli or PDO, CRUD operations and prepared statements.",
+       "notes": [
+        "Connect with mysqli_connect or new PDO(dsn, user, password).",
+        "Prepared statements with bound parameters prevent SQL injection.",
+        "CRUD: INSERT, SELECT, UPDATE, DELETE from PHP pages."
+       ],
+       "outcomes": [
+        "Build a CRUD application with PHP and MySQL",
+        "Prevent SQL injection with prepared statements"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

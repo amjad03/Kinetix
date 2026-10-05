@@ -1,0 +1,322 @@
+// MCom, Bangalore University. Semesters 1-4.
+file: bu-mcom
+curriculum: bu-pg | Bangalore University (PG) | pg
+programme: MCom
+scheme: BU MCom CBCS | 2024-25
+! The course list follows the BU MCom CBCS scheme as commonly listed (core papers in Sem 1-2, core plus electives in Sem 3-4); confirm titles and semesters against the current BU MCom regulations.
+! Not written: soft-core/open electives and Sem 3-4 elective groups beyond Advanced Financial Management and Indirect Taxes; project work.
+
+# mcom-1-organisational-behaviour | 1 | Management Concepts and Organisational Behaviour
+## Management Thought
+### Approaches to management
+= Classical, behavioural, quantitative, systems and contingency approaches.
+- Classical: scientific management (Taylor), administrative (Fayol), bureaucratic (Weber).
+- Behavioural: human relations (Mayo), Maslow, McGregor.
+- Systems and contingency approaches treat management as situational and open to the environment.
+> Compare management approaches
+> Apply a contingency view to a case
+## Individual Behaviour
+### Perception, personality and learning
+= Individual determinants of behaviour at work.
+- Perceptual shortcuts: halo effect, stereotyping, contrast effect, projection.
+- Personality: Big Five; locus of control (internal vs external).
+- Reinforcement schedules: continuous, fixed/variable interval, fixed/variable ratio.
+> Identify perceptual errors
+> Choose a reinforcement schedule
+## Motivation and Leadership
+### Motivation and leadership theories
+= Content and process theories and leadership models.
+- Herzberg, McClelland, Vroom (M = E × I × V), Adams (equity), Locke (goal setting).
+- Leadership: trait, behavioural, situational (Hersey–Blanchard), path–goal, transformational.
+- Emotional intelligence (Goleman): self-awareness, self-regulation, motivation, empathy, social skill.
+> Apply motivation theories
+> Choose a leadership approach
+## Group Dynamics and Change
+### Groups, conflict and change
+= Teams, conflict and organisational change and development.
+- Group cohesiveness raises productivity when group norms support organisational goals.
+- Conflict can be functional or dysfunctional.
+- Organisational development interventions: sensitivity training, survey feedback, team building.
+> Manage conflict constructively
+> Plan an OD intervention
+
+# mcom-1-managerial-economics | 1 | Managerial Economics
+## Demand and Supply
+### Demand analysis and forecasting
+= Elasticities, demand estimation and forecasting.
+- Point elasticity e = (dQ/dP)(P/Q).
+- Demand estimation by regression: Q = a + bP + cY + …
+- Forecasting: survey methods, trend projection, barometric indicators, econometric models.
+> Estimate and interpret elasticities
+> Forecast demand with a trend equation
+## Production and Costs
+### Production and cost analysis
+= Isoquants, economies of scope and break-even analysis.
+- An isoquant shows input combinations giving the same output; MRTS = MPL ÷ MPK.
+- Economies of scope: cheaper to produce products together than separately.
+- Learning curve: unit cost falls by a constant percentage each time cumulative output doubles.
+> Find the optimal input combination
+> Apply learning curve effects
+## Pricing
+### Pricing strategies and market structures
+= Pricing under competition and monopoly, and pricing practices.
+- Monopoly mark-up: (P − MC) ÷ P = −1 ÷ e (Lerner index).
+- Third-degree price discrimination charges more in the market with less elastic demand.
+- Game theory: Nash equilibrium is a set of strategies where no player gains by changing alone.
+> Price with the Lerner rule
+> Find a Nash equilibrium
+## Macro Environment
+### Macroeconomic policy and business
+= Monetary and fiscal policy, inflation and business cycles.
+- Inflation types: demand-pull, cost-push; Phillips curve trade-off in the short run.
+- RBI's monetary policy committee sets the repo rate to target 4% CPI inflation within a 2–6% band.
+- Fiscal deficit = Total expenditure − (Revenue receipts + non-debt capital receipts).
+> Explain how policy affects business
+> Compute the fiscal deficit
+
+# mcom-1-advanced-cost-accounting | 1 | Advanced Cost and Management Accounting
+## Activity-Based Costing
+### ABC system
+= Activities, cost drivers and ABC vs traditional costing.
+- ABC assigns overheads to activities, then to products by cost drivers (set-ups, orders, inspections).
+- Activity cost driver rate = Activity cost pool ÷ Cost driver volume.
+- ABC corrects cross-subsidisation where low-volume products are under-costed.
+> Compute product costs under ABC
+> Compare ABC with traditional absorption costing
+hook: A factory makes 10,000 standard shirts and 100 custom ones. Why might the custom shirts look profitable but not be?
+ex: Set-up cost ₹60,000 for 30 set-ups: ₹2,000 per set-up. Custom line uses 20 set-ups = ₹40,000 for 100 shirts: ₹400 each.
+ex: Spread by labour hours instead, the custom shirts might get only ₹20 each of set-up cost.
+q: What is a cost driver? || A factor whose change causes a change in the cost of an activity.
+terms: activity; cost pool; cost driver; cross-subsidisation
+## Strategic Cost Management
+### Target, life cycle and kaizen costing
+= Modern costing techniques for strategy.
+- Target cost = Target price − Target profit.
+- Life cycle costing covers costs from design to disposal.
+- Kaizen costing seeks continuous small cost reductions during production.
+> Compute target cost and cost gap
+> Explain life cycle costing
+## Decision Making
+### Relevant costing
+= Relevant costs, make or buy, special orders and limiting factors.
+- Relevant costs are future, incremental cash costs; sunk costs are irrelevant.
+- Opportunity cost is relevant when resources are scarce.
+- With one limiting factor, rank products by contribution per unit of that factor.
+> Make make-or-buy and special order decisions
+> Allocate scarce resources
+@lab lab.break-even
+## Performance Measurement
+### Responsibility accounting and transfer pricing
+= Responsibility centres, ROI, residual income and transfer pricing.
+- Centres: cost, revenue, profit and investment centres.
+- ROI = Operating profit ÷ Capital employed; residual income = Profit − (Capital × Cost of capital).
+- Transfer price range: minimum = marginal cost + opportunity cost; maximum = external market price.
+> Evaluate divisions by ROI and RI
+> Set a transfer price
+
+# mcom-2-corporate-financial-reporting | 2 | Corporate Financial Reporting
+## Ind AS Framework
+### Ind AS and IFRS
+= Conceptual framework and key Ind AS.
+- Ind AS 1 presentation; Ind AS 8 accounting policies, estimates and errors; Ind AS 10 events after the reporting period.
+- Ind AS 115 revenue: five steps — identify contract, performance obligations, transaction price, allocate, recognise.
+- Ind AS 116 leases: lessees recognise right-of-use assets and lease liabilities for most leases.
+> Apply the five-step revenue model
+> Account for a lease under Ind AS 116
+## Business Combinations
+### Ind AS 103 and consolidation
+= Acquisition method, goodwill and consolidated statements.
+- Acquisition method: identify acquirer, acquisition date, measure assets and liabilities at fair value, recognise goodwill or bargain purchase.
+- Goodwill = Consideration + NCI + previously held interest − Net identifiable assets.
+- Ind AS 110: control means power, exposure to variable returns and ability to use power to affect returns.
+> Compute goodwill on acquisition
+> Prepare a simple consolidated balance sheet
+## Financial Instruments
+### Ind AS 109 and 32
+= Classification, measurement and impairment of financial instruments.
+- Financial assets: amortised cost, FVOCI or FVTPL depending on business model and cash flow characteristics.
+- Expected credit loss model for impairment.
+- Compound instruments (convertible debentures) are split into liability and equity components.
+> Classify financial assets
+> Split a compound instrument
+## Corporate Reporting
+### Integrated and sustainability reporting
+= Non-financial reporting frameworks.
+- BRSR is mandatory for the top 1,000 listed companies; BRSR Core needs reasonable assurance for the top companies in phases.
+- Integrated reporting (IIRC) covers six capitals.
+- ISSB standards (IFRS S1, S2) set global sustainability disclosure baselines.
+> Explain BRSR requirements
+> Describe the six capitals
+
+# mcom-2-business-research-methods | 2 | Business Research Methods
+## Research Design
+### Research problem and design
+= Problem formulation, hypotheses and designs.
+- Research questions should be specific and answerable.
+- Designs: exploratory, descriptive, causal.
+- Variables: independent, dependent, moderating, mediating.
+> Formulate hypotheses
+> Choose a research design
+## Sampling and Measurement
+### Sampling and scales
+= Sampling techniques, sample size and measurement validity.
+- n = z²σ² ÷ e² for estimating a mean.
+- Validity types: content, construct, criterion; reliability: test–retest, internal consistency.
+- Scales: Likert, semantic differential, rank order.
+> Determine sample size
+> Assess reliability and validity
+## Data Analysis
+### Parametric and non-parametric tests
+= t, F, chi-square and non-parametric tests.
+- Paired t-test compares before–after means.
+- Chi-square test of independence: χ² = Σ (O − E)² ÷ E with (r − 1)(c − 1) df.
+- Non-parametric: sign test, Wilcoxon, Mann–Whitney, Kruskal–Wallis.
+> Choose and run a suitable test
+> Interpret test output
+ex: Observed 30 and 20 against expected 25 and 25: χ² = 25/25 + 25/25 = 2; with 1 df, below 3.84, so not significant at 5%.
+## Report Writing
+### Research report
+= Writing, presenting and referencing research.
+- Structure: introduction, review, methodology, analysis, findings, conclusions.
+- Tables and figures need numbers, titles and sources.
+- Cite with a consistent style (APA).
+> Write a research report
+> Present findings clearly
+
+# mcom-2-international-business | 2 | International Business
+## Global Environment
+### Globalisation and trade theories
+= Globalisation, trade theories and protectionism.
+- Comparative advantage and Heckscher–Ohlin factor endowment theory.
+- Tariff and non-tariff barriers (quotas, standards, anti-dumping duties).
+- Product life cycle theory of trade (Vernon).
+> Explain trade patterns with theory
+> Evaluate protectionist measures
+## Foreign Investment
+### FDI and multinational enterprises
+= Types and theories of FDI and India's FDI policy.
+- FDI types: horizontal, vertical, conglomerate; greenfield vs brownfield.
+- Dunning's OLI paradigm: ownership, location, internalisation advantages.
+- India's FDI is through the automatic route or the government route depending on sector caps.
+> Apply the OLI paradigm
+> Explain India's FDI routes
+## Foreign Exchange
+### Exchange rates and risk
+= Exchange rate determination and exposure management.
+- Purchasing power parity: exchange rate changes offset inflation differentials.
+- Interest rate parity: F = S × (1 + i_d) ÷ (1 + i_f).
+- Hedging: forwards, futures, options and natural hedges.
+> Compute forward rates by interest rate parity
+> Hedge transaction exposure
+## Trade Policy and Institutions
+### India's trade policy and the WTO
+= Foreign Trade Policy, export promotion and WTO agreements.
+- Foreign Trade Policy 2023 aims at export growth and ease of doing business; DGFT administers it.
+- Export promotion: SEZs, EOUs, export credit (ECGC, EXIM Bank).
+- WTO agreements: GATT, GATS, TRIPS, TRIMs.
+> Describe export promotion measures
+> Explain WTO agreements
+
+# mcom-3-direct-taxes | 3 | Direct Taxes and Tax Planning | year=2025-26
+! Written for the Income-tax Act, 1961 (AY 2026-27); the Income-tax Act, 2025 applies from 1 April 2026. Update to the syllabus in force.
+## Tax Planning Concepts
+### Tax planning, avoidance and evasion
+= Distinguishing planning, avoidance and evasion, and GAAR.
+- Tax planning uses provisions as intended; avoidance exploits loopholes; evasion is illegal.
+- GAAR (Chapter X-A) lets authorities deny benefits of impermissible avoidance arrangements.
+- McDowell and Vodafone judgments shaped the Indian position on avoidance.
+> Distinguish planning, avoidance and evasion
+> Explain GAAR
+## Corporate Taxation
+### Taxation of companies
+= Corporate tax rates, MAT and concessional regimes.
+- Section 115BAA: 22% (effective about 25.17%) for domestic companies forgoing certain deductions; MAT does not apply.
+- Section 115BAB (new manufacturing companies) 15% for companies set up before its sunset date.
+- MAT (section 115JB) at 15% of book profit for companies under the normal regime.
+> Compute a company's tax liability
+> Compare tax regimes for companies
+## Tax Planning for Decisions
+### Tax-based managerial decisions
+= Make or buy, lease or buy, and capital structure.
+- Interest is tax-deductible; dividends are not, so debt gives a tax shield (Interest × tax rate).
+- Lease or buy: compare after-tax present values of costs.
+- Depreciation tax shield = Depreciation × tax rate.
+> Compare lease and buy after tax
+> Value a tax shield
+## Assessment and Procedures
+### Returns, assessment and appeals
+= Filing returns, assessment types and appeals.
+- Assessment types: summary (143(1)), scrutiny (143(3)), best judgement (144), reassessment (147–148A).
+- Faceless assessment and appeals schemes.
+- Appeals: CIT(A), ITAT, High Court, Supreme Court.
+> Describe assessment procedures
+> Trace the appeal route
+
+# mcom-3-advanced-financial-management | 3 | Advanced Financial Management (Finance elective) | year=2025-26
+## Valuation
+### Corporate valuation
+= DCF, relative valuation and EVA.
+- Free cash flow to firm = EBIT(1 − t) + Depreciation − Capex − ΔWorking capital.
+- Firm value = PV of FCFF at WACC + terminal value (FCFF × (1 + g) ÷ (WACC − g)).
+- EVA = NOPAT − WACC × Capital employed.
+> Value a firm by DCF
+> Compute EVA
+## Mergers and Acquisitions
+### M&A analysis
+= Synergy, exchange ratios and takeover regulation.
+- Synergy = V(AB) − (V(A) + V(B)).
+- Exchange ratio based on EPS, market price or book value.
+- SEBI SAST Regulations: open offer triggered at 25% voting rights.
+> Compute synergy and exchange ratios
+> Explain takeover rules
+## Risk Management
+### Derivatives for corporate risk
+= Using futures, options and swaps to manage risk.
+- Hedge ratio for minimum variance: h = ρ σS ÷ σF.
+- Options give the right, not the obligation; premiums are the cost of protection.
+- Interest rate swaps change fixed to floating exposure or vice versa.
+> Compute a minimum-variance hedge ratio
+> Choose a hedging instrument
+## Financial Restructuring
+### Restructuring and insolvency
+= Buybacks, demergers and the IBC.
+- Buyback limit: 25% of paid-up capital and free reserves (with debt–equity not above 2:1 after buyback).
+- Demergers separate business units into new companies.
+- IBC: corporate insolvency resolution within 180 days (extendable to 330 days including litigation).
+> Evaluate a buyback
+> Describe the insolvency resolution process
+
+# mcom-4-indirect-taxes | 4 | Indirect Taxes: GST and Customs | year=2025-26
+! GST rates were rationalised from 22 September 2025; confirm rates and thresholds taught.
+## GST Framework
+### Constitutional and legal framework
+= GST laws, the GST Council and dual structure.
+- Laws: CGST Act, SGST Acts, IGST Act, UTGST Act, GST (Compensation to States) Act.
+- Article 246A gives both Centre and States power to levy GST.
+- Inter-state supplies attract IGST, settled between Centre and States.
+> Explain the legal framework of GST
+> Classify supplies for CGST, SGST or IGST
+## Valuation and ITC
+### Value of supply and input tax credit
+= Transaction value, inclusions and ITC rules.
+- Value of supply is the transaction value plus taxes other than GST, incidental expenses and subsidies linked to price (section 15).
+- Discounts before or at supply recorded on the invoice are excluded.
+- ITC is reversed if payment to the supplier is not made within 180 days.
+> Compute the value of supply
+> Compute eligible ITC
+## Procedures
+### Registration, invoicing, returns and e-invoicing
+= Compliance under GST.
+- E-invoicing applies above a turnover threshold (₹5 crore).
+- Reverse charge applies to notified supplies (e.g. GTA, legal services to businesses).
+- Annual return GSTR-9; reconciliation statement GSTR-9C for larger taxpayers.
+> Prepare a compliance calendar
+> Identify reverse charge supplies
+## Customs
+### Customs law
+= Types of customs duty and valuation of imports.
+- Basic customs duty, IGST on imports, social welfare surcharge, safeguard and anti-dumping duties.
+- Assessable value = CIF value (transaction value + freight + insurance).
+- Baggage, warehousing and drawback provisions.
+> Compute customs duty on an import
+> Explain duty drawback

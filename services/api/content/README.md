@@ -22,7 +22,15 @@ homework, key terms) with Kannada and Hindi versions (`lesson.kn`, `lesson.hi`) 
 | `icse.json` | `icse` | 40 CISCE syllabus subjects, Classes 9–10, 409 lessons |
 | `ka-state.json` | `ka-state` | 80 KTBS books, Classes 1–10, 1,394 lessons (585 also in Kannada) |
 | `early-years.json` | `early-years` | KINETIX's LKG and UKG curriculum (classes -1 and 0), 100 lessons |
-| `bangalore-university.json` | `bu-ug`, `bu-pg` | sample BCom / BCA / MCom courses, hand-written |
+| `bu-*.json` | `bu-ug`, `bu-pg` | Bangalore University programmes (BCA, BCom, …), one file per programme |
+| `kslu-*.json` | `kslu-law` | Karnataka State Law University law programmes |
+
+The `bu-*` and `kslu-*` files are **generated** from the hand-written sources in
+`sources/*.txt` by `scripts/build-syllabus.ts` (`pnpm --filter @kinetix/api content:build-syllabus`);
+edit the sources, not the JSON. The source format is described at the top of the script. Every
+course names its scheme and academic year in `source` and is `reviewed: false` until faculty check
+it; `sources/REVIEW.md` (generated from the sources' `!` lines) lists what to check. A test keeps the
+JSON in step with the sources and checks every topic's shape and lab and 3D ids.
 
 The first four are **generated** from the KINETIX prototype by
 `scripts/convert-prototype-syllabus.ts`; do not edit them by hand. Every course is marked

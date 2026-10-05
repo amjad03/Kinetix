@@ -1,0 +1,486 @@
+// Law papers, Karnataka State Law University (Soundarya College of Law). LLB (3-year) semesters 1-3.
+file: kslu-law
+curriculum: kslu-law | Karnataka State Law University | ug
+programme: LLB
+scheme: KSLU CBCS | 2024-25
+! Soundarya College of Law is affiliated to Karnataka State Law University (KSLU), Hubballi, not Bangalore University; its programmes are LLB (3-year), BA LLB and BCom LLB (5-year).
+! Courses are the core law papers, numbered by their LLB (3-year) semester. BA LLB and BCom LLB study the same law papers in different semesters (law papers from Sem 1, BA/BCom papers in Sem 1-6); link each 5-year subject to the matching law course by code. The 5-year programmes' BA and BCom papers (e.g. political science, sociology, economics, accountancy) are not written.
+! Paper titles and placement follow the common KSLU scheme; confirm against the current KSLU regulations, including optional papers (e.g. Banking Law, Insurance Law, Land Laws, Taxation) that are not written.
+! Criminal law papers follow the BNS, BNSS and BSA, in force from 1 July 2024; check whether the KSLU syllabus still teaches the IPC, CrPC and Evidence Act alongside them.
+
+# llb-1-contract-1 | 1 | Law of Contract I: General Principles
+## Formation of Contract
+### Offer, acceptance and communication
+= Proposal, acceptance, communication and revocation under the Indian Contract Act, 1872.
+- A proposal (section 2(a)) becomes a promise when accepted (2(b)); an agreement enforceable by law is a contract (2(h)).
+- An invitation to treat (display of goods, advertisements, auction calls) is not an offer (Pharmaceutical Society v Boots; Harvey v Facey).
+- A general offer can be accepted by anyone performing its conditions (Carlill v Carbolic Smoke Ball Co.; Lalman Shukla v Gauri Dutt: knowledge of the offer is needed).
+- Communication of acceptance is complete against the proposer when posted, and against the acceptor when it reaches the proposer (section 4).
+> Distinguish offers from invitations to treat
+> Decide when a contract is concluded by post or electronically
+hook: A shop tags a TV at ₹1,000 by mistake. Can a customer insist on buying it at that price?
+q: Is a price list an offer? || No, it is an invitation to treat.
+q: When is acceptance by post complete against the proposer? || When the letter of acceptance is posted, putting it out of the acceptor's power.
+terms: proposal; acceptance; invitation to treat; general offer
+## Consideration and Capacity
+### Consideration and competence to contract
+= Consideration, privity, and minors and persons of unsound mind.
+- Consideration may move from the promisee or any other person (section 2(d); Chinnaya v Ramayya).
+- An agreement without consideration is void except as section 25 allows (natural love and affection in writing and registered, past voluntary service, promise to pay a time-barred debt in writing).
+- A minor's agreement is void ab initio (Mohori Bibee v Dharmodas Ghose, 1903); no estoppel against a minor.
+- Persons of unsound mind cannot contract while unsound (section 12).
+> Apply the rules of consideration
+> Advise on contracts with minors
+## Free Consent
+### Coercion, undue influence, fraud, misrepresentation and mistake
+= Factors vitiating consent and their effect.
+- Consent is free unless caused by coercion (15), undue influence (16), fraud (17), misrepresentation (18) or mistake (20–22).
+- Coercion, undue influence, fraud and misrepresentation make the contract voidable (sections 19, 19A).
+- A bilateral mistake of fact essential to the agreement makes it void (section 20); a mistake of Indian law does not (section 21).
+> Identify the factor vitiating consent
+> State the effect on the contract
+## Void Agreements, Discharge and Remedies
+### Void agreements and discharge
+= Unlawful objects, restraint of trade, wagers and frustration.
+- Agreements in restraint of trade are void (section 27) except sale of goodwill; post-employment restraints are void in India.
+- Wagering agreements are void (section 30).
+- Frustration: a contract becomes void when performance becomes impossible or unlawful (section 56; Satyabrata Ghose v Mugneeram Bangur).
+> Identify void agreements
+> Apply the doctrine of frustration
+### Breach and remedies
+= Damages, quasi-contracts and specific relief.
+- Damages for loss arising naturally or within the parties' contemplation (section 73; Hadley v Baxendale); remote losses are not recoverable.
+- Liquidated damages and penalties: reasonable compensation up to the stated sum (section 74).
+- Quasi-contracts (sections 68–72): e.g. payment by mistake must be repaid (section 72).
+- After the 2018 amendment of the Specific Relief Act, 1963, specific performance is the general rule, not discretionary.
+> Compute damages for breach
+> Advise on specific performance
+
+# llb-1-constitutional-law-1 | 1 | Constitutional Law I
+## Nature of the Constitution
+### Salient features and the Preamble
+= Making of the Constitution, its features and the Preamble.
+- The Constitution was adopted on 26 November 1949 and came into force on 26 January 1950.
+- Features: written, federal with a strong centre, parliamentary government, fundamental rights, independent judiciary, rigid and flexible amendment.
+- The Preamble is part of the Constitution (Kesavananda Bharati, 1973); "socialist", "secular" and "integrity" were added by the 42nd Amendment, 1976.
+> Explain the salient features
+> Discuss the status of the Preamble
+## Fundamental Rights: Equality
+### Articles 12–18
+= State, judicial review, equality and reservation.
+- "State" under Article 12 includes instrumentalities of the State (Ajay Hasia; Pradeep Kumar Biswas).
+- Article 14 permits reasonable classification (intelligible differentia with a rational nexus) and forbids arbitrariness (E. P. Royappa).
+- Indra Sawhney (1992): 50% ceiling on reservation, creamy layer exclusion; Janhit Abhiyan (2022) upheld the EWS quota.
+> Apply the test of reasonable classification
+> Explain the law on reservation
+## Fundamental Rights: Freedoms and Life
+### Articles 19–22
+= Freedoms, protections in criminal matters and right to life.
+- Article 19(1) freedoms are subject to reasonable restrictions in 19(2)–(6).
+- Article 20: no ex post facto criminal law, no double jeopardy, no self-incrimination.
+- Article 21: procedure must be fair, just and reasonable (Maneka Gandhi, 1978); privacy is a fundamental right (K. S. Puttaswamy, 2017).
+- Article 22: an arrested person must be produced before a magistrate within 24 hours.
+> Apply Article 21 jurisprudence
+> Explain safeguards against arrest
+hook: Can the government seize your passport without telling you why?
+q: Which case held that the procedure under Article 21 must be fair, just and reasonable? || Maneka Gandhi v Union of India (1978).
+q: Which case recognised privacy as a fundamental right? || Justice K. S. Puttaswamy v Union of India (2017).
+terms: due process; reasonable restriction; double jeopardy
+## Remedies, DPSP and Duties
+### Constitutional remedies, directive principles and duties
+= Writs, Article 32 and 226, DPSPs and fundamental duties.
+- Article 32 is a fundamental right to move the Supreme Court; High Courts issue writs under Article 226 (wider: "for any other purpose").
+- Writs: habeas corpus, mandamus, prohibition, certiorari, quo warranto.
+- DPSPs (Part IV) are not enforceable but fundamental in governance; harmony with fundamental rights is a basic feature (Minerva Mills, 1980).
+- Fundamental duties (Article 51A) were added by the 42nd Amendment.
+> Choose the right writ
+> Relate DPSPs to fundamental rights
+
+# llb-1-torts | 1 | Law of Torts, Motor Vehicles Act and Consumer Protection
+## General Principles
+### Nature of tort
+= Definition, elements and maxims.
+- A tort is a civil wrong, other than breach of contract or trust, remedied by unliquidated damages.
+- Injuria sine damno is actionable (Ashby v White); damnum sine injuria is not (Gloucester Grammar School case).
+- General defences: volenti non fit injuria, inevitable accident, act of God, private defence, necessity, statutory authority.
+> Identify the elements of a tort
+> Apply general defences
+## Specific Torts
+### Negligence
+= Duty of care, breach, causation and damage.
+- Duty of care: neighbour principle (Donoghue v Stevenson, 1932).
+- Breach is judged by the reasonable person standard; res ipsa loquitur infers negligence from the facts.
+- Medical negligence: the Bolam test as applied in Jacob Mathew v State of Punjab (2005).
+> Establish the elements of negligence
+> Apply res ipsa loquitur
+### Strict and absolute liability, nuisance and defamation
+= Rylands v Fletcher, absolute liability and other torts.
+- Strict liability (Rylands v Fletcher, 1868) for escape of dangerous things, with exceptions.
+- Absolute liability for hazardous industries, with no exceptions (M. C. Mehta v Union of India, 1987, the Oleum gas case).
+- Defamation: libel (permanent form) and slander (transient); defences are truth, fair comment and privilege.
+> Distinguish strict and absolute liability
+> Apply defences to defamation
+## Vicarious Liability and the State
+### Vicarious liability
+= Master and servant, and liability of the State.
+- An employer is liable for torts of employees in the course of employment.
+- State liability: sovereign functions (Kasturilal, 1965) narrowed by later cases awarding compensation for violation of fundamental rights (Rudul Sah; Nilabati Behera).
+- Constitutional tort: compensation under Articles 32 and 226.
+> Decide when an employer is vicariously liable
+> Explain State liability in India
+## Motor Vehicles and Consumer Law
+### Motor accident claims and consumer protection
+= MV Act claims and the Consumer Protection Act, 2019.
+- Claims tribunals (MACT) decide motor accident compensation; no-fault liability is ₹5 lakh for death and ₹2.5 lakh for grievous hurt (section 164).
+- Compensation by the multiplier method (Sarla Verma; Pranay Sethi).
+- Consumer Protection Act, 2019: consumer rights, product liability, unfair trade practices, e-commerce; district, state and national commissions.
+> Compute compensation by the multiplier method
+> File a consumer complaint in the right forum
+
+# llb-1-family-law-1 | 1 | Family Law I: Hindu Law
+## Sources and Application
+### Sources and schools of Hindu law
+= Sources, schools and who is a Hindu.
+- Sources: Shruti, Smriti, commentaries and digests, custom, legislation and judicial decisions.
+- Schools: Mitakshara and Dayabhaga.
+- The codified Acts apply to Hindus, Buddhists, Jains and Sikhs.
+> Identify sources of Hindu law
+> Distinguish Mitakshara and Dayabhaga
+## Marriage and Divorce
+### Hindu Marriage Act, 1955
+= Conditions of marriage, void and voidable marriages, and matrimonial remedies.
+- Conditions (section 5): monogamy, sound mind, age 21 (groom) and 18 (bride), not within prohibited degrees or sapindas (unless custom permits).
+- Saptapadi completes the marriage where it is the essential ceremony (section 7).
+- Divorce grounds (section 13) include cruelty, desertion for two years, conversion and mental disorder; divorce by mutual consent under section 13B (the six-month period may be waived: Amardeep Singh, 2017).
+- The Supreme Court can grant divorce for irretrievable breakdown under Article 142 (Shilpa Sailesh, 2023).
+> Test the validity of a Hindu marriage
+> Advise on matrimonial remedies
+## Adoption, Maintenance and Guardianship
+### HAMA and HMGA
+= Adoption, maintenance and guardianship under the 1956 Acts.
+- Hindu Adoptions and Maintenance Act, 1956: who may adopt and be adopted; a single woman may adopt.
+- Wife, children and aged parents are entitled to maintenance; also BNSS section 144 (formerly CrPC 125) for all communities.
+- Hindu Minority and Guardianship Act, 1956: welfare of the minor is paramount; the mother can be natural guardian (Githa Hariharan, 1999).
+> State the rules of valid adoption
+> Advise on maintenance claims
+## Succession
+### Hindu Succession Act, 1956
+= Coparcenary, intestate succession and the 2005 amendment.
+- Since the 2005 amendment, a daughter is a coparcener by birth (section 6); applies regardless of whether the father was alive in 2005 (Vineeta Sharma, 2020).
+- Class I heirs (son, daughter, widow, mother and others) take simultaneously and equally.
+- A Hindu female's property is her absolute property (section 14).
+> Distribute an intestate Hindu male's property
+> Explain a daughter's coparcenary rights
+
+# llb-1-criminal-law-bns | 1 | Criminal Law I: Bharatiya Nyaya Sanhita, 2023
+! Section numbers are of the BNS; the IPC equivalents may still be expected in examinations.
+## General Principles
+### Crime and its elements
+= Actus reus, mens rea and stages of crime.
+- Actus non facit reum nisi mens sit rea: the act is not guilty unless the mind is guilty.
+- Stages: intention, preparation, attempt (punishable, section 62), commission.
+- Joint liability: common intention (section 3(5)) and common object of an unlawful assembly (section 190).
+> Identify actus reus and mens rea
+> Distinguish preparation and attempt
+## General Exceptions
+### General exceptions and private defence
+= Mistake, accident, infancy, insanity, intoxication and private defence.
+- Nothing is an offence by a child under 7 (section 20); a child of 7–12 lacking maturity of understanding is also exempt (section 21).
+- Insanity (section 22) follows the M'Naghten rules: incapacity to know the nature of the act or that it is wrong.
+- Private defence (sections 34–44) extends to causing death in cases listed in sections 38 (body) and 41 (property).
+> Apply the general exceptions
+> Decide the limits of private defence
+## Offences against the Body
+### Culpable homicide and murder
+= Distinguishing culpable homicide from murder and their punishments.
+- Culpable homicide (section 100); murder (section 101) with exceptions such as grave and sudden provocation and exceeding private defence.
+- Murder is punished under section 103; murder by a group of five or more on grounds such as race, caste or religion (mob lynching) is punishable under section 103(2).
+- Reg v Govinda guides the distinction between culpable homicide and murder.
+> Distinguish culpable homicide and murder
+> Apply the exceptions to murder
+hook: Two men fight; one dies after a single blow to the head. Murder, culpable homicide, or neither?
+q: Which BNS section defines murder? || Section 101.
+q: Name one exception that reduces murder to culpable homicide. || Grave and sudden provocation (others: private defence exceeded in good faith, sudden fight, consent).
+terms: culpable homicide; murder; provocation; mob lynching
+## Offences against Property and New Offences
+### Theft, extortion, robbery, cheating and organised crime
+= Property offences and offences new in the BNS.
+- Theft (section 303) needs dishonest intention, movable property, without consent, and moving it; snatching is a separate offence (section 304).
+- Robbery (section 309) is theft or extortion with violence; dacoity (section 310) is robbery by five or more.
+- Cheating (section 318) and criminal breach of trust (section 316).
+- New offences: organised crime (section 111), petty organised crime (112), terrorist act (113).
+> Distinguish theft, extortion, robbery and dacoity
+> Identify the new offences in the BNS
+
+# llb-2-contract-2 | 2 | Law of Contract II: Special Contracts
+## Indemnity and Guarantee
+### Indemnity and guarantee
+= Contracts of indemnity and guarantee and the surety's rights.
+- Indemnity (section 124): a promise to save another from loss.
+- Guarantee (section 126): three parties — creditor, principal debtor, surety; the surety's liability is co-extensive with the debtor's (section 128).
+- The surety is discharged by variance in terms, release of the principal debtor, or the creditor's act impairing the surety's remedy.
+> Distinguish indemnity and guarantee
+> Identify when a surety is discharged
+## Bailment and Pledge
+### Bailment and pledge
+= Duties of bailor and bailee and pledge.
+- Bailment (section 148): delivery of goods for a purpose, to be returned.
+- The bailee must take the care a person of ordinary prudence takes of his own goods (section 151).
+- Pledge (section 172) is bailment as security for a debt; the pawnee may sell after reasonable notice.
+> State the duties of a bailee
+> Explain the pawnee's rights
+## Agency
+### Contract of agency
+= Creation, authority and termination of agency.
+- An agent is employed to act for another in dealings with third persons (section 182).
+- Agency by express or implied authority, ratification, necessity, or estoppel.
+- Agency coupled with an interest cannot be revoked to the agent's prejudice (section 202).
+> Identify how agency arises
+> Decide the principal's liability for an agent's acts
+## Sale of Goods and Partnership
+### Sale of Goods Act, 1930 and Partnership Act, 1932
+= Conditions and warranties, transfer of property, and partnership.
+- Implied conditions: title, description, quality or fitness, sample.
+- Nemo dat quod non habet: no one gives what he does not have, with exceptions.
+- Partnership (section 4): agreement to share profits of a business carried on by all or any acting for all; partners are jointly and severally liable.
+- LLP Act, 2008 gives limited liability with partnership flexibility.
+> Apply implied conditions and warranties
+> Explain partners' liability
+
+# llb-2-constitutional-law-2 | 2 | Constitutional Law II
+## Union and State Executive
+### President, Governor and Council of Ministers
+= Executive powers and the parliamentary system.
+- The President acts on the advice of the Council of Ministers (Article 74; Shamsher Singh, 1974).
+- Ordinance power (Article 123) is subject to judicial review (Krishna Kumar Singh, 2017).
+- Pardoning power: President (Article 72) and Governor (Article 161).
+> Explain the President's position
+> Discuss the ordinance power
+## Legislature
+### Parliament and legislative procedure
+= Composition, privileges and law-making.
+- Money bills (Article 110) can be introduced only in the Lok Sabha; the Rajya Sabha can only recommend within 14 days.
+- Anti-defection law: Tenth Schedule (52nd Amendment, 1985).
+- Parliamentary privileges (Article 105).
+> Trace the passage of a bill
+> Explain the anti-defection law
+## Judiciary
+### Supreme Court and High Courts
+= Jurisdiction, independence and appointments.
+- Jurisdictions of the Supreme Court: original (Article 131), appellate (132–136), advisory (143).
+- Special leave petition (Article 136) is discretionary.
+- Collegium system (Second and Third Judges cases); the NJAC was struck down (2015).
+> Identify the Supreme Court's jurisdictions
+> Explain judicial appointments
+## Federalism, Emergency and Amendment
+### Centre–State relations, emergencies and amendment
+= Distribution of powers, emergencies and Article 368.
+- Seventh Schedule: Union, State and Concurrent Lists; residuary power with the Union (Article 248).
+- Emergencies: national (352), State (356, President's rule; S. R. Bommai, 1994), financial (360).
+- Basic structure doctrine limits amending power (Kesavananda Bharati, 1973).
+> Resolve conflicts between Union and State laws
+> Explain the basic structure doctrine
+
+# llb-2-family-law-2 | 2 | Family Law II: Muslim Law and Other Personal Laws
+## Muslim Law: Sources and Marriage
+### Sources and nikah
+= Sources of Muslim law, schools and marriage.
+- Sources: Quran, Sunna, Ijma, Qiyas; schools: Sunni (Hanafi, Maliki, Shafi'i, Hanbali) and Shia.
+- Nikah is a contract; essentials: offer and acceptance, competence, witnesses (Sunni law).
+- Mahr (dower) is the wife's right: prompt or deferred.
+> Explain sources of Muslim law
+> State the essentials of a valid nikah
+## Dissolution of Muslim Marriage
+### Talaq and other modes
+= Forms of talaq and the statutory position.
+- Talaq-e-biddat (instant triple talaq) was held invalid (Shayara Bano, 2017) and made an offence by the Muslim Women (Protection of Rights on Marriage) Act, 2019.
+- Talaq-e-ahsan and hasan; khula (at the wife's instance) and mubarat (mutual).
+- Dissolution of Muslim Marriages Act, 1939 gives the wife judicial grounds.
+> Distinguish forms of talaq
+> State the wife's grounds for divorce
+## Maintenance and Inheritance
+### Maintenance and succession
+= Maintenance of divorced women and inheritance rules.
+- Shah Bano (1985) and Danial Latifi (2001): reasonable and fair provision for a divorced wife.
+- Divorced Muslim women can also claim maintenance under BNSS section 144 (Mohd. Abdul Samad, 2024).
+- Inheritance: sharers, residuaries and distant kindred; a bequest is limited to one-third of the estate.
+> Advise on maintenance after divorce
+> Apply the one-third rule on wills
+## Other Personal Laws
+### Christian, Parsi and secular laws
+= Indian Succession Act, Special Marriage Act and the uniform civil code debate.
+- Indian Succession Act, 1925 governs Christian (and testamentary) succession.
+- Special Marriage Act, 1954 provides a civil marriage for any two persons, with 30 days' notice.
+- Article 44 directs the State to endeavour to secure a uniform civil code; Uttarakhand enacted one in 2024.
+> Compare personal laws on succession
+> Discuss the uniform civil code
+
+# llb-2-environmental-law | 2 | Environmental Law
+## Constitutional Framework
+### Environment and the Constitution
+= Articles 21, 48A and 51A(g), and public interest litigation.
+- Right to a healthy environment is part of Article 21 (Subhash Kumar, 1991).
+- Article 48A (State duty) and 51A(g) (citizens' duty) protect the environment.
+- PIL widened access to courts in environmental matters (M. C. Mehta cases).
+> Explain the constitutional basis of environmental rights
+> Describe the role of PIL
+## Principles
+### Environmental principles
+= Sustainable development, precautionary, polluter pays and public trust.
+- Precautionary and polluter pays principles are part of Indian law (Vellore Citizens' Welfare Forum, 1996).
+- Public trust doctrine: the State holds natural resources in trust (M. C. Mehta v Kamal Nath, 1997).
+- Inter-generational equity and sustainable development balance growth and environment.
+> Apply environmental principles to cases
+> Explain the public trust doctrine
+## Pollution Laws
+### Water, Air and Environment Protection Acts
+= Pollution control boards and the EPA, 1986.
+- Water Act, 1974 and Air Act, 1981 created the Central and State Pollution Control Boards; consent to establish and operate is required.
+- Environment (Protection) Act, 1986 is an umbrella law; EIA Notification, 2006 requires prior environmental clearance.
+- Hazardous wastes, plastic waste and e-waste are governed by rules under the EPA.
+> Describe the consent mechanism
+> Explain EIA requirements
+## Forests, Wildlife and the NGT
+### Forest and wildlife laws and the National Green Tribunal
+= Forest (Conservation) Act, Wild Life Act and NGT.
+- Forest (Conservation) Act, 1980 (renamed Van (Sanrakshan Evam Samvardhan) Adhiniyam in 2023) needs approval for diverting forest land.
+- Wild Life (Protection) Act, 1972 lists protected species in schedules and creates protected areas.
+- NGT Act, 2010: the Tribunal decides environmental cases on the principles of sustainable development, precaution and polluter pays.
+> Explain forest diversion rules
+> Describe the NGT's jurisdiction
+
+# llb-3-jurisprudence | 3 | Jurisprudence | year=2025-26
+## Schools of Jurisprudence
+### Natural law and positivism
+= Natural law and the analytical school.
+- Natural law: law derives from reason or morality (Aquinas; modern: Fuller's inner morality of law).
+- Austin: law is the command of the sovereign backed by sanction.
+- Hart: law is a union of primary rules (duties) and secondary rules (recognition, change, adjudication).
+- Kelsen's pure theory: a hierarchy of norms resting on the grundnorm.
+> Compare natural law and positivism
+> Explain Hart's rule of recognition
+### Historical, sociological and realist schools
+= Savigny, Pound and legal realism.
+- Savigny: law grows from the Volksgeist (spirit of the people).
+- Pound: law as social engineering balancing interests.
+- Realists (Holmes, Llewellyn): law is what courts actually do.
+> Explain the historical school
+> Apply Pound's theory of interests
+## Sources of Law
+### Legislation, precedent and custom
+= Sources of law and the doctrine of precedent.
+- Precedent: ratio decidendi binds; obiter dicta persuade; Article 141 binds all courts by the Supreme Court's law.
+- A valid custom must be ancient, certain, reasonable and continuous.
+- Delegated legislation must stay within the parent Act.
+> Distinguish ratio and obiter
+> Test the validity of a custom
+## Legal Concepts
+### Rights, duties and legal personality
+= Hohfeld's analysis, possession, ownership and persons.
+- Hohfeld's jural correlatives: right–duty, privilege–no-right, power–liability, immunity–disability.
+- Possession has corpus (control) and animus (intention).
+- Legal persons include corporations, idols (Ram Janmabhoomi case) and, by some courts, rivers.
+> Apply Hohfeld's scheme
+> Explain legal personality
+
+# llb-3-property-law | 3 | Property Law (Transfer of Property Act, 1882)
+## General Principles of Transfer
+### Transfer of property
+= Definition, transferable interests and conditions.
+- Transfer of property (section 5) is an act by which a living person conveys property to others.
+- Not transferable (section 6) include spes successionis, mere right to sue, and public offices.
+- Conditions absolutely restraining alienation are void (section 10); rule against perpetuity (section 14).
+> Identify transferable property
+> Apply the rule against perpetuity
+### Doctrines protecting transferees
+= Ostensible owner, part performance and lis pendens.
+- Transfer by ostensible owner (section 41) protects a bona fide purchaser.
+- Lis pendens (section 52): property in litigation cannot be transferred to affect the parties' rights.
+- Part performance (section 53A) protects a transferee in possession under a written contract.
+> Apply section 41, 52 and 53A
+> Advise a purchaser of disputed property
+## Sale and Mortgage
+### Sale and mortgages
+= Sale of immovable property and kinds of mortgage.
+- Sale of tangible immovable property worth ₹100 or more must be by registered instrument (section 54).
+- A contract for sale creates no interest in the property.
+- Mortgages (section 58): simple, by conditional sale, usufructuary, English, by deposit of title deeds, anomalous; right of redemption (section 60).
+> Distinguish sale and contract for sale
+> Classify mortgages
+## Lease, Gift and Easements
+### Lease, gift and easements
+= Leases, gifts and easementary rights.
+- Lease (section 105): transfer of a right to enjoy property for a term for a price.
+- Gift (section 122) of immovable property must be by registered instrument, accepted during the donor's lifetime.
+- Easements Act, 1882: easement by prescription after 20 years' peaceable and open enjoyment.
+> Advise on creating a lease or gift
+> Establish an easement by prescription
+
+# llb-3-administrative-law | 3 | Administrative Law | year=2025-26
+## Nature of Administrative Law
+### Rule of law and separation of powers
+= Dicey's rule of law and separation of powers in India.
+- Dicey: supremacy of law, equality before law, constitution as the result of ordinary law.
+- India has functional separation of powers (Ram Jawaya Kapur, 1955); judicial review is a basic feature.
+- Administrative law governs the powers and procedures of administrative authorities.
+> Explain the rule of law
+> Discuss separation of powers in India
+## Delegated Legislation
+### Delegated legislation and its control
+= Reasons, limits and parliamentary and judicial control.
+- Essential legislative functions cannot be delegated (In re Delhi Laws Act, 1951).
+- Controls: parliamentary (laying), judicial (ultra vires), procedural (publication, consultation).
+- Sub-delegation needs authority in the parent Act.
+> Test the validity of delegated legislation
+> Describe controls on delegation
+## Natural Justice
+### Principles of natural justice
+= Rule against bias and the right to a hearing.
+- Nemo judex in causa sua: no one should be a judge in his own cause (A. K. Kraipak, 1969).
+- Audi alteram partem: hear the other side; notice and opportunity (Maneka Gandhi).
+- Exceptions: emergency, confidentiality, legislative action; reasoned decisions are required.
+> Identify breaches of natural justice
+> Advise on the exceptions
+## Judicial Review and Remedies
+### Judicial review of administrative action
+= Grounds of review, writs and other remedies.
+- Grounds (CCSU case): illegality, irrationality (Wednesbury unreasonableness), procedural impropriety; proportionality in rights cases.
+- Legitimate expectation protects reasonable expectations from arbitrary change.
+- Other remedies: Lokpal and Lokayuktas Act, 2013; RTI Act, 2005; tribunals under Articles 323A and 323B.
+> Apply grounds of judicial review
+> Choose a remedy against administrative action
+
+# llb-3-labour-law | 3 | Labour and Industrial Law
+! The four labour codes were brought into force in late 2025; confirm whether the KSLU syllabus teaches the codes, the earlier Acts, or both.
+## Industrial Relations
+### Industry, workman and industrial disputes
+= Key definitions and dispute resolution.
+- "Industry" was defined broadly by the triple test in Bangalore Water Supply v A. Rajappa (1978).
+- The Industrial Relations Code, 2020 consolidates the Industrial Disputes Act, 1947, the Trade Unions Act, 1926 and the Industrial Employment (Standing Orders) Act, 1946.
+- Dispute resolution machinery: grievance redressal committee, conciliation, tribunals, arbitration.
+> Apply the definition of industry
+> Trace the dispute resolution process
+## Strikes, Lay-off and Retrenchment
+### Strikes, lockouts and retrenchment
+= Conditions for strikes and protection against job loss.
+- Under the IR Code, 14 days' notice is required before a strike or lockout in any establishment.
+- Retrenchment compensation is 15 days' average pay for every completed year of service; "last in, first out" applies.
+- Prior government permission for lay-off, retrenchment and closure applies to establishments with 300 or more workers.
+> State the conditions for a lawful strike
+> Compute retrenchment compensation
+## Wages and Social Security
+### Code on Wages and Code on Social Security
+= Minimum wages, payment of wages, bonus and social security.
+- The Code on Wages, 2019 introduces a national floor wage and covers minimum wages, payment of wages, bonus and equal remuneration.
+- The Code on Social Security, 2020 covers EPF, ESI, gratuity, maternity benefit and gig and platform workers.
+- Gratuity is payable after five years' continuous service at 15 days' wages per year (fixed-term employees after one year).
+> Explain coverage of wage and social security laws
+> Compute gratuity
+## Working Conditions
+### Occupational safety, health and working conditions
+= OSH Code, working hours and welfare.
+- The OSH Code, 2020 consolidates the Factories Act, Mines Act and others.
+- Daily working hours are capped at 8 hours (weekly 48), with overtime at twice the wage rate.
+- Welfare provisions: canteens, crèches, first aid, safety committees.
+> Apply working hour limits
+> List welfare duties of employers
