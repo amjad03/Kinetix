@@ -326,7 +326,7 @@ void main() {
       final board = BoardController(realtimeFactory: (_) => _NoRealtime(), outboxStore: MemoryOutboxStore())..skipEnrollment();
       await tester.pumpWidget(KinetixBoardApp(controller: board));
       await tester.pumpAndSettle();
-      expect(find.text('Write'), findsOneWidget);
+      expect(find.byTooltip('Undo'), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('profile-button')));
       await tester.pumpAndSettle();
@@ -336,13 +336,13 @@ void main() {
       await tester.pumpAndSettle();
       final hi = lookupAppLocalizations(const Locale('hi'));
       expect(find.text(hi.boardSettings), findsOneWidget, reason: 'the open dialog follows at once');
-      expect(find.text(hi.toolWrite), findsOneWidget);
-      expect(find.text('Write'), findsNothing);
+      expect(find.byTooltip(hi.toolUndo), findsOneWidget);
+      expect(find.byTooltip('Undo'), findsNothing);
       expect(board.boardLanguage, BoardLanguage.hi);
 
       await tester.tap(find.byKey(const Key('board-language-kn')));
       await tester.pumpAndSettle();
-      expect(find.text(lookupAppLocalizations(const Locale('kn')).toolWrite), findsOneWidget);
+      expect(find.byTooltip(lookupAppLocalizations(const Locale('kn')).toolUndo), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       // Saved like the other settings: a restarted board comes back in Kannada.
@@ -362,12 +362,12 @@ void main() {
       await tester.pumpAndSettle();
       final hi = lookupAppLocalizations(const Locale('hi'));
       final kn = lookupAppLocalizations(const Locale('kn'));
-      expect(find.text(hi.toolWrite), findsOneWidget);
+      expect(find.byTooltip(hi.toolUndo), findsOneWidget);
 
       board.onPaired('session-token', _session('kn'));
       await tester.pumpAndSettle();
       expect(board.language, BoardLanguage.kn);
-      expect(find.text(kn.toolWrite), findsOneWidget);
+      expect(find.byTooltip(kn.toolUndo), findsOneWidget);
       expect(find.textContaining(kn.welcomeTeacher('Anita')), findsOneWidget, reason: 'the welcome is in the new language');
 
       // The AI answer language is separate: it starts from the teacher's language and can be
@@ -383,13 +383,13 @@ void main() {
       expect(board.language, BoardLanguage.kn);
       await tester.tap(find.byKey(const Key('panel-close')));
       await tester.pumpAndSettle();
-      expect(find.text(kn.toolWrite), findsOneWidget);
+      expect(find.byTooltip(kn.toolUndo), findsOneWidget);
 
       // Signing out (the period ends) returns the board to its own language.
       await board.endClass();
       await tester.pumpAndSettle();
       expect(board.language, BoardLanguage.hi);
-      expect(find.text(hi.toolWrite), findsOneWidget);
+      expect(find.byTooltip(hi.toolUndo), findsOneWidget);
       expect(find.text(hi.signedOutGuest), findsOneWidget);
       expect(tester.takeException(), isNull);
       board.dispose();
@@ -403,7 +403,7 @@ void main() {
       board.onPaired('session-token', _session('ta'));
       await tester.pumpAndSettle();
       expect(board.language, BoardLanguage.kn);
-      expect(find.text(lookupAppLocalizations(const Locale('kn')).toolWrite), findsOneWidget);
+      expect(find.byTooltip(lookupAppLocalizations(const Locale('kn')).toolUndo), findsOneWidget);
       board.dispose();
     });
 
@@ -417,7 +417,7 @@ void main() {
       board.setBoardLanguage(BoardLanguage.en);
       await tester.pumpAndSettle();
       expect(board.language, BoardLanguage.en);
-      expect(find.text('Write'), findsOneWidget);
+      expect(find.byTooltip('Undo'), findsOneWidget);
       board.dispose();
     });
   });
@@ -428,6 +428,7 @@ void main() {
         _size(tester, size);
         final l = lookupAppLocalizations(Locale(lang));
         final board = await _enrolled();
+        board.layout = BoardLayout.bottomBar;
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
         board.onPaired('session-token', _session(lang));
         await tester.pumpWidget(KinetixBoardApp(controller: board));
@@ -624,6 +625,70 @@ void main() {
         fits('end');
         board.dispose();
       });
+    }
+
+    for (final size in [const Size(1920, 1080), const Size(1280, 720)]) {
+      for (final primary in [false, true]) {
+        testWidgets('$lang at ${size.width.toInt()}×${size.height.toInt()}, rails${primary ? ', primary' : ''}: rails, popovers, kit and editors fit', (tester) async {
+          _size(tester, size);
+          final l = lookupAppLocalizations(Locale(lang));
+          final board = await _enrolled();
+          board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
+          board.setSimpleBoard(primary ? SimpleBoard.on : SimpleBoard.off);
+          board.onPaired('session-token', _session(lang));
+          await tester.pumpWidget(KinetixBoardApp(controller: board));
+          await tester.pumpAndSettle();
+          void fits(String what) => expect(tester.takeException(), isNull, reason: '$lang $size rails: $what');
+          // The rails scroll when a short screen can't hold every tool.
+          Future<void> tap(Finder f) async {
+            await tester.ensureVisible(f);
+            await tester.pumpAndSettle();
+            await tester.tap(f);
+            await tester.pumpAndSettle();
+          }
+
+          // Tap the barrier well right of the popover, which opens beside the left rail.
+          Future<void> closePopover() async {
+            final r = tester.getRect(find.byKey(const Key('popover-barrier')));
+            await tester.tapAt(Offset(r.right - 200, r.center.dy));
+            await tester.pumpAndSettle();
+          }
+          fits('board');
+          if (primary) expect(find.text(l.pen), findsOneWidget);
+          await tap(find.byKey(const Key('tool-write')));
+          expect(find.text(l.thickness), findsOneWidget);
+          fits('write');
+          await closePopover();
+          for (final key in ['tool-shapes', 'tool-insert', 'tool-tools', 'tool-theme']) {
+            await tap(find.byKey(Key(key)));
+            fits(key);
+            await closePopover();
+          }
+          await tap(find.byKey(const Key('tool-insert')));
+          await tap(find.byKey(const Key('insert-equation')));
+          expect(find.byKey(const Key('math-tex')), findsOneWidget);
+          fits('equation editor');
+          await tester.enterText(find.byKey(const Key('math-tex')), r'\frac{1}{2}');
+          await tap(find.byKey(const Key('math-done')));
+          fits('equation on the board');
+          await tap(find.byKey(const Key('panel-kit')));
+          fits('kit');
+          for (final chip in find.byWidgetPredicate((w) => w is ChoiceChip && (w.key as ValueKey<String>?)?.value.startsWith('kit-') == true).evaluate().toList()) {
+            await tap(find.byKey(chip.widget.key!));
+            fits('kit ${chip.widget.key}');
+          }
+          await tap(find.byKey(const Key('panel-ai')));
+          fits('AI from the rail');
+          await tap(find.byKey(const Key('panel-close')));
+          await tap(find.byKey(const Key('profile-button')));
+          await tap(find.byKey(const Key('menu-settings')));
+          expect(find.text(l.layoutTitle), findsOneWidget);
+          fits('settings');
+          Navigator.of(tester.element(find.text(l.layoutTitle))).pop();
+          await tester.pumpAndSettle();
+          board.dispose();
+        });
+      }
     }
 
     testWidgets('$lang: enrolment and principal messages fit at 1280×720 and 1920×1080', (tester) async {

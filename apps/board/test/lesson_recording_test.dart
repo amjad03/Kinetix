@@ -123,7 +123,7 @@ void main() {
     await wait(tester);
     expect(find.byKey(const Key('rec-indicator')), findsOneWidget);
     expect(find.text('Recording the board and your voice.'), findsOneWidget);
-    expect(find.text('Stop'), findsOneWidget);
+    expect(find.byTooltip('Stop'), findsOneWidget);
 
     await drawLine(tester);
     await wait(tester);
@@ -139,11 +139,11 @@ void main() {
     // A new page, and the chalkboard background.
     await tester.tap(find.byKey(const Key('next-page')));
     await tester.pump();
-    await tester.tap(find.text('Theme'));
+    await tester.tap(find.byKey(const Key('tool-theme')));
     await wait(tester);
     await tester.tap(find.text('Chalkboard'));
     await wait(tester);
-    await tester.tap(find.text('Theme')); // close the popover
+    await tester.tap(find.byKey(const Key('tool-theme'))); // close the popover
     await wait(tester);
     await drawLine(tester, at: const Offset(600, 500));
 

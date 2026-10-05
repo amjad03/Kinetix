@@ -120,7 +120,7 @@ void main() {
     expect(lastSave()['share'], isTrue);
     expect(requests.last.url.path, '/v1/sessions/current/end');
     expect(board.isSignedIn, isFalse);
-    expect(find.text('Undo'), findsOneWidget);
+    expect(find.byTooltip('Undo'), findsOneWidget); // the board is still there, cleared
     board.dispose();
   });
 
