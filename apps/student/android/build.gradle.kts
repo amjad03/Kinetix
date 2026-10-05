@@ -15,6 +15,15 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+// Some plugins (flutter_pcm_sound) still compile against android-33, but the AndroidX libraries
+// they pull in need 34+. Compile every plugin against the same recent SDK as the app.
+subprojects {
+    if (name != "app") {
+        afterEvaluate {
+            extensions.findByName("android")?.withGroovyBuilder { "compileSdkVersion"(36) }
+        }
+    }
+}
 subprojects {
     project.evaluationDependsOn(":app")
 }
