@@ -7,17 +7,25 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  # PowerPoint import: a .pptx is a zip of XML (lib/features/insert/pptx_render.dart).
+  archive: ^4.3.0
   # PBKDF2 for the kiosk IT PIN (lib/core/kiosk/kiosk_pin.dart).
   crypto: ^3.0.6
+  # Pictures, PDFs and PowerPoints from the board's files (Windows) or storage (Android).
+  file_picker: ^13.1.0
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
+  # Read aloud with the board's own voices (Android TTS, Windows speech); no text leaves it.
+  flutter_tts: ^4.2.5
   # Handwriting to text on Android panels: ML Kit Digital Ink, on-device (the language model
   # downloads once from Google; no ink leaves the panel). See lib/core/handwriting.
   google_mlkit_digital_ink_recognition: ^0.16.1
   http: ^1.6.0
+  # The gallery and camera on Android panels.
+  image_picker: ^1.2.3
   intl: ^0.20.3
   kinetix_3d:
     path: ../../packages/kinetix_3d
@@ -30,6 +38,8 @@ dependencies:
   kinetix_ui:
     path: ../../packages/kinetix_ui
   path_provider: ^2.1.6
+  # PDF pages drawn on the board itself (PDFium), for PDF import.
+  pdfrx: ^2.6.5
   qr_flutter: ^4.1.0
   record: ^7.1.1
   shared_preferences: ^2.5.5
@@ -38,6 +48,8 @@ dependencies:
   webview_flutter: ^4.14.1
   webview_flutter_android: ^4.14.1
   webview_windows: ^0.4.0
+  # The slides inside a .pptx.
+  xml: ^7.0.1
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +61,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  # The picture library (lib/features/insert/picture_library.dart): openly licensed diagrams,
+  # maps and photos; credits in assets/library/catalog.json and CREDITS.txt.
+  assets:
+    - assets/library/
+    - assets/library/thumbs/
 
 # MSIX installer for Windows panels / OPS PCs. Version comes from `version:` above.
 # `publisher` must equal the Subject of the code-signing certificate (placeholder until we buy

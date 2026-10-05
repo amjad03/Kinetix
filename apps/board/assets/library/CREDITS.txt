@@ -1,0 +1,230 @@
+KINETIX Board picture library
+
+192 pictures: 101 diagrams, maps and photos from Wikimedia Commons (public domain, CC0,
+CC BY, CC BY-SA), each under the licence named below, and 91 Microsoft Fluent Emoji (MIT).
+Pictures were scaled to fit the board and saved as WebP; nothing else was changed.
+The board puts the credit line under each picture it inserts from the library.
+
+CC BY / CC BY-SA licences: https://creativecommons.org/licenses/
+
+Wikimedia Commons
+-----------------
+3D shapes: "Platonic Solids Composition 51.svg" by David Eric Ffell, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Platonic_Solids_Composition_51.svg
+Abacus: "Abacus SVG template 0 000 008 (6+2).svg" by Aeroid, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Abacus_SVG_template_0_000_008_(6%2B2).svg
+Amoeba: "Amoeba (PSF).svg" by el:User:Kupirijo, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Amoeba_(PSF).svg
+Animal cell: "Animal cell structure en.svg" by LadyofHats (Mariana Ruiz), Public domain. https://commons.wikimedia.org/wiki/File:Animal_cell_structure_en.svg
+Atom (Bohr model): "Bohr atom model.svg" by JabberWok at English Wikipedia, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Bohr_atom_model.svg
+B. R. Ambedkar: "Dr. Bhimrao Ambedkar.jpg" by Unknown authorUnknown author, Public domain. https://commons.wikimedia.org/wiki/File:Dr._Bhimrao_Ambedkar.jpg
+Bacterium: "Average prokaryote cell- en.svg" by Mariana Ruiz Villarreal, LadyofHats, Public domain. https://commons.wikimedia.org/wiki/File:Average_prokaryote_cell-_en.svg
+Beaker: "Beakers en.svg" by Lucasbosch, CC BY 3.0. https://commons.wikimedia.org/wiki/File:Beakers_en.svg
+Benzene: "Benzene-resonance-structures.svg" by Benzene_resonance_structures.png: Edgar181 derivative work: Rodolopezdato (talk), Public domain. https://commons.wikimedia.org/wiki/File:Benzene-resonance-structures.svg
+Blood cells: "Red White Blood cells.jpg" by Electron Microscopy Facility at The National Cancer Institute at Frederick (NCI-Frederick), Public domain. https://commons.wikimedia.org/wiki/File:Red_White_Blood_cells.jpg
+Carbon allotropes: "Eight Allotropes of Carbon.svg" by Andel, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Eight_Allotropes_of_Carbon.svg
+Chromosome: "Chromosome DNA Gene.svg" by Thomas Shafee, CC BY 4.0. https://commons.wikimedia.org/wiki/File:Chromosome_DNA_Gene.svg
+Circuit symbols: "Electrical symbols library.svg" by User:FDominec et al., Public domain. https://commons.wikimedia.org/wiki/File:Electrical_symbols_library.svg
+Circulatory system: "Circulatory System en.svg" by LadyofHats, Mariana Ruiz Villarreal, Public domain. https://commons.wikimedia.org/wiki/File:Circulatory_System_en.svg
+Climate zones: "Koppen-Geiger Map World future.svg" by Beck, H.E., Zimmermann, N. E., McVicar, T. R., Vergopolan, N., Berg, A., &amp; Wood, E. F., CC BY 4.0. https://commons.wikimedia.org/wiki/File:Koppen-Geiger_Map_World_future.svg
+Compass rose: "Compass rose simple plain.svg" by Compass_rose_simple.svg: Henrik derivative work: Thryduulf (talk), Public domain. https://commons.wikimedia.org/wiki/File:Compass_rose_simple_plain.svg
+Computer architecture: "Von Neumann Architecture.svg" by Kapooht, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Von_Neumann_Architecture.svg
+Computer parts: "Personal computer, exploded 6.svg" by User:HereToHelp, CC BY 2.5. https://commons.wikimedia.org/wiki/File:Personal_computer,_exploded_6.svg
+Cone: "Gerader Kreiskegel mit Mantel.svg" by Oldracoon, Public domain. https://commons.wikimedia.org/wiki/File:Gerader_Kreiskegel_mit_Mantel.svg
+Conical flask: "Kawaii erlenmeyer flask with liquid clipart.svg" by Mvolz, CC0. https://commons.wikimedia.org/wiki/File:Kawaii_erlenmeyer_flask_with_liquid_clipart.svg
+Constitution of India: "India-constitution-preamble.svg" by Unknown authorUnknown author, CC0. https://commons.wikimedia.org/wiki/File:India-constitution-preamble.svg
+Convex lens ray diagram: "Convex lens - circle of confusion.svg" by Chetvorno, CC0. https://commons.wikimedia.org/wiki/File:Convex_lens_-_circle_of_confusion.svg
+Coordinate plane: "Cartesian-coordinate-system.svg" by K. Bolino, Public domain. https://commons.wikimedia.org/wiki/File:Cartesian-coordinate-system.svg
+Cube: "Hexahedron.svg" by AquitaneHungerForce, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Hexahedron.svg
+Digestive system: "Digestive system diagram en.svg" by Mariana Ruiz, Jmarchn, Public domain. https://commons.wikimedia.org/wiki/File:Digestive_system_diagram_en.svg
+Distillation: "Simple distillation apparatus (bn).svg" by Original png by User:Quantockgoblin, SVG (bn) adaptation by User:আফতাবুজ্জামান, Public domain. https://commons.wikimedia.org/wiki/File:Simple_distillation_apparatus_(bn).svg
+DNA double helix: "DNA Structure+Key+Labelled.pn NoBB cy.svg" by Llywelyn2000, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:DNA_Structure%2BKey%2BLabelled.pn_NoBB_cy.svg
+Earth and Moon phases: "Phases-of-the-moon-diagram.svg" by File:Mond Grafik.svg: Horst Frank (JPG), Nethac DIU (SVG) File:Mond Phasen.svg: Pamplelune derivative work: MikeRun, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Phases-of-the-moon-diagram.svg
+Electric motor: "Electric Motor with Slip Rings.svg" by Bürstenabhebevorrichtung.svg: Biezl derivative work: Theanphibian (talk), CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Electric_Motor_with_Slip_Rings.svg
+Electrolysis: "AEM water electrolysis working principle.svg" by Kavin Teenakul, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:AEM_water_electrolysis_working_principle.svg
+Electromagnetic spectrum: "Electromagnetic radiation spectrum - en.svg" by Philip Ronan, CC BY-SA 2.5. https://commons.wikimedia.org/wiki/File:Electromagnetic_radiation_spectrum_-_en.svg
+Flag of India: "Flag of India.svg" by Government of India, Public domain. https://commons.wikimedia.org/wiki/File:Flag_of_India.svg
+Food chain: "FoodChain.svg" by chris 論 (through works of J. Patrick Fischer, C. Schuhmacher, Madprime, Luis Fernández García, Luis Miguel Bugallo Sánchez, chung-tung yeh, Susanne Heyer and Si, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:FoodChain.svg
+Human brain: "Gehirn, medial - Lobi en.svg" by NEUROtiker, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Gehirn,_medial_-_Lobi_en.svg
+Human ear: "Anatomy of the Human Ear en.svg" by Lars Chittka; Axel Brockmann, CC BY 2.5. https://commons.wikimedia.org/wiki/File:Anatomy_of_the_Human_Ear.svg
+Human eye: "Schematic diagram of the human eye en.svg" by Rhcastilhos. And Jmarchn., CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Schematic_diagram_of_the_human_eye_en.svg
+Human heart: "Heart diagram-en.svg" by ZooFari, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Heart_diagram-en.svg
+Human muscles: "Gray430-en.svg" by Jmarchn, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Gray430-en.svg
+Human skeleton: "Human skeleton front en.svg" by LadyofHats Mariana Ruiz Villarreal, Public domain. https://commons.wikimedia.org/wiki/File:Human_skeleton_front_en.svg
+Human skin: "Human skin anatomy numbered.svg" by Tomáš Kebert &amp; umimeto.org, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Human_skin_anatomy_numbered.svg
+India (physical): "India map en.svg" by w:user:Planemad, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:India_map_en.svg
+India (states): "India-map-or.svg" by Rajeshodayanchal, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:India-map-or.svg
+Indus Valley seal: "Indus civilisation seal unicorn at Indian Museum, Kolkata.jpg" by Royroydeb, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Indus_civilisation_seal_unicorn_at_Indian_Museum,_Kolkata.jpg
+Ionic bond (NaCl): "NaCl octahedra in crystal.svg" by Goran_tek-en, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:NaCl_octahedra_in_crystal.svg
+Jawaharlal Nehru: "Jawaharlal Nehru, circa 1925.jpg" by Keystone View Company/FPG, Public domain. https://commons.wikimedia.org/wiki/File:Jawaharlal_Nehru,_circa_1925.jpg
+Karnataka: "Karnataka districts map - Updated.svg" by C1MM, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Karnataka_districts_map_-_Updated.svg
+Kidney: "KidneyStructures PioM.svg" by Piotr Michał Jaworski; PioM EN DE PL, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:KidneyStructures_PioM.svg
+Layers of the Earth: "Earth-crust-cutaway-english.svg" by Surachit, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Earth-crust-cutaway-english.svg
+Leaf cross-section: "Leaf Tissue Structure.svg" by Zephyris, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Leaf_Tissue_Structure.svg
+Lever: "Simple lever forces.svg" by Masur, Public domain. https://commons.wikimedia.org/wiki/File:Simple_lever_forces.svg
+Lion Capital of Ashoka: "Lion Capital of Ashoka 3.jpg" by Apurv013, CC0. https://commons.wikimedia.org/wiki/File:Lion_Capital_of_Ashoka_3.jpg
+Logic gates: "LogicGates.svg" by User:Vaughan Pratt, CC BY 3.0. https://commons.wikimedia.org/wiki/File:LogicGates.svg
+Magnetic field of a bar magnet: "VFPt cylindrical magnet thumb potential.svg" by Geek3, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:VFPt_cylindrical_magnet_thumb_potential.svg
+Mahatma Gandhi: "Gandhi writing 1942.jpg" by Kanu Gandhi, Public domain. https://commons.wikimedia.org/wiki/File:Gandhi_writing_1942.jpg
+Maurya Empire map: "Ashoka Empire.png" by Facttez999a2z, CC BY 4.0. https://commons.wikimedia.org/wiki/File:Ashoka_Empire.png
+Methane molecule: "Methane-2D-dimensions.svg" by Original: Benjah-bmm27 Vector: Jynto, Public domain. https://commons.wikimedia.org/wiki/File:Methane-2D-dimensions.svg
+Mitosis: "Major events in mitosis.svg" by Mysid, Public domain. https://commons.wikimedia.org/wiki/File:Major_events_in_mitosis.svg
+Mughal Empire map: "MughalEmpire1700.svg" by nafSadh, CC0. https://commons.wikimedia.org/wiki/File:MughalEmpire1700.svg
+Nephron: "Nefron-EN.svg" by Original author: Sati at Polish Wikipedia, derivative work: User:Mario_modesto, CC BY 3.0. https://commons.wikimedia.org/wiki/File:Nefron-EN.svg
+Nervous system: "Nervous system diagram-en.svg" by Medium69, Jmarchn, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Nervous_system_diagram-en.svg
+Network topologies: "NetworkTopologies.svg" by NetworkTopologies.png: Maksim / derivative work: Malyszkz, Public domain. https://commons.wikimedia.org/wiki/File:NetworkTopologies.svg
+Neuron: "Complete neuron cell diagram en.svg" by LadyofHats, Public domain. https://commons.wikimedia.org/wiki/File:Complete_neuron_cell_diagram_en.svg
+Newton's cradle: "Newtons-cradle-solutions.svg" by MikeRun, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Newtons-cradle-solutions.svg
+Number line: "Number-line-3-5-7.svg" by Lsanabria, CC0. https://commons.wikimedia.org/wiki/File:Number-line-3-5-7.svg
+Parabola: "Parabola with focus and directrix.svg" by No machine-readable author provided. LucasVB assumed (based on copyright claims)., Public domain. https://commons.wikimedia.org/wiki/File:Parabola_with_focus_and_directrix.svg
+Parts of a circle: "Circle-withsegments-notext.svg" by Jokes Free4Me, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Circle-withsegments-notext.svg
+Parts of a flower: "Mature flower diagram.svg" by Mariana Ruiz LadyofHats, Public domain. https://commons.wikimedia.org/wiki/File:Mature_flower_diagram.svg
+Periodic table: "Simple Periodic Table Chart-en.svg" by Offnfopt, Public domain. https://commons.wikimedia.org/wiki/File:Simple_Periodic_Table_Chart-en.svg
+pH scale: "PH scale.svg" by Tristanevanslee, CC0. https://commons.wikimedia.org/wiki/File:PH_scale.svg
+Photosynthesis: "Photosynthesis en.svg" by At09kg, Wattcle, Nefronus At09kg: original Wattcle: vector graphics Nefronus: redoing the vector graphics, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Photosynthesis_en.svg
+Pie chart: "Pie chart example 01.svg" by Averater, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Pie_chart_example_01.svg
+Plant cell: "Plant cell structure-en.svg" by LadyofHats, Public domain. https://commons.wikimedia.org/wiki/File:Plant_cell_structure-en.svg
+Prism dispersion: "Dispersion prism-svg.svg" by Goran_tek-en, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Dispersion_prism-svg.svg
+Pulley: "Four pulleys.svg" by Prolineserver, Tomia (minor edits by Stanisław Skowron, scale adjusted by Atropos235), CC BY 2.5. https://commons.wikimedia.org/wiki/File:Four_pulleys.svg
+Pythagoras proof: "Pythagorean proof (1).svg" by Phildonnia (talk), CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Pythagorean_proof_(1).svg
+Reflection of light: "Reflection angles 001.svg" by Reflection_angles.svg: Arvelius derivative work: Marek M (talk), CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Reflection_angles_001.svg
+Refraction of light: "Snells law.svg" by Cristan at English Wikipedia, Sawims at Dutch Wikipedia, Public domain. https://commons.wikimedia.org/wiki/File:Snells_law.svg
+Regular polygons: "Regular polygons qtl1.svg" by Quartl, Public domain. https://commons.wikimedia.org/wiki/File:Regular_polygons_qtl1.svg
+Respiratory system: "Respiratory system complete en.svg" by LadyofHats, Jmarchn, Public domain. https://commons.wikimedia.org/wiki/File:Respiratory_system_complete_en.svg
+River course: "Meander-en.svg" by USDA &amp; Mysid, Public domain. https://commons.wikimedia.org/wiki/File:Meander-en.svg
+Rock cycle: "Rock Cycle Igneous Rock.svg" by Carie Frantz, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Rock_Cycle_Igneous_Rock.svg
+Seed germination: "Germination-en.svg" by Germination.svg: *Germinacion.png: Kat1992 derivative work: Begoon derivative work: Begoon, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Germination-en.svg
+Series and parallel circuits: "Series and parallel circuits.svg" by No machine-readable author provided. Xyzzy n assumed (based on copyright claims)., CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Series_and_parallel_circuits.svg
+Solar system: "Moons of solar system numbered.svg" by NASA This SVG image was created by Medium69. Cette image SVG a été créée par Medium69. Please credit this : William Crochot, Public domain. https://commons.wikimedia.org/wiki/File:Moons_of_solar_system_numbered.svg
+States of matter: "Solid liquid gas.svg" by Luis Javier Rodriguez Lopez, done for wikipedia, might be found at my webpage in a future; http://www.coroflot.com/yupi666 (Yupi666) / converted to SVG by Tomth, CC BY 2.5. https://commons.wikimedia.org/wiki/File:Solid_liquid_gas.svg
+Taj Mahal: "Taj Mahal, Agra, India edit2.jpg" by Yann; edited by King of Hearts, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Taj_Mahal,_Agra,_India_edit2.jpg
+Tectonic plates: "Plates tect2 en.svg" by Map:USGS Description:Scott Nash, Public domain. https://commons.wikimedia.org/wiki/File:Plates_tect2_en.svg
+Test tube: "Test Tube - The Noun Project.svg" by Timothy Dilich, CC0. https://commons.wikimedia.org/wiki/File:Test_Tube_-_The_Noun_Project.svg
+Tooth: "Tooth Section.svg" by User:Indolences, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Tooth_Section.svg
+Transformer: "Transformer3d col3.svg" by BillC at English Wikipedia, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Transformer3d_col3.svg
+Types of angles: "Angle types.svg" by TheGrifter80, CC0. https://commons.wikimedia.org/wiki/File:Angle_types.svg
+Types of triangles: "Euler diagram of triangle types.svg" by Cmglee, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Euler_diagram_of_triangle_types.svg
+Unit circle: "Unit Circle Angles Color Clock Face.svg" by Jim.belk, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Unit_Circle_Angles_Color_Clock_Face.svg
+Venn diagram: "Venn diagram for A union B.svg" by He7d3r, CC0. https://commons.wikimedia.org/wiki/File:Venn_diagram_for_A_union_B.svg
+Virus structure: "HI-virion-structure en.svg" by Thomas Splettstoesser (www.scistyle.com), CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:HI-virion-structure_en.svg
+Volcano: "Volcano scheme.svg" by MesserWoland, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Volcano_scheme.svg
+Water cycle: "Water Cycle-en.png" by Water_Cycle_-_blank.svg: *Wasserkreislauf.png: de:Benutzer:Joooo derivative work: moyogo (talk) derivative work: Alexchris (talk), CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Water_Cycle-en.png
+Water molecule: "Water molecule dimensions (comma).svg" by Water_molecule_dimensions.svg: Booyabazooka derivative work: Neq00 (talk), CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Water_molecule_dimensions_(comma).svg
+Wave (amplitude, wavelength): "Sinus amplitude en.svg" by Wikimedia Commons contributor, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Sinus_amplitude_en.svg
+World map: "BlankMap - World - Hellerick polynomial continent-based projection.svg" by Hellerick, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:BlankMap_-_World_-_Hellerick_polynomial_continent-based_projection.svg
+World map (countries): "BlankMap World simple.svg" by CodeOne Derivative work: Master Uegly, Public domain. https://commons.wikimedia.org/wiki/File:BlankMap_World_simple.svg
+
+Microsoft Fluent Emoji (91 pictures)
+----------------------
+https://github.com/microsoft/fluentui-emoji
+
+MIT License
+
+Copyright (c) Microsoft Corporation.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Aeroplane: Fluent Emoji: Airplane
+Ant: Fluent Emoji: Ant
+Apple: Fluent Emoji: Red apple
+Banana: Fluent Emoji: Banana
+Bicycle: Fluent Emoji: Bicycle
+Bone: Fluent Emoji: Bone
+Books: Fluent Emoji: Books
+Brain emoji: Fluent Emoji: Brain
+Bread: Fluent Emoji: Bread
+Bus: Fluent Emoji: Bus
+Butterfly: Fluent Emoji: Butterfly
+Cactus: Fluent Emoji: Cactus
+Car: Fluent Emoji: Automobile
+Carrot: Fluent Emoji: Carrot
+Cat: Fluent Emoji: Cat
+Clock: Fluent Emoji: Alarm clock
+Cloud: Fluent Emoji: Cloud
+Cow: Fluent Emoji: Cow
+Dice: Fluent Emoji: Game die
+Doctor: Fluent Emoji: Health worker
+Dog: Fluent Emoji: Dog
+Ear emoji: Fluent Emoji: Ear
+Earth globe: Fluent Emoji: Globe showing asia-australia
+Egg: Fluent Emoji: Egg
+Elephant: Fluent Emoji: Elephant
+Exclamation mark: Fluent Emoji: Red exclamation mark
+Eye emoji: Fluent Emoji: Eye
+Farmer: Fluent Emoji: Farmer
+Fish: Fluent Emoji: Tropical fish
+Frog: Fluent Emoji: Frog
+Goat: Fluent Emoji: Goat
+Grapes: Fluent Emoji: Grapes
+Hand: Fluent Emoji: Raised hand
+Heart emoji: Fluent Emoji: Red heart
+Hen: Fluent Emoji: Chicken
+Honeybee: Fluent Emoji: Honeybee
+Horse: Fluent Emoji: Horse
+Hospital: Fluent Emoji: Hospital
+House: Fluent Emoji: House
+Idea bulb: Fluent Emoji: Light bulb
+Letter: Fluent Emoji: Envelope
+Lightning: Fluent Emoji: High voltage
+Lion: Fluent Emoji: Lion
+Magnet: Fluent Emoji: Magnet
+Mango: Fluent Emoji: Mango
+Microscope: Fluent Emoji: Microscope
+Milk: Fluent Emoji: Glass of milk
+Money: Fluent Emoji: Money with wings
+Monkey: Fluent Emoji: Monkey
+Moon: Fluent Emoji: Crescent moon
+Newspaper: Fluent Emoji: Newspaper
+Nose: Fluent Emoji: Nose
+Onion: Fluent Emoji: Onion
+Open book: Fluent Emoji: Open book
+Owl: Fluent Emoji: Owl
+Parrot: Fluent Emoji: Parrot
+Party: Fluent Emoji: Party popper
+Peacock: Fluent Emoji: Peacock
+Pencil: Fluent Emoji: Pencil
+Police: Fluent Emoji: Police officer
+Potato: Fluent Emoji: Potato
+Question mark: Fluent Emoji: Red question mark
+Rain: Fluent Emoji: Cloud with rain
+Rainbow: Fluent Emoji: Rainbow
+Rice: Fluent Emoji: Cooked rice
+Rocket: Fluent Emoji: Rocket
+School: Fluent Emoji: School
+Seedling: Fluent Emoji: Seedling
+Ship: Fluent Emoji: Ship
+Snake: Fluent Emoji: Snake
+Snowflake: Fluent Emoji: Snowflake
+Soap: Fluent Emoji: Soap
+Speech bubble: Fluent Emoji: Speech balloon
+Star: Fluent Emoji: Star
+Sun: Fluent Emoji: Sun
+Sunflower: Fluent Emoji: Sunflower
+Teacher: Fluent Emoji: Teacher
+Test tube emoji: Fluent Emoji: Test tube
+Thinking face: Fluent Emoji: Thinking face
+Thumbs up: Fluent Emoji: Thumbs up
+Tiger: Fluent Emoji: Tiger face
+Tomato: Fluent Emoji: Tomato
+Tongue: Fluent Emoji: Tongue
+Tooth emoji: Fluent Emoji: Tooth
+Toothbrush: Fluent Emoji: Toothbrush
+Train: Fluent Emoji: Locomotive
+Tree: Fluent Emoji: Deciduous tree
+Trophy: Fluent Emoji: Trophy
+Turtle: Fluent Emoji: Turtle
+Water drop: Fluent Emoji: Droplet
+Watermelon: Fluent Emoji: Watermelon
