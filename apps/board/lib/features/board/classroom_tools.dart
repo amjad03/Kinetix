@@ -9,9 +9,15 @@ import 'chrome.dart';
 
 /// A countdown that floats over the board and can be dragged out of the way.
 class CountdownCard extends StatefulWidget {
-  const CountdownCard({super.key, required this.onClose});
+  const CountdownCard({super.key, required this.onClose, this.initial, this.onRunning});
 
   final VoidCallback onClose;
+
+  /// Starts at once with this time (the phone remote's "Start timer").
+  final Duration? initial;
+
+  /// Told when the countdown starts or stops (the phone remote shows it).
+  final ValueChanged<bool>? onRunning;
 
   @override
   State<CountdownCard> createState() => _CountdownCardState();
@@ -21,6 +27,18 @@ class _CountdownCardState extends State<CountdownCard> {
   Duration _total = const Duration(minutes: 5);
   Duration _left = const Duration(minutes: 5);
   Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _total = _left = initial;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _start();
+      });
+    }
+  }
 
   bool get _running => _timer != null;
   bool get _done => _left == Duration.zero;
@@ -37,12 +55,14 @@ class _CountdownCardState extends State<CountdownCard> {
       });
     });
     setState(() {});
+    widget.onRunning?.call(true);
   }
 
   void _stop() {
     _timer?.cancel();
     _timer = null;
     setState(() {});
+    widget.onRunning?.call(false);
   }
 
   void _preset(int minutes) {

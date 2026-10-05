@@ -2647,4 +2647,103 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiPenDownloadFailed =>
       'Could not download the handwriting model. Connect to the internet once and try again.';
+
+  @override
+  String get toolAskClass => 'Ask the class';
+
+  @override
+  String get askClassHint =>
+      'Students answer in the Student App, or hold up their answer card with the answer on top. No phones needed.';
+
+  @override
+  String get askQuestionLabel => 'Question (optional)';
+
+  @override
+  String get askAnswersLabel => 'Answers';
+
+  @override
+  String get askTrueFalse => 'True / False';
+
+  @override
+  String get askNumber => 'Number';
+
+  @override
+  String get askRightAnswer => 'Right answer (optional)';
+
+  @override
+  String get askNumberHint => 'For example 2.5';
+
+  @override
+  String get askNumberNoCards =>
+      'Number answers come from the Student App only (answer cards show A to D).';
+
+  @override
+  String get askStart => 'Ask';
+
+  @override
+  String get pollTrue => 'True';
+
+  @override
+  String get pollFalse => 'False';
+
+  @override
+  String get pollDefaultQuestion => 'Class check';
+
+  @override
+  String get pollNoCards =>
+      'No answer cards found in the photo. Ask the class to hold them up flat, then try again.';
+
+  @override
+  String pollCardsRead(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cards read.',
+      one: '1 card read.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pollUnknownCards(String cards) {
+    return 'Cards $cards are not in this class.';
+  }
+
+  @override
+  String get pollScanFailed => 'Could not read the photo. Try again.';
+
+  @override
+  String pollAnswered(int count, int total) {
+    return '$count of $total answered';
+  }
+
+  @override
+  String get pollEnded => 'Question ended';
+
+  @override
+  String get pollLiveInApp => 'Live in the Student App';
+
+  @override
+  String get pollNotSaved => 'Answer cards only; not saved (no class is open).';
+
+  @override
+  String get pollScanCards => 'Scan answer cards';
+
+  @override
+  String get pollShowAnswer => 'Show answer';
+
+  @override
+  String get pollEnd => 'End question';
+
+  @override
+  String get pollPutOnBoard => 'Put results on board';
+
+  @override
+  String get pollNoAnswersYet => 'No answers yet.';
+
+  @override
+  String get remoteConnected => 'Phone remote connected.';
+
+  @override
+  String get remotePhotoFailed => 'Could not show the photo from the phone.';
 }

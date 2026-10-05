@@ -23,11 +23,14 @@ import '../ai/ai_panel.dart';
 import '../ai/homework_panel.dart';
 import '../ai/quiz_panel.dart';
 import '../books/books_panel.dart';
+import '../class_check/class_check.dart';
 import '../concept_videos/concept_video_suggestions.dart';
 import '../kiosk/kiosk_ui.dart';
 import '../plan/plan_timer.dart';
 import '../plan/todays_plan_panel.dart';
 import '../recording/recording_ui.dart';
+import '../remote/board_remote.dart';
+import '../remote/board_toolkit.dart';
 import '../signin/sign_in_dialog.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
@@ -106,6 +109,13 @@ class _BoardScreenState extends State<BoardScreen> {
   SessionContext? _captureTeacher;
   bool _captureStarting = false;
 
+  /// "Ask the class" (features/class_check) and the phone remote (features/remote).
+  late final ClassCheck _classCheck = ClassCheck(board);
+  late final BoardRemote _remote;
+  Duration? _timerStart;
+  bool _timerRunning = false;
+  int _timerKey = 0;
+
   /// Streams the board while school leaders or the class watch it live.
   late final LiveStream _live = LiveStream(board: _wb, send: (events) => board.sendLiveFrame(events));
 
@@ -131,6 +141,52 @@ class _BoardScreenState extends State<BoardScreen> {
       ..onLetterSize = (px) => board.saveLetterSize(board.session?.teacherId, px);
     _applyClass();
     unawaited(_loadLetterSize());
+    _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
+  }
+
+  /// The toolkit as the phone remote sees it (a stub over today's timer and picker; the
+  /// toolkit port replaces it).
+  BoardToolkit _toolkit() => CallbackToolkit(
+    onStartTimer: (d) => setState(() {
+      _timer = true;
+      _timerStart = d;
+      _timerKey++;
+    }),
+    onStopTimer: () => setState(() {
+      _timer = false;
+      _timerRunning = false;
+    }),
+    isTimerRunning: () => _timer && _timerRunning,
+    onPickStudent: _randomPick,
+  );
+
+  RemoteHooks _remoteHooks() => RemoteHooks(
+    recording: () => _capture != null,
+    startRecording: _toggleRecording,
+    stopRecording: _stopRecording,
+    showPhoto: (bytes) => unawaited(_addPhoto(bytes)),
+    onAttached: () {
+      if (mounted) showBoardMessage(context, context.l10n.remoteConnected);
+    },
+  );
+
+  /// A photo from the teacher's phone, on the page.
+  Future<void> _addPhoto(Uint8List bytes) async {
+    try {
+      final image = await decodeImageFromList(bytes);
+      final w = math.min(720.0, image.width.toDouble());
+      final h = w * image.height / math.max(1, image.width);
+      image.dispose();
+      _wb.insert([ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: bytes)]);
+    } catch (_) {
+      if (mounted) showBoardMessage(context, context.l10n.remotePhotoFailed);
+    }
+  }
+
+  /// "Put results on board": the question's bar chart as a picture on the page.
+  void _addPollResults(Uint8List png) {
+    final size = _pngSize(png);
+    _wb.insert([ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, size.width, size.height), bytes: png)]);
   }
 
   @override
@@ -139,6 +195,8 @@ class _BoardScreenState extends State<BoardScreen> {
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
     _live.stop();
+    _remote.dispose();
+    _classCheck.dispose();
     _capture?.dispose();
     _pen.dispose();
     _wb.dispose();
@@ -721,10 +779,15 @@ class _BoardScreenState extends State<BoardScreen> {
       const Color(0xFF8AB4F8),
       () => setState(() {
         _timer = true;
+        _timerStart = null;
         _popover = null;
       }),
     ),
     ToolEntry(Icons.casino_outlined, l.toolRandomPick, const Color(0xFFFDD663), _randomPick),
+    ToolEntry(Icons.how_to_vote_outlined, l.toolAskClass, const Color(0xFF8AB4F8), () {
+      setState(() => _popover = null);
+      unawaited(_classCheck.ask(context));
+    }),
     ToolEntry(Icons.how_to_reg_outlined, l.toolAttendance, const Color(0xFF81C995), () {
       setState(() => _popover = null);
       _attendance();
@@ -992,9 +1055,26 @@ class _BoardScreenState extends State<BoardScreen> {
             top: _timerPos.dy,
             child: GestureDetector(
               onPanUpdate: (d) => setState(() => _timerPos += d.delta),
-              child: BoardChromeTheme(child: CountdownCard(onClose: () => setState(() => _timer = false))),
+              child: BoardChromeTheme(
+                child: CountdownCard(
+                  key: ValueKey(_timerKey),
+                  initial: _timerStart,
+                  onRunning: (on) {
+                    _timerRunning = on;
+                    _remote.sendState();
+                  },
+                  onClose: () => setState(() {
+                    _timer = false;
+                    _timerRunning = false;
+                    _timerStart = null;
+                    _remote.sendState();
+                  }),
+                ),
+              ),
             ),
           ),
+        Positioned.fill(child: ClassCheckOverlay(check: _classCheck, onPutOnBoard: _addPollResults)),
+        Positioned.fill(child: RemotePointer(remote: _remote)),
         if (!_hidden && rails) ..._railsChrome(context, compact: compact || short, primary: primary),
         if (!_hidden && !rails)
           Positioned(

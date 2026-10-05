@@ -13,6 +13,9 @@ abstract final class RealtimeEvents {
   static const liveFrame = 'live.frame';
   static const liveAudioState = 'live.audio.state';
   static const liveAudio = 'live.audio';
+  static const pollAnswered = 'poll.answered';
+  static const remoteCommand = 'remote.command';
+  static const remoteState = 'remote.state';
 }
 
 /// The board's live connection to KINETIX Cloud. Reconnects on its own.

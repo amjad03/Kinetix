@@ -2643,4 +2643,104 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get aiPenDownloadFailed =>
       'लिखावट मॉडल डाउनलोड नहीं हो सका। एक बार इंटरनेट से जुड़ें और फिर कोशिश करें।';
+
+  @override
+  String get toolAskClass => 'कक्षा से पूछें';
+
+  @override
+  String get askClassHint =>
+      'विद्यार्थी स्टूडेंट ऐप में उत्तर दें, या अपना उत्तर कार्ड उत्तर को ऊपर रखकर उठाएँ। फ़ोन ज़रूरी नहीं।';
+
+  @override
+  String get askQuestionLabel => 'प्रश्न (वैकल्पिक)';
+
+  @override
+  String get askAnswersLabel => 'उत्तर';
+
+  @override
+  String get askTrueFalse => 'सही / गलत';
+
+  @override
+  String get askNumber => 'संख्या';
+
+  @override
+  String get askRightAnswer => 'सही उत्तर (वैकल्पिक)';
+
+  @override
+  String get askNumberHint => 'जैसे 2.5';
+
+  @override
+  String get askNumberNoCards =>
+      'संख्या वाले उत्तर केवल स्टूडेंट ऐप से आते हैं (उत्तर कार्ड पर A से D होते हैं)।';
+
+  @override
+  String get askStart => 'पूछें';
+
+  @override
+  String get pollTrue => 'सही';
+
+  @override
+  String get pollFalse => 'गलत';
+
+  @override
+  String get pollDefaultQuestion => 'कक्षा जाँच';
+
+  @override
+  String get pollNoCards =>
+      'फ़ोटो में कोई उत्तर कार्ड नहीं मिला। कक्षा से कार्ड सीधे उठाने को कहें और फिर कोशिश करें।';
+
+  @override
+  String pollCardsRead(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count कार्ड पढ़े गए।',
+      one: '1 कार्ड पढ़ा गया।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pollUnknownCards(String cards) {
+    return 'कार्ड $cards इस कक्षा के नहीं हैं।';
+  }
+
+  @override
+  String get pollScanFailed => 'फ़ोटो पढ़ी नहीं जा सकी। फिर कोशिश करें।';
+
+  @override
+  String pollAnswered(int count, int total) {
+    return '$total में से $count ने उत्तर दिया';
+  }
+
+  @override
+  String get pollEnded => 'प्रश्न समाप्त';
+
+  @override
+  String get pollLiveInApp => 'स्टूडेंट ऐप में लाइव';
+
+  @override
+  String get pollNotSaved =>
+      'केवल उत्तर कार्ड; सहेजा नहीं जाएगा (कोई कक्षा खुली नहीं है)।';
+
+  @override
+  String get pollScanCards => 'उत्तर कार्ड स्कैन करें';
+
+  @override
+  String get pollShowAnswer => 'उत्तर दिखाएँ';
+
+  @override
+  String get pollEnd => 'प्रश्न समाप्त करें';
+
+  @override
+  String get pollPutOnBoard => 'परिणाम बोर्ड पर रखें';
+
+  @override
+  String get pollNoAnswersYet => 'अभी कोई उत्तर नहीं।';
+
+  @override
+  String get remoteConnected => 'फ़ोन रिमोट जुड़ गया।';
+
+  @override
+  String get remotePhotoFailed => 'फ़ोन से आई फ़ोटो नहीं दिखाई जा सकी।';
 }

@@ -188,6 +188,13 @@ class BoardController extends ChangeNotifier {
     _realtime?.emit(RealtimeEvents.liveFrame, {'events': events});
   }
 
+  /// Server events for class questions and the phone remote (features/class_check and
+  /// features/remote listen here): (event name, payload).
+  final classEvents = StreamController<(String, Map<String, dynamic>)>.broadcast();
+
+  /// Board → its teacher's phone remote: what the board shows (page, recording, timer).
+  void sendRemoteState(Map<String, dynamic> state) => _realtime?.emit(RealtimeEvents.remoteState, state);
+
   /// Emergencies the teacher acknowledged. They shrink to a strip but stay until the sender clears them.
   final Set<String> acknowledgedEmergencies = {};
 
@@ -503,6 +510,11 @@ class BoardController extends ChangeNotifier {
       notifyListeners();
     });
     rt.on(RealtimeEvents.liveSnapshotRequest, (_) => onLiveSnapshotRequest?.call());
+    for (final event in [RealtimeEvents.pollAnswered, RealtimeEvents.remoteCommand]) {
+      rt.on(event, (e) {
+        if (!classEvents.isClosed) classEvents.add((event, e));
+      });
+    }
     rt.onReady = () {
       online = true;
       unawaited(_fetchConfig());
@@ -622,6 +634,7 @@ class BoardController extends ChangeNotifier {
     classAudio.dispose();
     _realtime?.dispose();
     recordings.dispose();
+    unawaited(classEvents.close());
     super.dispose();
   }
 }

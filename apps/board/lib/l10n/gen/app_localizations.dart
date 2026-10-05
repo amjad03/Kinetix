@@ -4593,6 +4593,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not download the handwriting model. Connect to the internet once and try again.'**
   String get aiPenDownloadFailed;
+
+  /// No description provided for @toolAskClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the class'**
+  String get toolAskClass;
+
+  /// No description provided for @askClassHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Students answer in the Student App, or hold up their answer card with the answer on top. No phones needed.'**
+  String get askClassHint;
+
+  /// No description provided for @askQuestionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Question (optional)'**
+  String get askQuestionLabel;
+
+  /// No description provided for @askAnswersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers'**
+  String get askAnswersLabel;
+
+  /// No description provided for @askTrueFalse.
+  ///
+  /// In en, this message translates to:
+  /// **'True / False'**
+  String get askTrueFalse;
+
+  /// No description provided for @askNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get askNumber;
+
+  /// No description provided for @askRightAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Right answer (optional)'**
+  String get askRightAnswer;
+
+  /// No description provided for @askNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 2.5'**
+  String get askNumberHint;
+
+  /// No description provided for @askNumberNoCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Number answers come from the Student App only (answer cards show A to D).'**
+  String get askNumberNoCards;
+
+  /// No description provided for @askStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get askStart;
+
+  /// No description provided for @pollTrue.
+  ///
+  /// In en, this message translates to:
+  /// **'True'**
+  String get pollTrue;
+
+  /// No description provided for @pollFalse.
+  ///
+  /// In en, this message translates to:
+  /// **'False'**
+  String get pollFalse;
+
+  /// No description provided for @pollDefaultQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Class check'**
+  String get pollDefaultQuestion;
+
+  /// No description provided for @pollNoCards.
+  ///
+  /// In en, this message translates to:
+  /// **'No answer cards found in the photo. Ask the class to hold them up flat, then try again.'**
+  String get pollNoCards;
+
+  /// No description provided for @pollCardsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 card read.} other{{count} cards read.}}'**
+  String pollCardsRead(int count);
+
+  /// No description provided for @pollUnknownCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards {cards} are not in this class.'**
+  String pollUnknownCards(String cards);
+
+  /// No description provided for @pollScanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the photo. Try again.'**
+  String get pollScanFailed;
+
+  /// No description provided for @pollAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total} answered'**
+  String pollAnswered(int count, int total);
+
+  /// No description provided for @pollEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Question ended'**
+  String get pollEnded;
+
+  /// No description provided for @pollLiveInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Live in the Student App'**
+  String get pollLiveInApp;
+
+  /// No description provided for @pollNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer cards only; not saved (no class is open).'**
+  String get pollNotSaved;
+
+  /// No description provided for @pollScanCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan answer cards'**
+  String get pollScanCards;
+
+  /// No description provided for @pollShowAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show answer'**
+  String get pollShowAnswer;
+
+  /// No description provided for @pollEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End question'**
+  String get pollEnd;
+
+  /// No description provided for @pollPutOnBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Put results on board'**
+  String get pollPutOnBoard;
+
+  /// No description provided for @pollNoAnswersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No answers yet.'**
+  String get pollNoAnswersYet;
+
+  /// No description provided for @remoteConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone remote connected.'**
+  String get remoteConnected;
+
+  /// No description provided for @remotePhotoFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not show the photo from the phone.'**
+  String get remotePhotoFailed;
 }
 
 class _AppLocalizationsDelegate

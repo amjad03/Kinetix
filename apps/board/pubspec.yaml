@@ -18,9 +18,13 @@ dependencies:
   # downloads once from Google; no ink leaves the panel). See lib/core/handwriting.
   google_mlkit_digital_ink_recognition: ^0.16.1
   http: ^1.6.0
+  # Photos of the class for answer cards (camera on Android panels, a file on Windows).
+  image_picker: ^1.2.3
   intl: ^0.20.3
   kinetix_3d:
     path: ../../packages/kinetix_3d
+  kinetix_cards:
+    path: ../../packages/kinetix_cards
   kinetix_ink:
     path: ../../packages/kinetix_ink
   kinetix_labs:

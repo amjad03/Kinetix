@@ -216,6 +216,32 @@ class ApiClient {
     await _send('POST', '/v1/homework/from-board', body: {'title': title, 'instructions': ?instructions, 'dueOn': due});
   }
 
+  // --- Class questions and answer cards (features/class_check) -----------------------------
+
+  /// Opens a question in the class on the board ([id] chosen here, so a retry asks once).
+  Future<Map<String, dynamic>> openPoll(String id, Map<String, dynamic> body) async => await _send('PUT', '/v1/polls/$id', body: body) as Map<String, dynamic>;
+
+  /// Answers read from answer cards: `{cardNo, choice}` each.
+  Future<Map<String, dynamic>> pollCards(String id, List<Map<String, int>> answers) async =>
+      await _send('POST', '/v1/polls/$id/cards', body: {'answers': answers}) as Map<String, dynamic>;
+
+  Future<Map<String, dynamic>> closePoll(String id) async => await _send('POST', '/v1/polls/$id/close') as Map<String, dynamic>;
+
+  /// The answer cards of the class open on the board (card number → student).
+  Future<Map<String, dynamic>> answerCards() async => await _send('GET', '/v1/answer-cards/current') as Map<String, dynamic>;
+
+  // --- Phone remote (features/remote) ---------------------------------------------------------
+
+  /// A photo the teacher sent from the phone remote; fetched once.
+  Future<Uint8List> remotePhoto(String id) async {
+    final req = http.Request('GET', Uri.parse('$baseUrl/v1/remote/photos/$id'));
+    final token = sessionToken ?? deviceToken;
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final res = await http.Response.fromStream(await _http.send(req));
+    if (res.statusCode >= 400) _decode(res);
+    return res.bodyBytes;
+  }
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, bool useDeviceToken = false}) async {
     final token = useDeviceToken ? deviceToken : (sessionToken ?? deviceToken);
     final req = http.Request(method, Uri.parse('$baseUrl$path'))

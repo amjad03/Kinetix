@@ -148,6 +148,29 @@ class DemoBoardServer {
 
   SessionContext session() => SessionContext.fromJson(sessionJson());
 
+  /// Simulated Student App answers per open question.
+  final _pollTimers = <String, List<Timer>>{};
+
+  /// How long after a question the demo's students with phones answer (tests shorten it).
+  Duration studentAnswerDelay = const Duration(milliseconds: 1500);
+
+  void _askClass(String id, Map<String, dynamic> body) {
+    final options = (body['options'] as List? ?? const []).length;
+    final numeric = body['kind'] == 'numeric';
+    final correct = body['correct'] as String?;
+    // Students 3, 5, 8 and 11 have phones; most of them get it right.
+    _pollTimers[id] = [
+      for (final (i, n) in [3, 5, 8, 11].indexed)
+        Timer(studentAnswerDelay * (i + 1), () {
+          final right = i != 2;
+          final answer = numeric
+              ? (right && correct != null ? correct : '${n * 2}')
+              : (right && correct != null ? correct : '${n % (options == 0 ? 1 : options)}');
+          realtime.fire(RealtimeEvents.pollAnswered, {'pollId': id, 'studentId': 's$n', 'answer': answer, 'source': 'app'});
+        }),
+    ];
+  }
+
   Map<String, dynamic> get _syllabus => {
     'id': 'co1',
     'title': 'Corporate Accounting, BCom Semester 3',
@@ -406,6 +429,42 @@ class DemoBoardServer {
       });
     }
     if (path == '/v1/broadcasts/pending') return json([]);
+
+    // "Ask the class": every student has card n (roll number n); a few answer in the
+    // Student App over the next seconds.
+    if (path == '/v1/answer-cards/current') {
+      return json({
+        'section': {'id': 'sec1', 'displayName': 'BCom Sem 3 A'},
+        'cards': [
+          for (final (i, n) in _names.indexed)
+            {
+              'cardNo': i + 1,
+              'studentId': 's${i + 1}',
+              'rollNo': 'U03BC${(i + 1).toString().padLeft(3, '0')}',
+              'fullName': n,
+            },
+        ],
+      });
+    }
+    final poll = RegExp(r'^/v1/polls/([^/]+)(?:/(cards|close))?$').firstMatch(path);
+    if (poll != null) {
+      final id = poll[1]!;
+      switch (poll[2]) {
+        case null when method == 'PUT':
+          _askClass(id, body);
+          return json({'id': id, 'closedAt': null});
+        case 'cards':
+          final known = [for (final a in (body['answers'] as List? ?? const [])) (a as Map)['cardNo'] as int];
+          return json({
+            'matched': [for (final n in known.where((n) => n <= _names.length)) {'cardNo': n, 'studentId': 's$n'}],
+            'unknown': known.where((n) => n > _names.length).toList(),
+          });
+        case 'close':
+          _pollTimers.remove(id)?.forEach((t) => t.cancel());
+          return json({'id': id, 'closedAt': now.toUtc().toIso8601String()});
+      }
+    }
+    if (path.startsWith('/v1/remote/photos/')) return notInDemo();
     if (path.startsWith('/v1/broadcasts/')) return json({'ok': true});
 
     // Whiteboards.
@@ -624,8 +683,13 @@ class DemoRealtime extends Realtime {
     if (!_disposed) _handlers[event]?.call(data);
   }
 
+  /// What the board sent (tests): live frames are not kept, the remote's state is.
+  final sent = <(String, Object)>[];
+
   @override
-  void emit(String event, Object data) {}
+  void emit(String event, Object data) {
+    if (event == RealtimeEvents.remoteState) sent.add((event, data));
+  }
 
   @override
   Future<Object?> request(
