@@ -1,0 +1,949 @@
+{
+ "curricula": [
+  {
+   "code": "bu-pg",
+   "name": "Bangalore University (PG)",
+   "level": "pg"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-1-forensic-science-law",
+   "title": "Forensic Science, Criminal Law and Quality Management, MSc Forensic Science Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Criminal Justice System",
+     "topics": [
+      {
+       "title": "Criminal laws of India",
+       "summary": "The new criminal codes and the forensic science provisions in them.",
+       "notes": [
+        "From 1 July 2024 the Bharatiya Nyaya Sanhita (BNS) replaced the IPC, the Bharatiya Nagarik Suraksha Sanhita (BNSS) the CrPC, and the Bharatiya Sakshya Adhiniyam (BSA) the Evidence Act.",
+        "BNSS section 176(3): forensic experts must visit the scene for offences punishable with seven years or more and the collection must be video-recorded.",
+        "BNSS section 349 lets a magistrate order specimen signatures, handwriting, finger impressions and voice samples.",
+        "BSA section 39 makes expert opinion relevant; section 63 governs electronic records."
+       ],
+       "outcomes": [
+        "Map old and new criminal law provisions relevant to forensics",
+        "Explain the forensic mandates in BNSS"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Expert Testimony",
+     "topics": [
+      {
+       "title": "The expert in court",
+       "summary": "Admissibility standards, report writing and cross-examination.",
+       "notes": [
+        "An expert report states the materials received, methods, results, interpretation and limitations.",
+        "Indian courts treat expert opinion as advisory; the court weighs it with other evidence.",
+        "Frye (general acceptance) and Daubert (testability, peer review, error rate, standards, acceptance) are influential foreign standards.",
+        "Cognitive bias (contextual, confirmation) is reduced by blind verification and sequential unmasking."
+       ],
+       "outcomes": [
+        "Write a structured expert report",
+        "Identify and reduce cognitive bias"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Quality Management",
+     "topics": [
+      {
+       "title": "Accreditation and quality assurance",
+       "summary": "ISO/IEC 17025, validation and proficiency testing.",
+       "notes": [
+        "ISO/IEC 17025 sets requirements for testing laboratory competence; NABL accredits Indian laboratories.",
+        "Method validation establishes specificity, accuracy, precision, LOD, LOQ, linearity and robustness.",
+        "Proficiency testing and inter-laboratory comparisons check performance.",
+        "Measurement uncertainty must be estimated and reported where relevant."
+       ],
+       "outcomes": [
+        "Explain the elements of ISO/IEC 17025",
+        "Plan a method validation"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Forensic Statistics",
+     "topics": [
+      {
+       "title": "Interpreting evidence statistically",
+       "summary": "Probability, likelihood ratios and fallacies.",
+       "notes": [
+        "Likelihood ratio LR = P(E | Hp) ÷ P(E | Hd); LR > 1 supports the prosecution proposition.",
+        "Posterior odds = LR × prior odds (Bayes' theorem in odds form).",
+        "Prosecutor's fallacy confuses P(E | Hd) with P(Hd | E).",
+        "Random match probability is the chance that an unrelated person shares the profile."
+       ],
+       "outcomes": [
+        "Compute and explain a likelihood ratio",
+        "Recognise the prosecutor's fallacy"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "probability",
+         "title": "Probability with coins and dice"
+        }
+       ],
+       "lesson": {
+        "hook": "A blood type found at the scene occurs in 1% of people, and the suspect has it. Is there a 99% chance he is guilty?",
+        "example": "P(E | Hp) = 1, P(E | Hd) = 0.01, so LR = 100: the evidence is 100 times more likely if the suspect is the source.\nWith prior odds 1:1,000, posterior odds = 100 × 1/1,000 = 1:10, far from 99%.",
+        "activity": "",
+        "questions": [
+         {
+          "q": "What is the prosecutor's fallacy?",
+          "a": "Treating the probability of the evidence given innocence as the probability of innocence given the evidence."
+         }
+        ],
+        "homework": "",
+        "terms": [
+         "likelihood ratio",
+         "prior odds",
+         "posterior odds",
+         "prosecutor's fallacy"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-1-instrumental-analysis",
+   "title": "Instrumental Methods in Forensic Analysis, MSc Forensic Science Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Chromatography",
+     "topics": [
+      {
+       "title": "GC, HPLC and TLC",
+       "summary": "Theory and forensic applications of chromatography.",
+       "notes": [
+        "Resolution Rs = 2(t₂ − t₁) ÷ (w₁ + w₂); Rs ≥ 1.5 means baseline separation.",
+        "Plate number N = 16(tR ÷ w)²; more plates mean sharper peaks.",
+        "GC suits volatile compounds (accelerants, alcohol, drugs); HPLC non-volatile and thermally labile ones."
+       ],
+       "outcomes": [
+        "Compute resolution and plate number",
+        "Choose a chromatographic method for a sample"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "ink-chromatography",
+         "title": "Forensic ink analysis by chromatography"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Spectroscopy",
+     "topics": [
+      {
+       "title": "Molecular spectroscopy",
+       "summary": "UV-Vis, FTIR, Raman and fluorescence in forensics.",
+       "notes": [
+        "FTIR and Raman give molecular fingerprints of drugs, fibres, paints and polymers.",
+        "ATR-FTIR analyses solids with little preparation.",
+        "Fluorescence detects body fluids and some inks under alternate light sources."
+       ],
+       "outcomes": [
+        "Interpret FTIR spectra of common evidence",
+        "Choose a spectroscopic method"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "beer-lambert",
+         "title": "Beer–Lambert law with a colorimeter"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Mass Spectrometry",
+     "topics": [
+      {
+       "title": "MS and hyphenated techniques",
+       "summary": "Ionisation methods, analysers and GC-MS and LC-MS/MS.",
+       "notes": [
+        "Ionisation: electron impact (hard, library searchable), chemical ionisation and electrospray (soft).",
+        "Analysers: quadrupole, time-of-flight, ion trap, Orbitrap.",
+        "GC-MS is the confirmatory standard for many drugs; LC-MS/MS for trace toxicology."
+       ],
+       "outcomes": [
+        "Explain how GC-MS confirms a drug",
+        "Compare ionisation methods"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Elemental and Microscopic Analysis",
+     "topics": [
+      {
+       "title": "AAS, ICP, XRF and SEM-EDX",
+       "summary": "Elemental analysis and electron microscopy of trace evidence.",
+       "notes": [
+        "AAS and ICP-MS measure trace metals (poisons, glass, soil).",
+        "XRF is non-destructive elemental analysis.",
+        "SEM-EDX identifies gunshot residue particles (lead, barium, antimony)."
+       ],
+       "outcomes": [
+        "Choose an elemental technique for evidence",
+        "Identify gunshot residue by SEM-EDX"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-1-forensic-biology",
+   "title": "Forensic Biology and Serology, MSc Forensic Science Semester 1",
+   "term": 1,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Biological Trace Evidence",
+     "topics": [
+      {
+       "title": "Hair, fibres, pollen and diatoms",
+       "summary": "Microscopy and identification of biological traces.",
+       "notes": [
+        "Hair comparison uses colour, medulla, cuticle scales and cortex; nuclear DNA from roots, mtDNA from shafts.",
+        "Forensic palynology uses pollen to link people and places.",
+        "Diatoms in bone marrow support ante-mortem drowning."
+       ],
+       "outcomes": [
+        "Compare hairs microscopically",
+        "Use diatom tests in drowning cases"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "hair-microscopy",
+         "title": "Hair examination: human or animal?"
+        },
+        {
+         "kind": "lab",
+         "id": "fibre-microscopy",
+         "title": "Fibre examination under the microscope"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Serology",
+     "topics": [
+      {
+       "title": "Body fluid identification",
+       "summary": "Presumptive, confirmatory and immunological tests.",
+       "notes": [
+        "Blood: Kastle–Meyer, luminol (presumptive); Takayama, Teichmann, immunochromatographic Hb tests (confirmatory).",
+        "Semen: acid phosphatase, PSA, sperm microscopy; saliva: amylase.",
+        "Species origin by precipitin (ring, Ouchterlony double diffusion) tests."
+       ],
+       "outcomes": [
+        "Plan a sequence of tests for a stain",
+        "Determine species of origin"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "blood-typing",
+         "title": "ABO and Rh blood grouping"
+        },
+        {
+         "kind": "lab",
+         "id": "enzyme-amylase",
+         "title": "Effect of temperature and pH on salivary amylase"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Wildlife and Botanical Forensics",
+     "topics": [
+      {
+       "title": "Wildlife crime",
+       "summary": "Species identification and the Wild Life (Protection) Act, 1972.",
+       "notes": [
+        "Wildlife crime includes poaching and trade in protected species and their parts.",
+        "Species are identified by morphology, microscopy and DNA barcoding (cytochrome b, COI).",
+        "The Wildlife Crime Control Bureau coordinates enforcement in India."
+       ],
+       "outcomes": [
+        "Identify species from parts using DNA barcoding",
+        "Explain the legal framework for wildlife crime"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Forensic Entomology",
+     "topics": [
+      {
+       "title": "Insects and time since death",
+       "summary": "Insect succession and estimating the post-mortem interval.",
+       "notes": [
+        "Blowflies arrive within minutes to hours; their life cycle is egg, larva (three instars), pupa, adult.",
+        "Accumulated degree hours (ADH) relate development to temperature.",
+        "Succession of insect species estimates longer intervals."
+       ],
+       "outcomes": [
+        "Estimate a minimum PMI from larval stage and temperature",
+        "Collect entomological evidence"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-2-dna-profiling",
+   "title": "Forensic DNA Profiling, MSc Forensic Science Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "DNA Basics",
+     "topics": [
+      {
+       "title": "DNA structure and variation",
+       "summary": "DNA structure, polymorphism and markers used in forensics.",
+       "notes": [
+        "DNA is a double helix of nucleotides; A pairs with T, G with C.",
+        "STRs (2–6 bp repeats) are highly polymorphic; SNPs are single-base variants.",
+        "CODIS core set has 20 STR loci; amelogenin indicates sex."
+       ],
+       "outcomes": [
+        "Explain why STRs suit identification",
+        "Describe common forensic markers"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "dna",
+         "title": "DNA"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "DNA Workflow",
+     "topics": [
+      {
+       "title": "Extraction, quantification and amplification",
+       "summary": "Organic, Chelex and silica extraction; qPCR; multiplex PCR.",
+       "notes": [
+        "Extraction methods: organic (phenol–chloroform), Chelex-100, silica columns and magnetic beads; differential extraction separates sperm and epithelial cells.",
+        "qPCR quantifies human DNA and detects inhibitors and degradation.",
+        "PCR cycles: denaturation (≈94–95 °C), annealing (≈50–65 °C), extension (≈72 °C); copies double each cycle."
+       ],
+       "outcomes": [
+        "Choose an extraction method",
+        "Explain PCR and qPCR quantification"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "pcr-amplification",
+         "title": "Real-time PCR: standard curve and efficiency"
+        },
+        {
+         "kind": "lab",
+         "id": "gel-electrophoresis",
+         "title": "Agarose gel electrophoresis of DNA"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Profile Interpretation",
+     "topics": [
+      {
+       "title": "Interpretation and statistics",
+       "summary": "Alleles, stutter, mixtures and match statistics.",
+       "notes": [
+        "Artefacts: stutter, pull-up, drop-in, drop-out and allele imbalance.",
+        "Random match probability by the product rule with Hardy–Weinberg genotype frequencies (p² homozygote, 2pq heterozygote).",
+        "Mixtures are interpreted with probabilistic genotyping software giving likelihood ratios."
+       ],
+       "outcomes": [
+        "Interpret a single-source profile",
+        "Compute genotype frequencies and an RMP"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "hardy-weinberg",
+         "title": "Hardy–Weinberg equilibrium"
+        },
+        {
+         "kind": "lab",
+         "id": "dna-fingerprinting",
+         "title": "DNA fingerprinting by gel electrophoresis"
+        }
+       ],
+       "lesson": {
+        "hook": "",
+        "example": "At one locus alleles 12 and 15 have frequencies 0.1 and 0.2: genotype frequency 2pq = 0.04.\nAcross loci, frequencies multiply (product rule), giving very small RMPs.",
+        "activity": "",
+        "questions": [],
+        "homework": "",
+        "terms": []
+       }
+      }
+     ]
+    },
+    {
+     "title": "Lineage Markers and Applications",
+     "topics": [
+      {
+       "title": "Y-STR, mtDNA and kinship",
+       "summary": "Lineage markers, paternity and disaster victim identification.",
+       "notes": [
+        "Y-STRs follow the paternal line; mtDNA follows the maternal line; neither is unique to an individual.",
+        "Paternity index compares the probability of the child's alleles with the alleged father versus a random man.",
+        "Disaster victim identification combines DNA, fingerprints and dental records."
+       ],
+       "outcomes": [
+        "Choose lineage markers for a case",
+        "Explain a paternity index"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-2-toxicology-drugs",
+   "title": "Forensic Toxicology and Drug Analysis, MSc Forensic Science Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Toxicokinetics",
+     "topics": [
+      {
+       "title": "Absorption to elimination",
+       "summary": "Pharmacokinetics applied to poisoning and alcohol.",
+       "notes": [
+        "ADME: absorption, distribution, metabolism, excretion.",
+        "Widmark formula: BAC = A ÷ (W × r) − βt (A alcohol in g, W body mass, r distribution factor, β elimination rate).",
+        "Post-mortem redistribution can raise drug concentrations in central blood."
+       ],
+       "outcomes": [
+        "Estimate blood alcohol with Widmark's formula",
+        "Choose specimens considering redistribution"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Analytical Toxicology",
+     "topics": [
+      {
+       "title": "Screening and confirmation",
+       "summary": "Sample preparation, immunoassays and confirmatory analysis.",
+       "notes": [
+        "Extraction: liquid–liquid, solid-phase extraction, protein precipitation.",
+        "Immunoassays screen urine for drug classes; positives are confirmed by GC-MS or LC-MS/MS.",
+        "Cut-off concentrations decide positive or negative results."
+       ],
+       "outcomes": [
+        "Design a screening and confirmation scheme",
+        "Explain cut-offs and cross-reactivity"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "toxicology-spot-tests",
+         "title": "Forensic toxicology: presumptive colour tests"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Poisons",
+     "topics": [
+      {
+       "title": "Common poisons in India",
+       "summary": "Pesticides, plant poisons, metals and gases.",
+       "notes": [
+        "Organophosphates inhibit acetylcholinesterase (treatment: atropine and oximes).",
+        "Aluminium phosphide releases phosphine gas.",
+        "Plant poisons: oleander (cardiac glycosides), datura (anticholinergic), abrus (abrin)."
+       ],
+       "outcomes": [
+        "Identify common poisons by symptoms and tests",
+        "Describe the mechanism of organophosphate poisoning"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Drugs of Abuse",
+     "topics": [
+      {
+       "title": "Seized drug analysis",
+       "summary": "Sampling, identification and new psychoactive substances.",
+       "notes": [
+        "Representative sampling (e.g. hypergeometric or Bayesian plans) for large seizures.",
+        "Identification needs at least two independent techniques (SWGDRUG categories).",
+        "New psychoactive substances (synthetic cannabinoids, cathinones) need updated reference standards."
+       ],
+       "outcomes": [
+        "Plan sampling of a large seizure",
+        "Apply SWGDRUG recommendations"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-2-questioned-documents",
+   "title": "Questioned Documents and Fingerprint Science, MSc Forensic Science Semester 2",
+   "term": 2,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2024-25)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Handwriting Examination",
+     "topics": [
+      {
+       "title": "Handwriting identification",
+       "summary": "Characteristics, standards and conclusions.",
+       "notes": [
+        "Individual characteristics: letter formation, connections, proportions, alignment, pen pressure, speed.",
+        "Collected (course of business) and requested standards should be contemporaneous and adequate.",
+        "Conclusions range from identification through probable to elimination."
+       ],
+       "outcomes": [
+        "Compare handwriting systematically",
+        "Express conclusions on a scale"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Document Analysis",
+     "topics": [
+      {
+       "title": "Printed documents, inks and security features",
+       "summary": "Printers, counterfeit currency and ink dating.",
+       "notes": [
+        "Printing processes: offset, inkjet, laser, intaglio (currency).",
+        "Indian banknote features: watermark, security thread, latent image, micro-lettering, intaglio, colour-shifting ink.",
+        "Inks are compared by TLC and spectroscopy; ink dating is uncertain and contested."
+       ],
+       "outcomes": [
+        "Identify printing processes",
+        "Examine currency security features"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "ink-chromatography",
+         "title": "Forensic ink analysis by chromatography"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Fingerprint Science",
+     "topics": [
+      {
+       "title": "Ridge detail and development",
+       "summary": "Levels of detail, development chemistry and AFIS.",
+       "notes": [
+        "Level 1: pattern; level 2: minutiae; level 3: pores and ridge edges.",
+        "Chemistry: ninhydrin and DFO react with amino acids; physical developer with lipids; cyanoacrylate polymerises on residues.",
+        "AFIS searches databases (NAFIS in India) and returns candidates for human comparison."
+       ],
+       "outcomes": [
+        "Choose development techniques in sequence",
+        "Explain AFIS searching"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "fingerprint-matching",
+         "title": "Matching a chance print by minutiae"
+        },
+        {
+         "kind": "lab",
+         "id": "fingerprint-patterns",
+         "title": "Fingerprint patterns: arch, loop and whorl"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Impressions",
+     "topics": [
+      {
+       "title": "Footwear, tyre and tool marks",
+       "summary": "Comparison of impressions and marks.",
+       "notes": [
+        "Class and individual (acquired) characteristics.",
+        "Gel lifters and electrostatic lifters recover dust impressions.",
+        "Tool marks are compared by comparison microscope."
+       ],
+       "outcomes": [
+        "Compare footwear impressions",
+        "Examine tool marks"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "footprint-stature",
+         "title": "Estimating height from a footprint"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-3-ballistics-physics",
+   "title": "Forensic Ballistics and Physics, MSc Forensic Science Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Firearms",
+     "topics": [
+      {
+       "title": "Firearms and ammunition",
+       "summary": "Classification, mechanisms and cartridge components.",
+       "notes": [
+        "Cartridge: case, primer, propellant, projectile.",
+        "Rifling: number, direction and twist of lands and grooves are class characteristics.",
+        "Marks on cartridge cases: firing pin, breech face, ejector and extractor marks."
+       ],
+       "outcomes": [
+        "Identify class characteristics of firearms",
+        "Compare cartridge cases"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Ballistics",
+     "topics": [
+      {
+       "title": "Internal, external and terminal ballistics",
+       "summary": "Projectile motion, wound ballistics and range of fire.",
+       "notes": [
+        "Kinetic energy KE = ½mv² largely determines wounding potential.",
+        "External ballistics: trajectory, drag and ricochet.",
+        "Range of fire from soot, stippling and pellet spread (shotguns)."
+       ],
+       "outcomes": [
+        "Compute muzzle energy",
+        "Estimate range of fire"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "ballistics-trajectory",
+         "title": "Reconstructing a bullet’s path"
+        },
+        {
+         "kind": "lab",
+         "id": "projectile-motion",
+         "title": "Projectile motion"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Gunshot Residue",
+     "topics": [
+      {
+       "title": "GSR analysis",
+       "summary": "Formation, collection and analysis of GSR.",
+       "notes": [
+        "GSR contains lead, barium and antimony particles from the primer.",
+        "Collection by stub lifts from hands within hours of firing.",
+        "SEM-EDX identifies characteristic particles by morphology and composition."
+       ],
+       "outcomes": [
+        "Collect and analyse GSR",
+        "Interpret GSR findings cautiously"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Trace Physical Evidence",
+     "topics": [
+      {
+       "title": "Glass, paint and soil",
+       "summary": "Physical and chemical comparison of trace evidence.",
+       "notes": [
+        "Glass: refractive index (GRIM), density, elemental composition (LA-ICP-MS).",
+        "Paint layer sequences are compared by microscopy and FTIR.",
+        "Soil: colour (Munsell), particle size, minerals."
+       ],
+       "outcomes": [
+        "Compare glass by RI and density",
+        "Examine paint chips"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "glass-refractive-index",
+         "title": "Refractive index of glass by the Becke line"
+        },
+        {
+         "kind": "lab",
+         "id": "glass-density",
+         "title": "Comparing glass fragments by density"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-3-digital-forensics",
+   "title": "Digital Forensics, MSc Forensic Science Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Digital Evidence Principles",
+     "topics": [
+      {
+       "title": "Standards for digital evidence",
+       "summary": "ACPO principles, ISO/IEC 27037 and legal admissibility.",
+       "notes": [
+        "ACPO principles: no action should change data; competent persons; audit trail; overall responsibility.",
+        "ISO/IEC 27037 guides identification, collection, acquisition and preservation.",
+        "BSA section 63 requires a certificate for electronic records."
+       ],
+       "outcomes": [
+        "Apply the ACPO principles",
+        "Prepare admissible digital evidence"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Computer Forensics",
+     "topics": [
+      {
+       "title": "Acquisition and file system analysis",
+       "summary": "Imaging, hashing and analysis of NTFS and FAT.",
+       "notes": [
+        "Write blockers prevent changes; images in E01 or raw (dd) formats.",
+        "NTFS stores file records in the MFT; deleted entries may persist.",
+        "Timeline analysis uses MAC(B) timestamps."
+       ],
+       "outcomes": [
+        "Image and verify a drive",
+        "Recover deleted NTFS files"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Mobile and Cloud Forensics",
+     "topics": [
+      {
+       "title": "Mobile devices and cloud data",
+       "summary": "Extraction methods, encryption and cloud evidence.",
+       "notes": [
+        "Full-disk and file-based encryption limit physical extraction.",
+        "App data (SQLite databases) holds messages, locations and media.",
+        "Cloud evidence is obtained through legal process and account access with authorisation."
+       ],
+       "outcomes": [
+        "Choose extraction methods for a phone",
+        "Explain challenges of cloud evidence"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Network and Memory Forensics",
+     "topics": [
+      {
+       "title": "Volatile and network evidence",
+       "summary": "RAM analysis and network investigation.",
+       "notes": [
+        "Memory images reveal running processes, network connections, keys and malware (Volatility framework).",
+        "Logs (firewall, proxy, server) and NetFlow reconstruct activity.",
+        "Attribution must account for VPNs, Tor and spoofing."
+       ],
+       "outcomes": [
+        "Analyse a memory image",
+        "Reconstruct events from logs"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "bu-pg",
+   "code": "msc-fs-3-forensic-medicine-anthropology",
+   "title": "Forensic Medicine, Anthropology and Odontology, MSc Forensic Science Semester 3",
+   "term": 3,
+   "language": "en",
+   "source": "kinetix-curriculum-team from public BU syllabus (BU MSc CBCS, 2025-26)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Thanatology",
+     "topics": [
+      {
+       "title": "Death and post-mortem interval",
+       "summary": "Modes of death and estimation of time since death.",
+       "notes": [
+        "Algor mortis (Henssge nomogram), livor mortis, rigor mortis, vitreous potassium.",
+        "Decomposition is accelerated by heat and slowed by cold or burial.",
+        "Autopsy determines cause, manner and mechanism of death."
+       ],
+       "outcomes": [
+        "Estimate PMI by multiple methods",
+        "Distinguish cause, manner and mechanism of death"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Injuries and Trauma",
+     "topics": [
+      {
+       "title": "Wound analysis",
+       "summary": "Blunt, sharp and firearm injuries and ante-mortem vs post-mortem wounds.",
+       "notes": [
+        "Vital reaction (inflammation, bleeding) indicates ante-mortem injury.",
+        "Wound age is estimated from healing stages.",
+        "Pattern injuries can reflect the weapon."
+       ],
+       "outcomes": [
+        "Distinguish ante-mortem and post-mortem injuries",
+        "Relate injuries to weapons"
+       ],
+       "resources": []
+      }
+     ]
+    },
+    {
+     "title": "Forensic Anthropology",
+     "topics": [
+      {
+       "title": "The biological profile",
+       "summary": "Estimating sex, age, stature and ancestry from skeletal remains.",
+       "notes": [
+        "Sex: pelvis is most reliable (sub-pubic angle, greater sciatic notch), then skull.",
+        "Age: epiphyseal fusion, pubic symphysis, auricular surface, cranial sutures.",
+        "Stature from long bones with population-specific regression equations."
+       ],
+       "outcomes": [
+        "Build a biological profile from bones",
+        "Distinguish human and animal bone"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "skeleton",
+         "title": "Human skeleton"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Forensic Odontology",
+     "topics": [
+      {
+       "title": "Dental identification and bite marks",
+       "summary": "Dental charting, age estimation and bite mark analysis.",
+       "notes": [
+        "Comparison of ante-mortem and post-mortem dental records (Interpol DVI forms).",
+        "Dental age from eruption and development stages (e.g. Demirjian method).",
+        "Bite mark analysis has high error rates and is now treated with great caution."
+       ],
+       "outcomes": [
+        "Identify persons from dental records",
+        "Explain limits of bite mark evidence"
+       ],
+       "resources": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

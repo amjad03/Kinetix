@@ -99,3 +99,18 @@ When a course is checked, add `reviewed=yes` to its `#` line in the source and r
 
 - **Python Programming for Data Science, MCA Semester 2**
   - Some BU MCA schemes have Python Programming in Sem 1 and Machine Learning in Sem 2; confirm.
+
+## MCom (bu-mcom.txt, curriculum `bu-pg`, BU MCom CBCS (2024-25))
+
+- The course list follows the BU MCom CBCS scheme as commonly listed (core papers in Sem 1-2, core plus electives in Sem 3-4); confirm titles and semesters against the current BU MCom regulations.
+- Not written: soft-core/open electives and Sem 3-4 elective groups beyond Advanced Financial Management and Indirect Taxes; project work.
+
+- **Direct Taxes and Tax Planning, MCom Semester 3**
+  - Written for the Income-tax Act, 1961 (AY 2026-27); the Income-tax Act, 2025 applies from 1 April 2026. Update to the syllabus in force.
+- **Indirect Taxes: GST and Customs, MCom Semester 4**
+  - GST rates were rationalised from 22 September 2025; confirm rates and thresholds taught.
+
+## MSc Forensic Science (bu-msc.txt, curriculum `bu-pg`, BU MSc CBCS (2024-25))
+
+- SIMS's MSc is listed as MSc Forensic Science (secondary sources). Paper titles and semesters are the KINETIX team's reading of typical BU/Indian MSc Forensic Science schemes; confirm against the BU MSc Forensic Science regulations.
+- Not written: Sem 4 dissertation/internship, practicals as separate courses, and electives beyond those below.
