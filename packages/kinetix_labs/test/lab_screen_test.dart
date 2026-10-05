@@ -76,6 +76,17 @@ void main() {
     currentLabLang = LabLang.en;
   });
 
+  testWidgets('a LabSpeech above the lab reads its steps and guide aloud', (t) async {
+    await _size(t, const Size(1280, 800));
+    final said = <String>[];
+    await t.pumpWidget(_host(LabSpeech(speak: said.add, child: const LabScreen(labId: 'ohms-law'))));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('lab-tab-guide')));
+    await t.pump();
+    await t.tap(find.byTooltip('Read aloud').first);
+    expect(said.single, LabLibrary.instance.byId('ohms-law')!.aim.of(LabLang.en));
+  });
+
   testWidgets('put on board: the report picture reaches the board', (t) async {
     await _size(t, const Size(1280, 800));
     Uint8List? got;
