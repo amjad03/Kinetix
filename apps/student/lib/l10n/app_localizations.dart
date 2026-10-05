@@ -1779,6 +1779,12 @@ abstract class AppLocalizations {
   /// **'Syllabus'**
   String get syllabus;
 
+  /// No description provided for @labs.
+  ///
+  /// In en, this message translates to:
+  /// **'Labs'**
+  String get labs;
+
   /// No description provided for @earlierQuestions.
   ///
   /// In en, this message translates to:

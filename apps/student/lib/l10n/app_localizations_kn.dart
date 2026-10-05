@@ -1003,6 +1003,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get syllabus => 'ಪಠ್ಯಕ್ರಮ';
 
   @override
+  String get labs => 'ಪ್ರಯೋಗಾಲಯ';
+
+  @override
   String get earlierQuestions => 'ಹಿಂದೆ ಕೇಳಿದ ಪ್ರಶ್ನೆಗಳು';
 
   @override

@@ -996,6 +996,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syllabus => 'Syllabus';
 
   @override
+  String get labs => 'Labs';
+
+  @override
   String get earlierQuestions => 'Earlier questions';
 
   @override

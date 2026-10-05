@@ -1,5 +1,5 @@
 name: kinetix_labs
-description: KINETIX virtual labs — pure Flutter simulations (Ohm's law, ray optics, pendulum, break-even, graph plotter) with controls, live readouts and an aim card. Offline, no plugins.
+description: KINETIX virtual labs — offline benches on reusable engines (circuits, optics, mechanics, chemistry, biology, forensics) for LKG to PG, in English, Hindi and Kannada, with readings, fits, CSV and a board report.
 publish_to: none
 version: 0.1.0
 

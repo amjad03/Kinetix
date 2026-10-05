@@ -997,6 +997,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get syllabus => 'पाठ्यक्रम';
 
   @override
+  String get labs => 'प्रयोगशाला';
+
+  @override
   String get earlierQuestions => 'पहले पूछे गए सवाल';
 
   @override

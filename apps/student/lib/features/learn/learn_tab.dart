@@ -5,11 +5,13 @@ import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import 'ask_controller.dart';
 import 'ask_view.dart';
+import 'labs_view.dart';
 import '../privacy/privacy.dart';
 import 'syllabus_view.dart';
 import 'topic_screen.dart';
 
-/// Self-paced learning: ask KINETIX AI a doubt, or browse and search the syllabus library.
+/// Self-paced learning: ask KINETIX AI a doubt, browse and search the syllabus library, or do a
+/// virtual lab.
 class LearnTab extends StatefulWidget {
   const LearnTab({super.key, required this.state, required this.study});
 
@@ -21,7 +23,7 @@ class LearnTab extends StatefulWidget {
 }
 
 class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin {
-  late final tabs = TabController(length: 2, vsync: this);
+  late final tabs = TabController(length: 3, vsync: this);
   late final ask = AskController(
     api: widget.study.api,
     sectionId: widget.study.student.sectionId,
@@ -49,6 +51,9 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
   /// Switches to "Ask a doubt" (from Today's shortcut).
   void showAsk() => tabs.animateTo(0);
 
+  /// Switches to the virtual labs.
+  void showLabs() => tabs.animateTo(2);
+
   /// Opens a syllabus topic (from Today's "Coming up in class").
   void openTopic(String topicId) => TopicScreen.open(context, widget.study.api, topicId, controller: ask);
 
@@ -62,6 +67,7 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
           tabs: [
             Tab(key: const Key('tabAsk'), icon: const Icon(Icons.auto_awesome_outlined), text: context.l10n.askADoubt),
             Tab(key: const Key('tabSyllabus'), icon: const Icon(Icons.menu_book_outlined), text: context.l10n.syllabus),
+            Tab(key: const Key('tabLabs'), icon: const Icon(Icons.science_outlined), text: context.l10n.labs),
           ],
         ),
       ),
@@ -73,6 +79,7 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
             builder: (context, _) => AskView(controller: ask, subjects: widget.study.subjects),
           ),
           SyllabusView(study: widget.study, ask: ask),
+          LabsView(student: widget.study.student),
         ],
       ),
     );

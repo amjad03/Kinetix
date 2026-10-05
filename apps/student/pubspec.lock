@@ -524,6 +524,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  kinetix_labs:
+    dependency: "direct main"
+    description:
+      path: "../../packages/kinetix_labs"
+      relative: true
+    source: path
+    version: "0.1.0"
   kinetix_lesson:
     dependency: "direct main"
     description:
