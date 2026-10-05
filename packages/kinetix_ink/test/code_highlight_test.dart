@@ -47,6 +47,7 @@ void main() {
     expect(normalizeCodeLanguage('C++'), 'cpp');
     expect(normalizeCodeLanguage('Py'), 'python');
     expect(normalizeCodeLanguage('cobol'), isNull);
+    expect(tokenizeCode('select 1 # output', 'output'), isEmpty);
   });
 
   test('the highlighted text is the code, unchanged, and coloured', () {

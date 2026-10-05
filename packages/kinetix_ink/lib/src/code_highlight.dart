@@ -173,9 +173,12 @@ bool _isIdStart(int c) => (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 
 bool _isId(int c) => _isIdStart(c) || (c >= 48 && c <= 57);
 bool _isDigit(int c) => c >= 48 && c <= 57;
 
-/// The coloured tokens of [code] in [language] (guessed when null or unknown). Whitespace and
+/// The coloured tokens of [code] in [language] (guessed when null or unknown; none for
+/// `output` and `text`). Whitespace and
 /// punctuation are left out; the gaps are plain text.
 List<CodeToken> tokenizeCode(String code, String? language) {
+  // A program's output (and tables) is shown as it is.
+  if (language == 'output' || language == 'text') return const [];
   final lang = _langs[normalizeCodeLanguage(language) ?? guessCodeLanguage(code)]!;
   final out = <CodeToken>[];
   final n = code.length;
