@@ -26,8 +26,10 @@ import { DepartmentsModule } from './departments/departments.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
+import { PollsModule } from './polls/polls.module.js';
 import { ParentModule } from './parent/parent.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
+import { RemoteModule } from './remote/remote.module.js';
 import { SessionsModule } from './sessions/sessions.module.js';
 import { SyncModule } from './sync/sync.module.js';
 import { TeacherModule } from './teacher/teacher.module.js';
@@ -56,6 +58,8 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     SessionsModule,
     DevicesModule,
     PairingModule,
+    PollsModule,
+    RemoteModule,
     BroadcastsModule,
     SyncModule,
     NotificationsModule,

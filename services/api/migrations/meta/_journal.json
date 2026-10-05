@@ -253,6 +253,20 @@
       "when": 1791205038499,
       "tag": "0035_topic_lessons",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791210118805,
+      "tag": "0036_polls",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1791210129918,
+      "tag": "0037_polls_rls",
+      "breakpoints": true
     }
   ]
 }

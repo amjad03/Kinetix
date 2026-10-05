@@ -30,7 +30,112 @@ export const RealtimeEvents = {
   LiveAudio: 'live.audio',
   /** Server → users in the conversation: a new message ({@link MessageNewEvent}); refetch it. */
   MessageNew: 'message.new',
+  /** Server → students of the class: the teacher asked a question on the board ({@link PollView}). */
+  PollOpened: 'poll.opened',
+  /** Server → students of the class and the board: the question is closed ({@link PollClosedEvent}). */
+  PollClosed: 'poll.closed',
+  /** Server → board: someone answered; the new tally ({@link PollAnsweredEvent}). */
+  PollAnswered: 'poll.answered',
+  /** Teacher App → server: use the phone as a remote for this board ({@link RemoteAttachAck}). */
+  RemoteAttach: 'remote.attach',
+  /** Teacher App → server → board: one remote command ({@link RemoteCommand}). */
+  RemoteCommand: 'remote.command',
+  /** Board → server → the teacher of its class: what the board shows ({@link RemoteBoardState}). */
+  RemoteState: 'remote.state',
 } as const;
+
+// --- Class questions (polls) and answer cards ------------------------------------------------
+
+/** `mcq`: options A, B, C… (answer = option index); `numeric`: a number typed in the Student App. */
+export type PollKind = 'mcq' | 'numeric';
+/** Answered in the Student App, or with a printed answer card held up and read by the board's camera. */
+export type PollAnswerSource = 'app' | 'card';
+
+/** A question asked on the board, as students see it. */
+export interface PollView {
+  id: string;
+  kind: PollKind;
+  question: string;
+  options: string[];
+  openedAt: string;
+  closedAt: string | null;
+  subject: string | null;
+  teacher: string;
+  /** The student's own answer, when asked by a student. */
+  myAnswer?: string | null;
+}
+
+/** Per option (MCQ) or per distinct value (numeric): how many answered it. */
+export interface PollTally {
+  answers: Record<string, number>;
+  total: number;
+  /** Students of the class (to show "18 of 32 answered"). */
+  classSize: number;
+}
+
+export interface PollResults extends PollView {
+  /** MCQ: option index as text; numeric: the value. Null when there is no right answer. */
+  correct: string | null;
+  tally: PollTally;
+  responses: { studentId: string; rollNo: string; fullName: string; answer: string; source: PollAnswerSource; correct: boolean | null }[];
+}
+
+export interface PollAnsweredEvent {
+  pollId: string;
+  studentId: string;
+  answer: string;
+  source: PollAnswerSource;
+  tally: PollTally;
+}
+
+export interface PollClosedEvent {
+  pollId: string;
+}
+
+/** A class's printed answer cards: card n belongs to one student (bound by roll number). */
+export interface AnswerCardSheet {
+  section: { id: string; displayName: string };
+  cards: { cardNo: number; studentId: string; rollNo: string; fullName: string }[];
+}
+
+// --- Phone remote ----------------------------------------------------------------------------
+
+/**
+ * Teacher App → board, through the server, only from the teacher whose class is open on the
+ * board. `pointer` carries x and y as fractions of the board (0…1), or `hide: true`.
+ */
+export type RemoteCommand =
+  | { type: 'page.next' | 'page.previous' | 'page.add' }
+  | { type: 'slide.next' | 'slide.previous' }
+  | { type: 'timer.start'; seconds: number }
+  | { type: 'timer.stop' }
+  | { type: 'picker.pick' }
+  | { type: 'pointer'; x: number; y: number }
+  | { type: 'pointer.hide' }
+  | { type: 'recording.start' | 'recording.stop' }
+  | { type: 'photo.show'; photoId: string }
+  /** Sent by the server when a phone attaches: the board answers with {@link RemoteBoardState}. */
+  | { type: 'hello' };
+
+export type RemoteCommandType = RemoteCommand['type'];
+
+export interface RemoteAttachAck {
+  ok: boolean;
+  error?: string;
+  code?: string;
+  board?: { id: string; name: string };
+}
+
+/** Board → its teacher's phone: enough to draw the remote's buttons. */
+export interface RemoteBoardState {
+  deviceId?: string;
+  page: number;
+  pages: number;
+  recording: boolean;
+  timerRunning: boolean;
+  /** Slides or a PDF open in the toolkit: current slide and how many. */
+  slide?: { index: number; count: number } | null;
+}
 
 export interface MessageNewEvent {
   conversationId: string;
