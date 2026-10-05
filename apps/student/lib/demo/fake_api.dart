@@ -721,6 +721,25 @@ class FakeStudentApi implements StudentApi {
     return liveClass;
   }
 
+  /// The question open on the board, if any; answers land in [ClassQuestion.myAnswer].
+  ClassQuestion? question;
+
+  @override
+  Future<ClassQuestion?> classQuestion() async {
+    calls.add('poll');
+    return question;
+  }
+
+  @override
+  Future<String> answerQuestion(String id, String answer) async {
+    calls.add('answer $id $answer');
+    final q = question;
+    if (q == null || q.id != id) throw ApiException(400, 'This question is closed');
+    final stored = q.numeric ? '${num.parse(answer)}' : answer;
+    q.myAnswer = stored;
+    return stored;
+  }
+
   // ── Calendar ──────────────────────────────────────────────────────────────────────────────
 
   static Map<String, dynamic> eventJson(String id, String kind, String title, String startsOn, [String? endsOn, List<String>? programs]) => {

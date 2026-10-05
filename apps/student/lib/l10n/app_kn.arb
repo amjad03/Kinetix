@@ -498,5 +498,12 @@
   "conceptVideosHint": "ತರಗತಿಗೆ ಮೊದಲು ಮುನ್ನೋಟಕ್ಕಾಗಿ ಮತ್ತು ತರಗತಿಯ ನಂತರ ಪುನರಾವರ್ತನೆಗಾಗಿ ನೋಡಿ.",
   "conceptVideosFromYouTube": "ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ",
   "conceptVideosUnsupported": "ವೀಡಿಯೊಗಳು ಇಲ್ಲಿ ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ಬಳಸಿ.",
-  "conceptVideoPlay": "{title} ಪ್ಲೇ ಮಾಡಿ"
+  "conceptVideoPlay": "{title} ಪ್ಲೇ ಮಾಡಿ",
+  "liveQuestion": "ಲೈವ್ ಪ್ರಶ್ನೆ",
+  "liveQuestionTapToAnswer": "ಉತ್ತರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ",
+  "liveQuestionYourAnswer": "ನಿಮ್ಮ ಉತ್ತರ: {answer} (ಬದಲಿಸಬಹುದು)",
+  "liveQuestionYourNumber": "ನಿಮ್ಮ ಉತ್ತರ",
+  "liveQuestionSend": "ಉತ್ತರ ಕಳುಹಿಸಿ",
+  "liveQuestionNotNumber": "2.5 ರಂತೆ ಒಂದು ಸಂಖ್ಯೆ ಬರೆಯಿರಿ",
+  "liveQuestionClosed": "ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಈ ಪ್ರಶ್ನೆಯನ್ನು ಮುಗಿಸಿದ್ದಾರೆ."
 }

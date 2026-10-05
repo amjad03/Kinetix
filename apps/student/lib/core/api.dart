@@ -141,6 +141,12 @@ abstract class StudentApi {
   /// The class being taught live right now, or null.
   Future<LiveClass?> live();
 
+  /// The question open in the student's class on the board now, or null.
+  Future<ClassQuestion?> classQuestion();
+
+  /// Answers it (MCQ: the option's index; numeric: the number). Returns the answer as stored.
+  Future<String> answerQuestion(String id, String answer);
+
   /// The academic calendar for the student's class between [from] and [to] (default: today
   /// and the next 90 days).
   Future<CalendarRange> calendar({DateTime? from, DateTime? to});
@@ -391,6 +397,16 @@ class HttpStudentApi implements StudentApi {
     final live = j['live'];
     return live == null ? null : LiveClass.fromJson((live as Map).cast<String, dynamic>());
   }
+
+  @override
+  Future<ClassQuestion?> classQuestion() async {
+    final q = (await _send('GET', '/v1/student/poll') as Map<String, dynamic>)['poll'];
+    return q == null ? null : ClassQuestion.fromJson((q as Map).cast<String, dynamic>());
+  }
+
+  @override
+  Future<String> answerQuestion(String id, String answer) async =>
+      (await _send('POST', '/v1/polls/$id/answer', body: {'answer': answer}) as Map<String, dynamic>)['answer'] as String;
 
   @override
   Future<CalendarRange> calendar({DateTime? from, DateTime? to}) async {

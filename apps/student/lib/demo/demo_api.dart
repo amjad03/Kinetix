@@ -46,6 +46,15 @@ class DemoStudentApi extends FakeStudentApi {
   );
 
   void _seed() {
+    // A question open on the board in the demo class (the teacher's "Ask the class").
+    question = ClassQuestion(
+      id: 'demo-poll',
+      numeric: false,
+      question: 'Which shares can a company redeem?',
+      options: const ['A', 'B', 'C', 'D'],
+      teacher: 'Anita Sharma',
+      subject: 'Corporate Accounting',
+    );
     profile = Me(
       id: 'u1',
       fullName: 'Aarav Patel',

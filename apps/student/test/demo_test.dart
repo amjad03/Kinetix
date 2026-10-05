@@ -40,6 +40,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(state.me!.fullName, 'Aarav Patel');
     expect(find.byKey(const Key('demoChip')), findsOneWidget);
+    // The demo class has a question open on the board (the teacher's "Ask the class").
+    expect(find.text('Which shares can a company redeem?'), findsOneWidget);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -250));
+    await tester.pumpAndSettle();
     expect(find.text('Exercise 4.2: Issue of shares'), findsWidgets);
 
     for (final tab in ['Learn', 'Updates', 'Profile']) {

@@ -450,10 +450,14 @@ void main() {
       expect(api.calls.where((c) => c == 'conversations').length, before + 2);
     });
 
-    testWidgets('at a school (no messages) no realtime connection is opened', (tester) async {
+    testWidgets('at a school (no messages) the connection is for questions asked on the board only', (tester) async {
       final server = FakeLiveServer();
-      await pumpApp(tester, live: server, setup: (api) => api.contactGroups = []);
-      expect(server.connections, isEmpty);
+      final (api, _) = await pumpApp(tester, live: server, setup: (api) => api.contactGroups = []);
+      expect(server.connections, hasLength(1));
+      api.calls.clear();
+      server.last.send(const LiveMessageNew(conversationId: 'c1', messageId: 'm1', senderId: 'u2'));
+      await tester.pumpAndSettle();
+      expect(api.calls.where((c) => c.contains('conversation') || c.contains('message')), isEmpty);
     });
   });
 

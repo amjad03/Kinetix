@@ -12,6 +12,7 @@ import '../calendar/calendar_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
 import '../live/live_class_screen.dart';
+import '../live/live_question.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
@@ -49,6 +50,7 @@ class TodayTab extends StatelessWidget {
         final summary = study.summary;
         final live = study.live;
         final cards = <Widget>[
+          if (study.question case final question?) LiveQuestionBanner(study: study, question: question),
           if (live != null) LiveNowBanner(live: live, onWatch: () => LiveClassScreen.open(context, study, live)),
           if (study.holidaySoon case (final holiday, final isToday))
             HolidayBanner(holiday: holiday, isToday: isToday, onOpen: () => _openCalendar(context)),
