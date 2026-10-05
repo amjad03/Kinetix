@@ -46,6 +46,8 @@ import '../sims/sims.dart';
 import '../toolkit/toolkit_controller.dart';
 import '../toolkit/remote_toolkit.dart';
 import '../toolkit/toolkit_layer.dart';
+import '../search/board_search.dart';
+import '../search/search_strings.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
@@ -975,6 +977,36 @@ class _BoardScreenState extends State<BoardScreen> {
     ToolEntry(Icons.lock_outline, l.toolTouchLock, const Color(0xFFDADCE0), () => showComingSoon(context, l.toolTouchLock), soon: true),
   ];
 
+  /// Search everything (lib/features/search): the top bar, the phone's More sheet, Ctrl+K.
+  void _openSearch() {
+    setState(() => _popover = null);
+    unawaited(
+      openBoardSearch(
+        context,
+        board: board,
+        wb: _wb,
+        tools: (l) => [
+          ToolEntry(Icons.edit_outlined, l.pen, _style.accent, () => _selectTool(BoardTool.pen, null)),
+          ToolEntry(Icons.border_color_outlined, l.highlighter, _style.accent, () => _selectTool(BoardTool.highlighter, null)),
+          ToolEntry(Icons.auto_fix_normal, l.toolErase, _style.accent, () => _selectTool(BoardTool.eraser, null)),
+          ToolEntry(Icons.title, l.toolText, _style.accent, () => _selectTool(BoardTool.text, null)),
+          ToolEntry(Icons.interests_outlined, l.toolShapes, _style.accent, () => setState(() => _popover = _Popover.shapes)),
+          ToolEntry(Icons.texture, l.toolTheme, _style.accent, () => setState(() => _popover = _Popover.theme)),
+          ToolEntry(Icons.photo_library_outlined, l.libTitle, _style.accent, () => unawaited(insertLibraryPicture(context, _wb, subject: board.session?.subjectName))),
+          ..._tools(l),
+        ],
+        kitTabs: kitTabsFor(_style, primary: _primary),
+        subject: _style.subject,
+        accent: _style.accent,
+        onKit: _openKit,
+        onSplit: _openSplit,
+        onSim: (k) => unawaited(_openSim(k)),
+        onTopic: _openTopic,
+        onBooks: () => setState(() => _panel = PanelKind.books),
+      ),
+    );
+  }
+
   // --- Keyboard ------------------------------------------------------------------------------
 
   /// Keyboard shortcuts, as on the KINETIX prototype: tool letters, Ctrl+Z/Y/C/X/V/D/A/G,
@@ -1002,6 +1034,7 @@ class _BoardScreenState extends State<BoardScreen> {
       LogicalKeyboardKey.keyA when ctrl => done(_wb.selectAll),
       LogicalKeyboardKey.keyG when ctrl => done(shift ? _wb.ungroupSelection : _wb.groupSelection),
       LogicalKeyboardKey.keyS when ctrl => done(() => unawaited(_save())),
+      LogicalKeyboardKey.keyK when ctrl => done(_openSearch),
       LogicalKeyboardKey.slash when shift => done(_openHelp),
       LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace => done(_wb.deleteSelection),
       LogicalKeyboardKey.escape => done(() {
@@ -1229,6 +1262,7 @@ class _BoardScreenState extends State<BoardScreen> {
               onSignIn: _signIn,
               onEndClass: _endClass,
               onAttendance: _attendance,
+              onSearch: _openSearch,
               recording: _capture == null
                   ? null
                   : RecordingIndicator(capture: _capture!, onPause: _capture!.pause, onResume: _capture!.resume, onStop: _stopRecording),
@@ -1431,7 +1465,7 @@ class _BoardScreenState extends State<BoardScreen> {
       _Popover.aiPen => AiPenPopover(board: board, pen: _pen),
       _Popover.erase => ErasePopover(wb: _wb, onCleared: () => setState(() => _popover = null)),
       _Popover.theme => ThemePopover(background: _background, onChanged: _setBackground),
-      _Popover.shapes => ShapesPopover(wb: _wb, primary: _primary, onPicked: () {}),
+      _Popover.shapes => ShapesPopover(wb: _wb, primary: _primary, onPicked: () {}, onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
       _Popover.tools => ToolsPopover(tools: _tools(l)),
       _Popover.insert => InsertPopover(
         wb: _wb,
@@ -1561,6 +1595,7 @@ class _BoardScreenState extends State<BoardScreen> {
               ),
           ]),
           (l.helpGroupClass, [
+            MoreItem(const Key('more-search'), Icons.search, SearchStrings.of(context).search, _openSearch),
             MoreItem(const Key('tool-tools'), Icons.work_outline, l.toolTools, () => _toggle(_Popover.tools)),
             MoreItem(
               const Key('record'),
@@ -1839,10 +1874,14 @@ class _TopBar extends StatefulWidget {
     required this.onSignIn,
     required this.onEndClass,
     required this.onAttendance,
+    this.onSearch,
     this.recording,
     this.compact = false,
     this.safe = EdgeInsets.zero,
   });
+
+  /// Opens the board's search.
+  final VoidCallback? onSearch;
 
   final BoardController board;
 
@@ -2010,6 +2049,20 @@ class _TopBarState extends State<_TopBar> {
           if (widget.recording != null) ...[
             // On a phone the indicator gives way to the chips rather than overflow.
             if (compact) Flexible(child: FittedBox(child: widget.recording)) else widget.recording!,
+            SizedBox(width: gap),
+          ],
+          // On a phone the class's chips need the room: search is first in the More sheet.
+          if (widget.onSearch != null && !compact) ...[
+            ChromeSurface(
+              radius: Kx.rSm,
+              padding: EdgeInsets.zero,
+              child: IconButton(
+                key: const Key('open-search'),
+                tooltip: SearchStrings.of(context).searchTooltip,
+                onPressed: widget.onSearch,
+                icon: const Icon(Icons.search),
+              ),
+            ),
             SizedBox(width: gap),
           ],
           // Holding the clock for 3 seconds is IT's way out of kiosk mode (docs/hardware/kiosk-mode.md).

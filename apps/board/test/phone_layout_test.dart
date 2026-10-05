@@ -11,7 +11,10 @@ import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
 import 'package:kinetix_board/demo/demo.dart';
 import 'package:kinetix_board/demo/demo_server.dart';
+import 'package:kinetix_board/features/board/chrome.dart' show ChromeTile;
 import 'package:kinetix_board/features/board/side_panel.dart';
+import 'package:kinetix_board/features/search/search_strings.dart';
+import 'package:kinetix_board/features/search/solids3d.dart';
 import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
 import 'package:kinetix_board/features/enrollment/enroll_screen.dart';
 import 'package:kinetix_board/features/sims/sims.dart';
@@ -404,6 +407,8 @@ void main() {
           p.step = '3D viewer';
           final models = find.descendant(of: find.byKey(const Key('catalogue-model3d')), matching: find.byType(Scrollable)).first;
           await tester.scrollUntilVisible(find.byKey(const Key('pick-heart')), 300, scrollable: models);
+          await tester.ensureVisible(find.byKey(const Key('pick-heart')));
+          await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('pick-heart')));
           await tester.pump(const Duration(milliseconds: 400));
           await tester.pump(const Duration(milliseconds: 400));
@@ -421,11 +426,100 @@ void main() {
           await tap(tester, find.byKey(const Key('split-lab')));
           final labs = find.descendant(of: find.byKey(const Key('catalogue-lab')), matching: find.byType(Scrollable)).first;
           await tester.scrollUntilVisible(find.byKey(const Key('pick-glass-slab')), 200, scrollable: labs);
+          await tester.ensureVisible(find.byKey(const Key('pick-glass-slab')));
+          await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('pick-glass-slab')));
           await tester.pump(const Duration(milliseconds: 400));
           await tester.pump(const Duration(milliseconds: 400));
           await tester.tap(find.byKey(const Key('panel-close')));
           await tester.pump(const Duration(milliseconds: 400));
+        });
+        board.dispose();
+      });
+
+      testWidgets('$name: search, the browsers\' dropdowns and the 3D solids fit', (tester) async {
+        screenSize(tester, size);
+        final l = lookupAppLocalizations(Locale(lang));
+        final s = SearchStrings(lang);
+        final board = await enrolledBoard();
+        board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
+        board.onPaired('session-token', sessionIn(lang));
+        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpAndSettle();
+        await collecting(tester, name, (p) async {
+          await tap(tester, find.text(l.notNow)); // the offer of a PIN
+          p.step = 'search';
+          expect(find.byKey(const Key('open-search')), findsNothing, reason: 'on a phone it is in the More sheet');
+          await tapKey(tester, 'more-search');
+          expect(find.byKey(const Key('universal-search')), findsOneWidget);
+          await tester.enterText(find.byKey(const Key('universal-search-field')), s.solidName('cylinder'));
+          await tester.pumpAndSettle();
+          p.step = 'search results';
+          expect(find.byKey(const Key('group-model3d')), findsOneWidget);
+          await tap(tester, find.byKey(const Key('result-model3d-solid.cylinder')));
+          expect(tester.getSize(find.byType(SidePanelFrame)), size, reason: 'the model opens full screen');
+          expect(find.byType(SolidExplorer), findsOneWidget);
+          await tap(tester, find.byKey(const Key('panel-close')));
+          p.step = 'search again';
+          await tapKey(tester, 'more-search');
+          expect(find.byKey(Key('recent-${s.solidName('cylinder')}')), findsOneWidget);
+          await tester.enterText(find.byKey(const Key('universal-search-field')), s.settings);
+          await tester.pumpAndSettle();
+          await tap(tester, find.byKey(const Key('universal-search-close')));
+
+          p.step = '3D solids';
+          await tapKey(tester, 'tool-shapes');
+          await tap(tester, find.text('3D'));
+          for (final k in boardSolids) {
+            expect(find.byKey(Key('solid-${k.name}')), findsOneWidget);
+          }
+          await tap(tester, find.byKey(const Key('solid-cone')));
+          p.step = '3D solid dialog';
+          expect(find.byKey(const Key('solid-dialog')), findsOneWidget);
+          onScreen(tester, find.byKey(const Key('solid-put')), size);
+          await tap(tester, find.byKey(const Key('solid-close')));
+          await closePopover(tester);
+
+          p.step = 'tools search';
+          await tapKey(tester, 'tool-tools');
+          await tester.enterText(find.descendant(of: find.byKey(const Key('tools-search')), matching: find.byType(TextField)), l.toolTimer);
+          await tester.pumpAndSettle();
+          expect(find.text(l.toolScreenShade), findsNothing);
+          await tap(tester, find.widgetWithText(ChromeTile, l.toolTimer));
+          await tap(tester, find.byKey(const Key('toolkit-close-timer')));
+
+          p.step = 'lab dropdowns';
+          await tapKey(tester, 'tool-tools');
+          await tap(tester, find.text(l.toolSplitScreen));
+          // It opens on the solid search opened: back to its choices.
+          for (var i = 0; i < 2 && find.byKey(const Key('split-lab')).evaluate().isEmpty; i++) {
+            await tap(tester, find.byTooltip(l.chooseSomethingElse).first);
+          }
+          await tap(tester, find.byKey(const Key('split-lab')));
+          for (final (menu, value) in [('subject', 'physics'), ('category', 'optics'), ('level', '10')]) {
+            p.step = 'lab $menu';
+            await tap(tester, find.byKey(Key('filter-$menu')));
+            await tap(tester, find.byKey(Key('filter-$menu-$value')).last);
+          }
+          await tap(tester, find.byKey(const Key('pick-glass-slab')));
+          await tester.pump(const Duration(milliseconds: 400));
+          await tester.tap(find.byKey(const Key('panel-close')));
+          await tester.pump(const Duration(milliseconds: 400));
+
+          p.step = 'books search';
+          await tapKey(tester, 'panel-books');
+          await tester.enterText(find.descendant(of: find.byKey(const Key('books-search')), matching: find.byType(TextField)), 'goodwil');
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('topic-t1')), findsOneWidget, reason: 'found topics show without opening the chapter');
+          await tap(tester, find.byKey(const Key('panel-close')));
+
+          p.step = 'settings search';
+          await tapKey(tester, 'profile-button');
+          await tap(tester, find.byKey(const Key('menu-settings')));
+          await tester.enterText(find.descendant(of: find.byKey(const Key('settings-search')), matching: find.byType(TextField)), l.kioskTitle);
+          await tester.pumpAndSettle();
+          expect(find.byKey(const Key('board-language')), findsNothing);
+          await closeDialog(tester);
         });
         board.dispose();
       });
