@@ -1,0 +1,37 @@
+name: kinetix_cs
+description: KINETIX Computer Science — the code runner (Python and JavaScript in a WebView, SQL on SQLite, all offline; C, C++ and Java on the institution's runner in India), a code editor with colouring, and step-by-step algorithm, data-structure, networking, OS and DBMS simulations, in English, Hindi and Kannada. Shared by the Board and the Student App.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  kinetix_ink:
+    path: ../kinetix_ink
+  # Logic gates come from the virtual labs' circuit engine.
+  kinetix_labs:
+    path: ../kinetix_labs
+  kinetix_ui:
+    path: ../kinetix_ui
+  # SQL runs on SQLite on the device (the library is bundled by the package's build hook).
+  sqlite3: ^3.7.0
+  # Python (Pyodide) and JavaScript run in the system WebView on Android and WebView2 on
+  # Windows, fed by a server on 127.0.0.1 (as the 3D viewer is).
+  webview_flutter: ^4.14.1
+  webview_windows: ^0.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  # The runner page; Pyodide's core goes in assets/runner/pyodide/ (tool/fetch_pyodide.sh).
+  assets:
+    - assets/runner/
+    - assets/runner/pyodide/

@@ -9,6 +9,8 @@ export 'src/content/library.dart';
 export 'src/core/bench.dart';
 export 'src/core/i18n.dart';
 export 'src/core/lab.dart';
+// The gate truth functions, for logic tables elsewhere (the CS kit).
+export 'src/engines/circuit.dart' show Gate, GateKind;
 export 'src/lab_scaffold.dart';
 export 'src/labs/break_even_lab.dart';
 export 'src/labs/graph_plotter_lab.dart';
