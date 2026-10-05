@@ -1,0 +1,405 @@
+// BCom (Regular), Bangalore University. Semesters 4-6.
+file: bu-bcom
+curriculum: bu-ug | Bangalore University (UG) | ug
+programme: BCom
+scheme: SEP 2024 | 2025-26
+! Semesters 5 and 6 follow the earlier BU BCom schemes (Income Tax I and II, Management Accounting, Auditing, GST); the SEP Sem 5-6 papers (from 2026-27) should be checked when published.
+! Electives not written (Sem 5-6 specialisation streams): Accounting and Taxation, Finance, Marketing, HR, Banking and Insurance, Business Analytics.
+! Income tax is written for the Income-tax Act, 1961, AY 2026-27 (FY 2025-26). The Income-tax Act, 2025 replaces it from 1 April 2026 (tax year 2026-27) with new section numbers; update when the syllabus adopts the new Act.
+
+# bcom-4-advanced-corporate-accounting | 4 | Advanced Corporate Accounting
+## Amalgamation of Companies
+### Amalgamation and purchase consideration
+= Amalgamation in the nature of merger and of purchase (AS 14), and computing purchase consideration.
+- AS 14: amalgamation in the nature of merger uses the pooling of interests method; in the nature of purchase uses the purchase method.
+- Purchase consideration by the net assets method = Assets taken over at agreed values − Liabilities taken over.
+- Net payment method: sum of payments in shares, securities and cash to the transferor's shareholders.
+- The transferor closes its books through a realisation account; the transferee records assets, liabilities and goodwill or capital reserve.
+> Compute purchase consideration by the net assets and net payment methods
+> Pass entries in the books of transferor and transferee
+## Internal Reconstruction
+### Capital reduction
+= Reducing share capital, writing off losses and the capital reduction account.
+- Internal reconstruction reorganises a company's capital without forming a new company (section 66 needs Tribunal confirmation).
+- Capital is reduced by lowering the paid-up value or cancelling lost capital; the amount goes to the capital reduction account.
+- The capital reduction account is used to write off accumulated losses, fictitious assets and overvalued assets; any balance goes to capital reserve.
+> Pass journal entries for capital reduction
+> Prepare the balance sheet after reconstruction
+## Liquidation of Companies
+### Liquidator's final statement of account
+= Order of payment in liquidation and the liquidator's remuneration.
+- Order of payment: secured creditors (to the extent of security), liquidation costs and liquidator's remuneration, preferential creditors, unsecured creditors, preference shareholders, equity shareholders.
+- Workmen's dues rank pari passu with secured creditors (section 326 overriding preferential payments).
+- Liquidator's remuneration is usually a percentage of assets realised and of amounts paid to unsecured creditors.
+> Prepare a liquidator's final statement of account
+> Compute the liquidator's remuneration
+## Holding Company Accounts
+### Consolidated balance sheet
+= Minority interest, cost of control and pre- and post-acquisition profits.
+- A holding company controls a subsidiary (more than half the voting power or control of the board).
+- Minority (non-controlling) interest = Minority's share of share capital and reserves (both pre- and post-acquisition).
+- Pre-acquisition profits are capital profits and go to the cost of control; post-acquisition profits are revenue profits.
+- Cost of control (goodwill) = Cost of investment − (Holding's share of capital + pre-acquisition profits); a negative figure is capital reserve.
+> Compute minority interest and cost of control
+> Prepare a consolidated balance sheet
+! Confirm whether Ind AS 103 / Ind AS 110 have replaced AS 14 and AS 21 in the SEP syllabus.
+
+# bcom-4-business-statistics | 4 | Business Statistics
+! Under SEP this may be Business Statistics and Analytics or Business Mathematics and Statistics; confirm title and semester.
+## Correlation
+### Correlation analysis
+= Scatter diagrams, Karl Pearson's coefficient and Spearman's rank correlation.
+- Karl Pearson: r = Σdxdy ÷ √(Σdx² × Σdy²), with dx and dy deviations from the means; −1 ≤ r ≤ 1.
+- Spearman's rank correlation: R = 1 − 6Σd² ÷ (n(n² − 1)).
+- Probable error PE = 0.6745 × (1 − r²) ÷ √n; if |r| > 6 PE, correlation is significant.
+- Correlation does not imply causation.
+> Compute Pearson's and Spearman's coefficients
+> Interpret the sign and size of r
+hook: Ice-cream sales and drowning deaths rise together. Does ice cream cause drowning?
+ex: Ranks of 5 students by two judges give Σd² = 6. R = 1 − 6 × 6 ÷ (5 × 24) = 1 − 0.3 = 0.7.
+q: What does r = −0.9 indicate? || A strong negative linear relationship.
+terms: correlation; rank correlation; probable error
+## Regression
+### Regression lines
+= Regression equations of y on x and x on y.
+- y on x: y − ȳ = byx(x − x̄), byx = r σy ÷ σx; x on y: x − x̄ = bxy(y − ȳ), bxy = r σx ÷ σy.
+- r = ±√(byx × bxy), with the sign of the regression coefficients.
+- The two regression lines intersect at (x̄, ȳ).
+> Fit regression equations and estimate values
+> Find r from regression coefficients
+## Index Numbers
+### Construction of index numbers
+= Simple and weighted index numbers and their tests.
+- Laspeyres: P₀₁ = Σp₁q₀ ÷ Σp₀q₀ × 100; Paasche: Σp₁q₁ ÷ Σp₀q₁ × 100.
+- Fisher's ideal index = √(Laspeyres × Paasche); it satisfies the time reversal and factor reversal tests.
+- Cost of living index = Σ(I × W) ÷ ΣW (family budget method); real wage = Money wage ÷ CPI × 100.
+> Construct Laspeyres, Paasche and Fisher indices
+> Compute real wages with a cost of living index
+## Time Series
+### Trend analysis
+= Components of a time series and measuring trend.
+- Components: secular trend, seasonal, cyclical and irregular variations.
+- Moving averages smooth fluctuations; use a period equal to the cycle length.
+- Least squares straight-line trend: y = a + bx, with a = Σy ÷ n and b = Σxy ÷ Σx² when x is measured from the middle year.
+> Fit a straight-line trend by least squares
+> Compute moving averages
+## Probability
+### Probability theory
+= Classical probability, addition and multiplication theorems.
+- Classical probability P(A) = favourable outcomes ÷ total equally likely outcomes.
+- Addition theorem: P(A ∪ B) = P(A) + P(B) − P(A ∩ B).
+- Multiplication theorem: P(A ∩ B) = P(A) × P(B | A); for independent events P(A) × P(B).
+> Solve probability problems with the addition and multiplication theorems
+> Distinguish mutually exclusive and independent events
+@lab probability
+
+# bcom-4-costing-methods | 4 | Costing Methods and Techniques
+## Job, Batch and Contract Costing
+### Contract costing
+= Contract accounts, work certified and profit on incomplete contracts.
+- Contract costing applies to large jobs such as construction; each contract is a cost unit.
+- Notional profit = Value of work certified + Cost of work uncertified − Cost of work to date.
+- Profit to be credited on incomplete contracts: if 1/4 to 1/2 complete, 1/3 × notional profit × cash received ÷ work certified; if 1/2 or more, 2/3 × notional profit × cash received ÷ work certified.
+- Escalation clauses protect the contractor against price rises.
+> Prepare a contract account
+> Compute profit on incomplete contracts
+## Process Costing
+### Process accounts and losses
+= Normal and abnormal loss and gain in process accounts.
+- Normal loss is unavoidable; its scrap value is credited to the process and its cost absorbed by good units.
+- Cost per unit = (Total cost − Scrap value of normal loss) ÷ (Input − Normal loss).
+- Abnormal loss is valued at the normal cost per unit and transferred out; abnormal gain likewise is debited to the process.
+- Equivalent production converts work in progress into completed units.
+> Prepare process accounts with normal and abnormal loss
+> Compute equivalent production
+ex: Input 1,000 units at ₹20,000; normal loss 10% (scrap ₹5 each); output 880 units.
+ex: Cost per unit = (20,000 − 500) ÷ 900 = ₹21.67. Abnormal loss 20 units = ₹433.
+## Operating Costing
+### Service costing
+= Cost units of services and transport costing.
+- Operating costing finds the cost of services: transport, hotels, hospitals, power.
+- Composite units: passenger-km (transport), tonne-km (goods), room-days (hotels), bed-days (hospitals).
+- Costs are classed as standing (fixed), running (variable) and maintenance charges.
+> Compute cost per passenger-km or tonne-km
+> Prepare an operating cost sheet
+## Reconciliation of Cost and Financial Accounts
+### Reconciliation statement
+= Why cost and financial profits differ and how to reconcile them.
+- Differences arise from items in financial accounts only (interest received, dividends, losses on sale of assets), items in cost accounts only (notional rent, notional interest), and different overhead absorption and stock valuation.
+- Start from cost profit and add or deduct each difference to reach financial profit (or the reverse).
+- Over-absorbed overheads are added to cost profit; under-absorbed overheads are deducted.
+> Prepare a reconciliation statement
+> Explain the causes of difference
+
+# bcom-4-principles-of-marketing | 4 | Principles of Marketing
+! Under the BU NEP scheme this was a Sem 1 paper; confirm its SEP semester.
+## Introduction to Marketing
+### Marketing concepts
+= Meaning of marketing and the evolution of marketing philosophies.
+- Marketing creates, communicates and delivers value to customers and manages customer relationships.
+- Concepts: production, product, selling, marketing and societal marketing concept.
+- Needs, wants and demands: a want backed by purchasing power is demand.
+> Distinguish the marketing philosophies
+> Explain needs, wants and demand
+## Marketing Environment and Consumer Behaviour
+### Environment and buyer behaviour
+= Micro and macro environment and the consumer buying process.
+- Micro environment: company, suppliers, intermediaries, customers, competitors, publics.
+- Macro environment (PESTLE): political, economic, social, technological, legal, environmental.
+- Buying process: need recognition, information search, evaluation of alternatives, purchase decision, post-purchase behaviour.
+> Analyse a firm's marketing environment
+> Describe the consumer buying process
+## Segmentation, Targeting and Positioning
+### STP
+= Bases of segmentation, target market strategies and positioning.
+- Segmentation bases: geographic, demographic, psychographic, behavioural.
+- Targeting strategies: undifferentiated, differentiated, concentrated, micro marketing.
+- Positioning places a product clearly in customers' minds relative to competitors.
+> Segment a market for a product
+> Write a positioning statement
+## Marketing Mix
+### Product and price
+= Product levels, the product life cycle and pricing methods.
+- Product life cycle: introduction, growth, maturity, decline.
+- Branding, packaging and labelling add value and identity.
+- Pricing methods: cost-plus, competition-based, value-based; new product strategies: skimming and penetration.
+> Relate marketing strategy to the PLC stage
+> Choose a pricing strategy
+### Place and promotion
+= Distribution channels and the promotion mix.
+- Channel levels: zero (direct), one (retailer), two (wholesaler and retailer), three (agent, wholesaler, retailer).
+- Promotion mix: advertising, personal selling, sales promotion, public relations, direct and digital marketing.
+- AIDA model: attention, interest, desire, action.
+> Design a distribution channel
+> Plan a promotion mix
+## Recent Trends
+### Digital and services marketing
+= Digital marketing channels and the extended marketing mix for services.
+- Digital channels: search (SEO, SEM), social media, e-mail, content and influencer marketing.
+- Services are intangible, inseparable, variable and perishable.
+- Services marketing mix adds people, process and physical evidence (7 Ps).
+> Explain the 7 Ps of services marketing
+> Compare digital marketing channels
+
+# bcom-5-income-tax-1 | 5 | Income Tax Law and Practice I | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Basic Concepts and Residential Status
+### Basic concepts
+= Previous year, assessment year, person, assessee, income and the charge of tax.
+- Income of the previous year (financial year) is taxed in the following assessment year (section 4).
+- Person (section 2(31)) includes an individual, HUF, company, firm, AOP/BOI, local authority and artificial juridical person.
+- Heads of income (section 14): salaries, house property, profits and gains of business or profession, capital gains, other sources.
+- Agricultural income (section 10(1)) is exempt but is used for rate purposes under partial integration.
+> Explain the basic concepts of income tax
+> Name the five heads of income
+### Residential status and incidence of tax
+= Resident, RNOR and non-resident individuals and the scope of total income.
+- An individual is resident if in India 182 days or more in the previous year, or 60 days or more in the year and 365 days or more in the four preceding years (section 6).
+- The 60-day condition becomes 182 days for Indian citizens leaving for employment and for visiting Indian citizens or PIOs (120 days for those with Indian income above ₹15 lakh).
+- RNOR: non-resident in 9 of the 10 preceding years, or in India 729 days or less in the 7 preceding years.
+- A resident is taxed on world income; an RNOR and a non-resident only on income received or accruing in India (RNOR also on income from a business controlled in India).
+> Determine an individual's residential status
+> Compute income taxable by residential status
+hook: An Infosys engineer spends 200 days in the US this year. Does India tax her US salary?
+ex: In India 100 days this year and 400 days in the four preceding years: 60 + 365 days rule satisfied, so resident (unless an exception applies).
+q: In India 150 days this year and 300 days in the 4 preceding years. Resident? || No: neither 182 days nor (60 days and 365 days) is met; non-resident.
+terms: previous year; assessment year; resident; RNOR
+## Income from Salaries
+### Salary, allowances and perquisites
+= Basis of charge, allowances, perquisites and deductions from salary.
+- Salary is taxed on due or receipt basis, whichever is earlier (section 15).
+- HRA exemption (section 10(13A)) is the least of: HRA received; rent paid − 10% of salary; 50% of salary (Mumbai, Kolkata, Delhi, Chennai) or 40% elsewhere; salary = basic + DA (forming part) + commission on turnover.
+- Standard deduction (section 16(ia)): ₹75,000 under the new regime (section 115BAC), ₹50,000 under the old regime.
+- Professional tax (section 16(iii)) is deductible under the old regime only.
+> Compute income from salaries
+> Compute HRA exemption
+ex: Basic ₹4,00,000; HRA ₹1,50,000; rent paid ₹1,80,000 in Bengaluru (non-metro for HRA).
+ex: Least of 1,50,000; 1,80,000 − 40,000 = 1,40,000; 40% × 4,00,000 = 1,60,000. Exempt ₹1,40,000; taxable HRA ₹10,000.
+q: Under which regime is HRA exemption available? || Only under the old regime; the new regime (section 115BAC) disallows it.
+## Income from House Property
+### Annual value and deductions
+= Gross and net annual value, standard deduction and interest on loan.
+- Gross annual value is the higher of expected rent (municipal value or fair rent, limited to standard rent) and actual rent; unrealised rent and vacancy allowances apply.
+- Net annual value = GAV − Municipal taxes paid by the owner.
+- Standard deduction under section 24(a) is 30% of NAV; interest on borrowed capital is deductible under section 24(b).
+- For self-occupied property, annual value is nil; interest up to ₹2,00,000 is deductible under the old regime only.
+> Compute income from house property for let-out and self-occupied houses
+> Apply the limits on interest deduction
+## Tax Computation Basics
+### Rates of tax and rebate
+= Slab rates under the old and new regimes, rebate under section 87A and cess.
+- New regime (section 115BAC, default) for AY 2026-27: nil up to ₹4 lakh; 5% to ₹8 lakh; 10% to ₹12 lakh; 15% to ₹16 lakh; 20% to ₹20 lakh; 25% to ₹24 lakh; 30% above.
+- Section 87A rebate under the new regime: full tax on total income up to ₹12 lakh (rebate up to ₹60,000); under the old regime up to ₹12,500 for income up to ₹5 lakh.
+- Old regime: nil to ₹2.5 lakh, 5% to ₹5 lakh, 20% to ₹10 lakh, 30% above (higher exemption limits for senior citizens).
+- Health and education cess is 4% of tax plus surcharge.
+> Compute tax under both regimes
+> Decide which regime suits a taxpayer
+! Check slab rates and rebate against the Finance Act in force for the assessment year taught.
+
+# bcom-5-management-accounting | 5 | Management Accounting | scheme=NEP 2021 (BU scheme to confirm); year=2026-27
+## Introduction
+### Nature and scope of management accounting
+= Meaning, tools and limitations of management accounting.
+- Management accounting provides information for planning, control and decision making.
+- Tools: financial statement analysis, ratio analysis, cash flow analysis, budgeting, standard costing, marginal costing.
+- Financial accounting serves outsiders and is governed by law; management accounting serves managers and is not.
+> Distinguish financial, cost and management accounting
+> List the tools of management accounting
+## Analysis of Financial Statements
+### Ratio analysis
+= Liquidity, solvency, activity and profitability ratios.
+- Current ratio = Current assets ÷ Current liabilities (rule of thumb 2:1); quick ratio = Quick assets ÷ Current liabilities (1:1).
+- Debt-equity ratio = Long-term debt ÷ Shareholders' funds.
+- Inventory turnover = Cost of goods sold ÷ Average inventory; debtors' collection period = Average debtors ÷ Credit sales × 365.
+- Gross profit ratio = Gross profit ÷ Net sales × 100; return on capital employed = EBIT ÷ Capital employed × 100.
+> Compute and interpret ratios
+> Prepare a balance sheet from given ratios
+hook: A company's profit doubled, but it can't pay its suppliers. Which ratio would have warned you?
+ex: Current assets ₹2,00,000 (stock ₹80,000); current liabilities ₹1,00,000.
+ex: Current ratio 2:1; quick ratio 1,20,000 ÷ 1,00,000 = 1.2:1.
+q: Debtors ₹60,000, credit sales ₹3,65,000. Collection period? || 60,000 ÷ 3,65,000 × 365 = 60 days.
+terms: liquidity; solvency; turnover; ROCE
+### Cash flow statement
+= Preparing a cash flow statement under AS 3 (indirect method).
+- Cash flows are classified as operating, investing and financing activities.
+- Indirect method: start with net profit before tax, add non-cash and non-operating items, then adjust working capital changes.
+- An increase in current assets reduces cash; an increase in current liabilities increases it.
+> Prepare a cash flow statement by the indirect method
+> Classify cash flows by activity
+## Budgetary Control
+### Budgets and budgetary control
+= Functional, cash and flexible budgets.
+- A budget is a quantitative plan for a future period; budgetary control compares actuals with it.
+- The key (limiting) factor decides which budget is prepared first, often sales.
+- A flexible budget shows costs at different activity levels, separating fixed, variable and semi-variable costs.
+- Zero-base budgeting justifies every expense afresh.
+> Prepare cash and flexible budgets
+> Explain zero-base budgeting
+## Standard Costing
+### Variance analysis
+= Material and labour cost variances.
+- Material cost variance = Standard cost of actual output − Actual cost = Price variance + Usage variance.
+- Material price variance = AQ(SP − AP); material usage variance = SP(SQ − AQ).
+- Labour rate variance = AH(SR − AR); labour efficiency variance = SR(SH − AH).
+- A positive (favourable) variance means actual cost was below standard.
+> Compute material and labour variances
+> Interpret favourable and adverse variances
+
+# bcom-5-auditing | 5 | Auditing and Assurance | scheme=NEP 2021 (BU scheme to confirm); year=2026-27
+## Introduction to Auditing
+### Nature and types of audit
+= Meaning, objectives and kinds of audit.
+- An audit is an independent examination of financial statements to express an opinion on whether they give a true and fair view.
+- Objectives: express an opinion (primary); detect and prevent errors and frauds (secondary).
+- Types: statutory, internal, government (CAG), tax audit (section 44AB); continuous, interim and final audits.
+- Standards on Auditing (SAs) are issued by the ICAI; SA 200 states the overall objectives.
+> Explain the objectives of an audit
+> Distinguish statutory and internal audit
+## Internal Control and Vouching
+### Internal control, internal check and vouching
+= Internal control systems and vouching of transactions.
+- Internal control comprises policies and procedures that safeguard assets and ensure reliable records.
+- Internal check divides work so that one person's work is automatically checked by another.
+- Vouching checks entries against documentary evidence (vouchers) for authority, accuracy and occurrence.
+> Evaluate an internal control system
+> Vouch cash and credit transactions
+## Verification and Valuation
+### Verification of assets and liabilities
+= Existence, ownership, valuation and presentation of assets and liabilities.
+- Verification establishes existence, ownership and title, valuation, and freedom from charge.
+- Inventories are valued at the lower of cost and net realisable value (AS 2).
+- External confirmations (SA 505) verify debtors and bank balances.
+> Verify common assets and liabilities
+> Explain the auditor's duty about valuation
+## Company Audit
+### The company auditor and the audit report
+= Appointment, qualifications, rights and duties of the company auditor; kinds of report.
+- The first auditor is appointed by the board within 30 days of incorporation; later auditors at the AGM for a five-year term (section 139).
+- Rotation for listed and specified companies: an individual auditor for one term of 5 years; a firm for two terms of 5 years.
+- Section 141 bars certain persons (employees, debtors over ₹5 lakh, relatives holding securities) from appointment.
+- Opinions (SA 700, 705): unmodified, qualified, adverse, disclaimer; SA 706 adds emphasis of matter paragraphs.
+> State the rules on appointment and rotation of auditors
+> Distinguish kinds of audit opinion
+
+# bcom-6-income-tax-2 | 6 | Income Tax Law and Practice II | scheme=SEP 2024 (BU scheme to confirm); year=2026-27
+## Profits and Gains of Business or Profession
+### Computing business income
+= Admissible and inadmissible expenses and depreciation.
+- Section 30–37 allow expenses incurred wholly and exclusively for business; personal and capital expenses are disallowed.
+- Cash payments over ₹10,000 to a person in a day are disallowed (section 40A(3)); excess payments to relatives (40A(2)).
+- Depreciation (section 32) is on the block of assets, written-down value; half rate if the asset is used for less than 180 days in the year of acquisition.
+- Presumptive taxation: section 44AD (8% of turnover, 6% for digital receipts), 44ADA (50% of professional receipts).
+> Compute profits and gains of business
+> Compute depreciation on a block of assets
+## Capital Gains
+### Short-term and long-term capital gains
+= Capital assets, holding periods, computation and rates.
+- Listed securities are long-term if held more than 12 months; other assets more than 24 months (from 23 July 2024).
+- Capital gain = Full value of consideration − (Cost of acquisition + Cost of improvement + Transfer expenses).
+- From 23 July 2024: STCG on listed equity (section 111A) 20%; LTCG on listed equity (section 112A) 12.5% above ₹1.25 lakh; other LTCG 12.5% without indexation (land or building acquired before that date may choose 20% with indexation for resident individuals and HUFs).
+- Exemptions: section 54 (residential house), 54EC (specified bonds, up to ₹50 lakh), 54F.
+> Compute short- and long-term capital gains
+> Apply exemptions under sections 54 and 54EC
+## Income from Other Sources and Clubbing
+### Other sources and clubbing of income
+= Residuary income, gifts and clubbing provisions.
+- Other sources include interest, dividends, family pension, casual income (taxed at 30% under section 115BB) and gifts.
+- Gifts from non-relatives exceeding ₹50,000 in a year are taxable (section 56(2)(x)).
+- Family pension: deduction of one-third or ₹25,000 (new regime) / ₹15,000 (old), whichever is less.
+- Clubbing: income of a minor child is clubbed with the parent's income (exemption ₹1,500 per child).
+> Compute income from other sources
+> Apply clubbing provisions
+## Deductions and Total Income
+### Deductions and computation of total income
+= Chapter VI-A deductions, set-off of losses and computing tax for individuals.
+- Section 80C allows up to ₹1,50,000 (PF, PPF, life insurance, ELSS, tuition fees, principal on housing loan) under the old regime.
+- Section 80D: health insurance premium up to ₹25,000 (₹50,000 for senior citizens), more for parents.
+- The new regime allows few deductions (mainly 80CCD(2) employer's NPS contribution and 80CCH).
+- Losses: house property loss set off against other heads up to ₹2 lakh; business loss carried forward 8 years; long-term capital loss only against LTCG.
+> Compute gross and net total income
+> Compute tax liability of an individual
+
+# bcom-6-gst | 6 | Goods and Services Tax | scheme=NEP 2021 (BU scheme to confirm); year=2026-27
+! GST rates were rationalised from 22 September 2025 (5% and 18% main slabs, 40% for specified goods); confirm rates taught.
+## Introduction to GST
+### Concept and structure of GST
+= Indirect taxes before GST, the 101st Amendment and the dual GST model.
+- GST was introduced on 1 July 2017 under the Constitution (101st Amendment) Act, 2016.
+- Dual GST: intra-state supply attracts CGST + SGST (or UTGST); inter-state supply and imports attract IGST.
+- The GST Council (Article 279A) recommends rates and rules.
+- GST is destination-based: tax goes to the state where goods or services are consumed.
+> Explain the dual GST structure
+> Identify CGST, SGST and IGST transactions
+## Levy and Supply
+### Supply, time and place of supply
+= Meaning of supply, composite and mixed supply, and the time and place of supply.
+- Supply (section 7, CGST Act) includes sale, transfer, barter, exchange, licence, rental, lease or disposal for consideration in the course of business.
+- A composite supply is taxed at the rate of its principal supply; a mixed supply at the highest rate among its items.
+- Place of supply decides whether a supply is intra-state or inter-state.
+> Classify supplies as composite or mixed
+> Determine the place of supply in simple cases
+## Registration and Input Tax Credit
+### Registration and composition scheme
+= Threshold limits, compulsory registration and the composition levy.
+- Threshold for registration: aggregate turnover ₹40 lakh for suppliers of goods only and ₹20 lakh for services (₹20 lakh and ₹10 lakh in special category states).
+- Inter-state taxable suppliers and e-commerce operators must register regardless of turnover.
+- Composition scheme: turnover up to ₹1.5 crore (₹75 lakh in special category states); tax at a low rate on turnover, no input tax credit, no tax collected from customers.
+- GSTIN is a 15-character PAN-based number.
+> State who must register
+> Decide whether the composition scheme suits a business
+### Input tax credit
+= Conditions, blocked credits and utilisation of ITC.
+- ITC conditions (section 16): tax invoice held, goods or services received, tax paid to government by the supplier, return filed, and the credit appearing in GSTR-2B.
+- Blocked credits (section 17(5)) include motor vehicles (with exceptions), food and beverages, club membership and goods for personal use.
+- IGST credit is used first for IGST, then CGST and SGST; CGST credit cannot pay SGST and vice versa.
+> Compute ITC available
+> Set off ITC against output tax
+ex: Output: CGST ₹50,000, SGST ₹50,000. ITC: CGST ₹30,000, SGST ₹30,000, IGST ₹20,000.
+ex: IGST 20,000 sets off CGST first: CGST payable 50,000 − 20,000 − 30,000 = 0; SGST payable 50,000 − 30,000 = ₹20,000.
+## Returns and Payment
+### Returns, payment and e-way bill
+= Main GST returns, payment of tax and the e-way bill.
+- GSTR-1: outward supplies (monthly or quarterly); GSTR-3B: summary return with tax payment; GSTR-9: annual return.
+- Tax is paid through the electronic cash ledger and electronic credit ledger.
+- An e-way bill is needed to move goods worth more than ₹50,000.
+> Name the main returns and their purpose
+> Explain the e-way bill system

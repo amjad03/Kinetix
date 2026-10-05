@@ -32,3 +32,36 @@ When a course is checked, add `reviewed=yes` to its `#` line in the source and r
 
 - **Python Programming, BCA Semester 4**
   - Confirm whether GUI (Tkinter) and database connectivity are in the SEP Python syllabus.
+
+## BCom (bu-bcom-1.txt, curriculum `bu-ug`, SEP 2024 (2024-25))
+
+- Paper numbers (COM-1.1, 2.1, 2.3, 2.4, 3.1-3.4) are from secondary listings of the BU SEP BCom curriculum; check the titles and numbers of every paper against the approved BU SEP course curriculum (Sem I-IV).
+- Languages, AECC, the Constitution, skill and certification courses, and open electives are not included.
+
+- **Corporate Law, BCom Semester 1**
+  - Secondary listings disagree on the second Sem 1 paper (Corporate Law, Corporate Administration, Principles of Management); confirm.
+- **Principles of Management, BCom Semester 1**
+  - May be titled "Management Principles and Applications" or placed in another semester under SEP; confirm.
+- **Corporate Accounting, BCom Semester 3**
+  - The demo college and tests rely on these four units and one topic per unit; add units (e.g. amalgamation, if in Sem 3) as more topics only after updating test/concept-videos.e2e.spec.ts.
+- **Cost Accounting, BCom Semester 3**
+  - Marginal costing may sit in Management Accounting rather than Cost Accounting under SEP; confirm.
+- **Indian Financial System, BCom Semester 3**
+  - Some listings show Indian Financial System in Sem 1; confirm its semester.
+
+## BCom (bu-bcom-2.txt, curriculum `bu-ug`, SEP 2024 (2025-26))
+
+- Semesters 5 and 6 follow the earlier BU BCom schemes (Income Tax I and II, Management Accounting, Auditing, GST); the SEP Sem 5-6 papers (from 2026-27) should be checked when published.
+- Electives not written (Sem 5-6 specialisation streams): Accounting and Taxation, Finance, Marketing, HR, Banking and Insurance, Business Analytics.
+- Income tax is written for the Income-tax Act, 1961, AY 2026-27 (FY 2025-26). The Income-tax Act, 2025 replaces it from 1 April 2026 (tax year 2026-27) with new section numbers; update when the syllabus adopts the new Act.
+
+- **Advanced Corporate Accounting, BCom Semester 4**
+  - Confirm whether Ind AS 103 / Ind AS 110 have replaced AS 14 and AS 21 in the SEP syllabus.
+- **Business Statistics, BCom Semester 4**
+  - Under SEP this may be Business Statistics and Analytics or Business Mathematics and Statistics; confirm title and semester.
+- **Principles of Marketing, BCom Semester 4**
+  - Under the BU NEP scheme this was a Sem 1 paper; confirm its SEP semester.
+- **Income Tax Law and Practice I, BCom Semester 5**
+  - Check slab rates and rebate against the Finance Act in force for the assessment year taught.
+- **Goods and Services Tax, BCom Semester 6**
+  - GST rates were rationalised from 22 September 2025 (5% and 18% main slabs, 40% for specified goods); confirm rates taught.
