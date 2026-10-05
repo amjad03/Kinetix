@@ -65,7 +65,7 @@ describe('content library', () => {
     expect(outline.body.chapters.map((c: { title: string }) => c.title)).toContain('Valuation of Goodwill');
     expect(outline.body.reviewed).toBe(false);
 
-    const found = await http().get('/v1/content/search?q=goodwill').set(auth('parent')).expect(200);
+    const found = await http().get(`/v1/content/search?q=goodwill&courseId=${courseId}`).set(auth('parent')).expect(200);
     expect(found.body[0]).toMatchObject({ title: 'Methods of valuing goodwill', chapterTitle: 'Valuation of Goodwill' });
     const topic = await http().get(`/v1/content/topics/${found.body[0].id}`).set(auth('board')).expect(200);
     expect(topic.body.notes.join(' ')).toContain('Super profit');
@@ -131,5 +131,33 @@ describe('content library', () => {
 
     const unrelated = await http().post('/v1/ai/explain').set(auth('otherTeacher')).send({ question: 'What is goodwill?' }).expect(200);
     expect(unrelated.body.meta.sources).toEqual([]); // their subject is not linked to a course
+  });
+
+  it('serves a topic with its full lesson, resources and Kannada version, and grounds AI in it', async () => {
+    const topicIn = async (curriculum: string, code: string, chapter: string) => {
+      const course = (await http().get(`/v1/content/courses?curriculum=${curriculum}&term=10`).set(auth('teacher')).expect(200)).body.find((c: { code: string }) => c.code === code);
+      const outline = (await http().get(`/v1/content/courses/${course.id}`).set(auth('teacher')).expect(200)).body;
+      return outline.chapters.find((c: { title: string }) => c.title === chapter).topics[0].id as string;
+    };
+    const cbse = await topicIn('cbse', 'class-10-science', 'Chemical Reactions and Equations');
+    const topic = (await http().get(`/v1/content/topics/${cbse}`).set(auth('board')).expect(200)).body;
+    expect(topic).toMatchObject({ title: 'Chemical Reactions and Equations', course: { title: 'Science, Class 10', language: 'en', reviewed: false } });
+    expect(topic.lesson).toMatchObject({ hook: expect.stringContaining('iron nail'), terms: expect.arrayContaining(['reactant', 'oxidation']), homework: expect.any(String) });
+    expect(topic.lesson.questions[0]).toEqual({ q: expect.any(String), a: expect.any(String) });
+    expect(topic.lesson.kn).toBeUndefined();
+    expect(topic.resources).toEqual(expect.arrayContaining([{ kind: 'model3d', id: 'molecules', title: 'Molecules and their shapes' }, { kind: 'lab', id: 'reactions', title: 'Types of chemical reactions' }]));
+
+    await http().post('/v1/ai/explain').set(auth('teacher')).send({ question: 'Explain balancing equations', topicId: cbse }).expect(200);
+    const system = llm.prompts.at(-1)![0].content;
+    expect(system).toContain('Key terms of the syllabus lesson: reactant, product');
+    expect(system).toContain('Worked example from the syllabus lesson: ');
+    expect(system).not.toContain('The syllabus lesson opens with'); // only for lesson plans
+
+    // Karnataka's English-medium lesson has a Kannada version: a Kannada answer is grounded in it.
+    const ka = await topicIn('ka-state', 'class-10-science', 'Chemical Reactions and Equations');
+    const kn = (await http().get(`/v1/content/topics/${ka}`).set(auth('board')).expect(200)).body.lesson.kn;
+    expect(kn).toMatchObject({ title: 'ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು ಮತ್ತು ಸಮೀಕರಣಗಳು', notes: expect.any(Array), hook: expect.any(String) });
+    await http().post('/v1/ai/explain').set(auth('teacher')).send({ question: 'Explain balancing equations', topicId: ka, language: 'kn' }).expect(200);
+    expect(llm.prompts.at(-1)![0].content).toContain(`- ${kn.notes[0]}`);
   });
 });

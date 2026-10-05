@@ -1459,6 +1459,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get booksMarkFailed => 'सहेजा नहीं जा सका। देखें कि बोर्ड ऑनलाइन है।';
 
   @override
+  String get booksHook => 'ऐसे शुरू करें';
+
+  @override
+  String get booksTerms => 'सीखने के शब्द';
+
+  @override
+  String get booksExample => 'हल किया हुआ उदाहरण';
+
+  @override
+  String get booksActivity => 'कक्षा गतिविधि';
+
+  @override
   String get mathHint => 'कोई सवाल या समीकरण लिखें';
 
   @override

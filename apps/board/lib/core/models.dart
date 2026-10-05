@@ -261,9 +261,60 @@ class TopicResource {
   final String title;
 }
 
+/// How to teach a topic, from the content library: in the course's language, or one of its
+/// Hindi/Kannada [versions] (which carry their own [title], [notes] and [outcomes]).
+class TopicLesson {
+  TopicLesson({
+    this.title,
+    this.notes = const [],
+    this.outcomes = const [],
+    this.hook = '',
+    this.example = '',
+    this.activity = '',
+    this.questions = const [],
+    this.homework = '',
+    this.terms = const [],
+    this.versions = const {},
+  });
+  factory TopicLesson.fromJson(Map<String, dynamic> j) {
+    List<String> strings(Object? v) => (v as List<dynamic>? ?? const []).cast<String>();
+    return TopicLesson(
+      title: j['title'] as String?,
+      notes: strings(j['notes']),
+      outcomes: strings(j['outcomes']),
+      hook: j['hook'] as String? ?? '',
+      example: j['example'] as String? ?? '',
+      activity: j['activity'] as String? ?? '',
+      questions: [
+        for (final q in (j['questions'] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>()) (q: q['q'] as String, a: q['a'] as String? ?? ''),
+      ],
+      homework: j['homework'] as String? ?? '',
+      terms: strings(j['terms']),
+      versions: {
+        for (final lang in const ['hi', 'kn'])
+          if (j[lang] is Map) lang: TopicLesson.fromJson((j[lang] as Map).cast<String, dynamic>()),
+      },
+    );
+  }
+  final String? title;
+  final List<String> notes;
+  final List<String> outcomes;
+  final String hook;
+  final String example;
+  final String activity;
+  final List<({String q, String a})> questions;
+  final String homework;
+  final List<String> terms;
+  final Map<String, TopicLesson> versions;
+
+  /// The full lesson in [language] when it has been written in it (not just a title).
+  TopicLesson? fullIn(String language) => (versions[language]?.notes.isNotEmpty ?? false) ? versions[language] : null;
+}
+
 class TopicDetail {
   TopicDetail({
     this.resources = const [],
+    this.lesson,
     required this.id,
     required this.title,
     required this.summary,
@@ -281,6 +332,7 @@ class TopicDetail {
         chapterTitle: ((j['chapter'] as Map?)?['title'] as String?) ?? '',
         reviewed: ((j['course'] as Map?)?['reviewed'] as bool?) ?? false,
         resources: [for (final r in (j['resources'] as List<dynamic>? ?? const [])) TopicResource.fromJson(r as Map<String, dynamic>)],
+        lesson: j['lesson'] is Map ? TopicLesson.fromJson((j['lesson'] as Map).cast<String, dynamic>()) : null,
       );
   final String id;
   final String title;
@@ -292,6 +344,9 @@ class TopicDetail {
 
   /// 3D models and labs to open on the board for this topic.
   final List<TopicResource> resources;
+
+  /// The lesson the library has for this topic, if any.
+  final TopicLesson? lesson;
 }
 
 /// A task result with its [meta].

@@ -15,7 +15,8 @@
     "db:seed": "pnpm build && node --env-file-if-exists=.env dist/db/seed.js",
     "db:create-institution": "pnpm build && node --env-file-if-exists=.env dist/db/create-institution.js",
     "secrets:rotate": "pnpm build && node --env-file-if-exists=.env dist/db/rotate-secrets.js",
-    "content:import": "pnpm build && node --env-file-if-exists=.env dist/content/import.js"
+    "content:import": "pnpm build && node --env-file-if-exists=.env dist/content/import.js",
+    "content:convert-prototype": "node --experimental-strip-types scripts/convert-prototype-syllabus.ts"
   },
   "devDependencies": {
     "@nestjs/testing": "^12.1.2",

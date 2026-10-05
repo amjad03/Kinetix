@@ -2506,6 +2506,30 @@ abstract class AppLocalizations {
   /// **'Could not save. Check the board is online.'**
   String get booksMarkFailed;
 
+  /// No description provided for @booksHook.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with'**
+  String get booksHook;
+
+  /// No description provided for @booksTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Words to learn'**
+  String get booksTerms;
+
+  /// No description provided for @booksExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked example'**
+  String get booksExample;
+
+  /// No description provided for @booksActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Class activity'**
+  String get booksActivity;
+
   /// No description provided for @mathHint.
   ///
   /// In en, this message translates to:

@@ -1,0 +1,5121 @@
+{
+ "curricula": [
+  {
+   "code": "early-years",
+   "name": "Early years (LKG, UKG)",
+   "level": "k12"
+  }
+ ],
+ "courses": [
+  {
+   "curriculum": "early-years",
+   "code": "lkg-english",
+   "title": "English: Little Readers LKG, LKG",
+   "term": -1,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Hello! This Is Me",
+     "topics": [
+      {
+       "title": "Hello! This Is Me",
+       "summary": "We say 'Hello' or 'Good morning' when we meet.",
+       "notes": [
+        "We say 'Hello' or 'Good morning' when we meet.",
+        "We say 'My name is …' to tell our name.",
+        "We say 'Thank you' and 'Please'.",
+        "We listen when others talk.",
+        "Everyone's name is special."
+       ],
+       "outcomes": [
+        "Say their own name and greet others",
+        "Listen and respond to simple questions"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Hello! My name is Teacher. What is your name? Let's sing our names!",
+        "example": "Teacher: 'Hello! What is your name?' Child: 'My name is Aisha.' Teacher: 'Nice to meet you, Aisha!'",
+        "activity": "Name ball: children sit in a circle and roll a ball. Whoever gets it says 'My name is …' and rolls it to a friend.",
+        "questions": [
+         {
+          "q": "What do we say in the morning?",
+          "a": "Good morning!"
+         },
+         {
+          "q": "What is your name?",
+          "a": "My name is … (child's name)."
+         },
+         {
+          "q": "What do we say when someone gives us something?",
+          "a": "Thank you!"
+         }
+        ],
+        "homework": "Say 'Good morning' to everyone at home tomorrow.",
+        "terms": [
+         "hello",
+         "good morning",
+         "my name is",
+         "please",
+         "thank you"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Rhymes and Songs",
+     "topics": [
+      {
+       "title": "Rhymes and Songs",
+       "summary": "Rhymes are short songs with a beat.",
+       "notes": [
+        "Rhymes are short songs with a beat.",
+        "Rhyming words sound alike at the end: cat–hat, star–car.",
+        "We can clap, jump and move to rhymes.",
+        "Singing together is fun.",
+        "Rhymes help us learn new words."
+       ],
+       "outcomes": [
+        "Sing simple rhymes with actions",
+        "Listen for rhyming sounds"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Clap with me! Twinkle, twinkle, little star … do you know this song?",
+        "example": "Cat, hat, bat, mat — they all end with the same sound '-at'.",
+        "activity": "Action rhymes: sing 'Head, Shoulders, Knees and Toes' and 'Row, Row, Row Your Boat' with actions.",
+        "questions": [
+         {
+          "q": "Which word sounds like 'cat': hat or dog?",
+          "a": "Hat."
+         },
+         {
+          "q": "Can you clap the beat of your favourite rhyme?",
+          "a": "Child claps along."
+         },
+         {
+          "q": "Sing one rhyme you know.",
+          "a": "Any rhyme."
+         }
+        ],
+        "homework": "Sing a rhyme at home and teach it to someone.",
+        "terms": [
+         "rhyme",
+         "song",
+         "clap",
+         "beat",
+         "sound"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Letters A to E",
+     "topics": [
+      {
+       "title": "Letters A to E",
+       "summary": "Letters have a big form and a small form: A a, B b, C c, D d, E e.",
+       "notes": [
+        "Letters have a big form and a small form: A a, B b, C c, D d, E e.",
+        "Each letter makes a sound.",
+        "A a — apple, ant.",
+        "B b — ball, bat. C c — cat, cup.",
+        "D d — dog, duck. E e — egg, elephant."
+       ],
+       "outcomes": [
+        "Recognise the letters A to E, big and small",
+        "Say the sound of each letter and a word that begins with it"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A is for apple! Can you think of something else that begins with 'a'?",
+        "example": "B says /b/ — ball, bat, banana. Say it with me: /b/ /b/ ball!",
+        "activity": "Letter hunt: hide picture cards (apple, ball, cat, dog, egg) around the room; children find them and match them with letters A to E.",
+        "questions": [
+         {
+          "q": "What letter does 'dog' begin with?",
+          "a": "D."
+         },
+         {
+          "q": "Show me the small letter b.",
+          "a": "Child points to b."
+         },
+         {
+          "q": "Say a word that begins with C.",
+          "a": "Cat, cup, car, cake (any)."
+         }
+        ],
+        "homework": "Find one thing at home that begins with A, B, C, D or E.",
+        "terms": [
+         "letter",
+         "sound",
+         "capital",
+         "small",
+         "A",
+         "B",
+         "C",
+         "D",
+         "E"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Letters F to J",
+     "topics": [
+      {
+       "title": "Letters F to J",
+       "summary": "F f — fish, fan.",
+       "notes": [
+        "F f — fish, fan.",
+        "G g — goat, girl.",
+        "H h — hat, hen.",
+        "I i — igloo, ink.",
+        "J j — jug, jam."
+       ],
+       "outcomes": [
+        "Recognise the letters F to J, big and small",
+        "Match letters with their sounds and pictures"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "F is for fish! Wiggle like a fish and say /f/ /f/ /f/!",
+        "example": "H says /h/ — hat, hen, house. Put your hand in front of your mouth and feel the air when you say /h/.",
+        "activity": "Sand letters: children trace F to J in a tray of sand or rice with a finger, saying each sound.",
+        "questions": [
+         {
+          "q": "What letter does 'hen' begin with?",
+          "a": "H."
+         },
+         {
+          "q": "Which letter comes after G?",
+          "a": "H."
+         },
+         {
+          "q": "Say a word that begins with J.",
+          "a": "Jug, jam, jeep, juice (any)."
+         }
+        ],
+        "homework": "Draw a fish and colour it. Write a big F next to it.",
+        "terms": [
+         "letter",
+         "sound",
+         "F",
+         "G",
+         "H",
+         "I",
+         "J"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Letters K to O",
+     "topics": [
+      {
+       "title": "Letters K to O",
+       "summary": "K k — kite, king.",
+       "notes": [
+        "K k — kite, king.",
+        "L l — lion, lamp.",
+        "M m — mango, monkey.",
+        "N n — nest, nose.",
+        "O o — orange, owl."
+       ],
+       "outcomes": [
+        "Recognise the letters K to O, big and small",
+        "Say the sound of each letter"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "K is for kite! Fly your kite high in the sky — /k/ /k/ /k/!",
+        "example": "M says /m/ — mango, monkey, moon. Rub your tummy: mmm, mango!",
+        "activity": "Letter walk: draw K to O big on the floor; children walk along each letter while saying its sound.",
+        "questions": [
+         {
+          "q": "What letter does 'lion' begin with?",
+          "a": "L."
+         },
+         {
+          "q": "Show me the letter O.",
+          "a": "Child points to O."
+         },
+         {
+          "q": "Say a word that begins with M.",
+          "a": "Mango, monkey, moon, mother (any)."
+         }
+        ],
+        "homework": "Find something round like the letter O at home.",
+        "terms": [
+         "letter",
+         "sound",
+         "K",
+         "L",
+         "M",
+         "N",
+         "O"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Letters P to T",
+     "topics": [
+      {
+       "title": "Letters P to T",
+       "summary": "P p — parrot, pen.",
+       "notes": [
+        "P p — parrot, pen.",
+        "Q q — queen, quilt.",
+        "R r — rabbit, rose.",
+        "S s — sun, snake.",
+        "T t — tiger, tree."
+       ],
+       "outcomes": [
+        "Recognise the letters P to T, big and small",
+        "Match letters with pictures"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "P is for parrot! What colour is a parrot?",
+        "example": "S says /s/ — like a snake: sss, sun, sock, star.",
+        "activity": "Picture match: children match picture cards (parrot, queen, rabbit, sun, tiger) with letter cards P to T.",
+        "questions": [
+         {
+          "q": "What letter does 'tiger' begin with?",
+          "a": "T."
+         },
+         {
+          "q": "Make the sound of S like a snake.",
+          "a": "Sss."
+         },
+         {
+          "q": "Say a word that begins with R.",
+          "a": "Rabbit, rose, rain, red (any)."
+         }
+        ],
+        "homework": "Draw the sun and write a big S beside it.",
+        "terms": [
+         "letter",
+         "sound",
+         "P",
+         "Q",
+         "R",
+         "S",
+         "T"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Letters U to Z",
+     "topics": [
+      {
+       "title": "Letters U to Z",
+       "summary": "U u — umbrella, up.",
+       "notes": [
+        "U u — umbrella, up.",
+        "V v — van, violin. W w — watch, water.",
+        "X x — box, fox (x at the end). Y y — yak, yellow.",
+        "Z z — zebra, zip.",
+        "Now we know all 26 letters from A to Z!"
+       ],
+       "outcomes": [
+        "Recognise the letters U to Z, big and small",
+        "Sing the alphabet song"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "U is for umbrella! When do we open an umbrella?",
+        "example": "Z says /z/ — zebra, zoo, zip. Buzz like a bee: zzz!",
+        "activity": "Alphabet train: each child holds a letter card A–Z and they line up in order while singing the alphabet song.",
+        "questions": [
+         {
+          "q": "What letter does 'zebra' begin with?",
+          "a": "Z."
+         },
+         {
+          "q": "Which letter comes after X?",
+          "a": "Y."
+         },
+         {
+          "q": "Sing the ABC song.",
+          "a": "Child sings A to Z."
+         }
+        ],
+        "homework": "Sing the alphabet song at home and point to each letter on a chart.",
+        "terms": [
+         "letter",
+         "alphabet",
+         "U",
+         "V",
+         "W",
+         "X",
+         "Y",
+         "Z"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Colours Around Us",
+     "topics": [
+      {
+       "title": "Colours Around Us",
+       "summary": "Red, blue, yellow, green, orange, pink, purple, black, white and brown are colours.",
+       "notes": [
+        "Red, blue, yellow, green, orange, pink, purple, black, white and brown are colours.",
+        "The sky is blue. Grass is green. The sun is yellow.",
+        "A tomato is red. An orange is orange.",
+        "Things around us have many colours.",
+        "We can say: 'The ball is red.'"
+       ],
+       "outcomes": [
+        "Name the main colours in English",
+        "Find colours in things around them"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "What colour is your shirt today? Let's find something red in our classroom!",
+        "example": "Mixing colours: yellow and blue make green!",
+        "activity": "Colour hunt: call out a colour; children run and touch something of that colour in the room.",
+        "questions": [
+         {
+          "q": "What colour is grass?",
+          "a": "Green."
+         },
+         {
+          "q": "What colour is a banana?",
+          "a": "Yellow."
+         },
+         {
+          "q": "Name your favourite colour.",
+          "a": "Any colour."
+         }
+        ],
+        "homework": "Find three red things at home and tell the class tomorrow.",
+        "terms": [
+         "colour",
+         "red",
+         "blue",
+         "yellow",
+         "green",
+         "orange",
+         "pink",
+         "black",
+         "white"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Story Time",
+     "topics": [
+      {
+       "title": "Story Time",
+       "summary": "A story has people or animals, a place and something that happens.",
+       "notes": [
+        "A story has people or animals, a place and something that happens.",
+        "We listen quietly and look at the pictures.",
+        "The thirsty crow found a pot with a little water at the bottom.",
+        "It dropped pebbles into the pot until the water came up, and then it drank.",
+        "Stories teach us things: the crow was clever and did not give up."
+       ],
+       "outcomes": [
+        "Listen to a short story with attention",
+        "Answer simple questions about the story"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Sit in a circle — story time! Today's story is about a thirsty crow.",
+        "example": "Who was in the story? A crow. What did it want? Water. How did it get it? By dropping pebbles.",
+        "activity": "Act it out: children act as the crow and drop pebbles into a glass of water to watch the water rise.",
+        "questions": [
+         {
+          "q": "What did the crow want?",
+          "a": "Water."
+         },
+         {
+          "q": "What did the crow put in the pot?",
+          "a": "Pebbles (stones)."
+         },
+         {
+          "q": "Was the crow clever?",
+          "a": "Yes."
+         }
+        ],
+        "homework": "Ask someone at home to tell you a story and tell it in class.",
+        "terms": [
+         "story",
+         "listen",
+         "picture",
+         "beginning",
+         "end"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Lines and Curves",
+     "topics": [
+      {
+       "title": "Lines and Curves",
+       "summary": "Standing lines go from top to bottom: |",
+       "notes": [
+        "Standing lines go from top to bottom: |",
+        "Sleeping lines go from left to right: —",
+        "Slanting lines lean: / and \\",
+        "Curves are round like waves and smiles.",
+        "These lines make all letters."
+       ],
+       "outcomes": [
+        "Draw standing, sleeping and slanting lines",
+        "Draw curves and circles to get ready for writing"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Rain falls down like standing lines. Waves go like curves. Let's draw them in the air!",
+        "example": "The letter L is a standing line and a sleeping line. The letter O is a circle.",
+        "activity": "Air writing: children draw lines and curves in the air, then on sand, then with crayons on paper.",
+        "questions": [
+         {
+          "q": "Show a standing line in the air.",
+          "a": "Child draws top to bottom."
+         },
+         {
+          "q": "Which letter is a circle?",
+          "a": "O."
+         },
+         {
+          "q": "Draw a curve like a wave.",
+          "a": "Child draws a wavy line."
+         }
+        ],
+        "homework": "Draw rain (standing lines) and waves (curves) in your book.",
+        "terms": [
+         "standing line",
+         "sleeping line",
+         "slanting line",
+         "curve",
+         "circle"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "lkg-mathematics",
+   "title": "Mathematics: Number Fun LKG, LKG",
+   "term": -1,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Big and Small, Tall and Short",
+     "topics": [
+      {
+       "title": "Big and Small, Tall and Short",
+       "summary": "Some things are big, some are small.",
+       "notes": [
+        "Some things are big, some are small.",
+        "Some things are tall, some are short.",
+        "An elephant is big; an ant is small.",
+        "A tree is tall; a plant in a pot is short.",
+        "We can put things in order from small to big."
+       ],
+       "outcomes": [
+        "Compare things as big or small, tall or short",
+        "Use the words bigger, smaller, taller, shorter"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "An elephant and a mouse — which one is big? Which one is small?",
+        "example": "Papa is tall, Didi is shorter, baby is the shortest.",
+        "activity": "Line up: children stand in order from shortest to tallest; then sort toys into big and small baskets.",
+        "questions": [
+         {
+          "q": "Which is bigger: a ball or a bus?",
+          "a": "A bus."
+         },
+         {
+          "q": "Who is taller: you or your teacher?",
+          "a": "The teacher."
+         },
+         {
+          "q": "Show me something small in the class.",
+          "a": "Child shows a small object."
+         }
+        ],
+        "homework": "Find one big and one small spoon at home.",
+        "terms": [
+         "big",
+         "small",
+         "tall",
+         "short",
+         "bigger",
+         "smaller"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Same and Different",
+     "topics": [
+      {
+       "title": "Same and Different",
+       "summary": "Things that look alike are the same.",
+       "notes": [
+        "Things that look alike are the same.",
+        "Things that do not look alike are different.",
+        "We can sort things into groups.",
+        "We can sort by colour: all red things together.",
+        "We can sort by shape or by size too."
+       ],
+       "outcomes": [
+        "Find things that are the same and different",
+        "Sort objects by colour, shape or size"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Look at these two apples. Are they the same? Now look at an apple and a banana — same or different?",
+        "example": "Buttons: put red buttons in one bowl and blue buttons in another bowl.",
+        "activity": "Sorting trays: children sort buttons, beads or blocks by colour, then again by size.",
+        "questions": [
+         {
+          "q": "Are a cat and a dog the same?",
+          "a": "No, they are different."
+         },
+         {
+          "q": "Put all the red blocks together.",
+          "a": "Child sorts red blocks."
+         },
+         {
+          "q": "Find two things that are the same.",
+          "a": "Any matching pair."
+         }
+        ],
+        "homework": "Help sort socks at home into pairs.",
+        "terms": [
+         "same",
+         "different",
+         "sort",
+         "group",
+         "match"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Circle, Square and Triangle",
+     "topics": [
+      {
+       "title": "Circle, Square and Triangle",
+       "summary": "A circle is round: a coin, a plate, a clock.",
+       "notes": [
+        "A circle is round: a coin, a plate, a clock.",
+        "A square has 4 equal sides: a carrom board, a biscuit.",
+        "A triangle has 3 sides: a samosa, a slice of pizza.",
+        "Shapes are everywhere.",
+        "We can draw shapes."
+       ],
+       "outcomes": [
+        "Name circle, square and triangle",
+        "Find these shapes around us"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "triangle-angles",
+         "title": "Angle sum of a triangle"
+        },
+        {
+         "kind": "lab",
+         "id": "circle-pi",
+         "title": "Circumference and π"
+        }
+       ],
+       "lesson": {
+        "hook": "A roti is round like a … circle! What else is round?",
+        "example": "Samosa — triangle. Chapati — circle. Window — square.",
+        "activity": "Shape walk: children find circles, squares and triangles in the classroom and put a sticker on each.",
+        "questions": [
+         {
+          "q": "What shape is a coin?",
+          "a": "Circle."
+         },
+         {
+          "q": "How many sides does a triangle have?",
+          "a": "3."
+         },
+         {
+          "q": "Find a square in the class.",
+          "a": "Child points to a square object."
+         }
+        ],
+        "homework": "Draw a circle, a square and a triangle and colour them.",
+        "terms": [
+         "circle",
+         "square",
+         "triangle",
+         "shape",
+         "round",
+         "corner"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Numbers 1 to 5",
+     "topics": [
+      {
+       "title": "Numbers 1 to 5",
+       "summary": "We count by touching each thing once: 1, 2, 3, 4, 5.",
+       "notes": [
+        "We count by touching each thing once: 1, 2, 3, 4, 5.",
+        "The last number tells how many.",
+        "Each number has a shape: 1, 2, 3, 4, 5.",
+        "One hand has 5 fingers.",
+        "We can show numbers with fingers, dots and blocks."
+       ],
+       "outcomes": [
+        "Count objects from 1 to 5",
+        "Recognise the numerals 1 to 5"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Show me 1 finger. Now 2 fingers. How many fingers on one hand?",
+        "example": "3 balls: touch and say — one, two, three. There are 3 balls.",
+        "activity": "Counting songs: sing 'Five Little Ducks' and hold up fingers for each number.",
+        "questions": [
+         {
+          "q": "How many eyes do you have?",
+          "a": "2."
+         },
+         {
+          "q": "Count the blocks: ■ ■ ■ ■.",
+          "a": "4."
+         },
+         {
+          "q": "Show me number 5.",
+          "a": "Child shows 5 fingers or points to 5."
+         }
+        ],
+        "homework": "Count the doors in your home.",
+        "terms": [
+         "one",
+         "two",
+         "three",
+         "four",
+         "five",
+         "count"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Numbers 6 to 10",
+     "topics": [
+      {
+       "title": "Numbers 6 to 10",
+       "summary": "After 5 comes 6, 7, 8, 9, 10.",
+       "notes": [
+        "After 5 comes 6, 7, 8, 9, 10.",
+        "Two hands have 10 fingers.",
+        "10 is 5 and 5.",
+        "We count slowly and touch each thing once.",
+        "Numbers tell us how many."
+       ],
+       "outcomes": [
+        "Count objects from 6 to 10",
+        "Recognise the numerals 6 to 10"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Two hands together — how many fingers? Let's count to 10!",
+        "example": "7 is 5 fingers on one hand and 2 on the other.",
+        "activity": "Bead string: children thread 10 beads, counting aloud, and then show numbers 6 to 10 by sliding beads.",
+        "questions": [
+         {
+          "q": "What comes after 6?",
+          "a": "7."
+         },
+         {
+          "q": "How many fingers on two hands?",
+          "a": "10."
+         },
+         {
+          "q": "Count 8 claps.",
+          "a": "Child claps 8 times."
+         }
+        ],
+        "homework": "Count 10 steps as you walk at home.",
+        "terms": [
+         "six",
+         "seven",
+         "eight",
+         "nine",
+         "ten",
+         "count"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "More and Less",
+     "topics": [
+      {
+       "title": "More and Less",
+       "summary": "More means a bigger number of things.",
+       "notes": [
+        "More means a bigger number of things.",
+        "Less means a smaller number of things.",
+        "We can match one to one to see which group has more.",
+        "Leftovers show the group with more.",
+        "If nothing is left over, the groups are equal (the same)."
+       ],
+       "outcomes": [
+        "Compare two groups as more or less",
+        "Use matching to decide which group has more"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "You have 3 sweets and your friend has 5. Who has more?",
+        "example": "3 cups and 5 spoons: put one spoon in each cup — 2 spoons are left over, so there are more spoons.",
+        "activity": "Match and see: children match cups with spoons, chairs with children, to find more, less or equal.",
+        "questions": [
+         {
+          "q": "Which is more: 2 or 4?",
+          "a": "4."
+         },
+         {
+          "q": "Which is less: 5 or 1?",
+          "a": "1."
+         },
+         {
+          "q": "3 apples and 3 bananas — more, less or equal?",
+          "a": "Equal."
+         }
+        ],
+        "homework": "Count plates and glasses at dinner. Are there more plates or glasses?",
+        "terms": [
+         "more",
+         "less",
+         "equal",
+         "same number",
+         "match"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Patterns",
+     "topics": [
+      {
+       "title": "Patterns",
+       "summary": "A pattern repeats again and again.",
+       "notes": [
+        "A pattern repeats again and again.",
+        "Colour pattern: red, blue, red, blue.",
+        "Shape pattern: circle, square, circle, square.",
+        "Action pattern: clap, jump, clap, jump.",
+        "We can make our own patterns."
+       ],
+       "outcomes": [
+        "Continue simple patterns with colours, shapes and actions",
+        "Make their own patterns"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Clap, jump, clap, jump … what comes next?",
+        "example": "Red bead, yellow bead, red bead, yellow bead — next is red.",
+        "activity": "Bead patterns: children string beads in two-colour patterns and say the pattern aloud.",
+        "questions": [
+         {
+          "q": "What comes next: circle, square, circle, …?",
+          "a": "Square."
+         },
+         {
+          "q": "Continue: clap, clap, stamp, clap, clap, …",
+          "a": "Stamp."
+         },
+         {
+          "q": "Make a pattern with two colours.",
+          "a": "Any repeating pattern."
+         }
+        ],
+        "homework": "Look for a pattern on your clothes or floor tiles and draw it.",
+        "terms": [
+         "pattern",
+         "repeat",
+         "next",
+         "again"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Before and After",
+     "topics": [
+      {
+       "title": "Before and After",
+       "summary": "Numbers come in order: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10.",
+       "notes": [
+        "Numbers come in order: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10.",
+        "The number before 5 is 4.",
+        "The number after 5 is 6.",
+        "Counting forward adds one each time.",
+        "We can line up numbers like a train."
+       ],
+       "outcomes": [
+        "Say which number comes before and after",
+        "Put numbers 1 to 10 in order"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "In a line, who is standing before you? Who is after you?",
+        "example": "3 comes before 4. 7 comes after 6.",
+        "activity": "Number train: children hold number cards 1–10 and line up in order, then say who is before and after them.",
+        "questions": [
+         {
+          "q": "What comes after 3?",
+          "a": "4."
+         },
+         {
+          "q": "What comes before 9?",
+          "a": "8."
+         },
+         {
+          "q": "Put in order: 3, 1, 2.",
+          "a": "1, 2, 3."
+         }
+        ],
+        "homework": "Say numbers 1 to 10 while climbing stairs.",
+        "terms": [
+         "before",
+         "after",
+         "order",
+         "next",
+         "first",
+         "last"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "In, Out, Up and Down",
+     "topics": [
+      {
+       "title": "In, Out, Up and Down",
+       "summary": "In means inside something.",
+       "notes": [
+        "In means inside something.",
+        "Out means outside something.",
+        "Up is high; down is low.",
+        "On means on top; under means below.",
+        "Position words tell us where things are."
+       ],
+       "outcomes": [
+        "Use position words: in, out, up, down, on, under",
+        "Follow simple position instructions"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Where is the ball? In the box or out of the box?",
+        "example": "The cat is under the table. The book is on the table. The ball is in the box.",
+        "activity": "Simon says: 'Put your hands up', 'Put the block under the chair', 'Stand in the circle'.",
+        "questions": [
+         {
+          "q": "Is the sky up or down?",
+          "a": "Up."
+         },
+         {
+          "q": "Put the pencil in the box.",
+          "a": "Child does it."
+         },
+         {
+          "q": "Where is your shoe: on your foot or under the chair?",
+          "a": "On my foot."
+         }
+        ],
+        "homework": "Play 'Where is it?' at home: hide a toy and tell where it is.",
+        "terms": [
+         "in",
+         "out",
+         "up",
+         "down",
+         "on",
+         "under"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Counting Games",
+     "topics": [
+      {
+       "title": "Counting Games",
+       "summary": "We count things in games.",
+       "notes": [
+        "We count things in games.",
+        "The dots on a dice show a number.",
+        "Number and objects must match: 4 means 4 things.",
+        "We take turns in games.",
+        "Counting games make numbers fun."
+       ],
+       "outcomes": [
+        "Count objects to 10 in games",
+        "Match a number with that many objects"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Roll the big dice! How many dots? Jump that many times!",
+        "example": "Dice shows ● ● ● — 3 dots, so jump 3 times.",
+        "activity": "Dice and jump: children roll a big dice, count the dots aloud and jump or clap that many times.",
+        "questions": [
+         {
+          "q": "The dice shows 6 dots. How many jumps?",
+          "a": "6."
+         },
+         {
+          "q": "Put 4 blocks on the number 4 card.",
+          "a": "Child places 4 blocks."
+         },
+         {
+          "q": "Count the children in your row.",
+          "a": "Any correct count."
+         }
+        ],
+        "homework": "Play a counting game (like ludo) with your family.",
+        "terms": [
+         "count",
+         "dice",
+         "dots",
+         "turn",
+         "match"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "lkg-evs",
+   "title": "EVS: My World LKG, LKG",
+   "term": -1,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "My Body",
+     "topics": [
+      {
+       "title": "My Body",
+       "summary": "Our body has a head, eyes, ears, nose, mouth, hands and legs.",
+       "notes": [
+        "Our body has a head, eyes, ears, nose, mouth, hands and legs.",
+        "We see with our eyes and hear with our ears.",
+        "We smell with our nose and eat with our mouth.",
+        "We hold things with our hands and walk with our legs.",
+        "We keep our body clean and safe."
+       ],
+       "outcomes": [
+        "Name the main parts of the body",
+        "Know what each part helps us do"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "skeleton",
+         "title": "Human skeleton"
+        }
+       ],
+       "lesson": {
+        "hook": "Touch your head! Now your nose! Now your toes! What else can you touch?",
+        "example": "I see a flower with my eyes. I smell it with my nose.",
+        "activity": "Sing 'Head, Shoulders, Knees and Toes' and point to each body part.",
+        "questions": [
+         {
+          "q": "What do we see with?",
+          "a": "Eyes."
+         },
+         {
+          "q": "How many hands do you have?",
+          "a": "2."
+         },
+         {
+          "q": "What do we walk with?",
+          "a": "Legs."
+         }
+        ],
+        "homework": "Draw your face with eyes, nose, mouth and ears.",
+        "terms": [
+         "head",
+         "eyes",
+         "ears",
+         "nose",
+         "mouth",
+         "hands",
+         "legs"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "My Family",
+     "topics": [
+      {
+       "title": "My Family",
+       "summary": "A family lives together and loves each other.",
+       "notes": [
+        "A family lives together and loves each other.",
+        "Mother, father, brother, sister, grandmother and grandfather are family.",
+        "Family members help each other.",
+        "Some families are big; some are small.",
+        "We love and respect our family."
+       ],
+       "outcomes": [
+        "Name members of their family",
+        "Say how family members care for each other"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Who lives in your house with you? Let's count your family!",
+        "example": "Riya lives with her mother, father, grandmother and baby brother.",
+        "activity": "Family finger puppets: children draw family members on paper strips, wear them on fingers and introduce each.",
+        "questions": [
+         {
+          "q": "Who is your mother's mother?",
+          "a": "Grandmother."
+         },
+         {
+          "q": "How many people are in your family?",
+          "a": "Any number."
+         },
+         {
+          "q": "How do you help your family?",
+          "a": "Any helpful act."
+         }
+        ],
+        "homework": "Bring a family photo and tell the class who is in it.",
+        "terms": [
+         "family",
+         "mother",
+         "father",
+         "brother",
+         "sister",
+         "grandparents"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "My Home",
+     "topics": [
+      {
+       "title": "My Home",
+       "summary": "A house keeps us safe from rain, sun and cold.",
+       "notes": [
+        "A house keeps us safe from rain, sun and cold.",
+        "We cook in the kitchen.",
+        "We sleep in the bedroom.",
+        "We bathe in the bathroom.",
+        "We keep our home clean and tidy."
+       ],
+       "outcomes": [
+        "Name the rooms of a house and what we do in them",
+        "Know that a home keeps us safe"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Where do you sleep? Where does Amma cook? Let's walk through a house!",
+        "example": "In the kitchen there is a stove, pots and plates.",
+        "activity": "Doll house: using boxes, children make rooms and place pictures of things (bed, stove, bucket) in the right room.",
+        "questions": [
+         {
+          "q": "Where do we cook food?",
+          "a": "In the kitchen."
+         },
+         {
+          "q": "Where do we sleep?",
+          "a": "In the bedroom."
+         },
+         {
+          "q": "Why do we need a house?",
+          "a": "To keep us safe."
+         }
+        ],
+        "homework": "Draw your favourite room at home.",
+        "terms": [
+         "house",
+         "kitchen",
+         "bedroom",
+         "bathroom",
+         "living room",
+         "safe"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "My School",
+     "topics": [
+      {
+       "title": "My School",
+       "summary": "At school we learn, play and make friends.",
+       "notes": [
+        "At school we learn, play and make friends.",
+        "Our school has classrooms, a playground and toilets.",
+        "Teachers teach us; helpers keep school clean.",
+        "We wait for our turn and share toys.",
+        "We keep our class neat."
+       ],
+       "outcomes": [
+        "Name places and people in school",
+        "Follow simple class rules"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Who opens the school gate every morning? Who teaches you songs?",
+        "example": "In the playground we play on the slide and swing, taking turns.",
+        "activity": "School tour: walk around the school and meet the guard, the cleaner and the principal; say 'thank you' to each.",
+        "questions": [
+         {
+          "q": "Where do we play at school?",
+          "a": "In the playground."
+         },
+         {
+          "q": "Who teaches us?",
+          "a": "The teacher."
+         },
+         {
+          "q": "What do we do with toys in class?",
+          "a": "Share them."
+         }
+        ],
+        "homework": "Tell your family the name of one new friend.",
+        "terms": [
+         "school",
+         "teacher",
+         "classroom",
+         "playground",
+         "friends",
+         "share"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Fruits and Vegetables",
+     "topics": [
+      {
+       "title": "Fruits and Vegetables",
+       "summary": "Mango, banana, apple, grapes and orange are fruits.",
+       "notes": [
+        "Mango, banana, apple, grapes and orange are fruits.",
+        "Carrot, potato, tomato, onion and beans are vegetables.",
+        "Fruits and vegetables make us strong and healthy.",
+        "We wash them before eating.",
+        "Some grow on trees, some on plants, some under the ground."
+       ],
+       "outcomes": [
+        "Name common fruits and vegetables",
+        "Know that they keep us healthy"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "I am yellow and long, and monkeys love me. What fruit am I?",
+        "example": "Carrot grows under the ground. Mango grows on a tree.",
+        "activity": "Fruit basket: children feel, smell and name real fruits and vegetables from a basket, then sort them into two baskets.",
+        "questions": [
+         {
+          "q": "Is a banana a fruit or a vegetable?",
+          "a": "A fruit."
+         },
+         {
+          "q": "Name a red vegetable.",
+          "a": "Tomato (or carrot)."
+         },
+         {
+          "q": "What should we do before eating fruit?",
+          "a": "Wash it."
+         }
+        ],
+        "homework": "Eat one fruit at home today and draw it.",
+        "terms": [
+         "fruit",
+         "vegetable",
+         "healthy",
+         "wash",
+         "mango",
+         "carrot"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Animals Around Us",
+     "topics": [
+      {
+       "title": "Animals Around Us",
+       "summary": "Cow, dog, cat, goat and hen live near us.",
+       "notes": [
+        "Cow, dog, cat, goat and hen live near us.",
+        "A dog barks, a cat mews, a cow moos.",
+        "Some animals are pets: dog, cat.",
+        "Some animals give us food: cow gives milk, hen gives eggs.",
+        "We should be kind to animals."
+       ],
+       "outcomes": [
+        "Name common animals and their sounds",
+        "Know pet animals and farm animals"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Moo! Who says moo? Bow-wow! Who says bow-wow?",
+        "example": "The cow gives us milk. We make curd and ghee from milk.",
+        "activity": "Animal sounds game: children close their eyes, listen to animal sounds and guess the animal.",
+        "questions": [
+         {
+          "q": "Which animal gives us milk?",
+          "a": "Cow (or goat, buffalo)."
+         },
+         {
+          "q": "What sound does a dog make?",
+          "a": "Bow-wow (woof)."
+         },
+         {
+          "q": "Name a pet animal.",
+          "a": "Dog or cat."
+         }
+        ],
+        "homework": "Draw an animal you saw on the way home.",
+        "terms": [
+         "animal",
+         "pet",
+         "cow",
+         "dog",
+         "cat",
+         "goat",
+         "hen"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Birds",
+     "topics": [
+      {
+       "title": "Birds",
+       "summary": "Crow, sparrow, parrot, pigeon and peacock are birds.",
+       "notes": [
+        "Crow, sparrow, parrot, pigeon and peacock are birds.",
+        "Birds have wings, feathers and a beak.",
+        "Most birds can fly.",
+        "Birds lay eggs and live in nests.",
+        "The peacock is our national bird."
+       ],
+       "outcomes": [
+        "Name common birds",
+        "Know that birds have wings and feathers and live in nests"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Tweet, tweet! Who is singing outside the window?",
+        "example": "A parrot is green with a red beak. It can copy our words!",
+        "activity": "Bird watch: go out for 5 minutes and count the birds you see; make a feather collage afterwards.",
+        "questions": [
+         {
+          "q": "What do birds use to fly?",
+          "a": "Wings."
+         },
+         {
+          "q": "Where do birds live?",
+          "a": "In nests."
+         },
+         {
+          "q": "Which bird is our national bird?",
+          "a": "The peacock."
+         }
+        ],
+        "homework": "Put a bowl of water outside for birds.",
+        "terms": [
+         "bird",
+         "wings",
+         "feathers",
+         "beak",
+         "nest",
+         "egg"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Clean Habits",
+     "topics": [
+      {
+       "title": "Clean Habits",
+       "summary": "We wash our hands with soap before eating and after using the toilet.",
+       "notes": [
+        "We wash our hands with soap before eating and after using the toilet.",
+        "We brush our teeth in the morning and at night.",
+        "We take a bath every day.",
+        "We cut our nails and comb our hair.",
+        "Clean habits keep germs away."
+       ],
+       "outcomes": [
+        "Practise clean habits: washing hands, brushing teeth, bathing",
+        "Know why clean habits keep us healthy"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "What do we do before we eat? Show me how you wash your hands!",
+        "example": "Wet hands, rub with soap, scrub fingers and nails, rinse, dry — clean hands!",
+        "activity": "Glitter germs: sprinkle glitter on hands; children see how it spreads, then wash it off properly with soap.",
+        "questions": [
+         {
+          "q": "When do we wash our hands?",
+          "a": "Before eating and after the toilet."
+         },
+         {
+          "q": "How many times do we brush our teeth?",
+          "a": "Two times a day."
+         },
+         {
+          "q": "Why do we keep clean?",
+          "a": "To stay healthy (keep germs away)."
+         }
+        ],
+        "homework": "Wash your hands with soap before every meal this week.",
+        "terms": [
+         "wash",
+         "soap",
+         "brush",
+         "bath",
+         "clean",
+         "germs"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Weather",
+     "topics": [
+      {
+       "title": "Weather",
+       "summary": "Some days are sunny and hot.",
+       "notes": [
+        "Some days are sunny and hot.",
+        "Some days are rainy; we use an umbrella.",
+        "Some days are windy; leaves fly.",
+        "Some days are cold; we wear a sweater.",
+        "Weather changes from day to day."
+       ],
+       "outcomes": [
+        "Name kinds of weather: sunny, rainy, windy, cold",
+        "Choose clothes for the weather"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Look out of the window. Is it sunny or rainy today?",
+        "example": "On a rainy day we wear a raincoat and carry an umbrella.",
+        "activity": "Weather chart: each morning a child puts a sun, cloud, rain or wind picture on the class weather chart.",
+        "questions": [
+         {
+          "q": "What do we use on a rainy day?",
+          "a": "An umbrella (or raincoat)."
+         },
+         {
+          "q": "What do we wear when it is cold?",
+          "a": "A sweater."
+         },
+         {
+          "q": "What is the weather today?",
+          "a": "Any correct answer."
+         }
+        ],
+        "homework": "Draw today's weather.",
+        "terms": [
+         "weather",
+         "sunny",
+         "rainy",
+         "windy",
+         "cold",
+         "umbrella",
+         "sweater"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Festivals",
+     "topics": [
+      {
+       "title": "Festivals",
+       "summary": "We celebrate many festivals: Diwali, Eid, Christmas, Holi, Pongal and more.",
+       "notes": [
+        "We celebrate many festivals: Diwali, Eid, Christmas, Holi, Pongal and more.",
+        "On festivals we wear new clothes and eat sweets.",
+        "We meet family and friends.",
+        "We share with others.",
+        "Festivals make everyone happy."
+       ],
+       "outcomes": [
+        "Name some festivals we celebrate",
+        "Know how festivals bring people together"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Which festival has lamps and sweets? Which one has colours?",
+        "example": "On Diwali we light diyas; on Holi we play with colours; on Christmas we decorate a tree; on Eid we share sweet sevaiyan.",
+        "activity": "Festival craft: children decorate a paper diya, a star or a paper lantern.",
+        "questions": [
+         {
+          "q": "On which festival do we light diyas?",
+          "a": "Diwali."
+         },
+         {
+          "q": "On which festival do we play with colours?",
+          "a": "Holi."
+         },
+         {
+          "q": "What do we do on festivals?",
+          "a": "Wear new clothes, eat sweets, meet family and share."
+         }
+        ],
+        "homework": "Tell your class about your favourite festival.",
+        "terms": [
+         "festival",
+         "celebrate",
+         "sweets",
+         "lamps",
+         "colours",
+         "share"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "lkg-art",
+   "title": "Art, LKG",
+   "term": -1,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Colouring Fun",
+     "topics": [
+      {
+       "title": "Colouring Fun",
+       "summary": "We hold a crayon with our thumb and two fingers.",
+       "notes": [
+        "We hold a crayon with our thumb and two fingers.",
+        "We colour slowly and stay inside the lines.",
+        "We can use many colours in one picture.",
+        "Light and dark colours make pictures pretty.",
+        "We put crayons back in the box after use."
+       ],
+       "outcomes": [
+        "Hold a crayon correctly",
+        "Colour inside the lines using different colours"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Here is a big picture of a butterfly. Which colours shall we use to make it bright?",
+        "example": "Colour the sun yellow, the sky blue and the grass green.",
+        "activity": "Colour a large outline of a butterfly, a fish or a flower with crayons.",
+        "questions": [
+         {
+          "q": "What colour will you use for the sun?",
+          "a": "Yellow (or orange)."
+         },
+         {
+          "q": "Where do we put crayons after colouring?",
+          "a": "Back in the box."
+         },
+         {
+          "q": "Show how you hold a crayon.",
+          "a": "Child shows the grip."
+         }
+        ],
+        "homework": "Colour a picture at home and bring it to class.",
+        "terms": [
+         "crayon",
+         "colour",
+         "inside the lines",
+         "bright",
+         "light",
+         "dark"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Finger and Thumb Painting",
+     "topics": [
+      {
+       "title": "Finger and Thumb Painting",
+       "summary": "We can paint with our fingers and thumbs.",
+       "notes": [
+        "We can paint with our fingers and thumbs.",
+        "A thumb print can become a fish, a bird or a flower.",
+        "Many dots make a caterpillar.",
+        "We wash our hands after painting.",
+        "Every child's print is different!"
+       ],
+       "outcomes": [
+        "Make prints with fingers and thumbs",
+        "Turn prints into simple pictures"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Dip your thumb in paint and press it on paper. What does it look like?",
+        "example": "Five thumb prints in a circle make a flower; add a green stem and leaves.",
+        "activity": "Thumb-print tree: children add thumb-print leaves to a tree trunk drawn on a big chart.",
+        "questions": [
+         {
+          "q": "What can a thumb print become?",
+          "a": "A fish, bird, flower (any)."
+         },
+         {
+          "q": "What do we do after painting?",
+          "a": "Wash our hands."
+         },
+         {
+          "q": "Which colour did you use?",
+          "a": "Any colour."
+         }
+        ],
+        "homework": "Make a thumb-print animal at home.",
+        "terms": [
+         "paint",
+         "print",
+         "thumb",
+         "finger",
+         "dot"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tear and Paste",
+     "topics": [
+      {
+       "title": "Tear and Paste",
+       "summary": "Tearing paper makes our fingers strong.",
+       "notes": [
+        "Tearing paper makes our fingers strong.",
+        "We tear small pieces slowly.",
+        "We put a little glue and press the pieces on.",
+        "Pieces of different colours make a picture bright.",
+        "We clean up the paper bits after work."
+       ],
+       "outcomes": [
+        "Tear paper into small pieces",
+        "Paste pieces to fill a picture"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Listen to the sound of tearing paper! Let's make a picture with torn paper.",
+        "example": "Tear orange paper bits and paste them inside a circle to make a sun.",
+        "activity": "Torn-paper fruit: fill outlines of a mango, a watermelon and grapes with torn coloured paper.",
+        "questions": [
+         {
+          "q": "What do we use to stick paper?",
+          "a": "Glue."
+         },
+         {
+          "q": "Should we use a lot of glue or a little?",
+          "a": "A little."
+         },
+         {
+          "q": "What will you make with red paper?",
+          "a": "Any red thing (apple, tomato)."
+         }
+        ],
+        "homework": "Make a torn-paper picture with old magazine pages.",
+        "terms": [
+         "tear",
+         "paste",
+         "glue",
+         "pieces",
+         "fill"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Clay Play",
+     "topics": [
+      {
+       "title": "Clay Play",
+       "summary": "Clay is soft; we can shape it with our hands.",
+       "notes": [
+        "Clay is soft; we can shape it with our hands.",
+        "Rolling makes a snake; rolling in a circle makes a ball.",
+        "Pressing a ball makes it flat like a roti.",
+        "We can make fruits, animals and bowls.",
+        "We keep clay on the mat and wash our hands after."
+       ],
+       "outcomes": [
+        "Roll, press and pinch clay",
+        "Make simple shapes and objects with clay"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Squeeze the clay! Roll it! What can you make — a snake? A ball?",
+        "example": "Roll a ball, pinch the top — you have a little pot!",
+        "activity": "Clay fruits: children make bananas, apples and grapes with clay or play-dough.",
+        "questions": [
+         {
+          "q": "How do we make a clay snake?",
+          "a": "By rolling the clay."
+         },
+         {
+          "q": "What did you make?",
+          "a": "Any object."
+         },
+         {
+          "q": "What do we do after clay play?",
+          "a": "Wash our hands."
+         }
+        ],
+        "homework": "Make a small ball with atta dough while helping in the kitchen.",
+        "terms": [
+         "clay",
+         "roll",
+         "press",
+         "pinch",
+         "ball",
+         "snake"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Action Songs",
+     "topics": [
+      {
+       "title": "Action Songs",
+       "summary": "Action songs have movements for words.",
+       "notes": [
+        "Action songs have movements for words.",
+        "We clap, stamp and nod to the beat.",
+        "Singing together makes us happy.",
+        "We can sing songs in English, Hindi, Kannada and other languages.",
+        "We listen and wait for our turn to sing."
+       ],
+       "outcomes": [
+        "Sing songs with matching actions",
+        "Follow a beat with clapping"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "If you're happy and you know it, clap your hands! Can you do it?",
+        "example": "'The wheels on the bus go round and round' — roll your arms like wheels.",
+        "activity": "Sing three action songs in different languages with the whole class.",
+        "questions": [
+         {
+          "q": "What do we do when we are happy in the song?",
+          "a": "Clap our hands."
+         },
+         {
+          "q": "Sing one song you know.",
+          "a": "Any song."
+         },
+         {
+          "q": "Can you clap to the beat?",
+          "a": "Child claps along."
+         }
+        ],
+        "homework": "Teach an action song to someone at home.",
+        "terms": [
+         "song",
+         "action",
+         "clap",
+         "beat",
+         "together"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Move and Dance",
+     "topics": [
+      {
+       "title": "Move and Dance",
+       "summary": "We can walk, hop, jump, sway and spin.",
+       "notes": [
+        "We can walk, hop, jump, sway and spin.",
+        "Fast music makes us move fast; slow music makes us move slowly.",
+        "We can move like animals.",
+        "We stop when the music stops (freeze!).",
+        "Dancing makes our body strong and happy."
+       ],
+       "outcomes": [
+        "Move the body in different ways to music",
+        "Show animals and feelings through movement"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "When the music plays, move like an elephant! Now like a butterfly!",
+        "example": "Elephant: big, slow steps. Rabbit: quick little hops.",
+        "activity": "Freeze dance: play music; children dance and freeze when it stops.",
+        "questions": [
+         {
+          "q": "How does a rabbit move?",
+          "a": "It hops."
+         },
+         {
+          "q": "What do we do when music stops?",
+          "a": "Freeze."
+         },
+         {
+          "q": "Show a slow dance.",
+          "a": "Child moves slowly."
+         }
+        ],
+        "homework": "Dance to your favourite song at home.",
+        "terms": [
+         "move",
+         "dance",
+         "fast",
+         "slow",
+         "freeze",
+         "hop"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Dot Rangoli",
+     "topics": [
+      {
+       "title": "Dot Rangoli",
+       "summary": "Rangoli (kolam, muggu) is drawn at doorways on festivals.",
+       "notes": [
+        "Rangoli (kolam, muggu) is drawn at doorways on festivals.",
+        "We put dots in rows first.",
+        "We join dots with lines and curves.",
+        "Colours make rangoli bright.",
+        "Rangoli designs repeat and look the same on all sides."
+       ],
+       "outcomes": [
+        "Join dots to make simple rangoli patterns",
+        "Fill rangoli with colours"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Look at this rangoli at the door. How is it made? Dots and lines!",
+        "example": "Nine dots in 3 rows; join the outer dots to make a square, then draw a flower inside.",
+        "activity": "Dot rangoli: children join dots on paper (or with chalk on the floor) and colour their design.",
+        "questions": [
+         {
+          "q": "What do we draw first in a rangoli?",
+          "a": "Dots."
+         },
+         {
+          "q": "When do we make rangoli?",
+          "a": "On festivals (every day in some homes)."
+         },
+         {
+          "q": "Show a line joining two dots.",
+          "a": "Child draws a line."
+         }
+        ],
+        "homework": "Help make a rangoli at home and draw it in your book.",
+        "terms": [
+         "rangoli",
+         "kolam",
+         "dots",
+         "join",
+         "pattern"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Sounds and Rhythm",
+     "topics": [
+      {
+       "title": "Sounds and Rhythm",
+       "summary": "We can make music with drums, bells and shakers.",
+       "notes": [
+        "We can make music with drums, bells and shakers.",
+        "Sounds can be loud or soft.",
+        "Sounds can be fast or slow.",
+        "We can make shakers with bottles and rice.",
+        "Playing together, we follow the leader's beat."
+       ],
+       "outcomes": [
+        "Make sounds with simple instruments",
+        "Play loud and soft, fast and slow"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Shake this bottle with rice inside. What sound does it make?",
+        "example": "Tap the drum softly like rain; then loudly like thunder.",
+        "activity": "Make shakers: fill small bottles with rice, dal or pebbles and compare their sounds; then play along to a song.",
+        "questions": [
+         {
+          "q": "Is thunder loud or soft?",
+          "a": "Loud."
+         },
+         {
+          "q": "What did you put in your shaker?",
+          "a": "Rice, dal or pebbles."
+         },
+         {
+          "q": "Play a slow beat on the drum.",
+          "a": "Child plays slowly."
+         }
+        ],
+        "homework": "Find three things at home that make interesting sounds.",
+        "terms": [
+         "sound",
+         "loud",
+         "soft",
+         "fast",
+         "slow",
+         "drum",
+         "shaker"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "lkg-hindi",
+   "title": "Hindi: Aksharmala LKG, LKG",
+   "term": -1,
+   "language": "hi",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "मेरा नाम",
+     "topics": [
+      {
+       "title": "मेरा नाम",
+       "summary": "मिलने पर हम 'नमस्ते' कहते हैं।",
+       "notes": [
+        "मिलने पर हम 'नमस्ते' कहते हैं।",
+        "अपना नाम बताने के लिए कहते हैं: 'मेरा नाम … है।'",
+        "किसी से नाम पूछने के लिए कहते हैं: 'तुम्हारा नाम क्या है?'",
+        "'धन्यवाद' और 'कृपया' अच्छे शब्द हैं।",
+        "हम ध्यान से सुनते हैं।"
+       ],
+       "outcomes": [
+        "अपना नाम हिंदी में बताना",
+        "नमस्ते कहकर अभिवादन करना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "नमस्ते बच्चो! मेरा नाम शिक्षिका है। तुम्हारा नाम क्या है?",
+        "example": "शिक्षिका: 'तुम्हारा नाम क्या है?' बच्चा: 'मेरा नाम अमन है।'",
+        "activity": "गेंद खेल: बच्चे घेरे में बैठकर गेंद आगे बढ़ाएँ; जिसके पास गेंद आए वह कहे 'मेरा नाम … है।'",
+        "questions": [
+         {
+          "q": "मिलने पर हम क्या कहते हैं?",
+          "a": "नमस्ते।"
+         },
+         {
+          "q": "तुम्हारा नाम क्या है?",
+          "a": "मेरा नाम … है।"
+         },
+         {
+          "q": "कोई चीज़ देने पर क्या कहते हैं?",
+          "a": "धन्यवाद।"
+         }
+        ],
+        "homework": "घर पर सबको 'नमस्ते' कहो और अपना नाम बताओ।",
+        "terms": [
+         "नमस्ते",
+         "नाम",
+         "धन्यवाद",
+         "कृपया",
+         "मेरा"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "बाल गीत",
+     "topics": [
+      {
+       "title": "बाल गीत",
+       "summary": "बाल गीत छोटे और मज़ेदार होते हैं।",
+       "notes": [
+        "बाल गीत छोटे और मज़ेदार होते हैं।",
+        "गीत गाते समय हम हाथ-पैर से अभिनय करते हैं।",
+        "कुछ शब्दों की आवाज़ मिलती है: रानी–पानी।",
+        "मिलकर गाने में मज़ा आता है।",
+        "गीत से नए शब्द सीखते हैं।"
+       ],
+       "outcomes": [
+        "बाल गीत हाव-भाव के साथ गाना",
+        "गीत के शब्दों को सुनकर दोहराना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "चलो ताली बजाकर गाएँ: 'मछली जल की रानी है…' क्या तुम्हें आगे आता है?",
+        "example": "'रानी' और 'पानी' — दोनों के अंत की आवाज़ एक जैसी है।",
+        "activity": "'मछली जल की रानी है' और 'चंदा मामा दूर के' गीत हाव-भाव के साथ गाओ।",
+        "questions": [
+         {
+          "q": "मछली कहाँ रहती है?",
+          "a": "पानी में।"
+         },
+         {
+          "q": "'रानी' से मिलता शब्द बताओ।",
+          "a": "पानी (नानी)।"
+         },
+         {
+          "q": "अपना पसंदीदा गीत गाओ।",
+          "a": "कोई भी गीत।"
+         }
+        ],
+        "homework": "घर पर एक बाल गीत गाकर सुनाओ।",
+        "terms": [
+         "गीत",
+         "ताली",
+         "अभिनय",
+         "तुक",
+         "गाना"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "स्वर: अ – ई",
+     "topics": [
+      {
+       "title": "स्वर: अ – ई",
+       "summary": "अ — अनार, अमरूद।",
+       "notes": [
+        "अ — अनार, अमरूद।",
+        "आ — आम, आग।",
+        "इ — इमली, इक्का।",
+        "ई — ईख, ईंट।",
+        "छोटी और बड़ी मात्रा की आवाज़ अलग होती है: इ छोटा, ई लंबा।"
+       ],
+       "outcomes": [
+        "स्वर अ, आ, इ, ई को पहचानना और बोलना",
+        "इन स्वरों से शुरू होने वाले शब्द बताना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'अ' से अनार! बताओ, 'आ' से क्या होता है?",
+        "example": "'इ' छोटी आवाज़ — इमली; 'ई' लंबी आवाज़ — ईख।",
+        "activity": "रेत में अक्षर: बच्चे रेत या चावल की थाली में उँगली से अ, आ, इ, ई बनाएँ और बोलें।",
+        "questions": [
+         {
+          "q": "'आम' किस अक्षर से शुरू होता है?",
+          "a": "आ से।"
+         },
+         {
+          "q": "'अ' से कोई शब्द बताओ।",
+          "a": "अनार, अमरूद (कोई भी)।"
+         },
+         {
+          "q": "'ईंट' किस अक्षर से शुरू होती है?",
+          "a": "ई से।"
+         }
+        ],
+        "homework": "अ, आ, इ, ई लिखो और हर एक का एक चित्र बनाओ।",
+        "terms": [
+         "स्वर",
+         "अ",
+         "आ",
+         "इ",
+         "ई"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "स्वर: उ – औ",
+     "topics": [
+      {
+       "title": "स्वर: उ – औ",
+       "summary": "उ — उल्लू; ऊ — ऊन।",
+       "notes": [
+        "उ — उल्लू; ऊ — ऊन।",
+        "ऋ — ऋषि।",
+        "ए — एड़ी; ऐ — ऐनक।",
+        "ओ — ओखली; औ — औरत।",
+        "स्वरों को बोलते समय मुँह का आकार बदलता है।"
+       ],
+       "outcomes": [
+        "स्वर उ, ऊ, ऋ, ए, ऐ, ओ, औ पहचानना",
+        "इन स्वरों से शुरू होने वाले शब्द बताना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'उ' से उल्लू! उल्लू रात में जागता है। अब 'ए' से क्या?",
+        "example": "'ऊ' से ऊन — ऊन से स्वेटर बनता है।",
+        "activity": "चित्र-अक्षर मिलान: उल्लू, ऊन, ऋषि, एड़ी, ऐनक, ओखली के चित्रों को सही स्वर से मिलाओ।",
+        "questions": [
+         {
+          "q": "'उल्लू' किस अक्षर से शुरू होता है?",
+          "a": "उ से।"
+         },
+         {
+          "q": "'ऐनक' में पहला अक्षर कौन-सा है?",
+          "a": "ऐ।"
+         },
+         {
+          "q": "'ओ' से कोई शब्द बताओ।",
+          "a": "ओखली, ओस (कोई भी)।"
+         }
+        ],
+        "homework": "उ, ऊ, ए, ओ लिखो और एक-एक चित्र बनाओ।",
+        "terms": [
+         "स्वर",
+         "उ",
+         "ऊ",
+         "ए",
+         "ऐ",
+         "ओ",
+         "औ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "अं और अः",
+     "topics": [
+      {
+       "title": "अं और अः",
+       "summary": "अं — अंगूर, अंडा।",
+       "notes": [
+        "अं — अंगूर, अंडा।",
+        "अः की आवाज़ 'अह' जैसी होती है।",
+        "अब हम सारे स्वर जानते हैं।",
+        "स्वरों का क्रम: अ आ इ ई उ ऊ ऋ ए ऐ ओ औ अं अः।",
+        "स्वर गीत गाकर याद करना आसान है।"
+       ],
+       "outcomes": [
+        "अं और अः को पहचानना और बोलना",
+        "सभी स्वरों को क्रम से बोलना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'अं' से अंगूर! मीठे-मीठे अंगूर किसे पसंद हैं?",
+        "example": "'अं' से अंगूर, अंडा — ऊपर बिंदु (अनुस्वार) है।",
+        "activity": "स्वर रेल: हर बच्चा एक स्वर-कार्ड पकड़े और सब क्रम से खड़े होकर 'स्वर गीत' गाएँ।",
+        "questions": [
+         {
+          "q": "'अंगूर' किस अक्षर से शुरू होता है?",
+          "a": "अं से।"
+         },
+         {
+          "q": "'ओ' के बाद कौन-सा स्वर आता है?",
+          "a": "औ।"
+         },
+         {
+          "q": "सारे स्वर क्रम से बोलो।",
+          "a": "अ आ इ ई उ ऊ ऋ ए ऐ ओ औ अं अः।"
+         }
+        ],
+        "homework": "घर पर स्वर गीत गाओ।",
+        "terms": [
+         "स्वर",
+         "अं",
+         "अः",
+         "क्रम",
+         "अंगूर"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "चित्र देखो, बोलो",
+     "topics": [
+      {
+       "title": "चित्र देखो, बोलो",
+       "summary": "चित्र ध्यान से देखते हैं।",
+       "notes": [
+        "चित्र ध्यान से देखते हैं।",
+        "चित्र में दिख रही चीज़ों के नाम बोलते हैं।",
+        "छोटे वाक्य बनाते हैं: 'यह गाय है।'",
+        "रंगों के नाम भी बताते हैं: लाल, पीला, हरा।",
+        "बारी आने पर बोलते हैं।"
+       ],
+       "outcomes": [
+        "चित्र देखकर वस्तुओं के नाम बोलना",
+        "चित्र के बारे में छोटे वाक्य बोलना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "इस चित्र में क्या-क्या दिख रहा है? चलो, बारी-बारी से बताओ!",
+        "example": "चित्र में एक लड़का पतंग उड़ा रहा है। पतंग लाल है।",
+        "activity": "बाज़ार का चित्र दिखाकर बच्चों से पूछो: कौन-कौन-सी चीज़ें दिख रही हैं? किस रंग की हैं?",
+        "questions": [
+         {
+          "q": "यह क्या है? (गाय का चित्र)",
+          "a": "यह गाय है।"
+         },
+         {
+          "q": "पतंग किस रंग की है?",
+          "a": "कोई भी सही रंग।"
+         },
+         {
+          "q": "चित्र के बारे में एक वाक्य बोलो।",
+          "a": "कोई भी सरल वाक्य।"
+         }
+        ],
+        "homework": "किसी किताब का एक चित्र देखकर घर पर तीन बातें बताओ।",
+        "terms": [
+         "चित्र",
+         "नाम",
+         "वाक्य",
+         "रंग",
+         "बोलो"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "lkg-kannada",
+   "title": "Kannada: Varnamale LKG, LKG",
+   "term": -1,
+   "language": "kn",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "ನನ್ನ ಹೆಸರು",
+     "topics": [
+      {
+       "title": "ನನ್ನ ಹೆಸರು",
+       "summary": "ಭೇಟಿಯಾದಾಗ 'ನಮಸ್ಕಾರ' ಎಂದು ಹೇಳುತ್ತೇವೆ.",
+       "notes": [
+        "ಭೇಟಿಯಾದಾಗ 'ನಮಸ್ಕಾರ' ಎಂದು ಹೇಳುತ್ತೇವೆ.",
+        "ಹೆಸರು ಹೇಳಲು: 'ನನ್ನ ಹೆಸರು …'.",
+        "ಹೆಸರು ಕೇಳಲು: 'ನಿನ್ನ ಹೆಸರೇನು?'",
+        "'ಧನ್ಯವಾದ' ಮತ್ತು 'ದಯವಿಟ್ಟು' ಒಳ್ಳೆಯ ಪದಗಳು.",
+        "ಬೇರೆಯವರು ಮಾತನಾಡುವಾಗ ಗಮನವಿಟ್ಟು ಕೇಳುತ್ತೇವೆ."
+       ],
+       "outcomes": [
+        "ಕನ್ನಡದಲ್ಲಿ ತನ್ನ ಹೆಸರನ್ನು ಹೇಳುವುದು",
+        "ನಮಸ್ಕಾರ ಹೇಳಿ ಸ್ವಾಗತಿಸುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "ನಮಸ್ಕಾರ ಮಕ್ಕಳೇ! ನನ್ನ ಹೆಸರು ಟೀಚರ್. ನಿನ್ನ ಹೆಸರೇನು?",
+        "example": "ಟೀಚರ್: 'ನಿನ್ನ ಹೆಸರೇನು?' ಮಗು: 'ನನ್ನ ಹೆಸರು ಅನು.'",
+        "activity": "ಚೆಂಡಿನ ಆಟ: ಮಕ್ಕಳು ವೃತ್ತದಲ್ಲಿ ಕುಳಿತು ಚೆಂಡನ್ನು ಉರುಳಿಸುತ್ತಾರೆ; ಚೆಂಡು ಬಂದವರು 'ನನ್ನ ಹೆಸರು …' ಎನ್ನುತ್ತಾರೆ.",
+        "questions": [
+         {
+          "q": "ಭೇಟಿಯಾದಾಗ ಏನು ಹೇಳುತ್ತೇವೆ?",
+          "a": "ನಮಸ್ಕಾರ."
+         },
+         {
+          "q": "ನಿನ್ನ ಹೆಸರೇನು?",
+          "a": "ನನ್ನ ಹೆಸರು …"
+         },
+         {
+          "q": "ಯಾರಾದರೂ ಏನಾದರೂ ಕೊಟ್ಟಾಗ ಏನು ಹೇಳುತ್ತೇವೆ?",
+          "a": "ಧನ್ಯವಾದ."
+         }
+        ],
+        "homework": "ಮನೆಯಲ್ಲಿ ಎಲ್ಲರಿಗೂ 'ನಮಸ್ಕಾರ' ಹೇಳು.",
+        "terms": [
+         "ನಮಸ್ಕಾರ",
+         "ಹೆಸರು",
+         "ಧನ್ಯವಾದ",
+         "ದಯವಿಟ್ಟು",
+         "ನನ್ನ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಶಿಶು ಗೀತೆಗಳು",
+     "topics": [
+      {
+       "title": "ಶಿಶು ಗೀತೆಗಳು",
+       "summary": "ಶಿಶು ಗೀತೆಗಳು ಚಿಕ್ಕವು ಮತ್ತು ಖುಷಿ ಕೊಡುತ್ತವೆ.",
+       "notes": [
+        "ಶಿಶು ಗೀತೆಗಳು ಚಿಕ್ಕವು ಮತ್ತು ಖುಷಿ ಕೊಡುತ್ತವೆ.",
+        "ಹಾಡುವಾಗ ಕೈ-ಕಾಲು ಆಡಿಸಿ ಅಭಿನಯಿಸುತ್ತೇವೆ.",
+        "ಕೆಲವು ಪದಗಳ ಕೊನೆಯ ಧ್ವನಿ ಒಂದೇ ಇರುತ್ತದೆ: ಮರಿ–ಪರಿ.",
+        "ಎಲ್ಲರೂ ಸೇರಿ ಹಾಡುವುದು ಸಂತೋಷ.",
+        "ಹಾಡುಗಳಿಂದ ಹೊಸ ಪದಗಳನ್ನು ಕಲಿಯುತ್ತೇವೆ."
+       ],
+       "outcomes": [
+        "ಶಿಶು ಗೀತೆಗಳನ್ನು ಅಭಿನಯದೊಂದಿಗೆ ಹಾಡುವುದು",
+        "ಪ್ರಾಸ ಪದಗಳನ್ನು ಗುರುತಿಸುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "ಚಪ್ಪಾಳೆ ತಟ್ಟಿ ಹಾಡೋಣ: 'ನಾಯಿಮರಿ ನಾಯಿಮರಿ ತಿಂಡಿ ಬೇಕೆ?' ನಿಮಗೆ ಗೊತ್ತೇ?",
+        "example": "'ಬಾ ಬಾ ಗಿಳಿಯೇ' ಹಾಡಿನಲ್ಲಿ ಗಿಳಿಯನ್ನು ಕರೆಯುವಂತೆ ಕೈ ಬೀಸುತ್ತೇವೆ.",
+        "activity": "ಎರಡು-ಮೂರು ಕನ್ನಡ ಶಿಶು ಗೀತೆಗಳನ್ನು ಅಭಿನಯದೊಂದಿಗೆ ಎಲ್ಲರೂ ಹಾಡುವುದು.",
+        "questions": [
+         {
+          "q": "ನಿನಗೆ ಇಷ್ಟವಾದ ಹಾಡನ್ನು ಹಾಡು.",
+          "a": "ಯಾವುದೇ ಹಾಡು."
+         },
+         {
+          "q": "ಹಾಡುವಾಗ ನಾವು ಏನು ಮಾಡುತ್ತೇವೆ?",
+          "a": "ಚಪ್ಪಾಳೆ ತಟ್ಟುತ್ತೇವೆ, ಅಭಿನಯಿಸುತ್ತೇವೆ."
+         },
+         {
+          "q": "ನಾಯಿಮರಿ ಏನು ಕೇಳುತ್ತದೆ?",
+          "a": "ತಿಂಡಿ."
+         }
+        ],
+        "homework": "ಮನೆಯಲ್ಲಿ ಒಂದು ಶಿಶು ಗೀತೆ ಹಾಡಿ ತೋರಿಸು.",
+        "terms": [
+         "ಹಾಡು",
+         "ಚಪ್ಪಾಳೆ",
+         "ಅಭಿನಯ",
+         "ಪ್ರಾಸ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಸ್ವರಗಳು: ಅ – ಈ",
+     "topics": [
+      {
+       "title": "ಸ್ವರಗಳು: ಅ – ಈ",
+       "summary": "ಅ — ಅಮ್ಮ, ಅಕ್ಕ.",
+       "notes": [
+        "ಅ — ಅಮ್ಮ, ಅಕ್ಕ.",
+        "ಆ — ಆನೆ, ಆಟ.",
+        "ಇ — ಇಲಿ, ಇರುವೆ.",
+        "ಈ — ಈಶ, ಈಜು.",
+        "ಇ ಚಿಕ್ಕ ಧ್ವನಿ, ಈ ಉದ್ದ ಧ್ವನಿ."
+       ],
+       "outcomes": [
+        "ಸ್ವರಗಳು ಅ, ಆ, ಇ, ಈ ಗುರುತಿಸಿ ಹೇಳುವುದು",
+        "ಈ ಅಕ್ಷರಗಳಿಂದ ಆರಂಭವಾಗುವ ಪದಗಳನ್ನು ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಅ' ಅಂದರೆ ಅಮ್ಮ! 'ಆ' ಅಂದರೆ ಏನು ಹೇಳು?",
+        "example": "'ಆ' ಇಂದ ಆನೆ — ಆನೆ ತುಂಬಾ ದೊಡ್ಡ ಪ್ರಾಣಿ.",
+        "activity": "ಮರಳಿನ ಅಕ್ಷರ: ಮಕ್ಕಳು ಮರಳು ಅಥವಾ ಅಕ್ಕಿ ತಟ್ಟೆಯಲ್ಲಿ ಬೆರಳಿನಿಂದ ಅ, ಆ, ಇ, ಈ ಬರೆದು ಹೇಳುವುದು.",
+        "questions": [
+         {
+          "q": "'ಆನೆ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಆ."
+         },
+         {
+          "q": "'ಅ' ಇಂದ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಅಮ್ಮ, ಅಕ್ಕ (ಯಾವುದಾದರೂ)."
+         },
+         {
+          "q": "'ಇಲಿ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಇ."
+         }
+        ],
+        "homework": "ಅ, ಆ, ಇ, ಈ ಬರೆದು ಪ್ರತಿಯೊಂದಕ್ಕೆ ಒಂದು ಚಿತ್ರ ಬಿಡಿಸು.",
+        "terms": [
+         "ಸ್ವರ",
+         "ಅ",
+         "ಆ",
+         "ಇ",
+         "ಈ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಸ್ವರಗಳು: ಉ – ಐ",
+     "topics": [
+      {
+       "title": "ಸ್ವರಗಳು: ಉ – ಐ",
+       "summary": "ಉ — ಉಪ್ಪು, ಉಂಗುರ; ಊ — ಊಟ, ಊರು.",
+       "notes": [
+        "ಉ — ಉಪ್ಪು, ಉಂಗುರ; ಊ — ಊಟ, ಊರು.",
+        "ಋ — ಋಷಿ.",
+        "ಎ — ಎಲೆ, ಎತ್ತು; ಏ — ಏಣಿ.",
+        "ಐ — ಐದು.",
+        "ಸ್ವರಗಳನ್ನು ಹೇಳುವಾಗ ಬಾಯಿಯ ಆಕಾರ ಬದಲಾಗುತ್ತದೆ."
+       ],
+       "outcomes": [
+        "ಸ್ವರಗಳು ಉ, ಊ, ಋ, ಎ, ಏ, ಐ ಗುರುತಿಸುವುದು",
+        "ಈ ಸ್ವರಗಳಿಂದ ಪದಗಳನ್ನು ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಉ' ಇಂದ ಉಪ್ಪು! ಉಪ್ಪು ಇಲ್ಲದ ಊಟ ಹೇಗಿರುತ್ತದೆ?",
+        "example": "'ಏ' ಇಂದ ಏಣಿ — ಏಣಿ ಹತ್ತಿ ಮೇಲೆ ಹೋಗುತ್ತೇವೆ.",
+        "activity": "ಚಿತ್ರ-ಅಕ್ಷರ ಜೋಡಣೆ: ಉಪ್ಪು, ಊಟ, ಋಷಿ, ಎಲೆ, ಏಣಿ, ಐದು ಚಿತ್ರಗಳನ್ನು ಸರಿಯಾದ ಸ್ವರದೊಂದಿಗೆ ಜೋಡಿಸುವುದು.",
+        "questions": [
+         {
+          "q": "'ಎಲೆ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಎ."
+         },
+         {
+          "q": "'ಊ' ಇಂದ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಊಟ, ಊರು (ಯಾವುದಾದರೂ)."
+         },
+         {
+          "q": "'ಐದು' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಐ."
+         }
+        ],
+        "homework": "ಉ, ಊ, ಎ, ಏ ಬರೆದು ಒಂದೊಂದು ಚಿತ್ರ ಬಿಡಿಸು.",
+        "terms": [
+         "ಸ್ವರ",
+         "ಉ",
+         "ಊ",
+         "ಋ",
+         "ಎ",
+         "ಏ",
+         "ಐ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಸ್ವರಗಳು: ಒ – ಔ",
+     "topics": [
+      {
+       "title": "ಸ್ವರಗಳು: ಒ – ಔ",
+       "summary": "ಒ — ಒಂಟೆ, ಒಲೆ.",
+       "notes": [
+        "ಒ — ಒಂಟೆ, ಒಲೆ.",
+        "ಓ — ಓದು, ಓಟ.",
+        "ಔ — ಔಷಧಿ.",
+        "ಅಂ, ಅಃ — ಯೋಗವಾಹಕಗಳು.",
+        "ಸ್ವರಗಳ ಕ್ರಮ: ಅ ಆ ಇ ಈ ಉ ಊ ಋ ಎ ಏ ಐ ಒ ಓ ಔ."
+       ],
+       "outcomes": [
+        "ಸ್ವರಗಳು ಒ, ಓ, ಔ ಮತ್ತು ಯೋಗವಾಹಕಗಳು ಅಂ, ಅಃ ಗುರುತಿಸುವುದು",
+        "ಎಲ್ಲಾ ಸ್ವರಗಳನ್ನು ಕ್ರಮವಾಗಿ ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಒ' ಇಂದ ಒಂಟೆ! ಒಂಟೆ ಮರುಭೂಮಿಯಲ್ಲಿ ನಡೆಯುತ್ತದೆ.",
+        "example": "'ಔ' ಇಂದ ಔಷಧಿ — ಜ್ವರ ಬಂದಾಗ ಡಾಕ್ಟರು ಔಷಧಿ ಕೊಡುತ್ತಾರೆ.",
+        "activity": "ಸ್ವರ ರೈಲು: ಪ್ರತಿ ಮಗು ಒಂದು ಸ್ವರದ ಕಾರ್ಡ್ ಹಿಡಿದು ಕ್ರಮವಾಗಿ ನಿಂತು 'ಸ್ವರಗಳ ಹಾಡು' ಹಾಡುವುದು.",
+        "questions": [
+         {
+          "q": "'ಒಂಟೆ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಒ."
+         },
+         {
+          "q": "'ಓ' ನಂತರ ಯಾವ ಸ್ವರ ಬರುತ್ತದೆ?",
+          "a": "ಔ."
+         },
+         {
+          "q": "ಎಲ್ಲಾ ಸ್ವರಗಳನ್ನು ಕ್ರಮವಾಗಿ ಹೇಳು.",
+          "a": "ಅ ಆ ಇ ಈ ಉ ಊ ಋ ಎ ಏ ಐ ಒ ಓ ಔ."
+         }
+        ],
+        "homework": "ಮನೆಯಲ್ಲಿ ಸ್ವರಗಳ ಹಾಡು ಹಾಡು.",
+        "terms": [
+         "ಸ್ವರ",
+         "ಒ",
+         "ಓ",
+         "ಔ",
+         "ಅಂ",
+         "ಅಃ",
+         "ಯೋಗವಾಹಕ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಚಿತ್ರ ನೋಡಿ ಹೇಳು",
+     "topics": [
+      {
+       "title": "ಚಿತ್ರ ನೋಡಿ ಹೇಳು",
+       "summary": "ಚಿತ್ರವನ್ನು ಗಮನವಿಟ್ಟು ನೋಡುತ್ತೇವೆ.",
+       "notes": [
+        "ಚಿತ್ರವನ್ನು ಗಮನವಿಟ್ಟು ನೋಡುತ್ತೇವೆ.",
+        "ಚಿತ್ರದಲ್ಲಿರುವ ವಸ್ತುಗಳ ಹೆಸರು ಹೇಳುತ್ತೇವೆ.",
+        "ಚಿಕ್ಕ ವಾಕ್ಯ ಮಾಡುತ್ತೇವೆ: 'ಇದು ಹಸು.'",
+        "ಬಣ್ಣಗಳ ಹೆಸರು ಹೇಳುತ್ತೇವೆ: ಕೆಂಪು, ಹಳದಿ, ಹಸಿರು.",
+        "ನಮ್ಮ ಸರದಿ ಬಂದಾಗ ಮಾತನಾಡುತ್ತೇವೆ."
+       ],
+       "outcomes": [
+        "ಚಿತ್ರ ನೋಡಿ ವಸ್ತುಗಳ ಹೆಸರು ಹೇಳುವುದು",
+        "ಚಿತ್ರದ ಬಗ್ಗೆ ಚಿಕ್ಕ ವಾಕ್ಯಗಳನ್ನು ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "ಈ ಚಿತ್ರದಲ್ಲಿ ಏನೇನು ಕಾಣುತ್ತಿದೆ? ಒಬ್ಬೊಬ್ಬರಾಗಿ ಹೇಳಿ!",
+        "example": "ಚಿತ್ರದಲ್ಲಿ ಒಬ್ಬ ಹುಡುಗ ಗಾಳಿಪಟ ಹಾರಿಸುತ್ತಿದ್ದಾನೆ. ಗಾಳಿಪಟ ಕೆಂಪು ಬಣ್ಣದ್ದು.",
+        "activity": "ಸಂತೆಯ ಚಿತ್ರ ತೋರಿಸಿ ಮಕ್ಕಳನ್ನು ಕೇಳುವುದು: ಏನೇನು ಕಾಣುತ್ತಿದೆ? ಯಾವ ಬಣ್ಣ?",
+        "questions": [
+         {
+          "q": "ಇದು ಏನು? (ಹಸುವಿನ ಚಿತ್ರ)",
+          "a": "ಇದು ಹಸು."
+         },
+         {
+          "q": "ಗಾಳಿಪಟದ ಬಣ್ಣ ಯಾವುದು?",
+          "a": "ಯಾವುದೇ ಸರಿಯಾದ ಬಣ್ಣ."
+         },
+         {
+          "q": "ಚಿತ್ರದ ಬಗ್ಗೆ ಒಂದು ವಾಕ್ಯ ಹೇಳು.",
+          "a": "ಯಾವುದೇ ಸರಳ ವಾಕ್ಯ."
+         }
+        ],
+        "homework": "ಪುಸ್ತಕದ ಒಂದು ಚಿತ್ರ ನೋಡಿ ಮನೆಯಲ್ಲಿ ಮೂರು ವಿಷಯ ಹೇಳು.",
+        "terms": [
+         "ಚಿತ್ರ",
+         "ಹೆಸರು",
+         "ವಾಕ್ಯ",
+         "ಬಣ್ಣ"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "ukg-english",
+   "title": "English: Little Readers UKG, UKG",
+   "term": 0,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Letter Sounds",
+     "topics": [
+      {
+       "title": "Letter Sounds",
+       "summary": "Every letter has a name and a sound: the letter B says /b/.",
+       "notes": [
+        "Every letter has a name and a sound: the letter B says /b/.",
+        "Words are made of sounds.",
+        "We can hear the first sound of a word: /s/ in sun.",
+        "Some letters sound alike, so we listen carefully: /b/ and /d/.",
+        "Knowing sounds helps us read."
+       ],
+       "outcomes": [
+        "Say the sound of each letter A to Z",
+        "Name a word that begins with a given sound"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "I spy with my little eye something that begins with /b/ … what is it?",
+        "example": "Sun, sock, spoon — all begin with /s/.",
+        "activity": "I spy: the teacher says 'I spy something beginning with /p/' and children guess (pencil, paper, plant).",
+        "questions": [
+         {
+          "q": "What is the first sound in 'map'?",
+          "a": "/m/."
+         },
+         {
+          "q": "Say a word that begins with /t/.",
+          "a": "Tap, top, tiger, table (any)."
+         },
+         {
+          "q": "Which letter says /k/ in 'cat'?",
+          "a": "C."
+         }
+        ],
+        "homework": "Play 'I spy' at home with first sounds.",
+        "terms": [
+         "letter",
+         "sound",
+         "first sound",
+         "phonics"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Vowels",
+     "topics": [
+      {
+       "title": "Vowels",
+       "summary": "A, e, i, o and u are vowels.",
+       "notes": [
+        "A, e, i, o and u are vowels.",
+        "The other letters are consonants.",
+        "Short vowel sounds: a as in ant, e as in egg, i as in ink, o as in ox, u as in up.",
+        "Almost every word has a vowel.",
+        "Vowels join consonants to make words."
+       ],
+       "outcomes": [
+        "Identify the vowels a, e, i, o, u",
+        "Hear the short vowel sounds in words"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Five special letters live in every word. Let's find them: a, e, i, o, u!",
+        "example": "In 'pen', the middle sound /e/ is a vowel.",
+        "activity": "Vowel hands: each finger is a vowel; children hold up the right finger for the middle sound in words like cat, pin, hot, bus, bed.",
+        "questions": [
+         {
+          "q": "Name the five vowels.",
+          "a": "A, e, i, o, u."
+         },
+         {
+          "q": "Which vowel is in 'sun'?",
+          "a": "U."
+         },
+         {
+          "q": "Is 'b' a vowel or a consonant?",
+          "a": "A consonant."
+         }
+        ],
+        "homework": "Write the five vowels and draw a picture for each (ant, egg, ink, ox, umbrella).",
+        "terms": [
+         "vowel",
+         "consonant",
+         "a",
+         "e",
+         "i",
+         "o",
+         "u"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Word Families: -at and -an",
+     "topics": [
+      {
+       "title": "Word Families: -at and -an",
+       "summary": "We blend sounds to read: /c/ /a/ /t/ → cat.",
+       "notes": [
+        "We blend sounds to read: /c/ /a/ /t/ → cat.",
+        "Words with the same ending make a word family.",
+        "-at family: cat, bat, hat, mat, rat, sat.",
+        "-an family: can, fan, man, pan, van.",
+        "Changing the first letter makes a new word."
+       ],
+       "outcomes": [
+        "Blend sounds to read -at and -an words",
+        "Make new words by changing the first letter"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "/c/ /a/ /t/ … say it fast: cat! Now change /c/ to /h/ — what word?",
+        "example": "Start with 'an': add f → fan, add m → man, add v → van.",
+        "activity": "Word slider: a card with '-at' and a strip of letters that slides past it; children read each new word.",
+        "questions": [
+         {
+          "q": "Read: h-a-t.",
+          "a": "Hat."
+         },
+         {
+          "q": "Make an -an word with p.",
+          "a": "Pan."
+         },
+         {
+          "q": "Does 'bat' rhyme with 'mat'?",
+          "a": "Yes."
+         }
+        ],
+        "homework": "Write three -at words and draw them.",
+        "terms": [
+         "blend",
+         "word family",
+         "rhyme",
+         "-at",
+         "-an"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Word Families: -en, -in, -op and -ug",
+     "topics": [
+      {
+       "title": "Word Families: -en, -in, -op and -ug",
+       "summary": "-en family: hen, pen, ten, men.",
+       "notes": [
+        "-en family: hen, pen, ten, men.",
+        "-in family: pin, bin, tin, win.",
+        "-op family: top, mop, hop, pop.",
+        "-ug family: bug, mug, rug, jug.",
+        "Blending the sounds helps us read new words."
+       ],
+       "outcomes": [
+        "Read three-letter words with e, i, o and u",
+        "Sort words into word families"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A hen in a pen with a pin on top — can you read the funny words?",
+        "example": "/m/ /u/ /g/ → mug. /r/ /u/ /g/ → rug.",
+        "activity": "Word family houses: draw four houses (-en, -in, -op, -ug); children post word cards into the right house.",
+        "questions": [
+         {
+          "q": "Read: j-u-g.",
+          "a": "Jug."
+         },
+         {
+          "q": "Which family does 'top' belong to?",
+          "a": "-op."
+         },
+         {
+          "q": "Make an -in word with t.",
+          "a": "Tin."
+         }
+        ],
+        "homework": "Find things at home that are in these word families (pen, mug, pin, mop).",
+        "terms": [
+         "blend",
+         "word family",
+         "-en",
+         "-in",
+         "-op",
+         "-ug"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Sight Words",
+     "topics": [
+      {
+       "title": "Sight Words",
+       "summary": "Sight words are words we see very often.",
+       "notes": [
+        "Sight words are words we see very often.",
+        "The, a, is, I, and, it, in, to, my, we are sight words.",
+        "We learn them by seeing them many times.",
+        "Some sight words cannot be sounded out easily, like 'the'.",
+        "Sight words help us read sentences fast."
+       ],
+       "outcomes": [
+        "Recognise common sight words quickly",
+        "Use sight words in short spoken sentences"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Some words we see so often that we read them in a flash! Let's play flash cards.",
+        "example": "'I am a cat.' — 'I', 'am' and 'a' are sight words.",
+        "activity": "Sight-word swat: stick words on the wall; call out a word and a child 'swats' it with a fly swatter.",
+        "questions": [
+         {
+          "q": "Read: the.",
+          "a": "The."
+         },
+         {
+          "q": "Find the word 'is' in 'It is a hat.'",
+          "a": "Child points to 'is'."
+         },
+         {
+          "q": "Say a sentence with 'my'.",
+          "a": "My bag is red (any)."
+         }
+        ],
+        "homework": "Find the word 'the' five times in a book at home.",
+        "terms": [
+         "sight word",
+         "the",
+         "is",
+         "and",
+         "my",
+         "we"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Reading Little Sentences",
+     "topics": [
+      {
+       "title": "Reading Little Sentences",
+       "summary": "A sentence tells us something.",
+       "notes": [
+        "A sentence tells us something.",
+        "A sentence starts with a capital letter and ends with a full stop.",
+        "We read from left to right.",
+        "We blend sounds and use sight words to read sentences.",
+        "Pictures help us check what we read."
+       ],
+       "outcomes": [
+        "Read simple sentences made of known words",
+        "Match sentences with pictures"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Can you read this? 'The cat is on the mat.' Let's draw it!",
+        "example": "'A red hen is in the pen.' — draw a red hen inside a pen.",
+        "activity": "Read and draw: children read a short sentence card and draw what it says.",
+        "questions": [
+         {
+          "q": "Read: 'The dog can run.'",
+          "a": "The dog can run."
+         },
+         {
+          "q": "How does a sentence begin?",
+          "a": "With a capital letter."
+         },
+         {
+          "q": "What comes at the end of a sentence?",
+          "a": "A full stop."
+         }
+        ],
+        "homework": "Read three sentence cards to your family.",
+        "terms": [
+         "sentence",
+         "capital letter",
+         "full stop",
+         "left to right",
+         "read"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Naming Words",
+     "topics": [
+      {
+       "title": "Naming Words",
+       "summary": "Naming words tell the names of people, animals, places and things.",
+       "notes": [
+        "Naming words tell the names of people, animals, places and things.",
+        "People: mother, teacher, Ravi.",
+        "Animals: dog, lion, cow.",
+        "Places: school, park, market.",
+        "Things: book, chair, ball."
+       ],
+       "outcomes": [
+        "Understand naming words for people, animals, places and things",
+        "Name things around them"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Point to something in our classroom and tell me its name!",
+        "example": "In 'Ravi has a ball', Ravi and ball are naming words.",
+        "activity": "Name sort: children sort picture cards into four boxes: people, animals, places and things.",
+        "questions": [
+         {
+          "q": "Is 'school' a person, place or thing?",
+          "a": "A place."
+         },
+         {
+          "q": "Name two animals.",
+          "a": "Any two animals."
+         },
+         {
+          "q": "Find the naming word: 'The cat sleeps.'",
+          "a": "Cat."
+         }
+        ],
+        "homework": "Name five things in your kitchen.",
+        "terms": [
+         "naming word",
+         "noun",
+         "person",
+         "animal",
+         "place",
+         "thing"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Action Words",
+     "topics": [
+      {
+       "title": "Action Words",
+       "summary": "Action words tell what someone does.",
+       "notes": [
+        "Action words tell what someone does.",
+        "Run, jump, eat, sleep, sing, dance, read and write are action words.",
+        "We can act out action words.",
+        "A sentence needs an action word: 'The bird flies.'",
+        "Animals do actions too: fish swim, birds fly."
+       ],
+       "outcomes": [
+        "Understand action words (doing words)",
+        "Act out and name actions"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Jump! Clap! Run! Sit! What are we doing? These are action words!",
+        "example": "'The baby sleeps.' — sleeps is the action word.",
+        "activity": "Charades: a child acts out an action word and the class guesses it.",
+        "questions": [
+         {
+          "q": "What does a fish do?",
+          "a": "It swims."
+         },
+         {
+          "q": "Find the action word: 'Mina sings.'",
+          "a": "Sings."
+         },
+         {
+          "q": "Show me 'hop'.",
+          "a": "Child hops."
+         }
+        ],
+        "homework": "Tell five things you did today using action words.",
+        "terms": [
+         "action word",
+         "doing word",
+         "verb",
+         "run",
+         "jump",
+         "eat"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Opposites",
+     "topics": [
+      {
+       "title": "Opposites",
+       "summary": "Opposites mean the very different thing.",
+       "notes": [
+        "Opposites mean the very different thing.",
+        "Big – small, hot – cold, up – down.",
+        "Happy – sad, open – close, day – night.",
+        "Fast – slow, tall – short, full – empty.",
+        "Opposites help us describe and compare."
+       ],
+       "outcomes": [
+        "Learn common opposites",
+        "Use opposites to describe things"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "An elephant is big. A mouse is …? Small! Big and small are opposites.",
+        "example": "Ice is cold; tea is hot.",
+        "activity": "Opposites pairs: children match picture pairs (a full glass and an empty glass, an open and a closed door).",
+        "questions": [
+         {
+          "q": "What is the opposite of 'day'?",
+          "a": "Night."
+         },
+         {
+          "q": "What is the opposite of 'fast'?",
+          "a": "Slow."
+         },
+         {
+          "q": "Show me 'happy' and 'sad' faces.",
+          "a": "Child shows both."
+         }
+        ],
+        "homework": "Find two opposite things at home (hot tea, cold water).",
+        "terms": [
+         "opposite",
+         "big",
+         "small",
+         "hot",
+         "cold",
+         "happy",
+         "sad"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Picture Stories",
+     "topics": [
+      {
+       "title": "Picture Stories",
+       "summary": "Pictures can tell a story.",
+       "notes": [
+        "Pictures can tell a story.",
+        "A story has a beginning, a middle and an end.",
+        "We use words like first, next, then and last.",
+        "We look carefully at each picture.",
+        "We can tell our own stories."
+       ],
+       "outcomes": [
+        "Tell a story from a set of pictures in order",
+        "Use first, next and last"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Here are three pictures mixed up: a seed, a small plant, a big tree. Which comes first?",
+        "example": "First a seed is planted. Next a small plant grows. Last it becomes a big tree.",
+        "activity": "Story cards: groups arrange 3–4 picture cards in order and tell the story using first, next, last.",
+        "questions": [
+         {
+          "q": "What comes first: egg or chick?",
+          "a": "Egg."
+         },
+         {
+          "q": "What word do we use for the end?",
+          "a": "Last."
+         },
+         {
+          "q": "Tell a story about your morning.",
+          "a": "Any story using first, next, last."
+         }
+        ],
+        "homework": "Draw three pictures of your day and tell the story at home.",
+        "terms": [
+         "story",
+         "first",
+         "next",
+         "then",
+         "last",
+         "order"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "ukg-mathematics",
+   "title": "Mathematics: Number Fun UKG, UKG",
+   "term": 0,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Numbers 1 to 20",
+     "topics": [
+      {
+       "title": "Numbers 1 to 20",
+       "summary": "After 10 come 11, 12, 13 … up to 20.",
+       "notes": [
+        "After 10 come 11, 12, 13 … up to 20.",
+        "11 to 19 are 10 and some more: 14 is 10 and 4.",
+        "20 is two tens.",
+        "We touch each object once when we count.",
+        "We can write numbers from 1 to 20."
+       ],
+       "outcomes": [
+        "Count objects from 1 to 20",
+        "Read and write numerals 1 to 20"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "How many children are in our class today? Let's count together!",
+        "example": "A bundle of 10 sticks and 3 loose sticks make 13.",
+        "activity": "Counting jar: fill a jar with up to 20 buttons; children estimate, then count them out in groups of ten.",
+        "questions": [
+         {
+          "q": "What comes after 15?",
+          "a": "16."
+         },
+         {
+          "q": "10 and 5 make?",
+          "a": "15."
+         },
+         {
+          "q": "Count 18 claps.",
+          "a": "Child claps 18 times."
+         }
+        ],
+        "homework": "Write numbers 1 to 20 in your notebook.",
+        "terms": [
+         "eleven",
+         "twelve",
+         "fifteen",
+         "twenty",
+         "count",
+         "write"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Counting to 50",
+     "topics": [
+      {
+       "title": "Counting to 50",
+       "summary": "Numbers go on: 21, 22 … 30 … 40 … 50.",
+       "notes": [
+        "Numbers go on: 21, 22 … 30 … 40 … 50.",
+        "Counting in tens: 10, 20, 30, 40, 50.",
+        "Each row of a number chart has 10 numbers.",
+        "Numbers in the same column end with the same digit.",
+        "Counting helps us know how many."
+       ],
+       "outcomes": [
+        "Count forward to 50",
+        "Count in tens to 50"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Let's count to 50 together with a big number chart. Ready?",
+        "example": "On the chart: 23, 33, 43 are in the same column — they all end in 3.",
+        "activity": "Hundred-chart hop: children hop on a floor number chart from 1 to 50 and jump on every tenth number.",
+        "questions": [
+         {
+          "q": "Count in tens up to 50.",
+          "a": "10, 20, 30, 40, 50."
+         },
+         {
+          "q": "What comes after 39?",
+          "a": "40."
+         },
+         {
+          "q": "What comes before 30?",
+          "a": "29."
+         }
+        ],
+        "homework": "Count 50 beads, seeds or buttons at home in groups of 10.",
+        "terms": [
+         "count",
+         "tens",
+         "number chart",
+         "forty",
+         "fifty"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Number Names 1 to 10",
+     "topics": [
+      {
+       "title": "Number Names 1 to 10",
+       "summary": "Numbers have names: one, two, three, four, five.",
+       "notes": [
+        "Numbers have names: one, two, three, four, five.",
+        "Six, seven, eight, nine, ten.",
+        "We can write a number in digits (3) or in words (three).",
+        "Number names start with the sounds we know.",
+        "We match the name, the numeral and the objects."
+       ],
+       "outcomes": [
+        "Read and write number names one to ten",
+        "Match number names with numerals"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "This word says 'three'. Can you show me three fingers?",
+        "example": "5 = five = ●●●●●",
+        "activity": "Three-way match: children match numeral cards, number-name cards and dot cards for 1 to 10.",
+        "questions": [
+         {
+          "q": "Read: 'seven'.",
+          "a": "Seven (7)."
+         },
+         {
+          "q": "Write the number name for 4.",
+          "a": "Four."
+         },
+         {
+          "q": "Which number is 'ten'?",
+          "a": "10."
+         }
+        ],
+        "homework": "Write number names one to five.",
+        "terms": [
+         "number name",
+         "one",
+         "two",
+         "three",
+         "numeral",
+         "match"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Before, After and Between",
+     "topics": [
+      {
+       "title": "Before, After and Between",
+       "summary": "The number before is one less: before 9 is 8.",
+       "notes": [
+        "The number before is one less: before 9 is 8.",
+        "The number after is one more: after 9 is 10.",
+        "The number between two numbers sits in the middle: between 12 and 14 is 13.",
+        "Bigger numbers come later when we count.",
+        "We say which is bigger and which is smaller."
+       ],
+       "outcomes": [
+        "Find the number before, after and between",
+        "Compare two numbers up to 20"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "I am thinking of a number between 6 and 8. What is it?",
+        "example": "Between 17 and 19 is 18. 18 is bigger than 17.",
+        "activity": "Number line walk: a child stands on a number; classmates say the number before and after, and step there.",
+        "questions": [
+         {
+          "q": "What comes between 4 and 6?",
+          "a": "5."
+         },
+         {
+          "q": "What comes after 19?",
+          "a": "20."
+         },
+         {
+          "q": "Which is bigger, 12 or 16?",
+          "a": "16."
+         }
+        ],
+        "homework": "Look at a calendar and say the date before and after today.",
+        "terms": [
+         "before",
+         "after",
+         "between",
+         "bigger",
+         "smaller"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Adding with Objects",
+     "topics": [
+      {
+       "title": "Adding with Objects",
+       "summary": "Adding means putting together.",
+       "notes": [
+        "Adding means putting together.",
+        "2 and 3 make 5.",
+        "We write it as 2 + 3 = 5.",
+        "+ means 'add' and = means 'makes'.",
+        "We can add with fingers, beads or pictures."
+       ],
+       "outcomes": [
+        "Add by putting two groups together",
+        "Write simple addition using + and ="
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "2 ducks in the pond. 3 more ducks come. How many ducks now?",
+        "example": "3 apples + 1 apple = 4 apples.",
+        "exampleTex": "2+3=5",
+        "activity": "Duck pond: children place paper ducks on a pond in two groups and count all to add.",
+        "questions": [
+         {
+          "q": "4 + 1 = ?",
+          "a": "5."
+         },
+         {
+          "q": "2 + 2 = ?",
+          "a": "4."
+         },
+         {
+          "q": "3 balls and 3 balls. How many altogether?",
+          "a": "6."
+         }
+        ],
+        "homework": "Add spoons and forks on the dining table.",
+        "terms": [
+         "add",
+         "plus",
+         "equals",
+         "altogether",
+         "total"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Taking Away",
+     "topics": [
+      {
+       "title": "Taking Away",
+       "summary": "Taking away means making a group smaller.",
+       "notes": [
+        "Taking away means making a group smaller.",
+        "5 take away 1 leaves 4.",
+        "We write it as 5 − 1 = 4.",
+        "− means 'take away'.",
+        "We can cross out pictures to take away."
+       ],
+       "outcomes": [
+        "Take away objects from a group",
+        "Write simple subtraction using − and ="
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "5 little monkeys jumping on the bed. One fell off! How many are left?",
+        "example": "6 balloons, 2 fly away: 6 − 2 = 4 balloons left.",
+        "exampleTex": "6-2=4",
+        "activity": "Sing 'Five Little Monkeys' and act it out, taking away one monkey each verse.",
+        "questions": [
+         {
+          "q": "5 − 2 = ?",
+          "a": "3."
+         },
+         {
+          "q": "4 sweets, you eat 1. How many left?",
+          "a": "3."
+         },
+         {
+          "q": "3 − 3 = ?",
+          "a": "0."
+         }
+        ],
+        "homework": "Make a take-away story with your toys and show it to your family.",
+        "terms": [
+         "take away",
+         "minus",
+         "left",
+         "subtract"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Shapes Around Us",
+     "topics": [
+      {
+       "title": "Shapes Around Us",
+       "summary": "Flat shapes: circle, square, triangle, rectangle, oval.",
+       "notes": [
+        "Flat shapes: circle, square, triangle, rectangle, oval.",
+        "A rectangle has 4 sides: 2 long and 2 short.",
+        "An oval is like a stretched circle, like an egg.",
+        "Solid shapes: a ball (sphere), a box (cube or cuboid), a can (cylinder).",
+        "Shapes are all around us."
+       ],
+       "outcomes": [
+        "Name circle, square, triangle, rectangle and oval",
+        "Identify ball, box and can shapes around us"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "solids",
+         "title": "3D shapes and their nets"
+        }
+       ],
+       "lesson": {
+        "hook": "An egg is not a circle. What shape is it? It's an oval!",
+        "example": "Door — rectangle. Egg — oval. Ball — sphere.",
+        "activity": "Feely bag: children feel a shape inside a bag and guess its name before pulling it out.",
+        "questions": [
+         {
+          "q": "What shape is a door?",
+          "a": "Rectangle."
+         },
+         {
+          "q": "What shape is an egg?",
+          "a": "Oval."
+         },
+         {
+          "q": "Which shape rolls: a ball or a box?",
+          "a": "A ball."
+         }
+        ],
+        "homework": "Draw a picture using all five flat shapes.",
+        "terms": [
+         "circle",
+         "square",
+         "triangle",
+         "rectangle",
+         "oval",
+         "sphere",
+         "cube",
+         "cylinder"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Long and Short, Heavy and Light",
+     "topics": [
+      {
+       "title": "Long and Short, Heavy and Light",
+       "summary": "A long rope, a short rope.",
+       "notes": [
+        "A long rope, a short rope.",
+        "A heavy bag, a light feather.",
+        "A full glass, an empty glass.",
+        "We compare by looking, lifting and pouring.",
+        "Longer, shorter, heavier, lighter help us compare."
+       ],
+       "outcomes": [
+        "Compare long and short, heavy and light, full and empty",
+        "Use comparison words correctly"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "glass-slab",
+         "title": "Refraction through a glass slab"
+        },
+        {
+         "kind": "lab",
+         "id": "lens-mirror",
+         "title": "Focal length of a convex lens and a concave mirror"
+        },
+        {
+         "kind": "lab",
+         "id": "shadows",
+         "title": "Light and shadows"
+        }
+       ],
+       "lesson": {
+        "hook": "Hold a book in one hand and a pencil in the other. Which is heavier?",
+        "example": "A pencil is longer than a crayon. A watermelon is heavier than an apple.",
+        "activity": "Balance play: use a simple balance (hanger and two cups) to compare the weight of toys.",
+        "questions": [
+         {
+          "q": "Which is heavier: a stone or a leaf?",
+          "a": "A stone."
+         },
+         {
+          "q": "Which is longer: a train or a car?",
+          "a": "A train."
+         },
+         {
+          "q": "Is a glass with no water full or empty?",
+          "a": "Empty."
+         }
+        ],
+        "homework": "Find a long and a short thing at home.",
+        "terms": [
+         "long",
+         "short",
+         "heavy",
+         "light",
+         "full",
+         "empty"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Day, Night and the Week",
+     "topics": [
+      {
+       "title": "Day, Night and the Week",
+       "summary": "In the day the Sun shines; we go to school and play.",
+       "notes": [
+        "In the day the Sun shines; we go to school and play.",
+        "At night it is dark; we see the Moon and stars and we sleep.",
+        "A week has 7 days.",
+        "Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday.",
+        "We do different things on different days."
+       ],
+       "outcomes": [
+        "Tell things we do in the day and at night",
+        "Say the days of the week in order"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "solar_system",
+         "title": "The solar system"
+        }
+       ],
+       "lesson": {
+        "hook": "Do we see the Sun or the Moon when we go to school?",
+        "example": "Today is Monday. Tomorrow will be Tuesday.",
+        "activity": "Days-of-the-week song, then sort pictures (school, sleeping, moon, breakfast) into day and night.",
+        "questions": [
+         {
+          "q": "How many days are in a week?",
+          "a": "7."
+         },
+         {
+          "q": "Do we sleep in the day or at night?",
+          "a": "At night."
+         },
+         {
+          "q": "What day comes after Sunday?",
+          "a": "Monday."
+         }
+        ],
+        "homework": "Say the days of the week at home every morning.",
+        "terms": [
+         "day",
+         "night",
+         "week",
+         "Monday",
+         "Sunday",
+         "morning",
+         "evening"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Coins",
+     "topics": [
+      {
+       "title": "Coins",
+       "summary": "We use money to buy things.",
+       "notes": [
+        "We use money to buy things.",
+        "Coins come in ₹1, ₹2, ₹5 and ₹10.",
+        "Coins have numbers on them to show their value.",
+        "₹2 is the same as two ₹1 coins.",
+        "We keep money safe and give it to the shopkeeper to buy things."
+       ],
+       "outcomes": [
+        "Recognise Indian coins of ₹1, ₹2, ₹5 and ₹10",
+        "Use coins to 'buy' things in play"
+       ],
+       "resources": [
+        {
+         "kind": "lab",
+         "id": "probability",
+         "title": "Probability with coins and dice"
+        }
+       ],
+       "lesson": {
+        "hook": "This round thing has numbers and pictures on it. What is it? A coin!",
+        "example": "A toffee costs ₹1. Two toffees cost ₹2.",
+        "activity": "Class shop: children use toy coins to buy fruit and toys with price tags of ₹1 to ₹5.",
+        "questions": [
+         {
+          "q": "Show me a ₹5 coin.",
+          "a": "Child picks the ₹5 coin."
+         },
+         {
+          "q": "How many ₹1 coins make ₹2?",
+          "a": "2."
+         },
+         {
+          "q": "What do we use money for?",
+          "a": "To buy things."
+         }
+        ],
+        "homework": "Look at coins at home with an adult and name them.",
+        "terms": [
+         "money",
+         "coin",
+         "rupee",
+         "buy",
+         "shop",
+         "price"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "ukg-evs",
+   "title": "EVS: My World UKG, UKG",
+   "term": 0,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "My Five Senses",
+     "topics": [
+      {
+       "title": "My Five Senses",
+       "summary": "We have five senses.",
+       "notes": [
+        "We have five senses.",
+        "We see with eyes, hear with ears, smell with the nose.",
+        "We taste with the tongue and feel with the skin.",
+        "Our senses tell us about the world.",
+        "We take care of our eyes and ears."
+       ],
+       "outcomes": [
+        "Name the five senses and the body parts we use for each",
+        "Use senses to explore things"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "eye",
+         "title": "Human eye"
+        },
+        {
+         "kind": "model3d",
+         "id": "brain",
+         "title": "Human brain"
+        }
+       ],
+       "lesson": {
+        "hook": "Close your eyes. Smell this. What is it? How did you know?",
+        "example": "A lemon: we see it is yellow, smell it, taste it is sour, feel it is smooth.",
+        "activity": "Mystery boxes: children use one sense at a time to guess objects (a bell by sound, a flower by smell, cotton by touch).",
+        "questions": [
+         {
+          "q": "What do we hear with?",
+          "a": "Ears."
+         },
+         {
+          "q": "Is a lemon sweet or sour?",
+          "a": "Sour."
+         },
+         {
+          "q": "How many senses do we have?",
+          "a": "Five."
+         }
+        ],
+        "homework": "Find one thing that smells nice and one that feels soft at home.",
+        "terms": [
+         "senses",
+         "see",
+         "hear",
+         "smell",
+         "taste",
+         "touch"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Healthy Food",
+     "topics": [
+      {
+       "title": "Healthy Food",
+       "summary": "Healthy food helps us grow strong.",
+       "notes": [
+        "Healthy food helps us grow strong.",
+        "Fruits, vegetables, milk, dal, rice and roti are healthy.",
+        "Too many sweets, chips and cold drinks are not good for us.",
+        "We drink plenty of clean water.",
+        "We eat at proper times and do not waste food."
+       ],
+       "outcomes": [
+        "Tell healthy food from junk food",
+        "Know that we need different foods to grow"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Which one makes you strong: a banana or a packet of chips?",
+        "example": "A healthy lunch: roti, dal, vegetables and a fruit.",
+        "activity": "Healthy plate: children stick pictures of healthy foods on a paper plate and cross out junk foods.",
+        "questions": [
+         {
+          "q": "Is milk healthy?",
+          "a": "Yes."
+         },
+         {
+          "q": "Name one healthy food.",
+          "a": "Any fruit, vegetable, dal, milk, roti."
+         },
+         {
+          "q": "Should we waste food?",
+          "a": "No."
+         }
+        ],
+        "homework": "Eat one new vegetable this week and tell the class.",
+        "terms": [
+         "healthy",
+         "junk food",
+         "fruits",
+         "vegetables",
+         "milk",
+         "water"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Plants Around Us",
+     "topics": [
+      {
+       "title": "Plants Around Us",
+       "summary": "Plants have roots, a stem, leaves, flowers and fruits.",
+       "notes": [
+        "Plants have roots, a stem, leaves, flowers and fruits.",
+        "Plants need water, air and sunlight to grow.",
+        "Some plants are big trees; some are small.",
+        "Plants give us fruits, vegetables, flowers and shade.",
+        "We should water plants and not pluck them."
+       ],
+       "outcomes": [
+        "Name the parts of a plant",
+        "Know that plants need water and sunlight"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "flower",
+         "title": "Parts of a flower"
+        }
+       ],
+       "lesson": {
+        "hook": "This little plant is thirsty! What does it need to grow?",
+        "example": "A tree gives shade on a hot day, and birds make nests in it.",
+        "activity": "Grow a bean: each child plants a bean seed in a cup of soil, waters it and watches it grow.",
+        "questions": [
+         {
+          "q": "What do plants need to grow?",
+          "a": "Water, air and sunlight."
+         },
+         {
+          "q": "Which part of the plant is under the soil?",
+          "a": "Roots."
+         },
+         {
+          "q": "Name something plants give us.",
+          "a": "Fruits, vegetables, flowers, shade (any)."
+         }
+        ],
+        "homework": "Water a plant at home every day this week.",
+        "terms": [
+         "plant",
+         "root",
+         "stem",
+         "leaf",
+         "flower",
+         "sunlight",
+         "water"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Water",
+     "topics": [
+      {
+       "title": "Water",
+       "summary": "All living things need water.",
+       "notes": [
+        "All living things need water.",
+        "We drink water, cook, bathe and wash with water.",
+        "Water comes from rain, rivers, wells and taps.",
+        "We drink clean, safe water.",
+        "We close the tap and do not waste water."
+       ],
+       "outcomes": [
+        "Know why we need water",
+        "Learn ways to save water"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "What would happen if there was no water for one whole day?",
+        "example": "Close the tap while brushing your teeth — you save a whole bucket of water!",
+        "activity": "Water play: children pour water between cups and bottles; then discuss ways to save water.",
+        "questions": [
+         {
+          "q": "Name two uses of water.",
+          "a": "Drinking, bathing, cooking, washing (any two)."
+         },
+         {
+          "q": "Where does rain come from?",
+          "a": "Clouds."
+         },
+         {
+          "q": "What should we do after using a tap?",
+          "a": "Close it."
+         }
+        ],
+        "homework": "Remind your family to close taps.",
+        "terms": [
+         "water",
+         "rain",
+         "river",
+         "tap",
+         "clean",
+         "save"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Animals and Their Homes",
+     "topics": [
+      {
+       "title": "Animals and Their Homes",
+       "summary": "Animals need homes too.",
+       "notes": [
+        "Animals need homes too.",
+        "A bird lives in a nest; a lion lives in a den.",
+        "A dog lives in a kennel; a horse lives in a stable; a cow lives in a shed.",
+        "A fish lives in water; a rabbit lives in a burrow.",
+        "A spider makes a web; bees live in a hive."
+       ],
+       "outcomes": [
+        "Match animals with their homes",
+        "Know that animals need shelter like us"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Where does a bird live? Where does a lion live? Where does a fish live?",
+        "example": "Bees live together in a hive and make honey.",
+        "activity": "Home matching: children match animal cards with home cards on a board.",
+        "questions": [
+         {
+          "q": "Where does a bird live?",
+          "a": "In a nest."
+         },
+         {
+          "q": "Where does a dog live?",
+          "a": "In a kennel."
+         },
+         {
+          "q": "Who lives in a hive?",
+          "a": "Bees."
+         }
+        ],
+        "homework": "Draw an animal and its home.",
+        "terms": [
+         "nest",
+         "den",
+         "kennel",
+         "stable",
+         "burrow",
+         "hive",
+         "web"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "People Who Help Us",
+     "topics": [
+      {
+       "title": "People Who Help Us",
+       "summary": "Many people help us every day.",
+       "notes": [
+        "Many people help us every day.",
+        "A doctor treats us when we are ill; a nurse helps the doctor.",
+        "A farmer grows food; a postman brings letters.",
+        "A police officer keeps us safe; a firefighter puts out fires.",
+        "We say thank you to our helpers."
+       ],
+       "outcomes": [
+        "Name community helpers and their work",
+        "Show respect and thanks to helpers"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Who brings letters to your house? Who helps when you are sick?",
+        "example": "The farmer grows rice and vegetables that we eat every day.",
+        "activity": "Dress-up day: children dress as community helpers and tell the class what they do.",
+        "questions": [
+         {
+          "q": "Who grows our food?",
+          "a": "The farmer."
+         },
+         {
+          "q": "Who puts out fires?",
+          "a": "The firefighter."
+         },
+         {
+          "q": "What do we say to people who help us?",
+          "a": "Thank you."
+         }
+        ],
+        "homework": "Say thank you to a helper near your home and tell the class who it was.",
+        "terms": [
+         "doctor",
+         "farmer",
+         "postman",
+         "police",
+         "firefighter",
+         "teacher"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Transport",
+     "topics": [
+      {
+       "title": "Transport",
+       "summary": "Vehicles take us from one place to another.",
+       "notes": [
+        "Vehicles take us from one place to another.",
+        "On land: bicycle, car, bus, auto, train.",
+        "On water: boat, ship.",
+        "In the air: aeroplane, helicopter.",
+        "Traffic lights: red means stop, yellow means wait, green means go."
+       ],
+       "outcomes": [
+        "Name vehicles on land, water and air",
+        "Know simple road rules"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Vroom! Chug-chug! Whoosh! Which vehicles make these sounds?",
+        "example": "We go to school by bus. A ship carries goods over the sea.",
+        "activity": "Traffic game: one child holds red, yellow and green cards; others 'drive' around the room and follow the lights.",
+        "questions": [
+         {
+          "q": "Which vehicle flies in the sky?",
+          "a": "An aeroplane."
+         },
+         {
+          "q": "What does a red light mean?",
+          "a": "Stop."
+         },
+         {
+          "q": "Name a vehicle that goes on water.",
+          "a": "Boat or ship."
+         }
+        ],
+        "homework": "Count the vehicles you see on the way home.",
+        "terms": [
+         "vehicle",
+         "bus",
+         "train",
+         "boat",
+         "aeroplane",
+         "traffic light"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Staying Safe",
+     "topics": [
+      {
+       "title": "Staying Safe",
+       "summary": "We do not touch fire, knives, medicines or electric points.",
+       "notes": [
+        "We do not touch fire, knives, medicines or electric points.",
+        "We cross the road holding an adult's hand at a zebra crossing.",
+        "We do not go with strangers or take things from them.",
+        "We tell a trusted adult if we feel scared or hurt.",
+        "We learn our parent's name and phone number."
+       ],
+       "outcomes": [
+        "Know safety rules at home, on the road and in school",
+        "Know when and how to ask for help"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Is it safe to play with a matchbox? What should you do if you see a fire?",
+        "example": "Look right, look left, look right again — then cross with an adult.",
+        "activity": "Safe or not safe: show pictures (child near a stove, child holding an adult's hand) and children show thumbs up or down.",
+        "questions": [
+         {
+          "q": "Should we play with fire?",
+          "a": "No."
+         },
+         {
+          "q": "Where do we cross the road?",
+          "a": "At the zebra crossing with an adult."
+         },
+         {
+          "q": "What do you do if a stranger calls you?",
+          "a": "Say no, go away and tell a trusted adult."
+         }
+        ],
+        "homework": "Learn your mother's or father's phone number.",
+        "terms": [
+         "safe",
+         "danger",
+         "stranger",
+         "zebra crossing",
+         "help"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Sun, Moon and Stars",
+     "topics": [
+      {
+       "title": "Sun, Moon and Stars",
+       "summary": "The Sun gives us light and heat in the day.",
+       "notes": [
+        "The Sun gives us light and heat in the day.",
+        "We must never look straight at the Sun.",
+        "At night we see the Moon and the stars.",
+        "The Moon looks different on different nights.",
+        "Stars twinkle far, far away."
+       ],
+       "outcomes": [
+        "Talk about the Sun, the Moon and the stars",
+        "Know that the Sun gives us light and heat"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "solar_system",
+         "title": "The solar system"
+        }
+       ],
+       "lesson": {
+        "hook": "Who switches on the big light in the sky every morning?",
+        "example": "The Sun makes our clothes dry and helps plants grow.",
+        "activity": "Sky picture: children make a day sky (Sun, clouds) and a night sky (Moon, stars) on two halves of black and blue paper.",
+        "questions": [
+         {
+          "q": "What gives us light in the day?",
+          "a": "The Sun."
+         },
+         {
+          "q": "What do we see in the sky at night?",
+          "a": "The Moon and stars."
+         },
+         {
+          "q": "Should we look straight at the Sun?",
+          "a": "No."
+         }
+        ],
+        "homework": "Look at the Moon tonight and draw its shape.",
+        "terms": [
+         "Sun",
+         "Moon",
+         "stars",
+         "sky",
+         "day",
+         "night",
+         "light"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Keeping Our Earth Clean",
+     "topics": [
+      {
+       "title": "Keeping Our Earth Clean",
+       "summary": "We throw waste only in the dustbin.",
+       "notes": [
+        "We throw waste only in the dustbin.",
+        "We do not throw plastic on the road or in rivers.",
+        "We plant trees and water plants.",
+        "We switch off lights and fans when not in use.",
+        "A clean Earth is good for people, animals and plants."
+       ],
+       "outcomes": [
+        "Put waste in the dustbin",
+        "Know simple ways to keep our Earth clean and green"
+       ],
+       "resources": [
+        {
+         "kind": "model3d",
+         "id": "earth_layers",
+         "title": "Layers of the Earth"
+        }
+       ],
+       "lesson": {
+        "hook": "Our Earth is our home. What can we do to keep it clean?",
+        "example": "Green bin for peels and leftover food; blue bin for paper and plastic.",
+        "activity": "Clean-up drive: children pick up litter (with gloves) from the school garden and sort it into two bins.",
+        "questions": [
+         {
+          "q": "Where do we throw waste?",
+          "a": "In the dustbin."
+         },
+         {
+          "q": "Name one way to keep the Earth green.",
+          "a": "Plant trees."
+         },
+         {
+          "q": "Should we throw plastic in rivers?",
+          "a": "No."
+         }
+        ],
+        "homework": "Help keep your room clean and switch off lights when you leave.",
+        "terms": [
+         "Earth",
+         "clean",
+         "dustbin",
+         "plastic",
+         "trees",
+         "save"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "ukg-art",
+   "title": "Art, UKG",
+   "term": 0,
+   "language": "en",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "Shapes Become Pictures",
+     "topics": [
+      {
+       "title": "Shapes Become Pictures",
+       "summary": "Pictures are made of simple shapes.",
+       "notes": [
+        "Pictures are made of simple shapes.",
+        "A circle can be a sun, a ball or a face.",
+        "A triangle on a square makes a house.",
+        "An oval with small circles makes a caterpillar.",
+        "We add colours and details to finish."
+       ],
+       "outcomes": [
+        "Turn basic shapes into pictures",
+        "Draw with confidence using shapes"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "A circle and a triangle… can they become an ice cream? Let's see!",
+        "example": "Triangle (cone) + circle (scoop) = ice cream!",
+        "activity": "Shape pictures: children draw a house, a fish and a tree using only circles, squares and triangles.",
+        "questions": [
+         {
+          "q": "What can a circle become?",
+          "a": "Sun, ball, face (any)."
+         },
+         {
+          "q": "Which shapes make a house?",
+          "a": "A triangle and a square."
+         },
+         {
+          "q": "Draw a fish with an oval and a triangle.",
+          "a": "Child draws a fish."
+         }
+        ],
+        "homework": "Draw a picture using only shapes.",
+        "terms": [
+         "shape",
+         "circle",
+         "triangle",
+         "square",
+         "draw",
+         "picture"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Vegetable Printing",
+     "topics": [
+      {
+       "title": "Vegetable Printing",
+       "summary": "Cut vegetables make interesting shapes.",
+       "notes": [
+        "Cut vegetables make interesting shapes.",
+        "Bhindi makes stars; potato makes blocks; onion makes rings.",
+        "We dip them in paint and press on paper.",
+        "Leaves also make lovely prints.",
+        "Prints can make repeating patterns."
+       ],
+       "outcomes": [
+        "Make prints with vegetables and leaves",
+        "Create patterns with prints"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Cut a lady's finger (bhindi) — look, a star inside! Let's print with it.",
+        "example": "Bhindi star, potato square, bhindi star, potato square — a print pattern.",
+        "activity": "Vegetable printing: children print patterns on paper using bhindi, potato and onion (an adult cuts the vegetables).",
+        "questions": [
+         {
+          "q": "What shape does bhindi make?",
+          "a": "A star."
+         },
+         {
+          "q": "Who should cut the vegetables?",
+          "a": "An adult."
+         },
+         {
+          "q": "Make a pattern with two prints.",
+          "a": "Child makes a repeating pattern."
+         }
+        ],
+        "homework": "Make a leaf print at home.",
+        "terms": [
+         "print",
+         "stamp",
+         "pattern",
+         "paint",
+         "press"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Paper Folding",
+     "topics": [
+      {
+       "title": "Paper Folding",
+       "summary": "We fold paper carefully, matching the corners.",
+       "notes": [
+        "We fold paper carefully, matching the corners.",
+        "We press each fold with a finger.",
+        "Folding in half makes two equal parts.",
+        "Many folds make shapes like boats, caps and animals.",
+        "Paper folding is called origami."
+       ],
+       "outcomes": [
+        "Fold paper along lines",
+        "Make simple origami (a boat, a dog face)"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "One sheet of paper and some folds — and it becomes a boat that floats!",
+        "example": "Fold a square into a triangle, fold two corners down — a dog's face with ears!",
+        "activity": "Paper boats: children fold paper boats and test if they float in a tub of water.",
+        "questions": [
+         {
+          "q": "What is paper folding called?",
+          "a": "Origami."
+         },
+         {
+          "q": "Folding a square corner to corner makes what shape?",
+          "a": "A triangle."
+         },
+         {
+          "q": "Does your paper boat float?",
+          "a": "Child tests and answers."
+         }
+        ],
+        "homework": "Make a paper boat with someone at home.",
+        "terms": [
+         "fold",
+         "crease",
+         "corner",
+         "half",
+         "origami"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Collage",
+     "topics": [
+      {
+       "title": "Collage",
+       "summary": "A collage is a picture made by sticking different things.",
+       "notes": [
+        "A collage is a picture made by sticking different things.",
+        "We can use leaves, seeds, cloth, paper and cotton.",
+        "We plan where each piece goes.",
+        "Different textures feel rough, smooth or soft.",
+        "We use waste material to make art."
+       ],
+       "outcomes": [
+        "Make a collage with different materials",
+        "Arrange pieces to make a picture"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Leaves, seeds, cloth bits and paper — can they become a picture?",
+        "example": "Cotton for clouds, green leaves for grass, seeds for a path — a garden collage.",
+        "activity": "Nature collage: children collect leaves, twigs and seeds and make a collage of a tree or an animal.",
+        "questions": [
+         {
+          "q": "What is a collage?",
+          "a": "A picture made by sticking different things."
+         },
+         {
+          "q": "What can we use for clouds?",
+          "a": "Cotton."
+         },
+         {
+          "q": "Is a leaf rough or smooth?",
+          "a": "Any correct answer by feeling."
+         }
+        ],
+        "homework": "Collect five different leaves for the class collage.",
+        "terms": [
+         "collage",
+         "texture",
+         "rough",
+         "smooth",
+         "stick",
+         "arrange"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Songs and Rhythm",
+     "topics": [
+      {
+       "title": "Songs and Rhythm",
+       "summary": "Songs have a tune and a beat.",
+       "notes": [
+        "Songs have a tune and a beat.",
+        "We clap, tap or play instruments to the beat.",
+        "Some beats are fast; some are slow.",
+        "We sing songs in many languages.",
+        "Singing together, we listen to each other."
+       ],
+       "outcomes": [
+        "Sing songs with correct tune and rhythm",
+        "Keep a steady beat with claps and instruments"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Clap, clap, rest; clap, clap, rest. Can you keep the beat with me?",
+        "example": "'Ek, do, teen, chaar' — clap on each number to keep the beat.",
+        "activity": "Rhythm circle: the teacher claps a short rhythm; children echo it; then they sing a song while clapping the beat.",
+        "questions": [
+         {
+          "q": "Clap the rhythm after me.",
+          "a": "Child echoes the rhythm."
+         },
+         {
+          "q": "Sing a song in your home language.",
+          "a": "Any song."
+         },
+         {
+          "q": "Is this beat fast or slow?",
+          "a": "Any correct answer."
+         }
+        ],
+        "homework": "Sing a song at home and clap the beat.",
+        "terms": [
+         "song",
+         "tune",
+         "beat",
+         "rhythm",
+         "fast",
+         "slow"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Puppet Play",
+     "topics": [
+      {
+       "title": "Puppet Play",
+       "summary": "Puppets can be made from socks, paper bags and sticks.",
+       "notes": [
+        "Puppets can be made from socks, paper bags and sticks.",
+        "We give puppets eyes, noses and mouths.",
+        "Puppets can talk, sing and tell stories.",
+        "We change our voice for each puppet.",
+        "Puppet shows are a very old Indian tradition (kathputli)."
+       ],
+       "outcomes": [
+        "Make simple puppets",
+        "Tell a short story using puppets"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Meet Mr Sock! He wants to tell you a story…",
+        "example": "A lion paper-bag puppet says in a big voice, 'I am the king of the jungle!'",
+        "activity": "Stick puppets: children make animal stick puppets and act out 'The Lion and the Mouse' in groups.",
+        "questions": [
+         {
+          "q": "What can we make puppets from?",
+          "a": "Socks, paper bags, sticks (any)."
+         },
+         {
+          "q": "What is the Rajasthani string puppet called?",
+          "a": "Kathputli."
+         },
+         {
+          "q": "Make your puppet say hello.",
+          "a": "Child does it."
+         }
+        ],
+        "homework": "Make a sock or paper-bag puppet at home.",
+        "terms": [
+         "puppet",
+         "story",
+         "voice",
+         "show",
+         "kathputli"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Drawing My Family",
+     "topics": [
+      {
+       "title": "Drawing My Family",
+       "summary": "A person has a head, body, arms and legs.",
+       "notes": [
+        "A person has a head, body, arms and legs.",
+        "Faces have eyes, nose, mouth and ears.",
+        "Tall people are drawn bigger; babies smaller.",
+        "We can add clothes and hair.",
+        "Drawing our family shows who we love."
+       ],
+       "outcomes": [
+        "Draw people with head, body, arms and legs",
+        "Draw and talk about their family"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Let's draw a person: a circle head, a body, two arms and two legs. Who will you draw?",
+        "example": "Draw Amma with a red sari and Appa with glasses — details make them special.",
+        "activity": "Family portrait: children draw their family and tell the class who each person is.",
+        "questions": [
+         {
+          "q": "What shape is a head?",
+          "a": "A circle (or oval)."
+         },
+         {
+          "q": "Who is in your drawing?",
+          "a": "Any family members."
+         },
+         {
+          "q": "What parts does a face have?",
+          "a": "Eyes, nose, mouth and ears."
+         }
+        ],
+        "homework": "Draw one family member and give the drawing to them.",
+        "terms": [
+         "draw",
+         "face",
+         "body",
+         "family",
+         "portrait"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Festival Crafts",
+     "topics": [
+      {
+       "title": "Festival Crafts",
+       "summary": "Festivals are times to decorate and share.",
+       "notes": [
+        "Festivals are times to decorate and share.",
+        "We can make diyas, stars, lanterns, kites and cards.",
+        "We use scissors carefully with an adult's help.",
+        "We share our crafts with family and friends.",
+        "We clean up after craft time."
+       ],
+       "outcomes": [
+        "Make simple crafts for festivals",
+        "Use paper, colours and glue safely"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "Diwali, Christmas, Eid, Pongal — let's make decorations for our class festival corner!",
+        "example": "A paper lantern: fold paper, cut slits, roll and staple — hang it up!",
+        "activity": "Festival crafts: children make a greeting card or a paper lantern for the next festival.",
+        "questions": [
+         {
+          "q": "What did you make?",
+          "a": "Any craft."
+         },
+         {
+          "q": "Who helps us with scissors?",
+          "a": "An adult (teacher)."
+         },
+         {
+          "q": "What do we do after craft time?",
+          "a": "Clean up."
+         }
+        ],
+        "homework": "Give your festival card to someone special.",
+        "terms": [
+         "craft",
+         "decorate",
+         "lantern",
+         "diya",
+         "card",
+         "kite"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "ukg-hindi",
+   "title": "Hindi: Aksharmala UKG, UKG",
+   "term": 0,
+   "language": "hi",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "व्यंजन: क – ञ",
+     "topics": [
+      {
+       "title": "व्यंजन: क – ञ",
+       "summary": "क — कबूतर, ख — खरगोश, ग — गमला, घ — घड़ी, ङ।",
+       "notes": [
+        "क — कबूतर, ख — खरगोश, ग — गमला, घ — घड़ी, ङ।",
+        "च — चम्मच, छ — छतरी, ज — जहाज़, झ — झंडा, ञ।",
+        "ये अक्षर व्यंजन कहलाते हैं।",
+        "ङ और ञ से शुरू होने वाले शब्द बहुत कम हैं।",
+        "हर अक्षर की अपनी आवाज़ है।"
+       ],
+       "outcomes": [
+        "व्यंजन क से ञ तक पहचानना और बोलना",
+        "इन अक्षरों से शुरू होने वाले शब्द बताना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'क' से कबूतर! कबूतर कैसे बोलता है? गुटर-गूँ!",
+        "example": "'छ' से छतरी — बारिश में हम छतरी खोलते हैं।",
+        "activity": "अक्षर ढूँढो: कक्षा में कबूतर, खरगोश, घड़ी, चम्मच, छतरी, झंडा के चित्र छिपाओ; बच्चे ढूँढकर सही अक्षर बताएँ।",
+        "questions": [
+         {
+          "q": "'घड़ी' किस अक्षर से शुरू होती है?",
+          "a": "घ से।"
+         },
+         {
+          "q": "'ज' से कोई शब्द बताओ।",
+          "a": "जहाज़, जग (कोई भी)।"
+         },
+         {
+          "q": "'क' के बाद कौन-सा अक्षर आता है?",
+          "a": "ख।"
+         }
+        ],
+        "homework": "क, ख, ग, घ, च, छ, ज, झ लिखो।",
+        "terms": [
+         "व्यंजन",
+         "क",
+         "ख",
+         "ग",
+         "च",
+         "ज",
+         "झ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "व्यंजन: ट – न",
+     "topics": [
+      {
+       "title": "व्यंजन: ट – न",
+       "summary": "ट — टमाटर, ठ — ठठेरा, ड — डमरू, ढ — ढोलक, ण।",
+       "notes": [
+        "ट — टमाटर, ठ — ठठेरा, ड — डमरू, ढ — ढोलक, ण।",
+        "त — तरबूज़, थ — थैला, द — दवात, ध — धनुष, न — नल।",
+        "कुछ अक्षरों की आवाज़ मिलती-जुलती है: ट–त, ड–द।",
+        "ध्यान से सुनकर बोलते हैं।",
+        "ण से शुरू होने वाले शब्द नहीं होते, यह शब्दों के बीच या अंत में आता है: बाण।"
+       ],
+       "outcomes": [
+        "व्यंजन ट से न तक पहचानना और बोलना",
+        "अक्षरों से शब्द जोड़ना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ट' से टमाटर! लाल-लाल टमाटर किसे पसंद है?",
+        "example": "'ढ' से ढोलक — ढोलक बजाओ: ढम-ढम!",
+        "activity": "आवाज़ का खेल: शिक्षिका 'ट' और 'त' वाले शब्द बोले; बच्चे 'ट' पर हाथ ऊपर और 'त' पर ताली बजाएँ।",
+        "questions": [
+         {
+          "q": "'नल' किस अक्षर से शुरू होता है?",
+          "a": "न से।"
+         },
+         {
+          "q": "'ड' से कोई शब्द बताओ।",
+          "a": "डमरू, डाली (कोई भी)।"
+         },
+         {
+          "q": "'तरबूज़' का पहला अक्षर कौन-सा है?",
+          "a": "त।"
+         }
+        ],
+        "homework": "ट, ठ, ड, ढ, त, थ, द, ध, न लिखो।",
+        "terms": [
+         "व्यंजन",
+         "ट",
+         "ड",
+         "त",
+         "द",
+         "न"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "व्यंजन: प – म",
+     "topics": [
+      {
+       "title": "व्यंजन: प – म",
+       "summary": "प — पतंग, पंखा।",
+       "notes": [
+        "प — पतंग, पंखा।",
+        "फ — फल, फूल।",
+        "ब — बतख, बकरी।",
+        "भ — भालू, भुट्टा।",
+        "म — मछली, मटर।"
+       ],
+       "outcomes": [
+        "व्यंजन प, फ, ब, भ, म पहचानना और बोलना",
+        "इन अक्षरों से शब्द बताना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'प' से पतंग! पतंग आसमान में उड़ती है।",
+        "example": "'भ' से भालू — भालू को शहद पसंद है।",
+        "activity": "मिट्टी के अक्षर: बच्चे मिट्टी या आटे से प, फ, ब, भ, म बनाएँ।",
+        "questions": [
+         {
+          "q": "'मछली' किस अक्षर से शुरू होती है?",
+          "a": "म से।"
+         },
+         {
+          "q": "'फ' से कोई शब्द बताओ।",
+          "a": "फल, फूल (कोई भी)।"
+         },
+         {
+          "q": "'बकरी' का पहला अक्षर कौन-सा है?",
+          "a": "ब।"
+         }
+        ],
+        "homework": "प, फ, ब, भ, म लिखो और एक-एक चित्र बनाओ।",
+        "terms": [
+         "व्यंजन",
+         "प",
+         "फ",
+         "ब",
+         "भ",
+         "म"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "व्यंजन: य – ज्ञ",
+     "topics": [
+      {
+       "title": "व्यंजन: य – ज्ञ",
+       "summary": "य — यज्ञ, र — रथ, ल — लट्टू, व — वन।",
+       "notes": [
+        "य — यज्ञ, र — रथ, ल — लट्टू, व — वन।",
+        "श — शेर, ष — षट्कोण, स — सेब, ह — हाथी।",
+        "क्ष — क्षत्रिय, त्र — त्रिशूल, ज्ञ — ज्ञानी — ये दो अक्षरों से मिलकर बने हैं।",
+        "अब हम पूरी हिंदी वर्णमाला जानते हैं।",
+        "वर्णमाला गीत से याद करना आसान है।"
+       ],
+       "outcomes": [
+        "व्यंजन य से ह तक और क्ष, त्र, ज्ञ पहचानना",
+        "पूरी वर्णमाला क्रम से बोलना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'य' से यज्ञ, 'र' से रथ! चलो, वर्णमाला पूरी करें।",
+        "example": "'ह' से हाथी — हाथी सबसे बड़ा जानवर है।",
+        "activity": "वर्णमाला रेल: बच्चे व्यंजन-कार्ड पकड़कर क्रम में खड़े हों और वर्णमाला गीत गाएँ।",
+        "questions": [
+         {
+          "q": "'शेर' किस अक्षर से शुरू होता है?",
+          "a": "श से।"
+         },
+         {
+          "q": "'स' से कोई शब्द बताओ।",
+          "a": "सेब, साँप (कोई भी)।"
+         },
+         {
+          "q": "'त्र' किन दो अक्षरों से मिलकर बना है?",
+          "a": "त और र।"
+         }
+        ],
+        "homework": "य से ह तक सारे व्यंजन लिखो।",
+        "terms": [
+         "व्यंजन",
+         "य",
+         "र",
+         "ल",
+         "व",
+         "श",
+         "स",
+         "ह",
+         "क्ष",
+         "त्र",
+         "ज्ञ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "दो अक्षर वाले शब्द",
+     "topics": [
+      {
+       "title": "दो अक्षर वाले शब्द",
+       "summary": "दो अक्षर मिलकर शब्द बनाते हैं।",
+       "notes": [
+        "दो अक्षर मिलकर शब्द बनाते हैं।",
+        "न + ल = नल, घ + र = घर।",
+        "ज + ल = जल, फ + ल = फल।",
+        "क + म = कम, ब + स = बस।",
+        "अक्षर बोलकर जोड़ें, फिर पूरा शब्द बोलें।"
+       ],
+       "outcomes": [
+        "दो अक्षर वाले शब्द पढ़ना",
+        "अक्षर जोड़कर शब्द बनाना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'न' और 'ल' मिलाओ — क्या बना? नल!",
+        "example": "घ...र — घर! घर में हम रहते हैं।",
+        "activity": "शब्द बनाओ: बच्चों को अक्षर-कार्ड दो; वे दो कार्ड जोड़कर शब्द बनाएँ और पढ़ें (नल, घर, फल, जल, बस)।",
+        "questions": [
+         {
+          "q": "प + र = ?",
+          "a": "पर।"
+         },
+         {
+          "q": "यह शब्द पढ़ो: 'फल'।",
+          "a": "फल।"
+         },
+         {
+          "q": "'घर' किन दो अक्षरों से बना है?",
+          "a": "घ और र।"
+         }
+        ],
+        "homework": "दो अक्षर वाले पाँच शब्द लिखो और पढ़ो।",
+        "terms": [
+         "शब्द",
+         "जोड़ना",
+         "पढ़ना",
+         "अक्षर"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "आ की मात्रा",
+     "topics": [
+      {
+       "title": "आ की मात्रा",
+       "summary": "आ की मात्रा अक्षर के बाद खड़ी लकीर (ा) होती है।",
+       "notes": [
+        "आ की मात्रा अक्षर के बाद खड़ी लकीर (ा) होती है।",
+        "क + ा = का, म + ा = मा।",
+        "आ की मात्रा से आवाज़ लंबी हो जाती है।",
+        "शब्द: नाना, माला, राजा, आम, काला।",
+        "मात्रा से नए शब्द बनते हैं: नल → नाल।"
+       ],
+       "outcomes": [
+        "आ की मात्रा (ा) पहचानना",
+        "आ की मात्रा वाले शब्द पढ़ना"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'क' के साथ खड़ी लकीर लगाओ — 'का'! यह आ की मात्रा है।",
+        "example": "र + ा + ज + ा = राजा।",
+        "activity": "मात्रा लगाओ: बोर्ड पर क, म, न, र लिखो; बच्चे आ की मात्रा लगाकर का, मा, ना, रा पढ़ें और शब्द बनाएँ।",
+        "questions": [
+         {
+          "q": "'मामा' पढ़ो।",
+          "a": "मामा।"
+         },
+         {
+          "q": "आ की मात्रा कैसी दिखती है?",
+          "a": "एक खड़ी लकीर (ा)।"
+         },
+         {
+          "q": "आ की मात्रा वाला एक शब्द बताओ।",
+          "a": "नाना, राजा, माला (कोई भी)।"
+         }
+        ],
+        "homework": "आ की मात्रा वाले पाँच शब्द लिखो।",
+        "terms": [
+         "मात्रा",
+         "आ की मात्रा",
+         "का",
+         "मा",
+         "राजा"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "curriculum": "early-years",
+   "code": "ukg-kannada",
+   "title": "Kannada: Varnamale UKG, UKG",
+   "term": 0,
+   "language": "kn",
+   "source": "kinetix-curriculum-team (prototype import)",
+   "reviewed": false,
+   "chapters": [
+    {
+     "title": "ವ್ಯಂಜನಗಳು: ಕ – ಙ",
+     "topics": [
+      {
+       "title": "ವ್ಯಂಜನಗಳು: ಕ – ಙ",
+       "summary": "ಕ — ಕಮಲ, ಕಪ್ಪೆ.",
+       "notes": [
+        "ಕ — ಕಮಲ, ಕಪ್ಪೆ.",
+        "ಖ — ಖಡ್ಗ.",
+        "ಗ — ಗಡಿಯಾರ, ಗಿಳಿ.",
+        "ಘ — ಘಂಟೆ.",
+        "ಙ ಪದಗಳ ಮಧ್ಯದಲ್ಲಿ ಬರುತ್ತದೆ; ಇವು ಕವರ್ಗದ ಅಕ್ಷರಗಳು."
+       ],
+       "outcomes": [
+        "ವ್ಯಂಜನಗಳು ಕ, ಖ, ಗ, ಘ, ಙ ಗುರುತಿಸಿ ಹೇಳುವುದು",
+        "ಈ ಅಕ್ಷರಗಳಿಂದ ಆರಂಭವಾಗುವ ಪದಗಳನ್ನು ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಕ' ಇಂದ ಕಮಲ! ಕಮಲ ಹೂವು ಕೆರೆಯಲ್ಲಿ ಅರಳುತ್ತದೆ.",
+        "example": "'ಗ' ಇಂದ ಗಿಳಿ — ಗಿಳಿ ಹಸಿರು ಬಣ್ಣದ ಹಕ್ಕಿ.",
+        "activity": "ಅಕ್ಷರ ಹುಡುಕಾಟ: ಕಮಲ, ಕಪ್ಪೆ, ಗಡಿಯಾರ, ಘಂಟೆ ಚಿತ್ರಗಳನ್ನು ತರಗತಿಯಲ್ಲಿ ಬಚ್ಚಿಡಿ; ಮಕ್ಕಳು ಹುಡುಕಿ ಸರಿಯಾದ ಅಕ್ಷರ ಹೇಳುತ್ತಾರೆ.",
+        "questions": [
+         {
+          "q": "'ಕಪ್ಪೆ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಕ."
+         },
+         {
+          "q": "'ಗ' ಇಂದ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಗಿಳಿ, ಗಡಿಯಾರ (ಯಾವುದಾದರೂ)."
+         },
+         {
+          "q": "'ಕ' ನಂತರ ಯಾವ ಅಕ್ಷರ?",
+          "a": "ಖ."
+         }
+        ],
+        "homework": "ಕ, ಖ, ಗ, ಘ, ಙ ಬರೆ.",
+        "terms": [
+         "ವ್ಯಂಜನ",
+         "ಕ",
+         "ಖ",
+         "ಗ",
+         "ಘ",
+         "ಙ",
+         "ಕವರ್ಗ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ವ್ಯಂಜನಗಳು: ಚ – ಞ",
+     "topics": [
+      {
+       "title": "ವ್ಯಂಜನಗಳು: ಚ – ಞ",
+       "summary": "ಚ — ಚಮಚ, ಚಂದ್ರ.",
+       "notes": [
+        "ಚ — ಚಮಚ, ಚಂದ್ರ.",
+        "ಛ — ಛತ್ರಿ.",
+        "ಜ — ಜಿಂಕೆ, ಜಗ.",
+        "ಝ — ಝರಿ.",
+        "ಞ ಪದಗಳ ಮಧ್ಯದಲ್ಲಿ ಬರುತ್ತದೆ; ಇವು ಚವರ್ಗದ ಅಕ್ಷರಗಳು."
+       ],
+       "outcomes": [
+        "ವ್ಯಂಜನಗಳು ಚ, ಛ, ಜ, ಝ, ಞ ಗುರುತಿಸುವುದು",
+        "ಈ ಅಕ್ಷರಗಳಿಂದ ಪದಗಳನ್ನು ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಚ' ಇಂದ ಚಮಚ! ಚಮಚದಿಂದ ಏನು ತಿನ್ನುತ್ತೀಯ?",
+        "example": "'ಛ' ಇಂದ ಛತ್ರಿ — ಮಳೆಯಲ್ಲಿ ಛತ್ರಿ ಹಿಡಿಯುತ್ತೇವೆ.",
+        "activity": "ಮಣ್ಣಿನ ಅಕ್ಷರ: ಮಕ್ಕಳು ಮಣ್ಣು ಅಥವಾ ಹಿಟ್ಟಿನಿಂದ ಚ, ಛ, ಜ, ಝ ಮಾಡುವುದು.",
+        "questions": [
+         {
+          "q": "'ಜಿಂಕೆ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಜ."
+         },
+         {
+          "q": "'ಚ' ಇಂದ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಚಮಚ, ಚಂದ್ರ (ಯಾವುದಾದರೂ)."
+         },
+         {
+          "q": "'ಛತ್ರಿ' ಯ ಮೊದಲ ಅಕ್ಷರ ಯಾವುದು?",
+          "a": "ಛ."
+         }
+        ],
+        "homework": "ಚ, ಛ, ಜ, ಝ, ಞ ಬರೆ.",
+        "terms": [
+         "ವ್ಯಂಜನ",
+         "ಚ",
+         "ಛ",
+         "ಜ",
+         "ಝ",
+         "ಞ",
+         "ಚವರ್ಗ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ವ್ಯಂಜನಗಳು: ಟ – ನ",
+     "topics": [
+      {
+       "title": "ವ್ಯಂಜನಗಳು: ಟ – ನ",
+       "summary": "ಟ — ಟಗರು, ಠ — ಠಾಣೆ, ಡ — ಡಬ್ಬ, ಢ — ಢಕ್ಕೆ, ಣ.",
+       "notes": [
+        "ಟ — ಟಗರು, ಠ — ಠಾಣೆ, ಡ — ಡಬ್ಬ, ಢ — ಢಕ್ಕೆ, ಣ.",
+        "ತ — ತಬಲ, ಥ — ಥಳಿ, ದ — ದನ, ಧ — ಧ್ವಜ, ನ — ನವಿಲು.",
+        "ಟ–ತ, ಡ–ದ ಧ್ವನಿಗಳು ಹತ್ತಿರವಿದ್ದರೂ ಬೇರೆ.",
+        "ಣ ಪದದ ಆರಂಭದಲ್ಲಿ ಬರುವುದಿಲ್ಲ: ಹಣ, ಬಾಣ.",
+        "ಗಮನವಿಟ್ಟು ಕೇಳಿ ಸರಿಯಾಗಿ ಉಚ್ಚರಿಸುತ್ತೇವೆ."
+       ],
+       "outcomes": [
+        "ಟವರ್ಗ ಮತ್ತು ತವರ್ಗದ ಅಕ್ಷರಗಳನ್ನು ಗುರುತಿಸುವುದು (ಟ ಇಂದ ನ)",
+        "ಒಂದೇ ರೀತಿ ಕೇಳುವ ಅಕ್ಷರಗಳನ್ನು ಬೇರ್ಪಡಿಸಿ ಕೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಟ' ಇಂದ ಟಗರು! 'ತ' ಇಂದ ತಬಲ! ಎರಡರ ಧ್ವನಿಯಲ್ಲಿ ವ್ಯತ್ಯಾಸ ಕೇಳಿದೆಯಾ?",
+        "example": "'ನ' ಇಂದ ನವಿಲು — ನವಿಲು ನಮ್ಮ ರಾಷ್ಟ್ರೀಯ ಪಕ್ಷಿ.",
+        "activity": "ಧ್ವನಿ ಆಟ: ಟೀಚರ್ 'ಟ' ಮತ್ತು 'ತ' ಪದಗಳನ್ನು ಹೇಳುತ್ತಾರೆ; 'ಟ' ಗೆ ಕೈ ಮೇಲೆತ್ತಿ, 'ತ' ಗೆ ಚಪ್ಪಾಳೆ.",
+        "questions": [
+         {
+          "q": "'ನವಿಲು' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ನ."
+         },
+         {
+          "q": "'ದ' ಇಂದ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ದನ, ದಾರ (ಯಾವುದಾದರೂ)."
+         },
+         {
+          "q": "'ಡಬ್ಬ' ದ ಮೊದಲ ಅಕ್ಷರ ಯಾವುದು?",
+          "a": "ಡ."
+         }
+        ],
+        "homework": "ಟ ಇಂದ ನ ವರೆಗೆ ಹತ್ತು ಅಕ್ಷರಗಳನ್ನು ಬರೆ.",
+        "terms": [
+         "ವ್ಯಂಜನ",
+         "ಟ",
+         "ಡ",
+         "ತ",
+         "ದ",
+         "ನ",
+         "ಟವರ್ಗ",
+         "ತವರ್ಗ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ವ್ಯಂಜನಗಳು: ಪ – ಳ",
+     "topics": [
+      {
+       "title": "ವ್ಯಂಜನಗಳು: ಪ – ಳ",
+       "summary": "ಪ — ಪಟ, ಫ — ಫಲ, ಬ — ಬಸ್, ಭ — ಭರಣಿ, ಮ — ಮರ.",
+       "notes": [
+        "ಪ — ಪಟ, ಫ — ಫಲ, ಬ — ಬಸ್, ಭ — ಭರಣಿ, ಮ — ಮರ.",
+        "ಯ — ಯಂತ್ರ, ರ — ರಥ, ಲ — ಲಾರಿ, ವ — ವಜ್ರ.",
+        "ಶ — ಶಂಖ, ಷ — ಷಟ್ಕೋನ, ಸ — ಸಿಂಹ, ಹ — ಹಸು.",
+        "ಳ — ಕನ್ನಡದ ವಿಶೇಷ ಅಕ್ಷರ: ಬಾಳೆ, ಹಳ್ಳಿ.",
+        "ಈಗ ನಮಗೆ ಇಡೀ ಕನ್ನಡ ವರ್ಣಮಾಲೆ ಗೊತ್ತು!"
+       ],
+       "outcomes": [
+        "ಪವರ್ಗ ಮತ್ತು ಅವರ್ಗೀಯ ವ್ಯಂಜನಗಳನ್ನು (ಪ ಇಂದ ಳ) ಗುರುತಿಸುವುದು",
+        "ಪೂರ್ಣ ವರ್ಣಮಾಲೆಯನ್ನು ಕ್ರಮವಾಗಿ ಹೇಳುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಪ' ಇಂದ ಪಟ! 'ಮ' ಇಂದ ಮರ! ಬನ್ನಿ, ವರ್ಣಮಾಲೆ ಪೂರ್ಣ ಮಾಡೋಣ.",
+        "example": "'ಹ' ಇಂದ ಹಸು — ಹಸು ನಮಗೆ ಹಾಲು ಕೊಡುತ್ತದೆ.",
+        "activity": "ವರ್ಣಮಾಲೆ ರೈಲು: ಮಕ್ಕಳು ವ್ಯಂಜನ ಕಾರ್ಡ್ ಹಿಡಿದು ಕ್ರಮವಾಗಿ ನಿಂತು ವರ್ಣಮಾಲೆ ಹಾಡು ಹಾಡುವುದು.",
+        "questions": [
+         {
+          "q": "'ಸಿಂಹ' ಯಾವ ಅಕ್ಷರದಿಂದ ಆರಂಭ?",
+          "a": "ಸ."
+         },
+         {
+          "q": "'ಮ' ಇಂದ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಮರ, ಮನೆ (ಯಾವುದಾದರೂ)."
+         },
+         {
+          "q": "ಕನ್ನಡದ ವಿಶೇಷ ಅಕ್ಷರ 'ಳ' ಇರುವ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಬಾಳೆ, ಹಳ್ಳಿ (ಯಾವುದಾದರೂ)."
+         }
+        ],
+        "homework": "ಪ ಇಂದ ಳ ವರೆಗೆ ವ್ಯಂಜನಗಳನ್ನು ಬರೆ.",
+        "terms": [
+         "ವ್ಯಂಜನ",
+         "ಪ",
+         "ಮ",
+         "ಯ",
+         "ರ",
+         "ಸ",
+         "ಹ",
+         "ಳ",
+         "ವರ್ಣಮಾಲೆ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಎರಡು ಅಕ್ಷರದ ಪದಗಳು",
+     "topics": [
+      {
+       "title": "ಎರಡು ಅಕ್ಷರದ ಪದಗಳು",
+       "summary": "ಎರಡು ಅಕ್ಷರ ಸೇರಿದರೆ ಪದ ಆಗುತ್ತದೆ.",
+       "notes": [
+        "ಎರಡು ಅಕ್ಷರ ಸೇರಿದರೆ ಪದ ಆಗುತ್ತದೆ.",
+        "ಮ + ರ = ಮರ, ಕ + ರ = ಕರ.",
+        "ನ + ಲ = ನಲ, ಜ + ಗ = ಜಗ.",
+        "ರ + ಥ = ರಥ, ದ + ನ = ದನ.",
+        "ಅಕ್ಷರಗಳನ್ನು ಬೇರೆ ಬೇರೆಯಾಗಿ ಹೇಳಿ, ನಂತರ ಒಟ್ಟಿಗೆ ಹೇಳುತ್ತೇವೆ."
+       ],
+       "outcomes": [
+        "ಎರಡು ಅಕ್ಷರದ ಪದಗಳನ್ನು ಓದುವುದು",
+        "ಅಕ್ಷರಗಳನ್ನು ಸೇರಿಸಿ ಪದ ಮಾಡುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಮ' ಮತ್ತು 'ರ' ಸೇರಿಸು — ಏನಾಯಿತು? ಮರ!",
+        "example": "ರ...ಥ — ರಥ! ಜಾತ್ರೆಯಲ್ಲಿ ದೊಡ್ಡ ರಥ ಎಳೆಯುತ್ತಾರೆ.",
+        "activity": "ಪದ ಮಾಡು: ಮಕ್ಕಳಿಗೆ ಅಕ್ಷರ ಕಾರ್ಡ್ ಕೊಡಿ; ಎರಡು ಕಾರ್ಡ್ ಸೇರಿಸಿ ಪದ ಮಾಡಿ ಓದುವುದು (ಮರ, ರಥ, ದನ, ಜಗ).",
+        "questions": [
+         {
+          "q": "ಮ + ರ = ?",
+          "a": "ಮರ."
+         },
+         {
+          "q": "ಈ ಪದ ಓದು: 'ದನ'.",
+          "a": "ದನ."
+         },
+         {
+          "q": "'ರಥ' ಯಾವ ಎರಡು ಅಕ್ಷರಗಳಿಂದ ಆಗಿದೆ?",
+          "a": "ರ ಮತ್ತು ಥ."
+         }
+        ],
+        "homework": "ಎರಡು ಅಕ್ಷರದ ಐದು ಪದಗಳನ್ನು ಬರೆದು ಓದು.",
+        "terms": [
+         "ಪದ",
+         "ಸೇರಿಸು",
+         "ಓದು",
+         "ಅಕ್ಷರ"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "ಕಾಗುಣಿತ: ಕ ಕಾ ಕಿ ಕೀ",
+     "topics": [
+      {
+       "title": "ಕಾಗುಣಿತ: ಕ ಕಾ ಕಿ ಕೀ",
+       "summary": "ವ್ಯಂಜನಕ್ಕೆ ಸ್ವರ ಸೇರಿದರೆ ಗುಣಿತಾಕ್ಷರ ಆಗುತ್ತದೆ.",
+       "notes": [
+        "ವ್ಯಂಜನಕ್ಕೆ ಸ್ವರ ಸೇರಿದರೆ ಗುಣಿತಾಕ್ಷರ ಆಗುತ್ತದೆ.",
+        "ಕ + ಆ = ಕಾ, ಕ + ಇ = ಕಿ, ಕ + ಈ = ಕೀ.",
+        "ಪ್ರತಿ ಸ್ವರಕ್ಕೆ ಒಂದು ಚಿಹ್ನೆ ಇದೆ.",
+        "ಪದಗಳು: ಕಾಗೆ, ಕಿವಿ, ಕೀಲಿ, ಮಾವು.",
+        "ಕಾಗುಣಿತ ಕಲಿತರೆ ಹೆಚ್ಚು ಪದಗಳನ್ನು ಓದಬಹುದು."
+       ],
+       "outcomes": [
+        "ಕಾಗುಣಿತದ ಮೊದಲ ರೂಪಗಳು (ಕ ಕಾ ಕಿ ಕೀ) ಗುರುತಿಸುವುದು",
+        "ಗುಣಿತಾಕ್ಷರ ಇರುವ ಸರಳ ಪದಗಳನ್ನು ಓದುವುದು"
+       ],
+       "resources": [],
+       "lesson": {
+        "hook": "'ಕ' ಗೆ ದೀರ್ಘ ಸೇರಿಸಿದರೆ — 'ಕಾ'! ಇದೇ ಕಾಗುಣಿತದ ಮಜಾ.",
+        "example": "ಕಾ + ಗೆ = ಕಾಗೆ; ಕಿ + ವಿ = ಕಿವಿ.",
+        "activity": "ಕಾಗುಣಿತ ಹಾಡು: 'ಕ ಕಾ ಕಿ ಕೀ ಕು ಕೂ…' ಹಾಡಿ, ನಂತರ ಕಾಗೆ, ಕಿವಿ, ಕೀಲಿ ಚಿತ್ರ-ಪದ ಜೋಡಿಸುವುದು.",
+        "questions": [
+         {
+          "q": "ಕ + ಆ = ?",
+          "a": "ಕಾ."
+         },
+         {
+          "q": "ಈ ಪದ ಓದು: 'ಕಿವಿ'.",
+          "a": "ಕಿವಿ."
+         },
+         {
+          "q": "'ಕಾ' ಇರುವ ಒಂದು ಪದ ಹೇಳು.",
+          "a": "ಕಾಗೆ, ಕಾಲು (ಯಾವುದಾದರೂ)."
+         }
+        ],
+        "homework": "ಕ, ಕಾ, ಕಿ, ಕೀ ಬರೆದು ಪ್ರತಿಯೊಂದರಿಂದ ಒಂದು ಪದ ಬರೆ.",
+        "terms": [
+         "ಕಾಗುಣಿತ",
+         "ಗುಣಿತಾಕ್ಷರ",
+         "ಕಾ",
+         "ಕಿ",
+         "ಕೀ",
+         "ದೀರ್ಘ"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

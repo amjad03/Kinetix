@@ -1457,6 +1457,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get booksMarkFailed => 'Could not save. Check the board is online.';
 
   @override
+  String get booksHook => 'Start with';
+
+  @override
+  String get booksTerms => 'Words to learn';
+
+  @override
+  String get booksExample => 'Worked example';
+
+  @override
+  String get booksActivity => 'Class activity';
+
+  @override
   String get mathHint => 'Type a sum or an equation';
 
   @override
