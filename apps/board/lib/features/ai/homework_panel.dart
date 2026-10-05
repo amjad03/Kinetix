@@ -433,6 +433,7 @@ class _SendHomeworkDialogState extends State<_SendHomeworkDialog> {
     final l = context.l10n;
     final section = widget.ai.board.session?.sectionName;
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.assignment_outlined),
       title: Text(l.sendAsHomework),
       content: SizedBox(

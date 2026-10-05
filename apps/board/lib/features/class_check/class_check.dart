@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -64,10 +65,13 @@ class ClassCheck extends ChangeNotifier {
 
 /// The question's panel, draggable, over the board.
 class ClassCheckOverlay extends StatelessWidget {
-  const ClassCheckOverlay({super.key, required this.check, required this.onPutOnBoard});
+  const ClassCheckOverlay({super.key, required this.check, required this.onPutOnBoard, this.insets = EdgeInsets.zero});
 
   final ClassCheck check;
   final void Function(Uint8List png) onPutOnBoard;
+
+  /// Edges covered by the board's toolbars: the panel keeps clear of them.
+  final EdgeInsets insets;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -75,19 +79,34 @@ class ClassCheckOverlay extends StatelessWidget {
     builder: (context, _) {
       final poll = check.poll;
       if (poll == null) return const SizedBox.shrink();
-      return Stack(
-        children: [
-          Positioned(
-            left: check.position.dx,
-            top: check.position.dy,
-            child: GestureDetector(
-              onPanUpdate: (d) => check.move(d.delta),
-              child: BoardChromeTheme(
-                child: ClassCheckPanel(key: ValueKey(poll.id), poll: poll, onDismiss: check.dismiss, onPutOnBoard: onPutOnBoard),
+      // Kept on screen, and on a phone as wide as the screen allows; it scrolls when short.
+      return LayoutBuilder(
+        builder: (context, box) {
+          final width = math.min(428.0, box.maxWidth - 16);
+          final left = check.position.dx.clamp(8.0, math.max(8.0, box.maxWidth - width - 8)).toDouble();
+          final bottom = box.maxHeight - insets.bottom;
+          final top = check.position.dy.clamp(8.0, math.max(8.0, bottom - 160)).toDouble();
+          return Stack(
+            children: [
+              Positioned(
+                left: left,
+                top: top,
+                width: width,
+                child: GestureDetector(
+                  onPanUpdate: (d) => check.move(d.delta),
+                  child: BoardChromeTheme(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: math.max(160, bottom - top - 8)),
+                      child: SingleChildScrollView(
+                        child: ClassCheckPanel(key: ValueKey(poll.id), poll: poll, onDismiss: check.dismiss, onPutOnBoard: onPutOnBoard),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       );
     },
   );

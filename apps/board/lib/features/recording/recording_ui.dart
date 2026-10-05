@@ -143,6 +143,7 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
     final sure = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         title: Text(context.l10n.recDiscardTitle),
         content: Text(context.l10n.recDiscardBody(formatElapsed(widget.duration))),
         actions: [
@@ -159,6 +160,7 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
     final c = context.colors;
     final l = context.l10n;
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.video_library_outlined),
       title: Text(l.recSaveTitle),
       content: SizedBox(
@@ -257,6 +259,7 @@ class _RecordingsDialogState extends State<RecordingsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.video_library_outlined),
       title: Text(context.l10n.recordings),
       content: SizedBox(
