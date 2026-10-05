@@ -496,6 +496,20 @@ class FakeStudentApi implements StudentApi {
     return hits;
   }
 
+  /// Concept videos by topic id.
+  Map<String, List<ConceptVideo>> conceptVideoList = {
+    't1': const [
+      ConceptVideo(id: 'cv1', youtubeVideoId: 'abcdefghij1', title: 'Underwriting commission in 5 minutes', language: 'en', durationSeconds: 300),
+      ConceptVideo(id: 'cv2', youtubeVideoId: 'abcdefghij2', title: 'अभिगोपन कमीशन', language: 'hi', durationSeconds: 245),
+    ],
+  };
+
+  @override
+  Future<List<ConceptVideo>> conceptVideos(String topicId) async {
+    calls.add('conceptVideos $topicId');
+    return conceptVideoList[topicId] ?? const [];
+  }
+
   @override
   Future<TopicDetail> topic(String id) async {
     calls.add('topic $id');

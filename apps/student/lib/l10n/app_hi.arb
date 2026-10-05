@@ -492,5 +492,10 @@
   "demoSignInAs": "{name} के रूप में साइन इन करें",
   "demoOtpHint": "डेमो: कोई भी नंबर चलेगा; कोड 123456 है।",
   "notInDemo": "डेमो में उपलब्ध नहीं है।",
-  "recordingAvailableUntil": "{date} तक उपलब्ध"
+  "recordingAvailableUntil": "{date} तक उपलब्ध",
+  "conceptVideos": "कॉन्सेप्ट वीडियो",
+  "conceptVideosHint": "कक्षा से पहले झलक के लिए और कक्षा के बाद दोहराने के लिए देखें।",
+  "conceptVideosFromYouTube": "यूट्यूब से चलता है",
+  "conceptVideosUnsupported": "वीडियो यहाँ नहीं चल सकते। अपने फ़ोन पर विद्यार्थी ऐप का उपयोग करें।",
+  "conceptVideoPlay": "{title} चलाएँ"
 }

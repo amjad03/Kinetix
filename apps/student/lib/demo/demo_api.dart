@@ -224,6 +224,15 @@ class DemoStudentApi extends FakeStudentApi {
 
     syllabi = {'sub1': outline('co1', caTitle, ca), 'sub2': outline('co2', costTitle, cost)};
     underwriting = _topics['t6']!;
+    // Sample concept videos, as the platform team links them. The ids are placeholders until the
+    // KINETIX channel's own videos are linked (YouTube then shows "Video unavailable").
+    conceptVideoList = {
+      't5': const [
+        ConceptVideo(id: 'cv1', youtubeVideoId: 'kxDemoRe01a', title: 'Re-issue of forfeited shares in 6 minutes', language: 'en', durationSeconds: 372),
+        ConceptVideo(id: 'cv3', youtubeVideoId: 'kxDemoRe03h', title: 'ज़ब्त शेयरों का पुनः निर्गमन', language: 'hi', durationSeconds: 410),
+      ],
+      't6': const [ConceptVideo(id: 'cv5', youtubeVideoId: 'kxDemoUw01a', title: 'Underwriting commission explained', language: 'en', durationSeconds: 296)],
+    };
     coverageJson = {
       'sub1': {
         'covered': 4,

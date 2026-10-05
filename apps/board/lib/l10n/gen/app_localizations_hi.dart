@@ -1459,6 +1459,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get booksMarkFailed => 'सहेजा नहीं जा सका। देखें कि बोर्ड ऑनलाइन है।';
 
   @override
+  String get booksHook => 'ऐसे शुरू करें';
+
+  @override
+  String get booksTerms => 'सीखने के शब्द';
+
+  @override
+  String get booksExample => 'हल किया हुआ उदाहरण';
+
+  @override
+  String get booksActivity => 'कक्षा गतिविधि';
+
+  @override
   String get mathHint => 'कोई सवाल या समीकरण लिखें';
 
   @override
@@ -2008,4 +2020,57 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get kioskDemoBody =>
       'यह डेमो बिल्ड है: कियोस्क मोड बंद है और PIN की ज़रूरत नहीं है।';
+
+  @override
+  String get toolConceptVideos => 'कॉन्सेप्ट वीडियो';
+
+  @override
+  String get conceptVideosTitle => 'कॉन्सेप्ट वीडियो';
+
+  @override
+  String get conceptVideosForPeriod => 'इस पीरियड के कॉन्सेप्ट वीडियो';
+
+  @override
+  String conceptVideosNext(String time) {
+    return 'अगला पीरियड $time बजे';
+  }
+
+  @override
+  String get conceptVideosSkip => 'छोड़ें';
+
+  @override
+  String get conceptVideosNone =>
+      'इस विषय के लिए अभी कोई कॉन्सेप्ट वीडियो नहीं है।';
+
+  @override
+  String get conceptVideosNoPeriod =>
+      'इस बोर्ड पर अभी या आज बाद में कोई कक्षा नहीं है।';
+
+  @override
+  String get conceptVideosSignIn =>
+      'अपनी कक्षा के कॉन्सेप्ट वीडियो देखने के लिए साइन इन करें।';
+
+  @override
+  String get conceptVideosCouldNotLoad => 'कॉन्सेप्ट वीडियो लोड नहीं हो सके।';
+
+  @override
+  String get conceptVideosUnsupported =>
+      'इस डिवाइस पर वीडियो नहीं चल सकते। बोर्ड का Android या Windows ऐप उपयोग करें।';
+
+  @override
+  String get conceptVideosFromYouTube => 'यूट्यूब से चलता है';
+
+  @override
+  String get conceptVideosSourceLessonPlan => 'आज की पाठ योजना से';
+
+  @override
+  String get conceptVideosSourceYearPlan => 'वार्षिक योजना से';
+
+  @override
+  String get conceptVideosSourceSyllabus => 'पाठ्यक्रम का अगला विषय';
+
+  @override
+  String conceptVideosPlay(String title) {
+    return '$title चलाएँ';
+  }
 }

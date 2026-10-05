@@ -94,6 +94,12 @@ const EnvSchema = z.object({
   MSG91_SENDER_ID: z.string().optional(),
   /** The app name passed to the SMS template. */
   SMS_APP_NAME: z.string().default('KINETIX'),
+  /**
+   * YouTube Data API key (Google Cloud, YouTube Data API v3), optional. Only the platform team's
+   * playlist import and video durations use it (playlistItems.list and videos.list cost one
+   * quota unit each). Without it, concept videos are added one link at a time.
+   */
+  YOUTUBE_API_KEY: z.string().optional(),
   /** `json` writes one JSON object per log line (production log shipping); `text` is for people. */
   LOG_FORMAT: z.enum(['text', 'json']).default('text'),
   /**

@@ -89,6 +89,17 @@ void main() {
             'resources': [
               {'kind': 'lab', 'id': 'lab.break-even', 'title': 'Break-even chart'},
             ],
+            'lesson': {
+              'hook': 'Why would anyone pay for a name?',
+              'example': 'Average profit ₹50,000 × 3 years’ purchase = ₹1,50,000.',
+              'activity': 'Value the goodwill of a local shop in groups.',
+              'questions': [
+                {'q': 'What is super profit?', 'a': 'Average profit minus normal profit.'},
+              ],
+              'homework': '',
+              'terms': ['goodwill', 'super profit'],
+              'kn': {'title': 'ಸುನಾಮದ ಮೌಲ್ಯಮಾಪನ'},
+            },
           });
       }
       if (path == '/v1/ai/explain') {
@@ -144,6 +155,13 @@ void main() {
     expect(find.byKey(const Key('books-topic')), findsOneWidget);
     expect(find.textContaining('Super profit × Number'), findsOneWidget);
     expect(find.byKey(const Key('resource-lab.break-even')), findsOneWidget);
+    // The lesson the library wrote for the topic; the Kannada title is for a Kannada board only.
+    expect(find.text('Why would anyone pay for a name?'), findsOneWidget);
+    expect(find.text('super profit'), findsOneWidget);
+    expect(find.text('1. What is super profit?'), findsOneWidget);
+    expect(find.text('Average profit minus normal profit.'), findsOneWidget);
+    expect(find.byKey(const Key('lesson-homework')), findsNothing);
+    expect(find.text('ಸುನಾಮದ ಮೌಲ್ಯಮಾಪನ'), findsNothing);
 
     await tester.tap(find.byKey(const Key('topic-explain')));
     await tester.pumpAndSettle();

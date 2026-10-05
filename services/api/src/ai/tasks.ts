@@ -20,6 +20,8 @@ export interface Grounding {
   subjectName?: string;
   /** Notes from the content library for this topic, when available. */
   notes?: string[];
+  /** From the topic's lesson in the library, when written. */
+  lesson?: { terms?: string[]; example?: string; hook?: string; activity?: string };
 }
 
 const Topic = z.string().trim().min(2).max(300);
@@ -124,6 +126,11 @@ function systemPrompt(g: Grounding, language: Language): string {
     'Reply with one JSON object only, no markdown fences, matching the shape described by the user.',
   ];
   if (g.notes?.length) lines.push('Base the answer on these syllabus notes:', ...g.notes.map((n) => `- ${n}`));
+  const l = g.lesson;
+  if (l?.terms?.length) lines.push(`Key terms of the syllabus lesson: ${l.terms.join(', ')}.`);
+  if (l?.example) lines.push(`Worked example from the syllabus lesson: ${l.example}`);
+  if (l?.hook) lines.push(`The syllabus lesson opens with: ${l.hook}`);
+  if (l?.activity) lines.push(`Its class activity: ${l.activity}`);
   return lines.filter(Boolean).join('\n');
 }
 

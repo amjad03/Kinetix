@@ -179,6 +179,16 @@ class DemoBoardServer {
             'Sample notes (demo): work one example on the board, then let the class try the next one.',
           ],
           'outcomes': ['Explain $t', 'Solve a textbook problem on $t'],
+          'lesson': {
+            'hook': 'Sample lesson (demo): ask the class where they have seen $t in a business they know.',
+            'example': 'Work the first textbook example on the board, one step at a time.',
+            'activity': 'In pairs, students solve the next example and compare answers.',
+            'questions': [
+              {'q': 'What is $t used for?', 'a': s},
+            ],
+            'homework': 'Two textbook problems on $t.',
+            'terms': [t],
+          },
           'chapter': {'id': cid, 'title': chapter},
           'course': {
             'id': 'co1',
@@ -212,6 +222,51 @@ class DemoBoardServer {
     'topics': [
       for (final e in _taught.entries)
         {'topicId': e.key, 'coveredOn': e.value, 'coveredBy': 'Anita Sharma'},
+    ],
+  };
+
+  /// Sample concept videos (as the platform team links them in the ERP). The ids are placeholders
+  /// until the KINETIX channel's own videos are linked; YouTube then shows "Video unavailable".
+  static const conceptVideos = [
+    ('cv1', 't5', 'kxDemoRe01a', 'Re-issue of forfeited shares in 6 minutes', 'en', 372),
+    ('cv2', 't5', 'kxDemoRe02b', 'Capital reserve on re-issue: worked example', 'en', 455),
+    ('cv3', 't5', 'kxDemoRe03h', 'ज़ब्त शेयरों का पुनः निर्गमन', 'hi', 410),
+    ('cv4', 't4', 'kxDemoFo01a', 'Forfeiture of shares explained', 'en', 318),
+  ];
+
+  List<Map<String, dynamic>> _videosFor(String topicId) => [
+    for (final (i, (id, topic, yt, title, lang, secs)) in conceptVideos.indexed)
+      if (topic == topicId)
+        {
+          'id': id,
+          'topicId': topic,
+          'youtubeVideoId': yt,
+          'title': title,
+          'language': lang,
+          'durationSeconds': secs,
+          'channelTitle': 'KINETIX',
+          'position': i + 1,
+        },
+  ];
+
+  /// GET /v1/devices/me/concept-videos: the demo class is always in progress.
+  Map<String, dynamic> get _conceptVideosNow => {
+    'period': {
+      'slotId': 'slot1',
+      'date': _iso(_clock()),
+      'startsAt': '10:00:00',
+      'endsAt': '10:55:00',
+      'isNow': true,
+      'section': {'id': 'sec1', 'displayName': 'BCom Sem 3 A'},
+      'subject': {'id': 'sub1', 'name': 'Corporate Accounting'},
+    },
+    'source': 'lesson_plan',
+    'topics': [
+      {'id': 't5', 'title': 'Re-issue of forfeited shares'},
+    ],
+    'language': 'en',
+    'videos': [
+      for (final v in _videosFor('t5')) {...v, 'topicTitle': 'Re-issue of forfeited shares'},
     ],
   };
 
@@ -431,6 +486,11 @@ class DemoBoardServer {
 
     // Content library, coverage and today's plan.
     if (path == '/v1/content/syllabus') return json(_syllabus);
+    if (path == '/v1/devices/me/concept-videos') return json(_conceptVideosNow);
+    final videos = RegExp(r'^/v1/content/topics/([^/]+)/videos$').firstMatch(path);
+    if (videos != null) {
+      return json({'topicId': videos[1], 'language': 'en', 'videos': _videosFor(videos[1]!)});
+    }
     final topic = RegExp(r'^/v1/content/topics/([^/]+)$').firstMatch(path);
     if (topic != null) {
       final t = _topic(topic[1]!);

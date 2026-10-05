@@ -101,7 +101,9 @@ run_task() {  # run_task <family> [command-override-json]
    (`Created role kinetix_owner … Database kinetix is ready`).
 3. **Migrations**: `run_task kinetix-$ENV-migrate` → `Migrations applied.`
 4. **Global content library** (idempotent):
-   `run_task kinetix-$ENV-db-admin '["content-import"]' db-admin`
+   `run_task kinetix-$ENV-db-admin '["content-import"]' db-admin` → `Imported … courses, … topics
+   (… new, … changed, … removed)`. Re-run on every release that changes `services/api/content`
+   (see its README); topic ids are kept, so classes' coverage and plans stay attached.
 5. **Staging only — demo data**: `run_task kinetix-$ENV-api '["seed"]' api` with `ALLOW_DEMO_SEED=yes` set on the task (the seed refuses to run in production images otherwise) (the seed validates
    the full API environment, so it runs on the API task definition). Never on prod: it creates
    accounts with a known password.

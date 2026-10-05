@@ -15,7 +15,8 @@ export type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
  *   `kinetix_app` role inside a transaction whose `app.tenant_id` is set, so row-level
  *   security confines every statement to that tenant.
  * - `system` uses the owner role and bypasses RLS. Only {@link SystemLookups} may use it,
- *   for the few lookups that happen before a tenant is known.
+ *   for the few lookups that happen before a tenant is known, and the platform team's endpoints
+ *   (src/platform/, behind PlatformAdminGuard), which write the global library.
  */
 @Injectable()
 export class DbService implements OnApplicationShutdown {

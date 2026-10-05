@@ -28,6 +28,9 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
+  # Concept videos: YouTube's embedded player in a WebView.
+  webview_flutter: ^4.14.1
+  webview_flutter_android: ^4.14.1
 
 dev_dependencies:
   flutter_test:

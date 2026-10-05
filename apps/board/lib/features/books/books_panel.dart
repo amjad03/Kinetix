@@ -15,7 +15,8 @@ import '../board/side_panel.dart';
 const _booksAccent = Color(0xFF8AB4F8);
 
 /// Books: the syllabus of the class open on the board, from the KINETIX content library.
-/// A topic opens its notes in large type for the class, and can start an AI explanation or a
+/// A topic opens its notes and lesson (hook, terms, example, activity, questions, homework) in
+/// large type for the class, and can start an AI explanation or a
 /// quick quiz grounded in that topic. Topics taught to the open class are ticked, and the
 /// teacher marks a topic as taught (or undoes it) from the outline or the topic.
 class BooksPanel extends StatefulWidget {
@@ -162,7 +163,8 @@ class _BooksPanelState extends State<BooksPanel> {
           : () => setState(() {
               _topic = null;
             }),
-      child: topic != null ? _topicView(topic) : _syllabusView(),
+      // The topic follows the AI language (its lesson may be written in Kannada or Hindi too).
+      child: topic != null ? ListenableBuilder(listenable: widget.ai, builder: (context, _) => _topicView(topic)) : _syllabusView(),
     );
   }
 
@@ -314,6 +316,20 @@ class _BooksPanelState extends State<BooksPanel> {
         }
         final t = snap.data!;
         final c = context.colors;
+        // The lesson in the AI language when the library has it written in it (Kannada for
+        // Karnataka's English-medium books), else as written.
+        final language = widget.ai.language.name;
+        final version = t.lesson?.fullIn(language);
+        final lesson = version ?? t.lesson;
+        final title = t.lesson?.versions[language]?.title ?? t.title;
+        final notes = version?.notes ?? t.notes;
+        final outcomes = version?.outcomes ?? t.outcomes;
+        const body = TextStyle(fontSize: ClassType.body, height: 1.45);
+        Widget para(String label, String text, Key key) => Column(
+          key: key,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [AiSectionLabel(label), Text(text, style: body)],
+        );
         Widget list(String label, List<String> items, IconData icon) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -343,7 +359,7 @@ class _BooksPanelState extends State<BooksPanel> {
           children: [
             Text(t.chapterTitle, style: context.text.labelLarge?.copyWith(color: c.onSurfaceVariant)),
             const SizedBox(height: Kx.s4),
-            Text(t.title, style: context.text.headlineSmall),
+            Text(title, style: context.text.headlineSmall),
             if (t.summary.isNotEmpty) ...[
               const SizedBox(height: Kx.s12),
               Text(
@@ -403,8 +419,36 @@ class _BooksPanelState extends State<BooksPanel> {
                 ],
               ),
             ],
-            if (t.notes.isNotEmpty) list(l.booksKeyFacts, t.notes, Icons.check_circle_outline),
-            if (t.outcomes.isNotEmpty) list(l.booksOutcomes, t.outcomes, Icons.flag_outlined),
+            if (lesson != null && lesson.hook.isNotEmpty) para(l.booksHook, lesson.hook, const Key('lesson-hook')),
+            if (notes.isNotEmpty) list(l.booksKeyFacts, notes, Icons.check_circle_outline),
+            if (lesson != null && lesson.terms.isNotEmpty) ...[
+              AiSectionLabel(l.booksTerms),
+              Wrap(
+                key: const Key('lesson-terms'),
+                spacing: Kx.s8,
+                runSpacing: Kx.s8,
+                children: [for (final w in lesson.terms) Chip(label: Text(w, style: const TextStyle(fontSize: 16)))],
+              ),
+            ],
+            if (lesson != null && lesson.example.isNotEmpty) para(l.booksExample, lesson.example, const Key('lesson-example')),
+            if (lesson != null && lesson.activity.isNotEmpty) para(l.booksActivity, lesson.activity, const Key('lesson-activity')),
+            if (lesson != null && lesson.questions.isNotEmpty) ...[
+              AiSectionLabel(l.lessonCheck),
+              for (final (i, q) in lesson.questions.indexed)
+                Padding(
+                  key: Key('lesson-question-$i'),
+                  padding: const EdgeInsets.only(bottom: Kx.s12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${i + 1}. ${q.q}', style: body),
+                      if (q.a.isNotEmpty) Text(q.a, style: body.copyWith(color: c.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+            ],
+            if (lesson != null && lesson.homework.isNotEmpty) para(l.planHomework, lesson.homework, const Key('lesson-homework')),
+            if (outcomes.isNotEmpty) list(l.booksOutcomes, outcomes, Icons.flag_outlined),
             if (!t.reviewed)
               Padding(
                 padding: const EdgeInsets.only(top: Kx.s16),

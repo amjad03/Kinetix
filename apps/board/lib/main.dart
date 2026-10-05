@@ -14,6 +14,7 @@ import 'features/board/board_screen.dart';
 import 'features/board/chrome.dart';
 import 'features/broadcast/broadcast_overlay.dart';
 import 'features/comfort/eye_comfort.dart';
+import 'features/concept_videos/concept_video_suggestions.dart';
 import 'features/enrollment/enroll_screen.dart';
 import 'l10n/l10n.dart';
 
@@ -85,7 +86,8 @@ class KinetixBoardApp extends StatelessWidget {
           builder: (context, _) => switch (controller.stage) {
             BoardStage.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
             BoardStage.needsEnrollment => EnrollScreen(controller: controller),
-            BoardStage.board => BoardScreen(board: controller),
+            // Concept videos are suggested over the board when a period starts.
+            BoardStage.board => ConceptVideoSuggestions(board: controller, child: BoardScreen(board: controller)),
           },
         ),
       ),
