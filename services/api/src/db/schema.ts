@@ -54,6 +54,8 @@ export interface TenantSettings {
   classroomAudioToViewers?: boolean;
   /** Named in the apps' Privacy screen (DPDP Act). */
   grievanceOfficer?: { name: string; email?: string; phone?: string } | null;
+  /** Days lesson recordings are kept after their semester ends (default 7, 0–90). */
+  recordingRetentionGraceDays?: number;
 }
 
 export const campuses = pgTable('campuses', {
@@ -125,6 +127,27 @@ export const academicYears = pgTable('academic_years', {
   endsOn: date('ends_on').notNull(),
   isCurrent: boolean('is_current').notNull().default(false),
 });
+
+/**
+ * A semester (or term) inside an academic year: "Odd semester 2026". For the programs listed, or
+ * every program when `program_ids` is null; a school may have one term for the whole year. Terms
+ * of the same programs do not overlap. Lesson recordings are kept until their term ends.
+ */
+export const academicTerms = pgTable(
+  'academic_terms',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    academicYearId: uuid('academic_year_id').notNull().references(() => academicYears.id),
+    name: text('name').notNull(),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    /** Null = every program. */
+    programIds: uuid('program_ids').array(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('academic_terms_range_idx').on(t.tenantId, t.startsOn, t.endsOn)],
+);
 
 export const programLevel = pgEnum('program_level', ['k12', 'ug', 'pg', 'diploma', 'phd']);
 
@@ -664,6 +687,10 @@ export const recordings = pgTable(
     summaryState: processingState('summary_state').notNull().default('none'),
     summary: jsonb('summary').$type<{ summary: string; keyPoints: string[] }>(),
     sharedAt: timestamp('shared_at', { withTimezone: true }),
+    /** The teacher asked to keep it: never deleted when its term ends. */
+    keep: boolean('keep').notNull().default(false),
+    /** When the teacher was told it will be deleted soon (once). */
+    expiryNotifiedAt: timestamp('expiry_notified_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -1127,6 +1154,7 @@ export const TENANT_TABLES = [
   'users',
   'user_roles',
   'academic_years',
+  'academic_terms',
   'programs',
   'sections',
   'subjects',
