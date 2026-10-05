@@ -6195,6 +6195,1026 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not show the photo from the phone.'**
   String get remotePhotoFailed;
+
+  /// No description provided for @subjectManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Management'**
+  String get subjectManagement;
+
+  /// No description provided for @subjectLaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Law'**
+  String get subjectLaw;
+
+  /// No description provided for @subjectStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get subjectStatistics;
+
+  /// No description provided for @kitAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get kitAccounts;
+
+  /// No description provided for @kitFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculators'**
+  String get kitFinance;
+
+  /// No description provided for @kitManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Frameworks'**
+  String get kitManagement;
+
+  /// No description provided for @kitLaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Law'**
+  String get kitLaw;
+
+  /// No description provided for @kitStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get kitStats;
+
+  /// No description provided for @stSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Spreadsheet'**
+  String get stSheet;
+
+  /// No description provided for @stReader.
+  ///
+  /// In en, this message translates to:
+  /// **'Act and case reader'**
+  String get stReader;
+
+  /// No description provided for @accFormats.
+  ///
+  /// In en, this message translates to:
+  /// **'Formats'**
+  String get accFormats;
+
+  /// No description provided for @accJournal.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal'**
+  String get accJournal;
+
+  /// No description provided for @accLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger (T-account)'**
+  String get accLedger;
+
+  /// No description provided for @accTrialBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial balance'**
+  String get accTrialBalance;
+
+  /// No description provided for @accFinalAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading and profit & loss account'**
+  String get accFinalAccounts;
+
+  /// No description provided for @accBalanceSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance sheet (Schedule III)'**
+  String get accBalanceSheet;
+
+  /// No description provided for @accCashBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash book'**
+  String get accCashBook;
+
+  /// No description provided for @accBrs.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank reconciliation statement'**
+  String get accBrs;
+
+  /// No description provided for @accBlankSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank spreadsheet'**
+  String get accBlankSheet;
+
+  /// No description provided for @calcDepreciation.
+  ///
+  /// In en, this message translates to:
+  /// **'Depreciation (SLM / WDV)'**
+  String get calcDepreciation;
+
+  /// No description provided for @calcRatios.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounting ratios'**
+  String get calcRatios;
+
+  /// No description provided for @calcNpv.
+  ///
+  /// In en, this message translates to:
+  /// **'NPV, IRR and payback'**
+  String get calcNpv;
+
+  /// No description provided for @calcBreakEven.
+  ///
+  /// In en, this message translates to:
+  /// **'Break-even point'**
+  String get calcBreakEven;
+
+  /// No description provided for @calcGst.
+  ///
+  /// In en, this message translates to:
+  /// **'GST (CGST / SGST / IGST)'**
+  String get calcGst;
+
+  /// No description provided for @calcInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple and compound interest'**
+  String get calcInterest;
+
+  /// No description provided for @calcEmi.
+  ///
+  /// In en, this message translates to:
+  /// **'EMI'**
+  String get calcEmi;
+
+  /// No description provided for @calcWorkOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Work it out'**
+  String get calcWorkOut;
+
+  /// No description provided for @calcPutOnBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Put on the board'**
+  String get calcPutOnBoard;
+
+  /// No description provided for @calcCheckInputs.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the numbers'**
+  String get calcCheckInputs;
+
+  /// No description provided for @calcOpenLab.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the break-even lab'**
+  String get calcOpenLab;
+
+  /// No description provided for @methodSlm.
+  ///
+  /// In en, this message translates to:
+  /// **'Straight line'**
+  String get methodSlm;
+
+  /// No description provided for @methodWdv.
+  ///
+  /// In en, this message translates to:
+  /// **'Written-down value'**
+  String get methodWdv;
+
+  /// No description provided for @interestSimple.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple'**
+  String get interestSimple;
+
+  /// No description provided for @interestCompound.
+  ///
+  /// In en, this message translates to:
+  /// **'Compound'**
+  String get interestCompound;
+
+  /// No description provided for @fCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost (₹)'**
+  String get fCost;
+
+  /// No description provided for @fScrap.
+  ///
+  /// In en, this message translates to:
+  /// **'Scrap value (₹)'**
+  String get fScrap;
+
+  /// No description provided for @fLife.
+  ///
+  /// In en, this message translates to:
+  /// **'Useful life (years)'**
+  String get fLife;
+
+  /// No description provided for @fRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate (% a year)'**
+  String get fRate;
+
+  /// No description provided for @fYears.
+  ///
+  /// In en, this message translates to:
+  /// **'Years'**
+  String get fYears;
+
+  /// No description provided for @fMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'Months'**
+  String get fMonths;
+
+  /// No description provided for @fPrincipal.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal (₹)'**
+  String get fPrincipal;
+
+  /// No description provided for @fAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (₹)'**
+  String get fAmount;
+
+  /// No description provided for @fGstRate.
+  ///
+  /// In en, this message translates to:
+  /// **'GST rate (%)'**
+  String get fGstRate;
+
+  /// No description provided for @fInterState.
+  ///
+  /// In en, this message translates to:
+  /// **'Inter-state supply (IGST)'**
+  String get fInterState;
+
+  /// No description provided for @fInclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount includes GST'**
+  String get fInclusive;
+
+  /// No description provided for @fOutlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial outlay (₹)'**
+  String get fOutlay;
+
+  /// No description provided for @fCashFlows.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash inflows, year by year (₹)'**
+  String get fCashFlows;
+
+  /// No description provided for @fDiscountRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost of capital (%)'**
+  String get fDiscountRate;
+
+  /// No description provided for @fFixedCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed cost (₹)'**
+  String get fFixedCost;
+
+  /// No description provided for @fVariableCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Variable cost a unit (₹)'**
+  String get fVariableCost;
+
+  /// No description provided for @fPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling price a unit (₹)'**
+  String get fPrice;
+
+  /// No description provided for @fUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units sold'**
+  String get fUnits;
+
+  /// No description provided for @fCompounding.
+  ///
+  /// In en, this message translates to:
+  /// **'Times compounded a year'**
+  String get fCompounding;
+
+  /// No description provided for @fCurrentAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Current assets'**
+  String get fCurrentAssets;
+
+  /// No description provided for @fCurrentLiabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Current liabilities'**
+  String get fCurrentLiabilities;
+
+  /// No description provided for @fInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get fInventory;
+
+  /// No description provided for @fPrepaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepaid expenses'**
+  String get fPrepaid;
+
+  /// No description provided for @fDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-term debt'**
+  String get fDebt;
+
+  /// No description provided for @fEquity.
+  ///
+  /// In en, this message translates to:
+  /// **'Shareholders’ funds'**
+  String get fEquity;
+
+  /// No description provided for @fRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue from operations'**
+  String get fRevenue;
+
+  /// No description provided for @fGrossProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross profit'**
+  String get fGrossProfit;
+
+  /// No description provided for @fNetProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Net profit'**
+  String get fNetProfit;
+
+  /// No description provided for @fCogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost of revenue from operations'**
+  String get fCogs;
+
+  /// No description provided for @fAvgInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Average inventory'**
+  String get fAvgInventory;
+
+  /// No description provided for @fReceivables.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade receivables'**
+  String get fReceivables;
+
+  /// No description provided for @fEbit.
+  ///
+  /// In en, this message translates to:
+  /// **'Profit before interest and tax'**
+  String get fEbit;
+
+  /// No description provided for @fInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest'**
+  String get fInterest;
+
+  /// No description provided for @fTotalAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Total assets'**
+  String get fTotalAssets;
+
+  /// No description provided for @mgSwot.
+  ///
+  /// In en, this message translates to:
+  /// **'SWOT analysis'**
+  String get mgSwot;
+
+  /// No description provided for @mgPestle.
+  ///
+  /// In en, this message translates to:
+  /// **'PESTLE analysis'**
+  String get mgPestle;
+
+  /// No description provided for @mgPorter.
+  ///
+  /// In en, this message translates to:
+  /// **'Porter’s five forces'**
+  String get mgPorter;
+
+  /// No description provided for @mgBcg.
+  ///
+  /// In en, this message translates to:
+  /// **'BCG matrix'**
+  String get mgBcg;
+
+  /// No description provided for @mgAnsoff.
+  ///
+  /// In en, this message translates to:
+  /// **'Ansoff matrix'**
+  String get mgAnsoff;
+
+  /// No description provided for @mgValueChain.
+  ///
+  /// In en, this message translates to:
+  /// **'Value chain'**
+  String get mgValueChain;
+
+  /// No description provided for @mg7s.
+  ///
+  /// In en, this message translates to:
+  /// **'McKinsey 7S'**
+  String get mg7s;
+
+  /// No description provided for @mgMaslow.
+  ///
+  /// In en, this message translates to:
+  /// **'Maslow’s hierarchy of needs'**
+  String get mgMaslow;
+
+  /// No description provided for @mg4p.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing mix (4 Ps)'**
+  String get mg4p;
+
+  /// No description provided for @mg7p.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing mix (7 Ps)'**
+  String get mg7p;
+
+  /// No description provided for @mgGantt.
+  ///
+  /// In en, this message translates to:
+  /// **'Gantt chart'**
+  String get mgGantt;
+
+  /// No description provided for @mgPert.
+  ///
+  /// In en, this message translates to:
+  /// **'PERT / CPM (critical path)'**
+  String get mgPert;
+
+  /// No description provided for @mgDecisionTree.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision tree'**
+  String get mgDecisionTree;
+
+  /// No description provided for @mgFishbone.
+  ///
+  /// In en, this message translates to:
+  /// **'Fishbone diagram'**
+  String get mgFishbone;
+
+  /// No description provided for @mgMindMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind map'**
+  String get mgMindMap;
+
+  /// No description provided for @mgCaseStudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Case study frame'**
+  String get mgCaseStudy;
+
+  /// No description provided for @mgStrategy.
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy'**
+  String get mgStrategy;
+
+  /// No description provided for @mgMarketing.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing and people'**
+  String get mgMarketing;
+
+  /// No description provided for @mgProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects and decisions'**
+  String get mgProjects;
+
+  /// No description provided for @pertActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get pertActivities;
+
+  /// No description provided for @pertHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One activity a line: its letter, its time (or optimistic, likely, pessimistic), then the activities before it. For example: C 2 A'**
+  String get pertHint;
+
+  /// No description provided for @pertInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the activities: one needs an activity that is not listed, or they go round in a loop.'**
+  String get pertInvalid;
+
+  /// No description provided for @lawReader.
+  ///
+  /// In en, this message translates to:
+  /// **'Read an act or a judgment'**
+  String get lawReader;
+
+  /// No description provided for @lawPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste text'**
+  String get lawPaste;
+
+  /// No description provided for @lawImportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a PDF'**
+  String get lawImportPdf;
+
+  /// No description provided for @lawEditText.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit the text'**
+  String get lawEditText;
+
+  /// No description provided for @lawRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get lawRead;
+
+  /// No description provided for @lawAddNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note'**
+  String get lawAddNote;
+
+  /// No description provided for @lawSendToBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Put highlights on the board'**
+  String get lawSendToBoard;
+
+  /// No description provided for @lawSamples.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample sections'**
+  String get lawSamples;
+
+  /// No description provided for @lawReaderEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the text of an act or a judgment, or import a PDF. Then tap a paragraph to highlight it.'**
+  String get lawReaderEmpty;
+
+  /// No description provided for @lawNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'No text found in this PDF. It may be a scanned copy.'**
+  String get lawNoText;
+
+  /// No description provided for @lawNothingHighlighted.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight a paragraph first'**
+  String get lawNothingHighlighted;
+
+  /// No description provided for @lawCaseBrief.
+  ///
+  /// In en, this message translates to:
+  /// **'Case brief'**
+  String get lawCaseBrief;
+
+  /// No description provided for @lawIrac.
+  ///
+  /// In en, this message translates to:
+  /// **'IRAC frame'**
+  String get lawIrac;
+
+  /// No description provided for @lawTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline of events'**
+  String get lawTimeline;
+
+  /// No description provided for @lawTimelineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One event a line: the date, then what happened'**
+  String get lawTimelineHint;
+
+  /// No description provided for @lawArgumentMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Argument map'**
+  String get lawArgumentMap;
+
+  /// No description provided for @lawFrames.
+  ///
+  /// In en, this message translates to:
+  /// **'Frames'**
+  String get lawFrames;
+
+  /// No description provided for @stData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get stData;
+
+  /// No description provided for @stDataHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers, separated by spaces, commas or new lines'**
+  String get stDataHint;
+
+  /// No description provided for @stDescriptive.
+  ///
+  /// In en, this message translates to:
+  /// **'Descriptive statistics'**
+  String get stDescriptive;
+
+  /// No description provided for @stBoxPlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Box plot'**
+  String get stBoxPlot;
+
+  /// No description provided for @stHistogram.
+  ///
+  /// In en, this message translates to:
+  /// **'Histogram'**
+  String get stHistogram;
+
+  /// No description provided for @stDistributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Probability distributions'**
+  String get stDistributions;
+
+  /// No description provided for @stNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get stNormal;
+
+  /// No description provided for @stBinomial.
+  ///
+  /// In en, this message translates to:
+  /// **'Binomial'**
+  String get stBinomial;
+
+  /// No description provided for @stPoisson.
+  ///
+  /// In en, this message translates to:
+  /// **'Poisson'**
+  String get stPoisson;
+
+  /// No description provided for @stT.
+  ///
+  /// In en, this message translates to:
+  /// **'t'**
+  String get stT;
+
+  /// No description provided for @stChiSquare.
+  ///
+  /// In en, this message translates to:
+  /// **'Chi-square'**
+  String get stChiSquare;
+
+  /// No description provided for @stMean.
+  ///
+  /// In en, this message translates to:
+  /// **'Mean (μ)'**
+  String get stMean;
+
+  /// No description provided for @stSd.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard deviation (σ)'**
+  String get stSd;
+
+  /// No description provided for @stTrials.
+  ///
+  /// In en, this message translates to:
+  /// **'Trials (n)'**
+  String get stTrials;
+
+  /// No description provided for @stProbability.
+  ///
+  /// In en, this message translates to:
+  /// **'Probability of success (p)'**
+  String get stProbability;
+
+  /// No description provided for @stLambda.
+  ///
+  /// In en, this message translates to:
+  /// **'Mean (λ)'**
+  String get stLambda;
+
+  /// No description provided for @stDf.
+  ///
+  /// In en, this message translates to:
+  /// **'Degrees of freedom'**
+  String get stDf;
+
+  /// No description provided for @stFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get stFrom;
+
+  /// No description provided for @stTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get stTo;
+
+  /// No description provided for @stRegression.
+  ///
+  /// In en, this message translates to:
+  /// **'Correlation and regression'**
+  String get stRegression;
+
+  /// No description provided for @stPairsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One pair a line: x, y'**
+  String get stPairsHint;
+
+  /// No description provided for @stTests.
+  ///
+  /// In en, this message translates to:
+  /// **'Tests of hypotheses'**
+  String get stTests;
+
+  /// No description provided for @stZTest.
+  ///
+  /// In en, this message translates to:
+  /// **'z test (one mean)'**
+  String get stZTest;
+
+  /// No description provided for @stTTest1.
+  ///
+  /// In en, this message translates to:
+  /// **'t test (one mean)'**
+  String get stTTest1;
+
+  /// No description provided for @stTTest2.
+  ///
+  /// In en, this message translates to:
+  /// **'t test (two means)'**
+  String get stTTest2;
+
+  /// No description provided for @stChiTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Chi-square test'**
+  String get stChiTest;
+
+  /// No description provided for @stAnova.
+  ///
+  /// In en, this message translates to:
+  /// **'One-way ANOVA'**
+  String get stAnova;
+
+  /// No description provided for @stSampleMean.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample mean (x̄)'**
+  String get stSampleMean;
+
+  /// No description provided for @stSampleSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample size (n)'**
+  String get stSampleSize;
+
+  /// No description provided for @stMu0.
+  ///
+  /// In en, this message translates to:
+  /// **'Hypothesised mean (μ₀)'**
+  String get stMu0;
+
+  /// No description provided for @stAlpha.
+  ///
+  /// In en, this message translates to:
+  /// **'Level of significance (α)'**
+  String get stAlpha;
+
+  /// No description provided for @stSample1.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample 1'**
+  String get stSample1;
+
+  /// No description provided for @stSample2.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample 2'**
+  String get stSample2;
+
+  /// No description provided for @stObservedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Observed frequencies, one row a line (one row tests goodness of fit)'**
+  String get stObservedHint;
+
+  /// No description provided for @stExpectedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected frequencies (leave blank for equal)'**
+  String get stExpectedHint;
+
+  /// No description provided for @stGroupsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One group a line'**
+  String get stGroupsHint;
+
+  /// No description provided for @stIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Index numbers'**
+  String get stIndex;
+
+  /// No description provided for @stIndexHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One item a line: p₀, q₀, p₁, q₁'**
+  String get stIndexHint;
+
+  /// No description provided for @stMovingAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving average'**
+  String get stMovingAverage;
+
+  /// No description provided for @stPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get stPeriod;
+
+  /// No description provided for @stSeriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Values in time order'**
+  String get stSeriesHint;
+
+  /// No description provided for @stDrawChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw the chart too'**
+  String get stDrawChart;
+
+  /// No description provided for @sheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spreadsheet'**
+  String get sheetTitle;
+
+  /// No description provided for @sheetCellHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A number, words, or a formula such as =SUM(B2:B6)'**
+  String get sheetCellHint;
+
+  /// No description provided for @sheetAddRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a row'**
+  String get sheetAddRow;
+
+  /// No description provided for @sheetAddColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a column'**
+  String get sheetAddColumn;
+
+  /// No description provided for @sheetRemoveRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the last row'**
+  String get sheetRemoveRow;
+
+  /// No description provided for @sheetRemoveColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the last column'**
+  String get sheetRemoveColumn;
+
+  /// No description provided for @sheetHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'First row is a heading'**
+  String get sheetHeading;
+
+  /// No description provided for @sheetFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Column format'**
+  String get sheetFormat;
+
+  /// No description provided for @fmtGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get fmtGeneral;
+
+  /// No description provided for @fmtNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'1,23,456.00'**
+  String get fmtNumber;
+
+  /// No description provided for @fmtInr.
+  ///
+  /// In en, this message translates to:
+  /// **'₹ (Indian)'**
+  String get fmtInr;
+
+  /// No description provided for @fmtLakh.
+  ///
+  /// In en, this message translates to:
+  /// **'₹ lakh'**
+  String get fmtLakh;
+
+  /// No description provided for @fmtCrore.
+  ///
+  /// In en, this message translates to:
+  /// **'₹ crore'**
+  String get fmtCrore;
+
+  /// No description provided for @fmtPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Percent'**
+  String get fmtPercent;
+
+  /// No description provided for @sheetChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart'**
+  String get sheetChart;
+
+  /// No description provided for @chartNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No chart'**
+  String get chartNone;
+
+  /// No description provided for @chartBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bars'**
+  String get chartBar;
+
+  /// No description provided for @chartLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Line'**
+  String get chartLine;
+
+  /// No description provided for @chartPie.
+  ///
+  /// In en, this message translates to:
+  /// **'Pie'**
+  String get chartPie;
+
+  /// No description provided for @sheetLabels.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels (e.g. A2:A6)'**
+  String get sheetLabels;
+
+  /// No description provided for @sheetValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Values (e.g. B2:B6)'**
+  String get sheetValues;
 }
 
 class _AppLocalizationsDelegate

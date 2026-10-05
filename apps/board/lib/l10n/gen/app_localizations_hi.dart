@@ -3551,4 +3551,520 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get remotePhotoFailed => 'फ़ोन से आई फ़ोटो नहीं दिखाई जा सकी।';
+
+  @override
+  String get subjectManagement => 'प्रबंधन';
+
+  @override
+  String get subjectLaw => 'विधि';
+
+  @override
+  String get subjectStatistics => 'सांख्यिकी';
+
+  @override
+  String get kitAccounts => 'लेखा';
+
+  @override
+  String get kitFinance => 'कैलकुलेटर';
+
+  @override
+  String get kitManagement => 'ढाँचे';
+
+  @override
+  String get kitLaw => 'विधि';
+
+  @override
+  String get kitStats => 'सांख्यिकी';
+
+  @override
+  String get stSheet => 'स्प्रेडशीट';
+
+  @override
+  String get stReader => 'अधिनियम और निर्णय रीडर';
+
+  @override
+  String get accFormats => 'प्रारूप';
+
+  @override
+  String get accJournal => 'जर्नल (रोज़नामचा)';
+
+  @override
+  String get accLedger => 'खाता बही (T-खाता)';
+
+  @override
+  String get accTrialBalance => 'तलपट';
+
+  @override
+  String get accFinalAccounts => 'व्यापार एवं लाभ-हानि खाता';
+
+  @override
+  String get accBalanceSheet => 'तुलन पत्र (अनुसूची III)';
+
+  @override
+  String get accCashBook => 'रोकड़ बही';
+
+  @override
+  String get accBrs => 'बैंक समाधान विवरण';
+
+  @override
+  String get accBlankSheet => 'खाली स्प्रेडशीट';
+
+  @override
+  String get calcDepreciation => 'मूल्यह्रास (SLM / WDV)';
+
+  @override
+  String get calcRatios => 'लेखा अनुपात';
+
+  @override
+  String get calcNpv => 'NPV, IRR और पेबैक अवधि';
+
+  @override
+  String get calcBreakEven => 'सम-विच्छेद बिंदु';
+
+  @override
+  String get calcGst => 'GST (CGST / SGST / IGST)';
+
+  @override
+  String get calcInterest => 'साधारण और चक्रवृद्धि ब्याज';
+
+  @override
+  String get calcEmi => 'EMI (मासिक किस्त)';
+
+  @override
+  String get calcWorkOut => 'हल करें';
+
+  @override
+  String get calcPutOnBoard => 'बोर्ड पर रखें';
+
+  @override
+  String get calcCheckInputs => 'संख्याएँ जाँचें';
+
+  @override
+  String get calcOpenLab => 'सम-विच्छेद लैब खोलें';
+
+  @override
+  String get methodSlm => 'सीधी रेखा';
+
+  @override
+  String get methodWdv => 'ह्रासमान शेष';
+
+  @override
+  String get interestSimple => 'साधारण';
+
+  @override
+  String get interestCompound => 'चक्रवृद्धि';
+
+  @override
+  String get fCost => 'लागत (₹)';
+
+  @override
+  String get fScrap => 'अवशेष मूल्य (₹)';
+
+  @override
+  String get fLife => 'उपयोगी जीवन (वर्ष)';
+
+  @override
+  String get fRate => 'दर (% प्रति वर्ष)';
+
+  @override
+  String get fYears => 'वर्ष';
+
+  @override
+  String get fMonths => 'महीने';
+
+  @override
+  String get fPrincipal => 'मूलधन (₹)';
+
+  @override
+  String get fAmount => 'राशि (₹)';
+
+  @override
+  String get fGstRate => 'GST दर (%)';
+
+  @override
+  String get fInterState => 'अंतर-राज्यीय आपूर्ति (IGST)';
+
+  @override
+  String get fInclusive => 'राशि में GST शामिल है';
+
+  @override
+  String get fOutlay => 'प्रारंभिक निवेश (₹)';
+
+  @override
+  String get fCashFlows => 'वर्षवार नकद अंतर्वाह (₹)';
+
+  @override
+  String get fDiscountRate => 'पूंजी की लागत (%)';
+
+  @override
+  String get fFixedCost => 'स्थिर लागत (₹)';
+
+  @override
+  String get fVariableCost => 'प्रति इकाई परिवर्ती लागत (₹)';
+
+  @override
+  String get fPrice => 'प्रति इकाई विक्रय मूल्य (₹)';
+
+  @override
+  String get fUnits => 'बेची गई इकाइयाँ';
+
+  @override
+  String get fCompounding => 'वर्ष में चक्रवृद्धि की बार';
+
+  @override
+  String get fCurrentAssets => 'चालू परिसंपत्तियाँ';
+
+  @override
+  String get fCurrentLiabilities => 'चालू देयताएँ';
+
+  @override
+  String get fInventory => 'स्टॉक (माल-सूची)';
+
+  @override
+  String get fPrepaid => 'पूर्वदत्त व्यय';
+
+  @override
+  String get fDebt => 'दीर्घकालीन ऋण';
+
+  @override
+  String get fEquity => 'अंशधारकों की निधि';
+
+  @override
+  String get fRevenue => 'परिचालन से आय';
+
+  @override
+  String get fGrossProfit => 'सकल लाभ';
+
+  @override
+  String get fNetProfit => 'शुद्ध लाभ';
+
+  @override
+  String get fCogs => 'परिचालन आय की लागत';
+
+  @override
+  String get fAvgInventory => 'औसत स्टॉक';
+
+  @override
+  String get fReceivables => 'व्यापारिक प्राप्य';
+
+  @override
+  String get fEbit => 'ब्याज और कर से पूर्व लाभ';
+
+  @override
+  String get fInterest => 'ब्याज';
+
+  @override
+  String get fTotalAssets => 'कुल परिसंपत्तियाँ';
+
+  @override
+  String get mgSwot => 'SWOT विश्लेषण';
+
+  @override
+  String get mgPestle => 'PESTLE विश्लेषण';
+
+  @override
+  String get mgPorter => 'पोर्टर की पाँच शक्तियाँ';
+
+  @override
+  String get mgBcg => 'BCG मैट्रिक्स';
+
+  @override
+  String get mgAnsoff => 'एंसॉफ मैट्रिक्स';
+
+  @override
+  String get mgValueChain => 'मूल्य श्रृंखला';
+
+  @override
+  String get mg7s => 'मैकिन्से 7S';
+
+  @override
+  String get mgMaslow => 'मास्लो का आवश्यकता पदानुक्रम';
+
+  @override
+  String get mg4p => 'विपणन मिश्रण (4P)';
+
+  @override
+  String get mg7p => 'विपणन मिश्रण (7P)';
+
+  @override
+  String get mgGantt => 'गैंट चार्ट';
+
+  @override
+  String get mgPert => 'PERT / CPM (क्रांतिक पथ)';
+
+  @override
+  String get mgDecisionTree => 'निर्णय वृक्ष';
+
+  @override
+  String get mgFishbone => 'फिशबोन आरेख';
+
+  @override
+  String get mgMindMap => 'माइंड मैप';
+
+  @override
+  String get mgCaseStudy => 'केस स्टडी ढाँचा';
+
+  @override
+  String get mgStrategy => 'रणनीति';
+
+  @override
+  String get mgMarketing => 'विपणन और लोग';
+
+  @override
+  String get mgProjects => 'परियोजनाएँ और निर्णय';
+
+  @override
+  String get pertActivities => 'गतिविधियाँ';
+
+  @override
+  String get pertHint =>
+      'हर पंक्ति में एक गतिविधि: उसका अक्षर, उसका समय (या आशावादी, संभावित, निराशावादी), फिर उससे पहले की गतिविधियाँ। उदाहरण: C 2 A';
+
+  @override
+  String get pertInvalid =>
+      'गतिविधियाँ जाँचें: किसी को ऐसी गतिविधि चाहिए जो सूची में नहीं है, या वे एक चक्र बनाती हैं।';
+
+  @override
+  String get lawReader => 'अधिनियम या निर्णय पढ़ें';
+
+  @override
+  String get lawPaste => 'पाठ चिपकाएँ';
+
+  @override
+  String get lawImportPdf => 'PDF आयात करें';
+
+  @override
+  String get lawEditText => 'पाठ बदलें';
+
+  @override
+  String get lawRead => 'पढ़ें';
+
+  @override
+  String get lawAddNote => 'टिप्पणी जोड़ें';
+
+  @override
+  String get lawSendToBoard => 'हाइलाइट बोर्ड पर रखें';
+
+  @override
+  String get lawSamples => 'नमूना धाराएँ';
+
+  @override
+  String get lawReaderEmpty =>
+      'किसी अधिनियम या निर्णय का पाठ चिपकाएँ, या PDF आयात करें। फिर किसी अनुच्छेद को हाइलाइट करने के लिए उस पर टैप करें।';
+
+  @override
+  String get lawNoText =>
+      'इस PDF में कोई पाठ नहीं मिला। यह स्कैन की गई प्रति हो सकती है।';
+
+  @override
+  String get lawNothingHighlighted => 'पहले कोई अनुच्छेद हाइलाइट करें';
+
+  @override
+  String get lawCaseBrief => 'केस ब्रीफ़';
+
+  @override
+  String get lawIrac => 'IRAC ढाँचा';
+
+  @override
+  String get lawTimeline => 'घटनाओं की समयरेखा';
+
+  @override
+  String get lawTimelineHint => 'हर पंक्ति में एक घटना: तारीख, फिर क्या हुआ';
+
+  @override
+  String get lawArgumentMap => 'तर्क मानचित्र';
+
+  @override
+  String get lawFrames => 'ढाँचे';
+
+  @override
+  String get stData => 'आँकड़े';
+
+  @override
+  String get stDataHint => 'संख्याएँ, स्पेस, अल्पविराम या नई पंक्ति से अलग';
+
+  @override
+  String get stDescriptive => 'वर्णनात्मक सांख्यिकी';
+
+  @override
+  String get stBoxPlot => 'बॉक्स प्लॉट';
+
+  @override
+  String get stHistogram => 'आयतचित्र';
+
+  @override
+  String get stDistributions => 'प्रायिकता बंटन';
+
+  @override
+  String get stNormal => 'प्रसामान्य';
+
+  @override
+  String get stBinomial => 'द्विपद';
+
+  @override
+  String get stPoisson => 'प्वासों';
+
+  @override
+  String get stT => 't';
+
+  @override
+  String get stChiSquare => 'काई-वर्ग';
+
+  @override
+  String get stMean => 'माध्य (μ)';
+
+  @override
+  String get stSd => 'मानक विचलन (σ)';
+
+  @override
+  String get stTrials => 'परीक्षण (n)';
+
+  @override
+  String get stProbability => 'सफलता की प्रायिकता (p)';
+
+  @override
+  String get stLambda => 'माध्य (λ)';
+
+  @override
+  String get stDf => 'स्वातंत्र्य कोटि';
+
+  @override
+  String get stFrom => 'से';
+
+  @override
+  String get stTo => 'तक';
+
+  @override
+  String get stRegression => 'सहसंबंध और प्रतीपगमन';
+
+  @override
+  String get stPairsHint => 'हर पंक्ति में एक जोड़ी: x, y';
+
+  @override
+  String get stTests => 'परिकल्पना परीक्षण';
+
+  @override
+  String get stZTest => 'z परीक्षण (एक माध्य)';
+
+  @override
+  String get stTTest1 => 't परीक्षण (एक माध्य)';
+
+  @override
+  String get stTTest2 => 't परीक्षण (दो माध्य)';
+
+  @override
+  String get stChiTest => 'काई-वर्ग परीक्षण';
+
+  @override
+  String get stAnova => 'एकमार्गी ANOVA';
+
+  @override
+  String get stSampleMean => 'प्रतिदर्श माध्य (x̄)';
+
+  @override
+  String get stSampleSize => 'प्रतिदर्श आकार (n)';
+
+  @override
+  String get stMu0 => 'परिकल्पित माध्य (μ₀)';
+
+  @override
+  String get stAlpha => 'सार्थकता स्तर (α)';
+
+  @override
+  String get stSample1 => 'प्रतिदर्श 1';
+
+  @override
+  String get stSample2 => 'प्रतिदर्श 2';
+
+  @override
+  String get stObservedHint =>
+      'प्रेक्षित बारंबारताएँ, हर पंक्ति में एक पंक्ति (एक पंक्ति हो तो उपयुक्तता परीक्षण)';
+
+  @override
+  String get stExpectedHint =>
+      'अपेक्षित बारंबारताएँ (बराबर के लिए खाली छोड़ें)';
+
+  @override
+  String get stGroupsHint => 'हर पंक्ति में एक समूह';
+
+  @override
+  String get stIndex => 'सूचकांक';
+
+  @override
+  String get stIndexHint => 'हर पंक्ति में एक वस्तु: p₀, q₀, p₁, q₁';
+
+  @override
+  String get stMovingAverage => 'चल माध्य';
+
+  @override
+  String get stPeriod => 'अवधि';
+
+  @override
+  String get stSeriesHint => 'समय के क्रम में मान';
+
+  @override
+  String get stDrawChart => 'चार्ट भी बनाएँ';
+
+  @override
+  String get sheetTitle => 'स्प्रेडशीट';
+
+  @override
+  String get sheetCellHint => 'संख्या, शब्द, या =SUM(B2:B6) जैसा सूत्र';
+
+  @override
+  String get sheetAddRow => 'पंक्ति जोड़ें';
+
+  @override
+  String get sheetAddColumn => 'स्तंभ जोड़ें';
+
+  @override
+  String get sheetRemoveRow => 'अंतिम पंक्ति हटाएँ';
+
+  @override
+  String get sheetRemoveColumn => 'अंतिम स्तंभ हटाएँ';
+
+  @override
+  String get sheetHeading => 'पहली पंक्ति शीर्षक है';
+
+  @override
+  String get sheetFormat => 'स्तंभ का प्रारूप';
+
+  @override
+  String get fmtGeneral => 'सामान्य';
+
+  @override
+  String get fmtNumber => '1,23,456.00';
+
+  @override
+  String get fmtInr => '₹ (भारतीय)';
+
+  @override
+  String get fmtLakh => '₹ लाख';
+
+  @override
+  String get fmtCrore => '₹ करोड़';
+
+  @override
+  String get fmtPercent => 'प्रतिशत';
+
+  @override
+  String get sheetChart => 'चार्ट';
+
+  @override
+  String get chartNone => 'कोई चार्ट नहीं';
+
+  @override
+  String get chartBar => 'स्तंभ';
+
+  @override
+  String get chartLine => 'रेखा';
+
+  @override
+  String get chartPie => 'पाई';
+
+  @override
+  String get sheetLabels => 'लेबल (जैसे A2:A6)';
+
+  @override
+  String get sheetValues => 'मान (जैसे B2:B6)';
 }

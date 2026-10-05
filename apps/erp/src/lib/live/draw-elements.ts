@@ -1,9 +1,9 @@
-// Draws the board's elements beyond strokes (text, pictures, equations, graphs, figures, notes)
+// Draws the board's elements beyond strokes (text, pictures, equations, graphs, figures, notes, sheets)
 // and the laser, as packages/kinetix_ink/lib/src/element_painting.dart does. Equations are shown
 // as readable text (the board typesets them; the web view has no TeX engine).
 
 import { compileGraph } from './graph';
-import { isStroke, type BoardElement, type BoardBackground, type Box, type GraphElement, type LaserPoint, type NoteElement } from './player';
+import { isStroke, type BoardElement, type BoardBackground, type Box, type GraphElement, type LaserPoint, type NoteElement, type SheetElement } from './player';
 import { argbToCss, drawBackground, drawStroke, inkColorFor } from './render';
 
 export const BOARD_FONT = "Inter, 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif";
@@ -220,6 +220,132 @@ function drawGraph(ctx: CanvasRenderingContext2D, g: GraphElement) {
   ctx.fillText(`y = ${g.expression}`, b.x + 10, b.y + 8);
 }
 
+const CHART_COLORS = ['#0057c2', '#d97706', '#0f8a5f', '#b4235a', '#6d4bc4', '#00838f', '#7a4f00'];
+
+function cellText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number, w: number, align: CanvasTextAlign) {
+  let s = t;
+  while (s.length > 1 && ctx.measureText(s).width > w) s = s.slice(0, -2) + '…';
+  ctx.textAlign = align;
+  ctx.fillText(s, align === 'right' ? x + w : align === 'center' ? x + w / 2 : x, y);
+}
+
+/** A sheet, as `paintSheet` on the board: letters and numbers, the grid, cells as shown, its chart. */
+export function drawSheet(ctx: CanvasRenderingContext2D, s: SheetElement) {
+  const HH = 28, HW = 40, RH = 40, CH = 300;
+  const natW = HW + s.widths.reduce((a, b) => a + b, 0);
+  const natH = HH + s.rows * RH + (s.chart ? CH : 0);
+  ctx.save();
+  ctx.translate(s.box.x, s.box.y);
+  ctx.scale(s.box.w / natW, s.box.h / natH);
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, { x: 0, y: 0, w: natW, h: natH }, 8);
+  ctx.fill();
+  const accent = argbToCss(s.color);
+  ctx.globalAlpha = 0.1;
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, natW, HH);
+  ctx.fillRect(0, HH, HW, s.rows * RH);
+  if (s.header) ctx.fillRect(HW, HH, natW - HW, RH);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+  ctx.lineWidth = 1;
+  const xs = [HW];
+  for (const w of s.widths) xs.push(xs[xs.length - 1] + w);
+  ctx.beginPath();
+  for (const x of [0, ...xs]) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, HH + s.rows * RH);
+  }
+  for (let r = 0; r <= s.rows; r++) {
+    ctx.moveTo(0, HH + r * RH);
+    ctx.lineTo(natW, HH + r * RH);
+  }
+  ctx.stroke();
+  ctx.textBaseline = 'middle';
+  ctx.font = `13px ${BOARD_FONT}`;
+  ctx.fillStyle = '#6a7078';
+  for (let c = 0; c < s.cols; c++) cellText(ctx, colName(c), xs[c], HH / 2, s.widths[c], 'center');
+  for (let r = 0; r < s.rows; r++) cellText(ctx, String(r + 1), 0, HH + r * RH + RH / 2, HW, 'center');
+  for (let r = 0; r < s.rows; r++) {
+    for (let c = 0; c < s.cols; c++) {
+      const t = s.cells[r * s.cols + c];
+      if (!t) continue;
+      const head = s.header && r === 0;
+      const numeric = /^-?₹?[\d,.]+( L| Cr|%)?$/.test(t);
+      ctx.font = `${head ? 700 : 400} 16px ${BOARD_FONT}`;
+      ctx.fillStyle = t.startsWith('#') ? '#c62828' : head ? accent : '#1b1f24';
+      cellText(ctx, t, xs[c] + 8, HH + r * RH + RH / 2, s.widths[c] - 16, numeric ? 'right' : head ? 'center' : 'left');
+    }
+  }
+  if (s.chart && s.chart.values.length) drawSheetChart(ctx, s, { x: HW, y: HH + s.rows * RH + 16, w: natW - HW - 16, h: CH - 32 });
+  ctx.restore();
+}
+
+function drawSheetChart(ctx: CanvasRenderingContext2D, s: SheetElement, a: Box) {
+  const { kind, labels, values } = s.chart!;
+  ctx.font = `13px ${BOARD_FONT}`;
+  if (kind === 'pie') {
+    const total = values.filter((v) => v > 0).reduce((x, y) => x + y, 0);
+    if (total <= 0) return;
+    const r = Math.min(a.h / 2, a.w / 4);
+    const cx = a.x + r + 8, cy = a.y + a.h / 2;
+    let start = -Math.PI / 2;
+    values.forEach((v, i) => {
+      if (v <= 0) return;
+      const sweep = (v / total) * Math.PI * 2;
+      ctx.fillStyle = CHART_COLORS[i % CHART_COLORS.length];
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, start + sweep);
+      ctx.fill();
+      start += sweep;
+      ctx.fillRect(cx + r + 24, a.y + i * 26 + 7, 12, 12);
+      ctx.fillStyle = '#1b1f24';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${labels[i] ?? ''}  ${((v / total) * 100).toFixed(1)}%`, cx + r + 42, a.y + i * 26 + 13);
+    });
+    return;
+  }
+  const hi = Math.max(0, ...values), lo = Math.min(0, ...values);
+  const span = hi - lo || 1;
+  const top = a.y + 22, bottom = a.y + a.h - 24;
+  const yOf = (v: number) => bottom - ((v - lo) / span) * (bottom - top);
+  const step = (a.w - 8) / values.length;
+  ctx.strokeStyle = '#3a4048';
+  ctx.beginPath();
+  ctx.moveTo(a.x + 8, yOf(0));
+  ctx.lineTo(a.x + a.w, yOf(0));
+  ctx.stroke();
+  ctx.fillStyle = ctx.strokeStyle = argbToCss(s.color);
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const cx = a.x + 8 + step * (i + 0.5);
+    if (kind === 'bar') ctx.fillRect(cx - step * 0.32, Math.min(yOf(v), yOf(0)), step * 0.64, Math.abs(yOf(v) - yOf(0)));
+    else if (i === 0) ctx.moveTo(cx, yOf(v));
+    else ctx.lineTo(cx, yOf(v));
+  });
+  if (kind === 'line') ctx.stroke();
+  ctx.fillStyle = '#1b1f24';
+  ctx.textAlign = 'center';
+  values.forEach((v, i) => {
+    const cx = a.x + 8 + step * (i + 0.5);
+    ctx.fillText(labels[i] ?? '', cx, bottom + 14);
+    ctx.fillText(String(Math.round(v * 100) / 100), cx, yOf(v) - 10);
+  });
+}
+
+function colName(c: number): string {
+  let n = c + 1;
+  let out = '';
+  while (n > 0) {
+    const m = (n - 1) % 26;
+    out = String.fromCharCode(65 + m) + out;
+    n = Math.floor((n - 1) / 26);
+  }
+  return out;
+}
+
 /** Paints one element at board scale. */
 export function drawElement(ctx: CanvasRenderingContext2D, e: BoardElement, bg: BoardBackground, opts: DrawOptions = {}) {
   if (isStroke(e)) {
@@ -278,6 +404,9 @@ export function drawElement(ctx: CanvasRenderingContext2D, e: BoardElement, bg: 
     }
     case 'note':
       drawNote(ctx, e, opts);
+      break;
+    case 'sheet':
+      drawSheet(ctx, e);
       break;
   }
   ctx.restore();

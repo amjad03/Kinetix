@@ -11,6 +11,7 @@ import 'board_background.dart';
 import 'graph_expr.dart';
 import 'ink_canvas.dart';
 import 'ink_models.dart';
+import 'sheet_painting.dart';
 
 /// Words painted on the board by the ink engine itself. Apps set them in the teacher's
 /// language (the board does when its language changes).
@@ -163,6 +164,8 @@ void paintElement(
       );
     case NoteElement():
       paintNote(canvas, e);
+    case SheetElement():
+      paintSheet(canvas, e);
   }
   if (rot != 0) canvas.restore();
 }
