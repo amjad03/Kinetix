@@ -24,13 +24,22 @@ void main() {
     expect(again.background, BoardBackground.ledger);
   });
 
-  test('a dark paper turns black ink white on that page only', () {
+  test('the pen keeps black ink on a dark paper, drawn white there', () {
     final wb = WhiteboardController();
     wb.background = BoardBackground.paperSlate;
-    expect(wb.penColor, WhiteboardController.chalkWhite);
+    expect(wb.penColor, WhiteboardController.inkBlack);
+    expect(inkColorFor(wb.penColor, wb.background).computeLuminance(), greaterThan(0.8));
     wb.addPage();
     wb.background = BoardBackground.plain;
-    expect(wb.penColor, WhiteboardController.inkBlack);
+    expect(inkColorFor(WhiteboardController.chalkWhite, wb.background).computeLuminance(), lessThan(0.05));
+  });
+
+  test('replaceBackground follows the theme on plain pages only', () {
+    final wb = WhiteboardController()..addPage();
+    wb.background = BoardBackground.grid;
+    wb.replaceBackground(BoardBackground.plain, BoardBackground.night);
+    expect(wb.pages.first.background, BoardBackground.night);
+    expect(wb.background, BoardBackground.grid);
   });
 
   test('movePage reorders and keeps the open page open', () {

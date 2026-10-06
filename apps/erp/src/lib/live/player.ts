@@ -52,6 +52,10 @@ export interface Stroke {
   points: number[];
   /** Inside colour of a filled shape (ARGB). */
   fill?: number;
+  /** A dashed or dotted line (the board's line styles). */
+  dash?: 'dashed' | 'dotted';
+  /** An arrow's heads are filled. */
+  filledHead?: boolean;
 }
 
 /** A box on the board: left, top, width, height. */
@@ -226,6 +230,8 @@ export function decodeStroke(raw: unknown): Stroke | null {
   const points = flat.length % 2 === 0 ? [...flat] : flat.slice(0, -1);
   const stroke: Stroke = { tool, color: int(j.c, 0xff000000) >>> 0, width: isNum(j.w) ? j.w : 3, shape, points };
   if (isNum(j.f)) stroke.fill = int(j.f) >>> 0;
+  if (j.n === 'dashed' || j.n === 'dotted') stroke.dash = j.n;
+  if (j.ah === 1) stroke.filledHead = true;
   return stroke;
 }
 

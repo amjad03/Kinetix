@@ -62,3 +62,12 @@ output "github_ecr_role_arn" {
   description = "Set as the AWS_ECR_ROLE_ARN secret of the matching GitHub environment."
   value       = local.github_enabled ? aws_iam_role.github_ecr[0].arn : null
 }
+
+output "phet_mirror_bucket" {
+  description = "Upload PhET sims here with tools/phet/mirror.mjs --bucket (docs/operations/phet.md)."
+  value       = var.phet_mirror_enabled ? aws_s3_bucket.phet[0].bucket : null
+}
+
+output "phet_mirror_url" {
+  value = local.phet_mirror_url
+}

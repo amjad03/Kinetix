@@ -15,6 +15,7 @@ import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'support/layout.dart';
+import 'support/wait.dart';
 
 /// A realtime connection that never connects; the tests drive the controller directly.
 class _NoRealtime extends Realtime {
@@ -427,11 +428,7 @@ void main() {
       await tapKey(tester, 'ai-tool-readBoard');
       await tester.tap(find.byKey(const Key('read-board')));
       // Rendering the page to PNG is real (not fake-async) work.
-      for (var i = 0; i < 5 && calls('/v1/ai/read-board').isEmpty; i++) {
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
-        await tester.pump();
-      }
-      await tester.pumpAndSettle();
+      await waitUntil(tester, () => calls('/v1/ai/read-board').isNotEmpty);
       final image = bodyOf(calls('/v1/ai/read-board').single)['image'] as String;
       expect(base64Decode(image).sublist(1, 4), 'PNG'.codeUnits);
       expect(find.text('Goodwill = Super profit × 3'), findsOneWidget);

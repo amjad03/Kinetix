@@ -14,17 +14,21 @@ import '../../../l10n/l10n.dart';
 import '../chrome.dart';
 import '../whiteboard_dialogs.dart' show confirmClearBoard;
 import 'layout_strings.dart';
+import 'ui_strings.dart';
 
-/// The page overview (screen 9): every page as a thumbnail, drag to reorder, and duplicate,
-/// delete, clear, clear all and export as PDF; zoom underneath.
+/// The page overview (screen 9): every page as a 16:9 thumbnail of what is on it, in a grid
+/// that scrolls, with an "add page" tile of the same size; hold a page and drag it onto another
+/// to move it there. Duplicate, delete, clear, clear all and export as PDF, and zoom, underneath.
 class PageOverview extends StatefulWidget {
-  const PageOverview({super.key, required this.wb, required this.canvas, required this.onClose, this.width = 640});
+  const PageOverview({super.key, required this.wb, required this.canvas, required this.onClose, this.width = 880});
 
   final WhiteboardController wb;
 
-  /// The board's size on screen: a page's thumbnail shows at least this much of it.
+  /// The board's size on screen (the PDF's pages show at least this much).
   final Size canvas;
   final VoidCallback onClose;
+
+  /// The sheet's widest; it takes less where there is less room.
   final double width;
 
   @override
@@ -33,10 +37,12 @@ class PageOverview extends StatefulWidget {
 
 class _PageOverviewState extends State<PageOverview> {
   final _images = BoardImages();
+  final _grid = ScrollController();
 
   @override
   void dispose() {
     _images.dispose();
+    _grid.dispose();
     super.dispose();
   }
 
@@ -53,96 +59,142 @@ class _PageOverviewState extends State<PageOverview> {
     }
   }
 
+  void _add() {
+    widget.wb.addPage();
+    // The new page comes into view.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_grid.hasClients) _grid.animateTo(_grid.position.maxScrollExtent, duration: Kx.fast, curve: Kx.emphasized);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = LayoutStrings.of(context);
     final l = context.l10n;
+    final c = context.colors;
     final wb = widget.wb;
+    final narrow = MediaQuery.sizeOf(context).width < 600;
     return ListenableBuilder(
       listenable: Listenable.merge([wb, wb.view, _images]),
       builder: (context, _) {
         final pages = wb.pages;
-        return PopoverCard(
-          key: const Key('page-overview'),
-          title: s.pageOverview,
-          width: widget.width,
-          trailing: Text(s.dragToReorder, style: context.text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 132,
-                child: ReorderableListView.builder(
-                  key: const Key('page-thumbnails'),
-                  scrollDirection: Axis.horizontal,
-                  buildDefaultDragHandles: false,
-                  itemCount: pages.length,
-                  onReorderItem: wb.movePage,
-                  footer: Padding(
-                    padding: const EdgeInsets.all(Kx.s4),
-                    child: SizedBox(
-                      width: 72,
-                      child: IconButton.outlined(key: const Key('overview-add-page'), tooltip: s.addPage, onPressed: wb.addPage, icon: const Icon(Icons.add)),
-                    ),
-                  ),
-                  itemBuilder: (context, i) => ReorderableDelayedDragStartListener(
-                    key: ValueKey(pages[i].id),
-                    index: i,
-                    child: Padding(
-                      padding: const EdgeInsets.all(Kx.s4),
-                      child: _Thumb(
-                        key: Key('page-thumb-$i'),
-                        page: pages[i],
-                        number: i + 1,
-                        open: i == wb.pageIndex,
-                        canvas: widget.canvas,
-                        images: _images,
-                        onTap: () => wb.goToPage(i),
-                      ),
-                    ),
+        Widget action(Key key, IconData icon, String label, VoidCallback? onTap) => OutlinedButton.icon(
+          key: key,
+          style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44), padding: const EdgeInsets.symmetric(horizontal: Kx.s16), visualDensity: VisualDensity.compact),
+          onPressed: onTap,
+          icon: Icon(icon, size: 20),
+          label: Text(label),
+        );
+        return ChromeSurface(
+          key: const Key('page-overview-sheet'),
+          radius: Kx.rXl,
+          padding: EdgeInsets.zero,
+          child: SizedBox(
+            width: widget.width,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // The title, how many pages, and close.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Kx.s20, Kx.s12, Kx.s8, Kx.s4),
+                  child: Row(
+                    children: [
+                      Flexible(child: Text(s.pageOverview, style: context.text.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      const SizedBox(width: Kx.s12),
+                      Text(UiStrings.of(context).pages(pages.length), style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+                      const Spacer(),
+                      if (!narrow)
+                        Padding(
+                          padding: const EdgeInsets.only(right: Kx.s8),
+                          child: Text(s.dragToReorder, style: context.text.labelSmall?.copyWith(color: c.onSurfaceVariant)),
+                        ),
+                      IconButton(key: const Key('overview-close'), tooltip: l.close, onPressed: widget.onClose, icon: const Icon(Icons.close)),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: Kx.s8),
-              Wrap(
-                spacing: Kx.s8,
-                runSpacing: Kx.s8,
-                children: [
-                  OutlinedButton.icon(key: const Key('overview-duplicate'), onPressed: () => wb.duplicatePage(wb.pageIndex), icon: const Icon(Icons.copy_all_outlined), label: Text(s.duplicate)),
-                  OutlinedButton.icon(
-                    key: const Key('overview-delete'),
-                    onPressed: wb.pageCount > 1 || wb.elements.isNotEmpty ? () => wb.deletePage(wb.pageIndex) : null,
-                    icon: const Icon(Icons.delete_outline),
-                    label: Text(s.delete),
+                Flexible(
+                  child: LayoutBuilder(
+                    builder: (context, box) {
+                      // Each cell has half the gap around its tile, so a page dropped between
+                      // two tiles still lands on one.
+                      const gap = Kx.s12, pad = Kx.s20 - gap / 2;
+                      final across = math.max(2, ((box.maxWidth - 2 * pad) / (narrow ? 160 : 212)).floor());
+                      final tileW = (box.maxWidth - 2 * pad) / across - gap;
+                      // A 16:9 picture and its number under it.
+                      final tileH = tileW * 9 / 16 + 28;
+                      return GridView.builder(
+                        key: const Key('page-thumbnails'),
+                        controller: _grid,
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.fromLTRB(pad, Kx.s4, pad, Kx.s8),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: across, mainAxisExtent: tileH + gap),
+                        itemCount: pages.length + 1,
+                        itemBuilder: (context, i) {
+                          if (i == pages.length) {
+                            return _Droppable(
+                              onDrop: (from) => wb.movePage(from, pages.length - 1),
+                              child: _AddTile(key: const Key('overview-add-page'), label: s.addPage, onTap: _add),
+                            );
+                          }
+                          final thumb = _Thumb(
+                            key: Key('page-thumb-$i'),
+                            page: pages[i],
+                            number: i + 1,
+                            open: i == wb.pageIndex,
+                            images: _images,
+                            onTap: () => wb.goToPage(i),
+                          );
+                          return _Droppable(
+                            onDrop: (from) => wb.movePage(from, i),
+                            child: LongPressDraggable<int>(
+                              data: i,
+                              feedback: SizedBox(width: tileW, height: tileH, child: Opacity(opacity: 0.85, child: Material(type: MaterialType.transparency, child: thumb))),
+                              childWhenDragging: Opacity(opacity: 0.3, child: thumb),
+                              child: thumb,
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
-                  OutlinedButton.icon(
-                    key: const Key('overview-clear'),
-                    onPressed: wb.canClearPage ? wb.clearPage : null,
-                    icon: const Icon(Icons.layers_clear_outlined),
-                    label: Text(l.clearPage),
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Kx.s20, Kx.s12, Kx.s20, Kx.s4),
+                  child: Wrap(
+                    spacing: Kx.s8,
+                    runSpacing: Kx.s8,
+                    children: [
+                      action(const Key('overview-duplicate'), Icons.copy_all_outlined, s.duplicate, () => wb.duplicatePage(wb.pageIndex)),
+                      action(const Key('overview-delete'), Icons.delete_outline, s.delete, wb.pageCount > 1 || wb.elements.isNotEmpty ? () => wb.deletePage(wb.pageIndex) : null),
+                      action(const Key('overview-clear'), Icons.layers_clear_outlined, l.clearPage, wb.canClearPage ? wb.clearPage : null),
+                      action(const Key('overview-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, wb.canClearAllPages ? () => confirmClearBoard(context, wb) : null),
+                      FilledButton.tonalIcon(
+                        key: const Key('overview-export'),
+                        style: FilledButton.styleFrom(minimumSize: const Size(0, 44), padding: const EdgeInsets.symmetric(horizontal: Kx.s16), visualDensity: VisualDensity.compact),
+                        onPressed: _export,
+                        icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+                        label: Text(s.exportPdf),
+                      ),
+                    ],
                   ),
-                  OutlinedButton.icon(
-                    key: const Key('overview-clear-all'),
-                    onPressed: wb.canClearAllPages ? () => confirmClearBoard(context, wb) : null,
-                    icon: const Icon(Icons.delete_sweep_outlined),
-                    label: Text(l.clearAllPages),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Kx.s20, 0, Kx.s12, Kx.s8),
+                  child: Row(
+                    children: [
+                      Text(s.zoom, style: context.text.labelLarge),
+                      const Spacer(),
+                      IconButton(key: const Key('zoom-out'), tooltip: l.zoomOut, onPressed: () => wb.zoomBy(1 / 1.25), icon: const Icon(Icons.remove)),
+                      TextButton(key: const Key('zoom-reset'), onPressed: wb.resetZoom, child: Text('${(wb.view.value.scale * 100).round()}%')),
+                      IconButton(key: const Key('zoom-in'), tooltip: l.zoomIn, onPressed: () => wb.zoomBy(1.25), icon: const Icon(Icons.add)),
+                      IconButton(key: const Key('zoom-fit'), tooltip: l.zoomFit, onPressed: wb.fitContent, icon: const Icon(Icons.fit_screen_outlined)),
+                    ],
                   ),
-                  FilledButton.tonalIcon(key: const Key('overview-export'), onPressed: _export, icon: const Icon(Icons.picture_as_pdf_outlined), label: Text(s.exportPdf)),
-                ],
-              ),
-              const SizedBox(height: Kx.s8),
-              Row(
-                children: [
-                  Text(s.zoom, style: context.text.labelLarge),
-                  const Spacer(),
-                  IconButton(key: const Key('zoom-out'), tooltip: l.zoomOut, onPressed: () => wb.zoomBy(1 / 1.25), icon: const Icon(Icons.remove)),
-                  TextButton(key: const Key('zoom-reset'), onPressed: wb.resetZoom, child: Text('${(wb.view.value.scale * 100).round()}%')),
-                  IconButton(key: const Key('zoom-in'), tooltip: l.zoomIn, onPressed: () => wb.zoomBy(1.25), icon: const Icon(Icons.add)),
-                  IconButton(key: const Key('zoom-fit'), tooltip: l.zoomFit, onPressed: wb.fitContent, icon: const Icon(Icons.fit_screen_outlined)),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -150,40 +202,109 @@ class _PageOverviewState extends State<PageOverview> {
   }
 }
 
+/// A place in the grid a page can be dropped on (another page, or the add tile for the end).
+class _Droppable extends StatelessWidget {
+  const _Droppable({required this.onDrop, required this.child});
+
+  final ValueChanged<int> onDrop;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DragTarget<int>(
+    onAcceptWithDetails: (d) => onDrop(d.data),
+    builder: (context, over, _) => Padding(
+      padding: const EdgeInsets.all(Kx.s12 / 2),
+      child: AnimatedScale(scale: over.isEmpty ? 1 : 1.04, duration: Kx.fast, child: child),
+    ),
+  );
+}
+
+/// The tile that adds a page: the size of a page's thumbnail.
+class _AddTile extends StatelessWidget {
+  const _AddTile({super.key, required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Semantics(
+      button: true,
+      label: label,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Material(
+              color: c.surfaceContainerHigh,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd), side: BorderSide(color: c.outlineVariant)),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(Kx.rMd),
+                onTap: onTap,
+                child: Center(child: Icon(Icons.add, size: 32, color: c.primary)),
+              ),
+            ),
+          ),
+          const SizedBox(height: Kx.s4),
+          Text(label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.labelMedium?.copyWith(color: c.onSurfaceVariant)),
+        ],
+      ),
+    );
+  }
+}
+
 class _Thumb extends StatelessWidget {
-  const _Thumb({super.key, required this.page, required this.number, required this.open, required this.canvas, required this.images, required this.onTap});
+  const _Thumb({super.key, required this.page, required this.number, required this.open, required this.images, required this.onTap});
 
   final WhiteboardPage page;
   final int number;
   final bool open;
-  final Size canvas;
   final BoardImages images;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Kx.rMd),
-      child: Column(
-        children: [
-          Container(
-            width: 144,
-            height: 96,
-            decoration: BoxDecoration(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Material(
+            color: page.background.paper,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Kx.rMd),
-              border: Border.all(color: open ? c.primary : c.outlineVariant, width: open ? 3 : 1),
+              side: BorderSide(color: open ? c.primary : c.outlineVariant, width: open ? 3 : 1),
             ),
             clipBehavior: Clip.antiAlias,
-            child: RepaintBoundary(child: CustomPaint(painter: _ThumbPainter(page.elements, page.background, pageArea(page.elements, canvas), images))),
+            child: InkWell(
+              onTap: onTap,
+              child: RepaintBoundary(child: CustomPaint(painter: _ThumbPainter(page.elements, page.background, thumbArea(page.elements), images), size: Size.infinite)),
+            ),
           ),
-          const SizedBox(height: 2),
-          Text('$number', style: context.text.labelMedium?.copyWith(fontWeight: open ? FontWeight.w700 : null)),
-        ],
-      ),
+        ),
+        const SizedBox(height: Kx.s4),
+        Text(
+          '$number',
+          textAlign: TextAlign.center,
+          style: context.text.labelMedium?.copyWith(fontWeight: open ? FontWeight.w700 : null, color: open ? c.primary : c.onSurfaceVariant),
+        ),
+      ],
     );
   }
+}
+
+/// What a page's thumbnail shows: what is written on it, with a margin, widened to 16:9 (a
+/// 1920 × 1080 sheet for an empty page).
+Rect thumbArea(List<BoardElement> elements) {
+  if (elements.isEmpty) return Offset.zero & boardSheet;
+  var r = contentBounds(elements).inflate(48);
+  final w = math.max(r.width, math.max(480.0, r.height * 16 / 9));
+  final h = w * 9 / 16;
+  r = Rect.fromCenter(center: r.center, width: w, height: h);
+  return r;
 }
 
 /// What a page's thumbnail and PDF page show: the screen's area and anything drawn beyond it.

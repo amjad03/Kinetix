@@ -4123,4 +4123,116 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get attendanceNeedsClass =>
       'हाज़िरी छात्र सूची वाली समय-सारिणी की कक्षा के साथ खुलती है।';
+
+  @override
+  String get aiPenMeasureShapes => 'नई आकृतियों पर माप दिखाएँ';
+
+  @override
+  String get aiPenMeasureShapesHint =>
+      'आकृति बनाते ही लंबाई, कोण, त्रिज्या और क्षेत्रफल। हर आकृति के माप उसे चुनकर दिखाए या छिपाए जा सकते हैं।';
+
+  @override
+  String get measureUnits => 'इकाई';
+
+  @override
+  String get measureUnitCm => 'सेमी';
+
+  @override
+  String get measureUnitPx => 'px';
+
+  @override
+  String get selLineWidth => 'रेखा की मोटाई';
+
+  @override
+  String get selLineStyle => 'रेखा का प्रकार';
+
+  @override
+  String get selLineSolid => 'ठोस';
+
+  @override
+  String get selLineDashed => 'डैश वाली';
+
+  @override
+  String get selLineDotted => 'बिंदुदार';
+
+  @override
+  String get selShowMeasurements => 'माप दिखाएँ';
+
+  @override
+  String get selHideMeasurements => 'माप छिपाएँ';
+
+  @override
+  String get selMeasureOptions => 'माप';
+
+  @override
+  String get selMeasureLengths => 'लंबाई';
+
+  @override
+  String get selMeasureAngles => 'कोण';
+
+  @override
+  String get selMeasureRadius => 'त्रिज्या';
+
+  @override
+  String get selMeasureArea => 'क्षेत्रफल';
+
+  @override
+  String get selEditPoints => 'बिंदु बदलें';
+
+  @override
+  String get selArrowHeads => 'तीर के सिरे';
+
+  @override
+  String get selArrowNone => 'कोई सिरा नहीं';
+
+  @override
+  String get selArrowEnd => 'अंत में';
+
+  @override
+  String get selArrowStart => 'शुरू में';
+
+  @override
+  String get selArrowBoth => 'दोनों सिरों पर';
+
+  @override
+  String get selArrowFilled => 'भरे हुए सिरे';
+
+  @override
+  String get selFlipH => 'बाएँ-दाएँ पलटें';
+
+  @override
+  String get selFlipV => 'ऊपर-नीचे पलटें';
+
+  @override
+  String get selAlign => 'संरेखित करें';
+
+  @override
+  String get selAlignLeft => 'बाएँ किनारे';
+
+  @override
+  String get selAlignCentre => 'बीच में';
+
+  @override
+  String get selAlignRight => 'दाएँ किनारे';
+
+  @override
+  String get selAlignTop => 'ऊपरी किनारे';
+
+  @override
+  String get selAlignMiddle => 'बीचों-बीच';
+
+  @override
+  String get selAlignBottom => 'निचले किनारे';
+
+  @override
+  String get selLock => 'लॉक करें';
+
+  @override
+  String get selUnlock => 'अनलॉक करें';
+
+  @override
+  String get selKeepProportions => 'अनुपात बनाए रखें';
+
+  @override
+  String get selMore => 'और';
 }

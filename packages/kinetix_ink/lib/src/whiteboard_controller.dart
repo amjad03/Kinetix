@@ -9,6 +9,7 @@ import 'board_background.dart';
 import 'flow_chart.dart' show absorbTextIntoFlow;
 import 'ink_models.dart';
 import 'serialization.dart';
+import 'shape_edit.dart';
 import 'tools/geo_tool.dart';
 import 'view.dart';
 
@@ -67,10 +68,11 @@ enum SelectionHandle { topLeft, top, topRight, right, bottomRight, bottom, botto
 /// One page of the board: its elements (bottom first), its groups and the view the teacher
 /// left it at.
 class WhiteboardPage {
-  WhiteboardPage({String? id, List<BoardElement>? elements, Map<String, String>? groups, this.background = BoardBackground.plain})
+  WhiteboardPage({String? id, List<BoardElement>? elements, Map<String, String>? groups, Set<String>? locked, this.background = BoardBackground.plain})
     : id = id ?? 'p${newElementId()}',
       elements = elements ?? [],
-      groups = groups ?? {};
+      groups = groups ?? {},
+      locked = locked ?? {};
 
   final String id;
   List<BoardElement> elements;
@@ -81,6 +83,16 @@ class WhiteboardPage {
   /// Element id → group id. Elements in a group select and move together (everything one AI
   /// answer wrote, a diagram with its labels).
   Map<String, String> groups;
+
+  /// Ids of locked elements: they can be selected but not moved, resized, turned, rubbed out
+  /// or deleted until they are unlocked.
+  Set<String> locked;
+
+  /// Locked elements as positions on the page, for saving.
+  List<int> get lockedIndexes => [
+    for (var i = 0; i < elements.length; i++)
+      if (locked.contains(elements[i].id)) i,
+  ];
 
   /// The view the teacher chose on this page, or null to start from the top left.
   ViewState? view;
@@ -208,9 +220,33 @@ abstract interface class RecordableBoard {
 }
 
 class _Snapshot {
-  _Snapshot(List<BoardElement> elements, Map<String, String> groups) : elements = List.of(elements), groups = Map.of(groups);
+  _Snapshot(List<BoardElement> elements, Map<String, String> groups, Set<String> locked)
+    : elements = List.of(elements),
+      groups = Map.of(groups),
+      locked = Set.of(locked);
   final List<BoardElement> elements;
   final Map<String, String> groups;
+  final Set<String> locked;
+}
+
+/// A drag of the selection's handles, a shape's handle, or two fingers on the selection.
+class _Gesture {
+  _Gesture({this.handle, this.shapeHandle, required this.box, required this.from});
+
+  final SelectionHandle? handle;
+  final ShapeHandle? shapeHandle;
+  final Rect box;
+  final Offset from;
+  BoardElement Function(BoardElement) f = _same;
+  double angle = 0;
+
+  /// The second finger's start, for a two-finger gesture.
+  Offset? from2;
+
+  /// Where the grabbed shape handle was, so it keeps its distance from the finger.
+  Offset? handleAt;
+
+  static BoardElement _same(BoardElement e) => e;
 }
 
 /// The whiteboard: an endless, zoomable board of pages holding [BoardElement]s, the tools that
@@ -329,7 +365,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
           if (p >= board.pages.length)
             WhiteboardPage(background: board.background)
           else
-            _pageFrom(board.pages[p], p < board.groups.length ? board.groups[p] : const [])..background = board.backgroundOf(p),
+            _pageFrom(board.pages[p], p < board.groups.length ? board.groups[p] : const [], p < board.locked.length ? board.locked[p] : const [])
+              ..background = board.backgroundOf(p),
       ]);
     _index = 0;
     _paperChanged(was, page.background);
@@ -340,10 +377,13 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _changed();
   }
 
-  WhiteboardPage _pageFrom(List<BoardElement> saved, List<List<int>> groups) {
+  WhiteboardPage _pageFrom(List<BoardElement> saved, List<List<int>> groups, [List<int> locked = const []]) {
     // Saved elements get fresh ids, unique on this board.
     final els = [for (final e in saved) e.withId(newElementId())];
-    final page = WhiteboardPage(elements: els);
+    final page = WhiteboardPage(elements: els, locked: {
+      for (final i in locked)
+        if (i < els.length) els[i].id,
+    });
     for (final g in groups) {
       final gid = newElementId();
       for (final i in g) {
@@ -359,6 +399,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     canvas: canvas,
     pages: [for (final p in _pages) List.of(p.elements)],
     groups: [for (final p in _pages) p.groupIndexes],
+    locked: [for (final p in _pages) p.lockedIndexes],
     pageBackgrounds: [for (final p in _pages) p.background],
   );
 
@@ -397,10 +438,22 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _changed(content: false);
   }
 
-  /// Keeps the pen visible when flipping between paper and a dark board.
+  /// The pen keeps its logical colour across papers: black ink is drawn white on a dark board
+  /// ([inkColorFor]), so chalk white picked on a dark board becomes black again.
   void _paperChanged(BoardBackground from, BoardBackground to) {
-    if (to.isDark && !from.isDark && penColor == inkBlack) penColor = chalkWhite;
-    if (!to.isDark && from.isDark && penColor == chalkWhite) penColor = inkBlack;
+    if (from.isDark != to.isDark && penColor == chalkWhite) penColor = inkBlack;
+  }
+
+  /// Sets the paper of every page that has [from] to [to] (the board following its theme: plain
+  /// paper becomes the dark board and back, while pages with a template keep it).
+  void replaceBackground(BoardBackground from, BoardBackground to) {
+    if (from == to || !_pages.any((p) => p.background == from)) return;
+    final was = page.background;
+    for (final p in _pages) {
+      if (p.background == from) p.background = to;
+    }
+    _paperChanged(was, page.background);
+    _changed(content: false);
   }
 
   // --- Tools --------------------------------------------------------------------------------
@@ -495,6 +548,26 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _changed(content: false, repaint: true);
   }
 
+  /// New shapes (Shapes tool, compass, the AI pen's tidied drawings) show their measurements.
+  /// Off by default: each shape's labels are switched on from its selection bar. The app keeps
+  /// this setting (the AI pen's options).
+  bool measureNewShapes = false;
+
+  /// [e] as a new shape shows itself: with every measurement when [measureNewShapes].
+  BoardElement withNewShapeMeasure(BoardElement e) => measureNewShapes && measurable(e) ? withMeasure(e, ShapeMeasure.all) : e;
+
+  MeasureUnit _measureUnit = MeasureUnit.cm;
+
+  /// The units shape labels are given in.
+  MeasureUnit get measureUnit => _measureUnit;
+  set measureUnit(MeasureUnit u) {
+    _measureUnit = u;
+    _changed(content: false, repaint: true);
+  }
+
+  /// The corner handles keep the proportions (Shift, or switching this off, frees them).
+  bool lockAspect = true;
+
   /// How large contacts (a palm, a fist) are treated; see [PalmMode].
   /// Read on the next touch; nothing on the board changes, so it may be set while building.
   PalmMode palmMode;
@@ -507,7 +580,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   bool get canUndo => (_undo[page.id] ?? const []).isNotEmpty;
   bool get canRedo => (_redo[page.id] ?? const []).isNotEmpty;
 
-  _Snapshot get _snap => _Snapshot(page.elements, page.groups);
+  _Snapshot get _snap => _Snapshot(page.elements, page.groups, page.locked);
 
   void _push(_Snapshot s) {
     final stack = _undo.putIfAbsent(page.id, () => []);
@@ -535,6 +608,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   void _restore(_Snapshot s) {
     page.elements = List.of(s.elements);
     page.groups = Map.of(s.groups);
+    page.locked = Set.of(s.locked);
     _selection.clear();
     _changed();
   }
@@ -553,6 +627,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     page.elements = List.of(els);
     final ids = {for (final e in els) e.id};
     page.groups.removeWhere((k, _) => !ids.contains(k));
+    page.locked.removeWhere((k) => !ids.contains(k));
     _selection.removeWhere((id) => !ids.contains(id));
     _changed();
   }
@@ -602,16 +677,16 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   /// Clears the page, keeping an imported page under the ink.
   void clearPage() {
-    final kept = page.elements.where((e) => !_selectable(e)).toList();
+    final kept = page.elements.where((e) => !_selectable(e) || page.locked.contains(e.id)).toList();
     if (page.elements.length == kept.length) return;
     setElements(kept);
   }
 
   /// Whether the open page has anything [clearPage] would take.
-  bool get canClearPage => page.elements.any(_selectable);
+  bool get canClearPage => page.elements.any((e) => _selectable(e) && !page.locked.contains(e.id));
 
   /// Whether any page has anything [clearAllPages] would take.
-  bool get canClearAllPages => _pages.any((p) => p.elements.any(_selectable));
+  bool get canClearAllPages => _pages.any((p) => p.elements.any((e) => _selectable(e) && !p.locked.contains(e.id)));
 
   /// Clears every page (keeping imported pages under the ink); each page's undo brings its
   /// own back. Returns an undo for them all at once (for the "Undo" of a message).
@@ -619,9 +694,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _finishGestures();
     final cleared = <WhiteboardPage, _Snapshot>{};
     for (final p in _pages) {
-      final kept = p.elements.where((e) => !_selectable(e)).toList();
+      final kept = p.elements.where((e) => !_selectable(e) || p.locked.contains(e.id)).toList();
       if (p.elements.length == kept.length) continue;
-      final snap = _Snapshot(p.elements, p.groups);
+      final snap = _Snapshot(p.elements, p.groups, p.locked);
       final stack = _undo.putIfAbsent(p.id, () => []);
       stack.add(snap);
       if (stack.length > 100) stack.removeAt(0);
@@ -712,14 +787,154 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   Rect? get selectionBounds {
     final els = selectedElements;
     if (els.isEmpty) return null;
-    final labels = (_showLengths || _showAngles) && els.any((e) => e is Stroke && e.shape != null);
-    return contentBounds(els).inflate(labels ? 26 : 0);
+    return contentBounds(els).inflate(els.any(_labelled) ? 26 : 0);
   }
 
+  /// Whether [e] has measurement labels around it.
+  bool _labelled(BoardElement e) => measurable(e) && ((_showLengths || _showAngles) || measureOf(e).any);
+
+  /// Whether [e] shows measurement labels (for the selection box, which clears them).
+  bool isLabelled(BoardElement e) => _labelled(e);
+
   void deleteSelection() {
-    final ids = Set.of(_selection);
-    _selection.clear();
+    final ids = _selection.where((id) => !page.locked.contains(id)).toSet();
+    _selection.removeAll(ids);
     removeIds(ids);
+  }
+
+  // --- Locking --------------------------------------------------------------------------------
+
+  /// Whether element [id] is locked.
+  bool isLocked(String id) => page.locked.contains(id);
+
+  /// Whether everything selected is locked (its handles are hidden).
+  bool get selectionLocked => _selection.isNotEmpty && _selection.every(page.locked.contains);
+
+  /// Locks or unlocks the selection, as one undo step.
+  void setSelectionLocked(bool on) {
+    if (_selection.isEmpty) return;
+    _push(_snap);
+    if (on) {
+      page.locked.addAll(_selection);
+    } else {
+      page.locked.removeAll(_selection);
+    }
+    _changed(content: false, repaint: true);
+  }
+
+  /// The selected elements that may be changed (not locked).
+  Set<String> get _free => {
+    for (final id in _selection)
+      if (!page.locked.contains(id)) id,
+  };
+
+  /// Applies [f] to the selected elements that are not locked, as one undo step.
+  void _editFree(BoardElement Function(BoardElement) f) {
+    final free = _free;
+    if (free.isEmpty) return;
+    setElements([for (final e in page.elements) free.contains(e.id) ? f(e) : e]);
+  }
+
+  // --- Styling the selection -----------------------------------------------------------------
+
+  /// The line width of the first selected element that has one.
+  double? get selectionWidth {
+    for (final e in selectedElements) {
+      if (e is Stroke) return e.style.width;
+      if (e is PolygonElement) return e.width;
+    }
+    return null;
+  }
+
+  void setSelectionWidth(double w) => _editFree(
+    (e) => switch (e) {
+      Stroke() => e.copyWith(style: e.style.copyWith(width: w)),
+      PolygonElement() => e.copyWith(width: w),
+      _ => e,
+    },
+  );
+
+  /// The line style of the first selected stroke: round (solid), dashed or dotted.
+  PenNib? get selectionLineStyle => selectedElements.whereType<Stroke>().map((s) => s.style.nib == PenNib.dashed || s.style.nib == PenNib.dotted ? s.style.nib : PenNib.round).firstOrNull;
+
+  void setSelectionLineStyle(PenNib nib) => _editFree((e) => e is Stroke && e.style.tool != InkTool.highlighter ? e.copyWith(style: e.style.copyWith(nib: nib)) : e);
+
+  /// Whether any selected element can show measurements.
+  bool get selectionMeasurable => selectedElements.any(measurable);
+
+  /// The measurements of the first measurable selected element.
+  ShapeMeasure get selectionMeasure => selectedElements.where(measurable).map(measureOf).firstOrNull ?? ShapeMeasure.none;
+
+  /// Shows [m] on every selected shape, as one undo step.
+  void setSelectionMeasure(ShapeMeasure m) => _editFree((e) => withMeasure(e, m));
+
+  /// The heads of the selected line or arrow, when one is selected alone.
+  ArrowEnds? get selectionArrowEnds {
+    final els = selectedElements;
+    final e = els.length == 1 ? els.single : null;
+    return e is Stroke && editsByEnds(e) ? arrowEndsOf(e) : null;
+  }
+
+  bool get selectionFilledHead => selectedElements.whereType<Stroke>().any((s) => s.filledHead);
+
+  void setSelectionArrowEnds(ArrowEnds ends) => _editFree((e) => e is Stroke ? withArrowEnds(e, ends) : e);
+
+  void setSelectionFilledHead(bool on) => _editFree((e) => e is Stroke && editsByEnds(e) ? e.copyWith(filledHead: on) : e);
+
+  /// Mirrors the selection about its middle, left to right or top to bottom.
+  void flipSelection({required bool horizontal}) {
+    final els = selectedElements.where((e) => !isLocked(e.id));
+    if (els.isEmpty) return;
+    final c = contentBounds(els).center;
+    _editFree((e) => flipElement(e, c, horizontal: horizontal));
+  }
+
+  /// Lines the selected elements up on the selection's [edge] (two or more).
+  void alignSelection(BoardAlign edge) {
+    final els = selectedElements;
+    if (els.length < 2) return;
+    final box = contentBounds(els);
+    _editFree((e) {
+      final b = e.bounds;
+      final d = switch (edge) {
+        BoardAlign.left => Offset(box.left - b.left, 0),
+        BoardAlign.centre => Offset(box.center.dx - b.center.dx, 0),
+        BoardAlign.right => Offset(box.right - b.right, 0),
+        BoardAlign.top => Offset(0, box.top - b.top),
+        BoardAlign.middle => Offset(0, box.center.dy - b.center.dy),
+        BoardAlign.bottom => Offset(0, box.bottom - b.bottom),
+      };
+      return d == Offset.zero ? e : e.translated(d);
+    });
+  }
+
+  // --- Editing a shape's points --------------------------------------------------------------
+
+  String? _editPointsId;
+
+  /// The shape whose points are being edited: the one selected shape, once "Edit points" is on
+  /// (lines and arrows always).
+  BoardElement? get pointsTarget {
+    if (_selection.length != 1) return null;
+    final e = byId(_selection.single);
+    if (e == null || isLocked(e.id) || !hasShapeHandles(e)) return null;
+    return editsByEnds(e) || _editPointsId == e.id ? e : null;
+  }
+
+  /// Whether the selected shape's points are showing (its corners, radius or rounding).
+  bool get editingPoints => pointsTarget != null;
+
+  /// Whether "Edit points" can be offered for the selection.
+  bool get canEditPoints {
+    if (_selection.length != 1) return false;
+    final e = byId(_selection.single);
+    return e != null && !isLocked(e.id) && hasShapeHandles(e) && !editsByEnds(e);
+  }
+
+  /// Shows or hides the selected shape's point handles.
+  set editingPoints(bool on) {
+    _editPointsId = on && _selection.length == 1 ? _selection.single : null;
+    _changed(content: false, repaint: true);
   }
 
   void recolorSelection(Color c) {
@@ -756,11 +971,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     setElements([...page.elements.where((e) => _selection.contains(e.id)), ...page.elements.where((e) => !_selection.contains(e.id))]);
   }
 
-  /// Applies [f] to every selected element as one undo step (keyboard nudges, tests).
-  void transformSelection(BoardElement Function(BoardElement) f) {
-    if (_selection.isEmpty) return;
-    setElements([for (final e in page.elements) _selection.contains(e.id) ? f(e) : e]);
-  }
+  /// Applies [f] to every selected element (not locked ones) as one undo step (keyboard nudges, tests).
+  void transformSelection(BoardElement Function(BoardElement) f) => _editFree(f);
 
   bool get selectionGrouped {
     final gs = {for (final id in _selection) page.groups[id]};
@@ -1198,7 +1410,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
           }
           // Moved live (each element knows it was moved, so viewers get a move, not a redraw).
           // Arrows follow the blocks they join.
-          page.elements = reflowLinks([for (final e in page.elements) _selection.contains(e.id) ? e.translated(d) : e]);
+          final free = _free;
+          page.elements = reflowLinks([for (final e in page.elements) free.contains(e.id) ? e.translated(d) : e]);
           _lastSelect = at;
           committed.value++;
         }
@@ -1258,6 +1471,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   void _commit(Stroke s, {bool selectAfter = false}) {
     _push(_snap);
+    if (s.shape != null && measureNewShapes) s = s.copyWith(measure: ShapeMeasure.all);
     page.elements = [...page.elements, s];
     if (selectAfter) {
       // Selected at once, so its handles resize and turn it straight away.
@@ -1280,7 +1494,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     final r = _eraseRadius[pointer] ?? eraserRadius / _scale;
     final hit = <String>{
       for (final e in page.elements)
-        if (_erasable(e) && e.hitTest(c, r)) e.id,
+        if (_erasable(e) && !page.locked.contains(e.id) && e.hitTest(c, r)) e.id,
     };
     if (hit.isEmpty) return;
     page.elements = page.elements.where((e) => !hit.contains(e.id)).toList();
@@ -1318,6 +1532,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     } else if (!_selectMoved && down != null) {
       // A tap inside the selection's box: pick what is under it (with its group).
       final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
+      // A second tap on the one selected shape shows its points to edit.
+      final again = hit != null && _selection.length == 1 && _selection.single == hit.id;
+      if (again && hasShapeHandles(hit) && !editsByEnds(hit) && !isLocked(hit.id)) _editPointsId = hit.id;
       _selection.clear();
       if (hit != null) _selection.addAll(page.expandGroups({hit.id}));
       _tapped(hit);
@@ -1401,77 +1618,133 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   // --- Resizing and turning -----------------------------------------------------------------
 
-  ({SelectionHandle handle, Rect box, Offset from, BoardElement Function(BoardElement) f, double angle})? _transform;
+  _Gesture? _transform;
 
-  /// The resize or turn being dragged, applied to an element (for painting the preview).
-  BoardElement Function(BoardElement)? get transformPreview => _transform?.f;
+  /// The resize, turn or reshape being dragged, applied to an element (for painting the
+  /// preview). Locked elements stay as they are.
+  BoardElement Function(BoardElement)? get transformPreview {
+    final t = _transform;
+    if (t == null) return null;
+    return (e) => isLocked(e.id) ? e : t.f(e);
+  }
+
   bool get isTransforming => _transform != null;
   SelectionHandle? get transformHandle => _transform?.handle;
+
+  /// Whether two fingers are moving, scaling and turning the selection.
+  bool get isPinchingSelection => _transform?.from2 != null;
 
   /// How far the selection is being turned, in degrees (for the angle pill).
   double get transformAngle => (_transform?.angle ?? 0) * 180 / math.pi;
 
+  /// How far the one selected shape or box is turned in all, with the turn being dragged, in
+  /// degrees; null for several.
+  double? get selectionTurn {
+    final els = selectedElements;
+    if (els.length != 1) return null;
+    final e = els.single;
+    final base = switch (e) {
+      Stroke(:final turn) => turn,
+      PolygonElement(:final turn) => turn,
+      _ => e.rotation,
+    };
+    return (base + (_transform?.angle ?? 0)) * 180 / math.pi;
+  }
+
   /// Starts dragging [handle] of the selection from board point [p].
   void beginTransform(SelectionHandle handle, Offset p) {
-    final els = selectedElements;
+    final els = selectedElements.where((e) => !isLocked(e.id));
     if (els.isEmpty) return;
-    _transform = (handle: handle, box: contentBounds(els), from: p, f: (e) => e, angle: 0);
+    _transform = _Gesture(handle: handle, box: contentBounds(els), from: p);
     notifyListeners();
   }
 
-  void updateTransform(Offset w) {
+  /// The handle is at [w]. With [free], corners stretch either way and turning does not
+  /// settle on 15° steps (Shift on a keyboard).
+  void updateTransform(Offset w, {bool free = false}) {
     final t = _transform;
     if (t == null) return;
-    final r = t.box, from = t.from, h = t.handle;
+    final r = t.box, from = t.from;
+    final sh = t.shapeHandle;
+    if (sh != null) {
+      final id = _selection.single, pad = 20 / _scale;
+      final to = (t.handleAt ?? from) + (w - from);
+      t.f = (e) => e.id == id ? dragShapeHandle(e, sh, to, pad: pad) : e;
+      notifyListeners();
+      return;
+    }
+    final h = t.handle!;
     if (h == SelectionHandle.rotate) {
       final c = r.center;
-      var a = math.atan2(w.dy - c.dy, w.dx - c.dx) - math.atan2(from.dy - c.dy, from.dx - c.dx);
-      // Settles on 15° steps (0°, 45°, 90°…) when close to one.
-      final deg = a * 180 / math.pi;
-      final step = (deg / 15).round() * 15.0;
-      if ((deg - step).abs() < 4) a = step * math.pi / 180;
-      _transform = (handle: h, box: r, from: from, f: (e) => e.rotated(c, a), angle: a);
+      final a = snapTurn(math.atan2(w.dy - c.dy, w.dx - c.dx) - math.atan2(from.dy - c.dy, from.dx - c.dx), free: free);
+      t
+        ..f = ((e) => e.rotated(c, a))
+        ..angle = a;
     } else {
-      final anchor = switch (h) {
-        SelectionHandle.topLeft => r.bottomRight,
-        SelectionHandle.topRight => r.bottomLeft,
-        SelectionHandle.bottomLeft => r.topRight,
-        SelectionHandle.bottomRight => r.topLeft,
-        SelectionHandle.top => r.bottomCenter,
-        SelectionHandle.bottom => r.topCenter,
-        SelectionHandle.left => r.centerRight,
-        SelectionHandle.right => r.centerLeft,
-        SelectionHandle.rotate => r.center,
-      };
-      // Measured from where the handle was grabbed, so the box does not jump when it is taken.
-      double ratio(double now, double was, double at) => was == at ? 1 : ((now - at) / (was - at)).clamp(0.05, 50.0);
-      var sx = 1.0, sy = 1.0;
-      switch (h) {
-        case SelectionHandle.left || SelectionHandle.right:
-          sx = ratio(w.dx, from.dx, anchor.dx);
-        case SelectionHandle.top || SelectionHandle.bottom:
-          sy = ratio(w.dy, from.dy, anchor.dy);
-        default:
-          // Corners keep the proportions: scale along the diagonal.
-          final d0 = from - anchor, d = w - anchor;
-          final k = d0.distanceSquared == 0 ? 1.0 : ((d.dx * d0.dx + d.dy * d0.dy) / d0.distanceSquared).clamp(0.05, 50.0);
-          sx = sy = k;
-      }
-      _transform = (handle: h, box: r, from: from, f: (e) => e.scaled(anchor, sx, sy), angle: 0);
+      final s = handleScale(h, r, from, w, free: free || !lockAspect);
+      t.f = (e) => e.scaled(s.anchor, s.sx, s.sy);
     }
     notifyListeners();
   }
 
-  /// Applies the resize or turn as one undo step.
+  /// Applies the resize, turn or reshape as one undo step.
   void endTransform() {
     final t = _transform;
     _transform = null;
     if (t == null) return;
-    setElements([for (final e in page.elements) _selection.contains(e.id) ? t.f(e) : e]);
+    final free = _free;
+    setElements([for (final e in page.elements) free.contains(e.id) ? t.f(e) : e]);
   }
 
   void cancelTransform() {
     _transform = null;
+    notifyListeners();
+  }
+
+  /// The handles of the shape whose points are being edited, in board units.
+  List<(ShapeHandle, Offset)> get shapeHandles {
+    final e = pointsTarget;
+    if (e == null) return const [];
+    final shown = _transform?.f(e) ?? e;
+    return shapeHandlesOf(shown, pad: 20 / _scale);
+  }
+
+  /// Starts dragging shape handle [h] of the selected shape from board point [p].
+  void beginShapeEdit(ShapeHandle h, Offset p, {double scale = 1}) {
+    final e = pointsTarget;
+    if (e == null) return;
+    _scale = scale;
+    final at = shapeHandlesOf(e, pad: 20 / scale).where((x) => x.$1 == h).firstOrNull?.$2;
+    _transform = _Gesture(shapeHandle: h, box: e.bounds, from: p)..handleAt = at;
+    notifyListeners();
+  }
+
+  /// Starts moving, scaling and turning the selection with two fingers at [a] and [b] (board
+  /// units).
+  void beginSelectionPinch(Offset a, Offset b) {
+    final els = selectedElements.where((e) => !isLocked(e.id));
+    if (els.isEmpty) return;
+    _transform = _Gesture(box: contentBounds(els), from: a)..from2 = b;
+    notifyListeners();
+  }
+
+  /// The two fingers are now at [a] and [b]: the selection follows their middle, grows with
+  /// their spread and turns with them (settling on 15° steps).
+  void updateSelectionPinch(Offset a, Offset b) {
+    final t = _transform;
+    if (t == null || t.from2 == null) return;
+    final a0 = t.from, b0 = t.from2!;
+    final c0 = (a0 + b0) / 2, c1 = (a + b) / 2;
+    final d0 = math.max(1.0, (b0 - a0).distance);
+    final k = ((b - a).distance / d0).clamp(0.05, 50.0);
+    final turn = snapTurn(math.atan2((b - a).dy, (b - a).dx) - math.atan2((b0 - a0).dy, (b0 - a0).dx));
+    t
+      ..f = ((e) {
+        var out = e.scaled(c0, k, k);
+        if (turn != 0) out = out.rotated(c0, turn);
+        return out.translated(c1 - c0);
+      })
+      ..angle = turn;
     notifyListeners();
   }
 

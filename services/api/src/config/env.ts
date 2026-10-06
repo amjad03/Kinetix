@@ -114,6 +114,12 @@ const EnvSchema = z.object({
    * quota unit each). Without it, concept videos are added one link at a time.
    */
   YOUTUBE_API_KEY: z.string().optional(),
+  /**
+   * Our mirror of PhET's sims in India (infra/terraform/phet.tf), e.g. https://dxxxx.cloudfront.net/phet;
+   * files are at <url>/<id>/<id>_all.html. Unset (development, demo): boards are sent to
+   * phet.colorado.edu instead (docs/operations/phet.md).
+   */
+  PHET_MIRROR_URL: z.url().optional(),
   /** `json` writes one JSON object per log line (production log shipping); `text` is for people. */
   LOG_FORMAT: z.enum(['text', 'json']).default('text'),
   /**

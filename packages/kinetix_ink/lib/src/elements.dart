@@ -481,7 +481,16 @@ class GraphShade {
 /// A straight-sided figure with any corners: a tidied hand drawing, a geometry diagram, a
 /// circuit symbol's parts.
 class PolygonElement extends BoardElement {
-  const PolygonElement({required this.id, required this.points, required this.color, required this.width, this.closed = true, this.fill});
+  const PolygonElement({
+    required this.id,
+    required this.points,
+    required this.color,
+    required this.width,
+    this.closed = true,
+    this.fill,
+    this.measure = ShapeMeasure.none,
+    this.turn = 0,
+  });
 
   @override
   final String id;
@@ -490,6 +499,12 @@ class PolygonElement extends BoardElement {
   final double width;
   final bool closed;
   final Color? fill;
+
+  /// The measurements this figure shows.
+  final ShapeMeasure measure;
+
+  /// How far it has been turned since it was made (its points are already turned).
+  final double turn;
 
   @override
   Rect get bounds {
@@ -511,21 +526,33 @@ class PolygonElement extends BoardElement {
     return fill != null && closed && _insidePolygon(p, points);
   }
 
-  PolygonElement copyWith({String? id, List<Offset>? points, Color? color, Color? fill, bool clearFill = false}) => PolygonElement(
+  PolygonElement copyWith({
+    String? id,
+    List<Offset>? points,
+    Color? color,
+    Color? fill,
+    bool clearFill = false,
+    double? width,
+    ShapeMeasure? measure,
+    double? turn,
+  }) => PolygonElement(
     id: id ?? this.id,
     points: points ?? this.points,
     color: color ?? this.color,
-    width: width,
+    width: width ?? this.width,
     closed: closed,
     fill: clearFill ? null : (fill ?? this.fill),
+    measure: measure ?? this.measure,
+    turn: turn ?? this.turn,
   );
 
   @override
   PolygonElement translated(Offset d) => _moved(this, d, copyWith(points: [for (final p in points) p + d]));
   @override
-  PolygonElement scaled(Offset origin, double sx, double sy) => copyWith(points: [for (final p in points) scalePoint(p, origin, sx, sy)]);
+  PolygonElement scaled(Offset origin, double sx, double sy) =>
+      copyWith(points: [for (final p in points) scalePoint(p, origin, sx, sy)], turn: (sx < 0) != (sy < 0) ? -turn : turn);
   @override
-  PolygonElement rotated(Offset center, double angle) => copyWith(points: [for (final p in points) rotatePoint(p, center, angle)]);
+  PolygonElement rotated(Offset center, double angle) => copyWith(points: [for (final p in points) rotatePoint(p, center, angle)], turn: turn + angle);
   @override
   PolygonElement recolored(Color c) => copyWith(color: c, fill: fill == null ? null : c.withValues(alpha: fill!.a));
   @override

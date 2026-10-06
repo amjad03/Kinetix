@@ -139,6 +139,11 @@ class BoardController extends ChangeNotifier {
   /// A resting palm does not write (the touch surface decides how; off writes with any touch).
   bool palmRejection = true;
 
+  /// Preview as interactive panel: a phone (the demo build) shows the whole board at a 1920 ×
+  /// 1080 panel's size, scaled down to fit, on its side, so the teacher sees what the
+  /// smartboard will show. The phone's own setting, not a teacher's.
+  bool panelPreview = false;
+
   /// Several people write at once (two fingers then write, not move the board). Null follows
   /// the touch surface: panels and IR frames are multi-touch, tablets single.
   bool? multiTouch;
@@ -170,6 +175,13 @@ class BoardController extends ChangeNotifier {
   /// The pen tidies rough shapes too (the AI pen always does). For primary classes, where the
   /// AI pen is hidden, this is the one part of it on offer.
   bool snapShapes = false;
+
+  /// New shapes show their measurements (lengths, angles, radius, area). Off by default: each
+  /// shape's labels are switched on from its selection bar.
+  bool measureShapes = false;
+
+  /// The units shape measurements are given in.
+  MeasureUnit measureUnit = MeasureUnit.cm;
 
   /// Two fingers tapped on the board undo, three redo (on unless turned off).
   bool fingerTaps = true;
@@ -304,7 +316,10 @@ class BoardController extends ChangeNotifier {
       aiPenMode = AiPenMode.values.asNameMap()[await _store.setting('aiPenMode')] ?? AiPenMode.auto;
       _aiPenLanguage = BoardLanguage.tryParse(await _store.setting('aiPenLanguage'));
       snapShapes = await _store.setting('snapShapes') == 'true';
+      measureShapes = await _store.setting('measureShapes') == 'true';
+      measureUnit = MeasureUnit.values.asNameMap()[await _store.setting('measureUnit')] ?? MeasureUnit.cm;
       fingerTaps = await _store.setting('fingerTaps') != 'false';
+      panelPreview = await _store.setting('panelPreview') == 'true';
     } catch (e) {
       debugPrint('Board settings unreadable, using defaults: $e');
     }
@@ -314,7 +329,7 @@ class BoardController extends ChangeNotifier {
   /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
   /// come back when they sign out. The board's language, touch surface, kiosk and projector
   /// stay the board's.
-  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps'];
+  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps', 'measureShapes', 'measureUnit'];
 
   String? _settingsTeacher;
 
@@ -336,6 +351,8 @@ class BoardController extends ChangeNotifier {
     'aiPenMode': aiPenMode.name,
     'aiPenLanguage': _aiPenLanguage?.name,
     'snapShapes': '$snapShapes',
+    'measureShapes': '$measureShapes',
+    'measureUnit': measureUnit.name,
     'fingerTaps': '$fingerTaps',
   };
 
@@ -349,6 +366,8 @@ class BoardController extends ChangeNotifier {
     aiPenMode = AiPenMode.values.asNameMap()[v['aiPenMode']] ?? aiPenMode;
     if (v.containsKey('aiPenLanguage')) _aiPenLanguage = BoardLanguage.tryParse(v['aiPenLanguage']);
     if (v['snapShapes'] != null) snapShapes = v['snapShapes'] == 'true';
+    if (v['measureShapes'] != null) measureShapes = v['measureShapes'] == 'true';
+    measureUnit = MeasureUnit.values.asNameMap()[v['measureUnit']] ?? measureUnit;
     if (v['fingerTaps'] != null) fingerTaps = v['fingerTaps'] != 'false';
   }
 
@@ -513,6 +532,24 @@ class BoardController extends ChangeNotifier {
   void setSnapShapes(bool on) {
     snapShapes = on;
     unawaited(_saveTeacherSetting('snapShapes', '$on'));
+    notifyListeners();
+  }
+
+  void setPanelPreview(bool on) {
+    panelPreview = on;
+    unawaited(_store.setSetting('panelPreview', '$on'));
+    notifyListeners();
+  }
+
+  void setMeasureShapes(bool on) {
+    measureShapes = on;
+    unawaited(_saveTeacherSetting('measureShapes', '$on'));
+    notifyListeners();
+  }
+
+  void setMeasureUnit(MeasureUnit u) {
+    measureUnit = u;
+    unawaited(_saveTeacherSetting('measureUnit', u.name));
     notifyListeners();
   }
 

@@ -18,6 +18,7 @@ import 'package:kinetix_board/l10n/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
+import 'support/wait.dart';
 
 // Kiosk mode (docs/hardware/kiosk-mode.md).
 
@@ -428,13 +429,13 @@ void main() {
           expect(find.byKey(const Key('kiosk-dialog')), findsOneWidget);
           await tester.enterText(find.byKey(const Key('kiosk-pin')), '9999');
           await tester.tap(find.byKey(const Key('kiosk-unlock')));
-          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
-          await tester.pumpAndSettle();
+          // The PIN is checked in an isolate: until the button stops spinning.
+          await waitUntil(tester, () => find.descendant(of: find.byKey(const Key('kiosk-unlock')), matching: find.byType(CircularProgressIndicator)).evaluate().isEmpty);
           expect(tester.takeException(), isNull, reason: 'wrong PIN');
           await tester.enterText(find.byKey(const Key('kiosk-pin')), '1234');
           await tester.tap(find.byKey(const Key('kiosk-unlock')));
-          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
-          await tester.pumpAndSettle();
+          // The PIN is checked in an isolate: until the button stops spinning.
+          await waitUntil(tester, () => find.descendant(of: find.byKey(const Key('kiosk-unlock')), matching: find.byType(CircularProgressIndicator)).evaluate().isEmpty);
           expect(find.byKey(const Key('kiosk-open-settings')).hitTestable(), findsOneWidget);
           expect(tester.takeException(), isNull, reason: 'unlocked');
         });

@@ -5,38 +5,42 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'model.dart';
 
-/// The animations' palette: textbook colours on the board's paper, in KINETIX ink.
+part 'landscape.dart';
+part 'plate.dart';
+
+/// The animations' palette: restrained textbook colours on the board's paper, in KINETIX ink
+/// (no saturated primaries; see [TP] for the plates' own palette).
 abstract final class AC {
   static const ink = KxColor.ink;
   static const muted = KxColor.muted;
   static const line = KxColor.line;
   static const paper = KxColor.paper;
   static const accent = KxColor.accent;
-  static const leaf = Color(0xFF3E9B4F);
-  static const leafDark = Color(0xFF23703A);
-  static const leafLight = Color(0xFFCDEBC8);
-  static const water = Color(0xFF2F80ED);
-  static const waterLight = Color(0xFFD6E8FB);
-  static const sky = Color(0xFFE3F1FB);
-  static const sun = Color(0xFFF2B705);
-  static const o2 = Color(0xFF1AA6B7);
-  static const co2 = Color(0xFF6B7280);
-  static const glucose = Color(0xFFE8710A);
-  static const energy = Color(0xFFF59E0B);
-  static const red = Color(0xFFD93025);
-  static const blue = Color(0xFF3A5BC7);
-  static const purple = Color(0xFF7E57C2);
-  static const pink = Color(0xFFF4B6C2);
-  static const flesh = Color(0xFFF6D5C3);
-  static const cell = Color(0xFFFFF4DC);
-  static const membrane = Color(0xFFC48A3A);
+  static const leaf = Color(0xFF5A8A4E);
+  static const leafDark = Color(0xFF3F6B3A);
+  static const leafLight = Color(0xFFD6E5CC);
+  static const water = Color(0xFF4F86B0);
+  static const waterLight = Color(0xFFD8E6EE);
+  static const sky = Color(0xFFE6EEF2);
+  static const sun = Color(0xFFD9A93B);
+  static const o2 = Color(0xFF3A8E8A);
+  static const co2 = Color(0xFF6E747C);
+  static const glucose = Color(0xFFC07A35);
+  static const energy = Color(0xFFC9952F);
+  static const red = Color(0xFFB0473B);
+  static const blue = Color(0xFF3F5F94);
+  static const purple = Color(0xFF6C5687);
+  static const pink = Color(0xFFE3BCC0);
+  static const flesh = Color(0xFFEBD3C4);
+  static const cell = Color(0xFFF7F0E0);
+  static const membrane = Color(0xFFB08850);
   static const soil = Color(0xFF8D6E4A);
   static const soilLight = Color(0xFFD9C3A5);
   static const rock = Color(0xFF9A8F84);
-  static const magma = Color(0xFFE5532D);
-  static const ice = Color(0xFFEAF6FF);
-  static const space = Color(0xFF14213D);
-  static const electron = Color(0xFF1E88E5);
+  static const magma = Color(0xFFC2603A);
+  static const ice = Color(0xFFEDF3F6);
+  static const space = Color(0xFF1E2633);
+  static const electron = Color(0xFF34618E);
   static const copper = Color(0xFFB87333);
   static const grey = Color(0xFFBDBDBD);
 }
@@ -74,6 +78,9 @@ abstract class AnimPainter extends CustomPainter {
 
   late Canvas c;
   double _scale = 1;
+
+  /// Whether the picture is set on a dark ground (space): text halos are then dark too.
+  bool get darkStage => false;
 
   /// The background behind the design canvas.
   Color get background => AC.paper;
@@ -125,28 +132,30 @@ abstract class AnimPainter extends CustomPainter {
     return tp.size;
   }
 
-  /// A label (only when labels are on), in the frame's language. With [to], a leader line runs
-  /// from the label to a dot on the thing it names.
+  /// A label (only when labels are on), in the frame's language. With [to], a fine leader line
+  /// runs from the label to a dot on the thing it names.
   void label(String l3, Offset at, {Offset? to, Color color = AC.ink, double size = 17, double align = 0, double opacity = 1}) {
     if (!f.labels || opacity <= 0) return;
-    final col = color.withValues(alpha: opacity);
     if (to != null) {
-      line(at, to, AC.muted.withValues(alpha: 0.8 * opacity), 1.5);
-      circle(to, 3.5, AC.ink.withValues(alpha: opacity));
+      c.drawLine(at, to, linePaint(TP.ink2.withValues(alpha: 0.85 * opacity), LW.hair * 1.2));
+      c.drawCircle(to, 2.2, Paint()..color = TP.ink.withValues(alpha: opacity));
     }
-    text(tr(l3), at, size: size, color: col, align: align, bg: AC.paper.withValues(alpha: 0.85 * opacity), weight: FontWeight.w600);
+    note(tr(l3), at, size: size * 0.92, color: color == AC.ink ? (darkStage ? const Color(0xFFE4E8EC) : TP.ink) : color, align: align, opacity: opacity, weight: FontWeight.w500, maxWidth: 260);
   }
 
-  /// A formula or particle name in a coloured pill (always shown: it is part of the picture).
+  /// A formula or particle name in a quiet tinted tag (always shown: it is part of the picture).
   void chip(String s, Offset at, Color col, {double size = 15, double opacity = 1}) {
     if (opacity <= 0) return;
     final px = f.thumbnail ? size : math.max(size, 10 / _scale);
+    final ink = Color.lerp(col, Colors.black, 0.35)!;
     final tp = TextPainter(
-      text: TextSpan(text: s, style: TextStyle(fontSize: px, color: Colors.white.withValues(alpha: opacity), fontWeight: FontWeight.w700, fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback)),
+      text: TextSpan(text: s, style: TextStyle(fontSize: px * 0.92, color: ink.withValues(alpha: opacity), fontWeight: FontWeight.w600, fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback)),
       textDirection: TextDirection.ltr,
     )..layout();
-    final r = Rect.fromCenter(center: at, width: tp.width + 14, height: tp.height + 6);
-    c.drawRRect(RRect.fromRectAndRadius(r, Radius.circular(r.height / 2)), Paint()..color = col.withValues(alpha: opacity));
+    final r = Rect.fromCenter(center: at, width: tp.width + 10, height: tp.height + 3);
+    final rr = RRect.fromRectAndRadius(r, const Radius.circular(4));
+    c.drawRRect(rr, Paint()..color = Color.lerp(col, Colors.white, 0.84)!.withValues(alpha: 0.95 * opacity));
+    c.drawRRect(rr, linePaint(col.withValues(alpha: 0.8 * opacity), LW.hair));
     tp.paint(c, Offset(at.dx - tp.width / 2, at.dy - tp.height / 2));
   }
 
@@ -161,8 +170,12 @@ abstract class AnimPainter extends CustomPainter {
     ..strokeJoin = StrokeJoin.round;
 
   void circle(Offset o, double r, Color fillC, {Color? line, double w = 2}) {
+    if (r >= 5 && fillC.a > 0.6 && fillC != Colors.white && (line == null || line == Colors.white)) {
+      sphere(o, r, fillC.withValues(alpha: 1), opacity: fillC.a);
+      return;
+    }
     c.drawCircle(o, r, fill(fillC));
-    if (line != null) c.drawCircle(o, r, stroke(line, w));
+    if (line != null && line != Colors.white) c.drawCircle(o, r, stroke(line, w * 0.6));
   }
 
   void ring(Offset o, double r, Color col, [double w = 2]) => c.drawCircle(o, r, stroke(col, w));
@@ -178,7 +191,7 @@ abstract class AnimPainter extends CustomPainter {
     if (line != null) c.drawRRect(rr, stroke(line, w));
   }
 
-  void line(Offset a, Offset b, Color col, [double w = 3]) => c.drawLine(a, b, stroke(col, w));
+  void line(Offset a, Offset b, Color col, [double w = 3]) => c.drawLine(a, b, stroke(col, w * 0.7));
 
   void path(Path p, Color col, [double w = 3]) => c.drawPath(p, stroke(col, w));
 
@@ -204,26 +217,22 @@ abstract class AnimPainter extends CustomPainter {
     c.drawPath(p, fill(col));
   }
 
-  /// A straight arrow from [a] to [b].
+  /// A straight arrow from [a] to [b] (drawn slender: the weights are scaled to the plates').
   void arrow(Offset a, Offset b, Color col, {double w = 4, double head = 14, double opacity = 1}) {
     if (opacity <= 0 || (b - a).distance < 1) return;
-    final cc = col.withValues(alpha: opacity);
-    final d = b - a;
-    final ang = math.atan2(d.dy, d.dx);
-    line(a, b - Offset.fromDirection(ang, head * 0.6), cc, w);
-    _head(b, ang, cc, head);
+    arrowTo(a, b, col, w: math.max(1.2, w * 0.5), len: head * 0.8, opacity: opacity);
   }
 
   /// The first [upto] of [p], drawn as an arrow.
   void arrowPath(Path p, Color col, {double w = 4, double head = 14, double upto = 1, double opacity = 1}) {
     if (opacity <= 0 || upto <= 0) return;
-    final cc = col.withValues(alpha: opacity);
+    final cc = col.withValues(alpha: col.a * opacity);
     for (final m in p.computeMetrics()) {
       final len = m.length * upto.clamp(0.0, 1.0);
       if (len < 2) continue;
-      c.drawPath(m.extractPath(0, math.max(0, len - head * 0.6)), stroke(cc, w));
+      c.drawPath(m.extractPath(0, math.max(0, len - head * 0.5)), stroke(cc, math.max(1.2, w * 0.5)));
       final tan = m.getTangentForOffset(len)!;
-      _head(tan.position, -tan.angle, cc, head);
+      dart(tan.position, -tan.angle, cc, len: head * 0.8);
     }
   }
 
@@ -248,26 +257,11 @@ abstract class AnimPainter extends CustomPainter {
     _head(b, math.atan2(d.dy, d.dx), col, 12);
   }
 
-  /// The sun, with rays turning slowly.
-  void sun(Offset o, double r) {
-    c.drawCircle(o, r * 1.8, Paint()..shader = RadialGradient(colors: [AC.sun.withValues(alpha: 0.35), AC.sun.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: o, radius: r * 1.8)));
-    for (var i = 0; i < 12; i++) {
-      final a = i / 12 * tau + t * 2;
-      line(polar(o, r * 1.15, a), polar(o, r * 1.45, a), AC.sun, 4);
-    }
-    circle(o, r, const Color(0xFFFFD54F), line: AC.sun, w: 3);
-  }
+  /// The sun: a soft disc with a warm glow.
+  void sun(Offset o, double r) => sunDisc(o, r);
 
-  /// A small cloud.
-  void cloud(Offset o, double s, {Color col = Colors.white, Color? edge}) {
-    final p = Path()
-      ..addOval(Rect.fromCircle(center: o + Offset(-30 * s, 8 * s), radius: 22 * s))
-      ..addOval(Rect.fromCircle(center: o + Offset(0, -6 * s), radius: 30 * s))
-      ..addOval(Rect.fromCircle(center: o + Offset(32 * s, 6 * s), radius: 24 * s))
-      ..addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(o.dx - 50 * s, o.dy + 2 * s, 104 * s, 28 * s), Radius.circular(14 * s)));
-    c.drawPath(p, fill(col));
-    if (edge != null) c.drawPath(p, stroke(edge, 2));
-  }
+  /// A small cloud (a shaded cumulus).
+  void cloud(Offset o, double s, {Color col = Colors.white, Color? edge}) => cumulus(o + Offset(0, 6 * s), s * 0.9);
 
   /// One arrow of a cycle: muted when idle; when [on], bold, with [n] dots (or [chipText]
   /// pills) running along it.
@@ -280,27 +274,11 @@ abstract class AnimPainter extends CustomPainter {
     }
   }
 
-  /// A simple tree (trunk and a round crown), [s] its scale.
-  void tree(Offset base, double s, {Color crown = AC.leaf}) {
-    rect(Rect.fromLTWH(base.dx - 9 * s, base.dy - 90 * s, 18 * s, 90 * s), const Color(0xFF8D6E4A), radius: 4);
-    for (final o in [const Offset(-34, -110), const Offset(34, -110), const Offset(0, -150), const Offset(0, -100)]) {
-      circle(base + o * s, 44 * s, crown);
-    }
-  }
+  /// A tree (trunk, branches and a shaded crown), [s] its scale.
+  void tree(Offset base, double s, {Color crown = AC.leaf}) => broadleaf(base, s * 0.85);
 
-  /// A grazing animal (a cow, drawn simply), facing right.
-  void animal(Offset o, double s) {
-    const hide = Color(0xFFF5F0E6), edge = Color(0xFF5D4037);
-    for (final x in [-38.0, -18.0, 22.0, 40.0]) {
-      line(o + Offset(x, 10) * s, o + Offset(x, 52) * s, edge, 7 * s);
-    }
-    oval(Rect.fromCenter(center: o, width: 120 * s, height: 64 * s), hide, line: edge, w: 2.5);
-    oval(Rect.fromCenter(center: o + Offset(-10, -6) * s, width: 34 * s, height: 22 * s), edge);
-    oval(Rect.fromCenter(center: o + Offset(66, -22) * s, width: 42 * s, height: 34 * s), hide, line: edge, w: 2.5);
-    line(o + Offset(56, -40) * s, o + Offset(50, -50) * s, edge, 4 * s);
-    circle(o + Offset(72, -26) * s, 3 * s, edge);
-    line(o + Offset(-60, -8) * s, o + Offset(-72, 24) * s, edge, 3 * s);
-  }
+  /// A grazing animal (a cow in profile), facing right.
+  void animal(Offset o, double s) => cow(o + Offset(-6, -4) * s, s * 0.85);
 
   /// A factory with a chimney.
   void mill(Offset base, double s) {

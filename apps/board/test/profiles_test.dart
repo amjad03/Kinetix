@@ -21,6 +21,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
+import 'support/wait.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -277,9 +278,12 @@ void main() {
         await tester.pump();
       }
       await tester.tap(find.byKey(const Key('pin-ok')));
-      // PBKDF2 runs in an isolate.
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
-      await tester.pumpAndSettle();
+      // PBKDF2 runs in an isolate, and the unlock goes to the (fake) server: wait until the PIN
+      // pad is done, however long that takes on a busy machine (a fixed wait made this test
+      // fail when the whole suite ran in parallel).
+      final busy = find.descendant(of: find.byType(PinPad), matching: find.byType(CircularProgressIndicator));
+      await waitUntil(tester, () => busy.evaluate().isEmpty);
+      expect(busy, findsNothing, reason: 'the PIN was still being checked after 10 s');
     }
 
     testWidgets('locks after the idle time and opens with the teacher\'s PIN', (tester) async {

@@ -79,19 +79,24 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('anim-play')));
       await tester.pump();
       final calvin = photosynthesis.steps[4];
-      final chip = find.byKey(const ValueKey('anim-step-4'));
-      await tester.scrollUntilVisible(chip, 120, scrollable: find.descendant(of: find.byKey(const ValueKey('anim-steps')), matching: find.byType(Scrollable)));
-      await tester.ensureVisible(chip);
-      await tester.pump();
-      await tester.tap(chip);
+      // The step markers sit on the timeline; a tap jumps to the step's start.
+      await tester.tap(find.byKey(const ValueKey('anim-step-4')));
       await tester.pump();
       expect(find.text(calvin.caption.en), findsOneWidget);
+      // A tap near the end of the timeline scrubs to the last step.
+      final track = tester.getRect(find.byKey(const ValueKey('anim-scrub')));
+      await tester.tapAt(Offset(track.left + 8 + (track.width - 16) * 0.97, track.top + 14));
+      await tester.pump();
+      expect(find.text(photosynthesis.steps.last.caption.en), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('anim-labels')));
       await tester.pump();
 
       await tester.runAsync(() async {
         await tester.tap(find.byKey(const ValueKey('anim-add')));
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        // Rendering the still takes a moment (longer when the machine is busy).
+        for (var i = 0; i < 50 && png == null; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+        }
       });
       await tester.pump();
       expect(png, isNotNull);

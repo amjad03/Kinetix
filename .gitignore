@@ -26,3 +26,6 @@ key.properties
 # Pyodide is fetched at build time (packages/kinetix_cs/tool/fetch_pyodide.sh), not committed.
 packages/kinetix_cs/assets/runner/pyodide/*
 !packages/kinetix_cs/assets/runner/pyodide/.keep
+
+# PhET catalogue build cache (tools/phet/build-catalogue.mjs)
+tools/phet/.cache/

@@ -214,6 +214,12 @@ class ApiClient {
   /// (features/concept_videos parses it). Works with the device token too.
   Future<Map<String, dynamic>> conceptVideosNow() async => await _send('GET', '/v1/devices/me/concept-videos') as Map<String, dynamic>;
 
+  /// Where to download a PhET sim from (our mirror in India, else phet.colorado.edu); public.
+  Future<Uri> phetSimUrl(String id, String locale) async {
+    final j = await _send('GET', '/v1/content/sims/phet/$id?locale=$locale&format=json', auth: false) as Map<String, dynamic>;
+    return Uri.parse(j['url'] as String);
+  }
+
   /// A topic's concept videos, the class's language first, as JSON.
   Future<Map<String, dynamic>> topicConceptVideos(String topicId) async => await _send('GET', '/v1/content/topics/$topicId/videos') as Map<String, dynamic>;
 
