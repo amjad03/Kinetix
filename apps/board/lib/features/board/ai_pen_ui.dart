@@ -114,6 +114,7 @@ class AiPenPopover extends StatelessWidget {
             ),
             const SizedBox(height: Kx.s12),
             SnapShapesSwitch(board: board),
+            MeasureShapesSwitch(board: board),
             const SizedBox(height: Kx.s8),
             Text(l.aiPenTapHint, style: hint),
           ],
@@ -141,6 +142,49 @@ class SnapShapesSwitch extends StatelessWidget {
         subtitle: Text(l.aiPenSnapShapesHint),
         value: board.snapShapes,
         onChanged: board.setSnapShapes,
+      ),
+    );
+  }
+}
+
+/// "Show measurements on new shapes" (off by default), and the units they are given in.
+class MeasureShapesSwitch extends StatelessWidget {
+  const MeasureShapesSwitch({super.key, required this.board});
+
+  final BoardController board;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return ListenableBuilder(
+      listenable: board,
+      builder: (context, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SwitchListTile(
+            key: const Key('measure-shapes'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(l.aiPenMeasureShapes),
+            subtitle: Text(l.aiPenMeasureShapesHint),
+            value: board.measureShapes,
+            onChanged: board.setMeasureShapes,
+          ),
+          Row(
+            children: [
+              Expanded(child: Text(l.measureUnits, style: context.text.bodyMedium)),
+              SegmentedButton<MeasureUnit>(
+                key: const Key('measure-unit'),
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: MeasureUnit.cm, label: Text(l.measureUnitCm)),
+                  ButtonSegment(value: MeasureUnit.px, label: Text(l.measureUnitPx)),
+                ],
+                selected: {board.measureUnit},
+                onSelectionChanged: (s) => board.setMeasureUnit(s.single),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -464,6 +508,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
             ),
         const SizedBox(height: Kx.s8),
         SnapShapesSwitch(board: widget.board),
+        MeasureShapesSwitch(board: widget.board),
       ],
     );
   }

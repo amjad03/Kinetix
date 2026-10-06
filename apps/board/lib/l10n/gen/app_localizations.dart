@@ -7317,6 +7317,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attendance opens with a timetabled class that has a student list.'**
   String get attendanceNeedsClass;
+
+  /// No description provided for @aiPenMeasureShapes.
+  ///
+  /// In en, this message translates to:
+  /// **'Show measurements on new shapes'**
+  String get aiPenMeasureShapes;
+
+  /// No description provided for @aiPenMeasureShapesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Lengths, angles, radius and area on shapes as you draw them. Each shape\'s labels can be shown or hidden from its selection bar.'**
+  String get aiPenMeasureShapesHint;
+
+  /// No description provided for @measureUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get measureUnits;
+
+  /// No description provided for @measureUnitCm.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get measureUnitCm;
+
+  /// No description provided for @measureUnitPx.
+  ///
+  /// In en, this message translates to:
+  /// **'px'**
+  String get measureUnitPx;
+
+  /// No description provided for @selLineWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Line width'**
+  String get selLineWidth;
+
+  /// No description provided for @selLineStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Line style'**
+  String get selLineStyle;
+
+  /// No description provided for @selLineSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid'**
+  String get selLineSolid;
+
+  /// No description provided for @selLineDashed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashed'**
+  String get selLineDashed;
+
+  /// No description provided for @selLineDotted.
+  ///
+  /// In en, this message translates to:
+  /// **'Dotted'**
+  String get selLineDotted;
+
+  /// No description provided for @selShowMeasurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Show measurements'**
+  String get selShowMeasurements;
+
+  /// No description provided for @selHideMeasurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide measurements'**
+  String get selHideMeasurements;
+
+  /// No description provided for @selMeasureOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements'**
+  String get selMeasureOptions;
+
+  /// No description provided for @selMeasureLengths.
+  ///
+  /// In en, this message translates to:
+  /// **'Lengths'**
+  String get selMeasureLengths;
+
+  /// No description provided for @selMeasureAngles.
+  ///
+  /// In en, this message translates to:
+  /// **'Angles'**
+  String get selMeasureAngles;
+
+  /// No description provided for @selMeasureRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Radius'**
+  String get selMeasureRadius;
+
+  /// No description provided for @selMeasureArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get selMeasureArea;
+
+  /// No description provided for @selEditPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit points'**
+  String get selEditPoints;
+
+  /// No description provided for @selArrowHeads.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrow heads'**
+  String get selArrowHeads;
+
+  /// No description provided for @selArrowNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No heads'**
+  String get selArrowNone;
+
+  /// No description provided for @selArrowEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'At the end'**
+  String get selArrowEnd;
+
+  /// No description provided for @selArrowStart.
+  ///
+  /// In en, this message translates to:
+  /// **'At the start'**
+  String get selArrowStart;
+
+  /// No description provided for @selArrowBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both ends'**
+  String get selArrowBoth;
+
+  /// No description provided for @selArrowFilled.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled heads'**
+  String get selArrowFilled;
+
+  /// No description provided for @selFlipH.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip left to right'**
+  String get selFlipH;
+
+  /// No description provided for @selFlipV.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip upside down'**
+  String get selFlipV;
+
+  /// No description provided for @selAlign.
+  ///
+  /// In en, this message translates to:
+  /// **'Align'**
+  String get selAlign;
+
+  /// No description provided for @selAlignLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Left edges'**
+  String get selAlignLeft;
+
+  /// No description provided for @selAlignCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Centres'**
+  String get selAlignCentre;
+
+  /// No description provided for @selAlignRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Right edges'**
+  String get selAlignRight;
+
+  /// No description provided for @selAlignTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Tops'**
+  String get selAlignTop;
+
+  /// No description provided for @selAlignMiddle.
+  ///
+  /// In en, this message translates to:
+  /// **'Middles'**
+  String get selAlignMiddle;
+
+  /// No description provided for @selAlignBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottoms'**
+  String get selAlignBottom;
+
+  /// No description provided for @selLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get selLock;
+
+  /// No description provided for @selUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get selUnlock;
+
+  /// No description provided for @selKeepProportions.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep proportions'**
+  String get selKeepProportions;
+
+  /// No description provided for @selMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get selMore;
 }
 
 class _AppLocalizationsDelegate
