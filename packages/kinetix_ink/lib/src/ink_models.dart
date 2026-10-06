@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 part 'elements.dart';
+part 'flow_elements.dart';
 part 'sheet_element.dart';
 
 /// What a pointer does when it touches the board.

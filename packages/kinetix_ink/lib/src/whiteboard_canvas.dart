@@ -14,6 +14,9 @@ import 'ink_canvas.dart' show inkColorFor;
 import 'ink_models.dart';
 import 'lesson.dart' show paintLaser;
 import 'math_layer.dart';
+import 'tools/flow_overlay.dart';
+import 'tools/geo_overlay.dart';
+import 'tools/graph_editor.dart';
 import 'view.dart';
 import 'whiteboard_controller.dart';
 
@@ -188,6 +191,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       setState(() {});
     });
     c.addListener(_onController);
+    c.onDoubleTapElement ??= _openEditor;
     c.onToolChanging = commitText;
   }
 
@@ -199,6 +203,8 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       old.controller.removeListener(_onController);
       if (old.controller.onToolChanging == commitText) old.controller.onToolChanging = null;
       widget.controller.addListener(_onController);
+      if (old.controller.onDoubleTapElement == _openEditor) old.controller.onDoubleTapElement = null;
+      widget.controller.onDoubleTapElement ??= _openEditor;
       widget.controller.onToolChanging = commitText;
     }
   }
@@ -207,6 +213,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   void dispose() {
     c.removeListener(_onController);
     if (c.onToolChanging == commitText) c.onToolChanging = null;
+    if (c.onDoubleTapElement == _openEditor) c.onDoubleTapElement = null;
     _hold?.cancel();
     _laserTicker.dispose();
     _text.dispose();
@@ -639,6 +646,19 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     _editingIsNew ? c.add(el) : c.replace(el);
   }
 
+  /// A double tap on a flowchart block edits its words; on a graph, opens the graph editor.
+  void _openEditor(BoardElement e) {
+    if (!mounted) return;
+    switch (e) {
+      case FlowNodeElement():
+        editFlowNodeText(context, c, e);
+      case GraphElement():
+        editGraph(context, c, e);
+      default:
+        break;
+    }
+  }
+
   // --- Build ----------------------------------------------------------------------------------
 
   MouseCursor get _cursor => switch (c.tool) {
@@ -722,6 +742,9 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
                   if (c.ruler.value.visible) Positioned.fill(child: RulerOverlay(controller: c, closeLabel: widget.labels.hideRuler, turnLabel: widget.labels.turn)),
                   if (c.protractor.value.visible)
                     Positioned.fill(child: ProtractorOverlay(controller: c, closeLabel: widget.labels.hideProtractor, turnLabel: widget.labels.turn)),
+                  // The geometry box and the flowchart's add-next buttons.
+                  Positioned.fill(child: GeoToolsOverlay(controller: c)),
+                  if (c.selection.length == 1) Positioned.fill(child: FlowPlusOverlay(controller: c)),
                   if (_editing != null) _textEditor(view),
                   if (widget.selectionActions != null) _selectionBar(context, view, box.biggest),
                 ],

@@ -3,8 +3,19 @@
 // as readable text (the board typesets them; the web view has no TeX engine).
 
 import { compileGraph } from './graph';
-import { isStroke, type BoardElement, type BoardBackground, type Box, type GraphElement, type LaserPoint, type NoteElement, type SheetElement } from './player';
-import { argbToCss, drawBackground, drawStroke, inkColorFor } from './render';
+import {
+  isStroke,
+  type BoardElement,
+  type BoardBackground,
+  type Box,
+  type FlowLinkElement,
+  type FlowNodeElement,
+  type GraphElement,
+  type LaserPoint,
+  type NoteElement,
+  type SheetElement,
+} from './player';
+import { argbToCss, drawBackground, drawStroke, inkColorFor, isDark } from './render';
 
 export const BOARD_FONT = "Inter, 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif";
 export const PRIMARY_FONT = "Andika, 'Comic Neue', " + BOARD_FONT;
@@ -188,10 +199,12 @@ function drawGraph(ctx: CanvasRenderingContext2D, g: GraphElement) {
   ctx.moveTo(...map(0, yMin));
   ctx.lineTo(...map(0, yMax));
   ctx.stroke();
-  const f = compileGraph(g.expression);
-  if (f) {
+  const curves = [...g.curves.map((c, i) => [c, CURVE_COLORS[i % CURVE_COLORS.length]] as const), [g.expression, argbToCss(g.color)] as const];
+  for (const [expression, color] of curves) {
+    const f = compileGraph(expression);
+    if (!f) continue;
     const span = yMax - yMin;
-    ctx.strokeStyle = argbToCss(g.color);
+    ctx.strokeStyle = color;
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.beginPath();
@@ -213,11 +226,166 @@ function drawGraph(ctx: CanvasRenderingContext2D, g: GraphElement) {
     }
     ctx.stroke();
   }
+  for (const p of g.points) {
+    const [px, py] = map(p.x, p.y);
+    ctx.fillStyle = argbToCss(g.color);
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fill();
+    if (p.label) {
+      ctx.font = `700 13px ${BOARD_FONT}`;
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(p.label, px + 6, py - 6);
+    }
+  }
   ctx.restore();
   ctx.fillStyle = argbToCss(g.color);
   ctx.font = `700 14px ${BOARD_FONT}`;
   ctx.textBaseline = 'top';
-  ctx.fillText(`y = ${g.expression}`, b.x + 10, b.y + 8);
+  ctx.fillText(g.title || `y = ${g.expression}`, b.x + 10, b.y + 8);
+}
+
+/** Colours of a graph's further curves, as on the board. */
+const CURVE_COLORS = ['#d7263d', '#2e9e5b', '#8e44ad', '#e67e22', '#1f77b4'];
+
+/** A block's outline, as `flowShapePath` on the board (curved sides drawn straight or round). */
+function flowPath(ctx: CanvasRenderingContext2D, shape: string, b: Box) {
+  const { x, y, w, h } = b;
+  const poly = (pts: number[]) => {
+    ctx.moveTo(pts[0], pts[1]);
+    for (let i = 2; i + 1 < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]);
+    ctx.closePath();
+  };
+  ctx.beginPath();
+  switch (shape) {
+    case 'decision':
+      poly([x + w / 2, y, x + w, y + h / 2, x + w / 2, y + h, x, y + h / 2]);
+      break;
+    case 'inputOutput': {
+      const k = Math.min(w * 0.18, h * 0.5);
+      poly([x + k, y, x + w, y, x + w - k, y + h, x, y + h]);
+      break;
+    }
+    case 'terminal':
+      roundRect(ctx, b, h / 2);
+      break;
+    case 'topic':
+      roundRect(ctx, b, Math.min(18, h / 2));
+      break;
+    case 'connector':
+      ctx.arc(x + w / 2, y + h / 2, Math.min(w, h) / 2, 0, Math.PI * 2);
+      break;
+    case 'database':
+    case 'dataStore':
+      ctx.ellipse(x + w / 2, y + h * 0.12, w / 2, h * 0.12, 0, 0, Math.PI * 2);
+      ctx.moveTo(x, y + h * 0.12);
+      ctx.lineTo(x, y + h * 0.88);
+      ctx.ellipse(x + w / 2, y + h * 0.88, w / 2, h * 0.12, 0, Math.PI, 0, true);
+      ctx.lineTo(x + w, y + h * 0.12);
+      break;
+    case 'loopLimit': {
+      const k = Math.min(w * 0.12, h * 0.4);
+      poly([x + k, y, x + w - k, y, x + w, y + k, x + w, y + h, x, y + h, x, y + k]);
+      break;
+    }
+    case 'manualInput':
+      poly([x, y + h * 0.3, x + w, y, x + w, y + h, x, y + h]);
+      break;
+    case 'merge':
+      poly([x, y, x + w, y, x + w / 2, y + h]);
+      break;
+    case 'display': {
+      const k = Math.min(w * 0.15, 26);
+      poly([x, y + h / 2, x + k, y, x + w - k, y, x + w, y + h / 2, x + w - k, y + h, x + k, y + h]);
+      break;
+    }
+    case 'document':
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w, y + h * 0.88);
+      ctx.bezierCurveTo(x + w * 0.75, y + h * 0.64, x + w * 0.25, y + h * 1.12, x, y + h * 0.88);
+      ctx.closePath();
+      break;
+    case 'comment':
+      ctx.moveTo(x + 16, y);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x, y + h);
+      ctx.lineTo(x + 16, y + h);
+      break;
+    default:
+      // process, subprocess, and any block a newer board adds.
+      ctx.rect(x, y, w, h);
+      if (shape === 'subprocess') {
+        ctx.moveTo(x + 14, y);
+        ctx.lineTo(x + 14, y + h);
+        ctx.moveTo(x + w - 14, y);
+        ctx.lineTo(x + w - 14, y + h);
+      }
+  }
+}
+
+function drawFlowNode(ctx: CanvasRenderingContext2D, n: FlowNodeElement, bg: BoardBackground) {
+  const ink = argbToCss(inkColorFor(n.color, bg));
+  flowPath(ctx, n.shape, n.box);
+  if (n.shape !== 'comment') {
+    ctx.fillStyle = n.fill !== undefined ? argbToCss(n.fill) : isDark(bg) ? '#22262c' : '#ffffff';
+    ctx.fill();
+  }
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  if (!n.text) return;
+  ctx.fillStyle = ink;
+  ctx.font = `600 ${n.fontSize}px ${BOARD_FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const inset = n.shape === 'decision' ? n.box.w * 0.22 : 10;
+  cellText(ctx, n.text, n.box.x + inset, n.box.y + n.box.h / 2, n.box.w - 2 * inset, 'center');
+}
+
+function drawFlowLink(ctx: CanvasRenderingContext2D, l: FlowLinkElement, bg: BoardBackground) {
+  const p = l.points;
+  const ink = argbToCss(inkColorFor(l.color, bg));
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(p[0], p[1]);
+  for (let i = 2; i + 1 < p.length; i += 2) ctx.lineTo(p[i], p[i + 1]);
+  ctx.stroke();
+  const n = p.length;
+  if (!l.curved && n >= 4) {
+    const tx = p[n - 2], ty = p[n - 1];
+    const dx = tx - p[n - 4], dy = ty - p[n - 3];
+    const d = Math.hypot(dx, dy);
+    if (d > 0) {
+      const ux = dx / d, uy = dy / d;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - ux * 14 - uy * 7, ty - uy * 14 + ux * 7);
+      ctx.lineTo(tx - ux * 14 + uy * 7, ty - uy * 14 - ux * 7);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  if (!l.label) return;
+  // The label on the middle of the longest leg, as on the board.
+  let best = 2;
+  for (let i = 4; i + 1 < n; i += 2) {
+    if (Math.hypot(p[i] - p[i - 2], p[i + 1] - p[i - 1]) > Math.hypot(p[best] - p[best - 2], p[best + 1] - p[best - 1])) best = i;
+  }
+  const mx = (p[best] + p[best - 2]) / 2, my = (p[best + 1] + p[best - 1]) / 2;
+  ctx.font = `700 16px ${BOARD_FONT}`;
+  const w = ctx.measureText(l.label).width + 12;
+  ctx.fillStyle = isDark(bg) ? '#22262c' : '#ffffff';
+  ctx.fillRect(mx - w / 2, my - 11, w, 22);
+  ctx.fillStyle = ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(l.label, mx, my);
 }
 
 const CHART_COLORS = ['#0057c2', '#d97706', '#0f8a5f', '#b4235a', '#6d4bc4', '#00838f', '#7a4f00'];
@@ -407,6 +575,12 @@ export function drawElement(ctx: CanvasRenderingContext2D, e: BoardElement, bg: 
       break;
     case 'sheet':
       drawSheet(ctx, e);
+      break;
+    case 'flow':
+      drawFlowNode(ctx, e, bg);
+      break;
+    case 'flowlink':
+      drawFlowLink(ctx, e, bg);
       break;
   }
   ctx.restore();

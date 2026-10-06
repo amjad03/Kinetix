@@ -4,7 +4,29 @@ import { compileGraph } from './graph';
 import { decodeElement, isStroke, LivePlayer, type ImageElement, type TextElement } from './player';
 
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-const text = (x: number, tx = 'Fractions') => ({ t: 'text', x, y: 10, tx, c: 0xff1b1f24, fs: 32, sw: 140, sh: 40 });
+describe('flowcharts and graph templates', () => {
+  it('reads flowchart blocks and arrows, and the extras of a template graph', () => {
+    expect(decodeElement({ t: 'flow', id: 'n1', r: [0, 0, 200, 120], k: 'decision', tx: 'x > 0?', c: 0xff000000 })).toMatchObject({
+      kind: 'flow',
+      shape: 'decision',
+      text: 'x > 0?',
+      box: { x: 0, y: 0, w: 200, h: 120 },
+    });
+    expect(decodeElement({ t: 'flowlink', fr: 'a', to: 'b', sd: [2, 0], l: 'Yes', c: 0xff000000, p: [0, 0, 0, 40, 100, 40] })).toMatchObject({
+      kind: 'flowlink',
+      label: 'Yes',
+      points: [0, 0, 0, 40, 100, 40],
+      curved: false,
+    });
+    expect(decodeElement({ t: 'flowlink', fr: 'a', to: 'b', p: [1] })).toBeNull();
+    const g = decodeElement({ t: 'graph', r: [0, 0, 400, 300], e: '(10) - (1)*x', x: ['(2) + (1)*x'], pt: [[4, 6, 'E']], ti: 'Demand and supply', c: 0xff0000ff, v: [0, 10, 0, 12] });
+    expect(g).toMatchObject({ kind: 'graph', curves: ['(2) + (1)*x'], points: [{ x: 4, y: 6, label: 'E' }], title: 'Demand and supply' });
+    expect(compileGraph('(10) - (1)*x')!(4)).toBe(6);
+    expect(compileGraph('(2) + (1)*x')!(4)).toBe(6);
+  });
+});
+
+const text = (x: number, tx = 'Fractions') =>({ t: 'text', x, y: 10, tx, c: 0xff1b1f24, fs: 32, sw: 140, sh: 40 });
 
 describe('decodeElement (board format v2)', () => {
   it('reads every kind the board writes', () => {
