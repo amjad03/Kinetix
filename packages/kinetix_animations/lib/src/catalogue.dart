@@ -1,8 +1,10 @@
 import 'anims/cells.dart';
+import 'anims/chemistry.dart';
 import 'anims/cycles.dart';
 import 'anims/earth.dart';
 import 'anims/life_processes.dart';
 import 'anims/photosynthesis.dart';
+import 'anims/physics.dart';
 import 'model.dart';
 
 /// Every animation, in the order the panel lists them.
@@ -27,6 +29,13 @@ final List<KxAnimation> animationCatalogue = List.unmodifiable(<KxAnimation>[
   dayNightSeasons,
   moonPhases,
   eclipses,
+  circuit,
+  generator,
+  waves,
+  refraction,
+  statesOfMatter,
+  atomicStructure,
+  electrolysis,
 ]);
 
 /// The animation with [id], if any.
