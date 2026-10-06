@@ -12,6 +12,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { procedural } from './procedural.js';
+import { createSceneRuntime } from './scenes/runtime.js';
+import { cloneMaterial } from './scenes/kit.js';
 
 const params = new URLSearchParams(location.search);
 const state = {
@@ -39,6 +41,8 @@ function send(msg) {
   if (window.KX && window.KX.postMessage) window.KX.postMessage(text);
   else if (window.chrome && window.chrome.webview) window.chrome.webview.postMessage(text);
   else if (window.parent !== window) window.parent.postMessage({ kx: text }, '*');
+  // Opened on its own in a browser (checking a scene): errors go to the console.
+  else if (msg.event === 'error') console.error(`kx: ${msg.message} ${msg.where || ''} ${msg.stack || ''}`);
 }
 
 window.addEventListener('error', (e) => send({ event: 'error', message: String(e.message || e), where: `${e.filename || ''}:${e.lineno || ''}` }));
@@ -81,6 +85,11 @@ scene.add(sky);
 const rim = new THREE.DirectionalLight(0xbfd4ff, 0.9);
 rim.position.set(-1.5, 0.8, -2);
 scene.add(rim);
+// A fill light from the other side; only scenes turn it on.
+const fill = new THREE.DirectionalLight(0xcfe0ff, 0);
+fill.position.set(-4, 1.5, 2.5);
+scene.add(fill);
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 /**
  * Space models are lit by their Sun: a light where the Sun is and very
@@ -152,6 +161,7 @@ function resize() {
   renderer.setSize(w, h, false);
   camera.aspect = w / Math.max(1, h);
   camera.updateProjectionMatrix();
+  if (sceneRt?.active) sceneRt.frame(w, h);
   overlay.setAttribute('viewBox', `0 0 ${w} ${h}`);
   drawInk();
 }
@@ -166,7 +176,10 @@ function shouldShow(p) {
 }
 
 function applyVisibility() {
-  for (const p of parts.values()) p.group.visible = shouldShow(p);
+  for (const p of parts.values()) {
+    if (p.scene) for (const i of p.instances) i.wrapper.visible = shouldShow(p);
+    else p.group.visible = shouldShow(p);
+  }
 }
 
 // ------------------------------------------------------------------ labels
@@ -175,8 +188,14 @@ const overlay = document.getElementById('lines');
 const labelLayer = document.getElementById('labels');
 const name = (p) => (p.name && (p.name[state.lang] || p.name.en)) || p.id;
 
+/** Whether [p] is on screen: its own switch and, for a scene's part, everything above it. */
+function isShown(p) {
+  if (!p.scene) return p.group.visible;
+  return p.instances.some(instanceShown);
+}
+
 function visibleParts() {
-  return [...parts.values()].filter((p) => p.group.visible);
+  return [...parts.values()].filter(isShown);
 }
 
 /** The label point of [p] on the side facing the camera. */
@@ -192,6 +211,7 @@ function cutAnchor(p) {
 }
 
 function anchorOf(p) {
+  if (p.anchorFn) return p.anchorFn();
   const fixed = cutAnchor(p);
   if (fixed) return fixed;
   const list = p.info.anchors;
@@ -252,11 +272,18 @@ function layoutLabels() {
   let shown = [];
   // All labels: the main parts, plus a minor one if it is the one picked.
   if (state.labels === 'all') shown = visibleParts().filter((p) => (!p.info.minor || p.info.id === state.picked || state.shown.has(p.info.id)) && cutAnchor(p) !== null);
-  else if (state.labels === 'picked' && state.picked && parts.get(state.picked)?.group.visible) shown = [parts.get(state.picked)];
+  else if (state.labels === 'picked' && state.picked && parts.get(state.picked) && isShown(parts.get(state.picked))) shown = [parts.get(state.picked)];
+  // A scene names the parts its step is about.
+  if (sceneRt?.active && state.labels !== 'none') {
+    for (const id of sceneRt.labelParts()) {
+      const p = parts.get(id);
+      if (p && isShown(p) && !shown.includes(p)) shown.push(p);
+    }
+  }
   // The part under the laser is named whatever the label setting.
   const lit = laser.part && parts.get(laser.part);
-  if (lit && lit.group.visible && !shown.includes(lit)) shown.push(lit);
-  const o = new THREE.Vector3(0, 0, 0).project(camera);
+  if (lit && isShown(lit) && !shown.includes(lit)) shown.push(lit);
+  const o = (sceneRt?.active ? controls.target.clone() : new THREE.Vector3(0, 0, 0)).project(camera);
   const centre = { x: (o.x * 0.5 + 0.5) * w, y: (-o.y * 0.5 + 0.5) * h };
   const now = performance.now();
   const items = shown.map((p) => {
@@ -507,6 +534,16 @@ function buildCaps() {
   if (capsBuilt) return;
   capsBuilt = true;
   const all = [...parts.values()];
+  if (manifest?.kind === 'scene') {
+    // A scene's closed parts that its script marks (a heart's chambers, the blood in them).
+    for (const p of all) {
+      if (!p.info.cap || !p.object?.isMesh) continue;
+      const c = new THREE.Color(p.info.inside || p.info.color);
+      if (!p.info.inside) c.multiplyScalar(0.72);
+      addCapSet([p], c);
+    }
+    return;
+  }
   if (manifest.caps === 'flat') {
     addCapSet(all, new THREE.Color(0xf2b33d));
     return;
@@ -541,7 +578,7 @@ function placeCaps() {
   }
   const faded = state.anim && (state.anim.kind === 'flow' || state.anim.kind === 'tour');
   for (const set of capSets) {
-    const shown = set.parts.some((p) => p.group.visible);
+    const shown = set.parts.some((p) => (p.scene ? isShown(p) : p.group.visible));
     for (const it of set.items) {
       const on = !!state.slice && !faded && shown && (it.j === 0 || two);
       it.cap.visible = on;
@@ -597,6 +634,7 @@ function heading() {
 }
 
 function view(dir, instant = false) {
+  if (sceneRt?.active) return sceneRt.viewFrom(dir);
   const d = new THREE.Vector3(...dir).normalize();
   const e = extentFrom(d);
   const tan = Math.tan((camera.fov * Math.PI) / 360);
@@ -618,7 +656,7 @@ function view(dir, instant = false) {
 // ------------------------------------------------------------------ interaction
 
 function pickables() {
-  return visibleParts().map((p) => p.front);
+  return visibleParts().flatMap((p) => p.meshes || [p.front]);
 }
 
 /** A hit counts only on the kept side of the cut. */
@@ -628,6 +666,7 @@ let down = null;
 renderer.domElement.addEventListener('pointerdown', (e) => {
   down = { x: e.clientX, y: e.clientY, t: performance.now() };
   stopAutoRotate();
+  sceneRt?.touched();
 });
 renderer.domElement.addEventListener('pointerup', (e) => {
   if (!down) return;
@@ -654,6 +693,8 @@ function glowFor(p) {
 }
 
 function setGlow(p, amount) {
+  // A scene's parts glow through their materials' highlight, set each frame.
+  if (p.scene) return;
   const m = p.front.material;
   if (!m.emissive) return;
   // A part that gives light (the Sun, lava) always glows at least this much.
@@ -722,6 +763,7 @@ function applyPlanes(a, b, opt = {}) {
     state.slice = { normal: cut.normal.clone(), offset: -cut.constant, planes: b ? 2 : 1, wedge: !!b && !opt.union, slab: !!b && !!opt.union, anchors: opt.anchors || null };
   }
   if (state.slice) buildCaps();
+  if (manifest?.kind === 'scene') sceneSides(!!state.slice);
   placeSlack();
   planeHint.show();
   placeCaps();
@@ -779,30 +821,33 @@ function setCut(c) {
   state.cut = { ...c };
   const axis = AXES[c.axis] ? c.axis : 'z';
   const a = AXES[axis];
-  const size = manifest?.size || modelSize;
+  // A scene is cut through what the camera is looking at, at the size of the view.
+  const scened = manifest?.kind === 'scene';
+  const size = scened ? modelSize : manifest?.size || modelSize;
+  const c0 = scened ? controls.target.clone() : new THREE.Vector3();
   if (mode === 'half') {
     const n = a.clone().multiplyScalar(c.flip ? 1 : -1);
-    applyPlanes({ n, q: a.clone().multiplyScalar((c.at || 0) * size) });
+    applyPlanes({ n, q: a.clone().multiplyScalar((c.at || 0) * size).add(c0) });
   } else if (mode === 'wedge') {
     const angle = Math.max(30, Math.min(180, c.angle ?? 90));
     if (angle >= 179.5) {
-      applyPlanes({ n: a.clone().negate(), q: new THREE.Vector3() });
+      applyPlanes({ n: a.clone().negate(), q: c0.clone() });
     } else {
       const [u, v] = ACROSS[axis].map((k) => AXES[k]);
       const mid = ((45 + (c.turn || 0)) * Math.PI) / 180;
       const half = (angle * Math.PI) / 360;
       // The normal of an edge at angle t, turned a quarter towards v.
       const perp = (t) => u.clone().multiplyScalar(-Math.sin(t)).addScaledVector(v, Math.cos(t));
-      const o = new THREE.Vector3();
+      const o = c0.clone();
       applyPlanes({ n: perp(mid + half), q: o }, { n: perp(mid - half).negate(), q: o });
     }
   } else if (mode === 'slab') {
     const t = Math.max(0.01, Math.min(1, c.thickness ?? 0.2)) * size;
-    const centre = a.clone().multiplyScalar((c.at || 0) * size);
+    const centre = a.clone().multiplyScalar((c.at || 0) * size).add(c0);
     applyPlanes({ n: a.clone(), q: centre.clone().addScaledVector(a, -t / 2) }, { n: a.clone().negate(), q: centre.clone().addScaledVector(a, t / 2) }, { union: true });
   } else if (mode === 'depth') {
     const d = Math.max(0, Math.min(0.98, c.depth ?? 0.5));
-    const [lo, hi] = reachAlong(axis);
+    const [lo, hi] = scened ? [c0[axis] - size / 2, c0[axis] + size / 2] : reachAlong(axis);
     const pad = (hi - lo) * 0.002;
     // From the front (the + side) inwards, or from the back with flip.
     const at = c.flip ? lo - pad + d * (hi - lo + 2 * pad) : hi + pad - d * (hi - lo + 2 * pad);
@@ -836,6 +881,10 @@ function tickSweep(now) {
 
 /** How far a part reaches from the middle of the model (sampled). */
 function reachOf(p) {
+  if (p.scene) {
+    const box = new THREE.Box3().setFromObject(p.group);
+    return box.isEmpty() ? 0 : box.distanceToPoint(controls.target) + box.getSize(new THREE.Vector3()).length() / 2;
+  }
   const pos = p.front.geometry.attributes.position;
   const v = new THREE.Vector3();
   const step = Math.max(1, Math.floor(pos.count / 5000));
@@ -902,6 +951,7 @@ const planeHint = (() => {
       const a = Math.max(0, Math.min(1, (until - now) / 500));
       mat.opacity = 0;
       edge.material.opacity = 0.8 * a;
+      mesh.visible = a > 0;
     },
   };
 })();
@@ -1193,7 +1243,7 @@ const activePlanes = () => (!state.slice ? [] : state.slice.planes === 2 ? [cut,
 function surfaceAt(x, y) {
   const rect = renderer.domElement.getBoundingClientRect();
   raycaster.setFromCamera(new THREE.Vector2((x / rect.width) * 2 - 1, -(y / rect.height) * 2 + 1), camera);
-  const objects = visibleParts().flatMap((p) => [p.front, p.back]);
+  const objects = visibleParts().flatMap((p) => p.meshes || [p.front, p.back]);
   const h = raycaster.intersectObjects(objects, false).filter(visibleHit)[0];
   if (!h) return null;
   const part = h.object.userData.part;
@@ -1347,7 +1397,7 @@ function pinPlaces(now) {
   const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
   for (const n of notes.pins) {
     const p = parts.get(n.part);
-    if (!p || !p.group.visible) continue;
+    if (!p || !isShown(p)) continue;
     const world = p.group.localToWorld(new THREE.Vector3(...n.at));
     if (!kept(world, modelSize * 0.003)) continue;
     const q = world.clone().project(camera);
@@ -1504,6 +1554,163 @@ function annotate(c) {
   }
 }
 
+// ------------------------------------------------------------------ scenes
+
+// A narrated process scene (src/scenes): its parts join `parts` like a
+// model's, so picking, labels, the laser, cuts and notes all work on it.
+let sceneRt = null;
+
+async function loadScene(id) {
+  sceneRt = createSceneRuntime({
+    scene, root, camera, controls, renderer, send, parts, planes, pmrem,
+    lights: { key, fill, rim, sky },
+    lang: () => state.lang,
+    glowFor,
+    labelsChanged: () => (lastLabels = 0),
+    setPixelRatio: (r) => {
+      renderer.setPixelRatio(r);
+      resize();
+    },
+    // The size of what the camera frames, for cuts, notes and labels.
+    focus: (pose) => {
+      modelSize = Math.max(1e-3, pose.pos.distanceTo(pose.target) * 0.7);
+      placeSlack();
+    },
+    registerPart: registerScenePart,
+    // A cut the scene's step asks for (a heart opened down the middle): {normal, point}, or null.
+    sceneCut: (c) => {
+      state.cut = null;
+      state.sweep = null;
+      clearPeel();
+      applyPlanes(c ? { n: new THREE.Vector3(...c.normal), q: new THREE.Vector3(...(c.point || [0, 0, 0])) } : null);
+    },
+    prepare: () => {},
+    loadModel: loadModelParts,
+  });
+  const script = await sceneRt.load(id, state.lang);
+  manifest = { kind: 'scene', id, size: modelSize, parts: script.parts.filter((p) => parts.has(p.id)).map((p) => parts.get(p.id).info), views: [], peel: script.peel };
+  resize();
+  send({ event: 'loaded', model: id, scene: id, parts: manifest.parts.map((p) => p.id), steps: script.steps.length });
+  // For render checks in a browser.
+  window.__kxSteps = script.steps.length;
+  window.__kxDebug = () => ({ triangles: renderer.info.render.triangles, calls: renderer.info.render.calls, ...sceneRt.state() });
+}
+
+/** Makes [object] part [info.id] of the scene: a group round it (the teacher can hide it) and its meshes pickable. */
+function registerScenePart(info, object, { anchor } = {}) {
+  const wrapper = new THREE.Group();
+  wrapper.name = info.id;
+  const parent = object.parent;
+  if (!parent) throw new Error(`scene part ${info.id} must be added to the scene first`);
+  parent.add(wrapper);
+  wrapper.add(object);
+  const meshes = [];
+  const mats = new Set();
+  object.traverse((o) => {
+    // Atoms drawn as sprites light up with their part too.
+    if (o.isPoints && o.material.userData.kx) mats.add(o.material);
+    if (!o.isMesh || o.userData.decor) return;
+    o.userData.part = info.id;
+    meshes.push(o);
+    // Each part lights up alone: a material another part already uses is copied.
+    const ms = Array.isArray(o.material) ? o.material : [o.material];
+    const own = ms.map((m) => {
+      if (m.userData.kxOwner && m.userData.kxOwner !== info.id) {
+        const c = cloneMaterial(m);
+        c.userData.kxOwner = info.id;
+        return c;
+      }
+      m.userData.kxOwner = info.id;
+      return m;
+    });
+    o.material = Array.isArray(o.material) ? own : own[0];
+    own.forEach((m) => mats.add(m));
+  });
+  const box = new THREE.Box3().setFromObject(object);
+  const centre = box.isEmpty() ? new THREE.Vector3() : box.getCenter(new THREE.Vector3());
+  // The anchor is kept in the wrapper's space (its parent's).
+  wrapper.updateWorldMatrix(true, false);
+  const local = wrapper.worldToLocal(centre.clone());
+  const fixed = Array.isArray(anchor) ? new THREE.Vector3(...anchor) : null;
+  const instance = {
+    wrapper,
+    object,
+    anchorFn: typeof anchor === 'function' ? anchor : fixed ? () => fixed.clone() : () => local.clone(),
+  };
+  // The same part can appear in several stages (CO₂ on the leaf and in the
+  // stroma): one part, an instance in each; the one on screen is used.
+  let p = parts.get(info.id);
+  if (!p?.scene) {
+    p = {
+      info: { ...info, anchor: (fixed || local).toArray(), centroid: (fixed || local).toArray() },
+      instances: [],
+      front: meshes[0] || new THREE.Mesh(),
+      back: new THREE.Object3D(),
+      meshes: [],
+      materials: [],
+      scene: true,
+      base: centre,
+      restColor: new THREE.Color(info.color || '#888888'),
+      get current() {
+        return this.instances.find(instanceShown) || this.instances[0];
+      },
+      get group() {
+        return this.current.wrapper;
+      },
+      get object() {
+        return this.current.object;
+      },
+      get anchorFn() {
+        return this.current.anchorFn;
+      },
+    };
+    parts.set(info.id, p);
+  }
+  p.instances.push(instance);
+  p.meshes.push(...meshes);
+  for (const m of mats) if (!p.materials.includes(m)) p.materials.push(m);
+  return wrapper;
+}
+
+/** Whether one instance of a scene's part is on screen (it and everything above it). */
+function instanceShown(inst) {
+  if (!inst.object.visible) return false;
+  for (let o = inst.wrapper; o; o = o.parent) if (!o.visible) return false;
+  return true;
+}
+
+/** While a scene is cut, its surfaces show their insides (the cut face of a hollow cell). */
+function sceneSides(cut) {
+  root.traverse((o) => {
+    if (!o.material || o.userData.glowPoints) return;
+    for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+      const side = cut ? THREE.DoubleSide : m.userData.side0 ?? THREE.FrontSide;
+      if (m.side !== side) {
+        m.side = side;
+        m.needsUpdate = true;
+      }
+    }
+  });
+}
+
+/** A model's geometry (heart, lungs…) for a scene to build with: {manifest, geometries: {partId: BufferGeometry}}. */
+async function loadModelParts(id) {
+  const base = params.get('base') || 'models/';
+  const m = await (await fetch(`${base}${id}.json`)).json();
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  const gltf = await loader.loadAsync(`${base}${m.file}`);
+  gltf.scene.updateMatrixWorld(true);
+  const geometries = {};
+  gltf.scene.traverse((o) => {
+    if (o.isMesh) {
+      const g = o.geometry.clone();
+      g.applyMatrix4(o.matrixWorld);
+      geometries[o.name] = g;
+    }
+  });
+  return { manifest: m, geometries };
+}
+
 // ------------------------------------------------------------------ snapshot
 
 /** The view as the students see it, labels drawn in, as a PNG data URL. */
@@ -1537,6 +1744,7 @@ function snapshot(maxWidth = 1600) {
   g.drawImage(full, 0, 0, c.width, c.height);
   drawNotes2d(g, c.width / src.clientWidth, c.width);
   drawLabels2d(g, c.width / src.clientWidth, c.width);
+  if (sceneRt?.active) sceneRt.drawCaption2d(g, c.width / src.clientWidth, c.width, c.height);
   return c.toDataURL('image/png');
 }
 /** The labels, drawn into a picture [s] times the size of the screen. */
@@ -1583,13 +1791,13 @@ function mirrorTick(now) {
     state.labels, state.picked, state.explode, state.variant, state.lang,
     state.slice ? [...cut.normal.toArray(), cut.constant, ...cut2.normal.toArray(), cut2.constant, unionClip].join() : '',
     [...state.peeled].join(), notes.version, notes.draft?.pts.length ?? 0,
-    [...state.hidden].join(), [...state.shown].join(), renderer.domElement.width, renderer.domElement.height,
+    [...state.hidden].join(), [...state.shown].join(), renderer.domElement.width, renderer.domElement.height, sceneRt?.active ? sceneRt.key : '',
   ].map((v) => (typeof v === 'number' ? v.toFixed(4) : String(v))).join('|');
   if (key !== mirror.key) {
     mirror.key = key;
     mirror.until = now + 1500;
   }
-  if (!state.anim && !state.autoRotate && !laser.trail.length && now > mirror.until) return;
+  if (!state.anim && !state.autoRotate && !laser.trail.length && !sceneRt?.playing && now > mirror.until) return;
   mirror.last = now;
   send({ event: 'frame', jpg: mirrorFrame(mirror.maxWidth) });
 }
@@ -1617,6 +1825,7 @@ function mirrorFrame(maxWidth) {
   drawNotes2d(g, w / renderer.domElement.clientWidth, w);
   drawLabels2d(g, w / renderer.domElement.clientWidth, w);
   drawLaser2d(g, w / renderer.domElement.clientWidth, performance.now());
+  if (sceneRt?.active) sceneRt.drawCaption2d(g, w / renderer.domElement.clientWidth, w, h);
   return c.toDataURL('image/jpeg', 0.72);
 }
 
@@ -1624,6 +1833,7 @@ function mirrorFrame(maxWidth) {
 
 let lastLabels = 0;
 function render(now) {
+  if (sceneRt?.active) return renderScene(now);
   if (flight) {
     const u = Math.min(1, (now - flight.t0) / 700);
     const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
@@ -1659,6 +1869,21 @@ function render(now) {
   tickAnimation(now);
   tickSweep(now);
   placeCaps();
+  laserTick(now);
+  planeHint.tick(now);
+  controls.update();
+  renderer.render(scene, camera);
+  if (now - lastLabels > 90) {
+    lastLabels = now;
+    drawLabels();
+  }
+  drawPins(now);
+}
+
+/** A frame of a scene: its timeline moves on and poses everything. */
+function renderScene(now) {
+  sceneRt.tick(now);
+  tickSweep(now);
   laserTick(now);
   planeHint.tick(now);
   controls.update();
@@ -1724,11 +1949,12 @@ const commands = {
   orbit: (c) => {
     flight = null;
     stopAutoRotate();
+    sceneRt?.touched();
     const off = camera.position.clone().sub(controls.target);
     const s = new THREE.Spherical().setFromVector3(off);
     s.theta -= c.dx || 0;
     s.phi = Math.max(0.05, Math.min(Math.PI - 0.05, s.phi - (c.dy || 0)));
-    if (c.scale) s.radius = Math.max(modelSize * 0.3, Math.min(modelSize * 30, s.radius / c.scale));
+    if (c.scale) s.radius = Math.max(modelSize * 0.1, Math.min(modelSize * 30, s.radius / c.scale));
     off.setFromSpherical(s);
     camera.position.copy(controls.target).add(off);
     controls.update();
@@ -1742,7 +1968,8 @@ const commands = {
     applyExplode();
     setSlice(null);
     stopAnimation();
-    view(manifest.views?.[0]?.dir || [0, 0, 1]);
+    if (sceneRt?.active) sceneRt.reset();
+    else view(manifest.views?.[0]?.dir || [0, 0, 1]);
   },
   explode: (c) => {
     state.explode = Math.max(0, Math.min(1, c.amount));
@@ -1775,6 +2002,16 @@ const commands = {
     controls.autoRotateSpeed = 1.2;
   },
   snapshot: (c) => send({ event: 'snapshot', png: snapshot(c.maxWidth || 1600) }),
+  // A narrated scene's timeline: op play | pause | toggle | next | prev | step | seek | speed | replay | captions.
+  scene: (c) => sceneRt?.command(c),
+  // Drawing quality: 'high', or 'low' for weak graphics chips (fewer pixels and particles).
+  quality: (c) => {
+    if (sceneRt?.active) sceneRt.applyQuality(c.level);
+    else {
+      renderer.setPixelRatio(c.level === 'low' ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+      resize();
+    }
+  },
   // Pictures of the view for the students' screen.
   mirror: (c) => {
     mirror.on = !!c.on;
@@ -1806,6 +2043,7 @@ const commands = {
       caps: capSets.reduce((n, s) => n + s.items.filter((i) => i.cap.visible).length, 0),
       explode: state.explode,
       animation: state.anim?.id ?? null,
+      scene: sceneRt?.active ? sceneRt.state() : null,
       lost: contextLost,
       canvas: [renderer.domElement.width, renderer.domElement.height],
       pixelRatio: renderer.getPixelRatio(),
@@ -1826,6 +2064,7 @@ const commands = {
       cut: state.cut?.mode ?? (state.slice ? 'slice' : null),
       peeled: [...state.peeled],
       notes: { pins: notes.pins.length, strokes: notes.strokes.length, ink: notes.ink.length },
+      scene: sceneRt?.active ? sceneRt.state() : null,
     }),
 };
 
@@ -1848,4 +2087,6 @@ resize();
 requestAnimationFrame(loop);
 send({ event: 'ready' });
 const model = params.get('model');
-if (model) load(model).catch((e) => send({ event: 'error', message: `Could not open ${model}: ${e?.message || e}` }));
+const sceneId = params.get('scene');
+if (sceneId) loadScene(sceneId).catch((e) => send({ event: "error", message: `Could not open scene ${sceneId}: ${e?.message || e}`, stack: String(e?.stack || "").slice(0, 600) }));
+else if (model) load(model).catch((e) => send({ event: 'error', message: `Could not open ${model}: ${e?.message || e}` }));

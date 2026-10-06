@@ -69,6 +69,10 @@ class AnimFrame {
 
 typedef AnimPainterBuilder = AnimPainter Function(AnimFrame frame);
 
+/// How an animation is shown: drawn in 2D by its [KxAnimation.painter], or as a narrated 3D
+/// scene in the 3D viewer (packages/kinetix_3d, `Model3dViewer(sceneId: ...)`).
+enum AnimKind { painted, scene3d }
+
 /// One animation in the catalogue. Ids are stable: lessons may link to them.
 @immutable
 class KxAnimation {
@@ -84,7 +88,9 @@ class KxAnimation {
     this.seconds = 16,
     this.thumbT = 0.5,
     this.alsoSubjects = const ['Science'],
-  });
+    this.kind = AnimKind.painted,
+    this.sceneId,
+  }) : assert(kind == AnimKind.painted || sceneId != null, 'a 3D scene needs its sceneId');
 
   final String id;
   final Tr title;
@@ -111,6 +117,33 @@ class KxAnimation {
 
   /// Other subject names a board may use for this one (e.g. 'Science', 'Geography').
   final List<String> alsoSubjects;
+
+  /// Drawn in 2D, or a narrated 3D scene ([sceneId]) that the panel opens in the 3D viewer
+  /// when the app gives it a [SceneOpener]; without one the 2D drawing plays.
+  final AnimKind kind;
+
+  /// The 3D scene (a kinetix_3d ProcessScene id) for [AnimKind.scene3d].
+  final String? sceneId;
+
+  bool get isScene3d => kind == AnimKind.scene3d;
+
+  /// This animation shown as the narrated 3D scene [sceneId]; everything else (title,
+  /// filters, the 2D drawing as a fallback) stays.
+  KxAnimation asScene(String sceneId) => KxAnimation(
+        id: id,
+        title: title,
+        subject: subject,
+        topic: topic,
+        levels: levels,
+        keywords: keywords,
+        steps: steps,
+        painter: painter,
+        seconds: seconds,
+        thumbT: thumbT,
+        alsoSubjects: alsoSubjects,
+        kind: AnimKind.scene3d,
+        sceneId: sceneId,
+      );
 
   bool matchesSubject(String s) {
     final q = s.trim().toLowerCase();

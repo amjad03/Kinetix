@@ -11,6 +11,7 @@ import 'viewer/annotations.dart';
 import 'viewer/catalogue_info.dart';
 import 'viewer/engine.dart';
 import 'viewer/manifest.dart';
+import 'viewer/scenes.dart';
 import 'viewer/snapshot.dart';
 import 'viewer/strings.dart';
 import 'viewer/viewer.dart';
@@ -167,6 +168,20 @@ class _ModelViewState extends State<ModelView> {
 
   @override
   Widget build(BuildContext context) {
+    // A narrated scene ("scene:<id>", as its pictures on the board link back to it).
+    final scene = ProcessScene.byId(Viewer3dEngine.sceneOf(widget.id));
+    if (scene != null) {
+      return Model3dViewer(
+        key: ValueKey(widget.id),
+        sceneId: scene.id,
+        lang: widget.lang,
+        onSnapshot: widget.onSnapshot,
+        mirror: widget.mirror,
+        showTitle: widget.showTitle,
+        annotations: widget.annotations,
+        onAnnotationsChanged: widget.onAnnotationsChanged,
+      );
+    }
     final entry = ModelCatalogue.byId(widget.id);
     if (entry == null) {
       return KxEmptyState(icon: Icons.view_in_ar_outlined, message: Viewer3dStrings(widget.lang ?? viewerLangOf(context)).unknownModel(widget.id));

@@ -15,6 +15,14 @@ enum CutMode { off, half, wedge, slab, depth, peel }
 /// The model's axes: x left to right, y bottom to top, z back to front.
 enum CutAxis { x, y, z }
 
+/// What a narrated scene's timeline does: play, pause, toggle between them, go to the next or
+/// the previous step, or start again from the beginning and play.
+enum SceneOp { play, pause, toggle, next, prev, replay }
+
+/// How much drawing the viewer does: everything, or less for weak graphics chips (one pixel
+/// per screen pixel, fewer particles).
+enum ViewerQuality { high, low }
+
 /// The commands the app sends the viewer page (tool/models/src/viewer.js runs them with
 /// `kx.cmd({...})`). Each is a JSON object with a `cmd` name; this is the one place they
 /// are spelt, so the app and the tests agree with the page.
@@ -143,13 +151,54 @@ abstract final class ViewerCommands {
   static Map<String, dynamic> partAt(Offset at) => {'cmd': 'partAt', 'x': at.dx, 'y': at.dy};
   static Map<String, dynamic> state() => {'cmd': 'state'};
 
+  /// Plays, pauses or steps a narrated scene (answered by `scene` events, [SceneProgress]).
+  static Map<String, dynamic> scene(SceneOp op) => {'cmd': 'scene', 'op': op.name};
+
+  /// Goes to the start of step [step] of the scene.
+  static Map<String, dynamic> sceneStep(int step) => {'cmd': 'scene', 'op': 'step', 'step': math.max(0, step)};
+
+  /// Moves the scene's timeline to [seconds] from the start (scrubbing).
+  static Map<String, dynamic> sceneSeek(double seconds) => {'cmd': 'scene', 'op': 'seek', 'time': (math.max(0, seconds) * 100).roundToDouble() / 100};
+
+  /// How fast the scene plays: 0.25 to 3 times.
+  static Map<String, dynamic> sceneSpeed(double speed) => {'cmd': 'scene', 'op': 'speed', 'speed': speed.clamp(0.25, 3.0)};
+
+  /// The caption drawn in the page itself (the app shows its own; the page's is for browsers).
+  static Map<String, dynamic> sceneCaptions(bool on) => {'cmd': 'scene', 'op': 'captions', 'on': on};
+
+  static Map<String, dynamic> quality(ViewerQuality level) => {'cmd': 'quality', 'level': level.name};
+
   /// Every command name the page understands (kept in step with viewer.js by a test).
   static const names = {
     'lang', 'labels', 'pick', 'view', 'reset', 'explode', 'slice', 'cut', 'annotate', 'hide', 'variant', 'animate', 'step', 'autoRotate', 'snapshot',
-    'mirror', 'laser', 'orbit', 'partAt', 'frames', 'locate', 'debug', 'state',
+    'mirror', 'laser', 'orbit', 'partAt', 'frames', 'locate', 'debug', 'state', 'scene', 'quality',
   };
 
   static double _r(double v, [double lo = 0, double hi = 1]) => (v.clamp(lo, hi) * 10000).roundToDouble() / 10000;
+}
+
+/// Where a narrated scene's timeline is, as its `scene` events say.
+class SceneProgress {
+  const SceneProgress({required this.step, required this.time, required this.total, this.playing = false, this.speed = 1});
+
+  factory SceneProgress.fromJson(Map<String, dynamic> j) => SceneProgress(
+    step: (j['step'] as num?)?.toInt() ?? 0,
+    time: (j['time'] as num?)?.toDouble() ?? 0,
+    total: (j['total'] as num?)?.toDouble() ?? 0,
+    playing: j['playing'] == true,
+    speed: (j['speed'] as num?)?.toDouble() ?? 1,
+  );
+
+  /// The step showing (from 0).
+  final int step;
+
+  /// Seconds from the start, and the whole length (at 1× speed).
+  final double time, total;
+  final bool playing;
+  final double speed;
+
+  /// 0 at the start, 1 at the end.
+  double get fraction => total <= 0 ? 0 : (time / total).clamp(0.0, 1.0);
 }
 
 /// Something the viewer page said, decoded.
@@ -174,8 +223,11 @@ class ViewerEvent {
   final Map<String, dynamic> data;
 
   /// ready | loaded | pick | laser | snapshot | frame | animation | autoRotate | state | partAt |
-  /// cut | annotations | noteMissed | notePicked | error | restored
+  /// cut | annotations | noteMissed | notePicked | scene | error | restored
   String get type => data['event'] as String;
+
+  /// For scene: where the timeline is.
+  SceneProgress? get scene => type == 'scene' ? SceneProgress.fromJson(data) : null;
 
   /// For pick, laser, partAt: the part, or null for none.
   String? get part => data['part'] as String?;

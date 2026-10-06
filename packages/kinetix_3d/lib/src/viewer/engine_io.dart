@@ -66,8 +66,12 @@ class ViewerServer {
     await res.close();
   }
 
-  static Future<Uri> pageFor(String modelId, String lang) async =>
-      Uri.parse('${await start()}/index.html?model=${Uri.encodeComponent(modelId)}&lang=$lang');
+  /// The page for [modelId] (or a scene: [Viewer3dEngine.sceneTarget]) in [lang].
+  static Future<Uri> pageFor(String modelId, String lang) async {
+    final scene = Viewer3dEngine.sceneOf(modelId);
+    final what = scene != null ? 'scene=${Uri.encodeComponent(scene)}' : 'model=${Uri.encodeComponent(modelId)}';
+    return Uri.parse('${await start()}/index.html?$what&lang=$lang');
+  }
 }
 
 /// Android (and iOS): the system WebView through webview_flutter.

@@ -114,6 +114,17 @@ class Viewer3dStrings {
   String sliceSize(int degrees) => _t('sliceSize').replaceAll('{n}', '$degrees');
   String depthOf(int percent) => _t('depthOf').replaceAll('{n}', '$percent');
   String peeled(int n, int m) => _t('peeled').replaceAll('{n}', '$n').replaceAll('{m}', '$m');
+  String get play => _t('play');
+  String get pause => _t('pause');
+  String get replay => _t('replay');
+  String get speed => _t('speed');
+  String get readAloud => _t('readAloud');
+  String get lighterGraphics => _t('lighterGraphics');
+  String get lighterGraphicsHint => _t('lighterGraphicsHint');
+  String get tabSteps => _t('tabSteps');
+  String get previousStep => _t('previousStep');
+  String get nextStep => _t('nextStep');
+  String sceneStep(int n, int m) => _t('sceneStep').replaceAll('{n}', '$n').replaceAll('{m}', '$m');
 
   /// A subject's name (the catalogue's subjects are English words).
   String subject(String s) => words['subject$s']?[_i] ?? s;
@@ -224,6 +235,17 @@ class Viewer3dStrings {
     'sweep': ['Sweep through', 'आर-पार चलाएँ', 'ಆಚೆಯವರೆಗೆ ಸರಿಸಿ'],
     'peeled': ['{n} of {m} layers taken off', '{m} में से {n} परतें उतारीं', '{m} ರಲ್ಲಿ {n} ಪದರ ತೆಗೆದಿದೆ'],
     'onePeel': ['This model has only one layer.', 'इस मॉडल में केवल एक परत है।', 'ಈ ಮಾದರಿಯಲ್ಲಿ ಒಂದೇ ಪದರವಿದೆ.'],
+    'play': ['Play', 'चलाएँ', 'ಪ್ಲೇ ಮಾಡಿ'],
+    'pause': ['Pause', 'रोकें', 'ವಿರಾಮ'],
+    'replay': ['Play again', 'फिर से चलाएँ', 'ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಿ'],
+    'speed': ['Speed', 'गति', 'ವೇಗ'],
+    'readAloud': ['Read aloud', 'पढ़कर सुनाएँ', 'ಓದಿ ಹೇಳಿ'],
+    'lighterGraphics': ['Lighter graphics', 'हल्के ग्राफ़िक्स', 'ಹಗುರ ಗ್ರಾಫಿಕ್ಸ್'],
+    'lighterGraphicsHint': ['For slower panels: fewer pixels and particles.', 'धीमे पैनल के लिए: कम पिक्सेल और कण।', 'ನಿಧಾನ ಪ್ಯಾನೆಲ್‌ಗಳಿಗೆ: ಕಡಿಮೆ ಪಿಕ್ಸೆಲ್ ಮತ್ತು ಕಣಗಳು.'],
+    'tabSteps': ['Steps', 'चरण', 'ಹಂತಗಳು'],
+    'previousStep': ['Previous step', 'पिछला चरण', 'ಹಿಂದಿನ ಹಂತ'],
+    'nextStep': ['Next step', 'अगला चरण', 'ಮುಂದಿನ ಹಂತ'],
+    'sceneStep': ['Step {n} of {m}', 'चरण {n} / {m}', 'ಹಂತ {n} / {m}'],
     'subjectBiology': ['Biology', 'जीव विज्ञान', 'ಜೀವಶಾಸ್ತ್ರ'],
     'subjectPhysics': ['Physics', 'भौतिकी', 'ಭೌತಶಾಸ್ತ್ರ'],
     'subjectChemistry': ['Chemistry', 'रसायन विज्ञान', 'ರಸಾಯನಶಾಸ್ತ್ರ'],

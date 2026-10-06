@@ -606,6 +606,9 @@ class _BoardScreenState extends State<BoardScreen> {
     if (mounted) showBoardMessage(context, context.l10n.snapshotAdded);
   }
 
+  /// A narrated 3D scene's caption, read with the board's voices as its steps go by.
+  void _readSceneCaption(String text, String lang) => unawaited(speakOnce(text));
+
   /// The 3D models' notes of a board just opened (or none, for a fresh one).
   void _setModelNotes(Map<String, dynamic> json) {
     final old = _modelNotes;
@@ -1448,6 +1451,7 @@ class _BoardScreenState extends State<BoardScreen> {
       onSnapshot: _addModelSnapshot,
       annotations: _modelNotes,
       mirror: Model3dMirror(wanted: () => board.projector.wantsPictures, send: board.projector.send3d),
+      readAloud: _readSceneCaption,
       child: PanelHost(
         push: _pushInPanel,
         child: Focus(

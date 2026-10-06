@@ -26,6 +26,7 @@ export 'src/viewer/laser.dart';
 export 'src/viewer/library.dart';
 export 'src/viewer/manifest.dart';
 export 'src/viewer/protocol.dart';
+export 'src/viewer/scenes.dart';
 export 'src/viewer/snapshot.dart';
 export 'src/viewer/strings.dart';
 export 'src/viewer/viewer.dart';

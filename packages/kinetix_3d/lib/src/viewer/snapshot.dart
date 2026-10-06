@@ -33,11 +33,15 @@ class Model3dMirror {
   final void Function(Uint8List? jpg) send;
 }
 
-/// Lets an app give every 3D viewer below it somewhere to put snapshots ("Put on board")
-/// and a students' screen to mirror to, without passing them through each screen that
-/// opens a model. A viewer's own arguments win over the scope's.
+/// Reads [text] aloud in [lang] (en, hi or kn) with the app's voices: a narrated scene's
+/// captions as its steps go by.
+typedef Model3dReadAloud = void Function(String text, String lang);
+
+/// Lets an app give every 3D viewer below it somewhere to put snapshots ("Put on board"),
+/// a students' screen to mirror to and a voice to read with, without passing them through
+/// each screen that opens a model. A viewer's own arguments win over the scope's.
 class Model3dScope extends InheritedWidget {
-  const Model3dScope({super.key, this.onSnapshot, this.mirror, this.annotations, required super.child});
+  const Model3dScope({super.key, this.onSnapshot, this.mirror, this.annotations, this.readAloud, required super.child});
 
   final ValueChanged<Model3dSnapshot>? onSnapshot;
   final Model3dMirror? mirror;
@@ -45,8 +49,11 @@ class Model3dScope extends InheritedWidget {
   /// Where viewers below keep the notes written on each model, per lesson.
   final Model3dAnnotationStore? annotations;
 
+  /// The app's voice, for scenes' captions.
+  final Model3dReadAloud? readAloud;
+
   static Model3dScope? maybeOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<Model3dScope>();
 
   @override
-  bool updateShouldNotify(Model3dScope old) => old.onSnapshot != onSnapshot || old.mirror != mirror || old.annotations != annotations;
+  bool updateShouldNotify(Model3dScope old) => old.onSnapshot != onSnapshot || old.mirror != mirror || old.annotations != annotations || old.readAloud != readAloud;
 }

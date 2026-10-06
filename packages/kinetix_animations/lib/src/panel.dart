@@ -8,6 +8,20 @@ import 'model.dart';
 import 'player.dart';
 import 'strings.dart';
 
+/// How the app opens the narrated 3D scenes ([AnimKind.scene3d]) in the panel: the board
+/// gives its 3D viewer (packages/kinetix_3d). Without one, those animations play their 2D
+/// drawings.
+class SceneOpener {
+  const SceneOpener({required this.build, this.thumbnail});
+
+  /// The 3D scene [KxAnimation.sceneId] in [lang], filling the panel; [onBack] goes back to
+  /// the list.
+  final Widget Function(BuildContext context, KxAnimation animation, AnimLang lang, VoidCallback onBack) build;
+
+  /// The scene's picture for its thumbnail, if there is one (the 2D drawing otherwise).
+  final ImageProvider? Function(String sceneId)? thumbnail;
+}
+
 int _classNo(String level) => int.tryParse(level.replaceAll(RegExp(r'[^0-9]'), '')) ?? 99;
 
 /// The board's animations panel: Subject, Topic and Class dropdowns, a search, and thumbnails;
@@ -17,7 +31,7 @@ int _classNo(String level) => int.tryParse(level.replaceAll(RegExp(r'[^0-9]'), '
 /// catalogue does not name itself (e.g. 'Science', 'Geography') still filters by its aliases;
 /// a topic it does not know becomes the search when that finds something.
 class AnimationsPanel extends StatefulWidget {
-  const AnimationsPanel({super.key, this.subject, this.topic, this.onAddToBoard, this.lang, this.animations});
+  const AnimationsPanel({super.key, this.subject, this.topic, this.onAddToBoard, this.lang, this.animations, this.sceneOpener});
 
   final String? subject;
   final String? topic;
@@ -30,6 +44,9 @@ class AnimationsPanel extends StatefulWidget {
 
   /// The animations to offer (default: [animationCatalogue]).
   final List<KxAnimation>? animations;
+
+  /// Opens the narrated 3D scenes; without it they play their 2D drawings.
+  final SceneOpener? sceneOpener;
 
   @override
   State<AnimationsPanel> createState() => _AnimationsPanelState();
@@ -106,6 +123,10 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
   Widget build(BuildContext context) {
     final lang = widget.lang ?? AnimLang.of(context);
     final open = _open;
+    final opener = widget.sceneOpener;
+    if (open != null && open.isScene3d && opener != null) {
+      return KeyedSubtree(key: ValueKey('anim-scene-${open.id}'), child: opener.build(context, open, lang, () => setState(() => _open = null)));
+    }
     if (open != null) {
       return AnimationPlayer(
         key: ValueKey(open.id),
@@ -194,11 +215,7 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
                     child: InkWell(
                       onTap: () => setState(() => _open = a),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        Expanded(
-                          child: RepaintBoundary(
-                            child: CustomPaint(painter: a.painter(AnimFrame(a.thumbT, labels: false, lang: lang, thumbnail: true)), child: const SizedBox.expand()),
-                          ),
-                        ),
+                        Expanded(child: _thumb(a, lang, opener)),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(Kx.s12, Kx.s8, Kx.s12, Kx.s8),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -219,6 +236,28 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
       ),
     ]);
   }
+}
+
+/// A tile's picture: the 3D scene's still when it opens in 3D, else the 2D drawing.
+Widget _thumb(KxAnimation a, AnimLang lang, SceneOpener? opener) {
+  final drawn = RepaintBoundary(
+    child: CustomPaint(painter: a.painter(AnimFrame(a.thumbT, labels: false, lang: lang, thumbnail: true)), child: const SizedBox.expand()),
+  );
+  if (!a.isScene3d || opener == null) return drawn;
+  final image = opener.thumbnail?.call(a.sceneId!);
+  return Stack(fit: StackFit.expand, children: [
+    if (image != null) Image(image: image, fit: BoxFit.cover, errorBuilder: (_, _, _) => drawn) else drawn,
+    Positioned(
+      right: Kx.s8,
+      top: Kx.s8,
+      child: Container(
+        key: ValueKey('anim-3d-${a.id}'),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+        decoration: BoxDecoration(color: const Color(0xCC111418), borderRadius: BorderRadius.circular(6)),
+        child: const Text('3D', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+      ),
+    ),
+  ]);
 }
 
 /// A compact dropdown with an "All" choice (null).

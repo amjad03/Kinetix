@@ -9,7 +9,7 @@ await build({
   entryPoints: [join(here, 'src/viewer.js')],
   outfile: join(here, '../../assets/viewer3d/viewer.js'),
   bundle: true,
-  minify: true,
+  minify: !process.env.KX_DEV,
   format: 'iife',
   target: ['chrome80', 'safari14'],
   legalComments: 'none',

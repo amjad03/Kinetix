@@ -11,6 +11,7 @@ import 'engine.dart';
 import 'laser.dart';
 import 'manifest.dart';
 import 'protocol.dart';
+import 'scenes.dart';
 import 'snapshot.dart';
 import 'strings.dart';
 
@@ -44,11 +45,19 @@ class Model3dViewerController extends ChangeNotifier {
 /// and put a picture of it on the board. Fills the space it is given: the controls go
 /// beside the model when there is room, under it otherwise.
 ///
-/// Where the platform has no WebView (tests, Linux, the web) it lists the model's parts.
+/// With [sceneId] it plays a narrated process scene instead ([ProcessScene]): a timeline of
+/// steps, each flying the camera to its subject, lighting up and naming parts, with a
+/// caption in English, Hindi or Kannada (read aloud on request); play, pause, step, scrub
+/// and change speed below the view. Tapping, labels, the laser, cuts and notes work there too.
+///
+/// Where the platform has no WebView (tests, Linux, the web) it lists the model's parts (a
+/// scene's steps and parts).
 class Model3dViewer extends StatefulWidget {
   const Model3dViewer({
     super.key,
-    required this.modelId,
+    this.modelId = '',
+    this.sceneId,
+    this.onReadAloud,
     this.variant,
     this.lang,
     this.controller,
@@ -57,10 +66,17 @@ class Model3dViewer extends StatefulWidget {
     this.showTitle = true,
     this.annotations,
     this.onAnnotationsChanged,
-  });
+  }) : assert(modelId != '' || sceneId != null, 'give a modelId or a sceneId');
 
   /// A viewer model id (heart, orbitals…; see [ViewerModelInfo.all]).
   final String modelId;
+
+  /// A narrated scene to play instead of a model (photosynthesis…; see [ProcessScene.all]).
+  final String? sceneId;
+
+  /// Reads a scene's captions aloud as its steps go by (the "Read aloud" switch shows when
+  /// there is a voice). Falls back to [Model3dScope.readAloud].
+  final Model3dReadAloud? onReadAloud;
 
   /// The version to show first (an element of "atoms", a molecule of "molecules").
   final String? variant;
@@ -89,7 +105,7 @@ class Model3dViewer extends StatefulWidget {
   State<Model3dViewer> createState() => _Model3dViewerState();
 }
 
-enum _Tab { parts, cut, apart, animate, views, notes }
+enum _Tab { steps, parts, cut, apart, animate, views, notes }
 
 /// The writing tool in hand: pin a note, draw on the model's surface, draw over the view.
 enum _Pen { pin, surface, screen }
@@ -143,6 +159,23 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   double _orbitSpread = 0;
 
   ViewerPart? get _laserPartInfo => _model?.part(_laserPart);
+
+  // A narrated scene: where its timeline is, as the page last said.
+  ProcessScene? _scene;
+  SceneProgress _progress = const SceneProgress(step: 0, time: 0, total: 0);
+  double? _scrubTo; // while the teacher drags the timeline
+  bool _narrate = false;
+  int _spoken = -1;
+  ViewerQuality _quality = ViewerQuality.high;
+
+  /// What the engine opens and notes are kept under: the model, or the scene.
+  String get _target => _sceneId != null ? Viewer3dEngine.sceneTarget(_sceneId!) : widget.modelId;
+
+  /// The scene to play: [Model3dViewer.sceneId], or a model id that names one (a picture on
+  /// the board links back to its scene as `scene:<id>`).
+  String? get _sceneId => widget.sceneId ?? Viewer3dEngine.sceneOf(widget.modelId);
+
+  Model3dReadAloud? get _readAloud => widget.onReadAloud ?? Model3dScope.maybeOf(context)?.readAloud;
 
   // Notes and drawing.
   Model3dAnnotations _notes = Model3dAnnotations.empty;
@@ -199,27 +232,34 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   Model3dAnnotationStore? get _store => Model3dScope.maybeOf(context)?.annotations;
 
   Future<void> _open() async {
-    final notes = widget.annotations ?? _store?.of(widget.modelId) ?? Model3dAnnotations.empty;
+    final notes = widget.annotations ?? _store?.of(_target) ?? Model3dAnnotations.empty;
     setState(() {
       _problem = null;
       _loaded = false;
       _notes = notes;
     });
     try {
-      final m = await ViewerManifest.load(widget.modelId);
+      final scene = ProcessScene.byId(_sceneId);
+      if (_sceneId != null && scene == null) throw StateError('no scene $_sceneId');
+      final m = scene?.toManifest() ?? await ViewerManifest.load(widget.modelId);
       if (!mounted) return;
       final start = m.variants.any((v) => v.id == widget.variant) ? widget.variant : m.variants.firstOrNull?.id;
       setState(() {
         _model = m;
+        _scene = scene;
         _variant = start;
         _noViewer = _engine == null;
+        if (scene != null) {
+          _tab = _Tab.steps;
+          _progress = SceneProgress(step: 0, time: 0, total: scene.seconds, playing: true);
+        }
       });
       if (_engine == null) return;
-      await _engine!.open(widget.modelId, lang: _lang);
+      await _engine!.open(_target, lang: _lang);
       if (start != null && start != m.variants.firstOrNull?.id) _engine!.send(ViewerCommands.variant(start));
       if (notes.isNotEmpty) _engine!.send(ViewerCommands.setNotes(notes));
     } catch (e) {
-      debugPrint('3D model ${widget.modelId} could not be opened: $e');
+      debugPrint('3D model $_target could not be opened: $e');
       if (mounted) setState(() => _problem = Viewer3dStrings(_lang).couldNotOpen);
     }
   }
@@ -230,8 +270,13 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       case 'loaded':
         setState(() => _loaded = true);
         _engine!.send(ViewerCommands.labels(_labels));
+        if (_quality != ViewerQuality.high) _engine!.send(ViewerCommands.quality(_quality));
         _checkMirror();
         widget.controller?._changed();
+      case 'scene':
+        final p = e.scene!;
+        setState(() => _progress = p);
+        if (_narrate && p.step != _spoken) _speakStep(p.step);
       case 'frame':
         final jpg = e.image;
         if (_mirroring && jpg != null) _mirror?.send(jpg);
@@ -244,7 +289,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       case 'snapshot':
         final png = e.image;
         final m = _model;
-        _snapping?.complete(png == null || m == null ? null : Model3dSnapshot(png: png, modelId: m.id, title: m.title.of(_lang), credit: m.credit, annotations: _notes));
+        _snapping?.complete(png == null || m == null ? null : Model3dSnapshot(png: png, modelId: _target, title: m.title.of(_lang), credit: m.credit, annotations: _notes));
         _snapping = null;
       case 'autoRotate':
         setState(() => _turning = e.data['on'] == true);
@@ -264,7 +309,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         if (data is Map) {
           setState(() => _notes = Model3dAnnotations.fromJson(data));
           widget.onAnnotationsChanged?.call(_notes);
-          _store?.put(widget.modelId, _notes);
+          _store?.put(_target, _notes);
           widget.controller?._changed();
         }
         if (e.data['pin'] case final String id) _editPin(id, isNew: true);
@@ -536,6 +581,39 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     _send(ViewerCommands.reset());
     _send(ViewerCommands.pick(null));
     _sendVisibility();
+  }
+
+  // ------------------------------------------------------------------ scene
+
+  void _sceneOp(SceneOp op) {
+    // Answer at once; the page's next `scene` event confirms.
+    if (op == SceneOp.toggle) setState(() => _progress = SceneProgress(step: _progress.step, time: _progress.time, total: _progress.total, playing: !_progress.playing, speed: _progress.speed));
+    _send(ViewerCommands.scene(op));
+  }
+
+  void _sceneStep(int i) => _send(ViewerCommands.sceneStep(i));
+
+  void _setSpeed(double v) {
+    setState(() => _progress = SceneProgress(step: _progress.step, time: _progress.time, total: _progress.total, playing: _progress.playing, speed: v));
+    _send(ViewerCommands.sceneSpeed(v));
+  }
+
+  void _setQuality(ViewerQuality q) {
+    setState(() => _quality = q);
+    _send(ViewerCommands.quality(q));
+  }
+
+  void _setNarrate(bool on) {
+    setState(() => _narrate = on);
+    if (on) _speakStep(_progress.step);
+  }
+
+  void _speakStep(int i) {
+    final sc = _scene;
+    final read = _readAloud;
+    if (sc == null || read == null || i < 0 || i >= sc.steps.length) return;
+    _spoken = i;
+    read(sc.steps[i].spoken(_lang), _lang);
   }
 
   // ------------------------------------------------------------------ laser
@@ -869,7 +947,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     final cs = Theme.of(context).colorScheme;
     if (_problem != null) return _message(s, _problem!, retry: true);
     if (m == null) return _message(s, s.opening, busy: true);
-    if (_noViewer) return _PartsList(model: m, lang: _lang, variant: _variant, strings: s);
+    if (_noViewer) return _PartsList(model: m, lang: _lang, variant: _variant, strings: s, scene: _scene);
     return LayoutBuilder(builder: (context, c) {
       final wide = c.maxWidth >= 900;
       final stage = Stack(key: const ValueKey('model3d-stage'), children: [
@@ -1077,6 +1155,36 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     final lit = _laserPartInfo;
     final stepCard = a != null && a.steps.isNotEmpty;
     final credit = TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 11);
+    final sc = _scene;
+    if (sc != null) {
+      // A scene: the player along the bottom; what is picked or pointed at at the top.
+      final top = _laser || _pen != null ? 52.0 : 10.0;
+      return [
+        Positioned(left: 12, right: 12, bottom: 12, child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 900), child: _scenePlayer(sc, s, wide)))),
+        if (_laser && lit != null)
+          Positioned(left: 12, top: top, child: _laserChip(lit))
+        else if (p != null && _pen == null)
+          Positioned(left: 12, top: top, right: wide ? null : 12, child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: _partCard(m, p, s))),
+        if (_laser) Positioned(top: 10, left: 12, child: IgnorePointer(child: _pill(s.laserHint, const Color(0xCC16191E), Colors.white))),
+        if (_pen != null)
+          Positioned(
+            top: 8,
+            left: 8,
+            right: 8,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _penPalette(s),
+              const SizedBox(height: 6),
+              IgnorePointer(child: _pill(_pen == _Pen.pin ? s.pinHint : s.drawHint, const Color(0xCC16191E), Colors.white)),
+            ]),
+          ),
+        if (!_laser && _pen == null)
+          Positioned(
+            right: 10,
+            top: 8,
+            child: GestureDetector(key: const ValueKey('model3d-credit'), onTap: () => showModel3dCredits(context, model: m, lang: _lang), child: Text('${m.credit} · three.js', style: credit)),
+          ),
+      ];
+    }
     return [
       if (stepCard)
         Positioned(left: 12, right: 12, bottom: 12, child: _stepCard(a, s))
@@ -1173,6 +1281,164 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     );
   }
 
+  static String _clock(double seconds) {
+    final t = seconds.isFinite ? seconds.round() : 0;
+    return '${t ~/ 60}:${(t % 60).toString().padLeft(2, '0')}';
+  }
+
+  static const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
+  static String _speedLabel(double v) => '${v == v.roundToDouble() ? v.toInt() : v}×';
+
+  /// A scene's player: the step's title and caption, then back, play or pause, next, the
+  /// timeline (drag to scrub), the time, the speed and read aloud.
+  Widget _scenePlayer(ProcessScene sc, Viewer3dStrings s, bool wide) {
+    final cs = Theme.of(context).colorScheme;
+    final pr = _progress;
+    final i = pr.step.clamp(0, sc.steps.length - 1);
+    final step = sc.steps[i];
+    final total = pr.total > 0 ? pr.total : sc.seconds;
+    final at = (_scrubTo ?? pr.time).clamp(0.0, total);
+    final ended = !pr.playing && at >= total - 0.05;
+    final read = _readAloud;
+    return Container(
+      key: const ValueKey('scene-player'),
+      padding: EdgeInsets.fromLTRB(wide ? 18 : 12, 12, wide ? 10 : 6, 4),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHigh.withValues(alpha: 0.96),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: const [BoxShadow(color: Color(0x66000000), blurRadius: 18)],
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(text: s.sceneStep(i + 1, sc.steps.length), style: TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500)),
+                const TextSpan(text: '  ·  '),
+                TextSpan(text: step.title.of(_lang), style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700)),
+              ]),
+              key: const ValueKey('scene-step-title'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          if (read != null)
+            IconButton(
+              key: const ValueKey('scene-read'),
+              tooltip: s.readAloud,
+              visualDensity: VisualDensity.compact,
+              isSelected: _narrate,
+              icon: const Icon(Icons.volume_off_outlined),
+              selectedIcon: const Icon(Icons.record_voice_over_outlined),
+              color: _narrate ? cs.primary : null,
+              onPressed: () => _setNarrate(!_narrate),
+            ),
+          PopupMenuButton<double>(
+            key: const ValueKey('scene-speed'),
+            tooltip: s.speed,
+            initialValue: pr.speed,
+            onSelected: _setSpeed,
+            itemBuilder: (_) => [for (final v in _speeds) PopupMenuItem(key: ValueKey('scene-speed-$v'), value: v, child: Text(_speedLabel(v)))],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Text(_speedLabel(pr.speed), style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 2),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Text(step.caption.of(_lang), key: const ValueKey('scene-caption'), maxLines: wide ? 4 : 3, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: wide ? 17 : 15, height: 1.38)),
+        ),
+        Row(children: [
+          IconButton(key: const ValueKey('scene-prev'), tooltip: s.previousStep, onPressed: () => _sceneOp(SceneOp.prev), icon: const Icon(Icons.skip_previous_rounded)),
+          IconButton.filled(
+            key: const ValueKey('scene-play'),
+            tooltip: ended ? s.replay : pr.playing ? s.pause : s.play,
+            onPressed: () => _sceneOp(ended ? SceneOp.replay : SceneOp.toggle),
+            icon: Icon(ended ? Icons.replay_rounded : pr.playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+          ),
+          IconButton(key: const ValueKey('scene-next'), tooltip: s.nextStep, onPressed: i < sc.steps.length - 1 ? () => _sceneOp(SceneOp.next) : null, icon: const Icon(Icons.skip_next_rounded)),
+          Expanded(child: _timeline(sc, at, total)),
+          if (wide) Text('${_clock(at)} / ${_clock(total)}', style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant, fontFeatures: const [FontFeature.tabularFigures()])),
+          const SizedBox(width: 8),
+        ]),
+      ]),
+    );
+  }
+
+  /// The timeline: a slider over the whole scene with a tick where each step begins.
+  Widget _timeline(ProcessScene sc, double at, double total) {
+    final cs = Theme.of(context).colorScheme;
+    return LayoutBuilder(builder: (context, box) {
+      const pad = 24.0; // the slider's own inset
+      final w = math.max(1.0, box.maxWidth - pad * 2);
+      return Stack(alignment: Alignment.center, children: [
+        for (var k = 1; k < sc.steps.length; k++)
+          Positioned(
+            left: pad + w * sc.startOf(k) / total - 1,
+            child: IgnorePointer(child: Container(width: 2, height: 10, color: cs.onSurfaceVariant.withValues(alpha: 0.45))),
+          ),
+        Slider(
+          key: const ValueKey('scene-timeline'),
+          value: at,
+          max: total,
+          onChangeStart: (v) => setState(() => _scrubTo = v),
+          onChanged: (v) {
+            setState(() => _scrubTo = v);
+            _send(ViewerCommands.sceneSeek(v));
+          },
+          onChangeEnd: (v) {
+            _send(ViewerCommands.sceneSeek(v));
+            setState(() {
+              _scrubTo = null;
+              _progress = SceneProgress(step: sc.stepAt(v), time: v, total: total, playing: _progress.playing, speed: _progress.speed);
+            });
+          },
+        ),
+      ]);
+    });
+  }
+
+  /// The Steps tab: every step (tap to go there), read aloud and lighter graphics.
+  Widget _stepsTab(ProcessScene sc, Viewer3dStrings s) {
+    final cs = Theme.of(context).colorScheme;
+    return ListView(key: const ValueKey('scene-steps'), padding: const EdgeInsets.only(bottom: 16), children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        child: Text(sc.summary.of(_lang), style: TextStyle(color: cs.onSurfaceVariant, height: 1.35)),
+      ),
+      for (var i = 0; i < sc.steps.length; i++)
+        Material(
+          color: _progress.step == i ? cs.secondaryContainer : Colors.transparent,
+          child: ListTile(
+            key: ValueKey('scene-step-$i'),
+            dense: true,
+            leading: CircleAvatar(
+              radius: 14,
+              backgroundColor: _progress.step == i ? cs.primary : cs.surfaceContainerHighest,
+              child: Text('${i + 1}', style: TextStyle(fontSize: 12, color: _progress.step == i ? cs.onPrimary : cs.onSurface)),
+            ),
+            title: Text(sc.steps[i].title.of(_lang), style: TextStyle(fontWeight: _progress.step == i ? FontWeight.w700 : FontWeight.w500)),
+            trailing: Text(_clock(sc.steps[i].seconds), style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+            onTap: () => _sceneStep(i),
+          ),
+        ),
+      const Divider(height: 24),
+      if (_readAloud != null) SwitchListTile(key: const ValueKey('scene-read-switch'), title: Text(s.readAloud), value: _narrate, onChanged: _setNarrate),
+      SwitchListTile(
+        key: const ValueKey('scene-quality'),
+        title: Text(s.lighterGraphics),
+        subtitle: Text(s.lighterGraphicsHint),
+        value: _quality == ViewerQuality.low,
+        onChanged: (on) => _setQuality(on ? ViewerQuality.low : ViewerQuality.high),
+      ),
+    ]);
+  }
+
   Widget _stepCard(ViewerAnimation a, Viewer3dStrings s) {
     final cs = Theme.of(context).colorScheme;
     return _card(
@@ -1195,6 +1461,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   // ---------------------------------------------------------------- panel
 
   List<(_Tab, IconData, String)> _tabs(Viewer3dStrings s) => [
+    if (_scene != null) (_Tab.steps, Icons.format_list_numbered, s.tabSteps),
     (_Tab.parts, Icons.category_outlined, s.tabParts),
     (_Tab.cut, Icons.content_cut, s.tabCut),
     if (_model?.canTakeApart ?? true) (_Tab.apart, Icons.open_with, s.tabApart),
@@ -1274,10 +1541,12 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 
   Widget _tabBody(ViewerManifest m, Viewer3dStrings s) {
     final tab = _tabs(s).any((e) => e.$1 == _tab) ? _tab : _Tab.parts;
+    final sc = _scene;
     // A Material of its own, so list tiles show their ink.
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: switch (tab) {
+        _Tab.steps => sc == null ? _partsTab(m, s) : _stepsTab(sc, s),
         _Tab.parts => _partsTab(m, s),
         _Tab.cut => _cutTab(m, s),
         _Tab.apart => _apartTab(s),
@@ -1549,7 +1818,10 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 /// Where there is no WebView: the model's title, summary and parts, so the lesson can
 /// still use its names and notes.
 class _PartsList extends StatelessWidget {
-  const _PartsList({required this.model, required this.lang, required this.variant, required this.strings});
+  const _PartsList({required this.model, required this.lang, required this.variant, required this.strings, this.scene});
+
+  /// A scene's steps, listed before its parts.
+  final ProcessScene? scene;
 
   final ViewerManifest model;
   final String lang;
@@ -1574,6 +1846,17 @@ class _PartsList extends StatelessWidget {
           Expanded(child: Text(strings.noViewer, style: TextStyle(color: cs.onSecondaryContainer))),
         ]),
       ),
+      if (scene case final sc?) ...[
+        Padding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 4), child: Text(strings.tabSteps, style: text.titleSmall)),
+        for (var i = 0; i < sc.steps.length; i++)
+          ListTile(
+            key: ValueKey('scene-text-$i'),
+            contentPadding: EdgeInsets.zero,
+            leading: CircleAvatar(radius: 13, child: Text('${i + 1}', style: const TextStyle(fontSize: 12))),
+            title: Text(sc.steps[i].title.of(lang)),
+            subtitle: Text(sc.steps[i].caption.of(lang)),
+          ),
+      ],
       for (final g in model.groups.where((g) => model.inGroup(g.id, variant).isNotEmpty)) ...[
         Padding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 4), child: Text(g.name.of(lang), style: text.titleSmall)),
         for (final p in model.inGroup(g.id, variant))

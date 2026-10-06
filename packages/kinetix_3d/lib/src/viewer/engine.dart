@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import 'engine_stub.dart' if (dart.library.io) 'engine_io.dart' as platform;
 import 'protocol.dart';
+import 'scenes.dart';
 
 /// The three.js viewer (assets/viewer3d) as seen from the app: open a model, send it
 /// commands ([ViewerCommands]), hear what happens ([ViewerEvent]: a part tapped, the part
@@ -16,8 +17,15 @@ abstract class Viewer3dEngine {
   /// Everything the viewer says.
   Stream<ViewerEvent> get events;
 
-  /// Loads [modelId] with labels in [lang] (en, hi, kn).
+  /// Loads [modelId] with labels in [lang] (en, hi, kn); a narrated scene is opened with
+  /// [sceneTarget] as its model id.
   Future<void> open(String modelId, {required String lang});
+
+  /// What [open] takes to open narrated scene [sceneId] ([ProcessScene]).
+  static String sceneTarget(String sceneId) => 'scene:$sceneId';
+
+  /// The scene [target] opens, if it is a [sceneTarget].
+  static String? sceneOf(String target) => target.startsWith('scene:') ? target.substring(6) : null;
 
   /// Sends a command; commands sent before the model has loaded wait for it.
   void send(Map<String, dynamic> command);
@@ -103,11 +111,69 @@ class FakeViewerEngine extends QueuedEngine {
   /// What the "laser" finds under its tip: the part for a point (0..1), or null.
   String? Function(Offset at)? partUnder;
 
+  /// The scene opened, if any, and where its timeline is (the fake plays it by the book).
+  ProcessScene? scene;
+  int sceneStep = 0;
+  double sceneTime = 0;
+  bool scenePlaying = false;
+  double sceneSpeed = 1;
+
   @override
   Future<void> open(String modelId, {required String lang}) async {
     reset();
     opened.add('$modelId:$lang');
-    scheduleMicrotask(() => receive(ViewerEvent({'event': 'loaded', 'model': modelId})));
+    scene = ProcessScene.byId(Viewer3dEngine.sceneOf(modelId));
+    sceneStep = 0;
+    sceneTime = 0;
+    scenePlaying = scene != null;
+    scheduleMicrotask(() {
+      receive(ViewerEvent({'event': 'loaded', 'model': modelId}));
+      if (scene != null) _tellScene();
+    });
+  }
+
+  void _tellScene() => receive(ViewerEvent({
+    'event': 'scene',
+    'id': scene!.id,
+    'step': sceneStep,
+    'steps': scene!.steps.length,
+    'time': sceneTime,
+    'total': scene!.seconds,
+    'playing': scenePlaying,
+    'speed': sceneSpeed,
+  }));
+
+  void _scene(Map<String, dynamic> c) {
+    final s = scene;
+    if (s == null) return;
+    void go(int i) {
+      sceneStep = i.clamp(0, s.steps.length - 1);
+      sceneTime = s.startOf(sceneStep);
+    }
+
+    switch (c['op']) {
+      case 'play':
+        scenePlaying = true;
+      case 'pause':
+        scenePlaying = false;
+      case 'toggle':
+        scenePlaying = !scenePlaying;
+      case 'next':
+        go(sceneStep + 1);
+      case 'prev':
+        go(sceneStep - 1);
+      case 'step':
+        go((c['step'] as num).toInt());
+      case 'replay':
+        go(0);
+        scenePlaying = true;
+      case 'seek':
+        sceneTime = (c['time'] as num).toDouble().clamp(0, s.seconds);
+        sceneStep = s.stepAt(sceneTime);
+      case 'speed':
+        sceneSpeed = (c['speed'] as num).toDouble();
+    }
+    scheduleMicrotask(_tellScene);
   }
 
   @override
@@ -133,6 +199,8 @@ class FakeViewerEngine extends QueuedEngine {
         scheduleMicrotask(() => receive(ViewerEvent({'event': 'cut', 'mode': 'peel', 'layers': peelLayers, 'peel': command['peel']})));
       case 'annotate':
         _annotate(command);
+      case 'scene':
+        _scene(command);
     }
   }
 
