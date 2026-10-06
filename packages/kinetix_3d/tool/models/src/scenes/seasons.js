@@ -144,7 +144,7 @@ export async function build(k) {
   const tilt = new THREE.Group();
   tilt.rotation.z = -TILT; // north pole leans towards +x
   earth.add(tilt);
-  const globeMat = sunlitMaterial({ map: earthTexture(), sun: sunPos, ambient: 0.12, atmosphere: 0.8 });
+  const globeMat = sunlitMaterial({ map: earthTexture(), sun: sunPos, ambient: 0.12, atmosphere: 0.8, night: '#24385e' });
   const globe = new THREE.Mesh(new THREE.SphereGeometry(ER, 96, 64), globeMat);
   tilt.add(globe);
   // The axis, poking out through both poles, and the equator.

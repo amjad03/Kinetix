@@ -185,9 +185,9 @@ export async function build(k) {
   for (let f = 0; f < 3; f++) {
     const a = -Math.PI * (0.2 + 0.3 * f);
     const pts = [];
-    let x = Math.cos(a) * 0.95, z = Math.sin(a) * 0.95;
+    let x = Math.cos(a) * 1.5, z = Math.sin(a) * 1.5; // from just outside the crater's rim
     for (let i = 0; i < 24; i++) {
-      pts.push(new THREE.Vector3(x, height(x, z) + 0.06, z));
+      pts.push(new THREE.Vector3(x, height(x, z) + 0.02, z));
       // Downhill, with a little wander.
       const e = 0.05, h0 = height(x, z);
       const gx = (height(x + e, z) - h0) / e, gz = (height(x, z + e) - h0) / e;
@@ -197,11 +197,9 @@ export async function build(k) {
       z = Math.min(z, -0.2);
     }
     const c = curve(pts);
-    const geo = tube(c, (u) => 0.16 + 0.22 * u, { segments: 90, radial: 10 });
+    const geo = tube(c, (u) => 0.12 + 0.16 * u, { segments: 90, radial: 10 });
     const m = mat({ color: '#2e2826', emissive: '#ff5a10', emissiveIntensity: 1, rough: 0.6, rim: 0.1 });
     const mesh = new THREE.Mesh(geo, m);
-    mesh.scale.y = 0.45;
-    mesh.position.y = 0.04;
     flows.push({ mesh, geo, m, c });
   }
   const lavaGroup = new THREE.Group();

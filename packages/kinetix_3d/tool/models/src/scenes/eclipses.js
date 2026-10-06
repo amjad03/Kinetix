@@ -11,7 +11,7 @@ export const script = {
   id: 'eclipses',
   subject: 'Geography',
   classes: [6, 8],
-  thumb: { step: 'solar_view', u: 0.5 },
+  thumb: { step: 'lunar', u: 0.5 },
   title: t('Eclipses of the Sun and Moon', 'सूर्य और चंद्र ग्रहण', 'ಸೂರ್ಯ ಮತ್ತು ಚಂದ್ರ ಗ್ರಹಣ'),
   summary: t(
     'How the Sun, the Earth and the Moon line up to make a solar eclipse and a lunar eclipse, what each looks like, and why they do not happen every month.',
@@ -181,7 +181,7 @@ export async function build(k) {
       shadows.visible = !s.is('solar_view');
       // Where the Moon's shadow meets the Earth.
       earthSpot.copy(moon.position).addScaledVector(v, MO - ER - 0.1);
-      orbit.visible = !tiltOn && !s.is('solar_view');
+      orbit.visible = !tiltOn && !s.is('solar_view', 'lunar');
       tilted.visible = plane.visible = tiltOn;
       // In totality the corona shows: the glow is dimmer but wider.
       corona.material.opacity = s.is('solar_view') ? 1 : 0.85;
