@@ -959,11 +959,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     setElements([...page.elements.where((e) => _selection.contains(e.id)), ...page.elements.where((e) => !_selection.contains(e.id))]);
   }
 
-  /// Applies [f] to every selected element as one undo step (keyboard nudges, tests).
-  void transformSelection(BoardElement Function(BoardElement) f) {
-    if (_selection.isEmpty) return;
-    setElements([for (final e in page.elements) _selection.contains(e.id) ? f(e) : e]);
-  }
+  /// Applies [f] to every selected element (not locked ones) as one undo step (keyboard nudges, tests).
+  void transformSelection(BoardElement Function(BoardElement) f) => _editFree(f);
 
   bool get selectionGrouped {
     final gs = {for (final id in _selection) page.groups[id]};
