@@ -15,7 +15,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ import { audit } from '../common/audit.js';
 import { Clock, zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { guardians, homework, homeworkSubmissions, students, type SubmissionFile, tenants, users } from '../db/schema.js';
+import { guardians, homework, homeworkSubmissions, students, subjects, type SubmissionFile, tenants, users } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { addDays, isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
@@ -60,6 +60,28 @@ export class SubmissionsController {
     private readonly notifications: NotificationsService,
     private readonly clock: Clock,
   ) {}
+
+  /**
+   * "Remind the N": students of the class who have not handed in, and their families, get a
+   * notification. Declared before `:studentId` so the path is not read as a student id.
+   */
+  @Post('remind')
+  @HttpCode(200)
+  @Auth('user')
+  remind(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string): Promise<{ reminded: number }> {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const hw = await this.staffHomework(tx, p, id);
+      const [subject] = await tx.select({ name: subjects.name }).from(homework).innerJoin(subjects, eq(subjects.id, homework.subjectId)).where(eq(homework.id, id));
+      const missing = await tx
+        .select({ id: students.id, fullName: students.fullName })
+        .from(students)
+        .leftJoin(homeworkSubmissions, and(eq(homeworkSubmissions.studentId, students.id), eq(homeworkSubmissions.homeworkId, id)))
+        .where(and(eq(students.sectionId, hw.sectionId), eq(students.status, 'active'), isNull(homeworkSubmissions.studentId)));
+      await this.notifications.homeworkReminder(tx, { homeworkId: id, title: hw.title, subject: subject?.name ?? '', dueOn: hw.dueOn, students: missing });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.reminded', subjectType: 'homework', subjectId: id, data: { students: missing.length } });
+      return { reminded: missing.length };
+    });
+  }
 
   /** Hands in (or replaces) the work. Multipart: `text` and up to five `files`. */
   @Post(':studentId')

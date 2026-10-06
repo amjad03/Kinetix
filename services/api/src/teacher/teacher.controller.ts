@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { photoUrl } from '../profile/photo-url.js';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import type { ActiveBoardSession, AttendanceSheet, Homework, MeResponse, RosterStudent, TeacherClass, TeacherTimetableResponse } from '@kinetix/shared';
 import { and, asc, desc, eq, gt, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -43,6 +44,16 @@ const HomeworkBody = z.object({
   boardSessionId: z.uuid().optional(),
 });
 
+const UpdateMeBody = z
+  .object({
+    preferredLanguage: z.enum(['en', 'hi', 'kn']),
+    fullName: z.string().trim().min(2, 'Enter your full name').max(100),
+    email: z.union([z.literal('').transform(() => null), z.null(), z.string().trim().toLowerCase().max(200).pipe(z.email('Enter a valid email address'))]),
+    teachingSubjects: z.array(z.string().trim().min(1).max(60)).max(12),
+  })
+  .partial()
+  .strict();
+
 /** The signed-in user's profile. Used by every app after login. */
 @Controller('v1/me')
 export class MeController {
@@ -51,11 +62,40 @@ export class MeController {
     private readonly system: SystemLookups,
   ) {}
 
-  /** The user's language for the apps and for notifications sent to them (en, hi, kn). */
+  /**
+   * Edits one's own profile: language (also for notifications), name, email and, for teachers,
+   * the subjects they teach. The phone number is the phone-code sign-in, so the office changes it.
+   */
   @Patch()
   @Auth('user')
-  async update(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(z.object({ preferredLanguage: z.enum(['en', 'hi', 'kn']) }))) body: { preferredLanguage: 'en' | 'hi' | 'kn' }): Promise<MeResponse> {
-    await this.db.withTenant(p.tenantId, (tx) => tx.update(users).set({ preferredLanguage: body.preferredLanguage }).where(eq(users.id, p.userId)));
+  async update(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(UpdateMeBody)) body: z.infer<typeof UpdateMeBody>): Promise<MeResponse> {
+    if (body.teachingSubjects !== undefined && !p.roles.some((r) => TEACHING_ROLES.includes(r))) {
+      throw new ForbiddenException('Only teachers list the subjects they teach');
+    }
+    await this.db.withTenant(p.tenantId, async (tx) => {
+      const [before] = await tx.select({ fullName: users.fullName, email: users.email }).from(users).where(eq(users.id, p.userId));
+      if (!before) throw new NotFoundException('User not found');
+      if (body.email && body.email !== before.email) {
+        const [taken] = await tx.select({ id: users.id }).from(users).where(and(eq(users.email, body.email), sql`${users.id} <> ${p.userId}`));
+        if (taken) throw new ConflictException('Someone else at your institution uses this email');
+      }
+      await tx
+        .update(users)
+        .set({ ...body, updatedAt: new Date() })
+        .where(eq(users.id, p.userId));
+      const fields = Object.keys(body).filter((k) => k !== 'preferredLanguage');
+      if (fields.length) {
+        await audit(tx, {
+          tenantId: p.tenantId,
+          actorType: 'user',
+          actorId: p.userId,
+          action: 'profile.updated',
+          subjectType: 'user',
+          subjectId: p.userId,
+          data: { fields, ...(body.email !== undefined && body.email !== before.email ? { emailFrom: before.email } : {}) },
+        });
+      }
+    });
     return this.me(p);
   }
 
@@ -64,27 +104,34 @@ export class MeController {
   @Auth('user')
   @AllowDuringPasswordChange()
   me(@CurrentPrincipal() p: UserPrincipal): Promise<MeResponse> {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [u] = await tx.select().from(users).where(eq(users.id, p.userId));
-      if (!u) throw new NotFoundException('User not found');
-      const roles = await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, u.id));
-      const [tenant] = await tx.select({ name: tenants.name, slug: tenants.slug, timezone: tenants.timezone }).from(tenants);
-      return {
-        id: u.id,
-        fullName: u.fullName,
-        email: u.email,
-        phone: u.phone,
-        preferredLanguage: u.preferredLanguage,
-        roles: [...new Set(roles.map((r) => r.role as RoleName))],
-        tenant,
-        // As the token says (AuthGuard enforces the token): true until the user changes the temporary password.
-        mustChangePassword: !!p.mustChangePassword,
-        hasPassword: !!u.passwordHash,
-        // The KINETIX platform team (the ERP shows its Platform area); absent for everyone else.
-        ...((await this.system.isPlatformAdmin(u.id)) ? { platformAdmin: true } : {}),
-      };
-    });
+    return loadMe(this.db, this.system, p);
   }
+}
+
+/** The signed-in user's profile, as GET /v1/me returns it. */
+export function loadMe(db: DbService, system: SystemLookups, p: UserPrincipal): Promise<MeResponse> {
+  return db.withTenant(p.tenantId, async (tx) => {
+    const [u] = await tx.select().from(users).where(eq(users.id, p.userId));
+    if (!u) throw new NotFoundException('User not found');
+    const roles = await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, u.id));
+    const [tenant] = await tx.select({ name: tenants.name, slug: tenants.slug, timezone: tenants.timezone }).from(tenants);
+    return {
+      id: u.id,
+      fullName: u.fullName,
+      email: u.email,
+      phone: u.phone,
+      preferredLanguage: u.preferredLanguage,
+      roles: [...new Set(roles.map((r) => r.role as RoleName))],
+      tenant,
+      // As the token says (AuthGuard enforces the token): true until the user changes the temporary password.
+      mustChangePassword: !!p.mustChangePassword,
+      hasPassword: !!u.passwordHash,
+      photoUrl: photoUrl(u),
+      teachingSubjects: u.teachingSubjects,
+      // The KINETIX platform team (the ERP shows its Platform area); absent for everyone else.
+      ...((await system.isPlatformAdmin(u.id)) ? { platformAdmin: true } : {}),
+    };
+  });
 }
 
 /** Teacher App: the signed-in teacher's own day, classes, board session and homework. */

@@ -42,6 +42,8 @@ export const RealtimeEvents = {
   RemoteCommand: 'remote.command',
   /** Board → server → the teacher of its class: what the board shows ({@link RemoteBoardState}). */
   RemoteState: 'remote.state',
+  /** Server → the student and their guardians: a teacher awarded a badge ({@link BadgeAwardedEvent}). */
+  BadgeAwarded: 'badge.awarded',
 } as const;
 
 // --- Class questions (polls) and answer cards ------------------------------------------------
@@ -277,6 +279,63 @@ export interface MeResponse {
   hasPassword: boolean;
   /** Present (true) only for the KINETIX platform team, who look after the global library. */
   platformAdmin?: true;
+  /** GET this (with the token) for the profile photo; null shows initials. Changes when the photo does. */
+  photoUrl: string | null;
+  /** Teachers: what they teach, as they wrote it on their profile. */
+  teachingSubjects: string[];
+}
+
+/** PATCH /v1/me: any subset. The phone number is the phone-code sign-in, so the office changes it (not here). */
+export interface UpdateMeRequest {
+  preferredLanguage?: Language;
+  fullName?: string;
+  email?: string | null;
+  /** Teachers only: what they teach, shown on their profile. */
+  teachingSubjects?: string[];
+}
+
+/** The badges a teacher can award (names are translated in each app). */
+export type BadgeKind =
+  | 'dazzling_performer'
+  | 'good_attempt'
+  | 'aspiring_student'
+  | 'obedient_student'
+  | 'outstanding_speaker'
+  | 'master_of_maths'
+  | 'creative_mind'
+  | 'young_scientist'
+  | 'most_curious'
+  | 'best_leader';
+
+/** POST /v1/badges (the section's teachers, from the board or the Teacher App). */
+export interface AwardBadgeRequest {
+  studentId: string;
+  sectionId: string;
+  badge: BadgeKind;
+  subjectId?: string;
+  note?: string;
+}
+
+export interface BadgeView {
+  id: string;
+  studentId: string;
+  badge: BadgeKind;
+  awardedAt: string;
+  awardedBy: { id: string; fullName: string };
+  subject: { id: string; name: string } | null;
+  note: string | null;
+}
+
+/** GET /v1/badges/students/:id: newest first, with a count per kind. */
+export interface StudentBadges {
+  studentId: string;
+  badges: BadgeView[];
+  counts: Partial<Record<BadgeKind, number>>;
+}
+
+export interface BadgeAwardedEvent {
+  studentId: string;
+  badge: BadgeView;
 }
 
 export interface TeacherPeriod {
@@ -318,6 +377,8 @@ export interface RosterStudent {
   id: string;
   rollNo: string;
   fullName: string;
+  /** The student's profile photo, when they have an account with one. */
+  photoUrl?: string | null;
 }
 
 export type AttendanceCounts = Record<AttendanceStatus, number>;

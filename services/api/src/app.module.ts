@@ -29,6 +29,7 @@ import { DevicesModule } from './devices/devices.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
 import { PollsModule } from './polls/polls.module.js';
+import { BadgesModule } from './badges/badges.module.js';
 import { ParentModule } from './parent/parent.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
 import { RemoteModule } from './remote/remote.module.js';
@@ -61,6 +62,7 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     DevicesModule,
     PairingModule,
     PollsModule,
+    BadgesModule,
     RemoteModule,
     BoardProfilesModule,
     BroadcastsModule,
