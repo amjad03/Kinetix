@@ -8,6 +8,7 @@ import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
 import 'homework_panel.dart';
+import '../board/panel/panel_host.dart';
 
 const quizAccent = Color(0xFF81C995);
 const _correct = Color(0xFF188038);
@@ -212,10 +213,9 @@ class _QuestionCard extends StatelessWidget {
   }
 }
 
-/// Opens the quiz full screen over the board.
-Future<void> showQuizPresenter(BuildContext context, Quiz quiz, {bool preview = false}) => showDialog<void>(
+/// Opens the quiz in the split panel (⤢ takes it across the screen).
+Future<void> showQuizPresenter(BuildContext context, Quiz quiz, {bool preview = false}) => showPanelDialog<void>(
   context: context,
-  useSafeArea: false,
   barrierDismissible: false,
   builder: (_) => BoardChromeTheme(
     child: Dialog.fullscreen(

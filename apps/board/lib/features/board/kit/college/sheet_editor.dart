@@ -4,11 +4,12 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../../l10n/l10n.dart';
 import '../../chrome.dart';
+import '../../panel/panel_host.dart';
 
 /// Opens the spreadsheet editor on [sheet]; returns the edited sheet (same id, re-laid out at
 /// the same zoom), or null when cancelled.
 Future<SheetElement?> editSheet(BuildContext context, SheetElement sheet) =>
-    showDialog<SheetElement>(context: context, builder: (_) => BoardChromeTheme(child: SheetEditorDialog(sheet: sheet)));
+    showPanelDialog<SheetElement>(context: context, builder: (_) => BoardChromeTheme(child: SheetEditorDialog(sheet: sheet)));
 
 /// A grid that shows each cell's value; tapping a cell puts what was typed in it in the edit
 /// field above (numbers, words, or a formula such as =SUM(B2:B6)). Columns take a number

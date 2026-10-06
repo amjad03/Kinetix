@@ -4,6 +4,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
+import 'panel/panel_host.dart';
 
 /// The value of a calculator sum (+ − × ÷ ^ % √ π and brackets), or null when it cannot be
 /// worked out. A trailing `%` is a hundredth.
@@ -28,7 +29,7 @@ class BoardCalculator extends StatefulWidget {
 
   /// Opens it; returns "sum = answer" to put on the board, or null.
   static Future<String?> show(BuildContext context) =>
-      showDialog<String>(context: context, builder: (_) => const BoardChromeTheme(child: BoardCalculator()));
+      showPanelDialog<String>(context: context, builder: (_) => const BoardChromeTheme(child: BoardCalculator()));
 
   @override
   State<BoardCalculator> createState() => _BoardCalculatorState();

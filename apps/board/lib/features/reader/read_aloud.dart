@@ -6,6 +6,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../board/panel/panel_host.dart';
 
 /// Read aloud and the immersive reader (from the KINETIX prototype): the board's own voices
 /// (Android text-to-speech, Windows speech) read English, Hindi and Kannada where the device
@@ -251,11 +252,9 @@ class ImmersiveReader extends StatefulWidget {
   final ReaderVoice? voice;
 
   /// Opens the reader over the board.
-  static Future<void> open(BuildContext context, {required String title, required List<String> paragraphs, bool autoplay = true}) => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      fullscreenDialog: true,
-      builder: (_) => ImmersiveReader(title: title, paragraphs: paragraphs, autoplay: autoplay),
-    ),
+  static Future<void> open(BuildContext context, {required String title, required List<String> paragraphs, bool autoplay = true}) => showPanelDialog<void>(
+    context: context,
+    builder: (_) => ImmersiveReader(title: title, paragraphs: paragraphs, autoplay: autoplay),
   );
 
   @override

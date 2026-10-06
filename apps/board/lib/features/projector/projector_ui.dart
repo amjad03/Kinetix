@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import 'projector_controller.dart';
+import '../board/panel/panel_host.dart';
 
 /// Board settings → Projector: whether the board may use a second screen, whether it starts by
 /// itself when one is connected, and show/stop/blank now.
@@ -73,7 +74,7 @@ class ProjectorSettingsSection extends StatelessWidget {
 /// again for a second screen (an HDMI projector or a wireless display).
 Future<void> showProjectorDialog(BuildContext context, ProjectorController projector, {required Widget Function(Widget) theme}) {
   unawaited(projector.refresh());
-  return showDialog<void>(
+  return showPanelDialog<void>(
     context: context,
     builder: (context) => theme(
       AlertDialog(

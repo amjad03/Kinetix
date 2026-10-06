@@ -9,6 +9,7 @@ import '../board/chrome.dart';
 import 'ask_dialog.dart';
 import 'class_check_panel.dart';
 import 'class_poll.dart';
+import '../board/panel/panel_host.dart';
 
 export 'class_poll.dart';
 
@@ -26,7 +27,7 @@ class ClassCheck extends ChangeNotifier {
 
   /// Sets up a question with the teacher and asks it.
   Future<void> ask(BuildContext context) async {
-    final setup = await showDialog<AskSetup>(context: context, builder: (_) => const BoardChromeTheme(child: AskClassDialog()));
+    final setup = await showPanelDialog<AskSetup>(context: context, builder: (_) => const BoardChromeTheme(child: AskClassDialog()));
     if (setup == null) return;
     await start(setup);
   }

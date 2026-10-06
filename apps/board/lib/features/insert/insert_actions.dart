@@ -10,6 +10,7 @@ import 'device_files.dart';
 import 'document_import.dart';
 import 'insert_entries.dart';
 import 'picture_library.dart';
+import '../board/panel/panel_host.dart';
 
 /// Puts a picture on the board in a free spot in view, at most [maxWidth] wide, with [credit]
 /// (a library picture's source and licence) in small type under it, grouped with it.
@@ -50,7 +51,7 @@ Future<void> insertDevicePicture(BuildContext context, WhiteboardController wb, 
 Future<void> insertLibraryPicture(BuildContext context, WhiteboardController wb, {String? subject}) async {
   final lib = await PictureLibrary.load();
   if (!context.mounted) return;
-  final p = await showDialog<LibraryPicture>(
+  final p = await showPanelDialog<LibraryPicture>(
     context: context,
     builder: (_) => BoardChromeTheme(child: PictureLibraryDialog(library: lib, subject: subject)),
   );

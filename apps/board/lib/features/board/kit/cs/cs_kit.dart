@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../../../core/board_controller.dart';
 import '../../chrome.dart';
 import '../subjects.dart';
+import '../../panel/panel_host.dart';
 
 /// The Computer Science kit (BCA/MCA and school computer science): the code lab, algorithm
 /// and data-structure animations, CS labs (numbers, logic, networks, OS, DBMS) and diagram
@@ -58,7 +59,7 @@ class CsKitTab extends StatelessWidget {
 
 /// A large dialog for a CS screen; what [build]'s close callback gets goes on the board.
 Future<void> showCsDialog(BuildContext context, String title, Widget Function(void Function(List<BoardElement>) close) build, WhiteboardController wb) async {
-  final els = await showDialog<List<BoardElement>>(
+  final els = await showPanelDialog<List<BoardElement>>(
     context: context,
     builder: (ctx) {
       final size = MediaQuery.sizeOf(ctx);
@@ -113,7 +114,7 @@ class _Diagrams extends StatelessWidget {
   final Color accent;
 
   Future<String?> _ask(BuildContext context, String title, {String initial = '', int lines = 1, String? hint}) =>
-      showDialog<String>(context: context, builder: (_) => BoardChromeTheme(child: _LabelDialog(title: title, initial: initial, lines: lines, hint: hint)));
+      showPanelDialog<String>(context: context, builder: (_) => BoardChromeTheme(child: _LabelDialog(title: title, initial: initial, lines: lines, hint: hint)));
 
   /// The two shapes selected on the board, as boxes (each group counts once).
   List<Rect> _selectedBoxes() {

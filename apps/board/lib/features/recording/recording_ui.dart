@@ -6,6 +6,7 @@ import '../../core/recording/lesson_capture.dart';
 import '../../core/recording/recordings.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
+import '../board/panel/panel_host.dart';
 
 /// "03:12", or "1:03:12" past an hour.
 String formatElapsed(Duration d) {
@@ -140,7 +141,7 @@ class _SaveRecordingDialogState extends State<SaveRecordingDialog> {
   }
 
   Future<void> _discard() async {
-    final sure = await showDialog<bool>(
+    final sure = await showPanelDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         scrollable: true,

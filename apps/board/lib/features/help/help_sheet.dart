@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../board/panel/panel_host.dart';
 
 /// One "How do I…?" answer: a few short steps, and the control it is about for "Show me".
 class HelpTopic {
@@ -68,7 +69,7 @@ class HelpSheet extends StatefulWidget {
   /// Opens the help sheet over the board; the callbacks run after it closes.
   static Future<void> show(BuildContext context, {void Function(HelpTopic)? onShowMe, bool Function(Key)? canShow, VoidCallback? onTour, VoidCallback? onPractice}) async {
     VoidCallback? then;
-    await showDialog<void>(
+    await showPanelDialog<void>(
       context: context,
       builder: (ctx) => HelpSheet(
         canShow: canShow,

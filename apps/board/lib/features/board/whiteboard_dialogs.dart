@@ -7,6 +7,7 @@ import '../../core/api_client.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
+import 'panel/panel_host.dart';
 
 /// "Save board": a title and whether to share it with the class.
 class SaveBoardDialog extends StatefulWidget {
@@ -167,7 +168,7 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
 /// Both undo, and the message after it has an Undo too.
 Future<void> confirmClearBoard(BuildContext context, WhiteboardController wb) async {
   final l = context.l10n;
-  final all = await showDialog<bool>(
+  final all = await showPanelDialog<bool>(
     context: context,
     builder: (context) => BoardChromeTheme(
       child: AlertDialog(

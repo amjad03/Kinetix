@@ -57,17 +57,19 @@ class PanelDialogRoute<T> extends PageRoute<T> {
     color: Theme.of(context).colorScheme.surface,
     child: LayoutBuilder(
       builder: (context, c) {
-        // Dialogs are laid out for at least 560 px; a narrower panel scrolls sideways.
-        const minWidth = 560.0;
-        final child = MediaQuery(
-          data: MediaQuery.of(context).copyWith(size: Size(c.maxWidth < minWidth ? minWidth : c.maxWidth, c.maxHeight)),
+        // Dialogs are laid out for at least 560 × 600; a smaller panel (a phone on its side)
+        // scrolls rather than squeezing them.
+        const minWidth = 560.0, minHeight = 600.0;
+        final w = c.maxWidth < minWidth ? minWidth : c.maxWidth, h = c.maxHeight < minHeight ? minHeight : c.maxHeight;
+        Widget child = MediaQuery(
+          data: MediaQuery.of(context).copyWith(size: Size(w, h)),
           child: Builder(builder: builder),
         );
-        if (c.maxWidth >= minWidth) return child;
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(width: minWidth, height: c.maxHeight, child: child),
-        );
+        if (w == c.maxWidth && h == c.maxHeight) return child;
+        child = SizedBox(width: w, height: h, child: child);
+        if (h > c.maxHeight) child = SingleChildScrollView(child: child);
+        if (w > c.maxWidth) child = SingleChildScrollView(scrollDirection: Axis.horizontal, child: child);
+        return child;
       },
     ),
   );

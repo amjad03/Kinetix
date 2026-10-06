@@ -11,6 +11,7 @@ import 'college/college_builders.dart' show blankSheet;
 import 'college/law_reader.dart';
 import 'college/sheet_editor.dart';
 import 'subjects.dart';
+import '../panel/panel_host.dart';
 
 /// Runs a subject tool from the left rail: asks what is needed (an equation, a function, a
 /// range) and puts the result in a free spot in view, selected, so it can be moved at once.
@@ -32,7 +33,7 @@ class SubjectToolRunner {
   Color get _accent => style.accent;
   BoardFont get _font => primary ? BoardFont.andika : BoardFont.inter;
 
-  Future<T?> _dialog<T>(Widget dialog) => showDialog<T>(context: context, builder: (_) => BoardChromeTheme(child: dialog));
+  Future<T?> _dialog<T>(Widget dialog) => showPanelDialog<T>(context: context, builder: (_) => BoardChromeTheme(child: dialog));
 
   /// True when [t] is on now (geometry tools showing, four-line paper).
   bool isActive(SubjectTool t) => switch (t) {

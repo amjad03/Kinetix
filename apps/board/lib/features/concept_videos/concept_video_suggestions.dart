@@ -11,6 +11,7 @@ import '../search/search_strings.dart';
 import '../board/phone_chrome.dart';
 import 'concept_video_player.dart';
 import 'concept_videos.dart';
+import '../board/panel/panel_host.dart';
 
 /// When to suggest concept videos: at the start of each period (or when a teacher opens their
 /// class mid-period), unless the teacher skipped them for that period. Asks again when the
@@ -276,7 +277,7 @@ class ConceptVideosDialog extends StatefulWidget {
   final BoardController board;
 
   static Future<void> open(BuildContext context, BoardController board) =>
-      showDialog<void>(context: context, builder: (_) => ConceptVideosDialog(board: board));
+      showPanelDialog<void>(context: context, builder: (_) => ConceptVideosDialog(board: board));
 
   @override
   State<ConceptVideosDialog> createState() => _ConceptVideosDialogState();

@@ -9,6 +9,7 @@ import '../../../insert/device_files.dart';
 import '../../chrome.dart';
 import '../builders.dart' show wrapWords;
 import 'college_builders.dart' show noteColors;
+import '../../panel/panel_host.dart';
 
 /// A few provisions of Indian statutes, as enacted (Acts of the Government of India are not
 /// copyrighted). Only provisions whose wording is certain are included; teachers paste or
@@ -69,7 +70,7 @@ List<BoardElement> readerNotes(String title, List<String> paras, Map<int, int> m
 
 /// Opens the reader; what the teacher highlights goes on [wb].
 Future<void> openLawReader(BuildContext context, WhiteboardController wb, Color accent) async {
-  final els = await showDialog<List<BoardElement>>(context: context, builder: (_) => BoardChromeTheme(child: LawReaderDialog(accent: accent)));
+  final els = await showPanelDialog<List<BoardElement>>(context: context, builder: (_) => BoardChromeTheme(child: LawReaderDialog(accent: accent)));
   if (els != null && els.isNotEmpty) wb.insert(els);
 }
 
@@ -172,7 +173,7 @@ class _LawReaderDialogState extends State<LawReaderDialog> {
   });
 
   Future<void> _note(int i) async {
-    final t = await showDialog<String>(context: context, builder: (_) => _NoteDialog(initial: _notes[i] ?? ''));
+    final t = await showPanelDialog<String>(context: context, builder: (_) => _NoteDialog(initial: _notes[i] ?? ''));
     if (t == null) return;
     setState(() {
       if (t.trim().isEmpty) {

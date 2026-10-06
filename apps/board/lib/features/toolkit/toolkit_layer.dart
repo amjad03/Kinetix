@@ -10,6 +10,7 @@ import '../board/chrome.dart';
 import '../board/layout/layout_strings.dart';
 import 'noise_source.dart';
 import 'toolkit_controller.dart';
+import '../board/panel/panel_host.dart';
 
 /// A toolkit item's name in the board's language.
 String toolkitName(AppLocalizations l, ToolkitItem t) => switch (t) {
@@ -784,7 +785,7 @@ class SpinnerBody extends StatelessWidget {
   static List<String> optionsOf(ToolkitController k, AppLocalizations l) => k.spinnerOptions ?? [for (final g in ['A', 'B', 'C', 'D']) l.tkGroup(g)];
 
   Future<void> _edit(BuildContext context, List<String> options) async {
-    final edited = await showDialog<String>(
+    final edited = await showPanelDialog<String>(
       context: context,
       builder: (_) => BoardChromeTheme(child: _OptionsDialog(initial: options.join('\n'))),
     );

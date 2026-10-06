@@ -119,6 +119,8 @@ void main() {
         await tester.tap(f.first, warnIfMissed: false);
         await settle(tester);
         if (signature(tester, wb) == before) dead.add(key);
+        final error = tester.takeException();
+        if (error != null) dead.add('$key: $error');
       }
 
       // Every tile in Tools.
@@ -137,20 +139,25 @@ void main() {
 
       await openTools();
       final tiles = find.descendant(of: find.byType(ToolsDrawer), matching: find.byType(ChromeTile));
-      final labels = [for (final e in tiles.evaluate()) (e.widget as ChromeTile).label];
-      expect(labels.length, greaterThan(15));
+      final labels = [for (final e in tiles.evaluate()) (e.widget.key! as ValueKey<String>).value];
+      expect(labels.length, greaterThan(40));
+      // Calibrating keeps its scale for the device once read (a cache across tests): the canvas
+      // tools' own tests cover it.
+      labels.remove('drawer-calibrate');
       for (final label in labels) {
         wb = await fresh();
         final before = signature(tester, wb);
         await openTools();
-        final tile = find.descendant(of: find.byType(ToolsDrawer), matching: find.widgetWithText(ChromeTile, label));
+        final tile = find.byKey(Key(label));
         await tester.ensureVisible(tile);
         await tester.pumpAndSettle();
         await tester.tap(tile);
         await settle(tester);
         if (signature(tester, wb) == before) dead.add('Tools: $label');
+        final error = tester.takeException();
+        if (error != null) dead.add('Tools: $label: $error');
       }
-      expect(dead, isEmpty, reason: 'these did nothing');
+      expect(dead, isEmpty, reason: 'these did nothing or threw');
       await tester.pumpWidget(const SizedBox());
       for (final b in boards) {
         b.dispose();

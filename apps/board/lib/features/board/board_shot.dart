@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
+import 'panel/panel_host.dart';
 
 /// Screenshot: a picture (PNG) of what the board shows, to save on the device or share.
 abstract final class BoardShot {
@@ -36,7 +37,7 @@ abstract final class BoardShot {
     }
     if (!context.mounted) return;
     final name = fileName(DateTime.now());
-    await showDialog<void>(
+    await showPanelDialog<void>(
       context: context,
       builder: (dialog) => BoardChromeTheme(
         child: AlertDialog(

@@ -20,6 +20,7 @@ import '../sims/sims.dart';
 import 'search_index.dart';
 import 'search_strings.dart';
 import 'universal_search.dart';
+import '../board/panel/panel_host.dart';
 
 /// The board's universal search (the top bar's search button, the phone's More sheet,
 /// Ctrl+K): builds the index from what the board has and opens what is picked.
@@ -167,7 +168,7 @@ Future<void> openBoardSearch(
         unawaited(ConceptVideoPlayer.open(context, item.payload as ConceptVideo));
       case SearchKind.setting:
         unawaited(
-          showDialog<void>(
+          showPanelDialog<void>(
             context: context,
             builder: (_) => BoardChromeTheme(child: BoardSettingsDialog(board: board, initialQuery: item.titleIn(s.lang))),
           ),

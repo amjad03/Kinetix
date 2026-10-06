@@ -7,6 +7,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../board/phone_chrome.dart';
 import 'search_strings.dart';
+import '../board/panel/panel_host.dart';
 
 /// 3D solids for the Shapes popover: the solids of kinetix_3d (drawn by its pure-Dart
 /// renderer, so they work everywhere and offline), turned round with a finger, with their
@@ -170,7 +171,7 @@ class Solid3dDialog extends StatefulWidget {
   static Future<void> open(BuildContext context, SolidKind kind, {ValueChanged<Model3dSnapshot>? onPut, ValueChanged<String>? onOpenViewer}) {
     // The board's 3D scope places pictures; the dialog sits above it, so take it along.
     final put = onPut ?? Model3dScope.maybeOf(context)?.onSnapshot;
-    return showDialog<void>(
+    return showPanelDialog<void>(
       context: context,
       builder: (_) => Solid3dDialog(kind: kind, onPut: put, onOpenViewer: onOpenViewer),
     );

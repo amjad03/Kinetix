@@ -7,6 +7,7 @@ import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
+import '../board/panel/panel_host.dart';
 
 const homeworkAccent = Color(0xFFF28B82);
 
@@ -369,7 +370,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
 /// Asks for a title and due date, then gives [instructions] to the class as homework.
 /// Returns true when it was sent.
 Future<bool> showSendHomeworkDialog(BuildContext context, {required AiController ai, required String title, required String instructions}) async {
-  final sent = await showDialog<bool>(
+  final sent = await showPanelDialog<bool>(
     context: context,
     builder: (_) => BoardChromeTheme(
       child: _SendHomeworkDialog(ai: ai, title: title, instructions: instructions),

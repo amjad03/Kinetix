@@ -11,6 +11,7 @@ import 'package:webview_windows/webview_windows.dart' as win;
 
 import '../../l10n/l10n.dart';
 import 'concept_videos.dart';
+import '../board/panel/panel_host.dart';
 
 /// The page the player runs in. It is the embed's origin (and Referer, which YouTube's embedded
 /// player requires); nothing is served from it but the player page itself.
@@ -43,7 +44,7 @@ function onYouTubeIframeAPIReady() {
 </script></body></html>''';
 }
 
-/// A full-screen concept video. Close returns to the board.
+/// A concept video, in the split panel. Close returns to the board.
 class ConceptVideoPlayer extends StatelessWidget {
   const ConceptVideoPlayer({super.key, required this.video});
 
@@ -53,9 +54,8 @@ class ConceptVideoPlayer extends StatelessWidget {
   @visibleForTesting
   static Widget Function(ConceptVideo video)? surfaceOverride;
 
-  static Future<void> open(BuildContext context, ConceptVideo video) => Navigator.of(context).push(
-    MaterialPageRoute<void>(fullscreenDialog: true, builder: (_) => ConceptVideoPlayer(video: video)),
-  );
+  /// Plays [video] in the board's split panel.
+  static Future<void> open(BuildContext context, ConceptVideo video) => showPanelDialog<void>(context: context, builder: (_) => ConceptVideoPlayer(video: video));
 
   @override
   Widget build(BuildContext context) {

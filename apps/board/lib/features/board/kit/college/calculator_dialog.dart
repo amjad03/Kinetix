@@ -6,6 +6,7 @@ import '../../../../l10n/l10n.dart';
 import '../../chrome.dart';
 import 'college_builders.dart' show workingElements;
 import 'finance.dart' show Working;
+import '../../panel/panel_host.dart';
 
 /// One input of a calculator.
 class CalcField {
@@ -72,7 +73,7 @@ List<BoardElement> stackParts(List<List<BoardElement>> parts, {double gap = 60})
 
 /// Shows [spec]; returns the elements to put on the board, or null.
 Future<List<BoardElement>?> showCalculator(BuildContext context, CalcSpec spec, {required Color ink, required Color accent}) =>
-    showDialog<List<BoardElement>>(context: context, builder: (_) => BoardChromeTheme(child: CalculatorDialog(spec: spec, ink: ink, accent: accent)));
+    showPanelDialog<List<BoardElement>>(context: context, builder: (_) => BoardChromeTheme(child: CalculatorDialog(spec: spec, ink: ink, accent: accent)));
 
 class CalculatorDialog extends StatefulWidget {
   const CalculatorDialog({super.key, required this.spec, required this.ink, required this.accent});
