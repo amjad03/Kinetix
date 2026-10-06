@@ -118,6 +118,7 @@ void paintElement(
   bool lengths = false,
   bool angles = false,
   bool paintMath = false,
+  MeasureUnit unit = MeasureUnit.cm,
 }) {
   final rot = e.rotation;
   if (rot != 0) {
@@ -131,7 +132,7 @@ void paintElement(
   }
   switch (e) {
     case Stroke():
-      paintStroke(canvas, e, background, lengths: lengths, angles: angles);
+      paintStroke(canvas, e, background, lengths: lengths, angles: angles, unit: unit);
     case TextElement():
       _cachedText(e, background, () => layoutBoardText(e.text, e.fontSize, inkColorFor(e.color, background), bold: e.bold, font: e.font))
           .paint(canvas, e.position);
@@ -162,6 +163,8 @@ void paintElement(
           ..strokeJoin = StrokeJoin.round
           ..strokeCap = StrokeCap.round,
       );
+      final m = e.measure | ShapeMeasure(lengths: lengths, angles: angles);
+      if (m.any) paintShapeMeasurements(canvas, e, inkColorFor(e.color, background), m, unit);
     case NoteElement():
       paintNote(canvas, e);
     case SheetElement():

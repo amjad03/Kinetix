@@ -8,7 +8,11 @@ import 'sheet_formula.dart';
 
 /// The saved-board format version. 1: pages of strokes. 2: a page's `strokes` may also hold the
 /// other board elements (text, pictures, equations, graphs, figures, notes, sheets, flowchart
-/// blocks and arrows, each with its own `t`), and a page may list its `groups`. Readers skip kinds they do not know, so a board
+/// blocks and arrows, each with its own `t`), and a page may list its `groups` and the
+/// elements that are `locked`. Shapes and figures may carry their measurements (`m`, bits of
+/// [ShapeMeasure]) and how far they have been turned (`tr`, radians; their points are stored
+/// turned, so older readers draw them right); rectangles their corner radius (`cr`), arrows
+/// filled heads (`ah`). Readers skip kinds they do not know, so a board
 /// saved by a newer app still opens in an older one, without the new kinds.
 const int boardFormatVersion = 2;
 
@@ -21,7 +25,11 @@ class SavedBoard {
     this.groups = const [],
     this.pageBackgrounds = const [],
     this.model3dNotes = const {},
+    this.locked = const [],
   });
+
+  /// Each page's locked elements, as positions on the page (missing pages: none).
+  final List<List<int>> locked;
 
   /// The first page's paper (and every page's, for boards saved before pages had their own).
   final BoardBackground background;
@@ -36,7 +44,7 @@ class SavedBoard {
 
   /// A copy with [notes] as its 3D models' notes.
   SavedBoard withModel3dNotes(Map<String, dynamic> notes) =>
-      SavedBoard(background: background, canvas: canvas, pages: pages, groups: groups, pageBackgrounds: pageBackgrounds, model3dNotes: notes);
+      SavedBoard(background: background, canvas: canvas, pages: pages, groups: groups, pageBackgrounds: pageBackgrounds, model3dNotes: notes, locked: locked);
 
   /// Page [i]'s paper.
   BoardBackground backgroundOf(int i) => i < pageBackgrounds.length ? pageBackgrounds[i] : background;
@@ -64,6 +72,7 @@ class SavedBoard {
         {
           'strokes': [for (final e in pages[i]) encodeElement(e)],
           if (i < groups.length && groups[i].isNotEmpty) 'groups': groups[i],
+          if (i < locked.length && locked[i].isNotEmpty) 'locked': locked[i],
           if (backgroundOf(i) != background) 'background': backgroundOf(i).name,
         },
     ],
@@ -76,6 +85,7 @@ class SavedBoard {
     var n = 0;
     final pages = <List<BoardElement>>[];
     final groups = <List<List<int>>>[];
+    final locked = <List<int>>[];
     final board = BoardBackground.values.asNameMap()[j['background']] ?? BoardBackground.plain;
     final backgrounds = <BoardBackground>[];
     for (final raw in (j['pages'] as List<dynamic>? ?? const [])) {
@@ -96,6 +106,10 @@ class SavedBoard {
         for (final g in (page['groups'] as List<dynamic>? ?? const []))
           if (g is List) [for (final i in g) if (i is num && at[i.toInt()] != null) at[i.toInt()]!],
       ]..removeWhere((g) => g.length < 2));
+      locked.add([
+        for (final i in (page['locked'] as List<dynamic>? ?? const []))
+          if (i is num && at[i.toInt()] != null) at[i.toInt()]!,
+      ]);
     }
     return SavedBoard(
       background: board,
@@ -104,6 +118,7 @@ class SavedBoard {
       canvas: Size(((canvas?['w'] as num?) ?? 1920).toDouble(), ((canvas?['h'] as num?) ?? 1080).toDouble()),
       pages: pages,
       groups: groups,
+      locked: locked,
     );
   }
 
@@ -133,6 +148,10 @@ Map<String, dynamic> encodeStroke(Stroke s) => {
   if (s.fill != null) 'f': s.fill!.toARGB32(),
   if (s.style.nib != PenNib.round) 'n': s.style.nib.name,
   if (s.style.pressure) 'pr': [for (final p in s.points) (p.pressure * 100).round()],
+  if (s.measure.any) 'm': s.measure.bits,
+  if (s.turn != 0) 'tr': _round3(s.turn),
+  if (s.corner > 0) 'cr': _round1(s.corner),
+  if (s.filledHead) 'ah': 1,
   // Flat [x0, y0, x1, y1, …] to 0.1 px: plenty for ink, a third of the size of objects.
   'p': [
     for (final p in s.points) ...[_round1(p.x), _round1(p.y)],
@@ -155,6 +174,10 @@ Stroke? decodeStroke(Map<String, dynamic> j, String id) {
     id: id,
     shape: shape,
     fill: j['f'] is num ? Color((j['f'] as num).toInt()) : null,
+    measure: j['m'] is num ? ShapeMeasure.fromBits((j['m'] as num).toInt()) : ShapeMeasure.none,
+    turn: j['tr'] is num ? (j['tr'] as num).toDouble() : 0,
+    corner: j['cr'] is num ? (j['cr'] as num).toDouble() : 0,
+    filledHead: j['ah'] == 1,
     style: InkStyle(
       tool: tool,
       color: Color((j['c'] as num).toInt()),
@@ -217,6 +240,8 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     'w': e.width,
     if (!e.closed) 'o': true,
     if (e.fill != null) 'f': e.fill!.toARGB32(),
+    if (e.measure.any) 'm': e.measure.bits,
+    if (e.turn != 0) 'tr': _round3(e.turn),
   },
   NoteElement() => {
     't': 'note',
@@ -387,6 +412,8 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
           width: n('w', 3),
           closed: j['o'] != true,
           fill: j['f'] is num ? color('f') : null,
+          measure: j['m'] is num ? ShapeMeasure.fromBits((j['m'] as num).toInt()) : ShapeMeasure.none,
+          turn: n('tr'),
         );
       case 'note':
         final rect = _readRect(j['r']);
