@@ -918,6 +918,8 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 
   Widget _toolbar(ViewerManifest m, Viewer3dStrings s, bool wide) {
     final cs = Theme.of(context).colorScheme;
+    // Phones: tighter buttons, so the toolbar fits 360 pixels.
+    final density = wide ? null : VisualDensity.compact;
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -937,6 +939,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         IconButton(
           key: const ValueKey('model3d-write'),
           tooltip: s.write,
+          visualDensity: density,
           isSelected: _pen != null,
           style: _pen != null ? IconButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Theme.of(context).colorScheme.onPrimary) : null,
           icon: const Icon(Icons.edit_outlined),
@@ -945,13 +948,14 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         IconButton(
           key: const ValueKey('model3d-laser'),
           tooltip: s.laser,
+          visualDensity: density,
           isSelected: _laser,
           style: _laser ? IconButton.styleFrom(backgroundColor: const Color(0xFFE53935), foregroundColor: Colors.white) : null,
           icon: const Icon(Icons.highlight_outlined),
           onPressed: _loaded ? () => _setLaser(!_laser) : null,
         ),
-        IconButton(key: const ValueKey('model3d-reset'), tooltip: s.startAgain, icon: const Icon(Icons.restart_alt), onPressed: _loaded ? _reset : null),
-        IconButton(key: const ValueKey('model3d-about'), tooltip: s.about, icon: const Icon(Icons.info_outline), onPressed: () => showModel3dCredits(context, model: m, lang: _lang)),
+        IconButton(key: const ValueKey('model3d-reset'), tooltip: s.startAgain, visualDensity: density, icon: const Icon(Icons.restart_alt), onPressed: _loaded ? _reset : null),
+        IconButton(key: const ValueKey('model3d-about'), tooltip: s.about, visualDensity: density, icon: const Icon(Icons.info_outline), onPressed: () => showModel3dCredits(context, model: m, lang: _lang)),
         if (_onSnapshot != null) ...[
           const SizedBox(width: 4),
           wide
