@@ -11,9 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
+import 'support/layout.dart';
 
-/// The split screen on a phone: from the More sheet, the board above and the other half below
-/// in portrait, side by side in landscape; the board still writes and the bar resizes.
+/// The split panel on a phone: a sheet over the lower half upright (drag up for the whole
+/// screen, down to close), beside the board on its side; the board still writes.
 void main() {
   setUpAll(loadBoardFonts);
   setUp(() {
@@ -27,9 +28,9 @@ void main() {
     ViewerManifest.debugLoad = null;
   });
 
-  for (final size in [const Size(390, 844), const Size(844, 390)]) {
+  for (final size in [const Size(360, 640), const Size(390, 844), const Size(844, 390)]) {
     final portrait = size.height > size.width;
-    testWidgets('${portrait ? 'portrait' : 'landscape'}: the split screen opens from More and splits the phone', (tester) async {
+    testWidgets('${size.width.toInt()}×${size.height.toInt()}: the split panel is a sheet upright and beside the board on its side; the board still writes', (tester) async {
       screenSize(tester, size);
       final board = await enrolledBoard();
       board.onPaired('session-token', sessionIn('en'));
@@ -39,47 +40,45 @@ void main() {
         await tester.tap(find.text('Not now'));
         await tester.pumpAndSettle();
       }
-      await tester.tap(find.byKey(const Key('phone-more')));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const Key('more-split-screen')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('more-split-screen')));
-      await tester.pumpAndSettle();
-
-      expect(find.byKey(const Key('phone-split')), findsOneWidget);
+      await tapBoard(tester, 'panel-tab-model3d');
+      final panel = tester.getRect(find.byKey(const Key('split-panel')));
       final canvas = tester.getRect(find.byType(WhiteboardCanvas));
-      final close = tester.getRect(find.byKey(const Key('panel-close')));
       if (portrait) {
-        expect(canvas.bottom, lessThanOrEqualTo(close.top), reason: 'the board is above');
-        expect(canvas.width, size.width);
+        // Over the lower half; the board keeps the screen, its top half visible.
+        expect(panel.top, closeTo(size.height / 2, 1));
+        expect(panel.width, size.width);
+        expect(canvas.size, size);
       } else {
-        expect(canvas.right, lessThanOrEqualTo(close.left), reason: 'the board is at the left');
+        expect(canvas.right, lessThanOrEqualTo(panel.left), reason: 'the board is at the left');
         expect(canvas.height, size.height);
       }
-      // The phone's bar stays on the board's half.
-      expect(canvas.contains(tester.getCenter(find.byKey(const Key('tool-write')))), isTrue);
 
-      // The board half still writes.
+      // The board still writes where it shows.
       final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
-      final g = await tester.startGesture(canvas.center, kind: PointerDeviceKind.touch);
+      final at = portrait ? Offset(size.width / 2, size.height / 4) : Offset(canvas.center.dx, size.height / 3);
+      final g = await tester.startGesture(at, kind: PointerDeviceKind.touch);
       for (var i = 1; i <= 5; i++) {
-        await g.moveTo(canvas.center + Offset(i * 10.0, i * 4.0));
+        await g.moveTo(at + Offset(i * 10.0, i * 4.0));
       }
       await g.up();
       await tester.pump();
       expect(wb.elements, hasLength(1));
 
-      // The bar between the halves resizes them.
-      final before = canvas;
-      await tester.drag(find.byKey(const Key('phone-split-divider')), portrait ? const Offset(0, 120) : const Offset(120, 0));
-      await tester.pumpAndSettle();
-      final after = tester.getRect(find.byType(WhiteboardCanvas));
-      expect(portrait ? after.height : after.width, greaterThan((portrait ? before.height : before.width) + 60));
-
-      await tester.tap(find.byKey(const Key('panel-close')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('phone-split')), findsNothing);
-      expect(tester.getRect(find.byType(WhiteboardCanvas)).size, size);
+      if (portrait) {
+        // Drag up: the whole screen; down: closed.
+        await tester.drag(find.byKey(const Key('panel-grabber')), const Offset(0, -2000));
+        await tester.pumpAndSettle();
+        expect(tester.getRect(find.byKey(const Key('split-panel'))).top, 0);
+        await tester.drag(find.byKey(const Key('panel-grabber')), Offset(0, size.height * 0.9));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('split-panel')), findsNothing);
+      } else {
+        await tester.tap(find.byKey(const Key('panel-close')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('split-panel')), findsNothing);
+        expect(tester.getRect(find.byType(WhiteboardCanvas)).size, size);
+      }
+      expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       board.dispose();
     });

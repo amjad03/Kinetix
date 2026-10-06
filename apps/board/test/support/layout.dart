@@ -7,8 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 Future<void> tapBoard(WidgetTester tester, String key) async {
   final f = find.byKey(Key(key));
   if (f.evaluate().isEmpty && key.startsWith('panel-tab-') && find.byKey(const Key('split-panel')).evaluate().isEmpty) {
-    await tester.tap(find.byKey(const Key('panel-ai')));
-    await tester.pumpAndSettle();
+    await tapBoard(tester, 'panel-ai');
   }
   if (f.evaluate().isEmpty && find.byKey(const Key('phone-more')).evaluate().isNotEmpty) {
     await tester.tap(find.byKey(const Key('phone-more')));
