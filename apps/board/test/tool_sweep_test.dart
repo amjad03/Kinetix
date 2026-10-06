@@ -1,4 +1,3 @@
-import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_3d/kinetix_3d.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/features/board/chrome.dart';
-import 'package:kinetix_board/features/board/popovers.dart';
+import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
 import 'package:kinetix_board/main.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -16,10 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
 
-/// No dead buttons: every tool on the phone's bar and More sheet, the rails and the bottom
-/// toolbar, and every tile in Tools, changes something when tapped (a tool, a popover, a
-/// panel, a dialog, a message, the view or the page), at phone (390×844) and panel
-/// (1920×1080) sizes.
+/// No dead buttons: every button of the layout (the phone's bar and its ⋯ sheet, the main
+/// toolbar docked at the bottom or an edge, the corners) and every tile in the tools drawer
+/// changes something when tapped (a tool, a popover, the panel, a dialog, a message, the view
+/// or the page), on phones (390×844 upright, 844×390 on its side) and a panel (1920×1080).
 void main() {
   setUpAll(loadBoardFonts);
   setUp(() {
@@ -52,8 +51,9 @@ void main() {
 
   const setups = [
     ('phone', Size(390, 844), ToolbarDock.bottom),
-    ('panel rails', Size(1920, 1080), ToolbarDock.bottom),
-    ('panel bottom toolbar', Size(1920, 1080), ToolbarDock.left),
+    ('phone landscape', Size(844, 390), ToolbarDock.bottom),
+    ('panel', Size(1920, 1080), ToolbarDock.bottom),
+    ('panel, toolbar at the left', Size(1920, 1080), ToolbarDock.left),
   ];
 
   for (final (name, size, layout) in setups) {
@@ -81,7 +81,7 @@ void main() {
       }
 
       var wb = await fresh();
-      final phone = size.width < 600;
+      final phone = size.shortestSide < 600;
       // The buttons of this layout (the phone's More sheet holds the rest).
       Future<List<String>> buttons() async {
         final found = <String>{};
@@ -100,11 +100,11 @@ void main() {
           await tester.pumpAndSettle();
         }
         // Undo, redo, Clear, Fit and the pages need something to act on: their own tests cover them.
-        return (found..removeAll(['undo', 'redo', 'previous-page', 'clear-board', 'zoom-fit', 'phone-more', 'end-class', 'show-tools'])).toList()..sort();
+        return (found..removeAll(['undo', 'redo', 'previous-page', 'next-page', 'clear-board', 'zoom-fit', 'phone-more', 'end-class'])).toList()..sort();
       }
 
       final keys = await buttons();
-      expect(keys, containsAll(['tool-hand', 'tool-select', 'tool-write', 'tool-erase', 'tool-tools', 'panel-ai']));
+      expect(keys, containsAll(['tool-pen', 'tool-highlighter', 'tool-select', 'tool-erase', 'tool-shapes', 'tool-tools', 'tool-insert', 'panel-ai', 'page-overview', 'add-page']));
       for (final key in keys) {
         wb = await fresh();
         // From the More sheet too, compared with the board before the sheet opened.
