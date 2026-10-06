@@ -14,13 +14,29 @@ const int boardFormatVersion = 2;
 
 /// A saved board as stored by KINETIX Cloud (`WhiteboardContent` in services/api).
 class SavedBoard {
-  const SavedBoard({required this.background, required this.canvas, required this.pages, this.groups = const [], this.pageBackgrounds = const []});
+  const SavedBoard({
+    required this.background,
+    required this.canvas,
+    required this.pages,
+    this.groups = const [],
+    this.pageBackgrounds = const [],
+    this.model3dNotes = const {},
+  });
 
   /// The first page's paper (and every page's, for boards saved before pages had their own).
   final BoardBackground background;
 
   /// Each page's paper; a missing page uses [background].
   final List<BoardBackground> pageBackgrounds;
+
+  /// Notes written on 3D models shown beside the board (kinetix_3d's annotation store as
+  /// JSON), so they come back when the board is opened again. Readers that do not know it
+  /// skip it.
+  final Map<String, dynamic> model3dNotes;
+
+  /// A copy with [notes] as its 3D models' notes.
+  SavedBoard withModel3dNotes(Map<String, dynamic> notes) =>
+      SavedBoard(background: background, canvas: canvas, pages: pages, groups: groups, pageBackgrounds: pageBackgrounds, model3dNotes: notes);
 
   /// Page [i]'s paper.
   BoardBackground backgroundOf(int i) => i < pageBackgrounds.length ? pageBackgrounds[i] : background;
@@ -42,6 +58,7 @@ class SavedBoard {
     'v': boardFormatVersion,
     'background': background.name,
     'canvas': {'w': canvas.width.round(), 'h': canvas.height.round()},
+    if (model3dNotes.isNotEmpty) 'model3dNotes': model3dNotes,
     'pages': [
       for (var i = 0; i < pages.length; i++)
         {
@@ -83,6 +100,7 @@ class SavedBoard {
     return SavedBoard(
       background: board,
       pageBackgrounds: backgrounds,
+      model3dNotes: j['model3dNotes'] is Map ? (j['model3dNotes'] as Map).cast<String, dynamic>() : const {},
       canvas: Size(((canvas?['w'] as num?) ?? 1920).toDouble(), ((canvas?['h'] as num?) ?? 1080).toDouble()),
       pages: pages,
       groups: groups,

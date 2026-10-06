@@ -63,6 +63,14 @@ void main() {
     expect(back.points.first.pressure, closeTo(0.2, 0.01));
   });
 
+  test('3D models\' notes travel with the saved board', () {
+    final saved = WhiteboardController().toSaved(const Size(1920, 1080)).withModel3dNotes({
+      '/heart': {'pins': []},
+    });
+    expect(SavedBoard.fromJson(saved.toJson()).model3dNotes, contains('/heart'));
+    expect(SavedBoard.fromJson(WhiteboardController().toSaved(Size.zero).toJson()).model3dNotes, isEmpty);
+  });
+
   test('every paper paints', () async {
     for (final b in BoardBackground.values) {
       final r = PictureRecorder();

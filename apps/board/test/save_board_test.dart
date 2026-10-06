@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:kinetix_3d/kinetix_3d.dart';
 import 'package:kinetix_board/core/api_client.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/models.dart';
@@ -86,6 +87,11 @@ void main() {
   testWidgets('Save sends the pages, canvas size and title, and shares with the class', (tester) async {
     await pump(tester);
     await drawLine(tester);
+    // A note written on the heart in the 3D tab is kept with the board.
+    tester.widget<Model3dScope>(find.byType(Model3dScope)).annotations!.put(
+      'heart',
+      const Model3dAnnotations(pins: [Model3dPin(id: 'p1', part: 'aorta', at: [0, 1, 0], text: 'Aorta')]),
+    );
     await tapBoard(tester, 'save-board');
     await tester.pumpAndSettle();
     expect(find.text('Save board'), findsOneWidget);
@@ -99,6 +105,8 @@ void main() {
     expect(body['canvas']['h'], 1080);
     expect(body['canvas']['w'], inInclusiveRange(1000, 1920));
     expect((body['pages'] as List).single['strokes'], hasLength(1));
+    expect(body['model3dNotes'], contains('/heart'));
+    expect(Model3dAnnotationStore.fromJson(body['model3dNotes']).of('heart').pins.single.text, 'Aorta');
     expect(find.text('Saved and shared with BCom Sem 3 A.'), findsOneWidget);
 
     // Saving again goes to the same board id.

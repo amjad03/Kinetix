@@ -6,7 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show Model3dMirror, Model3dScope, Model3dSnapshot;
+import 'package:kinetix_3d/kinetix_3d.dart' show Model3dAnnotationStore, Model3dMirror, Model3dScope, Model3dSnapshot;
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -143,6 +143,10 @@ class _BoardScreenState extends State<BoardScreen> {
   final _penMemory = PenMemory();
   BoardTool _lastPen = BoardTool.pen;
 
+  /// Notes written on 3D models in the panel's 3D tab, kept with the board when it is saved
+  /// (by model id) and put back when it is opened.
+  Model3dAnnotationStore _modelNotes = Model3dAnnotationStore();
+
   /// While the toolbar is being dragged to an edge: how far it has moved.
   Offset? _toolbarDrag;
   BoardBackground? _lastPaper;
@@ -265,6 +269,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _pen.dispose();
     _wb.dispose();
     _images.dispose();
+    _modelNotes.dispose();
     _secondInk.dispose();
     _ai.dispose();
     _penMemory.dispose();
@@ -601,6 +606,13 @@ class _BoardScreenState extends State<BoardScreen> {
     if (mounted) showBoardMessage(context, context.l10n.snapshotAdded);
   }
 
+  /// The 3D models' notes of a board just opened (or none, for a fresh one).
+  void _setModelNotes(Map<String, dynamic> json) {
+    final old = _modelNotes;
+    setState(() => _modelNotes = Model3dAnnotationStore.fromJson(json));
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+  }
+
   /// A PNG's size from its header (640 × 480 when it cannot be read).
   static Size _pngSize(Uint8List png) {
     if (png.length < 24) return const Size(640, 480);
@@ -710,7 +722,7 @@ class _BoardScreenState extends State<BoardScreen> {
   /// The board as it stands, ready to save.
   SavedBoard _snapshot() {
     _canvasKey.currentState?.commitText();
-    return _wb.toSaved(_canvasSize);
+    return _wb.toSaved(_canvasSize).withModel3dNotes(_modelNotes.toJson());
   }
 
   Future<void> _save() async {
@@ -783,6 +795,7 @@ class _BoardScreenState extends State<BoardScreen> {
             try {
               final saved = await api.whiteboard(summary.id);
               _wb.load(saved);
+              _setModelNotes(saved.model3dNotes);
               board.whiteboardId = summary.id;
               setState(() => _boardTitle = summary.title);
               _capture?.background = saved.background;
@@ -872,6 +885,7 @@ class _BoardScreenState extends State<BoardScreen> {
       }
     }
     _wb.load(const SavedBoard(background: BoardBackground.plain, canvas: Size.zero, pages: []));
+    _setModelNotes(const {});
     _boardTitle = null;
   }
 
@@ -1432,6 +1446,7 @@ class _BoardScreenState extends State<BoardScreen> {
     InkLabels.answerCover = l.answerCover;
     return Model3dScope(
       onSnapshot: _addModelSnapshot,
+      annotations: _modelNotes,
       mirror: Model3dMirror(wanted: () => board.projector.wantsPictures, send: board.projector.send3d),
       child: PanelHost(
         push: _pushInPanel,
