@@ -1,21 +1,28 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:kinetix_animations/kinetix_animations.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
 
-import 'layout/layout_strings.dart';
+import '../insert/insert_actions.dart' show placePicture;
+import 'chrome.dart';
+import '../../l10n/l10n.dart';
 
-/// The split panel's Animations tab. packages/kinetix_animations (built separately) will export
-/// `AnimationsPanel` and `animationCatalogue`; at merge [animationsPanel] returns
-/// `AnimationsPanel(...)` and [animationsAvailable] becomes true. Until then the tab is
-/// registered and shows a placeholder.
-const animationsAvailable = false;
+/// The split panel's Animations tab (packages/kinetix_animations): the period's subject and
+/// topic preselected; "Add to board" puts a still of the animation on the page, titled.
+Widget animationsPanel(BuildContext context, {required WhiteboardController wb, String? subject, String? topic}) => AnimationsPanel(
+  subject: subject,
+  topic: topic,
+  onAddToBoard: (png, title) {
+    placePicture(wb, png, pngSize(png), credit: title);
+    if (context.mounted) showBoardMessage(context, context.l10n.snapshotAdded);
+  },
+);
 
-Widget animationsPanel(BuildContext context, {required WhiteboardController wb, String? subject}) => const _AnimationsPlaceholder();
-
-class _AnimationsPlaceholder extends StatelessWidget {
-  const _AnimationsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) =>
-      KxEmptyState(key: const Key('animations-placeholder'), icon: Icons.animation, message: LayoutStrings.of(context).animationsSoon);
+/// A PNG's size from its header (640 × 480 when it cannot be read).
+Size pngSize(Uint8List png) {
+  if (png.length < 24) return const Size(640, 480);
+  final d = ByteData.sublistView(png);
+  final w = d.getUint32(16), h = d.getUint32(20);
+  return w == 0 || h == 0 ? const Size(640, 480) : Size(w.toDouble(), h.toDouble());
 }
