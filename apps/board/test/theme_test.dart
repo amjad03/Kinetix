@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
+import 'support/layout.dart';
 
 /// The App theme (Board settings): light by default, never changed by the device type or the
 /// layout, and every screen renders in each theme on a phone and on a panel.
@@ -27,15 +28,16 @@ void main() {
     ViewerManifest.debugLoad = null;
   });
 
-  Future<void> tap(WidgetTester tester, String key) async {
-    final f = find.byKey(Key(key));
-    if (f.evaluate().isEmpty && find.byKey(const Key('phone-more')).evaluate().isNotEmpty) {
-      await tester.tap(find.byKey(const Key('phone-more')));
-      await tester.pumpAndSettle();
+  Future<void> tap(WidgetTester tester, String key) => tapBoard(tester, key);
+
+  /// Closes settings: in the split panel on a panel, a dialog on a phone.
+  Future<void> closeSettings(WidgetTester tester) async {
+    final close = find.byKey(const Key('panel-close'));
+    if (close.evaluate().isNotEmpty) {
+      await tester.tap(close.first);
+    } else {
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
     }
-    await tester.ensureVisible(f);
-    await tester.pumpAndSettle();
-    await tester.tap(f);
     await tester.pumpAndSettle();
   }
 
@@ -57,19 +59,17 @@ void main() {
   for (final size in [const Size(390, 844), const Size(1920, 1080)]) {
     final name = size.width < 600 ? 'phone' : 'panel';
 
-    testWidgets('$name: choosing Interactive panel or the bottom toolbar keeps the light theme', (tester) async {
+    testWidgets('$name: choosing Interactive panel or docking the toolbar keeps the light theme', (tester) async {
       final board = await start(tester, size);
       expect(board.theme, BoardTheme.light);
       expect(chrome(tester), Brightness.light);
-      await tap(tester, 'profile-button');
       await tap(tester, 'menu-settings');
       await tester.ensureVisible(find.byKey(const Key('touch-panel')));
       await tester.tap(find.byKey(const Key('touch-panel')));
       await tester.pumpAndSettle();
       expect(board.touchProfile, TouchProfile.panel);
       expect(Theme.of(tester.element(find.byKey(const Key('touch-panel')))).brightness, Brightness.light);
-      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
-      await tester.pumpAndSettle();
+      await closeSettings(tester);
       expect(chrome(tester), Brightness.light);
       board.setToolbarDock(ToolbarDock.left);
       await tester.pumpAndSettle();
@@ -82,7 +82,6 @@ void main() {
       testWidgets('$name, ${theme.name}: the board, its sheets, panels and dialogs render', (tester) async {
         final board = await start(tester, size);
 
-        await tap(tester, 'profile-button');
         await tap(tester, 'menu-settings');
         await tester.ensureVisible(find.byKey(Key('theme-${theme.name}')));
         await tester.tap(find.byKey(Key('theme-${theme.name}')));
@@ -91,13 +90,12 @@ void main() {
         final want = theme == BoardTheme.light || theme == BoardTheme.system ? Brightness.light : Brightness.dark;
         // The open dialog follows at once.
         expect(Theme.of(tester.element(find.byKey(Key('theme-${theme.name}')))).brightness, want);
-        tester.state<NavigatorState>(find.byType(Navigator).first).pop();
-        await tester.pumpAndSettle();
+        await closeSettings(tester);
         expect(chrome(tester), want);
         final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
         expect(wb.background == BoardBackground.chalkboard, theme == BoardTheme.chalkboard);
 
-        for (final panel in ['panel-ai', 'panel-books', 'panel-kit', 'panel-quiz', 'panel-homework']) {
+        for (final panel in ['panel-tab-ai', 'panel-tab-books', 'panel-tab-kit', 'panel-tab-videos', 'panel-tab-model3d']) {
           await tap(tester, panel);
           expect(find.byKey(const Key('panel-close')), findsWidgets, reason: panel);
           expect(Theme.of(tester.element(find.byKey(const Key('panel-close')).first)).brightness, want, reason: panel);
