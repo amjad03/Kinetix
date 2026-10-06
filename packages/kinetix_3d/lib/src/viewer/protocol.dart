@@ -1,9 +1,19 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'annotations.dart';
+
 /// What the labels show: nothing, the part tapped, or every main part.
 enum LabelMode { none, picked, all }
+
+/// The kinds of cut: in half, a wedge taken out like a slice of cake, a slab (only a slice
+/// left), a plane swept through by depth, and peeling the outer layers off one by one.
+enum CutMode { off, half, wedge, slab, depth, peel }
+
+/// The model's axes: x left to right, y bottom to top, z back to front.
+enum CutAxis { x, y, z }
 
 /// The commands the app sends the viewer page (tool/models/src/viewer.js runs them with
 /// `kx.cmd({...})`). Each is a JSON object with a `cmd` name; this is the one place they
@@ -30,6 +40,74 @@ abstract final class ViewerCommands {
     if (normal != null) 'offset': offset,
     'normal2': ?normal2,
   };
+
+  /// A kind of cut ([CutMode]) across [axis]. Each mode uses its own settings:
+  /// - half: [at] where the plane is (-0.5..0.5 of the model's size), [flip] keeps the other half;
+  /// - wedge: a slice of [angle] degrees (30..180) taken out round [axis], turned [turn] degrees;
+  /// - slab: a slice [thickness] thick (0..1 of the size) left at [at];
+  /// - depth: a plane [depth] of the way in (0..1) from the front of [axis] ([flip]: from the
+  ///   back); [play] sweeps it through, answered by a `cut` event with `done` at the end;
+  /// - peel: the [peel] outermost layers taken off, answered by a `cut` event with `layers`.
+  static Map<String, dynamic> cut(
+    CutMode mode, {
+    CutAxis axis = CutAxis.z,
+    bool flip = false,
+    double at = 0,
+    double angle = 90,
+    double turn = 0,
+    double thickness = 0.2,
+    double depth = 0.5,
+    int peel = 0,
+    bool play = false,
+  }) => {
+    'cmd': 'cut',
+    'mode': mode.name,
+    if (mode != CutMode.off && mode != CutMode.peel) 'axis': axis.name,
+    if ((mode == CutMode.half || mode == CutMode.depth) && flip) 'flip': true,
+    if (mode == CutMode.half || mode == CutMode.slab) 'at': _r(at, -0.5, 0.5),
+    if (mode == CutMode.wedge) ...{'angle': _r(angle, 30, 180), 'turn': _r(turn % 360, 0, 360)},
+    if (mode == CutMode.slab) 'thickness': _r(thickness, 0.01, 1),
+    if (mode == CutMode.depth) 'depth': _r(depth, 0, 1),
+    if (mode == CutMode.depth && play) 'play': true,
+    if (mode == CutMode.peel) 'peel': math.max(0, peel),
+  };
+
+  /// Puts saved notes back on the model (no event in answer).
+  static Map<String, dynamic> setNotes(Model3dAnnotations notes) => {'cmd': 'annotate', 'op': 'set', 'data': notes.toJson()};
+
+  /// Pins a note on the part under [at] (0..1 across the view); answered by an
+  /// `annotations` event naming the new pin, or `noteMissed`.
+  static Map<String, dynamic> pinNote(Offset at, {String text = '', Color color = const Color(0xFFF2B33D)}) => {
+    'cmd': 'annotate',
+    'op': 'pin',
+    'x': _r(at.dx, 0, 1),
+    'y': _r(at.dy, 0, 1),
+    'text': text,
+    'color': colorHex(color),
+  };
+
+  /// New points of a drawn stroke (0..1 across the view): on the model's surface, or over the
+  /// view when not [surface]. [up] ends the stroke (answered by `annotations`).
+  static Map<String, dynamic> stroke(List<Offset> points, {required bool surface, Color color = const Color(0xFFE53935), double width = 2, bool up = false}) => {
+    'cmd': 'annotate',
+    'op': 'stroke',
+    'surface': surface,
+    'pts': [for (final p in points) [_r(p.dx, 0, 1), _r(p.dy, 0, 1)]],
+    'color': colorHex(color),
+    'width': width,
+    if (up) 'up': true,
+  };
+
+  static Map<String, dynamic> updateNote(String id, {String? text, Color? color}) => {
+    'cmd': 'annotate',
+    'op': 'update',
+    'id': id,
+    'text': ?text,
+    if (color != null) 'color': colorHex(color),
+  };
+  static Map<String, dynamic> deleteNote(String id) => {'cmd': 'annotate', 'op': 'delete', 'id': id};
+  static Map<String, dynamic> clearNotes() => {'cmd': 'annotate', 'op': 'clear'};
+  static Map<String, dynamic> showNotes(bool on) => {'cmd': 'annotate', 'op': 'show', 'on': on};
 
   /// Hides [parts]; [shown] are parts hidden at the start that the teacher turned on.
   static Map<String, dynamic> hide(Iterable<String> parts, Iterable<String> shown) => {'cmd': 'hide', 'parts': parts.toList(), 'shown': shown.toList()};
@@ -67,11 +145,11 @@ abstract final class ViewerCommands {
 
   /// Every command name the page understands (kept in step with viewer.js by a test).
   static const names = {
-    'lang', 'labels', 'pick', 'view', 'reset', 'explode', 'slice', 'hide', 'variant', 'animate', 'step', 'autoRotate', 'snapshot',
+    'lang', 'labels', 'pick', 'view', 'reset', 'explode', 'slice', 'cut', 'annotate', 'hide', 'variant', 'animate', 'step', 'autoRotate', 'snapshot',
     'mirror', 'laser', 'orbit', 'partAt', 'frames', 'locate', 'debug', 'state',
   };
 
-  static double _r(double v) => (v.clamp(0.0, 1.0) * 10000).roundToDouble() / 10000;
+  static double _r(double v, [double lo = 0, double hi = 1]) => (v.clamp(lo, hi) * 10000).roundToDouble() / 10000;
 }
 
 /// Something the viewer page said, decoded.
@@ -95,7 +173,8 @@ class ViewerEvent {
 
   final Map<String, dynamic> data;
 
-  /// ready | loaded | pick | laser | snapshot | frame | animation | autoRotate | state | partAt | error | restored
+  /// ready | loaded | pick | laser | snapshot | frame | animation | autoRotate | state | partAt |
+  /// cut | annotations | noteMissed | notePicked | error | restored
   String get type => data['event'] as String;
 
   /// For pick, laser, partAt: the part, or null for none.

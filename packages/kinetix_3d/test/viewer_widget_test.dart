@@ -181,6 +181,163 @@ void main() {
     expect(e.lastOf('reset'), isNotNull);
   });
 
+  testWidgets('kinds of cut: half, cake slice, slab, depth and peel', (tester) async {
+    final e = (await _open(tester, const Model3dViewer(modelId: 'earth_layers')))!;
+    await tester.tap(find.byKey(const ValueKey('tab-cut')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('cut-mode-wedge')));
+    await tester.pump();
+    expect(e.lastOf('cut'), {'cmd': 'cut', 'mode': 'wedge', 'axis': 'z', 'angle': 90.0, 'turn': 0.0});
+    expect(e.lastOf('view'), isNotNull); // looks into the slice
+    await tester.tap(find.byKey(const ValueKey('cut-axis-y')));
+    await tester.pump();
+    expect(e.lastOf('cut')!['axis'], 'y');
+    await tester.drag(find.byKey(const ValueKey('cut-angle')), const Offset(120, 0));
+    await tester.pump();
+    expect(e.lastOf('cut')!['angle'], greaterThan(90));
+    await tester.tap(find.byKey(const ValueKey('cut-turn')));
+    await tester.pump();
+    expect(e.lastOf('cut')!['turn'], 90.0);
+
+    await tester.tap(find.byKey(const ValueKey('cut-mode-slab')));
+    await tester.pump();
+    expect(e.lastOf('cut'), containsPair('mode', 'slab'));
+    await tester.drag(find.byKey(const ValueKey('cut-thickness')), const Offset(-60, 0));
+    await tester.pump();
+    expect(e.lastOf('cut')!['thickness'], lessThan(0.2));
+
+    await tester.tap(find.byKey(const ValueKey('cut-mode-depth')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('cut-sweep')));
+    await tester.pump();
+    expect(e.lastOf('cut'), containsPair('play', true));
+    e.receive('{"event":"cut","mode":"depth","depth":0.95,"done":true}');
+    await tester.pump();
+    expect(find.text('How deep: 95%'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('cut-mode-peel')));
+    await tester.pump();
+    await tester.pump();
+    expect(e.lastOf('cut'), {'cmd': 'cut', 'mode': 'peel', 'peel': 1});
+    expect(find.text('1 of 4 layers taken off'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('cut-mode-half')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('cut-flip')));
+    await tester.pump();
+    expect(e.lastOf('cut'), containsPair('flip', true));
+
+    // A ready-made cut takes over; closing ends every kind.
+    await tester.tap(find.byKey(const ValueKey('slice-wedge')));
+    await tester.pump();
+    expect(e.lastOf('slice')!['normal2'], isNotNull);
+    expect(tester.widget<ChoiceChip>(find.byKey(const ValueKey('cut-mode-half'))).selected, isFalse);
+    await tester.tap(find.byKey(const ValueKey('slice-off')));
+    await tester.pump();
+    expect(e.lastOf('slice'), {'cmd': 'slice'});
+  });
+
+  testWidgets('notes: pin one on the model, write it, draw, list and delete', (tester) async {
+    final changes = <Model3dAnnotations>[];
+    final saved = Model3dAnnotations(pins: [const Model3dPin(id: 'old', part: 'crust', at: [0, 0.1, 0], text: 'We live here')]);
+    final e = (await _open(tester, Model3dViewer(modelId: 'earth_layers', annotations: saved, onAnnotationsChanged: changes.add)))!;
+    e.partUnder = (_) => 'outer_core';
+    // The saved notes go back on the model.
+    expect(e.allOf('annotate').first, {'cmd': 'annotate', 'op': 'set', 'data': saved.toJson()});
+
+    await tester.tap(find.byKey(const ValueKey('model3d-write')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('pen-palette')), findsOneWidget);
+    expect(find.byKey(const ValueKey('model3d-pen-layer')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('swatch-#3d8bf2')));
+    await tester.pump();
+    final stage = tester.getCenter(find.byKey(const ValueKey('model3d-stage')));
+    await tester.tapAt(stage + const Offset(0, 40));
+    await tester.pump();
+    await tester.pump();
+    expect(e.lastOf('annotate'), containsPair('op', 'pin'));
+    expect(e.lastOf('annotate'), containsPair('color', '#3d8bf2'));
+    // The new pin's editor opens at once.
+    expect(find.byKey(const ValueKey('pin-editor')), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('pin-text')), 'Liquid iron, 4,500 °C');
+    await tester.tap(find.byKey(const ValueKey('pin-save')));
+    await tester.pumpAndSettle();
+    expect(e.lastOf('annotate'), containsPair('op', 'update'));
+    expect(changes.last.pins.map((p) => p.text), ['We live here', 'Liquid iron, 4,500 °C']);
+    expect(changes.last.pins.last.part, 'outer_core');
+
+    // Draw on the model, then over the view.
+    await tester.tap(find.byKey(const ValueKey('pen-surface')));
+    await tester.pump();
+    await tester.dragFrom(stage, const Offset(80, 30));
+    await tester.pump();
+    expect(e.allOf('annotate').where((c) => c['op'] == 'stroke').last, containsPair('up', true));
+    expect(changes.last.strokes, hasLength(1));
+    await tester.tap(find.byKey(const ValueKey('pen-screen')));
+    await tester.pump();
+    await tester.dragFrom(stage, const Offset(-60, 20));
+    await tester.pump();
+    expect(changes.last.ink, hasLength(1));
+    expect(e.allOf('annotate').where((c) => c['op'] == 'stroke').last['surface'], isFalse);
+    await tester.tap(find.byKey(const ValueKey('pen-undo')));
+    await tester.pump();
+    expect(changes.last.ink, isEmpty);
+    await tester.tap(find.byKey(const ValueKey('pen-done')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('model3d-pen-layer')), findsNothing);
+
+    // The list.
+    await tester.tap(find.byKey(const ValueKey('tab-notes')));
+    await tester.pump();
+    expect(find.text('We live here'), findsOneWidget);
+    expect(find.text('Drawing on Outer core'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('note-delete-old')));
+    await tester.pump();
+    expect(changes.last.pins.map((p) => p.text), ['Liquid iron, 4,500 °C']);
+    await tester.tap(find.byKey(const ValueKey('notes-show')));
+    await tester.pump();
+    expect(e.lastOf('annotate'), {'cmd': 'annotate', 'op': 'show', 'on': false});
+    await tester.tap(find.byKey(const ValueKey('notes-clear')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('notes-clear-yes')));
+    await tester.pumpAndSettle();
+    expect(changes.last.isEmpty, isTrue);
+  });
+
+  testWidgets('a tap off the model pins nothing; the snapshot carries the notes', (tester) async {
+    Model3dSnapshot? got;
+    final e = (await _open(tester, Model3dViewer(modelId: 'earth_layers', onSnapshot: (s) => got = s)))!;
+    await tester.tap(find.byKey(const ValueKey('model3d-write')));
+    await tester.pump();
+    await tester.tapAt(tester.getCenter(find.byKey(const ValueKey('model3d-stage'))));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Tap on the model to pin a note there.'), findsOneWidget);
+    e.partUnder = (_) => 'inner_core';
+    await tester.tapAt(tester.getCenter(find.byKey(const ValueKey('model3d-stage'))));
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('pin-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('model3d-board')));
+    await tester.pump();
+    await tester.pump();
+    expect(got!.annotations.pins.single.part, 'inner_core');
+  });
+
+  testWidgets('a scope\'s store keeps the notes for the lesson and gives them back', (tester) async {
+    final store = Model3dAnnotationStore(lesson: 'geo-7');
+    final e = (await _open(tester, Model3dScope(annotations: store, child: const Model3dViewer(modelId: 'earth_layers'))))!;
+    expect(e.allOf('annotate'), isEmpty); // nothing saved yet
+    e.receive(jsonEncode({'event': 'annotations', 'data': {'pins': [{'id': 'p1', 'part': 'crust', 'at': [0, 0, 0.1], 'text': 'Plates', 'color': '#f2b33d'}]}}));
+    await tester.pump();
+    expect(store.of('earth_layers').pins.single.text, 'Plates');
+    await tester.pumpWidget(const SizedBox());
+    final again = (await _open(tester, Model3dScope(annotations: store, child: const Model3dViewer(modelId: 'earth_layers'))))!;
+    expect(again.lastOf('annotate')!['op'], 'set');
+    expect(again.lastOf('annotate')!['data'], store.of('earth_layers').toJson());
+  });
+
   testWidgets('flow animations step through their cards', (tester) async {
     final e = (await _open(tester, const Model3dViewer(modelId: 'nephron')))!;
     await tester.tap(find.byKey(const ValueKey('tab-animate')));

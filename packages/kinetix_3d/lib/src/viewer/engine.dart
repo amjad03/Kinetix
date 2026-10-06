@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 
@@ -128,6 +129,70 @@ class FakeViewerEngine extends QueuedEngine {
         }
       case 'pick':
         scheduleMicrotask(() => receive(ViewerEvent({'event': 'pick', 'part': command['part']})));
+      case 'cut' when command['mode'] == 'peel':
+        scheduleMicrotask(() => receive(ViewerEvent({'event': 'cut', 'mode': 'peel', 'layers': peelLayers, 'peel': command['peel']})));
+      case 'annotate':
+        _annotate(command);
+    }
+  }
+
+  /// How many layers "peel" finds.
+  int peelLayers = 4;
+
+  /// The notes on the fake model, as the page would keep them.
+  Map<String, dynamic> notes = {'v': 1, 'pins': <Object>[], 'strokes': <Object>[], 'ink': <Object>[]};
+  var _ids = 0;
+  final _draft = <List<double>>[];
+
+  void _annotate(Map<String, dynamic> c) {
+    List<Object?> list(String k) => notes[k] as List<Object?>;
+    void tell([String? pin]) {
+      final data = jsonDecode(jsonEncode(notes));
+      scheduleMicrotask(() => receive(ViewerEvent({'event': 'annotations', 'data': data, 'pin': ?pin})));
+    }
+
+    switch (c['op']) {
+      case 'set':
+        notes = (jsonDecode(jsonEncode(c['data'])) as Map).cast<String, dynamic>();
+      case 'pin':
+        final part = partUnder?.call(Offset((c['x'] as num).toDouble(), (c['y'] as num).toDouble()));
+        if (part == null) {
+          scheduleMicrotask(() => receive(ViewerEvent({'event': 'noteMissed'})));
+          return;
+        }
+        final id = 'p${_ids++}';
+        list('pins').add({'id': id, 'part': part, 'at': [0.0, 0.0, 0.1], 'text': c['text'] ?? '', 'color': c['color']});
+        tell(id);
+      case 'stroke':
+        for (final p in (c['pts'] as List? ?? const [])) {
+          _draft.add([for (final v in p as List) (v as num).toDouble()]);
+        }
+        if (c['up'] != true || _draft.isEmpty) return;
+        final surface = c['surface'] == true;
+        list(surface ? 'strokes' : 'ink').add({
+          'id': '${surface ? 's' : 'i'}${_ids++}',
+          if (surface) 'part': partUnder?.call(Offset(_draft.first[0], _draft.first[1])) ?? 'part',
+          'color': c['color'],
+          'width': c['width'] ?? 2,
+          'pts': surface ? [for (final p in _draft) [p[0], p[1], 0.0]] : List.of(_draft),
+        });
+        _draft.clear();
+        tell();
+      case 'update':
+        for (final n in list('pins').cast<Map>()) {
+          if (n['id'] != c['id']) continue;
+          if (c['text'] != null) n['text'] = c['text'];
+          if (c['color'] != null) n['color'] = c['color'];
+        }
+        tell();
+      case 'delete':
+        for (final k in ['pins', 'strokes', 'ink']) {
+          list(k).removeWhere((n) => (n as Map)['id'] == c['id']);
+        }
+        tell();
+      case 'clear':
+        notes = {'v': 1, 'pins': <Object>[], 'strokes': <Object>[], 'ink': <Object>[]};
+        tell();
     }
   }
 
