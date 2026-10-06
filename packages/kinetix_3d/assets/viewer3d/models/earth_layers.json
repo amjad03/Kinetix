@@ -143,6 +143,7 @@
    "group": "crust",
    "color": "#6f9a4c",
    "inside": "#9b7a55",
+   "capWith": "crust",
    "matte": true,
    "name": {
     "en": "Continental crust",
@@ -225,6 +226,7 @@
    "group": "crust",
    "color": "#2f6fb8",
    "inside": "#9b7a55",
+   "capWith": "crust",
    "name": {
     "en": "Oceanic crust",
     "hi": "महासागरीय भूपर्पटी",

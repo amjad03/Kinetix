@@ -105,7 +105,7 @@ export default {
       ),
     },
     {
-      id: 'continental_crust', group: 'crust', matte: true, detail: 0.25, error: 0.0005, color: '#6f9a4c', inside: '#9b7a55', explode: lineUp[0],
+      id: 'continental_crust', group: 'crust', capWith: 'crust', matte: true, detail: 0.25, error: 0.0005, color: '#6f9a4c', inside: '#9b7a55', explode: lineUp[0],
       name: t('Continental crust', 'महाद्वीपीय भूपर्पटी', 'ಖಂಡೀಯ ಭೂಹೊರಪದರ'),
       info: t(
         'The land. Thicker (30–70 km) and made of lighter rocks like granite, rich in silica and aluminium (sial).',
@@ -114,7 +114,7 @@ export default {
       ),
     },
     {
-      id: 'oceanic_crust', group: 'crust', detail: 0.15, error: 0.0005, color: '#2f6fb8', inside: '#9b7a55', explode: lineUp[0],
+      id: 'oceanic_crust', group: 'crust', capWith: 'crust', detail: 0.15, error: 0.0005, color: '#2f6fb8', inside: '#9b7a55', explode: lineUp[0],
       name: t('Oceanic crust', 'महासागरीय भूपर्पटी', 'ಸಾಗರೀಯ ಭೂಹೊರಪದರ'),
       info: t(
         'The floor of the oceans. Thinner (about 5–10 km) and made of heavier basalt, rich in silica and magnesium (sima).',

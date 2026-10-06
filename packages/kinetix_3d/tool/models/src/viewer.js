@@ -25,6 +25,9 @@ const state = {
   autoRotate: false,
   shown: new Set(), // hidden-by-default parts the teacher turned on
   variant: null, // for models with versions (each element's atom, each solid)
+  peeled: new Set(), // outer layers taken off ("peel")
+  cut: null, // the last cut command (half, wedge, slab, depth, peel), for the mirror and state
+  sweep: null, // a depth cut moving through the model: {t0, from, ms, c}
 };
 
 // Which viewer this is, when a page holds several (the web build).
@@ -108,10 +111,36 @@ scene.add(root);
 // the textbook picture of the Earth with a slice taken out) removes only what
 // is behind both planes; for a plain cut the second plane is behind
 // everything, so the first plane alone decides.
+// A slab (a slice of the model between two planes) keeps only what is in front
+// of both planes instead: the planes clip as a union.
 const cut = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1e6);
 const cut2 = new THREE.Plane(new THREE.Vector3(0, 0, -1), -1e6);
 const planes = [cut, cut2];
 const clip = { clippingPlanes: planes, clipIntersection: true };
+let unionClip = false;
+// The same cut a hair further out, for what is drawn on a cut face (notes' strokes).
+const slackPlanes = [new THREE.Plane(), new THREE.Plane()];
+function placeSlack() {
+  planes.forEach((p, i) => slackPlanes[i].copy(p).translate(p.normal.clone().multiplyScalar(-modelSize * 0.008)));
+}
+
+/** Whether a point of the model is drawn with the cut as it is. [slack] keeps points just on a cut face. */
+function kept(v, slack = 0) {
+  const a = cut.distanceToPoint(v) >= -slack, b = cut2.distanceToPoint(v) >= -slack;
+  return unionClip ? a && b : a || b;
+}
+
+function setClipUnion(on) {
+  if (on === unionClip) return;
+  unionClip = on;
+  root.traverse((o) => {
+    const m = o.material;
+    if (m && (m.clippingPlanes === planes || m.clippingPlanes === slackPlanes)) {
+      m.clipIntersection = !on;
+      m.needsUpdate = true;
+    }
+  });
+}
 
 /** part id -> {info, group (Group), front (Mesh), back (Mesh), material, base (Vector3 pivot)} */
 const parts = new Map();
@@ -124,6 +153,7 @@ function resize() {
   camera.aspect = w / Math.max(1, h);
   camera.updateProjectionMatrix();
   overlay.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  drawInk();
 }
 window.addEventListener('resize', resize);
 
@@ -131,7 +161,7 @@ window.addEventListener('resize', resize);
 function shouldShow(p) {
   const v = p.info.variant;
   if (v && v !== state.variant) return false;
-  if (state.hidden.has(p.info.id)) return false;
+  if (state.hidden.has(p.info.id) || state.peeled.has(p.info.id)) return false;
   return !p.info.hidden || state.shown.has(p.info.id);
 }
 
@@ -345,6 +375,7 @@ async function load(id) {
     });
   }
   modelSize = manifest.size || 0.1;
+  placeSlack();
   for (const info of manifest.parts) {
     const src = scenes[info.id];
     if (!src) {
@@ -370,7 +401,6 @@ async function load(id) {
     if (src.userData.animate) parts.get(info.id).animate = src.userData.animate;
   }
   if (manifest.edges) addEdges();
-  if (manifest.caps === 'flat') addFlatCap();
   if (manifest.light) sunlight(manifest.light);
   state.variant = manifest.variants?.[0]?.id ?? null;
   applyVisibility();
@@ -390,36 +420,139 @@ function addEdges() {
 }
 
 /**
- * A flat, filled face where the cut is (for maths, where the shape of the
- * cross-section is the lesson): the stencil counts how often each pixel is
- * inside the solid, and a plane is drawn only there.
+ * Solid cut faces ("caps"). For each part and each cut plane, a stencil pass
+ * counts how often each pixel's ray goes into and out of the part beyond the
+ * plane (the part clipped by that plane alone); where the count is odd the
+ * plane is inside the part, and a flat face of the part's inside colour is
+ * drawn there. A cap is clipped by the other plane, so a wedge or a slab shows
+ * two faces. Solids (caps: 'flat', made of open faces) are counted as one, in
+ * the lesson's yellow. Parts that are not closed keep the old look (their
+ * inside walls), which a cap would get wrong.
  */
-let capPlane = null;
-function addFlatCap() {
-  for (const p of parts.values()) {
-    for (const [side, op] of [[THREE.BackSide, THREE.IncrementWrapStencilOp], [THREE.FrontSide, THREE.DecrementWrapStencilOp]]) {
-      const m = new THREE.MeshBasicMaterial({ side, ...clip, colorWrite: false, depthWrite: false, depthTest: false, stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc, stencilFail: op, stencilZFail: op, stencilZPass: op });
-      const mesh = new THREE.Mesh(p.front.geometry, m);
-      mesh.applyMatrix4(p.front.matrix);
-      mesh.renderOrder = 4;
-      p.group.add(mesh);
+const capClip = [new THREE.Plane(new THREE.Vector3(0, 0, 1), 1e6), new THREE.Plane(new THREE.Vector3(0, 0, 1), 1e6)];
+const capGeometry = new THREE.PlaneGeometry(1, 1);
+const capSets = []; // {parts: [p], items: [{j, stencil: [Mesh, Mesh], cap: Mesh}]}
+let capsBuilt = false;
+let capOrder = 10;
+
+const stencilMaterials = [0, 1].map((j) =>
+  [[THREE.BackSide, THREE.IncrementWrapStencilOp], [THREE.FrontSide, THREE.DecrementWrapStencilOp]].map(
+    ([side, op]) => new THREE.MeshBasicMaterial({ side, clippingPlanes: [planes[j]], colorWrite: false, depthWrite: false, depthTest: false, stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc, stencilFail: op, stencilZFail: op, stencilZPass: op }),
+  ),
+);
+
+/** Whether a part's surface is closed (nearly every edge shared by two triangles), from its positions. */
+function closedSurface(geometry) {
+  const pos = geometry.attributes.position;
+  const index = geometry.index;
+  const tris = (index ? index.count : pos.count) / 3;
+  if (!tris || tris > 400000) return false;
+  const q = modelSize * 1e-5;
+  const ids = new Map();
+  const vid = new Uint32Array(pos.count);
+  for (let i = 0; i < pos.count; i++) {
+    const k = `${Math.round(pos.getX(i) / q)},${Math.round(pos.getY(i) / q)},${Math.round(pos.getZ(i) / q)}`;
+    let id = ids.get(k);
+    if (id === undefined) ids.set(k, (id = ids.size));
+    vid[i] = id;
+  }
+  const edges = new Map();
+  const at = (t, c) => vid[index ? index.getX(t * 3 + c) : t * 3 + c];
+  for (let t = 0; t < tris; t++) {
+    for (let c = 0; c < 3; c++) {
+      const a = at(t, c), b = at(t, (c + 1) % 3);
+      const k = a < b ? a * 4294967296 + b : b * 4294967296 + a;
+      edges.set(k, (edges.get(k) || 0) + 1);
     }
   }
-  const mat = new THREE.MeshStandardMaterial({ color: 0xf2b33d, roughness: 0.6, metalness: 0, side: THREE.DoubleSide, stencilWrite: true, stencilRef: 0, stencilFunc: THREE.NotEqualStencilFunc, stencilFail: THREE.ReplaceStencilOp, stencilZFail: THREE.ReplaceStencilOp, stencilZPass: THREE.ReplaceStencilOp });
-  capPlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
-  capPlane.renderOrder = 5;
-  capPlane.visible = false;
-  capPlane.onAfterRender = (r) => r.clearStencil();
-  scene.add(capPlane);
+  let open = 0;
+  for (const n of edges.values()) if (n !== 2) open++;
+  return open <= edges.size * 0.004;
 }
 
-function placeCap() {
-  if (!capPlane) return;
-  capPlane.visible = !!state.slice && !state.slice.wedge;
-  if (!state.slice) return;
-  capPlane.scale.setScalar(modelSize * 4);
-  capPlane.position.copy(state.slice.normal).multiplyScalar(-cut.constant);
-  capPlane.lookAt(capPlane.position.clone().sub(state.slice.normal));
+function addCapSet(list, colour) {
+  const set = { parts: list, items: [] };
+  for (const j of [0, 1]) {
+    const base = capOrder++;
+    const stencil = [];
+    for (const p of list) {
+      for (const [k, m] of stencilMaterials[j].entries()) {
+        const s = new THREE.Mesh(p.front.geometry, m);
+        s.applyMatrix4(p.front.matrix);
+        s.frustumCulled = false;
+        s.visible = false;
+        s.renderOrder = base + k * 0.1;
+        p.group.add(s);
+        stencil.push(s);
+      }
+    }
+    const mat = new THREE.MeshStandardMaterial({
+      color: colour, roughness: 0.85, metalness: 0, side: THREE.DoubleSide, clippingPlanes: [capClip[j]],
+      stencilWrite: true, stencilRef: 0, stencilFunc: THREE.NotEqualStencilFunc,
+      stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.KeepStencilOp,
+    });
+    const cap = new THREE.Mesh(capGeometry, mat);
+    cap.renderOrder = base + 0.2;
+    cap.visible = false;
+    cap.frustumCulled = false;
+    // The next set counts afresh.
+    cap.onAfterRender = (r) => r.clearStencil();
+    scene.add(cap);
+    set.items.push({ j, stencil, cap });
+  }
+  capSets.push(set);
+}
+
+function buildCaps() {
+  if (capsBuilt) return;
+  capsBuilt = true;
+  const all = [...parts.values()];
+  if (manifest.caps === 'flat') {
+    addCapSet(all, new THREE.Color(0xf2b33d));
+    return;
+  }
+  // Parts that make one solid together (the Earth's crust: land, sea and its
+  // underside) say so with capWith: the id of the part whose colour it shows.
+  const sets = new Map();
+  for (const p of all) {
+    if (p.info.opacity || p.info.cap === false) continue;
+    const key = p.info.capWith || p.info.id;
+    if (!sets.has(key)) sets.set(key, []);
+    sets.get(key).push(p);
+  }
+  for (const [key, list] of sets) {
+    if (list.length === 1 && !closedSurface(list[0].front.geometry)) continue;
+    addCapSet(list, (parts.get(key) || list[0]).back.material.color.clone());
+  }
+}
+
+/** Shows the caps of the planes in use, on their planes. */
+function placeCaps() {
+  const two = !!state.slice && state.slice.planes === 2;
+  if (state.slice) {
+    if (!two) capClip[0].set(new THREE.Vector3(0, 0, 1), 1e6);
+    else if (unionClip) {
+      capClip[0].copy(cut2);
+      capClip[1].copy(cut);
+    } else {
+      capClip[0].copy(cut2).negate();
+      capClip[1].copy(cut).negate();
+    }
+  }
+  const faded = state.anim && (state.anim.kind === 'flow' || state.anim.kind === 'tour');
+  for (const set of capSets) {
+    const shown = set.parts.some((p) => p.group.visible);
+    for (const it of set.items) {
+      const on = !!state.slice && !faded && shown && (it.j === 0 || two);
+      it.cap.visible = on;
+      for (const s of it.stencil) s.visible = on;
+      if (!on) continue;
+      const pl = planes[it.j];
+      it.cap.scale.setScalar(modelSize * 8);
+      it.cap.position.copy(pl.normal).multiplyScalar(-pl.constant);
+      it.cap.lookAt(it.cap.position.clone().sub(pl.normal));
+    }
+  }
 }
 
 // ------------------------------------------------------------------ camera
@@ -489,7 +622,7 @@ function pickables() {
 }
 
 /** A hit counts only on the kept side of the cut. */
-const visibleHit = (h) => cut.distanceToPoint(h.point) >= 0 || cut2.distanceToPoint(h.point) >= 0;
+const visibleHit = (h) => kept(h.point);
 
 let down = null;
 renderer.domElement.addEventListener('pointerdown', (e) => {
@@ -571,23 +704,172 @@ function applyExplode() {
   applyExplode.refit = setTimeout(() => view(heading()), 350);
 }
 
-function setSlice(s) {
-  cut2.set(new THREE.Vector3(0, 0, -1), -1e6);
-  if (!s) {
+/**
+ * Sets the cut planes: [a] alone (a half), [a] and [b] taking out what is
+ * behind both (a wedge), or with [union] keeping only what is in front of
+ * both (a slab). Each plane is {n, q}: its normal (the kept side) and a point.
+ */
+function applyPlanes(a, b, opt = {}) {
+  setClipUnion(!!(a && b && opt.union));
+  if (!a) {
     cut.set(new THREE.Vector3(0, 0, -1), 1e6);
+    cut2.set(new THREE.Vector3(0, 0, -1), -1e6);
     state.slice = null;
   } else {
-    const n = new THREE.Vector3(...s.normal).normalize();
-    cut.set(n, -(s.offset || 0) * 1);
-    state.slice = { normal: n, offset: s.offset || 0, anchors: (s.id && manifest?.slices?.find((x) => x.id === s.id)?.anchors) || null };
-    if (s.normal2) {
-      const n2 = new THREE.Vector3(...s.normal2).normalize();
-      cut2.set(n2, -(s.offset2 || 0));
-      state.slice.wedge = true;
-    }
+    cut.setFromNormalAndCoplanarPoint(a.n.clone().normalize(), a.q);
+    if (b) cut2.setFromNormalAndCoplanarPoint(b.n.clone().normalize(), b.q);
+    else cut2.set(new THREE.Vector3(0, 0, -1), -1e6);
+    state.slice = { normal: cut.normal.clone(), offset: -cut.constant, planes: b ? 2 : 1, wedge: !!b && !opt.union, slab: !!b && !!opt.union, anchors: opt.anchors || null };
   }
+  if (state.slice) buildCaps();
+  placeSlack();
   planeHint.show();
-  placeCap();
+  placeCaps();
+  lastLabels = 0;
+}
+
+/** A ready-made cut from the manifest (or the older free cut): normal and offset, normal2 for a wedge. */
+function setSlice(s) {
+  clearPeel();
+  state.sweep = null;
+  state.cut = null;
+  if (!s) return applyPlanes(null);
+  const plane = (n, offset) => {
+    const v = new THREE.Vector3(...n).normalize();
+    return { n: v, q: v.clone().multiplyScalar(offset || 0) };
+  };
+  const anchors = (s.id && manifest?.slices?.find((x) => x.id === s.id)?.anchors) || null;
+  applyPlanes(plane(s.normal, s.offset), s.normal2 ? plane(s.normal2, s.offset2) : null, { anchors });
+}
+
+const AXES = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
+// Two directions across each axis; a wedge's slice is measured round from the first towards the second.
+const ACROSS = { x: ['z', 'y'], y: ['x', 'z'], z: ['x', 'y'] };
+
+/** Where the visible model reaches along [axis] (at rest, before take-apart). */
+function reachAlong(axis) {
+  const box = new THREE.Box3();
+  for (const p of parts.values()) {
+    if (!p.group.visible) continue;
+    if (!p.box) p.box = new THREE.Box3().setFromBufferAttribute(p.front.geometry.attributes.position).applyMatrix4(p.front.matrix);
+    box.union(p.box);
+  }
+  if (box.isEmpty()) return [-modelSize / 2, modelSize / 2];
+  return [box.min[axis], box.max[axis]];
+}
+
+/**
+ * The kinds of cut the teacher picks from (c.mode):
+ * - half: one plane across [axis] at [at] (-0.5..0.5 of the model's size); [flip] keeps the other half;
+ * - wedge: a slice of [angle] degrees (30..180) taken out round [axis], like a cake, turned [turn] degrees;
+ * - slab: only a slice [thickness] thick (0..1 of the size) at [at] is left;
+ * - depth: a plane swept through the model, [depth] 0 (nothing cut) to 1, from the front of [axis]; [play] sweeps it;
+ * - peel: the [peel] outermost layers of parts taken off;
+ * - off.
+ */
+function setCut(c) {
+  const mode = c.mode || 'off';
+  if (mode !== 'depth' || !c.sweeping) state.sweep = null;
+  if (mode !== 'peel') clearPeel();
+  if (mode === 'off') {
+    state.cut = null;
+    applyPlanes(null);
+    return send({ event: 'cut', mode: 'off' });
+  }
+  state.cut = { ...c };
+  const axis = AXES[c.axis] ? c.axis : 'z';
+  const a = AXES[axis];
+  const size = manifest?.size || modelSize;
+  if (mode === 'half') {
+    const n = a.clone().multiplyScalar(c.flip ? 1 : -1);
+    applyPlanes({ n, q: a.clone().multiplyScalar((c.at || 0) * size) });
+  } else if (mode === 'wedge') {
+    const angle = Math.max(30, Math.min(180, c.angle ?? 90));
+    if (angle >= 179.5) {
+      applyPlanes({ n: a.clone().negate(), q: new THREE.Vector3() });
+    } else {
+      const [u, v] = ACROSS[axis].map((k) => AXES[k]);
+      const mid = ((45 + (c.turn || 0)) * Math.PI) / 180;
+      const half = (angle * Math.PI) / 360;
+      // The normal of an edge at angle t, turned a quarter towards v.
+      const perp = (t) => u.clone().multiplyScalar(-Math.sin(t)).addScaledVector(v, Math.cos(t));
+      const o = new THREE.Vector3();
+      applyPlanes({ n: perp(mid + half), q: o }, { n: perp(mid - half).negate(), q: o });
+    }
+  } else if (mode === 'slab') {
+    const t = Math.max(0.01, Math.min(1, c.thickness ?? 0.2)) * size;
+    const centre = a.clone().multiplyScalar((c.at || 0) * size);
+    applyPlanes({ n: a.clone(), q: centre.clone().addScaledVector(a, -t / 2) }, { n: a.clone().negate(), q: centre.clone().addScaledVector(a, t / 2) }, { union: true });
+  } else if (mode === 'depth') {
+    const d = Math.max(0, Math.min(0.98, c.depth ?? 0.5));
+    const [lo, hi] = reachAlong(axis);
+    const pad = (hi - lo) * 0.002;
+    // From the front (the + side) inwards, or from the back with flip.
+    const at = c.flip ? lo - pad + d * (hi - lo + 2 * pad) : hi + pad - d * (hi - lo + 2 * pad);
+    applyPlanes({ n: a.clone().multiplyScalar(c.flip ? 1 : -1), q: a.clone().multiplyScalar(at) });
+    if (c.play) state.sweep = { t0: performance.now(), from: c.depth > 0.9 ? 0 : c.depth || 0, ms: c.ms || 6000, c: { ...c, play: false } };
+  } else if (mode === 'peel') {
+    applyPlanes(null);
+    const layers = peelLayers();
+    const k = Math.max(0, Math.min(layers.length - 1, c.peel | 0));
+    state.peeled = new Set(layers.slice(0, k).flat());
+    applyVisibility();
+    if (state.picked && state.peeled.has(state.picked)) pick(null);
+    return send({ event: 'cut', mode, layers: layers.length, peel: k, peeled: [...state.peeled] });
+  }
+  if (!c.sweeping) send({ event: 'cut', mode, depth: mode === 'depth' ? c.depth ?? 0.5 : undefined });
+}
+
+/** Moves a playing depth cut on. */
+function tickSweep(now) {
+  const s = state.sweep;
+  if (!s) return;
+  const u = Math.min(1, (now - s.t0) / s.ms);
+  const depth = s.from + (0.95 - s.from) * u;
+  setCut({ ...s.c, depth, sweeping: true });
+  if (u >= 1) {
+    state.sweep = null;
+    state.cut.depth = depth;
+    send({ event: 'cut', mode: 'depth', depth, done: true });
+  }
+}
+
+/** How far a part reaches from the middle of the model (sampled). */
+function reachOf(p) {
+  const pos = p.front.geometry.attributes.position;
+  const v = new THREE.Vector3();
+  const step = Math.max(1, Math.floor(pos.count / 5000));
+  let r = 0;
+  for (let i = 0; i < pos.count; i += step) r = Math.max(r, v.fromBufferAttribute(pos, i).applyMatrix4(p.front.matrix).length());
+  return r;
+}
+
+/**
+ * The parts on show in layers, outermost first (the manifest's own "peel"
+ * order if it has one): parts that reach about as far out peel together.
+ */
+function peelLayers() {
+  const showing = (p) => {
+    const v = p.info.variant;
+    return (!v || v === state.variant) && !state.hidden.has(p.info.id) && (!p.info.hidden || state.shown.has(p.info.id));
+  };
+  if (manifest?.peel) return manifest.peel.map((ids) => ids.filter((id) => parts.has(id) && showing(parts.get(id)))).filter((l) => l.length);
+  const list = [...parts.values()].filter(showing);
+  for (const p of list) if (p.reach == null) p.reach = reachOf(p);
+  list.sort((x, y) => y.reach - x.reach);
+  const layers = [];
+  for (const p of list) {
+    const last = layers.at(-1);
+    if (last && last.top - p.reach < modelSize * 0.02) last.ids.push(p.info.id);
+    else layers.push({ top: p.reach, ids: [p.info.id] });
+  }
+  return layers.map((l) => l.ids);
+}
+
+function clearPeel() {
+  if (!state.peeled.size) return;
+  state.peeled = new Set();
+  applyVisibility();
 }
 
 /** A faint frame showing where the cut is, for a moment after it moves. */
@@ -601,7 +883,7 @@ const planeHint = (() => {
   let until = 0;
   return {
     show() {
-      if (!state.slice || state.slice.wedge) {
+      if (!state.slice || state.slice.planes === 2) {
         mat.opacity = 0;
         edge.material.opacity = 0;
         return;
@@ -866,6 +1148,362 @@ function drawLaser2d(g, s, now) {
   }
 }
 
+// ------------------------------------------------------------------ notes
+
+// The teacher writes on the model: notes pinned to a point of a part (they
+// follow it as the model turns, comes apart or beats), strokes drawn on its
+// surface (tubes stuck to the part), and ink drawn over the view (fixed to the
+// screen). The app keeps them (lib/src/viewer/annotations.dart): every change
+// is sent back whole as an `annotations` event, and `annotate` {op: 'set'}
+// puts a saved set back. Pin and stroke points are in their part's own frame.
+const notes = { pins: [], strokes: [], ink: [], draft: null, show: true, version: 0, seq: 0 };
+
+const noteStyle = document.createElement('style');
+noteStyle.textContent = `
+  #notes { position: absolute; inset: 0; pointer-events: none; }
+  #ink { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #ink polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .pin { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, calc(-100% + 7px)); pointer-events: auto; cursor: pointer; }
+  .pin .text { font: 600 14px/1.25 system-ui, -apple-system, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Kannada", sans-serif;
+    max-width: 14em; padding: 4px 9px; border-radius: 8px; margin-bottom: 4px; white-space: pre-wrap; box-shadow: 0 2px 8px rgba(0,0,0,0.45); }
+  .pin .text:empty { display: none; }
+  .pin .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 6px rgba(0,0,0,0.6); }
+  .pin.dim { opacity: 0.4; }`;
+document.head.appendChild(noteStyle);
+const inkLayer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+inkLayer.id = 'ink';
+const noteLayer = document.createElement('div');
+noteLayer.id = 'notes';
+document.body.append(inkLayer, noteLayer);
+
+const newId = (k) => `${k}${Date.now().toString(36)}${(notes.seq++).toString(36)}`;
+const round5 = (v) => Math.round(v * 1e5) / 1e5;
+const darkText = (hex) => {
+  const c = new THREE.Color(hex);
+  return 0.299 * c.r + 0.587 * c.g + 0.114 * c.b > 0.55;
+};
+
+/** The cut planes in use. */
+const activePlanes = () => (!state.slice ? [] : state.slice.planes === 2 ? [cut, cut2] : [cut]);
+
+/**
+ * The surface under a screen point (CSS pixels): {part, point, normal} in
+ * world space, or null. Seen through a cut, it is the point on the cut face.
+ */
+function surfaceAt(x, y) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  raycaster.setFromCamera(new THREE.Vector2((x / rect.width) * 2 - 1, -(y / rect.height) * 2 + 1), camera);
+  const objects = visibleParts().flatMap((p) => [p.front, p.back]);
+  const h = raycaster.intersectObjects(objects, false).filter(visibleHit)[0];
+  if (!h) return null;
+  const part = h.object.userData.part;
+  if (h.object.userData.back && state.slice) {
+    let best = null;
+    for (const pl of activePlanes()) {
+      const q = raycaster.ray.intersectPlane(pl, new THREE.Vector3());
+      if (!q) continue;
+      const d = q.distanceTo(raycaster.ray.origin);
+      if (d <= h.distance + 1e-9 && (!best || d > best.d)) best = { d, q, n: pl.normal.clone().negate() };
+    }
+    if (best) return { part, point: best.q, normal: best.n };
+  }
+  const n = h.face ? h.face.normal.clone().transformDirection(h.object.matrixWorld) : raycaster.ray.direction.clone().negate();
+  if (h.object.userData.back) n.negate();
+  return { part, point: h.point.clone(), normal: n };
+}
+
+function strokeMesh(s) {
+  const p = parts.get(s.part);
+  if (!p || !s.pts.length) return null;
+  const r = modelSize * 0.0022 * (s.width || 2);
+  const pts = s.pts.map((a) => new THREE.Vector3(...a));
+  let geo;
+  if (pts.length < 2) {
+    geo = new THREE.SphereGeometry(r * 1.6, 10, 8);
+    geo.translate(pts[0].x, pts[0].y, pts[0].z);
+  } else {
+    const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+    geo = new THREE.TubeGeometry(curve, Math.min(800, pts.length * 3), r, 6, false);
+  }
+  const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(s.color || '#e53935'), clippingPlanes: slackPlanes, clipIntersection: !unionClip }));
+  mesh.renderOrder = 1;
+  mesh.userData.note = s.id;
+  p.group.add(mesh);
+  return mesh;
+}
+
+function dropMesh(s) {
+  if (!s.mesh) return;
+  s.mesh.removeFromParent();
+  s.mesh.geometry.dispose();
+  s.mesh.material.dispose();
+  s.mesh = null;
+}
+
+function rebuildStroke(s) {
+  dropMesh(s);
+  s.mesh = strokeMesh(s);
+  if (s.mesh) s.mesh.visible = notes.show;
+}
+
+function notesJson() {
+  return {
+    v: 1,
+    pins: notes.pins.map((n) => ({ id: n.id, part: n.part, at: n.at, text: n.text, color: n.color })),
+    strokes: notes.strokes.map((s) => ({ id: s.id, part: s.part, color: s.color, width: s.width, pts: s.pts })),
+    ink: notes.ink.map((s) => ({ id: s.id, color: s.color, width: s.width, pts: s.pts })),
+  };
+}
+
+function setNotes(data) {
+  for (const s of notes.strokes) dropMesh(s);
+  if (notes.draft) dropMesh(notes.draft);
+  notes.draft = null;
+  const list = (k) => (Array.isArray(data?.[k]) ? data[k] : []);
+  notes.pins = list('pins').filter((n) => n && n.id && Array.isArray(n.at)).map((n) => ({ ...n, text: n.text || '', color: n.color || '#f2b33d' }));
+  notes.strokes = list('strokes').filter((s) => s && s.id && Array.isArray(s.pts)).map((s) => ({ ...s }));
+  notes.ink = list('ink').filter((s) => s && s.id && Array.isArray(s.pts)).map((s) => ({ ...s }));
+  for (const s of notes.strokes) rebuildStroke(s);
+  notesChanged(null, false);
+}
+
+function notesChanged(pin, tell = true) {
+  notes.version++;
+  drawInk();
+  pinEls.clear();
+  noteLayer.innerHTML = '';
+  if (tell) send({ event: 'annotations', data: notesJson(), pin: pin ?? undefined });
+}
+
+function findNote(id) {
+  for (const k of ['pins', 'strokes', 'ink']) {
+    const i = notes[k].findIndex((n) => n.id === id);
+    if (i >= 0) return { list: notes[k], i, note: notes[k][i], kind: k };
+  }
+  return null;
+}
+
+/** New points of a stroke ([x, y] 0..1 across the view); [up] ends it. */
+function strokeCommand(c) {
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
+  let d = notes.draft;
+  if (!d) {
+    d = notes.draft = { id: newId(c.surface ? 's' : 'i'), surface: !!c.surface, part: null, color: c.color || '#e53935', width: c.width || 2, pts: [], mesh: null };
+  }
+  let grew = false;
+  for (const [x, y] of c.pts || []) {
+    if (!d.surface) {
+      d.pts.push([round5(x), round5(y)]);
+      grew = true;
+      continue;
+    }
+    const hit = surfaceAt(x * w, y * h);
+    if (!hit) continue;
+    if (!d.part) d.part = hit.part;
+    const p = parts.get(d.part);
+    p.group.updateMatrixWorld(true);
+    const local = p.group.worldToLocal(hit.point.clone().addScaledVector(hit.normal, modelSize * 0.003));
+    const last = d.pts.at(-1);
+    if (last && local.distanceTo(new THREE.Vector3(...last)) < modelSize * 0.003) continue;
+    d.pts.push(local.toArray().map(round5));
+    grew = true;
+  }
+  if (grew && d.surface) rebuildStroke(d);
+  if (grew && !d.surface) drawInk();
+  if (!c.up) return;
+  notes.draft = null;
+  if (!d.pts.length) {
+    dropMesh(d);
+    drawInk();
+    return;
+  }
+  const { surface, ...rest } = d;
+  if (surface) notes.strokes.push(rest);
+  else notes.ink.push(rest);
+  notesChanged();
+}
+
+/** The ink over the view, drawn into the overlay. */
+function drawInk() {
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
+  inkLayer.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  inkLayer.innerHTML = '';
+  if (!notes.show) return;
+  const all = notes.draft && !notes.draft.surface ? [...notes.ink, notes.draft] : notes.ink;
+  for (const s of all) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    line.setAttribute('points', s.pts.map(([x, y]) => `${x * w},${y * h}`).join(' ') + (s.pts.length === 1 ? ` ${s.pts[0][0] * w + 0.1},${s.pts[0][1] * h}` : ''));
+    line.setAttribute('stroke', s.color);
+    line.setAttribute('stroke-width', 2 + 2 * (s.width || 2));
+    inkLayer.appendChild(line);
+  }
+}
+
+/** Where each pin is on screen now, and whether it shows: [{n, x, y, dim}]. */
+const pinHidden = new Map();
+function pinPlaces(now) {
+  const out = [];
+  if (!notes.show) return out;
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
+  for (const n of notes.pins) {
+    const p = parts.get(n.part);
+    if (!p || !p.group.visible) continue;
+    const world = p.group.localToWorld(new THREE.Vector3(...n.at));
+    if (!kept(world, modelSize * 0.003)) continue;
+    const q = world.clone().project(camera);
+    if (q.z > 1) continue;
+    let known = pinHidden.get(n.id);
+    if (!known || now - known.at > 600) {
+      const dir = world.clone().sub(camera.position);
+      const dist = dir.length();
+      raycaster.set(camera.position, dir.normalize());
+      const hit = raycaster.intersectObjects(pickables(), false).filter(visibleHit)[0];
+      known = { at: now, hidden: !!hit && hit.distance < dist - modelSize * 0.02 };
+      pinHidden.set(n.id, known);
+    }
+    out.push({ n, x: (q.x * 0.5 + 0.5) * w, y: (-q.y * 0.5 + 0.5) * h, dim: known.hidden });
+  }
+  return out;
+}
+
+const pinEls = new Map();
+function drawPins(now) {
+  const places = pinPlaces(now);
+  const seen = new Set();
+  for (const { n, x, y, dim } of places) {
+    seen.add(n.id);
+    let el = pinEls.get(n.id);
+    if (!el || el.dataset.key !== `${n.text}|${n.color}`) {
+      el?.remove();
+      el = document.createElement('div');
+      el.className = 'pin';
+      el.dataset.note = n.id;
+      el.dataset.key = `${n.text}|${n.color}`;
+      const text = document.createElement('div');
+      text.className = 'text';
+      text.textContent = n.text;
+      text.style.background = n.color;
+      text.style.color = darkText(n.color) ? '#111' : '#fff';
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.background = n.color;
+      el.append(text, dot);
+      noteLayer.appendChild(el);
+      pinEls.set(n.id, el);
+    }
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.classList.toggle('dim', dim);
+  }
+  for (const [id, el] of pinEls) {
+    if (!seen.has(id)) {
+      el.remove();
+      pinEls.delete(id);
+    }
+  }
+}
+
+noteLayer.addEventListener('pointerup', (e) => {
+  const id = e.target?.closest?.('.pin')?.dataset?.note;
+  if (id) send({ event: 'notePicked', id });
+});
+
+/** The pins and the ink, drawn into a picture [s] times the size of the screen. */
+function drawNotes2d(g, s, width) {
+  if (!notes.show) return;
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  for (const k of notes.ink) {
+    g.strokeStyle = k.color;
+    g.lineWidth = (2 + 2 * (k.width || 2)) * s;
+    g.beginPath();
+    k.pts.forEach(([x, y], i) => (i ? g.lineTo(x * w * s, y * h * s) : g.moveTo(x * w * s, y * h * s)));
+    if (k.pts.length === 1) g.lineTo(k.pts[0][0] * w * s + 0.1, k.pts[0][1] * h * s);
+    g.stroke();
+  }
+  g.font = `600 ${14 * s}px system-ui, "Noto Sans", sans-serif`;
+  g.textBaseline = 'middle';
+  for (const { n, x, y, dim } of pinPlaces(performance.now())) {
+    g.globalAlpha = dim ? 0.4 : 1;
+    g.fillStyle = n.color;
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 2 * s;
+    g.beginPath();
+    g.arc(x * s, y * s, 6 * s, 0, Math.PI * 2);
+    g.fill();
+    g.stroke();
+    if (n.text) {
+      const lines = String(n.text).split('\n').slice(0, 4);
+      const tw = Math.max(...lines.map((l) => g.measureText(l).width));
+      const lh = 18 * s;
+      const bw = tw + 18 * s, bh = lines.length * lh + 8 * s;
+      const bx = Math.max(4 * s, Math.min(width - bw - 4 * s, x * s - bw / 2));
+      const by = y * s - 10 * s - bh;
+      g.fillStyle = n.color;
+      g.fillRect(bx, by, bw, bh);
+      g.fillStyle = darkText(n.color) ? '#111111' : '#ffffff';
+      lines.forEach((l, i) => g.fillText(l, bx + 9 * s, by + 4 * s + lh * (i + 0.5)));
+    }
+  }
+  g.globalAlpha = 1;
+}
+
+/**
+ * `annotate`: op 'set' {data} puts saved notes back (no event); 'pin' {x, y,
+ * text, color} pins a note on the part under the point (answered by
+ * `annotations` with the new pin's id, or `noteMissed`); 'stroke' {pts, up,
+ * surface, color, width} draws; 'update' {id, text, color}; 'delete' {id};
+ * 'clear'; 'show' {on}.
+ */
+function annotate(c) {
+  switch (c.op) {
+    case 'set':
+      return setNotes(c.data);
+    case 'show':
+      notes.show = c.on !== false;
+      for (const s of notes.strokes) if (s.mesh) s.mesh.visible = notes.show;
+      return notesChanged(null, false);
+    case 'pin': {
+      const hit = surfaceAt(c.x * renderer.domElement.clientWidth, c.y * renderer.domElement.clientHeight);
+      if (!hit) return send({ event: 'noteMissed' });
+      const p = parts.get(hit.part);
+      p.group.updateMatrixWorld(true);
+      const at = p.group.worldToLocal(hit.point.clone()).toArray().map(round5);
+      const pin = { id: newId('p'), part: hit.part, at, text: c.text || '', color: c.color || '#f2b33d' };
+      notes.pins.push(pin);
+      return notesChanged(pin.id);
+    }
+    case 'stroke':
+      return strokeCommand(c);
+    case 'update': {
+      const f = findNote(c.id);
+      if (!f) return;
+      if (typeof c.text === 'string' && f.kind === 'pins') f.note.text = c.text;
+      if (c.color) {
+        f.note.color = c.color;
+        if (f.kind === 'strokes') rebuildStroke(f.note);
+      }
+      return notesChanged();
+    }
+    case 'delete': {
+      const f = findNote(c.id);
+      if (!f) return;
+      dropMesh(f.note);
+      f.list.splice(f.i, 1);
+      return notesChanged();
+    }
+    case 'clear':
+      for (const s of notes.strokes) dropMesh(s);
+      notes.pins = [];
+      notes.strokes = [];
+      notes.ink = [];
+      return notesChanged();
+    default:
+      throw new Error(`unknown annotate op ${c.op}`);
+  }
+}
+
 // ------------------------------------------------------------------ snapshot
 
 /** The view as the students see it, labels drawn in, as a PNG data URL. */
@@ -897,6 +1535,7 @@ function snapshot(maxWidth = 1600) {
   c.height = Math.round(h * k);
   const g = c.getContext('2d');
   g.drawImage(full, 0, 0, c.width, c.height);
+  drawNotes2d(g, c.width / src.clientWidth, c.width);
   drawLabels2d(g, c.width / src.clientWidth, c.width);
   return c.toDataURL('image/png');
 }
@@ -942,7 +1581,8 @@ function mirrorTick(now) {
   const key = [
     ...camera.position.toArray(), ...controls.target.toArray(),
     state.labels, state.picked, state.explode, state.variant, state.lang,
-    state.slice ? [...state.slice.normal.toArray(), state.slice.offset, !!state.slice.wedge].join() : '',
+    state.slice ? [...cut.normal.toArray(), cut.constant, ...cut2.normal.toArray(), cut2.constant, unionClip].join() : '',
+    [...state.peeled].join(), notes.version, notes.draft?.pts.length ?? 0,
     [...state.hidden].join(), [...state.shown].join(), renderer.domElement.width, renderer.domElement.height,
   ].map((v) => (typeof v === 'number' ? v.toFixed(4) : String(v))).join('|');
   if (key !== mirror.key) {
@@ -974,6 +1614,7 @@ function mirrorFrame(maxWidth) {
   c.height = h;
   const g = c.getContext('2d');
   g.putImageData(img, 0, 0);
+  drawNotes2d(g, w / renderer.domElement.clientWidth, w);
   drawLabels2d(g, w / renderer.domElement.clientWidth, w);
   drawLaser2d(g, w / renderer.domElement.clientWidth, performance.now());
   return c.toDataURL('image/jpeg', 0.72);
@@ -1016,6 +1657,8 @@ function render(now) {
     }
   }
   tickAnimation(now);
+  tickSweep(now);
+  placeCaps();
   laserTick(now);
   planeHint.tick(now);
   controls.update();
@@ -1024,6 +1667,7 @@ function render(now) {
     lastLabels = now;
     drawLabels();
   }
+  drawPins(now);
 }
 
 function loop(now) {
@@ -1094,6 +1738,7 @@ const commands = {
   partAt: (c) => send({ event: 'partAt', part: partAt(c.x * renderer.domElement.clientWidth, c.y * renderer.domElement.clientHeight) }),
   reset: () => {
     state.explode = 0;
+    state.cut = null;
     applyExplode();
     setSlice(null);
     stopAnimation();
@@ -1104,6 +1749,10 @@ const commands = {
     applyExplode();
   },
   slice: (c) => setSlice(c.normal ? c : null),
+  // The kinds of cut: half, wedge (a cake slice), slab, depth, peel, off.
+  cut: setCut,
+  // Notes, drawing on the model and ink over the view.
+  annotate: (c) => annotate(c),
   hide: (c) => {
     state.hidden = new Set(c.parts || []);
     state.shown = new Set(c.shown || []);
@@ -1154,6 +1803,7 @@ const commands = {
       triangles: renderer.info.render.triangles,
       camera: camera.position.toArray().map((v) => Math.round(v * 1e4) / 1e4),
       cut: Math.round(cut.constant * 1e4) / 1e4,
+      caps: capSets.reduce((n, s) => n + s.items.filter((i) => i.cap.visible).length, 0),
       explode: state.explode,
       animation: state.anim?.id ?? null,
       lost: contextLost,
@@ -1173,6 +1823,9 @@ const commands = {
       lang: state.lang,
       variant: state.variant,
       laser: laser.part,
+      cut: state.cut?.mode ?? (state.slice ? 'slice' : null),
+      peeled: [...state.peeled],
+      notes: { pins: notes.pins.length, strokes: notes.strokes.length, ink: notes.ink.length },
     }),
 };
 

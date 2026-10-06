@@ -299,6 +299,8 @@ async function build(recipe, bp3d) {
       ...(p.minor ? { minor: true } : {}),
       ...(p.glow ? { glow: p.glow } : {}),
       ...(p.inside ? { inside: p.inside } : {}),
+      ...(p.capWith ? { capWith: p.capWith } : {}),
+      ...(p.cap === false ? { cap: false } : {}),
       ...(p.matte !== undefined ? { matte: p.matte } : {}),
       ...(p.variant ? { variant: p.variant } : {}),
       // Hinge points and orbit centres move with the model when it is centred.
