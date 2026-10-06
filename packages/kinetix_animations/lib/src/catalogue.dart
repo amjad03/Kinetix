@@ -18,6 +18,15 @@ const scene3dIds = <String, String>{
   'breathing': 'breathing',
   'digestion': 'digestion',
   'nerve-impulse': 'neuron',
+  'mitosis': 'mitosis',
+  'dna-replication': 'dna_replication',
+  'protein-synthesis': 'protein_synthesis',
+  'plate-tectonics-earthquake': 'tectonics',
+  'volcano': 'volcano',
+  'water-cycle': 'water_cycle',
+  'day-night-seasons': 'seasons',
+  'moon-phases': 'moon_phases',
+  'eclipses': 'eclipses',
 };
 
 /// Every animation, in the order the panel lists them.

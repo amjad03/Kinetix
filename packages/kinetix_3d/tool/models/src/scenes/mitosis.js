@@ -1,7 +1,7 @@
 // Mitosis: one animal cell dividing into two, phase by phase: chromatin
 // condensing into chromosomes, the spindle, the chromosomes lining up and
 // splitting, two nuclei forming, and the cell pinching in two. Built in code.
-import { THREE, seeded, mat, tube, curve, smooth, lerp, clamp01, blob } from './kit.js';
+import { THREE, seeded, mat, tube, curve, smooth, lerp, clamp01, blob, cloneMaterial } from './kit.js';
 import { C } from './bio.js';
 
 const t = (en, hi, kn) => ({ en, hi, kn });
@@ -172,7 +172,7 @@ export async function build(k) {
   stage.add(membrane);
   k.part('cell_membrane', membrane, { anchor: [R * 0.5, R * 0.86, 0.4] });
   const shape = { stretch: 1, pinch: 0 };
-  const radiusAt = (x) => 1 - shape.pinch * 0.97 * Math.exp(-((x / 0.5) ** 2));
+  const radiusAt = (x) => 1 - shape.pinch * 0.97 * Math.exp(-((x / 0.65) ** 2));
   const reshape = () => {
     const p = memGeo.attributes.position;
     for (let i = 0; i < p.count; i++) {
@@ -180,7 +180,7 @@ export async function build(k) {
       const X = x * R * shape.stretch;
       const r = radiusAt(X / shape.stretch / R * 1.6);
       // Lobes stay round as the waist tightens: push the halves apart a little.
-      const push = shape.pinch * 0.35 * Math.sign(x) * R;
+      const push = shape.pinch * 0.22 * Math.sign(x) * R;
       p.setXYZ(i, X + push * Math.abs(x) ** 0.5, y * R * r, z * R * r);
     }
     p.needsUpdate = true;
@@ -191,10 +191,10 @@ export async function build(k) {
 
   // A few organelles in the cytoplasm, soft and out of the way.
   const organelles = new THREE.Group();
-  const mitoMat = mat({ color: '#b97a5e', rough: 0.5, clearcoat: 0.3, sheen: 0.3, rim: 0.15 });
+  const mitoMat = mat({ color: '#a8806a', rough: 0.5, clearcoat: 0.3, sheen: 0.3, rim: 0.15 });
   const organelleHome = [];
   for (let i = 0; i < 9; i++) {
-    const m = new THREE.Mesh(blob(0.42, 0.16, 0.17, { detail: 12, amp: 0.02, seed: i }), mitoMat);
+    const m = new THREE.Mesh(blob(0.3, 0.11, 0.12, { detail: 12, amp: 0.02, seed: i }), mitoMat);
     const a = rnd() * Math.PI * 2, b = (rnd() - 0.5) * 2;
     const p = new THREE.Vector3(Math.cos(a) * 2.3, b * 1.6, Math.sin(a) * 2.0);
     m.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3);
@@ -207,7 +207,7 @@ export async function build(k) {
   // The nucleus (and the two that form at the end).
   const envMat = mat({ color: '#c9a8d8', rough: 0.3, clearcoat: 0.6, sheen: 0.4, rim: 0.5, rimColor: '#f0e0ff', opacity: 0.32 });
   const envGeo = blob(1.55, 1.45, 1.5, { detail: 36, amp: 0.03, seed: 2 });
-  const nuclei = [new THREE.Mesh(envGeo, envMat), new THREE.Mesh(envGeo, envMat.clone()), new THREE.Mesh(envGeo, envMat.clone())];
+  const nuclei = [new THREE.Mesh(envGeo, envMat), new THREE.Mesh(envGeo, cloneMaterial(envMat)), new THREE.Mesh(envGeo, cloneMaterial(envMat))];
   const nucGroup = new THREE.Group();
   nucGroup.add(...nuclei);
   stage.add(nucGroup);
@@ -266,7 +266,7 @@ export async function build(k) {
   });
   // The same threads again for the two new nuclei.
   const chromatinL = chromatin.clone(true), chromatinR = chromatin.clone(true);
-  for (const g of [chromatinL, chromatinR]) g.traverse((o) => o.material && (o.material = o.material.clone()));
+  for (const g of [chromatinL, chromatinR]) g.traverse((o) => o.material && (o.material = cloneMaterial(o.material)));
   stage.add(chromatin, chromatinL, chromatinR);
   k.part('chromatin', chromatin, { anchor: () => (chromatin.visible ? new THREE.Vector3(-0.6, 0.5, 0.9) : chromatinL.position.clone().add({ x: 0, y: 0.4, z: 0.8 })) });
   const setOpacity = (g, a) => {

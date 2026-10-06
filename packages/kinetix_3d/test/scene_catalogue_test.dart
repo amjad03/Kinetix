@@ -109,8 +109,11 @@ void main() {
   test('the shipped page knows every scene', () {
     final bundle = File('assets/viewer3d/viewer.js').readAsStringSync();
     expect(bundle, contains('scene:'), reason: 'run node tool/models/build_viewer.mjs');
+    // The bundler writes characters beyond ASCII as \uXXXX escapes.
+    String escaped(String s) => s.runes.map((r) => r < 128 ? String.fromCharCode(r) : '\\u${r.toRadixString(16).padLeft(4, '0')}').join();
     for (final sc in ProcessScene.all) {
-      expect(bundle, contains(sc.steps.first.caption.en.substring(0, 40)), reason: '${sc.id} is in the bundle');
+      final start = sc.steps.first.caption.en.substring(0, 40);
+      expect(bundle.contains(start) || bundle.contains(escaped(start)), isTrue, reason: '${sc.id} is in the bundle');
     }
   });
 }
