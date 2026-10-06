@@ -324,6 +324,11 @@ Size estimateMathSize(String latex, double fontSize) {
 
 /// A plotted function y = f(x) on axes, inside [rect]. The expression uses the maths solver's
 /// syntax (`2x^2 - 3`, `sin(x)`, `sqrt(x)`).
+///
+/// A graph from a template is editable: its [expression] and [curves] may use single-letter
+/// [params] (`a*x^2 + b*x + c`; never `x` or `e`), put in as numbers before plotting
+/// ([resolve]). It may also carry marked [points] (draggable in the graph editor), a [shade]d
+/// band, axis labels and a [title].
 class GraphElement extends BoardElement {
   const GraphElement({
     required this.id,
@@ -335,6 +340,13 @@ class GraphElement extends BoardElement {
     this.yMin = -10,
     this.yMax = 10,
     this.rotation = 0,
+    this.curves = const [],
+    this.params = const {},
+    this.points = const [],
+    this.shade,
+    this.xLabel = '',
+    this.yLabel = '',
+    this.title = '',
   });
 
   @override
@@ -346,6 +358,27 @@ class GraphElement extends BoardElement {
   @override
   final double rotation;
 
+  /// More curves on the same axes (supply with demand, cost curves), in their own colours.
+  final List<String> curves;
+
+  /// Values of the letters in [expression] and [curves].
+  final Map<String, double> params;
+  final List<GraphPoint> points;
+  final GraphShade? shade;
+  final String xLabel, yLabel, title;
+
+  /// [template] with each of [params] put in as a number in brackets.
+  String resolve(String template) {
+    var out = template;
+    for (final e in params.entries) {
+      out = out.replaceAll(RegExp('(?<![a-z])${RegExp.escape(e.key)}(?![a-z])'), '(${graphNum(e.value)})');
+    }
+    return out;
+  }
+
+  String get resolvedExpression => resolve(expression);
+  List<String> get resolvedCurves => [for (final c in curves) resolve(c)];
+
   @override
   Rect get frame => rect;
   @override
@@ -353,16 +386,49 @@ class GraphElement extends BoardElement {
   @override
   bool hitTest(Offset p, double radius) => rect.inflate(radius).contains(unturn(p, rect, rotation));
 
-  GraphElement copyWith({String? id, Rect? rect, String? expression, Color? color, double? rotation}) => GraphElement(
+  /// Board point of graph point ([x], [y]), before the graph is turned.
+  Offset toBoard(double x, double y) =>
+      Offset(rect.left + (x - xMin) / (xMax - xMin) * rect.width, rect.bottom - (y - yMin) / (yMax - yMin) * rect.height);
+
+  /// Graph point under board point [p] (unturned).
+  Offset toGraph(Offset p) =>
+      Offset(xMin + (p.dx - rect.left) / rect.width * (xMax - xMin), yMin + (rect.bottom - p.dy) / rect.height * (yMax - yMin));
+
+  GraphElement copyWith({
+    String? id,
+    Rect? rect,
+    String? expression,
+    Color? color,
+    double? rotation,
+    double? xMin,
+    double? xMax,
+    double? yMin,
+    double? yMax,
+    List<String>? curves,
+    Map<String, double>? params,
+    List<GraphPoint>? points,
+    GraphShade? shade,
+    bool clearShade = false,
+    String? xLabel,
+    String? yLabel,
+    String? title,
+  }) => GraphElement(
     id: id ?? this.id,
     rect: rect ?? this.rect,
     expression: expression ?? this.expression,
     color: color ?? this.color,
-    xMin: xMin,
-    xMax: xMax,
-    yMin: yMin,
-    yMax: yMax,
+    xMin: xMin ?? this.xMin,
+    xMax: xMax ?? this.xMax,
+    yMin: yMin ?? this.yMin,
+    yMax: yMax ?? this.yMax,
     rotation: rotation ?? this.rotation,
+    curves: curves ?? this.curves,
+    params: params ?? this.params,
+    points: points ?? this.points,
+    shade: clearShade ? null : (shade ?? this.shade),
+    xLabel: xLabel ?? this.xLabel,
+    yLabel: yLabel ?? this.yLabel,
+    title: title ?? this.title,
   );
 
   @override
@@ -375,6 +441,39 @@ class GraphElement extends BoardElement {
   GraphElement recolored(Color c) => copyWith(color: c);
   @override
   GraphElement withId(String id) => copyWith(id: id);
+}
+
+/// [v] written short: whole numbers without a point, others to at most four places.
+String graphNum(double v) {
+  if (v == v.roundToDouble() && v.abs() < 1e15) return v.toInt().toString();
+  return v.toStringAsFixed(4).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
+}
+
+/// A marked point on a graph (an equilibrium, a reading), in graph units.
+class GraphPoint {
+  const GraphPoint(this.x, this.y, [this.label = '']);
+
+  final double x, y;
+  final String label;
+
+  @override
+  bool operator ==(Object other) => other is GraphPoint && other.x == x && other.y == y && other.label == label;
+  @override
+  int get hashCode => Object.hash(x, y, label);
+}
+
+/// A shaded band from x = [from] to x = [to]: under the main curve, or between it and the first
+/// of [GraphElement.curves] when [between].
+class GraphShade {
+  const GraphShade(this.from, this.to, {this.between = false});
+
+  final double from, to;
+  final bool between;
+
+  @override
+  bool operator ==(Object other) => other is GraphShade && other.from == from && other.to == to && other.between == between;
+  @override
+  int get hashCode => Object.hash(from, to, between);
 }
 
 // --- Figures -------------------------------------------------------------------------------

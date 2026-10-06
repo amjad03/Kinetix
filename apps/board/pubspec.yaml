@@ -31,6 +31,10 @@ dependencies:
   intl: ^0.20.3
   kinetix_3d:
     path: ../../packages/kinetix_3d
+  # Animations for the split panel: photosynthesis, the heart, cell division, the water cycle,
+  # circuits... drawn in Flutter, offline (lib/features/board/animations_hook.dart).
+  kinetix_animations:
+    path: ../../packages/kinetix_animations
   kinetix_cards:
     path: ../../packages/kinetix_cards
   # The CS kit: code lab (Python/JS/SQL on the board, C/C++/Java on the server), algorithms, CS labs.

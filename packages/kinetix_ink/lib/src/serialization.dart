@@ -7,8 +7,8 @@ import 'ink_models.dart';
 import 'sheet_formula.dart';
 
 /// The saved-board format version. 1: pages of strokes. 2: a page's `strokes` may also hold the
-/// other board elements (text, pictures, equations, graphs, figures, notes, sheets, each with its own
-/// `t`), and a page may list its `groups`. Readers skip kinds they do not know, so a board
+/// other board elements (text, pictures, equations, graphs, figures, notes, sheets, flowchart
+/// blocks and arrows, each with its own `t`), and a page may list its `groups`. Readers skip kinds they do not know, so a board
 /// saved by a newer app still opens in an older one, without the new kinds.
 const int boardFormatVersion = 2;
 
@@ -164,14 +164,7 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     'sh': _round1(e.size.height),
     if (e.rotation != 0) 'a': _round3(e.rotation),
   },
-  GraphElement() => {
-    't': 'graph',
-    'r': _rect(e.rect),
-    'e': e.expression,
-    'v': [e.xMin, e.xMax, e.yMin, e.yMax],
-    'c': e.color.toARGB32(),
-    if (e.rotation != 0) 'a': _round3(e.rotation),
-  },
+  GraphElement() => encodeGraph(e),
   PolygonElement() => {
     't': 'polygon',
     'p': [
@@ -193,7 +186,56 @@ Map<String, dynamic> encodeElement(BoardElement e, {Object? Function(Uint8List b
     if (e.rotation != 0) 'a': _round3(e.rotation),
   },
   SheetElement() => encodeSheet(e),
+  FlowNodeElement() => {
+    't': 'flow',
+    'id': e.id,
+    'r': _rect(e.rect),
+    'k': e.shape.name,
+    if (e.text.isNotEmpty) 'tx': e.text,
+    'c': e.color.toARGB32(),
+    if (e.fill != null) 'f': e.fill!.toARGB32(),
+    if (e.fontSize != 22) 'fs': _round1(e.fontSize),
+  },
+  FlowLinkElement() => {
+    't': 'flowlink',
+    'fr': e.from,
+    'to': e.to,
+    'sd': [e.fromSide.index, e.toSide.index],
+    if (e.label.isNotEmpty) 'l': e.label,
+    'c': e.color.toARGB32(),
+    if (e.curved) 'cv': true,
+    'p': [
+      for (final p in e.points) ...[_round1(p.dx), _round1(p.dy)],
+    ],
+  },
 };
+
+/// A graph. `e` (and `x` for further curves) are written with the parameters already put in,
+/// so readers that know nothing of parameters still plot it; `et`, `xt` and `pm` keep the
+/// editable templates and their values.
+Map<String, dynamic> encodeGraph(GraphElement e) {
+  final templated = e.params.isNotEmpty;
+  return {
+    't': 'graph',
+    'r': _rect(e.rect),
+    'e': e.resolvedExpression,
+    if (templated) 'et': e.expression,
+    'v': [e.xMin, e.xMax, e.yMin, e.yMax],
+    'c': e.color.toARGB32(),
+    if (e.rotation != 0) 'a': _round3(e.rotation),
+    if (e.curves.isNotEmpty) 'x': e.resolvedCurves,
+    if (templated && e.curves.isNotEmpty) 'xt': e.curves,
+    if (templated) 'pm': e.params,
+    if (e.points.isNotEmpty)
+      'pt': [
+        for (final p in e.points) [_round3(p.x), _round3(p.y), if (p.label.isNotEmpty) p.label],
+      ],
+    if (e.shade != null) 'sh': [e.shade!.from, e.shade!.to, if (e.shade!.between) 1],
+    if (e.xLabel.isNotEmpty) 'lx': e.xLabel,
+    if (e.yLabel.isNotEmpty) 'ly': e.yLabel,
+    if (e.title.isNotEmpty) 'ti': e.title,
+  };
+}
 
 /// A sheet: what was typed (`d`, row by row) and its layout; the reader works the values out
 /// again. `out` (each cell as shown) and `cv` (the chart's labels and numbers) are for viewers
@@ -261,16 +303,36 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
         final rect = _readRect(j['r']);
         final v = (j['v'] as List<dynamic>?)?.cast<num>();
         if (rect == null || j['e'] is! String) return null;
+        final pm = j['pm'] is Map
+            ? {
+                for (final e in (j['pm'] as Map).entries)
+                  if (e.value is num) '${e.key}': (e.value as num).toDouble(),
+              }
+            : const <String, double>{};
+        final templated = pm.isNotEmpty;
+        List<String> strings(Object? raw) => raw is List ? [for (final s in raw) '$s'] : const [];
+        final sh = (j['sh'] as List<dynamic>?)?.cast<num>();
         return GraphElement(
           id: id,
           rect: rect,
-          expression: j['e'] as String,
+          expression: templated && j['et'] is String ? j['et'] as String : j['e'] as String,
           color: color(),
           xMin: v != null && v.length == 4 ? v[0].toDouble() : -10,
           xMax: v != null && v.length == 4 ? v[1].toDouble() : 10,
           yMin: v != null && v.length == 4 ? v[2].toDouble() : -10,
           yMax: v != null && v.length == 4 ? v[3].toDouble() : 10,
           rotation: angle,
+          curves: templated && j['xt'] is List ? strings(j['xt']) : strings(j['x']),
+          params: pm,
+          points: [
+            for (final p in (j['pt'] as List<dynamic>? ?? const []))
+              if (p is List && p.length >= 2 && p[0] is num && p[1] is num)
+                GraphPoint((p[0] as num).toDouble(), (p[1] as num).toDouble(), p.length > 2 ? '${p[2]}' : ''),
+          ],
+          shade: sh != null && sh.length >= 2 ? GraphShade(sh[0].toDouble(), sh[1].toDouble(), between: sh.length > 2 && sh[2] != 0) : null,
+          xLabel: j['lx'] as String? ?? '',
+          yLabel: j['ly'] as String? ?? '',
+          title: j['ti'] as String? ?? '',
         );
       case 'polygon':
         final flat = (j['p'] as List<dynamic>?)?.cast<num>();
@@ -295,6 +357,36 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
           kind: NoteKind.values.asNameMap()[j['k']] ?? NoteKind.note,
           language: j['lg'] as String?,
           rotation: angle,
+        );
+      case 'flow':
+        final rect = _readRect(j['r']);
+        final shape = FlowBlock.values.asNameMap()[j['k']];
+        if (rect == null || shape == null) return null;
+        return FlowNodeElement(
+          id: j['id'] is String ? j['id'] as String : id,
+          rect: rect,
+          shape: shape,
+          text: j['tx'] as String? ?? '',
+          color: color(),
+          fill: j['f'] is num ? color('f') : null,
+          fontSize: n('fs', 22),
+        );
+      case 'flowlink':
+        final from = j['fr'], to = j['to'];
+        final sd = (j['sd'] as List<dynamic>?)?.cast<num>();
+        final flat = (j['p'] as List<dynamic>?)?.cast<num>() ?? const <num>[];
+        if (from is! String || to is! String) return null;
+        FlowSide side(int i, FlowSide fallback) => sd != null && sd.length == 2 && sd[i] >= 0 && sd[i] < 4 ? FlowSide.values[sd[i].toInt()] : fallback;
+        return FlowLinkElement(
+          id: id,
+          from: from,
+          to: to,
+          fromSide: side(0, FlowSide.bottom),
+          toSide: side(1, FlowSide.top),
+          label: j['l'] as String? ?? '',
+          color: color(),
+          curved: j['cv'] == true,
+          points: [for (var i = 0; i + 1 < flat.length; i += 2) Offset(flat[i].toDouble(), flat[i + 1].toDouble())],
         );
       case 'sheet':
         final rect = _readRect(j['r']);
