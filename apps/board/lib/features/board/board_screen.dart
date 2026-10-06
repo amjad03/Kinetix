@@ -1496,6 +1496,9 @@ class _BoardScreenState extends State<BoardScreen> {
   WhiteboardCanvasLabels _canvasLabels(AppLocalizations l) =>
       WhiteboardCanvasLabels(typeHint: l.typeHint, hideRuler: l.hideRuler, hideProtractor: l.hideProtractor, turn: l.turn);
 
+  /// The toolbar sits above the corners (a narrow board, or one beside the panel).
+  bool _toolbarRaised = false;
+
   /// The toolbar's size across its dock (height at the bottom, width at an edge).
   double get _toolbarDepth => _primary ? 92 : 76;
 
@@ -1621,7 +1624,8 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The chrome on an interactive panel, a tablet or a desktop.
   List<Widget> _panelChrome(BuildContext context, {required bool compact, required bool short, required ToolbarDock dock, required bool collapsed}) {
-    final width = MediaQuery.sizeOf(context).width;
+    // The board's own width: narrower beside the split panel.
+    final width = _canvasSize.width;
     final recording = _recordingIndicator();
     Widget themed(Widget child) => BoardChromeTheme(child: ToolbarDensity(compact: compact && !_primary, big: _primary, child: child));
     final drag = _toolbarDrag ?? Offset.zero;
@@ -1629,6 +1633,7 @@ class _BoardScreenState extends State<BoardScreen> {
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
     final leftRoom = recording == null ? 190.0 : 420.0, rightRoom = compact ? 330.0 : 400.0;
     final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 640.0 : 860.0));
+    _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
     return [
       Positioned(
         left: Kx.s12,
@@ -1659,7 +1664,7 @@ class _BoardScreenState extends State<BoardScreen> {
         child: themed(PageBar(wb: _wb, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
       ),
       if (dock == ToolbarDock.bottom)
-        if (width - leftRoom - rightRoom >= toolbarW)
+        if (!_toolbarRaised)
           Positioned(left: leftRoom, right: rightRoom, bottom: Kx.s12, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
         else
           Positioned(left: Kx.s12, right: Kx.s12, bottom: Kx.s12 + 76 + Kx.s8, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
@@ -1889,7 +1894,7 @@ class _BoardScreenState extends State<BoardScreen> {
             right: Kx.s12,
             top: 64,
             // Above the toolbar, wherever it sits (between the corners or raised above them).
-            bottom: 2 * _toolbarDepth + Kx.s8,
+            bottom: Kx.s12 + _toolbarDepth + Kx.s8 + (_toolbarRaised ? 76 + Kx.s8 : 0),
             child: Align(alignment: Alignment.bottomCenter, child: SingleChildScrollView(reverse: true, child: themed)),
           ),
         };
