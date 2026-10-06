@@ -1,0 +1,21 @@
+name: kinetix_animations
+description: KINETIX animations — offline, procedurally drawn science animations (photosynthesis, the heart, cell division, the water cycle, circuits...) with stepped captions in English, Hindi and Kannada, for the Board's split panel.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Read aloud with the board's own voices (the Board already ships it); nothing leaves the panel.
+  flutter_tts: ^4.2.5
+  kinetix_ui:
+    path: ../kinetix_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

@@ -1,0 +1,60 @@
+import 'model.dart';
+
+const _hi = <String, String>{
+  'Back': 'वापस',
+  'Language': 'भाषा',
+  'Hide labels': 'नाम छिपाएँ',
+  'Show labels': 'नाम दिखाएँ',
+  'Read aloud': 'पढ़कर सुनाएँ',
+  'Add to board': 'बोर्ड पर जोड़ें',
+  'Play': 'चलाएँ',
+  'Pause': 'रोकें',
+  'Speed': 'गति',
+  'Search animations': 'एनिमेशन खोजें',
+  'Subject': 'विषय',
+  'Topic': 'प्रकरण',
+  'Class': 'कक्षा',
+  'All': 'सभी',
+  'No animations match.': 'कोई एनिमेशन नहीं मिला।',
+  'Clear filters': 'फ़िल्टर हटाएँ',
+  'Animations': 'एनिमेशन',
+  'Biology': 'जीव विज्ञान',
+  'Earth Science': 'पृथ्वी विज्ञान',
+  'Physics': 'भौतिकी',
+  'Chemistry': 'रसायन विज्ञान',
+  'Economics': 'अर्थशास्त्र',
+  'Computer Science': 'कंप्यूटर विज्ञान',
+};
+
+const _kn = <String, String>{
+  'Back': 'ಹಿಂದೆ',
+  'Language': 'ಭಾಷೆ',
+  'Hide labels': 'ಹೆಸರುಗಳನ್ನು ಮರೆಮಾಡಿ',
+  'Show labels': 'ಹೆಸರುಗಳನ್ನು ತೋರಿಸಿ',
+  'Read aloud': 'ಓದಿ ಹೇಳಿ',
+  'Add to board': 'ಬೋರ್ಡ್‌ಗೆ ಸೇರಿಸಿ',
+  'Play': 'ಆರಂಭಿಸಿ',
+  'Pause': 'ನಿಲ್ಲಿಸಿ',
+  'Speed': 'ವೇಗ',
+  'Search animations': 'ಅನಿಮೇಷನ್ ಹುಡುಕಿ',
+  'Subject': 'ವಿಷಯ',
+  'Topic': 'ಅಧ್ಯಾಯ',
+  'Class': 'ತರಗತಿ',
+  'All': 'ಎಲ್ಲಾ',
+  'No animations match.': 'ಯಾವ ಅನಿಮೇಷನ್ ಸಿಗಲಿಲ್ಲ.',
+  'Clear filters': 'ಫಿಲ್ಟರ್ ತೆಗೆಯಿರಿ',
+  'Animations': 'ಅನಿಮೇಷನ್‌ಗಳು',
+  'Biology': 'ಜೀವಶಾಸ್ತ್ರ',
+  'Earth Science': 'ಭೂ ವಿಜ್ಞಾನ',
+  'Physics': 'ಭೌತಶಾಸ್ತ್ರ',
+  'Chemistry': 'ರಸಾಯನಶಾಸ್ತ್ರ',
+  'Economics': 'ಅರ್ಥಶಾಸ್ತ್ರ',
+  'Computer Science': 'ಕಂಪ್ಯೂಟರ್ ವಿಜ್ಞಾನ',
+};
+
+/// Interface text in [lang] (English when untranslated).
+String ui3(String en, AnimLang lang) => switch (lang) {
+      AnimLang.en => en,
+      AnimLang.hi => _hi[en] ?? en,
+      AnimLang.kn => _kn[en] ?? en,
+    };
