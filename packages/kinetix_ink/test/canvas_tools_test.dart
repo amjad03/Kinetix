@@ -372,11 +372,14 @@ void main() {
       await pump(tester);
       final c = board.addGeoTool(GeoKind.compass);
       await tester.pump();
+      await tester.tap(find.byKey(Key('geo-bigger-${c.id}')));
+      await tester.pump();
+      expect(board.geoTools.value.single.size, closeTo(c.size * 1.25, 1e-9));
       await tester.tap(find.byKey(Key('geo-circle-${c.id}')));
       await tester.pump();
       final s = board.elements.single as Stroke;
       expect(s.shape, ShapeKind.circle);
-      expect((s.points.first.offset - c.center).distance, closeTo(c.size, 1e-6));
+      expect((s.points.first.offset - c.center).distance, closeTo(c.size * 1.25, 1e-6));
     });
 
     testWidgets('a selected block shows ＋; the palette shows the shapes and adds the choice', (tester) async {

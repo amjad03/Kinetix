@@ -69,9 +69,9 @@ class GeoToolsOverlay extends StatelessWidget {
       padding: EdgeInsets.zero,
     );
     return Positioned(
-      left: box.center.dx - 110,
+      left: box.center.dx - 160,
       top: math.max(4, box.top - 48),
-      width: 220,
+      width: 320,
       child: Center(
         child: Material(
           color: KxColor.inverse.withValues(alpha: 0.88),
@@ -88,6 +88,10 @@ class GeoToolsOverlay extends StatelessWidget {
                   () => c.updateGeoTool(t.copyWith(locked: !t.locked)),
                 ),
                 if (t.kind != GeoKind.compass) btn('flip', Icons.flip, s.t('flip'), () => c.updateGeoTool(t.copyWith(flipped: !t.flipped))),
+                if (!t.locked) ...[
+                  btn('smaller', Icons.remove, s.t('smaller'), () => c.updateGeoTool(t.copyWith(size: t.clampSize(t.size / 1.25)))),
+                  btn('bigger', Icons.add, s.t('bigger'), () => c.updateGeoTool(t.copyWith(size: t.clampSize(t.size * 1.25)))),
+                ],
                 if (t.kind == GeoKind.compass)
                   btn('circle', Icons.radio_button_unchecked, s.t('circle'), () {
                     c.add(compassStroke(t.center, t.size, t.angle, 2 * math.pi, color: c.penColor, width: c.penWidth));
@@ -338,7 +342,16 @@ class GeoToolPainter extends CustomPainter {
         canvas.drawRRect(RRect.fromRectAndRadius(r, const Radius.circular(6)), body);
         canvas.drawRRect(RRect.fromRectAndRadius(r, const Radius.circular(6)), edge);
         _scale(canvas, Offset(-t.size / 2, 0), t.size, tick, GeoTool.rulerWidth);
-        _label(canvas, '${t.angleDegrees.round() % 180}°', Offset(0, GeoTool.rulerWidth * 0.62), 18, color: _accent, bold: true);
+        // Live readout: the turn (to a tenth of a degree, as the protractor reads it) and the length.
+        final turn = t.angleDegrees > 180 ? t.angleDegrees - 360 : t.angleDegrees;
+        _label(
+          canvas,
+          '${(-turn).toStringAsFixed(1)}° · ${GeoCalibration.format(t.size)}',
+          Offset(0, GeoTool.rulerWidth * 0.66),
+          16,
+          color: _accent,
+          bold: true,
+        );
       case GeoKind.setSquare45 || GeoKind.setSquare3060:
         final o = t.outline;
         final path = Path()..addPolygon(o, true);
