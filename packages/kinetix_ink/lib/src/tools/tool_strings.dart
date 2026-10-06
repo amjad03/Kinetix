@@ -16,7 +16,7 @@ class ToolStrings {
 
   String t(String key) => _strings[lang]?[key] ?? _strings['en']![key] ?? key;
 
-  String shape(FlowShape s) => t('shape.${s.name}');
+  String shape(FlowBlock s) => t('shape.${s.name}');
   String pattern(FlowPattern p) => t('pattern.${p.name}');
   String subject(GraphSubject s) => t('subject.${s.name}');
   String template(GraphTemplate g) => _strings[lang]?['graph.${g.id}'] ?? g.title;
@@ -353,9 +353,9 @@ class ToolStrings {
 }
 
 /// Shapes shown in the ＋ palette for a block of [from] (mind-map topics offer topics first).
-List<FlowShape> paletteShapes(FlowShape from) => from == FlowShape.topic
-    ? const [FlowShape.topic, FlowShape.process, FlowShape.comment]
+List<FlowBlock> paletteShapes(FlowBlock from) => from == FlowBlock.topic
+    ? const [FlowBlock.topic, FlowBlock.process, FlowBlock.comment]
     : [
-        for (final s in FlowShape.values)
-          if (s != FlowShape.topic) s,
+        for (final s in FlowBlock.values)
+          if (s != FlowBlock.topic) s,
       ];

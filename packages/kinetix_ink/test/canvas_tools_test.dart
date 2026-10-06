@@ -109,14 +109,14 @@ void main() {
   });
 
   group('flowcharts', () {
-    FlowNodeElement start() => const FlowNodeElement(id: 'a', rect: Rect.fromLTWH(0, 0, 200, 90), shape: FlowShape.process, color: Colors.black);
+    FlowNodeElement start() => const FlowNodeElement(id: 'a', rect: Rect.fromLTWH(0, 0, 200, 90), shape: FlowBlock.process, color: Colors.black);
     var n = 0;
     String id() => 'n${n++}';
 
     test('add next puts a joined block in line beyond the side', () {
-      final r = addNextFlow([start()], 'a', FlowSide.bottom, shape: FlowShape.inputOutput, newId: id)!;
+      final r = addNextFlow([start()], 'a', FlowSide.bottom, shape: FlowBlock.inputOutput, newId: id)!;
       final node = r.elements.whereType<FlowNodeElement>().firstWhere((e) => e.id == r.focus);
-      expect(node.shape, FlowShape.inputOutput);
+      expect(node.shape, FlowBlock.inputOutput);
       expect(node.rect.center.dx, closeTo(100, 1e-9)); // lined up
       expect(node.rect.top, closeTo(90 + flowGap, 1e-9));
       final link = r.elements.whereType<FlowLinkElement>().single;
@@ -124,7 +124,7 @@ void main() {
       expect(link.points.first, const Offset(100, 90));
       expect(link.points.last, node.rect.topCenter);
       // A second block on the same side steps past the first.
-      final r2 = addNextFlow(r.elements, 'a', FlowSide.bottom, shape: FlowShape.process, newId: id)!;
+      final r2 = addNextFlow(r.elements, 'a', FlowSide.bottom, shape: FlowBlock.process, newId: id)!;
       final second = r2.elements.whereType<FlowNodeElement>().firstWhere((e) => e.id == r2.focus);
       expect(second.rect.overlaps(node.rect), isFalse);
     });
@@ -132,7 +132,7 @@ void main() {
     test('if/else adds a decision with Yes and No arms', () {
       final r = addNextFlow([start()], 'a', FlowSide.bottom, pattern: FlowPattern.ifElse, newId: id)!;
       final d = r.elements.whereType<FlowNodeElement>().firstWhere((e) => e.id == r.focus);
-      expect(d.shape, FlowShape.decision);
+      expect(d.shape, FlowBlock.decision);
       final arms = r.elements.whereType<FlowLinkElement>().where((l) => l.from == d.id).toList();
       expect({for (final l in arms) l.label}, {'Yes', 'No'});
       expect(arms.firstWhere((l) => l.label == 'Yes').fromSide, FlowSide.bottom);
@@ -147,7 +147,7 @@ void main() {
       for (final p in [FlowPattern.whileLoop, FlowPattern.forLoop]) {
         final r = addNextFlow([start()], 'a', FlowSide.bottom, pattern: p, newId: id)!;
         final head = r.elements.whereType<FlowNodeElement>().firstWhere((e) => e.id == r.focus);
-        expect(head.shape, p == FlowPattern.whileLoop ? FlowShape.decision : FlowShape.loopLimit);
+        expect(head.shape, p == FlowPattern.whileLoop ? FlowBlock.decision : FlowBlock.loopLimit);
         final back = r.elements.whereType<FlowLinkElement>().where((l) => l.to == head.id && l.from != 'a').single;
         expect(back.fromSide, back.toSide); // round the outside, into the same side
         // The way back goes outside both blocks.
@@ -189,7 +189,7 @@ void main() {
       final root = starterNode(mindMap: true, color: Colors.teal);
       final r = addNextFlow([root], root.id, FlowSide.right, newId: id)!;
       final child = r.elements.whereType<FlowNodeElement>().firstWhere((e) => e.id == r.focus);
-      expect(child.shape, FlowShape.topic);
+      expect(child.shape, FlowBlock.topic);
       expect(r.elements.whereType<FlowLinkElement>().single.curved, isTrue);
     });
 
@@ -218,11 +218,11 @@ void main() {
     });
 
     test('every block has a closed outline in its box', () {
-      for (final s in FlowShape.values) {
+      for (final s in FlowBlock.values) {
         final r = Rect.fromLTWH(10, 10, 200, 100);
         final b = flowShapePath(s, r).getBounds();
         expect(
-          r.inflate(30).contains(b.topLeft) && r.inflate(30).contains(b.bottomRight) && (s == FlowShape.comment || b.contains(r.center)),
+          r.inflate(30).contains(b.topLeft) && r.inflate(30).contains(b.bottomRight) && (s == FlowBlock.comment || b.contains(r.center)),
           isTrue,
           reason: s.name,
         );
@@ -386,7 +386,7 @@ void main() {
       expect(find.byKey(const Key('flow-plus-bottom')), findsOneWidget);
       await tester.tap(find.byKey(const Key('flow-plus-bottom')));
       await tester.pumpAndSettle();
-      for (final s in FlowShape.values.where((s) => s != FlowShape.topic)) {
+      for (final s in FlowBlock.values.where((s) => s != FlowBlock.topic)) {
         expect(find.byKey(Key('flow-shape-${s.name}')), findsOneWidget);
       }
       expect(find.byKey(const Key('flow-pattern-ifElse')), findsOneWidget);
@@ -394,7 +394,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(board.elements.whereType<FlowNodeElement>(), hasLength(4));
       expect(board.elements.whereType<FlowLinkElement>(), hasLength(3));
-      expect((board.selectedElements.single as FlowNodeElement).shape, FlowShape.decision);
+      expect((board.selectedElements.single as FlowNodeElement).shape, FlowBlock.decision);
       board.undo();
       expect(board.elements.whereType<FlowNodeElement>(), hasLength(1));
       board.redo();

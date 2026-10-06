@@ -360,7 +360,7 @@ BoardElement? decodeElement(Map<String, dynamic> j, String id, {Uint8List? Funct
         );
       case 'flow':
         final rect = _readRect(j['r']);
-        final shape = FlowShape.values.asNameMap()[j['k']];
+        final shape = FlowBlock.values.asNameMap()[j['k']];
         if (rect == null || shape == null) return null;
         return FlowNodeElement(
           id: j['id'] is String ? j['id'] as String : id,

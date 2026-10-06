@@ -6,7 +6,7 @@ part of 'ink_models.dart';
 /// without the routing still draw it.
 
 /// The standard flowchart blocks, plus [topic] for mind maps.
-enum FlowShape {
+enum FlowBlock {
   process,
   decision,
   inputOutput,
@@ -25,12 +25,12 @@ enum FlowShape {
 
   /// The block's usual size when it is added, in board units.
   Size get defaultSize => switch (this) {
-    FlowShape.decision => const Size(200, 120),
-    FlowShape.connector => const Size(64, 64),
-    FlowShape.merge => const Size(90, 70),
-    FlowShape.terminal => const Size(190, 70),
-    FlowShape.topic => const Size(180, 64),
-    FlowShape.database || FlowShape.dataStore => const Size(170, 100),
+    FlowBlock.decision => const Size(200, 120),
+    FlowBlock.connector => const Size(64, 64),
+    FlowBlock.merge => const Size(90, 70),
+    FlowBlock.terminal => const Size(190, 70),
+    FlowBlock.topic => const Size(180, 64),
+    FlowBlock.database || FlowBlock.dataStore => const Size(170, 100),
     _ => const Size(200, 90),
   };
 }
@@ -66,20 +66,20 @@ Offset flowAnchor(Rect r, FlowSide s) => switch (s) {
 };
 
 /// The outline of block [s] drawn in [r].
-Path flowShapePath(FlowShape s, Rect r) {
+Path flowShapePath(FlowBlock s, Rect r) {
   final p = Path();
   final w = r.width, h = r.height, l = r.left, t = r.top;
   switch (s) {
-    case FlowShape.process:
+    case FlowBlock.process:
       p.addRect(r);
-    case FlowShape.decision:
+    case FlowBlock.decision:
       p.addPolygon([r.topCenter, r.centerRight, r.bottomCenter, r.centerLeft], true);
-    case FlowShape.inputOutput:
+    case FlowBlock.inputOutput:
       final k = math.min(w * 0.18, h * 0.5);
       p.addPolygon([Offset(l + k, t), Offset(r.right, t), Offset(r.right - k, r.bottom), Offset(l, r.bottom)], true);
-    case FlowShape.terminal:
+    case FlowBlock.terminal:
       p.addRRect(RRect.fromRectAndRadius(r, Radius.circular(h / 2)));
-    case FlowShape.subprocess:
+    case FlowBlock.subprocess:
       p.addRect(r);
       final k = math.min(14.0, w * 0.08);
       p
@@ -87,7 +87,7 @@ Path flowShapePath(FlowShape s, Rect r) {
         ..lineTo(l + k, r.bottom)
         ..moveTo(r.right - k, t)
         ..lineTo(r.right - k, r.bottom);
-    case FlowShape.document:
+    case FlowBlock.document:
       final wave = h * 0.12;
       p
         ..moveTo(l, t)
@@ -95,7 +95,7 @@ Path flowShapePath(FlowShape s, Rect r) {
         ..lineTo(r.right, r.bottom - wave)
         ..cubicTo(l + w * 0.75, r.bottom - wave * 3, l + w * 0.25, r.bottom + wave, l, r.bottom - wave)
         ..close();
-    case FlowShape.database:
+    case FlowBlock.database:
       final e = math.min(h * 0.18, 22.0);
       p
         ..moveTo(l, t + e)
@@ -103,21 +103,21 @@ Path flowShapePath(FlowShape s, Rect r) {
         ..arcTo(Rect.fromLTWH(l, r.bottom - 2 * e, w, 2 * e), math.pi, -math.pi, false)
         ..lineTo(r.right, t + e)
         ..addOval(Rect.fromLTWH(l, t, w, 2 * e));
-    case FlowShape.loopLimit:
+    case FlowBlock.loopLimit:
       final k = math.min(w * 0.12, h * 0.4);
       p.addPolygon([Offset(l + k, t), Offset(r.right - k, t), Offset(r.right, t + k), Offset(r.right, r.bottom), Offset(l, r.bottom), Offset(l, t + k)], true);
-    case FlowShape.connector:
+    case FlowBlock.connector:
       p.addOval(Rect.fromCenter(center: r.center, width: math.min(w, h), height: math.min(w, h)));
-    case FlowShape.comment:
+    case FlowBlock.comment:
       final k = math.min(16.0, w * 0.15);
       p
         ..moveTo(l + k, t)
         ..lineTo(l, t)
         ..lineTo(l, r.bottom)
         ..lineTo(l + k, r.bottom);
-    case FlowShape.manualInput:
+    case FlowBlock.manualInput:
       p.addPolygon([Offset(l, t + h * 0.3), Offset(r.right, t), Offset(r.right, r.bottom), Offset(l, r.bottom)], true);
-    case FlowShape.dataStore:
+    case FlowBlock.dataStore:
       final k = math.min(w * 0.12, 20.0);
       p
         ..moveTo(l + k, t)
@@ -126,7 +126,7 @@ Path flowShapePath(FlowShape s, Rect r) {
         ..lineTo(l + k, r.bottom)
         ..arcToPoint(Offset(l + k, t), radius: Radius.elliptical(k, h / 2))
         ..close();
-    case FlowShape.display:
+    case FlowBlock.display:
       final k = math.min(w * 0.15, 26.0);
       p
         ..moveTo(l, r.center.dy)
@@ -135,9 +135,9 @@ Path flowShapePath(FlowShape s, Rect r) {
         ..arcToPoint(Offset(r.right - k, r.bottom), radius: Radius.elliptical(k, h / 2))
         ..lineTo(l + k, r.bottom)
         ..close();
-    case FlowShape.merge:
+    case FlowBlock.merge:
       p.addPolygon([r.topLeft, r.topRight, r.bottomCenter], true);
-    case FlowShape.topic:
+    case FlowBlock.topic:
       p.addRRect(RRect.fromRectAndRadius(r, Radius.circular(math.min(18.0, h / 2))));
   }
   return p;
@@ -150,7 +150,7 @@ class FlowNodeElement extends BoardElement {
   @override
   final String id;
   final Rect rect;
-  final FlowShape shape;
+  final FlowBlock shape;
   final String text;
   final Color color;
 
@@ -165,7 +165,7 @@ class FlowNodeElement extends BoardElement {
 
   Offset anchor(FlowSide s) => flowAnchor(rect, s);
 
-  FlowNodeElement copyWith({String? id, Rect? rect, FlowShape? shape, String? text, Color? color, Color? fill, bool clearFill = false, double? fontSize}) =>
+  FlowNodeElement copyWith({String? id, Rect? rect, FlowBlock? shape, String? text, Color? color, Color? fill, bool clearFill = false, double? fontSize}) =>
       FlowNodeElement(
         id: id ?? this.id,
         rect: rect ?? this.rect,

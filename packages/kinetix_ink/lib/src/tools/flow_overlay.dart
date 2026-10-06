@@ -56,7 +56,7 @@ class FlowPlusOverlay extends StatelessWidget {
 }
 
 /// What the palette returned: a single block or a pattern.
-typedef FlowChoice = ({FlowShape? shape, FlowPattern? pattern});
+typedef FlowChoice = ({FlowBlock? shape, FlowPattern? pattern});
 
 /// Opens the palette for adding beyond [side] of [node], and adds the choice.
 Future<void> openFlowPalette(BuildContext context, WhiteboardController c, FlowNodeElement node, FlowSide side) async {
@@ -76,7 +76,7 @@ Future<void> openFlowPalette(BuildContext context, WhiteboardController c, FlowN
 class FlowPalette extends StatelessWidget {
   const FlowPalette({super.key, required this.from, required this.strings});
 
-  final FlowShape from;
+  final FlowBlock from;
   final ToolStrings strings;
 
   @override
@@ -122,7 +122,7 @@ class FlowPalette extends StatelessWidget {
                     tile('flow-shape-${shape.name}', s.shape(shape), ShapeIconPainter(shape), (shape: shape, pattern: null)),
                 ],
               ),
-              if (from != FlowShape.topic) ...[
+              if (from != FlowBlock.topic) ...[
                 const SizedBox(height: 18),
                 Text(s.t('conditions'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 10),
@@ -147,7 +147,7 @@ class FlowPalette extends StatelessWidget {
 class ShapeIconPainter extends CustomPainter {
   ShapeIconPainter(this.shape);
 
-  final FlowShape shape;
+  final FlowBlock shape;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -171,7 +171,7 @@ class PatternIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     var n = 0;
-    final start = FlowNodeElement(id: 'src', rect: const Rect.fromLTWH(0, 0, 200, 90), shape: FlowShape.process, color: KxColor.accent);
+    final start = FlowNodeElement(id: 'src', rect: const Rect.fromLTWH(0, 0, 200, 90), shape: FlowBlock.process, color: KxColor.accent);
     final r = addNextFlow(
       [start],
       'src',

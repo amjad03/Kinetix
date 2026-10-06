@@ -509,10 +509,10 @@ void paintGraph(Canvas canvas, GraphElement g) {
 void paintFlowNode(Canvas canvas, FlowNodeElement n, BoardBackground background) {
   final ink = inkColorFor(n.color, background);
   final path = flowShapePath(n.shape, n.rect);
-  final open = n.shape == FlowShape.comment;
+  final open = n.shape == FlowBlock.comment;
   if (!open) {
     canvas.drawPath(path, Paint()..color = n.fill ?? (background.isDark ? const Color(0xFF22262C) : const Color(0xFFFFFFFF)));
-    if (n.shape == FlowShape.topic) canvas.drawPath(path, Paint()..color = ink.withValues(alpha: 0.12));
+    if (n.shape == FlowBlock.topic) canvas.drawPath(path, Paint()..color = ink.withValues(alpha: 0.12));
   }
   canvas.drawPath(
     path,
@@ -525,9 +525,9 @@ void paintFlowNode(Canvas canvas, FlowNodeElement n, BoardBackground background)
   if (n.text.isEmpty) return;
   // Words stay inside the narrower middle of a diamond or a slanted block.
   final inset = switch (n.shape) {
-    FlowShape.decision => n.rect.width * 0.22,
-    FlowShape.inputOutput || FlowShape.manualInput || FlowShape.display || FlowShape.loopLimit => n.rect.width * 0.12,
-    FlowShape.merge => n.rect.width * 0.25,
+    FlowBlock.decision => n.rect.width * 0.22,
+    FlowBlock.inputOutput || FlowBlock.manualInput || FlowBlock.display || FlowBlock.loopLimit => n.rect.width * 0.12,
+    FlowBlock.merge => n.rect.width * 0.25,
     _ => 10.0,
   };
   final tp = TextPainter(
@@ -540,7 +540,7 @@ void paintFlowNode(Canvas canvas, FlowNodeElement n, BoardBackground background)
     maxLines: 4,
     ellipsis: '…',
   )..layout(maxWidth: math.max(10, n.rect.width - 2 * inset));
-  final dy = n.shape == FlowShape.merge ? -n.rect.height * 0.18 : 0.0;
+  final dy = n.shape == FlowBlock.merge ? -n.rect.height * 0.18 : 0.0;
   tp.paint(canvas, n.rect.center - Offset(tp.width / 2, tp.height / 2 - dy));
 }
 

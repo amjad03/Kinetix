@@ -59,14 +59,14 @@ FlowAddResult? addNextFlow(
   List<BoardElement> elements,
   String fromId,
   FlowSide side, {
-  FlowShape? shape,
+  FlowBlock? shape,
   FlowPattern? pattern,
   FlowWords words = const FlowWords(),
   String Function() newId = newElementId,
 }) {
   final src = elements.whereType<FlowNodeElement>().where((n) => n.id == fromId).firstOrNull;
   if (src == null) return null;
-  final mind = src.shape == FlowShape.topic && (shape == null || shape == FlowShape.topic) && pattern == null;
+  final mind = src.shape == FlowBlock.topic && (shape == null || shape == FlowBlock.topic) && pattern == null;
   final out = List<BoardElement>.of(elements);
   final added = <String>[];
   final color = src.color;
@@ -75,7 +75,7 @@ FlowAddResult? addNextFlow(
   bool free(Rect r) => !out.any((e) => e is FlowNodeElement && e.rect.inflate(flowGap / 3).overlaps(r));
 
   /// A block of [s] beyond [side] of [from], [offset] blocks sideways, nudged past others.
-  FlowNodeElement place(Rect from, FlowShape s, String text, {FlowSide? dir, double offset = 0, bool nudge = true}) {
+  FlowNodeElement place(Rect from, FlowBlock s, String text, {FlowSide? dir, double offset = 0, bool nudge = true}) {
     final d = dir ?? side;
     final size = s.defaultSize;
     final along = d.vertical ? from.height / 2 + flowGap + size.height / 2 : from.width / 2 + flowGap + size.width / 2;
@@ -102,35 +102,35 @@ FlowAddResult? addNextFlow(
   }
 
   if (pattern == null) {
-    final s = shape ?? (mind ? FlowShape.topic : FlowShape.process);
+    final s = shape ?? (mind ? FlowBlock.topic : FlowBlock.process);
     final n = place(src.rect, s, mind ? words.topic : '');
     link(src, side, n, side.opposite, curved: mind);
     return FlowAddResult(reflowLinks(out), added, n.id);
   }
 
   final head = switch (pattern) {
-    FlowPattern.forLoop => place(src.rect, FlowShape.loopLimit, words.forEach),
-    _ => place(src.rect, FlowShape.decision, words.condition),
+    FlowPattern.forLoop => place(src.rect, FlowBlock.loopLimit, words.forEach),
+    _ => place(src.rect, FlowBlock.decision, words.condition),
   };
   link(src, side, head, side.opposite);
   switch (pattern) {
     case FlowPattern.ifElse:
-      final yes = place(head.rect, FlowShape.process, words.step, nudge: false);
+      final yes = place(head.rect, FlowBlock.process, words.step, nudge: false);
       link(head, side, yes, side.opposite, label: words.yes);
-      final no = place(head.rect, FlowShape.process, words.step, dir: across, nudge: false);
+      final no = place(head.rect, FlowBlock.process, words.step, dir: across, nudge: false);
       link(head, across, no, across.opposite, label: words.no);
     case FlowPattern.switch3:
       for (var i = 0; i < 3; i++) {
-        final arm = place(head.rect, FlowShape.process, words.step, offset: i - 1.0, nudge: false);
+        final arm = place(head.rect, FlowBlock.process, words.step, offset: i - 1.0, nudge: false);
         link(head, side, arm, side.opposite, label: words.cases[i]);
       }
     case FlowPattern.whileLoop || FlowPattern.forLoop:
-      final body = place(head.rect, FlowShape.process, words.loop, nudge: false);
+      final body = place(head.rect, FlowBlock.process, words.loop, nudge: false);
       final back = across.opposite;
       link(head, side, body, side.opposite, label: pattern == FlowPattern.whileLoop ? words.yes : '');
       // The way back round the outside, into the same side of the head.
       link(body, back, head, back);
-      final exit = place(head.rect, FlowShape.terminal, words.done, dir: across, nudge: false);
+      final exit = place(head.rect, FlowBlock.terminal, words.done, dir: across, nudge: false);
       link(head, across, exit, across.opposite, label: pattern == FlowPattern.whileLoop ? words.no : words.done);
   }
   return FlowAddResult(reflowLinks(out), added, head.id);
@@ -139,7 +139,7 @@ FlowAddResult? addNextFlow(
 /// A first block for a new flowchart (a Start terminal) or a mind map's centre topic, with its
 /// top-left at the origin (for [WhiteboardController.insert]).
 FlowNodeElement starterNode({required bool mindMap, required Color color, FlowWords words = const FlowWords()}) {
-  final shape = mindMap ? FlowShape.topic : FlowShape.terminal;
+  final shape = mindMap ? FlowBlock.topic : FlowBlock.terminal;
   final size = mindMap ? const Size(240, 90) : shape.defaultSize;
   return FlowNodeElement(
     id: newElementId(),
@@ -168,7 +168,7 @@ List<BoardElement> absorbTextIntoFlow(List<BoardElement> before, List<BoardEleme
   final into = <String, String>{};
   final taken = <String>{};
   for (final t in fresh) {
-    final node = after.reversed.whereType<FlowNodeElement>().where((n) => n.shape != FlowShape.comment && n.rect.contains(t.bounds.center)).firstOrNull;
+    final node = after.reversed.whereType<FlowNodeElement>().where((n) => n.shape != FlowBlock.comment && n.rect.contains(t.bounds.center)).firstOrNull;
     if (node == null) continue;
     final had = into[node.id] ?? node.text;
     into[node.id] = had.trim().isEmpty ? t.text.trim() : '$had ${t.text.trim()}';
