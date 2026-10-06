@@ -54,7 +54,13 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
             Expanded(
               child: GridView(
                 // Rows of a fixed height, so a narrow phone's tiles keep room for name and roll number.
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 240, mainAxisSpacing: Kx.s8, crossAxisSpacing: Kx.s8, mainAxisExtent: 56),
+                // One column on a phone, so names are not cut short.
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: MediaQuery.sizeOf(context).width < 600 ? 480 : 240,
+                  mainAxisSpacing: Kx.s8,
+                  crossAxisSpacing: Kx.s8,
+                  mainAxisExtent: 56,
+                ),
                 children: [for (final s in widget.roster) _AttendanceTile(student: s, mark: _marks[s.id]!, onTap: () => _cycle(s.id))],
               ),
             ),

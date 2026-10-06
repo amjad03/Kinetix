@@ -323,8 +323,10 @@ void main() {
         await tester.pumpWidget(RepaintBoundary(key: shot, child: KinetixBoardApp(controller: board)));
         final s = Shot(tester, board, screen);
         await s.settle();
-        if (find.text('Not now').evaluate().isNotEmpty) {
-          await tester.tap(find.text('Not now'));
+        // The offer to set a PIN, in the board's language.
+        final notNow = find.text(l10nFor(Locale(lang)).notNow);
+        if (notNow.evaluate().isNotEmpty) {
+          await tester.tap(notNow.first);
           await s.settle();
         }
         if (scene.enrolled) {

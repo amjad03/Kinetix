@@ -105,6 +105,9 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
     return AlertDialog(
       icon: const Icon(Icons.dashboard_outlined),
       title: Text(l.yourWhiteboards),
+      // A phone gives the list its width.
+      insetPadding: MediaQuery.sizeOf(context).width < 600 ? const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s24) : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      contentPadding: MediaQuery.sizeOf(context).width < 600 ? const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, 0) : null,
       content: SizedBox(
         width: 640,
         height: 440,
@@ -138,7 +141,8 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
                   child: ListTile(
                     key: Key('wb-${b.id}'),
                     shape: const RoundedRectangleBorder(borderRadius: Kx.radiusLg),
-                    leading: Icon(Icons.draw_outlined, color: c.primary),
+                    leading: narrow ? null : Icon(Icons.draw_outlined, color: c.primary),
+                    titleTextStyle: narrow ? context.text.titleSmall : null,
                     title: Text(b.title),
                     subtitle: Text(details),
                     onTap: () async {
