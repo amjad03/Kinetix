@@ -1,4 +1,5 @@
 import 'anims/cells.dart';
+import 'anims/cycles.dart';
 import 'anims/life_processes.dart';
 import 'anims/photosynthesis.dart';
 import 'model.dart';
@@ -15,6 +16,9 @@ final List<KxAnimation> animationCatalogue = List.unmodifiable(<KxAnimation>[
   meiosis,
   dnaReplication,
   proteinSynthesis,
+  osmosis,
+  nitrogenCycle,
+  carbonCycle,
 ]);
 
 /// The animation with [id], if any.

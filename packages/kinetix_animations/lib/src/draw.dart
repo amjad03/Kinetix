@@ -59,6 +59,9 @@ Offset polar(Offset c, double r, double angle) => c + Offset(math.cos(angle) * r
 
 const tau = math.pi * 2;
 
+/// A fixed pseudo-random number in 0..1 for particle [i] (and channel [k]): the same every frame.
+double rnd(int i, [int k = 0]) => fr(math.sin(i * 12.9898 + k * 78.233) * 43758.5453);
+
 /// The base of every animation: draws on a 1000 × 600 design canvas, fitted (contained) and
 /// centred in whatever size the panel gives it. Subclasses draw in [draw] with the helpers below.
 abstract class AnimPainter extends CustomPainter {
@@ -264,6 +267,73 @@ abstract class AnimPainter extends CustomPainter {
       ..addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(o.dx - 50 * s, o.dy + 2 * s, 104 * s, 28 * s), Radius.circular(14 * s)));
     c.drawPath(p, fill(col));
     if (edge != null) c.drawPath(p, stroke(edge, 2));
+  }
+
+  /// One arrow of a cycle: muted when idle; when [on], bold, with [n] dots (or [chipText]
+  /// pills) running along it.
+  void flow(Path p, {required bool on, Color col = AC.accent, String? chipText, int n = 3, double w = 4}) {
+    arrowPath(p, on ? col : AC.grey, w: on ? w + 1 : w, head: on ? 16 : 13);
+    if (!on) return;
+    for (var i = 0; i < n; i++) {
+      final at = along(p, fr(t * 6 + i / n) * 0.92);
+      chipText == null ? circle(at, 7, col, line: Colors.white, w: 2) : chip(chipText, at, col, size: 12);
+    }
+  }
+
+  /// A simple tree (trunk and a round crown), [s] its scale.
+  void tree(Offset base, double s, {Color crown = AC.leaf}) {
+    rect(Rect.fromLTWH(base.dx - 9 * s, base.dy - 90 * s, 18 * s, 90 * s), const Color(0xFF8D6E4A), radius: 4);
+    for (final o in [const Offset(-34, -110), const Offset(34, -110), const Offset(0, -150), const Offset(0, -100)]) {
+      circle(base + o * s, 44 * s, crown);
+    }
+  }
+
+  /// A grazing animal (a cow, drawn simply), facing right.
+  void animal(Offset o, double s) {
+    const hide = Color(0xFFF5F0E6), edge = Color(0xFF5D4037);
+    for (final x in [-38.0, -18.0, 22.0, 40.0]) {
+      line(o + Offset(x, 10) * s, o + Offset(x, 52) * s, edge, 7 * s);
+    }
+    oval(Rect.fromCenter(center: o, width: 120 * s, height: 64 * s), hide, line: edge, w: 2.5);
+    oval(Rect.fromCenter(center: o + Offset(-10, -6) * s, width: 34 * s, height: 22 * s), edge);
+    oval(Rect.fromCenter(center: o + Offset(66, -22) * s, width: 42 * s, height: 34 * s), hide, line: edge, w: 2.5);
+    line(o + Offset(56, -40) * s, o + Offset(50, -50) * s, edge, 4 * s);
+    circle(o + Offset(72, -26) * s, 3 * s, edge);
+    line(o + Offset(-60, -8) * s, o + Offset(-72, 24) * s, edge, 3 * s);
+  }
+
+  /// A factory with a chimney.
+  void mill(Offset base, double s) {
+    const wall = Color(0xFF90A4AE), edge = Color(0xFF455A64);
+    rect(Rect.fromLTWH(base.dx + 40 * s, base.dy - 150 * s, 26 * s, 150 * s), edge);
+    final p = Path()
+      ..moveTo(base.dx - 70 * s, base.dy)
+      ..lineTo(base.dx - 70 * s, base.dy - 60 * s)
+      ..lineTo(base.dx - 35 * s, base.dy - 85 * s)
+      ..lineTo(base.dx - 35 * s, base.dy - 60 * s)
+      ..lineTo(base.dx, base.dy - 85 * s)
+      ..lineTo(base.dx, base.dy - 60 * s)
+      ..lineTo(base.dx + 80 * s, base.dy - 60 * s)
+      ..lineTo(base.dx + 80 * s, base.dy)
+      ..close();
+    fillPath(p, wall, line: edge);
+    for (var i = 0; i < 3; i++) {
+      rect(Rect.fromLTWH(base.dx + (-58 + i * 40) * s, base.dy - 40 * s, 22 * s, 18 * s), const Color(0xFFFFE082));
+    }
+  }
+
+  /// A lightning bolt from [a] to [b].
+  void lightning(Offset a, Offset b, {double opacity = 1}) {
+    if (opacity <= 0) return;
+    final d = b - a;
+    final n = Offset(-d.dy, d.dx) / d.distance;
+    final p = Path()..moveTo(a.dx, a.dy);
+    for (var i = 1; i <= 5; i++) {
+      final q = a + d * (i / 5) + n * (i == 5 ? 0 : (i.isEven ? -18 : 18));
+      p.lineTo(q.dx, q.dy);
+    }
+    path(p, const Color(0xFFFFEB3B).withValues(alpha: opacity), 9);
+    path(p, Colors.white.withValues(alpha: opacity), 3);
   }
 
   /// A heading at the top-left of the canvas (shown with the labels).
