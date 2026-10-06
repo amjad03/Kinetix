@@ -401,6 +401,9 @@ class _Seasons extends AnimPainter {
   _Seasons(super.f);
 
   @override
+  bool get darkStage => true;
+
+  @override
   Color get background => AC.space;
 
   static const tilt = 23.5 * math.pi / 180;
@@ -550,6 +553,9 @@ class _Moon extends AnimPainter {
   _Moon(super.f);
 
   @override
+  bool get darkStage => true;
+
+  @override
   Color get background => AC.space;
 
   static const names = [
@@ -627,6 +633,9 @@ final eclipses = KxAnimation(
 
 class _Eclipse extends AnimPainter {
   _Eclipse(super.f);
+
+  @override
+  bool get darkStage => true;
 
   @override
   Color get background => AC.space;

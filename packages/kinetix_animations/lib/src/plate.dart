@@ -84,7 +84,7 @@ extension Plate on AnimPainter {
     bool halo = true,
     bool italic = false,
     double opacity = 1,
-    Color haloColor = TP.paper,
+    Color? haloColor,
     double spacing = 0,
   }) {
     if (opacity <= 0) return Size.zero;
@@ -115,7 +115,7 @@ extension Plate on AnimPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = px * 0.24
           ..strokeJoin = StrokeJoin.round
-          ..color = haloColor.withValues(alpha: 0.85 * opacity),
+          ..color = (haloColor ?? (darkStage ? AC.space : TP.paper)).withValues(alpha: 0.85 * opacity),
       ).paint(c, topLeft);
     }
     tp.paint(c, topLeft);

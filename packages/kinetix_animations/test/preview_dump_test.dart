@@ -47,7 +47,7 @@ void main() {
       }
     }
   });
-  for (final size in const [Size(360, 640), Size(960, 800)]) {
+  for (final size in const [Size(360, 640), Size(960, 800), Size(1920, 1080)]) {
     testWidgets('dump the panel at ${size.width.toInt()}', (tester) async {
       if (out == null) return;
       await tester.runAsync(loadKxFonts);
