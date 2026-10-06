@@ -37,15 +37,15 @@ void main() {
   }
 
   const setups = [
-    ('phone', Size(390, 844), BoardLayout.rails),
-    ('panel rails', Size(1920, 1080), BoardLayout.rails),
-    ('panel bottom toolbar', Size(1920, 1080), BoardLayout.bottomBar),
+    ('phone', Size(390, 844), ToolbarDock.bottom),
+    ('panel rails', Size(1920, 1080), ToolbarDock.bottom),
+    ('panel bottom toolbar', Size(1920, 1080), ToolbarDock.left),
   ];
   for (final (name, size, layout) in setups) {
     testWidgets('$name: Clear page and Clear all pages ask first and undo', (tester) async {
       screenSize(tester, size);
       final board = await enrolledBoard();
-      board.setLayout(layout);
+      board.setToolbarDock(layout);
       board.onPaired('session-token', sessionIn('en'));
       await tester.pumpWidget(KinetixBoardApp(controller: board));
       await tester.pumpAndSettle();

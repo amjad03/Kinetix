@@ -71,7 +71,7 @@ void main() {
       tester.state<NavigatorState>(find.byType(Navigator).first).pop();
       await tester.pumpAndSettle();
       expect(chrome(tester), Brightness.light);
-      board.setLayout(BoardLayout.bottomBar);
+      board.setToolbarDock(ToolbarDock.left);
       await tester.pumpAndSettle();
       expect(chrome(tester), Brightness.light);
       await tester.pumpWidget(const SizedBox());

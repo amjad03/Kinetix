@@ -1,3 +1,4 @@
+import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -220,7 +221,7 @@ void main() {
         screenSize(tester, size);
         final l = lookupAppLocalizations(Locale(lang));
         final board = await enrolledBoard();
-        board.layout = BoardLayout.bottomBar;
+        board.toolbarDock = ToolbarDock.left;
         board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
         board.onPaired('session-token', sessionIn(lang));
         await tester.pumpWidget(KinetixBoardApp(controller: board));
@@ -241,7 +242,7 @@ void main() {
             await tester.scrollUntilVisible(
               f,
               200,
-              scrollable: find.descendant(of: find.byType(SidePanelFrame), matching: find.byType(Scrollable)).first,
+              scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: find.byType(Scrollable)).first,
             );
           }
           await tap(f);

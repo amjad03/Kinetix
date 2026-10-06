@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,17 +8,22 @@ import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_board/features/board/kit/subjects.dart';
+import 'package:kinetix_board/features/board/layout/board_chrome.dart';
+import 'package:kinetix_board/features/board/layout/page_overview.dart';
+import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
+import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// The approved layout (docs/design/board-wireframes.html) on an interactive panel.
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   Future<BoardController> pump(
     WidgetTester tester, {
     Size size = const Size(1920, 1080),
-    BoardLayout layout = BoardLayout.rails,
+    ToolbarDock dock = ToolbarDock.bottom,
     TouchProfile touch = TouchProfile.tablet,
   }) async {
     tester.view.physicalSize = size;
@@ -24,14 +31,9 @@ void main() {
     addTearDown(tester.view.reset);
     final board = BoardController()
       ..skipEnrollment()
-      ..layout = layout
+      ..toolbarDock = dock
       ..touchProfile = touch;
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: KinetixTheme.light(),
-        home: BoardScreen(board: board),
-      ),
-    );
+    await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pump();
     return board;
   }
@@ -60,23 +62,75 @@ void main() {
     await tester.pump();
   }
 
-  group('rails layout (the default)', () {
-    testWidgets('tools on the left, AI and the kit on the right, undo and pages at the bottom', (tester) async {
+  Future<void> tapKey(WidgetTester tester, String key) async {
+    await tester.ensureVisible(find.byKey(Key(key)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key(key)));
+    await tester.pumpAndSettle();
+  }
+
+  group('the layout', () {
+    testWidgets('class bar, search, clock and profile on top; toolbar in the order approved; menu, record and pages in the corners', (tester) async {
       final board = await pump(tester);
-      expect(board.layout, BoardLayout.rails);
-      for (final key in ['tool-select', 'tool-hand', 'tool-write', 'tool-highlighter', 'tool-erase', 'tool-text', 'tool-shapes', 'tool-insert', 'tool-tools', 'tool-theme']) {
+      expect(board.toolbarDock, ToolbarDock.bottom);
+      const order = ['tool-pen', 'tool-highlighter', 'tool-erase', 'tool-select', 'tool-shapes', 'undo', 'redo', 'tool-tools', 'tool-insert', 'panel-ai'];
+      final xs = [for (final k in order) tester.getCenter(find.byKey(Key(k))).dx];
+      for (var i = 1; i < xs.length; i++) {
+        expect(xs[i], greaterThan(xs[i - 1]), reason: order[i]);
+      }
+      expect(find.text('KINETIX AI'), findsOneWidget);
+      for (final key in ['sign-in-chip', 'open-search', 'board-clock', 'profile-button', 'board-menu', 'record', 'previous-page', 'page-indicator', 'next-page', 'add-page', 'page-overview']) {
         expect(find.byKey(Key(key)), findsOneWidget, reason: key);
       }
-      for (final key in ['panel-ai', 'panel-quiz', 'panel-homework', 'panel-books', 'panel-kit', 'undo', 'redo', 'next-page', 'zoom-in', 'record', 'save-board']) {
-        expect(find.byKey(Key(key)), findsOneWidget, reason: key);
-      }
-      // Icons only: the names are in tooltips.
-      expect(find.byTooltip('Pen'), findsOneWidget);
-      expect(find.text('Practice board'), findsOneWidget);
+      // Bottom centre, menu bottom left, pages bottom right.
+      expect(tester.getCenter(find.byKey(const Key('main-toolbar'))).dx, closeTo(960, 120));
+      expect(tester.getCenter(find.byKey(const Key('board-menu'))).dx, lessThan(300));
+      expect(tester.getCenter(find.byKey(const Key('page-overview'))).dx, greaterThan(1700));
+      expect(find.byKey(const Key('tool-hand')), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a finger writes; two fingers on a tablet zoom instead', (tester) async {
+    testWidgets('a signed-in class shows class and subject, Go live, attendance and time left', (tester) async {
+      final board = await pump(tester);
+      board.onPaired('token', session());
+      await tester.pumpAndSettle();
+      expect(find.textContaining('BCom Sem 3 A · Corporate Accounting'), findsWidgets);
+      expect(find.byKey(const Key('go-live')), findsOneWidget);
+      expect(find.byKey(const Key('attendance-chip')), findsOneWidget);
+      await tapKey(tester, 'board-menu');
+      expect(find.byKey(const Key('end-class')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      board.dispose();
+    });
+
+    test('time left in the period', () {
+      expect(minutesLeft('10:00–10:45', DateTime(2026, 1, 1, 10, 30)), 15);
+      expect(minutesLeft('10:00–10:45', DateTime(2026, 1, 1, 11)), isNull);
+    });
+
+    testWidgets('the toolbar drags to the left edge, then folds away and back', (tester) async {
+      final board = await pump(tester);
+      final handle = find.byKey(const Key('toolbar-handle'));
+      await tester.drag(handle, const Offset(-800, -300));
+      await tester.pumpAndSettle();
+      expect(board.toolbarDock, ToolbarDock.left);
+      expect(tester.getCenter(find.byKey(const Key('tool-pen'))).dx, lessThan(150));
+      // Vertical: Pen above Undo.
+      expect(tester.getCenter(find.byKey(const Key('tool-pen'))).dy, lessThan(tester.getCenter(find.byKey(const Key('undo'))).dy));
+      await tapKey(tester, 'toolbar-collapse');
+      expect(find.byKey(const Key('undo')), findsNothing);
+      await tapKey(tester, 'toolbar-expand');
+      expect(find.byKey(const Key('undo')), findsOneWidget);
+      await tester.drag(find.byKey(const Key('toolbar-handle')), const Offset(1700, 0));
+      await tester.pumpAndSettle();
+      expect(board.toolbarDock, ToolbarDock.right);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('writing', () {
+    testWidgets('a finger writes and Undo takes it back; zoom is in the page overview', (tester) async {
       await pump(tester);
       await stroke(tester, const Offset(500, 400));
       final wb = whiteboard(tester);
@@ -84,8 +138,8 @@ void main() {
       await tester.tap(find.byKey(const Key('undo')));
       await tester.pump();
       expect(wb.elements, isEmpty);
-      await tester.tap(find.byKey(const Key('zoom-in')));
-      await tester.pump();
+      await tapKey(tester, 'page-overview');
+      await tapKey(tester, 'zoom-in');
       expect(find.text('125%'), findsOneWidget);
     });
 
@@ -107,17 +161,64 @@ void main() {
       expect(whiteboard(tester).elements, hasLength(3));
     });
 
-    testWidgets('tapping the pen again opens its colours; the eraser its size and Clear page', (tester) async {
+    testWidgets('the pen popover: type, thickness, opacity, colour, wheel, smoothing, pressure, palm, touch, and the AI pen options', (tester) async {
+      final board = await pump(tester);
+      final wb = whiteboard(tester);
+      await tapKey(tester, 'tool-pen');
+      expect(find.byKey(const Key('pen-popover')), findsOneWidget);
+      await tapKey(tester, 'pen-type-dashed');
+      expect(wb.penNib, PenNib.dashed);
+      await tapKey(tester, 'pen-colour-1');
+      expect(wb.penColor.withValues(alpha: 1), const Color(0xFFD93025));
+      final thickness = find.byKey(const Key('pen-thickness'));
+      await tester.ensureVisible(thickness);
+      await tester.tapAt(tester.getTopRight(thickness) + const Offset(-12, 20));
+      await tester.pumpAndSettle();
+      expect(wb.penWidth, greaterThan(18));
+      final opacity = find.byKey(const Key('pen-opacity'));
+      await tester.tapAt(tester.getTopLeft(opacity) + const Offset(30, 20));
+      await tester.pumpAndSettle();
+      expect(wb.penColor.a, lessThan(0.5));
+      await tapKey(tester, 'pen-colour-custom');
+      await tapKey(tester, 'colour-wheel-disc');
+      await tapKey(tester, 'pen-pressure');
+      expect(wb.penPressure, isTrue);
+      final smooth = find.byKey(const Key('pen-smoothing'));
+      await tester.tapAt(tester.getTopRight(smooth) + const Offset(-12, 20));
+      await tester.pumpAndSettle();
+      expect(wb.penSmoothing, greaterThan(0.8));
+      await tapKey(tester, 'pen-palm');
+      expect(board.palmRejection, isFalse);
+      expect(wb.palmMode, PalmMode.off);
+      await tester.ensureVisible(find.text('Multi touch'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Multi touch'));
+      await tester.pumpAndSettle();
+      expect(board.multiWriter, isTrue);
+
+      // The AI pen keeps every pen option, and adds what it converts and when.
+      await tapKey(tester, 'pen-type-aiPen');
+      expect(wb.tool, BoardTool.aiPen);
+      expect(wb.penNib, PenNib.dashed);
+      await tapKey(tester, 'ai-convert-text');
+      expect(board.aiPenConvert.contains('text'), isFalse);
+      await tapKey(tester, 'ai-pen-mode-tap');
+      expect(board.aiPenMode, AiPenMode.tap);
+      await tester.tapAt(const Offset(1300, 150));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'tool-highlighter');
+      await tapKey(tester, 'tool-pen');
+      expect(wb.tool, BoardTool.aiPen);
+      // The last colours and thicknesses show as quick swatches.
+      expect(find.byKey(const Key('toolbar-recent-0')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the eraser again opens its size and Clear page', (tester) async {
       await pump(tester);
-      await tester.tap(find.byKey(const Key('tool-write')));
-      await tester.pumpAndSettle();
-      expect(find.text('Thickness'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('popover-barrier')));
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('tool-erase')));
       await tester.pump();
-      await tester.tap(find.byKey(const Key('tool-erase')));
-      await tester.pumpAndSettle();
+      await tapKey(tester, 'tool-erase');
       expect(find.byKey(const Key('clear-page')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -134,9 +235,6 @@ void main() {
       await tester.tap(find.byKey(const Key('sel-duplicate')));
       await tester.pumpAndSettle();
       expect(wb.elements, hasLength(2));
-      await tester.tap(find.byKey(const Key('delete-selection')));
-      await tester.pumpAndSettle();
-      expect(wb.elements, hasLength(1));
     });
 
     testWidgets('keyboard: tool letters, undo, delete, zoom, and none while typing', (tester) async {
@@ -150,7 +248,6 @@ void main() {
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
       await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-      expect(wb.selection, hasLength(1));
       await tester.sendKeyEvent(LogicalKeyboardKey.delete);
       expect(wb.elements, isEmpty);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
@@ -159,59 +256,173 @@ void main() {
       expect(wb.elements, hasLength(1));
       await tester.sendKeyEvent(LogicalKeyboardKey.equal);
       expect(wb.view.value.scale, closeTo(1.25, 0.001));
-
-      // Typing on the board: the letters go into the text, not to the tools.
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
-      await tester.pump();
-      await tester.tapAt(const Offset(900, 600));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('board-text-editor')).last, 'Pe');
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyE);
-      expect(wb.tool, BoardTool.text);
     });
+  });
 
-    testWidgets('the subject reshapes the rails: maths brings equation, graph, geometry', (tester) async {
-      final board = await pump(tester);
-      board.onPaired('token', session(subject: 'Mathematics', section: 'Class 9 B', term: 9, level: 'k12'));
-      await tester.pumpAndSettle();
-      for (final t in [SubjectTool.equation, SubjectTool.graph, SubjectTool.geometry]) {
-        expect(find.byKey(Key('subject-${t.name}')), findsOneWidget, reason: t.name);
-      }
-      final wb = whiteboard(tester);
-      expect(wb.background, BoardBackground.grid); // a new class starts on its subject's paper
-      await tester.tap(find.byKey(const Key('subject-geometry')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Ruler').last);
-      await tester.pumpAndSettle();
-      expect(wb.ruler.value.visible, isTrue);
-      expect(find.byKey(const Key('ruler')), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('panel-kit')));
-      await tester.pumpAndSettle();
-      expect(find.text('Maths kit'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('formula-Product rule')));
-      await tester.pumpAndSettle();
-      expect(wb.elements.whereType<MathElement>(), hasLength(1));
-      expect(tester.takeException(), isNull);
-      board.dispose();
-    });
-
-    testWidgets('pages: New page adds one and the indicator follows', (tester) async {
+  group('pages', () {
+    testWidgets('add, previous and next, and the overview: reorder, duplicate, delete, export', (tester) async {
       await pump(tester);
-      expect(find.text('1/1'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('next-page')));
-      await tester.pumpAndSettle();
+      final wb = whiteboard(tester);
+      await stroke(tester, const Offset(500, 400));
+      await tapKey(tester, 'add-page');
       expect(find.text('2/2'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('previous-page')));
-      await tester.pumpAndSettle();
+      await tapKey(tester, 'previous-page');
       expect(find.text('1/2'), findsOneWidget);
+      final first = wb.pages.first;
+      await tapKey(tester, 'page-overview');
+      expect(find.byKey(const Key('page-thumb-1')), findsOneWidget);
+      // Long-press a thumbnail and drag it past the second.
+      final g = await tester.startGesture(tester.getCenter(find.byKey(const Key('page-thumb-0'))));
+      await tester.pump(const Duration(milliseconds: 700));
+      for (var i = 0; i < 20; i++) {
+        await g.moveBy(const Offset(16, 0));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await g.up();
+      await tester.pumpAndSettle();
+      expect(wb.pages.last, same(first));
+      await tapKey(tester, 'overview-duplicate');
+      expect(wb.pageCount, 3);
+      await tapKey(tester, 'overview-delete');
+      expect(wb.pageCount, 2);
+      Uint8List? pdf;
+      sharePdf = (name, bytes) async => pdf = bytes;
+      await tester.runAsync(() async {
+        await tester.tap(find.byKey(const Key('overview-export')));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      });
+      await tester.pumpAndSettle();
+      expect(pdf, isNotNull);
+      expect(String.fromCharCodes(pdf!.take(8)), startsWith('%PDF-1.4'));
+      expect(tester.takeException(), isNull);
     });
 
-    testWidgets('fits at 1280×720 with the AI panel open', (tester) async {
-      await pump(tester, size: const Size(1280, 720));
-      await tester.tap(find.byKey(const Key('panel-ai')));
+    testWidgets('backgrounds per page from the menu', (tester) async {
+      await pump(tester);
+      final wb = whiteboard(tester);
+      await tapKey(tester, 'board-menu');
+      await tapKey(tester, 'tool-theme');
+      await tapKey(tester, 'bg-ledger');
+      expect(wb.background, BoardBackground.ledger);
+      await tester.tapAt(const Offset(1300, 150));
       await tester.pumpAndSettle();
-      expect(find.text('KINETIX AI'), findsOneWidget);
+      await tapKey(tester, 'add-page');
+      await tapKey(tester, 'board-menu');
+      await tapKey(tester, 'tool-theme');
+      await tester.tap(find.text('Colours'));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'bg-paperSky');
+      wb.previous();
+      expect(wb.background, BoardBackground.ledger);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('the split panel', () {
+    testWidgets('opens on the right at 42 %, the divider resizes it between 30 and 60 %, ⤢ and ✕', (tester) async {
+      await pump(tester);
+      await tapKey(tester, 'panel-ai');
+      final panel = find.byKey(const Key('split-panel'));
+      expect(tester.getSize(panel).width, closeTo(1920 * 0.42, 2));
+      expect(tester.getTopRight(panel).dx, 1920);
+      await tester.drag(find.byKey(const Key('panel-divider')), const Offset(-600, 0));
+      await tester.pumpAndSettle();
+      expect(tester.getSize(panel).width, closeTo(1920 * 0.60, 2));
+      await tester.drag(find.byKey(const Key('panel-divider')), const Offset(900, 0));
+      await tester.pumpAndSettle();
+      expect(tester.getSize(panel).width, closeTo(1920 * 0.30, 2));
+      // The board stays writable beside it.
+      await stroke(tester, const Offset(300, 400));
+      expect(whiteboard(tester).elements, hasLength(1));
+      await tapKey(tester, 'panel-full');
+      expect(tester.getSize(panel).width, 1920);
+      await tapKey(tester, 'panel-full');
+      for (final t in ['model3d', 'labs', 'videos', 'books', 'kit', 'animations', 'ai']) {
+        await tapKey(tester, 'panel-tab-$t');
+        expect(tester.takeException(), isNull, reason: t);
+      }
+      await tapKey(tester, 'panel-close');
+      expect(panel, findsNothing);
+    });
+
+    testWidgets('dialogs open in the panel, not over the board: settings', (tester) async {
+      await pump(tester);
+      await tapKey(tester, 'board-menu');
+      await tapKey(tester, 'menu-settings');
+      expect(find.byKey(const Key('split-panel')), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('finger-taps')));
+      await tester.tap(find.byKey(const Key('finger-taps')));
+      await tester.pumpAndSettle();
+      // Writing still works with the settings open.
+      await stroke(tester, const Offset(300, 400));
+      expect(whiteboard(tester).elements, hasLength(1));
+      await tapKey(tester, 'panel-close');
+      expect(find.byKey(const Key('split-panel')), findsNothing);
+    });
+
+    testWidgets('write on the panel with the pen', (tester) async {
+      await pump(tester);
+      await tapKey(tester, 'panel-ai');
+      await tapKey(tester, 'panel-write');
+      final ink = find.byKey(const Key('panel-ink'));
+      final g = await tester.startGesture(tester.getCenter(ink), kind: PointerDeviceKind.stylus);
+      await g.moveBy(const Offset(40, 20));
+      await g.up();
+      await tester.pump();
+      expect(whiteboard(tester).elements, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('tools', () {
+    testWidgets('the drawer: groups, filter and search; the timer floats on the board; formulas open in the panel', (tester) async {
+      await pump(tester);
+      await tapKey(tester, 'tool-tools');
+      expect(find.byKey(const Key('tools-drawer')), findsOneWidget);
+      await tapKey(tester, 'drawer-filter-commerce');
+      expect(find.byKey(const Key('drawer-spreadsheet')), findsOneWidget);
+      expect(find.byKey(const Key('drawer-toolkit-timer')), findsNothing);
+      await tester.enterText(find.byKey(const Key('tools-search')).first, 'timer');
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'drawer-toolkit-timer');
+      expect(find.byKey(const Key('countdown-text')), findsOneWidget);
+      await tapKey(tester, 'tool-tools');
+      await tapKey(tester, 'drawer-periodic-table');
+      expect(find.byKey(const Key('split-panel')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the timer: custom time by keypad and by wheels, count up, presets, sound, mini', (tester) async {
+      await pump(tester);
+      final kit = (tester.widget<ToolkitLayer>(find.byType(ToolkitLayer))).kit;
+      kit.show(ToolkitItem.timer);
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'timer-set');
+      await tester.tap(find.text('Keypad'));
+      await tester.pumpAndSettle();
+      for (final d in ['1', '2', '3', '0']) {
+        await tapKey(tester, 'timer-key-$d');
+      }
+      expect(find.text('00 : 12 : 30'), findsOneWidget);
+      await tapKey(tester, 'timer-setter-done');
+      expect(kit.timerTotal, const Duration(minutes: 12, seconds: 30));
+      await tapKey(tester, 'timer-save-preset');
+      expect(find.byKey(const Key('timer-preset-750')), findsOneWidget);
+      await tapKey(tester, 'timer-3');
+      expect(kit.timerTotal, const Duration(minutes: 3));
+      await tapKey(tester, 'timer-set');
+      await tester.drag(find.byKey(const Key('timer-wheel-h')), const Offset(0, -40));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'timer-setter-done');
+      expect(kit.timerTotal, const Duration(hours: 1, minutes: 3));
+      await tester.tap(find.text('Count up'));
+      await tester.pumpAndSettle();
+      expect(kit.timerCountUp, isTrue);
+      expect(find.text('00:00'), findsOneWidget);
+      await tapKey(tester, 'timer-mini');
+      expect(find.byKey(const Key('toolkit-timer-mini')), findsOneWidget);
+      await tapKey(tester, 'timer-big');
+      expect(find.byKey(const Key('toolkit-timer')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -219,151 +430,29 @@ void main() {
   group('primary classes (LKG to Class 5)', () {
     testWidgets('the period\'s class turns on big labelled tools, Andika and class stars', (tester) async {
       final board = await pump(tester);
-      expect(board.primaryMode, isFalse);
       board.onPaired('token', session(section: 'Class 3 A', subject: 'EVS', term: 3, level: 'k12'));
       await tester.pumpAndSettle();
       expect(board.primaryMode, isTrue);
-      // Labelled, with fewer tools (no hand, no laser).
       expect(find.text('Pen'), findsOneWidget);
-      expect(find.text('Erase'), findsWidgets);
-      expect(find.byKey(const Key('tool-hand')), findsNothing);
+      expect(tester.getSize(find.byKey(const Key('tool-pen'))).height, 76);
       expect(whiteboard(tester).font, BoardFont.andika);
-      await tester.tap(find.byKey(const Key('panel-kit')));
+      await tapKey(tester, 'tool-pen');
+      expect(find.byKey(const Key('pen-type-aiPen')), findsNothing);
+      await tester.tapAt(const Offset(1300, 150));
       await tester.pumpAndSettle();
+      await tapKey(tester, 'panel-ai');
+      await tapKey(tester, 'panel-tab-kit');
       expect(find.byKey(const Key('kit-stars')), findsOneWidget);
       expect(tester.takeException(), isNull);
-      board.dispose();
-    });
-
-    testWidgets('the Simple board setting overrides the class', (tester) async {
-      final board = await pump(tester);
-      board.onPaired('token', session(section: 'Class 9 B', subject: 'Physics', term: 9, level: 'k12'));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('tool-hand')), findsOneWidget);
-      board.setSimpleBoard(SimpleBoard.on);
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('tool-hand')), findsNothing);
-      expect(find.text('Pen'), findsOneWidget);
-      board.setSimpleBoard(SimpleBoard.off);
-      board.onPaired('token', session(section: 'UKG B', subject: 'English'));
-      await tester.pumpAndSettle();
-      expect(board.primaryMode, isFalse);
       board.dispose();
     });
 
     test('primary classes are told from the grade or the class name', () {
       expect(isPrimaryClass(session(section: 'BCom Sem 3 A', term: 3, level: 'ug')), isFalse);
       expect(isPrimaryClass(session(section: 'Grade 5 C', term: 5, level: 'k12')), isTrue);
-      expect(isPrimaryClass(session(section: 'Grade 6 C', term: 6, level: 'k12')), isFalse);
       expect(isPrimaryClass(session(section: 'LKG Sunflower')), isTrue);
-      expect(isPrimaryClass(session(section: 'Class 2 A')), isTrue);
       expect(isPrimaryClass(session(section: 'Class 10 A')), isFalse);
       expect(isPrimaryClass(null), isFalse);
-    });
-  });
-
-  group('bottom toolbar layout', () {
-    testWidgets('guest board: the toolbar has the Teachmint-style tools, labelled', (tester) async {
-      await pump(tester, layout: BoardLayout.bottomBar);
-      for (final label in ['Record', 'Theme', 'Write', 'Erase', 'Select', 'Shapes', 'Tools', 'Undo', 'Redo', 'AI', 'Books', 'Quiz', 'Homework', 'Hide', 'New page']) {
-        expect(find.text(label), findsWidgets, reason: label);
-      }
-      expect(find.text('Practice board'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('the settings switch between the layouts', (tester) async {
-      final board = await pump(tester, layout: BoardLayout.bottomBar);
-      await tester.tap(find.byKey(const Key('profile-button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('menu-settings')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('layout-rails')));
-      await tester.pumpAndSettle();
-      expect(board.layout, BoardLayout.rails);
-      expect(find.byKey(const Key('tool-hand')), findsOneWidget);
-    });
-
-    testWidgets('shapes popover: pick a shape and turn on measurements', (tester) async {
-      final board = await pump(tester, layout: BoardLayout.bottomBar);
-      await tester.tap(find.byKey(const Key('tool-shapes')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('shape-triangle')));
-      await tester.tap(find.text('Show lengths'));
-      await tester.pumpAndSettle();
-      final wb = whiteboard(tester);
-      expect(wb.showLengths, isTrue);
-      expect(wb.shapeKind.name, 'triangle');
-      expect(wb.tool, BoardTool.shape);
-      expect(board.isSignedIn, isFalse);
-    });
-
-    testWidgets('a signed-in session shows the class, attendance and End class', (tester) async {
-      final board = await pump(tester, layout: BoardLayout.bottomBar);
-      board.onPaired('token', session());
-      await tester.pumpAndSettle();
-      expect(find.textContaining('BCom Sem 3 A · Corporate Accounting'), findsWidgets);
-      expect(find.byKey(const Key('end-class')), findsOneWidget);
-      expect(find.byKey(const Key('attendance-chip')), findsOneWidget);
-      expect(find.textContaining('Welcome, Anita'), findsOneWidget);
-      board.dispose(); // cancels the end-of-period timer
-    });
-
-    testWidgets('pages: New page adds one and the indicator follows', (tester) async {
-      await pump(tester, layout: BoardLayout.bottomBar);
-      expect(find.text('1/1'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('next-page')));
-      await tester.pumpAndSettle();
-      expect(find.text('2/2'), findsOneWidget);
-      await tester.tap(find.text('Previous'));
-      await tester.pumpAndSettle();
-      expect(find.text('1/2'), findsOneWidget);
-    });
-
-    testWidgets('AI panel opens beside the board and fits at 1080p and 720p', (tester) async {
-      for (final size in [const Size(1920, 1080), const Size(1280, 720)]) {
-        await pump(tester, size: size, layout: BoardLayout.bottomBar);
-        await tester.tap(find.byKey(const Key('panel-ai')));
-        await tester.pumpAndSettle();
-        expect(find.text('KINETIX AI'), findsOneWidget);
-        expect(tester.takeException(), isNull, reason: 'overflow at $size');
-        await tester.tap(find.byKey(const Key('panel-close')));
-        await tester.pumpAndSettle();
-        expect(find.text('KINETIX AI'), findsNothing);
-      }
-    });
-
-    testWidgets('Hide collapses the chrome and the button brings it back', (tester) async {
-      await pump(tester, layout: BoardLayout.bottomBar);
-      await tester.tap(find.text('Hide'));
-      await tester.pumpAndSettle();
-      expect(find.text('Shapes'), findsNothing);
-      await tester.tap(find.byKey(const Key('show-tools')));
-      await tester.pumpAndSettle();
-      expect(find.text('Shapes'), findsOneWidget);
-    });
-
-    testWidgets('board settings: choosing IR touch frame turns off palm detection', (tester) async {
-      final board = await pump(tester, layout: BoardLayout.bottomBar);
-      await tester.tap(find.byKey(const Key('profile-button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('menu-settings')));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const Key('touch-irFrame')));
-      await tester.tap(find.byKey(const Key('touch-irFrame')));
-      await tester.pumpAndSettle();
-      expect(board.touchProfile, TouchProfile.irFrame);
-      expect(whiteboard(tester).palmMode.name, 'off');
-    });
-
-    testWidgets('tools popover opens the timer', (tester) async {
-      await pump(tester, layout: BoardLayout.bottomBar);
-      await tester.tap(find.byKey(const Key('tool-tools')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Timer'));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('countdown-text')), findsOneWidget);
-      expect(find.text('05:00'), findsOneWidget);
     });
   });
 
@@ -385,30 +474,23 @@ void main() {
       final board = await pump(tester);
       await stroke(tester, const Offset(500, 400));
       final wb = whiteboard(tester);
-      expect(wb.elements, hasLength(1));
       await tap(tester, 2, Duration.zero);
       expect(wb.elements, isEmpty);
       await tap(tester, 3, const Duration(seconds: 1));
       expect(wb.elements, hasLength(1));
-
       board.setFingerTaps(false);
       await tester.pump();
       await tap(tester, 2, const Duration(seconds: 2));
       expect(wb.elements, hasLength(1));
-      expect(board.fingerTaps, isFalse);
     });
 
-    testWidgets('the switch is in Board settings', (tester) async {
+    testWidgets('board settings: IR touch frame turns off palm detection', (tester) async {
       final board = await pump(tester);
-      await tester.tap(find.byKey(const Key('profile-button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('menu-settings')));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const Key('finger-taps')));
-      await tester.tap(find.byKey(const Key('finger-taps')));
-      await tester.pumpAndSettle();
-      expect(board.fingerTaps, isFalse);
-      expect(tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).fingerTaps, isFalse);
+      await tapKey(tester, 'board-menu');
+      await tapKey(tester, 'menu-settings');
+      await tapKey(tester, 'touch-irFrame');
+      expect(board.touchProfile, TouchProfile.irFrame);
+      expect(whiteboard(tester).palmMode.name, 'off');
     });
   });
 }

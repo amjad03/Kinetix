@@ -31,7 +31,7 @@ void main() {
     addTearDown(tester.view.reset);
     server = DemoBoardServer(claimDelay: const Duration(seconds: 2))..studentAnswerDelay = const Duration(seconds: 3);
     board = demoBoard(server);
-    board.setLayout(BoardLayout.bottomBar);
+    board.setToolbarDock(ToolbarDock.left);
     await tester.pumpWidget(KinetixBoardApp(controller: board));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('conceptVideoSkip')));

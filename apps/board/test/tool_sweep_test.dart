@@ -1,3 +1,4 @@
+import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -50,9 +51,9 @@ void main() {
   }
 
   const setups = [
-    ('phone', Size(390, 844), BoardLayout.rails),
-    ('panel rails', Size(1920, 1080), BoardLayout.rails),
-    ('panel bottom toolbar', Size(1920, 1080), BoardLayout.bottomBar),
+    ('phone', Size(390, 844), ToolbarDock.bottom),
+    ('panel rails', Size(1920, 1080), ToolbarDock.bottom),
+    ('panel bottom toolbar', Size(1920, 1080), ToolbarDock.left),
   ];
 
   for (final (name, size, layout) in setups) {
@@ -68,7 +69,7 @@ void main() {
         }
         final board = await enrolledBoard();
         boards = [board];
-        board.setLayout(layout);
+        board.setToolbarDock(layout);
         board.onPaired('session-token', sessionIn('en'));
         await tester.pumpWidget(KinetixBoardApp(controller: board));
         await tester.pumpAndSettle();
@@ -135,14 +136,14 @@ void main() {
       }
 
       await openTools();
-      final tiles = find.descendant(of: find.byType(ToolsPopover), matching: find.byType(ChromeTile));
+      final tiles = find.descendant(of: find.byType(ToolsDrawer), matching: find.byType(ChromeTile));
       final labels = [for (final e in tiles.evaluate()) (e.widget as ChromeTile).label];
       expect(labels.length, greaterThan(15));
       for (final label in labels) {
         wb = await fresh();
         final before = signature(tester, wb);
         await openTools();
-        final tile = find.descendant(of: find.byType(ToolsPopover), matching: find.widgetWithText(ChromeTile, label));
+        final tile = find.descendant(of: find.byType(ToolsDrawer), matching: find.widgetWithText(ChromeTile, label));
         await tester.ensureVisible(tile);
         await tester.pumpAndSettle();
         await tester.tap(tile);

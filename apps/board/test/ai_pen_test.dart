@@ -40,13 +40,13 @@ class FakeHandwriting implements HandwritingRecognizer {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<BoardController> pump(WidgetTester tester, {BoardLayout layout = BoardLayout.rails, HandwritingRecognizer? handwriting}) async {
+  Future<BoardController> pump(WidgetTester tester, {ToolbarDock layout = ToolbarDock.bottom, HandwritingRecognizer? handwriting}) async {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final board = BoardController(handwriting: handwriting ?? const NoHandwritingRecognizer())
       ..skipEnrollment()
-      ..layout = layout;
+      ..toolbarDock = layout;
     await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pump();
     return board;
@@ -88,7 +88,7 @@ void main() {
   });
 
   testWidgets('the bottom toolbar has the AI pen too; W picks it from the keyboard', (tester) async {
-    await pump(tester, layout: BoardLayout.bottomBar);
+    await pump(tester, layout: ToolbarDock.left);
     final wb = whiteboard(tester);
     expect(find.byKey(const Key('tool-ai-pen')), findsOneWidget);
     await tester.tap(find.byKey(const Key('tool-ai-pen')));

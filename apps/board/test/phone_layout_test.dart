@@ -1,3 +1,4 @@
+import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -113,7 +114,7 @@ void main() {
     final f = find.byKey(Key(key));
     if (f.evaluate().isEmpty) {
       final down = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down);
-      await tester.scrollUntilVisible(f, 200, scrollable: find.descendant(of: find.byType(SidePanelFrame), matching: down).first);
+      await tester.scrollUntilVisible(f, 200, scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: down).first);
     }
     await tap(tester, f);
   }
@@ -331,7 +332,7 @@ void main() {
           await tap(tester, find.text(l.notNow)); // the offer of a PIN
           p.step = 'AI home';
           await tapKey(tester, 'panel-ai');
-          expect(tester.getSize(find.byType(SidePanelFrame)), size, reason: 'full screen');
+          expect(tester.getSize(find.byType(SplitPanelFrame)), size, reason: 'full screen');
           expect(find.text(l.aiGroupTeach), findsOneWidget);
           p.step = 'AI explanation';
           await tester.enterText(find.byKey(const Key('ai-ask')), 'Photosynthesis');
@@ -365,7 +366,7 @@ void main() {
             await tap(tester, find.byKey(const Key('panel-back')));
           }
           await tap(tester, find.byKey(const Key('panel-close')));
-          expect(find.byType(SidePanelFrame), findsNothing);
+          expect(find.byType(SplitPanelFrame), findsNothing);
 
           p.step = 'books';
           await tapKey(tester, 'panel-books');
@@ -459,7 +460,7 @@ void main() {
           await tap(tester, find.byKey(const Key('result-model3d-solid.cylinder')));
           // On a phone the model opens in the split screen: below the board, or beside it in landscape.
           expect(find.byKey(const Key('phone-split')), findsOneWidget);
-          expect(size.height > size.width ? tester.getSize(find.byType(SidePanelFrame)).width : tester.getSize(find.byType(SidePanelFrame)).height, size.height > size.width ? size.width : size.height);
+          expect(size.height > size.width ? tester.getSize(find.byType(SplitPanelFrame)).width : tester.getSize(find.byType(SplitPanelFrame)).height, size.height > size.width ? size.width : size.height);
           expect(find.byType(SolidExplorer), findsOneWidget);
           await tap(tester, find.byKey(const Key('panel-close')));
           p.step = 'search again';
@@ -617,7 +618,7 @@ void main() {
       final board = await enrolledBoard();
       board.setBoardLanguage(BoardLanguage.tryParse(lang)!);
       board.setSimpleBoard(SimpleBoard.on);
-      board.setLayout(BoardLayout.bottomBar);
+      board.setToolbarDock(ToolbarDock.left);
       board.onPaired('session-token', sessionIn(lang));
       await tester.pumpWidget(KinetixBoardApp(controller: board));
       await tester.pumpAndSettle();

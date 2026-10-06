@@ -14,6 +14,10 @@ class PanelHost extends InheritedWidget {
 
   static PanelHost? maybeOf(BuildContext context) => context.getInheritedWidgetOfExactType<PanelHost>();
 
+  /// The board screen's panel, for callers above the [PanelHost] in the tree (the board screen
+  /// itself, and anything shown from its context).
+  static Future<T?> Function<T>(WidgetBuilder builder)? active;
+
   @override
   bool updateShouldNotify(PanelHost oldWidget) => false;
 }
@@ -21,9 +25,9 @@ class PanelHost extends InheritedWidget {
 /// Shows [builder]'s widget (a dialog) in the board's split panel, or as a dialog where there
 /// is no panel. Returns what it is popped with.
 Future<T?> showPanelDialog<T>({required BuildContext context, required WidgetBuilder builder, bool barrierDismissible = true}) {
-  final host = PanelHost.maybeOf(context);
-  if (host == null) return showDialog<T>(context: context, barrierDismissible: barrierDismissible, builder: builder);
-  return host.push<T>(builder);
+  final push = PanelHost.maybeOf(context)?.push ?? PanelHost.active;
+  if (push == null) return showDialog<T>(context: context, barrierDismissible: barrierDismissible, builder: builder);
+  return push<T>(builder);
 }
 
 /// A route inside the panel: the dialog centred on the panel's surface, scrolling sideways

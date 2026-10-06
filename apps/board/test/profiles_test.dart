@@ -217,23 +217,23 @@ void main() {
     test('each teacher keeps their own settings; the board gets its own back', () async {
       final board = await enrolled();
       addTearDown(board.dispose);
-      expect(board.layout, BoardLayout.rails);
+      expect(board.toolbarDock, ToolbarDock.bottom);
       await board.profiles.unlock(profile(board, 't1'), '4829');
       await pumpEventQueue();
-      board.setLayout(BoardLayout.bottomBar);
+      board.setToolbarDock(ToolbarDock.left);
       board.setInputMode(InputMode.pen);
       await board.endClass();
       await pumpEventQueue();
-      expect(board.layout, BoardLayout.rails, reason: 'the board\'s own');
+      expect(board.toolbarDock, ToolbarDock.bottom, reason: 'the board\'s own');
       expect(board.inputMode, InputMode.auto);
 
       await board.profiles.unlock(profile(board, 't2'), '7351');
       await pumpEventQueue();
-      expect(board.layout, BoardLayout.rails, reason: 'Ravi has not changed it');
+      expect(board.toolbarDock, ToolbarDock.bottom, reason: 'Ravi has not changed it');
 
       await board.profiles.unlock(profile(board, 't1'), '4829');
       await pumpEventQueue();
-      expect(board.layout, BoardLayout.bottomBar);
+      expect(board.toolbarDock, ToolbarDock.left);
       expect(board.inputMode, InputMode.pen);
     });
   });

@@ -80,19 +80,19 @@ void main() {
   }
 
   const setups = [
-    ('phone', Size(390, 844), BoardLayout.rails, false),
-    ('phone landscape', Size(844, 390), BoardLayout.rails, false),
-    ('phone simple', Size(390, 844), BoardLayout.rails, true),
-    ('panel rails', Size(1920, 1080), BoardLayout.rails, false),
-    ('panel bottom toolbar', Size(1920, 1080), BoardLayout.bottomBar, false),
-    ('panel simple', Size(1920, 1080), BoardLayout.bottomBar, true),
+    ('phone', Size(390, 844), ToolbarDock.bottom, false),
+    ('phone landscape', Size(844, 390), ToolbarDock.bottom, false),
+    ('phone simple', Size(390, 844), ToolbarDock.bottom, true),
+    ('panel rails', Size(1920, 1080), ToolbarDock.bottom, false),
+    ('panel bottom toolbar', Size(1920, 1080), ToolbarDock.left, false),
+    ('panel simple', Size(1920, 1080), ToolbarDock.left, true),
   ];
   for (final (name, size, layout, simple) in setups) {
     for (final profile in TouchProfile.values) {
       testWidgets('$name, ${profile.name}: the Move tool, two fingers and Select move the board and what is on it', (tester) async {
         screenSize(tester, size);
         final board = await enrolledBoard();
-        board.setLayout(layout);
+        board.setToolbarDock(layout);
         board.setSimpleBoard(simple ? SimpleBoard.on : SimpleBoard.off);
         board.setTouchProfile(profile);
         board.onPaired('session-token', sessionIn('en'));

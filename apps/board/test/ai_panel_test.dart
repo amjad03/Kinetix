@@ -1,3 +1,4 @@
+import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -127,7 +128,7 @@ void main() {
     final f = find.byKey(Key(key));
     if (f.evaluate().isEmpty) {
       // Lists build lazily: scroll the panel until it is there.
-      await tester.scrollUntilVisible(f, 200, scrollable: find.descendant(of: find.byType(SidePanelFrame), matching: find.byType(Scrollable)).first);
+      await tester.scrollUntilVisible(f, 200, scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: find.byType(Scrollable)).first);
     }
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();

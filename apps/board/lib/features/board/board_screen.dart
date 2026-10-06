@@ -47,7 +47,7 @@ import '../toolkit/toolkit_layer.dart';
 import '../search/board_search.dart';
 import 'ai_pen_ui.dart';
 import 'animations_hook.dart';
-import 'canvas_tools_hooks.dart';
+import '../canvas_tools/canvas_tools.dart';
 import 'chrome.dart';
 import 'classroom_tools.dart';
 import 'editors.dart';
@@ -199,6 +199,7 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(_loadLetterSize());
     _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
     _wb.addListener(_onWbChanged);
+    PanelHost.active = _pushInPanel;
   }
 
   /// The Pen button goes back to the last pen type; a page with other paper tells the live
@@ -249,6 +250,7 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void dispose() {
     _wb.removeListener(_onWbChanged);
+    if (PanelHost.active == _pushInPanel) PanelHost.active = null;
     board.removeListener(_onBoardChanged);
     board.projector.attach(null);
     board.profiles.onSwitch = null;
@@ -1033,18 +1035,19 @@ class _BoardScreenState extends State<BoardScreen> {
     void subject(SubjectTool t) => unawaited(runner.run(t, _menuAnchor));
     return [
       // Geometry
-      DrawerTool('ruler', Icons.straighten, l.toolRuler, [ToolGroup.geometry, ToolGroup.maths], geo, _run(() => CanvasToolsHooks.openRuler(context, _wb))),
-      DrawerTool('protractor', Icons.architecture, l.toolProtractor, [ToolGroup.geometry, ToolGroup.maths], geo, _run(() => CanvasToolsHooks.openProtractor(context, _wb))),
-      DrawerTool('set-square-45', Icons.change_history, s.setSquare45, [ToolGroup.geometry], geo, _run(() => CanvasToolsHooks.openSetSquare45(context, _wb))),
-      DrawerTool('set-square-3060', Icons.signal_cellular_0_bar, s.setSquare3060, [ToolGroup.geometry], geo, _run(() => CanvasToolsHooks.openSetSquare3060(context, _wb))),
-      DrawerTool('compass', Icons.radio_button_unchecked, l.toolCompass, [ToolGroup.geometry, ToolGroup.maths], geo, _run(() => CanvasToolsHooks.openCompass(context, _wb))),
+      DrawerTool('ruler', Icons.straighten, l.toolRuler, [ToolGroup.geometry, ToolGroup.maths], geo, _run(() => CanvasTools.openRuler(context, _wb))),
+      DrawerTool('protractor', Icons.architecture, l.toolProtractor, [ToolGroup.geometry, ToolGroup.maths], geo, _run(() => CanvasTools.openProtractor(context, _wb))),
+      DrawerTool('protractor-360', Icons.radio_button_checked, ToolStrings.of(context).t('protractor360'), [ToolGroup.geometry], geo, _run(() => CanvasTools.openProtractor360(context, _wb))),
+      DrawerTool('set-square-45', Icons.change_history, s.setSquare45, [ToolGroup.geometry], geo, _run(() => CanvasTools.openSetSquare45(context, _wb))),
+      DrawerTool('set-square-3060', Icons.signal_cellular_0_bar, s.setSquare3060, [ToolGroup.geometry], geo, _run(() => CanvasTools.openSetSquare3060(context, _wb))),
+      DrawerTool('compass', Icons.radio_button_unchecked, l.toolCompass, [ToolGroup.geometry, ToolGroup.maths], geo, _run(() => CanvasTools.openCompass(context, _wb))),
       DrawerTool(
         'graphs',
         Icons.show_chart,
         s.graphTemplates,
         [ToolGroup.maths, ToolGroup.geometry, ToolGroup.science, ToolGroup.commerce],
         maths,
-        _run(() => _openPage(s.graphTemplates, Icons.show_chart, (_) => CanvasToolsHooks.graphTemplatesPanel(onAdd: _wb.insert, color: _style.accent))),
+        _run(() => _openPage(s.graphTemplates, Icons.show_chart, (_) => CanvasTools.graphTemplatesPanel(controller: _wb, subject: board.session?.subjectName))),
       ),
       DrawerTool(
         'flowchart',
@@ -1052,8 +1055,9 @@ class _BoardScreenState extends State<BoardScreen> {
         s.flowchart,
         [ToolGroup.cs, ToolGroup.geometry],
         cs,
-        _run(() => unawaited(CanvasToolsHooks.insertFlowchart(context, _wb, current: () => runner.run(SubjectTool.flowchart, _menuAnchor)))),
+        _run(() => unawaited(CanvasTools.insertFlowchart(context, _wb))),
       ),
+      DrawerTool('calibrate', Icons.straighten_outlined, ToolStrings.of(context).t('calibrate'), [ToolGroup.geometry], geo, _run(() => unawaited(CanvasTools.calibrate(context)))),
       // Maths
       DrawerTool('calculator', Icons.calculate_outlined, l.toolCalculator, [ToolGroup.maths, ToolGroup.commerce, ToolGroup.science], maths, _run(() => unawaited(_calculator()))),
       DrawerTool('equation', Icons.functions, l.stEquation, [ToolGroup.maths, ToolGroup.science], maths, _run(() => unawaited(_newEquation()))),
