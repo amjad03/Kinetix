@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../draw.dart';
 import '../model.dart';
+import 'plate_rocks.dart';
 
 // The water cycle, the rock cycle, plates and earthquakes, volcanoes, day and night and the
 // seasons, the phases of the Moon, and eclipses.
@@ -145,114 +146,8 @@ final rockCycle = KxAnimation(
     AnimStep(0.8, Tr('Melting', 'पिघलना', 'ಕರಗುವಿಕೆ'),
         Tr('Pushed deeper still, rocks melt back into magma, and the cycle begins again.', 'और गहराई में जाकर शैल फिर पिघलकर मैग्मा बन जाते हैं, और चक्र फिर शुरू होता है।', 'ಇನ್ನೂ ಆಳಕ್ಕೆ ತಳ್ಳಲ್ಪಟ್ಟು ಶಿಲೆಗಳು ಮತ್ತೆ ಶಿಲಾಪಾಕವಾಗಿ ಕರಗುತ್ತವೆ; ಚಕ್ರ ಮತ್ತೆ ಆರಂಭ.')),
   ],
-  painter: _RockCycle.new,
+  painter: RockCyclePlate.new,
 );
-
-class _RockCycle extends AnimPainter {
-  _RockCycle(super.f);
-
-  static const nodes = [Offset(500, 480), Offset(170, 300), Offset(330, 130), Offset(670, 130), Offset(830, 300)];
-
-  @override
-  void draw() {
-    final step = rockCycle.stepAt(t);
-    // Arrows between the stages: magma → igneous → sediments → sedimentary → metamorphic → magma.
-    for (var i = 0; i < 5; i++) {
-      final a = nodes[i], b = nodes[(i + 1) % 5];
-      final mid = (a + b) / 2;
-      final bulge = (mid - const Offset(500, 300)) * 0.35;
-      final from = lerpO(a, b, 0.24), to = lerpO(a, b, 0.76);
-      final p = Path()
-        ..moveTo(from.dx, from.dy)
-        ..quadraticBezierTo(mid.dx + bulge.dx, mid.dy + bulge.dy, to.dx, to.dy);
-      flow(p, on: step == i, col: const Color(0xFF8D6E63), n: 4);
-      final name = const [
-        'Cooling|ठंडा होना|ತಣಿಯುವಿಕೆ',
-        'Weathering, erosion|अपक्षय, अपरदन|ಶಿಥಿಲೀಕರಣ, ಸವೆತ',
-        'Compaction|संघनन|ಸಂಕೋಚನ',
-        'Heat and pressure|ताप और दाब|ಶಾಖ ಮತ್ತು ಒತ್ತಡ',
-        'Melting|पिघलना|ಕರಗುವಿಕೆ',
-      ][i];
-      final lp = mid + bulge * 1.3;
-      label(name, Offset(lp.dx.clamp(90, 910), lp.dy.clamp(28, 572)), size: 15, opacity: step == i ? 1 : 0.55, color: step == i ? AC.accent : AC.ink);
-    }
-    _magma(nodes[0], step == 0 || step == 4);
-    _igneous(nodes[1], step == 0 || step == 1);
-    _sediments(nodes[2], step == 1 || step == 2);
-    _sedimentary(nodes[3], step == 2 || step == 3);
-    _metamorphic(nodes[4], step == 3 || step == 4);
-    // A rock grain travelling round with the step.
-    final k = ease(seg(t, step * 0.2 + 0.03, step * 0.2 + 0.18));
-    final a = nodes[step], b = nodes[(step + 1) % 5];
-    circle(lerpO(a, b, k), 13, const Color(0xFF6D4C41), line: Colors.white, w: 3);
-  }
-
-  Rect _box(Offset o) => Rect.fromCenter(center: o, width: 190, height: 110);
-
-  void _frame(Offset o, String name, bool on) {
-    rect(_box(o), Colors.transparent, line: on ? AC.accent : AC.line, w: on ? 4 : 2, radius: 18);
-    text(tr(name), o + const Offset(0, 74), size: 18, weight: FontWeight.w700, color: on ? AC.ink : AC.muted);
-  }
-
-  void _magma(Offset o, bool on) {
-    c.save();
-    c.clipRRect(RRect.fromRectAndRadius(_box(o), const Radius.circular(18)));
-    c.drawRect(_box(o), Paint()..shader = const LinearGradient(colors: [Color(0xFFFF7043), Color(0xFFFFCA28), Color(0xFFE64A19)]).createShader(_box(o)));
-    for (var i = 0; i < 8; i++) {
-      final k = fr(t * 3 + rnd(i));
-      circle(Offset(o.dx - 80 + rnd(i, 1) * 160, o.dy + 50 - 100 * k), 6 * (1 - k) + 2, const Color(0xFFFFF59D).withValues(alpha: 0.8));
-    }
-    c.restore();
-    _frame(o, 'Magma|मैग्मा|ಶಿಲಾಪಾಕ', on);
-  }
-
-  void _igneous(Offset o, bool on) {
-    rect(_box(o), const Color(0xFFBCAAA4), radius: 18);
-    for (var i = 0; i < 40; i++) {
-      circle(Offset(o.dx - 85 + rnd(i, 2) * 170, o.dy - 45 + rnd(i, 3) * 90), 3 + 4 * rnd(i, 4), [const Color(0xFF3E2723), Colors.white, const Color(0xFFF8BBD0)][i % 3]);
-    }
-    _frame(o, 'Igneous rock|आग्नेय शैल|ಅಗ್ನಿಶಿಲೆ', on);
-  }
-
-  void _sediments(Offset o, bool on) {
-    rect(_box(o), const Color(0xFFFFF8E1), radius: 18);
-    for (var i = 0; i < 26; i++) {
-      final fall = on ? fr(t * 2 + rnd(i)) : 1.0;
-      final p = Offset(o.dx - 85 + rnd(i, 5) * 170, o.dy - 45 + (40 + 50 * rnd(i, 6)) * fall);
-      circle(p, 4 + 4 * rnd(i, 7), [const Color(0xFFD7B98E), const Color(0xFFA1887F), const Color(0xFF8D6E63)][i % 3]);
-    }
-    _frame(o, 'Sediments|अवसाद|ಸಂಚಯಗಳು', on);
-  }
-
-  void _sedimentary(Offset o, bool on) {
-    final b = _box(o);
-    const cols = [Color(0xFFD7B98E), Color(0xFFBCAAA4), Color(0xFFE6CC9C), Color(0xFFA1887F), Color(0xFFD7B98E)];
-    c.save();
-    c.clipRRect(RRect.fromRectAndRadius(b, const Radius.circular(18)));
-    for (var i = 0; i < 5; i++) {
-      rect(Rect.fromLTWH(b.left, b.top + i * 22, b.width, 22), cols[i]);
-      line(Offset(b.left, b.top + i * 22), Offset(b.right, b.top + i * 22), Colors.white.withValues(alpha: 0.6), 1.5);
-    }
-    c.restore();
-    _frame(o, 'Sedimentary rock|अवसादी शैल|ಸಂಚಯ ಶಿಲೆ', on);
-  }
-
-  void _metamorphic(Offset o, bool on) {
-    final b = _box(o);
-    c.save();
-    c.clipRRect(RRect.fromRectAndRadius(b, const Radius.circular(18)));
-    rect(b, const Color(0xFF90A4AE));
-    for (var i = 0; i < 6; i++) {
-      final p = Path()..moveTo(b.left, b.top + 10 + i * 18.0);
-      for (var x = 0.0; x <= b.width; x += 10) {
-        p.lineTo(b.left + x, b.top + 10 + i * 18 + 8 * math.sin(x / 20 + i));
-      }
-      path(p, i.isEven ? const Color(0xFF37474F) : const Color(0xFFECEFF1), 5);
-    }
-    c.restore();
-    _frame(o, 'Metamorphic rock|कायांतरित शैल|ರೂಪಾಂತರ ಶಿಲೆ', on);
-  }
-}
 
 final earthquake = KxAnimation(
   id: 'plate-tectonics-earthquake',

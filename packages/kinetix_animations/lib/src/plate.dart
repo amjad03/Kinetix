@@ -113,9 +113,9 @@ extension Plate on AnimPainter {
       make(
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = px * 0.28
+          ..strokeWidth = px * 0.24
           ..strokeJoin = StrokeJoin.round
-          ..color = haloColor.withValues(alpha: 0.92 * opacity),
+          ..color = haloColor.withValues(alpha: 0.85 * opacity),
       ).paint(c, topLeft);
     }
     tp.paint(c, topLeft);

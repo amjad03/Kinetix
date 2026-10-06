@@ -5,6 +5,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'model.dart';
 
+part 'landscape.dart';
 part 'plate.dart';
 
 /// The animations' palette: textbook colours on the board's paper, in KINETIX ink.
