@@ -1673,7 +1673,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
     final leftRoom = recording == null ? 190.0 : 420.0, rightRoom = compact ? 330.0 : 400.0;
-    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 700.0 : 940.0));
+    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 760.0 : 940.0));
     _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
     return [
       Positioned(
@@ -1938,28 +1938,28 @@ class _BoardScreenState extends State<BoardScreen> {
         bottom: safe.bottom + 52 + 2 * Kx.s8,
         child: Align(
           alignment: _popover == BoardPopover.menu || _popover == BoardPopover.profile ? Alignment.topRight : Alignment.bottomCenter,
-          child: SingleChildScrollView(reverse: _popover != BoardPopover.menu && _popover != BoardPopover.profile, child: themed),
+          child: PopoverScroll(reverse: _popover != BoardPopover.menu && _popover != BoardPopover.profile, child: themed),
         ),
       );
     }
     // Beside the control that opened it.
     switch (_popover!) {
       case BoardPopover.menu || BoardPopover.background || BoardPopover.eyeComfort:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: SingleChildScrollView(reverse: true, child: themed)));
+        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: PopoverScroll(reverse: true, child: themed)));
       case BoardPopover.profile:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: Kx.s12, child: Align(alignment: Alignment.topRight, child: SingleChildScrollView(child: themed)));
+        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: Kx.s12, child: Align(alignment: Alignment.topRight, child: PopoverScroll(child: themed)));
       default:
         final side = _toolbarDepth + Kx.s12 + Kx.s8;
         return switch (dock) {
-          ToolbarDock.left => Positioned(left: side, right: Kx.s12, top: 64, bottom: 12, child: Align(alignment: Alignment.centerLeft, child: SingleChildScrollView(child: themed))),
-          ToolbarDock.right => Positioned(left: Kx.s12, right: side, top: 64, bottom: 12, child: Align(alignment: Alignment.centerRight, child: SingleChildScrollView(child: themed))),
+          ToolbarDock.left => Positioned(left: side, right: Kx.s12, top: 64, bottom: 12, child: Align(alignment: Alignment.centerLeft, child: PopoverScroll(child: themed))),
+          ToolbarDock.right => Positioned(left: Kx.s12, right: side, top: 64, bottom: 12, child: Align(alignment: Alignment.centerRight, child: PopoverScroll(child: themed))),
           ToolbarDock.bottom => Positioned(
             left: Kx.s12,
             right: Kx.s12,
             top: 64,
             // Above the toolbar, wherever it sits (between the corners or raised above them).
             bottom: Kx.s12 + _toolbarDepth + Kx.s8 + (_toolbarRaised ? 76 + Kx.s8 : 0),
-            child: Align(alignment: Alignment.bottomCenter, child: SingleChildScrollView(reverse: true, child: themed)),
+            child: Align(alignment: Alignment.bottomCenter, child: PopoverScroll(reverse: true, child: themed)),
           ),
         };
     }

@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
+import 'support/wait.dart';
 
 /// What used to say "coming soon": the calculator, the screenshot, touch lock, screen projection
 /// and voice questions to KINETIX AI, at phone and panel sizes.
@@ -98,6 +99,12 @@ void main() {
 
   for (final size in [const Size(390, 844), const Size(1920, 1080)]) {
     final name = size.width < 600 ? 'phone' : 'panel';
+    /// The screenshot is drawn for real (an image, off the test's fake clock), which takes
+    /// longer when the whole suite runs at once: wait for its dialog rather than a fixed time.
+    Future<void> screenshotShown(WidgetTester tester) async {
+      await waitUntil(tester, () => find.byKey(const Key('screenshot-dialog')).evaluate().isNotEmpty);
+    }
+
     testWidgets('$name: calculator, screenshot, touch lock, projection and voice questions work', (tester) async {
       screenSize(tester, size);
       final board = await enrolledBoard();
@@ -132,16 +139,14 @@ void main() {
       BoardShot.save = (n, png) async => (saved[n] = png).isNotEmpty;
       BoardShot.share = (n, png) async => shared.add(n);
       await tool(tester, 'screenshot');
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
-      await tester.pumpAndSettle();
+      await screenshotShown(tester);
       expect(find.byKey(const Key('screenshot-dialog')), findsOneWidget);
       await tester.tap(find.byKey(const Key('screenshot-save')));
       await tester.pumpAndSettle();
       expect(saved.values.single.sublist(1, 4), 'PNG'.codeUnits);
       expect(find.text(l.screenshotSaved), findsOneWidget);
       await tool(tester, 'screenshot');
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
-      await tester.pumpAndSettle();
+      await screenshotShown(tester);
       await tester.tap(find.byKey(const Key('screenshot-share')));
       await tester.pumpAndSettle();
       expect(shared.single, endsWith('.png'));

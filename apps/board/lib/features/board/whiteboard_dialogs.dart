@@ -119,6 +119,8 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
             if (boards.isEmpty) {
               return KxEmptyState(icon: Icons.dashboard_outlined, message: l.noBoardsYet);
             }
+            // A phone's dialog is narrow: Share and Shared are icons there, so the title has room.
+            final narrow = MediaQuery.sizeOf(context).width < 600;
             return ListView.separated(
               itemCount: boards.length,
               separatorBuilder: (_, _) => const SizedBox(height: Kx.s8),
@@ -144,9 +146,13 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
                       await widget.onOpen(b);
                     },
                     trailing: b.shared
-                        ? Chip(avatar: const Icon(Icons.people_alt_outlined, size: 16), label: Text(l.shared))
+                        ? (narrow
+                              ? Tooltip(message: l.shared, child: Icon(Icons.people_alt_outlined, color: c.primary))
+                              : Chip(avatar: const Icon(Icons.people_alt_outlined, size: 16), label: Text(l.shared)))
                         : b.sectionName == null
                         ? null
+                        : narrow
+                        ? IconButton(tooltip: l.share, onPressed: _busy == b.id ? null : () => _share(b), icon: const Icon(Icons.share_outlined))
                         : TextButton.icon(
                             onPressed: _busy == b.id ? null : () => _share(b),
                             icon: const Icon(Icons.share_outlined, size: 18),

@@ -21,6 +21,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
+import 'support/wait.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -281,13 +282,8 @@ void main() {
       // pad is done, however long that takes on a busy machine (a fixed wait made this test
       // fail when the whole suite ran in parallel).
       final busy = find.descendant(of: find.byType(PinPad), matching: find.byType(CircularProgressIndicator));
-      for (var i = 0; i < 200; i++) {
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 25)));
-        await tester.pump();
-        if (busy.evaluate().isEmpty) break;
-      }
-      expect(busy, findsNothing, reason: 'the PIN was still being checked after 5 s');
-      await tester.pumpAndSettle();
+      await waitUntil(tester, () => busy.evaluate().isEmpty);
+      expect(busy, findsNothing, reason: 'the PIN was still being checked after 10 s');
     }
 
     testWidgets('locks after the idle time and opens with the teacher\'s PIN', (tester) async {

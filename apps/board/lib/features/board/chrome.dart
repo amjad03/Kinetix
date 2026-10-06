@@ -175,10 +175,10 @@ class ToolButton extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           // Labels in Hindi and Kannada run longer than English: the button grows a little,
           // then the label is cut with an ellipsis (the tooltip keeps the full name).
-          width: compact ? 52 : null,
+          width: compact ? Kx.boardTarget : null,
           constraints: compact ? null : (big ? const BoxConstraints(minWidth: 80, maxWidth: 112) : const BoxConstraints(minWidth: 64, maxWidth: 92)),
           padding: compact ? null : const EdgeInsets.symmetric(horizontal: 4),
-          height: compact ? 52 : (big ? 76 : 60),
+          height: compact ? Kx.boardTarget : (big ? 76 : 60),
           decoration: BoxDecoration(
             color: selected ? c.secondaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(Kx.rMd),
@@ -214,6 +214,33 @@ class ToolbarDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 6), color: context.colors.outlineVariant);
+}
+
+/// A popover with more in it than there is room for (a phone on its side, a 720p board)
+/// scrolls inside a rounded, shadowed frame, so its top and bottom edges show where it is cut
+/// rather than the card running off past the screen's edge.
+class PopoverScroll extends StatelessWidget {
+  const PopoverScroll({super.key, required this.child, this.reverse = false});
+
+  final Widget child;
+
+  /// Starts scrolled to the bottom (popovers that open above the toolbar).
+  final bool reverse;
+
+  @override
+  Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(Kx.rXl));
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(color: Color(0x1A000000), blurRadius: 3, offset: Offset(0, 1)),
+          BoxShadow(color: Color(0x14000000), blurRadius: 12, spreadRadius: 1, offset: Offset(0, 4)),
+        ],
+      ),
+      child: ClipRRect(borderRadius: radius, child: SingleChildScrollView(reverse: reverse, child: child)),
+    );
+  }
 }
 
 /// A popover card with a title row, used above the toolbar.

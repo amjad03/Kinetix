@@ -321,71 +321,84 @@ class _ClassBarState extends State<ClassBar> {
     final ls = LayoutStrings.of(context);
     final marked = board.attendance.length;
     final left = minutesLeft(s?.periodLabel, DateTime.now());
-    const gap = SizedBox(width: Kx.s8);
+    const gap = SizedBox(width: Kx.s4);
+    // One floating pill, like search, the clock and the profile at the top right; its chips
+    // sit flat inside it.
+    final chips = ChipTheme.of(context).copyWith(side: BorderSide.none, backgroundColor: Colors.transparent, shape: const StadiumBorder());
     return SingleChildScrollView(
       key: const Key('class-bar'),
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          if (s == null)
-            ActionChip(
-              key: const Key('sign-in-chip'),
-              avatar: Icon(board.isEnrolled ? Icons.qr_code_2 : Icons.edit_outlined, size: 18),
-              label: Text(board.isEnrolled ? l.guestSignIn : l.practiceBoard),
-              onPressed: board.isEnrolled ? widget.onSignIn : null,
-            )
-          else ...[
-            ActionChip(
-              key: const Key('class-chip'),
-              avatar: KxAvatar(name: s.teacherName, size: 24),
-              tooltip: ls.switchClass,
-              label: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: widget.phone ? 150 : 320),
-                child: Text(s.classLabel ?? s.teacherName, overflow: TextOverflow.ellipsis),
-              ),
-              onPressed: widget.onSwitchClass,
-            ),
-            if (!widget.phone) ...[
-              if (board.liveLeaders > 0 && board.liveIndicator) ...[
+      // Room for the pill's shadow.
+      padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+      child: ChromeSurface(
+        radius: Kx.rFull,
+        padding: const EdgeInsets.all(Kx.s4),
+        child: ChipTheme(
+          data: chips,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (s == null)
+                ActionChip(
+                  key: const Key('sign-in-chip'),
+                  avatar: Icon(board.isEnrolled ? Icons.qr_code_2 : Icons.edit_outlined, size: 18),
+                  label: Text(board.isEnrolled ? l.guestSignIn : l.practiceBoard),
+                  onPressed: board.isEnrolled ? widget.onSignIn : null,
+                )
+              else ...[
+                ActionChip(
+                  key: const Key('class-chip'),
+                  avatar: KxAvatar(name: s.teacherName, size: 24),
+                  tooltip: ls.switchClass,
+                  label: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: widget.phone ? 150 : 320),
+                    child: Text(s.classLabel ?? s.teacherName, overflow: TextOverflow.ellipsis),
+                  ),
+                  onPressed: widget.onSwitchClass,
+                ),
+                if (!widget.phone) ...[
+                  if (board.liveLeaders > 0 && board.liveIndicator) ...[
+                    gap,
+                    Tooltip(
+                      message: l.beingViewedTooltip,
+                      child: Chip(key: const Key('being-viewed'), avatar: const Icon(Icons.visibility_outlined, size: 18), label: Text(l.beingViewed(board.liveLeaders))),
+                    ),
+                  ],
+                  gap,
+                  GoLiveChip(board: board),
+                  gap,
+                  ActionChip(
+                    key: const Key('attendance-chip'),
+                    avatar: const Icon(Icons.groups_outlined, size: 18),
+                    label: Text(
+                      board.roster.isEmpty
+                          ? l.noClassList
+                          : marked == 0
+                          ? l.takeAttendance(board.roster.length)
+                          : l.presentOfTotal(board.pickable.length, board.roster.length),
+                    ),
+                    onPressed: widget.onAttendance,
+                  ),
+                  if (left != null) ...[
+                    gap,
+                    Chip(key: const Key('period-left'), avatar: const Icon(Icons.hourglass_bottom, size: 18), label: Text(ls.minutesLeft(left))),
+                  ],
+                  gap,
+                  ClassAudioButton(board: board),
+                ],
+              ],
+              if (Demo.enabled) ...[gap, const DemoChip()],
+              // Privacy: whenever the microphone is going out to the class, the teacher sees it.
+              if (board.classAudio.sending) ...[
                 gap,
                 Tooltip(
-                  message: l.beingViewedTooltip,
-                  child: Chip(key: const Key('being-viewed'), avatar: const Icon(Icons.visibility_outlined, size: 18), label: Text(l.beingViewed(board.liveLeaders))),
+                  message: l.micOnTooltip,
+                  child: const CircleAvatar(key: Key('mic-on'), radius: 16, backgroundColor: Kx.record, child: Icon(Icons.mic, size: 18, color: Colors.white)),
                 ),
               ],
-              gap,
-              GoLiveChip(board: board),
-              gap,
-              ActionChip(
-                key: const Key('attendance-chip'),
-                avatar: const Icon(Icons.groups_outlined, size: 18),
-                label: Text(
-                  board.roster.isEmpty
-                      ? l.noClassList
-                      : marked == 0
-                      ? l.takeAttendance(board.roster.length)
-                      : l.presentOfTotal(board.pickable.length, board.roster.length),
-                ),
-                onPressed: widget.onAttendance,
-              ),
-              if (left != null) ...[
-                gap,
-                Chip(key: const Key('period-left'), avatar: const Icon(Icons.hourglass_bottom, size: 18), label: Text(ls.minutesLeft(left))),
-              ],
-              gap,
-              ClassAudioButton(board: board),
             ],
-          ],
-          if (Demo.enabled) ...[gap, const DemoChip()],
-          // Privacy: whenever the microphone is going out to the class, the teacher sees it.
-          if (board.classAudio.sending) ...[
-            gap,
-            Tooltip(
-              message: l.micOnTooltip,
-              child: const CircleAvatar(key: Key('mic-on'), radius: 16, backgroundColor: Kx.record, child: Icon(Icons.mic, size: 18, color: Colors.white)),
-            ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -458,7 +471,7 @@ class ClassAudioButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final on = board.classAudio.enabled;
-    return IconButton.outlined(
+    return IconButton(
       key: const Key('class-audio'),
       tooltip: on ? l.classAudioTurnOffTooltip : l.classAudioTurnOnTooltip,
       isSelected: on,
@@ -686,7 +699,7 @@ class PageBar extends StatelessWidget {
 /// The menu (bottom left; ⋮ on a phone): open, save, share, the background, settings, clearing,
 /// and signing out. [items] are (key, icon, label, action, enabled).
 class BoardMenu extends StatelessWidget {
-  const BoardMenu({super.key, required this.items, required this.onClose, this.width = 320});
+  const BoardMenu({super.key, required this.items, required this.onClose, this.width = 340});
 
   final List<(Key, IconData, String, VoidCallback, bool)> items;
   final VoidCallback onClose;
@@ -704,12 +717,14 @@ class BoardMenu extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (final (key, icon, label, onTap, enabled) in items)
+            for (final (i, (key, icon, label, onTap, enabled)) in items.indexed) ...[
+              // Grouped as the profile menu is: files, the board's look and settings, clearing,
+              // and signing out.
+              if (i > 0 && key is ValueKey<String> && _groupStarts.contains(key.value)) const Divider(height: Kx.s16),
               ListTile(
                 key: key,
                 leading: Icon(icon),
                 title: Text(label),
-                dense: true,
                 enabled: enabled,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd)),
                 onTap: () {
@@ -717,9 +732,12 @@ class BoardMenu extends StatelessWidget {
                   onTap();
                 },
               ),
+            ],
           ],
         ),
       ),
     );
   }
+
+  static const _groupStarts = {'menu-open', 'tool-theme', 'clear-board', 'end-class', 'menu-sign-in'};
 }

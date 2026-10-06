@@ -163,5 +163,75 @@ void main() {
         b.dispose();
       }
     });
+
+    if (layout != ToolbarDock.bottom) continue;
+    testWidgets('$name: every item of the menu and the profile menu does something', (tester) async {
+      screenSize(tester, size);
+      final dead = <String>[];
+      var boards = <BoardController>[];
+      Future<WhiteboardController> fresh() async {
+        await tester.pumpWidget(const SizedBox());
+        for (final b in boards) {
+          b.dispose();
+        }
+        SharedPreferences.setMockInitialValues({});
+        final board = await enrolledBoard();
+        boards = [board];
+        board.onPaired('session-token', sessionIn('en'));
+        await tester.pumpWidget(KinetixBoardApp(controller: board));
+        await tester.pumpAndSettle();
+        final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
+        // Something on the page, so Save, Share and Clear have something to act on.
+        wb.insert([TextElement(id: 'sweep', position: const Offset(200, 200), text: 'x', color: WhiteboardController.inkBlack, fontSize: 40, size: const Size(30, 40))]);
+        wb.clearSelection();
+        await tester.pumpAndSettle();
+        return wb;
+      }
+
+      final phone = size.shortestSide < 600;
+      Future<void> openMenu(String menu) async {
+        if (menu == 'profile' && phone) {
+          await tester.tap(find.byKey(const Key('board-menu')));
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.byKey(const Key('profile-button')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('profile-button')));
+        } else {
+          await tester.tap(find.byKey(Key(menu == 'profile' ? 'profile-button' : 'board-menu')));
+        }
+        await tester.pumpAndSettle();
+      }
+
+      // The file picker is the platform's (the insert tests cover importing).
+      const skip = {'menu-import', 'profile-button', 'kiosk-exit-version'};
+      for (final menu in ['menu', 'profile']) {
+        var wb = await fresh();
+        await openMenu(menu);
+        final items = [
+          for (final e in find.byWidgetPredicate((w) => w is ListTile && w.key is ValueKey<String> && w.enabled).evaluate()) (e.widget.key! as ValueKey<String>).value,
+        ]..removeWhere(skip.contains);
+        expect(items, isNotEmpty, reason: menu);
+        for (final key in items) {
+          wb = await fresh();
+          // Compared with the board before the menu opened: an item that only closes the menu
+          // did nothing.
+          final before = signature(tester, wb);
+          await openMenu(menu);
+          final f = find.byKey(Key(key));
+          await tester.ensureVisible(f.first);
+          await tester.pumpAndSettle();
+          await tester.tap(f.first, warnIfMissed: false);
+          await settle(tester);
+          if (signature(tester, wb) == before) dead.add('$menu: $key');
+          final error = tester.takeException();
+          if (error != null) dead.add('$menu: $key: $error');
+        }
+      }
+      expect(dead, isEmpty, reason: 'these did nothing or threw');
+      await tester.pumpWidget(const SizedBox());
+      for (final b in boards) {
+        b.dispose();
+      }
+    });
   }
 }
