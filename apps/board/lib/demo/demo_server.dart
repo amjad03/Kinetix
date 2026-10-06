@@ -383,6 +383,17 @@ class DemoBoardServer {
     http.Response notInDemo() =>
         json({'message': 'Not available in the demo.', 'code': 'DEMO'}, 400);
 
+    // PhET sims: the demo has no mirror, so they come from phet.colorado.edu (as the API does
+    // without PHET_MIRROR_URL).
+    if (path.startsWith('/v1/content/sims/phet/')) {
+      final id = path.split('/').last, locale = req.url.queryParameters['locale'] ?? 'en';
+      return json({
+        'id': id,
+        'locale': locale,
+        'url': 'https://phet.colorado.edu/sims/html/$id/latest/${id}_all.html?locale=$locale',
+        'mirror': false,
+      });
+    }
     if (path == '/v1/devices/enroll') {
       return json({
         'deviceToken': deviceToken,

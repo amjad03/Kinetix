@@ -3,10 +3,11 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../phet/phet_strings.dart';
 import '../layout/layout_strings.dart';
 
 /// The split panel's tabs (docs/design/board-wireframes.html, screen 3).
-enum PanelTab { ai, model3d, labs, videos, books, kit, animations }
+enum PanelTab { ai, model3d, labs, videos, books, kit, animations, sims }
 
 extension PanelTabInfo on PanelTab {
   String label(LayoutStrings s) => switch (this) {
@@ -17,6 +18,7 @@ extension PanelTabInfo on PanelTab {
     PanelTab.books => s.tabBooks,
     PanelTab.kit => s.tabKit,
     PanelTab.animations => s.tabAnimations,
+    PanelTab.sims => PhetStrings(s.lang).tab,
   };
 
   IconData get icon => switch (this) {
@@ -27,6 +29,7 @@ extension PanelTabInfo on PanelTab {
     PanelTab.books => Icons.menu_book_outlined,
     PanelTab.kit => Icons.backpack_outlined,
     PanelTab.animations => Icons.animation,
+    PanelTab.sims => Icons.science,
   };
 }
 
