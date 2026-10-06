@@ -105,6 +105,9 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
     return AlertDialog(
       icon: const Icon(Icons.dashboard_outlined),
       title: Text(l.yourWhiteboards),
+      // A phone gives the list its width.
+      insetPadding: MediaQuery.sizeOf(context).width < 600 ? const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s24) : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      contentPadding: MediaQuery.sizeOf(context).width < 600 ? const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, 0) : null,
       content: SizedBox(
         width: 640,
         height: 440,
@@ -119,6 +122,8 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
             if (boards.isEmpty) {
               return KxEmptyState(icon: Icons.dashboard_outlined, message: l.noBoardsYet);
             }
+            // A phone's dialog is narrow: Share and Shared are icons there, so the title has room.
+            final narrow = MediaQuery.sizeOf(context).width < 600;
             return ListView.separated(
               itemCount: boards.length,
               separatorBuilder: (_, _) => const SizedBox(height: Kx.s8),
@@ -136,7 +141,8 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
                   child: ListTile(
                     key: Key('wb-${b.id}'),
                     shape: const RoundedRectangleBorder(borderRadius: Kx.radiusLg),
-                    leading: Icon(Icons.draw_outlined, color: c.primary),
+                    leading: narrow ? null : Icon(Icons.draw_outlined, color: c.primary),
+                    titleTextStyle: narrow ? context.text.titleSmall : null,
                     title: Text(b.title),
                     subtitle: Text(details),
                     onTap: () async {
@@ -144,9 +150,13 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
                       await widget.onOpen(b);
                     },
                     trailing: b.shared
-                        ? Chip(avatar: const Icon(Icons.people_alt_outlined, size: 16), label: Text(l.shared))
+                        ? (narrow
+                              ? Tooltip(message: l.shared, child: Icon(Icons.people_alt_outlined, color: c.primary))
+                              : Chip(avatar: const Icon(Icons.people_alt_outlined, size: 16), label: Text(l.shared)))
                         : b.sectionName == null
                         ? null
+                        : narrow
+                        ? IconButton(tooltip: l.share, onPressed: _busy == b.id ? null : () => _share(b), icon: const Icon(Icons.share_outlined))
                         : TextButton.icon(
                             onPressed: _busy == b.id ? null : () => _share(b),
                             icon: const Icon(Icons.share_outlined, size: 18),

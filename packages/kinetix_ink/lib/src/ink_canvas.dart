@@ -54,9 +54,12 @@ class InkCanvas extends StatelessWidget {
   }
 }
 
-/// Dark ink on a dark board is invisible, so near-black ink is shown as chalk white there.
+/// Ink is kept as it was written (its logical colour) and drawn for contrast with the paper:
+/// near-black ink is drawn chalk white on a dark board, and white (chalk) ink is drawn black on
+/// light paper, so a page reads whatever the theme or the paper it is shown on.
 Color inkColorFor(Color c, BoardBackground bg) {
-  if (bg.isDark && c.computeLuminance() < 0.05) return const Color(0xFFF4F4EE);
+  if (bg.isDark && c.computeLuminance() < 0.05) return Color.from(alpha: c.a, red: 0xF4 / 255, green: 0xF4 / 255, blue: 0xEE / 255);
+  if (!bg.isDark && c.r > 0.92 && c.g > 0.92 && c.b > 0.92) return Color.from(alpha: c.a, red: 0x1B / 255, green: 0x1B / 255, blue: 0x1F / 255);
   return c;
 }
 

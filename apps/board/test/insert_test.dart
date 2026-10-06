@@ -15,6 +15,8 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/wait.dart';
+
 /// Files the test hands in as if the teacher had picked them.
 class FakeFiles implements DeviceFiles {
   FakeFiles({this.picture, this.document, this.camera = false});
@@ -153,9 +155,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('LadyofHats'), findsOneWidget);
       await tester.tap(find.byKey(const Key('picture-animal_cell')));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 500)));
-      await tester.pumpAndSettle();
       final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
+      await waitUntil(tester, () => wb.elements.whereType<ImageElement>().isNotEmpty);
       expect(wb.elements.whereType<ImageElement>(), hasLength(1));
       expect(wb.elements.whereType<TextElement>().single.text, contains('Public domain'));
     });
@@ -181,9 +182,11 @@ void main() {
     Future<void> insert(WidgetTester tester, String key) async {
       await tester.tap(find.byKey(const Key('tool-insert')));
       await tester.pumpAndSettle();
+      final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
+      final (elements, pages) = (wb.elements.length, wb.pageCount);
       await tester.tap(find.byKey(Key(key)));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
-      await tester.pumpAndSettle();
+      // Until the file is on the board (or, for a file that cannot be read, a moment).
+      await waitUntil(tester, () => wb.elements.length != elements || wb.pageCount != pages, timeout: const Duration(seconds: 3));
     }
 
     testWidgets('a picture from the board goes on it', (tester) async {
@@ -240,8 +243,7 @@ void main() {
       await tester.tap(find.byKey(const Key('profile-button')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('menu-import')));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
-      await tester.pumpAndSettle();
+      await waitUntil(tester, () => wb.pageCount == 3);
       expect(wb.pageCount, 3);
     });
   });

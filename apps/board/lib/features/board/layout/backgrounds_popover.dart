@@ -39,6 +39,7 @@ const colourBackgrounds = [
   BoardBackground.paperMint,
   BoardBackground.paperRose,
   BoardBackground.paperSlate,
+  BoardBackground.night,
   BoardBackground.chalkboard,
 ];
 

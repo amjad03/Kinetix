@@ -64,6 +64,7 @@ import 'layout/layout_strings.dart';
 import 'layout/page_overview.dart';
 import 'layout/pen_popover.dart';
 import 'layout/tools_drawer.dart';
+import 'layout/ui_strings.dart';
 import 'live_stream.dart';
 import 'panel/badges_panel.dart';
 import 'panel/panel_host.dart';
@@ -126,7 +127,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The panel's share of the width beside the board (30–60 %), across all of it, and a
   /// phone's sheet's share of the height.
-  double _panelFraction = panelDefault;
+  double? _panelFraction;
   bool _panelFull = false;
   double _sheetFraction = 0.5;
 
@@ -187,7 +188,6 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void initState() {
     super.initState();
-    _theme = board.theme;
     board.addListener(_onBoardChanged);
     _phet.addListener(_onPhetChanged);
     board.onLiveSnapshotRequest = _startLive;
@@ -210,13 +210,15 @@ class _BoardScreenState extends State<BoardScreen> {
     _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
     _wb.addListener(_onWbChanged);
     PanelHost.active = _pushInPanel;
+    // A board that starts in the dark or chalkboard theme starts on that theme's paper.
+    _followTheme();
   }
 
   /// The Pen button goes back to the last pen type; a page with other paper tells the live
   /// view and the projector.
   void _onWbChanged() {
     final t = _wb.tool;
-    if (isPenTool(t)) _lastPen = t;
+    if (t == BoardTool.pen || t == BoardTool.laser) _lastPen = t;
     final paper = _wb.background;
     if (paper != _lastPaper) {
       _lastPaper = paper;
@@ -307,7 +309,7 @@ class _BoardScreenState extends State<BoardScreen> {
   Future<void> _calculator() async {
     final text = await BoardCalculator.show(context);
     if (text == null || !mounted) return;
-    final ink = _background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    const ink = WhiteboardController.inkBlack;
     _wb.insert([TextElement(id: newElementId(), position: Offset.zero, text: text, color: ink, fontSize: 40, size: measureBoardText(text, 40))]);
   }
 
@@ -392,7 +394,7 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(_loadLetterSize());
     if (_signInOpen && id != null) Navigator.of(context).pop();
     // A new class on a clean board starts on its subject's paper.
-    if (id != null && _wb.isBlank) _wb.background = _style.paper;
+    if (id != null && _wb.isBlank) _wb.background = _themed(_style.paper);
     // The period ended (or the teacher signed out elsewhere) mid-recording: keep what was
     // recorded; it uploads when this teacher next signs in.
     if (id == null && _capture != null) unawaited(_stopRecording());
@@ -415,7 +417,8 @@ class _BoardScreenState extends State<BoardScreen> {
   void _onToolButton(BoardTool t) {
     final now = _wb.tool;
     switch (t) {
-      case BoardTool.pen when isPenTool(now):
+      case BoardTool.aiPen when now == BoardTool.aiPen:
+      case BoardTool.pen when now == BoardTool.pen || now == BoardTool.laser:
       case BoardTool.highlighter when now == BoardTool.highlighter:
         _toggle(BoardPopover.pen);
         return;
@@ -487,20 +490,26 @@ class _BoardScreenState extends State<BoardScreen> {
     if (mounted) setState(() => _signInOpen = false);
   }
 
-  late BoardTheme _theme;
+  /// The App theme the board's paper follows (light, dark or chalkboard; never system).
+  BoardTheme _theme = BoardTheme.light;
 
-  /// Chalkboard green writes on a chalkboard; leaving it puts plain paper back.
+  BoardTheme get _resolvedTheme => board.theme.resolve(WidgetsBinding.instance.platformDispatcher.platformBrightness);
+
+  /// The board follows the App theme: the pages on the old theme's paper (white, the dark
+  /// board or the chalkboard) take the new theme's; a page with a template or a colour keeps
+  /// it. Ink keeps its colour and is drawn for contrast ([inkColorFor]).
   void _followTheme() {
-    final t = board.theme;
+    final t = _resolvedTheme;
     if (t == _theme) return;
-    final was = _theme;
+    final from = themePaper(_theme), to = themePaper(t);
     _theme = t;
-    if (t == BoardTheme.chalkboard && _background != BoardBackground.chalkboard) {
-      _setBackground(BoardBackground.chalkboard);
-    } else if (was == BoardTheme.chalkboard && _background == BoardBackground.chalkboard) {
-      _setBackground(BoardBackground.plain);
-    }
+    final was = _background;
+    _wb.replaceBackground(from, to);
+    if (_background != was) _setBackground(_background);
   }
+
+  /// [paper] as this theme shows it: plain paper is the dark board in the dark theme.
+  BoardBackground _themed(BoardBackground paper) => themePapers.contains(paper) ? themePaper(_theme) : paper;
 
   void _setBackground(BoardBackground b) {
     _wb.background = b;
@@ -608,7 +617,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final decoded = _pngSize(s.png);
     final w = math.min(560.0, decoded.width);
     final h = w * decoded.height / math.max(1, decoded.width);
-    final ink = _background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    const ink = WhiteboardController.inkBlack;
     _wb.insert([
       ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId)),
       if (s.credit.isNotEmpty)
@@ -806,6 +815,10 @@ class _BoardScreenState extends State<BoardScreen> {
             try {
               final saved = await api.whiteboard(summary.id);
               _wb.load(saved);
+              // White paper and the dark board are the theme's: shown as this theme has it.
+              for (final p in const [BoardBackground.plain, BoardBackground.night]) {
+                if (_theme != BoardTheme.chalkboard) _wb.replaceBackground(p, themePaper(_theme));
+              }
               _setModelNotes(saved.model3dNotes);
               board.whiteboardId = summary.id;
               setState(() => _boardTitle = summary.title);
@@ -895,7 +908,7 @@ class _BoardScreenState extends State<BoardScreen> {
         showBoardMessage(context, context.l10n.signedOutRecordingPending(name));
       }
     }
-    _wb.load(const SavedBoard(background: BoardBackground.plain, canvas: Size.zero, pages: []));
+    _wb.load(SavedBoard(background: themePaper(_theme), canvas: Size.zero, pages: const []));
     _setModelNotes(const {});
     _boardTitle = null;
   }
@@ -1507,8 +1520,10 @@ class _BoardScreenState extends State<BoardScreen> {
     // side (and on panels and tablets) the panel sits beside the board.
     final sheet = phone && h >= w;
     final full = open && !sheet && _panelFull;
-    final panelW = !open || sheet ? 0.0 : (full ? w : (phone ? w * 0.5 : w * _panelFraction));
-    const dividerW = 14.0;
+    // Half the width on a phone on its side, 42 % on a panel, until the teacher drags it.
+    final fraction = _panelFraction ?? (phone ? 0.5 : panelDefault);
+    final panelW = !open || sheet ? 0.0 : (full ? w : w * fraction);
+    const dividerW = panelDividerWidth;
     final besideW = !open || sheet ? 0.0 : (full ? 0.0 : panelW + dividerW);
     final sheetH = open && sheet ? h * _sheetFraction : 0.0;
     return Stack(
@@ -1520,7 +1535,7 @@ class _BoardScreenState extends State<BoardScreen> {
           top: 0,
           bottom: 0,
           // Across the whole panel the board keeps its size under it.
-          width: !open || sheet ? w : w - ((phone ? w * 0.5 : w * _panelFraction) + dividerW),
+          width: !open || sheet ? w : w - (w * fraction + dividerW),
           child: LayoutBuilder(
             builder: (context, area) {
               _canvasSize = area.biggest;
@@ -1530,7 +1545,14 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         ),
         if (open && !sheet && !full)
-          Positioned(left: w - besideW, top: 0, bottom: 0, width: dividerW, child: BoardChromeTheme(child: PanelDivider(onDrag: (dx) => setState(() => _panelFraction = (_panelFraction - dx / w).clamp(panelMin, panelMax))))),
+          Positioned(left: w - besideW, top: 0, bottom: 0, width: dividerW, child: BoardChromeTheme(
+              child: PanelDivider(
+                // A little past the ends while dragging, kept to 30–60 % and snapped when let go.
+                onDrag: (dx) => setState(() => _panelFraction = ((_panelFraction ?? fraction) - dx / w).clamp(panelMin - 0.05, panelMax + 0.05)),
+                onDragEnd: () => setState(() => _panelFraction = snapPanelFraction(_panelFraction ?? fraction)),
+              ),
+            ),
+          ),
         if (open && !sheet) Positioned(right: 0, top: 0, bottom: 0, width: panelW, child: _panelFrame(full ? PanelMode.full : PanelMode.side, h)),
         if (open && sheet) Positioned(left: 0, right: 0, bottom: 0, height: sheetH, child: _panelFrame(PanelMode.sheet, h)),
       ],
@@ -1642,6 +1664,7 @@ class _BoardScreenState extends State<BoardScreen> {
     collapsed: collapsed,
     popover: _popover,
     aiOpen: _panelTab == PanelTab.ai,
+    showAiPen: !_primary,
     onTool: _onToolButton,
     onPopover: _toggle,
     onAi: () => _panel == PanelKind.ai ? _closePanel() : _openAi(AiView.home),
@@ -1668,6 +1691,9 @@ class _BoardScreenState extends State<BoardScreen> {
   );
 
   /// The chrome on an interactive panel, a tablet or a desktop.
+  /// The page overview is open: the toolbars at the bottom make way for its sheet.
+  bool get _bottomChromeHidden => _popover == BoardPopover.pages;
+
   List<Widget> _panelChrome(BuildContext context, {required bool compact, required bool short, required ToolbarDock dock, required bool collapsed}) {
     // The board's own width: narrower beside the split panel.
     final width = _canvasSize.width;
@@ -1677,7 +1703,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
     final leftRoom = recording == null ? 190.0 : 420.0, rightRoom = compact ? 330.0 : 400.0;
-    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 640.0 : 860.0));
+    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 760.0 : 940.0));
     _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
     return [
       Positioned(
@@ -1698,32 +1724,34 @@ class _BoardScreenState extends State<BoardScreen> {
           child: TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), profileOpen: _popover == BoardPopover.profile),
         ),
       ),
-      Positioned(
-        left: Kx.s12,
-        bottom: Kx.s12,
-        child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording)),
-      ),
-      Positioned(
-        right: Kx.s12,
-        bottom: Kx.s12,
-        child: themed(PageBar(wb: _wb, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
-      ),
-      if (dock == ToolbarDock.bottom)
-        if (!_toolbarRaised)
-          Positioned(left: leftRoom, right: rightRoom, bottom: Kx.s12, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
-        else
-          Positioned(left: Kx.s12, right: Kx.s12, bottom: Kx.s12 + 76 + Kx.s8, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
-      else
+      if (!_bottomChromeHidden) ...[
         Positioned(
-          left: dock == ToolbarDock.left ? Kx.s12 : null,
-          right: dock == ToolbarDock.right ? Kx.s12 : null,
-          top: 64,
-          bottom: 96,
-          child: Align(
-            alignment: dock == ToolbarDock.left ? Alignment.centerLeft : Alignment.centerRight,
-            child: FittedBox(fit: BoxFit.scaleDown, child: toolbar),
-          ),
+          left: Kx.s12,
+          bottom: Kx.s12,
+          child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording)),
         ),
+        Positioned(
+          right: Kx.s12,
+          bottom: Kx.s12,
+          child: themed(PageBar(wb: _wb, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
+        ),
+        if (dock == ToolbarDock.bottom)
+          if (!_toolbarRaised)
+            Positioned(left: leftRoom, right: rightRoom, bottom: Kx.s12, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
+          else
+            Positioned(left: Kx.s12, right: Kx.s12, bottom: Kx.s12 + 76 + Kx.s8, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
+        else
+          Positioned(
+            left: dock == ToolbarDock.left ? Kx.s12 : null,
+            right: dock == ToolbarDock.right ? Kx.s12 : null,
+            top: 64,
+            bottom: 96,
+            child: Align(
+              alignment: dock == ToolbarDock.left ? Alignment.centerLeft : Alignment.centerRight,
+              child: FittedBox(fit: BoxFit.scaleDown, child: toolbar),
+            ),
+          ),
+      ],
     ];
   }
 
@@ -1733,7 +1761,8 @@ class _BoardScreenState extends State<BoardScreen> {
     final s = LayoutStrings.of(context);
     final tool = _wb.tool;
     return [
-      BarItem(const Key('tool-pen'), penIcon(_wb), l.pen, () => _onToolButton(BoardTool.pen), selected: isPenTool(tool) || _popover == BoardPopover.pen),
+      BarItem(const Key('tool-pen'), penIcon(_wb), l.pen, () => _onToolButton(BoardTool.pen), selected: tool == BoardTool.pen || tool == BoardTool.laser),
+      if (!_primary) BarItem(const Key('tool-ai-pen'), aiPenIcon, l.aiPen, () => _onToolButton(BoardTool.aiPen), selected: tool == BoardTool.aiPen, color: tool == BoardTool.aiPen ? null : aiPenColor(context)),
       BarItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _onToolButton(BoardTool.highlighter), selected: tool == BoardTool.highlighter),
       BarItem(const Key('tool-erase'), Icons.auto_fix_normal, s.eraser, () => _onToolButton(BoardTool.eraser), selected: tool == BoardTool.eraser),
       BarItem(const Key('tool-select'), Icons.highlight_alt, l.toolSelect, () => _onToolButton(BoardTool.select), selected: tool == BoardTool.select),
@@ -1784,19 +1813,21 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         ),
       ),
-      Positioned(
-        right: Kx.s8 + safe.right,
-        bottom: bottom + 52 + Kx.s8,
-        child: BoardChromeTheme(child: PageBar(wb: _wb, compact: true, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
-      ),
+      if (!_bottomChromeHidden)
+        Positioned(
+          right: Kx.s8 + safe.right,
+          bottom: bottom + 52 + Kx.s8,
+          child: BoardChromeTheme(child: PageBar(wb: _wb, compact: true, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
+        ),
       if (recording != null)
         Positioned(left: Kx.s8 + safe.left, top: safe.top + 56, child: BoardChromeTheme(child: FittedBox(child: recording))),
-      Positioned(
-        left: Kx.s8 + safe.left,
-        right: Kx.s8 + safe.right,
-        bottom: bottom,
-        child: BoardChromeTheme(child: Center(child: PhoneBar(wb: _wb, items: _barItems, onMore: _openMore))),
-      ),
+      if (!_bottomChromeHidden)
+        Positioned(
+          left: Kx.s8 + safe.left,
+          right: Kx.s8 + safe.right,
+          bottom: bottom,
+          child: BoardChromeTheme(child: Center(child: PhoneBar(wb: _wb, items: _barItems, onMore: _openMore))),
+        ),
     ];
   }
 
@@ -1819,6 +1850,13 @@ class _BoardScreenState extends State<BoardScreen> {
       (const Key('tool-theme'), Icons.texture, s.background, () => setState(() => _popover = BoardPopover.background), true),
       (const Key('menu-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), true),
       (const Key('menu-settings'), Icons.settings_outlined, l.boardSettings, _openSettings, true),
+      (
+        const Key('menu-preview'),
+        board.panelPreview ? Icons.close_fullscreen : Icons.aspect_ratio,
+        board.panelPreview ? UiStrings.of(context).exitPreview : UiStrings.of(context).previewPanel,
+        () => board.setPanelPreview(!board.panelPreview),
+        true,
+      ),
       (const Key('clear-board'), Icons.layers_clear_outlined, l.clearPage, () => unawaited(confirmClearBoard(context, _wb)), _wb.canClearAllPages),
       (const Key('menu-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, _clearAll, _wb.canClearAllPages),
       if (signedIn)
@@ -1828,7 +1866,10 @@ class _BoardScreenState extends State<BoardScreen> {
     ];
   }
 
-  void _openSettings() => unawaited(showPanelDialog<void>(context: context, builder: (_) => BoardSettingsDialog(board: board)));
+  void _openSettings() {
+    setState(() => _popover = null);
+    unawaited(showBoardSettings(context, board));
+  }
 
   void _clearAll() {
     final undo = _wb.clearAllPages();
@@ -1890,7 +1931,7 @@ class _BoardScreenState extends State<BoardScreen> {
         settings: board.eyeComfort,
         onChanged: board.setEyeComfort,
         chalkboard: _background == BoardBackground.chalkboard,
-        onChalkboard: (v) => _setBackground(v ? BoardBackground.chalkboard : BoardBackground.plain),
+        onChalkboard: (v) => _setBackground(v ? BoardBackground.chalkboard : (_theme == BoardTheme.dark ? BoardBackground.night : BoardBackground.plain)),
       ),
       BoardPopover.profile => ProfileMenu(
         board: board,
@@ -1908,6 +1949,16 @@ class _BoardScreenState extends State<BoardScreen> {
       BoardPopover.pages => PageOverview(wb: _wb, canvas: _canvasSize, onClose: close),
     };
     final themed = BoardChromeTheme(child: card);
+    // The page overview is a sheet at the bottom of the board, the toolbars put away under it.
+    if (_popover == BoardPopover.pages) {
+      return Positioned(
+        left: phone ? Kx.s8 + safe.left : Kx.s16,
+        right: phone ? Kx.s8 + safe.right : Kx.s16,
+        top: phone ? safe.top + 56 : 72,
+        bottom: phone ? safe.bottom + Kx.s8 : Kx.s16,
+        child: Align(alignment: Alignment.bottomCenter, child: themed),
+      );
+    }
     if (phone) {
       // A small sheet above the bar, across the phone.
       return Positioned(
@@ -1917,30 +1968,28 @@ class _BoardScreenState extends State<BoardScreen> {
         bottom: safe.bottom + 52 + 2 * Kx.s8,
         child: Align(
           alignment: _popover == BoardPopover.menu || _popover == BoardPopover.profile ? Alignment.topRight : Alignment.bottomCenter,
-          child: SingleChildScrollView(reverse: _popover != BoardPopover.menu && _popover != BoardPopover.profile, child: themed),
+          child: PopoverScroll(reverse: _popover != BoardPopover.menu && _popover != BoardPopover.profile, child: themed),
         ),
       );
     }
     // Beside the control that opened it.
     switch (_popover!) {
       case BoardPopover.menu || BoardPopover.background || BoardPopover.eyeComfort:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: SingleChildScrollView(reverse: true, child: themed)));
-      case BoardPopover.pages:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomRight, child: SingleChildScrollView(reverse: true, child: themed)));
+        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: PopoverScroll(reverse: true, child: themed)));
       case BoardPopover.profile:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: Kx.s12, child: Align(alignment: Alignment.topRight, child: SingleChildScrollView(child: themed)));
+        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: Kx.s12, child: Align(alignment: Alignment.topRight, child: PopoverScroll(child: themed)));
       default:
         final side = _toolbarDepth + Kx.s12 + Kx.s8;
         return switch (dock) {
-          ToolbarDock.left => Positioned(left: side, right: Kx.s12, top: 64, bottom: 12, child: Align(alignment: Alignment.centerLeft, child: SingleChildScrollView(child: themed))),
-          ToolbarDock.right => Positioned(left: Kx.s12, right: side, top: 64, bottom: 12, child: Align(alignment: Alignment.centerRight, child: SingleChildScrollView(child: themed))),
+          ToolbarDock.left => Positioned(left: side, right: Kx.s12, top: 64, bottom: 12, child: Align(alignment: Alignment.centerLeft, child: PopoverScroll(child: themed))),
+          ToolbarDock.right => Positioned(left: Kx.s12, right: side, top: 64, bottom: 12, child: Align(alignment: Alignment.centerRight, child: PopoverScroll(child: themed))),
           ToolbarDock.bottom => Positioned(
             left: Kx.s12,
             right: Kx.s12,
             top: 64,
             // Above the toolbar, wherever it sits (between the corners or raised above them).
             bottom: Kx.s12 + _toolbarDepth + Kx.s8 + (_toolbarRaised ? 76 + Kx.s8 : 0),
-            child: Align(alignment: Alignment.bottomCenter, child: SingleChildScrollView(reverse: true, child: themed)),
+            child: Align(alignment: Alignment.bottomCenter, child: PopoverScroll(reverse: true, child: themed)),
           ),
         };
     }

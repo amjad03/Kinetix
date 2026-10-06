@@ -17,6 +17,13 @@ class ModuleSearchField extends StatefulWidget {
   State<ModuleSearchField> createState() => _ModuleSearchFieldState();
 }
 
+/// A rounded search box; outlined only while focused. (The theme's filled fields have an
+/// underline border, which leaves room for a label above the text and so sets it low.)
+OutlineInputBorder _pill([Color? focused]) => OutlineInputBorder(
+  borderRadius: BorderRadius.circular(Kx.rMd),
+  borderSide: focused == null ? BorderSide.none : BorderSide(color: focused, width: 2),
+);
+
 class _ModuleSearchFieldState extends State<ModuleSearchField> {
   late final _text = TextEditingController(text: widget.initial);
 
@@ -33,6 +40,8 @@ class _ModuleSearchFieldState extends State<ModuleSearchField> {
       controller: _text,
       autofocus: widget.autofocus,
       textInputAction: TextInputAction.search,
+      // The text sits in the middle of the field, level with the icons.
+      textAlignVertical: TextAlignVertical.center,
       onChanged: (v) {
         setState(() {});
         widget.onChanged(v);
@@ -40,6 +49,11 @@ class _ModuleSearchFieldState extends State<ModuleSearchField> {
       decoration: InputDecoration(
         hintText: widget.hint,
         isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s12),
+        constraints: const BoxConstraints(minHeight: 48),
+        border: _pill(),
+        enabledBorder: _pill(),
+        focusedBorder: _pill(context.colors.primary),
         prefixIcon: const Icon(Icons.search, size: 20),
         suffixIcon: _text.text.isEmpty
             ? null

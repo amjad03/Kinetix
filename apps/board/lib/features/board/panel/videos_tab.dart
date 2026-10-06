@@ -46,7 +46,18 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
       future: load,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) return const Center(child: CircularProgressIndicator());
-        if (snap.hasError) return KxEmptyState(icon: Icons.cloud_off_outlined, message: l.conceptVideosCouldNotLoad);
+        if (snap.hasError) {
+          return KxEmptyState(
+            icon: Icons.cloud_off_outlined,
+            message: l.conceptVideosCouldNotLoad,
+            action: OutlinedButton.icon(
+              key: const Key('videos-retry'),
+              onPressed: () => setState(() => _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson)),
+              icon: const Icon(Icons.refresh),
+              label: Text(l.tryAgain),
+            ),
+          );
+        }
         final v = snap.data!;
         final topics = {for (final x in v.videos) ?x.topicTitle};
         final languages = {for (final x in v.videos) x.language};

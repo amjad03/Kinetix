@@ -21,8 +21,12 @@ enum BoardPopover { pen, erase, shapes, tools, insert, background, menu, profile
 /// The tools that belong to the Pen button (the AI pen, the nibs and the laser are pen types).
 bool isPenTool(BoardTool t) => t == BoardTool.pen || t == BoardTool.aiPen || t == BoardTool.laser;
 
+/// The AI pen's button: its own icon, in the AI colour (marigold) until it is picked.
+const aiPenIcon = Icons.gesture;
+Color aiPenColor(BuildContext context) => context.colors.brightness == Brightness.dark ? const Color(0xFFFFB95C) : KxColor.spark;
+
+/// The Pen button's icon: the pen's nib, or the laser.
 IconData penIcon(WhiteboardController wb) => switch (wb.tool) {
-  BoardTool.aiPen => Icons.draw_outlined,
   BoardTool.laser => Icons.flare,
   _ => switch (wb.penNib) {
     PenNib.calligraphy => Icons.history_edu,
@@ -51,9 +55,13 @@ class MainToolbar extends StatelessWidget {
     this.onDragStart,
     this.onDragUpdate,
     this.onDragEnd,
+    this.showAiPen = true,
   });
 
   final WhiteboardController wb;
+
+  /// The AI pen's own button beside the pen (not on the Simple board).
+  final bool showAiPen;
   final PenMemory memory;
   final ToolbarDock dock;
   final bool collapsed;
@@ -98,14 +106,27 @@ class MainToolbar extends StatelessWidget {
             ),
           ),
         );
+        final chromePaper = context.colors.brightness == Brightness.dark ? BoardBackground.night : BoardBackground.plain;
         final pen = ToolButton(
           key: const Key('tool-pen'),
           icon: penIcon(wb),
-          label: tool == BoardTool.aiPen ? l.aiPen : (tool == BoardTool.laser ? l.toolLaser : l.pen),
-          iconColor: isPenTool(tool) && tool != BoardTool.laser ? inkColorFor(wb.penColor.withValues(alpha: 1), BoardBackground.plain) : null,
-          selected: isPenTool(tool) || popover == BoardPopover.pen,
+          label: tool == BoardTool.laser ? l.toolLaser : l.pen,
+          iconColor: tool == BoardTool.pen ? inkColorFor(wb.penColor.withValues(alpha: 1), chromePaper) : null,
+          selected: tool == BoardTool.pen || tool == BoardTool.laser || (popover == BoardPopover.pen && tool != BoardTool.aiPen),
           onTap: () => onTool(BoardTool.pen),
         );
+        // The AI pen, next to the pen: shapes, maths and words from handwriting (not on the
+        // Simple board).
+        final aiPen = showAiPen
+            ? ToolButton(
+                key: const Key('tool-ai-pen'),
+                icon: aiPenIcon,
+                label: l.aiPen,
+                iconColor: tool == BoardTool.aiPen ? null : aiPenColor(context),
+                selected: tool == BoardTool.aiPen,
+                onTap: () => onTool(BoardTool.aiPen),
+              )
+            : null;
         if (collapsed) {
           return ChromeSurface(
             key: const Key('main-toolbar'),
@@ -130,6 +151,7 @@ class MainToolbar extends StatelessWidget {
             children: [
               handle,
               pen,
+              ?aiPen,
               if (recent.isNotEmpty)
                 Flex(
                   direction: vertical ? Axis.horizontal : Axis.vertical,
@@ -218,8 +240,11 @@ class PhoneBar extends StatelessWidget {
   /// Opens the ⋯ sheet with the items that did not fit.
   final ValueChanged<List<BarItem>> onMore;
 
-  /// Each button's width on a phone (touch targets stay at least 40 px).
+  /// Each button's width on a phone (touch targets stay at least 42 px).
   static const slot = 44.0;
+
+  /// How many of the toolbar's buttons the bar shows at least (Pen to Undo).
+  static const minShown = 7;
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +254,14 @@ class PhoneBar extends StatelessWidget {
       builder: (context, _) => LayoutBuilder(
         builder: (context, c) {
           final all = items();
-          final fit = ((c.maxWidth - 8) / slot).floor() - 1;
+          // The pens, the eraser, Select and Undo always stay on the bar: on a small phone the
+          // buttons narrow a little (never under 42 px) to keep them there.
+          var size = slot;
+          var fit = ((c.maxWidth - 8) / size).floor() - 1;
+          if (fit < minShown && (c.maxWidth - 8) / (minShown + 1) >= 42) {
+            size = (c.maxWidth - 8) / (minShown + 1);
+            fit = minShown;
+          }
           final shown = all.take(fit.clamp(1, all.length)).toList();
           final rest = all.skip(shown.length).toList();
           return ChromeSurface(
@@ -241,10 +273,10 @@ class PhoneBar extends StatelessWidget {
               children: [
                 for (final i in shown)
                   SizedBox(
-                    width: slot,
+                    width: size,
                     child: KxToolButton(
                       key: i.key,
-                      size: 44,
+                      size: size,
                       icon: Icon(i.icon),
                       iconColor: i.color,
                       tooltip: i.label,
@@ -253,8 +285,8 @@ class PhoneBar extends StatelessWidget {
                     ),
                   ),
                 SizedBox(
-                  width: slot,
-                  child: KxToolButton(key: const Key('phone-more'), size: 44, icon: const Icon(Icons.more_horiz), tooltip: s.more, onTap: () => onMore(rest)),
+                  width: size,
+                  child: KxToolButton(key: const Key('phone-more'), size: size, icon: const Icon(Icons.more_horiz), tooltip: s.more, onTap: () => onMore(rest)),
                 ),
               ],
             ),
@@ -299,71 +331,84 @@ class _ClassBarState extends State<ClassBar> {
     final ls = LayoutStrings.of(context);
     final marked = board.attendance.length;
     final left = minutesLeft(s?.periodLabel, DateTime.now());
-    const gap = SizedBox(width: Kx.s8);
+    const gap = SizedBox(width: Kx.s4);
+    // One floating pill, like search, the clock and the profile at the top right; its chips
+    // sit flat inside it.
+    final chips = ChipTheme.of(context).copyWith(side: BorderSide.none, backgroundColor: Colors.transparent, shape: const StadiumBorder());
     return SingleChildScrollView(
       key: const Key('class-bar'),
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          if (s == null)
-            ActionChip(
-              key: const Key('sign-in-chip'),
-              avatar: Icon(board.isEnrolled ? Icons.qr_code_2 : Icons.edit_outlined, size: 18),
-              label: Text(board.isEnrolled ? l.guestSignIn : l.practiceBoard),
-              onPressed: board.isEnrolled ? widget.onSignIn : null,
-            )
-          else ...[
-            ActionChip(
-              key: const Key('class-chip'),
-              avatar: KxAvatar(name: s.teacherName, size: 24),
-              tooltip: ls.switchClass,
-              label: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: widget.phone ? 150 : 320),
-                child: Text(s.classLabel ?? s.teacherName, overflow: TextOverflow.ellipsis),
-              ),
-              onPressed: widget.onSwitchClass,
-            ),
-            if (!widget.phone) ...[
-              if (board.liveLeaders > 0 && board.liveIndicator) ...[
+      // Room for the pill's shadow.
+      padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+      child: ChromeSurface(
+        radius: Kx.rFull,
+        padding: const EdgeInsets.all(Kx.s4),
+        child: ChipTheme(
+          data: chips,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (s == null)
+                ActionChip(
+                  key: const Key('sign-in-chip'),
+                  avatar: Icon(board.isEnrolled ? Icons.qr_code_2 : Icons.edit_outlined, size: 18),
+                  label: Text(board.isEnrolled ? l.guestSignIn : l.practiceBoard),
+                  onPressed: board.isEnrolled ? widget.onSignIn : null,
+                )
+              else ...[
+                ActionChip(
+                  key: const Key('class-chip'),
+                  avatar: KxAvatar(name: s.teacherName, size: 24),
+                  tooltip: ls.switchClass,
+                  label: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: widget.phone ? 150 : 320),
+                    child: Text(s.classLabel ?? s.teacherName, overflow: TextOverflow.ellipsis),
+                  ),
+                  onPressed: widget.onSwitchClass,
+                ),
+                if (!widget.phone) ...[
+                  if (board.liveLeaders > 0 && board.liveIndicator) ...[
+                    gap,
+                    Tooltip(
+                      message: l.beingViewedTooltip,
+                      child: Chip(key: const Key('being-viewed'), avatar: const Icon(Icons.visibility_outlined, size: 18), label: Text(l.beingViewed(board.liveLeaders))),
+                    ),
+                  ],
+                  gap,
+                  GoLiveChip(board: board),
+                  gap,
+                  ActionChip(
+                    key: const Key('attendance-chip'),
+                    avatar: const Icon(Icons.groups_outlined, size: 18),
+                    label: Text(
+                      board.roster.isEmpty
+                          ? l.noClassList
+                          : marked == 0
+                          ? l.takeAttendance(board.roster.length)
+                          : l.presentOfTotal(board.pickable.length, board.roster.length),
+                    ),
+                    onPressed: widget.onAttendance,
+                  ),
+                  if (left != null) ...[
+                    gap,
+                    Chip(key: const Key('period-left'), avatar: const Icon(Icons.hourglass_bottom, size: 18), label: Text(ls.minutesLeft(left))),
+                  ],
+                  gap,
+                  ClassAudioButton(board: board),
+                ],
+              ],
+              if (Demo.enabled) ...[gap, const DemoChip()],
+              // Privacy: whenever the microphone is going out to the class, the teacher sees it.
+              if (board.classAudio.sending) ...[
                 gap,
                 Tooltip(
-                  message: l.beingViewedTooltip,
-                  child: Chip(key: const Key('being-viewed'), avatar: const Icon(Icons.visibility_outlined, size: 18), label: Text(l.beingViewed(board.liveLeaders))),
+                  message: l.micOnTooltip,
+                  child: const CircleAvatar(key: Key('mic-on'), radius: 16, backgroundColor: Kx.record, child: Icon(Icons.mic, size: 18, color: Colors.white)),
                 ),
               ],
-              gap,
-              GoLiveChip(board: board),
-              gap,
-              ActionChip(
-                key: const Key('attendance-chip'),
-                avatar: const Icon(Icons.groups_outlined, size: 18),
-                label: Text(
-                  board.roster.isEmpty
-                      ? l.noClassList
-                      : marked == 0
-                      ? l.takeAttendance(board.roster.length)
-                      : l.presentOfTotal(board.pickable.length, board.roster.length),
-                ),
-                onPressed: widget.onAttendance,
-              ),
-              if (left != null) ...[
-                gap,
-                Chip(key: const Key('period-left'), avatar: const Icon(Icons.hourglass_bottom, size: 18), label: Text(ls.minutesLeft(left))),
-              ],
-              gap,
-              ClassAudioButton(board: board),
             ],
-          ],
-          if (Demo.enabled) ...[gap, const DemoChip()],
-          // Privacy: whenever the microphone is going out to the class, the teacher sees it.
-          if (board.classAudio.sending) ...[
-            gap,
-            Tooltip(
-              message: l.micOnTooltip,
-              child: const CircleAvatar(key: Key('mic-on'), radius: 16, backgroundColor: Kx.record, child: Icon(Icons.mic, size: 18, color: Colors.white)),
-            ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -436,7 +481,7 @@ class ClassAudioButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final on = board.classAudio.enabled;
-    return IconButton.outlined(
+    return IconButton(
       key: const Key('class-audio'),
       tooltip: on ? l.classAudioTurnOffTooltip : l.classAudioTurnOnTooltip,
       isSelected: on,
@@ -664,7 +709,7 @@ class PageBar extends StatelessWidget {
 /// The menu (bottom left; ⋮ on a phone): open, save, share, the background, settings, clearing,
 /// and signing out. [items] are (key, icon, label, action, enabled).
 class BoardMenu extends StatelessWidget {
-  const BoardMenu({super.key, required this.items, required this.onClose, this.width = 320});
+  const BoardMenu({super.key, required this.items, required this.onClose, this.width = 340});
 
   final List<(Key, IconData, String, VoidCallback, bool)> items;
   final VoidCallback onClose;
@@ -682,12 +727,14 @@ class BoardMenu extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (final (key, icon, label, onTap, enabled) in items)
+            for (final (i, (key, icon, label, onTap, enabled)) in items.indexed) ...[
+              // Grouped as the profile menu is: files, the board's look and settings, clearing,
+              // and signing out.
+              if (i > 0 && key is ValueKey<String> && _groupStarts.contains(key.value)) const Divider(height: Kx.s16),
               ListTile(
                 key: key,
                 leading: Icon(icon),
                 title: Text(label),
-                dense: true,
                 enabled: enabled,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kx.rMd)),
                 onTap: () {
@@ -695,9 +742,12 @@ class BoardMenu extends StatelessWidget {
                   onTap();
                 },
               ),
+            ],
           ],
         ),
       ),
     );
   }
+
+  static const _groupStarts = {'menu-open', 'tool-theme', 'clear-board', 'end-class', 'menu-sign-in'};
 }

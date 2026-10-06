@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/board_controller.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
+import 'layout/ui_strings.dart';
 
 /// The AI pen on the board screen: its icon, its options, the Convert button for ink waiting to
 /// be converted, the readings of something it converted, and its part of Board settings.
@@ -462,6 +463,65 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
     });
   }
 
+  /// One language's handwriting model: its name, and whether it is ready, downloading (a bar
+  /// across the row) or can be downloaded.
+  Widget _model(BuildContext context, BoardLanguage lang) {
+    final l = context.l10n;
+    final c = context.colors;
+    final small = context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant);
+    final downloading = _downloading.contains(lang) || _states[lang] == HandwritingModelState.downloading;
+    final Widget status = downloading
+        ? const SizedBox.shrink()
+        : switch (_states[lang]) {
+            HandwritingModelState.ready => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, size: 18, color: c.primary),
+                const SizedBox(width: Kx.s4),
+                Text(l.aiPenModelReady, style: small),
+              ],
+            ),
+            HandwritingModelState.needsDownload => OutlinedButton.icon(
+              key: Key('ai-pen-download-${lang.name}'),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40), padding: const EdgeInsets.symmetric(horizontal: Kx.s16), visualDensity: VisualDensity.compact),
+              onPressed: () => unawaited(_download(lang)),
+              icon: const Icon(Icons.download, size: 18),
+              label: Text(l.aiPenModelDownload),
+            ),
+            HandwritingModelState.unsupported => Text(l.aiPenModelUnsupported, style: small),
+            // Still asking the recogniser.
+            _ => const SizedBox.shrink(),
+          };
+    return Padding(
+      key: Key('ai-pen-model-${lang.name}'),
+      padding: const EdgeInsets.symmetric(vertical: Kx.s8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 40),
+            child: Row(
+              children: [
+                Expanded(child: Text(lang.label, style: context.text.bodyLarge)),
+                status,
+              ],
+            ),
+          ),
+          if (downloading) ...[
+            const SizedBox(height: Kx.s8),
+            // ML Kit does not say how far along a download is: the bar runs until it is done.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(Kx.rXs),
+              child: const LinearProgressIndicator(key: Key('ai-pen-download-progress'), minHeight: 6),
+            ),
+            const SizedBox(height: Kx.s4),
+            Text('${l.aiPenModelDownloading} · ${UiStrings.of(context).modelSize}', style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -480,32 +540,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
           _ => l.aiPenEngineNone,
         }, style: hint),
         if (hw.available)
-          for (final lang in BoardLanguage.values)
-            ListTile(
-              key: Key('ai-pen-model-${lang.name}'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(lang.label),
-              trailing: _downloading.contains(lang) || _states[lang] == HandwritingModelState.downloading
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-                        const SizedBox(width: Kx.s8),
-                        Text(l.aiPenModelDownloading),
-                      ],
-                    )
-                  : switch (_states[lang]) {
-                      HandwritingModelState.ready => Text(l.aiPenModelReady),
-                      HandwritingModelState.needsDownload => FilledButton.tonal(
-                        key: Key('ai-pen-download-${lang.name}'),
-                        onPressed: () => unawaited(_download(lang)),
-                        child: Text(l.aiPenModelDownload),
-                      ),
-                      HandwritingModelState.unsupported => Text(l.aiPenModelUnsupported),
-                      // Still asking the recogniser.
-                      _ => const SizedBox.shrink(),
-                    },
-            ),
+          for (final lang in BoardLanguage.values) _model(context, lang),
         const SizedBox(height: Kx.s8),
         SnapShapesSwitch(board: widget.board),
         MeasureShapesSwitch(board: widget.board),

@@ -438,10 +438,22 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _changed(content: false);
   }
 
-  /// Keeps the pen visible when flipping between paper and a dark board.
+  /// The pen keeps its logical colour across papers: black ink is drawn white on a dark board
+  /// ([inkColorFor]), so chalk white picked on a dark board becomes black again.
   void _paperChanged(BoardBackground from, BoardBackground to) {
-    if (to.isDark && !from.isDark && penColor == inkBlack) penColor = chalkWhite;
-    if (!to.isDark && from.isDark && penColor == chalkWhite) penColor = inkBlack;
+    if (from.isDark != to.isDark && penColor == chalkWhite) penColor = inkBlack;
+  }
+
+  /// Sets the paper of every page that has [from] to [to] (the board following its theme: plain
+  /// paper becomes the dark board and back, while pages with a template keep it).
+  void replaceBackground(BoardBackground from, BoardBackground to) {
+    if (from == to || !_pages.any((p) => p.background == from)) return;
+    final was = page.background;
+    for (final p in _pages) {
+      if (p.background == from) p.background = to;
+    }
+    _paperChanged(was, page.background);
+    _changed(content: false);
   }
 
   // --- Tools --------------------------------------------------------------------------------

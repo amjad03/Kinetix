@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart' show InputMode;
@@ -14,6 +15,8 @@ import '../search/fuzzy.dart';
 import '../search/search_strings.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
+import 'panel/panel_host.dart';
+import 'layout/ui_strings.dart';
 
 /// The menu that opens from the avatar in the bottom-left corner.
 class ProfileMenu extends StatelessWidget {
@@ -263,6 +266,20 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
             ],
           ),
           (
+            [UiStrings.of(context).previewPanel, UiStrings.of(context).previewPanelHint, UiStrings.of(context).display],
+            [
+              SwitchListTile(
+                key: const Key('panel-preview'),
+                contentPadding: EdgeInsets.zero,
+                secondary: const Icon(Icons.aspect_ratio),
+                title: Text(UiStrings.of(context).previewPanel),
+                subtitle: Text(UiStrings.of(context).previewPanelHint),
+                value: board.panelPreview,
+                onChanged: board.setPanelPreview,
+              ),
+            ],
+          ),
+          (
             [l.simpleBoardTitle, l.simpleBoardHint],
             [
               Text(l.simpleBoardTitle, style: context.text.titleSmall),
@@ -342,35 +359,115 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
           ([l.kioskTitle], [KioskSettingsSection(kiosk: board.kiosk)]),
         ];
         final shown = matching(sections, (s) => s.$1, _q);
-        return AlertDialog(
-          icon: const Icon(Icons.settings_outlined),
-          title: Text(l.boardSettings),
-          // Scrolls on a 720p board in the longer languages.
-          scrollable: true,
-          content: SizedBox(
-            width: 560,
+        final c = context.colors;
+        // A sheet: the title and search stay at the top, Done at the bottom, the sections
+        // scroll between them.
+        return Material(
+          key: const Key('board-settings'),
+          color: Theme.of(context).dialogTheme.backgroundColor ?? c.surface,
+          child: SafeArea(
+            left: false,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s16, Kx.s8, Kx.s8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings_outlined, color: c.onSurfaceVariant),
+                      const SizedBox(width: Kx.s12),
+                      Expanded(child: Text(l.boardSettings, style: context.text.titleLarge, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      // In the split panel, its own ✕ closes it.
+                      if (ModalRoute.of(context) is! PanelDialogRoute)
+                        IconButton(key: const Key('settings-close'), tooltip: l.close, onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                    ],
+                  ),
+                ),
                 ModuleSearchField(
                   key: const Key('settings-search'),
                   hint: SearchStrings.of(context).searchSettings,
                   initial: widget.initialQuery,
-                  padding: const EdgeInsets.only(bottom: Kx.s16),
+                  padding: const EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, Kx.s12),
                   onChanged: (v) => setState(() => _q = v),
                 ),
-                if (shown.isEmpty) Text(SearchStrings.of(context).noneMatch, key: const Key('settings-none'), style: hint),
-                for (final (i, (_, children)) in shown.indexed) ...[
-                  if (i > 0) const SizedBox(height: Kx.s24),
-                  ...children,
-                ],
+                const Divider(height: 1),
+                Expanded(
+                  // Built all at once (a few sections), so search and "Show me" can reach any.
+                  child: SingleChildScrollView(
+                    key: const Key('settings-list'),
+                    padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s16, Kx.s24, Kx.s24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (shown.isEmpty) Text(SearchStrings.of(context).noneMatch, key: const Key('settings-none'), style: hint),
+                        for (final (i, (_, children)) in shown.indexed) ...[
+                          if (i > 0) const Padding(padding: EdgeInsets.symmetric(vertical: Kx.s20), child: Divider(height: 1)),
+                          ...children,
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Kx.s24, Kx.s12, Kx.s24, Kx.s12),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: FilledButton(key: const Key('settings-done'), onPressed: () => Navigator.pop(context), child: Text(l.done)),
+                  ),
+                ),
               ],
             ),
           ),
-          actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(l.done))],
         );
       },
     );
   }
+}
+
+/// Opens Board settings: a side sheet on a panel (in the split panel, the board writable beside
+/// it; along the right edge where there is no split panel), a full-height sheet on a phone. [query] narrows it to the matching sections.
+Future<void> showBoardSettings(BuildContext context, BoardController board, {String query = ''}) {
+  final phone = MediaQuery.sizeOf(context).shortestSide < 600;
+  Widget sheet(BuildContext context) => BoardChromeTheme(child: BoardSettingsDialog(board: board, initialQuery: query));
+  if (phone) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: false,
+      clipBehavior: Clip.antiAlias,
+      builder: (context) => SizedBox(height: MediaQuery.sizeOf(context).height, child: sheet(context)),
+    );
+  }
+  // On a panel it opens in the split panel beside the board, which stays writable.
+  final panel = PanelHost.maybeOf(context)?.push ?? PanelHost.active;
+  if (panel != null) return panel<void>(sheet);
+  return showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    barrierColor: Colors.black26,
+    transitionDuration: Kx.fast,
+    pageBuilder: (context, _, _) => Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s12),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: math.min(560, MediaQuery.sizeOf(context).width - 2 * Kx.s12)),
+          child: Material(
+            elevation: 12,
+            shadowColor: Colors.black45,
+            borderRadius: Kx.radiusXl,
+            clipBehavior: Clip.antiAlias,
+            child: sheet(context),
+          ),
+        ),
+      ),
+    ),
+    transitionBuilder: (context, animation, _, child) => SlideTransition(
+      position: Tween(begin: const Offset(0.15, 0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Kx.emphasized)),
+      child: FadeTransition(opacity: animation, child: child),
+    ),
+  );
 }
