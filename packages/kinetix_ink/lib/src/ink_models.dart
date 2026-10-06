@@ -31,6 +31,38 @@ enum ShapeKind {
   bool get isRound => this == ShapeKind.circle || this == ShapeKind.ellipse;
 }
 
+/// Which measurements a shape shows: side lengths, corner angles, a circle's radius, the area.
+/// Each shape keeps its own, so one figure can be labelled while the next stays clean.
+class ShapeMeasure {
+  const ShapeMeasure({this.lengths = false, this.angles = false, this.radius = false, this.area = false});
+
+  final bool lengths, angles, radius, area;
+
+  static const none = ShapeMeasure();
+  static const all = ShapeMeasure(lengths: true, angles: true, radius: true, area: true);
+
+  bool get any => lengths || angles || radius || area;
+
+  /// Saved as bits: 1 lengths, 2 angles, 4 radius, 8 area.
+  int get bits => (lengths ? 1 : 0) | (angles ? 2 : 0) | (radius ? 4 : 0) | (area ? 8 : 0);
+  static ShapeMeasure fromBits(int b) => ShapeMeasure(lengths: b & 1 != 0, angles: b & 2 != 0, radius: b & 4 != 0, area: b & 8 != 0);
+
+  ShapeMeasure copyWith({bool? lengths, bool? angles, bool? radius, bool? area}) =>
+      ShapeMeasure(lengths: lengths ?? this.lengths, angles: angles ?? this.angles, radius: radius ?? this.radius, area: area ?? this.area);
+
+  /// Either's labels (the board-wide switches add to a shape's own).
+  ShapeMeasure operator |(ShapeMeasure o) =>
+      ShapeMeasure(lengths: lengths || o.lengths, angles: angles || o.angles, radius: radius || o.radius, area: area || o.area);
+
+  @override
+  bool operator ==(Object other) => other is ShapeMeasure && other.bits == bits;
+  @override
+  int get hashCode => bits;
+}
+
+/// The units measurements are given in: centimetres on the calibrated scale, or board pixels.
+enum MeasureUnit { cm, px }
+
 /// How large contacts (a palm, a fist, a sleeve) are treated.
 enum PalmMode {
   /// Ignore them: a hand resting on a tablet must not draw.
@@ -90,7 +122,7 @@ class InkStyle {
 }
 
 /// The pen's line: the pen popover's pen types (calligraphy, dashed, arrow pen).
-enum PenNib { round, calligraphy, dashed, arrow }
+enum PenNib { round, calligraphy, dashed, arrow, dotted }
 
 /// Pen, highlighter and shape ink: a line of points. Shapes drawn with the Shapes tool are
 /// strokes too (with [shape] set), so they erase, move and undo like handwriting, keep their
@@ -100,7 +132,17 @@ enum PenNib { round, calligraphy, dashed, arrow }
 /// changed again (a move makes a new stroke with [translated]), except by the older
 /// [InkController], which moves strokes in place with [translate].
 class Stroke extends BoardElement {
-  Stroke({required this.id, required this.style, List<InkPoint>? points, this.shape, this.fill}) : points = points ?? [];
+  Stroke({
+    required this.id,
+    required this.style,
+    List<InkPoint>? points,
+    this.shape,
+    this.fill,
+    this.measure = ShapeMeasure.none,
+    this.turn = 0,
+    this.corner = 0,
+    this.filledHead = false,
+  }) : points = points ?? [];
 
   @override
   final String id;
@@ -112,6 +154,19 @@ class Stroke extends BoardElement {
 
   /// Inside colour of a closed shape, or null for an outline.
   final Color? fill;
+
+  /// The measurements this shape shows.
+  final ShapeMeasure measure;
+
+  /// How far the shape has been turned since it was drawn, in radians. Its points are already
+  /// turned (so older readers draw it right); this is kept for the angle readout.
+  final double turn;
+
+  /// A rectangle's rounded corners, in board units (0: square).
+  final double corner;
+
+  /// An arrow's heads are filled triangles rather than open chevrons.
+  final bool filledHead;
 
   @override
   Rect get bounds {
@@ -157,12 +212,27 @@ class Stroke extends BoardElement {
     return pts;
   }
 
-  Stroke copyWith({String? id, InkStyle? style, List<InkPoint>? points, Color? fill, bool clearFill = false}) => Stroke(
+  Stroke copyWith({
+    String? id,
+    InkStyle? style,
+    List<InkPoint>? points,
+    Color? fill,
+    bool clearFill = false,
+    ShapeKind? shape,
+    ShapeMeasure? measure,
+    double? turn,
+    double? corner,
+    bool? filledHead,
+  }) => Stroke(
     id: id ?? this.id,
     style: style ?? this.style,
     points: points ?? List.of(this.points),
-    shape: shape,
+    shape: shape ?? this.shape,
     fill: clearFill ? null : (fill ?? this.fill),
+    measure: measure ?? this.measure,
+    turn: turn ?? this.turn,
+    corner: corner ?? this.corner,
+    filledHead: filledHead ?? this.filledHead,
   );
 
   @override
@@ -174,18 +244,20 @@ class Stroke extends BoardElement {
     // Handwriting keeps its look: the line grows with the even part of the scale. A circle
     // pulled out of round becomes an ellipse.
     final k = math.sqrt((sx * sy).abs());
-    final kind = shape == ShapeKind.circle && (sx - sy).abs() > 0.01 ? ShapeKind.ellipse : shape;
-    return Stroke(
-      id: id,
+    final kind = shape == ShapeKind.circle && (sx.abs() - sy.abs()).abs() > 0.01 ? ShapeKind.ellipse : shape;
+    // A mirror (one negative factor) turns the other way.
+    final mirrored = (sx < 0) != (sy < 0);
+    return copyWith(
       style: shape == null ? style.copyWith(width: (style.width * k).clamp(0.5, 120.0)) : style,
       points: pts,
       shape: kind,
-      fill: fill,
+      turn: mirrored ? -turn : turn,
+      corner: corner * math.min(sx.abs(), sy.abs()),
     );
   }
 
   @override
-  Stroke rotated(Offset center, double angle) => copyWith(points: [for (final p in points) _rotateInk(p, center, angle)]);
+  Stroke rotated(Offset center, double angle) => copyWith(points: [for (final p in points) _rotateInk(p, center, angle)], turn: turn + angle);
 
   @override
   Stroke recolored(Color c) => copyWith(

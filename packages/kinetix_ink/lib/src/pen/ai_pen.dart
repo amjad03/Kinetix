@@ -314,7 +314,7 @@ class AiPenController extends ChangeNotifier {
     final remove = <String>{};
     for (final s in shapes) {
       final first = s.strokes.first;
-      final el = shapeElement(s, first.style.color, math.max(2.0, first.style.width));
+      final el = board.withNewShapeMeasure(shapeElement(s, first.style.color, math.max(2.0, first.style.width)));
       conversions[el.id] = PenConversion(kind: ConversionKind.shape, ink: s.strokes, inkBox: inkBounds(s.strokes), origin: el.frame.topLeft);
       replace[first.id] = el;
       remove.addAll(s.strokes.skip(1).map((x) => x.id));
@@ -605,7 +605,7 @@ class AiPenController extends ChangeNotifier {
     if (r == null) return false;
     conversions.remove(id);
     final first = conv.ink.first;
-    final shape = shapeElement(InkShape(conv.ink, r.$1, arrow: r.$2), first.style.color, math.max(2.0, first.style.width));
+    final shape = board.withNewShapeMeasure(shapeElement(InkShape(conv.ink, r.$1, arrow: r.$2), first.style.color, math.max(2.0, first.style.width)));
     board.setElements([for (final e in board.page.elements) e.id == id ? shape : e]);
     conversions[shape.id] = PenConversion(kind: ConversionKind.shape, ink: conv.ink, inkBox: conv.inkBox, origin: shape.frame.topLeft);
     // Writing mistaken for a shape at this size: this teacher's letters are this big.

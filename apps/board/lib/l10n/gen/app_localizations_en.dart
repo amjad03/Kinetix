@@ -4144,4 +4144,116 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get attendanceNeedsClass =>
       'Attendance opens with a timetabled class that has a student list.';
+
+  @override
+  String get aiPenMeasureShapes => 'Show measurements on new shapes';
+
+  @override
+  String get aiPenMeasureShapesHint =>
+      'Lengths, angles, radius and area on shapes as you draw them. Each shape\'s labels can be shown or hidden from its selection bar.';
+
+  @override
+  String get measureUnits => 'Units';
+
+  @override
+  String get measureUnitCm => 'cm';
+
+  @override
+  String get measureUnitPx => 'px';
+
+  @override
+  String get selLineWidth => 'Line width';
+
+  @override
+  String get selLineStyle => 'Line style';
+
+  @override
+  String get selLineSolid => 'Solid';
+
+  @override
+  String get selLineDashed => 'Dashed';
+
+  @override
+  String get selLineDotted => 'Dotted';
+
+  @override
+  String get selShowMeasurements => 'Show measurements';
+
+  @override
+  String get selHideMeasurements => 'Hide measurements';
+
+  @override
+  String get selMeasureOptions => 'Measurements';
+
+  @override
+  String get selMeasureLengths => 'Lengths';
+
+  @override
+  String get selMeasureAngles => 'Angles';
+
+  @override
+  String get selMeasureRadius => 'Radius';
+
+  @override
+  String get selMeasureArea => 'Area';
+
+  @override
+  String get selEditPoints => 'Edit points';
+
+  @override
+  String get selArrowHeads => 'Arrow heads';
+
+  @override
+  String get selArrowNone => 'No heads';
+
+  @override
+  String get selArrowEnd => 'At the end';
+
+  @override
+  String get selArrowStart => 'At the start';
+
+  @override
+  String get selArrowBoth => 'Both ends';
+
+  @override
+  String get selArrowFilled => 'Filled heads';
+
+  @override
+  String get selFlipH => 'Flip left to right';
+
+  @override
+  String get selFlipV => 'Flip upside down';
+
+  @override
+  String get selAlign => 'Align';
+
+  @override
+  String get selAlignLeft => 'Left edges';
+
+  @override
+  String get selAlignCentre => 'Centres';
+
+  @override
+  String get selAlignRight => 'Right edges';
+
+  @override
+  String get selAlignTop => 'Tops';
+
+  @override
+  String get selAlignMiddle => 'Middles';
+
+  @override
+  String get selAlignBottom => 'Bottoms';
+
+  @override
+  String get selLock => 'Lock';
+
+  @override
+  String get selUnlock => 'Unlock';
+
+  @override
+  String get selKeepProportions => 'Keep proportions';
+
+  @override
+  String get selMore => 'More';
 }

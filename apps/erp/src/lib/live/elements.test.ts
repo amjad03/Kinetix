@@ -137,3 +137,13 @@ describe('graphs and equations', () => {
     expect(wrap(ctx, 'one two three\nfour', 80)).toEqual(['one two', 'three', 'four']);
   });
 });
+
+describe('selection edits on shapes', () => {
+  it('reads line styles and filled arrow heads; turns, measurements and corners are extras it may skip', () => {
+    const s = decodeElement({ t: 'shape', s: 'arrow', c: 0xff000000, w: 3, n: 'dotted', ah: 1, tr: 0.5, m: 15, cr: 4, p: [0, 0, 100, 40] });
+    expect(s).toMatchObject({ shape: 'arrow', dash: 'dotted', filledHead: true, points: [0, 0, 100, 40] });
+    // The points are stored turned: the live view draws them as they are, never turning again.
+    expect(s).not.toHaveProperty('rotation');
+    expect(decodeElement({ t: 'shape', s: 'line', c: 0xff000000, w: 3, n: 'calligraphy', p: [0, 0, 1, 1] })).not.toHaveProperty('dash');
+  });
+});

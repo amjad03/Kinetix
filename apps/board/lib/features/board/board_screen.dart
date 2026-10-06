@@ -351,6 +351,8 @@ class _BoardScreenState extends State<BoardScreen> {
       ..convertShapes = board.aiPenConvert.contains('shapes')
       ..convertMaths = board.aiPenConvert.contains('maths')
       ..convertText = board.aiPenConvert.contains('text');
+    _wb.measureNewShapes = board.measureShapes;
+    if (_wb.measureUnit != board.measureUnit) _wb.measureUnit = board.measureUnit;
     if (_primary && (_wb.tool == BoardTool.aiPen || _wb.tool == BoardTool.laser)) _wb.tool = BoardTool.pen;
   }
 
@@ -1584,6 +1586,7 @@ class _BoardScreenState extends State<BoardScreen> {
               onConvertInk: primary ? null : () => unawaited(_convertSelection()),
               onReadings: (e) => _pen.conversions.containsKey(e.id) ? () => _pen.inspecting.value = e.id : null,
               onReadAloud: readableElements(_wb.selectedElements).isEmpty ? null : _readPage,
+              onMeasureUnit: board.setMeasureUnit,
             ),
           ),
         ),

@@ -26,6 +26,7 @@ export 'src/pen/symbol_glyphs.dart' show GlyphStroke, Pt;
 export 'src/pen/symbol_recognizer.dart' show SymbolGuess, SymbolRecognizer;
 export 'src/render.dart';
 export 'src/serialization.dart';
+export 'src/shape_edit.dart';
 export 'src/sheet_formula.dart';
 export 'src/sheet_painting.dart';
 export 'src/tools/flow_overlay.dart';
