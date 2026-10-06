@@ -240,8 +240,11 @@ class PhoneBar extends StatelessWidget {
   /// Opens the ⋯ sheet with the items that did not fit.
   final ValueChanged<List<BarItem>> onMore;
 
-  /// Each button's width on a phone (touch targets stay at least 40 px).
+  /// Each button's width on a phone (touch targets stay at least 42 px).
   static const slot = 44.0;
+
+  /// How many of the toolbar's buttons the bar shows at least (Pen to Undo).
+  static const minShown = 7;
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +254,14 @@ class PhoneBar extends StatelessWidget {
       builder: (context, _) => LayoutBuilder(
         builder: (context, c) {
           final all = items();
-          final fit = ((c.maxWidth - 8) / slot).floor() - 1;
+          // The pens, the eraser, Select and Undo always stay on the bar: on a small phone the
+          // buttons narrow a little (never under 42 px) to keep them there.
+          var size = slot;
+          var fit = ((c.maxWidth - 8) / size).floor() - 1;
+          if (fit < minShown && (c.maxWidth - 8) / (minShown + 1) >= 42) {
+            size = (c.maxWidth - 8) / (minShown + 1);
+            fit = minShown;
+          }
           final shown = all.take(fit.clamp(1, all.length)).toList();
           final rest = all.skip(shown.length).toList();
           return ChromeSurface(
@@ -263,10 +273,10 @@ class PhoneBar extends StatelessWidget {
               children: [
                 for (final i in shown)
                   SizedBox(
-                    width: slot,
+                    width: size,
                     child: KxToolButton(
                       key: i.key,
-                      size: 44,
+                      size: size,
                       icon: Icon(i.icon),
                       iconColor: i.color,
                       tooltip: i.label,
@@ -275,8 +285,8 @@ class PhoneBar extends StatelessWidget {
                     ),
                   ),
                 SizedBox(
-                  width: slot,
-                  child: KxToolButton(key: const Key('phone-more'), size: 44, icon: const Icon(Icons.more_horiz), tooltip: s.more, onTap: () => onMore(rest)),
+                  width: size,
+                  child: KxToolButton(key: const Key('phone-more'), size: size, icon: const Icon(Icons.more_horiz), tooltip: s.more, onTap: () => onMore(rest)),
                 ),
               ],
             ),
