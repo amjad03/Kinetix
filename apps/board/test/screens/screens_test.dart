@@ -195,7 +195,12 @@ final scenes = <Scene>[
   Scene('panel-books', (s) => s.tab('books')),
   Scene('panel-kit', (s) => s.tab('kit')),
   Scene('panel-animations', (s) => s.tab('animations')),
-  Scene('panel-phet', (s) => s.tab('phet')),
+  Scene('panel-phet', (s) => s.tab('sims')),
+  Scene('selection-shape', (s) async {
+    s.wb.tool = BoardTool.select;
+    s.wb.select({s.wb.elements.whereType<Stroke>().last.id});
+    await s.settle();
+  }),
   Scene('sims', (s) => s.tool('sims')),
   Scene('calculator', (s) => s.tool('calculator')),
   Scene('ask-class', (s) => s.tool('ask-class')),
