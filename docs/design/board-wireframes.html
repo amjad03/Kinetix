@@ -1,0 +1,399 @@
+<title>KINETIX Board Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single review document; each screen is a numbered wireframe card with its notes beside it. */
+:root{
+  --bg:#f3f5f2; --paper:#ffffff; --ink:#18221d; --muted:#5d6b63; --line:#c9d3cc;
+  --board:#fbfcfa; --chalk:#006545; --chalk-soft:#d5ebe0; --ai:#835400; --ai-soft:#f6e4c4;
+  --wire:#8a978f; --fill:#e8ede9; --hot:#c2410c;
+  --f-body:"Atkinson Hyperlegible",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1512; --paper:#161e1a; --ink:#e4ece7; --muted:#9aaba1; --line:#2c3a33;
+  --board:#1b2420; --chalk:#5fc79a; --chalk-soft:#183a2c; --ai:#f0b35a; --ai-soft:#3b2c12;
+  --wire:#6f8077; --fill:#222d28; --hot:#fb923c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1512; --paper:#161e1a; --ink:#e4ece7; --muted:#9aaba1; --line:#2c3a33;
+  --board:#1b2420; --chalk:#5fc79a; --chalk-soft:#183a2c; --ai:#f0b35a; --ai-soft:#3b2c12;
+  --wire:#6f8077; --fill:#222d28; --hot:#fb923c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);padding:24px 16px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+h1{font-size:2rem;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-size:1.25rem;margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:70ch;margin:6px 0 0}
+.tag{font:600 .7rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+.toc a{font:.8rem var(--f-mono);color:var(--chalk);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:var(--paper)}
+.toc a:hover,.toc a:focus-visible{border-color:var(--chalk);outline:none}
+.group{font:700 .8rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--chalk);border-top:2px solid var(--chalk);padding-top:10px;margin-top:8px}
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;scroll-margin-top:12px}
+.screen.tall{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+@media (max-width:820px){.screen,.screen.tall{grid-template-columns:1fr}}
+.head{display:flex;gap:10px;align-items:baseline;grid-column:1/-1}
+.num{font:600 .8rem var(--f-mono);color:var(--paper);background:var(--chalk);border-radius:4px;padding:1px 6px}
+.notes{font-size:.92rem;min-width:0}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.notes b{color:var(--chalk)}
+.src{font:.72rem var(--f-mono);color:var(--muted);margin-top:8px}
+
+/* wireframe primitives */
+.panel{position:relative;aspect-ratio:16/9;max-width:100%;background:var(--board);border:2px solid var(--wire);border-radius:8px;overflow:hidden;font:.62rem var(--f-mono);color:var(--muted)}
+.phone{position:relative;aspect-ratio:9/19;width:min(260px,100%);margin:0 auto;background:var(--board);border:2px solid var(--wire);border-radius:22px;overflow:hidden;font:.6rem var(--f-mono);color:var(--muted)}
+.a{position:absolute}
+.box{border:1.5px solid var(--wire);background:var(--paper);border-radius:6px}
+.pill{border:1.5px solid var(--wire);background:var(--paper);border-radius:99px;display:flex;align-items:center;gap:3px;padding:0 6px}
+.chip{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--wire);border-radius:99px;padding:1px 6px;background:var(--paper);white-space:nowrap}
+.chip.on{background:var(--chalk-soft);border-color:var(--chalk);color:var(--chalk)}
+.chip.ai{background:var(--ai-soft);border-color:var(--ai);color:var(--ai)}
+.chip.live{border-color:var(--hot);color:var(--hot)}
+.ic{width:15px;height:15px;border-radius:4px;background:var(--fill);border:1px solid var(--wire);display:inline-block;flex:none}
+.ic.on{background:var(--chalk);border-color:var(--chalk)}
+.ic.ai{background:var(--ai);border-color:var(--ai)}
+.tb{display:flex;gap:4px;align-items:center;padding:3px 6px}
+.sep{width:1px;height:14px;background:var(--wire)}
+.lbl{color:var(--ink);font-weight:600}
+.call{position:absolute;font:600 .58rem var(--f-mono);color:var(--paper);background:var(--hot);border-radius:99px;width:15px;height:15px;display:grid;place-items:center}
+.ink{position:absolute;border:2px solid var(--chalk);border-radius:50%}
+.grid{display:grid;gap:4px}
+.cell{border:1px solid var(--wire);border-radius:4px;background:var(--fill);min-height:22px;display:grid;place-items:center;text-align:center;padding:2px}
+.btn{background:var(--chalk);color:var(--paper);border-radius:99px;padding:2px 8px;font-weight:600;text-align:center}
+.btn.ai{background:var(--ai)}
+.slider{height:4px;background:var(--fill);border-radius:2px;position:relative}
+.slider::after{content:"";position:absolute;left:35%;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--chalk)}
+.sw{width:13px;height:13px;border-radius:50%;border:1px solid var(--wire);display:inline-block}
+.legend{font-size:.8rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.footnote{color:var(--muted);font-size:.85rem}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="tag">For approval · KINETIX Board + Teacher App</div>
+    <h1>KINETIX Board wireframes</h1>
+    <p class="lede">Every screen planned after studying Teachmint, BrightClass, ViewSonic myViewBoard, Promethean, Extramarks and SenseBoard, plus your notes. Orange numbers mark what changes from today's board. Nothing is built until you approve.</p>
+  </header>
+
+  <div class="legend">
+    <span><i class="ic on"></i> active tool</span>
+    <span><i class="ic ai"></i> KINETIX AI</span>
+    <span><i class="call" style="position:static">1</i> callout explained in the notes</span>
+  </div>
+
+  <nav class="toc" aria-label="Screens">
+    <a href="#s1">1 Board home</a><a href="#s2">2 Pen &amp; AI pen</a><a href="#s3">3 Split panel</a><a href="#s4">4 Tools drawer</a><a href="#s5">5 Geometry</a><a href="#s6">6 Flowchart</a><a href="#s7">7 Graphs</a><a href="#s8">8 Timer</a><a href="#s9">9 Pages</a><a href="#s10">10 Backgrounds</a><a href="#s11">11 Search</a><a href="#s12">12 Phone board</a><a href="#s13">13 Teacher app fixes</a>
+  </nav>
+
+  <div class="group">Common patterns found in the research</div>
+  <div class="screen" style="grid-template-columns:1fr">
+    <div class="notes">
+      <ul>
+        <li><b>One floating toolbar, bottom centre</b> (Teachmint, BrightClass, myViewBoard): pen, highlighter, eraser, select, shapes, tools, undo, redo, then smart tools and AI. Reachable by a short teacher standing at the panel.</li>
+        <li><b>Page controls bottom right</b>: previous, "3 / 8", next, add page, page overview.</li>
+        <li><b>Class and session bottom left / top left</b>: class name, Go live, attendance, record.</li>
+        <li><b>Content opens beside the board, not over it</b> (Teachmint EduAI, BrightClass chat, myViewBoard split): the board stays visible and writable while the panel shows AI, 3D, video or a PDF; anything in the panel has <b>Add to board</b>.</li>
+        <li><b>Tool options open as a popover above the tool</b>: pen type, thickness with live preview, colour row and a custom colour, single/multi-touch.</li>
+        <li><b>Geometry tools are real objects</b> (Promethean, SMART): drag to move, handle to rotate, live angle and length readouts, draw along the edge.</li>
+        <li><b>Smart tools grid</b>: timer, calculator, periodic table, graph, dictionary, picker, dice, spotlight, curtain, badges.</li>
+        <li><b>Subject templates and backgrounds</b>: grids, lines, staff, maps, sports fields, colours.</li>
+        <li><b>Rewards</b> (BrightClass badges) and <b>quick quiz</b> after a topic.</li>
+      </ul>
+      <p class="src">I could not find public material for Qeeb or MagicBox; if you have links or screenshots I'll fold them in.</p>
+    </div>
+  </div>
+
+  <div class="group">Smart board (interactive panel, 16:9)</div>
+
+  <section class="screen" id="s1">
+    <div class="head"><span class="num">1</span><h2>Board home</h2></div>
+    <div class="panel" role="img" aria-label="Board home wireframe">
+      <div class="a tb" style="top:6px;left:8px;gap:5px"><span class="chip on">BCom 3A · Accounting</span><span class="chip live">● Go live</span><span class="chip">38/42 present</span><span class="chip">⏱ 32:10 left</span></div>
+      <div class="a tb" style="top:6px;right:8px;gap:5px"><span class="chip">⌕ Search</span><span class="chip">10:42</span><span class="ic"></span></div>
+      <div class="a" style="top:38%;left:30%;font-size:.9rem;color:var(--ink)">Issue of shares — journal entry</div>
+      <div class="a pill tb" style="bottom:8px;left:8px"><span class="ic"></span><span class="ic" style="background:var(--hot);border-color:var(--hot)"></span><span>Menu · Rec</span></div>
+      <div class="a pill tb" style="bottom:8px;left:50%;transform:translateX(-50%)">
+        <span class="ic on"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="sep"></span><span class="ic"></span><span class="ic"></span><span class="sep"></span><span class="ic"></span><span class="ic"></span><span class="sep"></span><span class="ic ai"></span>
+      </div>
+      <div class="a pill tb" style="bottom:8px;right:8px"><span>‹</span><span class="lbl">3/8</span><span>›</span><span class="sep"></span><span>＋</span><span>▦</span></div>
+      <div class="call" style="top:2px;left:2px">1</div><div class="call" style="bottom:28px;left:48%">2</div><div class="call" style="bottom:28px;right:8px">3</div><div class="call" style="bottom:28px;left:8px">4</div><div class="call" style="top:2px;right:2px">5</div>
+    </div>
+    <div class="notes"><ul>
+      <li><b>1 Class bar</b>: class and subject, Go live, attendance (tap to take), period time left. Tap the class to switch.</li>
+      <li><b>2 Main toolbar</b>: Pen · Highlighter · Eraser · Select · Shapes │ Undo · Redo │ Tools · Add │ KINETIX AI. Labels under icons. It can be dragged to the left or right edge, and it can collapse.</li>
+      <li><b>3 Pages</b>: previous, page number, next, add page, page overview (screen 9). Matches your reference.</li>
+      <li><b>4 Menu and record</b>: menu (open, save, share, settings, clear page, sign out), record with a running time.</li>
+      <li><b>5</b> Universal search, clock, profile.</li>
+      <li>No full-screen windows. Everything else opens in the split panel (screen 3) or as a popover above its tool.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s2">
+    <div class="head"><span class="num">2</span><h2>Pen and AI pen options</h2></div>
+    <div class="panel" role="img" aria-label="Pen popover wireframe">
+      <div class="a box" style="left:22%;right:22%;bottom:40px;top:12%;padding:8px;display:grid;grid-template-columns:30% 1fr;gap:8px">
+        <div class="grid">
+          <span class="chip on">✎ Pen</span><span class="chip">Highlighter</span><span class="chip ai">✦ AI pen</span><span class="chip">Calligraphy</span><span class="chip">Dashed</span><span class="chip">Arrow pen</span><span class="chip">Laser</span>
+        </div>
+        <div class="grid" style="align-content:start;gap:7px">
+          <div class="tb" style="justify-content:space-between;padding:0"><span>Preview</span><span class="chip">Single touch / <b>Multi touch</b></span></div>
+          <div style="height:22px;border-bottom:3px solid var(--chalk);border-radius:50%"></div>
+          <div>Thickness 4 px</div><div class="slider"></div>
+          <div>Opacity 100%</div><div class="slider"></div>
+          <div class="tb" style="padding:0;flex-wrap:wrap"><i class="sw" style="background:#111"></i><i class="sw" style="background:#fff"></i><i class="sw" style="background:#1d4ed8"></i><i class="sw" style="background:#dc2626"></i><i class="sw" style="background:#16a34a"></i><i class="sw" style="background:#eab308"></i><i class="sw" style="background:#9333ea"></i><i class="sw" style="background:#ea580c"></i><i class="sw" style="background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red)"></i><span>＋ custom</span></div>
+          <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip">Smooth</span><span class="chip">Pressure</span><span class="chip">Palm rejection</span></div>
+          <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip ai">AI: shapes ✓</span><span class="chip ai">maths ✓</span><span class="chip ai">text ✓</span><span class="chip ai">Auto / Tap</span></div>
+        </div>
+      </div>
+      <div class="a pill tb" style="bottom:8px;left:50%;transform:translateX(-50%)"><span class="ic on"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="sep"></span><span class="ic ai"></span></div>
+    </div>
+    <div class="notes"><ul>
+      <li>Tap the Pen again to open this popover above it. AI pen sits in the same list, so it gets <b>every</b> pen option too.</li>
+      <li>Pen types, thickness with a live preview, opacity, 8 colours plus a custom colour wheel, smoothing, pressure, palm rejection, single or multi touch.</li>
+      <li>AI pen adds what to convert (shapes, maths, handwriting) and when (automatically or on tap).</li>
+      <li>The last 3 used colour/thickness pairs show as quick swatches on the toolbar.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s3">
+    <div class="head"><span class="num">3</span><h2>Split panel (AI, 3D, labs, videos, books, kit)</h2></div>
+    <div class="panel" role="img" aria-label="Split panel wireframe">
+      <div class="a" style="left:0;top:0;bottom:0;width:58%;border-right:2px solid var(--wire)">
+        <div class="a" style="top:30%;left:12%;color:var(--ink)">Heart — the teacher keeps writing here</div>
+        <div class="a pill tb" style="bottom:8px;left:50%;transform:translateX(-50%)"><span class="ic on"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="sep"></span><span class="ic ai"></span></div>
+      </div>
+      <div class="a" style="left:58%;top:0;bottom:0;width:6px;background:var(--fill);display:grid;place-items:center">⋮</div>
+      <div class="a" style="left:calc(58% + 6px);right:0;top:0;bottom:0;padding:6px;display:grid;grid-template-rows:auto auto 1fr auto;gap:5px">
+        <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip ai">AI</span><span class="chip on">3D</span><span class="chip">Labs</span><span class="chip">Videos</span><span class="chip">Books</span><span class="chip">Kit</span><span style="margin-left:auto">⤢ ✕</span></div>
+        <div class="tb" style="padding:0;gap:4px;flex-wrap:wrap"><span class="chip">Biology ▾</span><span class="chip">Human body ▾</span><span class="chip">Class 10 ▾</span><span class="chip">⌕</span></div>
+        <div class="box" style="display:grid;place-items:center;position:relative">3D heart · labels on<div class="a" style="right:18%;top:30%;width:30px;height:2px;background:var(--hot);transform:rotate(-20deg)"></div><span class="a chip" style="right:6%;top:18%">Aorta</span></div>
+        <div class="tb" style="padding:0;justify-content:space-between"><span class="chip">Laser</span><span class="chip">Labels</span><span class="chip">Cut</span><span class="btn">＋ Add to board</span></div>
+      </div>
+    </div>
+    <div class="notes"><ul>
+      <li>Opens to the <b>right</b> at 42% width; drag the divider (30–60%), ⤢ for full width, ✕ to close.</li>
+      <li>Tabs: AI · 3D · Labs · Videos · Books · Kit. Each tab has <b>dropdowns</b> (Subject → Topic → Class) and a search box.</li>
+      <li>Every item has <b>Add to board</b>: a snapshot, a lab report, a formula, an AI answer, a video note.</li>
+      <li>The board stays live: pen and laser work on both sides; the class sees both on the projector.</li>
+      <li>AI tab: ask by voice or text, explain, summarise the page, quiz, homework, lesson plan, related questions (like EduAI).</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s4">
+    <div class="head"><span class="num">4</span><h2>Tools drawer</h2></div>
+    <div class="panel" role="img" aria-label="Tools drawer wireframe">
+      <div class="a box" style="left:18%;right:18%;bottom:40px;top:8%;padding:8px;display:grid;grid-template-rows:auto 1fr;gap:6px">
+        <div class="tb" style="padding:0;gap:5px;flex-wrap:wrap"><span class="chip on">All</span><span class="chip">Geometry</span><span class="chip">Maths</span><span class="chip">Science</span><span class="chip">Commerce</span><span class="chip">CS</span><span class="chip">Class</span><span class="chip" style="margin-left:auto">⌕</span></div>
+        <div class="grid" style="grid-template-columns:repeat(6,1fr)">
+          <div class="cell">Ruler</div><div class="cell">Protractor</div><div class="cell">Set squares</div><div class="cell">Compass</div><div class="cell">Graph</div><div class="cell">Flowchart</div>
+          <div class="cell">Calculator</div><div class="cell">Periodic table</div><div class="cell">Formulas</div><div class="cell">Spreadsheet</div><div class="cell">Code lab</div><div class="cell">Dictionary</div>
+          <div class="cell">Timer</div><div class="cell">Stopwatch</div><div class="cell">Name picker</div><div class="cell">Dice</div><div class="cell">Spotlight</div><div class="cell">Curtain</div>
+          <div class="cell">Badges</div><div class="cell">Quick quiz</div><div class="cell">Noise meter</div><div class="cell">Sims</div><div class="cell">Screenshot</div><div class="cell">Touch lock</div>
+        </div>
+      </div>
+      <div class="a pill tb" style="bottom:8px;left:50%;transform:translateX(-50%)"><span class="ic"></span><span class="ic"></span><span class="sep"></span><span class="ic on"></span><span class="ic"></span><span class="sep"></span><span class="ic ai"></span></div>
+    </div>
+    <div class="notes"><ul>
+      <li>One drawer for every smart tool, grouped by subject with a filter row and search.</li>
+      <li>Tools that sit on the board (ruler, timer, picker) appear as floating objects; tools with content (formulas, periodic table, code lab) open in the split panel.</li>
+      <li>New: <b>Badges</b> (award a student, like BrightClass) and <b>Quick quiz</b> from the current page.</li>
+      <li>The subject of the period decides the order: commerce classes see Spreadsheet and Formulas first.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s5">
+    <div class="head"><span class="num">5</span><h2>Geometry tools that move, rotate and measure</h2></div>
+    <div class="panel" role="img" aria-label="Geometry tools wireframe">
+      <div class="a" style="left:12%;top:30%;width:52%;height:13%;border:2px solid var(--chalk);background:var(--chalk-soft);transform:rotate(-14deg);border-radius:3px;display:flex;justify-content:space-between;align-items:center;padding:0 6px;color:var(--chalk)">
+        <span>✥ move</span><span>0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 cm</span><span>⟳ rotate</span>
+      </div>
+      <span class="a chip on" style="left:30%;top:16%">−14.0° · 10.0 cm · snap 15°</span>
+      <div class="a" style="right:12%;top:22%;width:24%;aspect-ratio:2/1;border:2px solid var(--chalk);border-bottom-width:2px;border-radius:200px 200px 0 0;background:var(--chalk-soft);display:grid;place-items:end center;color:var(--chalk);padding-bottom:4px">∠ 62°</div>
+      <div class="a box" style="left:8px;bottom:8px;padding:4px 6px" >Lock · Flip · Draw along edge · Size ±</div>
+    </div>
+    <div class="notes"><ul>
+      <li>Ruler, protractor, set squares (45° and 30-60°) and compass are objects on the board: <b>drag to move</b>, corner handle to <b>rotate</b>, two fingers to rotate and resize together.</li>
+      <li>Live readout of angle and length; snaps to 15°; scale in cm or inches, with the real physical size calibrated per panel.</li>
+      <li>Pen strokes near an edge draw a straight line along it; the protractor drag-arm marks an angle; the compass draws arcs and circles with a radius readout.</li>
+      <li>Lock, flip, resize, and a close button on each tool.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s6">
+    <div class="head"><span class="num">6</span><h2>Flowchart with "add next step"</h2></div>
+    <div class="panel" role="img" aria-label="Flowchart wireframe">
+      <div class="a box" style="left:10%;top:12%;width:14%;height:12%;border-radius:99px;display:grid;place-items:center">Start</div>
+      <div class="a box" style="left:10%;top:36%;width:14%;height:12%;display:grid;place-items:center;border-color:var(--chalk)">Read marks</div>
+      <span class="a chip on" style="left:16%;top:50%">＋</span><span class="a chip on" style="left:26%;top:39%">＋</span>
+      <div class="a" style="left:17%;top:24%;width:2px;height:12%;background:var(--wire)"></div>
+      <div class="a box" style="left:36%;top:6%;width:60%;padding:6px">
+        <div class="lbl">Add next block</div>
+        <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-top:4px"><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><rect x="4" y="4" width="32" height="16" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Process</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M20 2 38 12 20 22 2 12Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Decision</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M9 4H38L31 20H2Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Input/Output</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><rect x="3" y="4" width="34" height="16" rx="8" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Start/End</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><rect x="4" y="4" width="32" height="16" stroke="currentColor" fill="none" stroke-width="2"/><path d="M9 4V20M31 4V20" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Sub-process</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M4 4H36V18Q28 14 20 19T4 18Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Document</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><ellipse cx="20" cy="6" rx="14" ry="3" stroke="currentColor" fill="none" stroke-width="2"/><path d="M6 6V18Q20 24 34 18V6" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Database</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M8 4H32L36 9V20H4V9Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Loop limit</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><circle cx="20" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Connector</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M12 4H4V20H12" stroke="currentColor" fill="none" stroke-width="2"/><path d="M16 12H36" stroke-dasharray="3 3" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Comment</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M8 4H36L32 20H4Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Manual input</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M4 4H36V20H4Z M4 9H36" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Data store</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M4 12 12 4H36V20H12Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Display</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M4 4H36L20 20Z" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Merge</span></div><div class="cell" style="color:var(--chalk)"><svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M4 12H30M24 6 32 12 24 18" stroke="currentColor" fill="none" stroke-width="2"/></svg><span style="color:var(--muted)">Arrow</span></div></div>
+        <div class="tb" style="padding:4px 0 0;flex-wrap:wrap"><span class="chip">◇ If / else → Yes · No arms</span><span class="chip">◇ Switch → 3 arms</span><span class="chip">⟲ While / For loop</span><span class="chip">Join</span></div>
+      </div>
+      <div class="a box" style="left:36%;top:80%;width:60%;padding:6px">Tap ＋ below a block → choose → it's added, connected and auto-aligned. Decision adds Yes/No arms.</div>
+    </div>
+    <div class="notes"><ul>
+      <li>Every selected block shows <b>＋</b> on its four sides. Tapping one opens the palette of <b>actual block shapes</b> (process, decision, input/output, start/end, sub-process, document, database, loop limit, connector, comment, manual input, data store, display, merge, arrow).</li>
+      <li>All standard shapes plus <b>conditional flows</b>: if/else with labelled Yes/No arms, switch, while/for loop, and join.</li>
+      <li>Blocks auto-align and connectors re-route when moved; double-tap a block to type, or write in it with the AI pen.</li>
+      <li>Same "add next" pattern for mind maps, org charts and UML.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s7">
+    <div class="head"><span class="num">7</span><h2>Graphs by subject and topic</h2></div>
+    <div class="panel" role="img" aria-label="Graph templates wireframe">
+      <div class="a" style="left:0;top:0;bottom:0;width:56%;padding:10px"><div class="box" style="height:100%;display:grid;place-items:center">y = 2x + 3 · editable axes, points, labels</div></div>
+      <div class="a" style="left:56%;right:0;top:0;bottom:0;padding:6px;border-left:2px solid var(--wire);display:grid;grid-template-rows:auto 1fr auto;gap:5px">
+        <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip">Economics ▾</span><span class="chip">Demand &amp; supply ▾</span><span class="chip">⌕</span></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;align-content:start">
+          <div class="cell">Demand–supply equilibrium</div><div class="cell">Break-even chart</div><div class="cell">Cost curves</div><div class="cell">Velocity–time</div><div class="cell">Titration curve</div><div class="cell">Normal distribution</div><div class="cell">Linear / quadratic</div><div class="cell">Sine, cosine</div>
+        </div>
+        <div class="btn">＋ Add to board</div>
+      </div>
+    </div>
+    <div class="notes"><ul>
+      <li>Ready-made graphs for each subject and topic, chosen with dropdowns; the period's topic is preselected.</li>
+      <li>Every graph stays editable on the board: drag a point or a curve, change the equation, add labels and shading.</li>
+      <li>Blank graph paper and data-from-table options too.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s8">
+    <div class="head"><span class="num">8</span><h2>Timer with custom time</h2></div>
+    <div class="panel" role="img" aria-label="Timer wireframe">
+      <div class="a box" style="left:30%;right:30%;top:12%;bottom:16%;padding:8px;display:grid;gap:6px;align-content:start;text-align:center">
+        <div class="tb" style="justify-content:center;padding:0"><span class="chip on">Count down</span><span class="chip">Count up</span></div>
+        <div style="font-size:1.4rem;color:var(--ink);font-family:var(--f-mono)">00 : 05 : 00</div>
+        <div>tap a number or swipe it to set hours · minutes · seconds</div>
+        <div class="tb" style="justify-content:center;padding:0;flex-wrap:wrap"><span class="chip">1 m</span><span class="chip">3 m</span><span class="chip">5 m</span><span class="chip">10 m</span><span class="chip">15 m</span><span class="chip">＋ save preset</span></div>
+        <div class="tb" style="justify-content:center;padding:0;flex-wrap:wrap"><span class="chip">Sound ▾</span><span class="chip">Show to class</span><span class="chip">Mini</span></div>
+        <div class="btn">Start</div>
+      </div>
+    </div>
+    <div class="notes"><ul>
+      <li><b>Custom time</b>: set hours, minutes and seconds with a keypad or swipe wheels; save your own presets.</li>
+      <li>Count up or down, choose the end sound, show big to the class or shrink to a corner chip.</li>
+      <li>Pause, add a minute, reset; the phone remote controls it too.</li>
+    </ul></div>
+  </section>
+
+  <section class="screen" id="s9">
+    <div class="head"><span class="num">9</span><h2>Page overview</h2></div>
+    <div class="panel" role="img" aria-label="Page overview wireframe">
+      <div class="a box" style="left:10%;right:10%;bottom:40px;top:14%;padding:8px;display:grid;grid-template-rows:1fr auto;gap:6px">
+        <div class="grid" style="grid-template-columns:repeat(5,1fr)"><div class="cell">1</div><div class="cell">2</div><div class="cell" style="border-color:var(--chalk);background:var(--chalk-soft)">3 ●</div><div class="cell">4</div><div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div><div class="cell">＋</div></div>
+        <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip">Drag to reorder</span><span class="chip">Duplicate</span><span class="chip">Delete</span><span class="chip">Clear page</span><span class="chip">Clear all</span><span class="chip">Export PDF</span></div>
+      </div>
+      <div class="a pill tb" style="bottom:8px;right:8px"><span>‹</span><span class="lbl">3/8</span><span>›</span><span class="sep"></span><span>＋</span><span class="chip on">▦</span></div>
+    </div>
+    <div class="notes"><ul><li>Opens from ▦ in the bottom-right page bar. Thumbnails, reorder, duplicate, delete, clear, export.</li></ul></div>
+  </section>
+
+  <section class="screen" id="s10">
+    <div class="head"><span class="num">10</span><h2>Backgrounds and templates</h2></div>
+    <div class="panel" role="img" aria-label="Backgrounds wireframe">
+      <div class="a box" style="left:14%;right:14%;bottom:40px;top:10%;padding:8px;display:grid;grid-template-rows:auto 1fr;gap:6px">
+        <div class="tb" style="padding:0"><span class="chip on">Templates</span><span class="chip">Colour</span><span class="chip">Image</span></div>
+        <div class="grid" style="grid-template-columns:repeat(6,1fr)"><div class="cell">Plain</div><div class="cell">Grid</div><div class="cell">Graph</div><div class="cell">Ruled</div><div class="cell">4-line (Eng)</div><div class="cell">Kannada lines</div><div class="cell">Music staff</div><div class="cell">Isometric</div><div class="cell">Ledger</div><div class="cell">Journal</div><div class="cell">India map</div><div class="cell">World map</div><div class="cell">Two columns</div><div class="cell">Three columns</div><div class="cell">Chalkboard</div><div class="cell">Cricket field</div><div class="cell">Football field</div><div class="cell">Your own</div></div>
+      </div>
+    </div>
+    <div class="notes"><ul><li>Per page. Includes commerce (ledger, journal), language (4-line, Kannada lines) and maps. Upload your own.</li></ul></div>
+  </section>
+
+  <section class="screen" id="s11">
+    <div class="head"><span class="num">11</span><h2>Universal search</h2></div>
+    <div class="panel" role="img" aria-label="Search wireframe">
+      <div class="a box" style="left:22%;right:22%;top:10%;padding:8px;display:grid;gap:5px">
+        <div class="box" style="padding:4px 6px">⌕ photosyn|</div>
+        <div class="lbl">3D models</div><div>Leaf cross-section · Chloroplast</div>
+        <div class="lbl">Labs</div><div>Photosynthesis rate · Starch test</div>
+        <div class="lbl">Videos · Lessons · Tools · Settings</div><div>…</div>
+      </div>
+    </div>
+    <div class="notes"><ul><li>From the top bar or Ctrl+K. Results grouped by type; choosing one opens it in the split panel. Already built; it moves into the new layout.</li></ul></div>
+  </section>
+
+  <div class="group">Phone (for testing and teachers on the move)</div>
+
+  <section class="screen tall" id="s12">
+    <div class="head"><span class="num">12</span><h2>Phone board</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="phone" role="img" aria-label="Phone board wireframe">
+        <div class="a tb" style="top:8px;left:6px;right:6px;justify-content:space-between"><span class="chip on">BCom 3A</span><span>⌕ ⋮</span></div>
+        <div class="a" style="top:38%;left:14%;color:var(--ink)">board</div>
+        <div class="a tb pill" style="bottom:42px;right:8px"><span>‹</span><span class="lbl">3/8</span><span>›</span></div>
+        <div class="a tb" style="bottom:0;left:0;right:0;height:36px;background:var(--paper);border-top:1.5px solid var(--wire);justify-content:space-around"><span class="ic on"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="ic"></span><span class="ic ai"></span><span>⋯</span></div>
+      </div>
+      <div class="phone" role="img" aria-label="Phone split panel wireframe">
+        <div class="a" style="top:8px;left:14%;color:var(--ink)">board (top half)</div>
+        <div class="a" style="left:0;right:0;top:45%;bottom:0;background:var(--paper);border-top:2px solid var(--wire);border-radius:14px 14px 0 0;padding:6px;display:grid;grid-template-rows:auto auto 1fr auto;gap:4px">
+          <div style="margin:0 auto;width:30px;height:3px;background:var(--wire);border-radius:2px"></div>
+          <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip on">3D</span><span class="chip">Labs</span><span class="chip">AI</span><span class="chip">⌕</span></div>
+          <div class="box" style="display:grid;place-items:center">model</div>
+          <div class="btn">＋ Add to board</div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><ul>
+      <li>Same toolbar order as the panel, as a bottom bar; ⋯ holds the rest. Page controls float bottom right.</li>
+      <li>The split panel becomes a <b>bottom sheet</b> over the lower half (drag up for full, down to close); the board stays visible above.</li>
+      <li>Popovers (pen, timer) become small sheets above the bar.</li>
+    </ul></div>
+  </section>
+
+  <div class="group">Teacher app fixes from your screenshots</div>
+
+  <section class="screen tall" id="s13">
+    <div class="head"><span class="num">13</span><h2>Homework, class picker, profile, lesson plan</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <div class="phone" role="img" aria-label="Homework filters">
+        <div class="a" style="top:10px;left:10px;right:10px;display:grid;gap:5px">
+          <div class="lbl">Submissions</div>
+          <div class="tb" style="padding:0;flex-wrap:wrap"><span class="chip on">All 12</span><span class="chip">Handed in 1</span><span class="chip">Checked 0</span><span class="chip">Returned 0</span><span class="chip">Missing 11</span></div>
+          <div class="box" style="padding:5px">Aarav Patel · Handed in ›</div>
+          <div class="box" style="padding:5px">… filtered list</div>
+          <div class="btn">Remind the 11</div>
+        </div>
+      </div>
+      <div class="phone" role="img" aria-label="Class picker sheet">
+        <div class="a" style="top:10px;left:10px;right:10px;display:grid;gap:5px">
+          <div class="box" style="padding:5px">Class · BCom 3A — Corporate Accounting ▾</div>
+        </div>
+        <div class="a" style="left:0;right:0;bottom:0;top:40%;background:var(--paper);border-top:2px solid var(--wire);border-radius:14px 14px 0 0;padding:8px;display:grid;gap:4px;align-content:start">
+          <div class="box" style="padding:4px">⌕ Search class or subject</div>
+          <div class="tag">BCom 3A</div><div class="box" style="padding:4px;border-color:var(--chalk)">✓ Corporate Accounting</div><div class="box" style="padding:4px">Cost Accounting</div>
+          <div class="tag">BCA 1B</div><div class="box" style="padding:4px">Programming in C</div>
+        </div>
+      </div>
+      <div class="phone" role="img" aria-label="Editable profile">
+        <div class="a" style="top:12px;left:10px;right:10px;display:grid;gap:6px;justify-items:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--fill);border:2px solid var(--wire);display:grid;place-items:center">📷</div>
+          <div class="chip">Change photo · camera / gallery</div>
+          <div class="box" style="padding:4px;width:100%">Name · Anita Sharma ✎</div>
+          <div class="box" style="padding:4px;width:100%">Phone · +91 98…</div>
+          <div class="box" style="padding:4px;width:100%">Email · anita@…</div>
+          <div class="box" style="padding:4px;width:100%">Subjects · Accounting</div>
+          <div class="btn" style="width:100%">Save</div>
+        </div>
+      </div>
+      <div class="phone" role="img" aria-label="Lesson plan fix">
+        <div class="a" style="top:12px;left:10px;right:10px;display:grid;gap:5px">
+          <div class="tb" style="padding:0"><span class="chip on">Length 30 min ▾</span></div>
+          <div class="lbl">Steps · 30 min</div>
+          <div class="box" style="padding:4px">5 min · Recap</div><div class="box" style="padding:4px">17 min · Worked example</div><div class="box" style="padding:4px">8 min · Pairs + exit ticket</div>
+          <div class="tag" style="color:var(--chalk)">Always adds up to the length chosen</div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><ul>
+      <li><b>Submission chips become filters</b> ("All, Handed in, Checked, Returned, Missing"); the list follows; one tap reminds those missing.</li>
+      <li><b>Dropdowns</b> everywhere become a searchable bottom sheet grouped by class, with a clear selected state (fixes the overlapping label).</li>
+      <li><b>Profile is editable</b>: photo from camera or gallery (cropped, uploaded), name, phone, email, subjects; changes go to the ERP.</li>
+      <li><b>Lesson plan</b>: step times always add up to the chosen length (30 → 5 + 17 + 8).</li>
+    </ul></div>
+  </section>
+
+  <p class="footnote">Also carried into the new layout unchanged: 3D laser, labs, AI pen, concept videos, code lab, kits, projector, recording, polls and answer cards, primary mode (bigger labelled toolbar, Andika), English / Hindi / Kannada.</p>
+</div>
