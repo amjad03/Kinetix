@@ -105,6 +105,30 @@ export interface GraphElement {
   color: number;
   range: [number, number, number, number];
   rotation: number;
+  /** Further curves (supply with demand), already with the graph's letters put in. */
+  curves: string[];
+  points: { x: number; y: number; label: string }[];
+  title: string;
+}
+
+/** A flowchart block or mind-map topic. */
+export interface FlowNodeElement {
+  kind: 'flow';
+  box: Box;
+  shape: string;
+  text: string;
+  color: number;
+  fill?: number;
+  fontSize: number;
+}
+
+/** A flowchart arrow, as its route ([x0, y0, x1, y1, …]). */
+export interface FlowLinkElement {
+  kind: 'flowlink';
+  points: number[];
+  label: string;
+  color: number;
+  curved: boolean;
 }
 
 export interface PolygonElement {
@@ -148,7 +172,17 @@ export interface SheetElement {
 }
 
 /** Anything on a page. Strokes have no `kind` (they keep the version 1 shape). */
-export type BoardElement = Stroke | TextElement | ImageElement | MathElement | GraphElement | PolygonElement | NoteElement | SheetElement;
+export type BoardElement =
+  | Stroke
+  | TextElement
+  | ImageElement
+  | MathElement
+  | GraphElement
+  | PolygonElement
+  | NoteElement
+  | SheetElement
+  | FlowNodeElement
+  | FlowLinkElement;
 
 export const isStroke = (e: BoardElement): e is Stroke => !('kind' in e);
 
@@ -258,7 +292,25 @@ export function decodeElement(raw: unknown, images?: Map<number, string>): Board
       if (!b || typeof j.e !== 'string') return null;
       const v: [number, number, number, number] =
         Array.isArray(j.v) && j.v.length === 4 && j.v.every(isNum) ? [j.v[0], j.v[1], j.v[2], j.v[3]] : [-10, 10, -10, 10];
-      return { kind: 'graph', box: b, expression: j.e, color: argb(j.c), range: v, rotation };
+      const curves = Array.isArray(j.x) ? j.x.filter((c): c is string => typeof c === 'string') : [];
+      const points = Array.isArray(j.pt)
+        ? j.pt
+            .filter((p): p is unknown[] => Array.isArray(p) && isNum(p[0]) && isNum(p[1]))
+            .map((p) => ({ x: p[0] as number, y: p[1] as number, label: typeof p[2] === 'string' ? p[2] : '' }))
+        : [];
+      const title = typeof j.ti === 'string' ? j.ti : '';
+      return { kind: 'graph', box: b, expression: j.e, color: argb(j.c), range: v, rotation, curves, points, title };
+    }
+    case 'flow': {
+      const b = box(j.r);
+      if (!b || typeof j.k !== 'string') return null;
+      const n: FlowNodeElement = { kind: 'flow', box: b, shape: j.k, text: typeof j.tx === 'string' ? j.tx : '', color: argb(j.c), fontSize: num(j.fs, 22) };
+      if (isNum(j.f)) n.fill = argb(j.f);
+      return n;
+    }
+    case 'flowlink': {
+      if (!Array.isArray(j.p) || j.p.length < 4 || !j.p.every(isNum)) return null;
+      return { kind: 'flowlink', points: [...(j.p as number[])], label: typeof j.l === 'string' ? j.l : '', color: argb(j.c), curved: j.cv === true };
     }
     case 'polygon': {
       if (!Array.isArray(j.p) || j.p.length < 4 || !j.p.every(isNum)) return null;
@@ -307,7 +359,7 @@ export function decodeElement(raw: unknown, images?: Map<number, string>): Board
 
 /** `e` moved by (dx, dy), in place. */
 export function moveElement(e: BoardElement, dx: number, dy: number) {
-  if (isStroke(e) || e.kind === 'polygon') {
+  if (isStroke(e) || e.kind === 'polygon' || e.kind === 'flowlink') {
     for (let i = 0; i + 1 < e.points.length; i += 2) {
       e.points[i] += dx;
       e.points[i + 1] += dy;
