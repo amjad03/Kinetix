@@ -1,5 +1,6 @@
 import 'anims/cells.dart';
 import 'anims/cycles.dart';
+import 'anims/earth.dart';
 import 'anims/life_processes.dart';
 import 'anims/photosynthesis.dart';
 import 'model.dart';
@@ -19,6 +20,13 @@ final List<KxAnimation> animationCatalogue = List.unmodifiable(<KxAnimation>[
   osmosis,
   nitrogenCycle,
   carbonCycle,
+  waterCycle,
+  rockCycle,
+  earthquake,
+  volcano,
+  dayNightSeasons,
+  moonPhases,
+  eclipses,
 ]);
 
 /// The animation with [id], if any.
