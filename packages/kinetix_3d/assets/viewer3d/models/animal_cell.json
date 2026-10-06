@@ -971,6 +971,19 @@
     1,
     0.2
    ]
+  },
+  {
+   "id": "wedge",
+   "name": {
+    "en": "Into the wedge",
+    "hi": "कटे भाग में",
+    "kn": "ಕತ್ತರಿಸಿದ ಭಾಗದೊಳಗೆ"
+   },
+   "dir": [
+    1,
+    0.6,
+    1
+   ]
   }
  ],
  "slices": [
@@ -988,6 +1001,26 @@
    ],
    "offset": 0,
    "view": "front"
+  },
+  {
+   "id": "wedge",
+   "name": {
+    "en": "Slice taken out",
+    "hi": "एक फाँक निकाली",
+    "kn": "ಒಂದು ತುಂಡು ತೆಗೆದಿದೆ"
+   },
+   "normal": [
+    -1,
+    0,
+    0
+   ],
+   "offset": 0,
+   "normal2": [
+    0,
+    0,
+    -1
+   ],
+   "view": "wedge"
   }
  ],
  "animations": []

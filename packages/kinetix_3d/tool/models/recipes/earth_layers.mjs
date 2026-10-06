@@ -99,13 +99,13 @@ export default {
       id: 'crust', group: 'crust', matte: true, color: '#9b7a55', inside: '#9b7a55', explode: lineUp[0],
       name: t('Crust', 'भूपर्पटी', 'ಭೂಹೊರಪದರ'),
       info: t(
-        'The thin rocky outer layer we live on: 5–70 km thick, like the skin of an apple. It is broken into large plates that move very slowly.',
-        'हम जिस पतली चट्टानी बाहरी परत पर रहते हैं: 5–70 किमी मोटी, सेब के छिलके जैसी। यह बड़ी प्लेटों में बँटी है जो बहुत धीरे खिसकती हैं।',
-        'ನಾವು ವಾಸಿಸುವ ತೆಳು ಬಂಡೆಯ ಹೊರಪದರ: 5–70 ಕಿಮೀ ದಪ್ಪ, ಸೇಬಿನ ಸಿಪ್ಪೆಯಂತೆ. ಇದು ಬಹಳ ನಿಧಾನವಾಗಿ ಸರಿಯುವ ದೊಡ್ಡ ಫಲಕಗಳಾಗಿ ಒಡೆದಿದೆ.',
+        'The thin rocky outer layer we live on. Depth 0–35 km on average (5–70 km thick), like the skin of an apple. Temperature: from the surface up to about 900 °C at its base. It is broken into large plates that move very slowly.',
+        'हम जिस पतली चट्टानी बाहरी परत पर रहते हैं। गहराई औसतन 0–35 किमी (5–70 किमी मोटी), सेब के छिलके जैसी। तापमान: सतह से नीचे इसके तल पर लगभग 900 °C तक। यह बड़ी प्लेटों में बँटी है जो बहुत धीरे खिसकती हैं।',
+        'ನಾವು ವಾಸಿಸುವ ತೆಳು ಬಂಡೆಯ ಹೊರಪದರ. ಆಳ ಸರಾಸರಿ 0–35 ಕಿಮೀ (5–70 ಕಿಮೀ ದಪ್ಪ), ಸೇಬಿನ ಸಿಪ್ಪೆಯಂತೆ. ತಾಪಮಾನ: ಮೇಲ್ಮೈಯಿಂದ ಅದರ ತಳದಲ್ಲಿ ಸುಮಾರು 900 °C ವರೆಗೆ. ಇದು ಬಹಳ ನಿಧಾನವಾಗಿ ಸರಿಯುವ ದೊಡ್ಡ ಫಲಕಗಳಾಗಿ ಒಡೆದಿದೆ.',
       ),
     },
     {
-      id: 'continental_crust', group: 'crust', matte: true, detail: 0.25, error: 0.0005, color: '#6f9a4c', inside: '#9b7a55', explode: lineUp[0],
+      id: 'continental_crust', group: 'crust', capWith: 'crust', matte: true, detail: 0.25, error: 0.0005, color: '#6f9a4c', inside: '#9b7a55', explode: lineUp[0],
       name: t('Continental crust', 'महाद्वीपीय भूपर्पटी', 'ಖಂಡೀಯ ಭೂಹೊರಪದರ'),
       info: t(
         'The land. Thicker (30–70 km) and made of lighter rocks like granite, rich in silica and aluminium (sial).',
@@ -114,7 +114,7 @@ export default {
       ),
     },
     {
-      id: 'oceanic_crust', group: 'crust', detail: 0.15, error: 0.0005, color: '#2f6fb8', inside: '#9b7a55', explode: lineUp[0],
+      id: 'oceanic_crust', group: 'crust', capWith: 'crust', detail: 0.15, error: 0.0005, color: '#2f6fb8', inside: '#9b7a55', explode: lineUp[0],
       name: t('Oceanic crust', 'महासागरीय भूपर्पटी', 'ಸಾಗರೀಯ ಭೂಹೊರಪದರ'),
       info: t(
         'The floor of the oceans. Thinner (about 5–10 km) and made of heavier basalt, rich in silica and magnesium (sima).',
@@ -126,36 +126,36 @@ export default {
       id: 'upper_mantle', group: 'layers', color: '#e0843e', explode: lineUp[1],
       name: t('Upper mantle', 'ऊपरी प्रावार', 'ಮೇಲಿನ ಪ್ರಾವಾರ'),
       info: t(
-        'Hot rock down to about 660 km that flows very slowly, carrying the plates of the crust. Magma comes from here.',
-        'लगभग 660 किमी तक गर्म चट्टान जो बहुत धीरे बहती है और भूपर्पटी की प्लेटों को ढोती है। मैग्मा यहीं से आता है।',
-        'ಸುಮಾರು 660 ಕಿಮೀವರೆಗಿನ ಬಿಸಿ ಬಂಡೆ; ಬಹಳ ನಿಧಾನವಾಗಿ ಹರಿದು ಭೂಹೊರಪದರದ ಫಲಕಗಳನ್ನು ಹೊರುತ್ತದೆ. ಶಿಲಾಪಾಕ ಇಲ್ಲಿಂದ ಬರುತ್ತದೆ.',
+        'Depth: from the crust down to about 660 km (about 625 km thick). Temperature: about 900–1,600 °C. Hot rock that flows very slowly, carrying the plates of the crust. Magma comes from here.',
+        'गहराई: भूपर्पटी से लगभग 660 किमी तक (लगभग 625 किमी मोटा)। तापमान: लगभग 900–1,600 °C। गर्म चट्टान जो बहुत धीरे बहती है और भूपर्पटी की प्लेटों को ढोती है। मैग्मा यहीं से आता है।',
+        'ಆಳ: ಭೂಹೊರಪದರದಿಂದ ಸುಮಾರು 660 ಕಿಮೀವರೆಗೆ (ಸುಮಾರು 625 ಕಿಮೀ ದಪ್ಪ). ತಾಪಮಾನ: ಸುಮಾರು 900–1,600 °C. ಬಹಳ ನಿಧಾನವಾಗಿ ಹರಿಯುವ ಬಿಸಿ ಬಂಡೆ; ಭೂಹೊರಪದರದ ಫಲಕಗಳನ್ನು ಹೊರುತ್ತದೆ. ಶಿಲಾಪಾಕ ಇಲ್ಲಿಂದ ಬರುತ್ತದೆ.',
       ),
     },
     {
       id: 'lower_mantle', group: 'layers', color: '#c2502c', explode: lineUp[2],
       name: t('Lower mantle', 'निचला प्रावार', 'ಕೆಳಗಿನ ಪ್ರಾವಾರ'),
       info: t(
-        'Solid but very hot rock, down to about 2,900 km. The mantle is about 84% of the Earth\'s volume.',
-        'ठोस पर बहुत गर्म चट्टान, लगभग 2,900 किमी तक। प्रावार पृथ्वी के आयतन का लगभग 84% है।',
-        'ಘನ ಆದರೆ ಅತಿ ಬಿಸಿ ಬಂಡೆ, ಸುಮಾರು 2,900 ಕಿಮೀವರೆಗೆ. ಪ್ರಾವಾರ ಭೂಮಿಯ ಗಾತ್ರದ ಸುಮಾರು 84%.',
+        'Depth: 660–2,900 km (about 2,240 km thick). Temperature: about 1,600–3,700 °C. Solid but very hot rock. The whole mantle is about 84% of the Earth\'s volume.',
+        'गहराई: 660–2,900 किमी (लगभग 2,240 किमी मोटा)। तापमान: लगभग 1,600–3,700 °C। ठोस पर बहुत गर्म चट्टान। पूरा प्रावार पृथ्वी के आयतन का लगभग 84% है।',
+        'ಆಳ: 660–2,900 ಕಿಮೀ (ಸುಮಾರು 2,240 ಕಿಮೀ ದಪ್ಪ). ತಾಪಮಾನ: ಸುಮಾರು 1,600–3,700 °C. ಘನ ಆದರೆ ಅತಿ ಬಿಸಿ ಬಂಡೆ. ಇಡೀ ಪ್ರಾವಾರ ಭೂಮಿಯ ಗಾತ್ರದ ಸುಮಾರು 84%.',
       ),
     },
     {
       id: 'outer_core', group: 'layers', color: '#f39a2e', glow: 0.25, explode: lineUp[3],
       name: t('Outer core', 'बाहरी क्रोड', 'ಹೊರ ತಿರುಳು'),
       info: t(
-        'Liquid iron and nickel, about 4,500–5,500 °C, down to 5,150 km. Its flow makes the Earth\'s magnetic field.',
-        'तरल लोहा और निकेल, लगभग 4,500–5,500 °C, 5,150 किमी तक। इसका बहाव पृथ्वी का चुंबकीय क्षेत्र बनाता है।',
-        'ದ್ರವ ಕಬ್ಬಿಣ ಮತ್ತು ನಿಕ್ಕಲ್, ಸುಮಾರು 4,500–5,500 °C, 5,150 ಕಿಮೀವರೆಗೆ. ಇದರ ಹರಿವು ಭೂಮಿಯ ಕಾಂತಕ್ಷೇತ್ರ ಸೃಷ್ಟಿಸುತ್ತದೆ.',
+        'Depth: 2,900–5,150 km (about 2,250 km thick). Temperature: about 4,500–5,500 °C. Liquid iron and nickel; its flow makes the Earth\'s magnetic field.',
+        'गहराई: 2,900–5,150 किमी (लगभग 2,250 किमी मोटा)। तापमान: लगभग 4,500–5,500 °C। तरल लोहा और निकेल; इसका बहाव पृथ्वी का चुंबकीय क्षेत्र बनाता है।',
+        'ಆಳ: 2,900–5,150 ಕಿಮೀ (ಸುಮಾರು 2,250 ಕಿಮೀ ದಪ್ಪ). ತಾಪಮಾನ: ಸುಮಾರು 4,500–5,500 °C. ದ್ರವ ಕಬ್ಬಿಣ ಮತ್ತು ನಿಕ್ಕಲ್; ಇದರ ಹರಿವು ಭೂಮಿಯ ಕಾಂತಕ್ಷೇತ್ರ ಸೃಷ್ಟಿಸುತ್ತದೆ.',
       ),
     },
     {
       id: 'inner_core', group: 'layers', color: '#f7d23a', glow: 0.45, explode: lineUp[4],
       name: t('Inner core', 'आंतरिक क्रोड', 'ಒಳ ತಿರುಳು'),
       info: t(
-        'A solid ball of iron and nickel (nife), about 5,400 °C – as hot as the Sun\'s surface – kept solid by enormous pressure.',
-        'लोहे और निकेल (निफे) का ठोस गोला, लगभग 5,400 °C – सूर्य की सतह जितना गर्म – भारी दबाव के कारण ठोस।',
-        'ಕಬ್ಬಿಣ ಮತ್ತು ನಿಕ್ಕಲ್‌ನ (ನಿಫೆ) ಘನ ಗೋಳ, ಸುಮಾರು 5,400 °C – ಸೂರ್ಯನ ಮೇಲ್ಮೈಯಷ್ಟು ಬಿಸಿ – ಭಾರಿ ಒತ್ತಡದಿಂದ ಘನವಾಗಿದೆ.',
+        'Depth: 5,150–6,371 km, the centre (a ball about 1,220 km in radius). Temperature: about 5,400 °C, as hot as the Sun\'s surface. Solid iron and nickel (nife), kept solid by enormous pressure.',
+        'गहराई: 5,150–6,371 किमी, केंद्र (लगभग 1,220 किमी त्रिज्या का गोला)। तापमान: लगभग 5,400 °C, सूर्य की सतह जितना गर्म। ठोस लोहा और निकेल (निफे), भारी दबाव के कारण ठोस।',
+        'ಆಳ: 5,150–6,371 ಕಿಮೀ, ಕೇಂದ್ರ (ಸುಮಾರು 1,220 ಕಿಮೀ ತ್ರಿಜ್ಯದ ಗೋಳ). ತಾಪಮಾನ: ಸುಮಾರು 5,400 °C, ಸೂರ್ಯನ ಮೇಲ್ಮೈಯಷ್ಟು ಬಿಸಿ. ಘನ ಕಬ್ಬಿಣ ಮತ್ತು ನಿಕ್ಕಲ್ (ನಿಫೆ), ಭಾರಿ ಒತ್ತಡದಿಂದ ಘನವಾಗಿದೆ.',
       ),
     },
   ],

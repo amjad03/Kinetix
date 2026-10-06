@@ -119,6 +119,49 @@ void main() {
     expect(ViewerModelInfo.byId('crystal_lattices')!.variants, ['sc', 'bcc', 'fcc', 'nacl']);
   });
 
+  test('the Earth shows its five layers, named and explained in English, Hindi and Kannada', () {
+    final m = ViewerManifest.fromJson(_json('$_assets/models/earth_layers.json'));
+    final layers = ['crust', 'upper_mantle', 'lower_mantle', 'outer_core', 'inner_core'];
+    final names = {
+      'crust': ['Crust', 'भूपर्पटी', 'ಭೂಹೊರಪದರ'],
+      'upper_mantle': ['Upper mantle', 'ऊपरी प्रावार', 'ಮೇಲಿನ ಪ್ರಾವಾರ'],
+      'lower_mantle': ['Lower mantle', 'निचला प्रावार', 'ಕೆಳಗಿನ ಪ್ರಾವಾರ'],
+      'outer_core': ['Outer core', 'बाहरी क्रोड', 'ಹೊರ ತಿರುಳು'],
+      'inner_core': ['Inner core', 'आंतरिक क्रोड', 'ಒಳ ತಿರುಳು'],
+    };
+    for (final id in layers) {
+      final p = m.part(id);
+      expect(p, isNotNull, reason: id);
+      expect(p!.name.complete && p.info.complete, isTrue, reason: id);
+      for (final (i, lang) in viewerLanguages.indexed) {
+        expect(p.name.of(lang), names[id]![i], reason: '$id in $lang');
+      }
+      // Each note says how deep the layer is and how hot, in every language.
+      for (final lang in viewerLanguages) {
+        expect(p.info.of(lang), contains('°C'), reason: '$id in $lang: temperature');
+        expect(p.info.of(lang), matches(RegExp(r'\d+(,\d+)?[–-]\d')), reason: '$id in $lang: depth');
+      }
+    }
+    expect(m.part('inner_core')!.info.en, contains('6,371 km'));
+    expect(m.part('upper_mantle')!.info.en, contains('thick'));
+    // The textbook wedge, and the plain half.
+    final wedge = m.slices.firstWhere((s) => s.id == 'wedge');
+    expect(wedge.normal2, isNotNull);
+    expect(wedge.name.complete, isTrue);
+    expect(m.slices.map((s) => s.id), contains('open'));
+  });
+
+  test('the cell and the heart have their ready-made cuts', () {
+    final cell = ViewerManifest.fromJson(_json('$_assets/models/animal_cell.json'));
+    final cellWedge = cell.slices.firstWhere((s) => s.id == 'wedge');
+    expect(cellWedge.normal2, isNotNull);
+    expect(cell.view(cellWedge.view), isNotNull);
+    final heart = ViewerManifest.fromJson(_json('$_assets/models/heart.json'));
+    final half = heart.slices.firstWhere((s) => s.id == 'four_chambers');
+    expect(half.normal2, isNull); // a plain half
+    expect(half.name.complete, isTrue);
+  });
+
   test('BodyParts3D and three.js are credited', () {
     final anatomy = [for (final m in ViewerModelInfo.all) if (m.fromBodyParts3D) m.id];
     expect(anatomy, containsAll(['heart', 'brain', 'digestive', 'lungs', 'eye', 'excretory', 'skeleton']));

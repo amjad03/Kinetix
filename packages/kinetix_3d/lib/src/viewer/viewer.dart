@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'annotations.dart';
 import 'credits.dart';
 import 'engine.dart';
 import 'laser.dart';
@@ -32,6 +33,9 @@ class Model3dViewerController extends ChangeNotifier {
   /// A picture of the view as the class sees it, or null if the model is not showing.
   Future<Model3dSnapshot?> snapshot() => _state?._snapshot() ?? Future.value();
 
+  /// What has been written on the model.
+  Model3dAnnotations get annotations => _state?._notes ?? Model3dAnnotations.empty;
+
   void _changed() => notifyListeners();
 }
 
@@ -51,6 +55,8 @@ class Model3dViewer extends StatefulWidget {
     this.onSnapshot,
     this.mirror,
     this.showTitle = true,
+    this.annotations,
+    this.onAnnotationsChanged,
   });
 
   /// A viewer model id (heart, orbitals…; see [ViewerModelInfo.all]).
@@ -72,11 +78,23 @@ class Model3dViewer extends StatefulWidget {
   /// The model's title above it (off when the host already shows one).
   final bool showTitle;
 
+  /// The notes and drawing to put on the model when it opens (saved with the lesson's
+  /// board). When null, a [Model3dScope]'s [Model3dAnnotationStore] gives them, if any.
+  final Model3dAnnotations? annotations;
+
+  /// Hears every change to the notes and drawing, to save them.
+  final ValueChanged<Model3dAnnotations>? onAnnotationsChanged;
+
   @override
   State<Model3dViewer> createState() => _Model3dViewerState();
 }
 
-enum _Tab { parts, cut, apart, animate, views }
+enum _Tab { parts, cut, apart, animate, views, notes }
+
+/// The writing tool in hand: pin a note, draw on the model's surface, draw over the view.
+enum _Pen { pin, surface, screen }
+
+const _penColors = [Color(0xFFE53935), Color(0xFFF2B33D), Color(0xFF3D8BF2), Color(0xFF2EAD5B), Color(0xFFFFFFFF), Color(0xFF16191E)];
 
 class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProviderStateMixin {
   Viewer3dEngine? _engine;
@@ -92,9 +110,18 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   String? _picked;
   final _hidden = <String>{};
   final _shown = <String>{}; // parts hidden at first that the teacher turned on
-  String? _slice; // preset id, or 'custom'
-  List<double> _cutNormal = const [0, 0, -1];
-  double _cutOffset = 0;
+  String? _slice; // a ready-made cut's id
+  CutMode _cutMode = CutMode.off;
+  CutAxis _cutAxis = CutAxis.z;
+  bool _cutFlip = false;
+  double _cutAt = 0; // where a half or a slab is, -0.5..0.5 of the model's size
+  double _wedgeAngle = 90;
+  double _wedgeTurn = 0;
+  double _slabThickness = 0.2;
+  double _depth = 0.4;
+  bool _sweeping = false;
+  int _peel = 0;
+  int _peelLayers = 0; // as the page counted them; 0 until it has
   double _explode = 0;
   String? _anim;
   int _step = 0;
@@ -116,6 +143,19 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   double _orbitSpread = 0;
 
   ViewerPart? get _laserPartInfo => _model?.part(_laserPart);
+
+  // Notes and drawing.
+  Model3dAnnotations _notes = Model3dAnnotations.empty;
+  bool _notesShown = true;
+  _Pen? _pen;
+  Color _penColor = _penColors.first;
+  final _penPointers = <int, Offset>{};
+  final _penPending = <Offset>[];
+  Offset? _penDownAt;
+  bool _penDrawing = false;
+  Duration? _penSent;
+  bool _penOrbiting = false;
+  bool _editingPin = false;
 
   @override
   void initState() {
@@ -149,12 +189,21 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       _lang = widget.lang!;
       _engine?.send(ViewerCommands.lang(_lang));
     }
+    final given = widget.annotations;
+    if (given != null && given != old.annotations && given != _notes) {
+      _notes = given;
+      _engine?.send(ViewerCommands.setNotes(given));
+    }
   }
 
+  Model3dAnnotationStore? get _store => Model3dScope.maybeOf(context)?.annotations;
+
   Future<void> _open() async {
+    final notes = widget.annotations ?? _store?.of(widget.modelId) ?? Model3dAnnotations.empty;
     setState(() {
       _problem = null;
       _loaded = false;
+      _notes = notes;
     });
     try {
       final m = await ViewerManifest.load(widget.modelId);
@@ -168,6 +217,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       if (_engine == null) return;
       await _engine!.open(widget.modelId, lang: _lang);
       if (start != null && start != m.variants.firstOrNull?.id) _engine!.send(ViewerCommands.variant(start));
+      if (notes.isNotEmpty) _engine!.send(ViewerCommands.setNotes(notes));
     } catch (e) {
       debugPrint('3D model ${widget.modelId} could not be opened: $e');
       if (mounted) setState(() => _problem = Viewer3dStrings(_lang).couldNotOpen);
@@ -194,10 +244,34 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       case 'snapshot':
         final png = e.image;
         final m = _model;
-        _snapping?.complete(png == null || m == null ? null : Model3dSnapshot(png: png, modelId: m.id, title: m.title.of(_lang), credit: m.credit));
+        _snapping?.complete(png == null || m == null ? null : Model3dSnapshot(png: png, modelId: m.id, title: m.title.of(_lang), credit: m.credit, annotations: _notes));
         _snapping = null;
       case 'autoRotate':
         setState(() => _turning = e.data['on'] == true);
+      case 'cut':
+        setState(() {
+          if (e.data['mode'] == 'peel') {
+            _peelLayers = (e.data['layers'] as num?)?.toInt() ?? 0;
+            _peel = (e.data['peel'] as num?)?.toInt() ?? _peel;
+          }
+          if (e.data['done'] == true) {
+            _sweeping = false;
+            _depth = (e.data['depth'] as num?)?.toDouble() ?? _depth;
+          }
+        });
+      case 'annotations':
+        final data = e.data['data'];
+        if (data is Map) {
+          setState(() => _notes = Model3dAnnotations.fromJson(data));
+          widget.onAnnotationsChanged?.call(_notes);
+          _store?.put(widget.modelId, _notes);
+          widget.controller?._changed();
+        }
+        if (e.data['pin'] case final String id) _editPin(id, isNew: true);
+      case 'noteMissed':
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(Viewer3dStrings(_lang).noteMissed)));
+      case 'notePicked':
+        if (e.data['id'] case final String id) _editPin(id);
       case 'error':
         debugPrint('3D viewer: ${e.message}');
         if (e.data['noViewer'] == true) {
@@ -321,13 +395,13 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     _send(ViewerCommands.variant(id));
   }
 
+  /// A ready-made cut from the model's manifest; null closes any cut.
   void _setSlice(ViewerSlice? s) {
     setState(() {
       _slice = s?.id;
-      if (s != null) {
-        _cutNormal = s.normal;
-        _cutOffset = s.offset;
-      }
+      _cutMode = CutMode.off;
+      _sweeping = false;
+      _peel = 0;
     });
     if (s == null) {
       _send(ViewerCommands.slice());
@@ -338,30 +412,86 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     }
   }
 
-  void _cutFrom(List<double> normal) {
-    setState(() {
-      _slice = 'custom';
-      _cutNormal = normal;
-      _cutOffset = 0;
-    });
-    _send(ViewerCommands.slice(normal: normal));
+  void _sendCut({bool play = false}) => _send(ViewerCommands.cut(
+    _cutMode,
+    axis: _cutAxis,
+    flip: _cutFlip,
+    at: _cutAt,
+    angle: _wedgeAngle,
+    turn: _wedgeTurn,
+    thickness: _slabThickness,
+    depth: _depth,
+    peel: _peel,
+    play: play,
+  ));
+
+  static const _across = {CutAxis.x: (CutAxis.z, CutAxis.y), CutAxis.y: (CutAxis.x, CutAxis.z), CutAxis.z: (CutAxis.x, CutAxis.y)};
+  static List<double> _unit(CutAxis a) => [for (final k in CutAxis.values) k == a ? 1.0 : 0.0];
+
+  /// Where to look from to see the cut faces of the cut now set.
+  List<double>? _cutView() {
+    final a = _unit(_cutAxis);
+    switch (_cutMode) {
+      case CutMode.half || CutMode.depth:
+        final s = _cutFlip ? -1.0 : 1.0;
+        final (u, v) = _across[_cutAxis]!;
+        return [for (var i = 0; i < 3; i++) s * a[i] + 0.25 * _unit(u)[i] + 0.2 * _unit(v)[i]];
+      case CutMode.wedge:
+        // Into the slice: the middle of the wedge, a little along the axis.
+        final (u, v) = _across[_cutAxis]!;
+        final t = (45 + _wedgeTurn) * math.pi / 180;
+        return [for (var i = 0; i < 3; i++) math.cos(t) * _unit(u)[i] + math.sin(t) * _unit(v)[i] + 0.55 * a[i]];
+      case CutMode.slab:
+        final (u, v) = _across[_cutAxis]!;
+        return [for (var i = 0; i < 3; i++) a[i] + 0.45 * _unit(u)[i] + 0.25 * _unit(v)[i]];
+      case CutMode.off || CutMode.peel:
+        return null;
+    }
   }
 
-  void _moveCut(double offset) {
+  void _setCutMode(CutMode m) {
+    if (m == CutMode.off) return _setSlice(null);
     setState(() {
-      _cutOffset = offset;
-      _slice ??= 'custom';
+      _cutMode = m;
+      _slice = null;
+      _sweeping = false;
+      if (m == CutMode.peel) _peel = math.min(1, math.max(_peelLayers - 1, 1));
+      if (m == CutMode.half || m == CutMode.slab) _cutAt = 0;
     });
-    _send(ViewerCommands.slice(normal: _cutNormal, offset: offset));
+    _sendCut();
+    final v = _cutView();
+    if (v != null) _send(ViewerCommands.view(v));
+  }
+
+  void _setCutAxis(CutAxis a) {
+    setState(() => _cutAxis = a);
+    _sendCut();
+    final v = _cutView();
+    if (v != null) _send(ViewerCommands.view(v));
+  }
+
+  /// A setting of the cut changed (a slider); the view stays where it is.
+  void _adjustCut(VoidCallback change) {
+    setState(() {
+      change();
+      _sweeping = false;
+    });
+    _sendCut();
   }
 
   void _flipCut() {
     setState(() {
-      _cutNormal = [for (final v in _cutNormal) -v];
-      _cutOffset = -_cutOffset;
-      _slice = 'custom';
+      _cutFlip = !_cutFlip;
+      _cutAt = -_cutAt;
     });
-    _send(ViewerCommands.slice(normal: _cutNormal, offset: _cutOffset));
+    _sendCut();
+    final v = _cutView();
+    if (v != null) _send(ViewerCommands.view(v));
+  }
+
+  void _sweep() {
+    setState(() => _sweeping = true);
+    _sendCut(play: true);
   }
 
   void _setExplode(double v) {
@@ -393,6 +523,9 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   void _reset() {
     setState(() {
       _slice = null;
+      _cutMode = CutMode.off;
+      _sweeping = false;
+      _peel = 0;
       _explode = 0;
       _anim = null;
       _step = 0;
@@ -411,6 +544,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 
   void _setLaser(bool on) {
     if (on == _laser) return;
+    if (on && _pen != null) _setPen(null);
     setState(() {
       _laser = on;
       if (!on) {
@@ -508,6 +642,189 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     if (e is PointerScrollEvent) _send(ViewerCommands.orbit(scale: e.scrollDelta.dy < 0 ? 1.1 : 1 / 1.1));
   }
 
+  // ------------------------------------------------------------------ notes
+
+  void _setPen(_Pen? pen) {
+    if (pen != null && _laser) _setLaser(false);
+    _endStroke();
+    setState(() {
+      _pen = pen;
+      _penPointers.clear();
+      _penOrbiting = false;
+      if (pen != null && !_notesShown) {
+        _notesShown = true;
+        _send(ViewerCommands.showNotes(true));
+      }
+    });
+  }
+
+  void _penDown(PointerDownEvent e, Size size) {
+    _penPointers[e.pointer] = e.localPosition;
+    final mouseTurn = e.kind == PointerDeviceKind.mouse && (e.buttons & kSecondaryMouseButton) != 0;
+    if (_penPointers.length == 1 && !mouseTurn) {
+      _penOrbiting = false;
+      _penDownAt = e.localPosition;
+      if (_pen != _Pen.pin) {
+        _penDrawing = true;
+        _penPending.add(_norm(e.localPosition, size));
+        _flushStroke();
+      }
+      return;
+    }
+    // A second finger (or the right mouse button) turns the model instead.
+    _endStroke();
+    _penDownAt = null;
+    _penOrbiting = true;
+    if (_penPointers.length >= 2) {
+      final ps = _penPointers.values.take(2).toList();
+      _orbitAt = (ps[0] + ps[1]) / 2;
+      _orbitSpread = (ps[0] - ps[1]).distance;
+    } else {
+      _orbitAt = e.localPosition;
+      _orbitSpread = 0;
+    }
+  }
+
+  void _penMove(PointerMoveEvent e, Size size) {
+    if (!_penPointers.containsKey(e.pointer)) return;
+    _penPointers[e.pointer] = e.localPosition;
+    if (_penOrbiting) {
+      final ps = _penPointers.values.take(2).toList();
+      final (at, spread) = ps.length >= 2 ? ((ps[0] + ps[1]) / 2, (ps[0] - ps[1]).distance) : (e.localPosition, 0.0);
+      final cmd = twoFingerOrbit(from: _orbitAt ?? at, to: at, spreadFrom: _orbitSpread, spreadTo: spread, height: size.height);
+      if (cmd != null) {
+        _send(cmd);
+        _orbitAt = at;
+        _orbitSpread = spread;
+      }
+      return;
+    }
+    if (!_penDrawing) return;
+    _penPending.add(_norm(e.localPosition, size));
+    final now = _now();
+    if (_penSent == null || now - _penSent! >= const Duration(milliseconds: 33)) _flushStroke();
+  }
+
+  void _penUp(PointerEvent e, Size size) {
+    final was = _penPointers.remove(e.pointer);
+    if (_penPointers.isNotEmpty) return;
+    if (!_penOrbiting && _pen == _Pen.pin && was != null && _penDownAt != null && (e.localPosition - _penDownAt!).distance < 12 && e is PointerUpEvent) {
+      _send(ViewerCommands.pinNote(_norm(e.localPosition, size), color: _penColor));
+    }
+    _penDownAt = null;
+    _endStroke();
+    _penOrbiting = false;
+  }
+
+  void _flushStroke({bool up = false}) {
+    if (_penPending.isEmpty && !up) return;
+    _send(ViewerCommands.stroke(List.of(_penPending), surface: _pen == _Pen.surface, color: _penColor, up: up));
+    _penPending.clear();
+    _penSent = _now();
+  }
+
+  void _endStroke() {
+    if (!_penDrawing) return;
+    _flushStroke(up: true);
+    _penDrawing = false;
+  }
+
+  void _showNotes(bool on) {
+    setState(() => _notesShown = on);
+    _send(ViewerCommands.showNotes(on));
+  }
+
+  void _deleteNote(String id) => _send(ViewerCommands.deleteNote(id));
+
+  /// Takes away the last line drawn (on the model or over the view).
+  void _undoStroke() {
+    final last = [..._notes.strokes, ..._notes.ink];
+    if (last.isEmpty) return;
+    // Ids are made in time order by the page.
+    last.sort((a, b) => a.id.substring(1).compareTo(b.id.substring(1)));
+    _deleteNote(last.last.id);
+  }
+
+  Future<void> _clearNotes() async {
+    final s = Viewer3dStrings(_lang);
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text('${s.clearNotes}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(s.close)),
+          FilledButton(key: const ValueKey('notes-clear-yes'), onPressed: () => Navigator.pop(context, true), child: Text(s.clearNotes)),
+        ],
+      ),
+    );
+    if (sure == true) _send(ViewerCommands.clearNotes());
+  }
+
+  /// Writes or changes the text and colour of pin [id]; a new pin opens here at once.
+  Future<void> _editPin(String id, {bool isNew = false}) async {
+    final pin = _notes.pin(id);
+    if (pin == null || _editingPin || !mounted) return;
+    _editingPin = true;
+    final s = Viewer3dStrings(_lang);
+    final text = TextEditingController(text: pin.text);
+    var colour = pin.color;
+    final result = await showDialog<Object>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, set) => AlertDialog(
+          key: const ValueKey('pin-editor'),
+          title: Text(s.note),
+          content: SizedBox(
+            width: 360,
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TextField(
+                key: const ValueKey('pin-text'),
+                controller: text,
+                autofocus: true,
+                minLines: 1,
+                maxLines: 4,
+                decoration: InputDecoration(hintText: s.noteText),
+              ),
+              const SizedBox(height: 14),
+              Text(s.colour, style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 6),
+              _swatches(colour, (c) => set(() => colour = c)),
+            ]),
+          ),
+          actions: [
+            TextButton.icon(key: const ValueKey('pin-delete'), onPressed: () => Navigator.pop(context, 'delete'), icon: const Icon(Icons.delete_outline), label: Text(s.delete)),
+            FilledButton(key: const ValueKey('pin-save'), onPressed: () => Navigator.pop(context, (text.text.trim(), colour)), child: Text(s.save)),
+          ],
+        ),
+      ),
+    );
+    _editingPin = false;
+    if (!mounted) return;
+    if (result == 'delete') {
+      _deleteNote(id);
+    } else if (result case (final String t, final Color c) when t != pin.text || c != pin.color) {
+      _send(ViewerCommands.updateNote(id, text: t, color: c));
+    }
+  }
+
+  Widget _swatches(Color selected, ValueChanged<Color> onPick) => Wrap(spacing: 6, runSpacing: 6, children: [
+    for (final c in _penColors)
+      InkWell(
+        key: ValueKey('swatch-${colorHex(c)}'),
+        customBorder: const CircleBorder(),
+        onTap: () => onPick(c),
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: c,
+            shape: BoxShape.circle,
+            border: Border.all(color: c == selected ? Theme.of(context).colorScheme.primary : const Color(0x66888888), width: c == selected ? 3 : 1),
+          ),
+        ),
+      ),
+  ]);
+
   // --------------------------------------------------------------- snapshot
 
   Completer<Model3dSnapshot?>? _snapping;
@@ -558,6 +875,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
       final stage = Stack(key: const ValueKey('model3d-stage'), children: [
         Positioned.fill(child: _engine!.view()),
         if (_laser) Positioned.fill(child: _laserLayer()),
+        if (_pen != null && _loaded) Positioned.fill(child: _penLayer()),
         if (!_loaded) Positioned.fill(child: _message(s, s.opening, busy: true)),
         if (_loaded) ..._overlays(m, s, wide),
       ]);
@@ -600,6 +918,8 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
 
   Widget _toolbar(ViewerManifest m, Viewer3dStrings s, bool wide) {
     final cs = Theme.of(context).colorScheme;
+    // Phones: tighter buttons, so the toolbar fits 360 pixels.
+    final density = wide ? null : VisualDensity.compact;
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -617,15 +937,25 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         _labelSwitch(s, wide),
         const SizedBox(width: 4),
         IconButton(
+          key: const ValueKey('model3d-write'),
+          tooltip: s.write,
+          visualDensity: density,
+          isSelected: _pen != null,
+          style: _pen != null ? IconButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Theme.of(context).colorScheme.onPrimary) : null,
+          icon: const Icon(Icons.edit_outlined),
+          onPressed: _loaded ? () => _setPen(_pen == null ? _Pen.pin : null) : null,
+        ),
+        IconButton(
           key: const ValueKey('model3d-laser'),
           tooltip: s.laser,
+          visualDensity: density,
           isSelected: _laser,
           style: _laser ? IconButton.styleFrom(backgroundColor: const Color(0xFFE53935), foregroundColor: Colors.white) : null,
           icon: const Icon(Icons.highlight_outlined),
           onPressed: _loaded ? () => _setLaser(!_laser) : null,
         ),
-        IconButton(key: const ValueKey('model3d-reset'), tooltip: s.startAgain, icon: const Icon(Icons.restart_alt), onPressed: _loaded ? _reset : null),
-        IconButton(key: const ValueKey('model3d-about'), tooltip: s.about, icon: const Icon(Icons.info_outline), onPressed: () => showModel3dCredits(context, model: m, lang: _lang)),
+        IconButton(key: const ValueKey('model3d-reset'), tooltip: s.startAgain, visualDensity: density, icon: const Icon(Icons.restart_alt), onPressed: _loaded ? _reset : null),
+        IconButton(key: const ValueKey('model3d-about'), tooltip: s.about, visualDensity: density, icon: const Icon(Icons.info_outline), onPressed: () => showModel3dCredits(context, model: m, lang: _lang)),
         if (_onSnapshot != null) ...[
           const SizedBox(width: 4),
           wide
@@ -695,6 +1025,52 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     ),
   );
 
+  /// Over the model while writing: one finger pins or draws, two turn the model.
+  Widget _penLayer() => LayoutBuilder(
+    builder: (context, box) => Listener(
+      key: const ValueKey('model3d-pen-layer'),
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: (e) => _penDown(e, box.biggest),
+      onPointerMove: (e) => _penMove(e, box.biggest),
+      onPointerUp: (e) => _penUp(e, box.biggest),
+      onPointerCancel: (e) => _penUp(e, box.biggest),
+      onPointerSignal: _laserScroll,
+      child: const SizedBox.expand(),
+    ),
+  );
+
+  /// The writing tools over the model: pin, draw on it, draw over the view; colours; undo; done.
+  Widget _penPalette(Viewer3dStrings s) {
+    final cs = Theme.of(context).colorScheme;
+    Widget tool(_Pen p, IconData icon, String tip) => IconButton(
+      key: ValueKey('pen-${p.name}'),
+      tooltip: tip,
+      isSelected: _pen == p,
+      style: _pen == p ? IconButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary) : null,
+      icon: Icon(icon),
+      onPressed: () => _setPen(p),
+    );
+    return Material(
+      key: const ValueKey('pen-palette'),
+      color: cs.surfaceContainerHigh.withValues(alpha: 0.96),
+      elevation: 4,
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 2, runSpacing: 4, children: [
+          tool(_Pen.pin, Icons.push_pin_outlined, s.toolPin),
+          tool(_Pen.surface, Icons.gesture, s.toolSurface),
+          tool(_Pen.screen, Icons.draw_outlined, s.toolScreen),
+          const SizedBox(width: 6),
+          _swatches(_penColor, (c) => setState(() => _penColor = c)),
+          const SizedBox(width: 6),
+          IconButton(key: const ValueKey('pen-undo'), tooltip: s.undo, icon: const Icon(Icons.undo), onPressed: _notes.strokes.isEmpty && _notes.ink.isEmpty ? null : _undoStroke),
+          IconButton(key: const ValueKey('pen-done'), tooltip: s.done, icon: const Icon(Icons.check), onPressed: () => _setPen(null)),
+        ]),
+      ),
+    );
+  }
+
   List<Widget> _overlays(ViewerManifest m, Viewer3dStrings s, bool wide) {
     final a = m.animation(_anim);
     final p = m.part(_picked);
@@ -713,6 +1089,17 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
           top: 10,
           left: 12,
           child: IgnorePointer(child: _pill(s.laserHint, const Color(0xCC16191E), Colors.white)),
+        ),
+      if (_pen != null)
+        Positioned(
+          top: 8,
+          left: 8,
+          right: 8,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            _penPalette(s),
+            const SizedBox(height: 6),
+            IgnorePointer(child: _pill(_pen == _Pen.pin ? s.pinHint : s.drawHint, const Color(0xCC16191E), Colors.white)),
+          ]),
         ),
       // The credit line: who made the model and the viewer (tap for the full credits).
       Positioned(
@@ -813,6 +1200,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
     if (_model?.canTakeApart ?? true) (_Tab.apart, Icons.open_with, s.tabApart),
     if (_model?.animations.isNotEmpty ?? true) (_Tab.animate, Icons.play_circle_outline, s.tabAnimate),
     (_Tab.views, Icons.threed_rotation, s.tabViews),
+    (_Tab.notes, Icons.sticky_note_2_outlined, s.tabNotes),
   ];
 
   Widget _panel(ViewerManifest m, Viewer3dStrings s) {
@@ -895,6 +1283,7 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
         _Tab.apart => _apartTab(s),
         _Tab.animate => _animateTab(m, s),
         _Tab.views => _viewsTab(m, s),
+        _Tab.notes => _notesTab(m, s),
       },
     );
   }
@@ -964,41 +1353,154 @@ class _Model3dViewerState extends State<Model3dViewer> with SingleTickerProvider
   }
 
   Widget _cutTab(ViewerManifest m, Viewer3dStrings s) {
-    final half = m.size / 2;
+    final pad = const EdgeInsets.symmetric(horizontal: 12);
+    final kinds = [
+      (CutMode.half, Icons.vertical_split_outlined, s.cutHalf),
+      (CutMode.wedge, Icons.pie_chart_outline, s.cutWedge),
+      (CutMode.slab, Icons.view_agenda_outlined, s.cutSlab),
+      (CutMode.depth, Icons.layers_outlined, s.cutDepth),
+      (CutMode.peel, Icons.blur_circular, s.cutPeel),
+    ];
+    final axes = [(CutAxis.z, s.front), (CutAxis.x, s.side), (CutAxis.y, s.top)];
+    final mode = _cutMode;
+    final on = _slice != null || mode != CutMode.off;
     return ListView(padding: const EdgeInsets.only(bottom: 16), children: [
       if (m.slices.isNotEmpty) ...[
         _title(s.readyCuts),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: pad,
           child: Wrap(spacing: 8, runSpacing: 8, children: [
             for (final c in m.slices)
               ChoiceChip(key: ValueKey('slice-${c.id}'), label: Text(c.name.of(_lang)), selected: _slice == c.id, onSelected: (_) => _setSlice(_slice == c.id ? null : c)),
           ]),
         ),
       ],
-      _title(s.cutFrom),
+      _title(s.cutKind),
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: pad,
         child: Wrap(spacing: 8, runSpacing: 8, children: [
-          for (final (id, label, n) in [
-            ('front', s.front, const [0.0, 0.0, -1.0]),
-            ('side', s.side, const [-1.0, 0.0, 0.0]),
-            ('top', s.top, const [0.0, -1.0, 0.0]),
-          ])
-            OutlinedButton(key: ValueKey('cut-$id'), onPressed: () => _cutFrom(n), child: Text(label)),
+          for (final (k, icon, label) in kinds)
+            ChoiceChip(
+              key: ValueKey('cut-mode-${k.name}'),
+              avatar: Icon(icon, size: 18),
+              label: Text(label),
+              selected: mode == k,
+              onSelected: (_) => _setCutMode(mode == k ? CutMode.off : k),
+            ),
         ]),
       ),
-      if (_slice != null) ...[
-        _title(s.moveCut),
-        Slider(key: const ValueKey('cut-depth'), min: -half, max: half, value: _cutOffset.clamp(-half, half), onChanged: _moveCut),
+      if (mode != CutMode.off && mode != CutMode.peel) ...[
+        _title(s.cutFrom),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.spaceBetween, children: [
-            TextButton.icon(key: const ValueKey('cut-flip'), onPressed: _flipCut, icon: const Icon(Icons.flip), label: Text(s.otherHalf)),
-            FilledButton.tonal(key: const ValueKey('slice-off'), onPressed: () => _setSlice(null), child: Text(s.closeCut)),
+          padding: pad,
+          child: Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final (a, label) in axes)
+              ChoiceChip(key: ValueKey('cut-axis-${a.name}'), label: Text(label), selected: _cutAxis == a, onSelected: (_) => _setCutAxis(a)),
           ]),
         ),
       ],
+      ...switch (mode) {
+        CutMode.half => [
+          _title(s.moveCut),
+          Slider(key: const ValueKey('cut-depth'), min: -0.5, max: 0.5, value: _cutAt.clamp(-0.5, 0.5), onChanged: (v) => _adjustCut(() => _cutAt = v)),
+          Padding(
+            padding: pad,
+            child: Align(alignment: Alignment.centerLeft, child: TextButton.icon(key: const ValueKey('cut-flip'), onPressed: _flipCut, icon: const Icon(Icons.flip), label: Text(s.otherHalf))),
+          ),
+        ],
+        CutMode.wedge => [
+          _title(s.sliceSize(_wedgeAngle.round())),
+          Slider(key: const ValueKey('cut-angle'), min: 30, max: 180, divisions: 10, value: _wedgeAngle.clamp(30, 180), onChanged: (v) => _adjustCut(() => _wedgeAngle = v)),
+          Padding(
+            padding: pad,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const ValueKey('cut-turn'),
+                onPressed: () {
+                  _adjustCut(() => _wedgeTurn = (_wedgeTurn + 90) % 360);
+                  final v = _cutView();
+                  if (v != null) _send(ViewerCommands.view(v));
+                },
+                icon: const Icon(Icons.rotate_right),
+                label: Text(s.turnSlice),
+              ),
+            ),
+          ),
+        ],
+        CutMode.slab => [
+          _title(s.thickness),
+          Slider(key: const ValueKey('cut-thickness'), min: 0.03, max: 0.6, value: _slabThickness.clamp(0.03, 0.6), onChanged: (v) => _adjustCut(() => _slabThickness = v)),
+          _title(s.moveCut),
+          Slider(key: const ValueKey('cut-depth'), min: -0.5, max: 0.5, value: _cutAt.clamp(-0.5, 0.5), onChanged: (v) => _adjustCut(() => _cutAt = v)),
+        ],
+        CutMode.depth => [
+          _title(s.depthOf((_depth * 100).round())),
+          Slider(key: const ValueKey('cut-sweep-depth'), value: _depth.clamp(0, 1), onChanged: (v) => _adjustCut(() => _depth = v)),
+          Padding(
+            padding: pad,
+            child: Wrap(spacing: 8, runSpacing: 8, children: [
+              FilledButton.tonalIcon(key: const ValueKey('cut-sweep'), onPressed: _sweeping ? null : _sweep, icon: const Icon(Icons.play_arrow), label: Text(s.sweep)),
+              TextButton.icon(key: const ValueKey('cut-flip'), onPressed: _flipCut, icon: const Icon(Icons.flip), label: Text(s.otherHalf)),
+            ]),
+          ),
+        ],
+        CutMode.peel => [
+          if (_peelLayers > 1) ...[
+            _title(s.peeled(_peel, _peelLayers)),
+            Slider(
+              key: const ValueKey('cut-peel'),
+              min: 0,
+              max: (_peelLayers - 1).toDouble(),
+              divisions: math.max(1, _peelLayers - 1),
+              value: _peel.clamp(0, _peelLayers - 1).toDouble(),
+              onChanged: (v) => _adjustCut(() => _peel = v.round()),
+            ),
+          ] else if (_peelLayers == 1)
+            Padding(padding: const EdgeInsets.all(16), child: Text(s.onePeel)),
+        ],
+        CutMode.off => const <Widget>[],
+      },
+      if (on)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+          child: Align(alignment: Alignment.centerLeft, child: FilledButton.tonal(key: const ValueKey('slice-off'), onPressed: () => _setSlice(null), child: Text(s.closeCut))),
+        ),
+    ]);
+  }
+
+  Widget _notesTab(ViewerManifest m, Viewer3dStrings s) {
+    final cs = Theme.of(context).colorScheme;
+    final n = _notes;
+    Widget dot(Color c, IconData icon) => Icon(icon, color: c == const Color(0xFFFFFFFF) ? cs.onSurfaceVariant : c);
+    Widget remove(String id) => IconButton(key: ValueKey('note-delete-$id'), tooltip: s.delete, icon: const Icon(Icons.delete_outline), onPressed: () => _deleteNote(id));
+    return ListView(key: const ValueKey('notes-list'), padding: const EdgeInsets.only(bottom: 16), children: [
+      SwitchListTile(key: const ValueKey('notes-show'), title: Text(s.showNotes), value: _notesShown, onChanged: _loaded ? _showNotes : null),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+        child: Wrap(spacing: 8, runSpacing: 8, children: [
+          FilledButton.tonalIcon(key: const ValueKey('notes-pin'), onPressed: _loaded ? () => _setPen(_Pen.pin) : null, icon: const Icon(Icons.push_pin_outlined), label: Text(s.toolPin)),
+          OutlinedButton.icon(key: const ValueKey('notes-draw'), onPressed: _loaded ? () => _setPen(_Pen.surface) : null, icon: const Icon(Icons.gesture), label: Text(s.toolSurface)),
+        ]),
+      ),
+      if (n.isEmpty) Padding(padding: const EdgeInsets.all(16), child: Text(s.noNotes, style: TextStyle(color: cs.onSurfaceVariant))),
+      for (final p in n.pins)
+        ListTile(
+          key: ValueKey('note-${p.id}'),
+          leading: dot(p.color, Icons.push_pin),
+          title: Text(p.text.isEmpty ? s.emptyNote : p.text, maxLines: 2, overflow: TextOverflow.ellipsis),
+          subtitle: Text(m.part(p.part)?.name.of(_lang) ?? p.part),
+          onTap: () => _editPin(p.id),
+          trailing: remove(p.id),
+        ),
+      for (final k in n.strokes)
+        ListTile(key: ValueKey('note-${k.id}'), leading: dot(k.color, Icons.gesture), title: Text(s.drawingOn(m.part(k.part)?.name.of(_lang) ?? '${k.part}')), trailing: remove(k.id)),
+      for (final k in n.ink) ListTile(key: ValueKey('note-${k.id}'), leading: dot(k.color, Icons.draw), title: Text(s.drawingOver), trailing: remove(k.id)),
+      if (n.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+          child: Align(alignment: Alignment.centerLeft, child: TextButton.icon(key: const ValueKey('notes-clear'), onPressed: _clearNotes, icon: const Icon(Icons.delete_sweep_outlined), label: Text(s.clearNotes))),
+        ),
     ]);
   }
 
