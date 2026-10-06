@@ -28,6 +28,7 @@ class FamilyController extends ChangeNotifier {
   final _libraryErrors = <String, ApiException>{};
   final _marks = <String, ChildMarks>{};
   final _marksErrors = <String, ApiException>{};
+  final _badges = <String, List<BadgeAward>>{};
 
   Child? get selected => children.where((c) => c.id == _selectedId).firstOrNull ?? children.firstOrNull;
   ChildSummary? summaryOf(String childId) => _summaries[childId];
@@ -39,6 +40,9 @@ class FamilyController extends ChangeNotifier {
   ApiException? libraryErrorOf(String childId) => _libraryErrors[childId];
   ChildMarks? marksOf(String childId) => _marks[childId];
   ApiException? marksErrorOf(String childId) => _marksErrors[childId];
+
+  /// Badges teachers awarded the child, newest first (null until loaded).
+  List<BadgeAward>? badgesOf(String childId) => _badges[childId];
   Child? byId(String? id) => children.where((c) => c.id == id).firstOrNull;
   Iterable<Child> inSection(String? sectionId) => children.where((c) => c.sectionId == sectionId);
 
@@ -62,7 +66,8 @@ class FamilyController extends ChangeNotifier {
   }
 
   /// Everything Home shows for a child. Each part fails on its own, so one problem never hides the rest.
-  Future<void> _loadAll(String childId) => Future.wait([loadSummary(childId), loadFees(childId), loadLibrary(childId), loadMarks(childId)]);
+  Future<void> _loadAll(String childId) =>
+      Future.wait([loadSummary(childId), loadFees(childId), loadLibrary(childId), loadMarks(childId), loadBadges(childId)]);
 
   Future<void> select(String childId) async {
     if (childId == _selectedId) return;
@@ -74,6 +79,7 @@ class FamilyController extends ChangeNotifier {
       if (!_fees.containsKey(childId)) loadFees(childId),
       if (!_library.containsKey(childId)) loadLibrary(childId),
       if (!_marks.containsKey(childId)) loadMarks(childId),
+      if (!_badges.containsKey(childId)) loadBadges(childId),
     ]);
   }
 
@@ -112,6 +118,16 @@ class FamilyController extends ChangeNotifier {
     } on ApiException catch (e) {
       _libraryErrors[childId] = e;
       return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadBadges(String childId) async {
+    try {
+      _badges[childId] = await api.badges(childId);
+    } on ApiException {
+      // Badges are a nicety: Home works without them.
     } finally {
       notifyListeners();
     }
@@ -240,7 +256,11 @@ class FamilyController extends ChangeNotifier {
   Future<(Child, Homework)?> findHomework(String homeworkId, {String? sectionId, String? studentId}) async {
     if (children.isEmpty) await load();
     final named = byId(studentId);
-    final candidates = named != null ? [named] : sectionId == null ? children : inSection(sectionId).toList();
+    final candidates = named != null
+        ? [named]
+        : sectionId == null
+        ? children
+        : inSection(sectionId).toList();
     for (final child in candidates) {
       if (!_summaries.containsKey(child.id)) await loadSummary(child.id);
       final s = _summaries[child.id];

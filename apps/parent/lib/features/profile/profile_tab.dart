@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/profile_photo.dart';
 import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../l10n/l10n.dart';
@@ -40,8 +41,33 @@ class ProfileTab extends StatelessWidget {
     if (ok == true) await state.signOut();
   }
 
+  /// Photo, name and email (the phone number is the sign-in).
+  Future<void> _edit(BuildContext context) async {
+    final me = state.me!;
+    final api = state.api;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (ctx) => KxProfileEditScreen(
+          fullName: me.fullName,
+          email: me.email,
+          phone: me.phone == null ? null : phone(me.phone!),
+          photo: api.photo(me.photoUrl),
+          pickImage: pickProfileImage,
+          onPhoto: (jpeg) async => state.updateMe(await api.uploadPhoto(jpeg)),
+          onRemovePhoto: () async => state.updateMe(await api.removePhoto()),
+          onSave: ({required fullName, required email, teachingSubjects}) async =>
+              state.updateMe(await api.updateProfile(fullName: fullName, email: email)),
+          describeError: ctx.errorText,
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: state, builder: (context, _) => _build(context));
+
+  Widget _build(BuildContext context) {
     final me = state.me!;
     final c = context.colors;
     final l = context.l10n;
@@ -57,7 +83,12 @@ class ProfileTab extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
                 child: Row(
                   children: [
-                    KxAvatar(name: me.fullName, size: 64),
+                    InkWell(
+                      key: const Key('profileAvatar'),
+                      customBorder: const CircleBorder(),
+                      onTap: () => _edit(context),
+                      child: KxAvatar(name: me.fullName, size: 64, image: state.api.photo(me.photoUrl)),
+                    ),
                     const SizedBox(width: Kx.s16),
                     Expanded(
                       child: Column(
@@ -68,6 +99,12 @@ class ProfileTab extends StatelessWidget {
                           if (me.email != null) Text(me.email!, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
                         ],
                       ),
+                    ),
+                    IconButton(
+                      key: const Key('editProfile'),
+                      tooltip: KxStrings.of(context).editProfile,
+                      icon: const Icon(Icons.edit_outlined),
+                      onPressed: () => _edit(context),
                     ),
                   ],
                 ),

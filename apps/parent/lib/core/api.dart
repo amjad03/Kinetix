@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
@@ -165,6 +167,19 @@ abstract class ParentApi {
   /// Registers this device for push notifications to the Parent App (`POST /v1/push/devices`).
   Future<void> registerPushDevice({required String token, required String platform});
   Future<void> removePushDevice(String token);
+
+  /// Edits the profile (the phone number is the sign-in: only the office changes it).
+  Future<Me> updateProfile({required String fullName, required String? email});
+
+  /// Replaces the profile photo with [jpeg] (already square and compressed).
+  Future<Me> uploadPhoto(Uint8List jpeg);
+  Future<Me> removePhoto();
+
+  /// A user's photo from its API [path] (`photoUrl`), loaded with the token; null for none.
+  ImageProvider? photo(String? path);
+
+  /// The badges teachers awarded a student, newest first.
+  Future<List<BadgeAward>> badges(String studentId);
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
@@ -436,6 +451,32 @@ class HttpParentApi implements ParentApi {
   Future<Consents> setConsent(String childId, ConsentPurpose purpose, {required bool granted}) async => Consents.fromJson(
     await _send('POST', '/v1/consents', body: {'studentId': childId, 'purpose': purpose.wire, 'granted': granted}) as Map<String, dynamic>,
   );
+
+  @override
+  Future<Me> updateProfile({required String fullName, required String? email}) async =>
+      Me.fromJson(await _send('PATCH', '/v1/me', body: {'fullName': fullName, 'email': email}) as Map<String, dynamic>);
+
+  @override
+  Future<Me> uploadPhoto(Uint8List jpeg) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/me/photo'))
+      ..files.add(http.MultipartFile.fromBytes('photo', jpeg, filename: 'photo.jpg', contentType: MediaType('image', 'jpeg')))
+      ..headers['accept'] = 'application/json';
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    return Me.fromJson(await _receive(req, auth: true, timeout: const Duration(minutes: 1)) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<Me> removePhoto() async => Me.fromJson(await _send('DELETE', '/v1/me/photo') as Map<String, dynamic>);
+
+  @override
+  ImageProvider? photo(String? path) =>
+      path == null ? null : NetworkImage('$baseUrl$path', headers: {if (token != null) 'authorization': 'Bearer $token'});
+
+  @override
+  Future<List<BadgeAward>> badges(String studentId) async {
+    final j = await _send('GET', '/v1/badges/students/$studentId') as Map<String, dynamic>;
+    return [for (final b in j['badges'] as List) BadgeAward.fromJson(b as Map<String, dynamic>)];
+  }
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
