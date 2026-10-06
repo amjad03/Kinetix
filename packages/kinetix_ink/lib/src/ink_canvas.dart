@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'board_background.dart';
 import 'ink_controller.dart';
 import 'ink_models.dart';
+import 'shape_edit.dart';
 
 /// A writing surface. Uses a raw [Listener] rather than gesture detectors so that every
 /// pointer is delivered independently: ten fingers make ten strokes.
@@ -62,7 +63,9 @@ Color inkColorFor(Color c, BoardBackground bg) {
   return c;
 }
 
-void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = false, bool angles = false}) {
+/// Paints [s]. [lengths] and [angles] label every shape (the board-wide switches) on top of
+/// the shape's own [Stroke.measure], in [unit].
+void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = false, bool angles = false, MeasureUnit unit = MeasureUnit.cm}) {
   final color = inkColorFor(s.style.color, bg);
   final highlighter = s.style.tool == InkTool.highlighter;
   final paint = Paint()
@@ -78,7 +81,12 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     canvas.drawCircle(pts.first.offset, paint.strokeWidth / 2, paint..style = PaintingStyle.fill);
     return;
   }
-  final nib = s.shape == null && !highlighter ? s.style.nib : PenNib.round;
+  // Shapes may be dashed or dotted; the other pen types are for handwriting.
+  final nib = highlighter
+      ? PenNib.round
+      : s.shape == null
+      ? s.style.nib
+      : (s.style.nib == PenNib.dashed || s.style.nib == PenNib.dotted ? s.style.nib : PenNib.round);
   if (nib == PenNib.calligraphy) {
     _paintCalligraphy(canvas, pts, s.style.width, paint.color);
     return;
@@ -87,11 +95,16 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     _paintPressure(canvas, pts, s.style.width, paint);
     return;
   }
-  final path = Path()..moveTo(pts.first.x, pts.first.y);
+  var path = Path()..moveTo(pts.first.x, pts.first.y);
   if (s.shape != null) {
     // Shapes are exact geometry: straight segments, no smoothing.
-    for (final p in pts.skip(1)) {
-      path.lineTo(p.x, p.y);
+    final v = s.vertices;
+    if (s.corner > 0 && v.length >= 3) {
+      path = roundedPolygon(v, s.corner);
+    } else {
+      for (final p in pts.skip(1)) {
+        path.lineTo(p.x, p.y);
+      }
     }
     if (s.fill != null && pts.length > 2) canvas.drawPath(path, Paint()..color = s.fill!);
   } else {
@@ -102,7 +115,14 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     }
     path.lineTo(pts.last.x, pts.last.y);
   }
-  canvas.drawPath(nib == PenNib.dashed ? _dashed(path, paint.strokeWidth) : path, paint);
+  canvas.drawPath(
+    switch (nib) {
+      PenNib.dashed => _dashed(path, paint.strokeWidth),
+      PenNib.dotted => _dashed(path, paint.strokeWidth, dot: true),
+      _ => path,
+    },
+    paint,
+  );
   if (nib == PenNib.arrow) {
     // The arrowhead follows the last stretch of the line, not its last jitter.
     final tip = pts.last.offset;
@@ -119,15 +139,37 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
   final shape = s.shape;
   if (shape == null) return;
   if (shape == ShapeKind.arrow || shape == ShapeKind.doubleArrow) {
-    _arrowHead(canvas, pts.first.offset, pts.last.offset, paint);
-    if (shape == ShapeKind.doubleArrow) _arrowHead(canvas, pts.last.offset, pts.first.offset, paint);
+    _arrowHead(canvas, pts.first.offset, pts.last.offset, paint, filled: s.filledHead);
+    if (shape == ShapeKind.doubleArrow) _arrowHead(canvas, pts.last.offset, pts.first.offset, paint, filled: s.filledHead);
   }
-  if (lengths || angles) _paintMeasurements(canvas, s, color, lengths: lengths, angles: angles);
+  final m = s.measure | ShapeMeasure(lengths: lengths, angles: angles, radius: lengths);
+  if (m.any) paintShapeMeasurements(canvas, s, color, m, unit);
 }
 
-/// [path] cut into dashes about three line widths long.
-Path _dashed(Path path, double width) {
-  final dash = math.max(8.0, width * 3), gap = math.max(6.0, width * 2.2);
+/// A closed path through [v] with its corners rounded to [radius] (at most half of the
+/// shorter side at each corner).
+Path roundedPolygon(List<Offset> v, double radius) {
+  final n = v.length;
+  final path = Path();
+  for (var i = 0; i < n; i++) {
+    final prev = v[(i - 1 + n) % n], at = v[i], next = v[(i + 1) % n];
+    final a = prev - at, b = next - at;
+    final r = math.min(radius, math.min(a.distance, b.distance) / 2);
+    final p1 = at + (a.distance == 0 ? Offset.zero : a / a.distance * r);
+    final p2 = at + (b.distance == 0 ? Offset.zero : b / b.distance * r);
+    if (i == 0) {
+      path.moveTo(p1.dx, p1.dy);
+    } else {
+      path.lineTo(p1.dx, p1.dy);
+    }
+    path.quadraticBezierTo(at.dx, at.dy, p2.dx, p2.dy);
+  }
+  return path..close();
+}
+
+/// [path] cut into dashes about three line widths long (or dots, one width apart).
+Path _dashed(Path path, double width, {bool dot = false}) {
+  final dash = dot ? 0.01 : math.max(8.0, width * 3), gap = dot ? math.max(4.0, width * 2) : math.max(6.0, width * 2.2);
   final out = Path();
   for (final m in path.computeMetrics()) {
     for (var d = 0.0; d < m.length; d += dash + gap) {
@@ -160,7 +202,7 @@ void _paintPressure(Canvas canvas, List<InkPoint> pts, double width, Paint paint
   }
 }
 
-void _arrowHead(Canvas canvas, Offset from, Offset tip, Paint paint) {
+void _arrowHead(Canvas canvas, Offset from, Offset tip, Paint paint, {bool filled = false}) {
   final d = tip - from;
   if (d.distance < 1) return;
   final a = math.atan2(d.dy, d.dx);
@@ -169,7 +211,15 @@ void _arrowHead(Canvas canvas, Offset from, Offset tip, Paint paint) {
     ..moveTo(tip.dx - len * math.cos(a - 0.45), tip.dy - len * math.sin(a - 0.45))
     ..lineTo(tip.dx, tip.dy)
     ..lineTo(tip.dx - len * math.cos(a + 0.45), tip.dy - len * math.sin(a + 0.45));
-  canvas.drawPath(path, paint);
+  if (filled) {
+    canvas.drawPath(
+      path..close(),
+      Paint()
+        ..color = paint.color
+        ..style = PaintingStyle.fill,
+    );
+  }
+  canvas.drawPath(path, Paint()..color = paint.color..strokeWidth = paint.strokeWidth..style = PaintingStyle.stroke..strokeJoin = StrokeJoin.round..strokeCap = StrokeCap.round);
 }
 
 String cm(double px) => '${(px / pxPerCm).toStringAsFixed(1)} cm';
@@ -181,7 +231,10 @@ String degrees(double d) {
   return (d - r).abs() < 0.05 ? '${r.toInt()}°' : '${d.toStringAsFixed(1)}°';
 }
 
-void _paintMeasurements(Canvas canvas, Stroke s, Color color, {required bool lengths, required bool angles}) {
+/// Labels on a shape or figure: side lengths, corner angles, a circle's radius, the area; all
+/// worked out from where its points are now, so they stay right after it is moved, resized,
+/// turned or reshaped.
+void paintShapeMeasurements(Canvas canvas, BoardElement e, Color color, ShapeMeasure m, MeasureUnit unit) {
   void label(String text, Offset at) {
     final tp = TextPainter(
       text: TextSpan(
@@ -195,21 +248,40 @@ void _paintMeasurements(Canvas canvas, Stroke s, Color color, {required bool len
     tp.paint(canvas, box.topLeft + const Offset(5, 2));
   }
 
-  final shape = s.shape!;
-  if (shape == ShapeKind.circle) {
-    final b = s.bounds.deflate(s.style.width / 2);
-    if (lengths) label('r = ${cm(b.width / 2)}', b.center);
+  final shape = e is Stroke ? e.shape : null;
+  if (e is Stroke && shape != null && shape.isRound) {
+    final ax = roundAxes(e);
+    if (shape == ShapeKind.circle) {
+      final r = (ax.major + ax.minor) / 2;
+      if (m.radius || m.lengths) {
+        // A radius drawn out to the first point, labelled half way along.
+        final rim = e.points.first.offset;
+        canvas.drawLine(
+          ax.center,
+          rim,
+          Paint()
+            ..color = color.withValues(alpha: 0.7)
+            ..strokeWidth = 1.5,
+        );
+        canvas.drawCircle(ax.center, 3, Paint()..color = color);
+        label('r = ${formatLength(r, unit)}', (ax.center + rim) / 2 - const Offset(0, 14));
+      }
+      if (m.area) label('A = ${formatArea(math.pi * r * r, unit)}', ax.center + const Offset(0, 18));
+    } else {
+      if (m.lengths) label('${formatLength(ax.major * 2, unit)} × ${formatLength(ax.minor * 2, unit)}', ax.center);
+      if (m.area) label('A = ${formatArea(math.pi * ax.major * ax.minor, unit)}', ax.center + const Offset(0, 22));
+    }
     return;
   }
-  if (shape == ShapeKind.ellipse) {
-    final b = s.bounds.deflate(s.style.width / 2);
-    if (lengths) label('${cm(b.width)} × ${cm(b.height)}', b.center);
-    return;
-  }
-  final v = s.vertices;
-  final closed = shape.isPolygon;
+  final v = switch (e) {
+    Stroke() => e.vertices,
+    PolygonElement(:final points) => points,
+    _ => const <Offset>[],
+  };
+  if (v.length < 2) return;
+  final closed = e is PolygonElement ? e.closed && v.length > 2 : (shape?.isPolygon ?? false);
   final centroid = v.fold(Offset.zero, (a, b) => a + b) / v.length.toDouble();
-  if (lengths) {
+  if (m.lengths) {
     final edges = closed ? v.length : v.length - 1;
     for (var i = 0; i < edges; i++) {
       final a = v[i], b = v[(i + 1) % v.length];
@@ -217,10 +289,10 @@ void _paintMeasurements(Canvas canvas, Stroke s, Color color, {required bool len
       // Push the label outward, away from the middle of the shape.
       final out = closed ? mid - centroid : Offset(-(b - a).dy, (b - a).dx);
       final n = out.distance == 0 ? Offset.zero : out / out.distance;
-      label(cm((b - a).distance), mid + n * 18);
+      label(formatLength((b - a).distance, unit), mid + n * 18);
     }
   }
-  if (angles && closed) {
+  if (m.angles && closed) {
     for (var i = 0; i < v.length; i++) {
       final prev = v[(i - 1 + v.length) % v.length], at = v[i], next = v[(i + 1) % v.length];
       final inward = centroid - at;
@@ -228,6 +300,7 @@ void _paintMeasurements(Canvas canvas, Stroke s, Color color, {required bool len
       label(degrees(angleAt(prev, at, next)), at + n * 30);
     }
   }
+  if (m.area && closed) label('A = ${formatArea(polygonArea(v), unit)}', centroid);
 }
 
 class _CommittedPainter extends CustomPainter {

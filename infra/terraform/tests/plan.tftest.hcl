@@ -68,6 +68,10 @@ run "staging_defaults" {
     error_message = "objects in India via S3; no AI server unless configured"
   }
   assert {
+    condition     = length(aws_s3_bucket.phet) == 1 && contains(keys(local.api_environment), "PHET_MIRROR_URL") && contains(aws_cloudfront_distribution.phet[0].restrictions[0].geo_restriction[0].locations, "IN")
+    error_message = "PhET sims are mirrored in India and the API is told where"
+  }
+  assert {
     condition     = aws_lb_target_group.api.health_check[0].path == "/ready"
     error_message = "the API target group checks readiness"
   }

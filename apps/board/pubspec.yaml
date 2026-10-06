@@ -79,6 +79,10 @@ flutter:
   assets:
     - assets/library/
     - assets/library/thumbs/
+    # PhET sims (lib/features/phet): the catalogue and small thumbnails; the sims themselves
+    # download on demand. Built by tools/phet/build-catalogue.mjs (docs/operations/phet.md).
+    - assets/phet/
+    - assets/phet/thumbs/
 
 # MSIX installer for Windows panels / OPS PCs. Version comes from `version:` above.
 # `publisher` must equal the Subject of the code-signing certificate (placeholder until we buy

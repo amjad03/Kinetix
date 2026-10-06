@@ -14,6 +14,7 @@ import '../ai/ai_controller.dart';
 import '../ai/ai_widgets.dart';
 import '../board/chrome.dart' show showBoardMessage;
 import '../board/side_panel.dart';
+import '../phet/phet_panel.dart' show RelatedPhetSims;
 import '../reader/read_aloud.dart' show ReadAloudScope;
 
 const _booksAccent = Color(0xFF8AB4F8);
@@ -24,7 +25,7 @@ const _booksAccent = Color(0xFF8AB4F8);
 /// quick quiz grounded in that topic. Topics taught to the open class are ticked, and the
 /// teacher marks a topic as taught (or undoes it) from the outline or the topic.
 class BooksPanel extends StatefulWidget {
-  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel, this.onOpenResource, this.initialTopicId});
+  const BooksPanel({super.key, required this.board, required this.ai, required this.onOpenPanel, this.onOpenResource, this.onOpenPhet, this.initialTopicId});
 
   final BoardController board;
   final AiController ai;
@@ -34,6 +35,9 @@ class BooksPanel extends StatefulWidget {
 
   /// Opens a topic's 3D model or lab next to the whiteboard.
   final void Function(SplitContent content, String id)? onOpenResource;
+
+  /// Opens a PhET sim in the Sims tab ("Related PhET sims" under a topic).
+  final ValueChanged<String>? onOpenPhet;
 
   /// Opens straight at this topic (from Today's plan).
   final String? initialTopicId;
@@ -457,6 +461,8 @@ class _BooksPanelState extends State<BooksPanel> {
                 padding: const EdgeInsets.only(top: Kx.s8),
                 child: Text(_taughtLine(done), style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
               ),
+            // PhET sims whose keywords match the topic (lib/features/phet).
+            if (widget.onOpenPhet case final open?) RelatedPhetSims(text: '${t.title} ${t.chapterTitle} ${t.summary}', onOpen: open),
             if (t.resources.isNotEmpty && widget.onOpenResource != null) ...[
               AiSectionLabel(l.booksOnTheBoard),
               Wrap(

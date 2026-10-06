@@ -384,3 +384,15 @@ variable "code_run_tenant_per_minute" {
   type        = number
   default     = 120
 }
+
+variable "phet_mirror_enabled" {
+  description = "Mirror PhET's sims in India (phet.tf). Off: the API sends boards to phet.colorado.edu."
+  type        = bool
+  default     = true
+}
+
+variable "phet_mirror_countries" {
+  description = "Countries (ISO 3166-1 alpha-2) the PhET mirror serves; empty = everywhere."
+  type        = list(string)
+  default     = ["IN"]
+}

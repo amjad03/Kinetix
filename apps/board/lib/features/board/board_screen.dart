@@ -40,6 +40,8 @@ import '../reader/read_aloud.dart';
 import '../remote/board_remote.dart';
 import '../remote/board_toolkit.dart';
 import '../signin/sign_in_dialog.dart';
+import '../phet/phet_panel.dart';
+import '../phet/phet_strings.dart';
 import '../sims/sims.dart';
 import '../toolkit/toolkit_controller.dart';
 import '../toolkit/remote_toolkit.dart';
@@ -115,6 +117,9 @@ class _BoardScreenState extends State<BoardScreen> {
   /// The model or lab view in the split pane, for a picture of it.
   final _splitKey = GlobalKey();
 
+  /// The Sims tab (PhET, lib/features/phet): the sim open in it, for "Add to board".
+  final _phet = PhetPanelController();
+
   /// Today's plan step timer: keeps running while other panels are open or the panel is closed.
   late final PlanTimer _planTimer;
   BoardPopover? _popover;
@@ -184,6 +189,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    _phet.addListener(_onPhetChanged);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
     _ai = AiController(board)
@@ -258,6 +264,9 @@ class _BoardScreenState extends State<BoardScreen> {
     _wb.removeListener(_onWbChanged);
     if (PanelHost.active == _pushInPanel) PanelHost.active = null;
     board.removeListener(_onBoardChanged);
+    _phet
+      ..removeListener(_onPhetChanged)
+      ..dispose();
     board.projector.attach(null);
     board.profiles.onSwitch = null;
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
@@ -344,6 +353,8 @@ class _BoardScreenState extends State<BoardScreen> {
       ..convertShapes = board.aiPenConvert.contains('shapes')
       ..convertMaths = board.aiPenConvert.contains('maths')
       ..convertText = board.aiPenConvert.contains('text');
+    _wb.measureNewShapes = board.measureShapes;
+    if (_wb.measureUnit != board.measureUnit) _wb.measureUnit = board.measureUnit;
     if (_primary && (_wb.tool == BoardTool.aiPen || _wb.tool == BoardTool.laser)) _wb.tool = BoardTool.pen;
   }
 
@@ -1097,6 +1108,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('physics-formulas', Icons.bolt_outlined, l.kitTabName(KitTab.physics), [ToolGroup.science], sci, _run(() => _kitAt(KitTab.physics))),
       DrawerTool('constants', Icons.pin_outlined, l.kitTabName(KitTab.constants), [ToolGroup.science], sci, _run(() => _kitAt(KitTab.constants))),
       DrawerTool('sims', Icons.science, l.simTitle, [ToolGroup.science, ToolGroup.maths], sci, _run(() => unawaited(_openSim()))),
+      DrawerTool('phet', Icons.science, PhetStrings(s.lang).title, [ToolGroup.science, ToolGroup.maths], sci, _run(() => _show(PanelKind.phet))),
       DrawerTool('labs', Icons.biotech_outlined, LayoutStrings.of(context).tabLabs, [ToolGroup.science], sci, _run(() => _openSplit(SplitContent.lab))),
       DrawerTool('models3d', Icons.view_in_ar_outlined, l.splitModel3d, [ToolGroup.science, ToolGroup.geometry], sci, _run(() => _openSplit(SplitContent.model3d))),
       DrawerTool('circuit', Icons.electrical_services, l.subjectToolName(SubjectTool.circuit), [ToolGroup.science], sci, _run(() => subject(SubjectTool.circuit))),
@@ -1327,6 +1339,7 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.books => PanelTab.books,
     PanelKind.kit => PanelTab.kit,
     PanelKind.animations => PanelTab.animations,
+    PanelKind.phet => PanelTab.sims,
     _ => null,
   };
 
@@ -1348,11 +1361,25 @@ class _BoardScreenState extends State<BoardScreen> {
         _show(PanelKind.kit);
       case PanelTab.animations:
         _show(PanelKind.animations);
+      case PanelTab.sims:
+        _show(PanelKind.phet);
     }
   }
 
+  void _onPhetChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Opens a PhET sim in the Sims tab (a topic's "Related PhET sims").
+  void _openPhet(String id) {
+    _phet.open(id);
+    _show(PanelKind.phet);
+  }
+
   /// "Add to board" in the panel's header, where what is showing has one.
-  VoidCallback? get _addToBoard => _panel == PanelKind.split && _splitItem != null && (_splitContent == SplitContent.lab || _splitContent == SplitContent.model3d)
+  VoidCallback? get _addToBoard => _panel == PanelKind.phet
+      ? (_phet.showing ? () => unawaited(addPhetShotToBoard(context, _wb, _phet, dark: _background.isDark)) : null)
+      : _panel == PanelKind.split && _splitItem != null && (_splitContent == SplitContent.lab || _splitContent == SplitContent.model3d)
       ? () => unawaited(_snapshotSplit())
       : null;
 
@@ -1369,6 +1396,7 @@ class _BoardScreenState extends State<BoardScreen> {
       ai: _ai,
       onOpenPanel: _show,
       onOpenResource: _openSplit,
+      onOpenPhet: _openPhet,
       initialTopicId: _booksTopic,
     ),
     PanelKind.plan => TodaysPlanPanel(board: board, timer: _planTimer, onOpenTopic: _openTopic),
@@ -1405,6 +1433,7 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.videos => ConceptVideosTab(board: board, onAddNote: _addVideoNote),
     PanelKind.animations => animationsPanel(context, wb: _wb, subject: board.session?.subjectName),
     PanelKind.badges => BadgesPanel(board: board),
+    PanelKind.phet => PhetPanel(downloads: phetDownloadsFor(board), controller: _phet, subject: board.session?.subjectName),
     PanelKind.sim => SimWindow(
       sim: _sim ?? ActiveSim.of(SimKind.values.first),
       onChanged: (s) => setState(() => _sim = s),
@@ -1579,6 +1608,7 @@ class _BoardScreenState extends State<BoardScreen> {
               onConvertInk: primary ? null : () => unawaited(_convertSelection()),
               onReadings: (e) => _pen.conversions.containsKey(e.id) ? () => _pen.inspecting.value = e.id : null,
               onReadAloud: readableElements(_wb.selectedElements).isEmpty ? null : _readPage,
+              onMeasureUnit: board.setMeasureUnit,
             ),
           ),
         ),

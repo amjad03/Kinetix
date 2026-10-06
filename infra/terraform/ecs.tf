@@ -59,6 +59,8 @@ locals {
     },
     var.ai_base_url != "" ? { AI_BASE_URL = var.ai_base_url } : {},
     var.asr_base_url != "" ? { ASR_BASE_URL = var.asr_base_url } : {},
+    # PhET sims from our mirror in India (phet.tf); without it boards fetch from phet.colorado.edu.
+    var.phet_mirror_enabled ? { PHET_MIRROR_URL = local.phet_mirror_url } : {},
     var.extra_api_environment,
   )
 
