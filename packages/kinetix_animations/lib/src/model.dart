@@ -51,18 +51,20 @@ class AnimStep {
 }
 
 /// What a painter draws: the time [t] (0..1), whether labels show, and their language.
+/// A [thumbnail] scales its text with the drawing (elsewhere text never gets too small to read).
 @immutable
 class AnimFrame {
-  const AnimFrame(this.t, {this.labels = true, this.lang = AnimLang.en});
+  const AnimFrame(this.t, {this.labels = true, this.lang = AnimLang.en, this.thumbnail = false});
   final double t;
   final bool labels;
   final AnimLang lang;
+  final bool thumbnail;
 
   @override
-  bool operator ==(Object other) => other is AnimFrame && other.t == t && other.labels == labels && other.lang == lang;
+  bool operator ==(Object other) => other is AnimFrame && other.t == t && other.labels == labels && other.lang == lang && other.thumbnail == thumbnail;
 
   @override
-  int get hashCode => Object.hash(t, labels, lang);
+  int get hashCode => Object.hash(t, labels, lang, thumbnail);
 }
 
 typedef AnimPainterBuilder = AnimPainter Function(AnimFrame frame);

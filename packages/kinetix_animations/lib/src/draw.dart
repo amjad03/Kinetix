@@ -108,7 +108,7 @@ abstract class AnimPainter extends CustomPainter {
 
   /// Text at [at]; [align] -1 left, 0 centre, 1 right of [at]. Never smaller than 11 px on screen.
   Size text(String s, Offset at, {double size = 18, Color color = AC.ink, FontWeight weight = FontWeight.w500, double align = 0, Color? bg, double maxWidth = 260}) {
-    final px = math.max(size, 11 / _scale);
+    final px = f.thumbnail ? size : math.max(size, 11 / _scale);
     final tp = TextPainter(
       text: TextSpan(
         text: s,
@@ -140,7 +140,7 @@ abstract class AnimPainter extends CustomPainter {
   /// A formula or particle name in a coloured pill (always shown: it is part of the picture).
   void chip(String s, Offset at, Color col, {double size = 15, double opacity = 1}) {
     if (opacity <= 0) return;
-    final px = math.max(size, 10 / _scale);
+    final px = f.thumbnail ? size : math.max(size, 10 / _scale);
     final tp = TextPainter(
       text: TextSpan(text: s, style: TextStyle(fontSize: px, color: Colors.white.withValues(alpha: opacity), fontWeight: FontWeight.w700, fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback)),
       textDirection: TextDirection.ltr,

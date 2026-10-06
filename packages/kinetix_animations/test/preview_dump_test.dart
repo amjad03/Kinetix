@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/painting.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_animations/kinetix_animations.dart';
+import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'render_util.dart';
 
@@ -37,4 +39,29 @@ void main() {
       File('$out/${a.id}.png').writeAsBytesSync(png!.buffer.asUint8List());
     }
   });
+  for (final size in const [Size(360, 640), Size(960, 800)]) {
+    testWidgets('dump the panel at ${size.width.toInt()}', (tester) async {
+      if (out == null) return;
+      await tester.runAsync(loadKxFonts);
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      const k = ValueKey('shot');
+      await tester.pumpWidget(RepaintBoundary(key: k, child: MaterialApp(theme: KinetixTheme.board(), home: const Scaffold(body: AnimationsPanel()))));
+      await tester.pump();
+      Future<void> shot(String name) async {
+        await tester.runAsync(() async {
+          final img = await (tester.renderObject(find.byKey(k)) as RenderRepaintBoundary).toImage();
+          final png = await img.toByteData(format: ui.ImageByteFormat.png);
+          File('$out/panel_${size.width.toInt()}_$name.png').writeAsBytesSync(png!.buffer.asUint8List());
+        });
+      }
+
+      await shot('browse');
+      await tester.tap(find.byKey(const ValueKey('anim-tile-photosynthesis')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 12));
+      await shot('play');
+    });
+  }
 }

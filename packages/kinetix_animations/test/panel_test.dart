@@ -57,7 +57,11 @@ void main() {
   testWidgets('the lesson subject and topic pick the starting filters', (tester) async {
     await _pump(tester, const AnimationsPanel(subject: 'Biology', topic: 'photosynthesis'));
     expect(find.byKey(const ValueKey('anim-tile-photosynthesis')), findsOneWidget);
-    expect(_tiles(tester), 1);
+    expect(_tiles(tester), animationCatalogue.where((a) => a.subject == 'Biology' && a.matchesQuery('photosynthesis')).length);
+    // A board subject the catalogue does not name itself still filters by its aliases.
+    await _pump(tester, const AnimationsPanel(subject: 'Geography', topic: 'Earth and space'));
+    expect(_tiles(tester), animationCatalogue.where((a) => a.matchesSubject('Geography') && a.topic == 'Earth and space').length);
+    expect(find.byKey(const ValueKey('anim-tile-photosynthesis')), findsNothing);
   });
 
   for (final size in const [Size(360, 640), Size(1920, 1080), Size(960, 1080)]) {

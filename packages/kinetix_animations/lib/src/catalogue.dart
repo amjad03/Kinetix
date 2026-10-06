@@ -2,6 +2,7 @@ import 'anims/cells.dart';
 import 'anims/chemistry.dart';
 import 'anims/cycles.dart';
 import 'anims/earth.dart';
+import 'anims/flows.dart';
 import 'anims/life_processes.dart';
 import 'anims/photosynthesis.dart';
 import 'anims/physics.dart';
@@ -36,6 +37,8 @@ final List<KxAnimation> animationCatalogue = List.unmodifiable(<KxAnimation>[
   statesOfMatter,
   atomicStructure,
   electrolysis,
+  circularFlow,
+  packetSwitching,
 ]);
 
 /// The animation with [id], if any.

@@ -58,7 +58,8 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
     final s = widget.subject?.trim();
     _subject = (s == null || s.isEmpty || !_all.any((a) => a.matchesSubject(s))) ? null : s;
     final t = widget.topic?.trim();
-    _topic = null;
+    _topic = _level = null;
+    _query.clear();
     if (t != null && t.isNotEmpty) {
       final known = _topics.where((x) => x.toLowerCase() == t.toLowerCase()).firstOrNull;
       if (known != null) {
@@ -134,8 +135,8 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
       ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s4),
-        child: Wrap(spacing: Kx.s8, runSpacing: Kx.s8, children: [
-          _Drop(
+        child: Row(children: [
+          Expanded(child: _Drop(
             key: const ValueKey('anim-subject'),
             hint: ui3('Subject', lang),
             value: _subject,
@@ -145,23 +146,25 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
               _subject = v;
               if (_topic != null && !_topics.contains(_topic)) _topic = null;
             }),
-          ),
-          _Drop(
+          )),
+          const SizedBox(width: Kx.s8),
+          Expanded(child: _Drop(
             key: const ValueKey('anim-topic'),
             hint: ui3('Topic', lang),
             value: _topic,
             items: {for (final t in _topics) t: t},
             allLabel: ui3('All', lang),
             onChanged: (v) => setState(() => _topic = v),
-          ),
-          _Drop(
+          )),
+          const SizedBox(width: Kx.s8),
+          Expanded(child: _Drop(
             key: const ValueKey('anim-class'),
             hint: ui3('Class', lang),
             value: _level,
             items: {for (final l in _levels) l: l},
             allLabel: ui3('All', lang),
             onChanged: (v) => setState(() => _level = v),
-          ),
+          )),
         ]),
       ),
       Expanded(
@@ -193,7 +196,7 @@ class _AnimationsPanelState extends State<AnimationsPanel> {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         Expanded(
                           child: RepaintBoundary(
-                            child: CustomPaint(painter: a.painter(AnimFrame(a.thumbT, labels: false, lang: lang)), child: const SizedBox.expand()),
+                            child: CustomPaint(painter: a.painter(AnimFrame(a.thumbT, labels: false, lang: lang, thumbnail: true)), child: const SizedBox.expand()),
                           ),
                         ),
                         Padding(
@@ -237,16 +240,17 @@ class _Drop extends StatelessWidget {
           value: items.containsKey(value) ? value : null,
           hint: Text(hint),
           isDense: true,
+          isExpanded: true,
           borderRadius: Kx.radiusLg,
           padding: const EdgeInsets.symmetric(vertical: Kx.s8),
           onChanged: onChanged,
           selectedItemBuilder: (_) => [
-            Text('$hint: $allLabel'),
-            for (final e in items.entries) Text(e.value),
+            Text('$hint: $allLabel', maxLines: 1, overflow: TextOverflow.ellipsis),
+            for (final e in items.entries) Text(e.value, maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
           items: [
             DropdownMenuItem<String?>(value: null, child: Text(allLabel)),
-            for (final e in items.entries) DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
+            for (final e in items.entries) DropdownMenuItem<String?>(value: e.key, child: Text(e.value, maxLines: 1, overflow: TextOverflow.ellipsis)),
           ],
         ),
       ),
