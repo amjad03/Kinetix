@@ -152,6 +152,11 @@ class ApiClient {
     return list.map((e) => RecordingSummary.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// Gives [studentId] a badge (one of the board's ten badge types, e.g. `star`) in the class
+  /// [sectionId] (the open class when the server knows it from the session).
+  Future<void> awardBadge(String studentId, String badgeType, {String? sectionId}) async =>
+      _send('POST', '/v1/badges', body: {'studentId': studentId, 'sectionId': ?sectionId, 'badge': badgeType});
+
   Future<void> markDisplayed(String id) async => _send('POST', '/v1/broadcasts/$id/displayed');
   Future<void> acknowledge(String id) async => _send('POST', '/v1/broadcasts/$id/ack');
 

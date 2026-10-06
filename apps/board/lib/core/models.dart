@@ -8,6 +8,7 @@ class SessionContext {
     required this.teacherId,
     required this.teacherName,
     required this.language,
+    this.sectionId,
     this.sectionName,
     this.subjectName,
     this.periodLabel,
@@ -27,6 +28,7 @@ class SessionContext {
       teacherId: teacher['id'] as String,
       teacherName: teacher['fullName'] as String,
       language: teacher['preferredLanguage'] as String,
+      sectionId: section?['id'] as String?,
       sectionName: section?['displayName'] as String?,
       subjectName: subject?['name'] as String?,
       periodLabel: period == null ? null : '${hhmm(period['startsAt'] as String)}–${hhmm(period['endsAt'] as String)}',
@@ -43,7 +45,7 @@ class SessionContext {
       'sessionId': sessionId,
       'expiresAt': expiresAt.toUtc().toIso8601String(),
       'teacher': {'id': teacherId, 'fullName': teacherName, 'preferredLanguage': language},
-      'section': sectionName == null ? null : {'displayName': sectionName, 'term': classTerm, 'level': programLevel},
+      'section': sectionName == null ? null : {'id': ?sectionId, 'displayName': sectionName, 'term': classTerm, 'level': programLevel},
       'subject': subjectName == null ? null : {'name': subjectName},
       'period': period == null || period.length != 2 ? null : {'startsAt': period[0], 'endsAt': period[1]},
     };
@@ -54,6 +56,9 @@ class SessionContext {
   final String teacherId;
   final String teacherName;
   final String language;
+
+  /// The class's id, when the server sends it (badges are given to a student of a class).
+  final String? sectionId;
   final String? sectionName;
   final String? subjectName;
   final String? periodLabel;

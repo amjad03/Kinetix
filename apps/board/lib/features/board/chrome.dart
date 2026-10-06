@@ -86,14 +86,18 @@ class ChromeSurface extends StatelessWidget {
 /// Compact toolbars drop the labels so the whole toolbar fits next to an open side panel or
 /// on a 720p tablet. Labels remain available as tooltips.
 class ToolbarDensity extends InheritedWidget {
-  const ToolbarDensity({super.key, required this.compact, required super.child});
+  const ToolbarDensity({super.key, required this.compact, this.big = false, required super.child});
 
   final bool compact;
 
+  /// Primary classes (LKG–5): bigger buttons and labels.
+  final bool big;
+
   static bool of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<ToolbarDensity>()?.compact ?? false;
+  static bool bigOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<ToolbarDensity>()?.big ?? false;
 
   @override
-  bool updateShouldNotify(ToolbarDensity old) => old.compact != compact;
+  bool updateShouldNotify(ToolbarDensity old) => old.compact != compact || old.big != big;
 }
 
 /// An icon with a label underneath, the main toolbar button (as on Teachmint and Google's
@@ -124,12 +128,13 @@ class ToolButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final compact = ToolbarDensity.of(context);
+    final big = !compact && ToolbarDensity.bigOf(context);
     final fg = !enabled
         ? c.onSurface.withValues(alpha: 0.38)
         : selected
         ? c.onSecondaryContainer
         : c.onSurfaceVariant;
-    Widget glyph = Icon(icon, size: 24, color: iconColor ?? (accent != null && enabled ? Colors.white : fg));
+    Widget glyph = Icon(icon, size: big ? 30 : 24, color: iconColor ?? (accent != null && enabled ? Colors.white : fg));
     if (accent != null) {
       glyph = Container(
         width: 32,
@@ -158,9 +163,9 @@ class ToolButton extends StatelessWidget {
           // Labels in Hindi and Kannada run longer than English: the button grows a little,
           // then the label is cut with an ellipsis (the tooltip keeps the full name).
           width: compact ? 52 : null,
-          constraints: compact ? null : const BoxConstraints(minWidth: 64, maxWidth: 92),
+          constraints: compact ? null : (big ? const BoxConstraints(minWidth: 80, maxWidth: 112) : const BoxConstraints(minWidth: 64, maxWidth: 92)),
           padding: compact ? null : const EdgeInsets.symmetric(horizontal: 4),
-          height: compact ? 52 : 60,
+          height: compact ? 52 : (big ? 76 : 60),
           decoration: BoxDecoration(
             color: selected ? c.secondaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(Kx.rMd),
@@ -169,7 +174,7 @@ class ToolButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 32, child: Center(widthFactor: 1, child: glyph)),
+              SizedBox(height: big ? 38 : 32, child: Center(widthFactor: 1, child: glyph)),
               if (!compact) const SizedBox(height: 2),
               if (!compact)
                 Text(
@@ -180,7 +185,7 @@ class ToolButton extends StatelessWidget {
                   textAlign: TextAlign.center,
                   // As wide as the label, not the 92 px the button may grow to.
                   textWidthBasis: TextWidthBasis.longestLine,
-                  style: TextStyle(fontSize: 11.5, height: 1.2, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),
+                  style: TextStyle(fontSize: big ? 14 : 11.5, height: 1.2, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),
                 ),
             ],
           ),

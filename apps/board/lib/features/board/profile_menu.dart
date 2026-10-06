@@ -228,25 +228,6 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
             ],
           ),
           (
-            [l.layoutTitle, l.layoutHint, l.layoutRails, l.layoutBottomBar],
-            [
-              Text(l.layoutTitle, style: context.text.titleSmall),
-              const SizedBox(height: Kx.s4),
-              Text(l.layoutHint, style: hint),
-              const SizedBox(height: Kx.s12),
-              SegmentedButton<BoardLayout>(
-                key: const Key('board-layout'),
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(value: BoardLayout.rails, icon: const Icon(Icons.view_sidebar_outlined), label: Text(l.layoutRails, key: const Key('layout-rails'))),
-                  ButtonSegment(value: BoardLayout.bottomBar, icon: const Icon(Icons.call_to_action_outlined), label: Text(l.layoutBottomBar, key: const Key('layout-bottomBar'))),
-                ],
-                selected: {board.layout},
-                onSelectionChanged: (s) => board.setLayout(s.single),
-              ),
-            ],
-          ),
-          (
             [l.appThemeTitle, l.appThemeHint, l.themeLight, l.themeDark, l.themeChalkboard, l.themeSystem],
             [
               Text(l.appThemeTitle, style: context.text.titleSmall),

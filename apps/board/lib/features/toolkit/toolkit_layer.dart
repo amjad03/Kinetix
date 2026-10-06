@@ -7,6 +7,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
+import '../board/layout/layout_strings.dart';
 import 'noise_source.dart';
 import 'toolkit_controller.dart';
 
@@ -74,7 +75,8 @@ class _ToolkitLayerState extends State<ToolkitLayer> {
           final ins = widget.insets;
           // A phone is narrower than a card: the card takes the width.
           final cardWidth = math.min(_cardWidth, c.maxWidth - 16);
-          final cards = k.open.where((t) => t != ToolkitItem.curtain && t != ToolkitItem.spotlight).toList();
+          final mini = k.isOpen(ToolkitItem.timer) && k.timerMini;
+          final cards = k.open.where((t) => t != ToolkitItem.curtain && t != ToolkitItem.spotlight && !(mini && t == ToolkitItem.timer)).toList();
           final overlays = k.isOpen(ToolkitItem.curtain) || k.isOpen(ToolkitItem.spotlight);
           return Stack(
             children: [
@@ -111,6 +113,12 @@ class _ToolkitLayerState extends State<ToolkitLayer> {
                       ),
                     );
                   },
+                ),
+              if (mini)
+                Positioned(
+                  right: ins.right + 12,
+                  top: ins.top + 8,
+                  child: BoardChromeTheme(child: TimerMiniChip(key: const Key('toolkit-timer-mini'), kit: k)),
                 ),
               if (overlays)
                 Positioned(
@@ -183,52 +191,153 @@ class ToolkitCard extends StatelessWidget {
 TextStyle? _bigNumber(BuildContext context, {Color? color, double size = 44}) =>
     context.text.displaySmall?.copyWith(fontSize: size, fontWeight: FontWeight.w600, color: color, fontFeatures: const [FontFeature.tabularFigures()]);
 
-class TimerBody extends StatelessWidget {
+class TimerBody extends StatefulWidget {
   const TimerBody({super.key, required this.kit});
   final ToolkitController kit;
 
   @override
+  State<TimerBody> createState() => _TimerBodyState();
+}
+
+class _TimerBodyState extends State<TimerBody> {
+  /// Setting a time: null, or the keypad (true) or the wheels (false).
+  bool? _keypad;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(widget.kit.loadPresets());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final k = kit;
+    final k = widget.kit;
     final c = context.colors;
     final l = context.l10n;
+    final s = LayoutStrings.of(context);
     final left = k.timerLeft;
     final total = k.timerTotal.inMilliseconds;
     final frac = total == 0 ? 0.0 : (left.inMilliseconds / total).clamp(0.0, 1.0);
-    final low = left.inSeconds <= 10 && k.timerRunning;
+    final low = left.inSeconds <= 10 && k.timerRunning && !k.timerCountUp;
     final alert = k.timerDone || low;
+    final secs = timerSeconds(k);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: Kx.s8),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: 156,
-              height: 156,
-              child: CircularProgressIndicator(value: frac, strokeWidth: 10, color: alert ? c.error : c.primary, backgroundColor: c.surfaceContainerHighest),
-            ),
-            // Rounded up, so 2:00 shows until a full second has gone.
-            Text(k.timerDone ? l.timesUp : clockText(Duration(seconds: (left.inMilliseconds / 1000).ceil())), key: const Key('countdown-text'), style: _bigNumber(context, color: alert ? c.error : c.onSurface, size: k.timerDone ? 26 : 40)),
-          ],
+        SegmentedButton<bool>(
+          key: const Key('timer-mode'),
+          showSelectedIcon: false,
+          segments: [ButtonSegment(value: false, label: Text(s.countDown)), ButtonSegment(value: true, label: Text(s.countUp))],
+          selected: {k.timerCountUp},
+          onSelectionChanged: k.timerRunning ? null : (v) => k.setTimerOptions(countUp: v.single),
         ),
+        const SizedBox(height: Kx.s8),
+        if (_keypad != null)
+          _TimeSetter(
+            key: const Key('timer-setter'),
+            keypad: _keypad!,
+            initial: k.timerTotal,
+            onKeypad: (v) => setState(() => _keypad = v),
+            onSet: (d) {
+              k.setTimer(d);
+              setState(() => _keypad = null);
+            },
+          )
+        else
+          Tooltip(
+            message: s.setTime,
+            child: InkWell(
+              key: const Key('timer-set'),
+              customBorder: const CircleBorder(),
+              onTap: k.timerRunning ? null : () => setState(() => _keypad = false),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 156,
+                    height: 156,
+                    child: CircularProgressIndicator(
+                      value: k.timerCountUp ? 1 - frac : frac,
+                      strokeWidth: 10,
+                      color: alert ? c.error : c.primary,
+                      backgroundColor: c.surfaceContainerHighest,
+                    ),
+                  ),
+                  Text(
+                    k.timerDone ? l.timesUp : clockText(Duration(seconds: secs)),
+                    key: const Key('countdown-text'),
+                    style: _bigNumber(context, color: alert ? c.error : c.onSurface, size: k.timerDone ? 26 : (secs >= 3600 ? 30 : 40)),
+                  ),
+                ],
+              ),
+            ),
+          ),
         const SizedBox(height: Kx.s12),
         Wrap(
           spacing: Kx.s8,
           runSpacing: Kx.s8,
           alignment: WrapAlignment.center,
           children: [
-            for (final m in [1, 2, 3, 5, 10, 15])
+            for (final m in const [1, 3, 5, 10, 15])
               ChoiceChip(
                 key: Key('timer-$m'),
                 label: Text(l.minutesShort(m)),
                 selected: k.timerTotal == Duration(minutes: m) && !k.timerRunning,
                 onSelected: (_) => k.setTimer(Duration(minutes: m)),
               ),
+            for (final d in k.customPresets)
+              InputChip(
+                key: Key('timer-preset-${d.inSeconds}'),
+                label: Text(clockText(d)),
+                selected: k.timerTotal == d && !k.timerRunning,
+                onPressed: () => k.setTimer(d),
+                onDeleted: () => unawaited(k.removePreset(d)),
+                deleteButtonTooltipMessage: s.removePreset,
+              ),
+            ActionChip(
+              key: const Key('timer-save-preset'),
+              avatar: const Icon(Icons.bookmark_add_outlined, size: 18),
+              label: Text(s.savePreset),
+              onPressed: () => unawaited(k.savePreset(k.timerTotal)),
+            ),
           ],
         ),
-        const SizedBox(height: Kx.s12),
+        const SizedBox(height: Kx.s8),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Kx.s8,
+          runSpacing: Kx.s4,
+          children: [
+            DropdownButton<String>(
+              key: const Key('timer-sound'),
+              value: k.timerSound,
+              underline: const SizedBox.shrink(),
+              items: [
+                for (final id in ToolkitController.timerSounds)
+                  DropdownMenuItem(
+                    value: id,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(id == 'none' ? Icons.volume_off_outlined : Icons.notifications_active_outlined, size: 18),
+                        const SizedBox(width: 6),
+                        Text(s.soundName(id)),
+                      ],
+                    ),
+                  ),
+              ],
+              onChanged: (v) => k.setTimerOptions(sound: v),
+            ),
+            TextButton.icon(
+              key: const Key('timer-mini'),
+              onPressed: () => k.setTimerOptions(mini: true),
+              icon: const Icon(Icons.picture_in_picture_alt_outlined),
+              label: Text(s.mini),
+            ),
+          ],
+        ),
+        const SizedBox(height: Kx.s8),
         Wrap(
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -242,9 +351,172 @@ class TimerBody extends StatelessWidget {
               icon: Icon(k.timerRunning ? Icons.pause : Icons.play_arrow),
               label: Text(k.timerRunning ? l.pause : (k.timerDone ? l.restart : l.start)),
             ),
-            IconButton.filledTonal(tooltip: l.reset, onPressed: k.resetTimer, icon: const Icon(Icons.replay)),
+            IconButton.filledTonal(key: const Key('timer-reset'), tooltip: l.reset, onPressed: k.resetTimer, icon: const Icon(Icons.replay)),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// Whole seconds to show: rounded up counting down (2:00 shows until a full second has gone),
+/// down counting up.
+int timerSeconds(ToolkitController k) {
+  final ms = k.timerShown.inMilliseconds;
+  return k.timerCountUp ? ms ~/ 1000 : (ms / 1000).ceil();
+}
+
+/// The timer in a corner: the time, start or pause, and back to the card.
+class TimerMiniChip extends StatelessWidget {
+  const TimerMiniChip({super.key, required this.kit});
+  final ToolkitController kit;
+
+  @override
+  Widget build(BuildContext context) {
+    final k = kit;
+    final l = context.l10n;
+    final c = context.colors;
+    return ChromeSurface(
+      radius: Kx.rFull,
+      padding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, color: k.timerDone ? c.error : c.primary),
+          const SizedBox(width: Kx.s8),
+          Text(
+            k.timerDone ? l.timesUp : clockText(Duration(seconds: timerSeconds(k))),
+            key: const Key('countdown-text'),
+            style: _bigNumber(context, size: 22, color: k.timerDone ? c.error : c.onSurface),
+          ),
+          IconButton(
+            key: const Key('countdown-toggle'),
+            tooltip: k.timerRunning ? l.pause : l.start,
+            onPressed: k.startPauseTimer,
+            icon: Icon(k.timerRunning ? Icons.pause : Icons.play_arrow),
+          ),
+          IconButton(
+            key: const Key('timer-big'),
+            tooltip: LayoutStrings.of(context).showToClass,
+            onPressed: () => k.setTimerOptions(mini: false),
+            icon: const Icon(Icons.open_in_full),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hours, minutes and seconds: on swipe wheels, or typed on a keypad (digits fill from the
+/// right, as on a microwave: 5 0 0 is 5:00).
+class _TimeSetter extends StatefulWidget {
+  const _TimeSetter({super.key, required this.keypad, required this.initial, required this.onKeypad, required this.onSet});
+
+  final bool keypad;
+  final Duration initial;
+  final ValueChanged<bool> onKeypad;
+  final ValueChanged<Duration> onSet;
+
+  @override
+  State<_TimeSetter> createState() => _TimeSetterState();
+}
+
+class _TimeSetterState extends State<_TimeSetter> {
+  late int _h = widget.initial.inHours.clamp(0, 23), _m = widget.initial.inMinutes % 60, _s = widget.initial.inSeconds % 60;
+  String _digits = '';
+
+  Duration get _value => widget.keypad ? _fromDigits() : Duration(hours: _h, minutes: _m, seconds: _s);
+
+  Duration _fromDigits() {
+    final d = _digits.padLeft(6, '0');
+    return Duration(hours: int.parse(d.substring(0, 2)), minutes: int.parse(d.substring(2, 4)), seconds: int.parse(d.substring(4, 6)));
+  }
+
+  void _type(String d) => setState(() {
+    var next = _digits + d;
+    while (next.startsWith('0')) {
+      next = next.substring(1);
+    }
+    _digits = next.length > 6 ? next.substring(next.length - 6) : next;
+  });
+
+  Widget _wheel(String id, int count, int value, ValueChanged<int> onChanged, String unit) => Column(
+    children: [
+      SizedBox(
+        width: 64,
+        height: 120,
+        child: ListWheelScrollView.useDelegate(
+          key: Key('timer-wheel-$id'),
+          controller: FixedExtentScrollController(initialItem: value),
+          itemExtent: 36,
+          physics: const FixedExtentScrollPhysics(),
+          onSelectedItemChanged: onChanged,
+          childDelegate: ListWheelChildBuilderDelegate(
+            childCount: count,
+            builder: (context, i) => Center(child: Text(i.toString().padLeft(2, '0'), style: _bigNumber(context, size: 26))),
+          ),
+        ),
+      ),
+      Text(unit, style: context.text.labelMedium),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final s = LayoutStrings.of(context);
+    final shown = _value;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SegmentedButton<bool>(
+          key: const Key('timer-setter-mode'),
+          showSelectedIcon: false,
+          segments: [ButtonSegment(value: false, label: Text(s.wheels)), ButtonSegment(value: true, label: Text(s.keypad))],
+          selected: {widget.keypad},
+          onSelectionChanged: (v) => widget.onKeypad(v.single),
+        ),
+        const SizedBox(height: Kx.s8),
+        if (widget.keypad) ...[
+          Text(
+            '${two(shown.inHours)} : ${two(shown.inMinutes % 60)} : ${two(shown.inSeconds % 60)}',
+            key: const Key('timer-keypad-display'),
+            style: _bigNumber(context, size: 30),
+          ),
+          const SizedBox(height: Kx.s8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: [
+              for (final d in const ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0'])
+                SizedBox(
+                  width: 64,
+                  height: 44,
+                  child: OutlinedButton(key: Key('timer-key-$d'), onPressed: () => _type(d), child: Text(d)),
+                ),
+              SizedBox(
+                width: 64,
+                height: 44,
+                child: OutlinedButton(
+                  key: const Key('timer-key-back'),
+                  onPressed: _digits.isEmpty ? null : () => setState(() => _digits = _digits.substring(0, _digits.length - 1)),
+                  child: const Icon(Icons.backspace_outlined, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ] else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _wheel('h', 24, _h, (v) => setState(() => _h = v), s.hoursShort),
+              _wheel('m', 60, _m, (v) => setState(() => _m = v), s.minutesShort),
+              _wheel('s', 60, _s, (v) => setState(() => _s = v), s.secondsShort),
+            ],
+          ),
+        const SizedBox(height: Kx.s8),
+        FilledButton(key: const Key('timer-setter-done'), onPressed: shown > Duration.zero ? () => widget.onSet(shown) : null, child: Text(s.set)),
       ],
     );
   }

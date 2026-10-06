@@ -20,10 +20,10 @@ List<(String, List<HelpTopic>)> helpTopics(AppLocalizations l) => [
   (
     l.helpGroupWriting,
     [
-      HelpTopic('write', Icons.edit_outlined, l.helpWriteTitle, [l.helpWrite1, l.helpWrite2], target: const Key('tool-write')),
+      HelpTopic('write', Icons.edit_outlined, l.helpWriteTitle, [l.helpWrite1, l.helpWrite2], target: const Key('tool-pen')),
       HelpTopic('erase', Icons.undo, l.helpEraseTitle, [l.helpErase1, l.helpErase2, l.helpErase3], target: const Key('tool-erase')),
       HelpTopic('shapes', Icons.interests_outlined, l.helpShapesTitle, [l.helpShapes1, l.helpShapes2], target: const Key('tool-shapes')),
-      HelpTopic('text', Icons.title, l.helpTextTitle, [l.helpText1], target: const Key('tool-text')),
+      HelpTopic('text', Icons.title, l.helpTextTitle, [l.helpText1], target: const Key('tool-insert')),
     ],
   ),
   (
@@ -48,7 +48,7 @@ List<(String, List<HelpTopic>)> helpTopics(AppLocalizations l) => [
     l.helpGroupAi,
     [
       HelpTopic('ai', Icons.auto_awesome, l.helpAiTitle, [l.helpAi1, l.helpAi2], target: const Key('panel-ai')),
-      HelpTopic('books', Icons.menu_book, l.helpBooksTitle, [l.helpBooks1, l.helpBooks2], target: const Key('panel-books')),
+      HelpTopic('books', Icons.menu_book, l.helpBooksTitle, [l.helpBooks1, l.helpBooks2], target: const Key('panel-ai')),
     ],
   ),
   (

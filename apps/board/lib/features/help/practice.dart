@@ -10,7 +10,7 @@ import '../toolkit/toolkit_controller.dart';
 enum PracticeTask { write, erase, shape, page, picture, timer }
 
 (String, IconData, Key) practiceText(AppLocalizations l, PracticeTask t) => switch (t) {
-  PracticeTask.write => (l.practiceWrite, Icons.edit_outlined, const Key('tool-write')),
+  PracticeTask.write => (l.practiceWrite, Icons.edit_outlined, const Key('tool-pen')),
   PracticeTask.erase => (l.practiceErase, Icons.undo, const Key('tool-erase')),
   PracticeTask.shape => (l.practiceShape, Icons.interests_outlined, const Key('tool-shapes')),
   PracticeTask.page => (l.practicePage, Icons.auto_stories_outlined, const Key('next-page')),

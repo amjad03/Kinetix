@@ -38,14 +38,9 @@ enum TouchProfile {
   final PalmMode palmMode;
 }
 
-/// How the board's tools are laid out (Board settings → Layout).
-enum BoardLayout {
-  /// Tools on a rail at the left, AI and the subject kit on a rail at the right.
-  rails,
-
-  /// One labelled toolbar along the bottom, as on Teachmint boards.
-  bottomBar,
-}
+/// Where the board's main toolbar is docked: floating at the bottom centre, or along the left
+/// or right edge (the teacher drags it there).
+enum ToolbarDock { bottom, left, right }
 
 /// How the board's screens, toolbars and dialogs look (Board settings → App theme).
 enum BoardTheme {
@@ -137,8 +132,19 @@ class BoardController extends ChangeNotifier {
   EyeComfortSettings eyeComfort = const EyeComfortSettings();
   TouchProfile touchProfile = TouchProfile.tablet;
 
-  /// Where the tools sit. Rails unless the board was set otherwise.
-  BoardLayout layout = BoardLayout.rails;
+  /// Where the main toolbar sits, and whether it is folded away.
+  ToolbarDock toolbarDock = ToolbarDock.bottom;
+  bool toolbarCollapsed = false;
+
+  /// A resting palm does not write (the touch surface decides how; off writes with any touch).
+  bool palmRejection = true;
+
+  /// Several people write at once (two fingers then write, not move the board). Null follows
+  /// the touch surface: panels and IR frames are multi-touch, tablets single.
+  bool? multiTouch;
+
+  /// What the AI pen converts: shapes, maths and text.
+  Set<String> aiPenConvert = {'shapes', 'maths', 'text'};
 
   /// How the screens look (Board settings → App theme): light unless the teacher picks another,
   /// whatever the device or the layout.
@@ -178,7 +184,7 @@ class BoardController extends ChangeNotifier {
 
   /// Every finger writes its own line on interactive panels and IR frames, where several
   /// children write at once; on a tablet two fingers move and zoom the board.
-  bool get multiWriter => touchProfile != TouchProfile.tablet;
+  bool get multiWriter => multiTouch ?? touchProfile != TouchProfile.tablet;
 
   /// The board's own language for its buttons and messages (Board settings → Language).
   BoardLanguage boardLanguage = BoardLanguage.en;
@@ -286,7 +292,12 @@ class BoardController extends ChangeNotifier {
       touchProfile = TouchProfile.values.asNameMap()[await _store.setting('touchProfile')] ?? TouchProfile.tablet;
       eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
       boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
-      layout = BoardLayout.values.asNameMap()[await _store.setting('layout')] ?? BoardLayout.rails;
+      toolbarDock = ToolbarDock.values.asNameMap()[await _store.setting('toolbarDock')] ?? ToolbarDock.bottom;
+      palmRejection = await _store.setting('palmRejection') != 'false';
+      final multi = await _store.setting('multiTouch');
+      multiTouch = multi == null ? null : multi == 'true';
+      final convert = await _store.setting('aiPenConvert');
+      if (convert != null) aiPenConvert = convert.split(',').where((x) => x.isNotEmpty).toSet();
       theme = BoardTheme.values.asNameMap()[await _store.setting('theme')] ?? BoardTheme.light;
       simpleBoard = SimpleBoard.values.asNameMap()[await _store.setting('simpleBoard')] ?? SimpleBoard.auto;
       inputMode = InputMode.values.asNameMap()[await _store.setting('inputMode')] ?? InputMode.auto;
@@ -303,7 +314,7 @@ class BoardController extends ChangeNotifier {
   /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
   /// come back when they sign out. The board's language, touch surface, kiosk and projector
   /// stay the board's.
-  static const teacherSettings = ['eyeComfort', 'layout', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps'];
+  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps'];
 
   String? _settingsTeacher;
 
@@ -317,7 +328,8 @@ class BoardController extends ChangeNotifier {
 
   Map<String, String?> _teacherSettingValues() => {
     'eyeComfort': eyeComfort.encode(),
-    'layout': layout.name,
+    'toolbarDock': toolbarDock.name,
+    'aiPenConvert': aiPenConvert.join(','),
     'theme': theme.name,
     'simpleBoard': simpleBoard.name,
     'inputMode': inputMode.name,
@@ -329,7 +341,8 @@ class BoardController extends ChangeNotifier {
 
   void _setTeacherSettingValues(Map<String, String?> v) {
     if (v.containsKey('eyeComfort')) eyeComfort = EyeComfortSettings.decode(v['eyeComfort']);
-    layout = BoardLayout.values.asNameMap()[v['layout']] ?? layout;
+    toolbarDock = ToolbarDock.values.asNameMap()[v['toolbarDock']] ?? toolbarDock;
+    if (v['aiPenConvert'] != null) aiPenConvert = v['aiPenConvert']!.split(',').where((x) => x.isNotEmpty).toSet();
     theme = BoardTheme.values.asNameMap()[v['theme']] ?? theme;
     simpleBoard = SimpleBoard.values.asNameMap()[v['simpleBoard']] ?? simpleBoard;
     inputMode = InputMode.values.asNameMap()[v['inputMode']] ?? inputMode;
@@ -437,9 +450,33 @@ class BoardController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setLayout(BoardLayout l) {
-    layout = l;
-    unawaited(_saveTeacherSetting('layout', l.name));
+  void setToolbarDock(ToolbarDock d) {
+    toolbarDock = d;
+    unawaited(_saveTeacherSetting('toolbarDock', d.name));
+    notifyListeners();
+  }
+
+  void setToolbarCollapsed(bool on) {
+    toolbarCollapsed = on;
+    notifyListeners();
+  }
+
+  void setPalmRejection(bool on) {
+    palmRejection = on;
+    unawaited(_store.setSetting('palmRejection', '$on'));
+    notifyListeners();
+  }
+
+  void setMultiTouch(bool on) {
+    multiTouch = on;
+    unawaited(_store.setSetting('multiTouch', '$on'));
+    notifyListeners();
+  }
+
+  void setAiPenConvert(String what, bool on) {
+    aiPenConvert = {...aiPenConvert}..removeWhere((x) => x == what);
+    if (on) aiPenConvert.add(what);
+    unawaited(_saveTeacherSetting('aiPenConvert', aiPenConvert.join(',')));
     notifyListeners();
   }
 

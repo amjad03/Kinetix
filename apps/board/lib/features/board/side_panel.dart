@@ -9,9 +9,11 @@ import '../../l10n/l10n.dart';
 import '../search/catalogue_browser.dart';
 import '../search/catalogue_facets.dart';
 import 'chrome.dart';
+import 'layout/layout_strings.dart';
 
-/// What the side panel shows. Opening any of these splits the screen with the whiteboard.
-enum PanelKind { ai, books, quiz, homework, split, plan, kit }
+/// What the split panel shows. Opening any of these splits the screen with the whiteboard.
+/// [page] is a tool's content (graph templates…); [host] is a dialog alone in the panel.
+enum PanelKind { ai, books, quiz, homework, split, plan, kit, videos, animations, badges, sim, page, host }
 
 /// What the split screen shows beside the board: a second whiteboard, a 3D model or a lab.
 enum SplitContent { whiteboard, model3d, lab }
@@ -28,95 +30,6 @@ extension SplitContentInfo on SplitContent {
     SplitContent.model3d => Icons.view_in_ar_outlined,
     SplitContent.lab => Icons.science_outlined,
   };
-}
-
-/// The panel frame: a slim rail on the board-facing edge (drag to resize, swap side, close)
-/// and the content. Mirrors the Teachmint side-panel pattern with Material 3 styling.
-class SidePanelFrame extends StatelessWidget {
-  const SidePanelFrame({
-    super.key,
-    required this.onLeft,
-    required this.onClose,
-    required this.onSwapSide,
-    required this.onResize,
-    required this.child,
-    this.fullScreen = false,
-  });
-
-  /// True when the panel is on the left of the screen (the rail is then on its right edge).
-  final bool onLeft;
-  final VoidCallback onClose;
-  final VoidCallback onSwapSide;
-
-  /// Horizontal drag delta in logical pixels.
-  final ValueChanged<double> onResize;
-  final Widget child;
-
-  /// On a phone the panel covers the board, inside the safe area, with Close on a slim strip
-  /// at the top (no resizing or swapping sides).
-  final bool fullScreen;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    if (fullScreen) {
-      return Material(
-        color: c.surface,
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(key: const Key('panel-close'), tooltip: context.l10n.close, onPressed: onClose, icon: const Icon(Icons.close)),
-              ),
-              Expanded(child: child),
-            ],
-          ),
-        ),
-      );
-    }
-    final rail = Container(
-      width: 44,
-      color: c.surfaceContainerLow,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onHorizontalDragUpdate: (d) => onResize(d.delta.dx),
-            child: MouseRegion(
-              cursor: SystemMouseCursors.resizeColumn,
-              child: Tooltip(
-                message: context.l10n.dragToResize,
-                child: Container(
-                  width: 32,
-                  height: 56,
-                  decoration: BoxDecoration(color: c.surfaceContainerHighest, borderRadius: BorderRadius.circular(Kx.rMd)),
-                  child: Icon(Icons.drag_indicator, color: c.onSurfaceVariant),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: Kx.s12),
-          IconButton(
-            key: const Key('panel-swap'),
-            tooltip: context.l10n.moveToOtherSide,
-            onPressed: onSwapSide,
-            icon: const Icon(Icons.swap_horiz),
-          ),
-          IconButton(key: const Key('panel-close'), tooltip: context.l10n.close, onPressed: onClose, icon: const Icon(Icons.close)),
-        ],
-      ),
-    );
-    final body = Expanded(
-      child: ColoredBox(color: c.surface, child: child),
-    );
-    return Material(
-      elevation: 8,
-      color: c.surface,
-      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: onLeft ? [body, rail] : [rail, body]),
-    );
-  }
 }
 
 /// A titled panel page. [onBack] adds a back arrow (sub-pages); [trailing] sits at the end of
@@ -321,7 +234,7 @@ class _SplitHeader extends StatelessWidget {
                 key: const Key('split-snapshot'),
                 onPressed: onSnapshot,
                 icon: const Icon(Icons.add_photo_alternate_outlined),
-                label: Text(context.l10n.snapshotToBoard),
+                label: Text(LayoutStrings.of(context).addToBoard),
               ),
           ],
         ),

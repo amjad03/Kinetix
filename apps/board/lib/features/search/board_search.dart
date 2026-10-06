@@ -32,7 +32,6 @@ Map<String, String> _inAll(String Function(AppLocalizations l) text) => {for (fi
 List<SearchItem> settingsSearchItems() => [
   for (final (id, icon, title) in <(String, IconData, String Function(AppLocalizations))>[
     ('language', Icons.translate, (l) => l.language),
-    ('layout', Icons.view_sidebar_outlined, (l) => l.layoutTitle),
     ('theme', Icons.palette_outlined, (l) => l.appThemeTitle),
     ('simple', Icons.child_care, (l) => l.simpleBoardTitle),
     ('input', Icons.draw_outlined, (l) => l.inputTitle),

@@ -10,10 +10,13 @@ import 'ink_models.dart';
 /// A writing surface. Uses a raw [Listener] rather than gesture detectors so that every
 /// pointer is delivered independently: ten fingers make ten strokes.
 class InkCanvas extends StatelessWidget {
-  const InkCanvas({super.key, required this.controller, this.background = BoardBackground.plain});
+  const InkCanvas({super.key, required this.controller, this.background = BoardBackground.plain, this.transparent = false});
 
   final InkController controller;
   final BoardBackground background;
+
+  /// No paper: ink over whatever is underneath (writing over a panel beside the board).
+  final bool transparent;
 
   InkPoint _point(PointerEvent e) {
     // Mice and most fingers report pressure 0 or 1; only pens give a useful range.
@@ -39,7 +42,7 @@ class InkCanvas extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          RepaintBoundary(child: CustomPaint(painter: BackgroundPainter(background))),
+          if (!transparent) RepaintBoundary(child: CustomPaint(painter: BackgroundPainter(background))),
           // Finished strokes repaint only when they change.
           RepaintBoundary(child: CustomPaint(painter: _CommittedPainter(controller, background))),
           // Strokes being drawn, the selection and the marquee repaint on every move.

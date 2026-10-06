@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:clock/clock.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/models.dart';
 import 'noise_source.dart';
@@ -136,11 +137,68 @@ class ToolkitController extends ChangeNotifier {
 
   void resetTimer() => setTimer(timerTotal);
 
+  /// Counting up shows the time gone (to the set time), counting down the time left.
+  bool timerCountUp = false;
+
+  /// The sound at the end: bell, chime, beep or none.
+  String timerSound = 'bell';
+  static const timerSounds = ['bell', 'chime', 'beep', 'none'];
+
+  /// The timer as a small chip in the corner rather than its card.
+  bool timerMini = false;
+
+  /// What the timer shows: the time left, or the time gone when counting up.
+  Duration get timerShown => timerCountUp ? timerTotal - timerLeft : timerLeft;
+
+  void setTimerOptions({bool? countUp, String? sound, bool? mini}) {
+    if (countUp != null) timerCountUp = countUp;
+    if (sound != null) timerSound = sound;
+    if (mini != null) timerMini = mini;
+    _changed();
+  }
+
+  /// The teacher's own presets, beside 1, 3, 5, 10 and 15 minutes (kept on the board).
+  final List<Duration> customPresets = [];
+  static const _presetsKey = 'toolkit.timerPresets';
+
+  Future<void> loadPresets() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      customPresets
+        ..clear()
+        ..addAll([for (final s in p.getStringList(_presetsKey) ?? const <String>[]) Duration(seconds: int.tryParse(s) ?? 0)].where((d) => d > Duration.zero));
+      _changed();
+    } catch (_) {
+      // No storage (tests, a locked-down board): presets last until the app closes.
+    }
+  }
+
+  Future<void> savePreset(Duration d) async {
+    if (d <= Duration.zero || customPresets.contains(d)) return;
+    customPresets.add(d);
+    customPresets.sort();
+    _changed();
+    await _storePresets();
+  }
+
+  Future<void> removePreset(Duration d) async {
+    if (!customPresets.remove(d)) return;
+    _changed();
+    await _storePresets();
+  }
+
+  Future<void> _storePresets() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setStringList(_presetsKey, [for (final d in customPresets) '${d.inSeconds}']);
+    } catch (_) {}
+  }
+
   void _timeUp() {
     _timerEnd = null;
     _timerPaused = Duration.zero;
     timerDone = true;
-    SystemSound.play(SystemSoundType.alert);
+    if (timerSound != 'none') SystemSound.play(timerSound == 'chime' ? SystemSoundType.click : SystemSoundType.alert);
     onTimeUp?.call();
   }
 
@@ -392,7 +450,7 @@ class ToolkitController extends ChangeNotifier {
 
   /// What the students' screen (projector) should show, as JSON.
   Map<String, dynamic> get projectorState => {
-    if (isOpen(ToolkitItem.timer)) 'timer': {'left': timerLeft.inMilliseconds, 'done': timerDone},
+    if (isOpen(ToolkitItem.timer)) 'timer': {'left': timerShown.inMilliseconds, 'done': timerDone, 'up': timerCountUp},
     if (isOpen(ToolkitItem.stopwatch)) 'stopwatch': stopwatch.inMilliseconds,
     if (isOpen(ToolkitItem.picker) && current != null) 'pick': {'name': current, 'rolling': rolling},
     if (isOpen(ToolkitItem.dice)) 'dice': dice,

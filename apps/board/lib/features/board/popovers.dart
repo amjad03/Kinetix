@@ -3,9 +3,6 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../comfort/eye_comfort.dart';
-import '../search/filter_bar.dart';
-import '../search/fuzzy.dart';
-import '../search/search_strings.dart';
 import '../search/solids3d.dart';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -241,52 +238,6 @@ class _ErasePopoverState extends State<ErasePopover> {
   }
 }
 
-/// Theme: the board background.
-class ThemePopover extends StatelessWidget {
-  const ThemePopover({super.key, required this.background, required this.onChanged});
-
-  final BoardBackground background;
-  final ValueChanged<BoardBackground> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopoverCard(
-      title: context.l10n.boardTheme,
-      width: 600,
-      child: Wrap(
-        spacing: Kx.s12,
-        runSpacing: Kx.s12,
-        children: [
-          for (final b in BoardBackground.values)
-            InkWell(
-              onTap: () => onChanged(b),
-              borderRadius: BorderRadius.circular(Kx.rMd),
-              child: Column(
-                children: [
-                  Container(
-                    width: 100,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(Kx.rMd),
-                      border: Border.all(
-                        color: b == background ? context.colors.primary : context.colors.outlineVariant,
-                        width: b == background ? 3 : 1,
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: CustomPaint(painter: BackgroundPainter(b)),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(backgroundName(context.l10n, b), style: context.text.labelMedium),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Shapes: 2D shapes, filled or not, with optional measurements, and 3D solids to turn round
 /// and put on the board (lib/features/search/solids3d.dart).
 class ShapesPopover extends StatefulWidget {
@@ -330,6 +281,7 @@ String backgroundName(AppLocalizations l, BoardBackground b) => switch (b) {
   BoardBackground.dots => l.bgDots,
   BoardBackground.chalkboard => l.bgChalkboard,
   BoardBackground.fourLine => l.bgFourLine,
+  _ => b.label,
 };
 
 /// An icon for a shape, drawn from the same geometry the board uses, so it always matches.
@@ -461,43 +413,6 @@ class ToolEntry {
   final String label;
   final Color color;
   final VoidCallback onTap;
-}
-
-class ToolsPopover extends StatefulWidget {
-  const ToolsPopover({super.key, required this.tools});
-
-  final List<ToolEntry> tools;
-
-  @override
-  State<ToolsPopover> createState() => _ToolsPopoverState();
-}
-
-class _ToolsPopoverState extends State<ToolsPopover> {
-  String _q = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final shown = matchingLabels(widget.tools, (t) => t.label, _q);
-    return PopoverCard(
-      title: context.l10n.toolTools,
-      width: 4 * 104 + 3 * Kx.s12,
-      // Beside the title, so the grid keeps its room.
-      trailing: SizedBox(
-        width: 190,
-        child: ModuleSearchField(
-          key: const Key('tools-search'),
-          hint: SearchStrings.of(context).searchTools,
-          padding: const EdgeInsets.only(left: Kx.s8),
-          onChanged: (v) => setState(() => _q = v),
-        ),
-      ),
-      child: Wrap(
-        spacing: Kx.s12,
-        runSpacing: Kx.s12,
-        children: [for (final t in shown) ChromeTile(icon: t.icon, label: t.label, color: t.color, onTap: t.onTap)],
-      ),
-    );
-  }
 }
 
 /// Eye comfort settings.

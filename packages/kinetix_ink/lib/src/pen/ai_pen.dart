@@ -130,6 +130,11 @@ class AiPenController extends ChangeNotifier {
   /// turns it on; the one AI pen feature primary classes may use.
   bool snapShapes = false;
 
+  /// What the AI pen converts (the pen popover): rough shapes, maths, and words.
+  bool convertShapes = true;
+  bool convertMaths = true;
+  bool convertText = true;
+
   /// A back-and-forth scribble over something with the AI pen (or the pen, when it tidies
   /// shapes) rubs it out.
   bool scribbleErase = true;
@@ -233,7 +238,7 @@ class AiPenController extends ChangeNotifier {
     ];
     _pending.clear();
     _pendingShapes.clear();
-    if (shapesOnly.isNotEmpty) _placeShapes(parseInk(shapesOnly, contextFor(shapesOnly)).shapes);
+    if (shapesOnly.isNotEmpty && convertShapes) _placeShapes(parseInk(shapesOnly, contextFor(shapesOnly)).shapes);
     if (batch.isEmpty) {
       notifyListeners();
       return;
@@ -243,7 +248,7 @@ class AiPenController extends ChangeNotifier {
     try {
       final reading = parseInk(batch, contextFor(batch));
       // Drawn shapes become clean shapes; sketches that are no clean shape stay as ink.
-      if (reading.shapes.isNotEmpty) _placeShapes(reading.shapes);
+      if (reading.shapes.isNotEmpty && convertShapes) _placeShapes(reading.shapes);
       for (final cluster in clusterWriting(reading.writing)) {
         await _convertCluster(cluster);
         _learnLetterSize(cluster);
@@ -267,8 +272,10 @@ class AiPenController extends ChangeNotifier {
     var n = 0;
     try {
       final reading = parseInk(ink, contextFor(ink));
-      _placeShapes(reading.shapes);
-      n += reading.shapes.length;
+      if (convertShapes) {
+        _placeShapes(reading.shapes);
+        n += reading.shapes.length;
+      }
       for (final cluster in clusterWriting(reading.writing)) {
         if (await _convertCluster(cluster)) n++;
       }
@@ -343,7 +350,9 @@ class AiPenController extends ChangeNotifier {
     final live = {for (final e in board.page.elements) e.id};
     if (!cluster.every((s) => live.contains(s.id))) return false;
 
-    final readings = _readings(maths, words);
+    var readings = _readings(maths, words);
+    // Maths or words the teacher has turned off stay as ink.
+    if (readings != null && (readings.maths ? !convertMaths : !convertText)) readings = null;
     if (readings == null) {
       if (words.isEmpty && !_handwriting.available) _tell(AiPenNotice.wordsStayInk);
       return false;

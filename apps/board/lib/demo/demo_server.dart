@@ -429,6 +429,8 @@ class DemoBoardServer {
       });
     }
     if (path == '/v1/broadcasts/pending') return json([]);
+    // Badges stay on the demo board (the demo class has no parents to tell).
+    if (path == '/v1/badges' && method == 'POST') return json({'id': 'demo-badge-${body['studentId']}', 'badge': body['badge']}, 201);
 
     // "Ask the class": every student has card n (roll number n); a few answer in the
     // Student App over the next seconds.
