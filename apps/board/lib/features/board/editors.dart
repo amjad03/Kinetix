@@ -237,6 +237,7 @@ class _GraphDialogState extends State<GraphDialog> {
     final l = context.l10n;
     final ok = _expr.text.trim().isEmpty || compileGraph(_expr.text) != null;
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.show_chart),
       title: Text(l.stGraph),
       content: SizedBox(

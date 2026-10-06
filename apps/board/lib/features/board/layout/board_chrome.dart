@@ -354,7 +354,7 @@ class _ClassBarState extends State<ClassBar> {
               ClassAudioButton(board: board),
             ],
           ],
-          if (Demo.enabled && !widget.phone) ...[gap, const DemoChip()],
+          if (Demo.enabled) ...[gap, const DemoChip()],
           // Privacy: whenever the microphone is going out to the class, the teacher sees it.
           if (board.classAudio.sending) ...[
             gap,

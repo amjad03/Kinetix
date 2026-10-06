@@ -1238,6 +1238,11 @@ class _BoardScreenState extends State<BoardScreen> {
   /// Shows [builder]'s dialog in the panel (PanelHost): the panel opens for it if it was closed,
   /// and closes again when the dialog is done.
   Future<T?> _pushInPanel<T>(WidgetBuilder builder) async {
+    // A phone has no room for a dialog beside the board: it covers the screen, as before.
+    if (context.isPhone) {
+      setState(() => _popover = null);
+      return showDialog<T>(context: context, builder: (context) => BoardChromeTheme(child: builder(context)));
+    }
     setState(() {
       _popover = null;
       _panel ??= PanelKind.host;
@@ -1505,7 +1510,8 @@ class _BoardScreenState extends State<BoardScreen> {
     final dock = phone ? ToolbarDock.bottom : board.toolbarDock;
     final collapsed = board.toolbarCollapsed;
     final edge = !phone && dock != ToolbarDock.bottom ? _toolbarDepth + 12 : 0.0;
-    final phoneBottom = safe.bottom + 52 + 2 * Kx.s8;
+    // The bar, and the page controls floating above it.
+    final phoneBottom = safe.bottom + 52 + 2 * Kx.s8 + 48;
     // The board keeps clear of the toolbars (start view, fit, placement).
     _wb.safeInsets = phone
         ? EdgeInsets.fromLTRB(safe.left, safe.top + 56, safe.right, math.max(sheetCover, phoneBottom))
