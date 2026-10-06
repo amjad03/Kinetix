@@ -12,7 +12,10 @@ import 'tool_strings.dart';
 /// value of each letter (sliders), the shaded band, the axis labels and title, and its marked
 /// points, dragged on the preview. Applied as one undo step.
 Future<void> editGraph(BuildContext context, WhiteboardController c, GraphElement g) async {
-  final out = await showDialog<GraphElement>(context: context, builder: (_) => GraphEditorDialog(graph: g));
+  final out = await showDialog<GraphElement>(
+    context: context,
+    builder: (_) => GraphEditorDialog(graph: g),
+  );
   if (out != null && c.byId(g.id) != null) c.replace(out);
 }
 
@@ -58,7 +61,10 @@ class _GraphEditorDialogState extends State<GraphEditorDialog> {
     setState(() {
       _g = _g.copyWith(
         expression: _expr.text.trim(),
-        curves: [for (final l in _curves.text.split('\n')) if (l.trim().isNotEmpty) l.trim()],
+        curves: [
+          for (final l in _curves.text.split('\n'))
+            if (l.trim().isNotEmpty) l.trim(),
+        ],
         title: _title.text.trim(),
         xLabel: _xl.text.trim(),
         yLabel: _yl.text.trim(),
@@ -132,7 +138,11 @@ class _GraphEditorDialogState extends State<GraphEditorDialog> {
                         },
                       ),
                     ),
-                    if (_g.points.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(s.t('points'), style: Theme.of(context).textTheme.bodySmall)),
+                    if (_g.points.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(s.t('points'), style: Theme.of(context).textTheme.bodySmall),
+                      ),
                   ],
                 ),
               ),
@@ -146,14 +156,18 @@ class _GraphEditorDialogState extends State<GraphEditorDialog> {
                     for (final e in _g.params.entries)
                       Row(
                         children: [
-                          SizedBox(width: 28, child: Text(e.key, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+                          SizedBox(
+                            width: 28,
+                            child: Text(e.key, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                          ),
                           Expanded(
                             child: Slider(
                               key: Key('graph-param-${e.key}'),
                               value: e.value.clamp(_ranges[e.key]!.$1, _ranges[e.key]!.$2),
                               min: _ranges[e.key]!.$1,
                               max: _ranges[e.key]!.$2,
-                              onChanged: (v) => setState(() => _g = _g.copyWith(params: {..._g.params, e.key: _round(v, _ranges[e.key]!.$2 - _ranges[e.key]!.$1)})),
+                              onChanged: (v) =>
+                                  setState(() => _g = _g.copyWith(params: {..._g.params, e.key: _round(v, _ranges[e.key]!.$2 - _ranges[e.key]!.$1)})),
                             ),
                           ),
                           SizedBox(width: 56, child: Text(graphNum(e.value), textAlign: TextAlign.end)),

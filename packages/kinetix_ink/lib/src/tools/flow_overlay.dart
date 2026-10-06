@@ -61,7 +61,10 @@ typedef FlowChoice = ({FlowShape? shape, FlowPattern? pattern});
 /// Opens the palette for adding beyond [side] of [node], and adds the choice.
 Future<void> openFlowPalette(BuildContext context, WhiteboardController c, FlowNodeElement node, FlowSide side) async {
   final s = ToolStrings.of(context);
-  final choice = await showDialog<FlowChoice>(context: context, builder: (_) => FlowPalette(from: node.shape, strings: s));
+  final choice = await showDialog<FlowChoice>(
+    context: context,
+    builder: (_) => FlowPalette(from: node.shape, strings: s),
+  );
   if (choice == null) return;
   final r = addNextFlow(c.elements, node.id, side, shape: choice.shape, pattern: choice.pattern, words: s.flowWords);
   if (r == null) return;
@@ -86,7 +89,10 @@ class FlowPalette extends StatelessWidget {
       child: Container(
         width: 116,
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(border: Border.all(color: const Color(0x22000000)), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0x22000000)),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -112,7 +118,8 @@ class FlowPalette extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  for (final shape in paletteShapes(from)) tile('flow-shape-${shape.name}', s.shape(shape), ShapeIconPainter(shape), (shape: shape, pattern: null)),
+                  for (final shape in paletteShapes(from))
+                    tile('flow-shape-${shape.name}', s.shape(shape), ShapeIconPainter(shape), (shape: shape, pattern: null)),
                 ],
               ),
               if (from != FlowShape.topic) ...[
@@ -165,7 +172,14 @@ class PatternIconPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     var n = 0;
     final start = FlowNodeElement(id: 'src', rect: const Rect.fromLTWH(0, 0, 200, 90), shape: FlowShape.process, color: KxColor.accent);
-    final r = addNextFlow([start], 'src', FlowSide.bottom, pattern: pattern, words: const FlowWords(yes: '', no: '', condition: '', step: '', cases: ['', '', ''], loop: '', forEach: '', done: ''), newId: () => 'p${n++}');
+    final r = addNextFlow(
+      [start],
+      'src',
+      FlowSide.bottom,
+      pattern: pattern,
+      words: const FlowWords(yes: '', no: '', condition: '', step: '', cases: ['', '', ''], loop: '', forEach: '', done: ''),
+      newId: () => 'p${n++}',
+    );
     if (r == null) return;
     final els = r.elements.where((e) => e.id != 'src').toList();
     final box = contentBounds(els).inflate(10);
@@ -208,7 +222,6 @@ Future<void> editFlowNodeText(BuildContext context, WhiteboardController c, Flow
       ],
     ),
   );
-  ctl.dispose();
   final now = c.byId(node.id);
   if (text == null || now is! FlowNodeElement) return;
   c.replace(now.copyWith(text: text.trim()));

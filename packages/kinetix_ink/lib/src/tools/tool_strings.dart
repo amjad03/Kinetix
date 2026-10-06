@@ -355,4 +355,7 @@ class ToolStrings {
 /// Shapes shown in the ＋ palette for a block of [from] (mind-map topics offer topics first).
 List<FlowShape> paletteShapes(FlowShape from) => from == FlowShape.topic
     ? const [FlowShape.topic, FlowShape.process, FlowShape.comment]
-    : [for (final s in FlowShape.values) if (s != FlowShape.topic) s];
+    : [
+        for (final s in FlowShape.values)
+          if (s != FlowShape.topic) s,
+      ];

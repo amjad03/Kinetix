@@ -32,7 +32,10 @@ class GeoToolsOverlay extends StatelessWidget {
         final line = c.edgeLine.value;
         return Stack(
           children: [
-            for (final t in tools) Positioned.fill(child: _GeoToolView(key: ValueKey('geo-${t.id}'), controller: c, tool: t, view: view)),
+            for (final t in tools)
+              Positioned.fill(
+                child: _GeoToolView(key: ValueKey('geo-${t.id}'), controller: c, tool: t, view: view),
+              ),
             for (final t in tools) _buttons(context, t, view),
             if (line != null) _lengthPill(line, view),
           ],
@@ -48,9 +51,7 @@ class GeoToolsOverlay extends StatelessWidget {
     return Positioned(
       left: at.dx + 14,
       top: at.dy - 40,
-      child: IgnorePointer(
-        child: _Pill('${GeoCalibration.format(d.distance)} · ${degrees360(math.atan2(-d.dy, d.dx)).round()}°'),
-      ),
+      child: IgnorePointer(child: _Pill('${GeoCalibration.format(d.distance)} · ${degrees360(math.atan2(-d.dy, d.dx)).round()}°')),
     );
   }
 
@@ -80,7 +81,12 @@ class GeoToolsOverlay extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                btn('lock', t.locked ? Icons.lock : Icons.lock_open, t.locked ? s.t('unlock') : s.t('lock'), () => c.updateGeoTool(t.copyWith(locked: !t.locked))),
+                btn(
+                  'lock',
+                  t.locked ? Icons.lock : Icons.lock_open,
+                  t.locked ? s.t('unlock') : s.t('lock'),
+                  () => c.updateGeoTool(t.copyWith(locked: !t.locked)),
+                ),
                 if (t.kind != GeoKind.compass) btn('flip', Icons.flip, s.t('flip'), () => c.updateGeoTool(t.copyWith(flipped: !t.flipped))),
                 if (t.kind == GeoKind.compass)
                   btn('circle', Icons.radio_button_unchecked, s.t('circle'), () {
@@ -117,9 +123,8 @@ class GeoToolsOverlay extends StatelessWidget {
 /// The tool's box on screen (unturned), for placing its buttons.
 Rect geoScreenBounds(GeoTool t, ViewState view) {
   final pts = switch (t.kind) {
-    GeoKind.protractor || GeoKind.protractor360 => [
-      for (var i = 0; i < 16; i++) t.toBoard(Offset(math.cos(i * math.pi / 8), math.sin(i * math.pi / 8)) * t.size),
-    ],
+    GeoKind.protractor ||
+    GeoKind.protractor360 => [for (var i = 0; i < 16; i++) t.toBoard(Offset(math.cos(i * math.pi / 8), math.sin(i * math.pi / 8)) * t.size)],
     GeoKind.compass => [t.center, t.pencil, t.hinge],
     _ => [for (final p in t.outline) t.toBoard(p)],
   };
@@ -140,7 +145,10 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(color: KxColor.inverse.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(14)),
-    child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+    child: Text(
+      text,
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+    ),
   );
 }
 
@@ -505,8 +513,7 @@ class GeoToolPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(GeoToolPainter old) =>
-      old.t != t || old.view != view || old.sweep != sweep || old.startAngle != startAngle || old.t.flipped != t.flipped;
+  bool shouldRepaint(GeoToolPainter old) => old.t != t || old.view != view || old.sweep != sweep || old.startAngle != startAngle || old.t.flipped != t.flipped;
 }
 
 /// Matches the scales to this screen: drag until 10 marks on screen match 10 cm on a real ruler.
@@ -528,7 +535,9 @@ Future<void> showGeoCalibrationDialog(BuildContext context) async {
               const SizedBox(height: 16),
               SizedBox(
                 height: 60,
-                child: ClipRect(child: CustomPaint(key: const Key('geo-calibrate-scale'), painter: _CalibrationPainter(px), size: Size.infinite)),
+                child: ClipRect(
+                  child: CustomPaint(key: const Key('geo-calibrate-scale'), painter: _CalibrationPainter(px), size: Size.infinite),
+                ),
               ),
               Slider(key: const Key('geo-calibrate-slider'), value: px.clamp(15, 120), min: 15, max: 120, onChanged: (v) => set(() => px = v)),
               Text('${(px * 2.54).round()} dpi · 1 ${s.t('cm')} = ${px.toStringAsFixed(1)} px'),

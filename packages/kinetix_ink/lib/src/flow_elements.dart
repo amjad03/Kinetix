@@ -186,7 +186,10 @@ class FlowNodeElement extends BoardElement {
   @override
   FlowNodeElement rotated(Offset center, double angle) => copyWith(rect: turnFrame(rect, center, angle));
   @override
-  FlowNodeElement recolored(Color c) => copyWith(color: c, fill: fill == null ? null : c.withValues(alpha: fill!.a));
+  FlowNodeElement recolored(Color c) => copyWith(
+    color: c,
+    fill: fill == null ? null : c.withValues(alpha: fill!.a),
+  );
   @override
   FlowNodeElement withId(String id) => copyWith(id: id);
 }
@@ -244,18 +247,27 @@ class FlowLinkElement extends BoardElement {
     return (points[best] + points[best - 1]) / 2;
   }
 
-  FlowLinkElement copyWith({String? id, String? from, String? to, FlowSide? fromSide, FlowSide? toSide, String? label, Color? color, List<Offset>? points, bool? curved}) =>
-      FlowLinkElement(
-        id: id ?? this.id,
-        from: from ?? this.from,
-        to: to ?? this.to,
-        fromSide: fromSide ?? this.fromSide,
-        toSide: toSide ?? this.toSide,
-        label: label ?? this.label,
-        color: color ?? this.color,
-        points: points ?? this.points,
-        curved: curved ?? this.curved,
-      );
+  FlowLinkElement copyWith({
+    String? id,
+    String? from,
+    String? to,
+    FlowSide? fromSide,
+    FlowSide? toSide,
+    String? label,
+    Color? color,
+    List<Offset>? points,
+    bool? curved,
+  }) => FlowLinkElement(
+    id: id ?? this.id,
+    from: from ?? this.from,
+    to: to ?? this.to,
+    fromSide: fromSide ?? this.fromSide,
+    toSide: toSide ?? this.toSide,
+    label: label ?? this.label,
+    color: color ?? this.color,
+    points: points ?? this.points,
+    curved: curved ?? this.curved,
+  );
 
   @override
   FlowLinkElement translated(Offset d) => _moved(this, d, copyWith(points: [for (final p in points) p + d]));
@@ -333,7 +345,10 @@ List<Offset> routeCurve(Rect a, FlowSide sa, Rect b, FlowSide sb) {
 /// block is gone dropped. Returns [elements] itself when nothing changed.
 List<BoardElement> reflowLinks(List<BoardElement> elements) {
   if (!elements.any((e) => e is FlowLinkElement)) return elements;
-  final nodes = {for (final e in elements) if (e is FlowNodeElement) e.id: e};
+  final nodes = {
+    for (final e in elements)
+      if (e is FlowNodeElement) e.id: e,
+  };
   var changed = false;
   final out = <BoardElement>[];
   for (final e in elements) {

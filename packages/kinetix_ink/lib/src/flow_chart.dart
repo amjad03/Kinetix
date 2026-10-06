@@ -141,7 +141,14 @@ FlowAddResult? addNextFlow(
 FlowNodeElement starterNode({required bool mindMap, required Color color, FlowWords words = const FlowWords()}) {
   final shape = mindMap ? FlowShape.topic : FlowShape.terminal;
   final size = mindMap ? const Size(240, 90) : shape.defaultSize;
-  return FlowNodeElement(id: newElementId(), rect: Offset.zero & size, shape: shape, text: mindMap ? words.topic : words.start, color: color, fontSize: mindMap ? 28 : 22);
+  return FlowNodeElement(
+    id: newElementId(),
+    rect: Offset.zero & size,
+    shape: shape,
+    text: mindMap ? words.topic : words.start,
+    color: color,
+    fontSize: mindMap ? 28 : 22,
+  );
 }
 
 /// New typed words whose middle lands inside a block go into that block (the AI pen writing in a
@@ -149,7 +156,10 @@ FlowNodeElement starterNode({required bool mindMap, required Color color, FlowWo
 /// not on it is taken. Returns [after] unchanged when nothing lands in a block.
 List<BoardElement> absorbTextIntoFlow(List<BoardElement> before, List<BoardElement> after) {
   if (!after.any((e) => e is FlowNodeElement)) return after;
-  final old = {for (final e in before) if (e is TextElement) e.id};
+  final old = {
+    for (final e in before)
+      if (e is TextElement) e.id,
+  };
   final fresh = [
     for (final e in after)
       if (e is TextElement && !old.contains(e.id)) e,
