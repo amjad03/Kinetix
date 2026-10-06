@@ -94,6 +94,8 @@ export function createSceneRuntime(env) {
     // Every material can be cut, like a model's.
     rt.group.traverse((o) => {
       for (const m of materials(o)) {
+        // Things drawn over a cut face (blood cells in a section) opt out of the cut.
+        if (m.userData.noClip) continue;
         m.clippingPlanes = env.planes;
         m.clipIntersection = true;
         m.userData.side0 = m.side;
@@ -274,7 +276,8 @@ export function createSceneRuntime(env) {
 
   /** Room for the caption: what the camera looks at sits a little above the middle. */
   function frame(w, h) {
-    const up = rt.look?.frameUp ?? 0.08;
+    const given = params().get('frameUp');
+    const up = given !== null ? parseFloat(given) || 0 : rt.look?.frameUp ?? 0.08;
     if (w > 0 && h > 0) camera.setViewOffset(w, h, 0, Math.round(h * up), w, h);
   }
 

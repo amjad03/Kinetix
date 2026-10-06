@@ -18,7 +18,7 @@ export const script = {
     'हृदय के चार कक्ष और कपाट, धड़कते हृदय के हर भाग से रक्त कैसे बहता है, और फेफड़ों तथा शरीर से होकर दोहरा परिसंचरण।',
     'ಹೃದಯದ ನಾಲ್ಕು ಕೋಣೆಗಳು ಮತ್ತು ಕವಾಟಗಳು, ಹೃದಯ ಬಡಿಯುವಾಗ ಪ್ರತಿ ಭಾಗದ ಮೂಲಕ ರಕ್ತ ಹೇಗೆ ಹರಿಯುತ್ತದೆ, ಮತ್ತು ಶ್ವಾಸಕೋಶ ಹಾಗೂ ದೇಹದ ಮೂಲಕ ದ್ವಿ ರಕ್ತಪರಿಚಲನೆ.',
   ),
-  thumb: { step: 'chambers', u: 0.6 },
+  thumb: { step: 'outside', u: 0.4 },
   keywords: ['heart', 'circulation', 'double circulation', 'blood', 'atrium', 'ventricle', 'valves', 'aorta', 'pulmonary', 'heartbeat', 'transportation', 'life processes', 'blood vessels'],
   credit: 'BodyParts3D, © The Database Center for Life Science (DBCLS), CC BY 4.0',
   look: {
@@ -71,7 +71,7 @@ export const script = {
     },
     {
       id: 'chambers', stage: 'heart', seconds: 12,
-      camera: { pos: [0.3, 0.3, 8.6], target: [0, -0.35, 0], drift: 0.02 },
+      camera: { pos: [0.3, 0.2, 7.4], target: [0, -0.35, 0], drift: 0.015 },
       cut: { normal: [0, 0, -1], point: [0, 0, -0.05] },
       highlight: ['septum'], labels: ['right_atrium', 'left_atrium', 'right_ventricle', 'left_ventricle', 'septum'],
       title: t('Four chambers', 'चार कक्ष', 'ನಾಲ್ಕು ಕೋಣೆಗಳು'),
@@ -83,7 +83,7 @@ export const script = {
     },
     {
       id: 'right_side', stage: 'heart', seconds: 14,
-      camera: { pos: [-1.6, 0.5, 8.0], target: [-0.4, -0.3, 0] },
+      camera: { pos: [-1.2, 0.3, 7.0], target: [-0.35, -0.3, 0], drift: 0.01 },
       cut: { normal: [0, 0, -1], point: [0, 0, -0.05] },
       highlight: ['right_atrium', 'right_ventricle'], labels: ['vena_cava', 'right_atrium', 'tricuspid_valve', 'right_ventricle', 'pulmonary_trunk', 'deoxy_blood'],
       title: t('The right side: to the lungs', 'दायाँ भाग: फेफड़ों की ओर', 'ಬಲಭಾಗ: ಶ್ವಾಸಕೋಶಗಳತ್ತ'),
@@ -95,7 +95,7 @@ export const script = {
     },
     {
       id: 'left_side', stage: 'heart', seconds: 14,
-      camera: { pos: [1.8, 0.4, 8.0], target: [0.4, -0.3, 0] },
+      camera: { pos: [1.4, 0.3, 7.0], target: [0.35, -0.3, 0], drift: 0.01 },
       cut: { normal: [0, 0, -1], point: [0, 0, -0.05] },
       highlight: ['left_atrium', 'left_ventricle'], labels: ['pulmonary_veins', 'left_atrium', 'mitral_valve', 'left_ventricle', 'aorta', 'oxy_blood'],
       title: t('The left side: to the body', 'बायाँ भाग: शरीर की ओर', 'ಎಡಭಾಗ: ದೇಹದತ್ತ'),
@@ -119,7 +119,7 @@ export const script = {
     },
     {
       id: 'double', stage: 'circulation', seconds: 15,
-      camera: { pos: [3.2, 1.4, 15.5], target: [0, 0.2, 0], from: [1, 0, 6], drift: 0.02 },
+      camera: { pos: [3.4, 1.0, 20.5], target: [0, -0.2, 0], from: [1, 0, 6], drift: 0.02 },
       highlight: ['lungs', 'body'], labels: ['lungs', 'body', 'pulmonary_circuit', 'systemic_circuit'],
       title: t('Double circulation', 'दोहरा परिसंचरण', 'ದ್ವಿ ರಕ್ತಪರಿಚಲನೆ'),
       caption: t(
@@ -130,7 +130,7 @@ export const script = {
     },
     {
       id: 'summary', stage: 'circulation', seconds: 13,
-      camera: { pos: [-4.0, 2.2, 14.5], target: [0, 0.2, 0], drift: 0.03 },
+      camera: { pos: [-4.4, 1.8, 20.0], target: [0, -0.2, 0], drift: 0.03 },
       highlight: [], labels: ['oxy_blood', 'deoxy_blood', 'pulmonary_circuit', 'systemic_circuit'],
       title: t('Why two circuits?', 'दो परिपथ क्यों?', 'ಎರಡು ಸುತ್ತುಗಳೇಕೆ?'),
       caption: t(
@@ -155,7 +155,8 @@ export async function build(k) {
 
 /** The flow paths, scaled: the right side (body → lungs) and the left side (lungs → body). */
 function paths() {
-  const P = (pts) => curve(pts.map(([x, y, z]) => [x * S, y * S, Math.min(z * S, -0.25)]));
+  // Just in front of the cut face (z = -0.05), where they show over the section.
+  const P = (pts) => curve(pts.map(([x, y, z]) => [x * S, y * S, 0.05 + z * 0.8]));
   return {
     right: [
       P([[-0.036, 0.075, 0.002], [-0.036, 0.058, 0.002], [-0.038, 0.04, 0.003], [-0.038, -0.006, 0.005], [-0.03, -0.03, 0.012], [-0.014, -0.042, 0.02], [-0.004, -0.03, 0.03], [0.002, -0.005, 0.03], [0.006, 0.022, 0.021], [0.01, 0.034, 0.0], [0.04, 0.03, -0.018]]),
@@ -204,7 +205,7 @@ function buildHeart(k, model) {
   add('vena_cava', ['superior_vena_cava', 'inferior_vena_cava'], vein);
   add('coronary_arteries', ['coronary_arteries', 'cardiac_veins'], mat({ color: '#c84a3a', rough: 0.4, clearcoat: 0.5, rim: 0.1 }));
   // The blood in the chambers: seen only where the heart is cut open.
-  const bloodMat = (c) => mat({ color: c, rough: 0.25, clearcoat: 0.8, clearcoatRough: 0.15, rim: 0.1, opacity: 0.0 });
+  const bloodMat = (c) => mat({ color: c, rough: 0.3, clearcoat: 0.8, clearcoatRough: 0.15, rim: 0.1 });
   const deoxy = new THREE.Group(), oxy = new THREE.Group();
   deoxy.add(new THREE.Mesh(g('ra_blood'), bloodMat(DEOXY)), new THREE.Mesh(g('rv_blood'), bloodMat(DEOXY)));
   oxy.add(new THREE.Mesh(g('la_blood'), bloodMat(OXY)), new THREE.Mesh(g('lv_blood'), bloodMat(OXY)));
@@ -231,7 +232,11 @@ function buildHeart(k, model) {
   // Red blood cells along the two sides.
   const P = paths();
   const geo = rbcGeometry();
-  const rbcMat = (c) => mat({ color: c, rough: 0.4, clearcoat: 0.6, clearcoatRough: 0.25, sheen: 0.3, rim: 0.15 });
+  const rbcMat = (c) => {
+    const m = mat({ color: c, rough: 0.4, clearcoat: 0.6, clearcoatRough: 0.25, sheen: 0.3, rim: 0.15 });
+    m.userData.noClip = true;
+    return m;
+  };
   const N = 40;
   const cells = { right: new THREE.InstancedMesh(geo, rbcMat('#5d6bb5'), N * 2), left: new THREE.InstancedMesh(geo, rbcMat('#c0392f'), N * 2) };
   for (const m of Object.values(cells)) {
@@ -282,11 +287,11 @@ function buildHeart(k, model) {
     sounds.done();
     // Blood in the chambers shows when the heart is open.
     const open = s.is('chambers', 'right_side', 'left_side', 'beat') ? smooth(s.t / 1.2) : 0;
-    for (const grp of [deoxy, oxy]) for (const m of grp.children) m.material.opacity = 0.55 * open;
     deoxy.visible = oxy.visible = open > 0.01;
     // Cells move faster while the chambers squeeze.
     const flow = (s.is('outside') ? 0.05 : 0.04) + 0.06 * (pulse(0.0, 0.18) + 1.6 * pulse(0.2, 0.55));
-    const show = { right: s.is('outside', 'chambers', 'right_side', 'beat') ? 1 : 0.25, left: s.is('outside', 'chambers', 'left_side', 'beat') ? 1 : 0.25 };
+    // Cells show over the cut face, on the side the step is about.
+    const show = { right: s.is('chambers', 'right_side', 'beat') ? 1 : 0, left: s.is('chambers', 'left_side', 'beat') ? 1 : 0 };
     for (const side of ['right', 'left']) {
       const mesh = cells[side];
       let n = 0;
@@ -302,7 +307,7 @@ function buildHeart(k, model) {
             e.set(j[3] + T * 1.3, j[0] * 4 + T, j[1] * 3);
             q.setFromEuler(e);
             const a = Math.min(1, u * 12, (1 - u) * 12);
-            sc.set(0.075 * a, 0.075 * a, 0.075 * a);
+            sc.set(0.085 * a, 0.085 * a, 0.085 * a);
             m4.compose(v, q, sc);
             mesh.setMatrixAt(n++, m4);
           }

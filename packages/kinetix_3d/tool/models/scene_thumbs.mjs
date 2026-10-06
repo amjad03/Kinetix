@@ -26,7 +26,7 @@ for (const id of ids) {
   const s = scenes[id].script;
   const thumb = s.thumb || { step: s.steps[0].id, u: 0.5 };
   const i = Math.max(0, s.steps.findIndex((x) => x.id === thumb.step));
-  await page.goto(`http://127.0.0.1:3681/index.html?scene=${id}&autoplay=0&step=${i}&u=${thumb.u ?? 0.5}`, { waitUntil: 'commit', timeout: 120000 });
+  await page.goto(`http://127.0.0.1:3681/index.html?scene=${id}&autoplay=0&frameUp=0&step=${i}&u=${thumb.u ?? 0.5}`, { waitUntil: 'commit', timeout: 120000 });
   await page.waitForFunction(() => window.__kxSteps, null, { timeout: 300000 });
   await page.evaluate(() => window.kx.cmd({ cmd: 'labels', mode: 'none' }));
   const f0 = await page.evaluate(() => window.__frames);

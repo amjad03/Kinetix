@@ -1587,6 +1587,8 @@ async function loadScene(id) {
     prepare: () => {},
     loadModel: loadModelParts,
   });
+  // A scene from the start (a first step may already cut it open).
+  manifest = { kind: 'scene', id, size: modelSize, parts: [], views: [] };
   const script = await sceneRt.load(id, state.lang);
   manifest = { kind: 'scene', id, size: modelSize, parts: script.parts.filter((p) => parts.has(p.id)).map((p) => parts.get(p.id).info), views: [], peel: script.peel };
   resize();
@@ -1684,7 +1686,9 @@ function sceneSides(cut) {
   root.traverse((o) => {
     if (!o.material || o.userData.glowPoints) return;
     for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-      const side = cut ? THREE.DoubleSide : m.userData.side0 ?? THREE.FrontSide;
+      // Only the scene's own materials (not the stencil passes of solid cut faces).
+      if (m.userData.side0 === undefined) continue;
+      const side = cut ? THREE.DoubleSide : m.userData.side0;
       if (m.side !== side) {
         m.side = side;
         m.needsUpdate = true;
@@ -1704,6 +1708,15 @@ async function loadModelParts(id) {
   gltf.scene.traverse((o) => {
     if (o.isMesh) {
       const g = o.geometry.clone();
+      // Quantized attributes (normalized integers) to floats first: the node's
+      // transform scales them back, and written into integers they would clamp.
+      for (const name of ['position', 'normal']) {
+        const a = g.getAttribute(name);
+        if (!a || a.array instanceof Float32Array) continue;
+        const f = new Float32Array(a.count * 3);
+        for (let i = 0; i < a.count; i++) f.set([a.getX(i), a.getY(i), a.getZ(i)], i * 3);
+        g.setAttribute(name, new THREE.BufferAttribute(f, 3));
+      }
       g.applyMatrix4(o.matrixWorld);
       geometries[o.name] = g;
     }
@@ -1884,6 +1897,7 @@ function render(now) {
 function renderScene(now) {
   sceneRt.tick(now);
   tickSweep(now);
+  placeCaps();
   laserTick(now);
   planeHint.tick(now);
   controls.update();
