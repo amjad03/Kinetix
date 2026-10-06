@@ -47,7 +47,11 @@ Models built in code need no BP3D: `node build_models.mjs orbitals ear`.
 `test/viewer_protocol_test.dart`). Besides the prototype's commands there are
 `laser` (trail points from the app, 0..1 across the view; the part under the
 tip is lit and named, and reported as a `laser` event), `orbit` (turn and zoom
-without touching the page) and `partAt` (for tests). `test/viewer_catalogue_test.dart`
+without touching the page) and `partAt` (for tests), `cut` (half, wedge, slab, depth
+sweep and peel, each with its own settings; every closed part gets a stencil
+cap on each cut plane) and `annotate` (notes pinned to parts, strokes on the
+surface and ink over the view; every change comes back as an `annotations`
+event in the JSON that `Model3dAnnotations` reads). `test/viewer_catalogue_test.dart`
 checks every manifest (three languages, files present, references resolved).
 
 ## Models built in code (recipes/volcano.mjs, recipes/seasons.mjs…)
@@ -59,7 +63,9 @@ revolution, thin sheets for petals), `lib/cell.mjs` (organelles),
 of closed solids, so layers are hollow shells a hair apart (the Earth's
 layers, the volcano's ash and lava). Also available:
 
-- per part: `inside` (the colour of its cut face), `matte`, `glow`,
+- per part: `inside` (the colour of its cut face), `capWith` (the part it
+  makes one solid with for the cut face, like the crust's land, sea and
+  underside), `cap: false` (no cut face), `matte`, `glow`,
   `opacity`, `explode` (take-apart direction), `spin` (for `orbit`
   animations), `hinge` (a solid's net), `variant`, `labelAt`, and
   `detail`/`error` to simplify a large part;
