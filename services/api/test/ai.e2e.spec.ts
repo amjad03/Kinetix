@@ -142,6 +142,11 @@ describe('KINETIX AI gateway', () => {
     const res = await http().post('/v1/ai/lesson-plan').set(auth('teacher')).send({ topic: 'Final accounts', minutes: 55 }).expect(200);
     expect(res.body.result.steps).toHaveLength(3);
     expect(model.requests[1].messages.at(-1)!.content).toContain('add up to 20, not 55');
+
+    // Still wrong after the repair: scaled to the chosen length rather than refused.
+    model.replies.push(plan([10, 25, 10]), plan([10, 25, 10]));
+    const fitted = await http().post('/v1/ai/lesson-plan').set(auth('teacher')).send({ topic: 'Final accounts', minutes: 30 }).expect(200);
+    expect(fitted.body.result.steps.map((s: { minutes: number }) => s.minutes)).toEqual([7, 16, 7]);
   });
 
   it('explains in Kannada for a student, and keeps homework and quizzes for staff', async () => {

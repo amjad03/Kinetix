@@ -29,6 +29,7 @@ import {
   buildMessages,
   checkOutput,
   PROMPT_VERSION,
+  postProcess,
   previewOutput,
   requestText,
   TaskOutputs,
@@ -154,7 +155,7 @@ export class AiService {
     });
 
     const meta = { provider: p.name, model: p.model, promptVersion: PROMPT_VERSION, preview: p.preview, sources };
-    if (cached) return { task, result: cached, meta: { ...meta, cached: true } };
+    if (cached) return { task, result: postProcess(task, input, cached), meta: { ...meta, cached: true } };
     if (p.preview) {
       await this.db.withTenant(caller.tenantId, (tx) => this.record(tx, caller, task, 'ok'));
       return { task, result: previewOutput(task, input), meta: { ...meta, cached: false } };
@@ -215,7 +216,8 @@ export class AiService {
         if (parsed.success) {
           const out = parsed.data as TaskOutput<T>;
           const wrong = checkOutput(task, input, out);
-          if (!wrong) return out;
+          // Close enough (or still off after one repair): the minutes are scaled to fit.
+          if (!wrong || (attempt >= 1 && task === 'lessonPlan')) return postProcess(task, input, out);
           problem = wrong;
         } else {
           problem = parsed.error.issues.slice(0, 5).map((i) => `${i.path.join('.') || 'reply'}: ${i.message}`).join('; ');

@@ -196,6 +196,38 @@ export function checkOutput<T extends TaskName>(task: T, input: TaskInput<T>, ou
 }
 
 /**
+ * Step minutes scaled to add up to exactly [total]: each rounded to whole minutes, at least 2
+ * (fewer only when the lesson is too short for that), and the rounding remainder added to (or
+ * taken from) the longest step.
+ */
+export function fitMinutes(minutes: number[], total: number): number[] {
+  const n = minutes.length;
+  if (n === 0 || total <= 0) return minutes;
+  const floor = Math.max(1, Math.min(2, Math.floor(total / n)));
+  const sum = minutes.reduce((s, m) => s + Math.max(0, m), 0);
+  const out = minutes.map((m) => Math.max(floor, Math.round(sum > 0 ? (Math.max(0, m) * total) / sum : total / n)));
+  let diff = total - out.reduce((s, m) => s + m, 0);
+  // Longest first (the earlier step on a tie), so the main part of the lesson absorbs the change.
+  const order = out.map((_, i) => i).sort((a, b) => out[b] - out[a] || a - b);
+  if (diff > 0) out[order[0]] += diff;
+  for (const i of order) {
+    if (diff >= 0) break;
+    const take = Math.min(-diff, out[i] - floor);
+    out[i] -= take;
+    diff += take;
+  }
+  return out;
+}
+
+/** Fixes what a model reliably gets slightly wrong: lesson-plan steps always add up to the chosen length. */
+export function postProcess<T extends TaskName>(task: T, input: TaskInput<T>, out: TaskOutput<T>): TaskOutput<T> {
+  if (task !== 'lessonPlan') return out;
+  const plan = out as TaskOutput<'lessonPlan'>;
+  const fitted = fitMinutes(plan.steps.map((s) => s.minutes), (input as TaskInput<'lessonPlan'>).minutes);
+  return { ...plan, steps: plan.steps.map((s, i) => ({ ...s, minutes: fitted[i] })) } as TaskOutput<T>;
+}
+
+/**
  * Offline preview: a fixed, clearly labelled response with the right shape. Used in
  * development and tests, and on installs that have not connected an AI server yet.
  * It never pretends to know the subject.
@@ -252,5 +284,5 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
         };
     }
   })();
-  return result as TaskOutput<T>;
+  return postProcess(task, input, result as TaskOutput<T>);
 }
