@@ -14,6 +14,7 @@ import 'ink_canvas.dart' show inkColorFor;
 import 'ink_models.dart';
 import 'lesson.dart' show paintLaser;
 import 'math_layer.dart';
+import 'shape_edit.dart';
 import 'tools/flow_overlay.dart';
 import 'tools/geo_overlay.dart';
 import 'tools/graph_editor.dart';
@@ -288,6 +289,12 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
             if (_drawing.remove(p)) c.pointerCancel(p);
           }
           if (_tapPointer != null) _tapPointer = null;
+          if (_transformPointer != null) {
+            _transformPointer = null;
+            c.cancelTransform();
+          }
+          // Two fingers on the selection move, scale and turn it instead.
+          if (_startSelectionPinch()) return;
           _startPinch();
           return;
         }
@@ -299,8 +306,15 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       }
     }
 
-    // A handle of the selection resizes or turns it, whatever the tool.
+    // A handle of the selection resizes or turns it, whatever the tool; a shape's own handles
+    // move its corners, its radius or its rounding.
     if (_transformPointer == null && _drawing.isEmpty && c.selection.isNotEmpty) {
+      final sh = shapeHandleAt(e.localPosition);
+      if (sh != null) {
+        _transformPointer = e.pointer;
+        c.beginShapeEdit(sh, _board(e.localPosition), scale: _scale);
+        return;
+      }
       final h = handleAt(e.localPosition);
       if (h != null) {
         _transformPointer = e.pointer;
@@ -338,6 +352,11 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     final down = _downAt[e.pointer];
     if (down != null && (e.localPosition - down).distance > 10) _hold?.cancel();
     if (down != null && _tapStart != null && (e.localPosition - down).distance > WhiteboardCanvas.tapSlop) _tapStart = null;
+    if (_selectionPinch) {
+      final pts = _touches.values.take(2).toList();
+      if (pts.length == 2) c.updateSelectionPinch(_board(pts[0]), _board(pts[1]));
+      return;
+    }
     if (_pinching) {
       _updatePinch();
       return;
@@ -348,7 +367,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
       return;
     }
     if (e.pointer == _transformPointer) {
-      c.updateTransform(_board(e.localPosition));
+      c.updateTransform(_board(e.localPosition), free: HardwareKeyboard.instance.isShiftPressed);
       return;
     }
     if (_drawing.contains(e.pointer)) {
@@ -363,6 +382,13 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     _downTime.remove(e.pointer);
     final wasTouch = _touches.remove(e.pointer) != null;
     if (wasTouch) _endTap(e);
+    if (_selectionPinch) {
+      if (_touches.length < 2) {
+        _selectionPinch = false;
+        c.endTransform();
+      }
+      return;
+    }
     if (_pinching) {
       if (_touches.length < 2) {
         _pinching = false;
@@ -404,6 +430,10 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     _downTime.remove(e.pointer);
     if (_touches.remove(e.pointer) != null) _tapStart = null;
     if (_touches.length < 2) _pinching = false;
+    if (_selectionPinch && _touches.length < 2) {
+      _selectionPinch = false;
+      c.cancelTransform();
+    }
     if (e.pointer == _panPointer) _panPointer = null;
     if (e.pointer == _tapPointer) _tapPointer = null;
     if (e.pointer == _transformPointer) {
@@ -486,6 +516,23 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     _panLast = at;
   }
 
+  bool _selectionPinch = false;
+
+  /// With the Select tool, two fingers that land on the selection take hold of it.
+  bool _startSelectionPinch() {
+    if (c.tool != BoardTool.select || c.selection.isEmpty || c.selectionLocked) return false;
+    final box = _selectionBox;
+    final pts = _touches.values.take(2).map(_board).toList();
+    if (box == null || pts.length < 2) return false;
+    final reach = box.inflate(_handleReach);
+    if (!pts.every(reach.contains)) return false;
+    _selectionPinch = true;
+    _pinching = false;
+    _panPointer = null;
+    c.beginSelectionPinch(pts[0], pts[1]);
+    return true;
+  }
+
   void _startPinch() {
     final pts = _touches.values.take(2).toList();
     _pinching = true;
@@ -525,8 +572,21 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
   /// The selection's box as drawn (board units).
   Rect? get _selectionBox => c.selectionBounds?.inflate(8 / _scale);
 
+  /// Handles are drawn [handleSize] screen pixels across and answer a touch [handleHit] across,
+  /// whatever the zoom (big enough for a finger on a classroom panel).
+  static const handleSize = 28.0, handleHit = 44.0;
+
+  /// How far from a handle's centre a touch still takes it, in board units.
+  double get _handleReach => handleHit / 2 / _scale;
+
+  /// Whether the box handles show: not on a locked selection, nor while a shape's points are
+  /// being edited (its own handles replace them).
+  bool get _boxHandles => !c.selectionLocked && !c.editingPoints;
+
   Map<SelectionHandle, Offset> _handlePoints(Rect r) {
-    final small = r.width * _scale < 72 || r.height * _scale < 72;
+    if (!_boxHandles) return const {};
+    // Side handles only when they fit between the corners.
+    final small = r.width * _scale < handleSize * 4 || r.height * _scale < handleSize * 4;
     return {
       SelectionHandle.topLeft: r.topLeft,
       SelectionHandle.topRight: r.topRight,
@@ -538,8 +598,23 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
         SelectionHandle.bottom: r.bottomCenter,
         SelectionHandle.left: r.centerLeft,
       },
-      SelectionHandle.rotate: r.topCenter - Offset(0, 40 / _scale),
+      SelectionHandle.rotate: r.topCenter - Offset(0, 56 / _scale),
     };
+  }
+
+  /// The shape handle under the screen point [screen], if any.
+  ShapeHandle? shapeHandleAt(Offset screen) {
+    final w = _board(screen);
+    ShapeHandle? best;
+    var bestD = double.infinity;
+    for (final (h, at) in c.shapeHandles) {
+      final d = (at - w).distance;
+      if (d <= _handleReach && d < bestD) {
+        best = h;
+        bestD = d;
+      }
+    }
+    return best;
   }
 
   /// The handle under the screen point [screen], if any.
@@ -547,7 +622,7 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     final r = _selectionBox;
     if (r == null) return null;
     final w = _board(screen);
-    final reach = 24 / _scale;
+    final reach = _handleReach;
     SelectionHandle? best;
     var bestD = double.infinity;
     for (final e in _handlePoints(r).entries) {
@@ -829,7 +904,7 @@ class _ElementsPainter extends CustomPainter {
     final visible = view.visible(size).inflate(40 / view.scale);
     for (final e in c.page.elements) {
       if (hidden.contains(e.id) || !visible.overlaps(e.bounds)) continue;
-      paintElement(canvas, e, c.background, images: images, lengths: c.showLengths, angles: c.showAngles);
+      paintElement(canvas, e, c.background, images: images, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit);
     }
   }
 
@@ -854,43 +929,72 @@ class _ActivePainter extends CustomPainter {
       ..translate(view.offset.dx, view.offset.dy)
       ..scale(view.scale);
     for (final st in c.activeStrokes) {
-      paintElement(canvas, st, bg, lengths: c.showLengths, angles: c.showAngles);
+      paintElement(canvas, st, bg, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit);
     }
     final preview = c.transformPreview;
     var selected = c.selectedElements;
     if (preview != null) {
       selected = [for (final e in selected) preview(e)];
       for (final e in selected) {
-        paintElement(canvas, e, bg, images: s.images, lengths: c.showLengths, angles: c.showAngles);
+        paintElement(canvas, e, bg, images: s.images, lengths: c.showLengths, angles: c.showAngles, unit: c.measureUnit);
       }
     }
     if (selected.isNotEmpty) {
-      final labels = (c.showLengths || c.showAngles) && selected.any((e) => e is Stroke && e.shape != null);
+      final labels = selected.any(c.isLabelled);
       final r = contentBounds(selected).inflate(labels ? 26 : 0).inflate(8 * k);
       final line = Paint()
         ..color = accent
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5 * k;
-      canvas.drawRect(r, line);
-      if (!c.isMovingSelection) {
+      final locked = c.selectionLocked;
+      // A locked selection has a broken outline and no handles.
+      canvas.drawPath(locked ? _dashedRect(r, 6 * k) : (Path()..addRect(r)), line);
+      if (!c.isMovingSelection && !c.isPinchingSelection) {
         // Handles: white squares on the corners and sides, a round knob to turn it.
+        const hs = WhiteboardCanvasState.handleSize;
         final pts = s._handlePoints(r);
-        final knob = pts[SelectionHandle.rotate]!;
-        canvas.drawLine(r.topCenter, knob, line);
+        final knob = pts[SelectionHandle.rotate];
+        if (knob != null) canvas.drawLine(r.topCenter, knob, line);
         for (final e in pts.entries) {
           if (e.key == SelectionHandle.rotate) continue;
-          final rr = RRect.fromRectAndRadius(Rect.fromCenter(center: e.value, width: 14 * k, height: 14 * k), Radius.circular(3 * k));
-          canvas.drawRRect(rr.shift(Offset(0, k)), Paint()..color = const Color(0x33000000));
+          final side = e.key.index.isOdd; // top, right, bottom, left
+          final size = side ? Size(hs * 0.8 * k, hs * 0.8 * k) : Size(hs * k, hs * k);
+          final rr = RRect.fromRectAndRadius(Rect.fromCenter(center: e.value, width: size.width, height: size.height), Radius.circular(6 * k));
+          canvas.drawRRect(rr.shift(Offset(0, 1.5 * k)), Paint()..color = const Color(0x33000000));
           canvas.drawRRect(rr, Paint()..color = Colors.white);
-          canvas.drawRRect(rr, line);
+          canvas.drawRRect(rr, line..strokeWidth = 2 * k);
         }
-        canvas.drawCircle(knob, 12 * k, Paint()..color = accent);
-        final arrow = Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.8 * k
-          ..strokeCap = StrokeCap.round;
-        canvas.drawArc(Rect.fromCircle(center: knob, radius: 5.5 * k), -2.6, 4.2, false, arrow);
+        line.strokeWidth = 1.5 * k;
+        if (knob != null) {
+          canvas.drawCircle(knob, hs / 2 * k, Paint()..color = accent);
+          final arrow = Paint()
+            ..color = Colors.white
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2 * k
+            ..strokeCap = StrokeCap.round;
+          canvas.drawArc(Rect.fromCircle(center: knob, radius: 7 * k), -2.6, 4.2, false, arrow);
+        }
+        // A shape's own handles: round dots on its corners, a diamond for the radius and the
+        // corner rounding.
+        for (final (h, at) in c.shapeHandles) {
+          final round = h.kind == ShapeHandleKind.vertex;
+          final radius = (round ? hs / 2 - 3 : hs / 2 - 5) * k;
+          if (round) {
+            canvas.drawCircle(at + Offset(0, 1.5 * k), radius, Paint()..color = const Color(0x33000000));
+            canvas.drawCircle(at, radius, Paint()..color = Colors.white);
+            canvas.drawCircle(at, radius, line..strokeWidth = 2.5 * k);
+          } else {
+            final d = Path()
+              ..moveTo(at.dx, at.dy - radius * 1.2)
+              ..lineTo(at.dx + radius * 1.2, at.dy)
+              ..lineTo(at.dx, at.dy + radius * 1.2)
+              ..lineTo(at.dx - radius * 1.2, at.dy)
+              ..close();
+            canvas.drawPath(d, Paint()..color = accent);
+            canvas.drawPath(d, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2 * k);
+          }
+          line.strokeWidth = 1.5 * k;
+        }
       }
     }
     final lasso = c.lasso;
@@ -924,11 +1028,12 @@ class _ActivePainter extends CustomPainter {
       final (centre, radius) = compass;
       _pill(canvas, 'r = ${(radius / pxPerCm).toStringAsFixed(1)} cm', view.toScreen(centre + Offset(radius / 2, 0)) - const Offset(0, 22));
     }
-    // The angle while turning.
-    if (c.isTransforming && c.transformHandle == SelectionHandle.rotate && selected.isNotEmpty) {
-      var deg = c.transformAngle.round() % 360;
+    // The angle while turning: how far one element is turned in all, or how far several are
+    // being turned.
+    if (c.isTransforming && (c.transformHandle == SelectionHandle.rotate || c.isPinchingSelection) && selected.isNotEmpty) {
+      var deg = (c.selectionTurn ?? c.transformAngle).round() % 360;
       if (deg > 180) deg -= 360;
-      _pill(canvas, '$deg°', view.toScreen(contentBounds(selected).topCenter) - const Offset(0, 86));
+      _pill(canvas, '$deg°', view.toScreen(contentBounds(selected).topCenter) - const Offset(0, 104));
     }
     final hover = s._hover;
     if (c.tool == BoardTool.eraser && hover != null) {
@@ -942,6 +1047,16 @@ class _ActivePainter extends CustomPainter {
           ..strokeWidth = 1.5,
       );
     }
+  }
+
+  static Path _dashedRect(Rect r, double dash) {
+    final out = Path();
+    for (final m in (Path()..addRect(r)).computeMetrics()) {
+      for (var d = 0.0; d < m.length; d += dash * 2) {
+        out.addPath(m.extractPath(d, math.min(d + dash, m.length)), Offset.zero);
+      }
+    }
+    return out;
   }
 
   void _pill(Canvas canvas, String text, Offset at) {

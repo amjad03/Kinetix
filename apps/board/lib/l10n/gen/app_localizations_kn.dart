@@ -4132,4 +4132,116 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get attendanceNeedsClass =>
       'ವಿದ್ಯಾರ್ಥಿ ಪಟ್ಟಿ ಇರುವ ವೇಳಾಪಟ್ಟಿಯ ತರಗತಿಯೊಂದಿಗೆ ಹಾಜರಾತಿ ತೆರೆಯುತ್ತದೆ.';
+
+  @override
+  String get aiPenMeasureShapes => 'ಹೊಸ ಆಕೃತಿಗಳ ಮೇಲೆ ಅಳತೆಗಳನ್ನು ತೋರಿಸಿ';
+
+  @override
+  String get aiPenMeasureShapesHint =>
+      'ಆಕೃತಿ ಬಿಡಿಸುತ್ತಿದ್ದಂತೆ ಉದ್ದ, ಕೋನ, ತ್ರಿಜ್ಯ ಮತ್ತು ವಿಸ್ತೀರ್ಣ. ಪ್ರತಿ ಆಕೃತಿಯ ಅಳತೆಗಳನ್ನು ಅದನ್ನು ಆರಿಸಿ ತೋರಿಸಬಹುದು ಅಥವಾ ಮರೆಮಾಡಬಹುದು.';
+
+  @override
+  String get measureUnits => 'ಮಾನ';
+
+  @override
+  String get measureUnitCm => 'ಸೆಂ.ಮೀ';
+
+  @override
+  String get measureUnitPx => 'px';
+
+  @override
+  String get selLineWidth => 'ಗೆರೆಯ ದಪ್ಪ';
+
+  @override
+  String get selLineStyle => 'ಗೆರೆಯ ಶೈಲಿ';
+
+  @override
+  String get selLineSolid => 'ಪೂರ್ಣ';
+
+  @override
+  String get selLineDashed => 'ಡ್ಯಾಶ್';
+
+  @override
+  String get selLineDotted => 'ಚುಕ್ಕೆ';
+
+  @override
+  String get selShowMeasurements => 'ಅಳತೆಗಳನ್ನು ತೋರಿಸಿ';
+
+  @override
+  String get selHideMeasurements => 'ಅಳತೆಗಳನ್ನು ಮರೆಮಾಡಿ';
+
+  @override
+  String get selMeasureOptions => 'ಅಳತೆಗಳು';
+
+  @override
+  String get selMeasureLengths => 'ಉದ್ದಗಳು';
+
+  @override
+  String get selMeasureAngles => 'ಕೋನಗಳು';
+
+  @override
+  String get selMeasureRadius => 'ತ್ರಿಜ್ಯ';
+
+  @override
+  String get selMeasureArea => 'ವಿಸ್ತೀರ್ಣ';
+
+  @override
+  String get selEditPoints => 'ಬಿಂದುಗಳನ್ನು ತಿದ್ದಿ';
+
+  @override
+  String get selArrowHeads => 'ಬಾಣದ ತುದಿಗಳು';
+
+  @override
+  String get selArrowNone => 'ತುದಿ ಇಲ್ಲ';
+
+  @override
+  String get selArrowEnd => 'ಕೊನೆಯಲ್ಲಿ';
+
+  @override
+  String get selArrowStart => 'ಆರಂಭದಲ್ಲಿ';
+
+  @override
+  String get selArrowBoth => 'ಎರಡೂ ತುದಿಗಳಲ್ಲಿ';
+
+  @override
+  String get selArrowFilled => 'ತುಂಬಿದ ತುದಿಗಳು';
+
+  @override
+  String get selFlipH => 'ಎಡ-ಬಲ ತಿರುಗಿಸಿ';
+
+  @override
+  String get selFlipV => 'ಮೇಲೆ-ಕೆಳಗೆ ತಿರುಗಿಸಿ';
+
+  @override
+  String get selAlign => 'ಜೋಡಿಸಿ';
+
+  @override
+  String get selAlignLeft => 'ಎಡ ಅಂಚುಗಳು';
+
+  @override
+  String get selAlignCentre => 'ಮಧ್ಯಗಳು';
+
+  @override
+  String get selAlignRight => 'ಬಲ ಅಂಚುಗಳು';
+
+  @override
+  String get selAlignTop => 'ಮೇಲಿನ ಅಂಚುಗಳು';
+
+  @override
+  String get selAlignMiddle => 'ನಡುಗಳು';
+
+  @override
+  String get selAlignBottom => 'ಕೆಳಗಿನ ಅಂಚುಗಳು';
+
+  @override
+  String get selLock => 'ಲಾಕ್ ಮಾಡಿ';
+
+  @override
+  String get selUnlock => 'ಅನ್‌ಲಾಕ್ ಮಾಡಿ';
+
+  @override
+  String get selKeepProportions => 'ಅನುಪಾತ ಉಳಿಸಿ';
+
+  @override
+  String get selMore => 'ಇನ್ನಷ್ಟು';
 }

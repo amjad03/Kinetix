@@ -26,7 +26,7 @@ IconData penIcon(WhiteboardController wb) => switch (wb.tool) {
   BoardTool.laser => Icons.flare,
   _ => switch (wb.penNib) {
     PenNib.calligraphy => Icons.history_edu,
-    PenNib.dashed => Icons.more_horiz,
+    PenNib.dashed || PenNib.dotted => Icons.more_horiz,
     PenNib.arrow => Icons.trending_flat,
     PenNib.round => Icons.edit_outlined,
   },
