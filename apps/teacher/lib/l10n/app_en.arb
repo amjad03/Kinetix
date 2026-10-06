@@ -2021,5 +2021,19 @@
   "answerCardsReady": "{count} cards for {className} are ready to print.",
   "@answerCardsReady": {"placeholders": {"count": {"type": "int"}, "className": {"type": "String", "example": "BCom Sem 3 A"}}},
   "answerCardsFailed": "Could not make the cards. Try again.",
-  "print": "Print"
+  "print": "Print",
+  "filterMissing": "Missing",
+  "remindMissing": "Remind the {count}",
+  "@remindMissing": {"placeholders": {"count": {"type": "int"}}},
+  "remindTitle": "Remind {count} students?",
+  "@remindTitle": {"placeholders": {"count": {"type": "int"}}},
+  "remindBody": "They and their families get a notification that this homework is not handed in yet.",
+  "remind": "Remind",
+  "reminded": "Reminded {count} students and their families",
+  "@reminded": {"placeholders": {"count": {"type": "int"}}},
+  "noneInFilter": "No students here",
+  "classAndSubject": "Class and subject",
+  "classRoster": "Class roster",
+  "classRosterBody": "Your students; award badges",
+  "chooseClass": "Choose a class"
 }

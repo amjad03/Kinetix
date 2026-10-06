@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
+import '../../widgets/class_picker.dart';
 import '../../widgets/common.dart';
 
 /// "New assessment": class and subject from the teacher's timetable, title, kind, maximum marks, date.
@@ -69,7 +70,6 @@ class _AssessmentFormState extends State<AssessmentForm> {
     }
   }
 
-  List<Ref> get _sections => {for (final c in _classes ?? <TeacherClass>[]) c.section}.toList();
   List<Ref> get _subjects => {
     for (final c in _classes ?? <TeacherClass>[])
       if (c.section == _section) c.subject,
@@ -150,38 +150,14 @@ class _AssessmentFormState extends State<AssessmentForm> {
                     const SizedBox(height: Kx.s16),
                   ],
                   if (_classes != null) ...[
-                    DropdownButtonFormField<Ref>(
-                      key: const Key('assessmentClassField'),
-                      initialValue: _section,
-                      isExpanded: true,
-                      decoration: InputDecoration(labelText: l.labelClass, prefixIcon: const Icon(Icons.groups_outlined)),
-                      items: [
-                        for (final s in _sections)
-                          DropdownMenuItem(
-                            value: s,
-                            child: Text(s.name, overflow: TextOverflow.ellipsis),
-                          ),
-                      ],
-                      onChanged: (s) => setState(() {
-                        _section = s;
-                        _subject = _subjects.firstOrNull;
+                    ClassSubjectPicker(
+                      classes: _classes!,
+                      section: _section,
+                      subject: _subject,
+                      onChanged: (c) => setState(() {
+                        _section = c.section;
+                        _subject = c.subject;
                       }),
-                    ),
-                    const SizedBox(height: Kx.s16),
-                    DropdownButtonFormField<Ref>(
-                      key: ValueKey('assessmentSubject-${_section?.id}'),
-                      initialValue: _subject,
-                      isExpanded: true,
-                      decoration: InputDecoration(labelText: l.labelSubject, prefixIcon: const Icon(Icons.menu_book_outlined)),
-                      items: [
-                        for (final s in _subjects)
-                          DropdownMenuItem(
-                            value: s,
-                            child: Text(s.name, overflow: TextOverflow.ellipsis),
-                          ),
-                      ],
-                      onChanged: (s) => setState(() => _subject = s),
-                      validator: (s) => s == null ? l.chooseSubject : null,
                     ),
                     const SizedBox(height: Kx.s16),
                     TextFormField(

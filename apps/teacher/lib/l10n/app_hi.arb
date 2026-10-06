@@ -425,5 +425,16 @@
   "answerCardsPrintHint": "Hold the card with your answer at the top. Keep your fingers off the black pattern.",
   "answerCardsReady": "{className} के {count} कार्ड प्रिंट के लिए तैयार हैं।",
   "answerCardsFailed": "कार्ड नहीं बन सके। फिर कोशिश करें।",
-  "print": "प्रिंट"
+  "print": "प्रिंट",
+  "filterMissing": "बाकी",
+  "remindMissing": "{count} को याद दिलाएँ",
+  "remindTitle": "{count} विद्यार्थियों को याद दिलाएँ?",
+  "remindBody": "उन्हें और उनके परिवार को सूचना मिलेगी कि यह होमवर्क अभी जमा नहीं हुआ है।",
+  "remind": "याद दिलाएँ",
+  "reminded": "{count} विद्यार्थियों और उनके परिवारों को याद दिलाया गया",
+  "noneInFilter": "यहाँ कोई विद्यार्थी नहीं",
+  "classAndSubject": "कक्षा और विषय",
+  "classRoster": "कक्षा सूची",
+  "classRosterBody": "आपके विद्यार्थी; बैज दें",
+  "chooseClass": "कक्षा चुनें"
 }

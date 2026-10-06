@@ -191,7 +191,8 @@ void main() {
       expect(find.text('AI draft — check before use'), findsOneWidget);
       expect(find.byKey(const Key('aiPreviewNote')), findsOneWidget);
       expect(find.text('Value shares by the intrinsic value method'), findsOneWidget);
-      expect(find.text('40 of 55 min'), findsOneWidget);
+      // The draft's 40 minutes of steps are fitted to the 55-minute period.
+      expect(find.text('55 of 55 min'), findsOneWidget);
 
       // Again, now that there is content: confirm first; the homework is kept.
       await show(tester, 'homeworkField');
@@ -257,7 +258,7 @@ void main() {
       await tapAndSettle(tester, find.byKey(const Key('draftWithAi')));
       expect(api.calls, contains('draft slot1 2026-10-05 t3 hi'));
       expect(find.text(s.aiDraftLabel), findsOneWidget);
-      expect(find.text(s.stepsTotal(40, 55)), findsOneWidget);
+      expect(find.text(s.stepsTotal(55, 55)), findsOneWidget);
     });
   });
 }

@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -2648,9 +2655,76 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Print'**
   String get print;
+
+  /// No description provided for @filterMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing'**
+  String get filterMissing;
+
+  /// No description provided for @remindMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind the {count}'**
+  String remindMissing(int count);
+
+  /// No description provided for @remindTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind {count} students?'**
+  String remindTitle(int count);
+
+  /// No description provided for @remindBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They and their families get a notification that this homework is not handed in yet.'**
+  String get remindBody;
+
+  /// No description provided for @remind.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind'**
+  String get remind;
+
+  /// No description provided for @reminded.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminded {count} students and their families'**
+  String reminded(int count);
+
+  /// No description provided for @noneInFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No students here'**
+  String get noneInFilter;
+
+  /// No description provided for @classAndSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Class and subject'**
+  String get classAndSubject;
+
+  /// No description provided for @classRoster.
+  ///
+  /// In en, this message translates to:
+  /// **'Class roster'**
+  String get classRoster;
+
+  /// No description provided for @classRosterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your students; award badges'**
+  String get classRosterBody;
+
+  /// No description provided for @chooseClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a class'**
+  String get chooseClass;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2659,7 +2733,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

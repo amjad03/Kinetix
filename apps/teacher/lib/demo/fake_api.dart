@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/painting.dart';
+
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/models.dart';
@@ -224,7 +226,10 @@ class FakeTeacherApi implements TeacherApi {
   }
 
   @override
-  Future<List<TeacherClass>> classes() async => [TeacherClass(section, subject)];
+  Future<List<TeacherClass>> classes() async => teacherClasses;
+
+  /// The teacher's class and subject pairs (GET /v1/teacher/classes).
+  late List<TeacherClass> teacherClasses = [TeacherClass(section, subject)];
 
   @override
   Future<List<Student>> roster(String sectionId) async => students;
@@ -284,7 +289,10 @@ class FakeTeacherApi implements TeacherApi {
     required String title,
     required String instructions,
     required String dueOn,
-  }) async => Homework(id: 'h1', title: title, instructions: instructions, dueOn: parseIsoDate(dueOn), section: section, subject: subject);
+  }) async {
+    calls.add('createHomework $sectionId $subjectId $title');
+    return Homework(id: 'h1', title: title, instructions: instructions, dueOn: parseIsoDate(dueOn), section: section, subject: subject);
+  }
 
   static Map<String, dynamic> recordingJson(
     String id,
@@ -724,6 +732,62 @@ class FakeTeacherApi implements TeacherApi {
     calls.add('unmark $topicId');
     if (markError != null) throw markError!;
     covered.remove(topicId);
+  }
+
+  // --- Profile, photos and badges ---------------------------------------------------------------
+
+  /// Uploaded photos by API path (demo mode shows them from memory).
+  final photos = <String, Uint8List>{};
+  final badgesAwarded = <String>[];
+
+  /// When set, saving the profile fails with this error.
+  ApiException? profileError;
+
+  @override
+  Future<Me> updateProfile({required String fullName, required String? email, List<String>? teachingSubjects}) async {
+    calls.add('profile $fullName ${email ?? '-'} ${teachingSubjects?.join(',') ?? ''}'.trim());
+    if (profileError != null) throw profileError!;
+    return profile = Me(
+      id: profile.id,
+      fullName: fullName,
+      roles: profile.roles,
+      preferredLanguage: profile.preferredLanguage,
+      institution: profile.institution,
+      email: email,
+      phone: profile.phone,
+      photoUrl: profile.photoUrl,
+      teachingSubjects: teachingSubjects ?? profile.teachingSubjects,
+    );
+  }
+
+  @override
+  Future<Me> uploadPhoto(Uint8List jpeg) async {
+    calls.add('photo ${jpeg.length}');
+    final path = '/v1/users/${profile.id}/photo?v=${photos.length + 1}';
+    photos[path] = jpeg;
+    return profile = profile.copyWith(photoUrl: path);
+  }
+
+  @override
+  Future<Me> removePhoto() async {
+    calls.add('photo removed');
+    return profile = profile.copyWith(clearPhoto: true);
+  }
+
+  @override
+  ImageProvider? photo(String? path) => path == null || photos[path] == null ? null : MemoryImage(photos[path]!);
+
+  @override
+  Future<void> awardBadge({required String studentId, required String sectionId, required String badge, String? subjectId}) async {
+    calls.add('badge $studentId $sectionId $badge');
+    badgesAwarded.add('$studentId:$badge');
+  }
+
+  @override
+  Future<int> remindMissing(String homeworkId) async {
+    final n = handedIn.where((s) => s.status == null).length;
+    calls.add('remind $homeworkId $n');
+    return n;
   }
 
   // --- Homework submissions --------------------------------------------------------------------

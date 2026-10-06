@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
@@ -193,6 +194,22 @@ abstract class TeacherApi {
 
   /// Checks the work, or returns it to be redone (the student and family are told).
   Future<Submission> reviewSubmission(String homeworkId, Submission submission, {required SubmissionStatus status, String? remark});
+
+  /// Notifies the students who have not handed in, and their families. Returns how many.
+  Future<int> remindMissing(String homeworkId);
+
+  /// Edits the profile (the phone number is the sign-in: only the office changes it).
+  Future<Me> updateProfile({required String fullName, required String? email, List<String>? teachingSubjects});
+
+  /// Replaces the profile photo with [jpeg] (already square and compressed).
+  Future<Me> uploadPhoto(Uint8List jpeg);
+  Future<Me> removePhoto();
+
+  /// A user's photo from its API [path] (`photoUrl`), loaded with the token; null for none.
+  ImageProvider? photo(String? path);
+
+  /// Awards a badge (KxBadge.api) to a student of a class the teacher teaches; the family is told.
+  Future<void> awardBadge({required String studentId, required String sectionId, required String badge, String? subjectId});
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -544,6 +561,43 @@ class HttpTeacherApi implements TeacherApi {
           timeout: const Duration(seconds: 60),
         ) as Map<String, dynamic>,
       );
+
+  @override
+  Future<int> remindMissing(String homeworkId) async =>
+      ((await _send('POST', '/v1/homework/$homeworkId/submissions/remind')) as Map)['reminded'] as int;
+
+  @override
+  Future<Me> updateProfile({required String fullName, required String? email, List<String>? teachingSubjects}) async => Me.fromJson(
+    await _send('PATCH', '/v1/me', body: {'fullName': fullName, 'email': email, 'teachingSubjects': ?teachingSubjects}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<Me> uploadPhoto(Uint8List jpeg) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/me/photo'))
+      ..files.add(http.MultipartFile.fromBytes('photo', jpeg, filename: 'photo.jpg'));
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final http.Response res;
+    try {
+      res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 60));
+    } on TimeoutException {
+      throw ApiException(0, 'The server is taking too long to respond. Try again.', kind: ApiErrorKind.timeout);
+    } catch (_) {
+      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", kind: ApiErrorKind.offline);
+    }
+    if (res.statusCode >= 400) throw ApiException(res.statusCode, _message(res) ?? 'HTTP ${res.statusCode}', code: _code(res));
+    return Me.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<Me> removePhoto() async => Me.fromJson(await _send('DELETE', '/v1/me/photo') as Map<String, dynamic>);
+
+  @override
+  ImageProvider? photo(String? path) =>
+      path == null ? null : NetworkImage('$baseUrl$path', headers: {if (token != null) 'authorization': 'Bearer $token'});
+
+  @override
+  Future<void> awardBadge({required String studentId, required String sectionId, required String badge, String? subjectId}) async =>
+      _send('POST', '/v1/badges', body: {'studentId': studentId, 'sectionId': sectionId, 'badge': badge, 'subjectId': ?subjectId});
 
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, Duration timeout = const Duration(seconds: 20)}) async {
     final res = await _request(method, path, body: body, auth: auth, timeout: timeout);

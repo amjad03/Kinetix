@@ -149,6 +149,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     for (final s in controller.students)
                       _StudentTile(
                         student: s,
+                        photo: widget.api.photo(s.photoUrl),
                         status: controller.marks[s.id]!,
                         onTap: () => controller.toggle(s.id),
                         onLongPress: () => _chooseStatus(s),
@@ -165,8 +166,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 }
 
 class _StudentTile extends StatelessWidget {
-  const _StudentTile({required this.student, required this.status, required this.onTap, required this.onLongPress});
+  const _StudentTile({required this.student, required this.status, required this.onTap, required this.onLongPress, this.photo});
 
+  final ImageProvider? photo;
   final Student student;
   final AttendanceStatus status;
   final VoidCallback onTap;
@@ -184,7 +186,7 @@ class _StudentTile extends StatelessWidget {
     return ListTile(
       key: ValueKey('student-${student.id}'),
       contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s16),
-      leading: KxAvatar(name: student.fullName),
+      leading: KxAvatar(name: student.fullName, image: photo),
       title: Text(student.fullName),
       subtitle: Text(student.rollNo),
       onTap: onTap,

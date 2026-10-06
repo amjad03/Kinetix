@@ -425,5 +425,16 @@
   "answerCardsPrintHint": "Hold the card with your answer at the top. Keep your fingers off the black pattern.",
   "answerCardsReady": "{className} ತರಗತಿಯ {count} ಕಾರ್ಡ್‌ಗಳು ಮುದ್ರಣಕ್ಕೆ ಸಿದ್ಧ.",
   "answerCardsFailed": "ಕಾರ್ಡ್‌ಗಳನ್ನು ಮಾಡಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
-  "print": "ಮುದ್ರಿಸಿ"
+  "print": "ಮುದ್ರಿಸಿ",
+  "filterMissing": "ಬಾಕಿ",
+  "remindMissing": "{count} ಮಂದಿಗೆ ನೆನಪಿಸಿ",
+  "remindTitle": "{count} ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ನೆನಪಿಸಬೇಕೇ?",
+  "remindBody": "ಈ ಹೋಂವರ್ಕ್ ಇನ್ನೂ ಸಲ್ಲಿಸಿಲ್ಲ ಎಂದು ಅವರಿಗೂ ಅವರ ಕುಟುಂಬಕ್ಕೂ ಸೂಚನೆ ಹೋಗುತ್ತದೆ.",
+  "remind": "ನೆನಪಿಸಿ",
+  "reminded": "{count} ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಮತ್ತು ಅವರ ಕುಟುಂಬಗಳಿಗೆ ನೆನಪಿಸಲಾಗಿದೆ",
+  "noneInFilter": "ಇಲ್ಲಿ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿ ಇಲ್ಲ",
+  "classAndSubject": "ತರಗತಿ ಮತ್ತು ವಿಷಯ",
+  "classRoster": "ತರಗತಿ ಪಟ್ಟಿ",
+  "classRosterBody": "ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿಗಳು; ಬ್ಯಾಡ್ಜ್ ನೀಡಿ",
+  "chooseClass": "ತರಗತಿ ಆಯ್ಕೆಮಾಡಿ"
 }
