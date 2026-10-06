@@ -166,6 +166,10 @@ void paintElement(
       paintNote(canvas, e);
     case SheetElement():
       paintSheet(canvas, e);
+    case FlowNodeElement():
+      paintFlowNode(canvas, e, background);
+    case FlowLinkElement():
+      paintFlowLink(canvas, e, background);
   }
   if (rot != 0) canvas.restore();
 }
@@ -338,7 +342,46 @@ void paintNote(Canvas canvas, NoteElement s) {
 
 final _graphCache = <String, double Function(double)?>{};
 
-/// A plotted function on a white card with a light grid, axes and numbers.
+/// Colours for a graph's further curves, after its own.
+const graphCurveColors = [Color(0xFFD7263D), Color(0xFF2E9E5B), Color(0xFF8E44AD), Color(0xFFE67E22), Color(0xFF1F77B4)];
+
+/// A tidy step for [span] split into about [parts]: 1, 2 or 5 times a power of ten.
+double niceStep(double span, [int parts = 10]) {
+  if (span <= 0 || !span.isFinite) return 1;
+  final raw = span / parts;
+  final p = math.pow(10, (math.log(raw) / math.ln10).floor()).toDouble();
+  final m = raw / p;
+  return (m < 1.5 ? 1 : (m < 3.5 ? 2 : (m < 7.5 ? 5 : 10))) * p;
+}
+
+String _tick(double v, double step) => step >= 1 ? graphNum(v.roundToDouble()) : graphNum(double.parse(v.toStringAsFixed(4)));
+
+double Function(double)? _compiled(String expression) => _graphCache.putIfAbsent(expression, () => compileGraph(expression));
+
+/// The plotted line of [f] across [g]'s x range, lifting the pen at gaps and jumps.
+Path _curvePath(GraphElement g, double Function(double) f, Offset Function(double, double) map) {
+  final path = Path();
+  var pen = false;
+  double? prevY;
+  const n = 400;
+  final span = g.yMax - g.yMin;
+  for (var i = 0; i <= n; i++) {
+    final x = g.xMin + (g.xMax - g.xMin) * i / n;
+    final y = f(x);
+    // Lift the pen at gaps and jumps (tan x, 1/x).
+    if (!y.isFinite || (prevY != null && (y - prevY).abs() > span * 2)) {
+      pen = false;
+      prevY = y.isFinite ? y : null;
+      continue;
+    }
+    final p = map(x, y.clamp(g.yMin - span, g.yMax + span));
+    pen ? path.lineTo(p.dx, p.dy) : path.moveTo(p.dx, p.dy);
+    pen = true;
+    prevY = y;
+  }
+  return path;
+}
+
 void paintGraph(Canvas canvas, GraphElement g) {
   final r = g.rect;
   final card = RRect.fromRectAndRadius(r, const Radius.circular(10));
@@ -353,78 +396,180 @@ void paintGraph(Canvas canvas, GraphElement g) {
   canvas
     ..save()
     ..clipRRect(card.deflate(1));
-  Offset map(double x, double y) =>
-      Offset(r.left + (x - g.xMin) / (g.xMax - g.xMin) * r.width, r.bottom - (y - g.yMin) / (g.yMax - g.yMin) * r.height);
+  Offset map(double x, double y) => g.toBoard(x, y);
   final grid = Paint()
     ..color = const Color(0x14000000)
     ..strokeWidth = 1;
-  final gridStep = math.max(1, ((g.xMax - g.xMin) / 40).ceil());
-  for (var x = (g.xMin / gridStep).ceil() * gridStep.toDouble(); x <= g.xMax; x += gridStep) {
+  final gx = niceStep(g.xMax - g.xMin, 20), gy = niceStep(g.yMax - g.yMin, 20);
+  for (var x = (g.xMin / gx).ceil() * gx; x <= g.xMax; x += gx) {
     canvas.drawLine(map(x, g.yMin), map(x, g.yMax), grid);
   }
-  for (var y = (g.yMin / gridStep).ceil() * gridStep.toDouble(); y <= g.yMax; y += gridStep) {
+  for (var y = (g.yMin / gy).ceil() * gy; y <= g.yMax; y += gy) {
     canvas.drawLine(map(g.xMin, y), map(g.xMax, y), grid);
   }
+  // Axes through 0, or along the edge when 0 is out of range.
+  final ax = 0.0.clamp(g.yMin, g.yMax), ay = 0.0.clamp(g.xMin, g.xMax);
   final axis = Paint()
     ..color = const Color(0xFF3A4048)
     ..strokeWidth = 1.6;
-  canvas.drawLine(map(g.xMin, 0), map(g.xMax, 0), axis);
-  canvas.drawLine(map(0, g.yMin), map(0, g.yMax), axis);
-  final labelStep = math.max(1, ((g.xMax - g.xMin) / 10).ceil());
-  void label(String t, Offset at, {bool below = true}) {
+  canvas.drawLine(map(g.xMin, ax), map(g.xMax, ax), axis);
+  canvas.drawLine(map(ay, g.yMin), map(ay, g.yMax), axis);
+  void label(String t, Offset at, {bool below = true, Color color = const Color(0xFF6A7078), double size = 11, bool bold = false}) {
     final tp = TextPainter(
-      text: TextSpan(text: t, style: const TextStyle(fontSize: 11, color: Color(0xFF6A7078), fontFamily: KxFonts.board)),
+      text: TextSpan(
+        text: t,
+        style: TextStyle(fontSize: size, color: color, fontFamily: KxFonts.board, fontWeight: bold ? FontWeight.w700 : FontWeight.w400),
+      ),
       textDirection: TextDirection.ltr,
     )..layout();
     tp.paint(canvas, below ? at + Offset(-tp.width / 2, 3) : at + Offset(4, -tp.height / 2));
   }
 
-  for (var x = (g.xMin / labelStep).ceil() * labelStep; x <= g.xMax; x += labelStep) {
-    if (x != 0) label('$x', map(x.toDouble(), 0));
+  final lx = niceStep(g.xMax - g.xMin), ly = niceStep(g.yMax - g.yMin);
+  for (var x = (g.xMin / lx).ceil() * lx; x <= g.xMax + lx * 1e-6; x += lx) {
+    if (x.abs() > lx * 1e-6) label(_tick(x, lx), map(x, ax));
   }
-  for (var y = (g.yMin / labelStep).ceil() * labelStep; y <= g.yMax; y += labelStep) {
-    if (y != 0) label('$y', map(0, y.toDouble()), below: false);
+  for (var y = (g.yMin / ly).ceil() * ly; y <= g.yMax + ly * 1e-6; y += ly) {
+    if (y.abs() > ly * 1e-6) label(_tick(y, ly), map(ay, y), below: false);
   }
-  final f = _graphCache.putIfAbsent(g.expression, () => compileGraph(g.expression));
-  if (f != null) {
-    final path = Path();
-    var pen = false;
-    double? prevY;
-    const n = 400;
-    final span = g.yMax - g.yMin;
-    for (var i = 0; i <= n; i++) {
-      final x = g.xMin + (g.xMax - g.xMin) * i / n;
-      final y = f(x);
-      // Lift the pen at gaps and jumps (tan x, 1/x).
-      if (!y.isFinite || (prevY != null && (y - prevY).abs() > span * 2)) {
-        pen = false;
-        prevY = y.isFinite ? y : null;
-        continue;
+  final f = _compiled(g.resolvedExpression);
+  final more = [for (final c in g.resolvedCurves) _compiled(c)];
+  // The shaded band, under the curve or between the first two.
+  final sh = g.shade;
+  if (sh != null && f != null) {
+    final other = sh.between && more.isNotEmpty ? more.first : null;
+    final from = math.max(math.min(sh.from, sh.to), g.xMin), to = math.min(math.max(sh.from, sh.to), g.xMax);
+    if (to > from) {
+      final band = Path();
+      const n = 120;
+      double clampY(double y) => y.isFinite ? y.clamp(g.yMin, g.yMax) : ax;
+      for (var i = 0; i <= n; i++) {
+        final x = from + (to - from) * i / n;
+        final p = map(x, clampY(f(x)));
+        i == 0 ? band.moveTo(p.dx, p.dy) : band.lineTo(p.dx, p.dy);
       }
-      final p = map(x, y.clamp(g.yMin - span, g.yMax + span));
-      pen ? path.lineTo(p.dx, p.dy) : path.moveTo(p.dx, p.dy);
-      pen = true;
-      prevY = y;
+      for (var i = n; i >= 0; i--) {
+        final x = from + (to - from) * i / n;
+        final p = map(x, other == null ? ax : clampY(other(x)));
+        band.lineTo(p.dx, p.dy);
+      }
+      band.close();
+      canvas.drawPath(band, Paint()..color = g.color.withValues(alpha: 0.18));
     }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = g.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
   }
+  Paint line(Color c) => Paint()
+    ..color = c
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 3
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+  for (var i = 0; i < more.length; i++) {
+    final m = more[i];
+    if (m != null) canvas.drawPath(_curvePath(g, m, map), line(graphCurveColors[i % graphCurveColors.length]));
+  }
+  if (f != null) canvas.drawPath(_curvePath(g, f, map), line(g.color));
+  for (final p in g.points) {
+    final at = map(p.x, p.y);
+    final guide = Paint()
+      ..color = g.color.withValues(alpha: 0.45)
+      ..strokeWidth = 1;
+    canvas.drawLine(at, map(p.x, ax), guide);
+    canvas.drawLine(at, map(ay, p.y), guide);
+    canvas.drawCircle(at, 6, Paint()..color = g.color);
+    canvas.drawCircle(at, 3, Paint()..color = const Color(0xFFFFFFFF));
+    if (p.label.isNotEmpty) label(p.label, at + const Offset(4, -18), below: false, color: g.color, size: 13, bold: true);
+  }
+  if (g.xLabel.isNotEmpty) {
+    final tp = TextPainter(
+      text: TextSpan(text: g.xLabel, style: const TextStyle(fontSize: 13, color: Color(0xFF3A4048), fontWeight: FontWeight.w600, fontFamily: KxFonts.board)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(r.right - tp.width - 8, map(0, ax).dy - tp.height - 4));
+  }
+  if (g.yLabel.isNotEmpty) label(g.yLabel, Offset(map(ay, 0).dx, r.top + 40), below: false, color: const Color(0xFF3A4048), size: 13, bold: true);
   canvas.restore();
-  if (g.expression.isNotEmpty) {
+  final heading = g.title.isNotEmpty ? g.title : (g.expression.isNotEmpty ? 'y = ${g.resolvedExpression}' : '');
+  if (heading.isNotEmpty) {
     final tp = TextPainter(
       text: TextSpan(
-        text: 'y = ${g.expression}',
+        text: heading,
         style: TextStyle(fontSize: 14, color: g.color, fontWeight: FontWeight.w700, fontFamily: KxFonts.board, fontFamilyFallback: KxFonts.fallback),
       ),
       textDirection: TextDirection.ltr,
-    )..layout();
+      maxLines: 1,
+      ellipsis: '…',
+    )..layout(maxWidth: math.max(10, r.width - 20));
     tp.paint(canvas, r.topLeft + const Offset(10, 8));
   }
+}
+
+// --- Flowcharts ----------------------------------------------------------------------------
+
+/// A flowchart block: its outline, a light fill, and its words centred inside.
+void paintFlowNode(Canvas canvas, FlowNodeElement n, BoardBackground background) {
+  final ink = inkColorFor(n.color, background);
+  final path = flowShapePath(n.shape, n.rect);
+  final open = n.shape == FlowBlock.comment;
+  if (!open) {
+    canvas.drawPath(path, Paint()..color = n.fill ?? (background.isDark ? const Color(0xFF22262C) : const Color(0xFFFFFFFF)));
+    if (n.shape == FlowBlock.topic) canvas.drawPath(path, Paint()..color = ink.withValues(alpha: 0.12));
+  }
+  canvas.drawPath(
+    path,
+    Paint()
+      ..color = ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeJoin = StrokeJoin.round,
+  );
+  if (n.text.isEmpty) return;
+  // Words stay inside the narrower middle of a diamond or a slanted block.
+  final inset = switch (n.shape) {
+    FlowBlock.decision => n.rect.width * 0.22,
+    FlowBlock.inputOutput || FlowBlock.manualInput || FlowBlock.display || FlowBlock.loopLimit => n.rect.width * 0.12,
+    FlowBlock.merge => n.rect.width * 0.25,
+    _ => 10.0,
+  };
+  final tp = TextPainter(
+    text: TextSpan(
+      text: n.text,
+      style: TextStyle(fontSize: n.fontSize, color: ink, fontWeight: FontWeight.w600, fontFamily: KxFonts.board, fontFamilyFallback: KxFonts.fallback),
+    ),
+    textDirection: TextDirection.ltr,
+    textAlign: TextAlign.center,
+    maxLines: 4,
+    ellipsis: '…',
+  )..layout(maxWidth: math.max(10, n.rect.width - 2 * inset));
+  final dy = n.shape == FlowBlock.merge ? -n.rect.height * 0.18 : 0.0;
+  tp.paint(canvas, n.rect.center - Offset(tp.width / 2, tp.height / 2 - dy));
+}
+
+/// A flowchart arrow: its route, an arrowhead at the end, and its label on a white chip.
+void paintFlowLink(Canvas canvas, FlowLinkElement l, BoardBackground background) {
+  if (l.points.length < 2) return;
+  final ink = inkColorFor(l.color, background);
+  final paint = Paint()
+    ..color = ink
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.5
+    ..strokeJoin = StrokeJoin.round
+    ..strokeCap = StrokeCap.round;
+  canvas.drawPath(Path()..addPolygon(l.points, false), paint);
+  if (!l.curved) {
+    final tip = l.points.last, from = l.points[l.points.length - 2];
+    final d = tip - from;
+    if (d.distance > 0) {
+      final u = d / d.distance, nrm = Offset(-u.dy, u.dx);
+      canvas.drawPath(Path()..addPolygon([tip, tip - u * 14 + nrm * 7, tip - u * 14 - nrm * 7], true), Paint()..color = ink);
+    }
+  }
+  if (l.label.isEmpty) return;
+  final tp = TextPainter(
+    text: TextSpan(text: l.label, style: TextStyle(fontSize: 16, color: ink, fontWeight: FontWeight.w700, fontFamily: KxFonts.board, fontFamilyFallback: KxFonts.fallback)),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  final at = l.labelAt;
+  final chip = RRect.fromRectAndRadius(Rect.fromCenter(center: at, width: tp.width + 12, height: tp.height + 4), const Radius.circular(6));
+  canvas.drawRRect(chip, Paint()..color = background.isDark ? const Color(0xFF22262C) : const Color(0xFFFFFFFF));
+  tp.paint(canvas, at - Offset(tp.width / 2, tp.height / 2));
 }
