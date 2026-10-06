@@ -77,7 +77,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byWidgetPredicate((w) => w is ListTile && '${w.key}'.contains('result-tool-')).first);
       await tester.pumpAndSettle();
-      expect(wb.ruler.value.visible, isTrue);
+      expect(wb.geoTools.value.map((t) => t.kind), contains(GeoKind.ruler));
       expect(tester.takeException(), isNull);
       board.dispose();
     });

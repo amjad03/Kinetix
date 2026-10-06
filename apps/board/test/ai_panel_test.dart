@@ -15,6 +15,7 @@ import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_board/features/board/side_panel.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 /// A realtime connection that never connects; the tests drive the controller directly.
 class _NoRealtime extends Realtime {
@@ -128,7 +129,7 @@ void main() {
     final f = find.byKey(Key(key));
     if (f.evaluate().isEmpty) {
       // Lists build lazily: scroll the panel until it is there.
-      await tester.scrollUntilVisible(f, 200, scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: find.byType(Scrollable)).first);
+      await tester.scrollUntilVisible(f, 200, scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down)).first);
     }
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();
@@ -259,8 +260,8 @@ void main() {
       expect(find.textContaining('not closed'), findsOneWidget);
 
       // Quiz and homework panels say why they cannot work.
-      await tester.tap(find.byTooltip('Quiz'));
-      await tester.pumpAndSettle();
+      await tapBoard(tester, 'panel-tab-ai');
+      await tapKey(tester, 'ai-tool-quiz');
       expect(find.byKey(const Key('ai-signin')), findsOneWidget);
       await tapKey(tester, 'quiz-generate');
       expect(calls('/v1/ai/quiz'), isEmpty);
@@ -270,8 +271,8 @@ void main() {
   group('Quick quiz', () {
     testBoard('generate, regenerate, present and send as homework', (tester) async {
       await pump(tester);
-      await tester.tap(find.byTooltip('Quiz'));
-      await tester.pumpAndSettle();
+      await tapBoard(tester, 'panel-tab-ai');
+      await tapKey(tester, 'ai-tool-quiz');
       expect(tester.widget<TextField>(find.byKey(const Key('quiz-topic'))).controller!.text, 'Corporate Accounting');
       await tester.enterText(find.byKey(const Key('quiz-topic')), 'Journal entries');
       await tester.tap(find.text('5'));
@@ -321,8 +322,8 @@ void main() {
 
     testBoard('a failed send keeps the dialog open with the reason', (tester) async {
       await pump(tester, ctx: session());
-      await tester.tap(find.byTooltip('Quiz'));
-      await tester.pumpAndSettle();
+      await tapBoard(tester, 'panel-tab-ai');
+      await tapKey(tester, 'ai-tool-quiz');
       await tapKey(tester, 'quiz-generate');
       await tapKey(tester, 'quiz-homework');
       // The server refuses: no class open.
@@ -344,8 +345,8 @@ void main() {
   group('Homework', () {
     testBoard('generate a draft, edit it and send it to the class', (tester) async {
       await pump(tester);
-      await tester.tap(find.byTooltip('Homework'));
-      await tester.pumpAndSettle();
+      await tapBoard(tester, 'panel-tab-ai');
+      await tapKey(tester, 'ai-tool-homework');
       await tester.enterText(find.byKey(const Key('homework-topic')), 'Fractions');
       await tapKey(tester, 'homework-generate');
       expect(bodyOf(calls('/v1/ai/homework').single)['topic'], 'Fractions');
@@ -375,8 +376,8 @@ void main() {
 
     testBoard('without a timetabled class, homework cannot be sent', (tester) async {
       await pump(tester, ctx: session(sectionName: null));
-      await tester.tap(find.byTooltip('Homework'));
-      await tester.pumpAndSettle();
+      await tapBoard(tester, 'panel-tab-ai');
+      await tapKey(tester, 'ai-tool-homework');
       await tapKey(tester, 'homework-write');
       expect(find.text('No class is timetabled now'), findsOneWidget);
       expect(tester.widget<ButtonStyleButton>(find.byKey(const Key('homework-send'))).enabled, isFalse);
@@ -433,7 +434,7 @@ void main() {
         await ask(tester, 'A long question about the causes of the French Revolution and its effects on Europe');
         for (final narrow in [false, true]) {
           if (narrow) {
-            await tester.drag(find.byIcon(Icons.drag_indicator), const Offset(2000, 0));
+            await tester.drag(find.byKey(const Key('panel-divider')), const Offset(2000, 0));
             await tester.pumpAndSettle();
           }
           expect(tester.takeException(), isNull);

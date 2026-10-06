@@ -13,6 +13,7 @@ import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_labs/kinetix_labs.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -41,19 +42,10 @@ void main() {
 
   Future<void> settle(WidgetTester tester) => tester.pump(const Duration(milliseconds: 400));
 
-  Future<void> openSplit(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Tools').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Split screen'));
-    await tester.pumpAndSettle();
-  }
-
   for (final size in [const Size(1920, 1080), const Size(1280, 720)]) {
     testWidgets('split screen: pick a 3D solid and see its measurements (${size.width.toInt()}×${size.height.toInt()})', (tester) async {
       final board = await pump(tester, size: size);
-      await openSplit(tester);
-      await tester.tap(find.byKey(const Key('split-model3d')));
-      await tester.pumpAndSettle();
+      await tapBoard(tester, 'panel-tab-model3d');
       expect(find.byKey(const Key('catalogue-model3d')), findsOneWidget);
       await tester.scrollUntilVisible(find.byKey(const Key('pick-solid.cone')), 200, scrollable: find.descendant(of: find.byKey(const Key('catalogue-model3d')), matching: find.byType(Scrollable)).first);
       await tester.tap(find.byKey(const Key('pick-solid.cone')));
@@ -86,9 +78,7 @@ void main() {
 
   testWidgets("a bench lab goes on the board as its report (the lab's LabReport picture)", (tester) async {
     final board = await pump(tester);
-    await openSplit(tester);
-    await tester.tap(find.byKey(const Key('split-lab')));
-    await tester.pumpAndSettle();
+    await tapBoard(tester, 'panel-tab-labs');
     final pick = find.byKey(const Key('pick-glass-slab'));
     await tester.scrollUntilVisible(pick, 200, scrollable: find.descendant(of: find.byKey(const Key('catalogue-lab')), matching: find.byType(Scrollable)).first);
     await tester.tap(pick);

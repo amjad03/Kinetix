@@ -13,6 +13,7 @@ import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -48,12 +49,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(theme: KinetixTheme.light(), home: BoardScreen(board: board)));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Tools').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Split screen'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('split-model3d')));
-    await tester.pumpAndSettle();
+    await tapBoard(tester, 'panel-tab-model3d');
     // The prototype's models are in the list under their old ids, and the new ones too.
     final list = find.descendant(of: find.byKey(const Key('catalogue-model3d')), matching: find.byType(Scrollable)).first;
     await tester.scrollUntilVisible(find.byKey(const Key('pick-orbitals')), 300, scrollable: list);
