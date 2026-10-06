@@ -17,8 +17,9 @@ void main() {
 
   Future<void> tap(WidgetTester tester, String key) async {
     final f = find.byKey(Key(key));
-    if (f.evaluate().isEmpty && find.byKey(const Key('phone-more')).evaluate().isNotEmpty) {
-      await tester.tap(find.byKey(const Key('phone-more')));
+    if (f.evaluate().isEmpty) {
+      // Clearing is in the menu (bottom left; ⋮ on a phone).
+      await tester.tap(find.byKey(const Key('board-menu')));
       await tester.pumpAndSettle();
     }
     await tester.ensureVisible(f);
@@ -38,8 +39,9 @@ void main() {
 
   const setups = [
     ('phone', Size(390, 844), ToolbarDock.bottom),
-    ('panel rails', Size(1920, 1080), ToolbarDock.bottom),
-    ('panel bottom toolbar', Size(1920, 1080), ToolbarDock.left),
+    ('phone landscape', Size(844, 390), ToolbarDock.bottom),
+    ('panel', Size(1920, 1080), ToolbarDock.bottom),
+    ('panel, toolbar at the left', Size(1920, 1080), ToolbarDock.left),
   ];
   for (final (name, size, layout) in setups) {
     testWidgets('$name: Clear page and Clear all pages ask first and undo', (tester) async {

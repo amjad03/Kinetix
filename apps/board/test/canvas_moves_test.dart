@@ -108,7 +108,8 @@ void main() {
         // The Move tool: one broad finger drags the board (the Simple board has none: two fingers move it).
         var before = wb.view.value;
         if (!simple) {
-          await tap(tester, 'tool-hand');
+          await tap(tester, 'tool-tools');
+          await tap(tester, 'drawer-move');
           expect(wb.tool, BoardTool.hand);
           final f = await down(tester, mid);
           await moveAll(tester, [f], [const Offset(-90, -60)]);
@@ -117,7 +118,7 @@ void main() {
         }
 
         // The pen: two fingers pinch and pan, and draw nothing.
-        await tap(tester, 'tool-write');
+        await tap(tester, 'tool-pen');
         await closePopovers(tester);
         expect(wb.tool, BoardTool.pen);
         before = wb.view.value;

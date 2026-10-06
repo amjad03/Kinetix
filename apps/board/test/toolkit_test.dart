@@ -238,13 +238,13 @@ void main() {
       final k = await pumpLayer(tester, ToolkitController(roster: () => const [], now: () => clock.now)..show(ToolkitItem.timer));
       await tester.pump();
       expect(find.text('05:00'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('timer-2')));
+      await tester.tap(find.byKey(const Key('timer-3')));
       await tester.pump();
-      expect(find.text('02:00'), findsOneWidget);
+      expect(find.text('03:00'), findsOneWidget);
       await tester.tap(find.byKey(const Key('countdown-toggle')));
       clock.advance(const Duration(seconds: 30));
       await tester.pump(const Duration(milliseconds: 250));
-      expect(find.text('01:30'), findsOneWidget);
+      expect(find.text('02:30'), findsOneWidget);
       expect(find.text('Pause'), findsOneWidget);
       await tester.tap(find.byKey(const Key('countdown-toggle')));
       await tester.pump();

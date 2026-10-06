@@ -66,18 +66,19 @@ void main() {
 
   List<Offset> circle(Offset c, double r) => [for (var a = 0.0; a <= 2 * math.pi + 0.2; a += 0.15) c + Offset(math.cos(a), math.sin(a)) * r];
 
-  testWidgets('the AI pen is on the left rail; a second tap opens its options', (tester) async {
+  testWidgets('the AI pen is a pen type: tap the pen again, pick the AI pen, choose when and in which language', (tester) async {
     final board = await pump(tester);
     final wb = whiteboard(tester);
-    await tester.tap(find.byKey(const Key('tool-ai-pen')));
-    await tester.pump();
-    expect(wb.tool, BoardTool.aiPen);
-    await tester.tap(find.byKey(const Key('tool-ai-pen')));
+    await tester.tap(find.byKey(const Key('tool-pen')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('ai-pen-popover')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('pen-type-aiPen')));
+    await tester.pumpAndSettle();
+    expect(wb.tool, BoardTool.aiPen);
     await tester.tap(find.byKey(const Key('ai-pen-mode-tap')));
     await tester.pumpAndSettle();
     expect(board.aiPenMode, AiPenMode.tap);
+    await tester.ensureVisible(find.text('ಕನ್ನಡ'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('ಕನ್ನಡ'));
     await tester.pumpAndSettle();
     expect(board.aiPenLanguage.name, 'kn');
@@ -87,12 +88,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the bottom toolbar has the AI pen too; W picks it from the keyboard', (tester) async {
+  testWidgets('with the toolbar at the left edge too; W picks it from the keyboard', (tester) async {
     await pump(tester, layout: ToolbarDock.left);
     final wb = whiteboard(tester);
-    expect(find.byKey(const Key('tool-ai-pen')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('tool-ai-pen')));
-    await tester.pump();
+    await tester.tap(find.byKey(const Key('tool-pen')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('pen-type-aiPen')));
+    await tester.pumpAndSettle();
     expect(wb.tool, BoardTool.aiPen);
     wb.tool = BoardTool.pen;
     await tester.sendKeyEvent(LogicalKeyboardKey.keyW);
@@ -104,15 +106,17 @@ void main() {
     final board = await pump(tester);
     board.setSimpleBoard(SimpleBoard.on);
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('tool-ai-pen')), findsNothing);
-    // The pen is already in hand: a tap opens its options.
-    await tester.tap(find.byKey(const Key('tool-write')));
+    // The pen is already in hand: a tap opens its options, which have no AI pen.
+    await tester.tap(find.byKey(const Key('tool-pen')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('pen-type-aiPen')), findsNothing);
+    await tester.ensureVisible(find.byKey(const Key('snap-shapes')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('snap-shapes')));
     await tester.pumpAndSettle();
     expect(board.snapShapes, isTrue);
     // Closing the popover, then a rough circle with the pen becomes a clean one.
-    await tester.tapAt(const Offset(1700, 900));
+    await tester.tapAt(const Offset(1300, 150));
     await tester.pumpAndSettle();
     final wb = whiteboard(tester);
     expect(wb.tool, BoardTool.pen);
@@ -181,7 +185,7 @@ void main() {
   testWidgets('Board settings: download a handwriting model, see which are ready', (tester) async {
     final hw = FakeHandwriting(states: {'en': HandwritingModelState.ready, 'hi': HandwritingModelState.needsDownload, 'kn': HandwritingModelState.unsupported});
     await pump(tester, handwriting: hw);
-    await tester.tap(find.byKey(const Key('profile-button')));
+    await tester.tap(find.byKey(const Key('board-menu')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('menu-settings')));
     await tester.pumpAndSettle();
