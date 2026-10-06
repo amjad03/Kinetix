@@ -58,16 +58,38 @@ class InkPoint {
 
 /// Pen settings for one pointer. Each finger or pen can have its own (multi-user zones).
 class InkStyle {
-  const InkStyle({required this.tool, required this.color, required this.width, this.shape = ShapeKind.rectangle});
+  const InkStyle({
+    required this.tool,
+    required this.color,
+    required this.width,
+    this.shape = ShapeKind.rectangle,
+    this.nib = PenNib.round,
+    this.pressure = false,
+  });
 
   final InkTool tool;
   final Color color;
   final double width;
   final ShapeKind shape;
 
-  InkStyle copyWith({InkTool? tool, Color? color, double? width, ShapeKind? shape}) =>
-      InkStyle(tool: tool ?? this.tool, color: color ?? this.color, width: width ?? this.width, shape: shape ?? this.shape);
+  /// How the line is drawn: round, a calligraphy nib, dashes, or with an arrowhead at the end.
+  final PenNib nib;
+
+  /// The line gets thicker the harder a stylus presses (points keep their pressure).
+  final bool pressure;
+
+  InkStyle copyWith({InkTool? tool, Color? color, double? width, ShapeKind? shape, PenNib? nib, bool? pressure}) => InkStyle(
+    tool: tool ?? this.tool,
+    color: color ?? this.color,
+    width: width ?? this.width,
+    shape: shape ?? this.shape,
+    nib: nib ?? this.nib,
+    pressure: pressure ?? this.pressure,
+  );
 }
+
+/// The pen's line: the pen popover's pen types (calligraphy, dashed, arrow pen).
+enum PenNib { round, calligraphy, dashed, arrow }
 
 /// Pen, highlighter and shape ink: a line of points. Shapes drawn with the Shapes tool are
 /// strokes too (with [shape] set), so they erase, move and undo like handwriting, keep their

@@ -14,9 +14,16 @@ const int boardFormatVersion = 2;
 
 /// A saved board as stored by KINETIX Cloud (`WhiteboardContent` in services/api).
 class SavedBoard {
-  const SavedBoard({required this.background, required this.canvas, required this.pages, this.groups = const []});
+  const SavedBoard({required this.background, required this.canvas, required this.pages, this.groups = const [], this.pageBackgrounds = const []});
 
+  /// The first page's paper (and every page's, for boards saved before pages had their own).
   final BoardBackground background;
+
+  /// Each page's paper; a missing page uses [background].
+  final List<BoardBackground> pageBackgrounds;
+
+  /// Page [i]'s paper.
+  BoardBackground backgroundOf(int i) => i < pageBackgrounds.length ? pageBackgrounds[i] : background;
 
   /// The screen size the board was drawn on, in logical pixels. The board is endless, so
   /// elements may lie outside it; viewers show this area and anything beyond it.
@@ -40,6 +47,7 @@ class SavedBoard {
         {
           'strokes': [for (final e in pages[i]) encodeElement(e)],
           if (i < groups.length && groups[i].isNotEmpty) 'groups': groups[i],
+          if (backgroundOf(i) != background) 'background': backgroundOf(i).name,
         },
     ],
   };
@@ -51,8 +59,11 @@ class SavedBoard {
     var n = 0;
     final pages = <List<BoardElement>>[];
     final groups = <List<List<int>>>[];
+    final board = BoardBackground.values.asNameMap()[j['background']] ?? BoardBackground.plain;
+    final backgrounds = <BoardBackground>[];
     for (final raw in (j['pages'] as List<dynamic>? ?? const [])) {
       final page = raw as Map<String, dynamic>;
+      backgrounds.add(BoardBackground.values.asNameMap()[page['background']] ?? board);
       final items = page['strokes'] as List<dynamic>? ?? const [];
       // Group positions refer to the stored list; skipped items shift what follows.
       final at = <int, int>{};
@@ -70,7 +81,8 @@ class SavedBoard {
       ]..removeWhere((g) => g.length < 2));
     }
     return SavedBoard(
-      background: BoardBackground.values.asNameMap()[j['background']] ?? BoardBackground.plain,
+      background: board,
+      pageBackgrounds: backgrounds,
       canvas: Size(((canvas?['w'] as num?) ?? 1920).toDouble(), ((canvas?['h'] as num?) ?? 1080).toDouble()),
       pages: pages,
       groups: groups,
@@ -101,6 +113,8 @@ Map<String, dynamic> encodeStroke(Stroke s) => {
   'w': s.style.width,
   if (s.shape != null) 's': s.shape!.name,
   if (s.fill != null) 'f': s.fill!.toARGB32(),
+  if (s.style.nib != PenNib.round) 'n': s.style.nib.name,
+  if (s.style.pressure) 'pr': [for (final p in s.points) (p.pressure * 100).round()],
   // Flat [x0, y0, x1, y1, …] to 0.1 px: plenty for ink, a third of the size of objects.
   'p': [
     for (final p in s.points) ...[_round1(p.x), _round1(p.y)],
@@ -118,12 +132,23 @@ Stroke? decodeStroke(Map<String, dynamic> j, String id) {
   if (tool == null || flat == null || flat.length < 2) return null;
   final shape = j['s'] == null ? null : ShapeKind.values.asNameMap()[j['s']];
   if (tool == InkTool.shape && shape == null) return null;
+  final pressures = (j['pr'] as List<dynamic>?)?.cast<num>();
   return Stroke(
     id: id,
     shape: shape,
     fill: j['f'] is num ? Color((j['f'] as num).toInt()) : null,
-    style: InkStyle(tool: tool, color: Color((j['c'] as num).toInt()), width: (j['w'] as num).toDouble(), shape: shape ?? ShapeKind.rectangle),
-    points: [for (var i = 0; i + 1 < flat.length; i += 2) InkPoint(flat[i].toDouble(), flat[i + 1].toDouble())],
+    style: InkStyle(
+      tool: tool,
+      color: Color((j['c'] as num).toInt()),
+      width: (j['w'] as num).toDouble(),
+      shape: shape ?? ShapeKind.rectangle,
+      nib: PenNib.values.asNameMap()[j['n']] ?? PenNib.round,
+      pressure: pressures != null,
+    ),
+    points: [
+      for (var i = 0; i + 1 < flat.length; i += 2)
+        InkPoint(flat[i].toDouble(), flat[i + 1].toDouble(), pressures != null && i ~/ 2 < pressures.length ? pressures[i ~/ 2] / 100 : 0.5),
+    ],
   );
 }
 

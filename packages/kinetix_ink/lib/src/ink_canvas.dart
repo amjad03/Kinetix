@@ -72,6 +72,15 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     canvas.drawCircle(pts.first.offset, paint.strokeWidth / 2, paint..style = PaintingStyle.fill);
     return;
   }
+  final nib = s.shape == null && !highlighter ? s.style.nib : PenNib.round;
+  if (nib == PenNib.calligraphy) {
+    _paintCalligraphy(canvas, pts, s.style.width, paint.color);
+    return;
+  }
+  if (s.style.pressure && s.shape == null && !highlighter && nib == PenNib.round) {
+    _paintPressure(canvas, pts, s.style.width, paint);
+    return;
+  }
   final path = Path()..moveTo(pts.first.x, pts.first.y);
   if (s.shape != null) {
     // Shapes are exact geometry: straight segments, no smoothing.
@@ -87,7 +96,19 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     }
     path.lineTo(pts.last.x, pts.last.y);
   }
-  canvas.drawPath(path, paint);
+  canvas.drawPath(nib == PenNib.dashed ? _dashed(path, paint.strokeWidth) : path, paint);
+  if (nib == PenNib.arrow) {
+    // The arrowhead follows the last stretch of the line, not its last jitter.
+    final tip = pts.last.offset;
+    var from = pts.first.offset;
+    for (final p in pts.reversed) {
+      if ((p.offset - tip).distance > 12 + paint.strokeWidth * 2) {
+        from = p.offset;
+        break;
+      }
+    }
+    _arrowHead(canvas, from, tip, paint);
+  }
 
   final shape = s.shape;
   if (shape == null) return;
@@ -96,6 +117,41 @@ void paintStroke(Canvas canvas, Stroke s, BoardBackground bg, {bool lengths = fa
     if (shape == ShapeKind.doubleArrow) _arrowHead(canvas, pts.last.offset, pts.first.offset, paint);
   }
   if (lengths || angles) _paintMeasurements(canvas, s, color, lengths: lengths, angles: angles);
+}
+
+/// [path] cut into dashes about three line widths long.
+Path _dashed(Path path, double width) {
+  final dash = math.max(8.0, width * 3), gap = math.max(6.0, width * 2.2);
+  final out = Path();
+  for (final m in path.computeMetrics()) {
+    for (var d = 0.0; d < m.length; d += dash + gap) {
+      out.addPath(m.extractPath(d, math.min(d + dash, m.length)), Offset.zero);
+    }
+  }
+  return out;
+}
+
+/// A broad nib held at 45°: thick going one way, thin the other.
+void _paintCalligraphy(Canvas canvas, List<InkPoint> pts, double width, Color color) {
+  final half = Offset(1, -1) * (width * 1.1 / math.sqrt2);
+  final fill = Paint()
+    ..color = color
+    ..isAntiAlias = true;
+  final path = Path();
+  for (var i = 0; i < pts.length - 1; i++) {
+    final a = pts[i].offset, b = pts[i + 1].offset;
+    path.addPolygon([a - half, b - half, b + half, a + half], true);
+  }
+  canvas.drawPath(path, fill);
+  canvas.drawLine(pts.first.offset - half, pts.first.offset + half, Paint()..color = color..strokeWidth = 1);
+}
+
+/// Each stretch as wide as the stylus pressed (0.5, a finger or a mouse, is the set width).
+void _paintPressure(Canvas canvas, List<InkPoint> pts, double width, Paint paint) {
+  for (var i = 0; i < pts.length - 1; i++) {
+    final p = (pts[i].pressure + pts[i + 1].pressure) / 2;
+    canvas.drawLine(pts[i].offset, pts[i + 1].offset, paint..strokeWidth = width * (0.35 + 1.3 * p));
+  }
 }
 
 void _arrowHead(Canvas canvas, Offset from, Offset tip, Paint paint) {

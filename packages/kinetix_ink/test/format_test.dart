@@ -278,7 +278,8 @@ void main() {
       final player = LessonPlayer(l)..seek(l.duration);
       expectSameBoard(player);
       expect(player.pageCount, 3);
-      expect(player.background, BoardBackground.grid);
+      // Each page has its own paper: the copy of the first page is plain, as the first page is.
+      expect(player.background, BoardBackground.plain);
     });
 
     test('the view and the laser stream for the live view', () {

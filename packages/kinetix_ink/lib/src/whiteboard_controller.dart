@@ -10,6 +10,24 @@ import 'ink_models.dart';
 import 'serialization.dart';
 import 'view.dart';
 
+/// Evens out [points] in place: each inner point moves towards the average of its
+/// neighbours, [amount] (0..1) sets how far around it looks. The ends stay where they are.
+void smoothStroke(List<InkPoint> points, double amount) {
+  final k = (amount.clamp(0.0, 1.0) * 4).round();
+  if (k == 0 || points.length < 3) return;
+  final src = List.of(points);
+  for (var i = 1; i < src.length - 1; i++) {
+    var x = 0.0, y = 0.0, p = 0.0, n = 0;
+    for (var j = math.max(0, i - k); j <= math.min(src.length - 1, i + k); j++) {
+      x += src[j].x;
+      y += src[j].y;
+      p += src[j].pressure;
+      n++;
+    }
+    points[i] = InkPoint(x / n, y / n, p / n);
+  }
+}
+
 /// What a pointer does on the board.
 enum BoardTool {
   /// Tap to pick, drag a loop to pick several, drag the picked things to move them.
@@ -47,13 +65,16 @@ enum SelectionHandle { topLeft, top, topRight, right, bottomRight, bottom, botto
 /// One page of the board: its elements (bottom first), its groups and the view the teacher
 /// left it at.
 class WhiteboardPage {
-  WhiteboardPage({String? id, List<BoardElement>? elements, Map<String, String>? groups})
+  WhiteboardPage({String? id, List<BoardElement>? elements, Map<String, String>? groups, this.background = BoardBackground.plain})
     : id = id ?? 'p${newElementId()}',
       elements = elements ?? [],
       groups = groups ?? {};
 
   final String id;
   List<BoardElement> elements;
+
+  /// This page's paper (each page keeps its own: graph paper on one, a map on the next).
+  BoardBackground background;
 
   /// Element id → group id. Elements in a group select and move together (everything one AI
   /// answer wrote, a diagram with its labels).
@@ -231,7 +252,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (i < 0 || i >= _pages.length || i == _index) return;
     _finishGestures();
     page.view = _autoView ? null : view.value;
+    final was = page.background;
     _index = i;
+    _paperChanged(was, page.background);
     _selection.clear();
     _showPage();
     _changed(content: false);
@@ -241,7 +264,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   void addPage() {
     _finishGestures();
     page.view = _autoView ? null : view.value;
-    _pages.insert(_index + 1, WhiteboardPage());
+    _pages.insert(_index + 1, WhiteboardPage(background: page.background));
     _index++;
     _selection.clear();
     _showPage();
@@ -254,7 +277,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     if (pages.isEmpty) return;
     _finishGestures();
     page.view = _autoView ? null : view.value;
-    _pages.insertAll(_index + 1, [for (final els in pages) WhiteboardPage(elements: List.of(els))]);
+    _pages.insertAll(_index + 1, [for (final els in pages) WhiteboardPage(elements: List.of(els), background: page.background)]);
     _index++;
     _selection.clear();
     _showPage();
@@ -265,7 +288,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   void duplicatePage(int i) {
     final src = _pages[i];
     final ids = <String, String>{};
-    final copy = WhiteboardPage(elements: [for (final e in src.elements) e.withId(ids[e.id] = newElementId())]);
+    final copy = WhiteboardPage(elements: [for (final e in src.elements) e.withId(ids[e.id] = newElementId())], background: src.background);
     final groupIds = <String, String>{};
     for (final g in src.groups.entries) {
       if (ids[g.key] != null) copy.groups[ids[g.key]!] = groupIds[g.value] ??= newElementId();
@@ -281,11 +304,13 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       return;
     }
     _finishGestures();
+    final was = page.background;
     final removed = _pages.removeAt(i);
     _undo.remove(removed.id);
     _redo.remove(removed.id);
     if (_index >= _pages.length) _index = _pages.length - 1;
     if (i < _index) _index--;
+    _paperChanged(was, page.background);
     _selection.clear();
     _showPage();
     _changed();
@@ -294,17 +319,18 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// Replaces every page with a saved board's and opens the first. Clears undo.
   void load(SavedBoard board) {
     _finishGestures();
+    final was = _pages.isEmpty ? BoardBackground.plain : page.background;
     _pages
       ..clear()
       ..addAll([
         for (var p = 0; p < math.max(1, board.pages.length); p++)
           if (p >= board.pages.length)
-            WhiteboardPage()
+            WhiteboardPage(background: board.background)
           else
-            _pageFrom(board.pages[p], p < board.groups.length ? board.groups[p] : const []),
+            _pageFrom(board.pages[p], p < board.groups.length ? board.groups[p] : const [])..background = board.backgroundOf(p),
       ]);
     _index = 0;
-    _background = board.background;
+    _paperChanged(was, page.background);
     _undo.clear();
     _redo.clear();
     _selection.clear();
@@ -327,25 +353,52 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   /// The board as it stands, ready to save. [canvas] is the screen size it was drawn on.
   SavedBoard toSaved(Size canvas) => SavedBoard(
-    background: _background,
+    background: _pages.first.background,
     canvas: canvas,
     pages: [for (final p in _pages) List.of(p.elements)],
     groups: [for (final p in _pages) p.groupIndexes],
+    pageBackgrounds: [for (final p in _pages) p.background],
   );
+
+  /// Moves a page from [from] to [to] (the page overview's drag to reorder); the open page
+  /// stays open.
+  void movePage(int from, int to) {
+    if (from == to || from < 0 || to < 0 || from >= _pages.length || to >= _pages.length) return;
+    _finishGestures();
+    final open = page;
+    _pages.insert(to, _pages.removeAt(from));
+    _index = _pages.indexOf(open);
+    _changed(content: false);
+  }
 
   // --- Paper --------------------------------------------------------------------------------
 
-  BoardBackground _background = BoardBackground.plain;
+  /// The open page's paper. Setting it changes this page only; new pages take the paper of
+  /// the page they are added after.
   @override
-  BoardBackground get background => _background;
+  BoardBackground get background => page.background;
   set background(BoardBackground b) {
-    if (b == _background) return;
-    final wasDark = _background.isDark;
-    _background = b;
-    // Keep the pen visible when flipping between paper and chalkboard.
-    if (b.isDark && !wasDark && penColor == inkBlack) penColor = chalkWhite;
-    if (!b.isDark && wasDark && penColor == chalkWhite) penColor = inkBlack;
+    if (b == page.background) return;
+    final was = page.background;
+    page.background = b;
+    _paperChanged(was, b);
     _changed(content: false);
+  }
+
+  /// Sets every page's paper at once.
+  void setAllBackgrounds(BoardBackground b) {
+    final was = page.background;
+    for (final p in _pages) {
+      p.background = b;
+    }
+    _paperChanged(was, b);
+    _changed(content: false);
+  }
+
+  /// Keeps the pen visible when flipping between paper and a dark board.
+  void _paperChanged(BoardBackground from, BoardBackground to) {
+    if (to.isDark && !from.isDark && penColor == inkBlack) penColor = chalkWhite;
+    if (!to.isDark && from.isDark && penColor == chalkWhite) penColor = inkBlack;
   }
 
   // --- Tools --------------------------------------------------------------------------------
@@ -368,6 +421,15 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
 
   Color penColor = inkBlack;
   double penWidth = 4;
+
+  /// The pen's line (the AI pen's too): round, calligraphy, dashed or an arrow.
+  PenNib penNib = PenNib.round;
+
+  /// Line width follows stylus pressure.
+  bool penPressure = false;
+
+  /// 0 (as drawn) to 1 (very smooth): finished pen strokes are evened out by this much.
+  double penSmoothing = 0;
   Color highlighterColor = const Color(0xFFFFD84D);
 
   /// The highlighter paints four times this wide.
@@ -988,6 +1050,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
           tool: hl ? InkTool.highlighter : InkTool.pen,
           color: hl ? highlighterColor : penColor,
           width: hl ? highlighterWidth : penWidth,
+          nib: hl ? PenNib.round : penNib,
+          pressure: !hl && penPressure,
         );
         final r = ruler.value;
         final edge = !hl && r.visible ? r.snapEdge(at, 28 / scale) : null;
@@ -1113,6 +1177,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         _rulerEdge.remove(pointer);
         // A ruler line that never left its start point is a stray tap.
         if (s.shape == ShapeKind.line && (s.points.first.offset - s.points.last.offset).distance * _scale < 4) break;
+        if (s.shape == null && tool != BoardTool.highlighter && penSmoothing > 0) smoothStroke(s.points, penSmoothing);
         _commit(s);
         if (tool != BoardTool.highlighter) onStrokeEnd?.call(tool, s);
       case BoardTool.shape || BoardTool.compass:
