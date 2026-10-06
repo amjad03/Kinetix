@@ -125,7 +125,7 @@ export function drawBackground(ctx: CanvasRenderingContext2D, bg: BoardBackgroun
   ctx.stroke();
 }
 
-function arrowHead(ctx: CanvasRenderingContext2D, fx: number, fy: number, tx: number, ty: number, width: number) {
+function arrowHead(ctx: CanvasRenderingContext2D, fx: number, fy: number, tx: number, ty: number, width: number, filled = false) {
   const dx = tx - fx, dy = ty - fy;
   if (Math.hypot(dx, dy) < 1) return;
   const a = Math.atan2(dy, dx);
@@ -134,6 +134,10 @@ function arrowHead(ctx: CanvasRenderingContext2D, fx: number, fy: number, tx: nu
   ctx.moveTo(tx - len * Math.cos(a - 0.45), ty - len * Math.sin(a - 0.45));
   ctx.lineTo(tx, ty);
   ctx.lineTo(tx - len * Math.cos(a + 0.45), ty - len * Math.sin(a + 0.45));
+  if (filled) {
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.stroke();
 }
 
@@ -153,6 +157,8 @@ export function drawStroke(ctx: CanvasRenderingContext2D, s: Stroke, bg: BoardBa
     ctx.fill();
     return;
   }
+  // Dashes and dots as the board draws them (about three widths, or one, apart).
+  if (s.dash) ctx.setLineDash(s.dash === 'dotted' ? [0.01, Math.max(4, style.width * 2)] : [Math.max(8, style.width * 3), Math.max(6, style.width * 2.2)]);
   ctx.beginPath();
   ctx.moveTo(p[0], p[1]);
   if (s.shape) {
@@ -172,10 +178,11 @@ export function drawStroke(ctx: CanvasRenderingContext2D, s: Stroke, bg: BoardBa
     ctx.lineTo(p[p.length - 2], p[p.length - 1]);
   }
   ctx.stroke();
+  if (s.dash) ctx.setLineDash([]);
   if (s.shape === 'arrow' || s.shape === 'doubleArrow') {
     const [x0, y0, x1, y1] = [p[0], p[1], p[p.length - 2], p[p.length - 1]];
-    arrowHead(ctx, x0, y0, x1, y1, style.width);
-    if (s.shape === 'doubleArrow') arrowHead(ctx, x1, y1, x0, y0, style.width);
+    arrowHead(ctx, x0, y0, x1, y1, style.width, s.filledHead);
+    if (s.shape === 'doubleArrow') arrowHead(ctx, x1, y1, x0, y0, style.width, s.filledHead);
   }
 }
 
