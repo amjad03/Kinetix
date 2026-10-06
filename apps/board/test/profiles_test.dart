@@ -277,8 +277,16 @@ void main() {
         await tester.pump();
       }
       await tester.tap(find.byKey(const Key('pin-ok')));
-      // PBKDF2 runs in an isolate.
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
+      // PBKDF2 runs in an isolate, and the unlock goes to the (fake) server: wait until the PIN
+      // pad is done, however long that takes on a busy machine (a fixed wait made this test
+      // fail when the whole suite ran in parallel).
+      final busy = find.descendant(of: find.byType(PinPad), matching: find.byType(CircularProgressIndicator));
+      for (var i = 0; i < 200; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 25)));
+        await tester.pump();
+        if (busy.evaluate().isEmpty) break;
+      }
+      expect(busy, findsNothing, reason: 'the PIN was still being checked after 5 s');
       await tester.pumpAndSettle();
     }
 

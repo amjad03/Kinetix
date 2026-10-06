@@ -139,6 +139,11 @@ class BoardController extends ChangeNotifier {
   /// A resting palm does not write (the touch surface decides how; off writes with any touch).
   bool palmRejection = true;
 
+  /// Preview as interactive panel: a phone (the demo build) shows the whole board at a 1920 ×
+  /// 1080 panel's size, scaled down to fit, on its side, so the teacher sees what the
+  /// smartboard will show. The phone's own setting, not a teacher's.
+  bool panelPreview = false;
+
   /// Several people write at once (two fingers then write, not move the board). Null follows
   /// the touch surface: panels and IR frames are multi-touch, tablets single.
   bool? multiTouch;
@@ -305,6 +310,7 @@ class BoardController extends ChangeNotifier {
       _aiPenLanguage = BoardLanguage.tryParse(await _store.setting('aiPenLanguage'));
       snapShapes = await _store.setting('snapShapes') == 'true';
       fingerTaps = await _store.setting('fingerTaps') != 'false';
+      panelPreview = await _store.setting('panelPreview') == 'true';
     } catch (e) {
       debugPrint('Board settings unreadable, using defaults: $e');
     }
@@ -513,6 +519,12 @@ class BoardController extends ChangeNotifier {
   void setSnapShapes(bool on) {
     snapShapes = on;
     unawaited(_saveTeacherSetting('snapShapes', '$on'));
+    notifyListeners();
+  }
+
+  void setPanelPreview(bool on) {
+    panelPreview = on;
+    unawaited(_store.setSetting('panelPreview', '$on'));
     notifyListeners();
   }
 

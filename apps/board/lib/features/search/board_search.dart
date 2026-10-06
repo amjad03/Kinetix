@@ -9,7 +9,7 @@ import '../board/chrome.dart';
 import '../board/kit/builders.dart';
 import '../board/kit/subjects.dart';
 import '../board/popovers.dart' show ToolEntry;
-import '../board/profile_menu.dart' show BoardSettingsDialog;
+import '../board/profile_menu.dart' show showBoardSettings;
 import '../board/side_panel.dart' show SplitContent;
 import '../concept_videos/concept_video_player.dart';
 import '../concept_videos/concept_videos.dart';
@@ -20,7 +20,6 @@ import '../sims/sims.dart';
 import 'search_index.dart';
 import 'search_strings.dart';
 import 'universal_search.dart';
-import '../board/panel/panel_host.dart';
 
 /// The board's universal search (the top bar's search button, the phone's More sheet,
 /// Ctrl+K): builds the index from what the board has and opens what is picked.
@@ -167,12 +166,7 @@ Future<void> openBoardSearch(
       case SearchKind.video:
         unawaited(ConceptVideoPlayer.open(context, item.payload as ConceptVideo));
       case SearchKind.setting:
-        unawaited(
-          showPanelDialog<void>(
-            context: context,
-            builder: (_) => BoardChromeTheme(child: BoardSettingsDialog(board: board, initialQuery: item.titleIn(s.lang))),
-          ),
-        );
+        unawaited(showBoardSettings(context, board, query: item.titleIn(s.lang)));
     }
   }
 

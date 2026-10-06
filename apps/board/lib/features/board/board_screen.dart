@@ -62,6 +62,7 @@ import 'layout/layout_strings.dart';
 import 'layout/page_overview.dart';
 import 'layout/pen_popover.dart';
 import 'layout/tools_drawer.dart';
+import 'layout/ui_strings.dart';
 import 'live_stream.dart';
 import 'panel/badges_panel.dart';
 import 'panel/panel_host.dart';
@@ -1660,6 +1661,9 @@ class _BoardScreenState extends State<BoardScreen> {
   );
 
   /// The chrome on an interactive panel, a tablet or a desktop.
+  /// The page overview is open: the toolbars at the bottom make way for its sheet.
+  bool get _bottomChromeHidden => _popover == BoardPopover.pages;
+
   List<Widget> _panelChrome(BuildContext context, {required bool compact, required bool short, required ToolbarDock dock, required bool collapsed}) {
     // The board's own width: narrower beside the split panel.
     final width = _canvasSize.width;
@@ -1690,32 +1694,34 @@ class _BoardScreenState extends State<BoardScreen> {
           child: TopRightBar(board: board, onSearch: _openSearch, onProfile: () => _toggle(BoardPopover.profile), profileOpen: _popover == BoardPopover.profile),
         ),
       ),
-      Positioned(
-        left: Kx.s12,
-        bottom: Kx.s12,
-        child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording)),
-      ),
-      Positioned(
-        right: Kx.s12,
-        bottom: Kx.s12,
-        child: themed(PageBar(wb: _wb, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
-      ),
-      if (dock == ToolbarDock.bottom)
-        if (!_toolbarRaised)
-          Positioned(left: leftRoom, right: rightRoom, bottom: Kx.s12, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
-        else
-          Positioned(left: Kx.s12, right: Kx.s12, bottom: Kx.s12 + 76 + Kx.s8, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
-      else
+      if (!_bottomChromeHidden) ...[
         Positioned(
-          left: dock == ToolbarDock.left ? Kx.s12 : null,
-          right: dock == ToolbarDock.right ? Kx.s12 : null,
-          top: 64,
-          bottom: 96,
-          child: Align(
-            alignment: dock == ToolbarDock.left ? Alignment.centerLeft : Alignment.centerRight,
-            child: FittedBox(fit: BoxFit.scaleDown, child: toolbar),
-          ),
+          left: Kx.s12,
+          bottom: Kx.s12,
+          child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording)),
         ),
+        Positioned(
+          right: Kx.s12,
+          bottom: Kx.s12,
+          child: themed(PageBar(wb: _wb, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
+        ),
+        if (dock == ToolbarDock.bottom)
+          if (!_toolbarRaised)
+            Positioned(left: leftRoom, right: rightRoom, bottom: Kx.s12, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
+          else
+            Positioned(left: Kx.s12, right: Kx.s12, bottom: Kx.s12 + 76 + Kx.s8, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
+        else
+          Positioned(
+            left: dock == ToolbarDock.left ? Kx.s12 : null,
+            right: dock == ToolbarDock.right ? Kx.s12 : null,
+            top: 64,
+            bottom: 96,
+            child: Align(
+              alignment: dock == ToolbarDock.left ? Alignment.centerLeft : Alignment.centerRight,
+              child: FittedBox(fit: BoxFit.scaleDown, child: toolbar),
+            ),
+          ),
+      ],
     ];
   }
 
@@ -1777,19 +1783,21 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         ),
       ),
-      Positioned(
-        right: Kx.s8 + safe.right,
-        bottom: bottom + 52 + Kx.s8,
-        child: BoardChromeTheme(child: PageBar(wb: _wb, compact: true, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
-      ),
+      if (!_bottomChromeHidden)
+        Positioned(
+          right: Kx.s8 + safe.right,
+          bottom: bottom + 52 + Kx.s8,
+          child: BoardChromeTheme(child: PageBar(wb: _wb, compact: true, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
+        ),
       if (recording != null)
         Positioned(left: Kx.s8 + safe.left, top: safe.top + 56, child: BoardChromeTheme(child: FittedBox(child: recording))),
-      Positioned(
-        left: Kx.s8 + safe.left,
-        right: Kx.s8 + safe.right,
-        bottom: bottom,
-        child: BoardChromeTheme(child: Center(child: PhoneBar(wb: _wb, items: _barItems, onMore: _openMore))),
-      ),
+      if (!_bottomChromeHidden)
+        Positioned(
+          left: Kx.s8 + safe.left,
+          right: Kx.s8 + safe.right,
+          bottom: bottom,
+          child: BoardChromeTheme(child: Center(child: PhoneBar(wb: _wb, items: _barItems, onMore: _openMore))),
+        ),
     ];
   }
 
@@ -1812,6 +1820,13 @@ class _BoardScreenState extends State<BoardScreen> {
       (const Key('tool-theme'), Icons.texture, s.background, () => setState(() => _popover = BoardPopover.background), true),
       (const Key('menu-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), true),
       (const Key('menu-settings'), Icons.settings_outlined, l.boardSettings, _openSettings, true),
+      (
+        const Key('menu-preview'),
+        board.panelPreview ? Icons.close_fullscreen : Icons.aspect_ratio,
+        board.panelPreview ? UiStrings.of(context).exitPreview : UiStrings.of(context).previewPanel,
+        () => board.setPanelPreview(!board.panelPreview),
+        true,
+      ),
       (const Key('clear-board'), Icons.layers_clear_outlined, l.clearPage, () => unawaited(confirmClearBoard(context, _wb)), _wb.canClearAllPages),
       (const Key('menu-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, _clearAll, _wb.canClearAllPages),
       if (signedIn)
@@ -1821,7 +1836,10 @@ class _BoardScreenState extends State<BoardScreen> {
     ];
   }
 
-  void _openSettings() => unawaited(showPanelDialog<void>(context: context, builder: (_) => BoardSettingsDialog(board: board)));
+  void _openSettings() {
+    setState(() => _popover = null);
+    unawaited(showBoardSettings(context, board));
+  }
 
   void _clearAll() {
     final undo = _wb.clearAllPages();
@@ -1901,6 +1919,16 @@ class _BoardScreenState extends State<BoardScreen> {
       BoardPopover.pages => PageOverview(wb: _wb, canvas: _canvasSize, onClose: close),
     };
     final themed = BoardChromeTheme(child: card);
+    // The page overview is a sheet at the bottom of the board, the toolbars put away under it.
+    if (_popover == BoardPopover.pages) {
+      return Positioned(
+        left: phone ? Kx.s8 + safe.left : Kx.s16,
+        right: phone ? Kx.s8 + safe.right : Kx.s16,
+        top: phone ? safe.top + 56 : 72,
+        bottom: phone ? safe.bottom + Kx.s8 : Kx.s16,
+        child: Align(alignment: Alignment.bottomCenter, child: themed),
+      );
+    }
     if (phone) {
       // A small sheet above the bar, across the phone.
       return Positioned(
@@ -1918,8 +1946,6 @@ class _BoardScreenState extends State<BoardScreen> {
     switch (_popover!) {
       case BoardPopover.menu || BoardPopover.background || BoardPopover.eyeComfort:
         return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomLeft, child: SingleChildScrollView(reverse: true, child: themed)));
-      case BoardPopover.pages:
-        return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: 96, child: Align(alignment: Alignment.bottomRight, child: SingleChildScrollView(reverse: true, child: themed)));
       case BoardPopover.profile:
         return Positioned(left: Kx.s12, right: Kx.s12, top: 64, bottom: Kx.s12, child: Align(alignment: Alignment.topRight, child: SingleChildScrollView(child: themed)));
       default:

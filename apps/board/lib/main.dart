@@ -17,6 +17,7 @@ import 'features/comfort/eye_comfort.dart';
 import 'features/concept_videos/concept_video_suggestions.dart';
 import 'features/enrollment/enroll_screen.dart';
 import 'features/insert/picture_library.dart';
+import 'features/preview/panel_preview.dart';
 import 'features/profiles/profiles_ui.dart';
 import 'features/projector/projector_screen.dart';
 import 'l10n/l10n.dart';
@@ -86,16 +87,21 @@ class KinetixBoardApp extends StatelessWidget {
           builder: (context, _) {
             // The teacher's App theme, whatever the device or the layout.
             final look = controller.theme.resolve(MediaQuery.platformBrightnessOf(context));
-            return BoardLook(
-              look: look,
-              child: EyeComfortFilter(
-                settings: controller.eyeComfort,
-                child: BoardChromeTheme(
-                  child: BroadcastOverlay(
-                    messages: controller.broadcasts,
-                    acknowledged: controller.acknowledgedEmergencies,
-                    onDismiss: controller.dismissBroadcast,
-                    child: Theme(data: boardAppTheme(look), child: child!),
+            // Preview as interactive panel: the whole app as a 1920 × 1080 panel shows it.
+            return PanelPreview(
+              enabled: controller.panelPreview,
+              onExit: () => controller.setPanelPreview(false),
+              child: BoardLook(
+                look: look,
+                child: EyeComfortFilter(
+                  settings: controller.eyeComfort,
+                  child: BoardChromeTheme(
+                    child: BroadcastOverlay(
+                      messages: controller.broadcasts,
+                      acknowledged: controller.acknowledgedEmergencies,
+                      onDismiss: controller.dismissBroadcast,
+                      child: Theme(data: boardAppTheme(look), child: child!),
+                    ),
                   ),
                 ),
               ),
