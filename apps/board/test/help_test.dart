@@ -9,6 +9,7 @@ import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -46,7 +47,7 @@ void main() {
     await pumpBoard(tester);
     await tester.tap(find.byKey(const Key('profile-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('menu-tour')));
+    await tapBoard(tester, 'menu-tour');
     await tester.pumpAndSettle();
     for (var i = 0; i < 9; i++) {
       await tester.tap(find.byKey(const Key('coach-next')));
@@ -62,7 +63,7 @@ void main() {
     await pumpBoard(tester);
     await tester.tap(find.byKey(const Key('profile-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('menu-help')));
+    await tapBoard(tester, 'menu-help');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('help-sheet')), findsOneWidget);
     await tester.enterText(find.byKey(const Key('help-search')), 'PowerPoint');
@@ -114,7 +115,7 @@ void main() {
     wb.add(TextElement(id: 'mine', position: const Offset(300, 300), text: 'My lesson', color: const Color(0xFF000000), fontSize: 30, size: const Size(200, 36)));
     await tester.tap(find.byKey(const Key('profile-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('menu-help')));
+    await tapBoard(tester, 'menu-help');
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('help-practice')));
     await tester.pumpAndSettle();

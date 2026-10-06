@@ -12,6 +12,7 @@ import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -113,7 +114,7 @@ void main() {
   Future<void> open(WidgetTester tester) async {
     await tester.tap(find.byKey(const Key('tool-tools')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text("Today's plan"));
+    await tapBoard(tester, 'drawer-todays-plan');
     await tester.pumpAndSettle();
   }
 
@@ -157,7 +158,7 @@ void main() {
     expect(find.text('09:55'), findsOneWidget);
 
     // Books for a minute, then the panel closed for another.
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('plan-view')), findsNothing);
     await tester.pump(const Duration(minutes: 1));
@@ -215,9 +216,9 @@ void main() {
     expect(find.text('Marked as taught'), findsOneWidget);
 
     // Books opened from the toolbar starts at the outline again.
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('books-topic')), findsNothing);
     board.dispose();

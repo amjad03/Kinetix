@@ -16,6 +16,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/recording_fakes.dart';
+import 'support/layout.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -123,7 +124,6 @@ void main() {
     await wait(tester);
     expect(find.byKey(const Key('rec-indicator')), findsOneWidget);
     expect(find.text('Recording the board and your voice.'), findsOneWidget);
-    expect(find.byTooltip('Stop'), findsOneWidget);
 
     await drawLine(tester);
     await wait(tester);
@@ -137,13 +137,13 @@ void main() {
     expect(voice.calls, ['start', 'pause', 'resume']);
 
     // A new page, and the chalkboard background.
-    await tester.tap(find.byKey(const Key('next-page')));
+    await tester.tap(find.byKey(const Key('add-page')));
     await tester.pump();
-    await tester.tap(find.byKey(const Key('tool-theme')));
+    await tapBoard(tester, 'tool-theme');
     await wait(tester);
     await tester.tap(find.text('Chalkboard'));
     await wait(tester);
-    await tester.tap(find.byKey(const Key('tool-theme'))); // close the popover
+    await tester.tapAt(const Offset(1300, 150)); // close the popover
     await wait(tester);
     await drawLine(tester, at: const Offset(600, 500));
 
@@ -168,7 +168,7 @@ void main() {
     // The Recordings list shows it as shared.
     await tester.tap(find.byKey(const Key('profile-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('menu-recordings')));
+    await tapBoard(tester, 'menu-recordings');
     await tester.pumpAndSettle();
     expect(find.text('Depreciation methods'), findsOneWidget);
     expect(find.descendant(of: find.byType(Chip), matching: find.text('Shared')), findsOneWidget);
@@ -216,7 +216,7 @@ void main() {
     await tester.tap(find.byKey(const Key('record')));
     await wait(tester);
     await drawLine(tester);
-    await tester.tap(find.byKey(const Key('end-class')));
+    await tapBoard(tester, 'end-class');
     await wait(tester);
     expect(find.byKey(const Key('end-recording-note')), findsOneWidget);
     await tester.tap(find.byKey(const Key('end-save'))); // do not save the board itself
@@ -255,7 +255,7 @@ void main() {
     // The Recordings list on the guest board says whose sign-in it waits for.
     await tester.tap(find.byKey(const Key('profile-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('menu-recordings')));
+    await tapBoard(tester, 'menu-recordings');
     await tester.pumpAndSettle();
     expect(find.text('Uploads when Anita signs in'), findsOneWidget);
     await tester.tap(find.text('Close'));
@@ -282,7 +282,7 @@ void main() {
     // Share it from the list.
     await tester.tap(find.byKey(const Key('profile-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('menu-recordings')));
+    await tapBoard(tester, 'menu-recordings');
     await tester.pumpAndSettle();
     expect(find.text('Uploaded'), findsOneWidget);
     await tester.tap(find.byKey(Key('rec-share-${r.id}')));

@@ -142,13 +142,13 @@ void main() {
   testWidgets('off by default; the toggle tells the server; no capture while nobody may listen', (tester) async {
     await pump(tester);
     expect(board.classAudio.enabled, isFalse);
-    expect(find.text('Class audio'), findsOneWidget);
+    expect(tester.widget<IconButton>(find.byKey(const Key('class-audio'))).isSelected, isFalse);
 
     viewers(0);
     await tester.tap(find.byKey(const Key('class-audio')));
     await settle(tester);
     expect(rt.states, [true]);
-    expect(find.text('Class audio on'), findsOneWidget);
+    expect(tester.widget<IconButton>(find.byKey(const Key('class-audio'))).isSelected, isTrue);
     expect(mic.capturing, isFalse);
     expect(find.byKey(const Key('mic-on')), findsNothing);
     expect(rt.chunks, isEmpty);
@@ -156,7 +156,7 @@ void main() {
     await tester.tap(find.byKey(const Key('class-audio')));
     await settle(tester);
     expect(rt.states, [true, false]);
-    expect(find.text('Class audio'), findsOneWidget);
+    expect(tester.widget<IconButton>(find.byKey(const Key('class-audio'))).isSelected, isFalse);
     board.dispose();
   });
 
@@ -169,7 +169,6 @@ void main() {
     await settle(tester);
     expect(mic.capturing, isTrue);
     expect(find.byKey(const Key('mic-on')), findsOneWidget);
-    expect(find.text('Mic on'), findsOneWidget);
 
     mic.speak(500); // two whole chunks and a bit
     await settle(tester);

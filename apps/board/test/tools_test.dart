@@ -55,6 +55,15 @@ void main() {
     if (f.evaluate().isEmpty && find.byKey(const Key('phone-more')).evaluate().isNotEmpty) {
       await tester.tap(find.byKey(const Key('phone-more')));
       await tester.pumpAndSettle();
+      if (f.evaluate().isEmpty) {
+        Navigator.of(tester.element(find.byKey(const Key('more-sheet')))).pop();
+        await tester.pumpAndSettle();
+      }
+    }
+    if (f.evaluate().isEmpty) {
+      // The menu: bottom left, ⋮ on a phone.
+      await tester.tap(find.byKey(const Key('board-menu')));
+      await tester.pumpAndSettle();
     }
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();
@@ -62,11 +71,28 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> tool(WidgetTester tester, String label) async {
-    await tap(tester, 'tool-tools');
-    await tester.ensureVisible(find.text(label));
+  /// A tile of the tools drawer.
+  Future<void> tool(WidgetTester tester, String id) async {
+    // A board message from the last step would cover the drawer on a phone.
+    for (final e in find.byType(ScaffoldMessenger).evaluate()) {
+      ((e as StatefulElement).state as ScaffoldMessengerState).removeCurrentSnackBar();
+    }
     await tester.pumpAndSettle();
-    await tester.tap(find.text(label));
+    await tap(tester, 'tool-tools');
+    await tester.ensureVisible(find.byKey(Key('drawer-$id')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('drawer-$id')));
+    await tester.pumpAndSettle();
+  }
+
+  /// Closes the split panel (where dialogs open beside the board), or the dialog on a phone.
+  Future<void> close(WidgetTester tester) async {
+    final panel = find.byKey(const Key('panel-close'));
+    if (panel.evaluate().isNotEmpty) {
+      await tester.tap(panel.first);
+    } else {
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+    }
     await tester.pumpAndSettle();
   }
 
@@ -85,7 +111,7 @@ void main() {
       final wb = tester.widget<WhiteboardCanvas>(find.byType(WhiteboardCanvas)).controller;
 
       // Calculator: 12 + 3 × 4 = 24 goes on the board.
-      await tool(tester, l.toolCalculator);
+      await tool(tester, 'calculator');
       for (final k in ['1', '2', '+', '3', '×', '4', '=']) {
         await tester.tap(find.byKey(Key('calc-$k')));
         await tester.pump();
@@ -98,9 +124,14 @@ void main() {
       // Screenshot: a PNG of the board, saved and shared.
       final saved = <String, Uint8List>{};
       final shared = <String>[];
+      final (save, share) = (BoardShot.save, BoardShot.share);
+      addTearDown(() {
+        BoardShot.save = save;
+        BoardShot.share = share;
+      });
       BoardShot.save = (n, png) async => (saved[n] = png).isNotEmpty;
       BoardShot.share = (n, png) async => shared.add(n);
-      await tool(tester, l.toolScreenshot);
+      await tool(tester, 'screenshot');
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('screenshot-dialog')), findsOneWidget);
@@ -108,7 +139,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(saved.values.single.sublist(1, 4), 'PNG'.codeUnits);
       expect(find.text(l.screenshotSaved), findsOneWidget);
-      await tool(tester, l.toolScreenshot);
+      await tool(tester, 'screenshot');
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('screenshot-share')));
@@ -116,7 +147,7 @@ void main() {
       expect(shared.single, endsWith('.png'));
 
       // Touch lock: the board takes no touches until the lock is held for 2 seconds.
-      await tool(tester, l.toolTouchLock);
+      await tool(tester, 'touch-lock');
       expect(find.byKey(const Key('touch-lock')), findsOneWidget);
       final before = wb.elements.length;
       final g = await tester.startGesture(Offset(size.width / 3, size.height / 2), kind: PointerDeviceKind.touch);
@@ -143,8 +174,7 @@ void main() {
       await tap(tester, 'menu-projector');
       expect(find.byKey(const Key('projector-dialog')), findsOneWidget);
       expect(find.byKey(const Key('projector-enabled')), findsOneWidget);
-      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
-      await tester.pumpAndSettle();
+      await close(tester);
 
       // Voice questions: the mic listens in the AI's language and asks what was said.
       final voice = FakeVoice();
@@ -161,14 +191,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('what is photosynthesis'), findsWidgets);
 
-      // The split screen offers only what works.
-      await tester.tap(find.byKey(const Key('panel-close')).first);
-      await tester.pumpAndSettle();
-      await tool(tester, l.toolSplitScreen);
-      expect(find.byKey(const Key('split-web')), findsNothing);
-      for (final k in ['split-whiteboard', 'split-model3d', 'split-lab']) {
-        expect(find.byKey(Key(k)), findsOneWidget);
+      // The split panel's tabs, and a second board beside this one.
+      for (final k in ['model3d', 'labs', 'videos', 'books', 'kit', 'animations']) {
+        expect(find.byKey(Key('panel-tab-$k')), findsOneWidget);
       }
+      await close(tester);
+      await tool(tester, 'second-board');
+      expect(find.byType(InkCanvas), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       board.dispose();
     });

@@ -9,6 +9,7 @@ import 'package:kinetix_board/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/recording_fakes.dart';
+import 'support/layout.dart';
 
 /// The demo build (--dart-define=KINETIX_DEMO=true): no enrolment, a sample class, no server.
 void main() {
@@ -62,24 +63,19 @@ void main() {
       expect(board.roster, hasLength(12));
 
       // Books: the syllabus with what has been taught.
-      await tapKey(tester, 'panel-books');
+      await tapBoard(tester, 'panel-tab-books');
       expect(
         find.text('Corporate Accounting, BCom Semester 3'),
         findsOneWidget,
       );
       expect(find.text('4 of 8 topics taught'), findsOneWidget);
-      await tapKey(tester, 'panel-books');
 
       // Today's plan.
-      await tapKey(tester, 'tool-tools');
-      await tester.tap(find.text("Today's plan"));
-      await tester.pumpAndSettle();
+      await openTool(tester, 'todays-plan');
       expect(find.text('Re-issue of forfeited shares'), findsWidgets);
-      await tester.tapAt(const Offset(960, 600));
-      await tester.pumpAndSettle();
 
       // AI: a labelled sample answer.
-      await tapKey(tester, 'panel-ai');
+      await tapKey(tester, 'panel-tab-ai');
       await tester.enterText(
         find.byKey(const Key('ai-ask')),
         'What is forfeiture?',

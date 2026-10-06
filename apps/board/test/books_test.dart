@@ -13,6 +13,7 @@ import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_labs/kinetix_labs.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 class _NoRealtime extends Realtime {
   _NoRealtime() : super('http://test');
@@ -142,7 +143,7 @@ void main() {
 
   testWidgets('opens the class syllabus, a topic in large type, and explains it grounded in that topic', (tester) async {
     final board = await pump(tester);
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     expect(find.text('Corporate Accounting, BCom Semester 3'), findsOneWidget);
     expect(find.textContaining('Draft content'), findsOneWidget);
@@ -158,11 +159,15 @@ void main() {
     // The lesson the library wrote for the topic; the Kannada title is for a Kannada board only.
     expect(find.text('Why would anyone pay for a name?'), findsOneWidget);
     expect(find.text('super profit'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('1. What is super profit?'), 200, scrollable: find.descendant(of: find.byKey(const Key('books-topic')), matching: find.byType(Scrollable)).first);
     expect(find.text('1. What is super profit?'), findsOneWidget);
     expect(find.text('Average profit minus normal profit.'), findsOneWidget);
     expect(find.byKey(const Key('lesson-homework')), findsNothing);
     expect(find.text('ಸುನಾಮದ ಮೌಲ್ಯಮಾಪನ'), findsNothing);
 
+    await tester.scrollUntilVisible(find.byKey(const Key('topic-explain')), -200, scrollable: find.descendant(of: find.byKey(const Key('books-topic')), matching: find.byType(Scrollable)).first);
+    await tester.ensureVisible(find.byKey(const Key('topic-explain')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('topic-explain')));
     await tester.pumpAndSettle();
     final explain = requests.lastWhere((r) => r.url.path == '/v1/ai/explain');
@@ -175,7 +180,7 @@ void main() {
   testWidgets('shows what the class has been taught; marks a topic as taught and undoes it', (tester) async {
     taught = {'t9': '2026-10-01'};
     final board = await pump(tester);
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     expect(find.text('1 of 2 topics taught'), findsOneWidget);
     expect(find.textContaining('0/1 taught'), findsOneWidget);
@@ -211,7 +216,7 @@ void main() {
   testWidgets('a free session (no class) shows the syllabus without coverage', (tester) async {
     taught = null;
     final board = await pump(tester);
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('chapter-ch1')));
     await tester.pumpAndSettle();
@@ -224,7 +229,7 @@ void main() {
   testWidgets('explains when the subject is not linked to a syllabus yet', (tester) async {
     linked = false;
     final board = await pump(tester);
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('books-unlinked')), findsOneWidget);
     board.dispose();
@@ -232,14 +237,14 @@ void main() {
 
   testWidgets('a guest board is asked to sign in', (tester) async {
     await pump(tester, signedIn: false);
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('books-signin')), findsOneWidget);
   });
 
   testWidgets("a topic's lab opens next to the whiteboard", (tester) async {
     final board = await pump(tester);
-    await tester.tap(find.byKey(const Key('panel-books')));
+    await tapBoard(tester, 'panel-tab-books');
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('chapter-ch1')));
     await tester.pumpAndSettle();

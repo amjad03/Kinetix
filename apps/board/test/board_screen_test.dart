@@ -286,6 +286,8 @@ void main() {
       await tapKey(tester, 'overview-delete');
       expect(wb.pageCount, 2);
       Uint8List? pdf;
+      final share = sharePdf;
+      addTearDown(() => sharePdf = share);
       sharePdf = (name, bytes) async => pdf = bytes;
       await tester.runAsync(() async {
         await tester.tap(find.byKey(const Key('overview-export')));

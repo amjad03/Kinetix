@@ -12,6 +12,7 @@ import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/layout.dart';
 
 /// A realtime connection that never connects; the tests drive the controller directly.
 class _NoRealtime extends Realtime {
@@ -85,7 +86,7 @@ void main() {
   testWidgets('Save sends the pages, canvas size and title, and shares with the class', (tester) async {
     await pump(tester);
     await drawLine(tester);
-    await tester.tap(find.byKey(const Key('save-board')));
+    await tapBoard(tester, 'save-board');
     await tester.pumpAndSettle();
     expect(find.text('Save board'), findsOneWidget);
     expect(tester.widget<TextField>(find.byKey(const Key('save-title'))).controller!.text, startsWith('Corporate Accounting · '));
@@ -94,13 +95,15 @@ void main() {
     await tester.pumpAndSettle();
     final body = lastSave();
     expect(body['share'], isTrue);
-    expect(body['canvas'], {'w': 1920, 'h': 1080});
+    // The board's size on screen: narrower while the save dialog shows in the split panel.
+    expect(body['canvas']['h'], 1080);
+    expect(body['canvas']['w'], inInclusiveRange(1000, 1920));
     expect((body['pages'] as List).single['strokes'], hasLength(1));
     expect(find.text('Saved and shared with BCom Sem 3 A.'), findsOneWidget);
 
     // Saving again goes to the same board id.
     final firstId = requests.lastWhere((r) => r.method == 'PUT').url.pathSegments.last;
-    await tester.tap(find.byKey(const Key('save-board')));
+    await tapBoard(tester, 'save-board');
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('save-confirm')));
     await tester.pumpAndSettle();
@@ -111,7 +114,7 @@ void main() {
   testWidgets('End class saves and shares the board, then signs out', (tester) async {
     await pump(tester);
     await drawLine(tester);
-    await tester.tap(find.byKey(const Key('end-class')));
+    await tapBoard(tester, 'end-class');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('end-save')), findsOneWidget);
     await tester.tap(find.byKey(const Key('confirm-end')));
@@ -126,7 +129,7 @@ void main() {
 
   testWidgets('a blank board ends class without asking to save', (tester) async {
     await pump(tester);
-    await tester.tap(find.byKey(const Key('end-class')));
+    await tapBoard(tester, 'end-class');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('end-save')), findsNothing);
     await tester.tap(find.byKey(const Key('confirm-end')));
@@ -140,7 +143,7 @@ void main() {
     await board.endClass();
     await tester.pumpAndSettle();
     await drawLine(tester);
-    await tester.tap(find.byKey(const Key('save-board')));
+    await tapBoard(tester, 'save-board');
     await tester.pumpAndSettle();
     expect(find.textContaining('Sign in with the Teacher app to save'), findsOneWidget);
     board.dispose();
