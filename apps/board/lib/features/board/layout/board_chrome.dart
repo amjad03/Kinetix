@@ -21,8 +21,12 @@ enum BoardPopover { pen, erase, shapes, tools, insert, background, menu, profile
 /// The tools that belong to the Pen button (the AI pen, the nibs and the laser are pen types).
 bool isPenTool(BoardTool t) => t == BoardTool.pen || t == BoardTool.aiPen || t == BoardTool.laser;
 
+/// The AI pen's button: its own icon, in the AI colour (marigold) until it is picked.
+const aiPenIcon = Icons.gesture;
+Color aiPenColor(BuildContext context) => context.colors.brightness == Brightness.dark ? const Color(0xFFFFB95C) : KxColor.spark;
+
+/// The Pen button's icon: the pen's nib, or the laser.
 IconData penIcon(WhiteboardController wb) => switch (wb.tool) {
-  BoardTool.aiPen => Icons.draw_outlined,
   BoardTool.laser => Icons.flare,
   _ => switch (wb.penNib) {
     PenNib.calligraphy => Icons.history_edu,
@@ -51,9 +55,13 @@ class MainToolbar extends StatelessWidget {
     this.onDragStart,
     this.onDragUpdate,
     this.onDragEnd,
+    this.showAiPen = true,
   });
 
   final WhiteboardController wb;
+
+  /// The AI pen's own button beside the pen (not on the Simple board).
+  final bool showAiPen;
   final PenMemory memory;
   final ToolbarDock dock;
   final bool collapsed;
@@ -98,14 +106,27 @@ class MainToolbar extends StatelessWidget {
             ),
           ),
         );
+        final chromePaper = context.colors.brightness == Brightness.dark ? BoardBackground.night : BoardBackground.plain;
         final pen = ToolButton(
           key: const Key('tool-pen'),
           icon: penIcon(wb),
-          label: tool == BoardTool.aiPen ? l.aiPen : (tool == BoardTool.laser ? l.toolLaser : l.pen),
-          iconColor: isPenTool(tool) && tool != BoardTool.laser ? inkColorFor(wb.penColor.withValues(alpha: 1), BoardBackground.plain) : null,
-          selected: isPenTool(tool) || popover == BoardPopover.pen,
+          label: tool == BoardTool.laser ? l.toolLaser : l.pen,
+          iconColor: tool == BoardTool.pen ? inkColorFor(wb.penColor.withValues(alpha: 1), chromePaper) : null,
+          selected: tool == BoardTool.pen || tool == BoardTool.laser || (popover == BoardPopover.pen && tool != BoardTool.aiPen),
           onTap: () => onTool(BoardTool.pen),
         );
+        // The AI pen, next to the pen: shapes, maths and words from handwriting (not on the
+        // Simple board).
+        final aiPen = showAiPen
+            ? ToolButton(
+                key: const Key('tool-ai-pen'),
+                icon: aiPenIcon,
+                label: l.aiPen,
+                iconColor: tool == BoardTool.aiPen ? null : aiPenColor(context),
+                selected: tool == BoardTool.aiPen,
+                onTap: () => onTool(BoardTool.aiPen),
+              )
+            : null;
         if (collapsed) {
           return ChromeSurface(
             key: const Key('main-toolbar'),
@@ -130,6 +151,7 @@ class MainToolbar extends StatelessWidget {
             children: [
               handle,
               pen,
+              ?aiPen,
               if (recent.isNotEmpty)
                 Flex(
                   direction: vertical ? Axis.horizontal : Axis.vertical,

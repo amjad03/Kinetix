@@ -44,16 +44,20 @@ enum BoardBackground {
   paperMint,
   paperRose,
   paperSlate,
+
+  /// The dark theme's board: near-black, written on in white (black ink is drawn white on it).
+  night,
 }
 
 /// One "sheet" of the endless board, for papers drawn once (fields, maps) or by columns.
 const Size boardSheet = Size(1920, 1080);
 
 extension BoardBackgroundColors on BoardBackground {
-  bool get isDark => this == BoardBackground.chalkboard || this == BoardBackground.paperSlate;
+  bool get isDark => this == BoardBackground.chalkboard || this == BoardBackground.paperSlate || this == BoardBackground.night;
   Color get paper => switch (this) {
     BoardBackground.chalkboard => const Color(0xFF1F2A24),
     BoardBackground.paperSlate => const Color(0xFF263238),
+    BoardBackground.night => const Color(0xFF141517),
     BoardBackground.paperCream => const Color(0xFFFFF6DC),
     BoardBackground.paperSky => const Color(0xFFE3F1FD),
     BoardBackground.paperMint => const Color(0xFFE2F5EA),
@@ -89,6 +93,7 @@ extension BoardBackgroundColors on BoardBackground {
     BoardBackground.paperMint => 'Mint',
     BoardBackground.paperRose => 'Rose',
     BoardBackground.paperSlate => 'Slate',
+    BoardBackground.night => 'Dark',
   };
 }
 
@@ -229,7 +234,8 @@ void paintBoardBackground(Canvas canvas, Rect area, BoardBackground background, 
         BoardBackground.paperSky ||
         BoardBackground.paperMint ||
         BoardBackground.paperRose ||
-        BoardBackground.paperSlate:
+        BoardBackground.paperSlate ||
+        BoardBackground.night:
       break;
   }
 }

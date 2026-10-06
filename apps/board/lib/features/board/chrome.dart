@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show BoardBackground;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
@@ -18,6 +19,18 @@ final _appThemes = {
   BoardTheme.dark: KinetixTheme.dark(),
   BoardTheme.chalkboard: KinetixTheme.chalkboard(),
 };
+
+/// The board's own paper in an App theme: white paper in the light theme, a near-black board in
+/// the dark theme and a green chalkboard in chalkboard green. A page with another paper or a
+/// template keeps it.
+BoardBackground themePaper(BoardTheme t) => switch (t) {
+  BoardTheme.dark => BoardBackground.night,
+  BoardTheme.chalkboard => BoardBackground.chalkboard,
+  _ => BoardBackground.plain,
+};
+
+/// Every theme's own paper (the papers that follow the theme).
+const themePapers = {BoardBackground.plain, BoardBackground.night, BoardBackground.chalkboard};
 
 /// Wraps [child] in the board chrome theme of the teacher's App theme.
 class BoardChromeTheme extends StatelessWidget {

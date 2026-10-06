@@ -212,7 +212,10 @@ void main() {
       await tester.tapAt(const Offset(1300, 150));
       await tester.pumpAndSettle();
       await tapKey(tester, 'tool-highlighter');
+      // The Pen goes back to the pen; the AI pen has its own button beside it.
       await tapKey(tester, 'tool-pen');
+      expect(wb.tool, BoardTool.pen);
+      await tapKey(tester, 'tool-ai-pen');
       expect(wb.tool, BoardTool.aiPen);
       // The last colours and thicknesses show as quick swatches.
       expect(find.byKey(const Key('toolbar-recent-0')), findsOneWidget);

@@ -121,7 +121,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The panel's share of the width beside the board (30–60 %), across all of it, and a
   /// phone's sheet's share of the height.
-  double _panelFraction = panelDefault;
+  double? _panelFraction;
   bool _panelFull = false;
   double _sheetFraction = 0.5;
 
@@ -182,7 +182,6 @@ class _BoardScreenState extends State<BoardScreen> {
   @override
   void initState() {
     super.initState();
-    _theme = board.theme;
     board.addListener(_onBoardChanged);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
@@ -204,13 +203,15 @@ class _BoardScreenState extends State<BoardScreen> {
     _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
     _wb.addListener(_onWbChanged);
     PanelHost.active = _pushInPanel;
+    // A board that starts in the dark or chalkboard theme starts on that theme's paper.
+    _followTheme();
   }
 
   /// The Pen button goes back to the last pen type; a page with other paper tells the live
   /// view and the projector.
   void _onWbChanged() {
     final t = _wb.tool;
-    if (isPenTool(t)) _lastPen = t;
+    if (t == BoardTool.pen || t == BoardTool.laser) _lastPen = t;
     final paper = _wb.background;
     if (paper != _lastPaper) {
       _lastPaper = paper;
@@ -298,7 +299,7 @@ class _BoardScreenState extends State<BoardScreen> {
   Future<void> _calculator() async {
     final text = await BoardCalculator.show(context);
     if (text == null || !mounted) return;
-    final ink = _background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    const ink = WhiteboardController.inkBlack;
     _wb.insert([TextElement(id: newElementId(), position: Offset.zero, text: text, color: ink, fontSize: 40, size: measureBoardText(text, 40))]);
   }
 
@@ -381,7 +382,7 @@ class _BoardScreenState extends State<BoardScreen> {
     unawaited(_loadLetterSize());
     if (_signInOpen && id != null) Navigator.of(context).pop();
     // A new class on a clean board starts on its subject's paper.
-    if (id != null && _wb.isBlank) _wb.background = _style.paper;
+    if (id != null && _wb.isBlank) _wb.background = _themed(_style.paper);
     // The period ended (or the teacher signed out elsewhere) mid-recording: keep what was
     // recorded; it uploads when this teacher next signs in.
     if (id == null && _capture != null) unawaited(_stopRecording());
@@ -404,7 +405,8 @@ class _BoardScreenState extends State<BoardScreen> {
   void _onToolButton(BoardTool t) {
     final now = _wb.tool;
     switch (t) {
-      case BoardTool.pen when isPenTool(now):
+      case BoardTool.aiPen when now == BoardTool.aiPen:
+      case BoardTool.pen when now == BoardTool.pen || now == BoardTool.laser:
       case BoardTool.highlighter when now == BoardTool.highlighter:
         _toggle(BoardPopover.pen);
         return;
@@ -476,20 +478,26 @@ class _BoardScreenState extends State<BoardScreen> {
     if (mounted) setState(() => _signInOpen = false);
   }
 
-  late BoardTheme _theme;
+  /// The App theme the board's paper follows (light, dark or chalkboard; never system).
+  BoardTheme _theme = BoardTheme.light;
 
-  /// Chalkboard green writes on a chalkboard; leaving it puts plain paper back.
+  BoardTheme get _resolvedTheme => board.theme.resolve(WidgetsBinding.instance.platformDispatcher.platformBrightness);
+
+  /// The board follows the App theme: the pages on the old theme's paper (white, the dark
+  /// board or the chalkboard) take the new theme's; a page with a template or a colour keeps
+  /// it. Ink keeps its colour and is drawn for contrast ([inkColorFor]).
   void _followTheme() {
-    final t = board.theme;
+    final t = _resolvedTheme;
     if (t == _theme) return;
-    final was = _theme;
+    final from = themePaper(_theme), to = themePaper(t);
     _theme = t;
-    if (t == BoardTheme.chalkboard && _background != BoardBackground.chalkboard) {
-      _setBackground(BoardBackground.chalkboard);
-    } else if (was == BoardTheme.chalkboard && _background == BoardBackground.chalkboard) {
-      _setBackground(BoardBackground.plain);
-    }
+    final was = _background;
+    _wb.replaceBackground(from, to);
+    if (_background != was) _setBackground(_background);
   }
+
+  /// [paper] as this theme shows it: plain paper is the dark board in the dark theme.
+  BoardBackground _themed(BoardBackground paper) => themePapers.contains(paper) ? themePaper(_theme) : paper;
 
   void _setBackground(BoardBackground b) {
     _wb.background = b;
@@ -597,7 +605,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final decoded = _pngSize(s.png);
     final w = math.min(560.0, decoded.width);
     final h = w * decoded.height / math.max(1, decoded.width);
-    final ink = _background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
+    const ink = WhiteboardController.inkBlack;
     _wb.insert([
       ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, w, h), bytes: s.png, link: EmbedLink(kind: EmbedLink.model3d, id: s.modelId)),
       if (s.credit.isNotEmpty)
@@ -795,6 +803,10 @@ class _BoardScreenState extends State<BoardScreen> {
             try {
               final saved = await api.whiteboard(summary.id);
               _wb.load(saved);
+              // White paper and the dark board are the theme's: shown as this theme has it.
+              for (final p in const [BoardBackground.plain, BoardBackground.night]) {
+                if (_theme != BoardTheme.chalkboard) _wb.replaceBackground(p, themePaper(_theme));
+              }
               _setModelNotes(saved.model3dNotes);
               board.whiteboardId = summary.id;
               setState(() => _boardTitle = summary.title);
@@ -884,7 +896,7 @@ class _BoardScreenState extends State<BoardScreen> {
         showBoardMessage(context, context.l10n.signedOutRecordingPending(name));
       }
     }
-    _wb.load(const SavedBoard(background: BoardBackground.plain, canvas: Size.zero, pages: []));
+    _wb.load(SavedBoard(background: themePaper(_theme), canvas: Size.zero, pages: const []));
     _setModelNotes(const {});
     _boardTitle = null;
   }
@@ -1478,8 +1490,10 @@ class _BoardScreenState extends State<BoardScreen> {
     // side (and on panels and tablets) the panel sits beside the board.
     final sheet = phone && h >= w;
     final full = open && !sheet && _panelFull;
-    final panelW = !open || sheet ? 0.0 : (full ? w : (phone ? w * 0.5 : w * _panelFraction));
-    const dividerW = 14.0;
+    // Half the width on a phone on its side, 42 % on a panel, until the teacher drags it.
+    final fraction = _panelFraction ?? (phone ? 0.5 : panelDefault);
+    final panelW = !open || sheet ? 0.0 : (full ? w : w * fraction);
+    const dividerW = panelDividerWidth;
     final besideW = !open || sheet ? 0.0 : (full ? 0.0 : panelW + dividerW);
     final sheetH = open && sheet ? h * _sheetFraction : 0.0;
     return Stack(
@@ -1491,7 +1505,7 @@ class _BoardScreenState extends State<BoardScreen> {
           top: 0,
           bottom: 0,
           // Across the whole panel the board keeps its size under it.
-          width: !open || sheet ? w : w - ((phone ? w * 0.5 : w * _panelFraction) + dividerW),
+          width: !open || sheet ? w : w - (w * fraction + dividerW),
           child: LayoutBuilder(
             builder: (context, area) {
               _canvasSize = area.biggest;
@@ -1501,7 +1515,14 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         ),
         if (open && !sheet && !full)
-          Positioned(left: w - besideW, top: 0, bottom: 0, width: dividerW, child: BoardChromeTheme(child: PanelDivider(onDrag: (dx) => setState(() => _panelFraction = (_panelFraction - dx / w).clamp(panelMin, panelMax))))),
+          Positioned(left: w - besideW, top: 0, bottom: 0, width: dividerW, child: BoardChromeTheme(
+              child: PanelDivider(
+                // A little past the ends while dragging, kept to 30–60 % and snapped when let go.
+                onDrag: (dx) => setState(() => _panelFraction = ((_panelFraction ?? fraction) - dx / w).clamp(panelMin - 0.05, panelMax + 0.05)),
+                onDragEnd: () => setState(() => _panelFraction = snapPanelFraction(_panelFraction ?? fraction)),
+              ),
+            ),
+          ),
         if (open && !sheet) Positioned(right: 0, top: 0, bottom: 0, width: panelW, child: _panelFrame(full ? PanelMode.full : PanelMode.side, h)),
         if (open && sheet) Positioned(left: 0, right: 0, bottom: 0, height: sheetH, child: _panelFrame(PanelMode.sheet, h)),
       ],
@@ -1612,6 +1633,7 @@ class _BoardScreenState extends State<BoardScreen> {
     collapsed: collapsed,
     popover: _popover,
     aiOpen: _panelTab == PanelTab.ai,
+    showAiPen: !_primary,
     onTool: _onToolButton,
     onPopover: _toggle,
     onAi: () => _panel == PanelKind.ai ? _closePanel() : _openAi(AiView.home),
@@ -1647,7 +1669,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
     final leftRoom = recording == null ? 190.0 : 420.0, rightRoom = compact ? 330.0 : 400.0;
-    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 640.0 : 860.0));
+    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 700.0 : 940.0));
     _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
     return [
       Positioned(
@@ -1703,7 +1725,8 @@ class _BoardScreenState extends State<BoardScreen> {
     final s = LayoutStrings.of(context);
     final tool = _wb.tool;
     return [
-      BarItem(const Key('tool-pen'), penIcon(_wb), l.pen, () => _onToolButton(BoardTool.pen), selected: isPenTool(tool) || _popover == BoardPopover.pen),
+      BarItem(const Key('tool-pen'), penIcon(_wb), l.pen, () => _onToolButton(BoardTool.pen), selected: tool == BoardTool.pen || tool == BoardTool.laser),
+      if (!_primary) BarItem(const Key('tool-ai-pen'), aiPenIcon, l.aiPen, () => _onToolButton(BoardTool.aiPen), selected: tool == BoardTool.aiPen, color: tool == BoardTool.aiPen ? null : aiPenColor(context)),
       BarItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _onToolButton(BoardTool.highlighter), selected: tool == BoardTool.highlighter),
       BarItem(const Key('tool-erase'), Icons.auto_fix_normal, s.eraser, () => _onToolButton(BoardTool.eraser), selected: tool == BoardTool.eraser),
       BarItem(const Key('tool-select'), Icons.highlight_alt, l.toolSelect, () => _onToolButton(BoardTool.select), selected: tool == BoardTool.select),
@@ -1860,7 +1883,7 @@ class _BoardScreenState extends State<BoardScreen> {
         settings: board.eyeComfort,
         onChanged: board.setEyeComfort,
         chalkboard: _background == BoardBackground.chalkboard,
-        onChalkboard: (v) => _setBackground(v ? BoardBackground.chalkboard : BoardBackground.plain),
+        onChalkboard: (v) => _setBackground(v ? BoardBackground.chalkboard : (_theme == BoardTheme.dark ? BoardBackground.night : BoardBackground.plain)),
       ),
       BoardPopover.profile => ProfileMenu(
         board: board,

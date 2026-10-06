@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -181,29 +182,72 @@ class SplitPanelFrame extends StatelessWidget {
   }
 }
 
-/// The bar between the board and the panel: drag it to share the width (30–60 %).
-class PanelDivider extends StatelessWidget {
-  const PanelDivider({super.key, required this.onDrag});
+/// The panel's width snaps to these shares of the screen when let go near one.
+const panelSnaps = [panelMin, 0.4, 0.5, panelMax];
 
+/// [fraction] snapped to the nearest of [panelSnaps] within 3 %, and kept within 30–60 %.
+double snapPanelFraction(double fraction) {
+  final f = fraction.clamp(panelMin, panelMax);
+  for (final s in panelSnaps) {
+    if ((f - s).abs() <= 0.03) return s;
+  }
+  return f;
+}
+
+/// The width of the bar between the board and the panel: a 24 px touch target (the grip
+/// drawn in it is narrower).
+const panelDividerWidth = 24.0;
+
+/// The bar between the board and the panel: drag it (a finger, a pen or the mouse) to share
+/// the width (30–60 %); it snaps to 30 %, 40 %, half and 60 % when let go near one.
+class PanelDivider extends StatefulWidget {
+  const PanelDivider({super.key, required this.onDrag, this.onDragEnd});
+
+  /// How far it moved, in logical pixels (to the right is positive).
   final ValueChanged<double> onDrag;
+  final VoidCallback? onDragEnd;
+
+  @override
+  State<PanelDivider> createState() => _PanelDividerState();
+}
+
+class _PanelDividerState extends State<PanelDivider> {
+  bool _active = false;
+  bool _hover = false;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return GestureDetector(
-      key: const Key('panel-divider'),
-      behavior: HitTestBehavior.opaque,
-      onHorizontalDragUpdate: (d) => onDrag(d.delta.dx),
+    final on = _active || _hover;
+    return Semantics(
+      label: LayoutStrings.of(context).dragDivider,
+      slider: true,
       child: MouseRegion(
         cursor: SystemMouseCursors.resizeColumn,
-        child: Tooltip(
-          message: LayoutStrings.of(context).dragDivider,
-          waitDuration: const Duration(seconds: 1),
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: GestureDetector(
+          key: const Key('panel-divider'),
+          behavior: HitTestBehavior.opaque,
+          // The drag starts where the finger went down, so the bar follows it exactly.
+          dragStartBehavior: DragStartBehavior.down,
+          onHorizontalDragStart: (_) => setState(() => _active = true),
+          onHorizontalDragUpdate: (d) => widget.onDrag(d.delta.dx),
+          onHorizontalDragEnd: (_) {
+            setState(() => _active = false);
+            widget.onDragEnd?.call();
+          },
+          onHorizontalDragCancel: () => setState(() => _active = false),
           child: Container(
-            width: 14,
+            width: panelDividerWidth,
             color: c.surfaceContainerHigh,
             alignment: Alignment.center,
-            child: Container(width: 4, height: 48, decoration: BoxDecoration(color: c.outline, borderRadius: BorderRadius.circular(2))),
+            child: AnimatedContainer(
+              duration: Kx.fast,
+              width: on ? 6 : 4,
+              height: on ? 72 : 48,
+              decoration: BoxDecoration(color: on ? c.primary : c.outline, borderRadius: BorderRadius.circular(3)),
+            ),
           ),
         ),
       ),
