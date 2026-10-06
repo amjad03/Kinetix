@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'strings.dart';
+
 /// The badges a teacher can award (the API's `badge` values), with their names in each language.
 enum KxBadge {
   dazzlingPerformer('dazzling_performer', Icons.auto_awesome, Color(0xFFE6A100), 'Dazzling Performer', 'शानदार प्रदर्शन', 'ಅದ್ಭುತ ಸಾಧಕ'),
@@ -128,4 +130,119 @@ Future<KxBadge?> showKxBadgePicker(BuildContext context, {required String title}
       ),
     ),
   );
+}
+
+/// One badge a student received, for [KxBadgeShelf].
+class KxBadgeEntry {
+  const KxBadgeEntry({required this.badge, required this.teacher, required this.awardedAt, this.subject});
+
+  final KxBadge badge;
+  final String teacher;
+  final String? subject;
+  final DateTime awardedAt;
+}
+
+/// A student's badges: one medal per kind with how many, newest kind first. Tapping a medal
+/// lists who awarded it and when.
+class KxBadgeShelf extends StatelessWidget {
+  const KxBadgeShelf({super.key, required this.entries, required this.formatDate});
+
+  final List<KxBadgeEntry> entries;
+  final String Function(DateTime) formatDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = KxStrings.of(context);
+    final text = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
+    if (entries.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(s.noBadges, key: const Key('noBadges'), style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+      );
+    }
+    final byKind = <KxBadge, List<KxBadgeEntry>>{};
+    for (final e in [...entries]..sort((a, b) => b.awardedAt.compareTo(a.awardedAt))) {
+      byKind.putIfAbsent(e.badge, () => []).add(e);
+    }
+    return SizedBox(
+      height: 112,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        children: [
+          for (final MapEntry(key: badge, value: list) in byKind.entries)
+            InkWell(
+              key: Key('shelf-${badge.api}'),
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => showModalBottomSheet<void>(
+                context: context,
+                showDragHandle: true,
+                builder: (ctx) => SafeArea(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      ListTile(
+                        leading: KxBadgeMedal(badge: badge, size: 40),
+                        title: Text(badge.nameIn(ctx), style: Theme.of(ctx).textTheme.titleLarge),
+                      ),
+                      for (final e in list)
+                        ListTile(
+                          dense: true,
+                          title: Text(s.badgeFrom(e.teacher)),
+                          subtitle: Text([?e.subject, formatDate(e.awardedAt)].join(' · ')),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              child: SizedBox(
+                width: 96,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 6),
+                      KxBadgeMedal(badge: badge, size: 52, count: list.length),
+                      const SizedBox(height: 6),
+                      Text(badge.nameIn(context), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: text.bodySmall),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The "New badge!" toast shown when one arrives.
+void showKxBadgeToast(BuildContext context, KxBadge badge, {String? teacher}) {
+  final s = KxStrings.of(context);
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        key: const Key('badgeToast'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 6),
+        content: Row(
+          children: [
+            KxBadgeMedal(badge: badge, size: 40),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(s.newBadge(badge.nameIn(context)), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  if (teacher != null) Text(s.badgeFrom(teacher)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
 }

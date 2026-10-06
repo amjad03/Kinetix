@@ -9,7 +9,7 @@ import '../../widgets/common.dart';
 
 /// Every period's mark over the last 30 days, grouped by day, newest first.
 class AttendanceScreen extends StatefulWidget {
-  const AttendanceScreen({super.key, required this.api, required this.student, this.highlightDate});
+  const AttendanceScreen({super.key, required this.api, required this.student, this.highlightDate, this.initialStatus});
 
   final StudentApi api;
   final StudentProfile student;
@@ -17,12 +17,20 @@ class AttendanceScreen extends StatefulWidget {
   /// Opened from an absence alert: that day is marked.
   final DateTime? highlightDate;
 
-  static Future<void> open(BuildContext context, StudentApi api, StudentProfile student, {DateTime? highlightDate}) => Navigator.of(context)
-      .push(
-        MaterialPageRoute(
-          builder: (_) => AttendanceScreen(api: api, student: student, highlightDate: highlightDate),
-        ),
-      );
+  /// Opened from a count on Today: only that status.
+  final AttendanceStatus? initialStatus;
+
+  static Future<void> open(
+    BuildContext context,
+    StudentApi api,
+    StudentProfile student, {
+    DateTime? highlightDate,
+    AttendanceStatus? status,
+  }) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => AttendanceScreen(api: api, student: student, highlightDate: highlightDate, initialStatus: status),
+    ),
+  );
 
   @override
   State<AttendanceScreen> createState() => _AttendanceScreenState();
@@ -32,7 +40,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   static const _days = 30;
   List<ClassMark>? _marks;
   ApiException? _error;
-  bool _onlyMissed = false;
+
+  /// The status shown; null shows every class.
+  late AttendanceStatus? _status = widget.initialStatus;
 
   @override
   void initState() {
@@ -54,7 +64,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final marks = _marks;
-    final shown = marks?.where((m) => !_onlyMissed || m.status == AttendanceStatus.absent || m.status == AttendanceStatus.late).toList();
+    final shown = marks?.where((m) => _status == null || m.status == _status).toList();
+    final missed = _status == AttendanceStatus.absent || _status == AttendanceStatus.late;
     final days = <DateTime, List<ClassMark>>{};
     for (final m in shown ?? const <ClassMark>[]) {
       days.putIfAbsent(m.date, () => []).add(m);
@@ -83,20 +94,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
                       ),
                       const SizedBox(height: Kx.s12),
-                      Wrap(
-                        spacing: Kx.s8,
-                        children: [
-                          ChoiceChip(
-                            label: Text(context.l10n.allClasses),
-                            selected: !_onlyMissed,
-                            onSelected: (_) => setState(() => _onlyMissed = false),
+                      KxCountChips<AttendanceStatus?>(
+                        padding: EdgeInsets.zero,
+                        selected: _status,
+                        onSelected: (v) => setState(() => _status = v),
+                        chips: [
+                          KxCountChip(
+                            key: const Key('count-all'),
+                            value: null,
+                            label: KxStrings.of(context).all,
+                            count: marks?.length ?? 0,
                           ),
-                          ChoiceChip(
-                            key: const Key('onlyMissed'),
-                            label: Text(context.l10n.absentOrLate),
-                            selected: _onlyMissed,
-                            onSelected: (_) => setState(() => _onlyMissed = true),
-                          ),
+                          for (final st in AttendanceStatus.values)
+                            if (st != AttendanceStatus.excused || (marks ?? const []).any((m) => m.status == st))
+                              KxCountChip(
+                                key: Key('count-${st.name}'),
+                                value: st,
+                                label: context.l10n.attendanceStatus(st),
+                                count: (marks ?? const []).where((m) => m.status == st).length,
+                                background: Tone.status(context, st).$1,
+                                foreground: Tone.status(context, st).$2,
+                              ),
                         ],
                       ),
                     ],
@@ -115,10 +133,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: KxEmptyState(
-                  icon: _onlyMissed ? Icons.celebration_outlined : Icons.event_available_outlined,
-                  message: _onlyMissed
-                      ? context.l10n.notMissedAny(_days)
-                      : context.l10n.noAttendanceTaken(_days),
+                  icon: missed ? Icons.celebration_outlined : Icons.event_available_outlined,
+                  message: missed ? context.l10n.notMissedAny(_days) : context.l10n.noAttendanceTaken(_days),
                 ),
               )
             else
