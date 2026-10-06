@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../draw.dart';
 import '../model.dart';
+import 'plate_states.dart';
 
 // States of matter, atomic structure, and electrolysis.
 
@@ -28,83 +29,8 @@ final statesOfMatter = KxAnimation(
     AnimStep(0.72, Tr('Gas (steam)', 'गैस (भाप)', 'ಅನಿಲ (ಹಬೆ)'),
         Tr('In a gas the particles are far apart and move fast in all directions, filling the whole container.', 'गैस में कण दूर-दूर होते हैं और सब दिशाओं में तेज़ी से चलते हुए पूरा बर्तन भर देते हैं।', 'ಅನಿಲದಲ್ಲಿ ಕಣಗಳು ದೂರ ದೂರವಿದ್ದು ಎಲ್ಲ ದಿಕ್ಕುಗಳಲ್ಲಿ ವೇಗವಾಗಿ ಚಲಿಸುತ್ತಾ ಇಡೀ ಪಾತ್ರೆಯನ್ನು ತುಂಬುತ್ತವೆ.')),
   ],
-  painter: _States.new,
+  painter: StatesPlate.new,
 );
-
-class _States extends AnimPainter {
-  _States(super.f);
-
-  static const box = Rect.fromLTWH(80, 110, 400, 380);
-
-  /// Temperature (°C) at time [x] along the heating curve.
-  static double temp(double x) {
-    if (x < 0.2) return -20 + 20 * x / 0.2;
-    if (x < 0.36) return 0;
-    if (x < 0.56) return 100 * (x - 0.36) / 0.2;
-    if (x < 0.72) return 100;
-    return 100 + 30 * (x - 0.72) / 0.28;
-  }
-
-  @override
-  void draw() {
-    final melt = seg(t, 0.2, 0.36), boil = seg(t, 0.56, 0.72);
-    // Container, heater.
-    path(Path()..moveTo(box.left, box.top)..lineTo(box.left, box.bottom)..lineTo(box.right, box.bottom)..lineTo(box.right, box.top), AC.ink, 4);
-    rect(Rect.fromLTRB(box.left + 2, box.top + 2, box.right - 2, box.bottom - 2), const Color(0xFFF1F8FD));
-    for (var i = 0; i < 5; i++) {
-      final x = box.left + 60 + i * 70.0;
-      final h = 26 + 10 * math.sin(t * 90 + i);
-      fillPath(Path()..moveTo(x - 14, 540)..quadraticBezierTo(x - 10, 540 - h * 0.6, x, 540 - h)..quadraticBezierTo(x + 10, 540 - h * 0.6, x + 14, 540)..close(), const Color(0xFFFF7043));
-    }
-    rect(Rect.fromLTWH(box.left, 540, box.width, 16), const Color(0xFF616161), radius: 4);
-    // Particles.
-    for (var i = 0; i < 30; i++) {
-      final col = i % 6, row = i ~/ 6;
-      final solid = Offset(box.left + 60 + col * 56.0, box.bottom - 30 - row * 44.0) + Offset(math.sin(t * 160 + i), math.cos(t * 150 + i * 2)) * 3;
-      final liquid = Offset(box.left + 40 + rnd(i, 1) * 320, box.bottom - 30 - rnd(i, 2) * 170) + Offset(math.sin(t * 30 + i * 1.7), math.cos(t * 26 + i)) * 16;
-      final gas = Offset(box.left + 20 + 360 * tri(fr(rnd(i, 3) + t * (2 + rnd(i, 4) * 2))), box.top + 20 + 340 * tri(fr(rnd(i, 5) + t * (2 + rnd(i, 6) * 2))));
-      final m = ((melt - rnd(i, 9) * 0.7) * 3).clamp(0.0, 1.0);
-      final b = ((boil - rnd(i, 10) * 0.7) * 3).clamp(0.0, 1.0);
-      final p = lerpO(lerpO(solid, liquid, m), gas, b);
-      circle(p, 15, Color.lerp(Color.lerp(const Color(0xFF90CAF9), AC.water, m)!, const Color(0xFFB0BEC5), b)!, line: Colors.white, w: 2);
-    }
-    // Thermometer.
-    const th = Rect.fromLTWH(505, 130, 18, 330);
-    rect(th, Colors.white, line: AC.ink, w: 2, radius: 9);
-    final level = (temp(t) + 30) / 170;
-    rect(Rect.fromLTRB(th.left + 4, th.bottom - (th.height - 10) * level, th.right - 4, th.bottom - 4), AC.red, radius: 5);
-    circle(Offset(th.center.dx, th.bottom + 10), 16, AC.red);
-    text('${temp(t).round()} °C', Offset(th.center.dx, th.top - 20), size: 18, weight: FontWeight.w700);
-
-    // Heating curve.
-    const g = Rect.fromLTWH(590, 110, 380, 360);
-    line(Offset(g.left, g.bottom), Offset(g.right, g.bottom), AC.ink, 2);
-    line(Offset(g.left, g.bottom), Offset(g.left, g.top), AC.ink, 2);
-    Offset pt(double x) => Offset(g.left + x * g.width, g.bottom - (temp(x) + 30) / 170 * g.height);
-    final curve = Path()..moveTo(pt(0).dx, pt(0).dy);
-    for (var x = 0.0; x <= 1.0; x += 0.01) {
-      curve.lineTo(pt(x).dx, pt(x).dy);
-    }
-    path(curve, AC.line, 4);
-    final done = Path()..moveTo(pt(0).dx, pt(0).dy);
-    for (var x = 0.0; x <= t; x += 0.01) {
-      done.lineTo(pt(x).dx, pt(x).dy);
-    }
-    path(done, AC.red, 4);
-    circle(pt(t), 9, AC.red, line: Colors.white, w: 2);
-    for (final (y, name) in [(0.0, '0 °C'), (100.0, '100 °C')]) {
-      final yy = g.bottom - (y + 30) / 170 * g.height;
-      dashed(Offset(g.left, yy), Offset(g.right, yy), AC.muted.withValues(alpha: 0.5), w: 1);
-      text(name, Offset(g.left - 8, yy), size: 13, color: AC.muted, align: 1);
-    }
-    text(tr('Temperature|तापमान|ತಾಪಮಾನ'), Offset(g.left + 10, g.top - 14), size: 14, color: AC.muted, align: -1);
-    text(tr('Heat added →|दी गई ऊष्मा →|ನೀಡಿದ ಶಾಖ →'), Offset(g.right, g.bottom + 18), size: 14, color: AC.muted, align: 1);
-    label('Melting point|गलनांक|ದ್ರವನ ಬಿಂದು', pt(0.28) + const Offset(0, 28), size: 14);
-    label('Boiling point|क्वथनांक|ಕುದಿಯುವ ಬಿಂದು', pt(0.64) + const Offset(0, 28), size: 14);
-    final state = t < 0.2 ? 'Solid|ठोस|ಘನ' : t < 0.36 ? 'Solid + liquid|ठोस + द्रव|ಘನ + ದ್ರವ' : t < 0.56 ? 'Liquid|द्रव|ದ್ರವ' : t < 0.72 ? 'Liquid + gas|द्रव + गैस|ದ್ರವ + ಅನಿಲ' : 'Gas|गैस|ಅನಿಲ';
-    label(state, Offset(box.center.dx, 70), size: 22);
-  }
-}
 
 final atomicStructure = KxAnimation(
   id: 'atomic-structure',

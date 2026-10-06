@@ -5,6 +5,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import 'model.dart';
 
+part 'plate.dart';
+
 /// The animations' palette: textbook colours on the board's paper, in KINETIX ink.
 abstract final class AC {
   static const ink = KxColor.ink;
@@ -125,28 +127,30 @@ abstract class AnimPainter extends CustomPainter {
     return tp.size;
   }
 
-  /// A label (only when labels are on), in the frame's language. With [to], a leader line runs
-  /// from the label to a dot on the thing it names.
+  /// A label (only when labels are on), in the frame's language. With [to], a fine leader line
+  /// runs from the label to a dot on the thing it names.
   void label(String l3, Offset at, {Offset? to, Color color = AC.ink, double size = 17, double align = 0, double opacity = 1}) {
     if (!f.labels || opacity <= 0) return;
-    final col = color.withValues(alpha: opacity);
     if (to != null) {
-      line(at, to, AC.muted.withValues(alpha: 0.8 * opacity), 1.5);
-      circle(to, 3.5, AC.ink.withValues(alpha: opacity));
+      c.drawLine(at, to, linePaint(TP.ink2.withValues(alpha: 0.85 * opacity), LW.hair * 1.2));
+      c.drawCircle(to, 2.2, Paint()..color = TP.ink.withValues(alpha: opacity));
     }
-    text(tr(l3), at, size: size, color: col, align: align, bg: AC.paper.withValues(alpha: 0.85 * opacity), weight: FontWeight.w600);
+    note(tr(l3), at, size: size * 0.92, color: color == AC.ink ? TP.ink : color, align: align, opacity: opacity, weight: FontWeight.w500, maxWidth: 260);
   }
 
-  /// A formula or particle name in a coloured pill (always shown: it is part of the picture).
+  /// A formula or particle name in a quiet tinted tag (always shown: it is part of the picture).
   void chip(String s, Offset at, Color col, {double size = 15, double opacity = 1}) {
     if (opacity <= 0) return;
     final px = f.thumbnail ? size : math.max(size, 10 / _scale);
+    final ink = Color.lerp(col, Colors.black, 0.35)!;
     final tp = TextPainter(
-      text: TextSpan(text: s, style: TextStyle(fontSize: px, color: Colors.white.withValues(alpha: opacity), fontWeight: FontWeight.w700, fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback)),
+      text: TextSpan(text: s, style: TextStyle(fontSize: px * 0.92, color: ink.withValues(alpha: opacity), fontWeight: FontWeight.w600, fontFamily: KxFonts.family, fontFamilyFallback: KxFonts.fallback)),
       textDirection: TextDirection.ltr,
     )..layout();
-    final r = Rect.fromCenter(center: at, width: tp.width + 14, height: tp.height + 6);
-    c.drawRRect(RRect.fromRectAndRadius(r, Radius.circular(r.height / 2)), Paint()..color = col.withValues(alpha: opacity));
+    final r = Rect.fromCenter(center: at, width: tp.width + 10, height: tp.height + 3);
+    final rr = RRect.fromRectAndRadius(r, const Radius.circular(4));
+    c.drawRRect(rr, Paint()..color = Color.lerp(col, Colors.white, 0.84)!.withValues(alpha: 0.95 * opacity));
+    c.drawRRect(rr, linePaint(col.withValues(alpha: 0.8 * opacity), LW.hair));
     tp.paint(c, Offset(at.dx - tp.width / 2, at.dy - tp.height / 2));
   }
 

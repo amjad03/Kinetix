@@ -11,7 +11,8 @@ import 'render_util.dart';
 
 /// Writes a contact sheet per animation (one frame per step) to PREVIEW_DIR, only when it is set,
 /// to check the drawings by eye. PREVIEW_ONLY=id1,id2 limits it; PREVIEW_LANG=hi|kn picks the
-/// language; PREVIEW_W sets each frame's width (default 600).
+/// language; PREVIEW_W sets each frame's width (default 600). PREVIEW_HD=1 also writes each
+/// step's frame at 1920 × 1080 (`<id>_<step>.png`).
 void main() {
   final out = Platform.environment['PREVIEW_DIR'];
   final only = Platform.environment['PREVIEW_ONLY'];
@@ -37,6 +38,13 @@ void main() {
       final img = await rec.endRecording().toImage(cell.width.round() * 2, (cell.height * rows).round());
       final png = await img.toByteData(format: ui.ImageByteFormat.png);
       File('$out/${a.id}.png').writeAsBytesSync(png!.buffer.asUint8List());
+      if (Platform.environment['PREVIEW_HD'] == '1') {
+        for (var i = 0; i < a.steps.length; i++) {
+          final end = i + 1 < a.steps.length ? a.steps[i + 1].at : 1.0;
+          final hd = await renderAnimationPng(a, AnimFrame(a.steps[i].at + (end - a.steps[i].at) * 0.7, lang: lang), size: const Size(1920, 1080));
+          File('$out/${a.id}_$i.png').writeAsBytesSync(hd);
+        }
+      }
     }
   });
   for (final size in const [Size(360, 640), Size(960, 800)]) {

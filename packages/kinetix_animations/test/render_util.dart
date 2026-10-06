@@ -17,5 +17,6 @@ Future<void> loadKxFonts() async {
   await load(KxFonts.family, ['SansFlex-400.ttf', 'SansFlex-500.ttf', 'SansFlex-600.ttf', 'SansFlex-700.ttf']);
   await load(KxFonts.fallback[0], ['NotoSansDevanagari-400.ttf', 'NotoSansDevanagari-700.ttf']);
   await load(KxFonts.fallback[1], ['NotoSansKannada-400.ttf', 'NotoSansKannada-700.ttf']);
-  await load(KxFonts.fallback[2], ['Inter-400.ttf', 'Inter-700.ttf']);
+  await load(KxFonts.fallback[2], ['Inter-400.ttf', 'Inter-500.ttf', 'Inter-700.ttf']);
+  await load(KxFonts.fallback[3], ['NotoSansMath-400.ttf']);
 }
