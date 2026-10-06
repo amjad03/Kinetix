@@ -167,7 +167,7 @@ export function tube(points, r, { segments = 64, radial = 12, closed = false, ca
   for (let i = 0; i < segments; i++) {
     for (let j = 0; j < radial; j++) {
       const a = i * ring + j, b = a + 1, cc = a + ring, d = cc + 1;
-      idx.push(a, cc, b, b, cc, d);
+      idx.push(a, b, cc, b, d, cc);
     }
   }
   if (caps && !closed) {
@@ -178,8 +178,8 @@ export function tube(points, r, { segments = 64, radial = 12, closed = false, ca
       pos.push(p.x + t.x, p.y + t.y, p.z + t.z);
       for (let j = 0; j < radial; j++) {
         const a = i * ring + j, b = a + 1;
-        if (dir < 0) idx.push(k, a, b);
-        else idx.push(k, b, a);
+        if (dir < 0) idx.push(k, b, a);
+        else idx.push(k, a, b);
       }
     }
   }

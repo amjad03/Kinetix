@@ -13,6 +13,11 @@ import 'model.dart';
 /// [SceneOpener]; the 2D drawing stays as the fallback.
 const scene3dIds = <String, String>{
   'photosynthesis': 'photosynthesis',
+  'cellular-respiration': 'respiration',
+  'heart-circulation': 'heart',
+  'breathing': 'breathing',
+  'digestion': 'digestion',
+  'nerve-impulse': 'neuron',
 };
 
 /// Every animation, in the order the panel lists them.
