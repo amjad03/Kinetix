@@ -6,8 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart' show EdgeInsets;
 
 import 'board_background.dart';
+import 'flow_chart.dart' show absorbTextIntoFlow;
 import 'ink_models.dart';
 import 'serialization.dart';
+import 'tools/geo_tool.dart';
 import 'view.dart';
 
 /// What a pointer does on the board.
@@ -485,6 +487,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// Replaces the open page's elements as one undo step.
   void setElements(List<BoardElement> els) {
     _push(_snap);
+    els = reflowLinks(absorbTextIntoFlow(page.elements, els));
     page.elements = List.of(els);
     final ids = {for (final e in els) e.id};
     page.groups.removeWhere((k, _) => !ids.contains(k));
@@ -517,6 +520,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       setElements(els);
       return;
     }
+    els = reflowLinks(absorbTextIntoFlow(page.elements, els));
     page.elements = List.of(els);
     final ids = {for (final e in els) e.id};
     page.groups.removeWhere((k, _) => !ids.contains(k));
@@ -891,6 +895,38 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     notifyListeners();
   }
 
+  /// The geometry box on the board: any number of rulers, protractors, set squares and
+  /// compasses at once (see [GeoTool]). Not part of the page: they are instruments, and what is
+  /// drawn with them is ink.
+  final ValueNotifier<List<GeoTool>> geoTools = ValueNotifier(const []);
+
+  /// The line being drawn along a tool's edge (for its live length), or null.
+  final ValueNotifier<GeoEdge?> edgeLine = ValueNotifier(null);
+
+  /// Puts a new tool of [kind] in the middle of the view and returns it.
+  GeoTool addGeoTool(GeoKind kind) {
+    final c = visibleArea?.center ?? const Offset(400, 300);
+    // Each new tool a little below the last, so several do not land on top of each other.
+    final t = GeoTool.create(kind, c + Offset(0, 40.0 * (geoTools.value.length % 5)));
+    geoTools.value = [...geoTools.value, t];
+    notifyListeners();
+    return t;
+  }
+
+  void updateGeoTool(GeoTool t) {
+    geoTools.value = [for (final x in geoTools.value) x.id == t.id ? t : x];
+  }
+
+  void removeGeoTool(String id) {
+    geoTools.value = geoTools.value.where((t) => t.id != id).toList();
+    notifyListeners();
+  }
+
+  /// Told when a block or graph is tapped twice (the canvas opens its editor).
+  void Function(BoardElement e)? onDoubleTapElement;
+  String? _lastTapId;
+  int _lastTapAt = 0;
+
   /// The laser trail, newest last; points older than [laserLife] are dropped by [pruneLaser].
   final ValueNotifier<List<LaserPoint>> laser = ValueNotifier(const []);
   static const laserLife = 1000;
@@ -990,7 +1026,9 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
           width: hl ? highlighterWidth : penWidth,
         );
         final r = ruler.value;
-        final edge = !hl && r.visible ? r.snapEdge(at, 28 / scale) : null;
+        var edge = !hl && r.visible ? r.snapEdge(at, 28 / scale) : null;
+        // The edges of the geometry box guide the pen the same way.
+        if (!hl && edge == null && geoTools.value.isNotEmpty) edge = snapToTools(geoTools.value, at, 28 / scale);
         if (edge != null) {
           // Along the ruler: a straight line from where the pen landed.
           _rulerEdge[pointer] = edge;
@@ -1063,6 +1101,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         if (edge != null) {
           final b = RulerState.project(at, edge);
           s.points[1] = InkPoint(b.dx, b.dy);
+          edgeLine.value = (s.points[0].offset, b);
         } else {
           // Points closer than half a screen pixel add cost and no detail.
           if ((s.points.last.offset - at).distanceSquared * _scale * _scale < 0.25) return;
@@ -1094,7 +1133,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
             _moveSnapshot = _snap;
           }
           // Moved live (each element knows it was moved, so viewers get a move, not a redraw).
-          page.elements = [for (final e in page.elements) _selection.contains(e.id) ? e.translated(d) : e];
+          // Arrows follow the blocks they join.
+          page.elements = reflowLinks([for (final e in page.elements) _selection.contains(e.id) ? e.translated(d) : e]);
           _lastSelect = at;
           committed.value++;
         }
@@ -1111,6 +1151,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       case BoardTool.pen || BoardTool.highlighter || BoardTool.aiPen:
         final s = _active.remove(pointer)!;
         _rulerEdge.remove(pointer);
+        edgeLine.value = null;
         // A ruler line that never left its start point is a stray tap.
         if (s.shape == ShapeKind.line && (s.points.first.offset - s.points.last.offset).distance * _scale < 4) break;
         _commit(s);
@@ -1140,6 +1181,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     _active.remove(pointer);
     _shapeStart.remove(pointer);
     _rulerEdge.remove(pointer);
+    edgeLine.value = null;
     if (tool == BoardTool.eraser) _finishErase(pointer);
     if (tool == BoardTool.select) {
       _lasso.clear();
@@ -1199,6 +1241,7 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
         final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
         _selection.clear();
         if (hit != null) _selection.addAll(page.expandGroups({hit.id}));
+        _tapped(hit);
       } else {
         _selection
           ..clear()
@@ -1212,11 +1255,28 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
       final hit = page.elements.reversed.where((e) => _selectable(e) && e.hitTest(down, 8 / _scale)).firstOrNull;
       _selection.clear();
       if (hit != null) _selection.addAll(page.expandGroups({hit.id}));
+      _tapped(hit);
     }
     _moveSnapshot = null;
     _selectPointer = null;
     _selectDown = _lastSelect = null;
     _selectMoved = false;
+  }
+
+  /// A second tap on the same block or graph soon after the first opens its editor.
+  void _tapped(BoardElement? hit) {
+    final t = now(), previous = _lastTapAt;
+    _lastTapAt = t;
+    if (hit == null || !(hit is FlowNodeElement || hit is GraphElement)) {
+      _lastTapId = null;
+      return;
+    }
+    if (hit.id == _lastTapId && t - previous < 450) {
+      _lastTapId = null;
+      onDoubleTapElement?.call(hit);
+      return;
+    }
+    _lastTapId = hit.id;
   }
 
   double _lassoSpan() {
@@ -1367,6 +1427,8 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     view.dispose();
     ruler.dispose();
     protractor.dispose();
+    geoTools.dispose();
+    edgeLine.dispose();
     laser.dispose();
     super.dispose();
   }
