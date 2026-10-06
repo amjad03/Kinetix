@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
-import 'package:kinetix_board/features/board/side_panel.dart';
 import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
 import 'package:kinetix_board/features/enrollment/enroll_screen.dart';
 import 'package:kinetix_board/l10n/l10n.dart';
@@ -20,6 +19,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';
 import 'support/fake_cloud.dart';
+import 'package:kinetix_board/features/board/layout/layout_strings.dart';
+import 'package:kinetix_ink/kinetix_ink.dart' show InkCanvas;
+import 'support/layout.dart';
 
 void main() {
   setUpAll(loadBoardFonts);
@@ -228,6 +230,11 @@ void main() {
         await tester.pumpAndSettle();
 
         void fits(String what) => expect(tester.takeException(), isNull, reason: '$lang $size: $what');
+        // The offer of a PIN would cover the toolbar.
+        if (find.text(l.notNow).evaluate().isNotEmpty) {
+          await tester.tap(find.text(l.notNow));
+          await tester.pumpAndSettle();
+        }
         NavigatorState nav() => tester.state<NavigatorState>(find.byType(Navigator).first);
         Future<void> tap(Finder f) async {
           await tester.ensureVisible(f);
@@ -242,16 +249,24 @@ void main() {
             await tester.scrollUntilVisible(
               f,
               200,
-              scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: find.byType(Scrollable)).first,
+              scrollable: find.descendant(of: find.byType(SplitPanelFrame), matching: find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down)).first,
             );
           }
           await tap(f);
         }
 
+        // Dialogs open in the split panel; the sign-in is the board's own dialog.
         Future<void> closeDialog() async {
-          nav().pop();
+          final close = find.byKey(const Key('panel-close'));
+          if (close.evaluate().isNotEmpty) {
+            await tester.tap(close);
+          } else {
+            nav().pop();
+          }
           await tester.pumpAndSettle();
         }
+
+        Future<void> tapB(String key) => tapBoard(tester, key);
 
         Future<void> closePopover() async {
           await tester.tapAt(Offset(size.width - 8, size.height / 2));
@@ -260,7 +275,7 @@ void main() {
 
         fits('board');
         if (size.width >= 1500) {
-          for (final label in [l.toolRecord, l.toolWrite, l.toolShapes, l.toolBooks, l.toolHomework, l.toolHide]) {
+          for (final label in [l.toolRecord, l.pen, l.toolShapes, l.toolTools, l.toolUndo, LayoutStrings(lang).menu]) {
             expect(find.text(label), findsWidgets, reason: label);
           }
         }
@@ -275,49 +290,43 @@ void main() {
         await tester.pumpAndSettle();
 
         // Popovers above the toolbar.
-        await tap(find.byKey(const Key('tool-write')));
-        expect(find.text(l.highlighter), findsOneWidget);
-        fits('write');
+        await tap(find.byKey(const Key('tool-pen')));
+        expect(find.byKey(const Key('pen-popover')), findsOneWidget);
+        fits('pen');
         await closePopover();
         await tap(find.byKey(const Key('tool-erase')));
         await tap(find.byKey(const Key('tool-erase')));
         expect(find.byKey(const Key('clear-page')), findsOneWidget);
         fits('erase');
         await closePopover();
-        await tap(find.byKey(const Key('tool-write')));
-        await closePopover();
-        for (final (key, title) in [('tool-theme', l.boardTheme), ('tool-shapes', l.showLengths), ('tool-tools', l.toolTimer)]) {
-          await tap(find.byKey(Key(key)));
+        for (final (key, title) in [('tool-theme', LayoutStrings(lang).background), ('tool-shapes', l.showLengths), ('tool-tools', l.toolTimer), ('page-overview', LayoutStrings(lang).pageOverview), ('board-menu', l.boardSettings)]) {
+          await tapB(key);
           expect(find.text(title), findsWidgets, reason: key);
           fits(key);
           await closePopover();
         }
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.toolEyeComfort));
+        await openTool(tester, 'eye-comfort');
         expect(find.text(l.adjustSchoolDay), findsOneWidget);
         fits('eye comfort');
         await closePopover();
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.toolTimer));
+        await openTool(tester, 'toolkit-timer');
+        await tap(find.byKey(const Key('timer-set')));
+        await tap(find.byKey(const Key('timer-setter-done')));
         fits('timer');
         await tap(find.byKey(const Key('toolkit-close-timer')));
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.toolRandomPick));
+        await openTool(tester, 'toolkit-picker');
         fits('random pick');
         await tap(find.byKey(const Key('toolkit-close-picker')));
-        for (final (name, label) in [('stopwatch', l.tkStopwatch), ('dice', l.tkDice), ('spinner', l.tkSpinner), ('noise', l.tkNoiseMeter)]) {
-          await tap(find.byKey(const Key('tool-tools')));
-          await tap(find.text(label));
+        for (final name in ['stopwatch', 'dice', 'spinner', 'noise']) {
+          await openTool(tester, 'toolkit-$name');
           fits(name);
           await tap(find.byKey(Key('toolkit-close-$name')));
         }
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.toolScreenShade));
+        await openTool(tester, 'toolkit-curtain');
         expect(find.text(l.tkDragToReveal), findsOneWidget);
         fits('screen shade');
         await tap(find.byKey(const Key('curtain-remove')));
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.simTitle));
+        await openTool(tester, 'sims');
         fits('simulations');
         await tap(find.byKey(const Key('open-sim-pythagoras')));
         fits('pythagoras');
@@ -346,14 +355,14 @@ void main() {
         await tap(find.byKey(const Key('menu-recordings')));
         fits('recordings');
         await closeDialog();
-        await tap(find.byKey(const Key('save-board')));
+        await tapB('save-board');
         expect(find.text(l.saveBoard), findsOneWidget);
         fits('save board');
         await closeDialog();
         await tap(find.byKey(const Key('attendance-chip')));
         fits('attendance');
         await closeDialog();
-        await tap(find.byKey(const Key('end-class')));
+        await tapB('end-class');
         expect(find.text(l.endClassTitle), findsOneWidget);
         fits('end class');
         await closeDialog();
@@ -399,24 +408,31 @@ void main() {
           }
           await tap(find.byKey(const Key('panel-back')));
         }
-        await tap(find.byKey(const Key('panel-books')));
+        await tapB('panel-tab-books');
         await tap(find.byKey(const Key('chapter-ch1')));
         fits('books');
         await tap(find.byKey(const Key('topic-t1')));
         expect(find.text(l.booksExplain), findsOneWidget);
         fits('books topic');
-        await tap(find.byKey(const Key('panel-quiz')));
+        for (final tab in ['model3d', 'labs', 'videos', 'kit', 'animations']) {
+          await tapB('panel-tab-$tab');
+          fits('panel $tab');
+        }
+        await tap(find.byKey(const Key('panel-full')));
+        fits('panel across the screen');
+        await tap(find.byKey(const Key('panel-full')));
+        await tap(find.byKey(const Key('panel-close')));
+        await openTool(tester, 'quick-quiz');
         fits('quiz panel');
-        await tap(find.byKey(const Key('panel-homework')));
-        fits('homework panel');
+        await openTool(tester, 'badges');
+        fits('badges');
+        await openTool(tester, 'graphs');
+        fits('graph templates');
+        await openTool(tester, 'second-board');
+        expect(find.byType(InkCanvas), findsOneWidget);
+        fits('second board');
         await tap(find.byKey(const Key('panel-close')));
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.toolSplitScreen));
-        expect(find.text(l.splitChoose), findsOneWidget);
-        fits('split screen');
-        await tap(find.byKey(const Key('panel-close')));
-        await tap(find.byKey(const Key('tool-tools')));
-        await tap(find.text(l.toolTodaysPlan));
+        await openTool(tester, 'todays-plan');
         expect(find.byKey(const Key('plan-view')), findsOneWidget);
         await tap(find.byKey(const Key('plan-timer')));
         fits("today's plan");
@@ -446,7 +462,7 @@ void main() {
 
     for (final size in [const Size(1920, 1080), const Size(1280, 720)]) {
       for (final primary in [false, true]) {
-        testWidgets('$lang at ${size.width.toInt()}×${size.height.toInt()}, rails${primary ? ', primary' : ''}: rails, popovers, kit and editors fit', (tester) async {
+        testWidgets('$lang at ${size.width.toInt()}×${size.height.toInt()}, toolbar at the bottom${primary ? ', primary' : ''}: toolbar, popovers, kit and editors fit', (tester) async {
           screenSize(tester, size);
           final l = lookupAppLocalizations(Locale(lang));
           final board = await enrolledBoard();
@@ -455,7 +471,11 @@ void main() {
           board.onPaired('session-token', sessionIn(lang));
           await tester.pumpWidget(KinetixBoardApp(controller: board));
           await tester.pumpAndSettle();
-          void fits(String what) => expect(tester.takeException(), isNull, reason: '$lang $size rails: $what');
+          void fits(String what) => expect(tester.takeException(), isNull, reason: '$lang $size toolbar: $what');
+          if (find.text(l.notNow).evaluate().isNotEmpty) {
+            await tester.tap(find.text(l.notNow));
+            await tester.pumpAndSettle();
+          }
           // The rails scroll when a short screen can't hold every tool.
           Future<void> tap(Finder f) async {
             await tester.ensureVisible(f);
@@ -464,29 +484,27 @@ void main() {
             await tester.pumpAndSettle();
           }
 
-          // Tap the barrier well right of the popover, which opens beside the left rail.
+          // Tap the barrier over the top bar: popovers open below it.
           Future<void> closePopover() async {
             final r = tester.getRect(find.byKey(const Key('popover-barrier')));
-            await tester.tapAt(Offset(r.right - 200, r.center.dy));
+            await tester.tapAt(Offset(r.center.dx, r.top + 20));
             await tester.pumpAndSettle();
           }
           fits('board');
           if (primary) expect(find.text(l.pen), findsOneWidget);
-          await tap(find.byKey(const Key('tool-write')));
+          await tap(find.byKey(const Key('tool-pen')));
           expect(find.text(l.thickness), findsOneWidget);
-          fits('write');
-          await closePopover();
-          for (final key in ['tool-shapes', 'tool-insert', 'tool-tools', 'tool-theme']) {
-            await tap(find.byKey(Key(key)));
-            fits(key);
-            await closePopover();
-          }
+          fits('pen');
           if (!primary) {
-            // The AI pen: the first tap takes it, the second opens its options.
-            await tap(find.byKey(const Key('tool-ai-pen')));
-            await tap(find.byKey(const Key('tool-ai-pen')));
-            expect(find.byKey(const Key('ai-pen-popover')), findsOneWidget);
+            // The AI pen is a pen type, with every pen option and its own.
+            await tap(find.byKey(const Key('pen-type-aiPen')));
+            expect(find.byKey(const Key('ai-convert-maths')), findsOneWidget);
             fits('AI pen');
+          }
+          await closePopover();
+          for (final key in ['tool-shapes', 'tool-insert', 'tool-tools', 'tool-theme', 'board-menu', 'page-overview', 'profile-button']) {
+            await tapBoard(tester, key);
+            fits(key);
             await closePopover();
           }
           await tap(find.byKey(const Key('tool-insert')));
@@ -496,21 +514,19 @@ void main() {
           await tester.enterText(find.byKey(const Key('math-tex')), r'\frac{1}{2}');
           await tap(find.byKey(const Key('math-done')));
           fits('equation on the board');
-          await tap(find.byKey(const Key('panel-kit')));
+          await tapBoard(tester, 'panel-tab-kit');
           fits('kit');
           for (final chip in find.byWidgetPredicate((w) => w is ChoiceChip && (w.key as ValueKey<String>?)?.value.startsWith('kit-') == true).evaluate().toList()) {
             await tap(find.byKey(chip.widget.key!));
             fits('kit ${chip.widget.key}');
           }
-          await tap(find.byKey(const Key('panel-ai')));
-          fits('AI from the rail');
+          await tapBoard(tester, 'panel-tab-ai');
+          fits('AI tab');
           await tap(find.byKey(const Key('panel-close')));
-          await tap(find.byKey(const Key('profile-button')));
-          await tap(find.byKey(const Key('menu-settings')));
-          expect(find.text(l.layoutTitle), findsOneWidget);
+          await tapBoard(tester, 'menu-settings');
+          expect(find.text(l.languageHint), findsOneWidget);
           fits('settings');
-          Navigator.of(tester.element(find.text(l.layoutTitle))).pop();
-          await tester.pumpAndSettle();
+          await tap(find.byKey(const Key('panel-close')));
           board.dispose();
         });
       }
