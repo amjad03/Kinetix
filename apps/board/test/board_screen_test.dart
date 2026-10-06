@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +7,7 @@ import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
 import 'package:kinetix_board/features/board/kit/subjects.dart';
 import 'package:kinetix_board/features/board/layout/board_chrome.dart';
+import 'package:kinetix_board/features/board/layout/layout_strings.dart';
 import 'package:kinetix_board/features/board/layout/page_overview.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
@@ -102,6 +101,12 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       board.dispose();
+    });
+
+    test('the layout\'s words are in English, Hindi and Kannada', () {
+      for (final lang in ['hi', 'kn']) {
+        expect(LayoutStrings.table(lang).keys.toSet(), LayoutStrings.keys.toSet(), reason: lang);
+      }
     });
 
     test('time left in the period', () {

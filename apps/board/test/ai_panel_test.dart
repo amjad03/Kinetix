@@ -1,4 +1,3 @@
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -12,7 +11,7 @@ import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/features/ai/ai_controller.dart';
 import 'package:kinetix_board/features/ai/ai_widgets.dart';
 import 'package:kinetix_board/features/board/board_screen.dart';
-import 'package:kinetix_board/features/board/side_panel.dart';
+import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'support/layout.dart';

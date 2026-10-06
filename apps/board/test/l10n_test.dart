@@ -1,4 +1,3 @@
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
+import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';
 import 'package:kinetix_board/features/enrollment/enroll_screen.dart';
 import 'package:kinetix_board/l10n/l10n.dart';

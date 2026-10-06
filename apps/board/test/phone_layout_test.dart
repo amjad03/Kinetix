@@ -1,4 +1,3 @@
-import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,7 +11,7 @@ import 'package:kinetix_board/core/models.dart';
 import 'package:kinetix_board/core/outbox_store.dart';
 import 'package:kinetix_board/demo/demo.dart';
 import 'package:kinetix_board/demo/demo_server.dart';
-import 'package:kinetix_board/features/board/chrome.dart' show ChromeTile;
+import 'package:kinetix_board/features/board/panel/split_panel.dart';
 import 'package:kinetix_board/features/search/search_strings.dart';
 import 'package:kinetix_board/features/search/solids3d.dart';
 import 'package:kinetix_board/features/broadcast/broadcast_overlay.dart';

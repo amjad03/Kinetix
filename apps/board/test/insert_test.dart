@@ -14,7 +14,6 @@ import 'package:kinetix_board/features/insert/pptx_render.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'support/layout.dart';
 
 /// Files the test hands in as if the teacher had picked them.
 class FakeFiles implements DeviceFiles {
