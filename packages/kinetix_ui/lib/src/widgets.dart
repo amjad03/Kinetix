@@ -5,10 +5,13 @@ import 'tokens.dart';
 
 /// Initials avatar used for teachers and students, e.g. "AS" for Anita Sharma.
 class KxAvatar extends StatelessWidget {
-  const KxAvatar({super.key, required this.name, this.size = 40});
+  const KxAvatar({super.key, required this.name, this.size = 40, this.image});
 
   final String name;
   final double size;
+
+  /// The person's photo; the initials show while it loads and if it fails.
+  final ImageProvider? image;
 
   static String initials(String name) {
     final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty && !p.endsWith('.')).toList();
@@ -23,6 +26,8 @@ class KxAvatar extends StatelessWidget {
       radius: size / 2,
       backgroundColor: context.colors.primaryContainer,
       foregroundColor: context.colors.onPrimaryContainer,
+      foregroundImage: image,
+      onForegroundImageError: image == null ? null : (_, _) {},
       child: Text(initials(name), style: TextStyle(fontSize: size * 0.38, fontWeight: FontWeight.w500)),
     );
   }

@@ -462,19 +462,13 @@ class _MoveDialogState extends State<_MoveDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DropdownButtonFormField<DateTime>(
+          KxPicker<DateTime>(
             key: const Key('weekPicker'),
-            initialValue: _week,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l.planWeek),
-            items: [
-              for (final w in weeks)
-                DropdownMenuItem(
-                  value: w,
-                  child: Text(l.weekOf(fmt.shortDay(w)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
-            ],
-            onChanged: (w) => setState(() => _week = w ?? _week),
+            label: l.planWeek,
+            icon: Icons.date_range_outlined,
+            items: [for (final w in weeks) KxPickerItem(value: w, label: l.weekOf(fmt.shortDay(w)))],
+            value: _week,
+            onChanged: (w) => setState(() => _week = w),
           ),
           const SizedBox(height: Kx.s16),
           Row(

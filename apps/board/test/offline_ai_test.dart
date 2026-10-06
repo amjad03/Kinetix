@@ -73,6 +73,11 @@ void main() {
 
       final p = ai.lessonPlan('pythagoras', minutes: 40)!;
       expect(p.result.steps.fold(0, (s, x) => s + x.minutes), 40);
+      for (final m in [10, 20, 30, 45, 55, 60, 90]) {
+        final steps = ai.lessonPlan('pythagoras', minutes: m)!.result.steps;
+        expect(steps.fold(0, (s, x) => s + x.minutes), m, reason: '$m minutes');
+        expect(steps.every((s) => s.minutes >= 2), isTrue);
+      }
       expect(p.result.objectives, isNotEmpty);
       expect(p.meta.offline, isTrue);
     });

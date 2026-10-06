@@ -79,6 +79,41 @@ class Viewer3dStrings {
   String get allSubjects => _t('allSubjects');
   String classes(List<int> c) => c.isEmpty ? '' : _t('classes').replaceAll('{list}', c.join(', '));
   String get noMatch => _t('noMatch');
+  String get write => _t('write');
+  String get toolPin => _t('toolPin');
+  String get toolSurface => _t('toolSurface');
+  String get toolScreen => _t('toolScreen');
+  String get pinHint => _t('pinHint');
+  String get drawHint => _t('drawHint');
+  String get noteMissed => _t('noteMissed');
+  String get tabNotes => _t('tabNotes');
+  String get noNotes => _t('noNotes');
+  String get note => _t('note');
+  String get noteText => _t('noteText');
+  String get emptyNote => _t('emptyNote');
+  String get drawingOver => _t('drawingOver');
+  String get save => _t('save');
+  String get delete => _t('delete');
+  String get edit => _t('edit');
+  String get clearNotes => _t('clearNotes');
+  String get undo => _t('undo');
+  String get showNotes => _t('showNotes');
+  String get colour => _t('colour');
+  String get done => _t('done');
+  String get cutKind => _t('cutKind');
+  String get cutHalf => _t('cutHalf');
+  String get cutWedge => _t('cutWedge');
+  String get cutSlab => _t('cutSlab');
+  String get cutDepth => _t('cutDepth');
+  String get cutPeel => _t('cutPeel');
+  String get turnSlice => _t('turnSlice');
+  String get thickness => _t('thickness');
+  String get sweep => _t('sweep');
+  String get onePeel => _t('onePeel');
+  String drawingOn(String part) => _t('drawingOn').replaceAll('{part}', part);
+  String sliceSize(int degrees) => _t('sliceSize').replaceAll('{n}', '$degrees');
+  String depthOf(int percent) => _t('depthOf').replaceAll('{n}', '$percent');
+  String peeled(int n, int m) => _t('peeled').replaceAll('{n}', '$n').replaceAll('{m}', '$m');
 
   /// A subject's name (the catalogue's subjects are English words).
   String subject(String s) => words['subject$s']?[_i] ?? s;
@@ -154,6 +189,41 @@ class Viewer3dStrings {
     'allSubjects': ['All', 'सभी', 'ಎಲ್ಲಾ'],
     'classes': ['Class {list}', 'कक्षा {list}', 'ತರಗತಿ {list}'],
     'noMatch': ['No model matches.', 'कोई मॉडल नहीं मिला।', 'ಯಾವ ಮಾದರಿಯೂ ಸಿಗಲಿಲ್ಲ.'],
+    'write': ['Write on the model', 'मॉडल पर लिखें', 'ಮಾದರಿಯ ಮೇಲೆ ಬರೆಯಿರಿ'],
+    'toolPin': ['Pin a note', 'नोट लगाएँ', 'ಟಿಪ್ಪಣಿ ಅಂಟಿಸಿ'],
+    'toolSurface': ['Draw on the model', 'मॉडल पर बनाएँ', 'ಮಾದರಿಯ ಮೇಲೆ ಗೆರೆ ಎಳೆಯಿರಿ'],
+    'toolScreen': ['Draw over the view', 'दृश्य के ऊपर बनाएँ', 'ನೋಟದ ಮೇಲೆ ಗೆರೆ ಎಳೆಯಿರಿ'],
+    'pinHint': ['Tap the model to pin a note; turn it with two fingers.', 'नोट लगाने के लिए मॉडल को छुएँ; दो उंगलियों से घुमाएँ।', 'ಟಿಪ್ಪಣಿ ಅಂಟಿಸಲು ಮಾದರಿಯನ್ನು ಮುಟ್ಟಿ; ಎರಡು ಬೆರಳಿನಿಂದ ತಿರುಗಿಸಿ.'],
+    'drawHint': ['Draw with one finger; turn the model with two.', 'एक उंगली से बनाएँ; दो उंगलियों से मॉडल घुमाएँ।', 'ಒಂದು ಬೆರಳಿನಿಂದ ಬರೆಯಿರಿ; ಎರಡು ಬೆರಳಿನಿಂದ ಮಾದರಿ ತಿರುಗಿಸಿ.'],
+    'noteMissed': ['Tap on the model to pin a note there.', 'नोट लगाने के लिए मॉडल पर ही छुएँ।', 'ಟಿಪ್ಪಣಿ ಅಂಟಿಸಲು ಮಾದರಿಯ ಮೇಲೆಯೇ ಮುಟ್ಟಿ.'],
+    'tabNotes': ['Notes', 'नोट', 'ಟಿಪ್ಪಣಿಗಳು'],
+    'noNotes': ['Nothing written yet. Use the pen above the model to pin notes or draw.', 'अभी कुछ नहीं लिखा। नोट लगाने या बनाने के लिए मॉडल के ऊपर का पेन चुनें।', 'ಇನ್ನೂ ಏನೂ ಬರೆದಿಲ್ಲ. ಟಿಪ್ಪಣಿ ಅಂಟಿಸಲು ಅಥವಾ ಬರೆಯಲು ಮಾದರಿಯ ಮೇಲಿನ ಪೆನ್ ಬಳಸಿ.'],
+    'note': ['Note', 'नोट', 'ಟಿಪ್ಪಣಿ'],
+    'noteText': ['Write the note', 'नोट लिखें', 'ಟಿಪ್ಪಣಿ ಬರೆಯಿರಿ'],
+    'emptyNote': ['(no text)', '(कोई पाठ नहीं)', '(ಪಠ್ಯವಿಲ್ಲ)'],
+    'drawingOn': ['Drawing on {part}', '{part} पर चित्र', '{part} ಮೇಲೆ ಚಿತ್ರ'],
+    'drawingOver': ['Drawing over the view', 'दृश्य के ऊपर चित्र', 'ನೋಟದ ಮೇಲಿನ ಚಿತ್ರ'],
+    'save': ['Save', 'सहेजें', 'ಉಳಿಸಿ'],
+    'delete': ['Delete', 'हटाएँ', 'ಅಳಿಸಿ'],
+    'edit': ['Edit', 'बदलें', 'ಬದಲಿಸಿ'],
+    'clearNotes': ['Clear all', 'सब मिटाएँ', 'ಎಲ್ಲವನ್ನೂ ಅಳಿಸಿ'],
+    'undo': ['Undo last', 'पिछला हटाएँ', 'ಕೊನೆಯದನ್ನು ತೆಗೆಯಿರಿ'],
+    'showNotes': ['Show notes and drawing', 'नोट और चित्र दिखाएँ', 'ಟಿಪ್ಪಣಿ ಮತ್ತು ಚಿತ್ರ ತೋರಿಸಿ'],
+    'colour': ['Colour', 'रंग', 'ಬಣ್ಣ'],
+    'done': ['Done', 'हो गया', 'ಮುಗಿಯಿತು'],
+    'cutKind': ['Kind of cut', 'कट का प्रकार', 'ಕಡಿತದ ಬಗೆ'],
+    'cutHalf': ['In half', 'आधा', 'ಅರ್ಧ'],
+    'cutWedge': ['Cake slice', 'केक जैसी फाँक', 'ಕೇಕ್ ತುಂಡು'],
+    'cutSlab': ['Thin slice', 'पतली परत', 'ತೆಳು ಹೋಳು'],
+    'cutDepth': ['Depth', 'गहराई', 'ಆಳ'],
+    'cutPeel': ['Peel layers', 'परतें उतारें', 'ಪದರ ಸುಲಿಯಿರಿ'],
+    'sliceSize': ['Size of the slice: {n}°', 'फाँक का आकार: {n}°', 'ತುಂಡಿನ ಗಾತ್ರ: {n}°'],
+    'turnSlice': ['Turn the slice', 'फाँक घुमाएँ', 'ತುಂಡನ್ನು ತಿರುಗಿಸಿ'],
+    'thickness': ['Thickness', 'मोटाई', 'ದಪ್ಪ'],
+    'depthOf': ['How deep: {n}%', 'कितना गहरा: {n}%', 'ಎಷ್ಟು ಆಳ: {n}%'],
+    'sweep': ['Sweep through', 'आर-पार चलाएँ', 'ಆಚೆಯವರೆಗೆ ಸರಿಸಿ'],
+    'peeled': ['{n} of {m} layers taken off', '{m} में से {n} परतें उतारीं', '{m} ರಲ್ಲಿ {n} ಪದರ ತೆಗೆದಿದೆ'],
+    'onePeel': ['This model has only one layer.', 'इस मॉडल में केवल एक परत है।', 'ಈ ಮಾದರಿಯಲ್ಲಿ ಒಂದೇ ಪದರವಿದೆ.'],
     'subjectBiology': ['Biology', 'जीव विज्ञान', 'ಜೀವಶಾಸ್ತ್ರ'],
     'subjectPhysics': ['Physics', 'भौतिकी', 'ಭೌತಶಾಸ್ತ್ರ'],
     'subjectChemistry': ['Chemistry', 'रसायन विज्ञान', 'ರಸಾಯನಶಾಸ್ತ್ರ'],

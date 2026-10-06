@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../cards/answer_cards_screen.dart';
+import '../../core/api.dart';
 import '../../core/app_state.dart';
+import '../../core/files.dart';
 import '../../core/l10n.dart';
 import '../calendar/calendar_screen.dart';
+import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -25,6 +28,30 @@ class ProfileTab extends StatelessWidget {
       ),
     );
     if (ok == true) await state.signOut();
+  }
+
+  /// Photo, name, email and the subjects the teacher teaches.
+  Future<void> _edit(BuildContext context) async {
+    final me = state.me!;
+    final api = state.api;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (ctx) => KxProfileEditScreen(
+          fullName: me.fullName,
+          email: me.email,
+          phone: me.phone,
+          photo: api.photo(me.photoUrl),
+          teachingSubjects: me.teachingSubjects,
+          pickImage: pickProfileImage,
+          onPhoto: (jpeg) async => state.updateMe(await api.uploadPhoto(jpeg)),
+          onRemovePhoto: () async => state.updateMe(await api.removePhoto()),
+          onSave: ({required fullName, required email, teachingSubjects}) async =>
+              state.updateMe(await api.updateProfile(fullName: fullName, email: email, teachingSubjects: teachingSubjects)),
+          describeError: (e) => e is ApiException ? ctx.l10n.errorText(e) : '$e',
+        ),
+      ),
+    );
   }
 
   /// English / हिन्दी / ಕನ್ನಡ. The app switches straight away; the account is updated too.
@@ -59,7 +86,9 @@ class ProfileTab extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: state, builder: (context, _) => _build(context));
+
+  Widget _build(BuildContext context) {
     final me = state.me;
     // Signed out from here: the app returns to sign-in on the next frame.
     if (me == null) return const SizedBox.shrink();
@@ -77,7 +106,12 @@ class ProfileTab extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
               child: Row(
                 children: [
-                  KxAvatar(name: me.fullName, size: 64),
+                  InkWell(
+                    key: const Key('profileAvatar'),
+                    customBorder: const CircleBorder(),
+                    onTap: () => _edit(context),
+                    child: KxAvatar(name: me.fullName, size: 64, image: state.api.photo(me.photoUrl)),
+                  ),
                   const SizedBox(width: Kx.s16),
                   Expanded(
                     child: Column(
@@ -86,8 +120,16 @@ class ProfileTab extends StatelessWidget {
                         Text(me.fullName, style: context.text.titleLarge),
                         if (me.email != null || me.phone != null)
                           Text(me.email ?? me.phone!, style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant)),
+                        if (me.teachingSubjects.isNotEmpty)
+                          Text(me.teachingSubjects.join(' · '), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                       ],
                     ),
+                  ),
+                  IconButton(
+                    key: const Key('editProfile'),
+                    tooltip: KxStrings.of(context).editProfile,
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => _edit(context),
                   ),
                 ],
               ),
@@ -113,6 +155,14 @@ class ProfileTab extends StatelessWidget {
             ),
             ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
             KxSectionHeader(l.teaching),
+            ListTile(
+              key: const Key('openRoster'),
+              leading: const Icon(Icons.military_tech_outlined),
+              title: Text(l.classRoster),
+              subtitle: Text(l.classRosterBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RosterScreen(api: state.api))),
+            ),
             ListTile(
               key: const Key('openCalendar'),
               leading: const Icon(Icons.event_outlined),

@@ -5,6 +5,7 @@ import '../../core/api.dart';
 import '../../core/app_state.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/profile_photo.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
@@ -108,6 +109,30 @@ class ProfileTabState extends State<ProfileTab> {
     if (picked != null) await widget.state.setAiLanguage(picked);
   }
 
+  /// Photo, name and email (the phone number is the sign-in).
+  Future<void> _edit() async {
+    final state = widget.state;
+    final me = state.me!;
+    final api = state.api;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (ctx) => KxProfileEditScreen(
+          fullName: me.fullName,
+          email: me.email,
+          phone: me.phone == null ? null : ProfileTab.phone(me.phone!),
+          photo: api.photo(me.photoUrl),
+          pickImage: pickProfileImage,
+          onPhoto: (jpeg) async => state.updateMe(await api.uploadPhoto(jpeg)),
+          onRemovePhoto: () async => state.updateMe(await api.removePhoto()),
+          onSave: ({required fullName, required email, teachingSubjects}) async =>
+              state.updateMe(await api.updateProfile(fullName: fullName, email: email)),
+          describeError: ctx.errorText,
+        ),
+      ),
+    );
+  }
+
   void _soon(String what) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -141,7 +166,12 @@ class ProfileTabState extends State<ProfileTab> {
                   padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
                   child: Row(
                     children: [
-                      KxAvatar(name: me.fullName, size: 64),
+                      InkWell(
+                        key: const Key('profileAvatar'),
+                        customBorder: const CircleBorder(),
+                        onTap: _edit,
+                        child: KxAvatar(name: me.fullName, size: 64, image: state.api.photo(me.photoUrl)),
+                      ),
                       const SizedBox(width: Kx.s16),
                       Expanded(
                         child: Column(
@@ -155,8 +185,24 @@ class ProfileTabState extends State<ProfileTab> {
                           ],
                         ),
                       ),
+                      IconButton(
+                        key: const Key('editProfile'),
+                        tooltip: KxStrings.of(context).editProfile,
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: _edit,
+                      ),
                     ],
                   ),
+                ),
+                KxSectionHeader(KxStrings.of(context).badges),
+                KxBadgeShelf(
+                  key: const Key('badgeShelf'),
+                  entries: [
+                    for (final b in widget.study.badges ?? const <BadgeAward>[])
+                      if (KxBadge.fromApi(b.badge) case final kind?)
+                        KxBadgeEntry(badge: kind, teacher: b.teacherName, subject: b.subjectName, awardedAt: b.awardedAt),
+                  ],
+                  formatDate: context.fmt.shortDay,
                 ),
                 KxSectionHeader(l.yourClass),
                 ListTile(leading: const Icon(Icons.groups_outlined), title: Text(l.classLabel), subtitle: Text(st.sectionName)),

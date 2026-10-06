@@ -36,20 +36,70 @@ class LateBadge extends StatelessWidget {
 /// A homework with the class's submissions: how many handed in, were checked or returned, and
 /// who has not handed in. A student's work opens to be read, checked or returned.
 class HomeworkDetailScreen extends StatefulWidget {
-  const HomeworkDetailScreen({super.key, required this.api, required this.homework, this.openFile = openWithSystem});
+  const HomeworkDetailScreen({super.key, required this.api, required this.homework, this.openFile = openWithSystem, this.photos = const {}});
 
   final TeacherApi api;
   final Homework homework;
   final OpenFile openFile;
 
+  /// Students' photo paths by id (from the class roster), when known.
+  final Map<String, String?> photos;
+
   @override
   State<HomeworkDetailScreen> createState() => _HomeworkDetailScreenState();
+}
+
+/// What the list shows: everyone, one status, or (null status) who has not handed in.
+sealed class _Filter {
+  const _Filter();
+}
+
+class _All extends _Filter {
+  const _All();
+}
+
+class _Status extends _Filter {
+  const _Status(this.status);
+  final SubmissionStatus? status;
+
+  @override
+  bool operator ==(Object other) => other is _Status && other.status == status;
+  @override
+  int get hashCode => status.hashCode;
 }
 
 class _HomeworkDetailScreenState extends State<HomeworkDetailScreen> {
   SubmissionList? _list;
   ApiException? _error;
   bool _loading = false;
+  _Filter _filter = const _All();
+  bool _reminding = false;
+
+  Future<void> _remind(int count) async {
+    final l = context.l10n;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.remindTitle(count)),
+        content: Text(l.remindBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          FilledButton(key: const Key('confirmRemind'), onPressed: () => Navigator.pop(ctx, true), child: Text(l.remind)),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _reminding = true);
+    try {
+      final n = await widget.api.remindMissing(widget.homework.id);
+      messenger.showSnackBar(SnackBar(content: Text(l.reminded(n))));
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l.errorText(e))));
+    } finally {
+      if (mounted) setState(() => _reminding = false);
+    }
+  }
 
   @override
   void initState() {
@@ -120,18 +170,54 @@ class _HomeworkDetailScreenState extends State<HomeworkDetailScreen> {
                 ),
               )
             else if (list != null) ...[
-              SliverToBoxAdapter(child: _Counts(counts: list.counts)),
+              SliverToBoxAdapter(
+                child: _Counts(counts: list.counts, selected: _filter, onSelected: (f) => setState(() => _filter = f)),
+              ),
+              if (list.counts.missing > 0 && (_filter is _All || _filter == const _Status(null)))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s12, Kx.s16, 0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FilledButton.tonalIcon(
+                        key: const Key('remindMissing'),
+                        onPressed: _reminding ? null : () => _remind(list.counts.missing),
+                        icon: _reminding
+                            ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.notifications_active_outlined),
+                        label: Text(l.remindMissing(list.counts.missing)),
+                      ),
+                    ),
+                  ),
+                ),
               if (list.students.isEmpty)
                 SliverToBoxAdapter(
                   child: KxEmptyState(icon: Icons.groups_outlined, message: l.noStudentsInClass),
                 )
               else
-                SliverPadding(
-                  padding: const EdgeInsets.only(top: Kx.s8, bottom: Kx.s24),
-                  sliver: SliverList.builder(
-                    itemCount: list.students.length,
-                    itemBuilder: (context, i) => _StudentRow(submission: list.students[i], onTap: () => _open(list.students[i])),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final shown = switch (_filter) {
+                      _All() => list.students,
+                      _Status(:final status) => list.students.where((s) => s.status == status).toList(),
+                    };
+                    if (shown.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: KxEmptyState(icon: Icons.filter_list_off, message: l.noneInFilter),
+                      );
+                    }
+                    return SliverPadding(
+                      padding: const EdgeInsets.only(top: Kx.s8, bottom: Kx.s24),
+                      sliver: SliverList.builder(
+                        itemCount: shown.length,
+                        itemBuilder: (context, i) => _StudentRow(
+                          submission: shown[i],
+                          photo: widget.api.photo(widget.photos[shown[i].studentId]),
+                          onTap: () => _open(shown[i]),
+                        ),
+                      ),
+                    );
+                  },
                 ),
             ],
           ],
@@ -141,62 +227,57 @@ class _HomeworkDetailScreenState extends State<HomeworkDetailScreen> {
   }
 }
 
+/// The counts are filters: All, Handed in, Checked, Returned, Missing.
 class _Counts extends StatelessWidget {
-  const _Counts({required this.counts});
+  const _Counts({required this.counts, required this.selected, required this.onSelected});
 
   final SubmissionCounts counts;
+  final _Filter selected;
+  final ValueChanged<_Filter> onSelected;
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final cells = [
-      (SubmissionStatus.submitted, counts.submitted),
-      (SubmissionStatus.checked, counts.checked),
-      (SubmissionStatus.returned, counts.returned),
-      (null, counts.missing),
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
-      child: Wrap(
-        spacing: Kx.s8,
-        runSpacing: Kx.s8,
-        children: [
-          for (final (status, n) in cells)
-            Builder(
-              builder: (context) {
-                final (bg, fg) = submissionColors(context, status);
-                return Container(
-                  key: Key('count-${status?.name ?? 'missing'}'),
-                  padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),
-                  decoration: BoxDecoration(color: bg, borderRadius: Kx.radiusMd),
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '$n ',
-                          style: context.text.titleMedium?.copyWith(color: fg, fontWeight: FontWeight.w600),
-                        ),
-                        TextSpan(
-                          text: l.submissionStatus(status),
-                          style: context.text.bodyMedium?.copyWith(color: fg),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
+    final c = context.colors;
+    Color? bg(SubmissionStatus? s) => submissionColors(context, s).$1;
+    Color? fg(SubmissionStatus? s) => submissionColors(context, s).$2;
+    return KxCountChips<_Filter>(
+      selected: selected,
+      onSelected: (f) => onSelected(f ?? const _All()),
+      chips: [
+        KxCountChip(
+          key: const Key('count-all'),
+          value: const _All(),
+          label: KxStrings.of(context).all,
+          count: counts.students,
+          background: c.secondaryContainer,
+          foreground: c.onSecondaryContainer,
+        ),
+        for (final (status, n) in [
+          (SubmissionStatus.submitted, counts.submitted),
+          (SubmissionStatus.checked, counts.checked),
+          (SubmissionStatus.returned, counts.returned),
+          (null, counts.missing),
+        ])
+          KxCountChip(
+            key: Key('count-${status?.name ?? 'missing'}'),
+            value: _Status(status),
+            label: status == null ? l.filterMissing : l.submissionStatus(status),
+            count: n,
+            background: bg(status),
+            foreground: fg(status),
+          ),
+      ],
     );
   }
 }
 
 class _StudentRow extends StatelessWidget {
-  const _StudentRow({required this.submission, required this.onTap});
+  const _StudentRow({required this.submission, required this.onTap, this.photo});
 
   final Submission submission;
   final VoidCallback onTap;
+  final ImageProvider? photo;
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +293,7 @@ class _StudentRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s12),
         child: Row(
           children: [
-            KxAvatar(name: s.fullName, size: 40),
+            KxAvatar(name: s.fullName, size: 40, image: photo),
             const SizedBox(width: Kx.s16),
             Expanded(
               child: Column(

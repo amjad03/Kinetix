@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { and, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import { PushService } from '../push/push.service.js';
-import { dateIn, texts, type Localized, type Text } from './texts.js';
+import { dateIn, texts, type BadgeKind, type Localized, type Text } from './texts.js';
 import {
   attendanceRecords,
   notifications,
@@ -12,7 +12,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge';
 
 export { rupees } from './texts.js';
 
@@ -104,6 +104,28 @@ export class NotificationsService {
       data: { homeworkId: r.homeworkId, studentId: r.studentId },
       dedupeKey: `homework-review:${r.homeworkId}:${r.studentId}`,
     }, { replace: true });
+  }
+
+  /** The teacher reminds students who have not handed in: each student and their family. */
+  async homeworkReminder(tx: Tx, r: { homeworkId: string; title: string; subject: string; dueOn: string; students: { id: string; fullName: string }[] }): Promise<void> {
+    for (const st of r.students) {
+      await this.insertFor(tx, this.studentAndFamily(st.id), {
+        kind: 'homework',
+        text: texts.homeworkReminder({ studentName: st.fullName, title: r.title, subject: r.subject, dueOn: r.dueOn }),
+        data: { homeworkId: r.homeworkId, studentId: st.id },
+        dedupeKey: `homework-remind:${r.homeworkId}:${st.id}`,
+      }, { replace: true });
+    }
+  }
+
+  /** A teacher awarded a badge: the student and their family. */
+  async badgeAwarded(tx: Tx, b: { id: string; studentId: string; studentName: string; badge: BadgeKind; teacherName: string }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(b.studentId), {
+      kind: 'badge',
+      text: texts.badge(b),
+      data: { badgeId: b.id, studentId: b.studentId, badge: b.badge },
+      dedupeKey: `badge:${b.id}`,
+    });
   }
 
   /** A board shared with the class after the lesson. */

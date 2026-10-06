@@ -190,7 +190,8 @@ class _LessonPlanScreenState extends State<LessonPlanScreen> {
       if (!mounted) return;
       _changed(() {
         if (d.topicIds.isNotEmpty) _topicIds = d.topicIds.toList();
-        _fill(d.content, keepHomework: true);
+        // The draft's steps fill the period exactly.
+        _fill(d.content.fittedTo(widget.period.minutes), keepHomework: true);
         _aiDrafted = true;
         _preview = d.preview;
       });

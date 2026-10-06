@@ -77,6 +77,12 @@ class AppState extends ChangeNotifier {
 
   /// Switches the UI language now and saves it to the account, so notifications use it too.
   /// Returns false when the server could not be told; that is retried on the next start.
+  /// After the profile was edited or the photo changed.
+  void updateMe(Me updated) {
+    me = updated;
+    notifyListeners();
+  }
+
   Future<bool> setLanguage(String lang) async {
     final user = me;
     if (user == null) return false;

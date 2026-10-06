@@ -75,6 +75,15 @@ class LivePollChanged extends LiveSignal {
   const LivePollChanged();
 }
 
+/// A teacher awarded this student a badge (`badge.awarded`): show it and refresh the badges.
+class LiveBadgeAwarded extends LiveSignal {
+  const LiveBadgeAwarded({required this.badge, required this.teacher});
+
+  /// The API value (KxBadge.fromApi).
+  final String badge;
+  final String teacher;
+}
+
 /// The connection dropped; the client keeps trying to reconnect on its own.
 class LiveDisconnected extends LiveSignal {
   const LiveDisconnected();
@@ -211,6 +220,12 @@ class SocketLiveConnection implements LiveConnection {
     socket.on(LiveEvents.messageNew, (d) {
       if (d is Map && d['conversationId'] is String) {
         _add(LiveMessageNew(conversationId: '${d['conversationId']}', messageId: '${d['messageId']}', senderId: '${d['senderId']}'));
+      }
+    });
+    socket.on('badge.awarded', (d) {
+      final b = d is Map ? d['badge'] : null;
+      if (b is Map && b['badge'] is String) {
+        _add(LiveBadgeAwarded(badge: b['badge'] as String, teacher: '${(b['awardedBy'] as Map?)?['fullName'] ?? ''}'));
       }
     });
     for (final event in ['poll.opened', 'poll.closed']) {

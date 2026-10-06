@@ -90,10 +90,34 @@ void main() {
     expect(find.text('Absent'), findsOneWidget);
     expect(find.text('Late'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('onlyMissed')));
+    // The counts filter the list.
+    await tester.tap(find.byKey(const Key('count-late')));
     await tester.pumpAndSettle();
     expect(find.text('Saturday, 3 October'), findsNothing);
     expect(find.text('Thursday, 1 October'), findsOneWidget);
+    expect(find.text('Absent'), findsNothing);
+    await tester.tap(find.byKey(const Key('count-all')));
+    await tester.pumpAndSettle();
+    expect(find.text('Saturday, 3 October'), findsOneWidget);
+  });
+
+  testWidgets('a count on Home opens the history showing only that status', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('absentCount')));
+    await tester.pumpAndSettle();
+    expect(find.text("Aarav's attendance"), findsOneWidget);
+    expect(find.text('Thursday, 1 October'), findsOneWidget);
+    expect(find.text('Saturday, 3 October'), findsNothing);
+  });
+
+  testWidgets("the child's badges on Home", (tester) async {
+    final (api, _) = await pumpApp(tester, setup: (api) => api.addBadge(api.aarav.id, 'most_curious', teacher: 'Anita Sharma'));
+    expect(api.calls, contains('badges c1'));
+    await tester.scrollUntilVisible(find.byKey(const Key('badgesCard')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Most Curious'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('shelf-most_curious')));
+    await tester.pumpAndSettle();
+    expect(find.text('From Anita Sharma'), findsOneWidget);
   });
 
   test('participation in plain language', () {

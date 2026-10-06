@@ -81,10 +81,11 @@ class Pill extends StatelessWidget {
 
 /// The signed-in teacher's avatar in a tab's app bar; opens Profile.
 class ProfileButton extends StatelessWidget {
-  const ProfileButton({super.key, required this.name, required this.onPressed});
+  const ProfileButton({super.key, required this.name, required this.onPressed, this.image});
 
   final String name;
   final VoidCallback onPressed;
+  final ImageProvider? image;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -93,7 +94,7 @@ class ProfileButton extends StatelessWidget {
       key: const Key('profileButton'),
       onPressed: onPressed,
       tooltip: context.l10n.profile,
-      icon: KxAvatar(name: name, size: 32),
+      icon: KxAvatar(name: name, size: 32, image: image),
     ),
   );
 }

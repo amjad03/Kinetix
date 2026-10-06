@@ -79,7 +79,7 @@ class TodayTab extends StatelessWidget {
               SliverSafeArea(
                 bottom: false,
                 sliver: SliverToBoxAdapter(
-                  child: _Header(me: me, today: today, onAvatar: onOpenProfile),
+                  child: _Header(me: me, today: today, onAvatar: onOpenProfile, photo: api.photo(me.photoUrl)),
                 ),
               ),
               SliverPadding(
@@ -184,7 +184,9 @@ class TodayTab extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.me, required this.today, required this.onAvatar});
+  const _Header({required this.me, required this.today, required this.onAvatar, this.photo});
+
+  final ImageProvider? photo;
 
   final Me me;
   final DateTime today;
@@ -211,7 +213,7 @@ class _Header extends StatelessWidget {
             onPressed: onAvatar,
             key: const Key('profileButton'),
             tooltip: context.l10n.profile,
-            icon: KxAvatar(name: me.fullName, size: 36),
+            icon: KxAvatar(name: me.fullName, size: 36, image: photo),
           ),
         ],
       ),

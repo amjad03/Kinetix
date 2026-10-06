@@ -18,6 +18,7 @@ export 'src/primitives.dart';
 export 'src/renderer.dart';
 export 'src/solid_explorer.dart';
 export 'src/solids.dart';
+export 'src/viewer/annotations.dart';
 export 'src/viewer/catalogue_info.dart';
 export 'src/viewer/credits.dart';
 export 'src/viewer/engine.dart';

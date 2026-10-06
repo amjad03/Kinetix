@@ -50,9 +50,11 @@ class Me {
     required this.institution,
     this.email,
     this.phone,
+    this.photoUrl,
   });
 
   factory Me.fromJson(Map<String, dynamic> j) => Me(
+    photoUrl: j['photoUrl'] as String?,
     id: j['id'] as String,
     fullName: j['fullName'] as String,
     email: j['email'] as String?,
@@ -69,6 +71,20 @@ class Me {
   final String preferredLanguage;
   final List<String> roles;
   final String institution;
+
+  /// The API path of the profile photo (load it with the API's `photo`); null shows initials.
+  final String? photoUrl;
+
+  Me copyWith({String? fullName, String? email, bool clearEmail = false, String? preferredLanguage, String? photoUrl, bool clearPhoto = false}) => Me(
+    id: id,
+    fullName: fullName ?? this.fullName,
+    roles: roles,
+    preferredLanguage: preferredLanguage ?? this.preferredLanguage,
+    institution: institution,
+    email: clearEmail ? null : email ?? this.email,
+    phone: phone,
+    photoUrl: clearPhoto ? null : photoUrl ?? this.photoUrl,
+  );
 
   bool get isStudent => roles.contains('student');
 
@@ -1450,4 +1466,25 @@ class Consents {
 
   /// Something is not decided yet, or was decided on an older notice: ask (when allowed to decide).
   bool get needsAnswer => canDecide && purposes.values.any((d) => d == null || (d.noticeVersion != null && d.noticeVersion != noticeVersion));
+}
+
+/// A badge a teacher awarded (GET /v1/badges/students/:id).
+class BadgeAward {
+  BadgeAward({required this.id, required this.badge, required this.awardedAt, required this.teacherName, this.subjectName});
+
+  factory BadgeAward.fromJson(Map<String, dynamic> j) => BadgeAward(
+    id: j['id'] as String,
+    badge: j['badge'] as String,
+    awardedAt: DateTime.parse(j['awardedAt'] as String).toLocal(),
+    teacherName: (j['awardedBy'] as Map)['fullName'] as String,
+    subjectName: (j['subject'] as Map?)?['name'] as String?,
+  );
+
+  final String id;
+
+  /// The API value (see KxBadge.fromApi).
+  final String badge;
+  final DateTime awardedAt;
+  final String teacherName;
+  final String? subjectName;
 }

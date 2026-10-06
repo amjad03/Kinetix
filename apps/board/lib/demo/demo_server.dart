@@ -7,6 +7,7 @@ import 'package:http/testing.dart' show MockClient;
 import '../core/models.dart';
 import '../core/realtime.dart';
 import '../core/server_config.dart';
+import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
 
 /// The demo backend for the board (`--dart-define=KINETIX_DEMO=true`): KINETIX Cloud answered in
 /// memory, with KINETIX Demo College's BCom Sem 3 A · Corporate Accounting class (as
@@ -638,10 +639,10 @@ class DemoBoardServer {
               'Explain $topicName',
               'Solve one textbook problem on it',
             ],
+            // Sample steps for the length asked for (the API fits real plans the same way).
             'steps': [
-              {'minutes': 10, 'activity': 'Recap the last class'},
-              {'minutes': 25, 'activity': 'Worked example on the board'},
-              {'minutes': 10, 'activity': 'Pairs practice and exit ticket'},
+              for (final (i, m) in kxFitMinutes([10, 25, 10], (body['minutes'] as num?)?.toInt() ?? 45).indexed)
+                {'minutes': m, 'activity': const ['Recap the last class', 'Worked example on the board', 'Pairs practice and exit ticket'][i]},
             ],
             'materials': ['Textbook', 'Calculator'],
             'assessment': 'Exit ticket with two questions (sample, demo).',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../catalogue.dart';
+import 'annotations.dart';
 import 'manifest.dart';
 import 'snapshot.dart';
 import 'strings.dart';
@@ -14,19 +15,27 @@ Future<void> openModel3d(
   ValueChanged<Model3dSnapshot>? onSnapshot,
   Model3dMirror? mirror,
   String? lang,
+  Model3dAnnotations? annotations,
+  ValueChanged<Model3dAnnotations>? onAnnotationsChanged,
 }) {
   final l = lang ?? viewerLangOf(context);
   final entry = ModelCatalogue.byId(id);
   final scope = Model3dScope.maybeOf(context);
   return Navigator.of(context).push(MaterialPageRoute<void>(
-    builder: (context) => Scaffold(
-      appBar: AppBar(title: Text(entry?.titleIn(l) ?? id)),
-      body: ModelView(
-        key: ValueKey(id),
-        id: id,
-        lang: lang,
-        onSnapshot: onSnapshot ?? scope?.onSnapshot,
-        mirror: mirror ?? scope?.mirror,
+    // The scope's notes store goes along to the new page, which is not below it.
+    builder: (context) => Model3dScope(
+      annotations: scope?.annotations,
+      child: Scaffold(
+        appBar: AppBar(title: Text(entry?.titleIn(l) ?? id)),
+        body: ModelView(
+          key: ValueKey(id),
+          id: id,
+          lang: lang,
+          onSnapshot: onSnapshot ?? scope?.onSnapshot,
+          mirror: mirror ?? scope?.mirror,
+          annotations: annotations,
+          onAnnotationsChanged: onAnnotationsChanged,
+        ),
       ),
     ),
   ));

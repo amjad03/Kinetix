@@ -46,6 +46,10 @@ class DemoStudentApi extends FakeStudentApi {
   );
 
   void _seed() {
+    // Badges from teachers (the board and the Teacher App award them).
+    addBadge(record!.id, 'good_attempt', teacher: 'Anita Sharma', subject: 'Corporate Accounting', at: _day(-6));
+    addBadge(record!.id, 'master_of_maths', teacher: 'Ravi Kumar', subject: 'Business Statistics', at: _day(-2));
+    addBadge(record!.id, 'master_of_maths', teacher: 'Ravi Kumar', subject: 'Business Statistics', at: _day(-1));
     // A question open on the board in the demo class (the teacher's "Ask the class").
     question = ClassQuestion(
       id: 'demo-poll',

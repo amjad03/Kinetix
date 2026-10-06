@@ -71,6 +71,12 @@ class AppState extends ChangeNotifier {
 
   /// Switches the app's language and saves it to the account, so updates arrive in it too.
   /// The save is fire-and-forget: if it fails it is retried quietly on the next start.
+  /// After the profile was edited or the photo changed.
+  void updateMe(Me updated) {
+    me = updated;
+    notifyListeners();
+  }
+
   Future<void> setLanguage(AppLanguage l) async {
     await prefs.setString(_kLanguage, l.name);
     await prefs.setBool(_kLanguageUnsynced, true);

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_3d/kinetix_3d.dart';
 
@@ -16,6 +17,14 @@ void main() {
         ViewerCommands.reset(),
         ViewerCommands.explode(0.5),
         ViewerCommands.slice(normal: [0, 0, -1], offset: 0.01),
+        for (final m in CutMode.values) ViewerCommands.cut(m, axis: CutAxis.y),
+        ViewerCommands.setNotes(const Model3dAnnotations()),
+        ViewerCommands.pinNote(const Offset(0.5, 0.5), text: 'Hot!'),
+        ViewerCommands.stroke(const [Offset(0.1, 0.2)], surface: true, up: true),
+        ViewerCommands.updateNote('p1', text: 'x'),
+        ViewerCommands.deleteNote('p1'),
+        ViewerCommands.clearNotes(),
+        ViewerCommands.showNotes(false),
         ViewerCommands.hide(['aorta'], ['ra_blood']),
         ViewerCommands.variant('h2o'),
         ViewerCommands.animate('beat'),
@@ -42,7 +51,7 @@ void main() {
       expect(names, ViewerCommands.names);
       // The bundle the app ships was rebuilt after the source changed.
       final bundle = File('assets/viewer3d/viewer.js').readAsStringSync();
-      for (final n in ['laser', 'orbit', 'partAt']) {
+      for (final n in ['laser', 'orbit', 'partAt', 'cut', 'annotate']) {
         expect(bundle, contains('$n:'), reason: 'run node tool/models/build_viewer.mjs');
       }
       expect(bundle, contains('chrome.webview'), reason: 'WebView2 messages');
@@ -73,6 +82,51 @@ void main() {
       });
       expect(ViewerCommands.laser(up: true), {'cmd': 'laser', 'up': true});
       expect(ViewerCommands.laser(off: true), {'cmd': 'laser', 'off': true});
+    });
+  });
+
+  group('cuts', () {
+    test('each mode carries only its own settings', () {
+      expect(ViewerCommands.cut(CutMode.off), {'cmd': 'cut', 'mode': 'off'});
+      expect(ViewerCommands.cut(CutMode.half, axis: CutAxis.x, at: 0.1, flip: true), {'cmd': 'cut', 'mode': 'half', 'axis': 'x', 'flip': true, 'at': 0.1});
+      expect(ViewerCommands.cut(CutMode.wedge, axis: CutAxis.y), {'cmd': 'cut', 'mode': 'wedge', 'axis': 'y', 'angle': 90.0, 'turn': 0.0});
+      expect(ViewerCommands.cut(CutMode.slab, thickness: 0.15, at: -0.2), {'cmd': 'cut', 'mode': 'slab', 'axis': 'z', 'at': -0.2, 'thickness': 0.15});
+      expect(ViewerCommands.cut(CutMode.depth, depth: 0.25, play: true), {'cmd': 'cut', 'mode': 'depth', 'axis': 'z', 'depth': 0.25, 'play': true});
+      expect(ViewerCommands.cut(CutMode.peel, peel: 2), {'cmd': 'cut', 'mode': 'peel', 'peel': 2});
+    });
+
+    test('settings are kept in range', () {
+      expect(ViewerCommands.cut(CutMode.wedge, angle: 10)['angle'], 30.0);
+      expect(ViewerCommands.cut(CutMode.wedge, angle: 400)['angle'], 180.0);
+      expect(ViewerCommands.cut(CutMode.wedge, turn: 450)['turn'], 90.0);
+      expect(ViewerCommands.cut(CutMode.half, at: 3)['at'], 0.5);
+      expect(ViewerCommands.cut(CutMode.slab, thickness: 0)['thickness'], 0.01);
+      expect(ViewerCommands.cut(CutMode.depth, depth: -1)['depth'], 0.0);
+      expect(ViewerCommands.cut(CutMode.peel, peel: -3)['peel'], 0);
+    });
+
+    test('viewer.js knows every mode and the notes operations', () {
+      final source = File('tool/models/src/viewer.js').readAsStringSync();
+      for (final m in CutMode.values.where((m) => m != CutMode.off)) {
+        expect(source, contains("mode === '${m.name}'"), reason: m.name);
+      }
+      for (final op in ['set', 'show', 'pin', 'stroke', 'update', 'delete', 'clear']) {
+        expect(source, contains("case '$op':"), reason: op);
+      }
+    });
+  });
+
+  group('notes commands', () {
+    test('carry colours as #rrggbb and points in the view', () {
+      expect(ViewerCommands.pinNote(const Offset(0.25, 1.5), text: 'Lava', color: const Color(0xFF3D8BF2)), {
+        'cmd': 'annotate', 'op': 'pin', 'x': 0.25, 'y': 1.0, 'text': 'Lava', 'color': '#3d8bf2',
+      });
+      expect(ViewerCommands.stroke(const [Offset(0.1, 0.2), Offset(0.3, 0.4)], surface: false, width: 3), {
+        'cmd': 'annotate', 'op': 'stroke', 'surface': false, 'pts': [[0.1, 0.2], [0.3, 0.4]], 'color': '#e53935', 'width': 3.0,
+      });
+      expect(ViewerCommands.updateNote('p1', color: const Color(0xFF000000)), {'cmd': 'annotate', 'op': 'update', 'id': 'p1', 'color': '#000000'});
+      final notes = Model3dAnnotations(pins: [Model3dPin(id: 'p1', part: 'crust', at: const [0, 0, 0.1], text: 'Crust')]);
+      expect(ViewerCommands.setNotes(notes)['data'], notes.toJson());
     });
   });
 

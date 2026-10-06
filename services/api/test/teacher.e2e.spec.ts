@@ -82,7 +82,7 @@ describe('Teacher App endpoints', () => {
   it('shows a roster only to teachers of the class, principals and admins', async () => {
     const res = await as(teacher).get(`/v1/sections/${t.section.id}/roster`).expect(200);
     expect(res.body.map((s: { rollNo: string }) => s.rollNo)).toEqual(['R1', 'R2', 'R3']);
-    expect(Object.keys(res.body[0]).sort()).toEqual(['fullName', 'id', 'rollNo']);
+    expect(Object.keys(res.body[0]).sort()).toEqual(['fullName', 'id', 'photoUrl', 'rollNo']);
     await as(principal).get(`/v1/sections/${t.section.id}/roster`).expect(200);
     await as(teacher2).get(`/v1/sections/${t.section.id}/roster`).expect(403);
     await as(student).get(`/v1/sections/${t.section.id}/roster`).expect(403);

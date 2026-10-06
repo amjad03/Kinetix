@@ -1,5 +1,6 @@
 /// Mirrors packages/shared/src/index.ts.
 library;
+import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
 
 class SessionContext {
   SessionContext({
@@ -490,6 +491,17 @@ class LessonPlan {
   final List<LessonStep> steps;
   final List<String> materials;
   final String assessment;
+
+  /// The same plan with step minutes adding up to exactly [minutes] (see [kxFitMinutes]).
+  LessonPlan fittedTo(int minutes) {
+    final fitted = kxFitMinutes([for (final s in steps) s.minutes], minutes);
+    return LessonPlan(
+      objectives: objectives,
+      steps: [for (var i = 0; i < steps.length; i++) LessonStep(minutes: fitted[i], activity: steps[i].activity)],
+      materials: materials,
+      assessment: assessment,
+    );
+  }
 }
 
 /// The lesson plan for the period open on the board (GET /v1/lesson-plans/current), saved by

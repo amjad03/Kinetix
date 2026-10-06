@@ -205,6 +205,54 @@ export const texts = {
           kn: { title: `ಈಗ ಲೈವ್: ${p.subject ?? 'ತರಗತಿ'}`, body: `${p.teacherName} ಲೈವ್ ಆಗಿ ಕಲಿಸುತ್ತಿದ್ದಾರೆ. ಬೋರ್ಡ್ ನೋಡಲು KINETIX ತೆರೆಯಿರಿ.` },
         })[l],
     ),
+
+  homeworkReminder: (p: { studentName: string; title: string; subject: string; dueOn: string }) =>
+    all((l) => {
+      const n = first(p.studentName);
+      const d = dateIn(l, p.dueOn);
+      return {
+        en: { title: `Homework not handed in: ${n}`, body: `${p.title} (${p.subject}), due ${d}. Please hand it in.` },
+        hi: { title: `होमवर्क जमा नहीं हुआ: ${n}`, body: `${p.title} (${p.subject}), जमा करने की तारीख ${d}। कृपया जमा करें।` },
+        kn: { title: `ಹೋಂವರ್ಕ್ ಸಲ್ಲಿಸಿಲ್ಲ: ${n}`, body: `${p.title} (${p.subject}), ಸಲ್ಲಿಸುವ ದಿನಾಂಕ ${d}. ದಯವಿಟ್ಟು ಸಲ್ಲಿಸಿ.` },
+      }[l];
+    }),
+
+  badge: (p: { studentName: string; badge: BadgeKind; teacherName: string }) =>
+    all((l) => {
+      const n = first(p.studentName);
+      const b = BADGE_NAMES[p.badge][l];
+      return {
+        en: { title: `${n} earned a badge: ${b}`, body: `${p.teacherName} awarded ${p.studentName} the “${b}” badge.` },
+        hi: { title: `${n} को बैज मिला: ${b}`, body: `${p.teacherName} ने ${p.studentName} को “${b}” बैज दिया।` },
+        kn: { title: `${n} ಅವರಿಗೆ ಬ್ಯಾಡ್ಜ್: ${b}`, body: `${p.teacherName} ಅವರು ${p.studentName} ಅವರಿಗೆ “${b}” ಬ್ಯಾಡ್ಜ್ ನೀಡಿದ್ದಾರೆ.` },
+      }[l];
+    }),
+};
+
+export type BadgeKind =
+  | 'dazzling_performer'
+  | 'good_attempt'
+  | 'aspiring_student'
+  | 'obedient_student'
+  | 'outstanding_speaker'
+  | 'master_of_maths'
+  | 'creative_mind'
+  | 'young_scientist'
+  | 'most_curious'
+  | 'best_leader';
+
+/** Badge names in each language (the apps carry the same names). */
+export const BADGE_NAMES: Record<BadgeKind, Record<Lang, string>> = {
+  dazzling_performer: { en: 'Dazzling Performer', hi: 'शानदार प्रदर्शन', kn: 'ಅದ್ಭುತ ಸಾಧಕ' },
+  good_attempt: { en: 'Good Attempt', hi: 'अच्छा प्रयास', kn: 'ಉತ್ತಮ ಪ್ರಯತ್ನ' },
+  aspiring_student: { en: 'Aspiring Student', hi: 'उभरता विद्यार्थी', kn: 'ಆಕಾಂಕ್ಷಿ ವಿದ್ಯಾರ್ಥಿ' },
+  obedient_student: { en: 'Obedient Student', hi: 'आज्ञाकारी विद्यार्थी', kn: 'ವಿಧೇಯ ವಿದ್ಯಾರ್ಥಿ' },
+  outstanding_speaker: { en: 'Outstanding Speaker', hi: 'उत्कृष्ट वक्ता', kn: 'ಅತ್ಯುತ್ತಮ ಭಾಷಣಕಾರ' },
+  master_of_maths: { en: 'Master of Maths', hi: 'गणित का उस्ताद', kn: 'ಗಣಿತ ಪರಿಣತ' },
+  creative_mind: { en: 'Creative Mind', hi: 'रचनात्मक सोच', kn: 'ಸೃಜನಶೀಲ ಮನಸ್ಸು' },
+  young_scientist: { en: 'Young Scientist', hi: 'युवा वैज्ञानिक', kn: 'ಯುವ ವಿಜ್ಞಾನಿ' },
+  most_curious: { en: 'Most Curious', hi: 'सबसे जिज्ञासु', kn: 'ಅತ್ಯಂತ ಕುತೂಹಲಿ' },
+  best_leader: { en: 'Best Leader', hi: 'सर्वश्रेष्ठ नेता', kn: 'ಅತ್ಯುತ್ತಮ ನಾಯಕ' },
 };
 
 /** What a phone's lock screen shows for each kind: generic on purpose (no names or details). */
@@ -219,6 +267,7 @@ export const LOCK_SCREEN: Record<string, Record<Lang, string>> = {
   marks: { en: 'Marks published', hi: 'अंक जारी', kn: 'ಅಂಕಗಳು ಪ್ರಕಟವಾಗಿವೆ' },
   message: { en: 'New message', hi: 'नया संदेश', kn: 'ಹೊಸ ಸಂದೇಶ' },
   live: { en: 'Class is live', hi: 'कक्षा लाइव है', kn: 'ತರಗತಿ ಲೈವ್ ಆಗಿದೆ' },
+  badge: { en: 'A new badge', hi: 'नया बैज', kn: 'ಹೊಸ ಬ್ಯಾಡ್ಜ್' },
 };
 
 export const OPEN_APP: Record<Lang, string> = {

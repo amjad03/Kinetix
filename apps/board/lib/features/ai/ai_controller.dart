@@ -114,6 +114,9 @@ class AiController extends ChangeNotifier {
   // Lesson plan
   String? lessonTopic;
   int lessonMinutes = 45;
+
+  /// The length the shown plan was made for: its steps are fitted to it.
+  int lessonPlanMinutes = 45;
   final lessonPlan = AiTask<LessonPlan>();
 
   // Read the board (handwriting to text)
@@ -245,6 +248,7 @@ class AiController extends ChangeNotifier {
 
   Future<void> generateLessonPlan(String topic, {bool fresh = false}) async {
     lessonTopic = topic.trim();
+    lessonPlanMinutes = lessonMinutes;
     await lessonPlan.run(
       () => _withOffline(
         () => _api.lessonPlan(lessonTopic!, minutes: lessonMinutes, language: language, fresh: fresh),

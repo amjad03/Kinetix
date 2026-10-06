@@ -7,6 +7,7 @@ import 'model.dart';
 import 'model_viewer.dart';
 import 'solid_explorer.dart';
 import 'solids.dart';
+import 'viewer/annotations.dart';
 import 'viewer/catalogue_info.dart';
 import 'viewer/engine.dart';
 import 'viewer/manifest.dart';
@@ -140,7 +141,7 @@ List<ModelEntry> get modelCatalogue => ModelCatalogue.entries;
 /// Shows a catalogue model by id: a [SolidExplorer] for solids, the three.js
 /// [Model3dViewer] for viewer models, and the Dart [ModelViewer] where there is no WebView.
 class ModelView extends StatefulWidget {
-  const ModelView({super.key, required this.id, this.onSnapshot, this.mirror, this.lang, this.showTitle = false});
+  const ModelView({super.key, required this.id, this.onSnapshot, this.mirror, this.lang, this.showTitle = false, this.annotations, this.onAnnotationsChanged});
   final String id;
 
   /// "Put on board" (falls back to a [Model3dScope] above).
@@ -150,6 +151,11 @@ class ModelView extends StatefulWidget {
 
   /// Whether the viewer shows the title (the board's split panel already does).
   final bool showTitle;
+
+  /// Notes and drawing to put on a viewer model, and where changes to them go
+  /// ([Model3dViewer.annotations], [Model3dViewer.onAnnotationsChanged]).
+  final Model3dAnnotations? annotations;
+  final ValueChanged<Model3dAnnotations>? onAnnotationsChanged;
 
   @override
   State<ModelView> createState() => _ModelViewState();
@@ -175,6 +181,8 @@ class _ModelViewState extends State<ModelView> {
         onSnapshot: widget.onSnapshot,
         mirror: widget.mirror,
         showTitle: widget.showTitle,
+        annotations: widget.annotations,
+        onAnnotationsChanged: widget.onAnnotationsChanged,
       );
     }
     if (_builtFor != entry.id) {

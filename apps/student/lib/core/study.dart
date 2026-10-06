@@ -24,7 +24,7 @@ class StudyController extends ChangeNotifier {
   DateTime get today => summary?.today ?? DateTime.now();
 
   /// Everything on Today. Each part fails on its own, so one problem never hides the rest.
-  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadQuestion(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans()]);
+  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadQuestion(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans(), loadBadges()]);
 
   Future<void> loadSummary() async {
     loading = true;
@@ -89,6 +89,19 @@ class StudyController extends ChangeNotifier {
   ApiException? marksError;
   LibraryAccount? library;
   ApiException? libraryError;
+
+  /// Badges teachers awarded, newest first (null until loaded).
+  List<BadgeAward>? badges;
+
+  Future<void> loadBadges() async {
+    try {
+      badges = await api.badges(student.id);
+    } on ApiException {
+      // Badges are a nicety: the rest of the profile works without them.
+    } finally {
+      notifyListeners();
+    }
+  }
 
   Future<StudentMarks?> loadMarks() async {
     marksError = null;

@@ -94,6 +94,11 @@ export const users = pgTable(
     passwordMustChange: boolean('password_must_change').notNull().default(false),
     preferredLanguage: language('preferred_language').notNull().default('en'),
     status: userStatus('status').notNull().default('active'),
+    /** Profile photo in object storage (a square JPEG); null shows initials. */
+    photoKey: text('photo_key'),
+    photoUpdatedAt: timestamp('photo_updated_at', { withTimezone: true }),
+    /** What a teacher says they teach, shown on their profile (the timetable says what they do teach). */
+    teachingSubjects: jsonb('teaching_subjects').$type<string[]>().notNull().default([]),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -448,6 +453,38 @@ export const pollKind = pgEnum('poll_kind', ['mcq', 'numeric']);
 export const pollAnswerSource = pgEnum('poll_answer_source', ['app', 'card']);
 
 /** A question the teacher asked the class on the board ("Ask the class"). */
+/** The badges a teacher can award (names in each app's language; see docs/design/board-wireframes.html, screen 13). */
+export const BADGE_KINDS = [
+  'dazzling_performer',
+  'good_attempt',
+  'aspiring_student',
+  'obedient_student',
+  'outstanding_speaker',
+  'master_of_maths',
+  'creative_mind',
+  'young_scientist',
+  'most_curious',
+  'best_leader',
+] as const;
+export const badgeKind = pgEnum('badge_kind', BADGE_KINDS);
+
+/** A badge awarded to a student by one of their class's teachers (from the board or the Teacher App). */
+export const badges = pgTable(
+  'badges',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    badge: badgeKind('badge').notNull(),
+    awardedBy: uuid('awarded_by').notNull().references(() => users.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    note: text('note'),
+    awardedAt: timestamp('awarded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('badges_student_idx').on(t.studentId, t.awardedAt)],
+);
+
 export const polls = pgTable(
   'polls',
   {
@@ -542,7 +579,7 @@ export const guardians = pgTable(
   (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -1403,5 +1440,6 @@ export const TENANT_TABLES = [
   'answer_cards',
   'polls',
   'poll_responses',
+  'badges',
   'audit_log',
 ] as const;

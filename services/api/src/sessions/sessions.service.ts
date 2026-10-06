@@ -1,3 +1,4 @@
+import { photoUrl } from '../profile/photo-url.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { SessionContext, SessionEndReason } from '@kinetix/shared';
 import { RealtimeEvents } from '@kinetix/shared';
@@ -41,11 +42,18 @@ export class SessionsService {
   }
 
   async roster(tx: Tx, sectionId: string) {
-    return tx
-      .select({ id: students.id, rollNo: students.rollNo, fullName: students.fullName })
+    const rows = await tx
+      .select({ id: students.id, rollNo: students.rollNo, fullName: students.fullName, userId: users.id, photoKey: users.photoKey, photoUpdatedAt: users.photoUpdatedAt })
       .from(students)
+      .leftJoin(users, eq(users.id, students.userId))
       .where(and(eq(students.sectionId, sectionId), eq(students.status, 'active')))
       .orderBy(asc(students.rollNo));
+    return rows.map((r) => ({
+      id: r.id,
+      rollNo: r.rollNo,
+      fullName: r.fullName,
+      photoUrl: r.userId ? photoUrl({ id: r.userId, photoKey: r.photoKey, photoUpdatedAt: r.photoUpdatedAt }) : null,
+    }));
   }
 
   /** Ends every open session on a device. Returns the ids that were ended. */

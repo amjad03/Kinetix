@@ -39,6 +39,10 @@ class DemoParentApi extends FakeParentApi {
   );
 
   void _seed() {
+    // Badges from teachers (the board and the Teacher App award them).
+    addBadge(aarav.id, 'outstanding_speaker', teacher: 'Anita Sharma', subject: 'Corporate Accounting', at: _day(-4));
+    addBadge(aarav.id, 'best_leader', teacher: 'Ravi Kumar', at: _day(-1));
+    addBadge(diya.id, 'creative_mind', teacher: 'Meera Iyer', subject: 'Art', at: _day(-2));
     profile = Me(
       id: 'u1',
       fullName: 'Rajesh Patel',

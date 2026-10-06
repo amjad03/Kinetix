@@ -100,10 +100,33 @@ void main() {
     expect(find.text('Your attendance'), findsOneWidget);
     expect(find.text('Saturday, 3 October'), findsOneWidget);
     expect(find.text('Attended 1 of 2'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('onlyMissed')));
+    // The counts are filters, and the list follows them.
+    String chip(String key) =>
+        tester.widget<Text>(find.descendant(of: find.byKey(Key('count-$key')), matching: find.byType(Text))).textSpan!.toPlainText();
+    expect(chip('all'), '3 All');
+    expect(chip('absent'), '1 Absent');
+    await tester.tap(find.byKey(const Key('count-absent')));
     await tester.pumpAndSettle();
     expect(find.text('Saturday, 3 October'), findsNothing);
     expect(find.text('Thursday, 1 October'), findsOneWidget);
+    expect(find.text('Cost Accounting'), findsNothing);
+    await tester.tap(find.byKey(const Key('count-present')));
+    await tester.pumpAndSettle();
+    expect(find.text('Saturday, 3 October'), findsOneWidget);
+    expect(find.text('Thursday, 1 October'), findsNothing);
+    // Tapping the chosen count again shows every class.
+    await tester.tap(find.byKey(const Key('count-present')));
+    await tester.pumpAndSettle();
+    expect(find.text('Thursday, 1 October'), findsOneWidget);
+  });
+
+  testWidgets('a count on Today opens the history showing only that status', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('absentCount')));
+    await tester.pumpAndSettle();
+    expect(find.text('Your attendance'), findsOneWidget);
+    expect(find.text('Thursday, 1 October'), findsOneWidget);
+    expect(find.text('Saturday, 3 October'), findsNothing);
   });
 
   testWidgets('recordings: missed first, plays in the lesson player', (tester) async {

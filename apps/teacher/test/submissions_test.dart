@@ -52,12 +52,47 @@ void main() {
     expect(find.text('Show all working.'), findsOneWidget);
   });
 
+  testWidgets('the counts filter the list; "Remind the N" notifies who has not handed in', (tester) async {
+    await pumpDetail(tester);
+    expect(countText(tester, 'all'), '3 All');
+    for (final id in ['s1', 's2', 's3']) {
+      expect(find.byKey(Key('submission-$id')), findsOneWidget);
+    }
+
+    await tapAndSettle(tester, count('missing'));
+    expect(find.byKey(const Key('submission-s3')), findsOneWidget);
+    expect(find.byKey(const Key('submission-s1')), findsNothing);
+    expect(find.byKey(const Key('submission-s2')), findsNothing);
+
+    await tapAndSettle(tester, count('checked'));
+    expect(find.byKey(const Key('submission-s2')), findsOneWidget);
+    expect(find.byKey(const Key('submission-s3')), findsNothing);
+    // Only shown with everyone or the missing ones.
+    expect(find.byKey(const Key('remindMissing')), findsNothing);
+
+    await tapAndSettle(tester, count('returned'));
+    expect(find.text('No students here'), findsOneWidget);
+
+    // Tapping the selected filter again shows everyone.
+    await tapAndSettle(tester, count('returned'));
+    expect(find.byKey(const Key('submission-s1')), findsOneWidget);
+    await tapAndSettle(tester, count('missing'));
+    await tapAndSettle(tester, count('all'));
+    expect(find.byKey(const Key('submission-s1')), findsOneWidget);
+
+    await tapAndSettle(tester, find.byKey(const Key('remindMissing')));
+    expect(find.text('Remind 1 students?'), findsOneWidget);
+    await tapAndSettle(tester, find.byKey(const Key('confirmRemind')));
+    expect(api.calls, contains('remind h1 1'));
+    expect(find.text('Reminded 1 students and their families'), findsOneWidget);
+  });
+
   testWidgets('counts and each student with status and a late badge', (tester) async {
     await pumpDetail(tester);
     expect(countText(tester, 'submitted'), '1 Handed in');
     expect(countText(tester, 'checked'), '1 Checked');
     expect(countText(tester, 'returned'), '0 Returned');
-    expect(countText(tester, 'missing'), '1 Not handed in');
+    expect(countText(tester, 'missing'), '1 Missing');
     expect(inRow('s1', find.text('Handed in')), findsOneWidget);
     expect(inRow('s1', find.text('Late')), findsNothing);
     expect(inRow('s2', find.text('Checked')), findsOneWidget);

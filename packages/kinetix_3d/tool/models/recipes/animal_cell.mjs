@@ -123,9 +123,12 @@ export default {
   views: [
     { id: 'front', name: t('Front', 'सामने से', 'ಮುಂಭಾಗ'), dir: [0.2, 0.25, 1] },
     { id: 'top', name: t('From above', 'ऊपर से', 'ಮೇಲಿನಿಂದ'), dir: [0, 1, 0.2] },
+    { id: 'wedge', name: t('Into the wedge', 'कटे भाग में', 'ಕತ್ತರಿಸಿದ ಭಾಗದೊಳಗೆ'), dir: [1, 0.6, 1] },
   ],
   slices: [
     { id: 'half', name: t('Cut in half', 'बीच से आधा काटा', 'ಅರ್ಧಕ್ಕೆ ಕತ್ತರಿಸಿದ್ದು'), normal: [0, 0, -1], offset: 0.0, view: 'front' },
+    // Cut like a cake: a quarter taken out, so the inside shows on two faces.
+    { id: 'wedge', name: t('Slice taken out', 'एक फाँक निकाली', 'ಒಂದು ತುಂಡು ತೆಗೆದಿದೆ'), normal: [-1, 0, 0], offset: 0, normal2: [0, 0, -1], view: 'wedge' },
   ],
   animations: [],
 };

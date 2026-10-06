@@ -43,7 +43,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get discardTitle => 'ಬದಲಾವಣೆಗಳನ್ನು ಬಿಟ್ಟುಬಿಡುವುದೇ?';
 
   @override
-  String get discardMarksBody => 'ನೀವು ನಮೂದಿಸಿದ ಕೆಲವು ಅಂಕಗಳನ್ನು ಇನ್ನೂ ಉಳಿಸಿಲ್ಲ.';
+  String get discardMarksBody =>
+      'ನೀವು ನಮೂದಿಸಿದ ಕೆಲವು ಅಂಕಗಳನ್ನು ಇನ್ನೂ ಉಳಿಸಿಲ್ಲ.';
 
   @override
   String get keepEditing => 'ಸಂಪಾದನೆ ಮುಂದುವರಿಸಿ';
@@ -138,7 +139,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get enterInstitutionCode => 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಕೋಡ್ ನಮೂದಿಸಿ';
 
   @override
-  String get institutionCodeChars => 'ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳು, ಸಂಖ್ಯೆಗಳು ಮತ್ತು ಹೈಫನ್ (-) ಮಾತ್ರ ಬಳಸಿ';
+  String get institutionCodeChars =>
+      'ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳು, ಸಂಖ್ಯೆಗಳು ಮತ್ತು ಹೈಫನ್ (-) ಮಾತ್ರ ಬಳಸಿ';
 
   @override
   String get enterEmailOrPhone => 'ನಿಮ್ಮ ಇಮೇಲ್ ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
@@ -147,22 +149,27 @@ class AppLocalizationsKn extends AppLocalizations {
   String get invalidEmail => 'ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸ ನಮೂದಿಸಿ';
 
   @override
-  String get invalidEmailOrPhone => 'ಸರಿಯಾದ ಇಮೇಲ್ ಅಥವಾ 10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
+  String get invalidEmailOrPhone =>
+      'ಸರಿಯಾದ ಇಮೇಲ್ ಅಥವಾ 10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
 
   @override
   String get enterPassword => 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ';
 
   @override
-  String get invalidServer => 'https://api.kinetix.in ರೀತಿಯ ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ';
+  String get invalidServer =>
+      'https://api.kinetix.in ರೀತಿಯ ಸರ್ವರ್ ವಿಳಾಸ ನಮೂದಿಸಿ';
 
   @override
-  String get errorNotTeacher => 'ಈ ಆ್ಯಪ್ ಶಿಕ್ಷಕರಿಗಾಗಿ. ನಿಮ್ಮ ಖಾತೆಗೆ ಶಿಕ್ಷಕರ ಪಾತ್ರ ಇಲ್ಲ.';
+  String get errorNotTeacher =>
+      'ಈ ಆ್ಯಪ್ ಶಿಕ್ಷಕರಿಗಾಗಿ. ನಿಮ್ಮ ಖಾತೆಗೆ ಶಿಕ್ಷಕರ ಪಾತ್ರ ಇಲ್ಲ.';
 
   @override
-  String get errorOffline => 'KINETIX ಸಂಪರ್ಕಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
+  String get errorOffline =>
+      'KINETIX ಸಂಪರ್ಕಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get errorTimeout => 'ಸರ್ವರ್ ಪ್ರತಿಕ್ರಿಯಿಸಲು ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errorTimeout =>
+      'ಸರ್ವರ್ ಪ್ರತಿಕ್ರಿಯಿಸಲು ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get errorForbidden => 'ಇದಕ್ಕೆ ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ.';
@@ -171,7 +178,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errorNotFound => 'ಸಿಗಲಿಲ್ಲ.';
 
   @override
-  String get errorTooManyAttempts => 'ತುಂಬಾ ಪ್ರಯತ್ನಗಳಾಗಿವೆ. ಒಂದು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errorTooManyAttempts =>
+      'ತುಂಬಾ ಪ್ರಯತ್ನಗಳಾಗಿವೆ. ಒಂದು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String errorGeneric(int status) {
@@ -179,13 +187,16 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get errorSessionExpired => 'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
+  String get errorSessionExpired =>
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get errorWrongLogin => 'ಸಂಸ್ಥೆಯ ಕೋಡ್, ಲಾಗಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ತಪ್ಪಾಗಿದೆ';
+  String get errorWrongLogin =>
+      'ಸಂಸ್ಥೆಯ ಕೋಡ್, ಲಾಗಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ತಪ್ಪಾಗಿದೆ';
 
   @override
-  String get errorCodeExpired => 'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅದರ ಅವಧಿ ಮುಗಿದಿದೆ. ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ ಹೊಸ ಕೋಡ್ ಬಳಸಿ.';
+  String get errorCodeExpired =>
+      'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅದರ ಅವಧಿ ಮುಗಿದಿದೆ. ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ ಹೊಸ ಕೋಡ್ ಬಳಸಿ.';
 
   @override
   String get errorAccountInactive => 'ನಿಮ್ಮ ಖಾತೆ ಸಕ್ರಿಯವಾಗಿಲ್ಲ';
@@ -197,7 +208,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errorNotPairingQr => 'ಇದು KINETIX ಬೋರ್ಡ್‌ನ QR ಕೋಡ್ ಅಲ್ಲ';
 
   @override
-  String get errorFutureAttendance => 'ಮುಂದಿನ ದಿನಾಂಕದ ಹಾಜರಾತಿಯನ್ನು ಈಗ ತೆಗೆದುಕೊಳ್ಳಲು ಆಗುವುದಿಲ್ಲ';
+  String get errorFutureAttendance =>
+      'ಮುಂದಿನ ದಿನಾಂಕದ ಹಾಜರಾತಿಯನ್ನು ಈಗ ತೆಗೆದುಕೊಳ್ಳಲು ಆಗುವುದಿಲ್ಲ';
 
   @override
   String get errorNotYourClass => 'ನೀವು ಈ ತರಗತಿಗೆ ಪಾಠ ಮಾಡುವುದಿಲ್ಲ';
@@ -218,16 +230,19 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errorRecordingUploading => 'ರೆಕಾರ್ಡಿಂಗ್ ಇನ್ನೂ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get errorRecordingNoClass => 'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಯಾವುದೇ ತರಗತಿಯೊಂದಿಗೆ ಮಾಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಹಂಚಿಕೊಳ್ಳಲು ಯಾರೂ ಇಲ್ಲ';
+  String get errorRecordingNoClass =>
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಯಾವುದೇ ತರಗತಿಯೊಂದಿಗೆ ಮಾಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಹಂಚಿಕೊಳ್ಳಲು ಯಾರೂ ಇಲ್ಲ';
 
   @override
-  String get recordingNotAvailable => 'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ. ಇದು ಇನ್ನೂ ಬೋರ್ಡ್‌ನಿಂದ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿರಬಹುದು.';
+  String get recordingNotAvailable =>
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ. ಇದು ಇನ್ನೂ ಬೋರ್ಡ್‌ನಿಂದ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿರಬಹುದು.';
 
   @override
   String get connectToBoard => 'ಬೋರ್ಡ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ';
 
   @override
-  String get connectToBoardBody => 'ಪಾಠ ಶುರು ಮಾಡಲು ತರಗತಿಯ ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
+  String get connectToBoardBody =>
+      'ಪಾಠ ಶುರು ಮಾಡಲು ತರಗತಿಯ ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
 
   @override
   String get connect => 'ಸಂಪರ್ಕಿಸಿ';
@@ -279,7 +294,12 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಅವಧಿಗಳು',
+      one: '1 ಅವಧಿ',
+    );
     return '$_temp0';
   }
 
@@ -350,10 +370,12 @@ class AppLocalizationsKn extends AppLocalizations {
   String get noStudentsInClass => 'ಈ ತರಗತಿಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ';
 
   @override
-  String get attendanceAlreadyTaken => 'ಹಾಜರಾತಿ ಈಗಾಗಲೇ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳು ಹಿಂದಿನ ನಮೂದುಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತವೆ.';
+  String get attendanceAlreadyTaken =>
+      'ಹಾಜರಾತಿ ಈಗಾಗಲೇ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳು ಹಿಂದಿನ ನಮೂದುಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತವೆ.';
 
   @override
-  String get attendanceHelp => 'ಎಲ್ಲರೂ ಮೊದಲಿಗೆ ಹಾಜರು. ಗೈರು ಎಂದು ಗುರುತಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ, ತಡ ಎಂದು ಗುರುತಿಸಲು ಒತ್ತಿ ಹಿಡಿಯಿರಿ.';
+  String get attendanceHelp =>
+      'ಎಲ್ಲರೂ ಮೊದಲಿಗೆ ಹಾಜರು. ಗೈರು ಎಂದು ಗುರುತಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ, ತಡ ಎಂದು ಗುರುತಿಸಲು ಒತ್ತಿ ಹಿಡಿಯಿರಿ.';
 
   @override
   String get update => 'ಅಪ್‌ಡೇಟ್ ಮಾಡಿ';
@@ -368,7 +390,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get enterCodeTitle => 'ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ ಕೋಡ್ ನಮೂದಿಸಿ';
 
   @override
-  String get enterCodeBody => 'ಇದು QR ಕೋಡ್‌ನ ಕೆಳಗಿರುವ 6 ಅಂಕಿಯ ಸಂಖ್ಯೆ. ಪ್ರತಿ 2 ನಿಮಿಷಕ್ಕೊಮ್ಮೆ ಹೊಸ ಕೋಡ್ ಬರುತ್ತದೆ.';
+  String get enterCodeBody =>
+      'ಇದು QR ಕೋಡ್‌ನ ಕೆಳಗಿರುವ 6 ಅಂಕಿಯ ಸಂಖ್ಯೆ. ಪ್ರತಿ 2 ನಿಮಿಷಕ್ಕೊಮ್ಮೆ ಹೊಸ ಕೋಡ್ ಬರುತ್ತದೆ.';
 
   @override
   String get scanInstead => 'ಬದಲಾಗಿ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
@@ -406,7 +429,8 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಈಗ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ನಿಮಗೆ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಬೋರ್ಡ್ ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿ ಇಲ್ಲದೆ ತೆರೆಯುತ್ತದೆ. 2 ಗಂಟೆಗಳ ನಂತರ ನೀವು ತಾನಾಗಿಯೇ ಸೈನ್ ಔಟ್ ಆಗುತ್ತೀರಿ.';
 
   @override
-  String get qrNotOurs => 'ಇದು KINETIX ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಅಲ್ಲ. ಬೋರ್ಡ್‌ನ ಪರದೆಯ ಮೇಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.';
+  String get qrNotOurs =>
+      'ಇದು KINETIX ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಅಲ್ಲ. ಬೋರ್ಡ್‌ನ ಪರದೆಯ ಮೇಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.';
 
   @override
   String get scanTitle => 'ಬೋರ್ಡ್‌ನ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
@@ -415,13 +439,15 @@ class AppLocalizationsKn extends AppLocalizations {
   String get torch => 'ಟಾರ್ಚ್';
 
   @override
-  String get cameraDenied => 'ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮೆರಾ ಅನುಮತಿ ನೀಡಿ, ಅಥವಾ ಬದಲಾಗಿ ಕೋಡ್ ನಮೂದಿಸಿ.';
+  String get cameraDenied =>
+      'ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮೆರಾ ಅನುಮತಿ ನೀಡಿ, ಅಥವಾ ಬದಲಾಗಿ ಕೋಡ್ ನಮೂದಿಸಿ.';
 
   @override
   String get cameraUnavailable => 'ಕ್ಯಾಮೆರಾ ಲಭ್ಯವಿಲ್ಲ. ಬದಲಾಗಿ ಕೋಡ್ ನಮೂದಿಸಿ.';
 
   @override
-  String get pointCamera => 'ಕ್ಯಾಮೆರಾವನ್ನು ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ QR ಕೋಡ್ ಕಡೆಗೆ ತೋರಿಸಿ';
+  String get pointCamera =>
+      'ಕ್ಯಾಮೆರಾವನ್ನು ಬೋರ್ಡ್‌ನಲ್ಲಿರುವ QR ಕೋಡ್ ಕಡೆಗೆ ತೋರಿಸಿ';
 
   @override
   String get enterCodeInstead => 'ಬದಲಾಗಿ ಕೋಡ್ ನಮೂದಿಸಿ';
@@ -433,7 +459,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get assign => 'ನೀಡಿ';
 
   @override
-  String get noClassesInTimetable => 'ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿಗಳಿಲ್ಲ';
+  String get noClassesInTimetable =>
+      'ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿಗಳಿಲ್ಲ';
 
   @override
   String get chooseSubject => 'ವಿಷಯ ಆಯ್ಕೆಮಾಡಿ';
@@ -456,7 +483,8 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get noHomework => 'ಇನ್ನೂ ಯಾವುದೇ ಹೋಂವರ್ಕ್ ಇಲ್ಲ.\nತರಗತಿಗೆ ಹೋಂವರ್ಕ್ ನೀಡಿದರೆ ಅದು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
+  String get noHomework =>
+      'ಇನ್ನೂ ಯಾವುದೇ ಹೋಂವರ್ಕ್ ಇಲ್ಲ.\nತರಗತಿಗೆ ಹೋಂವರ್ಕ್ ನೀಡಿದರೆ ಅದು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get dueToday => 'ಸಲ್ಲಿಕೆ: ಇಂದು';
@@ -493,7 +521,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get create => 'ರಚಿಸಿ';
 
   @override
-  String get assessmentTitleHint => 'ಉದಾ. ಯೂನಿಟ್ ಟೆಸ್ಟ್ 2: Redemption of shares';
+  String get assessmentTitleHint =>
+      'ಉದಾ. ಯೂನಿಟ್ ಟೆಸ್ಟ್ 2: Redemption of shares';
 
   @override
   String get assessmentTitleRequired => 'ಶೀರ್ಷಿಕೆ ನೀಡಿ';
@@ -606,7 +635,8 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get publishCanCorrect => 'ಪ್ರಕಟಿಸಿದ ನಂತರವೂ ನೀವು ಅಂಕಗಳನ್ನು ಸರಿಪಡಿಸಬಹುದು.';
+  String get publishCanCorrect =>
+      'ಪ್ರಕಟಿಸಿದ ನಂತರವೂ ನೀವು ಅಂಕಗಳನ್ನು ಸರಿಪಡಿಸಬಹುದು.';
 
   @override
   String get publish => 'ಪ್ರಕಟಿಸಿ';
@@ -665,7 +695,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get notSavedYet => 'ಇನ್ನೂ ಉಳಿಸಿಲ್ಲ';
 
   @override
-  String get publishedFamiliesSee => 'ಪ್ರಕಟಿಸಲಾಗಿದೆ · ಪೋಷಕರು ಈ ಅಂಕಗಳನ್ನು ನೋಡಬಹುದು';
+  String get publishedFamiliesSee =>
+      'ಪ್ರಕಟಿಸಲಾಗಿದೆ · ಪೋಷಕರು ಈ ಅಂಕಗಳನ್ನು ನೋಡಬಹುದು';
 
   @override
   String get typeMarksThenSave => 'ಅಂಕಗಳನ್ನು ಟೈಪ್ ಮಾಡಿ, ನಂತರ ಉಳಿಸಿ';
@@ -682,7 +713,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get remarkFamiliesSee => 'ಪೋಷಕರು ಇದನ್ನು ಅಂಕಗಳೊಂದಿಗೆ ನೋಡುತ್ತಾರೆ.';
 
   @override
-  String get remarkHint => 'ಉದಾ. ಅಚ್ಚುಕಟ್ಟಾದ ಕೆಲಸ; ಜರ್ನಲ್ ಎಂಟ್ರಿಗಳನ್ನು ಪುನರಾವರ್ತಿಸಿ';
+  String get remarkHint =>
+      'ಉದಾ. ಅಚ್ಚುಕಟ್ಟಾದ ಕೆಲಸ; ಜರ್ನಲ್ ಎಂಟ್ರಿಗಳನ್ನು ಪುನರಾವರ್ತಿಸಿ';
 
   @override
   String get noMessages =>
@@ -729,7 +761,8 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get threadPrivacy => 'ಈ ಸಂಭಾಷಣೆ ನಿಮ್ಮ ಮತ್ತು ನೀವು ಆಯ್ಕೆಮಾಡುವ ವ್ಯಕ್ತಿಯ ನಡುವೆ ಇರುತ್ತದೆ. ಶಾಲೆಯ ಮುಖ್ಯಸ್ಥರು ಇದನ್ನು ಪರಿಶೀಲಿಸಬಹುದು.';
+  String get threadPrivacy =>
+      'ಈ ಸಂಭಾಷಣೆ ನಿಮ್ಮ ಮತ್ತು ನೀವು ಆಯ್ಕೆಮಾಡುವ ವ್ಯಕ್ತಿಯ ನಡುವೆ ಇರುತ್ತದೆ. ಶಾಲೆಯ ಮುಖ್ಯಸ್ಥರು ಇದನ್ನು ಪರಿಶೀಲಿಸಬಹುದು.';
 
   @override
   String get relationFather => 'ತಂದೆ';
@@ -747,7 +780,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get searchStudents => 'ಹೆಸರು ಅಥವಾ ರೋಲ್ ನಂಬರ್ ಮೂಲಕ ಹುಡುಕಿ';
 
   @override
-  String get noStudentsTaught => 'ನೀವು ಕಲಿಸುವ ತರಗತಿಗಳಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ';
+  String get noStudentsTaught =>
+      'ನೀವು ಕಲಿಸುವ ತರಗತಿಗಳಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ';
 
   @override
   String noStudentMatches(String query) {
@@ -829,7 +863,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get signOutTitle => 'ಸೈನ್ ಔಟ್ ಮಾಡುವುದೇ?';
 
   @override
-  String get signOutBody => 'ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬೇಕಾಗುತ್ತದೆ.';
+  String get signOutBody =>
+      'ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬೇಕಾಗುತ್ತದೆ.';
 
   @override
   String get signOut => 'ಸೈನ್ ಔಟ್ ಮಾಡಿ';
@@ -870,7 +905,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get mcqTests => 'MCQ ಟೆಸ್ಟ್‌ಗಳು';
 
   @override
-  String get mcqTestsBody => 'ಬೋರ್ಡ್ ರಸಪ್ರಶ್ನೆಗಳೊಂದಿಗೆ ಹೊಂದಿಕೊಳ್ಳುವ ಆನ್‌ಲೈನ್ ಟೆಸ್ಟ್‌ಗಳು';
+  String get mcqTestsBody =>
+      'ಬೋರ್ಡ್ ರಸಪ್ರಶ್ನೆಗಳೊಂದಿಗೆ ಹೊಂದಿಕೊಳ್ಳುವ ಆನ್‌ಲೈನ್ ಟೆಸ್ಟ್‌ಗಳು';
 
   @override
   String get roleAdmin => 'ಆಡಳಿತಾಧಿಕಾರಿ';
@@ -897,7 +933,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get roleAccountant => 'ಲೆಕ್ಕಿಗರು';
 
   @override
-  String get languageSaveFailed => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಭಾಷೆ ಬದಲಾಗಿದೆ. ಮುಂದಿನ ಬಾರಿ ಆನ್‌ಲೈನ್ ಆದಾಗ ಇದು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.';
+  String get languageSaveFailed =>
+      'ಈ ಫೋನ್‌ನಲ್ಲಿ ಭಾಷೆ ಬದಲಾಗಿದೆ. ಮುಂದಿನ ಬಾರಿ ಆನ್‌ಲೈನ್ ಆದಾಗ ಇದು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.';
 
   @override
   String holidayNoClasses(String title) {
@@ -940,7 +977,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get syllabusProgressBody => 'ಪ್ರತಿ ತರಗತಿಗೆ ಕಲಿಸಿದ ವಿಷಯಗಳನ್ನು ಗುರುತಿಸಿ';
 
   @override
-  String get syllabusUnlinked => 'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿ KINETIX ERP → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
+  String get syllabusUnlinked =>
+      'ಈ ವಿಷಯವನ್ನು ಇನ್ನೂ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿ KINETIX ERP → Syllabus ನಲ್ಲಿ ಜೋಡಿಸಬಹುದು.';
 
   @override
   String topicsTaught(int covered, int total) {
@@ -1004,7 +1042,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get openPdf => 'PDF ತೆರೆಯಿರಿ';
 
   @override
-  String get couldNotOpenFile => 'ಈ ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ.';
+  String get couldNotOpenFile =>
+      'ಈ ಫೈಲ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. PDF ತೆರೆಯುವ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ.';
 
   @override
   String get remarkOptional => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
@@ -1019,7 +1058,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get checkWork => 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ';
 
   @override
-  String get reviewNotifies => 'ವಿದ್ಯಾರ್ಥಿ ಮತ್ತು ಅವರ ಪೋಷಕರಿಗೆ ನಿಮ್ಮ ಟಿಪ್ಪಣಿಯೊಂದಿಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
+  String get reviewNotifies =>
+      'ವಿದ್ಯಾರ್ಥಿ ಮತ್ತು ಅವರ ಪೋಷಕರಿಗೆ ನಿಮ್ಮ ಟಿಪ್ಪಣಿಯೊಂದಿಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String workChecked(String name) {
@@ -1043,10 +1083,12 @@ class AppLocalizationsKn extends AppLocalizations {
   String get errorTopicNotInSyllabus => 'ಈ ವಿಷಯವು ಈ ಪಠ್ಯಕ್ರಮದಲ್ಲಿ ಇಲ್ಲ';
 
   @override
-  String get errorFutureCoverage => 'ಮುಂದಿನ ದಿನಾಂಕಕ್ಕೆ ವಿಷಯವನ್ನು ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗದು';
+  String get errorFutureCoverage =>
+      'ಮುಂದಿನ ದಿನಾಂಕಕ್ಕೆ ವಿಷಯವನ್ನು ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗದು';
 
   @override
-  String get errorValidation => 'ಕೆಲವು ವಿವರಗಳು ಸರಿಯಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errorValidation =>
+      'ಕೆಲವು ವಿವರಗಳು ಸರಿಯಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get yearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆ';
@@ -1075,7 +1117,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get remake => 'ಮತ್ತೆ ಮಾಡಿ';
 
   @override
-  String get planDatesNote => 'ನೀವು ದಿನಾಂಕಗಳನ್ನು ಬದಲಿಸದಿದ್ದರೆ, ಯೋಜನೆ ಇಂದಿನಿಂದ 16 ವಾರಗಳು, ಶೈಕ್ಷಣಿಕ ವರ್ಷದ ಕೊನೆಯವರೆಗೆ ಇರುತ್ತದೆ.';
+  String get planDatesNote =>
+      'ನೀವು ದಿನಾಂಕಗಳನ್ನು ಬದಲಿಸದಿದ್ದರೆ, ಯೋಜನೆ ಇಂದಿನಿಂದ 16 ವಾರಗಳು, ಶೈಕ್ಷಣಿಕ ವರ್ಷದ ಕೊನೆಯವರೆಗೆ ಇರುತ್ತದೆ.';
 
   @override
   String get planStartsOn => 'ಪ್ರಾರಂಭ ದಿನಾಂಕ';
@@ -1100,7 +1143,12 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ', one: '1 ವಿಷಯ ಹಿಂದಿದೆ');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ',
+      one: '1 ವಿಷಯ ಹಿಂದಿದೆ',
+    );
     return '$_temp0';
   }
 
@@ -1114,7 +1162,12 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಅವಧಿಗಳು',
+      one: '1 ಅವಧಿ',
+    );
     return '$_temp0';
   }
 
@@ -1210,7 +1263,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get lessonCheck => 'ಅರ್ಥವಾಗಿದೆಯೇ ಪರಿಶೀಲನೆ';
 
   @override
-  String get lessonCheckHint => 'ವಿದ್ಯಾರ್ಥಿಗಳು ಏನು ಕಲಿತರು ಎಂದು ಹೇಗೆ ಪರಿಶೀಲಿಸುವಿರಿ';
+  String get lessonCheckHint =>
+      'ವಿದ್ಯಾರ್ಥಿಗಳು ಏನು ಕಲಿತರು ಎಂದು ಹೇಗೆ ಪರಿಶೀಲಿಸುವಿರಿ';
 
   @override
   String get lessonHomework => 'ಹೋಂವರ್ಕ್';
@@ -1238,7 +1292,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get aiDraftLabel => 'AI ಕರಡು — ಬಳಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ';
 
   @override
-  String get aiPreviewNote => 'ಮಾದರಿ: KINETIX AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಇದು ಮಾದರಿ ಕರಡು.';
+  String get aiPreviewNote =>
+      'ಮಾದರಿ: KINETIX AI ಸರ್ವರ್ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಇದು ಮಾದರಿ ಕರಡು.';
 
   @override
   String get savePlan => 'ಯೋಜನೆ ಉಳಿಸಿ';
@@ -1255,31 +1310,39 @@ class AppLocalizationsKn extends AppLocalizations {
   String get reviewRemark => 'ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರ ಟಿಪ್ಪಣಿ';
 
   @override
-  String get discardPlanBody => 'ನಿಮ್ಮ ಪಾಠ ಯೋಜನೆಯಲ್ಲಿ ಇನ್ನೂ ಉಳಿಸದ ಬದಲಾವಣೆಗಳಿವೆ.';
+  String get discardPlanBody =>
+      'ನಿಮ್ಮ ಪಾಠ ಯೋಜನೆಯಲ್ಲಿ ಇನ್ನೂ ಉಳಿಸದ ಬದಲಾವಣೆಗಳಿವೆ.';
 
   @override
-  String get errorPlanNoSyllabus => 'ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಪಠ್ಯಕ್ರಮ ಇಲ್ಲ. ಇದನ್ನು ಕೋರ್ಸ್‌ಗೆ ಜೋಡಿಸಲು ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿಗೆ ಕೇಳಿ.';
+  String get errorPlanNoSyllabus =>
+      'ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಪಠ್ಯಕ್ರಮ ಇಲ್ಲ. ಇದನ್ನು ಕೋರ್ಸ್‌ಗೆ ಜೋಡಿಸಲು ನಿಮ್ಮ ಆಡಳಿತಾಧಿಕಾರಿಗೆ ಕೇಳಿ.';
 
   @override
-  String get errorPlanNoPeriods => 'ಈ ತರಗತಿಯ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಈ ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಅವಧಿ ಇಲ್ಲ.';
+  String get errorPlanNoPeriods =>
+      'ಈ ತರಗತಿಯ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಈ ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಅವಧಿ ಇಲ್ಲ.';
 
   @override
-  String get errorPlanNoTeachingDays => 'ಈ ದಿನಾಂಕಗಳ ನಡುವೆ ಯಾವುದೇ ಬೋಧನಾ ದಿನವಿಲ್ಲ.';
+  String get errorPlanNoTeachingDays =>
+      'ಈ ದಿನಾಂಕಗಳ ನಡುವೆ ಯಾವುದೇ ಬೋಧನಾ ದಿನವಿಲ್ಲ.';
 
   @override
-  String get errorPlanEndsBeforeStart => 'ಮುಕ್ತಾಯ ದಿನಾಂಕ ಪ್ರಾರಂಭ ದಿನಾಂಕದ ನಂತರ ಇರಬೇಕು.';
+  String get errorPlanEndsBeforeStart =>
+      'ಮುಕ್ತಾಯ ದಿನಾಂಕ ಪ್ರಾರಂಭ ದಿನಾಂಕದ ನಂತರ ಇರಬೇಕು.';
 
   @override
   String get errorPeriodNotOnDay => 'ಈ ತರಗತಿ ಆ ದಿನ ಇಲ್ಲ.';
 
   @override
-  String get errorAiAllowance => 'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ KINETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ನಾಳೆ ಮತ್ತೆ ಲಭ್ಯ.';
+  String get errorAiAllowance =>
+      'ನಿಮ್ಮ ಸಂಸ್ಥೆ ಇಂದಿನ KINETIX AI ಮಿತಿಯನ್ನು ಬಳಸಿದೆ. ನಾಳೆ ಮತ್ತೆ ಲಭ್ಯ.';
 
   @override
-  String get errorAiUnavailable => 'KINETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errorAiUnavailable =>
+      'KINETIX AI ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get errorAiUnusable => 'KINETIX AI ಬಳಸಬಹುದಾದ ಕರಡು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get errorAiUnusable =>
+      'KINETIX AI ಬಳಸಬಹುದಾದ ಕರಡು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String reviewedByOn(String name, String date) {
@@ -1293,7 +1356,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get signInWithPassword => 'ಪಾಸ್‌ವರ್ಡ್ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ';
 
   @override
-  String get phoneSignInSubtitle => 'ನಿಮ್ಮ ನೋಂದಾಯಿತ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಗೆ 6 ಅಂಕಿಯ ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ';
+  String get phoneSignInSubtitle =>
+      'ನಿಮ್ಮ ನೋಂದಾಯಿತ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಗೆ 6 ಅಂಕಿಯ ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ';
 
   @override
   String get mobileNumber => 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ';
@@ -1333,7 +1397,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get changeNumber => 'ಸಂಖ್ಯೆ ಬದಲಿಸಿ';
 
   @override
-  String get errorOtpInvalid => 'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಿ.';
+  String get errorOtpInvalid =>
+      'ಈ ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಅವಧಿ ಮುಗಿದಿದೆ. SMS ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಕೋಡ್ ಕಳುಹಿಸಿ.';
 
   @override
   String get demoChip => 'ಡೆಮೊ';
@@ -1371,7 +1436,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get dontKeepRecording => 'ಉಳಿಸಬೇಡಿ';
 
   @override
-  String get keepRecordingTooltip => 'ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಅವಧಿ ಮುಗಿದಾಗ ಅಳಿಸಲಾಗುವುದಿಲ್ಲ';
+  String get keepRecordingTooltip =>
+      'ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಅವಧಿ ಮುಗಿದಾಗ ಅಳಿಸಲಾಗುವುದಿಲ್ಲ';
 
   @override
   String get phoneRemote => 'ಫೋನ್ ರಿಮೋಟ್';
@@ -1408,7 +1474,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get remoteSlides => 'ಸ್ಲೈಡ್‌ಗಳು ಮತ್ತು PDF';
 
   @override
-  String get remoteNoSlides => 'ಇಲ್ಲಿಂದ ತಿರುಗಿಸಲು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸ್ಲೈಡ್‌ಗಳು ಅಥವಾ PDF ತೆರೆಯಿರಿ.';
+  String get remoteNoSlides =>
+      'ಇಲ್ಲಿಂದ ತಿರುಗಿಸಲು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಸ್ಲೈಡ್‌ಗಳು ಅಥವಾ PDF ತೆರೆಯಿರಿ.';
 
   @override
   String remoteSlideOf(int slide, int slides) {
@@ -1448,14 +1515,16 @@ class AppLocalizationsKn extends AppLocalizations {
   String get answerCards => 'ಉತ್ತರ ಕಾರ್ಡ್‌ಗಳು';
 
   @override
-  String get answerCardsMenuBody => 'ಫೋನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಉತ್ತರಿಸಲು ಕಾರ್ಡ್‌ಗಳನ್ನು ಮುದ್ರಿಸಿ';
+  String get answerCardsMenuBody =>
+      'ಫೋನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಉತ್ತರಿಸಲು ಕಾರ್ಡ್‌ಗಳನ್ನು ಮುದ್ರಿಸಿ';
 
   @override
   String get answerCardsBody =>
       'ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಹಾಜರಿ ಸಂಖ್ಯೆಯ ಪ್ರಕಾರ ಒಂದು ಕಾರ್ಡ್. ಬೋರ್ಡ್‌ನ \"ತರಗತಿಯನ್ನು ಕೇಳಿ\" ಯಲ್ಲಿ ಅವರು ಉತ್ತರ ಮೇಲಿರುವಂತೆ ಕಾರ್ಡ್ ಎತ್ತುತ್ತಾರೆ, ಬೋರ್ಡ್ ಒಂದೇ ಫೋಟೋದಿಂದ ಇಡೀ ತರಗತಿಯನ್ನು ಓದುತ್ತದೆ.';
 
   @override
-  String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
+  String get answerCardsPrintHint =>
+      'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
 
   @override
   String answerCardsReady(int count, String className) {
@@ -1463,8 +1532,49 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get answerCardsFailed => 'ಕಾರ್ಡ್‌ಗಳನ್ನು ಮಾಡಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get answerCardsFailed =>
+      'ಕಾರ್ಡ್‌ಗಳನ್ನು ಮಾಡಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get print => 'ಮುದ್ರಿಸಿ';
+
+  @override
+  String get filterMissing => 'ಬಾಕಿ';
+
+  @override
+  String remindMissing(int count) {
+    return '$count ಮಂದಿಗೆ ನೆನಪಿಸಿ';
+  }
+
+  @override
+  String remindTitle(int count) {
+    return '$count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ನೆನಪಿಸಬೇಕೇ?';
+  }
+
+  @override
+  String get remindBody =>
+      'ಈ ಹೋಂವರ್ಕ್ ಇನ್ನೂ ಸಲ್ಲಿಸಿಲ್ಲ ಎಂದು ಅವರಿಗೂ ಅವರ ಕುಟುಂಬಕ್ಕೂ ಸೂಚನೆ ಹೋಗುತ್ತದೆ.';
+
+  @override
+  String get remind => 'ನೆನಪಿಸಿ';
+
+  @override
+  String reminded(int count) {
+    return '$count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಮತ್ತು ಅವರ ಕುಟುಂಬಗಳಿಗೆ ನೆನಪಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get noneInFilter => 'ಇಲ್ಲಿ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿ ಇಲ್ಲ';
+
+  @override
+  String get classAndSubject => 'ತರಗತಿ ಮತ್ತು ವಿಷಯ';
+
+  @override
+  String get classRoster => 'ತರಗತಿ ಪಟ್ಟಿ';
+
+  @override
+  String get classRosterBody => 'ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿಗಳು; ಬ್ಯಾಡ್ಜ್ ನೀಡಿ';
+
+  @override
+  String get chooseClass => 'ತರಗತಿ ಆಯ್ಕೆಮಾಡಿ';
 }

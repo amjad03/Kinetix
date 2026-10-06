@@ -86,7 +86,7 @@ class OfflineAi {
         ],
         materials: const ['Board', 'Notebooks'],
         assessment: t.quiz.isEmpty ? 'Exit ticket: one question on ${t.title}.' : 'Exit ticket: ${t.quiz.first.question}',
-      ),
+      ).fittedTo(minutes),
       _meta,
     );
   }

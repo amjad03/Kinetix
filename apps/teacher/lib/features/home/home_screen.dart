@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final profile = ProfileButton(name: widget.state.me!.fullName, onPressed: _openProfile);
+    final profile = ProfileButton(name: widget.state.me!.fullName, image: widget.state.api.photo(widget.state.me!.photoUrl), onPressed: _openProfile);
     return Scaffold(
       body: IndexedStack(
         index: _tab,

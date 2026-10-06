@@ -5,6 +5,7 @@ library;
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
@@ -548,6 +549,60 @@ class FakeStudentApi implements StudentApi {
       reference: 'UPI-778812',
       paidAt: DateTime(2026, 10, 2, 11, 30),
     );
+  }
+
+  // ── Profile, photo and badges ─────────────────────────────────────────────────────────────
+
+  /// Uploaded photos by API path (demo mode shows them from memory).
+  final photos = <String, Uint8List>{};
+
+  /// Badges by student id, newest first.
+  final badgesByStudent = <String, List<BadgeAward>>{};
+
+  /// When set, saving the profile fails with this error.
+  ApiException? profileError;
+
+  @override
+  Future<Me> updateProfile({required String fullName, required String? email}) async {
+    calls.add('profile $fullName ${email ?? '-'}');
+    if (profileError != null) throw profileError!;
+    return profile = profile.copyWith(fullName: fullName, email: email, clearEmail: email == null);
+  }
+
+  @override
+  Future<Me> uploadPhoto(Uint8List jpeg) async {
+    calls.add('photo ${jpeg.length}');
+    final path = '/v1/users/${profile.id}/photo?v=${photos.length + 1}';
+    photos[path] = jpeg;
+    return profile = profile.copyWith(photoUrl: path);
+  }
+
+  @override
+  Future<Me> removePhoto() async {
+    calls.add('photo removed');
+    return profile = profile.copyWith(clearPhoto: true);
+  }
+
+  @override
+  ImageProvider? photo(String? path) => path == null || photos[path] == null ? null : MemoryImage(photos[path]!);
+
+  @override
+  Future<List<BadgeAward>> badges(String studentId) async {
+    calls.add('badges $studentId');
+    return badgesByStudent[studentId] ?? const [];
+  }
+
+  /// A badge as a teacher awards it (newest first).
+  BadgeAward addBadge(String studentId, String badge, {String teacher = 'Ms. Kavya Rao', String? subject, DateTime? at}) {
+    final b = BadgeAward(
+      id: 'b${badgesByStudent.values.fold(0, (n, l) => n + l.length) + 1}',
+      badge: badge,
+      awardedAt: at ?? DateTime(2026, 10, 5, 11),
+      teacherName: teacher,
+      subjectName: subject,
+    );
+    badgesByStudent.putIfAbsent(studentId, () => []).insert(0, b);
+    return b;
   }
 
   // ── Library ───────────────────────────────────────────────────────────────────────────────

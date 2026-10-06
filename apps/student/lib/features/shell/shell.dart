@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/app_state.dart';
 import '../../core/message_feed.dart';
@@ -108,6 +109,11 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
         study.loadQuestion();
       },
       onPoll: study.loadQuestion,
+      onBadge: (b) {
+        study.loadBadges();
+        final badge = KxBadge.fromApi(b.badge);
+        if (badge != null && mounted) showKxBadgeToast(context, badge, teacher: b.teacher.isEmpty ? null : b.teacher);
+      },
     )..start();
   }
 

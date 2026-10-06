@@ -1,6 +1,8 @@
 /// Mirrors the Teacher App DTOs in packages/shared/src/index.ts.
 library;
 
+import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
+
 /// "10:00:00" → minutes since midnight.
 int _minutes(String hhmmss) {
   final p = hhmmss.split(':');
@@ -36,6 +38,8 @@ class Me {
     required this.institution,
     this.email,
     this.phone,
+    this.photoUrl,
+    this.teachingSubjects = const [],
   });
 
   factory Me.fromJson(Map<String, dynamic> j) => Me(
@@ -46,12 +50,32 @@ class Me {
     preferredLanguage: j['preferredLanguage'] as String,
     roles: (j['roles'] as List).cast<String>(),
     institution: (j['tenant'] as Map)['name'] as String,
+    photoUrl: j['photoUrl'] as String?,
+    teachingSubjects: (j['teachingSubjects'] as List? ?? const []).cast<String>(),
   );
 
   final String id;
   final String fullName;
   final String? email;
   final String? phone;
+
+  /// The API path of the profile photo (load it with [TeacherApi.photo]); null shows initials.
+  final String? photoUrl;
+
+  /// What the teacher wrote on their profile that they teach.
+  final List<String> teachingSubjects;
+
+  Me copyWith({String? fullName, String? email, String? preferredLanguage, String? photoUrl, bool clearPhoto = false, List<String>? teachingSubjects}) => Me(
+    id: id,
+    fullName: fullName ?? this.fullName,
+    roles: roles,
+    preferredLanguage: preferredLanguage ?? this.preferredLanguage,
+    institution: institution,
+    email: email ?? this.email,
+    phone: phone,
+    photoUrl: clearPhoto ? null : photoUrl ?? this.photoUrl,
+    teachingSubjects: teachingSubjects ?? this.teachingSubjects,
+  );
   final String preferredLanguage;
   final List<String> roles;
   final String institution;
@@ -353,15 +377,23 @@ class TeacherClass {
   factory TeacherClass.fromJson(Map<String, dynamic> j) => TeacherClass(_section(j['section'] as Map), _subject(j['subject'] as Map));
   final Ref section;
   final Ref subject;
+
+  @override
+  bool operator ==(Object other) => other is TeacherClass && other.section == section && other.subject == subject;
+  @override
+  int get hashCode => Object.hash(section, subject);
 }
 
 class Student {
-  Student({required this.id, required this.rollNo, required this.fullName});
+  Student({required this.id, required this.rollNo, required this.fullName, this.photoUrl});
   factory Student.fromJson(Map<String, dynamic> j) =>
-      Student(id: j['id'] as String, rollNo: j['rollNo'] as String, fullName: j['fullName'] as String);
+      Student(id: j['id'] as String, rollNo: j['rollNo'] as String, fullName: j['fullName'] as String, photoUrl: j['photoUrl'] as String?);
   final String id;
   final String rollNo;
   final String fullName;
+
+  /// The student's photo (API path), when they have an account with one.
+  final String? photoUrl;
 }
 
 /// Shown with AppLocalizations.attendanceStatus.
@@ -837,6 +869,18 @@ class LessonContent {
 
   bool get isEmpty =>
       objectives.isEmpty && steps.isEmpty && materials.isEmpty && assessment.trim().isEmpty && homework.trim().isEmpty;
+
+  /// The same content with step minutes adding up to exactly [minutes] (the period's length).
+  LessonContent fittedTo(int minutes) {
+    final fitted = kxFitMinutes([for (final s in steps) s.minutes], minutes);
+    return LessonContent(
+      objectives: objectives,
+      steps: [for (var i = 0; i < steps.length; i++) LessonStep(minutes: fitted[i], activity: steps[i].activity)],
+      materials: materials,
+      assessment: assessment,
+      homework: homework,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'objectives': objectives,
