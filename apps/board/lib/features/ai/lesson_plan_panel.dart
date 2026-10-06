@@ -99,7 +99,7 @@ class _LessonPlanPanelState extends State<LessonPlanPanel> {
               if (plan != null && !task.loading) ...[
                 const Divider(height: Kx.s24),
                 if (plan.meta.preview) AiNotice.preview(offline: plan.meta.offline),
-                _PlanView(plan: plan.result, topic: ai.lessonTopic ?? ''),
+                _PlanView(plan: plan.result.fittedTo(ai.lessonPlanMinutes), topic: ai.lessonTopic ?? ''),
               ],
             ],
           );

@@ -400,6 +400,23 @@ void main() {
       await tapKey(tester, 'panel-back');
       expect(find.byKey(const Key('ai-ask')), findsOneWidget);
     });
+
+    testBoard('fits the steps to the chosen length (a 45-minute reply for a 30-minute lesson)', (tester) async {
+      await pump(tester);
+      await openAi(tester);
+      await tapKey(tester, 'ai-tool-lessonPlan');
+      await tester.tap(find.text('45 min'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('30 min').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('lesson-topic')), 'The water cycle');
+      await tapKey(tester, 'lesson-generate');
+      expect(bodyOf(calls('/v1/ai/lesson-plan').single)['minutes'], 30);
+      expect(find.text('STEPS · 30 MIN'), findsOneWidget);
+      expect(find.text('16 min'), findsOneWidget);
+      expect(find.text('7 min'), findsNWidgets(2));
+      expect(find.text('25 min'), findsNothing);
+    });
   });
 
   group('Read board', () {
