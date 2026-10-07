@@ -58,6 +58,15 @@ class LayoutStrings {
   String get animationsSoon => t('animationsSoon');
   String get videosNone => t('videosNone');
   String get videoNoteAdded => t('videoNoteAdded');
+  String get videoSourcePlatform => t('videoSourcePlatform');
+  String get videoSourceInstitution => t('videoSourceInstitution');
+  String get videoSourceTeacher => t('videoSourceTeacher');
+  String get addVideo => t('addVideo');
+  String get videoLink => t('videoLink');
+  String get videoLinkHelp => t('videoLinkHelp');
+  String get videoAdded => t('videoAdded');
+  String get videoNotAdded => t('videoNotAdded');
+  String get videoCancel => t('videoCancel');
   String get topic => t('topic');
   String get language => t('language');
   String get dragDivider => t('dragDivider');
@@ -183,6 +192,15 @@ class LayoutStrings {
       'animationsSoon': 'Animations arrive with the animations pack.',
       'videosNone': 'No concept videos for this period yet.',
       'videoNoteAdded': 'Video note added to the board',
+      'videoSourcePlatform': 'KINETIX',
+      'videoSourceInstitution': 'School',
+      'videoSourceTeacher': 'Teacher',
+      'addVideo': 'Add a video',
+      'videoLink': 'YouTube link',
+      'videoLinkHelp': 'Paste a link. The title comes from YouTube. Only this class sees it until the principal approves sharing it.',
+      'videoAdded': 'Video added for this class',
+      'videoNotAdded': "Couldn't add that video. Check the link and try again.",
+      'videoCancel': 'Cancel',
       'topic': 'Topic',
       'language': 'Language',
       'dragDivider': 'Drag to resize',
@@ -324,6 +342,15 @@ class LayoutStrings {
       'animationsSoon': 'एनिमेशन, एनिमेशन पैक के साथ आएँगे।',
       'videosNone': 'इस पीरियड के लिए अभी कोई कॉन्सेप्ट वीडियो नहीं।',
       'videoNoteAdded': 'वीडियो नोट बोर्ड पर जोड़ा गया',
+      'videoSourcePlatform': 'KINETIX',
+      'videoSourceInstitution': 'स्कूल',
+      'videoSourceTeacher': 'शिक्षक',
+      'addVideo': 'वीडियो जोड़ें',
+      'videoLink': 'यूट्यूब लिंक',
+      'videoLinkHelp': 'लिंक चिपकाएँ। शीर्षक यूट्यूब से आता है। प्राचार्य के साझा करने की मंज़ूरी तक केवल यही कक्षा इसे देखती है।',
+      'videoAdded': 'इस कक्षा के लिए वीडियो जोड़ा गया',
+      'videoNotAdded': 'वह वीडियो नहीं जोड़ा जा सका। लिंक जाँचकर फिर कोशिश करें।',
+      'videoCancel': 'रद्द करें',
       'topic': 'विषय-वस्तु',
       'language': 'भाषा',
       'dragDivider': 'आकार बदलने के लिए खींचें',
@@ -465,6 +492,15 @@ class LayoutStrings {
       'animationsSoon': 'ಅನಿಮೇಷನ್‌ಗಳು ಅನಿಮೇಷನ್ ಪ್ಯಾಕ್‌ನೊಂದಿಗೆ ಬರುತ್ತವೆ.',
       'videosNone': 'ಈ ಅವಧಿಗೆ ಇನ್ನೂ ಪರಿಕಲ್ಪನೆ ವೀಡಿಯೊಗಳಿಲ್ಲ.',
       'videoNoteAdded': 'ವೀಡಿಯೊ ಟಿಪ್ಪಣಿ ಬೋರ್ಡ್‌ಗೆ ಸೇರಿತು',
+      'videoSourcePlatform': 'KINETIX',
+      'videoSourceInstitution': 'ಶಾಲೆ',
+      'videoSourceTeacher': 'ಶಿಕ್ಷಕ',
+      'addVideo': 'ವೀಡಿಯೊ ಸೇರಿಸಿ',
+      'videoLink': 'ಯೂಟ್ಯೂಬ್ ಲಿಂಕ್',
+      'videoLinkHelp': 'ಲಿಂಕ್ ಅಂಟಿಸಿ. ಶೀರ್ಷಿಕೆ ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಬರುತ್ತದೆ. ಪ್ರಾಂಶುಪಾಲರು ಹಂಚಲು ಅನುಮೋದಿಸುವವರೆಗೆ ಈ ತರಗತಿ ಮಾತ್ರ ನೋಡುತ್ತದೆ.',
+      'videoAdded': 'ಈ ತರಗತಿಗೆ ವೀಡಿಯೊ ಸೇರಿಸಲಾಗಿದೆ',
+      'videoNotAdded': 'ಆ ವೀಡಿಯೊ ಸೇರಿಸಲಾಗಲಿಲ್ಲ. ಲಿಂಕ್ ಪರೀಕ್ಷಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+      'videoCancel': 'ರದ್ದುಮಾಡಿ',
       'topic': 'ವಿಷಯಾಂಶ',
       'language': 'ಭಾಷೆ',
       'dragDivider': 'ಗಾತ್ರ ಬದಲಿಸಲು ಎಳೆಯಿರಿ',

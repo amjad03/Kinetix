@@ -35,6 +35,25 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
     _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson);
   }
 
+  void _reload() => setState(() => _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson));
+
+  /// The teacher pastes a YouTube link; it is added to the topic for this class.
+  Future<void> _add(PeriodVideos v) async {
+    final s = LayoutStrings.of(context);
+    final topics = v.topics;
+    final topic = topics.firstWhere((t) => t.title == _topic, orElse: () => topics.first);
+    final link = await showDialog<String>(context: context, builder: (_) => _AddVideoDialog(strings: s));
+    if (link == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await widget.board.api!.addConceptVideo(topic.id, link, sectionId: v.period?.sectionId ?? '');
+      messenger.showSnackBar(SnackBar(content: Text(s.videoAdded)));
+      _reload();
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(s.videoNotAdded)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -52,7 +71,7 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
             message: l.conceptVideosCouldNotLoad,
             action: OutlinedButton.icon(
               key: const Key('videos-retry'),
-              onPressed: () => setState(() => _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson)),
+              onPressed: _reload,
               icon: const Icon(Icons.refresh),
               label: Text(l.tryAgain),
             ),
@@ -85,6 +104,14 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
                 ),
               ],
             ),
+            if (v.topics.isNotEmpty)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
+                  child: TextButton.icon(key: const Key('video-add'), onPressed: () => _add(v), icon: const Icon(Icons.add_link), label: Text(s.addVideo)),
+                ),
+              ),
             Expanded(
               child: shown.isEmpty
                   ? KxEmptyState(key: const Key('conceptVideosNone'), icon: Icons.smart_display_outlined, message: v.videos.isEmpty ? s.videosNone : search.noneMatch)
@@ -110,6 +137,45 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
           ],
         );
       },
+    );
+  }
+}
+
+class _AddVideoDialog extends StatefulWidget {
+  const _AddVideoDialog({required this.strings});
+
+  final LayoutStrings strings;
+
+  @override
+  State<_AddVideoDialog> createState() => _AddVideoDialogState();
+}
+
+class _AddVideoDialogState extends State<_AddVideoDialog> {
+  final _link = TextEditingController();
+
+  @override
+  void dispose() {
+    _link.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.strings;
+    return AlertDialog(
+      title: Text(s.addVideo),
+      content: TextField(
+        key: const Key('video-link'),
+        controller: _link,
+        autofocus: true,
+        keyboardType: TextInputType.url,
+        decoration: InputDecoration(labelText: s.videoLink, helperText: s.videoLinkHelp, helperMaxLines: 3),
+        onChanged: (_) => setState(() {}),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(s.videoCancel)),
+        FilledButton(key: const Key('video-link-add'), onPressed: _link.text.trim().isEmpty ? null : () => Navigator.pop(context, _link.text.trim()), child: Text(s.addVideo)),
+      ],
     );
   }
 }
