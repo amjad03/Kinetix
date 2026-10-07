@@ -288,6 +288,48 @@
       "when": 1791285235540,
       "tag": "0040_badges_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791408404917,
+      "tag": "0053_staff_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791408414509,
+      "tag": "0054_leave_recruitment",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791408415838,
+      "tag": "0055_payroll",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791408417184,
+      "tag": "0056_certificates",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1791408418534,
+      "tag": "0057_vault",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1791408419534,
+      "tag": "0058_hr_documents_rls",
+      "breakpoints": true
     }
   ]
 }

@@ -35,6 +35,20 @@ const first = (name: string) => name.split(' ')[0];
 const all = (f: (lang: Lang) => Text): Localized => ({ en: f('en'), hi: f('hi'), kn: f('kn') });
 
 export const texts = {
+  leaveRequested: (p: { name: string; from: string; to: string; days: number }) =>
+    all((l) => ({ title: l === 'hi' ? `${p.name} का अवकाश अनुरोध` : l === 'kn' ? `${p.name} ರಜೆ ಕೋರಿಕೆ` : `Leave request from ${p.name}`, body: `${dateIn(l, p.from)} - ${dateIn(l, p.to)} (${p.days})` })),
+  leaveDecided: (p: { status: 'approved' | 'rejected'; from: string; to: string; note?: string | null }) =>
+    all((l) => {
+      const ok = p.status === 'approved';
+      return {
+        title: l === 'hi' ? (ok ? 'आपका अवकाश स्वीकृत' : 'आपका अवकाश अस्वीकृत') : l === 'kn' ? (ok ? 'ನಿಮ್ಮ ರಜೆ ಅನುಮೋದನೆ' : 'ನಿಮ್ಮ ರಜೆ ನಿರಾಕರಣೆ') : ok ? 'Your leave was approved' : 'Your leave was declined',
+        body: `${dateIn(l, p.from)} - ${dateIn(l, p.to)}${p.note ? `. ${p.note}` : ''}`,
+      };
+    }),
+  payslipReady: (p: { month: string }) =>
+    all((l) => ({ title: l === 'hi' ? 'वेतन पर्ची उपलब्ध' : l === 'kn' ? 'ವೇತನ ಚೀಟಿ ಲಭ್ಯ' : 'Your payslip is ready', body: p.month })),
+  certificateIssued: (p: { title: string; serialNo: string }) =>
+    all((l) => ({ title: l === 'hi' ? 'प्रमाणपत्र जारी' : l === 'kn' ? 'ಪ್ರಮಾಣಪತ್ರ ವಿತರಿಸಲಾಗಿದೆ' : 'Certificate issued', body: `${p.title} (${p.serialNo})` })),
   absence: (p: { studentName: string; date: string; subject?: string | null; from?: string; to?: string }) =>
     all((l) => {
       const d = dateIn(l, p.date);
