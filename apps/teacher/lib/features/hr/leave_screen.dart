@@ -192,7 +192,8 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   void initState() {
     super.initState();
     widget.api.leaveTypes().then((t) {
-      if (mounted) setState(() {
+      if (!mounted) return;
+      setState(() {
         _types = t;
         _typeId = t.firstOrNull?.id;
       });

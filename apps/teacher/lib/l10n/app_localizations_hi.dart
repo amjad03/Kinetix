@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -278,12 +279,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count पीरियड',
-      one: '1 पीरियड',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count पीरियड', one: '1 पीरियड');
     return '$_temp0';
   }
 
@@ -406,7 +402,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get freeSession => 'खुला सेशन';
 
   @override
-  String get freeSessionBody => 'अभी टाइमटेबल में आपकी कोई कक्षा नहीं है, इसलिए बोर्ड बिना विद्यार्थियों की सूची के खुलेगा। 2 घंटे बाद आप अपने-आप साइन आउट हो जाएँगे।';
+  String get freeSessionBody =>
+      'अभी टाइमटेबल में आपकी कोई कक्षा नहीं है, इसलिए बोर्ड बिना विद्यार्थियों की सूची के खुलेगा। 2 घंटे बाद आप अपने-आप साइन आउट हो जाएँगे।';
 
   @override
   String get qrNotOurs => 'यह KINETIX बोर्ड का कोड नहीं है। बोर्ड की स्क्रीन पर दिख रहा QR कोड स्कैन करें।';
@@ -508,7 +505,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get outOf => 'कुल अंक';
 
   @override
-  String get marksPrivateNote => 'प्रकाशित करने तक अंक सिर्फ़ आपको दिखेंगे। उसके बाद विद्यार्थी और उनके अभिभावक अपने अंक और कक्षा का औसत देख सकेंगे।';
+  String get marksPrivateNote =>
+      'प्रकाशित करने तक अंक सिर्फ़ आपको दिखेंगे। उसके बाद विद्यार्थी और उनके अभिभावक अपने अंक और कक्षा का औसत देख सकेंगे।';
 
   @override
   String get kindTest => 'टेस्ट';
@@ -564,12 +562,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String marksNeedFixing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count अंक ठीक करने हैं',
-      one: 'एक अंक ठीक करना है',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count अंक ठीक करने हैं', one: 'एक अंक ठीक करना है');
     return '$_temp0';
   }
 
@@ -593,7 +586,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get publishTitle => 'अंक प्रकाशित करें?';
 
   @override
-  String get publishBody => 'कक्षा के विद्यार्थियों और अभिभावकों को सूचना मिलेगी। वे अपने अंक, कक्षा का औसत और सबसे ज़्यादा अंक देख सकेंगे।';
+  String get publishBody =>
+      'कक्षा के विद्यार्थियों और अभिभावकों को सूचना मिलेगी। वे अपने अंक, कक्षा का औसत और सबसे ज़्यादा अंक देख सकेंगे।';
 
   @override
   String publishBlank(int count) {
@@ -686,7 +680,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get remarkHint => 'उदा. साफ़-सुथरा काम; जर्नल एंट्री दोहराएँ';
 
   @override
-  String get noMessages => 'अभी कोई संदेश नहीं है।\n“नया संदेश” से किसी विद्यार्थी के अभिभावक को लिखें, या अभिभावकों के संदेश का इंतज़ार करें।';
+  String get noMessages =>
+      'अभी कोई संदेश नहीं है।\n“नया संदेश” से किसी विद्यार्थी के अभिभावक को लिखें, या अभिभावकों के संदेश का इंतज़ार करें।';
 
   @override
   String get noMessagesPreview => 'अभी कोई संदेश नहीं';
@@ -771,7 +766,8 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get noRecordings => 'अभी कोई रिकॉर्डिंग नहीं है।\nकक्षा के दौरान बोर्ड पर रिकॉर्ड बटन दबाएँ। बोर्ड के अपलोड करते ही पाठ यहाँ दिखेगा।';
+  String get noRecordings =>
+      'अभी कोई रिकॉर्डिंग नहीं है।\nकक्षा के दौरान बोर्ड पर रिकॉर्ड बटन दबाएँ। बोर्ड के अपलोड करते ही पाठ यहाँ दिखेगा।';
 
   @override
   String get uploading => 'अपलोड हो रही है';
@@ -1051,7 +1047,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get yearPlan => 'वार्षिक योजना';
 
   @override
-  String get yearPlanNone => 'अभी कोई वार्षिक योजना नहीं है। KINETIX आपकी समय-सारिणी के अनुसार, छुट्टियाँ और परीक्षाएँ छोड़कर, इस विषय का पाठ्यक्रम सत्र के हफ़्तों में बाँट सकता है। बाद में आप विषय-वस्तु आगे-पीछे कर सकते हैं।';
+  String get yearPlanNone =>
+      'अभी कोई वार्षिक योजना नहीं है। KINETIX आपकी समय-सारिणी के अनुसार, छुट्टियाँ और परीक्षाएँ छोड़कर, इस विषय का पाठ्यक्रम सत्र के हफ़्तों में बाँट सकता है। बाद में आप विषय-वस्तु आगे-पीछे कर सकते हैं।';
 
   @override
   String get makeYearPlan => 'वार्षिक योजना बनाएँ';
@@ -1066,7 +1063,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get remakeYearPlanTitle => 'वार्षिक योजना दोबारा बनाएँ?';
 
   @override
-  String get remakeYearPlanBody => 'आपकी चुनी तारीखों से सभी हफ़्ते फिर से तय होंगे, और जो विषय-वस्तु आपने आगे-पीछे की थी वह वापस चली जाएगी। पढ़ाई जा चुकी विषय-वस्तु पढ़ाई गई ही रहेगी।';
+  String get remakeYearPlanBody =>
+      'आपकी चुनी तारीखों से सभी हफ़्ते फिर से तय होंगे, और जो विषय-वस्तु आपने आगे-पीछे की थी वह वापस चली जाएगी। पढ़ाई जा चुकी विषय-वस्तु पढ़ाई गई ही रहेगी।';
 
   @override
   String get remake => 'दोबारा बनाएँ';
@@ -1097,12 +1095,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count विषय-वस्तु पीछे',
-      one: '1 विषय-वस्तु पीछे',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count विषय-वस्तु पीछे', one: '1 विषय-वस्तु पीछे');
     return '$_temp0';
   }
 
@@ -1116,12 +1109,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count पीरियड',
-      one: '1 पीरियड',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count पीरियड', one: '1 पीरियड');
     return '$_temp0';
   }
 
@@ -1348,7 +1336,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get demoBannerTitle => 'डेमो मोड';
 
   @override
-  String get demoBannerBody => 'KINETIX डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
+  String get demoBannerBody =>
+      'KINETIX डेमो कॉलेज का नमूना डेटा। कुछ भी सर्वर पर नहीं भेजा जाता, और आपके बदलाव ऐप बंद होने तक ही रहते हैं।';
 
   @override
   String demoSignInAs(String name) {
@@ -1456,7 +1445,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get answerCardsMenuBody => 'कार्ड प्रिंट करें ताकि बिना फ़ोन वाले विद्यार्थी बोर्ड पर उत्तर दे सकें';
 
   @override
-  String get answerCardsBody => 'हर विद्यार्थी को रोल नंबर के अनुसार एक कार्ड मिलता है। बोर्ड पर \"कक्षा से पूछें\" में वे उत्तर को ऊपर रखकर कार्ड उठाते हैं, और बोर्ड एक फ़ोटो से पूरी कक्षा पढ़ लेता है।';
+  String get answerCardsBody =>
+      'हर विद्यार्थी को रोल नंबर के अनुसार एक कार्ड मिलता है। बोर्ड पर \"कक्षा से पूछें\" में वे उत्तर को ऊपर रखकर कार्ड उठाते हैं, और बोर्ड एक फ़ोटो से पूरी कक्षा पढ़ लेता है।';
 
   @override
   String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';

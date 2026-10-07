@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -278,12 +279,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಅವಧಿಗಳು',
-      one: '1 ಅವಧಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
     return '$_temp0';
   }
 
@@ -406,7 +402,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get freeSession => 'ಮುಕ್ತ ಸೆಷನ್';
 
   @override
-  String get freeSessionBody => 'ಈಗ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ನಿಮಗೆ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಬೋರ್ಡ್ ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿ ಇಲ್ಲದೆ ತೆರೆಯುತ್ತದೆ. 2 ಗಂಟೆಗಳ ನಂತರ ನೀವು ತಾನಾಗಿಯೇ ಸೈನ್ ಔಟ್ ಆಗುತ್ತೀರಿ.';
+  String get freeSessionBody =>
+      'ಈಗ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ನಿಮಗೆ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಬೋರ್ಡ್ ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿ ಇಲ್ಲದೆ ತೆರೆಯುತ್ತದೆ. 2 ಗಂಟೆಗಳ ನಂತರ ನೀವು ತಾನಾಗಿಯೇ ಸೈನ್ ಔಟ್ ಆಗುತ್ತೀರಿ.';
 
   @override
   String get qrNotOurs => 'ಇದು KINETIX ಬೋರ್ಡ್‌ನ ಕೋಡ್ ಅಲ್ಲ. ಬೋರ್ಡ್‌ನ ಪರದೆಯ ಮೇಲಿರುವ QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.';
@@ -508,7 +505,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get outOf => 'ಒಟ್ಟು ಅಂಕ';
 
   @override
-  String get marksPrivateNote => 'ನೀವು ಪ್ರಕಟಿಸುವವರೆಗೆ ಅಂಕಗಳು ನಿಮಗೆ ಮಾತ್ರ ಕಾಣುತ್ತವೆ. ನಂತರ ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಅವರ ಪೋಷಕರು ತಮ್ಮ ಅಂಕಗಳು ಮತ್ತು ತರಗತಿ ಸರಾಸರಿಯನ್ನು ನೋಡಬಹುದು.';
+  String get marksPrivateNote =>
+      'ನೀವು ಪ್ರಕಟಿಸುವವರೆಗೆ ಅಂಕಗಳು ನಿಮಗೆ ಮಾತ್ರ ಕಾಣುತ್ತವೆ. ನಂತರ ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಅವರ ಪೋಷಕರು ತಮ್ಮ ಅಂಕಗಳು ಮತ್ತು ತರಗತಿ ಸರಾಸರಿಯನ್ನು ನೋಡಬಹುದು.';
 
   @override
   String get kindTest => 'ಟೆಸ್ಟ್';
@@ -593,7 +591,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get publishTitle => 'ಅಂಕಗಳನ್ನು ಪ್ರಕಟಿಸುವುದೇ?';
 
   @override
-  String get publishBody => 'ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಪೋಷಕರಿಗೆ ಸೂಚನೆ ಹೋಗುತ್ತದೆ. ಅವರು ತಮ್ಮ ಅಂಕಗಳು, ತರಗತಿ ಸರಾಸರಿ ಮತ್ತು ಗರಿಷ್ಠ ಅಂಕವನ್ನು ನೋಡಬಹುದು.';
+  String get publishBody =>
+      'ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಪೋಷಕರಿಗೆ ಸೂಚನೆ ಹೋಗುತ್ತದೆ. ಅವರು ತಮ್ಮ ಅಂಕಗಳು, ತರಗತಿ ಸರಾಸರಿ ಮತ್ತು ಗರಿಷ್ಠ ಅಂಕವನ್ನು ನೋಡಬಹುದು.';
 
   @override
   String publishBlank(int count) {
@@ -686,7 +685,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get remarkHint => 'ಉದಾ. ಅಚ್ಚುಕಟ್ಟಾದ ಕೆಲಸ; ಜರ್ನಲ್ ಎಂಟ್ರಿಗಳನ್ನು ಪುನರಾವರ್ತಿಸಿ';
 
   @override
-  String get noMessages => 'ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ.\n“ಹೊಸ ಸಂದೇಶ” ಬಳಸಿ ವಿದ್ಯಾರ್ಥಿಯ ಪೋಷಕರಿಗೆ ಬರೆಯಿರಿ, ಅಥವಾ ಪೋಷಕರು ನಿಮಗೆ ಬರೆಯುವವರೆಗೆ ಕಾಯಿರಿ.';
+  String get noMessages =>
+      'ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ.\n“ಹೊಸ ಸಂದೇಶ” ಬಳಸಿ ವಿದ್ಯಾರ್ಥಿಯ ಪೋಷಕರಿಗೆ ಬರೆಯಿರಿ, ಅಥವಾ ಪೋಷಕರು ನಿಮಗೆ ಬರೆಯುವವರೆಗೆ ಕಾಯಿರಿ.';
 
   @override
   String get noMessagesPreview => 'ಇನ್ನೂ ಸಂದೇಶಗಳಿಲ್ಲ';
@@ -771,7 +771,8 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get noRecordings => 'ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ.\nತರಗತಿಯ ಸಮಯದಲ್ಲಿ ಬೋರ್ಡ್‌ನಲ್ಲಿ ರೆಕಾರ್ಡ್ ಬಟನ್ ಒತ್ತಿ. ಬೋರ್ಡ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ತಕ್ಷಣ ಪಾಠ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
+  String get noRecordings =>
+      'ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ.\nತರಗತಿಯ ಸಮಯದಲ್ಲಿ ಬೋರ್ಡ್‌ನಲ್ಲಿ ರೆಕಾರ್ಡ್ ಬಟನ್ ಒತ್ತಿ. ಬೋರ್ಡ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ತಕ್ಷಣ ಪಾಠ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String get uploading => 'ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ';
@@ -1051,7 +1052,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get yearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆ';
 
   @override
-  String get yearPlanNone => 'ಇನ್ನೂ ವಾರ್ಷಿಕ ಯೋಜನೆ ಇಲ್ಲ. ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯ ಪ್ರಕಾರ, ರಜೆ ಮತ್ತು ಪರೀಕ್ಷೆಗಳನ್ನು ಬಿಟ್ಟು, KINETIX ಈ ವಿಷಯದ ಪಠ್ಯಕ್ರಮವನ್ನು ಅವಧಿಯ ವಾರಗಳಿಗೆ ಹಂಚಬಹುದು. ನಂತರ ನೀವು ವಿಷಯಗಳನ್ನು ಬದಲಿಸಬಹುದು.';
+  String get yearPlanNone =>
+      'ಇನ್ನೂ ವಾರ್ಷಿಕ ಯೋಜನೆ ಇಲ್ಲ. ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯ ಪ್ರಕಾರ, ರಜೆ ಮತ್ತು ಪರೀಕ್ಷೆಗಳನ್ನು ಬಿಟ್ಟು, KINETIX ಈ ವಿಷಯದ ಪಠ್ಯಕ್ರಮವನ್ನು ಅವಧಿಯ ವಾರಗಳಿಗೆ ಹಂಚಬಹುದು. ನಂತರ ನೀವು ವಿಷಯಗಳನ್ನು ಬದಲಿಸಬಹುದು.';
 
   @override
   String get makeYearPlan => 'ವಾರ್ಷಿಕ ಯೋಜನೆ ಮಾಡಿ';
@@ -1066,7 +1068,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get remakeYearPlanTitle => 'ವಾರ್ಷಿಕ ಯೋಜನೆಯನ್ನು ಮತ್ತೆ ಮಾಡಬೇಕೇ?';
 
   @override
-  String get remakeYearPlanBody => 'ನೀವು ಆರಿಸುವ ದಿನಾಂಕಗಳಿಂದ ಎಲ್ಲಾ ವಾರಗಳನ್ನು ಮತ್ತೆ ಯೋಜಿಸಲಾಗುತ್ತದೆ, ನೀವು ಬದಲಿಸಿದ ವಿಷಯಗಳು ಹಿಂದಿನ ಸ್ಥಾನಕ್ಕೆ ಹೋಗುತ್ತವೆ. ಈಗಾಗಲೇ ಕಲಿಸಿದ ವಿಷಯಗಳು ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ.';
+  String get remakeYearPlanBody =>
+      'ನೀವು ಆರಿಸುವ ದಿನಾಂಕಗಳಿಂದ ಎಲ್ಲಾ ವಾರಗಳನ್ನು ಮತ್ತೆ ಯೋಜಿಸಲಾಗುತ್ತದೆ, ನೀವು ಬದಲಿಸಿದ ವಿಷಯಗಳು ಹಿಂದಿನ ಸ್ಥಾನಕ್ಕೆ ಹೋಗುತ್ತವೆ. ಈಗಾಗಲೇ ಕಲಿಸಿದ ವಿಷಯಗಳು ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ.';
 
   @override
   String get remake => 'ಮತ್ತೆ ಮಾಡಿ';
@@ -1097,12 +1100,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ',
-      one: '1 ವಿಷಯ ಹಿಂದಿದೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ', one: '1 ವಿಷಯ ಹಿಂದಿದೆ');
     return '$_temp0';
   }
 
@@ -1116,12 +1114,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಅವಧಿಗಳು',
-      one: '1 ಅವಧಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
     return '$_temp0';
   }
 
@@ -1235,7 +1228,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get replaceWithDraftTitle => 'KINETIX AI ಕರಡಿನಿಂದ ಬದಲಿಸಬೇಕೇ?';
 
   @override
-  String get replaceWithDraftBody => 'ಈ ಯೋಜನೆಯ ವಿಷಯಗಳು, ಉದ್ದೇಶಗಳು, ಹಂತಗಳು, ಸಾಮಗ್ರಿಗಳು ಮತ್ತು ಪರಿಶೀಲನೆ ಬದಲಾಗುತ್ತವೆ. ನಿಮ್ಮ ಹೋಂವರ್ಕ್ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತದೆ.';
+  String get replaceWithDraftBody =>
+      'ಈ ಯೋಜನೆಯ ವಿಷಯಗಳು, ಉದ್ದೇಶಗಳು, ಹಂತಗಳು, ಸಾಮಗ್ರಿಗಳು ಮತ್ತು ಪರಿಶೀಲನೆ ಬದಲಾಗುತ್ತವೆ. ನಿಮ್ಮ ಹೋಂವರ್ಕ್ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತದೆ.';
 
   @override
   String get replace => 'ಬದಲಿಸಿ';
@@ -1348,7 +1342,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get demoBannerTitle => 'ಡೆಮೊ ಮೋಡ್';
 
   @override
-  String get demoBannerBody => 'KINETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
+  String get demoBannerBody =>
+      'KINETIX ಡೆಮೊ ಕಾಲೇಜಿನ ಮಾದರಿ ಡೇಟಾ. ಯಾವುದನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವುದಿಲ್ಲ, ಮತ್ತು ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್ ಮುಚ್ಚುವವರೆಗೆ ಮಾತ್ರ ಇರುತ್ತವೆ.';
 
   @override
   String demoSignInAs(String name) {
@@ -1456,7 +1451,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get answerCardsMenuBody => 'ಫೋನ್ ಇಲ್ಲದ ವಿದ್ಯಾರ್ಥಿಗಳು ಬೋರ್ಡ್‌ನಲ್ಲಿ ಉತ್ತರಿಸಲು ಕಾರ್ಡ್‌ಗಳನ್ನು ಮುದ್ರಿಸಿ';
 
   @override
-  String get answerCardsBody => 'ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಹಾಜರಿ ಸಂಖ್ಯೆಯ ಪ್ರಕಾರ ಒಂದು ಕಾರ್ಡ್. ಬೋರ್ಡ್‌ನ \"ತರಗತಿಯನ್ನು ಕೇಳಿ\" ಯಲ್ಲಿ ಅವರು ಉತ್ತರ ಮೇಲಿರುವಂತೆ ಕಾರ್ಡ್ ಎತ್ತುತ್ತಾರೆ, ಬೋರ್ಡ್ ಒಂದೇ ಫೋಟೋದಿಂದ ಇಡೀ ತರಗತಿಯನ್ನು ಓದುತ್ತದೆ.';
+  String get answerCardsBody =>
+      'ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಹಾಜರಿ ಸಂಖ್ಯೆಯ ಪ್ರಕಾರ ಒಂದು ಕಾರ್ಡ್. ಬೋರ್ಡ್‌ನ \"ತರಗತಿಯನ್ನು ಕೇಳಿ\" ಯಲ್ಲಿ ಅವರು ಉತ್ತರ ಮೇಲಿರುವಂತೆ ಕಾರ್ಡ್ ಎತ್ತುತ್ತಾರೆ, ಬೋರ್ಡ್ ಒಂದೇ ಫೋಟೋದಿಂದ ಇಡೀ ತರಗತಿಯನ್ನು ಓದುತ್ತದೆ.';
 
   @override
   String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';

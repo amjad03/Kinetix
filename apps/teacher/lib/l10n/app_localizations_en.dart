@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -278,12 +279,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count periods',
-      one: '1 period',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count periods', one: '1 period');
     return '$_temp0';
   }
 
@@ -406,7 +402,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeSession => 'Free session';
 
   @override
-  String get freeSessionBody => 'You have no timetabled class right now, so the board opens without a class list. It signs you out after 2 hours.';
+  String get freeSessionBody =>
+      'You have no timetabled class right now, so the board opens without a class list. It signs you out after 2 hours.';
 
   @override
   String get qrNotOurs => 'That isn\'t a KINETIX board code. Scan the QR code on the board\'s screen.';
@@ -508,7 +505,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outOf => 'Out of';
 
   @override
-  String get marksPrivateNote => 'Marks stay private until you publish them. Then students and their families see their own marks and the class average.';
+  String get marksPrivateNote =>
+      'Marks stay private until you publish them. Then students and their families see their own marks and the class average.';
 
   @override
   String get kindTest => 'Test';
@@ -564,12 +562,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String marksNeedFixing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count marks need fixing',
-      one: 'One mark needs fixing',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count marks need fixing', one: 'One mark needs fixing');
     return '$_temp0';
   }
 
@@ -593,7 +586,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publishTitle => 'Publish marks?';
 
   @override
-  String get publishBody => 'Students and families of the class will be notified and can see their own marks with the class average and highest.';
+  String get publishBody =>
+      'Students and families of the class will be notified and can see their own marks with the class average and highest.';
 
   @override
   String publishBlank(int count) {
@@ -771,7 +765,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noRecordings => 'No recordings yet.\nTap Record on the board during class. The lesson shows up here once the board uploads it.';
+  String get noRecordings =>
+      'No recordings yet.\nTap Record on the board during class. The lesson shows up here once the board uploads it.';
 
   @override
   String get uploading => 'Uploading';
@@ -1051,7 +1046,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yearPlan => 'Year plan';
 
   @override
-  String get yearPlanNone => 'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
+  String get yearPlanNone =>
+      'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
 
   @override
   String get makeYearPlan => 'Make a year plan';
@@ -1066,7 +1062,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remakeYearPlanTitle => 'Remake the year plan?';
 
   @override
-  String get remakeYearPlanBody => 'All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.';
+  String get remakeYearPlanBody =>
+      'All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.';
 
   @override
   String get remake => 'Remake';
@@ -1097,12 +1094,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Behind by $count topics',
-      one: 'Behind by 1 topic',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Behind by $count topics', one: 'Behind by 1 topic');
     return '$_temp0';
   }
 
@@ -1116,12 +1108,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count periods',
-      one: '1 period',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count periods', one: '1 period');
     return '$_temp0';
   }
 
@@ -1235,7 +1222,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get replaceWithDraftTitle => 'Replace with a KINETIX AI draft?';
 
   @override
-  String get replaceWithDraftBody => 'The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.';
+  String get replaceWithDraftBody =>
+      'The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.';
 
   @override
   String get replace => 'Replace';
@@ -1348,7 +1336,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get demoBannerTitle => 'Demo mode';
 
   @override
-  String get demoBannerBody => 'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+  String get demoBannerBody =>
+      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
 
   @override
   String demoSignInAs(String name) {
@@ -1456,7 +1445,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get answerCardsMenuBody => 'Print cards so students without phones can answer on the board';
 
   @override
-  String get answerCardsBody => 'Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.';
+  String get answerCardsBody =>
+      'Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.';
 
   @override
   String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
