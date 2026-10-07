@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'hr' | 'payroll' | 'payslips';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -36,6 +36,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   settings: ['principal', 'tenant_admin'],
   // import.controller.ts (bulk import from CSV): STAFF_ADMIN_ROLES
   import: ['principal', 'tenant_admin'],
+  // hr.controller.ts, leave.controller.ts, recruitment.controller.ts: HR_ROLES (the head of department decides leave in the API)
+  hr: ['principal', 'tenant_admin', 'hr_manager'],
+  // payroll.controller.ts PAYROLL_ROLES; approving and locking is for the principal and administrator (canApprovePayroll)
+  payroll: ['principal', 'tenant_admin', 'hr_manager', 'accountant'],
+  // GET /v1/payroll/payslips/me: a staff member's own payslips (teachers read theirs in the Teacher App)
+  payslips: ['principal', 'tenant_admin', 'hod', 'hr_manager', 'accountant', 'librarian'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -107,6 +113,10 @@ export function sectionOf(pathname: string): Section | null {
       return 'settings';
     case 'import':
       return 'import';
+    case 'hr':
+      return 'hr';
+    case 'payroll':
+      return pathname.startsWith('/payroll/payslips') ? 'payslips' : 'payroll';
     default:
       return null;
   }
@@ -126,6 +136,7 @@ export function homeFor(roles: readonly RoleName[]): string {
   if (canSee(roles, 'school')) return '/';
   if (canSee(roles, 'fees')) return '/fees';
   if (canSee(roles, 'library')) return '/library';
+  if (canSee(roles, 'hr')) return '/hr';
   return '/login';
 }
 
@@ -144,4 +155,9 @@ export function landingFor(roles: readonly RoleName[], next: string | null | und
  */
 export function canReviewLessonPlans(roles: readonly RoleName[]): boolean {
   return roles.some((r) => r === 'hod' || r === 'principal' || r === 'tenant_admin');
+}
+
+/** Approving, locking and reopening a payroll run, and the statutory rates: principal and administrator. */
+export function canApprovePayroll(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
 }

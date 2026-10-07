@@ -40,6 +40,12 @@ import MenuBook from '@mui/icons-material/MenuBook';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import OndemandVideo from '@mui/icons-material/OndemandVideo';
 import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
+import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
+import Badge from '@mui/icons-material/Badge';
+import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
+import RequestQuote from '@mui/icons-material/RequestQuote';
+import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
+import ReceiptLong from '@mui/icons-material/ReceiptLong';
 import Payments from '@mui/icons-material/Payments';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import Today from '@mui/icons-material/Today';
@@ -82,6 +88,9 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/boards', label: 'nav.boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
   { href: '/live', label: 'nav.live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
   { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
+  { href: '/hr', label: 'nav.hr', section: 'hr', icon: BadgeOutlined, active: Badge },
+  { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: RequestQuoteOutlined, active: RequestQuote },
+  { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: ReceiptLongOutlined, active: ReceiptLong },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
@@ -99,6 +108,7 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   teacher: 'role.teacher',
   accountant: 'role.accountant',
   librarian: 'role.librarian',
+  hr_manager: 'role.hr_manager',
 };
 
 export interface ShellUser {
