@@ -734,6 +734,45 @@ class FakeTeacherApi implements TeacherApi {
     covered.remove(topicId);
   }
 
+  /// The teacher's own videos by topic id.
+  Map<String, List<TopicVideo>> topicVideoList = {};
+  Object? topicVideoError;
+
+  @override
+  Future<List<TopicVideo>> topicVideos(String topicId) async {
+    calls.add('topicVideos $topicId');
+    return [...?topicVideoList[topicId]];
+  }
+
+  @override
+  Future<TopicVideo> addTopicVideo({required String topicId, required String url, required String sectionId}) async {
+    calls.add('addTopicVideo $topicId $sectionId $url');
+    if (topicVideoError != null) throw topicVideoError!;
+    final v = TopicVideo(id: 'tv${(topicVideoList[topicId]?.length ?? 0) + 1}', youtubeVideoId: 'abcdefghij1', title: 'Title from YouTube', sections: const ['BCom Sem 3 A']);
+    topicVideoList = {...topicVideoList, topicId: [...?topicVideoList[topicId], v]};
+    return v;
+  }
+
+  @override
+  Future<TopicVideo> shareTopicVideo(String videoId) async {
+    calls.add('shareTopicVideo $videoId');
+    late TopicVideo updated;
+    topicVideoList = {
+      for (final e in topicVideoList.entries)
+        e.key: [
+          for (final v in e.value)
+            if (v.id == videoId) updated = TopicVideo(id: v.id, youtubeVideoId: v.youtubeVideoId, title: v.title, shareStatus: 'pending', sections: v.sections) else v,
+        ],
+    };
+    return updated;
+  }
+
+  @override
+  Future<void> removeTopicVideo(String videoId) async {
+    calls.add('removeTopicVideo $videoId');
+    topicVideoList = {for (final e in topicVideoList.entries) e.key: [for (final v in e.value) if (v.id != videoId) v]};
+  }
+
   // --- Profile, photos and badges ---------------------------------------------------------------
 
   /// Uploaded photos by API path (demo mode shows them from memory).

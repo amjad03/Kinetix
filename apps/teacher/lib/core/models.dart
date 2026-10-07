@@ -998,3 +998,34 @@ class AppNotification {
   /// Ids for the screen to open: conversationId, homeworkId…
   final Map<String, String> data;
 }
+
+/// A video a teacher added to a topic for their classes (`GET /v1/content/topics/:id/videos/mine`).
+/// Only the YouTube id is kept. [shareStatus]: none (their classes only), pending, approved or rejected.
+class TopicVideo {
+  const TopicVideo({required this.id, required this.youtubeVideoId, required this.title, this.shareStatus = 'none', this.reviewReason, this.sections = const []});
+
+  factory TopicVideo.fromJson(Map<String, dynamic> j) => TopicVideo(
+    id: j['id'] as String,
+    youtubeVideoId: j['youtubeVideoId'] as String,
+    title: j['title'] as String,
+    shareStatus: j['shareStatus'] as String? ?? 'none',
+    reviewReason: j['reviewReason'] as String?,
+    sections: [for (final s in (j['sections'] as List? ?? const [])) (s as Map<String, dynamic>)['displayName'] as String],
+  );
+
+  final String id;
+  final String youtubeVideoId;
+  final String title;
+  final String shareStatus;
+
+  /// Why the principal did not approve sharing it.
+  final String? reviewReason;
+
+  /// The classes it is for.
+  final List<String> sections;
+
+  /// Can be offered to the whole institution.
+  bool get canShare => shareStatus == 'none' || shareStatus == 'rejected';
+
+  String get thumbnailUrl => 'https://i.ytimg.com/vi/$youtubeVideoId/mqdefault.jpg';
+}

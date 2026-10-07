@@ -1730,6 +1730,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get conceptVideosFromYouTube => 'यूट्यूब से चलता है';
 
   @override
+  String get conceptVideoSourcePlatform => 'KINETIX';
+
+  @override
+  String get conceptVideoSourceInstitution => 'स्कूल';
+
+  @override
+  String get conceptVideoSourceTeacher => 'शिक्षक';
+
+  @override
   String get conceptVideosUnsupported => 'वीडियो यहाँ नहीं चल सकते। अपने फ़ोन पर विद्यार्थी ऐप का उपयोग करें।';
 
   @override

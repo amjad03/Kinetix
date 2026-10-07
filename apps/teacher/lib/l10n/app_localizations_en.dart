@@ -997,6 +997,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taughtOnWhichDay => 'Taught on which day?';
 
   @override
+  String get topicVideosTooltip => 'Videos for this topic';
+
+  @override
+  String get topicVideosTitle => 'Videos for this class';
+
+  @override
+  String get topicVideoLink => 'YouTube link';
+
+  @override
+  String get topicVideoLinkHelp => 'Paste a link. The title comes from YouTube. Only this class sees it until the principal approves sharing it.';
+
+  @override
+  String get topicVideoAdd => 'Add video';
+
+  @override
+  String get topicVideoAdded => 'Video added for this class';
+
+  @override
+  String get topicVideoNotAdded => 'Couldn\'t add that video. Check the link and try again.';
+
+  @override
+  String get topicVideoNone => 'You haven\'t added videos to this topic yet.';
+
+  @override
+  String get topicVideoShare => 'Ask to share with everyone';
+
+  @override
+  String get topicVideoShareSent => 'Sent to the principal for approval';
+
+  @override
+  String get topicVideoStatusNone => 'This class only';
+
+  @override
+  String get topicVideoStatusPending => 'Waiting for approval';
+
+  @override
+  String get topicVideoStatusApproved => 'Shared with everyone';
+
+  @override
+  String get topicVideoStatusRejected => 'Not approved';
+
+  @override
+  String get topicVideoRemove => 'Remove video';
+
+  @override
   String get topicMarked => 'Marked as taught';
 
   @override

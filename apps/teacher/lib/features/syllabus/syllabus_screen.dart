@@ -9,6 +9,7 @@ import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import '../plans/year_plan_screen.dart';
+import 'topic_videos_sheet.dart';
 
 /// A class's syllabus for one subject, and which topics have been taught.
 class SyllabusController extends ChangeNotifier {
@@ -202,6 +203,7 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
                             saving: controller.saving.contains(t.id),
                             onToggle: () => _set(t.id, taught: !cov.topics.containsKey(t.id)),
                             onPickDate: () => _pickDate(t),
+                            onVideos: () => TopicVideosSheet.show(context, api: widget.api, topic: t, section: widget.section),
                           ),
                       ],
                     ),
@@ -294,13 +296,14 @@ class _ChapterHeader extends StatelessWidget {
 }
 
 class _TopicTile extends StatelessWidget {
-  const _TopicTile({required this.topic, required this.taught, required this.saving, required this.onToggle, required this.onPickDate});
+  const _TopicTile({required this.topic, required this.taught, required this.saving, required this.onToggle, required this.onPickDate, required this.onVideos});
 
   final SyllabusTopic topic;
   final TopicCoverage? taught;
   final bool saving;
   final VoidCallback onToggle;
   final VoidCallback onPickDate;
+  final VoidCallback onVideos;
 
   @override
   Widget build(BuildContext context) {
@@ -320,11 +323,12 @@ class _TopicTile extends StatelessWidget {
               t.coveredBy.isEmpty ? l.taughtOn(when!) : l.taughtOnBy(when!, t.coveredBy),
               style: context.text.bodySmall?.copyWith(color: c.primary),
             ),
-      trailing: IconButton(
-        key: Key('pickDate-${topic.id}'),
-        tooltip: l.taughtOnWhichDay,
-        onPressed: saving ? null : onPickDate,
-        icon: const Icon(Icons.edit_calendar_outlined),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(key: Key('topicVideos-${topic.id}'), tooltip: l.topicVideosTooltip, onPressed: onVideos, icon: const Icon(Icons.video_library_outlined)),
+          IconButton(key: Key('pickDate-${topic.id}'), tooltip: l.taughtOnWhichDay, onPressed: saving ? null : onPickDate, icon: const Icon(Icons.edit_calendar_outlined)),
+        ],
       ),
     );
   }

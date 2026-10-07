@@ -501,7 +501,7 @@ class FakeStudentApi implements StudentApi {
   Map<String, List<ConceptVideo>> conceptVideoList = {
     't1': const [
       ConceptVideo(id: 'cv1', youtubeVideoId: 'abcdefghij1', title: 'Underwriting commission in 5 minutes', language: 'en', durationSeconds: 300),
-      ConceptVideo(id: 'cv2', youtubeVideoId: 'abcdefghij2', title: 'अभिगोपन कमीशन', language: 'hi', durationSeconds: 245),
+      ConceptVideo(id: 'cv2', youtubeVideoId: 'abcdefghij2', title: 'अभिगोपन कमीशन', language: 'hi', durationSeconds: 245, source: 'teacher'),
     ],
   };
 

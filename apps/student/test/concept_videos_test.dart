@@ -30,6 +30,9 @@ void main() {
     expect(find.text('Concept videos'), findsOneWidget);
     expect(find.text('Underwriting commission in 5 minutes'), findsOneWidget);
     expect(find.text('4:05 · हिन्दी'), findsOneWidget);
+    // Who linked each: KINETIX, or the class's teacher.
+    expect(find.descendant(of: find.byKey(const Key('videoSource-cv1')), matching: find.text('KINETIX')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('videoSource-cv2')), matching: find.text('Teacher')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('conceptVideo-cv1')));
     await tester.pumpAndSettle();
@@ -53,6 +56,8 @@ void main() {
     expect(() => playerHtml('<script>'), throwsArgumentError);
     expect(playerMayNavigate('https://www.youtube.com/watch?v=abcdefghij1', mainFrame: true), isFalse);
     expect(const ConceptVideo(id: 'x', youtubeVideoId: 'abcdefghij1', title: 'x', language: 'en', durationSeconds: 3723).durationLabel, '1:02:03');
+    expect(ConceptVideo.fromJson({'id': 'x', 'youtubeVideoId': 'abcdefghij1', 'title': 'x', 'source': 'institution'}).source, 'institution');
+    expect(ConceptVideo.fromJson({'id': 'x', 'youtubeVideoId': 'abcdefghij1', 'title': 'x'}).source, 'platform');
     final demo = DemoStudentApi(clock: () => DateTime(2026, 10, 5, 10, 15));
     expect((await demo.conceptVideos('t5')).map((v) => v.language), ['en', 'hi']);
     expect(await demo.conceptVideos('t1'), isEmpty);

@@ -1739,6 +1739,15 @@ class AppLocalizationsKn extends AppLocalizations {
   String get conceptVideosFromYouTube => 'ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತದೆ';
 
   @override
+  String get conceptVideoSourcePlatform => 'KINETIX';
+
+  @override
+  String get conceptVideoSourceInstitution => 'ಶಾಲೆ';
+
+  @override
+  String get conceptVideoSourceTeacher => 'ಶಿಕ್ಷಕ';
+
+  @override
   String get conceptVideosUnsupported => 'ವೀಡಿಯೊಗಳು ಇಲ್ಲಿ ಪ್ಲೇ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್ ಬಳಸಿ.';
 
   @override

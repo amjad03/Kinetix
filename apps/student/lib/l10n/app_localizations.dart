@@ -3081,6 +3081,24 @@ abstract class AppLocalizations {
   /// **'Plays from YouTube'**
   String get conceptVideosFromYouTube;
 
+  /// No description provided for @conceptVideoSourcePlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'KINETIX'**
+  String get conceptVideoSourcePlatform;
+
+  /// No description provided for @conceptVideoSourceInstitution.
+  ///
+  /// In en, this message translates to:
+  /// **'School'**
+  String get conceptVideoSourceInstitution;
+
+  /// No description provided for @conceptVideoSourceTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get conceptVideoSourceTeacher;
+
   /// No description provided for @conceptVideosUnsupported.
   ///
   /// In en, this message translates to:
