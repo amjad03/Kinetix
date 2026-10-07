@@ -76,6 +76,10 @@ import 'profile_menu.dart';
 import 'selection_actions.dart';
 import 'side_panel.dart';
 import 'whiteboard_dialogs.dart';
+import '../../demo/demo_class_switcher.dart' show DemoClassSwitcher;
+import '../../demo/demo_classes.dart' show DemoClass;
+import '../extras/board_extras.dart';
+import '../extras/extras_hooks.dart';
 import 'board_shot.dart';
 import 'calculator.dart';
 import 'touch_lock.dart';
@@ -210,6 +214,9 @@ class _BoardScreenState extends State<BoardScreen> {
     _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
     _wb.addListener(_onWbChanged);
     PanelHost.active = _pushInPanel;
+    // The classroom extras (lib/features/extras) and the demo class switcher.
+    initBoardExtras();
+    DemoClassSwitcher.attach(board, _onDemoClass);
     // A board that starts in the dark or chalkboard theme starts on that theme's paper.
     _followTheme();
   }
@@ -259,8 +266,36 @@ class _BoardScreenState extends State<BoardScreen> {
     _wb.insert([ImageElement(id: newElementId(), rect: Rect.fromLTWH(0, 0, size.width, size.height), bytes: png)]);
   }
 
+  /// What the classroom extras may open and use (lib/features/extras).
+  late final ExtrasHooks _extras = ExtrasHooks(
+    board: board,
+    wb: _wb,
+    openPage: _openPage,
+    openSplit: (c, id) => _openSplit(c, id),
+    openPhet: _openPhet,
+    openAnimations: (topic) => topic == null
+        ? _show(PanelKind.animations)
+        : _openPage(LayoutStrings.of(context).tabAnimations, Icons.animation, (c) => animationsPanel(c, wb: _wb, subject: board.session?.subjectName, topic: topic)),
+    openKit: _openKit,
+    openVideos: () => _show(PanelKind.videos),
+    openPlan: () => _show(PanelKind.plan),
+    openCamera: () => _show(PanelKind.camera),
+    openWeb: () => _show(PanelKind.web),
+    askClass: _classCheck.start,
+  );
+
+  /// A demo class was opened (the DEMO chip's timetable): a clean page on its paper, and its
+  /// panel with the plan and the resources picked for it (primary classes start an activity).
+  void _onDemoClass(DemoClass c) {
+    if (!mounted) return;
+    if (!_wb.isBlank) _wb.addPage();
+    _wb.background = _themed(_style.paper);
+    openDemoClassPanel(context, _extras);
+  }
+
   @override
   void dispose() {
+    DemoClassSwitcher.detach(board);
     _wb.removeListener(_onWbChanged);
     if (PanelHost.active == _pushInPanel) PanelHost.active = null;
     board.removeListener(_onBoardChanged);
@@ -1145,6 +1180,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('eye-comfort', Icons.visibility_outlined, l.toolEyeComfort, [ToolGroup.classroom], cls, () => setState(() => _popover = BoardPopover.eyeComfort)),
       DrawerTool('screenshot', Icons.photo_camera_outlined, l.toolScreenshot, [ToolGroup.classroom], cls, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
       DrawerTool('touch-lock', Icons.lock_outline, l.toolTouchLock, [ToolGroup.classroom], const Color(0xFFDADCE0), _run(() => setState(() => _touchLocked = true))),
+      ...extraDrawerTools(context, _extras, run: (f) => _run(f)()),
     ];
   }
 
@@ -1155,8 +1191,10 @@ class _BoardScreenState extends State<BoardScreen> {
       Subject.physics || Subject.chemistry || Subject.biology || Subject.science || Subject.evs || Subject.geography => [ToolGroup.science, ToolGroup.maths],
       Subject.commerce || Subject.management || Subject.law => [ToolGroup.commerce, ToolGroup.maths],
       Subject.computer => [ToolGroup.cs, ToolGroup.maths],
+      Subject.english || Subject.languages => [ToolGroup.language, ToolGroup.classroom],
       _ => [ToolGroup.classroom],
     };
+    if (_primary) first.insertAll(0, [ToolGroup.primary, ToolGroup.language].where((g) => !first.contains(g)));
     return [...first, ...ToolGroup.values.where((g) => !first.contains(g))];
   }
 
@@ -1343,6 +1381,8 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.kit => PanelTab.kit,
     PanelKind.animations => PanelTab.animations,
     PanelKind.phet => PanelTab.sims,
+    PanelKind.camera => PanelTab.camera,
+    PanelKind.web => PanelTab.web,
     _ => null,
   };
 
@@ -1366,6 +1406,10 @@ class _BoardScreenState extends State<BoardScreen> {
         _show(PanelKind.animations);
       case PanelTab.sims:
         _show(PanelKind.phet);
+      case PanelTab.camera:
+        _show(PanelKind.camera);
+      case PanelTab.web:
+        _show(PanelKind.web);
     }
   }
 
@@ -1445,6 +1489,8 @@ class _BoardScreenState extends State<BoardScreen> {
     ),
     PanelKind.page => _page == null ? const SizedBox.shrink() : PanelPage(icon: _page!.icon, title: _page!.title, child: Builder(builder: _page!.builder)),
     PanelKind.host => const SizedBox.shrink(),
+    PanelKind.camera => docCameraPanel(_wb),
+    PanelKind.web => safeBrowserPanel(_extras),
   };
 
   /// The panel's body: its content, with dialogs pushed over it in the panel's own navigator.

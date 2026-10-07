@@ -4,11 +4,12 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../search/filter_bar.dart';
 import '../../search/fuzzy.dart';
+import '../../extras/board_extras.dart' show extrasStrings;
 import '../chrome.dart';
 import 'layout_strings.dart';
 
 /// The tools drawer's groups (screen 4).
-enum ToolGroup { geometry, maths, science, commerce, cs, classroom }
+enum ToolGroup { geometry, maths, science, commerce, cs, classroom, primary, language }
 
 String toolGroupName(LayoutStrings s, ToolGroup g) => switch (g) {
   ToolGroup.geometry => s.geometry,
@@ -17,6 +18,8 @@ String toolGroupName(LayoutStrings s, ToolGroup g) => switch (g) {
   ToolGroup.commerce => s.commerce,
   ToolGroup.cs => s.cs,
   ToolGroup.classroom => s.classGroup,
+  ToolGroup.primary => extrasStrings(s.lang)['groupPrimary'],
+  ToolGroup.language => extrasStrings(s.lang)['groupLanguage'],
 };
 
 /// One smart tool. On-board tools float on the board; content tools open in the split panel.
@@ -57,8 +60,9 @@ class _ToolsDrawerState extends State<ToolsDrawer> {
   List<DrawerTool> _sorted(Iterable<DrawerTool> tools) {
     final pref = widget.preferred;
     final list = tools.toList();
-    int rank(DrawerTool t) => pref.contains(t.id) ? pref.indexOf(t.id) : pref.length + list.indexOf(t);
-    return list..sort((a, b) => rank(a).compareTo(rank(b)));
+    // Ranked before sorting: a rank read from the list while it is being sorted moves.
+    final rank = {for (final (i, t) in list.indexed) t: pref.contains(t.id) ? pref.indexOf(t.id) : pref.length + i};
+    return list..sort((a, b) => rank[a]!.compareTo(rank[b]!));
   }
 
   @override
