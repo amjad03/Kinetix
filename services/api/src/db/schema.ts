@@ -6,6 +6,7 @@
  */
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   bigint,
   boolean,
   date,
@@ -244,7 +245,7 @@ export const students = pgTable(
     /** The day they joined (enrolment), for the timeline and reports. */
     enrolledOn: date('enrolled_on'),
     /** The admission application they came from; null for students imported or added by hand. */
-    applicationId: uuid('application_id').references(() => applications.id, { onDelete: 'set null' }),
+    applicationId: uuid('application_id').references((): AnyPgColumn => applications.id, { onDelete: 'set null' }),
     updatedAt: updatedAt(),
   },
   (t) => [uniqueIndex('students_section_roll_uq').on(t.sectionId, t.rollNo)],
@@ -1628,7 +1629,8 @@ export const studentLifecycleEvents = pgTable(
     batchId: uuid('batch_id').references(() => promotionBatches.id, { onDelete: 'set null' }),
     data: jsonb('data').$type<Record<string, unknown>>(),
     actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: createdAt(),
+    /** clock_timestamp(), not now(): events of one transaction keep their order. */
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`clock_timestamp()`),
   },
   (t) => [index('student_lifecycle_events_student_idx').on(t.studentId, t.createdAt)],
 );

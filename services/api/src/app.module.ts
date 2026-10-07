@@ -9,6 +9,8 @@ import { MessagesModule } from './messages/messages.module.js';
 import { PushModule } from './push/push.module.js';
 import { RecordingsModule } from './recordings/recordings.module.js';
 import { StorageModule } from './storage/storage.module.js';
+import { AdmissionsModule } from './admissions/admissions.module.js';
+import { StudentsModule } from './students/students.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BoardProfilesModule } from './board-profiles/board-profiles.module.js';
 import { BroadcastsModule } from './broadcasts/broadcasts.module.js';
@@ -77,6 +79,8 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     AiModule,
     RecordingsModule,
     FeesModule,
+    AdmissionsModule,
+    StudentsModule,
     LibraryModule,
     MarksModule,
     MessagesModule,

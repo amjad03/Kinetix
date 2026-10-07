@@ -30,6 +30,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { feeInvoices, feePayments, sections, students, tenants, users } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { ApplicationFeesService } from './application-fees.service.js';
 import { FEE_ROLES, FeesService } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
 import type { PaymentProvider } from './payment-provider.js';
@@ -61,6 +62,7 @@ export class FeesController {
     private readonly gateway: PaymentGateway,
     private readonly notifications: NotificationsService,
     private readonly lookups: SystemLookups,
+    private readonly applicationFees: ApplicationFeesService,
   ) {}
 
   /** One invoice per active student of the class. */
@@ -290,6 +292,8 @@ export class FeesController {
       // RLS: an order of another institution is simply not found here.
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, entity.order_id));
       if (pay) await this.credit(tx, pay, entity);
+      // Otherwise it may be an admission application fee.
+      else await this.applicationFees.creditByOrder(tx, entity);
     });
     return { ok: true };
   }

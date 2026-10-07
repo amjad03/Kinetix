@@ -23,7 +23,7 @@ CREATE TABLE "student_lifecycle_events" (
 	"batch_id" uuid,
 	"data" jsonb,
 	"actor_id" uuid,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT clock_timestamp() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "guardians" ADD COLUMN "is_primary" boolean DEFAULT false NOT NULL;--> statement-breakpoint
