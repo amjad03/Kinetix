@@ -12,7 +12,7 @@ const keys = Object.keys(en) as MessageKey[];
  * Words that stay in Latin script in every language (glossary): brand and technical names, and
  * values people type into import files as they are (CSV, levels ug/pg/school, languages en/hi/kn, days Mon–Sun).
  */
-const LATIN_OK = /^(KINETIX|ERP|AI|UPI|ISBN|ID|PIN|HOD|UTR|PC|Windows|Board|Teacher|App|Parent|Student|Books|Set|up|this|board|Register|Commerce|Room|demo-college|Cr|L|Cloud|CSV|UTF-|ug|pg|school|en|hi|kn|Mon|Sun|Razorpay|KYC|API|URL|IT|MDM|Android|Assigned|Access|PF|ESI|PT|TDS|PAN|UAN|IFSC|PDF|Tally)$/;
+const LATIN_OK = /^(KINETIX|ERP|AI|UPI|ISBN|ID|PIN|HOD|UTR|PC|Windows|Board|Teacher|App|Parent|Student|Books|Set|up|this|board|Register|Commerce|Room|demo-college|Cr|L|Cloud|CSV|UTF-|ug|pg|school|en|hi|kn|Mon|Sun|Razorpay|KYC|API|URL|IT|MDM|Android|Assigned|Access|PF|ESI|PT|TDS|PAN|UAN|IFSC|PDF|Tally|C|A|QR|JPEG|PNG|MB|A4|aadhaar|marks|card|key|required|employee|code|date|in|time|out)$/;
 
 describe('dictionary', () => {
   it('has every key in English, Hindi and Kannada, and nothing extra', () => {

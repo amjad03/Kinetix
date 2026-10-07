@@ -46,6 +46,8 @@ import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
 import RequestQuote from '@mui/icons-material/RequestQuote';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import ReceiptLong from '@mui/icons-material/ReceiptLong';
+import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
+import FolderCopy from '@mui/icons-material/FolderCopy';
 import Payments from '@mui/icons-material/Payments';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import Today from '@mui/icons-material/Today';
@@ -91,6 +93,7 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/hr', label: 'nav.hr', section: 'hr', icon: BadgeOutlined, active: Badge },
   { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: RequestQuoteOutlined, active: RequestQuote },
   { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: ReceiptLongOutlined, active: ReceiptLong },
+  { href: '/documents', label: 'nav.documents', section: 'documents', icon: FolderCopyOutlined, active: FolderCopy },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },

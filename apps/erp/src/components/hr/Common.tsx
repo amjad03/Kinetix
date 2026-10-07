@@ -59,3 +59,10 @@ export function useNotice() {
   );
   return { run, view, setError };
 }
+
+export const DOC_TABS: { href: string; label: MessageKey }[] = [
+  { href: '/documents', label: 'doc.tab.requests' },
+  { href: '/documents/templates', label: 'doc.tab.templates' },
+  { href: '/documents/id-cards', label: 'doc.tab.idCards' },
+  { href: '/documents/vault', label: 'doc.tab.vault' },
+];

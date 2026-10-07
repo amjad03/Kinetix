@@ -9,6 +9,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Where each kind of download lives in the API. Nothing else can be fetched through this route. */
 const TARGETS: Record<string, (id: string) => string> = {
+  certificate: (id) => `/v1/documents/requests/${id}/pdf`,
+  vault: (id) => `/v1/documents/vault/files/${id}`,
+  'id-students': (id) => `/v1/documents/id-cards/students.pdf?sectionId=${id}`,
   bank: (id) => `/v1/payroll/runs/${id}/bank-transfer.csv`,
   tally: (id) => `/v1/payroll/runs/${id}/tally.xml`,
   pf: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=pf`,
@@ -25,8 +28,10 @@ const TARGETS: Record<string, (id: string) => string> = {
 export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get('kind') ?? '';
   const id = req.nextUrl.searchParams.get('id') ?? '';
-  const target = TARGETS[kind];
-  if (!target || !UUID.test(id)) return new Response('Not found', { status: 404 });
+  // The staff and own-card PDFs need no id.
+  const FIXED: Record<string, string> = { 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
+  const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
+  if (!target || (!FIXED[kind] && !UUID.test(id))) return new Response('Not found', { status: 404 });
   const site = req.headers.get('sec-fetch-site');
   if (site && site !== 'same-origin') return new Response('Forbidden', { status: 403 });
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
