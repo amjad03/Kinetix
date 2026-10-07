@@ -20,8 +20,9 @@ import account from './account';
 import terms from './terms';
 import payments from './payments';
 import platform from './platform';
+import admissions from './admissions';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, admissions } as const;
 
 type Areas = typeof AREAS;
 type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;

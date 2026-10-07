@@ -11,6 +11,10 @@ import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
 import Check from '@mui/icons-material/Check';
 import EventNote from '@mui/icons-material/EventNote';
 import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
+import HowToReg from '@mui/icons-material/HowToReg';
+import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
+import Groups from '@mui/icons-material/Groups';
+import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
 import Settings from '@mui/icons-material/Settings';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import UploadFile from '@mui/icons-material/UploadFile';
@@ -81,6 +85,8 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: ForumOutlined, active: Forum },
   { href: '/boards', label: 'nav.boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
   { href: '/live', label: 'nav.live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
+  { href: '/admissions', label: 'nav.admissions', section: 'admissions', icon: HowToRegOutlined, active: HowToReg },
+  { href: '/students', label: 'nav.students', section: 'students', icon: GroupsOutlined, active: Groups },
   { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
@@ -99,6 +105,7 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   teacher: 'role.teacher',
   accountant: 'role.accountant',
   librarian: 'role.librarian',
+  admissions_officer: 'role.admissions_officer',
 };
 
 export interface ShellUser {
