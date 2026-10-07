@@ -7539,6 +7539,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get selMore;
+
+  /// No description provided for @clearThisPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear this page?'**
+  String get clearThisPageTitle;
+
+  /// No description provided for @clearAllPagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all {count} pages?'**
+  String clearAllPagesTitle(int count);
 }
 
 class _AppLocalizationsDelegate

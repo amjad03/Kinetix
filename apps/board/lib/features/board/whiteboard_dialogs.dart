@@ -174,31 +174,42 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
   }
 }
 
-/// Clear: asks first, then clears this page or every page (imported pages keep their pictures).
-/// Both undo, and the message after it has an Undo too.
-Future<void> confirmClearBoard(BuildContext context, WhiteboardController wb) async {
+/// What a Clear asks about: this page (with "Clear all pages" beside it when there are more),
+/// this page only, or every page.
+enum ClearScope { choose, page, all }
+
+/// Clear: asks first ("Clear this page?" / "Clear all N pages?"), then clears this page or every
+/// page (imported pages keep their pictures). Both undo, and the message after it has an Undo too.
+/// Every Clear on the board comes here: the toolbar, the menu, the page overview, the eraser's
+/// card and the phone's More sheet.
+Future<void> confirmClearBoard(BuildContext context, WhiteboardController wb, {ClearScope scope = ClearScope.choose}) async {
   final l = context.l10n;
+  final allOnly = scope == ClearScope.all;
+  if (allOnly ? !wb.canClearAllPages : (scope == ClearScope.page && !wb.canClearPage)) return;
   final all = await showPanelDialog<bool>(
     context: context,
     builder: (context) => BoardChromeTheme(
       child: AlertDialog(
         key: const Key('clear-dialog'),
         icon: const Icon(Icons.delete_sweep_outlined),
-        title: Text(l.clearBoardTitle),
+        title: Text(allOnly ? l.clearAllPagesTitle(wb.pageCount) : l.clearThisPageTitle),
         content: Text(l.clearBoardBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
-          if (wb.pageCount > 1)
+          TextButton(key: const Key('clear-cancel'), onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+          if (allOnly)
+            FilledButton(key: const Key('clear-all-pages'), onPressed: () => Navigator.pop(context, true), child: Text(l.clearAllPages))
+          else if (scope == ClearScope.choose && wb.pageCount > 1)
             OutlinedButton(
               key: const Key('clear-all-pages'),
               onPressed: wb.canClearAllPages ? () => Navigator.pop(context, true) : null,
               child: Text(l.clearAllPages),
             ),
-          FilledButton(
-            key: const Key('clear-this-page'),
-            onPressed: wb.canClearPage ? () => Navigator.pop(context, false) : null,
-            child: Text(l.clearPage),
-          ),
+          if (!allOnly)
+            FilledButton(
+              key: const Key('clear-this-page'),
+              onPressed: wb.canClearPage ? () => Navigator.pop(context, false) : null,
+              child: Text(l.clearPage),
+            ),
         ],
       ),
     ),

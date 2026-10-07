@@ -10,7 +10,6 @@ import 'package:kinetix_board/features/board/kit/kit_panel.dart';
 import 'package:kinetix_board/features/board/kit/subjects.dart';
 import 'package:kinetix_board/features/board/layout/tools_drawer.dart';
 import 'package:kinetix_board/main.dart';
-import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/board_fonts.dart';

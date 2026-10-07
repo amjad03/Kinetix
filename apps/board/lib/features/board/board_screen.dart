@@ -1862,7 +1862,7 @@ class _BoardScreenState extends State<BoardScreen> {
         true,
       ),
       (const Key('clear-board'), Icons.layers_clear_outlined, l.clearPage, () => unawaited(confirmClearBoard(context, _wb)), _wb.canClearAllPages),
-      (const Key('menu-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, _clearAll, _wb.canClearAllPages),
+      (const Key('menu-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, () => unawaited(confirmClearBoard(context, _wb, scope: ClearScope.all)), _wb.canClearAllPages),
       if (signedIn)
         (const Key('end-class'), Icons.logout, s.signOut, () => unawaited(_endClass()), true)
       else if (board.isEnrolled)
@@ -1873,11 +1873,6 @@ class _BoardScreenState extends State<BoardScreen> {
   void _openSettings() {
     setState(() => _popover = null);
     unawaited(showBoardSettings(context, board));
-  }
-
-  void _clearAll() {
-    final undo = _wb.clearAllPages();
-    showBoardMessage(context, context.l10n.clearedAllPages, action: (context.l10n.toolUndo, undo));
   }
 
   /// Share: saves the board and shares it with the class.
@@ -1899,7 +1894,13 @@ class _BoardScreenState extends State<BoardScreen> {
     void close() => setState(() => _popover = null);
     final Widget card = switch (_popover!) {
       BoardPopover.pen => PenPopover(wb: _wb, board: board, memory: _penMemory, primary: _primary),
-      BoardPopover.erase => ErasePopover(wb: _wb, onCleared: close),
+      BoardPopover.erase => ErasePopover(
+        wb: _wb,
+        onClear: () {
+          close();
+          unawaited(confirmClearBoard(context, _wb, scope: ClearScope.page));
+        },
+      ),
       BoardPopover.background => BackgroundsPopover(wb: _wb, onChanged: _setBackground),
       BoardPopover.shapes => ShapesPopover(wb: _wb, primary: _primary, onPicked: () {}, onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
       BoardPopover.tools => ToolsDrawer(
@@ -1950,7 +1951,15 @@ class _BoardScreenState extends State<BoardScreen> {
         onClose: close,
       ),
       BoardPopover.menu => BoardMenu(items: _menuItems(phone: phone), onClose: close),
-      BoardPopover.pages => PageOverview(wb: _wb, canvas: _canvasSize, onClose: close),
+      BoardPopover.pages => PageOverview(
+        wb: _wb,
+        canvas: _canvasSize,
+        onClose: close,
+        onClear: (scope) {
+          close();
+          unawaited(confirmClearBoard(context, _wb, scope: scope));
+        },
+      ),
     };
     final themed = BoardChromeTheme(child: card);
     // The page overview is a sheet at the bottom of the board, the toolbars put away under it.

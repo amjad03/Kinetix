@@ -1239,5 +1239,7 @@
   "selLock": "ಲಾಕ್ ಮಾಡಿ",
   "selUnlock": "ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
   "selKeepProportions": "ಅನುಪಾತ ಉಳಿಸಿ",
-  "selMore": "ಇನ್ನಷ್ಟು"
+  "selMore": "ಇನ್ನಷ್ಟು",
+  "clearThisPageTitle": "ಈ ಪುಟವನ್ನು ಅಳಿಸಬೇಕೇ?",
+  "clearAllPagesTitle": "ಎಲ್ಲಾ {count} ಪುಟಗಳನ್ನು ಅಳಿಸಬೇಕೇ?"
 }

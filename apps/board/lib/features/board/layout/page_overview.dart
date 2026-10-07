@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show ZLibCodec;
 import 'dart:math' as math;
@@ -12,7 +13,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/l10n.dart';
 import '../chrome.dart';
-import '../whiteboard_dialogs.dart' show confirmClearBoard;
+import '../whiteboard_dialogs.dart' show ClearScope, confirmClearBoard;
 import 'layout_strings.dart';
 import 'ui_strings.dart';
 
@@ -20,13 +21,17 @@ import 'ui_strings.dart';
 /// that scrolls, with an "add page" tile of the same size; hold a page and drag it onto another
 /// to move it there. Duplicate, delete, clear, clear all and export as PDF, and zoom, underneath.
 class PageOverview extends StatefulWidget {
-  const PageOverview({super.key, required this.wb, required this.canvas, required this.onClose, this.width = 880});
+  const PageOverview({super.key, required this.wb, required this.canvas, required this.onClose, this.onClear, this.width = 880});
 
   final WhiteboardController wb;
 
   /// The board's size on screen (the PDF's pages show at least this much).
   final Size canvas;
   final VoidCallback onClose;
+
+  /// Asks before clearing (the board closes the overview and shows its own question, so the
+  /// answer still reaches the board once the overview has gone).
+  final ValueChanged<ClearScope>? onClear;
 
   /// The sheet's widest; it takes less where there is less room.
   final double width;
@@ -44,6 +49,15 @@ class _PageOverviewState extends State<PageOverview> {
     _images.dispose();
     _grid.dispose();
     super.dispose();
+  }
+
+  void _clear(ClearScope scope) {
+    final onClear = widget.onClear;
+    if (onClear != null) {
+      onClear(scope);
+    } else {
+      unawaited(confirmClearBoard(context, widget.wb, scope: scope));
+    }
   }
 
   Future<void> _export() async {
@@ -168,8 +182,8 @@ class _PageOverviewState extends State<PageOverview> {
                     children: [
                       action(const Key('overview-duplicate'), Icons.copy_all_outlined, s.duplicate, () => wb.duplicatePage(wb.pageIndex)),
                       action(const Key('overview-delete'), Icons.delete_outline, s.delete, wb.pageCount > 1 || wb.elements.isNotEmpty ? () => wb.deletePage(wb.pageIndex) : null),
-                      action(const Key('overview-clear'), Icons.layers_clear_outlined, l.clearPage, wb.canClearPage ? wb.clearPage : null),
-                      action(const Key('overview-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, wb.canClearAllPages ? () => confirmClearBoard(context, wb) : null),
+                      action(const Key('overview-clear'), Icons.layers_clear_outlined, l.clearPage, wb.canClearPage ? () => _clear(ClearScope.page) : null),
+                      action(const Key('overview-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, wb.canClearAllPages ? () => _clear(ClearScope.all) : null),
                       FilledButton.tonalIcon(
                         key: const Key('overview-export'),
                         style: FilledButton.styleFrom(minimumSize: const Size(0, 44), padding: const EdgeInsets.symmetric(horizontal: Kx.s16), visualDensity: VisualDensity.compact),

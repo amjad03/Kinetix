@@ -1239,5 +1239,7 @@
   "selLock": "लॉक करें",
   "selUnlock": "अनलॉक करें",
   "selKeepProportions": "अनुपात बनाए रखें",
-  "selMore": "और"
+  "selMore": "और",
+  "clearThisPageTitle": "यह पेज साफ़ करें?",
+  "clearAllPagesTitle": "सभी {count} पेज साफ़ करें?"
 }

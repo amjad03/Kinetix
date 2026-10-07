@@ -4256,4 +4256,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selMore => 'More';
+
+  @override
+  String get clearThisPageTitle => 'Clear this page?';
+
+  @override
+  String clearAllPagesTitle(int count) {
+    return 'Clear all $count pages?';
+  }
 }

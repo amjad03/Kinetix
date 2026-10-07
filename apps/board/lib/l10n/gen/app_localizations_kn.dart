@@ -4244,4 +4244,12 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get selMore => 'ಇನ್ನಷ್ಟು';
+
+  @override
+  String get clearThisPageTitle => 'ಈ ಪುಟವನ್ನು ಅಳಿಸಬೇಕೇ?';
+
+  @override
+  String clearAllPagesTitle(int count) {
+    return 'ಎಲ್ಲಾ $count ಪುಟಗಳನ್ನು ಅಳಿಸಬೇಕೇ?';
+  }
 }

@@ -66,12 +66,13 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
     _tab = widget.initialTab ?? (_tabs.length > 1 ? _tabs[1] : _tabs.first);
     // A tab opened from a tool may sit past the edge of a phone: bring its chip into view.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final c = _selectedChip.currentContext;
+      final c = _chipKeys[_tab]?.currentContext;
       if (mounted && c != null) Scrollable.ensureVisible(c, alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd);
     });
   }
 
-  final _selectedChip = GlobalKey();
+  /// One key per tab's chip (kept, so a chip is never rebuilt when the selection moves).
+  final _chipKeys = <KitTab, GlobalKey>{};
 
   @override
   void didUpdateWidget(SubjectKitPanel old) {
@@ -103,7 +104,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                 children: [
                   for (final t in _tabs)
                     Padding(
-                      key: t == _tab ? _selectedChip : null,
+                      key: _chipKeys.putIfAbsent(t, GlobalKey.new),
                       padding: const EdgeInsets.only(right: Kx.s8),
                       child: ChoiceChip(
                         key: Key('kit-${t.name}'),

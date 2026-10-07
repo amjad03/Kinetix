@@ -90,6 +90,55 @@ void main() {
       await tester.pumpAndSettle();
       expect(wb.pages.map((p) => p.elements.length), [1, 2]);
 
+      // The menu's Clear all pages asks "Clear all 2 pages?"; Cancel keeps them.
+      await tap(tester, 'menu-clear-all');
+      expect(find.text('Clear all 2 pages?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('clear-cancel')));
+      await tester.pumpAndSettle();
+      expect(wb.pages.map((p) => p.elements.length), [1, 2]);
+      await tap(tester, 'menu-clear-all');
+      await tester.tap(find.byKey(const Key('clear-all-pages')));
+      await tester.pumpAndSettle();
+      expect(wb.isBlank, isTrue);
+      await tester.tap(find.byKey(const Key('message-action')));
+      await tester.pumpAndSettle();
+      expect(wb.pages.map((p) => p.elements.length), [1, 2]);
+
+      // The eraser's card asks "Clear this page?" too.
+      if (find.byKey(const Key('tool-erase')).evaluate().isNotEmpty) {
+        await tester.tap(find.byKey(const Key('tool-erase')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('tool-erase')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('clear-page')));
+        await tester.pumpAndSettle();
+        expect(find.text('Clear this page?'), findsOneWidget);
+        expect(wb.elements, hasLength(2));
+        await tester.tap(find.byKey(const Key('clear-this-page')));
+        await tester.pumpAndSettle();
+        expect(wb.elements, isEmpty);
+        await tester.tap(find.byKey(const Key('message-action')));
+        await tester.pumpAndSettle();
+        expect(wb.elements, hasLength(2));
+      }
+
+      // The page overview asks for both.
+      await tap(tester, 'page-overview');
+      await tester.tap(find.byKey(const Key('overview-clear')));
+      await tester.pumpAndSettle();
+      expect(find.text('Clear this page?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('clear-cancel')));
+      await tester.pumpAndSettle();
+      expect(wb.elements, hasLength(2));
+      await tap(tester, 'page-overview');
+      await tester.tap(find.byKey(const Key('overview-clear-all')));
+      await tester.pumpAndSettle();
+      expect(find.text('Clear all 2 pages?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('clear-all-pages')));
+      await tester.pumpAndSettle();
+      expect(wb.isBlank, isTrue);
+      expect(wb.canUndo, isTrue, reason: 'Undo is still there');
+
       await tester.pumpWidget(const SizedBox());
       board.dispose();
     });

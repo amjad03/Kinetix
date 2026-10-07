@@ -4235,4 +4235,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get selMore => 'और';
+
+  @override
+  String get clearThisPageTitle => 'यह पेज साफ़ करें?';
+
+  @override
+  String clearAllPagesTitle(int count) {
+    return 'सभी $count पेज साफ़ करें?';
+  }
 }

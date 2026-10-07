@@ -2352,5 +2352,14 @@
   "selLock": "Lock",
   "selUnlock": "Unlock",
   "selKeepProportions": "Keep proportions",
-  "selMore": "More"
+  "selMore": "More",
+  "clearThisPageTitle": "Clear this page?",
+  "clearAllPagesTitle": "Clear all {count} pages?",
+  "@clearAllPagesTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

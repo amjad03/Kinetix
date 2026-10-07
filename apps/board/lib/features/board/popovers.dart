@@ -181,10 +181,11 @@ class _WidthChip extends StatelessWidget {
 
 /// Erase: eraser size and clearing the page.
 class ErasePopover extends StatefulWidget {
-  const ErasePopover({super.key, required this.wb, required this.onCleared});
+  const ErasePopover({super.key, required this.wb, required this.onClear});
 
   final WhiteboardController wb;
-  final VoidCallback onCleared;
+  /// Closes the card and asks before clearing the page.
+  final VoidCallback onClear;
 
   @override
   State<ErasePopover> createState() => _ErasePopoverState();
@@ -224,10 +225,7 @@ class _ErasePopoverState extends State<ErasePopover> {
               key: const Key('clear-page'),
               onPressed: wb.elements.isEmpty
                   ? null
-                  : () {
-                      wb.clearPage();
-                      widget.onCleared();
-                    },
+                  : widget.onClear,
               icon: const Icon(Icons.delete_sweep_outlined),
               label: Text(l.clearPage),
             ),
