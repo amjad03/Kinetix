@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -63,6 +64,7 @@ import 'layout/board_chrome.dart';
 import 'layout/layout_strings.dart';
 import 'ai_pen_models.dart';
 import 'layout/page_overview.dart';
+import 'layout/toolbar_layout.dart';
 import 'layout/pen_popover.dart';
 import 'layout/tools_drawer.dart';
 import 'layout/ui_strings.dart';
@@ -1681,33 +1683,154 @@ class _BoardScreenState extends State<BoardScreen> {
     memory: _penMemory,
     dock: dock,
     collapsed: collapsed,
-    popover: _popover,
-    aiOpen: _panelTab == PanelTab.ai,
-    showAiPen: !_primary,
-    onTool: _onToolButton,
-    onPopover: _toggle,
-    onAi: () => _panel == PanelKind.ai ? _closePanel() : _openAi(AiView.home),
+    items: () => _layoutItems(phone: false),
+    onMore: () => _openMore(const [], phone: false),
+    onEdit: () => unawaited(_editToolbar()),
     onCollapse: (v) {
       setState(() => _popover = null);
       board.setToolbarCollapsed(v);
     },
-    onDragStart: (_) => setState(() => _toolbarDrag = Offset.zero),
-    onDragUpdate: (d) => setState(() => _toolbarDrag = (_toolbarDrag ?? Offset.zero) + d.delta),
+    onDragStart: (d) => setState(() {
+      _toolbarDrag = Offset.zero;
+      _toolbarGrab = d.globalPosition;
+    }),
+    onDragUpdate: (d) => setState(() {
+      _toolbarDrag = (_toolbarDrag ?? Offset.zero) + d.delta;
+      _toolbarGrab = d.globalPosition;
+    }),
     onDragEnd: (d) {
       final box = context.findRenderObject() as RenderBox?;
-      final width = box?.size.width ?? 1920;
-      final drag = _toolbarDrag ?? Offset.zero;
-      // Where it was let go: the left or right quarter docks it there, the middle at the bottom.
-      final start = switch (board.toolbarDock) {
-        ToolbarDock.left => 60.0,
-        ToolbarDock.right => width - 60,
-        ToolbarDock.bottom => width / 2,
-      };
-      final x = start + drag.dx;
-      setState(() => _toolbarDrag = null);
-      board.setToolbarDock(x < width * 0.25 ? ToolbarDock.left : (x > width * 0.75 ? ToolbarDock.right : ToolbarDock.bottom));
+      final size = box?.size ?? const Size(1920, 1080);
+      final at = box == null || _toolbarGrab == null ? null : box.globalToLocal(_toolbarGrab!);
+      setState(() {
+        _toolbarDrag = null;
+        _toolbarGrab = null;
+      });
+      if (at != null) board.setToolbarDock(toolbarDockAt(at, size));
     },
   );
+
+  /// Where the grip was while the toolbar is dragged (it snaps to the nearest edge when let go).
+  Offset? _toolbarGrab;
+
+  /// Every tool the toolbar can carry, by id, in the board's order: what Edit toolbar offers and
+  /// what ⋯ shows when it is not on the bar.
+  Map<String, BarItem> _catalog() {
+    final l = context.l10n;
+    final s = LayoutStrings.of(context);
+    final ts = ToolbarStrings.of(context);
+    final tool = _wb.tool;
+    final chromePaper = context.colors.brightness == Brightness.dark ? BoardBackground.night : BoardBackground.plain;
+    BarItem kit(ToolkitItem t) => BarItem(Key('tbar-${t.name}'), toolkitIcon(t), toolkitName(l, t), _run(() => _showKit(t)), selected: _kit.isOpen(t));
+    return {
+      'pen': BarItem(
+        const Key('tool-pen'),
+        penIcon(_wb),
+        tool == BoardTool.laser ? l.toolLaser : l.pen,
+        () => _onToolButton(BoardTool.pen),
+        selected: tool == BoardTool.pen || tool == BoardTool.laser || (_popover == BoardPopover.pen && tool != BoardTool.aiPen),
+        color: tool == BoardTool.pen ? inkColorFor(_wb.penColor.withValues(alpha: 1), chromePaper) : null,
+      ),
+      if (!_primary)
+        'ai-pen': BarItem(
+          const Key('tool-ai-pen'),
+          aiPenIcon,
+          l.aiPen,
+          () => _onToolButton(BoardTool.aiPen),
+          selected: tool == BoardTool.aiPen,
+          color: tool == BoardTool.aiPen ? null : aiPenColor(context),
+        ),
+      // The laser: a tap points, a second tap goes back to the pen.
+      if (!_primary)
+        'laser': BarItem(
+          const Key('tool-laser'),
+          Icons.flare,
+          l.toolLaser,
+          _run(() => _wb.tool = tool == BoardTool.laser ? BoardTool.pen : BoardTool.laser),
+          selected: tool == BoardTool.laser,
+          color: tool == BoardTool.laser ? null : const Color(0xFFD93025),
+        ),
+      'highlighter': BarItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _onToolButton(BoardTool.highlighter), selected: tool == BoardTool.highlighter),
+      'eraser': BarItem(const Key('tool-erase'), Icons.auto_fix_normal, s.eraser, () => _onToolButton(BoardTool.eraser), selected: tool == BoardTool.eraser || _popover == BoardPopover.erase),
+      'select': BarItem(const Key('tool-select'), Icons.highlight_alt, l.toolSelect, () => _onToolButton(BoardTool.select), selected: tool == BoardTool.select),
+      'shapes': BarItem(const Key('tool-shapes'), Icons.category_outlined, l.toolShapes, () => _toggle(BoardPopover.shapes), selected: tool == BoardTool.shape || _popover == BoardPopover.shapes),
+      'text': BarItem(const Key('tbar-text'), Icons.title, l.toolText, _run(() => _wb.tool = BoardTool.text), selected: tool == BoardTool.text),
+      if (!_primary) 'move': BarItem(const Key('tbar-move'), Icons.pan_tool_outlined, l.toolMove, _run(() => _wb.tool = BoardTool.hand), selected: tool == BoardTool.hand),
+      'undo': BarItem(const Key('undo'), Icons.undo, l.toolUndo, _wb.undo, enabled: _wb.canUndo),
+      'redo': BarItem(const Key('redo'), Icons.redo, l.toolRedo, _wb.redo, enabled: _wb.canRedo),
+      'add-page': BarItem(const Key('tbar-add-page'), Icons.note_add_outlined, s.addPage, _run(_wb.addPage)),
+      'clear': BarItem(const Key('tbar-clear'), Icons.layers_clear_outlined, l.clearPage, _run(() => unawaited(confirmClearBoard(context, _wb))), enabled: _wb.canClearAllPages),
+      'tools': BarItem(const Key('tool-tools'), Icons.grid_view_rounded, l.toolTools, () => _toggle(BoardPopover.tools), selected: _popover == BoardPopover.tools),
+      'insert': BarItem(
+        const Key('tool-insert'),
+        Icons.add_box_outlined,
+        s.add,
+        () => _toggle(BoardPopover.insert),
+        selected: _popover == BoardPopover.insert || tool == BoardTool.note || tool == BoardTool.math,
+      ),
+      'ruler': BarItem(const Key('tbar-ruler'), Icons.straighten, l.toolRuler, _run(() => CanvasTools.openRuler(context, _wb))),
+      'protractor': BarItem(const Key('tbar-protractor'), Icons.architecture, l.toolProtractor, _run(() => CanvasTools.openProtractor(context, _wb))),
+      'calculator': BarItem(const Key('tbar-calculator'), Icons.calculate_outlined, l.toolCalculator, _run(() => unawaited(_calculator()))),
+      'timer': kit(ToolkitItem.timer),
+      'stopwatch': kit(ToolkitItem.stopwatch),
+      'picker': kit(ToolkitItem.picker),
+      'spotlight': kit(ToolkitItem.spotlight),
+      'screenshot': BarItem(const Key('tbar-screenshot'), Icons.photo_camera_outlined, l.toolScreenshot, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
+      'models3d': BarItem(const Key('tbar-models3d'), Icons.view_in_ar_outlined, l.splitModel3d, _run(() => _openSplit(SplitContent.model3d))),
+      'labs': BarItem(const Key('tbar-labs'), Icons.biotech_outlined, s.tabLabs, _run(() => _openSplit(SplitContent.lab))),
+      'sims': BarItem(const Key('tbar-sims'), Icons.science, l.simTitle, _run(() => unawaited(_openSim()))),
+      'animations': BarItem(const Key('tbar-animations'), Icons.animation, s.tabAnimations, _run(() => _show(PanelKind.animations))),
+      'ai': BarItem(
+        const Key('panel-ai'),
+        Icons.auto_awesome,
+        s.kinetixAi,
+        () => _panel == PanelKind.ai ? _closePanel() : _openAi(AiView.home),
+        selected: _panelTab == PanelTab.ai,
+        color: const Color(0xFF835400),
+        accent: const Color(0xFF835400),
+      ),
+      'search': BarItem(const Key('tbar-search'), Icons.search, ts.search, _run(_openSearch)),
+      'record': BarItem(const Key('tbar-record'), _capture == null ? Icons.fiber_manual_record_outlined : Icons.stop_circle_outlined, ts.record, _run(() => unawaited(_toggleRecording())), selected: _capture != null),
+      'eye-comfort': BarItem(const Key('tbar-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort)),
+    };
+  }
+
+  /// The ids on the bar for a phone or a panel: the teacher's own, or the default.
+  List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) => ToolbarLayouts.clean(
+    phone ? board.toolbarPhone : board.toolbarPanel,
+    (catalog ?? _catalog()).keys,
+    max: ToolbarLayouts.maxFor(phone: phone),
+    fallback: ToolbarLayouts.defaults(phone: phone, primary: _primary),
+  );
+
+  /// The tools on the bar, in order.
+  List<(String, BarItem)> _layoutItems({required bool phone}) {
+    final cat = _catalog();
+    return [for (final id in _layoutIds(phone: phone, catalog: cat)) (id, cat[id]!)];
+  }
+
+  /// Edit toolbar (a long press on the toolbar, or Menu → Customise toolbar): the tools on the
+  /// bar of this device (a phone's or a panel's), in and out and in order, the dock, and Reset.
+  Future<void> _editToolbar() async {
+    final phone = context.isPhone;
+    setState(() => _popover = null);
+    final cat = _catalog();
+    final defaults = ToolbarLayouts.defaults(phone: phone, primary: _primary);
+    await showPanelDialog<void>(
+      context: context,
+      builder: (_) => BoardChromeTheme(
+        child: ToolbarEditor(
+          catalog: cat,
+          ids: _layoutIds(phone: phone, catalog: cat),
+          max: ToolbarLayouts.maxFor(phone: phone),
+          defaults: defaults,
+          onChanged: (ids) => board.setToolbarTools(phone: phone, ids: listEquals(ids, defaults) ? null : ids),
+          dock: phone ? null : board.toolbarDock,
+          onDock: phone ? null : board.setToolbarDock,
+        ),
+      ),
+    );
+  }
 
   /// The chrome on an interactive panel, a tablet or a desktop.
   /// The page overview is open: the toolbars at the bottom make way for its sheet.
@@ -1722,7 +1845,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
     final leftRoom = recording == null ? 190.0 : 420.0, rightRoom = compact ? 330.0 : 400.0;
-    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 760.0 : 940.0));
+    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 840.0 : 1040.0));
     _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
     return [
       Positioned(
@@ -1774,29 +1897,20 @@ class _BoardScreenState extends State<BoardScreen> {
     ];
   }
 
-  /// The toolbar's buttons in its order, for the phone's bar and its ⋯ sheet.
-  List<BarItem> _barItems() {
-    final l = context.l10n;
-    final s = LayoutStrings.of(context);
-    final tool = _wb.tool;
-    return [
-      BarItem(const Key('tool-pen'), penIcon(_wb), l.pen, () => _onToolButton(BoardTool.pen), selected: tool == BoardTool.pen || tool == BoardTool.laser),
-      if (!_primary) BarItem(const Key('tool-ai-pen'), aiPenIcon, l.aiPen, () => _onToolButton(BoardTool.aiPen), selected: tool == BoardTool.aiPen, color: tool == BoardTool.aiPen ? null : aiPenColor(context)),
-      BarItem(const Key('tool-highlighter'), Icons.border_color_outlined, l.highlighter, () => _onToolButton(BoardTool.highlighter), selected: tool == BoardTool.highlighter),
-      BarItem(const Key('tool-erase'), Icons.auto_fix_normal, s.eraser, () => _onToolButton(BoardTool.eraser), selected: tool == BoardTool.eraser),
-      BarItem(const Key('tool-select'), Icons.highlight_alt, l.toolSelect, () => _onToolButton(BoardTool.select), selected: tool == BoardTool.select),
-      BarItem(const Key('tool-shapes'), Icons.category_outlined, l.toolShapes, () => _toggle(BoardPopover.shapes), selected: tool == BoardTool.shape),
-      BarItem(const Key('undo'), Icons.undo, l.toolUndo, _wb.undo, enabled: _wb.canUndo),
-      BarItem(const Key('redo'), Icons.redo, l.toolRedo, _wb.redo, enabled: _wb.canRedo),
-      BarItem(const Key('tool-tools'), Icons.grid_view_rounded, l.toolTools, () => _toggle(BoardPopover.tools), selected: _popover == BoardPopover.tools),
-      BarItem(const Key('tool-insert'), Icons.add_box_outlined, s.add, () => _toggle(BoardPopover.insert), selected: _popover == BoardPopover.insert),
-      BarItem(const Key('panel-ai'), Icons.auto_awesome, s.kinetixAi, () => _openAi(AiView.home), selected: _panelTab == PanelTab.ai, color: const Color(0xFF835400)),
-    ];
-  }
+  /// The phone bar's tools in the teacher's order (⋯ holds what does not fit and the rest).
+  List<BarItem> _barItems() => [for (final (_, i) in _layoutItems(phone: true)) i];
 
-  /// ⋯ on a phone: the toolbar's buttons that did not fit, the background and the pages.
-  void _openMore(List<BarItem> rest) {
+  /// ⋯: the bar's tools that did not fit, every other tool, the background and the pages, and
+  /// Customise toolbar.
+  void _openMore(List<BarItem> rest, {bool phone = true}) {
     final s = LayoutStrings.of(context);
+    final cat = _catalog();
+    final onBar = _layoutIds(phone: phone, catalog: cat).toSet();
+    final others = [
+      for (final e in cat.entries)
+        if (!onBar.contains(e.key)) e.value,
+    ];
+    rest = [...rest, ...others];
     setState(() => _popover = null);
     unawaited(
       BoardMoreSheet.show(
@@ -1806,6 +1920,7 @@ class _BoardScreenState extends State<BoardScreen> {
             for (final i in rest) MoreItem(i.key, i.icon, i.label, i.onTap, selected: i.selected, enabled: i.enabled, color: i.color),
             MoreItem(const Key('tool-theme'), Icons.texture, s.background, () => _toggle(BoardPopover.background)),
             MoreItem(const Key('more-pages'), Icons.grid_view, s.pageOverview, () => _toggle(BoardPopover.pages)),
+            MoreItem(const Key('more-customise-toolbar'), Icons.tune, ToolbarStrings.of(context).customise, () => unawaited(_editToolbar())),
           ]),
         ],
       ),
@@ -1845,7 +1960,7 @@ class _BoardScreenState extends State<BoardScreen> {
           left: Kx.s8 + safe.left,
           right: Kx.s8 + safe.right,
           bottom: bottom,
-          child: BoardChromeTheme(child: Center(child: PhoneBar(wb: _wb, items: _barItems, onMore: _openMore))),
+          child: BoardChromeTheme(child: Center(child: PhoneBar(wb: _wb, items: _barItems, onMore: _openMore, onEdit: () => unawaited(_editToolbar())))),
         ),
     ];
   }
@@ -1876,6 +1991,7 @@ class _BoardScreenState extends State<BoardScreen> {
         () => board.setPanelPreview(!board.panelPreview),
         true,
       ),
+      (const Key('menu-customise-toolbar'), Icons.tune, ToolbarStrings.of(context).customise, () => unawaited(_editToolbar()), true),
       (const Key('clear-board'), Icons.layers_clear_outlined, l.clearPage, () => unawaited(confirmClearBoard(context, _wb)), _wb.canClearAllPages),
       (const Key('menu-clear-all'), Icons.delete_sweep_outlined, l.clearAllPages, () => unawaited(confirmClearBoard(context, _wb, scope: ClearScope.all)), _wb.canClearAllPages),
       if (signedIn)

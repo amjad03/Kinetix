@@ -180,7 +180,8 @@ void main() {
           p.step = 'board';
           // The toolbar is a bottom bar with ⋯; touch targets are at least 40 px.
           expect(find.byKey(const Key('phone-more')), findsOneWidget);
-          for (final key in ['tool-pen', 'tool-highlighter', 'tool-erase', 'tool-select', 'tool-shapes', 'undo', 'phone-more', 'board-menu', 'open-search', 'page-overview']) {
+          // The default phone bar (toolbar_layout.dart); the rest is in ⋯.
+          for (final key in ['tool-pen', 'tool-ai-pen', 'tool-erase', 'tool-select', 'undo', 'tool-tools', 'panel-ai', 'phone-more', 'board-menu', 'open-search', 'page-overview']) {
             final r = tester.getRect(find.byKey(Key(key)));
             expect(r.width >= 40 && r.height >= 40, isTrue, reason: '$key is $r');
             expect(Offset.zero & size, isA<Rect>().having((s) => s.contains(r.center), 'on screen', isTrue), reason: key);

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +14,7 @@ import '../../kiosk/kiosk_ui.dart';
 import '../../search/search_strings.dart';
 import '../chrome.dart';
 import 'layout_strings.dart';
+import 'toolbar_layout.dart';
 import 'pen_popover.dart';
 
 /// The popovers of the new layout; each opens above (or beside) the control that opened it.
@@ -36,9 +38,11 @@ IconData penIcon(WhiteboardController wb) => switch (wb.tool) {
   },
 };
 
-/// The main toolbar (screen 1, callout 2): Pen · Highlighter · Eraser · Select · Shapes │
-/// Undo · Redo │ Tools · Add │ KINETIX AI, labels under the icons. It floats at the bottom
-/// centre, can be dragged to the left or right edge, and folds away.
+/// The main toolbar (screen 1, callout 2): the teacher's tools in their order (by default
+/// Pen · AI pen · Laser · Highlighter · Eraser · Select · Shapes │ Undo · Redo │ Tools · Add │
+/// KINETIX AI, see toolbar_layout.dart), labels under the icons, then ⋯ for the tools not on it.
+/// It floats at the bottom centre; its grip drags it to the left or right edge (it snaps there),
+/// a long press on the grip or the bar opens Edit toolbar, and it folds away.
 class MainToolbar extends StatelessWidget {
   const MainToolbar({
     super.key,
@@ -46,180 +50,128 @@ class MainToolbar extends StatelessWidget {
     required this.memory,
     required this.dock,
     required this.collapsed,
-    required this.popover,
-    required this.aiOpen,
-    required this.onTool,
-    required this.onPopover,
-    required this.onAi,
+    required this.items,
     required this.onCollapse,
+    this.onMore,
+    this.onEdit,
     this.onDragStart,
     this.onDragUpdate,
     this.onDragEnd,
-    this.showAiPen = true,
   });
 
   final WhiteboardController wb;
-
-  /// The AI pen's own button beside the pen (not on the Simple board).
-  final bool showAiPen;
   final PenMemory memory;
   final ToolbarDock dock;
   final bool collapsed;
-  final BoardPopover? popover;
-  final bool aiOpen;
 
-  /// The Pen, Highlighter, Eraser and Select buttons (a second tap opens the tool's options).
-  final ValueChanged<BoardTool> onTool;
-  final ValueChanged<BoardPopover> onPopover;
-  final VoidCallback onAi;
+  /// The tools on the bar, by id, in order (built afresh on every change of the board).
+  final List<(String, BarItem)> Function() items;
   final ValueChanged<bool> onCollapse;
 
-  /// The handle: drag the toolbar to an edge.
+  /// ⋯: the tools not on the bar (null when every tool is on it).
+  final VoidCallback? onMore;
+
+  /// Edit toolbar (a long press on the grip or the bar).
+  final VoidCallback? onEdit;
+
+  /// The grip: drag the toolbar to an edge.
   final GestureDragStartCallback? onDragStart;
   final GestureDragUpdateCallback? onDragUpdate;
   final GestureDragEndCallback? onDragEnd;
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l10n;
     final s = LayoutStrings.of(context);
     final vertical = dock != ToolbarDock.bottom;
     return ListenableBuilder(
       listenable: Listenable.merge([wb, memory]),
       builder: (context, _) {
-        final tool = wb.tool;
+        final all = items();
         final handle = GestureDetector(
           key: const Key('toolbar-handle'),
           behavior: HitTestBehavior.opaque,
           onPanStart: onDragStart,
           onPanUpdate: onDragUpdate,
           onPanEnd: onDragEnd,
+          onLongPress: onEdit,
           child: MouseRegion(
             cursor: SystemMouseCursors.grab,
             child: Tooltip(
               message: s.dragToolbar,
               waitDuration: const Duration(seconds: 1),
+              // A long press on the grip edits the toolbar (hovering still shows the tip).
+              triggerMode: TooltipTriggerMode.manual,
               child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(vertical ? Icons.drag_handle : Icons.drag_indicator, color: context.colors.onSurfaceVariant),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                // A grip that reads as one: dots across a bar at the bottom, down one at an edge.
+                child: Icon(vertical ? Icons.drag_handle : Icons.drag_indicator, size: 28, color: context.colors.onSurfaceVariant),
               ),
             ),
           ),
         );
-        final chromePaper = context.colors.brightness == Brightness.dark ? BoardBackground.night : BoardBackground.plain;
-        final pen = ToolButton(
-          key: const Key('tool-pen'),
-          icon: penIcon(wb),
-          label: tool == BoardTool.laser ? l.toolLaser : l.pen,
-          iconColor: tool == BoardTool.pen ? inkColorFor(wb.penColor.withValues(alpha: 1), chromePaper) : null,
-          selected: tool == BoardTool.pen || tool == BoardTool.laser || (popover == BoardPopover.pen && tool != BoardTool.aiPen),
-          onTap: () => onTool(BoardTool.pen),
+        ToolButton button(BarItem i) => ToolButton(
+          key: i.key,
+          icon: i.icon,
+          label: i.label,
+          iconColor: i.color,
+          accent: i.accent,
+          selected: i.selected,
+          enabled: i.enabled,
+          onTap: i.onTap,
         );
-        // The AI pen, next to the pen: shapes, maths and words from handwriting (not on the
-        // Simple board).
-        final aiPen = showAiPen
-            ? ToolButton(
-                key: const Key('tool-ai-pen'),
-                icon: aiPenIcon,
-                label: l.aiPen,
-                iconColor: tool == BoardTool.aiPen ? null : aiPenColor(context),
-                selected: tool == BoardTool.aiPen,
-                onTap: () => onTool(BoardTool.aiPen),
-              )
-            : null;
-        if (collapsed) {
-          return ChromeSurface(
+        Widget surface(List<Widget> children) => GestureDetector(
+          onLongPress: onEdit,
+          excludeFromSemantics: true,
+          child: ChromeSurface(
             key: const Key('main-toolbar'),
-            child: Flex(
-              direction: vertical ? Axis.vertical : Axis.horizontal,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                handle,
-                pen,
-                ToolButton(key: const Key('toolbar-expand'), icon: vertical ? Icons.unfold_more : Icons.expand_less, label: s.expand, onTap: () => onCollapse(false)),
-              ],
-            ),
-          );
+            child: Flex(direction: vertical ? Axis.vertical : Axis.horizontal, mainAxisSize: MainAxisSize.min, children: children),
+          ),
+        );
+        if (collapsed) {
+          final first = all.isEmpty ? null : all.first.$2;
+          return surface([
+            handle,
+            if (first != null) button(first),
+            ToolButton(key: const Key('toolbar-expand'), icon: vertical ? Icons.unfold_more : Icons.expand_less, label: s.expand, onTap: () => onCollapse(false)),
+          ]);
         }
         Widget divider() => vertical ? Container(height: 1, width: 40, margin: const EdgeInsets.symmetric(vertical: 4), color: context.colors.outlineVariant) : const ToolbarDivider();
         final recent = memory.recent;
-        return ChromeSurface(
-          key: const Key('main-toolbar'),
-          child: Flex(
-            direction: vertical ? Axis.vertical : Axis.horizontal,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              handle,
-              pen,
-              ?aiPen,
-              if (recent.isNotEmpty)
-                Flex(
-                  direction: vertical ? Axis.horizontal : Axis.vertical,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final (i, r) in recent.indexed)
-                      Padding(
-                        padding: const EdgeInsets.all(1),
-                        child: RecentPenSwatch(
-                          key: Key('toolbar-recent-$i'),
-                          colour: r.$1,
-                          width: r.$2,
-                          size: 18,
-                          onTap: () {
-                            wb.setPen(color: r.$1, width: r.$2);
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ToolButton(
-                key: const Key('tool-highlighter'),
-                icon: Icons.border_color_outlined,
-                label: l.highlighter,
-                selected: tool == BoardTool.highlighter,
-                onTap: () => onTool(BoardTool.highlighter),
+        final children = <Widget>[handle];
+        int? group;
+        for (final (id, item) in all) {
+          final g = ToolbarLayouts.group(id);
+          if (group != null && g != group) children.add(divider());
+          group = g;
+          children.add(button(item));
+          // The last colours and thicknesses, beside the pen.
+          if (id == 'pen' && recent.isNotEmpty) {
+            children.add(
+              Flex(
+                direction: vertical ? Axis.horizontal : Axis.vertical,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final (i, r) in recent.indexed)
+                    Padding(
+                      padding: const EdgeInsets.all(1),
+                      child: RecentPenSwatch(key: Key('toolbar-recent-$i'), colour: r.$1, width: r.$2, size: 18, onTap: () => wb.setPen(color: r.$1, width: r.$2)),
+                    ),
+                ],
               ),
-              ToolButton(
-                key: const Key('tool-erase'),
-                icon: Icons.auto_fix_normal,
-                label: s.eraser,
-                selected: tool == BoardTool.eraser || popover == BoardPopover.erase,
-                onTap: () => onTool(BoardTool.eraser),
-              ),
-              ToolButton(key: const Key('tool-select'), icon: Icons.highlight_alt, label: l.toolSelect, selected: tool == BoardTool.select, onTap: () => onTool(BoardTool.select)),
-              ToolButton(
-                key: const Key('tool-shapes'),
-                icon: Icons.category_outlined,
-                label: l.toolShapes,
-                selected: tool == BoardTool.shape || popover == BoardPopover.shapes,
-                onTap: () => onPopover(BoardPopover.shapes),
-              ),
-              divider(),
-              ToolButton(key: const Key('undo'), icon: Icons.undo, label: l.toolUndo, enabled: wb.canUndo, onTap: wb.undo),
-              ToolButton(key: const Key('redo'), icon: Icons.redo, label: l.toolRedo, enabled: wb.canRedo, onTap: wb.redo),
-              divider(),
-              ToolButton(key: const Key('tool-tools'), icon: Icons.grid_view_rounded, label: l.toolTools, selected: popover == BoardPopover.tools, onTap: () => onPopover(BoardPopover.tools)),
-              ToolButton(
-                key: const Key('tool-insert'),
-                icon: Icons.add_box_outlined,
-                label: s.add,
-                selected: popover == BoardPopover.insert || tool == BoardTool.note || tool == BoardTool.math || tool == BoardTool.text,
-                onTap: () => onPopover(BoardPopover.insert),
-              ),
-              divider(),
-              ToolButton(key: const Key('panel-ai'), icon: Icons.auto_awesome, label: s.kinetixAi, accent: const Color(0xFF835400), selected: aiOpen, onTap: onAi),
-              ToolButton(key: const Key('toolbar-collapse'), icon: vertical ? Icons.unfold_less : Icons.expand_more, label: s.collapse, onTap: () => onCollapse(true)),
-            ],
-          ),
-        );
+            );
+          }
+        }
+        if (onMore != null) children.add(ToolButton(key: const Key('toolbar-more'), icon: Icons.more_horiz, label: s.more, onTap: onMore));
+        children.add(ToolButton(key: const Key('toolbar-collapse'), icon: vertical ? Icons.unfold_less : Icons.expand_more, label: s.collapse, onTap: () => onCollapse(true)));
+        return surface(children);
       },
     );
   }
 }
 
-/// One entry of the phone's bar or its ⋯ sheet.
+/// One tool of the toolbar, the phone's bar or its ⋯ sheet.
 class BarItem {
-  const BarItem(this.key, this.icon, this.label, this.onTap, {this.selected = false, this.enabled = true, this.color});
+  const BarItem(this.key, this.icon, this.label, this.onTap, {this.selected = false, this.enabled = true, this.color, this.accent});
 
   final Key key;
   final IconData icon;
@@ -227,19 +179,25 @@ class BarItem {
   final VoidCallback onTap;
   final bool selected;
   final bool enabled;
+
+  /// The icon's own colour (the pen's ink, the AI pen's marigold).
   final Color? color;
+
+  /// The button's accent on a panel's toolbar (KINETIX AI).
+  final Color? accent;
 }
 
-/// The phone's bottom bar: the toolbar's order, as many as fit, and ⋯ for the rest.
+/// The phone's bottom bar: the teacher's phone tools in order, as many as fit (at most
+/// [ToolbarLayouts.phoneMax]), and ⋯ for the rest. A long press on it opens Edit toolbar.
 class PhoneBar extends StatelessWidget {
-  const PhoneBar({super.key, required this.wb, required this.items, required this.onMore});
+  const PhoneBar({super.key, required this.wb, required this.items, required this.onMore, this.onEdit});
 
   final WhiteboardController wb;
   final List<BarItem> Function() items;
 
   /// Opens the ⋯ sheet with the items that did not fit.
   final ValueChanged<List<BarItem>> onMore;
-
+  final VoidCallback? onEdit;
   /// Each button's width on a phone (touch targets stay at least 42 px).
   static const slot = 44.0;
 
@@ -262,9 +220,12 @@ class PhoneBar extends StatelessWidget {
             size = (c.maxWidth - 8) / (minShown + 1);
             fit = minShown;
           }
-          final shown = all.take(fit.clamp(1, all.length)).toList();
+          final shown = all.take(fit.clamp(1, math.min(all.length, ToolbarLayouts.phoneMax))).toList();
           final rest = all.skip(shown.length).toList();
-          return ChromeSurface(
+          return GestureDetector(
+            onLongPress: onEdit,
+            excludeFromSemantics: true,
+            child: ChromeSurface(
             key: const Key('phone-bar'),
             radius: Kx.rXl,
             padding: const EdgeInsets.all(4),
@@ -290,6 +251,7 @@ class PhoneBar extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           );
         },
       ),

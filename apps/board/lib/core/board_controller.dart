@@ -136,6 +136,10 @@ class BoardController extends ChangeNotifier {
   ToolbarDock toolbarDock = ToolbarDock.bottom;
   bool toolbarCollapsed = false;
 
+  /// The teacher's own toolbar (tool ids in order) on a panel and on a phone; null for the
+  /// default (features/board/layout/toolbar_layout.dart).
+  List<String>? toolbarPanel, toolbarPhone;
+
   /// A resting palm does not write (the touch surface decides how; off writes with any touch).
   bool palmRejection = true;
 
@@ -305,6 +309,8 @@ class BoardController extends ChangeNotifier {
       eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
       boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
       toolbarDock = ToolbarDock.values.asNameMap()[await _store.setting('toolbarDock')] ?? ToolbarDock.bottom;
+      toolbarPanel = _ids(await _store.setting('toolbarPanel'));
+      toolbarPhone = _ids(await _store.setting('toolbarPhone'));
       palmRejection = await _store.setting('palmRejection') != 'false';
       final multi = await _store.setting('multiTouch');
       multiTouch = multi == null ? null : multi == 'true';
@@ -329,7 +335,7 @@ class BoardController extends ChangeNotifier {
   /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
   /// come back when they sign out. The board's language, touch surface, kiosk and projector
   /// stay the board's.
-  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps', 'measureShapes', 'measureUnit'];
+  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'toolbarPanel', 'toolbarPhone', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps', 'measureShapes', 'measureUnit'];
 
   String? _settingsTeacher;
 
@@ -344,6 +350,8 @@ class BoardController extends ChangeNotifier {
   Map<String, String?> _teacherSettingValues() => {
     'eyeComfort': eyeComfort.encode(),
     'toolbarDock': toolbarDock.name,
+    'toolbarPanel': toolbarPanel?.join(','),
+    'toolbarPhone': toolbarPhone?.join(','),
     'aiPenConvert': aiPenConvert.join(','),
     'theme': theme.name,
     'simpleBoard': simpleBoard.name,
@@ -359,6 +367,8 @@ class BoardController extends ChangeNotifier {
   void _setTeacherSettingValues(Map<String, String?> v) {
     if (v.containsKey('eyeComfort')) eyeComfort = EyeComfortSettings.decode(v['eyeComfort']);
     toolbarDock = ToolbarDock.values.asNameMap()[v['toolbarDock']] ?? toolbarDock;
+    if (v.containsKey('toolbarPanel')) toolbarPanel = _ids(v['toolbarPanel']);
+    if (v.containsKey('toolbarPhone')) toolbarPhone = _ids(v['toolbarPhone']);
     if (v['aiPenConvert'] != null) aiPenConvert = v['aiPenConvert']!.split(',').where((x) => x.isNotEmpty).toSet();
     theme = BoardTheme.values.asNameMap()[v['theme']] ?? theme;
     simpleBoard = SimpleBoard.values.asNameMap()[v['simpleBoard']] ?? simpleBoard;
@@ -472,6 +482,19 @@ class BoardController extends ChangeNotifier {
   void setToolbarDock(ToolbarDock d) {
     toolbarDock = d;
     unawaited(_saveTeacherSetting('toolbarDock', d.name));
+    notifyListeners();
+  }
+
+  static List<String>? _ids(String? v) => v == null || v.isEmpty ? null : v.split(',');
+
+  /// Saves the teacher's toolbar for a phone or a panel; null puts the default back.
+  void setToolbarTools({required bool phone, required List<String>? ids}) {
+    if (phone) {
+      toolbarPhone = ids;
+    } else {
+      toolbarPanel = ids;
+    }
+    unawaited(_saveTeacherSetting(phone ? 'toolbarPhone' : 'toolbarPanel', ids?.join(',') ?? ''));
     notifyListeners();
   }
 
