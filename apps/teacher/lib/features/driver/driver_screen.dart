@@ -88,7 +88,8 @@ class _DriverScreenState extends State<DriverScreen> {
               child: Text(l.driverNoRoutes, key: const Key('driverNoRoutes'), style: context.text.bodyLarge),
             );
           }
-          return ListView(padding: const EdgeInsets.all(Kx.s16), children: _trip.running ? _running(context) : _idle(context, home));
+          // A new list per state, so the result of ending a trip shows at the top, not scrolled away.
+          return ListView(key: ValueKey(_trip.running), primary: false, padding: const EdgeInsets.all(Kx.s16), children: _trip.running ? _running(context) : _idle(context, home));
         },
       ),
     );

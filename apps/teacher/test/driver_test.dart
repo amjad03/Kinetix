@@ -206,6 +206,7 @@ void main() {
       expect(find.byKey(const Key('driverStop-s3')), findsNothing);
       expect(find.textContaining('Location sent at'), findsOneWidget);
 
+      await tester.ensureVisible(find.byKey(const Key('driverEnd'))); // below the stop list on a phone
       await tester.tap(find.byKey(const Key('driverEnd')));
       await tester.pumpAndSettle();
       expect(api.calls, contains('end trip trip1'));
@@ -230,7 +231,9 @@ void main() {
 
       api = FakeTeacherApi();
       loc.access = LocationAccess.denied;
+      await tester.pumpWidget(const SizedBox()); // a fresh screen, not the one above with no routes loaded
       await pumpScreen(tester);
+      await tester.ensureVisible(find.byKey(const Key('driverStart')));
       await tester.tap(find.byKey(const Key('driverStart')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Location permission is needed'), findsOneWidget);

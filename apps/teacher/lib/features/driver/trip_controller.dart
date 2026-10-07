@@ -181,13 +181,25 @@ class TripController extends ChangeNotifier {
 
   Future<void> _stop(TripPhase next) async {
     phase = next;
-    await _sub?.cancel();
+    // Show the new state before waiting on the GPS stream: cancelling it can take a while.
+    notifyListeners();
+    final sub = _sub;
     _sub = null;
+    await sub?.cancel();
     unawaited(awake.disable().catchError((_) {}));
+  }
+
+  bool _disposed = false;
+
+  // A trip can finish (the GPS stream closing, the server answering) after the screen is gone.
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _sub?.cancel();
     if (running) unawaited(awake.disable().catchError((_) {}));
     super.dispose();
