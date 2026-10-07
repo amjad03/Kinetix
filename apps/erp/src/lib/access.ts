@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'topicVideos';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -36,6 +36,9 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   settings: ['principal', 'tenant_admin'],
   // import.controller.ts (bulk import from CSV): STAFF_ADMIN_ROLES
   import: ['principal', 'tenant_admin'],
+  // content.controller / concept-videos.controller: the principal and admin manage the institution's videos and approve
+  // teachers'; a head of department adds videos for their own classes (teachers do that in the Teacher App).
+  topicVideos: ['principal', 'tenant_admin', 'hod'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -87,6 +90,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'fees';
     case 'syllabus':
       return 'syllabus';
+    case 'topic-videos':
+      return 'topicVideos';
     case 'ai':
       return 'ai';
     case 'library':
@@ -144,4 +149,9 @@ export function landingFor(roles: readonly RoleName[], next: string | null | und
  */
 export function canReviewLessonPlans(roles: readonly RoleName[]): boolean {
   return roles.some((r) => r === 'hod' || r === 'principal' || r === 'tenant_admin');
+}
+
+/** Principal and administrator add the institution's topic videos and approve teachers' (STAFF_ADMIN_ROLES). */
+export function canReviewVideos(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
 }

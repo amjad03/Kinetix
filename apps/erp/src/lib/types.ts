@@ -575,8 +575,12 @@ export interface LessonPlanList {
 
 export type VideoLanguage = 'en' | 'hi' | 'kn';
 
+export type VideoSource = 'platform' | 'institution' | 'teacher';
+export type ShareStatus = 'none' | 'pending' | 'approved' | 'rejected';
+
 export interface ConceptVideo {
   id: string;
+  source?: VideoSource;
   topicId: string;
   youtubeVideoId: string;
   title: string;
@@ -626,4 +630,27 @@ export interface PlaylistPreview {
   chapter: { id: string; title: string };
   topics: { id: string; title: string }[];
   videos: { youtubeVideoId: string; title: string; position: number; durationSeconds: number | null; suggestedTopicId: string | null; alreadyOn: string[] }[];
+}
+
+// Topic videos (Syllabus › Topic videos; services/api/src/content/concept-videos.*). Same shapes as @kinetix/shared.
+
+/** An institution or teacher video as its managers see it. */
+export interface ManagedVideo extends ConceptVideo {
+  source: VideoSource;
+  shareStatus: ShareStatus;
+  reviewReason: string | null;
+  sectionIds: string[];
+  sections: { id: string; displayName: string }[];
+  createdBy: string | null;
+  createdByName: string | null;
+  topicTitle: string;
+  createdAt: string;
+}
+
+/** GET /v1/content/video-counts?courseId= */
+export interface TopicVideoCount {
+  topicId: string;
+  institution: number;
+  teacher: number;
+  pending: number;
 }

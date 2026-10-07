@@ -38,6 +38,8 @@ import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuBook from '@mui/icons-material/MenuBook';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
+import VideoLibrary from '@mui/icons-material/VideoLibrary';
+import VideoLibraryOutlined from '@mui/icons-material/VideoLibraryOutlined';
 import OndemandVideo from '@mui/icons-material/OndemandVideo';
 import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
 import Payments from '@mui/icons-material/Payments';
@@ -84,6 +86,7 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
+  { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: VideoLibraryOutlined, active: VideoLibrary },
   { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
   { href: '/departments', label: 'nav.departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
   { href: '/import', label: 'nav.import', section: 'import', icon: UploadFileOutlined, active: UploadFile },
