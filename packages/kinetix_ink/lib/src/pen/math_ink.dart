@@ -147,6 +147,23 @@ class MathPower extends MathNode {
   }
 }
 
+/// A subscript: a small symbol written lowered just after a letter (x₁, aₙ, H₂O).
+class MathSubscript extends MathNode {
+  const MathSubscript(this.base, this.index);
+
+  final MathNode base;
+  final MathRow index;
+
+  @override
+  String get latex => '${base.latex}_{${index.latex}}';
+
+  @override
+  String get plain {
+    final i = index.plain;
+    return '${base.plain}_${i.length == 1 ? i : '($i)'}';
+  }
+}
+
 /// Handwritten maths, read.
 class MathReading {
   const MathReading(this.row, this.confidence, {this.alternatives = const []});
@@ -171,7 +188,7 @@ class MathReading {
       switch (n) {
         case MathRow(:final items):
           items.forEach(walk);
-        case MathFraction() || MathRoot() || MathPower():
+        case MathFraction() || MathRoot() || MathPower() || MathSubscript():
           structure = true;
         case MathSymbol():
           symbols++;
@@ -461,6 +478,18 @@ class _Reader {
         items.add((MathPower(baseNode, e), baseBox.expandToInclude(_span(exp))));
         continue;
       }
+      // Lowered and smaller, right after a letter: a subscript.
+      if (base != null && prev!.$1 is MathSymbol && (prev.$1 as MathSymbol).isLetter && _lowered(u.box, base)) {
+        final (baseNode, baseBox) = items.removeLast();
+        final sub = <_Unit>[u];
+        i++;
+        while (i < units.length && _lowered(units[i].box, base) && !_isOperator(units[i])) {
+          sub.add(units[i]);
+          i++;
+        }
+        items.add((MathSubscript(baseNode, _assembleNested(sub)), baseBox.expandToInclude(_span(sub))));
+        continue;
+      }
       items.add((u.node!, u.box));
       i++;
     }
@@ -470,6 +499,12 @@ class _Reader {
   bool _isOperator(_Unit u) => u.node is MathSymbol && ((u.node as MathSymbol).isBinary || (u.node as MathSymbol).isRelation);
 
   MathRow _assembleNested(List<_Unit> units) => _assemble(units);
+
+  bool _lowered(Rect r, Rect base) =>
+      r.top > base.top + base.height * 0.45 &&
+      r.center.dy > base.center.dy + base.height * 0.25 &&
+      r.height < base.height * 0.8 &&
+      r.left - base.right < lineH * 0.6;
 
   bool _raised(Rect r, Rect base) =>
       r.bottom < base.top + base.height * 0.5 &&
@@ -484,7 +519,7 @@ class _Reader {
     bool numeric(MathNode? n, {required bool before}) => switch (n) {
       MathSymbol(:final symbol) => (n.isDigit || (before ? symbol == ')' : symbol == '(')),
       MathFraction() || MathRoot() => true,
-      MathPower() => before,
+      MathPower() || MathSubscript() => before,
       _ => false,
     };
     for (var i = 0; i < out.length; i++) {
@@ -521,6 +556,9 @@ class _Reader {
         case MathPower(:final base, :final exponent):
           walk(base);
           walk(exponent);
+        case MathSubscript(:final base, :final index):
+          walk(base);
+          walk(index);
         case MathSymbol():
           if (n.guesses.length > 1) uncertain.add(n);
       }
@@ -545,6 +583,7 @@ class _Reader {
     MathFraction(:final numerator, :final denominator) => MathFraction(_replace(numerator, from, to) as MathRow, _replace(denominator, from, to) as MathRow),
     MathRoot(:final radicand) => MathRoot(_replace(radicand, from, to) as MathRow),
     MathPower(:final base, :final exponent) => MathPower(_replace(base, from, to), _replace(exponent, from, to) as MathRow),
+    MathSubscript(:final base, :final index) => MathSubscript(_replace(base, from, to), _replace(index, from, to) as MathRow),
   };
 }
 

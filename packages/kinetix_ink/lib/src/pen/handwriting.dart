@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import '../ink_models.dart';
+import 'ink_model.dart' show StrokeTime;
 import 'ink_parser.dart' show inkBounds, isPenInk;
 
 /// Handwriting to text, on the board itself.
@@ -69,9 +70,57 @@ class NoHandwritingRecognizer implements HandwritingRecognizer {
   Future<List<String>> recognize(List<Stroke> strokes, {required String language, String preContext = ''}) async => const [];
 }
 
-/// Strokes grouped into lines of writing (and separate chunks on one line), each in the order
-/// it was written. Strokes much bigger than the writing (drawings) are left out.
-List<List<Stroke>> clusterWriting(List<Stroke> strokes) {
+/// How the AI pen splits a line of writing into pieces (words, expressions): by the space
+/// between them, in letter heights, and, when it knows when each stroke was written, by the
+/// pause between them.
+abstract final class WritingGaps {
+  /// A gap this wide always splits (without timing, the only rule).
+  static const always = 2.5;
+
+  /// With timing: a gap this wide never splits when the pen went straight on ("x  =  5"
+  /// written in one go stays one expression)...
+  static const flowing = 4.0;
+
+  /// ... where "straight on" is a pause shorter than this (ms).
+  static const flowPause = 700;
+
+  /// With timing: a narrower gap (a word space) splits after a pause this long (ms): the
+  /// teacher stopped, then wrote on.
+  static const pause = 2500;
+  static const pauseGap = 1.0;
+}
+
+/// The median height of the ordinary letters in [strokes] (flat strokes such as minus signs and
+/// fraction bars left out), in board units.
+double medianLetterHeight(List<Stroke> strokes) {
+  final hs = <double>[];
+  for (final s in strokes) {
+    final b = inkBounds([s]);
+    if (b.height > b.width * 0.35) hs.add(b.height);
+  }
+  if (hs.isEmpty) return strokes.isEmpty ? 0 : inkBounds(strokes).height;
+  hs.sort();
+  return hs[hs.length ~/ 2];
+}
+
+/// The typed size (board units) for a line of handwriting: from the median letter height, so
+/// tall and short letters, ascenders and descenders all become text of one size. A size [near]
+/// (the text written on the line before or above) wins when it is close, so a paragraph stays
+/// one size.
+double typedFontSize(List<Stroke> line, {double? near}) {
+  // A handwritten letter's median height sits between the x-height and the capitals: about
+  // 0.62 of the font size in the board's fonts.
+  final fs = (medianLetterHeight(line) / 0.62).clamp(16.0, 160.0);
+  if (near != null && fs / near > 0.72 && fs / near < 1.38) return near;
+  return fs.roundToDouble();
+}
+
+/// Strokes grouped into lines of writing (and separate chunks on one line: words or
+/// expressions), each in the order it was written. Strokes much bigger than the writing
+/// (drawings) are left out. With [times] (when each stroke was written) a line splits at a
+/// pause as well as a wide space, and writing done in one go stays together (see
+/// [WritingGaps]).
+List<List<Stroke>> clusterWriting(List<Stroke> strokes, {Map<String, StrokeTime> times = const {}}) {
   final ink = strokes.where(isPenInk).toList();
   if (ink.isEmpty) return [];
   final boxes = {
@@ -157,7 +206,8 @@ List<List<Stroke>> clusterWriting(List<Stroke> strokes) {
     var right = inkBounds(row.first).right;
     for (final u in row.skip(1)) {
       final ub = inkBounds(u);
-      if (ub.left - right > median * 2.5) {
+      final gap = ub.left - right;
+      if (_splits(chunk, u, gap / median, times)) {
         emit(chunk);
         chunk = [];
       }
@@ -167,4 +217,20 @@ List<List<Stroke>> clusterWriting(List<Stroke> strokes) {
     emit(chunk);
   }
   return out;
+}
+
+/// Whether a line splits between [chunk] and the next unit [next], [gap] letter heights apart.
+bool _splits(List<Stroke> chunk, List<Stroke> next, double gap, Map<String, StrokeTime> times) {
+  final timed = chunk.every((s) => times.containsKey(s.id)) && next.every((s) => times.containsKey(s.id));
+  if (!timed) return gap > WritingGaps.always;
+  // The pause between the two: from the end of the chunk's last stroke to the start of the next
+  // unit's first (either way round, for a word squeezed in later).
+  final chunkEnd = chunk.map((s) => times[s.id]!.end).reduce(math.max);
+  final chunkStart = chunk.map((s) => times[s.id]!.start).reduce(math.min);
+  final nextStart = next.map((s) => times[s.id]!.start).reduce(math.min);
+  final nextEnd = next.map((s) => times[s.id]!.end).reduce(math.max);
+  final pause = nextStart >= chunkEnd ? nextStart - chunkEnd : (chunkStart >= nextEnd ? chunkStart - nextEnd : 0);
+  if (gap > WritingGaps.flowing) return true;
+  if (gap > WritingGaps.always) return pause >= WritingGaps.flowPause;
+  return gap > WritingGaps.pauseGap && pause >= WritingGaps.pause;
 }

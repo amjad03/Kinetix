@@ -8,8 +8,10 @@ import 'package:kinetix_math/kinetix_math.dart' show MathTex;
 import '../element_painting.dart' show measureBoardText;
 import '../ink_models.dart';
 import '../whiteboard_controller.dart';
+import 'assisted_symbols.dart';
 import 'gestures.dart';
 import 'handwriting.dart';
+import 'ink_model.dart';
 import 'ink_parser.dart';
 import 'math_ink.dart';
 import 'shape_fit.dart';
@@ -26,7 +28,12 @@ import 'symbol_recognizer.dart';
 ///
 /// Shapes and maths are read on the board itself with no model (ink_parser.dart,
 /// math_ink.dart). Words need the platform's handwriting recogniser ([HandwritingRecognizer]);
-/// without one they stay as ink.
+/// without one they stay as ink. When that recogniser can read timed ink with named models
+/// ([InkModelReader]: ML Kit Digital Ink on Android), the AI pen also uses it for what the
+/// pure-Dart readers miss: writing is read with when each stroke was written, drawn shapes are
+/// checked (and sketches that are no clean shape recognised) with the shapes model, and each
+/// symbol of laid-out maths is read with the text model while the board keeps the layout. The
+/// pure-Dart readers stay as the fallback whenever a model is not downloaded.
 
 /// When the AI pen converts.
 enum AiPenMode {
@@ -94,20 +101,54 @@ class PenConversion {
 }
 
 class AiPenController extends ChangeNotifier {
-  AiPenController(this.board, {HandwritingRecognizer handwriting = const NoHandwritingRecognizer(), SymbolRecognizer? symbols})
+  AiPenController(this.board, {HandwritingRecognizer handwriting = const NoHandwritingRecognizer(), SymbolRecognizer? symbols, int Function()? clock})
     : _handwriting = handwriting,
-      _symbols = symbols {
+      _symbols = symbols,
+      _clock = clock ?? _stopwatch() {
     board.onStrokeStart = _strokeStarted;
     board.onStrokeEnd = _strokeEnded;
   }
 
   final WhiteboardController board;
   final SymbolRecognizer? _symbols;
+  final int Function() _clock;
+
+  static int Function() _stopwatch() {
+    final w = Stopwatch()..start();
+    return () => w.elapsedMilliseconds;
+  }
+
+  /// When each AI pen stroke was written (pen down, pen up), by stroke id: a pause splits a line
+  /// of writing, and the model reads the ink as it was written.
+  final Map<String, StrokeTime> strokeTimes = {};
+  int? _penDownAt;
+
+  /// The recogniser's timed, model-based reading, when it has one (ML Kit on Android).
+  InkModelReader? get _reader => _handwriting is InkModelReader ? _handwriting as InkModelReader : null;
+  final Set<String> _readyModels = {};
+
+  /// Whether [model] is on the board (asked until it is, so a stroke then costs no platform call).
+  Future<bool> _ready(String model) async {
+    final r = _reader;
+    if (r == null) return false;
+    if (_readyModels.contains(model)) return true;
+    try {
+      if (await r.modelStateOf(model) != HandwritingModelState.ready) return false;
+    } catch (_) {
+      return false;
+    }
+    _readyModels.add(model);
+    return true;
+  }
+
+  /// Forgets which models were ready (after a download, or when one was deleted).
+  void modelsChanged() => _readyModels.clear();
 
   HandwritingRecognizer _handwriting;
   HandwritingRecognizer get handwriting => _handwriting;
   set handwriting(HandwritingRecognizer h) {
     _handwriting = h;
+    _readyModels.clear();
     notifyListeners();
   }
 
@@ -177,6 +218,7 @@ class AiPenController extends ChangeNotifier {
 
   void _strokeStarted(BoardTool tool, Offset at) {
     if (tool != BoardTool.aiPen) return;
+    _penDownAt = _clock();
     _timer?.cancel();
     final p = pending;
     if (_mode != AiPenMode.live || p.isEmpty) return;
@@ -189,6 +231,11 @@ class AiPenController extends ChangeNotifier {
   void _strokeEnded(BoardTool tool, Stroke s) {
     final ai = tool == BoardTool.aiPen;
     if (!ai && !(tool == BoardTool.pen && snapShapes)) return;
+    if (ai) {
+      final end = _clock();
+      strokeTimes[s.id] = (start: math.min(_penDownAt ?? end, end), end: end);
+      _penDownAt = null;
+    }
     final pts = offsetsOf(s);
     // A tap with the AI pen on something it converted: other readings.
     if (ai && inkBounds([s]).longestSide * board.inputScale < 8) {
@@ -247,9 +294,10 @@ class AiPenController extends ChangeNotifier {
     notifyListeners();
     try {
       final reading = parseInk(batch, contextFor(batch));
-      // Drawn shapes become clean shapes; sketches that are no clean shape stay as ink.
-      if (reading.shapes.isNotEmpty && convertShapes) _placeShapes(reading.shapes);
-      for (final cluster in clusterWriting(reading.writing)) {
+      // Drawn shapes become clean shapes; sketches that are no clean shape stay as ink, unless
+      // the shapes model knows them.
+      if (convertShapes) _placeShapes(await _modelShapes(reading));
+      for (final cluster in clusterWriting(reading.writing, times: strokeTimes)) {
         await _convertCluster(cluster);
         _learnLetterSize(cluster);
       }
@@ -273,10 +321,11 @@ class AiPenController extends ChangeNotifier {
     try {
       final reading = parseInk(ink, contextFor(ink));
       if (convertShapes) {
-        _placeShapes(reading.shapes);
-        n += reading.shapes.length;
+        final shapes = await _modelShapes(reading);
+        _placeShapes(shapes);
+        n += shapes.length;
       }
-      for (final cluster in clusterWriting(reading.writing)) {
+      for (final cluster in clusterWriting(reading.writing, times: strokeTimes)) {
         if (await _convertCluster(cluster)) n++;
       }
     } finally {
@@ -307,8 +356,69 @@ class AiPenController extends ChangeNotifier {
     onLetterSize?.call(letterPx);
   }
 
+  /// The shapes in [reading], checked with the shapes model when it is on the board: a drawing
+  /// the model names differently is fitted as what it names, and a sketch too rough for the
+  /// board's own fitter becomes the shape the model sees in it. Without the model, the board's
+  /// own reading.
+  Future<List<InkShape>> _modelShapes(InkReading reading) async {
+    final reader = _reader;
+    if (reader == null || (reading.shapes.isEmpty && reading.drawings.isEmpty) || !await _ready(InkModels.shapes)) return reading.shapes;
+    Future<({FitKind kind, int sides, bool arrow})?> label(List<Stroke> strokes) async {
+      try {
+        final box = inkBounds(strokes);
+        final r = await reader.readInk(timedInk(strokes, strokeTimes, origin: box.topLeft), InkModels.shapes, writingArea: box.size);
+        return r.isEmpty ? null : shapeFromLabel(r.first);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final out = <InkShape>[];
+    for (final s in reading.shapes) {
+      final l = await label(s.strokes);
+      out.add(l == null ? s : (_fitLabelled(s.strokes, l, current: s) ?? s));
+    }
+    for (final g in touchingGroups(reading.drawings, board.view.value.scale)) {
+      final l = await label(g);
+      final shape = l == null ? null : _fitLabelled(g, l);
+      if (shape != null) out.add(shape);
+    }
+    return out;
+  }
+
+  /// [strokes] as the shape a model named; null when the ink cannot make it. [current] is the
+  /// board's own reading, kept when the model agrees with it.
+  InkShape? _fitLabelled(List<Stroke> strokes, ({FitKind kind, int sides, bool arrow}) label, {InkShape? current}) {
+    if (label.arrow) {
+      if (current?.arrow != null) return current;
+      // The longest stroke is the shaft, drawn from tail to tip.
+      final shaft = strokes.reduce((a, b) => inkBounds([a]).longestSide >= inkBounds([b]).longestSide ? a : b);
+      final pts = offsetsOf(shaft);
+      if (pts.length < 2 || (pts.last - pts.first).distance < 8) return null;
+      return InkShape(strokes, Fit(FitKind.line, [pts.first, pts.last], 0, 1), arrow: (pts.first, pts.last));
+    }
+    final f = current?.fit;
+    if (f != null && current!.arrow == null) {
+      final same = switch (label.kind) {
+        FitKind.circle || FitKind.ellipse => f.isOval,
+        FitKind.rectangle || FitKind.square => f.kind == FitKind.rectangle || f.kind == FitKind.square,
+        FitKind.polygon => f.kind == FitKind.polygon && f.outline.length == label.sides,
+        _ => f.kind == label.kind,
+      };
+      if (same) return current;
+    }
+    final fit = fitAs([for (final s in strokes) offsetsOf(s)], label.kind, sides: label.sides);
+    return fit == null ? null : InkShape(strokes, fit);
+  }
+
   /// Rough drawings become clean shapes, in one undo step.
   void _placeShapes(List<InkShape> shapes) {
+    final live = {for (final e in board.page.elements) e.id};
+    // The page may have changed while a model was reading (undo, another page).
+    shapes = [
+      for (final s in shapes)
+        if (s.strokes.every((x) => live.contains(x.id))) s,
+    ];
     if (shapes.isEmpty) return;
     final replace = <String, BoardElement>{};
     final remove = <String>{};
@@ -334,14 +444,16 @@ class AiPenController extends ChangeNotifier {
     final before = neighbour == null ? null : conversions[neighbour.id];
     final pre = before?.text ?? (neighbour is TextElement ? neighbour.text : '');
 
-    // Maths is read on the board, symbol by symbol, on every platform.
-    final maths = readMathInk(cluster, recognizer: _symbols);
+    // Maths is read on the board, symbol by symbol, on every platform (each symbol read by the
+    // text model too, when there is one).
+    final maths = await _readMaths(cluster);
     // Words need the platform's recogniser.
     var words = const <String>[];
     if (_handwriting.available) {
       final state = await _handwriting.modelState(language);
       if (state == HandwritingModelState.ready) {
-        words = await _handwriting.recognize(cluster, language: language, preContext: pre.isEmpty || before?.kind == ConversionKind.maths ? '' : '$pre ');
+        final context = pre.isEmpty || before?.kind == ConversionKind.maths ? '' : '$pre ';
+        words = await _readWords(cluster, box, context);
       } else {
         _tell(state == HandwritingModelState.unsupported ? AiPenNotice.languageUnsupported : AiPenNotice.modelNeeded);
       }
@@ -377,7 +489,7 @@ class AiPenController extends ChangeNotifier {
         );
         return true;
       }
-      final fs = (lineHeightOf(cluster) * 1.05).clamp(22.0, 140.0);
+      final fs = typedFontSize(cluster, near: _nearSize(box)).clamp(22.0, 160.0);
       final size = estimateMathSize(readings.candidates.first, fs);
       final el = MathElement(
         id: newElementId(),
@@ -416,7 +528,9 @@ class AiPenController extends ChangeNotifier {
       );
       return true;
     }
-    final fs = (box.height * 0.78).clamp(18.0, 120.0);
+    // One size for the whole line, from the median letter height (not the ink's box, which
+    // ascenders and descenders stretch), or the size of the text just above.
+    final fs = typedFontSize(cluster, near: _nearSize(box));
     final text = readings.candidates.first;
     final el = TextElement(
       id: newElementId(),
@@ -430,6 +544,72 @@ class AiPenController extends ChangeNotifier {
     _replace(ids, el);
     conversions[el.id] = PenConversion(kind: ConversionKind.text, ink: cluster, inkBox: box, origin: el.position, candidates: readings.candidates);
     return true;
+  }
+
+  /// Maths in [cluster]: the board's layout reading, with each symbol read by the English text
+  /// model when it is on the board and the maths is laid out (a fraction, a power, a subscript,
+  /// a root), which no line reader understands.
+  Future<MathReading> _readMaths(List<Stroke> cluster) async {
+    final base = _symbols ?? SymbolRecognizer.instance;
+    final reader = _reader;
+    final en = InkModels.text('en');
+    if (reader == null || !await _ready(en)) return readMathInk(cluster, recognizer: base);
+    final assisted = AssistedSymbols(base);
+    final first = readMathInk(cluster, recognizer: assisted);
+    if (!_hasLayout(first.row)) return first;
+    final h = lineHeightOf(cluster);
+    for (final g in assisted.asked.toList()) {
+      try {
+        assisted.hint(g, await reader.readInk(timedGlyph(g), en, writingArea: Size(h * 2, h * 2)));
+      } catch (_) {}
+    }
+    return readMathInk(cluster, recognizer: assisted);
+  }
+
+  /// Readings of [cluster] as a line of writing: with the timed model when there is one (and,
+  /// for Hindi and Kannada, the English one for digits and symbols), else the platform's reader.
+  Future<List<String>> _readWords(List<Stroke> cluster, Rect box, String context) async {
+    final reader = _reader;
+    final model = InkModels.text(language);
+    if (reader == null || !await _ready(model)) return _handwriting.recognize(cluster, language: language, preContext: context);
+    Future<List<String>> read(String m) async {
+      try {
+        return await reader.readInk(
+          timedInk(cluster, strokeTimes, origin: box.topLeft),
+          m,
+          preContext: context.length > 20 ? context.substring(context.length - 20) : context,
+          writingArea: Size(box.width + 20, box.height + 20),
+        );
+      } catch (_) {
+        return const [];
+      }
+    }
+
+    final words = await read(model);
+    final en = InkModels.text('en');
+    if (model != en && (words.isEmpty || looksMathy(words.first)) && await _ready(en)) {
+      final latin = await read(en);
+      if (latin.isNotEmpty && looksMathy(latin.first)) return [...latin, ...words];
+    }
+    return words;
+  }
+
+  /// The size of typed text written just above [box], so a paragraph of writing becomes text of
+  /// one size.
+  double? _nearSize(Rect box) {
+    double? best;
+    var bestGap = double.infinity;
+    for (final e in board.page.elements) {
+      if (e is! TextElement) continue;
+      final b = e.bounds;
+      final hOverlap = math.min(b.right, box.right) - math.max(b.left, box.left);
+      final above = box.top - b.bottom;
+      if (hOverlap > -box.height * 2 && above > -box.height * 0.3 && above < math.max(box.height, b.height) * 2.5 && above < bestGap) {
+        best = e.fontSize;
+        bestGap = above;
+      }
+    }
+    return best;
   }
 
   /// How sure the symbol recogniser must be before maths with no word reader to agree is
@@ -452,7 +632,10 @@ class AiPenController extends ChangeNotifier {
       final tex = MathTex.fromText(fixed);
       if (tex != null && !fromWords.any((x) => x.$1 == tex)) fromWords.add((tex, fixed));
     }
-    final structured = _hasLayout(maths.row);
+    // A fraction or a root is maths whatever a word reader says; a raised or lowered letter
+    // loses to a reader that clearly read a word ("hay" is no h, a, y with a subscript).
+    final wordy = clean.isNotEmpty && RegExp(r'[A-Za-z\u0900-\u0DFF]{3,}').hasMatch(clean.first) && !looksMathy(clean.first);
+    final structured = _hasStrongLayout(maths.row) || (_hasLayout(maths.row) && !wordy);
     final wordsSayMaths = clean.isNotEmpty && looksMathy(clean.first) && fromWords.isNotEmpty;
     final inkSaysMaths = maths.looksLikeMaths && (maths.confidence >= minMathsConfidence || structured);
     // A word reader that reads words wins, unless the ink is laid out as maths (a fraction, a
@@ -474,9 +657,17 @@ class AiPenController extends ChangeNotifier {
     return (maths: false, candidates: clean, plains: const []);
   }
 
+  static bool _hasStrongLayout(MathNode n) => switch (n) {
+    MathRow(:final items) => items.any(_hasStrongLayout),
+    MathFraction() || MathRoot() => true,
+    MathPower(:final base, :final exponent) => _hasStrongLayout(base) || _hasStrongLayout(exponent),
+    MathSubscript(:final base, :final index) => _hasStrongLayout(base) || _hasStrongLayout(index),
+    MathSymbol() => false,
+  };
+
   static bool _hasLayout(MathNode n) => switch (n) {
     MathRow(:final items) => items.any(_hasLayout),
-    MathFraction() || MathRoot() || MathPower() => true,
+    MathFraction() || MathRoot() || MathPower() || MathSubscript() => true,
     MathSymbol() => false,
   };
 

@@ -342,6 +342,52 @@ Fit? fitClosed(List<List<Offset>> strokes) {
   return tidyFit(best.fit);
 }
 
+/// [strokes] fitted as [kind] (with [sides] corners for a polygon) however loosely it fits:
+/// for when a shapes model has already said what the drawing is. Null when the ink cannot make
+/// that shape at all (too small, or flat for a closed one).
+Fit? fitAs(List<List<Offset>> strokes, FitKind kind, {int sides = 0}) {
+  if (kind == FitKind.line) {
+    final line = fitLine(strokes);
+    if (line != null) return line;
+    final raw = [for (final s in strokes) ...s];
+    if (raw.length < 2) return null;
+    final box = boundsOfPoints(raw);
+    if (box.longestSide < 8) return null;
+    // The two points of the ink farthest apart, in the order it was drawn.
+    var best = (raw.first, raw.last);
+    var far = 0.0;
+    final hull = convexHull(raw);
+    for (final a in hull) {
+      for (final b in hull) {
+        final d = (a - b).distance;
+        if (d > far) {
+          far = d;
+          best = (a, b);
+        }
+      }
+    }
+    var (a, b) = best;
+    if ((raw.first - b).distance < (raw.first - a).distance) (a, b) = (b, a);
+    return Fit(FitKind.line, [a, b], 0.05, 1);
+  }
+  final cands = _closedCandidates(strokes);
+  bool matches(_Cand c) => switch (kind) {
+    FitKind.circle => c.fit.kind == FitKind.circle,
+    FitKind.ellipse => c.fit.kind == FitKind.ellipse,
+    FitKind.rectangle || FitKind.square => c.fit.kind == FitKind.rectangle,
+    FitKind.triangle => c.fit.kind == FitKind.triangle,
+    FitKind.quad => c.fit.kind == FitKind.quad,
+    FitKind.polygon => c.fit.kind == FitKind.polygon && c.fit.outline.length == sides,
+    FitKind.line => false,
+  };
+  var pick = cands.where(matches).toList();
+  // A drawn circle that came out oval is the closest ellipse.
+  if (pick.isEmpty && kind == FitKind.circle) pick = cands.where((c) => c.fit.kind == FitKind.ellipse).toList();
+  if (pick.isEmpty) return null;
+  pick.sort((a, b) => a.error.compareTo(b.error));
+  return tidyFit(pick.first.fit);
+}
+
 /// A straight line through the ink, or null.
 Fit? fitLine(List<List<Offset>> strokes) {
   final raw = [for (final s in strokes) ...s];
