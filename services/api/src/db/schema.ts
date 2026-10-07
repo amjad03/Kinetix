@@ -125,6 +125,7 @@ export const roleName = pgEnum('role_name', [
   'canteen_manager',
   'store_keeper',
   'admissions_officer',
+  'hr_manager',
 ]);
 
 export const userRoles = pgTable(
@@ -600,7 +601,7 @@ export const guardians = pgTable(
   ],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -2005,6 +2006,354 @@ export const obeEvidence = pgTable('obe_evidence', {
   createdAt: createdAt(),
 });
 
+// ---------------------------------------------------------------------------------------------
+// HR (docs/architecture/hr-payroll.md)
+// ---------------------------------------------------------------------------------------------
+
+export const designations = pgTable(
+  'designations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    grade: text('grade'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('designations_name_uq').on(t.tenantId, t.name)],
+);
+
+/**
+ * The employment record of a staff user. The bank account number is encrypted at rest with the
+ * same SecretBox as the Razorpay secrets; only the last four digits are kept in clear.
+ */
+export const staffProfiles = pgTable(
+  'staff_profiles',
+  {
+    userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+    tenantId: tenantId(),
+    employeeCode: text('employee_code').notNull(),
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    designationId: uuid('designation_id').references(() => designations.id, { onDelete: 'set null' }),
+    employmentType: text('employment_type').notNull().default('permanent'),
+    dateOfJoining: date('date_of_joining'),
+    dateOfLeaving: date('date_of_leaving'),
+    status: text('status').notNull().default('active'),
+    gender: text('gender'),
+    dateOfBirth: date('date_of_birth'),
+    pan: text('pan'),
+    uan: text('uan'),
+    esiNumber: text('esi_number'),
+    taxRegime: text('tax_regime').notNull().default('new'),
+    tax80cPaise: bigint('tax_80c_paise', { mode: 'number' }).notNull().default(0),
+    taxOtherDeductionsPaise: bigint('tax_other_deductions_paise', { mode: 'number' }).notNull().default(0),
+    pfEnabled: boolean('pf_enabled').notNull().default(true),
+    esiEnabled: boolean('esi_enabled').notNull().default(false),
+    ptEnabled: boolean('pt_enabled').notNull().default(true),
+    bankAccountHolder: text('bank_account_holder'),
+    bankName: text('bank_name'),
+    bankIfsc: text('bank_ifsc'),
+    /** AES-256-GCM (common/secret-box.ts), bound to "<tenantId>:staff.<userId>.bank_account". */
+    bankAccountEnc: text('bank_account_enc'),
+    bankAccountLast4: text('bank_account_last4'),
+    version: integer('version').notNull().default(1),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('staff_profiles_code_uq').on(t.tenantId, t.employeeCode), index('staff_profiles_dept_idx').on(t.departmentId)],
+);
+
+/** One row per staff member per day. Manual entries overwrite app and biometric ones. */
+export const staffAttendance = pgTable(
+  'staff_attendance',
+  {
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    date: date('date').notNull(),
+    status: text('status').notNull(), // present | absent | half_day | on_leave
+    checkInAt: timestamp('check_in_at', { withTimezone: true }),
+    checkOutAt: timestamp('check_out_at', { withTimezone: true }),
+    source: text('source').notNull(), // app | manual | biometric
+    note: text('note'),
+    markedBy: uuid('marked_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.date] }), index('staff_attendance_date_idx').on(t.tenantId, t.date)],
+);
+
+export const leaveTypes = pgTable(
+  'leave_types',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    paid: boolean('paid').notNull().default(true),
+    annualDays: numeric('annual_days', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
+    accrual: text('accrual').notNull().default('yearly'), // yearly | monthly
+    carryForwardMax: numeric('carry_forward_max', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
+    active: boolean('active').notNull().default(true),
+  },
+  (t) => [uniqueIndex('leave_types_code_uq').on(t.tenantId, t.code)],
+);
+
+/** Days carried into a year; accrual and use are derived (no per-month rows to keep in step). */
+export const leaveBalances = pgTable(
+  'leave_balances',
+  {
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    leaveTypeId: uuid('leave_type_id').notNull().references(() => leaveTypes.id, { onDelete: 'cascade' }),
+    year: smallint('year').notNull(),
+    opening: numeric('opening', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.leaveTypeId, t.year] })],
+);
+
+export const leaveRequests = pgTable(
+  'leave_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    leaveTypeId: uuid('leave_type_id').notNull().references(() => leaveTypes.id),
+    fromDate: date('from_date').notNull(),
+    toDate: date('to_date').notNull(),
+    halfDay: boolean('half_day').notNull().default(false),
+    days: numeric('days', { precision: 5, scale: 1, mode: 'number' }).notNull(),
+    reason: text('reason').notNull().default(''),
+    status: text('status').notNull().default('pending'), // pending | approved | rejected | cancelled
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('leave_requests_user_idx').on(t.userId, t.fromDate), index('leave_requests_status_idx').on(t.tenantId, t.status)],
+);
+
+export const jobOpenings = pgTable('job_openings', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+  designationId: uuid('designation_id').references(() => designations.id, { onDelete: 'set null' }),
+  positions: smallint('positions').notNull().default(1),
+  description: text('description').notNull().default(''),
+  status: text('status').notNull().default('open'), // open | on_hold | closed
+  closesOn: date('closes_on'),
+  createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+});
+
+export const jobApplicants = pgTable(
+  'job_applicants',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    openingId: uuid('opening_id').notNull().references(() => jobOpenings.id, { onDelete: 'cascade' }),
+    fullName: text('full_name').notNull(),
+    email: text('email'),
+    phone: text('phone'),
+    notes: text('notes').notNull().default(''),
+    stage: text('stage').notNull().default('applied'),
+    stageHistory: jsonb('stage_history').$type<{ stage: string; at: string; by: string; note?: string }[]>().notNull().default([]),
+    createdAt: createdAt(),
+  },
+  (t) => [index('job_applicants_opening_idx').on(t.openingId, t.stage)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Payroll. Amounts are integer paise.
+// ---------------------------------------------------------------------------------------------
+
+export const salaryComponents = pgTable(
+  'salary_components',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    kind: text('kind').notNull(), // earning | deduction
+    pfWage: boolean('pf_wage').notNull().default(false),
+    taxable: boolean('taxable').notNull().default(true),
+    active: boolean('active').notNull().default(true),
+    sortOrder: smallint('sort_order').notNull().default(0),
+  },
+  (t) => [uniqueIndex('salary_components_code_uq').on(t.tenantId, t.code)],
+);
+
+/** A salary structure is effective from a date; a revision is a new row, history is kept. */
+export const salaryStructures = pgTable(
+  'salary_structures',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    effectiveFrom: date('effective_from').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('salary_structures_uq').on(t.userId, t.effectiveFrom)],
+);
+
+export const salaryStructureLines = pgTable(
+  'salary_structure_lines',
+  {
+    tenantId: tenantId(),
+    structureId: uuid('structure_id').notNull().references(() => salaryStructures.id, { onDelete: 'cascade' }),
+    componentId: uuid('component_id').notNull().references(() => salaryComponents.id),
+    monthlyPaise: bigint('monthly_paise', { mode: 'number' }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.structureId, t.componentId] })],
+);
+
+export const payrollSettings = pgTable('payroll_settings', {
+  tenantId: tenantId().primaryKey(),
+  pfCapAtCeiling: boolean('pf_cap_at_ceiling').notNull().default(true),
+  pfWageCeilingPaise: bigint('pf_wage_ceiling_paise', { mode: 'number' }).notNull().default(1_500_000),
+  esiGrossLimitPaise: bigint('esi_gross_limit_paise', { mode: 'number' }).notNull().default(2_100_000),
+  ptState: text('pt_state').notNull().default('Karnataka'),
+  ptSlabs: jsonb('pt_slabs').notNull(),
+  weeklyOffs: jsonb('weekly_offs').$type<number[]>().notNull().default([0]),
+  ledgers: jsonb('ledgers').notNull(),
+  updatedAt: updatedAt(),
+});
+
+export const payrollRuns = pgTable(
+  'payroll_runs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    month: text('month').notNull(), // YYYY-MM
+    status: text('status').notNull().default('draft'), // draft | approved | locked
+    version: integer('version').notNull().default(1),
+    skipped: jsonb('skipped').$type<{ userId: string; fullName: string; reason: string }[]>().notNull().default([]),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    lockedBy: uuid('locked_by').references(() => users.id, { onDelete: 'set null' }),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('payroll_runs_month_uq').on(t.tenantId, t.month)],
+);
+
+/** One payslip per staff member per run; `data` is the full computed payslip (the record once locked). */
+export const payslips = pgTable(
+  'payslips',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    runId: uuid('run_id').notNull().references(() => payrollRuns.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id),
+    grossPaise: bigint('gross_paise', { mode: 'number' }).notNull(),
+    deductionsPaise: bigint('deductions_paise', { mode: 'number' }).notNull(),
+    netPaise: bigint('net_paise', { mode: 'number' }).notNull(),
+    employerCostPaise: bigint('employer_cost_paise', { mode: 'number' }).notNull(),
+    taxableGrossPaise: bigint('taxable_gross_paise', { mode: 'number' }).notNull(),
+    ptPaise: bigint('pt_paise', { mode: 'number' }).notNull(),
+    employeePfPaise: bigint('employee_pf_paise', { mode: 'number' }).notNull(),
+    tdsPaise: bigint('tds_paise', { mode: 'number' }).notNull(),
+    data: jsonb('data').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('payslips_run_user_uq').on(t.runId, t.userId), index('payslips_user_idx').on(t.userId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Documents and certificates (docs/architecture/documents-certificates.md)
+// ---------------------------------------------------------------------------------------------
+
+export const certificateTemplates = pgTable(
+  'certificate_templates',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    kind: text('kind').notNull(),
+    name: text('name').notNull(),
+    subjectType: text('subject_type').notNull(), // student | staff
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    fields: jsonb('fields').$type<{ key: string; label: string; required: boolean }[]>().notNull().default([]),
+    serialPrefix: text('serial_prefix').notNull(),
+    active: boolean('active').notNull().default(true),
+    version: integer('version').notNull().default(1),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('certificate_templates_kind_idx').on(t.tenantId, t.kind)],
+);
+
+/** Serial numbers run per institution, prefix and financial year; the row lock keeps them unique. */
+export const certificateCounters = pgTable(
+  'certificate_counters',
+  {
+    tenantId: tenantId(),
+    prefix: text('prefix').notNull(),
+    financialYear: text('financial_year').notNull(),
+    lastNo: integer('last_no').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.prefix, t.financialYear] })],
+);
+
+/** A certificate request and, once issued, the certificate itself (text frozen at issue). */
+export const certificates = pgTable(
+  'certificates',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    templateId: uuid('template_id').notNull().references(() => certificateTemplates.id),
+    subjectType: text('subject_type').notNull(),
+    studentId: uuid('student_id').references(() => students.id),
+    staffUserId: uuid('staff_user_id').references(() => users.id),
+    purpose: text('purpose').notNull().default(''),
+    fields: jsonb('fields').$type<Record<string, string>>().notNull().default({}),
+    status: text('status').notNull().default('requested'), // requested | approved | rejected | issued | revoked
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    decidedBy: uuid('decided_by').references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    serialNo: text('serial_no'),
+    issuedBy: uuid('issued_by').references(() => users.id, { onDelete: 'set null' }),
+    issuedAt: timestamp('issued_at', { withTimezone: true }),
+    renderedTitle: text('rendered_title'),
+    renderedBody: text('rendered_body'),
+    verifyToken: text('verify_token'),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    revokedBy: uuid('revoked_by').references(() => users.id, { onDelete: 'set null' }),
+    revokedReason: text('revoked_reason'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('certificates_serial_uq').on(t.tenantId, t.serialNo),
+    uniqueIndex('certificates_token_uq').on(t.verifyToken),
+    index('certificates_status_idx').on(t.tenantId, t.status),
+  ],
+);
+
+/** Files kept per student or staff member; the bytes live in object storage. */
+export const vaultDocuments = pgTable(
+  'vault_documents',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    ownerType: text('owner_type').notNull(), // student | staff
+    studentId: uuid('student_id').references(() => students.id),
+    staffUserId: uuid('staff_user_id').references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    category: text('category').notNull(),
+    contentType: text('content_type').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    storageKey: text('storage_key').notNull(),
+    version: integer('version').notNull().default(1),
+    replacesId: uuid('replaces_id'),
+    visibility: text('visibility').notNull().default('staff'), // staff | owner
+    expiresOn: date('expires_on'),
+    uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('vault_documents_student_idx').on(t.studentId), index('vault_documents_staff_idx').on(t.staffUserId), index('vault_documents_expiry_idx').on(t.tenantId, t.expiresOn)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -2128,6 +2477,24 @@ export const TENANT_TABLES = [
   'asset_allocations',
   'asset_maintenance',
   'doc_counters',
+  'designations',
+  'staff_profiles',
+  'staff_attendance',
+  'leave_types',
+  'leave_balances',
+  'leave_requests',
+  'job_openings',
+  'job_applicants',
+  'salary_components',
+  'salary_structures',
+  'salary_structure_lines',
+  'payroll_settings',
+  'payroll_runs',
+  'payslips',
+  'certificate_templates',
+  'certificate_counters',
+  'certificates',
+  'vault_documents',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------

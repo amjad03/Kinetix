@@ -12,7 +12,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge' | 'transport' | 'hostel';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge' | 'transport' | 'hostel' | 'leave' | 'payslip' | 'certificate';
 
 export { rupees } from './texts.js';
 
@@ -211,6 +211,12 @@ export class NotificationsService {
         dedupeKey: `fee-paid:${p.paymentId}`,
       },
     );
+  }
+
+  /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */
+  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
+    if (userIds.length === 0) return;
+    await this.insertFor(tx, sql`select u from unnest(array[${uuidList(userIds)}]::uuid[]) as u`, n, opts);
   }
 
   /** The student and their family: used by events about one student. */

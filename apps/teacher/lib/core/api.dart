@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
+import 'hr_models.dart';
 import 'models.dart';
 
 /// Where an [ApiException] came from; the UI turns it into words with AppLocalizations.errorText.
@@ -72,6 +73,22 @@ abstract class TeacherApi {
 
   Future<void> markNotificationRead(String id);
 
+
+  /// Staff leave, check-in and payslips (docs/architecture/hr-payroll.md).
+  Future<List<LeaveTypeInfo>> leaveTypes();
+  Future<List<LeaveBalanceInfo>> leaveBalances();
+  Future<List<LeaveRequestInfo>> myLeaveRequests();
+
+  /// Requests waiting for this person to decide (heads of department, HR, principal).
+  Future<List<LeaveRequestInfo>> pendingLeaveRequests();
+  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason});
+  Future<LeaveRequestInfo> cancelLeave(String id);
+  Future<LeaveRequestInfo> decideLeave(String id, {required bool approve, String? note});
+  Future<MyAttendance> myAttendance({String? month});
+  Future<AttendanceDayInfo> checkIn();
+  Future<AttendanceDayInfo> checkOut();
+  Future<List<PayslipInfo>> myPayslips();
+  Future<Uint8List> payslipPdf(String id);
 
   /// Saves the teacher's language on the server (notifications and pushes use it).
   Future<Me> updatePreferredLanguage(String language);
@@ -303,6 +320,50 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<Me> me() async => Me.fromJson(await _send('GET', '/v1/me'));
+
+  @override
+  Future<List<LeaveTypeInfo>> leaveTypes() async =>
+      [for (final e in await _send('GET', '/v1/hr/leave-types') as List) LeaveTypeInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<LeaveBalanceInfo>> leaveBalances() async =>
+      [for (final e in await _send('GET', '/v1/hr/leave/balances/me') as List) LeaveBalanceInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<LeaveRequestInfo>> myLeaveRequests() async =>
+      [for (final e in await _send('GET', '/v1/hr/leave/requests/me') as List) LeaveRequestInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<LeaveRequestInfo>> pendingLeaveRequests() async =>
+      [for (final e in await _send('GET', '/v1/hr/leave/requests?status=pending') as List) LeaveRequestInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason}) async =>
+      LeaveRequestInfo.fromJson(await _send('POST', '/v1/hr/leave/requests', body: {'leaveTypeId': leaveTypeId, 'fromDate': fromDate, 'toDate': toDate, 'halfDay': halfDay, 'reason': reason}));
+
+  @override
+  Future<LeaveRequestInfo> cancelLeave(String id) async => LeaveRequestInfo.fromJson(await _send('POST', '/v1/hr/leave/requests/$id/cancel'));
+
+  @override
+  Future<LeaveRequestInfo> decideLeave(String id, {required bool approve, String? note}) async =>
+      LeaveRequestInfo.fromJson(await _send('POST', '/v1/hr/leave/requests/$id/${approve ? 'approve' : 'reject'}', body: {'note': ?note}));
+
+  @override
+  Future<MyAttendance> myAttendance({String? month}) async =>
+      MyAttendance.fromJson(await _send('GET', '/v1/hr/attendance/me${month == null ? '' : '?month=$month'}') as Map<String, dynamic>);
+
+  @override
+  Future<AttendanceDayInfo> checkIn() async => AttendanceDayInfo.fromJson(await _send('POST', '/v1/hr/attendance/check-in'));
+
+  @override
+  Future<AttendanceDayInfo> checkOut() async => AttendanceDayInfo.fromJson(await _send('POST', '/v1/hr/attendance/check-out'));
+
+  @override
+  Future<List<PayslipInfo>> myPayslips() async =>
+      [for (final e in await _send('GET', '/v1/payroll/payslips/me') as List) PayslipInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<Uint8List> payslipPdf(String id) async => (await _request('GET', '/v1/payroll/payslips/$id/pdf', timeout: const Duration(seconds: 60))).bodyBytes;
 
   @override
   Future<Me> updatePreferredLanguage(String language) async =>

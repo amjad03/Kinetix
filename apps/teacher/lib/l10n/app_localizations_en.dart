@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -278,12 +279,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count periods',
-      one: '1 period',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count periods', one: '1 period');
     return '$_temp0';
   }
 
@@ -566,12 +562,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String marksNeedFixing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count marks need fixing',
-      one: 'One mark needs fixing',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count marks need fixing', one: 'One mark needs fixing');
     return '$_temp0';
   }
 
@@ -1103,12 +1094,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Behind by $count topics',
-      one: 'Behind by 1 topic',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Behind by $count topics', one: 'Behind by 1 topic');
     return '$_temp0';
   }
 
@@ -1122,12 +1108,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count periods',
-      one: '1 period',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count periods', one: '1 period');
     return '$_temp0';
   }
 
@@ -1583,4 +1564,160 @@ class AppLocalizationsEn extends AppLocalizations {
   String driverVehicle(Object regNo) {
     return 'Bus $regNo';
   }
+
+  @override
+  String get workSection => 'Work';
+
+  @override
+  String get leaveTitle => 'Leave';
+
+  @override
+  String get leaveBody => 'Balances, apply and approvals';
+
+  @override
+  String get checkInTitle => 'Check-in';
+
+  @override
+  String get checkInBody => 'Mark your day and see your month';
+
+  @override
+  String get payslipsTitle => 'Payslips';
+
+  @override
+  String get payslipsBody => 'Your monthly salary slips';
+
+  @override
+  String get leaveMine => 'My leave';
+
+  @override
+  String get leaveApprovals => 'To approve';
+
+  @override
+  String get leaveBalances => 'Balances';
+
+  @override
+  String get leaveApply => 'Apply for leave';
+
+  @override
+  String get leaveType => 'Leave type';
+
+  @override
+  String get leaveFrom => 'From';
+
+  @override
+  String get leaveTo => 'To';
+
+  @override
+  String get leaveHalfDay => 'Half day';
+
+  @override
+  String get leaveReason => 'Reason (optional)';
+
+  @override
+  String get leaveSubmit => 'Submit';
+
+  @override
+  String leaveDaysCount(String days) {
+    return 'Working days: $days';
+  }
+
+  @override
+  String leaveAvailable(String days) {
+    return '$days left';
+  }
+
+  @override
+  String leaveDaysLabel(String days) {
+    return '$days days';
+  }
+
+  @override
+  String get leaveNone => 'No leave requests yet.';
+
+  @override
+  String get leaveNoApprovals => 'Nothing is waiting for your decision.';
+
+  @override
+  String get leaveCancelAction => 'Cancel request';
+
+  @override
+  String get leaveApprove => 'Approve';
+
+  @override
+  String get leaveReject => 'Reject';
+
+  @override
+  String get leaveDecisionNote => 'Note (optional)';
+
+  @override
+  String get leaveStatusPending => 'Pending';
+
+  @override
+  String get leaveStatusApproved => 'Approved';
+
+  @override
+  String get leaveStatusRejected => 'Rejected';
+
+  @override
+  String get leaveStatusCancelled => 'Cancelled';
+
+  @override
+  String get checkInButton => 'Check in';
+
+  @override
+  String get checkOutButton => 'Check out';
+
+  @override
+  String checkedInAt(String time) {
+    return 'Checked in at $time';
+  }
+
+  @override
+  String checkedOutAt(String time) {
+    return 'Checked out at $time';
+  }
+
+  @override
+  String get notCheckedIn => 'You have not checked in today.';
+
+  @override
+  String get attendanceMonth => 'This month';
+
+  @override
+  String get attStatusPresent => 'Present';
+
+  @override
+  String get attStatusAbsent => 'Absent';
+
+  @override
+  String get attStatusHalfDay => 'Half day';
+
+  @override
+  String get attStatusOnLeave => 'On leave';
+
+  @override
+  String get payslipNet => 'Net pay';
+
+  @override
+  String get payslipGross => 'Gross';
+
+  @override
+  String get payslipEarnings => 'Earnings';
+
+  @override
+  String get payslipDeductions => 'Deductions';
+
+  @override
+  String payslipDays(String paid, String lop) {
+    return 'Paid days $paid, loss of pay $lop';
+  }
+
+  @override
+  String get payslipOpenPdf => 'Open PDF';
+
+  @override
+  String get payslipsEmpty => 'No payslips yet. They appear when payroll is finalised.';
+
+  @override
+  String get roleHr => 'HR manager';
 }

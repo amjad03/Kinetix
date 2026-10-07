@@ -363,20 +363,62 @@
       "idx": 51,
       "version": "7",
       "when": 1791408844229,
-      "tag": "0059_ops_roles",
+      "tag": "0053_staff_records",
       "breakpoints": true
     },
     {
       "idx": 52,
       "version": "7",
       "when": 1791408904229,
-      "tag": "0060_campus_ops",
+      "tag": "0054_leave_recruitment",
       "breakpoints": true
     },
     {
       "idx": 53,
       "version": "7",
       "when": 1791408964229,
+      "tag": "0055_payroll",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1791409024229,
+      "tag": "0056_certificates",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1791409084229,
+      "tag": "0057_vault",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1791409144229,
+      "tag": "0058_hr_documents_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1791409204229,
+      "tag": "0059_ops_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1791409264229,
+      "tag": "0060_campus_ops",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1791409324229,
       "tag": "0061_campus_ops_rls",
       "breakpoints": true
     }

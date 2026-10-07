@@ -14,7 +14,8 @@ export type RoleName =
   | 'hostel_warden'
   | 'canteen_manager'
   | 'store_keeper'
-  | 'admissions_officer';
+  | 'admissions_officer'
+  | 'hr_manager';
 
 export interface UserPrincipal {
   kind: 'user';

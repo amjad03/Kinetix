@@ -263,7 +263,7 @@ export type SyncOpResult =
 // Teacher App
 // ---------------------------------------------------------------------------------------------
 
-export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant' | 'transport_manager' | 'driver' | 'hostel_warden' | 'canteen_manager' | 'store_keeper' | 'admissions_officer';
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant' | 'transport_manager' | 'driver' | 'hostel_warden' | 'canteen_manager' | 'store_keeper' | 'admissions_officer' | 'hr_manager';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 /** GET /v1/me */
@@ -516,3 +516,4 @@ export interface TransportPositionEvent {
   at: string;
 }
 export * from './admissions.js';
+export * from './hr.js';

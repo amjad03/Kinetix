@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -278,12 +279,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count पीरियड',
-      one: '1 पीरियड',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count पीरियड', one: '1 पीरियड');
     return '$_temp0';
   }
 
@@ -566,12 +562,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String marksNeedFixing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count अंक ठीक करने हैं',
-      one: 'एक अंक ठीक करना है',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count अंक ठीक करने हैं', one: 'एक अंक ठीक करना है');
     return '$_temp0';
   }
 
@@ -1104,12 +1095,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count विषय-वस्तु पीछे',
-      one: '1 विषय-वस्तु पीछे',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count विषय-वस्तु पीछे', one: '1 विषय-वस्तु पीछे');
     return '$_temp0';
   }
 
@@ -1123,12 +1109,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count पीरियड',
-      one: '1 पीरियड',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count पीरियड', one: '1 पीरियड');
     return '$_temp0';
   }
 
@@ -1583,4 +1564,160 @@ class AppLocalizationsHi extends AppLocalizations {
   String driverVehicle(Object regNo) {
     return 'बस $regNo';
   }
+
+  @override
+  String get workSection => 'कार्य';
+
+  @override
+  String get leaveTitle => 'अवकाश';
+
+  @override
+  String get leaveBody => 'शेष, आवेदन और स्वीकृति';
+
+  @override
+  String get checkInTitle => 'उपस्थिति दर्ज करें';
+
+  @override
+  String get checkInBody => 'अपना दिन दर्ज करें और महीना देखें';
+
+  @override
+  String get payslipsTitle => 'वेतन पर्चियाँ';
+
+  @override
+  String get payslipsBody => 'आपकी मासिक वेतन पर्चियाँ';
+
+  @override
+  String get leaveMine => 'मेरा अवकाश';
+
+  @override
+  String get leaveApprovals => 'स्वीकृति के लिए';
+
+  @override
+  String get leaveBalances => 'शेष';
+
+  @override
+  String get leaveApply => 'अवकाश के लिए आवेदन';
+
+  @override
+  String get leaveType => 'अवकाश का प्रकार';
+
+  @override
+  String get leaveFrom => 'से';
+
+  @override
+  String get leaveTo => 'तक';
+
+  @override
+  String get leaveHalfDay => 'आधा दिन';
+
+  @override
+  String get leaveReason => 'कारण (वैकल्पिक)';
+
+  @override
+  String get leaveSubmit => 'जमा करें';
+
+  @override
+  String leaveDaysCount(String days) {
+    return 'कार्य दिवस: $days';
+  }
+
+  @override
+  String leaveAvailable(String days) {
+    return '$days शेष';
+  }
+
+  @override
+  String leaveDaysLabel(String days) {
+    return '$days दिन';
+  }
+
+  @override
+  String get leaveNone => 'अभी कोई अवकाश अनुरोध नहीं।';
+
+  @override
+  String get leaveNoApprovals => 'आपके निर्णय के लिए कुछ लंबित नहीं है।';
+
+  @override
+  String get leaveCancelAction => 'अनुरोध रद्द करें';
+
+  @override
+  String get leaveApprove => 'स्वीकृत करें';
+
+  @override
+  String get leaveReject => 'अस्वीकृत करें';
+
+  @override
+  String get leaveDecisionNote => 'टिप्पणी (वैकल्पिक)';
+
+  @override
+  String get leaveStatusPending => 'लंबित';
+
+  @override
+  String get leaveStatusApproved => 'स्वीकृत';
+
+  @override
+  String get leaveStatusRejected => 'अस्वीकृत';
+
+  @override
+  String get leaveStatusCancelled => 'रद्द';
+
+  @override
+  String get checkInButton => 'उपस्थित हों';
+
+  @override
+  String get checkOutButton => 'प्रस्थान दर्ज करें';
+
+  @override
+  String checkedInAt(String time) {
+    return '$time बजे उपस्थिति दर्ज';
+  }
+
+  @override
+  String checkedOutAt(String time) {
+    return '$time बजे प्रस्थान दर्ज';
+  }
+
+  @override
+  String get notCheckedIn => 'आपने आज उपस्थिति दर्ज नहीं की है।';
+
+  @override
+  String get attendanceMonth => 'यह महीना';
+
+  @override
+  String get attStatusPresent => 'उपस्थित';
+
+  @override
+  String get attStatusAbsent => 'अनुपस्थित';
+
+  @override
+  String get attStatusHalfDay => 'आधा दिन';
+
+  @override
+  String get attStatusOnLeave => 'अवकाश पर';
+
+  @override
+  String get payslipNet => 'शुद्ध वेतन';
+
+  @override
+  String get payslipGross => 'कुल';
+
+  @override
+  String get payslipEarnings => 'आय';
+
+  @override
+  String get payslipDeductions => 'कटौतियाँ';
+
+  @override
+  String payslipDays(String paid, String lop) {
+    return 'भुगतान दिवस $paid, वेतन कटौती $lop';
+  }
+
+  @override
+  String get payslipOpenPdf => 'PDF खोलें';
+
+  @override
+  String get payslipsEmpty => 'अभी कोई वेतन पर्ची नहीं। वेतन अंतिम होने पर यहाँ दिखेगी।';
+
+  @override
+  String get roleHr => 'एचआर प्रबंधक';
 }

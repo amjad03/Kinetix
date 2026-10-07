@@ -110,6 +110,22 @@ export const ERROR_CODES: Record<string, string> = {
   'This row could not be saved': 'IMPORT_ROW_FAILED',
   'A guardian needs a name and a phone number': 'IMPORT_GUARDIAN_INCOMPLETE',
   'This phone number belongs to a student, not a guardian': 'IMPORT_GUARDIAN_NOT_FAMILY',
+  // HR, payroll and documents (hr/, documents/).
+  'This record changed since you opened it. Reload and try again.': 'STALE_VERSION',
+  'Payroll for that month is locked': 'PAYROLL_MONTH_LOCKED',
+  'You are marked on leave today': 'ON_LEAVE_TODAY',
+  'Check in first': 'CHECK_IN_FIRST',
+  'You already have leave on some of these dates': 'LEAVE_OVERLAP',
+  'You cannot decide your own leave': 'LEAVE_OWN_DECISION',
+  'This leave can no longer be cancelled': 'LEAVE_NOT_CANCELLABLE',
+  'Those dates are weekly offs or holidays: no leave is needed': 'LEAVE_NO_WORKING_DAYS',
+  'Approve the run before exporting': 'PAYROLL_NOT_APPROVED',
+  'Only a draft run can be recomputed': 'PAYROLL_NOT_DRAFT',
+  'There is already a payroll run for that month': 'PAYROLL_RUN_EXISTS',
+  'There is already an open request for this certificate': 'CERTIFICATE_REQUEST_OPEN',
+  'This certificate was revoked': 'CERTIFICATE_REVOKED',
+  'Only PDF, JPEG and PNG files are accepted': 'VAULT_FILE_TYPE',
+  'Files can be at most 10 MB': 'VAULT_FILE_TOO_LARGE',
 };
 
 /** Timetable clashes (409): the message names the class or time, so the code says which kind. */

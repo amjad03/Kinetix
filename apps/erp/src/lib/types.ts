@@ -1,6 +1,6 @@
 // Shapes returned by the KINETIX Cloud API (services/api). Kept by hand for this slice.
 
-export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'accountant' | 'student' | 'guardian' | string;
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'accountant' | 'hr_manager' | 'student' | 'guardian' | string;
 
 /** School leaders: the day-to-day pages (Today, Classes, …). Who else may sign in: see access.ts. */
 export const DASHBOARD_ROLES: RoleName[] = ['principal', 'tenant_admin', 'hod'];

@@ -26,7 +26,10 @@ import admissions from './admissions';
 import exams from './exams';
 import obe from './obe';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe } as const;
+import hr from './hr';
+import documents from './documents';
+
+export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents } as const;
 
 type Areas = typeof AREAS;
 type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;

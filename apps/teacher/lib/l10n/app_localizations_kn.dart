@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -278,12 +279,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String periodCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಅವಧಿಗಳು',
-      one: '1 ಅವಧಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
     return '$_temp0';
   }
 
@@ -1104,12 +1100,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String planBehindBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ',
-      one: '1 ವಿಷಯ ಹಿಂದಿದೆ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಷಯಗಳು ಹಿಂದಿವೆ', one: '1 ವಿಷಯ ಹಿಂದಿದೆ');
     return '$_temp0';
   }
 
@@ -1123,12 +1114,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String periodsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ಅವಧಿಗಳು',
-      one: '1 ಅವಧಿ',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಅವಧಿಗಳು', one: '1 ಅವಧಿ');
     return '$_temp0';
   }
 
@@ -1584,4 +1570,160 @@ class AppLocalizationsKn extends AppLocalizations {
   String driverVehicle(Object regNo) {
     return 'ಬಸ್ $regNo';
   }
+
+  @override
+  String get workSection => 'ಕೆಲಸ';
+
+  @override
+  String get leaveTitle => 'ರಜೆ';
+
+  @override
+  String get leaveBody => 'ಬಾಕಿ, ಅರ್ಜಿ ಮತ್ತು ಅನುಮೋದನೆ';
+
+  @override
+  String get checkInTitle => 'ಹಾಜರಾತಿ';
+
+  @override
+  String get checkInBody => 'ನಿಮ್ಮ ದಿನ ದಾಖಲಿಸಿ, ತಿಂಗಳು ನೋಡಿ';
+
+  @override
+  String get payslipsTitle => 'ವೇತನ ಚೀಟಿಗಳು';
+
+  @override
+  String get payslipsBody => 'ನಿಮ್ಮ ಮಾಸಿಕ ವೇತನ ಚೀಟಿಗಳು';
+
+  @override
+  String get leaveMine => 'ನನ್ನ ರಜೆ';
+
+  @override
+  String get leaveApprovals => 'ಅನುಮೋದನೆಗೆ';
+
+  @override
+  String get leaveBalances => 'ಬಾಕಿ';
+
+  @override
+  String get leaveApply => 'ರಜೆಗೆ ಅರ್ಜಿ';
+
+  @override
+  String get leaveType => 'ರಜೆಯ ಪ್ರಕಾರ';
+
+  @override
+  String get leaveFrom => 'ಇಂದ';
+
+  @override
+  String get leaveTo => 'ವರೆಗೆ';
+
+  @override
+  String get leaveHalfDay => 'ಅರ್ಧ ದಿನ';
+
+  @override
+  String get leaveReason => 'ಕಾರಣ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get leaveSubmit => 'ಸಲ್ಲಿಸಿ';
+
+  @override
+  String leaveDaysCount(String days) {
+    return 'ಕೆಲಸದ ದಿನಗಳು: $days';
+  }
+
+  @override
+  String leaveAvailable(String days) {
+    return '$days ಬಾಕಿ';
+  }
+
+  @override
+  String leaveDaysLabel(String days) {
+    return '$days ದಿನಗಳು';
+  }
+
+  @override
+  String get leaveNone => 'ಇನ್ನೂ ರಜೆ ಕೋರಿಕೆಗಳಿಲ್ಲ.';
+
+  @override
+  String get leaveNoApprovals => 'ನಿಮ್ಮ ನಿರ್ಧಾರಕ್ಕೆ ಯಾವುದೂ ಬಾಕಿ ಇಲ್ಲ.';
+
+  @override
+  String get leaveCancelAction => 'ಕೋರಿಕೆ ರದ್ದುಮಾಡಿ';
+
+  @override
+  String get leaveApprove => 'ಅನುಮೋದಿಸಿ';
+
+  @override
+  String get leaveReject => 'ನಿರಾಕರಿಸಿ';
+
+  @override
+  String get leaveDecisionNote => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get leaveStatusPending => 'ಬಾಕಿ';
+
+  @override
+  String get leaveStatusApproved => 'ಅನುಮೋದಿತ';
+
+  @override
+  String get leaveStatusRejected => 'ನಿರಾಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get leaveStatusCancelled => 'ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get checkInButton => 'ಹಾಜರಾಗಿ';
+
+  @override
+  String get checkOutButton => 'ನಿರ್ಗಮನ';
+
+  @override
+  String checkedInAt(String time) {
+    return '$timeಕ್ಕೆ ಹಾಜರಾಗಿದ್ದೀರಿ';
+  }
+
+  @override
+  String checkedOutAt(String time) {
+    return '$timeಕ್ಕೆ ನಿರ್ಗಮಿಸಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get notCheckedIn => 'ನೀವು ಇಂದು ಹಾಜರಾಗಿಲ್ಲ.';
+
+  @override
+  String get attendanceMonth => 'ಈ ತಿಂಗಳು';
+
+  @override
+  String get attStatusPresent => 'ಹಾಜರು';
+
+  @override
+  String get attStatusAbsent => 'ಗೈರು';
+
+  @override
+  String get attStatusHalfDay => 'ಅರ್ಧ ದಿನ';
+
+  @override
+  String get attStatusOnLeave => 'ರಜೆಯಲ್ಲಿ';
+
+  @override
+  String get payslipNet => 'ನಿವ್ವಳ ವೇತನ';
+
+  @override
+  String get payslipGross => 'ಒಟ್ಟು';
+
+  @override
+  String get payslipEarnings => 'ಗಳಿಕೆ';
+
+  @override
+  String get payslipDeductions => 'ಕಡಿತಗಳು';
+
+  @override
+  String payslipDays(String paid, String lop) {
+    return 'ಪಾವತಿ ದಿನಗಳು $paid, ವೇತನ ಕಡಿತ $lop';
+  }
+
+  @override
+  String get payslipOpenPdf => 'PDF ತೆರೆಯಿರಿ';
+
+  @override
+  String get payslipsEmpty => 'ಇನ್ನೂ ವೇತನ ಚೀಟಿಗಳಿಲ್ಲ. ವೇತನ ಅಂತಿಮವಾದಾಗ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
+
+  @override
+  String get roleHr => 'ಎಚ್‌ಆರ್ ವ್ಯವಸ್ಥಾಪಕ';
 }

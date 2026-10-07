@@ -19,7 +19,7 @@ import 'app_localizations_kn.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'gen_l10n/app_localizations.dart';
+/// import 'l10n/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -2834,6 +2834,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bus {regNo}'**
   String driverVehicle(Object regNo);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get workSection;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leaveTitle;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Balances, apply and approvals'**
+  String get leaveBody;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in'**
+  String get checkInTitle;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Mark your day and see your month'**
+  String get checkInBody;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Payslips'**
+  String get payslipsTitle;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Your monthly salary slips'**
+  String get payslipsBody;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'My leave'**
+  String get leaveMine;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'To approve'**
+  String get leaveApprovals;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Balances'**
+  String get leaveBalances;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Apply for leave'**
+  String get leaveApply;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Leave type'**
+  String get leaveType;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get leaveFrom;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get leaveTo;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Half day'**
+  String get leaveHalfDay;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get leaveReason;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get leaveSubmit;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Working days: {days}'**
+  String leaveDaysCount(String days);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'{days} left'**
+  String leaveAvailable(String days);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String leaveDaysLabel(String days);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'No leave requests yet.'**
+  String get leaveNone;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for your decision.'**
+  String get leaveNoApprovals;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel request'**
+  String get leaveCancelAction;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get leaveApprove;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get leaveReject;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get leaveDecisionNote;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get leaveStatusPending;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get leaveStatusApproved;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get leaveStatusRejected;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get leaveStatusCancelled;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Check in'**
+  String get checkInButton;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Check out'**
+  String get checkOutButton;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in at {time}'**
+  String checkedInAt(String time);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Checked out at {time}'**
+  String checkedOutAt(String time);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'You have not checked in today.'**
+  String get notCheckedIn;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get attendanceMonth;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get attStatusPresent;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get attStatusAbsent;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Half day'**
+  String get attStatusHalfDay;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'On leave'**
+  String get attStatusOnLeave;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Net pay'**
+  String get payslipNet;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Gross'**
+  String get payslipGross;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get payslipEarnings;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Deductions'**
+  String get payslipDeductions;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Paid days {paid}, loss of pay {lop}'**
+  String payslipDays(String paid, String lop);
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'Open PDF'**
+  String get payslipOpenPdf;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'No payslips yet. They appear when payroll is finalised.'**
+  String get payslipsEmpty;
+
+  /// HR screens (leave, check-in, payslips).
+  ///
+  /// In en, this message translates to:
+  /// **'HR manager'**
+  String get roleHr;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -2862,8 +3150,10 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsKn();
   }
 
-  throw FlutterError('AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

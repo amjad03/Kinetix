@@ -58,6 +58,14 @@ import MenuBook from '@mui/icons-material/MenuBook';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import OndemandVideo from '@mui/icons-material/OndemandVideo';
 import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
+import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
+import Badge from '@mui/icons-material/Badge';
+import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
+import RequestQuote from '@mui/icons-material/RequestQuote';
+import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
+import ReceiptLong from '@mui/icons-material/ReceiptLong';
+import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
+import FolderCopy from '@mui/icons-material/FolderCopy';
 import Payments from '@mui/icons-material/Payments';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import Today from '@mui/icons-material/Today';
@@ -104,6 +112,10 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/admissions', label: 'nav.admissions', section: 'admissions', icon: HowToRegOutlined, active: HowToReg },
   { href: '/students', label: 'nav.students', section: 'students', icon: GroupsOutlined, active: Groups },
   { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
+  { href: '/hr', label: 'nav.hr', section: 'hr', icon: BadgeOutlined, active: Badge },
+  { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: RequestQuoteOutlined, active: RequestQuote },
+  { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: ReceiptLongOutlined, active: ReceiptLong },
+  { href: '/documents', label: 'nav.documents', section: 'documents', icon: FolderCopyOutlined, active: FolderCopy },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/transport', label: 'nav.transport', section: 'transport', icon: DirectionsBusOutlined, active: DirectionsBus },
   { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: HotelOutlined, active: Hotel },
@@ -131,6 +143,7 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   canteen_manager: 'role.canteen_manager',
   store_keeper: 'role.store_keeper',
   admissions_officer: 'role.admissions_officer',
+  hr_manager: 'role.hr_manager',
 };
 
 export interface ShellUser {
