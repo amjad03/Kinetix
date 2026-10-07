@@ -173,6 +173,7 @@ extension AppLocalizationsX on AppLocalizations {
     'guardian' => roleParent,
     'librarian' => roleLibrarian,
     'accountant' => roleAccountant,
+    'hr_manager' => roleHr,
     _ => code,
   };
 

@@ -1988,9 +1988,18 @@
     "description": "Tooltip of the Keep button."
   },
   "phoneRemote": "Phone remote",
-  "@phoneRemote": {"description": "Button: use this phone to control the classroom board."},
+  "@phoneRemote": {
+    "description": "Button: use this phone to control the classroom board."
+  },
   "remoteTitle": "Remote · {board}",
-  "@remoteTitle": {"placeholders": {"board": {"type": "String", "example": "Room 204 Board"}}},
+  "@remoteTitle": {
+    "placeholders": {
+      "board": {
+        "type": "String",
+        "example": "Room 204 Board"
+      }
+    }
+  },
   "remoteEnded": "The class on this board has ended.",
   "remotePhotoSent": "Photo is on the board.",
   "remotePhotoFailed": "Could not send the photo. Try again.",
@@ -1998,16 +2007,40 @@
   "remotePrevious": "Previous",
   "remoteNext": "Next",
   "remotePageOf": "Page {page} of {pages}",
-  "@remotePageOf": {"placeholders": {"page": {"type": "int"}, "pages": {"type": "int"}}},
+  "@remotePageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
   "remoteSlides": "Slides and PDF",
   "remoteNoSlides": "Open slides or a PDF on the board to turn them from here.",
   "remoteSlideOf": "Slide {slide} of {slides}",
-  "@remoteSlideOf": {"placeholders": {"slide": {"type": "int"}, "slides": {"type": "int"}}},
+  "@remoteSlideOf": {
+    "placeholders": {
+      "slide": {
+        "type": "int"
+      },
+      "slides": {
+        "type": "int"
+      }
+    }
+  },
   "remotePointer": "Pointer",
   "remotePointerHint": "Slide your finger here to point on the board",
   "remoteClassroom": "Classroom tools",
   "remoteTimerMinutes": "{minutes} min timer",
-  "@remoteTimerMinutes": {"placeholders": {"minutes": {"type": "int"}}},
+  "@remoteTimerMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "remoteTimerStop": "Stop timer",
   "remotePickStudent": "Pick a student",
   "remoteShowPhoto": "Show a photo",
@@ -2017,23 +2050,278 @@
   "answerCardsMenuBody": "Print cards so students without phones can answer on the board",
   "answerCardsBody": "Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.",
   "answerCardsPrintHint": "Hold the card with your answer at the top. Keep your fingers off the black pattern.",
-  "@answerCardsPrintHint": {"description": "Printed on each card. Kept in English in Hindi and Kannada until the PDF bundles Devanagari and Kannada shaping."},
+  "@answerCardsPrintHint": {
+    "description": "Printed on each card. Kept in English in Hindi and Kannada until the PDF bundles Devanagari and Kannada shaping."
+  },
   "answerCardsReady": "{count} cards for {className} are ready to print.",
-  "@answerCardsReady": {"placeholders": {"count": {"type": "int"}, "className": {"type": "String", "example": "BCom Sem 3 A"}}},
+  "@answerCardsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "className": {
+        "type": "String",
+        "example": "BCom Sem 3 A"
+      }
+    }
+  },
   "answerCardsFailed": "Could not make the cards. Try again.",
   "print": "Print",
   "filterMissing": "Missing",
   "remindMissing": "Remind the {count}",
-  "@remindMissing": {"placeholders": {"count": {"type": "int"}}},
+  "@remindMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "remindTitle": "Remind {count} students?",
-  "@remindTitle": {"placeholders": {"count": {"type": "int"}}},
+  "@remindTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "remindBody": "They and their families get a notification that this homework is not handed in yet.",
   "remind": "Remind",
   "reminded": "Reminded {count} students and their families",
-  "@reminded": {"placeholders": {"count": {"type": "int"}}},
+  "@reminded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noneInFilter": "No students here",
   "classAndSubject": "Class and subject",
   "classRoster": "Class roster",
   "classRosterBody": "Your students; award badges",
-  "chooseClass": "Choose a class"
+  "chooseClass": "Choose a class",
+  "workSection": "Work",
+  "@workSection": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveTitle": "Leave",
+  "@leaveTitle": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveBody": "Balances, apply and approvals",
+  "@leaveBody": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "checkInTitle": "Check-in",
+  "@checkInTitle": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "checkInBody": "Mark your day and see your month",
+  "@checkInBody": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipsTitle": "Payslips",
+  "@payslipsTitle": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipsBody": "Your monthly salary slips",
+  "@payslipsBody": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveMine": "My leave",
+  "@leaveMine": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveApprovals": "To approve",
+  "@leaveApprovals": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveBalances": "Balances",
+  "@leaveBalances": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveApply": "Apply for leave",
+  "@leaveApply": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveType": "Leave type",
+  "@leaveType": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveFrom": "From",
+  "@leaveFrom": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveTo": "To",
+  "@leaveTo": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveHalfDay": "Half day",
+  "@leaveHalfDay": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveReason": "Reason (optional)",
+  "@leaveReason": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveSubmit": "Submit",
+  "@leaveSubmit": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveDaysCount": "Working days: {days}",
+  "@leaveDaysCount": {
+    "description": "HR screens (leave, check-in, payslips).",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveAvailable": "{days} left",
+  "@leaveAvailable": {
+    "description": "HR screens (leave, check-in, payslips).",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveDaysLabel": "{days} days",
+  "@leaveDaysLabel": {
+    "description": "HR screens (leave, check-in, payslips).",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveNone": "No leave requests yet.",
+  "@leaveNone": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveNoApprovals": "Nothing is waiting for your decision.",
+  "@leaveNoApprovals": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveCancelAction": "Cancel request",
+  "@leaveCancelAction": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveApprove": "Approve",
+  "@leaveApprove": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveReject": "Reject",
+  "@leaveReject": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveDecisionNote": "Note (optional)",
+  "@leaveDecisionNote": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveStatusPending": "Pending",
+  "@leaveStatusPending": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveStatusApproved": "Approved",
+  "@leaveStatusApproved": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveStatusRejected": "Rejected",
+  "@leaveStatusRejected": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "leaveStatusCancelled": "Cancelled",
+  "@leaveStatusCancelled": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "checkInButton": "Check in",
+  "@checkInButton": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "checkOutButton": "Check out",
+  "@checkOutButton": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "checkedInAt": "Checked in at {time}",
+  "@checkedInAt": {
+    "description": "HR screens (leave, check-in, payslips).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "checkedOutAt": "Checked out at {time}",
+  "@checkedOutAt": {
+    "description": "HR screens (leave, check-in, payslips).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notCheckedIn": "You have not checked in today.",
+  "@notCheckedIn": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "attendanceMonth": "This month",
+  "@attendanceMonth": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "attStatusPresent": "Present",
+  "@attStatusPresent": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "attStatusAbsent": "Absent",
+  "@attStatusAbsent": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "attStatusHalfDay": "Half day",
+  "@attStatusHalfDay": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "attStatusOnLeave": "On leave",
+  "@attStatusOnLeave": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipNet": "Net pay",
+  "@payslipNet": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipGross": "Gross",
+  "@payslipGross": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipEarnings": "Earnings",
+  "@payslipEarnings": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipDeductions": "Deductions",
+  "@payslipDeductions": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipDays": "Paid days {paid}, loss of pay {lop}",
+  "@payslipDays": {
+    "description": "HR screens (leave, check-in, payslips).",
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "lop": {
+        "type": "String"
+      }
+    }
+  },
+  "payslipOpenPdf": "Open PDF",
+  "@payslipOpenPdf": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "payslipsEmpty": "No payslips yet. They appear when payroll is finalised.",
+  "@payslipsEmpty": {
+    "description": "HR screens (leave, check-in, payslips)."
+  },
+  "roleHr": "HR manager",
+  "@roleHr": {
+    "description": "HR screens (leave, check-in, payslips)."
+  }
 }

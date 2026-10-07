@@ -1,4 +1,3 @@
-// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -147,27 +146,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidEmail => 'Enter a valid email address';
 
   @override
-  String get invalidEmailOrPhone =>
-      'Enter a valid email or 10-digit phone number';
+  String get invalidEmailOrPhone => 'Enter a valid email or 10-digit phone number';
 
   @override
   String get enterPassword => 'Enter your password';
 
   @override
-  String get invalidServer =>
-      'Enter a server address like https://api.kinetix.in';
+  String get invalidServer => 'Enter a server address like https://api.kinetix.in';
 
   @override
-  String get errorNotTeacher =>
-      'This app is for teachers. Your account does not have a teaching role.';
+  String get errorNotTeacher => 'This app is for teachers. Your account does not have a teaching role.';
 
   @override
-  String get errorOffline =>
-      'Can\'t reach KINETIX. Check your internet connection and the server address.';
+  String get errorOffline => 'Can\'t reach KINETIX. Check your internet connection and the server address.';
 
   @override
-  String get errorTimeout =>
-      'The server is taking too long to respond. Try again.';
+  String get errorTimeout => 'The server is taking too long to respond. Try again.';
 
   @override
   String get errorForbidden => 'You don\'t have access to this.';
@@ -176,8 +170,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNotFound => 'Not found.';
 
   @override
-  String get errorTooManyAttempts =>
-      'Too many attempts. Wait a minute and try again.';
+  String get errorTooManyAttempts => 'Too many attempts. Wait a minute and try again.';
 
   @override
   String errorGeneric(int status) {
@@ -191,29 +184,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorWrongLogin => 'Wrong institution, login or password';
 
   @override
-  String get errorCodeExpired =>
-      'This code is invalid or has expired. Use the new code on the board.';
+  String get errorCodeExpired => 'This code is invalid or has expired. Use the new code on the board.';
 
   @override
   String get errorAccountInactive => 'Your account is not active';
 
   @override
-  String get errorOtherCampus =>
-      'You are not a teacher at the campus this board belongs to';
+  String get errorOtherCampus => 'You are not a teacher at the campus this board belongs to';
 
   @override
   String get errorNotPairingQr => 'Not a KINETIX pairing QR code';
 
   @override
-  String get errorFutureAttendance =>
-      'Attendance cannot be taken for a future date';
+  String get errorFutureAttendance => 'Attendance cannot be taken for a future date';
 
   @override
   String get errorNotYourClass => 'You do not teach this class';
 
   @override
-  String get errorSubjectNotInClass =>
-      'That subject is not taught in this class';
+  String get errorSubjectNotInClass => 'That subject is not taught in this class';
 
   @override
   String get errorDueDatePassed => 'The due date has already passed';
@@ -228,19 +217,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorRecordingUploading => 'The recording is still uploading';
 
   @override
-  String get errorRecordingNoClass =>
-      'This recording was not made with a class, so there is no one to share it with';
+  String get errorRecordingNoClass => 'This recording was not made with a class, so there is no one to share it with';
 
   @override
-  String get recordingNotAvailable =>
-      'This recording is not available yet. It may still be uploading from the board.';
+  String get recordingNotAvailable => 'This recording is not available yet. It may still be uploading from the board.';
 
   @override
   String get connectToBoard => 'Connect to board';
 
   @override
-  String get connectToBoardBody =>
-      'Scan the QR code on the classroom board to start teaching';
+  String get connectToBoardBody => 'Scan the QR code on the classroom board to start teaching';
 
   @override
   String get connect => 'Connect';
@@ -368,12 +354,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noStudentsInClass => 'No students in this class yet';
 
   @override
-  String get attendanceAlreadyTaken =>
-      'Already taken. Changes replace the earlier marks.';
+  String get attendanceAlreadyTaken => 'Already taken. Changes replace the earlier marks.';
 
   @override
-  String get attendanceHelp =>
-      'Everyone starts present. Tap to mark absent, long-press for late.';
+  String get attendanceHelp => 'Everyone starts present. Tap to mark absent, long-press for late.';
 
   @override
   String get update => 'Update';
@@ -388,8 +372,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterCodeTitle => 'Enter the code on the board';
 
   @override
-  String get enterCodeBody =>
-      'It is the 6-digit number under the QR code. A new code appears every 2 minutes.';
+  String get enterCodeBody => 'It is the 6-digit number under the QR code. A new code appears every 2 minutes.';
 
   @override
   String get scanInstead => 'Scan QR code instead';
@@ -423,12 +406,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeSession => 'Free session';
 
   @override
-  String get freeSessionBody =>
-      'You have no timetabled class right now, so the board opens without a class list. It signs you out after 2 hours.';
+  String get freeSessionBody => 'You have no timetabled class right now, so the board opens without a class list. It signs you out after 2 hours.';
 
   @override
-  String get qrNotOurs =>
-      'That isn\'t a KINETIX board code. Scan the QR code on the board\'s screen.';
+  String get qrNotOurs => 'That isn\'t a KINETIX board code. Scan the QR code on the board\'s screen.';
 
   @override
   String get scanTitle => 'Scan board QR code';
@@ -437,12 +418,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get torch => 'Torch';
 
   @override
-  String get cameraDenied =>
-      'Allow camera access in Settings to scan, or enter the code instead.';
+  String get cameraDenied => 'Allow camera access in Settings to scan, or enter the code instead.';
 
   @override
-  String get cameraUnavailable =>
-      'The camera is not available. Enter the code instead.';
+  String get cameraUnavailable => 'The camera is not available. Enter the code instead.';
 
   @override
   String get pointCamera => 'Point your camera at the QR code on the board';
@@ -457,8 +436,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assign => 'Assign';
 
   @override
-  String get noClassesInTimetable =>
-      'You have no classes in your timetable yet';
+  String get noClassesInTimetable => 'You have no classes in your timetable yet';
 
   @override
   String get chooseSubject => 'Choose a subject';
@@ -481,8 +459,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noHomework =>
-      'No homework yet.\nAssign work to a class and it will show up here.';
+  String get noHomework => 'No homework yet.\nAssign work to a class and it will show up here.';
 
   @override
   String get dueToday => 'Due today';
@@ -531,8 +508,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outOf => 'Out of';
 
   @override
-  String get marksPrivateNote =>
-      'Marks stay private until you publish them. Then students and their families see their own marks and the class average.';
+  String get marksPrivateNote => 'Marks stay private until you publish them. Then students and their families see their own marks and the class average.';
 
   @override
   String get kindTest => 'Test';
@@ -617,8 +593,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publishTitle => 'Publish marks?';
 
   @override
-  String get publishBody =>
-      'Students and families of the class will be notified and can see their own marks with the class average and highest.';
+  String get publishBody => 'Students and families of the class will be notified and can see their own marks with the class average and highest.';
 
   @override
   String publishBlank(int count) {
@@ -632,8 +607,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get publishCanCorrect =>
-      'You can still correct marks after publishing.';
+  String get publishCanCorrect => 'You can still correct marks after publishing.';
 
   @override
   String get publish => 'Publish';
@@ -712,8 +686,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remarkHint => 'e.g. Neat working; revise journal entries';
 
   @override
-  String get noMessages =>
-      'No messages yet.\nWrite to a student’s parent with New message, or wait for families to write to you.';
+  String get noMessages => 'No messages yet.\nWrite to a student’s parent with New message, or wait for families to write to you.';
 
   @override
   String get noMessagesPreview => 'No messages yet';
@@ -756,8 +729,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get threadPrivacy =>
-      'The thread is between you and the person you choose. School leaders can review it.';
+  String get threadPrivacy => 'The thread is between you and the person you choose. School leaders can review it.';
 
   @override
   String get relationFather => 'Father';
@@ -799,8 +771,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noRecordings =>
-      'No recordings yet.\nTap Record on the board during class. The lesson shows up here once the board uploads it.';
+  String get noRecordings => 'No recordings yet.\nTap Record on the board during class. The lesson shows up here once the board uploads it.';
 
   @override
   String get uploading => 'Uploading';
@@ -925,8 +896,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleAccountant => 'Accountant';
 
   @override
-  String get languageSaveFailed =>
-      'Language changed on this phone. It will be saved to your account next time you are online.';
+  String get languageSaveFailed => 'Language changed on this phone. It will be saved to your account next time you are online.';
 
   @override
   String holidayNoClasses(String title) {
@@ -952,8 +922,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarEvent => 'Event';
 
   @override
-  String get calendarEmpty =>
-      'Nothing on the calendar for the next six months.';
+  String get calendarEmpty => 'Nothing on the calendar for the next six months.';
 
   @override
   String calendarFor(String programs) {
@@ -970,8 +939,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syllabusProgressBody => 'Mark topics as taught for each class';
 
   @override
-  String get syllabusUnlinked =>
-      'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.';
+  String get syllabusUnlinked => 'This subject isn\'t linked to a syllabus yet. Your admin can link it in KINETIX ERP → Syllabus.';
 
   @override
   String topicsTaught(int covered, int total) {
@@ -1035,8 +1003,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openPdf => 'Open PDF';
 
   @override
-  String get couldNotOpenFile =>
-      'Couldn\'t open this file. Install an app that opens PDFs.';
+  String get couldNotOpenFile => 'Couldn\'t open this file. Install an app that opens PDFs.';
 
   @override
   String get remarkOptional => 'Remark (optional)';
@@ -1051,8 +1018,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkWork => 'Mark as checked';
 
   @override
-  String get reviewNotifies =>
-      'The student and their family are told, with your remark.';
+  String get reviewNotifies => 'The student and their family are told, with your remark.';
 
   @override
   String workChecked(String name) {
@@ -1073,23 +1039,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNothingHandedIn => 'Nothing has been handed in yet';
 
   @override
-  String get errorTopicNotInSyllabus =>
-      'That topic is not in this subject\'s syllabus';
+  String get errorTopicNotInSyllabus => 'That topic is not in this subject\'s syllabus';
 
   @override
-  String get errorFutureCoverage =>
-      'A topic cannot be marked as taught in the future';
+  String get errorFutureCoverage => 'A topic cannot be marked as taught in the future';
 
   @override
-  String get errorValidation =>
-      'Some details are not right. Check them and try again.';
+  String get errorValidation => 'Some details are not right. Check them and try again.';
 
   @override
   String get yearPlan => 'Year plan';
 
   @override
-  String get yearPlanNone =>
-      'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
+  String get yearPlanNone => 'No year plan yet. KINETIX can spread this subject\'s syllabus over the weeks of the term, using your timetable and skipping holidays and exams. You can move topics afterwards.';
 
   @override
   String get makeYearPlan => 'Make a year plan';
@@ -1104,15 +1066,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remakeYearPlanTitle => 'Remake the year plan?';
 
   @override
-  String get remakeYearPlanBody =>
-      'All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.';
+  String get remakeYearPlanBody => 'All weeks will be planned again from the dates you choose, and topics you moved go back. Topics already taught stay taught.';
 
   @override
   String get remake => 'Remake';
 
   @override
-  String get planDatesNote =>
-      'Unless you change them, the plan covers 16 weeks from today, up to the end of the academic year.';
+  String get planDatesNote => 'Unless you change them, the plan covers 16 weeks from today, up to the end of the academic year.';
 
   @override
   String get planStartsOn => 'Starts on';
@@ -1275,8 +1235,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get replaceWithDraftTitle => 'Replace with a KINETIX AI draft?';
 
   @override
-  String get replaceWithDraftBody =>
-      'The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.';
+  String get replaceWithDraftBody => 'The topics, objectives, steps, materials and check in this plan will be replaced. Your homework is kept.';
 
   @override
   String get replace => 'Replace';
@@ -1285,8 +1244,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiDraftLabel => 'AI draft — check before use';
 
   @override
-  String get aiPreviewNote =>
-      'Preview: a sample draft, because the KINETIX AI server is not connected.';
+  String get aiPreviewNote => 'Preview: a sample draft, because the KINETIX AI server is not connected.';
 
   @override
   String get savePlan => 'Save plan';
@@ -1303,39 +1261,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewRemark => 'Remark from your head of department';
 
   @override
-  String get discardPlanBody =>
-      'Your lesson plan has changes that are not saved yet.';
+  String get discardPlanBody => 'Your lesson plan has changes that are not saved yet.';
 
   @override
-  String get errorPlanNoSyllabus =>
-      'This subject has no syllabus yet. Ask your administrator to link it to a course.';
+  String get errorPlanNoSyllabus => 'This subject has no syllabus yet. Ask your administrator to link it to a course.';
 
   @override
-  String get errorPlanNoPeriods =>
-      'This subject has no periods in the timetable for this class.';
+  String get errorPlanNoPeriods => 'This subject has no periods in the timetable for this class.';
 
   @override
-  String get errorPlanNoTeachingDays =>
-      'There are no teaching days between these dates.';
+  String get errorPlanNoTeachingDays => 'There are no teaching days between these dates.';
 
   @override
-  String get errorPlanEndsBeforeStart =>
-      'The end date must be after the start date.';
+  String get errorPlanEndsBeforeStart => 'The end date must be after the start date.';
 
   @override
   String get errorPeriodNotOnDay => 'This class is not on that day.';
 
   @override
-  String get errorAiAllowance =>
-      'Your institution has used today\'s KINETIX AI allowance. It resets tomorrow.';
+  String get errorAiAllowance => 'Your institution has used today\'s KINETIX AI allowance. It resets tomorrow.';
 
   @override
-  String get errorAiUnavailable =>
-      'KINETIX AI is not reachable right now. Try again in a minute.';
+  String get errorAiUnavailable => 'KINETIX AI is not reachable right now. Try again in a minute.';
 
   @override
-  String get errorAiUnusable =>
-      'KINETIX AI could not write a usable draft. Try again.';
+  String get errorAiUnusable => 'KINETIX AI could not write a usable draft. Try again.';
 
   @override
   String reviewedByOn(String name, String date) {
@@ -1349,8 +1299,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signInWithPassword => 'Sign in with password';
 
   @override
-  String get phoneSignInSubtitle =>
-      'We\'ll text a 6-digit code to your registered mobile number';
+  String get phoneSignInSubtitle => 'We\'ll text a 6-digit code to your registered mobile number';
 
   @override
   String get mobileNumber => 'Mobile number';
@@ -1390,8 +1339,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeNumber => 'Change number';
 
   @override
-  String get errorOtpInvalid =>
-      'That code is wrong or has expired. Check the SMS or send a new code.';
+  String get errorOtpInvalid => 'That code is wrong or has expired. Check the SMS or send a new code.';
 
   @override
   String get demoChip => 'DEMO';
@@ -1400,8 +1348,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get demoBannerTitle => 'Demo mode';
 
   @override
-  String get demoBannerBody =>
-      'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
+  String get demoBannerBody => 'Sample data from KINETIX Demo College. Nothing is sent to a server, and your changes last until the app is closed.';
 
   @override
   String demoSignInAs(String name) {
@@ -1429,8 +1376,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dontKeepRecording => 'Don\'t keep';
 
   @override
-  String get keepRecordingTooltip =>
-      'Kept recordings are not deleted when the term ends';
+  String get keepRecordingTooltip => 'Kept recordings are not deleted when the term ends';
 
   @override
   String get phoneRemote => 'Phone remote';
@@ -1467,8 +1413,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remoteSlides => 'Slides and PDF';
 
   @override
-  String get remoteNoSlides =>
-      'Open slides or a PDF on the board to turn them from here.';
+  String get remoteNoSlides => 'Open slides or a PDF on the board to turn them from here.';
 
   @override
   String remoteSlideOf(int slide, int slides) {
@@ -1479,8 +1424,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remotePointer => 'Pointer';
 
   @override
-  String get remotePointerHint =>
-      'Slide your finger here to point on the board';
+  String get remotePointerHint => 'Slide your finger here to point on the board';
 
   @override
   String get remoteClassroom => 'Classroom tools';
@@ -1509,16 +1453,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get answerCards => 'Answer cards';
 
   @override
-  String get answerCardsMenuBody =>
-      'Print cards so students without phones can answer on the board';
+  String get answerCardsMenuBody => 'Print cards so students without phones can answer on the board';
 
   @override
-  String get answerCardsBody =>
-      'Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.';
+  String get answerCardsBody => 'Each student gets one card, numbered by roll number. In \"Ask the class\" on the board they hold it up with their answer on top, and the board reads the whole class from one photo.';
 
   @override
-  String get answerCardsPrintHint =>
-      'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
+  String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
 
   @override
   String answerCardsReady(int count, String className) {
@@ -1545,8 +1486,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get remindBody =>
-      'They and their families get a notification that this homework is not handed in yet.';
+  String get remindBody => 'They and their families get a notification that this homework is not handed in yet.';
 
   @override
   String get remind => 'Remind';
@@ -1570,4 +1510,160 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseClass => 'Choose a class';
+
+  @override
+  String get workSection => 'Work';
+
+  @override
+  String get leaveTitle => 'Leave';
+
+  @override
+  String get leaveBody => 'Balances, apply and approvals';
+
+  @override
+  String get checkInTitle => 'Check-in';
+
+  @override
+  String get checkInBody => 'Mark your day and see your month';
+
+  @override
+  String get payslipsTitle => 'Payslips';
+
+  @override
+  String get payslipsBody => 'Your monthly salary slips';
+
+  @override
+  String get leaveMine => 'My leave';
+
+  @override
+  String get leaveApprovals => 'To approve';
+
+  @override
+  String get leaveBalances => 'Balances';
+
+  @override
+  String get leaveApply => 'Apply for leave';
+
+  @override
+  String get leaveType => 'Leave type';
+
+  @override
+  String get leaveFrom => 'From';
+
+  @override
+  String get leaveTo => 'To';
+
+  @override
+  String get leaveHalfDay => 'Half day';
+
+  @override
+  String get leaveReason => 'Reason (optional)';
+
+  @override
+  String get leaveSubmit => 'Submit';
+
+  @override
+  String leaveDaysCount(String days) {
+    return 'Working days: $days';
+  }
+
+  @override
+  String leaveAvailable(String days) {
+    return '$days left';
+  }
+
+  @override
+  String leaveDaysLabel(String days) {
+    return '$days days';
+  }
+
+  @override
+  String get leaveNone => 'No leave requests yet.';
+
+  @override
+  String get leaveNoApprovals => 'Nothing is waiting for your decision.';
+
+  @override
+  String get leaveCancelAction => 'Cancel request';
+
+  @override
+  String get leaveApprove => 'Approve';
+
+  @override
+  String get leaveReject => 'Reject';
+
+  @override
+  String get leaveDecisionNote => 'Note (optional)';
+
+  @override
+  String get leaveStatusPending => 'Pending';
+
+  @override
+  String get leaveStatusApproved => 'Approved';
+
+  @override
+  String get leaveStatusRejected => 'Rejected';
+
+  @override
+  String get leaveStatusCancelled => 'Cancelled';
+
+  @override
+  String get checkInButton => 'Check in';
+
+  @override
+  String get checkOutButton => 'Check out';
+
+  @override
+  String checkedInAt(String time) {
+    return 'Checked in at $time';
+  }
+
+  @override
+  String checkedOutAt(String time) {
+    return 'Checked out at $time';
+  }
+
+  @override
+  String get notCheckedIn => 'You have not checked in today.';
+
+  @override
+  String get attendanceMonth => 'This month';
+
+  @override
+  String get attStatusPresent => 'Present';
+
+  @override
+  String get attStatusAbsent => 'Absent';
+
+  @override
+  String get attStatusHalfDay => 'Half day';
+
+  @override
+  String get attStatusOnLeave => 'On leave';
+
+  @override
+  String get payslipNet => 'Net pay';
+
+  @override
+  String get payslipGross => 'Gross';
+
+  @override
+  String get payslipEarnings => 'Earnings';
+
+  @override
+  String get payslipDeductions => 'Deductions';
+
+  @override
+  String payslipDays(String paid, String lop) {
+    return 'Paid days $paid, loss of pay $lop';
+  }
+
+  @override
+  String get payslipOpenPdf => 'Open PDF';
+
+  @override
+  String get payslipsEmpty => 'No payslips yet. They appear when payroll is finalised.';
+
+  @override
+  String get roleHr => 'HR manager';
 }

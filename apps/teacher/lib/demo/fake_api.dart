@@ -10,6 +10,7 @@ import 'package:flutter/painting.dart';
 
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
+import '../core/hr_models.dart';
 import '../core/models.dart';
 import '../core/push.dart';
 import '../core/realtime.dart';
@@ -675,6 +676,97 @@ class FakeTeacherApi implements TeacherApi {
   Future<List<CalendarEvent>> calendar({String? from, String? to}) async {
     calls.add('calendar');
     return calendarEvents;
+  }
+
+  // --- HR: leave, check-in, payslips ------------------------------------------------------------
+
+  List<LeaveTypeInfo> leaveTypeList = const [
+    LeaveTypeInfo(id: 'lt-cl', code: 'CL', name: 'Casual leave', paid: true),
+    LeaveTypeInfo(id: 'lt-lop', code: 'LOP', name: 'Leave without pay', paid: false),
+  ];
+  List<LeaveBalanceInfo> leaveBalanceList = const [
+    LeaveBalanceInfo(type: LeaveTypeInfo(id: 'lt-cl', code: 'CL', name: 'Casual leave', paid: true), opening: 0, accrued: 7, used: 2, pending: 1, available: 4),
+  ];
+  List<LeaveRequestInfo> myLeaves = [];
+  List<LeaveRequestInfo> pendingLeaves = [];
+  AttendanceDayInfo? todayMark;
+  List<PayslipInfo> payslipList = [];
+  int _leaveSeq = 0;
+
+  @override
+  Future<List<LeaveTypeInfo>> leaveTypes() async => leaveTypeList;
+  @override
+  Future<List<LeaveBalanceInfo>> leaveBalances() async => leaveBalanceList;
+  @override
+  Future<List<LeaveRequestInfo>> myLeaveRequests() async => List.of(myLeaves);
+  @override
+  Future<List<LeaveRequestInfo>> pendingLeaveRequests() async => List.of(pendingLeaves);
+
+  @override
+  Future<LeaveRequestInfo> applyLeave({required String leaveTypeId, required String fromDate, required String toDate, required bool halfDay, required String reason}) async {
+    calls.add('applyLeave $leaveTypeId $fromDate $toDate ${halfDay ? 'half' : 'full'} $reason');
+    final r = LeaveRequestInfo(
+      id: 'lr${++_leaveSeq}',
+      userId: 'me',
+      userName: profile.fullName,
+      type: leaveTypeList.firstWhere((t) => t.id == leaveTypeId),
+      fromDate: parseDay(fromDate),
+      toDate: parseDay(toDate),
+      halfDay: halfDay,
+      days: leaveDays(parseDay(fromDate), parseDay(toDate), halfDay: halfDay),
+      reason: reason,
+      status: LeaveStatus.pending,
+    );
+    myLeaves = [r, ...myLeaves];
+    return r;
+  }
+
+  LeaveRequestInfo _withStatus(LeaveRequestInfo r, LeaveStatus s, [String? note]) => LeaveRequestInfo(
+    id: r.id, userId: r.userId, userName: r.userName, type: r.type, fromDate: r.fromDate, toDate: r.toDate, halfDay: r.halfDay, days: r.days, reason: r.reason, status: s, decisionNote: note,
+  );
+
+  @override
+  Future<LeaveRequestInfo> cancelLeave(String id) async {
+    calls.add('cancelLeave $id');
+    final r = _withStatus(myLeaves.firstWhere((x) => x.id == id), LeaveStatus.cancelled);
+    myLeaves = [for (final x in myLeaves) x.id == id ? r : x];
+    return r;
+  }
+
+  @override
+  Future<LeaveRequestInfo> decideLeave(String id, {required bool approve, String? note}) async {
+    calls.add('decideLeave $id ${approve ? 'approve' : 'reject'} ${note ?? '-'}');
+    final r = _withStatus(pendingLeaves.firstWhere((x) => x.id == id), approve ? LeaveStatus.approved : LeaveStatus.rejected, note);
+    pendingLeaves = pendingLeaves.where((x) => x.id != id).toList();
+    return r;
+  }
+
+  @override
+  Future<MyAttendance> myAttendance({String? month}) async {
+    final t = todayMark;
+    return MyAttendance(today: t, month: month ?? '2026-10', days: [?t]);
+  }
+
+  @override
+  Future<AttendanceDayInfo> checkIn() async {
+    calls.add('checkIn');
+    return todayMark ??= AttendanceDayInfo(date: '2026-10-20', status: 'present', checkInAt: DateTime(2026, 10, 20, 9, 5));
+  }
+
+  @override
+  Future<AttendanceDayInfo> checkOut() async {
+    calls.add('checkOut');
+    final t = todayMark!;
+    return todayMark = AttendanceDayInfo(date: t.date, status: t.status, checkInAt: t.checkInAt, checkOutAt: DateTime(2026, 10, 20, 17, 30));
+  }
+
+  @override
+  Future<List<PayslipInfo>> myPayslips() async => payslipList;
+
+  @override
+  Future<Uint8List> payslipPdf(String id) async {
+    calls.add('payslipPdf $id');
+    return Uint8List.fromList('%PDF-1.4'.codeUnits);
   }
 
   // --- Syllabus coverage -----------------------------------------------------------------------

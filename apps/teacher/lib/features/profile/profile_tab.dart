@@ -7,6 +7,9 @@ import '../../core/app_state.dart';
 import '../../core/files.dart';
 import '../../core/l10n.dart';
 import '../calendar/calendar_screen.dart';
+import '../hr/check_in_screen.dart';
+import '../hr/leave_screen.dart';
+import '../hr/payslips_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 
@@ -190,6 +193,33 @@ class ProfileTab extends StatelessWidget {
                   builder: (_) => SyllabusClassesScreen(api: state.api, teacherName: me.fullName),
                 ),
               ),
+            ),
+            KxSectionHeader(l.workSection),
+            ListTile(
+              key: const Key('openCheckIn'),
+              leading: const Icon(Icons.how_to_reg_outlined),
+              title: Text(l.checkInTitle),
+              subtitle: Text(l.checkInBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CheckInScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openLeave'),
+              leading: const Icon(Icons.beach_access_outlined),
+              title: Text(l.leaveTitle),
+              subtitle: Text(l.leaveBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => LeaveScreen(api: state.api, canApprove: me.roles.any(leaveApproverRoles.contains))),
+              ),
+            ),
+            ListTile(
+              key: const Key('openPayslips'),
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: Text(l.payslipsTitle),
+              subtitle: Text(l.payslipsBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PayslipsScreen(api: state.api))),
             ),
             KxSectionHeader(l.comingSoon),
             ListTile(
