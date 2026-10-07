@@ -1838,8 +1838,17 @@ class _BoardScreenState extends State<BoardScreen> {
       'search': BarItem(const Key('tbar-search'), Icons.search, ts.search, _run(_openSearch)),
       'record': BarItem(const Key('tbar-record'), _capture == null ? Icons.fiber_manual_record_outlined : Icons.stop_circle_outlined, ts.record, _run(() => unawaited(_toggleRecording())), selected: _capture != null),
       'eye-comfort': BarItem(const Key('tbar-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort)),
+      // Every tile of Tools too (the document camera, safe web, captions, seating, groups, the
+      // magnifier, notes, exit tickets, the language kit, organisers, clocks, the scoreboard ...),
+      // so any of them can sit on the bar.
+      for (final t in _drawerTools(l))
+        if (!_drawerOnCatalog.contains(t.id)) 'drawer:${t.id}': BarItem(Key('tbar-drawer-${t.id}'), t.icon, t.label, t.onTap),
     };
   }
+
+  /// Tools tiles the catalogue already has under its own id (and calibrating, a one-off set-up
+  /// that stays in Tools).
+  static const _drawerOnCatalog = {'calibrate', 'ruler', 'protractor', 'calculator', 'sims', 'labs', 'models3d', 'laser', 'move', 'eye-comfort', 'screenshot', 'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-spotlight'};
 
   /// The ids on the bar for a phone or a panel: the teacher's own, or the default.
   List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) => ToolbarLayouts.clean(

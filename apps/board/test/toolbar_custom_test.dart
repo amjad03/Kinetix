@@ -108,6 +108,22 @@ void main() {
     await close(tester, board);
   });
 
+  testWidgets('1920×1080: every Tools tile, the new ones too, can go on the toolbar', (tester) async {
+    final (board, _) = await open(tester, const Size(1920, 1080));
+    await openEditorFromMenu(tester);
+    for (final id in ['doc-camera', 'safe-web', 'live-captions', 'seating-chart', 'group-maker', 'magnifier', 'teacher-notes', 'exit-ticket', 'organisers', 'teaching-clock', 'scoreboard', 'exam-clock']) {
+      expect(find.byKey(Key('tbar-add-drawer:$id')), findsOneWidget, reason: id);
+    }
+    await tapInEditor(tester, 'tbar-remove-redo');
+    await tapInEditor(tester, 'tbar-add-drawer:scoreboard');
+    await tapInEditor(tester, 'tbar-done');
+    expect(onToolbar('tbar-drawer-scoreboard'), findsOneWidget);
+    await tester.tap(onToolbar('tbar-drawer-scoreboard'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await close(tester, board);
+  });
+
   testWidgets('1920×1080: tools drag onto the bar, off it and into order', (tester) async {
     final (board, _) = await open(tester, const Size(1920, 1080));
     await openEditorFromMenu(tester);
@@ -129,11 +145,11 @@ void main() {
     await tester.pumpAndSettle();
     await dragTo(redo, find.byKey(const Key('tbar-add-ruler')));
     expect(board.toolbarPanel, isNot(contains('redo')));
-    // On: drag the ruler onto the bar.
-    await tester.ensureVisible(find.byKey(const Key('tbar-add-ruler')));
+    // On: drag Redo back onto the bar.
+    await tester.ensureVisible(find.byKey(const ValueKey('tbar-item-pen')));
     await tester.pumpAndSettle();
-    await dragTo(find.byKey(const Key('tbar-add-ruler')), find.byKey(const ValueKey('tbar-item-pen')));
-    expect(board.toolbarPanel, contains('ruler'));
+    await dragTo(find.byKey(const Key('tbar-add-redo')), find.byKey(const ValueKey('tbar-item-pen')));
+    expect(board.toolbarPanel, contains('redo'));
     // In order: the pen's grip down below the AI pen.
     final grip = find.descendant(of: find.byKey(const ValueKey('tbar-item-pen')), matching: find.byIcon(Icons.drag_indicator));
     await tester.ensureVisible(grip);
