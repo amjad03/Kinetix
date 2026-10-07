@@ -7,6 +7,7 @@ import { YouTube } from './youtube.js';
 /** The KINETIX platform team's endpoints (concept videos on the global library). */
 @Module({
   controllers: [PlatformController],
+  exports: [YouTube],
   providers: [PlatformAdminGuard, { provide: YouTube, inject: [ENV], useFactory: (env: Env) => new YouTube(env.YOUTUBE_API_KEY) }],
 })
 export class PlatformModule {}

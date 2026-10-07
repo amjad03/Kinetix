@@ -1013,7 +1013,7 @@ export const platformAdmins = pgTable('platform_admins', {
  * Concept videos: short explainers from the KINETIX YouTube channel, linked to global topics by
  * the platform team and shown to every institution (board, Student App). Only the YouTube id is
  * kept; the apps play it with YouTube's own embedded player and never download it.
- * Read-only for the app role; the platform endpoints write it as the owner.
+ * Platform rows are written by the platform endpoints as the owner; institution and teacher rows by the institution (RLS, migration 0066).
  */
 export const conceptVideos = pgTable(
   'concept_videos',
@@ -1030,8 +1030,25 @@ export const conceptVideos = pgTable(
     position: smallint('position').notNull(),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Who linked it: the platform team (every institution), an institution's admin, or one teacher (migration 0066). */
+    scope: text('scope').$type<'platform' | 'institution' | 'teacher'>().notNull().default('platform'),
+    /** Null for platform videos. */
+    tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+    /** Teacher videos: the sections they are for. Once approved they are shown to the whole institution. */
+    sectionIds: uuid('section_ids').array().notNull().default(sql`'{}'::uuid[]`),
+    /** Teacher videos: none = for their sections only; pending / approved / rejected = asked to be shared institution-wide. */
+    shareStatus: text('share_status').$type<'none' | 'pending' | 'approved' | 'rejected'>().notNull().default('none'),
+    reviewReason: text('review_reason'),
+    reviewedBy: uuid('reviewed_by').references(() => users.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
   },
-  (t) => [uniqueIndex('concept_videos_topic_video_uq').on(t.topicId, t.youtubeVideoId), index('concept_videos_topic_idx').on(t.topicId, t.position)],
+  (t) => [
+    uniqueIndex('concept_videos_platform_uq').on(t.topicId, t.youtubeVideoId).where(sql`scope = 'platform'`),
+    uniqueIndex('concept_videos_institution_uq').on(t.tenantId, t.topicId, t.youtubeVideoId).where(sql`scope = 'institution'`),
+    uniqueIndex('concept_videos_teacher_uq').on(t.createdBy, t.topicId, t.youtubeVideoId).where(sql`scope = 'teacher'`),
+    index('concept_videos_topic_idx').on(t.topicId, t.position),
+    index('concept_videos_tenant_idx').on(t.tenantId, t.shareStatus),
+  ],
 );
 
 // ---------------------------------------------------------------------------------------------
@@ -2440,6 +2457,7 @@ export const TENANT_TABLES = [
   'attainment_snapshots',
   'improvement_actions',
   'obe_evidence',
+  'concept_videos',
   'audit_log',
   'transport_vehicles',
   'transport_drivers',

@@ -559,7 +559,7 @@ class TopicDetail {
 /// A concept video from the KINETIX YouTube channel (`GET /v1/content/topics/:id/videos`), in the
 /// class's language first. Only the YouTube id is kept; it plays in YouTube's embedded player.
 class ConceptVideo {
-  const ConceptVideo({required this.id, required this.youtubeVideoId, required this.title, required this.language, this.durationSeconds});
+  const ConceptVideo({required this.id, required this.youtubeVideoId, required this.title, required this.language, this.durationSeconds, this.source = 'platform'});
 
   factory ConceptVideo.fromJson(Map<String, dynamic> j) => ConceptVideo(
     id: j['id'] as String,
@@ -567,6 +567,7 @@ class ConceptVideo {
     title: j['title'] as String,
     language: j['language'] as String? ?? 'en',
     durationSeconds: (j['durationSeconds'] as num?)?.toInt(),
+    source: j['source'] as String? ?? 'platform',
   );
 
   final String id;
@@ -576,6 +577,9 @@ class ConceptVideo {
   /// en, hi or kn.
   final String language;
   final int? durationSeconds;
+
+  /// Who linked it: platform (KINETIX), institution (the school) or teacher (this class's teacher, or approved for all).
+  final String source;
 
   /// YouTube's own thumbnail (i.ytimg.com).
   String get thumbnailUrl => 'https://i.ytimg.com/vi/$youtubeVideoId/mqdefault.jpg';

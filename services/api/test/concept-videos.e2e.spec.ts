@@ -92,7 +92,7 @@ describe('concept videos', () => {
     expect((await listPlatformAdmins(db)).map((r) => r.email)).toContain(kinetix.principal.email);
     await expect(addPlatformAdmin(db, kinetix.slug, 'nobody@x.in')).rejects.toThrow(/No user/);
 
-    // The app role cannot read the team, nor write videos (only read them).
+    // The app role cannot read the team, nor write platform videos (institutions write only their own, see concept-video-scopes).
     const appPool = new pg.Pool({ connectionString: env.APP_DATABASE_URL, max: 1 });
     const appDb = drizzle(appPool, { schema: s });
     const denies = async (fn: () => Promise<unknown>) => {
@@ -102,8 +102,8 @@ describe('concept videos', () => {
     await denies(() => appDb.select().from(s.platformAdmins));
     await denies(() => appDb.insert(s.platformAdmins).values({ userId: t.teacher.id }));
     const [anyTopic] = await db.select({ id: s.topics.id }).from(s.topics).limit(1);
-    await denies(() => appDb.insert(s.conceptVideos).values({ topicId: anyTopic.id, youtubeVideoId: VID(0), title: 'x', position: 1 }));
-    await denies(() => appDb.delete(s.conceptVideos));
+    await expect(appDb.insert(s.conceptVideos).values({ topicId: anyTopic.id, youtubeVideoId: VID(0), title: 'x', position: 1 })).rejects.toThrow();
+    expect(await appDb.delete(s.conceptVideos).returning()).toEqual([]);
     expect(await appDb.select().from(s.conceptVideos).limit(1)).toBeDefined();
     await appPool.end();
   });

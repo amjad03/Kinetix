@@ -190,6 +190,17 @@ abstract class TeacherApi {
   /// Undoes [markTopic].
   Future<void> unmarkTopic({required String sectionId, required String subjectId, required String topicId});
 
+  /// The videos this teacher added to a topic for their classes.
+  Future<List<TopicVideo>> topicVideos(String topicId);
+
+  /// Adds a YouTube video to a topic for [sectionId]'s class; the server takes the title from YouTube (oEmbed).
+  Future<TopicVideo> addTopicVideo({required String topicId, required String url, required String sectionId});
+
+  /// Asks the principal to show the video to the whole institution.
+  Future<TopicVideo> shareTopicVideo(String videoId);
+
+  Future<void> removeTopicVideo(String videoId);
+
   /// The class list for a homework, with what each student handed in and the counts.
   Future<SubmissionList> submissions(String homeworkId);
 
@@ -569,6 +580,22 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<void> unmarkTopic({required String sectionId, required String subjectId, required String topicId}) async =>
       _send('DELETE', '/v1/coverage', body: {'sectionId': sectionId, 'subjectId': subjectId, 'topicId': topicId});
+
+  @override
+  Future<List<TopicVideo>> topicVideos(String topicId) async => [
+    for (final v in await _send('GET', '/v1/content/topics/$topicId/videos/mine') as List) TopicVideo.fromJson(v as Map<String, dynamic>),
+  ];
+
+  @override
+  Future<TopicVideo> addTopicVideo({required String topicId, required String url, required String sectionId}) async => TopicVideo.fromJson(
+    await _send('POST', '/v1/content/topics/$topicId/videos', body: {'url': url, 'scope': 'teacher', 'sectionIds': [sectionId]}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<TopicVideo> shareTopicVideo(String videoId) async => TopicVideo.fromJson(await _send('POST', '/v1/content/videos/$videoId/share') as Map<String, dynamic>);
+
+  @override
+  Future<void> removeTopicVideo(String videoId) async => _send('DELETE', '/v1/content/videos/$videoId');
 
   @override
   Future<SubmissionList> submissions(String homeworkId) async =>

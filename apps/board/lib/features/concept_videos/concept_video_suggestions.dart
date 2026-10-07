@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../search/filter_bar.dart';
 import '../search/fuzzy.dart';
 import '../search/search_strings.dart';
+import '../board/layout/layout_strings.dart';
 import '../board/phone_chrome.dart';
 import 'concept_video_player.dart';
 import 'concept_videos.dart';
@@ -258,7 +259,13 @@ class ConceptVideoTile extends StatelessWidget {
                   children: [
                     Text(video.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
                     const SizedBox(height: Kx.s4),
-                    Text(meta, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                    Row(
+                      children: [
+                        VideoSourceBadge(source: video.source, key: Key('videoSource-${video.id}')),
+                        const SizedBox(width: Kx.s8),
+                        Flexible(child: Text(meta, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant))),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -266,6 +273,29 @@ class ConceptVideoTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Who linked a video: KINETIX, the institution or a teacher.
+class VideoSourceBadge extends StatelessWidget {
+  const VideoSourceBadge({super.key, required this.source});
+
+  final String source;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final s = LayoutStrings.of(context);
+    final label = switch (source) {
+      'institution' => s.videoSourceInstitution,
+      'teacher' => s.videoSourceTeacher,
+      _ => s.videoSourcePlatform,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: 2),
+      decoration: BoxDecoration(color: source == 'platform' ? c.surfaceContainerHighest : c.tertiaryContainer, borderRadius: BorderRadius.circular(Kx.rSm)),
+      child: Text(label, style: context.text.labelSmall?.copyWith(color: source == 'platform' ? c.onSurfaceVariant : c.onTertiaryContainer)),
     );
   }
 }

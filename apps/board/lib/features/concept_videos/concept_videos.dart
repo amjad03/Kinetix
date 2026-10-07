@@ -14,6 +14,7 @@ class ConceptVideo {
     required this.language,
     this.durationSeconds,
     this.topicTitle,
+    this.source = 'platform',
   });
 
   factory ConceptVideo.fromJson(Map<String, dynamic> j) => ConceptVideo(
@@ -24,6 +25,7 @@ class ConceptVideo {
     language: j['language'] as String? ?? 'en',
     durationSeconds: (j['durationSeconds'] as num?)?.toInt(),
     topicTitle: j['topicTitle'] as String?,
+    source: j['source'] as String? ?? 'platform',
   );
 
   final String id;
@@ -35,6 +37,9 @@ class ConceptVideo {
   final String language;
   final int? durationSeconds;
   final String? topicTitle;
+
+  /// Who linked it: platform (KINETIX), institution (the school's admin) or teacher.
+  final String source;
 
   /// YouTube's own thumbnail (i.ytimg.com, 320×180).
   String get thumbnailUrl => 'https://i.ytimg.com/vi/$youtubeVideoId/mqdefault.jpg';
@@ -67,6 +72,7 @@ class PeriodVideos {
               startsAt: p['startsAt'] as String,
               endsAt: p['endsAt'] as String,
               isNow: p['isNow'] as bool? ?? false,
+              sectionId: (p['section'] as Map?)?['id'] as String? ?? '',
               sectionName: (p['section'] as Map?)?['displayName'] as String? ?? '',
               subjectName: (p['subject'] as Map?)?['name'] as String? ?? '',
             ),
@@ -97,6 +103,7 @@ class PeriodInfo {
     required this.startsAt,
     required this.endsAt,
     required this.isNow,
+    this.sectionId = '',
     required this.sectionName,
     required this.subjectName,
   });
@@ -110,6 +117,7 @@ class PeriodInfo {
   final String startsAt;
   final String endsAt;
   final bool isNow;
+  final String sectionId;
   final String sectionName;
   final String subjectName;
 

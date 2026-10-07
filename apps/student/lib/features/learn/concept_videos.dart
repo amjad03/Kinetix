@@ -134,7 +134,13 @@ class _VideoRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(video.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: context.text.bodyLarge),
-                    Text(meta, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                    Row(
+                      children: [
+                        _SourceBadge(key: Key('videoSource-${video.id}'), source: video.source),
+                        const SizedBox(width: Kx.s8),
+                        Flexible(child: Text(meta, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant))),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -142,6 +148,30 @@ class _VideoRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Who linked a video: KINETIX, the school or the class's teacher.
+class _SourceBadge extends StatelessWidget {
+  const _SourceBadge({super.key, required this.source});
+
+  final String source;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l = context.l10n;
+    final platform = source != 'institution' && source != 'teacher';
+    final label = switch (source) {
+      'institution' => l.conceptVideoSourceInstitution,
+      'teacher' => l.conceptVideoSourceTeacher,
+      _ => l.conceptVideoSourcePlatform,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Kx.s8, vertical: 2),
+      decoration: BoxDecoration(color: platform ? c.surfaceContainerHighest : c.tertiaryContainer, borderRadius: BorderRadius.circular(Kx.rSm)),
+      child: Text(label, style: context.text.labelSmall?.copyWith(color: platform ? c.onSurfaceVariant : c.onTertiaryContainer)),
     );
   }
 }

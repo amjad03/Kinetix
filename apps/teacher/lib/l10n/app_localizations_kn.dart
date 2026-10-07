@@ -966,6 +966,51 @@ class AppLocalizationsKn extends AppLocalizations {
   String get taughtOnWhichDay => 'ಯಾವ ದಿನ ಕಲಿಸಲಾಯಿತು?';
 
   @override
+  String get topicVideosTooltip => 'ಈ ವಿಷಯದ ವೀಡಿಯೊಗಳು';
+
+  @override
+  String get topicVideosTitle => 'ಈ ತರಗತಿಗೆ ವೀಡಿಯೊಗಳು';
+
+  @override
+  String get topicVideoLink => 'ಯೂಟ್ಯೂಬ್ ಲಿಂಕ್';
+
+  @override
+  String get topicVideoLinkHelp => 'ಲಿಂಕ್ ಅಂಟಿಸಿ. ಶೀರ್ಷಿಕೆ ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಬರುತ್ತದೆ. ಪ್ರಾಂಶುಪಾಲರು ಹಂಚಲು ಅನುಮೋದಿಸುವವರೆಗೆ ಈ ತರಗತಿ ಮಾತ್ರ ನೋಡುತ್ತದೆ.';
+
+  @override
+  String get topicVideoAdd => 'ವೀಡಿಯೊ ಸೇರಿಸಿ';
+
+  @override
+  String get topicVideoAdded => 'ಈ ತರಗತಿಗೆ ವೀಡಿಯೊ ಸೇರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get topicVideoNotAdded => 'ಆ ವೀಡಿಯೊ ಸೇರಿಸಲಾಗಲಿಲ್ಲ. ಲಿಂಕ್ ಪರೀಕ್ಷಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get topicVideoNone => 'ನೀವು ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ವೀಡಿಯೊ ಸೇರಿಸಿಲ್ಲ.';
+
+  @override
+  String get topicVideoShare => 'ಎಲ್ಲರೊಂದಿಗೆ ಹಂಚಲು ಕೋರಿ';
+
+  @override
+  String get topicVideoShareSent => 'ಅನುಮೋದನೆಗಾಗಿ ಪ್ರಾಂಶುಪಾಲರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get topicVideoStatusNone => 'ಈ ತರಗತಿ ಮಾತ್ರ';
+
+  @override
+  String get topicVideoStatusPending => 'ಅನುಮೋದನೆಗೆ ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get topicVideoStatusApproved => 'ಎಲ್ಲರೊಂದಿಗೆ ಹಂಚಲಾಗಿದೆ';
+
+  @override
+  String get topicVideoStatusRejected => 'ಅನುಮೋದನೆ ಸಿಗಲಿಲ್ಲ';
+
+  @override
+  String get topicVideoRemove => 'ವೀಡಿಯೊ ತೆಗೆಯಿರಿ';
+
+  @override
   String get topicMarked => 'ಕಲಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ';
 
   @override

@@ -961,6 +961,51 @@ class AppLocalizationsHi extends AppLocalizations {
   String get taughtOnWhichDay => 'किस दिन पढ़ाया?';
 
   @override
+  String get topicVideosTooltip => 'इस विषय के वीडियो';
+
+  @override
+  String get topicVideosTitle => 'इस कक्षा के लिए वीडियो';
+
+  @override
+  String get topicVideoLink => 'यूट्यूब लिंक';
+
+  @override
+  String get topicVideoLinkHelp => 'लिंक चिपकाएँ। शीर्षक यूट्यूब से आता है। प्राचार्य के साझा करने की मंज़ूरी तक केवल यही कक्षा इसे देखती है।';
+
+  @override
+  String get topicVideoAdd => 'वीडियो जोड़ें';
+
+  @override
+  String get topicVideoAdded => 'इस कक्षा के लिए वीडियो जोड़ा गया';
+
+  @override
+  String get topicVideoNotAdded => 'वह वीडियो नहीं जोड़ा जा सका। लिंक जाँचकर फिर कोशिश करें।';
+
+  @override
+  String get topicVideoNone => 'आपने इस विषय में अभी कोई वीडियो नहीं जोड़ा।';
+
+  @override
+  String get topicVideoShare => 'सबके साथ साझा करने का अनुरोध करें';
+
+  @override
+  String get topicVideoShareSent => 'मंज़ूरी के लिए प्राचार्य को भेजा गया';
+
+  @override
+  String get topicVideoStatusNone => 'केवल यह कक्षा';
+
+  @override
+  String get topicVideoStatusPending => 'मंज़ूरी की प्रतीक्षा में';
+
+  @override
+  String get topicVideoStatusApproved => 'सबके साथ साझा';
+
+  @override
+  String get topicVideoStatusRejected => 'मंज़ूर नहीं हुआ';
+
+  @override
+  String get topicVideoRemove => 'वीडियो हटाएँ';
+
+  @override
   String get topicMarked => 'पढ़ाया गया मार्क किया';
 
   @override

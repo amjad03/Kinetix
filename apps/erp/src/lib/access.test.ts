@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canChangeLifecycle, canEditCalendar, canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
+import { canChangeLifecycle, canEditCalendar, canLinkSubjects, canPublishMarks, canReviewVideos, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
 
 describe('access', () => {
   it('lets the accounts office into Fees (and the calendar) only', () => {
@@ -139,5 +139,13 @@ describe('access', () => {
     expect(canChangeLifecycle(r)).toBe(false);
     expect(canChangeLifecycle(['principal'])).toBe(true);
     expect(canSee(['teacher'], 'admissions')).toBe(false);
+  });
+
+  it('opens Topic videos to the principal, admin and heads of department, and approval to the first two', () => {
+    for (const r of [['principal'], ['tenant_admin'], ['hod']] as const) expect(canSee([...r], 'topicVideos')).toBe(true);
+    for (const r of [['accountant'], ['librarian'], ['teacher']] as const) expect(canSee([...r], 'topicVideos')).toBe(false);
+    expect(sectionOf('/topic-videos/abc')).toBe('topicVideos');
+    expect(canReviewVideos(['principal'])).toBe(true);
+    expect(canReviewVideos(['hod'])).toBe(false);
   });
 });

@@ -1737,6 +1737,96 @@ abstract class AppLocalizations {
   /// **'Taught on which day?'**
   String get taughtOnWhichDay;
 
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos for this topic'**
+  String get topicVideosTooltip;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos for this class'**
+  String get topicVideosTitle;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube link'**
+  String get topicVideoLink;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a link. The title comes from YouTube. Only this class sees it until the principal approves sharing it.'**
+  String get topicVideoLinkHelp;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Add video'**
+  String get topicVideoAdd;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Video added for this class'**
+  String get topicVideoAdded;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add that video. Check the link and try again.'**
+  String get topicVideoNotAdded;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t added videos to this topic yet.'**
+  String get topicVideoNone;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask to share with everyone'**
+  String get topicVideoShare;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to the principal for approval'**
+  String get topicVideoShareSent;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'This class only'**
+  String get topicVideoStatusNone;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get topicVideoStatusPending;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with everyone'**
+  String get topicVideoStatusApproved;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get topicVideoStatusRejected;
+
+  /// Teacher videos on a syllabus topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove video'**
+  String get topicVideoRemove;
+
   /// Snackbar.
   ///
   /// In en, this message translates to:

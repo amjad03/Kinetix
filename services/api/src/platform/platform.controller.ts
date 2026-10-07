@@ -49,6 +49,7 @@ const ImportBody = z.object({
 
 const VIDEO = {
   id: conceptVideos.id,
+  source: conceptVideos.scope,
   topicId: conceptVideos.topicId,
   youtubeVideoId: conceptVideos.youtubeVideoId,
   title: conceptVideos.title,
@@ -100,7 +101,7 @@ export class PlatformController {
         .from(courses)
         .leftJoin(chapters, and(eq(chapters.courseId, courses.id), isNull(chapters.tenantId)))
         .leftJoin(topics, and(eq(topics.chapterId, chapters.id), isNull(topics.tenantId)))
-        .leftJoin(conceptVideos, eq(conceptVideos.topicId, topics.id))
+        .leftJoin(conceptVideos, and(eq(conceptVideos.topicId, topics.id), eq(conceptVideos.scope, 'platform')))
         .groupBy(courses.id)
         .orderBy(asc(courses.term), asc(courses.title)),
     ]);
@@ -118,7 +119,7 @@ export class PlatformController {
       ? await db
           .select({ id: topics.id, chapterId: topics.chapterId, title: topics.title, videos: sql<number>`count(${conceptVideos.id})::int` })
           .from(topics)
-          .leftJoin(conceptVideos, eq(conceptVideos.topicId, topics.id))
+          .leftJoin(conceptVideos, and(eq(conceptVideos.topicId, topics.id), eq(conceptVideos.scope, 'platform')))
           .where(and(inArray(topics.chapterId, chs.map((c) => c.id)), isNull(topics.tenantId)))
           .groupBy(topics.id)
           .orderBy(asc(topics.position))
@@ -151,7 +152,7 @@ export class PlatformController {
       .from(topics)
       .innerJoin(chapters, eq(chapters.id, topics.chapterId))
       .innerJoin(courses, eq(courses.id, chapters.courseId))
-      .leftJoin(conceptVideos, eq(conceptVideos.topicId, topics.id))
+      .leftJoin(conceptVideos, and(eq(conceptVideos.topicId, topics.id), eq(conceptVideos.scope, 'platform')))
       .where(and(isNull(topics.tenantId), isNull(chapters.tenantId), or(ilike(topics.title, like), ilike(chapters.title, like), ilike(courses.title, like))))
       .groupBy(topics.id, chapters.id, courses.id)
       .orderBy(asc(courses.title), asc(chapters.position), asc(topics.position))
@@ -177,7 +178,7 @@ export class PlatformController {
     if (!title) throw new BadRequestException("Couldn't get the video's title from YouTube. Type a title and add it again.");
     return this.db.system.transaction(async (tx) => {
       await this.assertNotOnTopic(tx, id, [videoId]);
-      const [{ last }] = await tx.select({ last: max(conceptVideos.position) }).from(conceptVideos).where(eq(conceptVideos.topicId, id));
+      const [{ last }] = await tx.select({ last: max(conceptVideos.position) }).from(conceptVideos).where(and(eq(conceptVideos.topicId, id), eq(conceptVideos.scope, 'platform')));
       const [v] = await tx
         .insert(conceptVideos)
         .values({
@@ -199,7 +200,7 @@ export class PlatformController {
   @Patch('videos/:id')
   async edit(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(EditBody)) b: z.infer<typeof EditBody>): Promise<ConceptVideo> {
     return this.db.system.transaction(async (tx) => {
-      const [v] = await tx.update(conceptVideos).set(b).where(eq(conceptVideos.id, id)).returning(VIDEO);
+      const [v] = await tx.update(conceptVideos).set(b).where(and(eq(conceptVideos.id, id), eq(conceptVideos.scope, 'platform'))).returning(VIDEO);
       if (!v) throw new NotFoundException('Video not found');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'platform.concept_video.edited', subjectType: 'topic', subjectId: v.topicId, data: { videoId: id, ...b } });
       return v as ConceptVideo;
@@ -210,7 +211,7 @@ export class PlatformController {
   @HttpCode(204)
   async remove(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.db.system.transaction(async (tx) => {
-      const [v] = await tx.delete(conceptVideos).where(eq(conceptVideos.id, id)).returning(VIDEO);
+      const [v] = await tx.delete(conceptVideos).where(and(eq(conceptVideos.id, id), eq(conceptVideos.scope, 'platform'))).returning(VIDEO);
       if (!v) throw new NotFoundException('Video not found');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'platform.concept_video.removed', subjectType: 'topic', subjectId: v.topicId, data: { youtubeVideoId: v.youtubeVideoId } });
     });
@@ -221,7 +222,7 @@ export class PlatformController {
   async reorder(@Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(OrderBody)) b: z.infer<typeof OrderBody>): Promise<ConceptVideo[]> {
     return this.db.system.transaction(async (tx) => {
       await this.globalTopic(tx, id);
-      const current = await tx.select({ id: conceptVideos.id }).from(conceptVideos).where(eq(conceptVideos.topicId, id));
+      const current = await tx.select({ id: conceptVideos.id }).from(conceptVideos).where(and(eq(conceptVideos.topicId, id), eq(conceptVideos.scope, 'platform')));
       const ids = new Set(b.ids);
       if (ids.size !== b.ids.length || ids.size !== current.length || current.some((c) => !ids.has(c.id))) throw new BadRequestException("List each of the topic's videos once");
       for (const [i, vid] of b.ids.entries()) await tx.update(conceptVideos).set({ position: i + 1 }).where(eq(conceptVideos.id, vid));
@@ -255,7 +256,7 @@ export class PlatformController {
       ? await db
           .select({ youtubeVideoId: conceptVideos.youtubeVideoId, topicId: conceptVideos.topicId })
           .from(conceptVideos)
-          .where(inArray(conceptVideos.youtubeVideoId, items.map((i) => i.videoId)))
+          .where(and(eq(conceptVideos.scope, 'platform'), inArray(conceptVideos.youtubeVideoId, items.map((i) => i.videoId))))
       : [];
     return {
       playlistId,
@@ -289,7 +290,7 @@ export class PlatformController {
       let added = 0;
       let skipped = 0;
       for (const i of b.items) {
-        const [{ last }] = await tx.select({ last: max(conceptVideos.position) }).from(conceptVideos).where(eq(conceptVideos.topicId, i.topicId));
+        const [{ last }] = await tx.select({ last: max(conceptVideos.position) }).from(conceptVideos).where(and(eq(conceptVideos.topicId, i.topicId), eq(conceptVideos.scope, 'platform')));
         const rows = await tx
           .insert(conceptVideos)
           .values({ topicId: i.topicId, youtubeVideoId: i.youtubeVideoId, title: i.title, language: b.language, durationSeconds: i.durationSeconds ?? null, playlistId: b.playlistId, position: (last ?? 0) + 1, createdBy: p.userId })
@@ -306,7 +307,7 @@ export class PlatformController {
   // ----------------------------------------------------------------------------------------
 
   private list(db: Tx | DbService['system'], topicId: string): Promise<ConceptVideo[]> {
-    return db.select(VIDEO).from(conceptVideos).where(eq(conceptVideos.topicId, topicId)).orderBy(asc(conceptVideos.position)) as Promise<ConceptVideo[]>;
+    return db.select(VIDEO).from(conceptVideos).where(and(eq(conceptVideos.topicId, topicId), eq(conceptVideos.scope, 'platform'))).orderBy(asc(conceptVideos.position)) as Promise<ConceptVideo[]>;
   }
 
   /** A topic of the global library (never an institution's own), with its course's language. */
@@ -322,7 +323,7 @@ export class PlatformController {
   }
 
   private async assertNotOnTopic(tx: Tx, topicId: string, videoIds: string[]) {
-    const [dup] = await tx.select({ id: conceptVideos.id }).from(conceptVideos).where(and(eq(conceptVideos.topicId, topicId), inArray(conceptVideos.youtubeVideoId, videoIds)));
+    const [dup] = await tx.select({ id: conceptVideos.id }).from(conceptVideos).where(and(eq(conceptVideos.topicId, topicId), eq(conceptVideos.scope, 'platform'), inArray(conceptVideos.youtubeVideoId, videoIds)));
     if (dup) throw new ConflictException('This video is already on this topic');
   }
 }

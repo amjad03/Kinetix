@@ -221,6 +221,11 @@ class ApiClient {
   }
 
   /// A topic's concept videos, the class's language first, as JSON.
+  /// The teacher adds a YouTube video to a topic for [sectionId]'s class (the server takes the title
+  /// from YouTube). Shown to that class only until the principal approves sharing it.
+  Future<Map<String, dynamic>> addConceptVideo(String topicId, String url, {required String sectionId}) async =>
+      await _send('POST', '/v1/content/topics/$topicId/videos', body: {'url': url, 'scope': 'teacher', if (sectionId.isNotEmpty) 'sectionIds': [sectionId]}) as Map<String, dynamic>;
+
   Future<Map<String, dynamic>> topicConceptVideos(String topicId) async => await _send('GET', '/v1/content/topics/$topicId/videos') as Map<String, dynamic>;
 
   Future<TopicDetail> topic(String id) async => TopicDetail.fromJson(await _send('GET', '/v1/content/topics/$id') as Map<String, dynamic>);

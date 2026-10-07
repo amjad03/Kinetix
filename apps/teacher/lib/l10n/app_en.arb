@@ -1404,6 +1404,66 @@
   "@taughtOnWhichDay": {
     "description": "Date picker title and button tooltip for marking a topic as taught on an earlier day."
   },
+  "topicVideosTooltip": "Videos for this topic",
+  "@topicVideosTooltip": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideosTitle": "Videos for this class",
+  "@topicVideosTitle": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoLink": "YouTube link",
+  "@topicVideoLink": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoLinkHelp": "Paste a link. The title comes from YouTube. Only this class sees it until the principal approves sharing it.",
+  "@topicVideoLinkHelp": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoAdd": "Add video",
+  "@topicVideoAdd": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoAdded": "Video added for this class",
+  "@topicVideoAdded": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoNotAdded": "Couldn't add that video. Check the link and try again.",
+  "@topicVideoNotAdded": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoNone": "You haven't added videos to this topic yet.",
+  "@topicVideoNone": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoShare": "Ask to share with everyone",
+  "@topicVideoShare": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoShareSent": "Sent to the principal for approval",
+  "@topicVideoShareSent": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoStatusNone": "This class only",
+  "@topicVideoStatusNone": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoStatusPending": "Waiting for approval",
+  "@topicVideoStatusPending": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoStatusApproved": "Shared with everyone",
+  "@topicVideoStatusApproved": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoStatusRejected": "Not approved",
+  "@topicVideoStatusRejected": {
+    "description": "Teacher videos on a syllabus topic."
+  },
+  "topicVideoRemove": "Remove video",
+  "@topicVideoRemove": {
+    "description": "Teacher videos on a syllabus topic."
+  },
   "topicMarked": "Marked as taught",
   "@topicMarked": {
     "description": "Snackbar."

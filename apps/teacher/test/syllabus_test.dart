@@ -96,6 +96,48 @@ void main() {
     expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 
+  testWidgets('a teacher adds a video to a topic for the class by pasting a link, then asks to share it', (tester) async {
+    await openFromToday(tester);
+    await tapAndSettle(tester, find.byKey(const Key('topicVideos-t2')));
+    expect(find.byKey(const Key('topicVideosSheet')), findsOneWidget);
+    expect(api.calls, contains('topicVideos t2'));
+    expect(find.byKey(const Key('topicVideoNone')), findsOneWidget);
+    expect(tester.widget<FilledButton>(find.byKey(const Key('topicVideoAdd'))).onPressed, isNull);
+
+    await tester.enterText(find.byKey(const Key('topicVideoLink')), 'https://youtu.be/abcdefghij1');
+    await tester.pump();
+    await tapAndSettle(tester, find.byKey(const Key('topicVideoAdd')));
+    expect(api.calls, contains('addTopicVideo t2 sec1 https://youtu.be/abcdefghij1'));
+    expect(find.text('Video added for this class'), findsOneWidget);
+    expect(find.text('Title from YouTube'), findsOneWidget);
+    expect(find.text('This class only'), findsOneWidget);
+
+    await tapAndSettle(tester, find.byKey(const Key('topicVideoShare-tv1')));
+    expect(api.calls, contains('shareTopicVideo tv1'));
+    expect(find.text('Waiting for approval'), findsOneWidget);
+    expect(find.byKey(const Key('topicVideoShare-tv1')), findsNothing);
+
+    await tapAndSettle(tester, find.byKey(const Key('topicVideoRemove-tv1')));
+    expect(find.byKey(const Key('topicVideoNone')), findsOneWidget);
+  });
+
+  testWidgets('a rejected video shows why, and can be offered again; a bad link says so', (tester) async {
+    api.topicVideoList = {
+      't2': [const TopicVideo(id: 'tv9', youtubeVideoId: 'abcdefghij9', title: 'Goodwill basics', shareStatus: 'rejected', reviewReason: 'Wrong chapter', sections: ['BCom Sem 3 A'])],
+    };
+    await openFromToday(tester);
+    await tapAndSettle(tester, find.byKey(const Key('topicVideos-t2')));
+    expect(find.text('Goodwill basics'), findsOneWidget);
+    expect(find.text('Not approved · Wrong chapter'), findsOneWidget);
+    expect(find.byKey(const Key('topicVideoShare-tv9')), findsOneWidget);
+
+    api.topicVideoError = ApiException(400, 'That is not a YouTube video link');
+    await tester.enterText(find.byKey(const Key('topicVideoLink')), 'https://example.com/x');
+    await tester.pump();
+    await tapAndSettle(tester, find.byKey(const Key('topicVideoAdd')));
+    expect(find.text("Couldn't add that video. Check the link and try again."), findsOneWidget);
+  });
+
   testWidgets('in Kannada', (tester) async {
     api.useLanguage('kn');
     await openFromToday(tester);

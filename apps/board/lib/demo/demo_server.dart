@@ -586,6 +586,9 @@ class DemoBoardServer {
       if (path == '/v1/content/topics/${current.topicId}') return json(current.topicJson);
       if (path == '/v1/coverage' && method == 'GET') return json({'covered': 0, 'total': 1, 'percent': 0, 'topics': []});
     }
+    if (method == 'POST' && RegExp(r'^/v1/content/topics/[^/]+/videos$').hasMatch(path)) {
+      return json({'id': 'demo-teacher-video', 'source': 'teacher', 'title': 'Added video', 'shareStatus': 'none'}, 201);
+    }
     if (path == '/v1/content/syllabus') return json(_syllabus);
     if (path == '/v1/devices/me/concept-videos') return json(_conceptVideosNow);
     final videos = RegExp(r'^/v1/content/topics/([^/]+)/videos$').firstMatch(path);

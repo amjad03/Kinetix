@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -61,6 +61,9 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // documents.access.ts OFFICE_ROLES: certificates, ID cards, the document vault
   documents: ['principal', 'tenant_admin', 'accountant', 'hr_manager'],
   payslips: ['principal', 'tenant_admin', 'hod', 'hr_manager', 'accountant', 'librarian'],
+  // content.controller / concept-videos.controller: the principal and admin manage the institution's videos and approve
+  // teachers'; a head of department adds videos for their own classes (teachers do that in the Teacher App).
+  topicVideos: ['principal', 'tenant_admin', 'hod'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -117,6 +120,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'fees';
     case 'syllabus':
       return 'syllabus';
+    case 'topic-videos':
+      return 'topicVideos';
     case 'ai':
       return 'ai';
     case 'library':
@@ -201,5 +206,10 @@ export function canReviewLessonPlans(roles: readonly RoleName[]): boolean {
 
 /** Approving, locking and reopening a payroll run, and the statutory rates: principal and administrator. */
 export function canApprovePayroll(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
+}
+
+/** Principal and administrator add the institution's topic videos and approve teachers' (STAFF_ADMIN_ROLES). */
+export function canReviewVideos(roles: readonly RoleName[]): boolean {
   return roles.some((r) => r === 'principal' || r === 'tenant_admin');
 }

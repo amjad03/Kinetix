@@ -1085,6 +1085,9 @@
   "conceptVideos": "Concept videos",
   "conceptVideosHint": "Watch before class to preview, and after class to revise.",
   "conceptVideosFromYouTube": "Plays from YouTube",
+  "conceptVideoSourcePlatform": "KINETIX",
+  "conceptVideoSourceInstitution": "School",
+  "conceptVideoSourceTeacher": "Teacher",
   "conceptVideosUnsupported": "Videos can't play here. Use the Student App on your phone.",
   "conceptVideoPlay": "Play {title}",
   "@conceptVideoPlay": {
