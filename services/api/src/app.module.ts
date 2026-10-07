@@ -24,6 +24,7 @@ import { PlansModule } from './plans/plans.module.js';
 import { PlatformModule } from './platform/platform.module.js';
 import { CoverageModule } from './coverage/coverage.module.js';
 import { HrModule } from './hr/hr.module.js';
+import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
 import { DevicesModule } from './devices/devices.module.js';
@@ -83,6 +84,7 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     MessagesModule,
     CodeModule,
     HrModule,
+    DocumentsModule,
     PlatformModule,
   ],
 })

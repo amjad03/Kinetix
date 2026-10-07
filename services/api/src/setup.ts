@@ -16,8 +16,8 @@ export function configureApp(app: NestExpressApplication): void {
   if (env.REDIS_URL) app.useWebSocketAdapter(new RedisIoAdapter(app, env.REDIS_URL));
   // Saved whiteboards are JSON stroke data; a busy multi-page lesson is a few MB.
   app.useBodyParser('json', { limit: '8mb' });
-  // Bulk import (import/) and document-vault uploads (documents/): a CSV body, kept as bytes so the import can refuse text that is not UTF-8.
-  app.useBodyParser('raw', { type: ['text/csv', 'application/csv', 'application/vnd.ms-excel', 'application/pdf', 'image/jpeg', 'image/png'], limit: '10mb' });
+  // Bulk import (import/): a CSV body, kept as bytes so the import can refuse text that is not UTF-8.
+  app.useBodyParser('raw', { type: ['text/csv', 'application/csv', 'application/vnd.ms-excel'], limit: '6mb' });
   // Every error carries a stable `code` the apps can translate.
   app.useGlobalFilters(new ErrorCodeFilter(app.get(HttpAdapterHost).httpAdapter));
 }
