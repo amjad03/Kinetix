@@ -184,18 +184,22 @@ abstract final class LiveCaptions {
 
   /// Starts captions (or stops them when they are on).
   static Future<void> toggle(BuildContext context) async {
-    if (_entry != null) {
+    if (_entry?.mounted ?? false) {
       await hide();
       return;
     }
+    // An entry whose board has gone (a new board, a test) is forgotten.
+    _entry = null;
+    final overlay = Overlay.of(context, rootOverlay: true);
     final c = controller ??= CaptionsController();
+    if (c.on) await c.stop();
     _entry = OverlayEntry(builder: (_) => CaptionsOverlay(controller: c, onClose: hide));
-    Overlay.of(context, rootOverlay: true).insert(_entry!);
+    overlay.insert(_entry!);
     await c.start();
   }
 
   static Future<void> hide() async {
-    _entry?.remove();
+    if (_entry?.mounted ?? false) _entry!.remove();
     _entry = null;
     await controller?.stop();
   }

@@ -322,7 +322,7 @@ abstract final class BoardMagnifier {
   static bool get showing => _entry != null;
 
   static void toggle(BuildContext context) {
-    if (_entry != null) {
+    if (_entry?.mounted ?? false) {
       hide();
       return;
     }
@@ -331,7 +331,7 @@ abstract final class BoardMagnifier {
   }
 
   static void hide() {
-    _entry?.remove();
+    if (_entry?.mounted ?? false) _entry!.remove();
     _entry = null;
   }
 }

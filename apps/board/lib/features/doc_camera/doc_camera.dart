@@ -229,7 +229,7 @@ class DocCameraPanelState extends State<DocCameraPanel> {
       body = Center(child: Column(mainAxisSize: MainAxisSize.min, children: [const CircularProgressIndicator(), const SizedBox(height: Kx.s12), Text(s['starting'])]));
     } else if (_ready == false) {
       body = Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(Kx.s24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
