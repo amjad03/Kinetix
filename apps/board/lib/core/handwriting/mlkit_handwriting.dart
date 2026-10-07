@@ -3,29 +3,29 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
 import 'package:kinetix_ink/kinetix_ink.dart';
 
-/// Words from handwriting on Android panels: Google ML Kit Digital Ink, on the panel itself.
+/// Handwriting on Android panels and phones: Google ML Kit Digital Ink, on the device itself.
 ///
-/// Each language's model (about 20 MB) downloads once from Google when the teacher asks for it
-/// in Board settings; after that it works with no network, and no ink ever leaves the panel.
-/// English is en-US; Hindi hi-IN and Kannada kn-IN. ML Kit says itself whether it has a model
-/// for a tag ("No model was found" for one it does not), so a language it lacks shows as not
-/// available rather than failing later.
-class MlKitHandwriting implements HandwritingRecognizer {
+/// It reads words, digits and symbols in English (en-US), Hindi (hi-IN) and Kannada (kn-IN), and
+/// drawn shapes with ML Kit's shapes model ([InkModels.shapes]). Each model (a few MB to about
+/// 20 MB) downloads once from Google: the first time the AI pen is used, from Board settings, or
+/// by itself on a demo board; after that it works with no network, and no ink ever leaves the
+/// device. ML Kit says itself whether it has a model for a tag ("No model was found" for one it
+/// does not), so a language it lacks shows as not available rather than failing later.
+class MlKitHandwriting implements HandwritingRecognizer, InkModelReader {
   MlKitHandwriting({mlkit.DigitalInkRecognizerModelManager? manager}) : _manager = manager ?? mlkit.DigitalInkRecognizerModelManager();
 
   final mlkit.DigitalInkRecognizerModelManager _manager;
   final Map<String, mlkit.DigitalInkRecognizer> _recognizers = {};
   final Set<String> _unsupported = {};
 
-  /// Languages downloading now.
-  final ValueNotifier<Set<String>> downloading = ValueNotifier(const {});
+  /// Models (ML Kit tags) downloading now.
+  final ValueNotifier<Set<String>> _downloading = ValueNotifier(const {});
+
+  @override
+  ValueListenable<Set<String>> get downloadingModels => _downloading;
 
   /// ML Kit's tag for a board language.
-  static String tagFor(String language) => switch (language) {
-    'hi' => 'hi-IN',
-    'kn' => 'kn-IN',
-    _ => 'en-US',
-  };
+  static String tagFor(String language) => InkModels.text(language);
 
   @override
   String get engine => 'mlkit';
@@ -34,14 +34,20 @@ class MlKitHandwriting implements HandwritingRecognizer {
   bool get available => true;
 
   @override
-  Future<HandwritingModelState> modelState(String language) async {
-    if (_unsupported.contains(language)) return HandwritingModelState.unsupported;
-    if (downloading.value.contains(language)) return HandwritingModelState.downloading;
+  Future<HandwritingModelState> modelState(String language) => modelStateOf(tagFor(language));
+
+  @override
+  Future<bool> prepare(String language) => downloadModel(tagFor(language));
+
+  @override
+  Future<HandwritingModelState> modelStateOf(String model) async {
+    if (_unsupported.contains(model)) return HandwritingModelState.unsupported;
+    if (_downloading.value.contains(model)) return HandwritingModelState.downloading;
     try {
-      return await _manager.isModelDownloaded(tagFor(language)) ? HandwritingModelState.ready : HandwritingModelState.needsDownload;
+      return await _manager.isModelDownloaded(model) ? HandwritingModelState.ready : HandwritingModelState.needsDownload;
     } on PlatformException catch (e) {
       if (_noModel(e)) {
-        _unsupported.add(language);
+        _unsupported.add(model);
         return HandwritingModelState.unsupported;
       }
       return HandwritingModelState.needsDownload;
@@ -53,19 +59,19 @@ class MlKitHandwriting implements HandwritingRecognizer {
   static bool _noModel(PlatformException e) => '${e.code} ${e.message}'.toLowerCase().contains('no model');
 
   @override
-  Future<bool> prepare(String language) async {
-    if (await modelState(language) == HandwritingModelState.ready) return true;
-    if (_unsupported.contains(language)) return false;
-    downloading.value = {...downloading.value, language};
+  Future<bool> downloadModel(String model) async {
+    if (await modelStateOf(model) == HandwritingModelState.ready) return true;
+    if (_unsupported.contains(model)) return false;
+    _downloading.value = {..._downloading.value, model};
     try {
-      return await _manager.downloadModel(tagFor(language), isWifiRequired: false);
+      return await _manager.downloadModel(model, isWifiRequired: false);
     } on PlatformException catch (e) {
-      if (_noModel(e)) _unsupported.add(language);
+      if (_noModel(e)) _unsupported.add(model);
       return false;
     } on MissingPluginException {
       return false;
     } finally {
-      downloading.value = {...downloading.value}..remove(language);
+      _downloading.value = {..._downloading.value}..remove(model);
     }
   }
 
@@ -73,26 +79,32 @@ class MlKitHandwriting implements HandwritingRecognizer {
   Future<List<String>> recognize(List<Stroke> strokes, {required String language, String preContext = ''}) async {
     if (strokes.isEmpty) return const [];
     final box = inkBounds(strokes);
-    final ink = mlkit.Ink();
-    // The teacher's stroke order, with plausible timing (the board does not keep it).
-    var t = 0;
-    for (final s in strokes) {
+    return readInk(timedInk(strokes, const {}, origin: box.topLeft), tagFor(language), preContext: preContext, writingArea: Size(box.width + 20, box.height + 20));
+  }
+
+  @override
+  Future<List<String>> readInk(List<List<TimedPoint>> ink, String model, {String preContext = '', Size? writingArea}) async {
+    if (ink.isEmpty) return const [];
+    final mk = mlkit.Ink();
+    for (final s in ink) {
       final stroke = mlkit.Stroke();
-      for (final p in s.points) {
-        stroke.points.add(mlkit.StrokePoint(x: p.x - box.left, y: p.y - box.top, t: t));
-        t += 8;
+      for (final p in s) {
+        stroke.points.add(mlkit.StrokePoint(x: p.x, y: p.y, t: p.t));
       }
-      ink.strokes.add(stroke);
-      t += 250;
+      mk.strokes.add(stroke);
     }
-    final recognizer = _recognizers[language] ??= mlkit.DigitalInkRecognizer(languageCode: tagFor(language));
+    final recognizer = _recognizers[model] ??= mlkit.DigitalInkRecognizer(languageCode: model);
     try {
+      final shapes = model == InkModels.shapes;
       final result = await recognizer.recognize(
-        ink,
-        context: mlkit.DigitalInkRecognitionContext(
-          preContext: preContext.length > 20 ? preContext.substring(preContext.length - 20) : preContext,
-          writingArea: mlkit.WritingArea(width: box.width + 20, height: box.height + 20),
-        ),
+        mk,
+        // The shapes model takes no writing context.
+        context: shapes
+            ? null
+            : mlkit.DigitalInkRecognitionContext(
+                preContext: preContext.length > 20 ? preContext.substring(preContext.length - 20) : preContext,
+                writingArea: writingArea == null ? null : mlkit.WritingArea(width: writingArea.width, height: writingArea.height),
+              ),
       );
       return [for (final c in result) c.text];
     } on PlatformException {

@@ -7551,6 +7551,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear all {count} pages?'**
   String clearAllPagesTitle(int count);
+
+  /// No description provided for @aiPenModelsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up the AI pen?'**
+  String get aiPenModelsTitle;
+
+  /// No description provided for @aiPenModelsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI pen reads handwriting, maths and shapes on this device. Download its models once (a few MB each); after that they work with no internet, and no ink leaves the device.'**
+  String get aiPenModelsBody;
+
+  /// No description provided for @aiPenModelShapes.
+  ///
+  /// In en, this message translates to:
+  /// **'Shapes'**
+  String get aiPenModelShapes;
+
+  /// No description provided for @aiPenModelHandwriting.
+  ///
+  /// In en, this message translates to:
+  /// **'{language} handwriting'**
+  String aiPenModelHandwriting(String language);
+
+  /// No description provided for @aiPenModelsStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {name} ({step} of {count})…'**
+  String aiPenModelsStep(String name, int step, int count);
+
+  /// No description provided for @aiPenModelsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI pen is ready: handwriting, maths and shapes now convert.'**
+  String get aiPenModelsReady;
 }
 
 class _AppLocalizationsDelegate

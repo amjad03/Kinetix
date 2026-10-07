@@ -61,6 +61,7 @@ import 'kit/subjects.dart';
 import 'layout/backgrounds_popover.dart';
 import 'layout/board_chrome.dart';
 import 'layout/layout_strings.dart';
+import 'ai_pen_models.dart';
 import 'layout/page_overview.dart';
 import 'layout/pen_popover.dart';
 import 'layout/tools_drawer.dart';
@@ -205,6 +206,8 @@ class _BoardScreenState extends State<BoardScreen> {
       ..onNotice = _aiPenNotice
       ..onLetterSize = (px) => board.saveLetterSize(board.session?.teacherId, px);
     _applyClass();
+    // A demo board fetches the English and shape models by itself when it is online.
+    if (Demo.enabled) unawaited(autoDownloadDemoModels(board.handwriting, onReady: _pen.modelsChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_firstRunTour()));
     unawaited(_loadLetterSize());
     _remote = BoardRemote(board: board, wb: _wb, toolkit: _toolkit(), hooks: _remoteHooks());
@@ -219,6 +222,14 @@ class _BoardScreenState extends State<BoardScreen> {
   void _onWbChanged() {
     final t = _wb.tool;
     if (t == BoardTool.pen || t == BoardTool.laser) _lastPen = t;
+    // The first time the AI pen is picked: offer its handwriting and shape models.
+    if (t == BoardTool.aiPen && !_aiPenOffered) {
+      _aiPenOffered = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        if (await offerAiPenModels(context, board.handwriting, board.aiPenLanguage)) _pen.modelsChanged();
+      });
+    }
     final paper = _wb.background;
     if (paper != _lastPaper) {
       _lastPaper = paper;
@@ -363,6 +374,10 @@ class _BoardScreenState extends State<BoardScreen> {
     final px = await board.letterSize(board.session?.teacherId);
     if (mounted) _pen.letterPx = px ?? 46;
   }
+
+  /// Whether the AI pen's models were offered in this session (once per device, see
+  /// [offerAiPenModels]).
+  bool _aiPenOffered = false;
 
   void _aiPenNotice(AiPenNotice n) {
     if (mounted) showBoardMessage(context, aiPenNoticeText(context.l10n, n, board.aiPenLanguage));

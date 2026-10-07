@@ -4243,4 +4243,28 @@ class AppLocalizationsHi extends AppLocalizations {
   String clearAllPagesTitle(int count) {
     return 'सभी $count पेज साफ़ करें?';
   }
+
+  @override
+  String get aiPenModelsTitle => 'AI पेन तैयार करें?';
+
+  @override
+  String get aiPenModelsBody =>
+      'AI पेन इसी डिवाइस पर लिखावट, गणित और आकृतियाँ पढ़ता है। इसके मॉडल एक बार डाउनलोड करें (हर एक कुछ MB); उसके बाद ये बिना इंटरनेट के चलते हैं, और कोई लिखावट डिवाइस से बाहर नहीं जाती।';
+
+  @override
+  String get aiPenModelShapes => 'आकृतियाँ';
+
+  @override
+  String aiPenModelHandwriting(String language) {
+    return '$language लिखावट';
+  }
+
+  @override
+  String aiPenModelsStep(String name, int step, int count) {
+    return '$name डाउनलोड हो रहा है ($count में से $step)…';
+  }
+
+  @override
+  String get aiPenModelsReady =>
+      'AI पेन तैयार है: लिखावट, गणित और आकृतियाँ अब बदलती हैं।';
 }

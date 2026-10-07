@@ -1241,5 +1241,11 @@
   "selKeepProportions": "अनुपात बनाए रखें",
   "selMore": "और",
   "clearThisPageTitle": "यह पेज साफ़ करें?",
-  "clearAllPagesTitle": "सभी {count} पेज साफ़ करें?"
+  "clearAllPagesTitle": "सभी {count} पेज साफ़ करें?",
+  "aiPenModelsTitle": "AI पेन तैयार करें?",
+  "aiPenModelsBody": "AI पेन इसी डिवाइस पर लिखावट, गणित और आकृतियाँ पढ़ता है। इसके मॉडल एक बार डाउनलोड करें (हर एक कुछ MB); उसके बाद ये बिना इंटरनेट के चलते हैं, और कोई लिखावट डिवाइस से बाहर नहीं जाती।",
+  "aiPenModelShapes": "आकृतियाँ",
+  "aiPenModelHandwriting": "{language} लिखावट",
+  "aiPenModelsStep": "{name} डाउनलोड हो रहा है ({count} में से {step})…",
+  "aiPenModelsReady": "AI पेन तैयार है: लिखावट, गणित और आकृतियाँ अब बदलती हैं।"
 }

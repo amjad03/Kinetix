@@ -4252,4 +4252,28 @@ class AppLocalizationsKn extends AppLocalizations {
   String clearAllPagesTitle(int count) {
     return 'ಎಲ್ಲಾ $count ಪುಟಗಳನ್ನು ಅಳಿಸಬೇಕೇ?';
   }
+
+  @override
+  String get aiPenModelsTitle => 'AI ಪೆನ್ ಸಿದ್ಧಪಡಿಸಬೇಕೇ?';
+
+  @override
+  String get aiPenModelsBody =>
+      'AI ಪೆನ್ ಈ ಸಾಧನದಲ್ಲೇ ಕೈಬರಹ, ಗಣಿತ ಮತ್ತು ಆಕಾರಗಳನ್ನು ಓದುತ್ತದೆ. ಅದರ ಮಾದರಿಗಳನ್ನು ಒಮ್ಮೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (ಪ್ರತಿಯೊಂದೂ ಕೆಲವು MB); ನಂತರ ಅವು ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ಕೆಲಸ ಮಾಡುತ್ತವೆ, ಯಾವ ಬರಹವೂ ಸಾಧನದಿಂದ ಹೊರಹೋಗುವುದಿಲ್ಲ.';
+
+  @override
+  String get aiPenModelShapes => 'ಆಕಾರಗಳು';
+
+  @override
+  String aiPenModelHandwriting(String language) {
+    return '$language ಕೈಬರಹ';
+  }
+
+  @override
+  String aiPenModelsStep(String name, int step, int count) {
+    return '$name ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ ($count ರಲ್ಲಿ $step)…';
+  }
+
+  @override
+  String get aiPenModelsReady =>
+      'AI ಪೆನ್ ಸಿದ್ಧವಾಗಿದೆ: ಕೈಬರಹ, ಗಣಿತ ಮತ್ತು ಆಕಾರಗಳು ಈಗ ಪರಿವರ್ತನೆಯಾಗುತ್ತವೆ.';
 }

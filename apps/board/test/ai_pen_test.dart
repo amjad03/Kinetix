@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +37,30 @@ class FakeHandwriting implements HandwritingRecognizer {
 
   @override
   Future<List<String>> recognize(List<Stroke> strokes, {required String language, String preContext = ''}) async => line;
+}
+
+/// ML Kit with its models not downloaded yet: downloads finish when [finish] completes.
+class FakeModels extends FakeHandwriting implements InkModelReader {
+  FakeModels() : super(states: {'en': HandwritingModelState.needsDownload});
+
+  final models = <String, HandwritingModelState>{'en-US': HandwritingModelState.needsDownload, InkModels.shapes: HandwritingModelState.needsDownload};
+  final downloaded = <String>[];
+  Completer<void> finish = Completer<void>();
+
+  @override
+  Future<HandwritingModelState> modelStateOf(String model) async => models[model] ?? HandwritingModelState.ready;
+  @override
+  Future<bool> downloadModel(String model) async {
+    await finish.future;
+    downloaded.add(model);
+    models[model] = HandwritingModelState.ready;
+    return true;
+  }
+
+  @override
+  final ValueListenable<Set<String>> downloadingModels = ValueNotifier(const {});
+  @override
+  Future<List<String>> readInk(List<List<TimedPoint>> ink, String model, {String preContext = '', Size? writingArea}) async => line;
 }
 
 void main() {
@@ -86,6 +112,32 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('setting.aiPenMode'), 'tap');
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the first time the AI pen is picked, it offers its models and downloads them with progress', (tester) async {
+    final models = FakeModels();
+    await pump(tester, handwriting: models);
+    final wb = whiteboard(tester);
+    wb.tool = BoardTool.aiPen;
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-pen-models')), findsOneWidget);
+    expect(find.text('English handwriting'), findsOneWidget);
+    expect(find.text('Shapes'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ai-pen-models-download')));
+    await tester.pump();
+    expect(find.byKey(const Key('ai-pen-models-progress')), findsOneWidget);
+    expect(find.text('Downloading English handwriting (1 of 2)…'), findsOneWidget);
+    models.finish.complete();
+    await tester.pumpAndSettle();
+    expect(models.downloaded, ['en-US', InkModels.shapes]);
+    expect(find.byKey(const Key('ai-pen-models')), findsNothing);
+    // Asked once per device.
+    wb.tool = BoardTool.pen;
+    await tester.pumpAndSettle();
+    models.models['en-US'] = HandwritingModelState.needsDownload;
+    wb.tool = BoardTool.aiPen;
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-pen-models')), findsNothing);
   });
 
   testWidgets('with the toolbar at the left edge too; W picks it from the keyboard', (tester) async {

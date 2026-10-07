@@ -2361,5 +2361,31 @@
         "type": "int"
       }
     }
-  }
+  },
+  "aiPenModelsTitle": "Set up the AI pen?",
+  "aiPenModelsBody": "The AI pen reads handwriting, maths and shapes on this device. Download its models once (a few MB each); after that they work with no internet, and no ink leaves the device.",
+  "aiPenModelShapes": "Shapes",
+  "aiPenModelHandwriting": "{language} handwriting",
+  "@aiPenModelHandwriting": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPenModelsStep": "Downloading {name} ({step} of {count})…",
+  "@aiPenModelsStep": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "step": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPenModelsReady": "The AI pen is ready: handwriting, maths and shapes now convert."
 }

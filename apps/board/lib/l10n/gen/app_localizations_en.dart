@@ -4264,4 +4264,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String clearAllPagesTitle(int count) {
     return 'Clear all $count pages?';
   }
+
+  @override
+  String get aiPenModelsTitle => 'Set up the AI pen?';
+
+  @override
+  String get aiPenModelsBody =>
+      'The AI pen reads handwriting, maths and shapes on this device. Download its models once (a few MB each); after that they work with no internet, and no ink leaves the device.';
+
+  @override
+  String get aiPenModelShapes => 'Shapes';
+
+  @override
+  String aiPenModelHandwriting(String language) {
+    return '$language handwriting';
+  }
+
+  @override
+  String aiPenModelsStep(String name, int step, int count) {
+    return 'Downloading $name ($step of $count)…';
+  }
+
+  @override
+  String get aiPenModelsReady =>
+      'The AI pen is ready: handwriting, maths and shapes now convert.';
 }

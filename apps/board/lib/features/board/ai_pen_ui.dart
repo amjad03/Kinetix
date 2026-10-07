@@ -430,10 +430,17 @@ class AiPenSettingsSection extends StatefulWidget {
 }
 
 class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
-  final Map<BoardLanguage, HandwritingModelState> _states = {};
-  final Set<BoardLanguage> _downloading = {};
+  final Map<String, HandwritingModelState> _states = {};
+  final Set<String> _downloading = {};
 
   HandwritingRecognizer get hw => widget.board.handwriting;
+
+  /// The shapes model, where the recogniser has one (ML Kit).
+  InkModelReader? get _shapes => hw is InkModelReader ? hw as InkModelReader : null;
+
+  /// A row's key: the language code, or "shapes".
+  Future<HandwritingModelState> _state(String id) => id == 'shapes' ? _shapes!.modelStateOf(InkModels.shapes) : hw.modelState(id);
+  List<String> get _rows => [for (final l in BoardLanguage.values) l.name, if (_shapes != null) 'shapes'];
 
   @override
   void initState() {
@@ -443,30 +450,31 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
 
   Future<void> _check() async {
     if (!hw.available) return;
-    for (final lang in BoardLanguage.values) {
-      final s = await hw.modelState(lang.name);
+    for (final id in _rows) {
+      final s = await _state(id);
       if (!mounted) return;
-      setState(() => _states[lang] = s);
+      setState(() => _states[id] = s);
     }
   }
 
-  Future<void> _download(BoardLanguage lang) async {
-    setState(() => _downloading.add(lang));
-    final ok = await hw.prepare(lang.name);
+  Future<void> _download(String id) async {
+    setState(() => _downloading.add(id));
+    final ok = id == 'shapes' ? await _shapes!.downloadModel(InkModels.shapes) : await hw.prepare(id);
     if (!mounted) return;
     if (!ok) showBoardMessage(context, context.l10n.aiPenDownloadFailed);
-    final s = await hw.modelState(lang.name);
+    final s = await _state(id);
     if (!mounted) return;
     setState(() {
-      _downloading.remove(lang);
-      _states[lang] = s;
+      _downloading.remove(id);
+      _states[id] = s;
     });
   }
 
   /// One language's handwriting model: its name, and whether it is ready, downloading (a bar
   /// across the row) or can be downloaded.
-  Widget _model(BuildContext context, BoardLanguage lang) {
+  Widget _model(BuildContext context, String lang) {
     final l = context.l10n;
+    final label = lang == 'shapes' ? l.aiPenModelShapes : BoardLanguage.values.byName(lang).label;
     final c = context.colors;
     final small = context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant);
     final downloading = _downloading.contains(lang) || _states[lang] == HandwritingModelState.downloading;
@@ -482,7 +490,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
               ],
             ),
             HandwritingModelState.needsDownload => OutlinedButton.icon(
-              key: Key('ai-pen-download-${lang.name}'),
+              key: Key('ai-pen-download-$lang'),
               style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40), padding: const EdgeInsets.symmetric(horizontal: Kx.s16), visualDensity: VisualDensity.compact),
               onPressed: () => unawaited(_download(lang)),
               icon: const Icon(Icons.download, size: 18),
@@ -493,7 +501,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
             _ => const SizedBox.shrink(),
           };
     return Padding(
-      key: Key('ai-pen-model-${lang.name}'),
+      key: Key('ai-pen-model-$lang'),
       padding: const EdgeInsets.symmetric(vertical: Kx.s8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -502,7 +510,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
             constraints: const BoxConstraints(minHeight: 40),
             child: Row(
               children: [
-                Expanded(child: Text(lang.label, style: context.text.bodyLarge)),
+                Expanded(child: Text(label, style: context.text.bodyLarge)),
                 status,
               ],
             ),
@@ -540,7 +548,7 @@ class _AiPenSettingsSectionState extends State<AiPenSettingsSection> {
           _ => l.aiPenEngineNone,
         }, style: hint),
         if (hw.available)
-          for (final lang in BoardLanguage.values) _model(context, lang),
+          for (final id in _rows) _model(context, id),
         const SizedBox(height: Kx.s8),
         SnapShapesSwitch(board: widget.board),
         MeasureShapesSwitch(board: widget.board),
