@@ -54,10 +54,10 @@ Missing:
 | 6 | Assessment / examination / results | Partial — marks only; no exams, hall tickets, SGPA/CGPA, transcripts |
 | 7 | OBE / accreditation | **Missing** |
 | 8 | Fees / finance | Partial — fees and Razorpay; no scholarships, budgets, cost centres, GL export |
-| 9 | HR / payroll | **Missing** |
+| 9 | HR / payroll | **Built** — staff records, attendance (app, manual, biometric CSV), leave, recruitment basics, India payroll (PF, ESI, Karnataka PT, TDS old/new, LOP), payslip PDF, bank/statutory/Tally exports; ERP pages and Teacher app screens. Not built: surcharge above ₹50 lakh, device-specific biometric adapters. See `docs/architecture/hr-payroll.md` |
 | 10 | Library / inventory / procurement | Partial — library only |
 | 11 | Transport / hostel / canteen | **Missing** |
-| 12 | Communication / documents | Partial — messaging and broadcasts; no certificates or document vault |
+| 12 | Communication / documents | **Built** — messaging, broadcasts, certificate templates and request → approve → issue with serial numbers, QR and public verification, student/staff ID cards, fee-receipt PDF, access-controlled document vault. See `docs/architecture/documents-certificates.md` |
 | 13 | Placements / internships / alumni | **Missing** |
 | 14 | Research / projects | **Missing** |
 | 15 | Grievance / discipline / welfare | **Missing** |

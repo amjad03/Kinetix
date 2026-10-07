@@ -66,7 +66,7 @@ designation and whether the person is still active.
 `vault_documents`: per student or staff member; title, category (e.g. `aadhaar`, `marks_card`,
 `offer_letter`), content type, size, `version` (uploading with `replacesId` supersedes the
 earlier version, which stays in history), visibility (`staff` or `owner`), expiry date.
-Files go to object storage (`tenants/<id>/vault/<docId>`), at most 10 MB, PDF/JPEG/PNG only.
+The file is the raw request body (not multipart), with details in the query string. Files go to object storage (`tenants/<id>/vault/<docId>`), at most 10 MB, PDF/JPEG/PNG only.
 
 | Who | Student vault | Staff vault |
 |---|---|---|
