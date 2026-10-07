@@ -290,23 +290,58 @@
       "breakpoints": true
     },
     {
-      "idx": 59,
+      "idx": 41,
       "version": "7",
-      "when": 1791403152012,
+      "when": 1791408455050,
+      "tag": "0041_admissions_crm",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791408456050,
+      "tag": "0042_admissions_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791408482229,
+      "tag": "0043_student_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791408483229,
+      "tag": "0044_lifecycle_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1791408484229,
+      "tag": "0045_lifecycle_backfill",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1791408544229,
       "tag": "0059_ops_roles",
       "breakpoints": true
     },
     {
-      "idx": 60,
+      "idx": 47,
       "version": "7",
-      "when": 1791408387418,
+      "when": 1791408604229,
       "tag": "0060_campus_ops",
       "breakpoints": true
     },
     {
-      "idx": 61,
+      "idx": 48,
       "version": "7",
-      "when": 1791408393718,
+      "when": 1791408664229,
       "tag": "0061_campus_ops_rls",
       "breakpoints": true
     }

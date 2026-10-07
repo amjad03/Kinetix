@@ -18,6 +18,7 @@ import {
   subjects,
   timetableSlots,
   users,
+  academicYears,
 } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { addDays, isoWeekday, parseDate } from '../teacher/teacher.service.js';
@@ -40,15 +41,16 @@ export class AdminController {
   ) {}
 
   /** Campuses, programs, classes and rooms: for audience pickers and filters. */
-  /** Also readable by the accounts office, which issues fees to classes. */
+  /** Also readable by the accounts office (fees go to classes) and admissions officers (cycles belong to a program and year). */
   @Get('structure')
-  @Auth('user', [...DASHBOARD_ROLES, 'accountant'])
+  @Auth('user', [...DASHBOARD_ROLES, 'accountant', 'admissions_officer'])
   structure(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => ({
       timezone: await this.timetable.tenantTimezone(tx),
       campuses: await tx.select({ id: campuses.id, name: campuses.name }).from(campuses).orderBy(asc(campuses.name)),
+      academicYears: await tx.select({ id: academicYears.id, label: academicYears.label, isCurrent: academicYears.isCurrent }).from(academicYears).orderBy(desc(academicYears.startsOn)),
       programs: await tx
-        .select({ id: programs.id, name: programs.name, level: programs.level, campusId: programs.campusId })
+        .select({ id: programs.id, name: programs.name, level: programs.level, campusId: programs.campusId, termCount: programs.termCount })
         .from(programs)
         .orderBy(asc(programs.name)),
       sections: await tx

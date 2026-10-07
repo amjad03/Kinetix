@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -45,6 +45,10 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // inventory.controller.ts and assets.controller.ts STORE_ROLES
   inventory: ['store_keeper', 'principal', 'tenant_admin'],
   assets: ['store_keeper', 'principal', 'tenant_admin'],
+  // admissions.controller.ts ADMISSIONS_ROLES
+  admissions: ['principal', 'tenant_admin', 'admissions_officer'],
+  // students.controller.ts PROFILE_ROLES (status changes and promotion are principal and admin only: LIFECYCLE_ROLES)
+  students: ['principal', 'tenant_admin', 'admissions_officer', 'hod', 'accountant'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -76,6 +80,11 @@ export function canEditCalendar(roles: readonly RoleName[]): boolean {
 /** Own topics: teaching staff and administrators (content.controller.ts EDITORS). */
 export function canEditTopics(roles: readonly RoleName[]): boolean {
   return roles.some((r) => ['teacher', 'hod', 'principal', 'tenant_admin'].includes(r));
+}
+
+/** Principal and administrator change students' status, class and run the yearly promotion (LIFECYCLE_ROLES). */
+export function canChangeLifecycle(roles: readonly RoleName[]): boolean {
+  return roles.some((r) => r === 'principal' || r === 'tenant_admin');
 }
 
 /** The section a path belongs to, or null for pages everyone signed in may open. */
@@ -122,6 +131,10 @@ export function sectionOf(pathname: string): Section | null {
     case 'inventory':
     case 'assets':
       return first;
+    case 'admissions':
+      return 'admissions';
+    case 'students':
+      return 'students';
     default:
       return null;
   }
@@ -139,6 +152,7 @@ export function isOnlyHod(roles: readonly RoleName[]): boolean {
 export function homeFor(roles: readonly RoleName[]): string {
   if (isOnlyHod(roles)) return '/department';
   if (canSee(roles, 'school')) return '/';
+  if (canSee(roles, 'admissions')) return '/admissions';
   if (canSee(roles, 'fees')) return '/fees';
   if (canSee(roles, 'library')) return '/library';
   for (const s of ['transport', 'hostel', 'canteen', 'inventory'] as const) if (canSee(roles, s)) return `/${s}`;

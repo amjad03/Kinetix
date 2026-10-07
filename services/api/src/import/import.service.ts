@@ -49,7 +49,7 @@ const REQUIRED: Record<ImportKind, string[]> = {
 };
 
 /** Roles the staff file may give. Students and guardians come from the students file. */
-const STAFF_ROLES: RoleName[] = ['teacher', 'hod', 'principal', 'tenant_admin', 'accountant', 'librarian'];
+const STAFF_ROLES: RoleName[] = ['teacher', 'hod', 'principal', 'tenant_admin', 'accountant', 'librarian', 'admissions_officer'];
 const ROLE_ALIASES: Record<string, RoleName> = { admin: 'tenant_admin', administrator: 'tenant_admin', head_of_department: 'hod', head: 'hod', accounts: 'accountant', library: 'librarian' };
 const LEVELS: Record<string, (typeof programs.level.enumValues)[number]> = { ug: 'ug', pg: 'pg', school: 'k12', k12: 'k12', diploma: 'diploma', phd: 'phd' };
 const DAYS: Record<string, number> = { mon: 1, monday: 1, tue: 2, tues: 2, tuesday: 2, wed: 3, wednesday: 3, thu: 4, thur: 4, thurs: 4, thursday: 4, fri: 5, friday: 5, sat: 6, saturday: 6, sun: 7, sunday: 7 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canEditCalendar, canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
+import { canChangeLifecycle, canEditCalendar, canLinkSubjects, canPublishMarks, canSee, canUseErp, homeFor, isOnlyHod, landingFor, sectionOf } from './access';
 
 describe('access', () => {
   it('lets the accounts office into Fees (and the calendar) only', () => {
@@ -125,5 +125,19 @@ describe('access', () => {
     for (const r of [['principal'], ['tenant_admin']]) for (const s of ['transport', 'hostel', 'canteen', 'inventory', 'assets'] as const) expect(canSee(r, s)).toBe(true);
     expect(sectionOf('/assets/abc')).toBe('assets');
     expect(landingFor(['hostel_warden'], '/transport')).toBe('/hostel');
+  });
+
+  it('gives admissions officers admissions and the student record, but not status changes', () => {
+    const r = ['admissions_officer'];
+    expect(canUseErp(r)).toBe(true);
+    expect(canSee(r, 'admissions')).toBe(true);
+    expect(canSee(r, 'students')).toBe(true);
+    for (const s of ['school', 'fees', 'settings', 'import'] as const) expect(canSee(r, s)).toBe(false);
+    expect(homeFor(r)).toBe('/admissions');
+    expect(sectionOf('/admissions/applications/x')).toBe('admissions');
+    expect(sectionOf('/students/promotion')).toBe('students');
+    expect(canChangeLifecycle(r)).toBe(false);
+    expect(canChangeLifecycle(['principal'])).toBe(true);
+    expect(canSee(['teacher'], 'admissions')).toBe(false);
   });
 });

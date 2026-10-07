@@ -13,7 +13,8 @@ export type RoleName =
   | 'driver'
   | 'hostel_warden'
   | 'canteen_manager'
-  | 'store_keeper';
+  | 'store_keeper'
+  | 'admissions_officer';
 
 export interface UserPrincipal {
   kind: 'user';

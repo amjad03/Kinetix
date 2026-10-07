@@ -39,7 +39,8 @@ export interface Me {
 
 export interface Structure {
   campuses: { id: string; name: string }[];
-  programs: { id: string; name: string; level: string; campusId: string }[];
+  academicYears: { id: string; label: string; isCurrent: boolean }[];
+  programs: { id: string; name: string; level: string; campusId: string; termCount: number }[];
   sections: { id: string; displayName: string; programId: string; term: number; students: number }[];
   rooms: { id: string; name: string; campusId: string }[];
   subjects: { id: string; code: string; name: string; programId: string; term: number; courseId: string | null }[];

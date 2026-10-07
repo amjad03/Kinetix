@@ -30,6 +30,10 @@ interface Options {
   csv?: string;
   /** Return the response body as text (a CSV template) instead of parsing JSON. */
   text?: boolean;
+  /** Extra request headers (the applicant's token on the public admissions endpoints). */
+  headers?: Record<string, string>;
+  /** Send this multipart form (a document upload) instead of `body`. */
+  form?: FormData;
   /** Request timeout; a large import takes longer than a page load. */
   timeoutMs?: number;
 }
@@ -74,6 +78,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
     headers.authorization = `Bearer ${token}`;
   }
   if (opts.body !== undefined) headers['content-type'] = 'application/json';
+  Object.assign(headers, opts.headers);
   if (opts.csv !== undefined) headers['content-type'] = 'text/csv; charset=utf-8';
 
   let res: Response;
@@ -81,7 +86,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
     res = await fetch(`${API_URL}${path}`, {
       method: opts.method ?? 'GET',
       headers,
-      body: opts.csv !== undefined ? opts.csv : opts.body === undefined ? undefined : JSON.stringify(opts.body),
+      body: opts.form ?? (opts.csv !== undefined ? opts.csv : opts.body === undefined ? undefined : JSON.stringify(opts.body)),
       cache: 'no-store',
       signal: AbortSignal.timeout(opts.timeoutMs ?? 15_000),
     });

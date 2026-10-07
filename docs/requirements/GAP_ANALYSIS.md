@@ -48,7 +48,7 @@ Missing:
 |---|---|---|
 | 1 | Institution / org / admin | Built |
 | 2 | Academic structure / curriculum | Built |
-| 3 | Admissions / student lifecycle | **Missing** |
+| 3 | Admissions / student lifecycle | Built — enquiry pipeline, per-program cycles and application forms, documents, application fee (Razorpay), eligibility and merit lists, offers, enrolment; lifecycle statuses with rules and audit, bulk promotion, guardians, `admissions_officer` role ([design](../architecture/admissions-lifecycle.md)). Not yet: SMS/email to applicants, entrance-test scheduling, seat quotas/reservation categories, sibling and transfer-certificate workflows |
 | 4 | Timetable / attendance | Built |
 | 5 | LMS / content | Partial — homework, library, content; no course shells, no gradebook |
 | 6 | Assessment / examination / results | Partial — marks only; no exams, hall tickets, SGPA/CGPA, transcripts |
