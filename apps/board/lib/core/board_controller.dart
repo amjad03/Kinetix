@@ -720,13 +720,20 @@ class BoardController extends ChangeNotifier {
     unawaited(_fetchConfig());
   }
 
+  /// Features that read the institution's board config too (the safe browser's allowed sites).
+  static final configListeners = <void Function(Map<String, dynamic> config)>[];
+
   /// The institution's settings for its boards (kiosk mode). Offline: the cached ones stay.
   Future<void> _fetchConfig() async {
     final api = this.api;
     if (_demo || api == null || api.deviceToken == null) return;
     try {
-      final kioskConfig = (await api.boardConfig())['kiosk'];
+      final config = await api.boardConfig();
+      final kioskConfig = config['kiosk'];
       if (kioskConfig is Map<String, dynamic>) await kiosk.applyPolicy(KioskPolicy.fromConfig(kioskConfig));
+      for (final l in configListeners) {
+        l(config);
+      }
     } catch (e) {
       debugPrint('Board config not fetched: $e');
     }
