@@ -109,4 +109,21 @@ describe('access', () => {
     expect(landingFor(['principal'], '//evil.example')).toBe('/');
     expect(landingFor(['principal'], 'https://evil.example')).toBe('/');
   });
+
+  it('gives each operations role its own page, and drivers none', () => {
+    const own = { transport_manager: 'transport', hostel_warden: 'hostel', canteen_manager: 'canteen', store_keeper: 'inventory' } as const;
+    for (const [role, section] of Object.entries(own)) {
+      const r = [role];
+      expect(canUseErp(r)).toBe(true);
+      expect(canSee(r, section)).toBe(true);
+      expect(homeFor(r)).toBe(`/${section}`);
+      for (const other of Object.values(own).filter((x) => x !== section)) expect(canSee(r, other)).toBe(false);
+      expect(canSee(r, 'school')).toBe(false);
+    }
+    expect(canSee(['store_keeper'], 'assets')).toBe(true);
+    expect(canUseErp(['driver'])).toBe(false);
+    for (const r of [['principal'], ['tenant_admin']]) for (const s of ['transport', 'hostel', 'canteen', 'inventory', 'assets'] as const) expect(canSee(r, s)).toBe(true);
+    expect(sectionOf('/assets/abc')).toBe('assets');
+    expect(landingFor(['hostel_warden'], '/transport')).toBe('/hostel');
+  });
 });

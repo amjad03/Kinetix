@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -36,6 +36,15 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   settings: ['principal', 'tenant_admin'],
   // import.controller.ts (bulk import from CSV): STAFF_ADMIN_ROLES
   import: ['principal', 'tenant_admin'],
+  // transport.controller.ts TRANSPORT_ROLES (a driver uses the Teacher App, not the ERP)
+  transport: ['transport_manager', 'principal', 'tenant_admin'],
+  // hostel.controller.ts HOSTEL_ROLES
+  hostel: ['hostel_warden', 'principal', 'tenant_admin'],
+  // canteen.controller.ts CANTEEN_ROLES
+  canteen: ['canteen_manager', 'principal', 'tenant_admin'],
+  // inventory.controller.ts and assets.controller.ts STORE_ROLES
+  inventory: ['store_keeper', 'principal', 'tenant_admin'],
+  assets: ['store_keeper', 'principal', 'tenant_admin'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -107,6 +116,12 @@ export function sectionOf(pathname: string): Section | null {
       return 'settings';
     case 'import':
       return 'import';
+    case 'transport':
+    case 'hostel':
+    case 'canteen':
+    case 'inventory':
+    case 'assets':
+      return first;
     default:
       return null;
   }
@@ -119,13 +134,14 @@ export function isOnlyHod(roles: readonly RoleName[]): boolean {
 
 /**
  * Where a role lands after signing in: Department for a head of department, Today for the
- * principal and administrator, Fees for the accounts office, Library for the librarian.
+ * principal and administrator, Fees for the accounts office, Library for the librarian, and the desk of the transport, hostel, canteen or store role.
  */
 export function homeFor(roles: readonly RoleName[]): string {
   if (isOnlyHod(roles)) return '/department';
   if (canSee(roles, 'school')) return '/';
   if (canSee(roles, 'fees')) return '/fees';
   if (canSee(roles, 'library')) return '/library';
+  for (const s of ['transport', 'hostel', 'canteen', 'inventory'] as const) if (canSee(roles, s)) return `/${s}`;
   return '/login';
 }
 

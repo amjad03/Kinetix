@@ -8,6 +8,16 @@ import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import Campaign from '@mui/icons-material/Campaign';
 import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
+import DirectionsBus from '@mui/icons-material/DirectionsBus';
+import DirectionsBusOutlined from '@mui/icons-material/DirectionsBusOutlined';
+import Hotel from '@mui/icons-material/Hotel';
+import HotelOutlined from '@mui/icons-material/HotelOutlined';
+import Inventory2 from '@mui/icons-material/Inventory2';
+import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
+import QrCode2 from '@mui/icons-material/QrCode2';
+import QrCode2Outlined from '@mui/icons-material/QrCode2Outlined';
+import Restaurant from '@mui/icons-material/Restaurant';
+import RestaurantOutlined from '@mui/icons-material/RestaurantOutlined';
 import Check from '@mui/icons-material/Check';
 import EventNote from '@mui/icons-material/EventNote';
 import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
@@ -83,6 +93,11 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/live', label: 'nav.live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
   { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
+  { href: '/transport', label: 'nav.transport', section: 'transport', icon: DirectionsBusOutlined, active: DirectionsBus },
+  { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: HotelOutlined, active: Hotel },
+  { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: RestaurantOutlined, active: Restaurant },
+  { href: '/inventory', label: 'nav.inventory', section: 'inventory', icon: Inventory2Outlined, active: Inventory2 },
+  { href: '/assets', label: 'nav.assets', section: 'assets', icon: QrCode2Outlined, active: QrCode2 },
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
   { href: '/departments', label: 'nav.departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
@@ -99,6 +114,10 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   teacher: 'role.teacher',
   accountant: 'role.accountant',
   librarian: 'role.librarian',
+  transport_manager: 'role.transport_manager',
+  hostel_warden: 'role.hostel_warden',
+  canteen_manager: 'role.canteen_manager',
+  store_keeper: 'role.store_keeper',
 };
 
 export interface ShellUser {
