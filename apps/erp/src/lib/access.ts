@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'exams' | 'obe';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -36,6 +36,10 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   settings: ['principal', 'tenant_admin'],
   // import.controller.ts (bulk import from CSV): STAFF_ADMIN_ROLES
   import: ['principal', 'tenant_admin'],
+  // exams.controller.ts / schemes.controller.ts / results.controller.ts: principal and administrator manage, heads of department read and verify
+  exams: ['principal', 'tenant_admin', 'hod'],
+  // obe.controller.ts MANAGE: principal, administrator and heads of department
+  obe: ['principal', 'tenant_admin', 'hod'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -107,6 +111,10 @@ export function sectionOf(pathname: string): Section | null {
       return 'settings';
     case 'import':
       return 'import';
+    case 'exams':
+      return 'exams';
+    case 'obe':
+      return 'obe';
     default:
       return null;
   }

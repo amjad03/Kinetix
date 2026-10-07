@@ -51,8 +51,8 @@ Missing:
 | 3 | Admissions / student lifecycle | **Missing** |
 | 4 | Timetable / attendance | Built |
 | 5 | LMS / content | Partial — homework, library, content; no course shells, no gradebook |
-| 6 | Assessment / examination / results | Partial — marks only; no exams, hall tickets, SGPA/CGPA, transcripts |
-| 7 | OBE / accreditation | **Missing** |
+| 6 | Assessment / examination / results | **Built (core)** — schemes (BU NEP / CBSE presets), marks verify and moderate, exam sessions, seating, hall ticket / marks card / transcript PDFs, SGPA/CGPA, publish + lock, revaluation. Not built: question bank, paper generation, answer capture, supplementary-specific rules. See docs/assessment-obe.md |
+| 7 | OBE / accreditation | **Built (core)** — mission/vision/PEO/PO/PSO, versioned COs, CO-PO/PSO matrix, assessment-to-CO mapping, direct + survey (indirect) attainment, targets, gaps, actions, evidence, NAAC/NBA CSV and PDF. Not built: file upload for evidence (links and notes only), question-level CO mapping, survey collection UI. See docs/assessment-obe.md |
 | 8 | Fees / finance | Partial — fees and Razorpay; no scholarships, budgets, cost centres, GL export |
 | 9 | HR / payroll | **Missing** |
 | 10 | Library / inventory / procurement | Partial — library only |

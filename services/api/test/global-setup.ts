@@ -13,7 +13,7 @@ export default async function setup() {
   const owner = `postgres://kinetix_owner:kinetix_owner@localhost:5432/${TEST_DB}`;
   // KINETIX_PG_ADMIN_URL (e.g. postgres://me@localhost:5432/postgres) is a superuser connection that
   // needs no sudo; without it the old `sudo -u postgres psql` is used.
-  const adminUrl = process.env.KINETIX_PG_ADMIN_URL;
+  const adminUrl = process.env.KINETIX_PG_ADMIN_URL || process.env.KINETIX_TEST_ADMIN_URL;
   const psql = (sql: string) => (adminUrl ? execFileSync('psql', [adminUrl, '-q', '-c', sql], { stdio: 'pipe' }) : execSync(`sudo -u postgres psql -q -c "${sql}"`, { stdio: 'pipe' }));
   psql(`DROP DATABASE IF EXISTS ${TEST_DB} WITH (FORCE)`);
   psql(`CREATE DATABASE ${TEST_DB} OWNER kinetix_owner`);

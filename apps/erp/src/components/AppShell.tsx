@@ -27,6 +27,10 @@ import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import Forum from '@mui/icons-material/Forum';
 import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import Grading from '@mui/icons-material/Grading';
+import Quiz from '@mui/icons-material/Quiz';
+import QuizOutlined from '@mui/icons-material/QuizOutlined';
+import TrackChanges from '@mui/icons-material/TrackChanges';
+import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
 import GradingOutlined from '@mui/icons-material/GradingOutlined';
 import Insights from '@mui/icons-material/Insights';
 import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
@@ -77,6 +81,8 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/attendance', label: 'nav.attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
   { href: '/homework', label: 'nav.homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
   { href: '/results', label: 'nav.results', section: 'results', icon: GradingOutlined, active: Grading },
+  { href: '/exams', label: 'nav.exams', section: 'exams', icon: QuizOutlined, active: Quiz },
+  { href: '/obe', label: 'nav.obe', section: 'obe', icon: TrackChangesOutlined, active: TrackChanges },
   { href: '/messages', label: 'nav.messages', section: 'school', icon: CampaignOutlined, active: Campaign },
   { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: ForumOutlined, active: Forum },
   { href: '/boards', label: 'nav.boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },

@@ -18,6 +18,7 @@ import {
   subjects,
   timetableSlots,
   users,
+  academicYears,
 } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { addDays, isoWeekday, parseDate } from '../teacher/teacher.service.js';
@@ -47,6 +48,7 @@ export class AdminController {
     return this.db.withTenant(p.tenantId, async (tx) => ({
       timezone: await this.timetable.tenantTimezone(tx),
       campuses: await tx.select({ id: campuses.id, name: campuses.name }).from(campuses).orderBy(asc(campuses.name)),
+      academicYears: await tx.select({ id: academicYears.id, label: academicYears.label, isCurrent: academicYears.isCurrent }).from(academicYears).orderBy(asc(academicYears.startsOn)),
       programs: await tx
         .select({ id: programs.id, name: programs.name, level: programs.level, campusId: programs.campusId })
         .from(programs)
