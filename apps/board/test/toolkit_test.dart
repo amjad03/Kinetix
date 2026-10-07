@@ -11,6 +11,8 @@ import 'package:kinetix_board/features/toolkit/noise_source.dart';
 import 'package:kinetix_board/features/toolkit/remote_toolkit.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_controller.dart';
 import 'package:kinetix_board/features/toolkit/toolkit_layer.dart';
+import 'package:kinetix_board/features/toolkit/toolkit_sounds.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -32,6 +34,13 @@ class FakeNoise implements NoiseSource {
   Future<void> stop() async => stopped = true;
   @override
   Future<void> dispose() async {}
+}
+
+/// A player that records what it was asked to play.
+class FakeSounds implements ToolkitSounds {
+  final played = <String>[];
+  @override
+  Future<void> play(String id) async => played.add(id);
 }
 
 /// A clock the test moves by hand.
@@ -82,6 +91,47 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(rang, 1);
       k.dispose();
+    });
+
+    testWidgets('the end of the timer plays the chosen sound; laps tick; none is silent', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final clock = FakeClock();
+      final sounds = FakeSounds();
+      final k = ToolkitController(roster: () => const [], now: () => clock.now, sounds: sounds);
+      k.setTimer(const Duration(seconds: 3));
+      k.startPauseTimer();
+      clock.advance(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(sounds.played, ['bell'], reason: 'the default sound');
+
+      k.setTimerOptions(sound: 'chime');
+      expect(sounds.played.last, 'chime', reason: 'a taste of the new sound');
+      sounds.played.clear();
+      k.setTimer(const Duration(seconds: 2));
+      k.startPauseTimer();
+      clock.advance(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(sounds.played, ['chime']);
+
+      k.startPauseStopwatch();
+      k.lap();
+      expect(sounds.played.last, 'lap');
+
+      k.setTimerOptions(sound: 'none');
+      sounds.played.clear();
+      k.lap();
+      k.setTimer(const Duration(seconds: 1));
+      k.startPauseTimer();
+      clock.advance(const Duration(seconds: 2));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(sounds.played, isEmpty);
+      k.dispose();
+
+      // The choice is kept for the next class.
+      final next = ToolkitController(roster: () => const [], now: () => clock.now, sounds: sounds);
+      await next.loadPresets();
+      expect(next.timerSound, 'none');
+      next.dispose();
     });
 
     test('the stopwatch keeps time across pauses and keeps laps, newest first', () {

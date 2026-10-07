@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/models.dart';
 import 'noise_source.dart';
+import 'toolkit_sounds.dart';
 
 /// The class toolkit (ported from the KINETIX prototype): cards that float over the board and
 /// the two overlays that cover it.
@@ -31,8 +32,9 @@ const demoClassNames = [
 /// The toolkit's state: which tools are open, and each tool's own state. Everything the class
 /// should see is in [projectorState], for the students' screen.
 class ToolkitController extends ChangeNotifier {
-  ToolkitController({required this.roster, this.demo = false, NoiseSource? noiseSource, math.Random? random, DateTime Function()? now})
+  ToolkitController({required this.roster, this.demo = false, NoiseSource? noiseSource, ToolkitSounds? sounds, math.Random? random, DateTime Function()? now})
     : _noiseSource = noiseSource, // ignore: prefer_initializing_formals
+      _sounds = sounds, // ignore: prefer_initializing_formals
       _rnd = random ?? math.Random(),
       _now = now ?? clock.now;
 
@@ -42,6 +44,10 @@ class ToolkitController extends ChangeNotifier {
   /// A demo board picks from [demoClassNames] when no class is open.
   final bool demo;
 
+  final ToolkitSounds? _sounds;
+
+  /// What plays the timer's end and the stopwatch's laps.
+  ToolkitSounds get sounds => _sounds ?? ToolkitSounds.instance;
   final math.Random _rnd;
   final DateTime Function() _now;
   NoiseSource? _noiseSource;
@@ -152,9 +158,23 @@ class ToolkitController extends ChangeNotifier {
 
   void setTimerOptions({bool? countUp, String? sound, bool? mini}) {
     if (countUp != null) timerCountUp = countUp;
-    if (sound != null) timerSound = sound;
+    if (sound != null && timerSounds.contains(sound) && sound != timerSound) {
+      timerSound = sound;
+      unawaited(_storeSound());
+      // A taste of the chosen sound.
+      if (sound != 'none') unawaited(sounds.play(sound));
+    }
     if (mini != null) timerMini = mini;
     _changed();
+  }
+
+  static const _soundKey = 'toolkit.timerSound';
+
+  Future<void> _storeSound() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(_soundKey, timerSound);
+    } catch (_) {}
   }
 
   /// The teacher's own presets, beside 1, 3, 5, 10 and 15 minutes (kept on the board).
@@ -167,6 +187,8 @@ class ToolkitController extends ChangeNotifier {
       customPresets
         ..clear()
         ..addAll([for (final s in p.getStringList(_presetsKey) ?? const <String>[]) Duration(seconds: int.tryParse(s) ?? 0)].where((d) => d > Duration.zero));
+      final sound = p.getString(_soundKey);
+      if (sound != null && timerSounds.contains(sound)) timerSound = sound;
       _changed();
     } catch (_) {
       // No storage (tests, a locked-down board): presets last until the app closes.
@@ -198,7 +220,7 @@ class ToolkitController extends ChangeNotifier {
     _timerEnd = null;
     _timerPaused = Duration.zero;
     timerDone = true;
-    if (timerSound != 'none') SystemSound.play(timerSound == 'chime' ? SystemSoundType.click : SystemSoundType.alert);
+    if (timerSound != 'none') unawaited(sounds.play(timerSound));
     onTimeUp?.call();
   }
 
@@ -226,6 +248,7 @@ class ToolkitController extends ChangeNotifier {
 
   void lap() {
     _laps.insert(0, stopwatch);
+    if (timerSound != 'none') unawaited(sounds.play('lap'));
     _changed();
   }
 
