@@ -293,6 +293,14 @@ SubjectStyle styleOf(String? subjectName) => subjectStyles[subjectOf(subjectName
 /// little ones.
 List<KitTab> kitTabsFor(SubjectStyle s, {required bool primary}) => [KitTab.lesson, ...s.tabs, if (primary) KitTab.stars];
 
+/// [kitTabsFor] with [requested] added straight after "This lesson" when the subject does not
+/// carry it, so every tool tile opens its own tab whatever the period's subject is.
+List<KitTab> kitTabsWith(SubjectStyle s, {required bool primary, KitTab? requested}) {
+  final tabs = kitTabsFor(s, primary: primary);
+  if (requested == null || tabs.contains(requested)) return tabs;
+  return [tabs.first, requested, ...tabs.skip(1)];
+}
+
 /// The AI tools in this subject's order (the AI panel's tools, favourites first).
 List<AiView> aiOrderFor(SubjectStyle s, {required bool primary}) {
   const all = [AiView.quiz, AiView.homework, AiView.lessonPlan, AiView.math, AiView.readBoard];

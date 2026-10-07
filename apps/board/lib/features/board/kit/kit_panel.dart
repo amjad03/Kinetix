@@ -52,7 +52,10 @@ class SubjectKitPanel extends StatefulWidget {
 class _SubjectKitPanelState extends State<SubjectKitPanel> {
   late KitTab _tab;
 
-  List<KitTab> get _tabs => kitTabsFor(widget.style, primary: widget.primary);
+  /// The subject's own tabs, plus the tab a tool asked for when it is not one of them (the
+  /// periodic table opened from the tools drawer in a commerce period must open the periodic
+  /// table, not the commerce kit's first tab).
+  List<KitTab> get _tabs => kitTabsWith(widget.style, primary: widget.primary, requested: widget.initialTab);
   Color get _accent => widget.style.accent;
   Color get _ink => widget.wb.background.isDark ? WhiteboardController.chalkWhite : WhiteboardController.inkBlack;
   BoardFont get _font => widget.primary ? BoardFont.andika : BoardFont.inter;
@@ -60,8 +63,15 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
   @override
   void initState() {
     super.initState();
-    _tab = widget.initialTab != null && _tabs.contains(widget.initialTab) ? widget.initialTab! : (_tabs.length > 1 ? _tabs[1] : _tabs.first);
+    _tab = widget.initialTab ?? (_tabs.length > 1 ? _tabs[1] : _tabs.first);
+    // A tab opened from a tool may sit past the edge of a phone: bring its chip into view.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final c = _selectedChip.currentContext;
+      if (mounted && c != null) Scrollable.ensureVisible(c, alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd);
+    });
   }
+
+  final _selectedChip = GlobalKey();
 
   @override
   void didUpdateWidget(SubjectKitPanel old) {
@@ -71,8 +81,7 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
 
   void _insert(List<BoardElement> els) => widget.wb.insert(els);
   void _insertMath(String tex, {double fs = 40}) => _insert([boardMath(tex, _accent, fontSize: fs)]);
-  void _insertText(String text, {double size = 26, bool bold = false, Color? color}) =>
-      _insert([boardText(text, color ?? _ink, size: size, bold: bold, font: _font)]);
+  void _insertText(String text, {double size = 26, bool bold = false, Color? color}) => _insert([boardText(text, color ?? _ink, size: size, bold: bold, font: _font)]);
 
   @override
   Widget build(BuildContext context) {
@@ -86,22 +95,26 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
         children: [
           SizedBox(
             height: 48,
-            child: ListView(
+            // Every chip is built (a row, not a lazy list) so the opened tab can scroll into view.
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
-              children: [
-                for (final t in _tabs)
-                  Padding(
-                    padding: const EdgeInsets.only(right: Kx.s8),
-                    child: ChoiceChip(
-                      key: Key('kit-${t.name}'),
-                      label: Text(l.kitTabName(t)),
-                      selected: _tab == t,
-                      selectedColor: widget.style.container,
-                      onSelected: (_) => setState(() => _tab = t),
+              child: Row(
+                children: [
+                  for (final t in _tabs)
+                    Padding(
+                      key: t == _tab ? _selectedChip : null,
+                      padding: const EdgeInsets.only(right: Kx.s8),
+                      child: ChoiceChip(
+                        key: Key('kit-${t.name}'),
+                        label: Text(l.kitTabName(t)),
+                        selected: _tab == t,
+                        selectedColor: widget.style.container,
+                        onSelected: (_) => setState(() => _tab = t),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
           const Divider(height: 1),
@@ -126,15 +139,16 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
               KitTab.words => _WordWall(wb: widget.wb, accent: _accent, onCard: (w) => _insert([wordCard(w, _accent)])),
               KitTab.logic => _logic(),
               KitTab.binary => _BinaryTab(onInsert: (t) => _insertText(t, size: 28, bold: true)),
-              KitTab.stars => _StarsTab(board: widget.board, accent: _accent, onInsert: (t) => _insertText(t, size: 34, bold: true, color: _accent)),
-              KitTab.accounts || KitTab.finance || KitTab.management || KitTab.law || KitTab.stats => CollegeKitTab(
-                key: ValueKey(_tab),
-                tab: _tab,
-                wb: widget.wb,
+              KitTab.stars => _StarsTab(
+                board: widget.board,
                 accent: _accent,
-                ink: _ink,
-                onOpenLab: () => widget.onSplit(SplitContent.lab),
+                onInsert: (t) => _insertText(t, size: 34, bold: true, color: _accent),
               ),
+              KitTab.accounts ||
+              KitTab.finance ||
+              KitTab.management ||
+              KitTab.law ||
+              KitTab.stats => CollegeKitTab(key: ValueKey(_tab), tab: _tab, wb: widget.wb, accent: _accent, ink: _ink, onOpenLab: () => widget.onSplit(SplitContent.lab)),
               KitTab.algorithms || KitTab.csLabs || KitTab.diagrams => CsKitTab(key: ValueKey(_tab), tab: _tab, wb: widget.wb, accent: _accent, board: widget.board),
             },
           ),
@@ -150,7 +164,9 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
 
   Widget _tex(String tex, {double size = 17}) => SingleChildScrollView(
     scrollDirection: Axis.horizontal,
-    child: BoardMath(element: MathElement(id: tex, position: Offset.zero, latex: tex, color: context.colors.onSurface, fontSize: size, size: const Size(1, 1))),
+    child: BoardMath(
+      element: MathElement(id: tex, position: Offset.zero, latex: tex, color: context.colors.onSurface, fontSize: size, size: const Size(1, 1)),
+    ),
   );
 
   // --- This lesson ----------------------------------------------------------------------------
@@ -161,7 +177,10 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
     Widget quick(AiView v, IconData icon, String label) => OutlinedButton.icon(
       key: Key('kit-ai-${v.name}'),
       onPressed: () => widget.onAi(v),
-      style: OutlinedButton.styleFrom(foregroundColor: context.colors.onSurface, side: BorderSide(color: context.colors.tertiary.withValues(alpha: 0.5))),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: context.colors.onSurface,
+        side: BorderSide(color: context.colors.tertiary.withValues(alpha: 0.5)),
+      ),
       icon: Icon(icon, size: 18, color: context.colors.tertiary),
       label: Text(label),
     );
@@ -187,30 +206,17 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            FilledButton.tonalIcon(
-              key: const Key('kit-books'),
-              onPressed: () => widget.onPanel(PanelKind.books),
-              icon: const Icon(Icons.menu_book),
-              label: Text(l.toolBooks),
-            ),
+            FilledButton.tonalIcon(key: const Key('kit-books'), onPressed: () => widget.onPanel(PanelKind.books), icon: const Icon(Icons.menu_book), label: Text(l.toolBooks)),
             FilledButton.tonalIcon(
               key: const Key('kit-model3d'),
               onPressed: () => widget.onSplit(SplitContent.model3d),
               icon: const Icon(Icons.view_in_ar_outlined),
               label: Text(l.splitModel3d),
             ),
-            FilledButton.tonalIcon(
-              key: const Key('kit-lab'),
-              onPressed: () => widget.onSplit(SplitContent.lab),
-              icon: const Icon(Icons.science_outlined),
-              label: Text(l.splitLab),
-            ),
+            FilledButton.tonalIcon(key: const Key('kit-lab'), onPressed: () => widget.onSplit(SplitContent.lab), icon: const Icon(Icons.science_outlined), label: Text(l.splitLab)),
           ],
         ),
-        if (widget.style.tabs.isNotEmpty) ...[
-          _section(l.kitMore),
-          Text(l.kitMoreHint, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
-        ],
+        if (widget.style.tabs.isNotEmpty) ...[_section(l.kitMore), Text(l.kitMoreHint, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant))],
       ],
     );
   }
@@ -275,7 +281,10 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
                       child: Container(
                         alignment: Alignment.center,
                         decoration: BoxDecoration(color: _catColors[e.cat], borderRadius: BorderRadius.circular(2)),
-                        child: Text(e.symbol, style: TextStyle(fontSize: cell * 0.42, fontWeight: FontWeight.w600, color: const Color(0xFF1B1F24))),
+                        child: Text(
+                          e.symbol,
+                          style: TextStyle(fontSize: cell * 0.42, fontWeight: FontWeight.w600, color: const Color(0xFF1B1F24)),
+                        ),
                       ),
                     ),
                   ),
@@ -376,7 +385,10 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
     return ListView(
       padding: const EdgeInsets.all(Kx.s12),
       children: [
-        _Tap(onTap: () => _insertText('NOT\nA  |  Y\n0  |  1\n1  |  0', size: 24), child: const Text('NOT  —  Y = NOT A', style: TextStyle(fontWeight: FontWeight.w700))),
+        _Tap(
+          onTap: () => _insertText('NOT\nA  |  Y\n0  |  1\n1  |  0', size: 24),
+          child: const Text('NOT  —  Y = NOT A', style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
         for (final e in gates.entries)
           _Tap(
             onTap: () => _insertText(table(e.key, e.value), size: 24),
@@ -629,7 +641,10 @@ class _BinaryTabState extends State<_BinaryTab> {
             onTap: () => widget.onInsert('$_n (base 10) = $v (base $base)'),
             child: Text('$label:  $v', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           ),
-        _Tap(onTap: () => widget.onInsert('$bin (base 2) = $working = $_n'), child: Text(working, style: context.text.bodySmall)),
+        _Tap(
+          onTap: () => widget.onInsert('$bin (base 2) = $working = $_n'),
+          child: Text(working, style: context.text.bodySmall),
+        ),
       ],
     );
   }
@@ -704,7 +719,12 @@ class _StarsTabState extends State<_StarsTab> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(tooltip: l.kitStarRemove, onPressed: () => _add(s.id, -1), icon: const Icon(Icons.remove_circle_outline)),
-                      IconButton(key: Key('star-${s.id}'), tooltip: l.kitStarGive, onPressed: () => _add(s.id, 1), icon: Icon(Icons.star, color: widget.accent)),
+                      IconButton(
+                        key: Key('star-${s.id}'),
+                        tooltip: l.kitStarGive,
+                        onPressed: () => _add(s.id, 1),
+                        icon: Icon(Icons.star, color: widget.accent),
+                      ),
                     ],
                   ),
                 ),
