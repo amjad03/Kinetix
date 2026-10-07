@@ -4,6 +4,9 @@
     <!-- Lesson recording: the teacher's voice. Without it the board records ink only. The noise
          meter reads the sound level from it on the board; nothing is recorded or sent. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- The document camera (visualiser) in the split panel shows the live camera. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <!-- Kiosk mode: open the board again after a reboot or power cut (docs/hardware/kiosk-mode.md). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application

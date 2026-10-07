@@ -189,16 +189,20 @@ class ToolButton extends StatelessWidget {
             children: [
               SizedBox(height: big ? 38 : 32, child: Center(widthFactor: 1, child: glyph)),
               if (!compact) const SizedBox(height: 2),
+              // Flexible: while the button grows into the primary layout (a class switched with
+              // the panel open) the big label is a pixel taller than the button for a frame.
               if (!compact)
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
-                  textAlign: TextAlign.center,
-                  // As wide as the label, not the 92 px the button may grow to.
-                  textWidthBasis: TextWidthBasis.longestLine,
-                  style: TextStyle(fontSize: big ? 14 : 11.5, height: 1.2, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
+                    textAlign: TextAlign.center,
+                    // As wide as the label, not the 92 px the button may grow to.
+                    textWidthBasis: TextWidthBasis.longestLine,
+                    style: TextStyle(fontSize: big ? 14 : 11.5, height: 1.2, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: fg),
+                  ),
                 ),
             ],
           ),

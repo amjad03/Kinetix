@@ -9,6 +9,10 @@ environment:
 dependencies:
   # PowerPoint import: a .pptx is a zip of XML (lib/features/insert/pptx_render.dart).
   archive: ^4.3.0
+  # The document camera (visualiser) in the split panel: the live device camera (lib/features/doc_camera).
+  camera: ^0.11.2
+  # Windows panels' webcams (camera_windows is not endorsed by camera, so it is listed).
+  camera_windows: ^0.2.6
   # The toolkit's timer and stopwatch keep time with it (tests move it with fake_async).
   audioplayers: ^6.8.1
   clock: ^1.1.3
@@ -95,7 +99,7 @@ msix_config:
   publisher_display_name: KINETIX
   identity_name: in.kinetix.board
   publisher: CN=KINETIX, O=KINETIX, C=IN
-  capabilities: internetClient,microphone
+  capabilities: internetClient,microphone,webcam
   languages: en-in, hi-in, kn-in
   store: false
   install_certificate: false

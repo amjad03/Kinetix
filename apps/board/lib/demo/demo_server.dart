@@ -9,6 +9,8 @@ import '../core/realtime.dart';
 import '../core/server_config.dart';
 import 'package:kinetix_ui/kinetix_ui.dart' show kxFitMinutes;
 
+import 'demo_classes.dart';
+
 /// The demo backend for the board (`--dart-define=KINETIX_DEMO=true`): KINETIX Cloud answered in
 /// memory, with KINETIX Demo College's BCom Sem 3 A · Corporate Accounting class (as
 /// services/api/src/db/seed.ts seeds it). [client] goes into ApiClient and [realtime] stands in
@@ -18,7 +20,18 @@ class DemoBoardServer {
   DemoBoardServer({
     DateTime Function()? clock,
     this.claimDelay = const Duration(seconds: 4),
-  }) : _clock = clock ?? DateTime.now;
+  }) : _clock = clock ?? DateTime.now {
+    active = this;
+  }
+
+  /// The demo server the running board uses (the class switcher, lib/demo/demo_class_switcher.dart).
+  static DemoBoardServer? active;
+
+  /// The class open on the demo board (the demo day's timetable: lib/demo/demo_classes.dart).
+  DemoClass current = DemoClasses.byId(DemoClasses.defaultId);
+
+  /// Opens [id]'s class: the next session, roster, plan, syllabus and videos are its own.
+  void switchTo(String id) => current = DemoClasses.byId(id);
 
   static const deviceName = 'Room 204 Board';
   static const deviceToken = 'demo-device-token';
@@ -137,13 +150,13 @@ class DemoBoardServer {
       'sessionId': 'demo-session-${++_sessions}',
       'expiresAt': now.add(const Duration(hours: 8)).toUtc().toIso8601String(),
       'teacher': {
-        'id': 'u1',
-        'fullName': 'Anita Sharma',
+        'id': current.isDefault ? 'u1' : 'u-${current.id}',
+        'fullName': current.teacher,
         'preferredLanguage': 'en',
       },
-      'section': {'id': 'sec1', 'displayName': 'BCom Sem 3 A'},
-      'subject': {'id': 'sub1', 'name': 'Corporate Accounting'},
-      'period': {'startsAt': '10:00:00', 'endsAt': '10:55:00'},
+      'section': current.isDefault ? {'id': 'sec1', 'displayName': 'BCom Sem 3 A'} : current.sectionJson,
+      'subject': current.isDefault ? {'id': 'sub1', 'name': 'Corporate Accounting'} : current.subjectJson,
+      'period': {'startsAt': '${current.startsAt}:00', 'endsAt': '${current.endsAt}:00'},
     };
   }
 
@@ -362,8 +375,8 @@ class DemoBoardServer {
       'title': b['title'],
       'pageCount': (b['pages'] as List?)?.length ?? 1,
       'updatedAt': b['updatedAt'],
-      'sectionName': 'BCom Sem 3 A',
-      'subjectName': 'Corporate Accounting',
+      'sectionName': current.section,
+      'subjectName': current.subject,
       'sharedAt': b['sharedAt'],
     };
   }
@@ -418,6 +431,7 @@ class DemoBoardServer {
             .toIso8601String(),
       });
     }
+    if (path == '/v1/sessions/current' && !current.isDefault) return json({'roster': current.rosterJson});
     if (path == '/v1/sessions/current') {
       return json({
         'roster': [
@@ -446,6 +460,12 @@ class DemoBoardServer {
 
     // "Ask the class": every student has card n (roll number n); a few answer in the
     // Student App over the next seconds.
+    if (path == '/v1/answer-cards/current' && !current.isDefault) {
+      return json({
+        'section': current.sectionJson,
+        'cards': [for (final (i, s) in current.rosterJson.indexed) {'cardNo': i + 1, 'studentId': s['id'], 'rollNo': s['rollNo'], 'fullName': s['fullName']}],
+      });
+    }
     if (path == '/v1/answer-cards/current') {
       return json({
         'section': {'id': 'sec1', 'displayName': 'BCom Sem 3 A'},
@@ -536,8 +556,8 @@ class DemoBoardServer {
             'startedAt': body['startedAt'] ?? now.toUtc().toIso8601String(),
             'hasAudio': false,
             'sectionId': 'sec1',
-            'sectionName': 'BCom Sem 3 A',
-            'subjectName': 'Corporate Accounting',
+            'sectionName': current.section,
+            'subjectName': current.subject,
           };
           return json(_recordings[id]);
         case 'events' || 'audio':
@@ -558,6 +578,14 @@ class DemoBoardServer {
     }
 
     // Content library, coverage and today's plan.
+    if (!current.isDefault) {
+      if (path == '/v1/content/syllabus') return json(current.syllabusJson);
+      if (path == '/v1/devices/me/concept-videos') return json(current.conceptVideosNow(_iso(now)));
+      if (path == '/v1/lesson-plans/current') return json(current.planJson(_iso(now)));
+      if (path == '/v1/content/topics/${current.topicId}/videos') return json({'topicId': current.topicId, 'language': 'en', 'videos': current.videosJson});
+      if (path == '/v1/content/topics/${current.topicId}') return json(current.topicJson);
+      if (path == '/v1/coverage' && method == 'GET') return json({'covered': 0, 'total': 1, 'percent': 0, 'topics': []});
+    }
     if (path == '/v1/content/syllabus') return json(_syllabus);
     if (path == '/v1/devices/me/concept-videos') return json(_conceptVideosNow);
     final videos = RegExp(r'^/v1/content/topics/([^/]+)/videos$').firstMatch(path);
@@ -597,8 +625,8 @@ class DemoBoardServer {
         return json(
           _ai('explain', {
             'answer':
-                'Sample answer (demo): with a KINETIX AI server this would explain "$topicName" for BCom Sem 3 A, '
-                'using the Corporate Accounting syllabus notes.',
+                'Sample answer (demo): with a KINETIX AI server this would explain "$topicName" for ${current.section}, '
+                'using the ${current.subject} syllabus notes.',
             'keyPoints': [
               'Start from the journal entry',
               'Show the effect on share capital',
