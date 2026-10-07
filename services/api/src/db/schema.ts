@@ -117,6 +117,7 @@ export const roleName = pgEnum('role_name', [
   'guardian',
   'librarian',
   'accountant',
+  'admissions_officer',
 ]);
 
 export const userRoles = pgTable(
@@ -237,7 +238,13 @@ export const students = pgTable(
     sectionId: uuid('section_id').notNull().references(() => sections.id),
     rollNo: text('roll_no').notNull(),
     fullName: text('full_name').notNull(),
+    /** Lifecycle status (STUDENT_STATUSES in @kinetix/shared); changes go through StudentLifecycleService. */
     status: text('status').notNull().default('active'),
+    statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
+    /** The day they joined (enrolment), for the timeline and reports. */
+    enrolledOn: date('enrolled_on'),
+    /** The admission application they came from; null for students imported or added by hand. */
+    applicationId: uuid('application_id').references(() => applications.id, { onDelete: 'set null' }),
     updatedAt: updatedAt(),
   },
   (t) => [uniqueIndex('students_section_roll_uq').on(t.sectionId, t.rollNo)],
@@ -574,9 +581,16 @@ export const guardians = pgTable(
     userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
     relation: text('relation').notNull().default('parent'), // mother, father, guardian…
+    /** The contact the institution calls first. At most one per student (a partial unique index). */
+    isPrimary: boolean('is_primary').notNull().default(false),
+    isEmergencyContact: boolean('is_emergency_contact').notNull().default(false),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
+  (t) => [
+    uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId),
+    index('guardians_student_idx').on(t.studentId),
+    uniqueIndex('guardians_one_primary_uq').on(t.studentId).where(sql`${t.isPrimary}`),
+  ],
 );
 
 export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge']);
@@ -1385,6 +1399,240 @@ export const lessonPlans = pgTable(
   (t) => [uniqueIndex('lesson_plans_period_uq').on(t.timetableSlotId, t.date), index('lesson_plans_class_idx').on(t.sectionId, t.subjectId, t.date)],
 );
 
+// ---------------------------------------------------------------------------------------------
+// Admissions CRM (docs/architecture/admissions-lifecycle.md)
+// ---------------------------------------------------------------------------------------------
+
+export const enquirySource = pgEnum('enquiry_source', ['web', 'walk_in', 'phone', 'campaign', 'referral', 'import']);
+export const enquiryStage = pgEnum('enquiry_stage', ['new', 'contacted', 'counselling', 'applied', 'converted', 'lost', 'deferred']);
+export const enquiryActivityKind = pgEnum('enquiry_activity_kind', ['call', 'visit', 'email', 'sms', 'whatsapp', 'note']);
+
+/** A prospective student's first contact: from the public form, a walk-in, a call or a campaign. */
+export const enquiries = pgTable(
+  'enquiries',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    phone: text('phone').notNull(),
+    email: text('email'),
+    /** The program the family asked about (null = undecided). */
+    programId: uuid('program_id').references(() => programs.id, { onDelete: 'set null' }),
+    source: enquirySource('source').notNull().default('web'),
+    stage: enquiryStage('stage').notNull().default('new'),
+    /** The counsellor (a staff user) who owns the follow-up. */
+    counsellorId: uuid('counsellor_id').references(() => users.id, { onDelete: 'set null' }),
+    message: text('message'),
+    lostReason: text('lost_reason'),
+    nextFollowUpOn: date('next_follow_up_on'),
+    /** The application this enquiry turned into. */
+    applicationId: uuid('application_id'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('enquiries_stage_idx').on(t.tenantId, t.stage, t.createdAt), index('enquiries_phone_idx').on(t.tenantId, t.phone), index('enquiries_counsellor_idx').on(t.counsellorId)],
+);
+
+/** Calls, visits and notes on an enquiry: the counsellor's follow-up trail. */
+export const enquiryActivities = pgTable(
+  'enquiry_activities',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    enquiryId: uuid('enquiry_id').notNull().references(() => enquiries.id, { onDelete: 'cascade' }),
+    kind: enquiryActivityKind('kind').notNull(),
+    note: text('note').notNull(),
+    nextFollowUpOn: date('next_follow_up_on'),
+    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('enquiry_activities_enquiry_idx').on(t.enquiryId, t.createdAt)],
+);
+
+export const admissionCycleStatus = pgEnum('admission_cycle_status', ['draft', 'open', 'closed']);
+
+/**
+ * One program's intake for one academic year: its seats, application fee, the form the
+ * applicant fills (per program), the documents to upload, eligibility and merit rules.
+ */
+export const admissionCycles = pgTable(
+  'admission_cycles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    programId: uuid('program_id').notNull().references(() => programs.id),
+    academicYearId: uuid('academic_year_id').notNull().references(() => academicYears.id),
+    name: text('name').notNull(),
+    status: admissionCycleStatus('status').notNull().default('draft'),
+    /** The grade or semester admitted into (sections of this term receive the students). */
+    entryTerm: smallint('entry_term').notNull().default(1),
+    seats: integer('seats').notNull(),
+    opensOn: date('opens_on').notNull(),
+    closesOn: date('closes_on').notNull(),
+    applicationFeePaise: bigint('application_fee_paise', { mode: 'number' }).notNull().default(0),
+    /** How many days an offer stays open. */
+    offerValidDays: smallint('offer_valid_days').notNull().default(7),
+    formFields: jsonb('form_fields').$type<unknown[]>().notNull().default([]),
+    documents: jsonb('documents').$type<unknown[]>().notNull().default([]),
+    eligibility: jsonb('eligibility').$type<Record<string, unknown>>().notNull().default({}),
+    meritRules: jsonb('merit_rules').$type<unknown[]>().notNull().default([]),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('admission_cycles_program_idx').on(t.tenantId, t.programId, t.status)],
+);
+
+export const applicationStatus = pgEnum('application_status', ['submitted', 'under_review', 'eligible', 'ineligible', 'waitlisted', 'offered', 'accepted', 'declined', 'rejected', 'enrolled', 'withdrawn']);
+export const applicationFeeStatus = pgEnum('application_fee_status', ['none', 'pending', 'paid', 'waived']);
+
+/** An applicant's submitted application to a cycle. The applicant has no login: a secret link token. */
+export const applications = pgTable(
+  'applications',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id),
+    /** "APP/2026-27/00012" */
+    applicationNo: text('application_no').notNull(),
+    enquiryId: uuid('enquiry_id').references(() => enquiries.id, { onDelete: 'set null' }),
+    applicantName: text('applicant_name').notNull(),
+    dateOfBirth: date('date_of_birth'),
+    gender: text('gender'),
+    phone: text('phone').notNull(),
+    email: text('email'),
+    guardianName: text('guardian_name').notNull(),
+    guardianPhone: text('guardian_phone').notNull(),
+    guardianEmail: text('guardian_email'),
+    guardianRelation: text('guardian_relation').notNull().default('parent'),
+    /** Answers to the cycle's per-program form, by field key. */
+    answers: jsonb('answers').$type<Record<string, string | number>>().notNull().default({}),
+    status: applicationStatus('status').notNull().default('submitted'),
+    statusReason: text('status_reason'),
+    feeStatus: applicationFeeStatus('fee_status').notNull().default('none'),
+    meritScore: numeric('merit_score', { precision: 10, scale: 3, mode: 'number' }),
+    meritRank: integer('merit_rank'),
+    eligibilityNotes: jsonb('eligibility_notes').$type<string[]>().notNull().default([]),
+    /** SHA-256 of the token in the applicant's link; the token itself is shown once. */
+    accessTokenHash: text('access_token_hash').notNull(),
+    offerExpiresOn: date('offer_expires_on'),
+    studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex('applications_no_uq').on(t.tenantId, t.applicationNo),
+    index('applications_cycle_idx').on(t.cycleId, t.status),
+    index('applications_phone_idx').on(t.tenantId, t.phone),
+  ],
+);
+
+export const documentStatus = pgEnum('application_document_status', ['pending', 'verified', 'rejected']);
+
+/** A file the applicant uploaded for one of the cycle's required documents. */
+export const applicationDocuments = pgTable(
+  'application_documents',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    /** The cycle's document key: `marksheet_12th`. */
+    docKey: text('doc_key').notNull(),
+    fileName: text('file_name').notNull(),
+    contentType: text('content_type').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    storageKey: text('storage_key').notNull(),
+    status: documentStatus('status').notNull().default('pending'),
+    reviewNote: text('review_note'),
+    reviewedBy: uuid('reviewed_by').references(() => users.id, { onDelete: 'set null' }),
+    uploadedAt: timestamp('uploaded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('application_documents_uq').on(t.applicationId, t.docKey)],
+);
+
+/** The application fee: an online order through the institution's own gateway, or a counter payment. */
+export const applicationPayments = pgTable(
+  'application_payments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    method: paymentMethod('method').notNull(),
+    status: paymentStatus('status').notNull(),
+    provider: text('provider'),
+    providerOrderId: text('provider_order_id'),
+    providerPaymentId: text('provider_payment_id'),
+    reference: text('reference'),
+    receiptNo: text('receipt_no'),
+    recordedBy: uuid('recorded_by').references(() => users.id, { onDelete: 'set null' }),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('application_payments_order_uq').on(t.providerOrderId), index('application_payments_app_idx').on(t.applicationId)],
+);
+
+/** A generated ranking of a cycle's eligible applications; publishing it makes the offers. */
+export const meritLists = pgTable(
+  'merit_lists',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    seats: integer('seats').notNull(),
+    /** [{ applicationId, rank, score, decision: 'offer' | 'waitlist' }] */
+    entries: jsonb('entries').$type<{ applicationId: string; rank: number; score: number; decision: 'offer' | 'waitlist' }[]>().notNull(),
+    generatedBy: uuid('generated_by').references(() => users.id, { onDelete: 'set null' }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('merit_lists_version_uq').on(t.cycleId, t.version)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Student lifecycle
+// ---------------------------------------------------------------------------------------------
+
+export const lifecycleEventKind = pgEnum('lifecycle_event_kind', ['status', 'promotion', 'section', 'guardian']);
+
+/** One bulk promotion run: who ran it, from which classes, and what happened to whom. */
+export const promotionBatches = pgTable('promotion_batches', {
+  id: id(),
+  tenantId: tenantId(),
+  label: text('label').notNull(),
+  /** { promoted, detained, graduated, skipped, sections: [{ from, to }] } */
+  summary: jsonb('summary').$type<Record<string, unknown>>().notNull().default({}),
+  runBy: uuid('run_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+});
+
+/**
+ * The permanent record of a student's lifecycle: every status change, promotion, section move and
+ * guardian link, with the reason and who did it. Rows are only ever added.
+ */
+export const studentLifecycleEvents = pgTable(
+  'student_lifecycle_events',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    kind: lifecycleEventKind('kind').notNull(),
+    fromStatus: text('from_status'),
+    toStatus: text('to_status'),
+    fromSectionId: uuid('from_section_id').references(() => sections.id, { onDelete: 'set null' }),
+    toSectionId: uuid('to_section_id').references(() => sections.id, { onDelete: 'set null' }),
+    reason: text('reason'),
+    effectiveOn: date('effective_on').notNull(),
+    batchId: uuid('batch_id').references(() => promotionBatches.id, { onDelete: 'set null' }),
+    data: jsonb('data').$type<Record<string, unknown>>(),
+    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('student_lifecycle_events_student_idx').on(t.studentId, t.createdAt)],
+);
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -1441,5 +1689,14 @@ export const TENANT_TABLES = [
   'polls',
   'poll_responses',
   'badges',
+  'enquiries',
+  'enquiry_activities',
+  'admission_cycles',
+  'applications',
+  'application_documents',
+  'application_payments',
+  'merit_lists',
+  'promotion_batches',
+  'student_lifecycle_events',
   'audit_log',
 ] as const;

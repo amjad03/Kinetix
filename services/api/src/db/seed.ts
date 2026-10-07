@@ -75,6 +75,7 @@ async function main() {
   };
   await staff('Dr. Meera Rao', 'principal@demo.kinetix.in', ['principal']);
   const admin = await staff('Admin Office', 'admin@demo.kinetix.in', ['tenant_admin']);
+  await staff('Admissions Office', 'admissions@demo.kinetix.in', ['admissions_officer']);
   await staff('Accounts Office', 'accounts@demo.kinetix.in', ['accountant']);
   const librarian = await staff('Library Desk', 'library@demo.kinetix.in', ['librarian']);
   const anita = await staff('Anita Sharma', 'anita@demo.kinetix.in', ['teacher'], 'hi');

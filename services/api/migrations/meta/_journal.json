@@ -288,6 +288,41 @@
       "when": 1791285235540,
       "tag": "0040_badges_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791408455050,
+      "tag": "0041_admissions_crm",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791408456050,
+      "tag": "0042_admissions_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791408482229,
+      "tag": "0043_student_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791408483229,
+      "tag": "0044_lifecycle_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1791408484229,
+      "tag": "0045_lifecycle_backfill",
+      "breakpoints": true
     }
   ]
 }

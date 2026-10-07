@@ -29,7 +29,7 @@ BSc,ug,6,1,,,BSC-1.4,Hindi I,Languages
 # full_name           Full name, in any script (required)
 # email               Email address (email or phone required; used to match on re-import)
 # phone               Mobile number, e.g. 98450 12345 (staff sign in with a code sent to it)
-# roles               teacher, hod, principal, tenant_admin, accountant, librarian; several separated by ; (required)
+# roles               teacher, hod, principal, tenant_admin, accountant, librarian, admissions_officer; several separated by ; (required)
 # preferred_language  en, hi or kn (default en)
 # departments         Department names separated by ; (created if missing)
 # Rows are matched by email, then phone: importing again updates the name, adds roles and departments.

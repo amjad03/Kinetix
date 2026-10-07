@@ -261,7 +261,7 @@ export type SyncOpResult =
 // Teacher App
 // ---------------------------------------------------------------------------------------------
 
-export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant';
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant' | 'admissions_officer';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 /** GET /v1/me */
@@ -497,3 +497,4 @@ export interface PlaylistPreview {
   topics: { id: string; title: string }[];
   videos: { youtubeVideoId: string; title: string; position: number; durationSeconds: number | null; suggestedTopicId: string | null; alreadyOn: string[] }[];
 }
+export * from './admissions.js';
