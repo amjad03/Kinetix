@@ -1,4 +1,3 @@
-// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -138,8 +137,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get enterInstitutionCode => 'अपना संस्थान कोड डालें';
 
   @override
-  String get institutionCodeChars =>
-      'केवल अंग्रेज़ी अक्षर, नंबर और हाइफ़न (-) इस्तेमाल करें';
+  String get institutionCodeChars => 'केवल अंग्रेज़ी अक्षर, नंबर और हाइफ़न (-) इस्तेमाल करें';
 
   @override
   String get enterEmailOrPhone => 'अपना ईमेल या फ़ोन नंबर डालें';
@@ -157,16 +155,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get invalidServer => 'https://api.kinetix.in जैसा सर्वर पता डालें';
 
   @override
-  String get errorNotTeacher =>
-      'यह ऐप शिक्षकों के लिए है। आपके अकाउंट में शिक्षक की भूमिका नहीं है।';
+  String get errorNotTeacher => 'यह ऐप शिक्षकों के लिए है। आपके अकाउंट में शिक्षक की भूमिका नहीं है।';
 
   @override
-  String get errorOffline =>
-      'KINETIX से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
+  String get errorOffline => 'KINETIX से कनेक्ट नहीं हो पा रहा। अपना इंटरनेट कनेक्शन और सर्वर का पता जाँचें।';
 
   @override
-  String get errorTimeout =>
-      'सर्वर जवाब देने में बहुत समय ले रहा है। फिर से कोशिश करें।';
+  String get errorTimeout => 'सर्वर जवाब देने में बहुत समय ले रहा है। फिर से कोशिश करें।';
 
   @override
   String get errorForbidden => 'आपको इसकी अनुमति नहीं है।';
@@ -175,8 +170,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorNotFound => 'नहीं मिला।';
 
   @override
-  String get errorTooManyAttempts =>
-      'बहुत ज़्यादा कोशिशें हो गईं। एक मिनट रुककर फिर से कोशिश करें।';
+  String get errorTooManyAttempts => 'बहुत ज़्यादा कोशिशें हो गईं। एक मिनट रुककर फिर से कोशिश करें।';
 
   @override
   String errorGeneric(int status) {
@@ -184,29 +178,25 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get errorSessionExpired =>
-      'आपका साइन इन समाप्त हो गया है। फिर से साइन इन करें।';
+  String get errorSessionExpired => 'आपका साइन इन समाप्त हो गया है। फिर से साइन इन करें।';
 
   @override
   String get errorWrongLogin => 'संस्थान कोड, लॉगिन या पासवर्ड गलत है';
 
   @override
-  String get errorCodeExpired =>
-      'यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। बोर्ड पर दिख रहा नया कोड डालें।';
+  String get errorCodeExpired => 'यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। बोर्ड पर दिख रहा नया कोड डालें।';
 
   @override
   String get errorAccountInactive => 'आपका अकाउंट सक्रिय नहीं है';
 
   @override
-  String get errorOtherCampus =>
-      'आप उस कैंपस के शिक्षक नहीं हैं जिसका यह बोर्ड है';
+  String get errorOtherCampus => 'आप उस कैंपस के शिक्षक नहीं हैं जिसका यह बोर्ड है';
 
   @override
   String get errorNotPairingQr => 'यह KINETIX बोर्ड का QR कोड नहीं है';
 
   @override
-  String get errorFutureAttendance =>
-      'आने वाली तारीख की उपस्थिति अभी नहीं ली जा सकती';
+  String get errorFutureAttendance => 'आने वाली तारीख की उपस्थिति अभी नहीं ली जा सकती';
 
   @override
   String get errorNotYourClass => 'आप यह कक्षा नहीं पढ़ाते';
@@ -227,19 +217,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorRecordingUploading => 'रिकॉर्डिंग अभी अपलोड हो रही है';
 
   @override
-  String get errorRecordingNoClass =>
-      'यह रिकॉर्डिंग किसी कक्षा के साथ नहीं बनी थी, इसलिए इसे किसी के साथ साझा नहीं किया जा सकता';
+  String get errorRecordingNoClass => 'यह रिकॉर्डिंग किसी कक्षा के साथ नहीं बनी थी, इसलिए इसे किसी के साथ साझा नहीं किया जा सकता';
 
   @override
-  String get recordingNotAvailable =>
-      'यह रिकॉर्डिंग अभी उपलब्ध नहीं है। हो सकता है यह अभी बोर्ड से अपलोड हो रही हो।';
+  String get recordingNotAvailable => 'यह रिकॉर्डिंग अभी उपलब्ध नहीं है। हो सकता है यह अभी बोर्ड से अपलोड हो रही हो।';
 
   @override
   String get connectToBoard => 'बोर्ड से कनेक्ट करें';
 
   @override
-  String get connectToBoardBody =>
-      'पढ़ाना शुरू करने के लिए कक्षा के बोर्ड पर दिख रहा QR कोड स्कैन करें';
+  String get connectToBoardBody => 'पढ़ाना शुरू करने के लिए कक्षा के बोर्ड पर दिख रहा QR कोड स्कैन करें';
 
   @override
   String get connect => 'कनेक्ट करें';
@@ -367,12 +354,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noStudentsInClass => 'इस कक्षा में अभी कोई विद्यार्थी नहीं है';
 
   @override
-  String get attendanceAlreadyTaken =>
-      'उपस्थिति पहले ही ली जा चुकी है। बदलाव करने पर पहले वाली उपस्थिति बदल जाएगी।';
+  String get attendanceAlreadyTaken => 'उपस्थिति पहले ही ली जा चुकी है। बदलाव करने पर पहले वाली उपस्थिति बदल जाएगी।';
 
   @override
-  String get attendanceHelp =>
-      'सभी पहले से उपस्थित हैं। अनुपस्थित करने के लिए टैप करें, देर से आने के लिए दबाकर रखें।';
+  String get attendanceHelp => 'सभी पहले से उपस्थित हैं। अनुपस्थित करने के लिए टैप करें, देर से आने के लिए दबाकर रखें।';
 
   @override
   String get update => 'अपडेट करें';
@@ -387,8 +372,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get enterCodeTitle => 'बोर्ड पर दिख रहा कोड डालें';
 
   @override
-  String get enterCodeBody =>
-      'यह QR कोड के नीचे लिखा 6 अंकों का नंबर है। हर 2 मिनट में नया कोड आता है।';
+  String get enterCodeBody => 'यह QR कोड के नीचे लिखा 6 अंकों का नंबर है। हर 2 मिनट में नया कोड आता है।';
 
   @override
   String get scanInstead => 'इसके बजाय QR कोड स्कैन करें';
@@ -426,8 +410,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'अभी टाइमटेबल में आपकी कोई कक्षा नहीं है, इसलिए बोर्ड बिना विद्यार्थियों की सूची के खुलेगा। 2 घंटे बाद आप अपने-आप साइन आउट हो जाएँगे।';
 
   @override
-  String get qrNotOurs =>
-      'यह KINETIX बोर्ड का कोड नहीं है। बोर्ड की स्क्रीन पर दिख रहा QR कोड स्कैन करें।';
+  String get qrNotOurs => 'यह KINETIX बोर्ड का कोड नहीं है। बोर्ड की स्क्रीन पर दिख रहा QR कोड स्कैन करें।';
 
   @override
   String get scanTitle => 'बोर्ड का QR कोड स्कैन करें';
@@ -436,8 +419,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get torch => 'टॉर्च';
 
   @override
-  String get cameraDenied =>
-      'स्कैन करने के लिए सेटिंग्स में कैमरे की अनुमति दें, या इसके बजाय कोड डालें।';
+  String get cameraDenied => 'स्कैन करने के लिए सेटिंग्स में कैमरे की अनुमति दें, या इसके बजाय कोड डालें।';
 
   @override
   String get cameraUnavailable => 'कैमरा उपलब्ध नहीं है। इसके बजाय कोड डालें।';
@@ -478,8 +460,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get noHomework =>
-      'अभी कोई होमवर्क नहीं है।\nकिसी कक्षा को होमवर्क दें, वह यहाँ दिखेगा।';
+  String get noHomework => 'अभी कोई होमवर्क नहीं है।\nकिसी कक्षा को होमवर्क दें, वह यहाँ दिखेगा।';
 
   @override
   String get dueToday => 'जमा: आज';
@@ -629,8 +610,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get publishCanCorrect =>
-      'प्रकाशित करने के बाद भी आप अंक ठीक कर सकते हैं।';
+  String get publishCanCorrect => 'प्रकाशित करने के बाद भी आप अंक ठीक कर सकते हैं।';
 
   @override
   String get publish => 'प्रकाशित करें';
@@ -753,8 +733,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get threadPrivacy =>
-      'यह बातचीत आपके और आपके चुने हुए व्यक्ति के बीच है। स्कूल प्रबंधन इसे देख सकता है।';
+  String get threadPrivacy => 'यह बातचीत आपके और आपके चुने हुए व्यक्ति के बीच है। स्कूल प्रबंधन इसे देख सकता है।';
 
   @override
   String get relationFather => 'पिता';
@@ -854,8 +833,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get signOutTitle => 'साइन आउट करें?';
 
   @override
-  String get signOutBody =>
-      'फिर से साइन इन करने के लिए आपको पासवर्ड चाहिए होगा।';
+  String get signOutBody => 'फिर से साइन इन करने के लिए आपको पासवर्ड चाहिए होगा।';
 
   @override
   String get signOut => 'साइन आउट करें';
@@ -923,8 +901,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get roleAccountant => 'लेखाकार';
 
   @override
-  String get languageSaveFailed =>
-      'इस फ़ोन पर भाषा बदल गई है। अगली बार ऑनलाइन होने पर यह आपके अकाउंट में सहेज दी जाएगी।';
+  String get languageSaveFailed => 'इस फ़ोन पर भाषा बदल गई है। अगली बार ऑनलाइन होने पर यह आपके अकाउंट में सहेज दी जाएगी।';
 
   @override
   String holidayNoClasses(String title) {
@@ -964,12 +941,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get syllabusProgress => 'पाठ्यक्रम की प्रगति';
 
   @override
-  String get syllabusProgressBody =>
-      'हर कक्षा के लिए पढ़ाई गई विषय-वस्तु मार्क करें';
+  String get syllabusProgressBody => 'हर कक्षा के लिए पढ़ाई गई विषय-वस्तु मार्क करें';
 
   @override
-  String get syllabusUnlinked =>
-      'यह विषय अभी किसी पाठ्यक्रम से नहीं जुड़ा है। आपके एडमिन इसे KINETIX ERP → Syllabus में जोड़ सकते हैं।';
+  String get syllabusUnlinked => 'यह विषय अभी किसी पाठ्यक्रम से नहीं जुड़ा है। आपके एडमिन इसे KINETIX ERP → Syllabus में जोड़ सकते हैं।';
 
   @override
   String topicsTaught(int covered, int total) {
@@ -1033,8 +1008,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get openPdf => 'PDF खोलें';
 
   @override
-  String get couldNotOpenFile =>
-      'यह फ़ाइल नहीं खुल सकी। PDF खोलने वाला कोई ऐप इंस्टॉल करें।';
+  String get couldNotOpenFile => 'यह फ़ाइल नहीं खुल सकी। PDF खोलने वाला कोई ऐप इंस्टॉल करें।';
 
   @override
   String get remarkOptional => 'टिप्पणी (वैकल्पिक)';
@@ -1049,8 +1023,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get checkWork => 'जाँचा गया मार्क करें';
 
   @override
-  String get reviewNotifies =>
-      'विद्यार्थी और उनके अभिभावकों को आपकी टिप्पणी के साथ बताया जाएगा।';
+  String get reviewNotifies => 'विद्यार्थी और उनके अभिभावकों को आपकी टिप्पणी के साथ बताया जाएगा।';
 
   @override
   String workChecked(String name) {
@@ -1071,16 +1044,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorNothingHandedIn => 'अभी तक कुछ जमा नहीं किया गया है';
 
   @override
-  String get errorTopicNotInSyllabus =>
-      'यह विषय-वस्तु इस विषय के पाठ्यक्रम में नहीं है';
+  String get errorTopicNotInSyllabus => 'यह विषय-वस्तु इस विषय के पाठ्यक्रम में नहीं है';
 
   @override
-  String get errorFutureCoverage =>
-      'आने वाली तारीख पर विषय-वस्तु को पढ़ाया गया मार्क नहीं कर सकते';
+  String get errorFutureCoverage => 'आने वाली तारीख पर विषय-वस्तु को पढ़ाया गया मार्क नहीं कर सकते';
 
   @override
-  String get errorValidation =>
-      'कुछ जानकारी सही नहीं है। जाँचकर फिर से कोशिश करें।';
+  String get errorValidation => 'कुछ जानकारी सही नहीं है। जाँचकर फिर से कोशिश करें।';
 
   @override
   String get yearPlan => 'वार्षिक योजना';
@@ -1109,8 +1079,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get remake => 'दोबारा बनाएँ';
 
   @override
-  String get planDatesNote =>
-      'अगर आप तारीखें नहीं बदलते, तो योजना आज से 16 हफ़्तों की होगी, शैक्षणिक वर्ष के अंत तक।';
+  String get planDatesNote => 'अगर आप तारीखें नहीं बदलते, तो योजना आज से 16 हफ़्तों की होगी, शैक्षणिक वर्ष के अंत तक।';
 
   @override
   String get planStartsOn => 'शुरू होने की तारीख';
@@ -1255,8 +1224,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get lessonCheck => 'समझ की जाँच';
 
   @override
-  String get lessonCheckHint =>
-      'आप कैसे जाँचेंगे कि विद्यार्थियों ने क्या सीखा';
+  String get lessonCheckHint => 'आप कैसे जाँचेंगे कि विद्यार्थियों ने क्या सीखा';
 
   @override
   String get lessonHomework => 'होमवर्क';
@@ -1274,8 +1242,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get replaceWithDraftTitle => 'KINETIX AI के ड्राफ़्ट से बदलें?';
 
   @override
-  String get replaceWithDraftBody =>
-      'इस योजना की विषय-वस्तु, उद्देश्य, चरण, सामग्री और जाँच बदल जाएगी। आपका होमवर्क वैसा ही रहेगा।';
+  String get replaceWithDraftBody => 'इस योजना की विषय-वस्तु, उद्देश्य, चरण, सामग्री और जाँच बदल जाएगी। आपका होमवर्क वैसा ही रहेगा।';
 
   @override
   String get replace => 'बदलें';
@@ -1284,8 +1251,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get aiDraftLabel => 'AI ड्राफ़्ट — इस्तेमाल से पहले जाँचें';
 
   @override
-  String get aiPreviewNote =>
-      'नमूना: KINETIX AI सर्वर जुड़ा नहीं है, इसलिए यह एक नमूना ड्राफ़्ट है।';
+  String get aiPreviewNote => 'नमूना: KINETIX AI सर्वर जुड़ा नहीं है, इसलिए यह एक नमूना ड्राफ़्ट है।';
 
   @override
   String get savePlan => 'योजना सहेजें';
@@ -1302,39 +1268,31 @@ class AppLocalizationsHi extends AppLocalizations {
   String get reviewRemark => 'विभागाध्यक्ष की टिप्पणी';
 
   @override
-  String get discardPlanBody =>
-      'आपकी पाठ योजना में ऐसे बदलाव हैं जो अभी सहेजे नहीं गए।';
+  String get discardPlanBody => 'आपकी पाठ योजना में ऐसे बदलाव हैं जो अभी सहेजे नहीं गए।';
 
   @override
-  String get errorPlanNoSyllabus =>
-      'इस विषय का अभी कोई पाठ्यक्रम नहीं है। अपने एडमिन से इसे किसी कोर्स से जोड़ने को कहें।';
+  String get errorPlanNoSyllabus => 'इस विषय का अभी कोई पाठ्यक्रम नहीं है। अपने एडमिन से इसे किसी कोर्स से जोड़ने को कहें।';
 
   @override
-  String get errorPlanNoPeriods =>
-      'इस कक्षा की समय-सारिणी में इस विषय का कोई पीरियड नहीं है।';
+  String get errorPlanNoPeriods => 'इस कक्षा की समय-सारिणी में इस विषय का कोई पीरियड नहीं है।';
 
   @override
-  String get errorPlanNoTeachingDays =>
-      'इन तारीखों के बीच पढ़ाई का कोई दिन नहीं है।';
+  String get errorPlanNoTeachingDays => 'इन तारीखों के बीच पढ़ाई का कोई दिन नहीं है।';
 
   @override
-  String get errorPlanEndsBeforeStart =>
-      'खत्म होने की तारीख शुरू होने की तारीख के बाद होनी चाहिए।';
+  String get errorPlanEndsBeforeStart => 'खत्म होने की तारीख शुरू होने की तारीख के बाद होनी चाहिए।';
 
   @override
   String get errorPeriodNotOnDay => 'यह कक्षा उस दिन नहीं है।';
 
   @override
-  String get errorAiAllowance =>
-      'आपके संस्थान ने आज की KINETIX AI सीमा पूरी कर ली है। कल फिर से मिलेगी।';
+  String get errorAiAllowance => 'आपके संस्थान ने आज की KINETIX AI सीमा पूरी कर ली है। कल फिर से मिलेगी।';
 
   @override
-  String get errorAiUnavailable =>
-      'KINETIX AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।';
+  String get errorAiUnavailable => 'KINETIX AI अभी उपलब्ध नहीं है। एक मिनट बाद फिर से कोशिश करें।';
 
   @override
-  String get errorAiUnusable =>
-      'KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।';
+  String get errorAiUnusable => 'KINETIX AI काम का ड्राफ़्ट नहीं बना सका। फिर से कोशिश करें।';
 
   @override
   String reviewedByOn(String name, String date) {
@@ -1348,8 +1306,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get signInWithPassword => 'पासवर्ड से साइन इन करें';
 
   @override
-  String get phoneSignInSubtitle =>
-      'हम आपके रजिस्टर्ड मोबाइल नंबर पर 6 अंकों का कोड भेजेंगे';
+  String get phoneSignInSubtitle => 'हम आपके रजिस्टर्ड मोबाइल नंबर पर 6 अंकों का कोड भेजेंगे';
 
   @override
   String get mobileNumber => 'मोबाइल नंबर';
@@ -1389,8 +1346,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get changeNumber => 'नंबर बदलें';
 
   @override
-  String get errorOtpInvalid =>
-      'यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। SMS देखें या नया कोड मंगाएँ।';
+  String get errorOtpInvalid => 'यह कोड गलत है या इसकी समय-सीमा खत्म हो गई है। SMS देखें या नया कोड मंगाएँ।';
 
   @override
   String get demoChip => 'डेमो';
@@ -1428,8 +1384,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get dontKeepRecording => 'न रखें';
 
   @override
-  String get keepRecordingTooltip =>
-      'रखी गई रिकॉर्डिंग सत्र समाप्त होने पर नहीं हटाई जातीं';
+  String get keepRecordingTooltip => 'रखी गई रिकॉर्डिंग सत्र समाप्त होने पर नहीं हटाई जातीं';
 
   @override
   String get phoneRemote => 'फ़ोन रिमोट';
@@ -1466,8 +1421,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get remoteSlides => 'स्लाइड और PDF';
 
   @override
-  String get remoteNoSlides =>
-      'यहाँ से बदलने के लिए बोर्ड पर स्लाइड या PDF खोलें।';
+  String get remoteNoSlides => 'यहाँ से बदलने के लिए बोर्ड पर स्लाइड या PDF खोलें।';
 
   @override
   String remoteSlideOf(int slide, int slides) {
@@ -1507,16 +1461,14 @@ class AppLocalizationsHi extends AppLocalizations {
   String get answerCards => 'उत्तर कार्ड';
 
   @override
-  String get answerCardsMenuBody =>
-      'कार्ड प्रिंट करें ताकि बिना फ़ोन वाले विद्यार्थी बोर्ड पर उत्तर दे सकें';
+  String get answerCardsMenuBody => 'कार्ड प्रिंट करें ताकि बिना फ़ोन वाले विद्यार्थी बोर्ड पर उत्तर दे सकें';
 
   @override
   String get answerCardsBody =>
       'हर विद्यार्थी को रोल नंबर के अनुसार एक कार्ड मिलता है। बोर्ड पर \"कक्षा से पूछें\" में वे उत्तर को ऊपर रखकर कार्ड उठाते हैं, और बोर्ड एक फ़ोटो से पूरी कक्षा पढ़ लेता है।';
 
   @override
-  String get answerCardsPrintHint =>
-      'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
+  String get answerCardsPrintHint => 'Hold the card with your answer at the top. Keep your fingers off the black pattern.';
 
   @override
   String answerCardsReady(int count, String className) {
@@ -1543,8 +1495,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get remindBody =>
-      'उन्हें और उनके परिवार को सूचना मिलेगी कि यह होमवर्क अभी जमा नहीं हुआ है।';
+  String get remindBody => 'उन्हें और उनके परिवार को सूचना मिलेगी कि यह होमवर्क अभी जमा नहीं हुआ है।';
 
   @override
   String get remind => 'याद दिलाएँ';
@@ -1568,4 +1519,68 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get chooseClass => 'कक्षा चुनें';
+
+  @override
+  String get driverMode => 'ड्राइवर मोड';
+
+  @override
+  String get driverModeBody => 'बस की यात्रा शुरू करें और बस की लोकेशन साझा करें';
+
+  @override
+  String get driverNoRoutes => 'आपको अभी कोई रूट नहीं मिला है। परिवहन कार्यालय से पूछें।';
+
+  @override
+  String get driverRoute => 'रूट';
+
+  @override
+  String get driverDirection => 'दिशा';
+
+  @override
+  String get driverPickup => 'पिकअप (स्कूल के लिए)';
+
+  @override
+  String get driverDrop => 'ड्रॉप (घर के लिए)';
+
+  @override
+  String get driverStart => 'यात्रा शुरू करें';
+
+  @override
+  String get driverEnd => 'यात्रा समाप्त करें';
+
+  @override
+  String get driverRunning => 'यात्रा चल रही है';
+
+  @override
+  String get driverTripEnded => 'यात्रा समाप्त हुई';
+
+  @override
+  String get driverNextStops => 'अगले स्टॉप';
+
+  @override
+  String get driverNoMoreStops => 'कोई और स्टॉप नहीं';
+
+  @override
+  String driverLastSent(Object time) {
+    return 'लोकेशन $time बजे भेजी गई';
+  }
+
+  @override
+  String get driverWaitingGps => 'GPS का इंतज़ार है...';
+
+  @override
+  String get driverLocationDenied => 'बस की लोकेशन साझा करने के लिए लोकेशन की अनुमति चाहिए। इसे सेटिंग्स में दें।';
+
+  @override
+  String get driverLocationOff => 'यात्रा शुरू करने के लिए फ़ोन की लोकेशन (GPS) चालू करें।';
+
+  @override
+  String get driverSendFailing => 'सर्वर से संपर्क नहीं हो पा रहा। कोशिश जारी है...';
+
+  @override
+  String get driverKeepOpen => 'बस चलते समय इस स्क्रीन को खुला रखें।';
+
+  @override
+  String driverVehicle(Object regNo) {
+    return 'बस $regNo';
+  }
 }

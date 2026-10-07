@@ -7,6 +7,7 @@ import '../../core/app_state.dart';
 import '../../core/files.dart';
 import '../../core/l10n.dart';
 import '../calendar/calendar_screen.dart';
+import '../driver/driver_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 
@@ -191,6 +192,15 @@ class ProfileTab extends StatelessWidget {
                 ),
               ),
             ),
+            if (me.roles.contains('driver'))
+              ListTile(
+                key: const Key('openDriver'),
+                leading: const Icon(Icons.directions_bus_outlined),
+                title: Text(l.driverMode),
+                subtitle: Text(l.driverModeBody),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => DriverScreen.open(context, state.api),
+              ),
             KxSectionHeader(l.comingSoon),
             ListTile(
               leading: const Icon(Icons.campaign_outlined),

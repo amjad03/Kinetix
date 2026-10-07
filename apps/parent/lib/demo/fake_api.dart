@@ -901,6 +901,37 @@ class FakeParentApi implements ParentApi {
     return libraries[childId] ?? LibraryAccount(current: [], history: [], finesPaise: 0);
   }
 
+  // ── Transport ─────────────────────────────────────────────────────────────────────────────
+
+  /// Per child; a child without an entry has no bus.
+  Map<String, StudentBus> buses = {
+    'c1': StudentBus.fromJson({
+      'assigned': true,
+      'routeId': 'r1',
+      'routeName': 'Route 4 · Indiranagar',
+      'regNo': 'KA01AB1234',
+      'stopId': 's2',
+      'stopName': 'Defence Colony',
+      'stopLat': 12.97,
+      'stopLng': 77.64,
+      'pickupTime': '07:30',
+      'stops': [
+        {'id': 's1', 'name': '100 Feet Road', 'seq': 1, 'lat': 12.96, 'lng': 77.63},
+        {'id': 's2', 'name': 'Defence Colony', 'seq': 2, 'lat': 12.97, 'lng': 77.64},
+        {'id': 's3', 'name': 'College gate', 'seq': 3, 'lat': 12.98, 'lng': 77.65},
+      ],
+      'bus': null,
+    }),
+  };
+  ApiException? busError;
+
+  @override
+  Future<StudentBus> bus(String childId) async {
+    calls.add('bus $childId');
+    if (busError != null) throw busError!;
+    return buses[childId] ?? const StudentBus(assigned: false);
+  }
+
   // ── Marks ─────────────────────────────────────────────────────────────────────────────────
 
   late Map<String, ChildMarks> childMarks = {

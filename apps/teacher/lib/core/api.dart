@@ -150,6 +150,17 @@ abstract class TeacherApi {
   /// Holidays, exams and events from [from] (default: today) to [to] (default: 90 days on).
   Future<List<CalendarEvent>> calendar({String? from, String? to});
 
+  /// Driver mode: the driver's routes with stops, and the trip under way (`GET /v1/transport/me`).
+  Future<DriverHome> driverHome();
+
+  /// Starts a trip on [routeId]; any trip of this driver already running is ended.
+  Future<DriverTrip> startTrip({required String routeId, required TripDirection direction});
+
+  /// Reports where the bus is (`POST /v1/transport/trips/:id/position`). 409 when the trip has ended.
+  Future<void> sendPosition(String tripId, {required double lat, required double lng, double? speedKmh});
+
+  Future<void> endTrip(String tripId);
+
   /// A subject's syllabus outline, or null when the subject is not linked to a course yet.
   Future<Syllabus?> syllabus(String subjectId);
 
@@ -455,6 +466,23 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<Conversation> startConversation({required String studentId, required String guardianId}) async =>
       Conversation.fromJson(await _send('POST', '/v1/conversations', body: {'studentId': studentId, 'withUserId': guardianId}));
+
+  @override
+  Future<DriverHome> driverHome() async => DriverHome.fromJson(await _send('GET', '/v1/transport/me') as Map<String, dynamic>);
+
+  @override
+  Future<DriverTrip> startTrip({required String routeId, required TripDirection direction}) async =>
+      DriverTrip.fromJson(await _send('POST', '/v1/transport/trips', body: {'routeId': routeId, 'direction': direction.name}) as Map<String, dynamic>);
+
+  @override
+  Future<void> sendPosition(String tripId, {required double lat, required double lng, double? speedKmh}) async {
+    await _send('POST', '/v1/transport/trips/$tripId/position', body: {'lat': lat, 'lng': lng, 'speedKmh': ?speedKmh});
+  }
+
+  @override
+  Future<void> endTrip(String tripId) async {
+    await _send('POST', '/v1/transport/trips/$tripId/end', body: <String, dynamic>{});
+  }
 
   @override
   Future<List<CalendarEvent>> calendar({String? from, String? to}) async {

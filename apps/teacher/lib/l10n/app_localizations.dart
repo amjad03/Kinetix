@@ -19,7 +19,7 @@ import 'app_localizations_kn.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'l10n/app_localizations.dart';
+/// import 'gen_l10n/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// App name (keep in English).
   ///
@@ -2721,10 +2714,129 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose a class'**
   String get chooseClass;
+
+  /// No description provided for @driverMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver mode'**
+  String get driverMode;
+
+  /// No description provided for @driverModeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a bus trip and share the bus location'**
+  String get driverModeBody;
+
+  /// No description provided for @driverNoRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'No route is assigned to you yet. Ask the transport office.'**
+  String get driverNoRoutes;
+
+  /// No description provided for @driverRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get driverRoute;
+
+  /// No description provided for @driverDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Direction'**
+  String get driverDirection;
+
+  /// No description provided for @driverPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup (to school)'**
+  String get driverPickup;
+
+  /// No description provided for @driverDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop (home)'**
+  String get driverDrop;
+
+  /// No description provided for @driverStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start trip'**
+  String get driverStart;
+
+  /// No description provided for @driverEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End trip'**
+  String get driverEnd;
+
+  /// No description provided for @driverRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip running'**
+  String get driverRunning;
+
+  /// No description provided for @driverTripEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip ended'**
+  String get driverTripEnded;
+
+  /// No description provided for @driverNextStops.
+  ///
+  /// In en, this message translates to:
+  /// **'Next stops'**
+  String get driverNextStops;
+
+  /// No description provided for @driverNoMoreStops.
+  ///
+  /// In en, this message translates to:
+  /// **'No more stops'**
+  String get driverNoMoreStops;
+
+  /// No description provided for @driverLastSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Location sent at {time}'**
+  String driverLastSent(Object time);
+
+  /// No description provided for @driverWaitingGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for GPS...'**
+  String get driverWaitingGps;
+
+  /// No description provided for @driverLocationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission is needed to share the bus location. Allow it in Settings.'**
+  String get driverLocationDenied;
+
+  /// No description provided for @driverLocationOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on the phone location (GPS) to start the trip.'**
+  String get driverLocationOff;
+
+  /// No description provided for @driverSendFailing.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the server. Still trying...'**
+  String get driverSendFailing;
+
+  /// No description provided for @driverKeepOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this screen open while the bus is moving.'**
+  String get driverKeepOpen;
+
+  /// No description provided for @driverVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bus {regNo}'**
+  String driverVehicle(Object regNo);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2733,8 +2845,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -2751,10 +2862,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsKn();
   }
 
-  throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+  throw FlutterError('AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

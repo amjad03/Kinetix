@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import 'models.dart';
+
 /// What arrives on the signed-in user's realtime connection (Socket.IO namespace `/realtime`,
 /// the same connection the Student App uses for live classes).
 sealed class RealtimeSignal {
@@ -20,6 +22,13 @@ class RealtimeMessageNew extends RealtimeSignal {
   final String conversationId;
   final String messageId;
   final String senderId;
+}
+
+/// The school bus moved (`transport.position`).
+class RealtimeBusPosition extends RealtimeSignal {
+  const RealtimeBusPosition(this.event);
+
+  final BusPositionEvent event;
 }
 
 /// The connection dropped; the client keeps trying to reconnect on its own.
@@ -81,6 +90,14 @@ class SocketRealtimeConnection implements RealtimeConnection {
         _add(RealtimeMessageNew(conversationId: '${d['conversationId']}', messageId: '${d['messageId']}', senderId: '${d['senderId']}'));
       }
     });
+    socket.on('transport.position', (d) {
+      if (d is! Map) return;
+      try {
+        _add(RealtimeBusPosition(BusPositionEvent.fromJson(d.cast<String, dynamic>())));
+      } catch (_) {
+        // A malformed event is ignored; the next ping replaces it.
+      }
+    });
     socket.on('error', (d) {
       if (d is Map && d['message'] == 'unauthorized') _add(const RealtimeRejected());
     });
@@ -101,13 +118,14 @@ class SocketRealtimeConnection implements RealtimeConnection {
 /// New messages as they arrive: keeps the realtime connection open while signed in and reports
 /// `message.new`; after a reconnect [onReconnected] catches up on anything missed.
 class MessageFeed {
-  MessageFeed({required this.connector, required this.baseUrl, required this.token, required this.onMessage, this.onReconnected});
+  MessageFeed({required this.connector, required this.baseUrl, required this.token, required this.onMessage, this.onReconnected, this.onBusPosition});
 
   final RealtimeConnector connector;
   final String baseUrl;
   final String token;
   final void Function(RealtimeMessageNew message) onMessage;
   final void Function()? onReconnected;
+  final void Function(BusPositionEvent event)? onBusPosition;
 
   RealtimeConnection? _conn;
   StreamSubscription<RealtimeSignal>? _sub;
@@ -130,6 +148,8 @@ class MessageFeed {
           _wasReady = true;
         case RealtimeMessageNew():
           onMessage(s);
+        case RealtimeBusPosition():
+          onBusPosition?.call(s.event);
         case RealtimeDisconnected():
           connected = false;
         case RealtimeRejected():

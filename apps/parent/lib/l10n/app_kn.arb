@@ -436,5 +436,19 @@
   "demoSignInAs": "{name} ಆಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ",
   "demoOtpHint": "ಡೆಮೊ: ಯಾವುದೇ ಸಂಖ್ಯೆ ಸಾಕು; ಕೋಡ್ 123456.",
   "notInDemo": "ಡೆಮೊದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.",
-  "recordingAvailableUntil": "{date} ರವರೆಗೆ ಲಭ್ಯ"
+  "recordingAvailableUntil": "{date} ರವರೆಗೆ ಲಭ್ಯ",
+  "bus": "ಬಸ್",
+  "busSubtitle": "ಮಾರ್ಗ, ನಿಲ್ದಾಣ ಮತ್ತು ಬಸ್ ಈಗ ಎಲ್ಲಿದೆ",
+  "busTitle": "{name} ಅವರ ಬಸ್",
+  "busNoBus": "{name} ಶಾಲಾ ಬಸ್ ಬಳಸುವುದಿಲ್ಲ.",
+  "busRoute": "ಮಾರ್ಗ",
+  "busYourStop": "ನಿಲ್ದಾಣ",
+  "busPickupTime": "ಪಿಕಪ್ ಸಮಯ",
+  "busVehicle": "ವಾಹನ",
+  "busNotRunning": "ಈಗ ಯಾವುದೇ ಬಸ್ ಓಡುತ್ತಿಲ್ಲ. ಚಾಲಕ ಪ್ರಯಾಣ ಆರಂಭಿಸಿದಾಗ ಲೈವ್ ನಕ್ಷೆ ಕಾಣಿಸುತ್ತದೆ.",
+  "busArrivingIn": "{minutes, plural, =1{1 ನಿಮಿಷದಲ್ಲಿ ತಲುಪುತ್ತದೆ} other{{minutes} ನಿಮಿಷಗಳಲ್ಲಿ ತಲುಪುತ್ತದೆ}}",
+  "busStopsAway": "{count, plural, =0{ಮುಂದಿನ ನಿಲ್ದಾಣ {name}} =1{1 ನಿಲ್ದಾಣ ದೂರ} other{{count} ನಿಲ್ದಾಣ ದೂರ}}",
+  "busPassed": "ಬಸ್ ಈ ನಿಲ್ದಾಣವನ್ನು ದಾಟಿದೆ.",
+  "busStops": "ನಿಲ್ದಾಣಗಳು",
+  "busLive": "ಲೈವ್"
 }

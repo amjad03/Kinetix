@@ -2,6 +2,7 @@
 /// src/recordings, src/fees, src/library, src/marks, src/messages).
 library;
 
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -327,7 +328,7 @@ class ChildSummary {
   List<RecordingInfo> get recordingsMissedFirst => [...recordings.where((r) => r.missed), ...recordings.where((r) => !r.missed)];
 }
 
-enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, broadcast, calendar, other }
+enum NotificationKind { absence, homework, boardShared, recording, fee, library, marks, message, broadcast, calendar, transport, hostel, other }
 
 class AppNotification {
   AppNotification({
@@ -353,6 +354,8 @@ class AppNotification {
       'message' => NotificationKind.message,
       'broadcast' => NotificationKind.broadcast,
       'calendar' => NotificationKind.calendar,
+      'transport' => NotificationKind.transport,
+      'hostel' => NotificationKind.hostel,
       _ => NotificationKind.other,
     },
     title: j['title'] as String,
@@ -1380,4 +1383,190 @@ class BadgeAward {
   final DateTime awardedAt;
   final String teacherName;
   final String? subjectName;
+}
+
+// ── Transport (GET /v1/transport/students/:id, realtime `transport.position`) ─────────────────
+
+/// A stop on the child's bus route.
+class BusStop {
+  const BusStop({required this.id, required this.name, required this.seq, required this.lat, required this.lng});
+
+  factory BusStop.fromJson(Map<String, dynamic> j) => BusStop(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        seq: (j['seq'] as num).toInt(),
+        lat: (j['lat'] as num).toDouble(),
+        lng: (j['lng'] as num).toDouble(),
+      );
+
+  final String id;
+  final String name;
+  final int seq;
+  final double lat;
+  final double lng;
+}
+
+/// Where the bus is right now, and how far from the child's stop.
+class BusPosition {
+  const BusPosition(
+      {required this.tripId, required this.lat, required this.lng, this.speedKmh, this.at, this.etaMinutes, this.stopsAway = 0});
+
+  factory BusPosition.fromJson(Map<String, dynamic> j) => BusPosition(
+        tripId: j['tripId'] as String,
+        lat: (j['lat'] as num).toDouble(),
+        lng: (j['lng'] as num).toDouble(),
+        speedKmh: (j['speedKmh'] as num?)?.toDouble(),
+        at: _instant(j['at']),
+        etaMinutes: (j['etaMinutes'] as num?)?.toInt(),
+        stopsAway: (j['stopsAway'] as num?)?.toInt() ?? 0,
+      );
+
+  final String tripId;
+  final double lat;
+  final double lng;
+  final double? speedKmh;
+  final DateTime? at;
+
+  /// Minutes to the child's stop; null once the bus has passed it.
+  final int? etaMinutes;
+  final int stopsAway;
+}
+
+/// A `transport.position` event (TransportPositionEvent in packages/shared).
+class BusPositionEvent {
+  const BusPositionEvent({
+    required this.tripId,
+    required this.routeId,
+    required this.lat,
+    required this.lng,
+    this.speedKmh,
+    this.nextStopId,
+    this.nextStopSeq,
+    this.etaMinutes,
+    this.at,
+  });
+
+  factory BusPositionEvent.fromJson(Map<String, dynamic> j) {
+    final next = j['nextStop'] as Map?;
+    return BusPositionEvent(
+      tripId: j['tripId'] as String,
+      routeId: j['routeId'] as String,
+      lat: (j['lat'] as num).toDouble(),
+      lng: (j['lng'] as num).toDouble(),
+      speedKmh: (j['speedKmh'] as num?)?.toDouble(),
+      nextStopId: next?['id'] as String?,
+      nextStopSeq: (next?['seq'] as num?)?.toInt(),
+      etaMinutes: (j['etaMinutes'] as num?)?.toInt(),
+      at: _instant(j['at']),
+    );
+  }
+
+  final String tripId;
+  final String routeId;
+  final double lat;
+  final double lng;
+  final double? speedKmh;
+
+  /// The stop the bus is heading to (null after the last stop).
+  final String? nextStopId;
+  final int? nextStopSeq;
+
+  /// Minutes to that next stop.
+  final int? etaMinutes;
+  final DateTime? at;
+}
+
+/// Great-circle distance in metres.
+double distanceMetres(double lat1, double lng1, double lat2, double lng2) {
+  const r = 6371000.0;
+  double rad(double d) => d * math.pi / 180;
+  final dLat = rad(lat2 - lat1), dLng = rad(lng2 - lng1);
+  final a = math.pow(math.sin(dLat / 2), 2) + math.cos(rad(lat1)) * math.cos(rad(lat2)) * math.pow(math.sin(dLng / 2), 2);
+  return 2 * r * math.asin(math.min(1, math.sqrt(a)));
+}
+
+/// Minutes to cover [metres] at [speedKmh]; a stopped or unknown bus counts as 20 km/h
+/// (the same rule as the server's etaMinutes).
+int etaMinutesFor(double metres, double? speedKmh) {
+  final v = speedKmh != null && speedKmh >= 5 ? speedKmh : 20.0;
+  return math.max(1, (metres / 1000 / v * 60).ceil());
+}
+
+/// A child's bus: the seat (route, stop, pickup time) and the bus right now.
+class StudentBus {
+  const StudentBus({
+    required this.assigned,
+    this.routeId,
+    this.routeName,
+    this.regNo,
+    this.stopId,
+    this.stopName,
+    this.stopLat,
+    this.stopLng,
+    this.pickupTime,
+    this.stops = const [],
+    this.bus,
+  });
+
+  factory StudentBus.fromJson(Map<String, dynamic> j) {
+    if (j['assigned'] != true) return const StudentBus(assigned: false);
+    return StudentBus(
+      assigned: true,
+      routeId: j['routeId'] as String,
+      routeName: j['routeName'] as String,
+      regNo: j['regNo'] as String?,
+      stopId: j['stopId'] as String,
+      stopName: j['stopName'] as String,
+      stopLat: (j['stopLat'] as num).toDouble(),
+      stopLng: (j['stopLng'] as num).toDouble(),
+      pickupTime: _clock(j['pickupTime']),
+      stops: [for (final s in (j['stops'] as List? ?? const [])) BusStop.fromJson((s as Map).cast<String, dynamic>())],
+      bus: j['bus'] == null ? null : BusPosition.fromJson((j['bus'] as Map).cast<String, dynamic>()),
+    );
+  }
+
+  final bool assigned;
+  final String? routeId;
+  final String? routeName;
+  final String? regNo;
+  final String? stopId;
+  final String? stopName;
+  final double? stopLat;
+  final double? stopLng;
+  final ClockTime? pickupTime;
+  final List<BusStop> stops;
+
+  /// Null when no trip is running (or the bus has not reported a position yet).
+  final BusPosition? bus;
+
+  /// This bus after a live position: the ETA to the child's stop and how many stops away.
+  /// Events for another route leave it as it is.
+  StudentBus withEvent(BusPositionEvent e) {
+    if (!assigned || e.routeId != routeId) return this;
+    final next = e.nextStopId;
+    int? eta;
+    var away = 0;
+    if (next == null) {
+      eta = null; // past the last stop
+    } else if (next == stopId) {
+      eta = e.etaMinutes;
+    } else {
+      eta = etaMinutesFor(distanceMetres(e.lat, e.lng, stopLat!, stopLng!), e.speedKmh);
+      final mine = stops.where((s) => s.id == stopId).firstOrNull;
+      if (mine != null && e.nextStopSeq != null) away = (mine.seq - e.nextStopSeq!).abs();
+    }
+    return StudentBus(
+      assigned: true,
+      routeId: routeId,
+      routeName: routeName,
+      regNo: regNo,
+      stopId: stopId,
+      stopName: stopName,
+      stopLat: stopLat,
+      stopLng: stopLng,
+      pickupTime: pickupTime,
+      stops: stops,
+      bus: BusPosition(tripId: e.tripId, lat: e.lat, lng: e.lng, speedKmh: e.speedKmh, at: e.at, etaMinutes: eta, stopsAway: away),
+    );
+  }
 }

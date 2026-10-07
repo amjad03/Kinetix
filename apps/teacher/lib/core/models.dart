@@ -998,3 +998,88 @@ class AppNotification {
   /// Ids for the screen to open: conversationId, homeworkId…
   final Map<String, String> data;
 }
+
+// ── Driver mode (GET /v1/transport/me, trips) ───────────────────────────────────────────────
+
+/// A stop on a driver's route.
+class DriverStop {
+  const DriverStop({required this.id, required this.name, required this.seq, required this.lat, required this.lng, this.pickupTime});
+
+  factory DriverStop.fromJson(Map<String, dynamic> j) => DriverStop(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    seq: (j['seq'] as num).toInt(),
+    lat: (j['lat'] as num).toDouble(),
+    lng: (j['lng'] as num).toDouble(),
+    pickupTime: j['pickupTime'] as String?,
+  );
+
+  final String id;
+  final String name;
+  final int seq;
+  final double lat;
+  final double lng;
+
+  /// "07:30" (or "07:30:00").
+  final String? pickupTime;
+
+  /// "07:30" without seconds.
+  String? get pickupLabel => pickupTime == null || pickupTime!.length < 5 ? pickupTime : pickupTime!.substring(0, 5);
+}
+
+/// A route the driver drives, with its stops in order.
+class DriverRoute {
+  const DriverRoute({required this.id, required this.name, this.regNo, this.stops = const []});
+
+  factory DriverRoute.fromJson(Map<String, dynamic> j) => DriverRoute(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    regNo: j['regNo'] as String?,
+    stops: [for (final s in (j['stops'] as List? ?? const [])) DriverStop.fromJson(s as Map<String, dynamic>)]..sort((a, b) => a.seq.compareTo(b.seq)),
+  );
+
+  final String id;
+  final String name;
+  final String? regNo;
+  final List<DriverStop> stops;
+
+  /// The stops in the order this run visits them: forwards to pick up, backwards to drop.
+  List<DriverStop> ordered(TripDirection d) => d == TripDirection.drop ? stops.reversed.toList() : stops;
+}
+
+enum TripDirection {
+  pickup,
+  drop;
+
+  static TripDirection parse(Object? v) => v == 'drop' ? TripDirection.drop : TripDirection.pickup;
+}
+
+/// A trip under way (or ended).
+class DriverTrip {
+  const DriverTrip({required this.id, required this.routeId, required this.direction, this.running = true});
+
+  factory DriverTrip.fromJson(Map<String, dynamic> j) => DriverTrip(
+    id: j['id'] as String,
+    routeId: j['routeId'] as String,
+    direction: TripDirection.parse(j['direction']),
+    running: (j['status'] ?? 'running') == 'running',
+  );
+
+  final String id;
+  final String routeId;
+  final TripDirection direction;
+  final bool running;
+}
+
+/// `GET /v1/transport/me`: the driver's routes and the trip under way, if any.
+class DriverHome {
+  const DriverHome({required this.routes, this.trip});
+
+  factory DriverHome.fromJson(Map<String, dynamic> j) => DriverHome(
+    routes: [for (final r in (j['routes'] as List? ?? const [])) DriverRoute.fromJson(r as Map<String, dynamic>)],
+    trip: j['trip'] == null ? null : DriverTrip.fromJson(j['trip'] as Map<String, dynamic>),
+  );
+
+  final List<DriverRoute> routes;
+  final DriverTrip? trip;
+}

@@ -13,6 +13,7 @@ import '../calendar/calendar_screen.dart';
 import '../fees/fees_card.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
+import '../transport/bus_screen.dart';
 import '../marks/marks.dart';
 import '../recordings/recordings.dart';
 import 'child_switcher.dart';
@@ -125,6 +126,13 @@ class HomeTab extends StatelessWidget {
         ),
         FeesCard(family: family, child: c, today: summary.today),
         LibraryCard(family: family, child: c, today: summary.today),
+        SectionCard(
+          key: const Key('busCard'),
+          icon: Icons.directions_bus_outlined,
+          title: context.l10n.bus,
+          onTap: () => BusScreen.open(context, family, c),
+          child: Text(context.l10n.busSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+        ),
         UpcomingCard(
           range: family.calendar,
           program: c.programName,

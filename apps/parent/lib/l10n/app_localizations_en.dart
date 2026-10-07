@@ -1,4 +1,3 @@
-// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations.dart';
@@ -36,7 +35,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String overdueBy(int days) {
-    String _temp0 = intl.Intl.pluralLogic(days, locale: localeName, other: '$days days', one: '1 day');
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
     return 'Overdue by $_temp0';
   }
 
@@ -127,7 +131,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String pages(int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count pages', one: '1 page');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pages',
+      one: '1 page',
+    );
     return '$_temp0';
   }
 
@@ -499,7 +508,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String feesToPay(int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count fees to pay', one: '1 fee to pay');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fees to pay',
+      one: '1 fee to pay',
+    );
     return '$_temp0';
   }
 
@@ -670,7 +684,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String attendedOf(Object attended, int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count classes', one: '1 class');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count classes',
+      one: '1 class',
+    );
     return 'Attended $attended of $_temp0';
   }
 
@@ -776,7 +795,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String askedNoAnswer(int count, Object subject) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count questions', one: '1 question');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
     return 'Was asked $_temp0 in $subject but did not answer.';
   }
 
@@ -792,7 +816,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String answeredDetail(int count, Object subject, Object detail) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count questions', one: '1 question');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
     return 'Answered $_temp0 in $subject, $detail.';
   }
 
@@ -1146,7 +1175,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'In $count days', one: 'In 1 day');
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In $count days',
+      one: 'In 1 day',
+    );
     return '$_temp0';
   }
 
@@ -1471,7 +1505,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chaptersTopics(int chapters) {
-    String _temp0 = intl.Intl.pluralLogic(chapters, locale: localeName, other: '$chapters chapters', one: '1 chapter');
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters chapters',
+      one: '1 chapter',
+    );
     return '$_temp0';
   }
 
@@ -1591,4 +1630,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String recordingAvailableUntil(String date) {
     return 'Available until $date';
   }
+
+  @override
+  String get bus => 'Bus';
+
+  @override
+  String get busSubtitle => 'Route, stop and where the bus is now';
+
+  @override
+  String busTitle(Object name) {
+    return '$name\'s bus';
+  }
+
+  @override
+  String busNoBus(Object name) {
+    return '$name does not use the school bus.';
+  }
+
+  @override
+  String get busRoute => 'Route';
+
+  @override
+  String get busYourStop => 'Stop';
+
+  @override
+  String get busPickupTime => 'Pickup time';
+
+  @override
+  String get busVehicle => 'Vehicle';
+
+  @override
+  String get busNotRunning => 'No bus running right now. The live map appears when the driver starts the trip.';
+
+  @override
+  String busArrivingIn(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Arriving in $minutes min',
+      one: 'Arriving in 1 min',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String busStopsAway(int count, Object name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stops away',
+      one: '1 stop away',
+      zero: 'Next stop is $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get busPassed => 'The bus has passed this stop.';
+
+  @override
+  String get busStops => 'Stops';
+
+  @override
+  String get busLive => 'Live';
 }

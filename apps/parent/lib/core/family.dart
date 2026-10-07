@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +31,20 @@ class FamilyController extends ChangeNotifier {
   final _marks = <String, ChildMarks>{};
   final _marksErrors = <String, ApiException>{};
   final _badges = <String, List<BadgeAward>>{};
+
+  final _busPositions = StreamController<BusPositionEvent>.broadcast();
+
+  /// Live `transport.position` events, fed by the shell's realtime connection.
+  Stream<BusPositionEvent> get busPositions => _busPositions.stream;
+  void busMoved(BusPositionEvent e) {
+    if (!_busPositions.isClosed) _busPositions.add(e);
+  }
+
+  @override
+  void dispose() {
+    _busPositions.close();
+    super.dispose();
+  }
 
   Child? get selected => children.where((c) => c.id == _selectedId).firstOrNull ?? children.firstOrNull;
   ChildSummary? summaryOf(String childId) => _summaries[childId];

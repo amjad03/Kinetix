@@ -19,7 +19,7 @@ import 'app_localizations_kn.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'l10n/app_localizations.dart';
+/// import 'gen_l10n/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -2714,6 +2714,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Available until {date}'**
   String recordingAvailableUntil(String date);
+
+  /// No description provided for @bus.
+  ///
+  /// In en, this message translates to:
+  /// **'Bus'**
+  String get bus;
+
+  /// No description provided for @busSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Route, stop and where the bus is now'**
+  String get busSubtitle;
+
+  /// No description provided for @busTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s bus'**
+  String busTitle(Object name);
+
+  /// No description provided for @busNoBus.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} does not use the school bus.'**
+  String busNoBus(Object name);
+
+  /// No description provided for @busRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get busRoute;
+
+  /// No description provided for @busYourStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get busYourStop;
+
+  /// No description provided for @busPickupTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup time'**
+  String get busPickupTime;
+
+  /// No description provided for @busVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get busVehicle;
+
+  /// No description provided for @busNotRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'No bus running right now. The live map appears when the driver starts the trip.'**
+  String get busNotRunning;
+
+  /// No description provided for @busArrivingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{Arriving in 1 min} other{Arriving in {minutes} min}}'**
+  String busArrivingIn(int minutes);
+
+  /// No description provided for @busStopsAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Next stop is {name}} =1{1 stop away} other{{count} stops away}}'**
+  String busStopsAway(int count, Object name);
+
+  /// No description provided for @busPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'The bus has passed this stop.'**
+  String get busPassed;
+
+  /// No description provided for @busStops.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops'**
+  String get busStops;
+
+  /// No description provided for @busLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get busLive;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -2742,10 +2826,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsKn();
   }
 
-  throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+  throw FlutterError('AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

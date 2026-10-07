@@ -200,7 +200,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> _finishSignIn({required String server, required String tenant}) async {
     final profile = await api.me();
-    if (!profile.roles.any((r) => const ['teacher', 'hod', 'principal'].contains(r))) {
+    if (!profile.roles.any((r) => const ['teacher', 'hod', 'principal', 'driver'].contains(r))) {
       api.token = null;
       throw ApiException(403, 'This app is for teachers. Your account does not have a teaching role.', kind: ApiErrorKind.notTeacher);
     }

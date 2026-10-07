@@ -52,6 +52,7 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
         token: token,
         onMessage: messages.received,
         onReconnected: messages.load,
+        onBusPosition: family.busMoved,
       )..start();
     }
     widget.state.pendingPushTap.addListener(_openPushTap);

@@ -108,6 +108,9 @@ abstract class ParentApi {
   /// Books the child has out and has returned, with fines (`GET /v1/library/students/:id`).
   Future<LibraryAccount> library(String childId);
 
+  /// The child's school bus: route, stop, pickup time and the bus now (`GET /v1/transport/students/:id`).
+  Future<StudentBus> bus(String childId);
+
   /// The child's published marks with class averages and per-subject percentages.
   Future<ChildMarks> marks(String childId);
 
@@ -332,6 +335,10 @@ class HttpParentApi implements ParentApi {
   @override
   Future<FeeReceipt> receipt(String paymentId) async =>
       FeeReceipt.fromJson(await _send('GET', '/v1/fees/payments/$paymentId/receipt') as Map<String, dynamic>);
+
+  @override
+  Future<StudentBus> bus(String childId) async =>
+      StudentBus.fromJson(await _send('GET', '/v1/transport/students/$childId') as Map<String, dynamic>);
 
   @override
   Future<LibraryAccount> library(String childId) async =>

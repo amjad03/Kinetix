@@ -1171,5 +1171,44 @@
         "type": "String"
       }
     }
-  }
+  },
+  "bus": "Bus",
+  "busSubtitle": "Route, stop and where the bus is now",
+  "busTitle": "{name}'s bus",
+  "@busTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "busNoBus": "{name} does not use the school bus.",
+  "@busNoBus": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "busRoute": "Route",
+  "busYourStop": "Stop",
+  "busPickupTime": "Pickup time",
+  "busVehicle": "Vehicle",
+  "busNotRunning": "No bus running right now. The live map appears when the driver starts the trip.",
+  "busArrivingIn": "{minutes, plural, =1{Arriving in 1 min} other{Arriving in {minutes} min}}",
+  "@busArrivingIn": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "busStopsAway": "{count, plural, =0{Next stop is {name}} =1{1 stop away} other{{count} stops away}}",
+  "@busStopsAway": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {}
+    }
+  },
+  "busPassed": "The bus has passed this stop.",
+  "busStops": "Stops",
+  "busLive": "Live"
 }

@@ -2,6 +2,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Scanning the board's pairing QR code. mobile_scanner also declares this. -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Driver mode: the bus location while a trip runs. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- Push notifications (Android 13+ asks the teacher; the app requests it after sign-in). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Plain http:// only in debug/profile builds (dev server http://10.0.2.2:4000); release is HTTPS-only (build.gradle.kts). -->

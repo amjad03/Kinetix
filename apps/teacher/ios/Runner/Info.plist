@@ -29,6 +29,8 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Driver mode shares the bus location with families while a trip is running.</string>
 	<key>CFBundleName</key>
 	<string>kinetix_teacher</string>
 	<key>CFBundlePackageType</key>

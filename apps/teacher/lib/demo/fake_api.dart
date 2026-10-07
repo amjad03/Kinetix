@@ -637,6 +637,51 @@ class FakeTeacherApi implements TeacherApi {
     return c;
   }
 
+  // --- Driver mode ---------------------------------------------------------------------------
+
+  DriverHome driverData = DriverHome.fromJson({
+    'routes': [
+      {
+        'id': 'r1',
+        'name': 'Route 4 · Indiranagar',
+        'regNo': 'KA01AB1234',
+        'stops': [
+          {'id': 's1', 'name': '100 Feet Road', 'seq': 1, 'lat': 12.96, 'lng': 77.63, 'pickupTime': '07:15'},
+          {'id': 's2', 'name': 'Defence Colony', 'seq': 2, 'lat': 12.97, 'lng': 77.64, 'pickupTime': '07:30'},
+          {'id': 's3', 'name': 'College gate', 'seq': 3, 'lat': 12.98, 'lng': 77.65, 'pickupTime': '07:50'},
+        ],
+      },
+    ],
+    'trip': null,
+  });
+
+  /// Positions the app has sent: (tripId, lat, lng, speedKmh).
+  final positions = <(String, double, double, double?)>[];
+
+  /// Set to make [sendPosition] fail.
+  ApiException? positionError;
+
+  @override
+  Future<DriverHome> driverHome() async {
+    calls.add('driver home');
+    return driverData;
+  }
+
+  @override
+  Future<DriverTrip> startTrip({required String routeId, required TripDirection direction}) async {
+    calls.add('start trip $routeId ${direction.name}');
+    return DriverTrip(id: 'trip1', routeId: routeId, direction: direction);
+  }
+
+  @override
+  Future<void> sendPosition(String tripId, {required double lat, required double lng, double? speedKmh}) async {
+    if (positionError != null) throw positionError!;
+    positions.add((tripId, lat, lng, speedKmh));
+  }
+
+  @override
+  Future<void> endTrip(String tripId) async => calls.add('end trip $tripId');
+
   // --- Calendar --------------------------------------------------------------------------------
 
   List<CalendarEvent> calendarEvents = [

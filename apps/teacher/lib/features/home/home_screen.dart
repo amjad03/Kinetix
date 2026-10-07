@@ -9,6 +9,7 @@ import '../../core/models.dart';
 import '../../core/push.dart';
 import '../../widgets/common.dart';
 import '../calendar/calendar_screen.dart';
+import '../driver/driver_screen.dart';
 import '../homework/homework_tab.dart';
 import '../marks/marks_tab.dart';
 import '../messages/messages_tab.dart';
@@ -103,6 +104,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _go(_recordingsTab);
       case 'calendar':
         await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CalendarScreen(api: api)));
+      case 'transport':
+        // Only drivers get transport pushes in this app; others land on Today.
+        if (widget.state.me?.roles.contains('driver') ?? false) {
+          await DriverScreen.open(context, api);
+        } else {
+          _go(0);
+        }
       default:
         _go(0);
     }

@@ -16,6 +16,7 @@ import '../fees/fees_screen.dart';
 import '../fees/receipt_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
+import '../transport/bus_screen.dart';
 import '../marks/marks.dart';
 import '../messages/chat_screen.dart';
 import '../messages/messages_controller.dart';
@@ -44,6 +45,8 @@ class UpdatesTab extends StatelessWidget {
     NotificationKind.message => Icons.forum,
     NotificationKind.broadcast => Icons.campaign,
     NotificationKind.calendar => Icons.event,
+    NotificationKind.transport => Icons.directions_bus,
+    NotificationKind.hostel => Icons.apartment,
     NotificationKind.other => Icons.notifications,
   };
 
@@ -94,6 +97,10 @@ class UpdatesTab extends StatelessWidget {
         if (family.children.isEmpty) await family.load();
         final child = family.byId(n.studentId);
         if (child != null && context.mounted) return LibraryScreen.open(context, family, child);
+      case NotificationKind.transport:
+        if (family.children.isEmpty) await family.load();
+        final child = family.byId(n.studentId) ?? family.selected;
+        if (child != null && context.mounted) return BusScreen.open(context, family, child);
       case NotificationKind.marks:
         // "Marks published": that assessment's result for the child in the class, else all their results.
         final found = await family.findAssessment(n.assessmentId, sectionId: n.sectionId);
@@ -106,6 +113,7 @@ class UpdatesTab extends StatelessWidget {
         if (n.conversationId != null && context.mounted) return ChatScreen.open(context, messages, n.conversationId!);
       case NotificationKind.calendar:
         return CalendarScreen.open(context, api, highlightId: n.calendarEventId);
+      case NotificationKind.hostel:
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;

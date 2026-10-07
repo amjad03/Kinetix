@@ -436,5 +436,19 @@
   "demoSignInAs": "{name} के रूप में साइन इन करें",
   "demoOtpHint": "डेमो: कोई भी नंबर चलेगा; कोड 123456 है।",
   "notInDemo": "डेमो में उपलब्ध नहीं है।",
-  "recordingAvailableUntil": "{date} तक उपलब्ध"
+  "recordingAvailableUntil": "{date} तक उपलब्ध",
+  "bus": "बस",
+  "busSubtitle": "रूट, स्टॉप और बस अभी कहाँ है",
+  "busTitle": "{name} की बस",
+  "busNoBus": "{name} स्कूल बस से नहीं आते-जाते।",
+  "busRoute": "रूट",
+  "busYourStop": "स्टॉप",
+  "busPickupTime": "पिकअप का समय",
+  "busVehicle": "वाहन",
+  "busNotRunning": "अभी कोई बस नहीं चल रही। ड्राइवर के यात्रा शुरू करते ही लाइव नक्शा दिखेगा।",
+  "busArrivingIn": "{minutes, plural, =1{1 मिनट में पहुँचेगी} other{{minutes} मिनट में पहुँचेगी}}",
+  "busStopsAway": "{count, plural, =0{अगला स्टॉप {name} है} =1{1 स्टॉप दूर} other{{count} स्टॉप दूर}}",
+  "busPassed": "बस इस स्टॉप से निकल चुकी है।",
+  "busStops": "स्टॉप",
+  "busLive": "लाइव"
 }
