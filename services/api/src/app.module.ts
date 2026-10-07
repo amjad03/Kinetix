@@ -7,6 +7,8 @@ import { HostelModule } from './hostel/hostel.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { TransportModule } from './transport/transport.module.js';
 import { LibraryModule } from './library/library.module.js';
+import { ExamsModule } from './exams/exams.module.js';
+import { ObeModule } from './obe/obe.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
 import { PushModule } from './push/push.module.js';
@@ -89,6 +91,8 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     HostelModule,
     InventoryModule,
     MarksModule,
+    ExamsModule,
+    ObeModule,
     MessagesModule,
     CodeModule,
     PlatformModule,

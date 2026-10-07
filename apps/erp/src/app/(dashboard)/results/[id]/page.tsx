@@ -14,6 +14,7 @@ import { MiniBar } from '@/components/Bars';
 import { TableFrame } from '@/components/DataTable';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
+import { MarksPanel } from '@/components/results/MarksPanel';
 import { Distribution } from '@/components/results/Distribution';
 import { PublishButton } from '@/components/results/PublishButton';
 import { PublishedChip } from '@/components/results/PublishedChip';
@@ -114,6 +115,8 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
           testId="stat-absent"
         />
       </StatGrid>
+
+      {a.markStatus && <MarksPanel assessment={a} canPublish={!!me && canPublishMarks(me.roles)} canVerify={!!me && me.roles.some((r) => r === 'principal' || r === 'tenant_admin' || r === 'hod')} />}
 
       <SectionTitle>{t('results.howClassDid')}</SectionTitle>
       <Card sx={{ p: { xs: 2, md: 3 } }}>

@@ -347,6 +347,9 @@ export interface AssessmentSummary {
   classSize: number;
   /** Class average of the marks entered (absentees excluded), one decimal. */
   average: number | null;
+  /** Marks workflow: draft → submitted → verified → moderated (absent on older API versions). */
+  markStatus?: 'draft' | 'submitted' | 'verified' | 'moderated';
+  componentId?: string | null;
 }
 
 export interface MarkStats {
@@ -358,7 +361,7 @@ export interface MarkStats {
 
 export interface AssessmentDetail extends AssessmentSummary {
   stats: MarkStats;
-  students: { id: string; fullName: string; rollNo: string | null; marks: number | null; absent: boolean; remark: string | null }[];
+  students: { id: string; fullName: string; rollNo: string | null; marks: number | null; absent: boolean; remark: string | null; moderatedMarks?: number | null }[];
 }
 
 // ---- Timetable editing (v1/admin/timetable) ----

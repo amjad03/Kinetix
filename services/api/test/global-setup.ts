@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { importContent } from '../src/content/import.js';
@@ -11,10 +11,10 @@ export const TEST_DB = process.env.KINETIX_TEST_DB || 'kinetix_test';
 /** Recreates the test database and applies migrations once per test run. */
 export default async function setup() {
   const owner = `postgres://kinetix_owner:kinetix_owner@localhost:5432/${TEST_DB}`;
-  // KINETIX_TEST_ADMIN_URL: a superuser connection (e.g. postgres://me@localhost/postgres) where
-  // there is no `postgres` OS user to sudo to (a Homebrew Postgres on macOS).
-  const admin = process.env.KINETIX_TEST_ADMIN_URL || process.env.KINETIX_PG_ADMIN_URL;
-  const psql = (sql: string) => execSync(admin ? `psql "${admin}" -q -c "${sql}"` : `sudo -u postgres psql -q -c "${sql}"`, { stdio: 'pipe' });
+  // KINETIX_PG_ADMIN_URL (e.g. postgres://me@localhost:5432/postgres) is a superuser connection that
+  // needs no sudo; without it the old `sudo -u postgres psql` is used.
+  const adminUrl = process.env.KINETIX_PG_ADMIN_URL || process.env.KINETIX_TEST_ADMIN_URL;
+  const psql = (sql: string) => (adminUrl ? execFileSync('psql', [adminUrl, '-q', '-c', sql], { stdio: 'pipe' }) : execSync(`sudo -u postgres psql -q -c "${sql}"`, { stdio: 'pipe' }));
   psql(`DROP DATABASE IF EXISTS ${TEST_DB} WITH (FORCE)`);
   psql(`CREATE DATABASE ${TEST_DB} OWNER kinetix_owner`);
   await runMigrations(owner);

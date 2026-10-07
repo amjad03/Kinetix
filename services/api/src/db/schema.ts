@@ -1171,6 +1171,7 @@ export const libraryLoans = pgTable(
 // ---------------------------------------------------------------------------------------------
 
 export const assessmentKind = pgEnum('assessment_kind', ['test', 'assignment', 'internal', 'exam', 'practical']);
+export const markStatus = pgEnum('mark_status', ['draft', 'submitted', 'verified', 'moderated']);
 
 /** A test, assignment or exam for one class and subject. Families see it once published. */
 export const assessments = pgTable(
@@ -1187,6 +1188,15 @@ export const assessments = pgTable(
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** The scheme component this assessment counts towards (null = a plain class test). */
+    componentId: uuid('component_id').references((): AnyPgColumn => schemeComponents.id, { onDelete: 'set null' }),
+    /** Marks entry workflow: draft → submitted (teacher) → verified (head) → moderated (optional). */
+    markStatus: markStatus('mark_status').notNull().default('draft'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    verifiedBy: uuid('verified_by').references(() => users.id),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    moderatedBy: uuid('moderated_by').references(() => users.id),
+    moderatedAt: timestamp('moderated_at', { withTimezone: true }),
   },
   (t) => [index('assessments_section_idx').on(t.sectionId, t.heldOn)],
 );
@@ -1201,6 +1211,9 @@ export const marks = pgTable(
     marks: numeric('marks', { precision: 6, scale: 2, mode: 'number' }),
     absent: boolean('absent').notNull().default(false),
     remark: text('remark'),
+    /** Set by moderation; the effective mark is the moderated one when present. */
+    moderatedMarks: numeric('moderated_marks', { precision: 6, scale: 2, mode: 'number' }),
+    moderationNote: text('moderation_note'),
     updatedAt: updatedAt(),
   },
   (t) => [primaryKey({ columns: [t.assessmentId, t.studentId] })],
@@ -1641,6 +1654,357 @@ export const studentLifecycleEvents = pgTable(
   (t) => [index('student_lifecycle_events_student_idx').on(t.studentId, t.createdAt)],
 );
 
+
+// ---------------------------------------------------------------------------------------------
+// Assessment schemes, exams and results
+// ---------------------------------------------------------------------------------------------
+
+export const componentKind = pgEnum('component_kind', ['internal', 'external', 'practical', 'project', 'viva']);
+
+/** A grade scale: bands, how grade points are derived and how many decimals SGPA/CGPA print. */
+export const gradeScales = pgTable('grade_scales', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  /** GradeScaleRules (exams/grading.ts). */
+  rules: jsonb('rules').notNull(),
+  isDefault: boolean('is_default').notNull().default(false),
+  createdAt: createdAt(),
+});
+
+/** How one subject is assessed in an academic year: components, weights, credits and pass rules. */
+export const assessmentSchemes = pgTable(
+  'assessment_schemes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    academicYearId: uuid('academic_year_id').notNull().references(() => academicYears.id),
+    name: text('name').notNull(),
+    credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
+    /** PassRules (exams/grading.ts). */
+    passRules: jsonb('pass_rules').notNull(),
+    gradeScaleId: uuid('grade_scale_id').notNull().references(() => gradeScales.id),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('assessment_schemes_subject_year_uq').on(t.subjectId, t.academicYearId)],
+);
+
+export const schemeComponents = pgTable(
+  'scheme_components',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    schemeId: uuid('scheme_id').notNull().references(() => assessmentSchemes.id, { onDelete: 'cascade' }),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    kind: componentKind('kind').notNull(),
+    weight: numeric('weight', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    ord: smallint('ord').notNull().default(0),
+  },
+  (t) => [uniqueIndex('scheme_components_code_uq').on(t.schemeId, t.code)],
+);
+
+
+export const examSessionKind = pgEnum('exam_session_kind', ['regular', 'supplementary']);
+export const examSessionStatus = pgEnum('exam_session_status', ['draft', 'scheduled', 'processed', 'published', 'locked']);
+
+/** An examination session ("Semester 3 end exam, Nov 2026") with its schedule, seating and results. */
+export const examSessions = pgTable('exam_sessions', {
+  id: id(),
+  tenantId: tenantId(),
+  academicYearId: uuid('academic_year_id').notNull().references(() => academicYears.id),
+  programId: uuid('program_id').notNull().references(() => programs.id),
+  term: smallint('term').notNull(),
+  name: text('name').notNull(),
+  kind: examSessionKind('kind').notNull().default('regular'),
+  startsOn: date('starts_on').notNull(),
+  endsOn: date('ends_on').notNull(),
+  status: examSessionStatus('status').notNull().default('draft'),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  lockedAt: timestamp('locked_at', { withTimezone: true }),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** One paper in a session: a subject, its date and slot, the hall and the exam assessment its marks go into. */
+export const examPapers = pgTable(
+  'exam_papers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    examDate: date('exam_date').notNull(),
+    startsAt: time('starts_at').notNull(),
+    endsAt: time('ends_at').notNull(),
+    maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
+    /** The assessment (kind exam) that holds the marks; created with the paper. */
+    assessmentId: uuid('assessment_id').references(() => assessments.id, { onDelete: 'set null' }),
+  },
+  (t) => [uniqueIndex('exam_papers_uq').on(t.sessionId, t.subjectId, t.sectionId)],
+);
+
+/** A student's seat at a paper. */
+export const examSeats = pgTable(
+  'exam_seats',
+  {
+    tenantId: tenantId(),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    roomId: uuid('room_id').notNull().references(() => rooms.id),
+    seatNo: smallint('seat_no').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.paperId, t.studentId] }), uniqueIndex('exam_seats_seat_uq').on(t.paperId, t.roomId, t.seatNo)],
+);
+
+/** A student's hall ticket for a session; blocked tickets are not issued (detained, dues). */
+export const hallTickets = pgTable(
+  'hall_tickets',
+  {
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    ticketNo: text('ticket_no').notNull(),
+    blocked: boolean('blocked').notNull().default(false),
+    blockedReason: text('blocked_reason'),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.studentId] }), uniqueIndex('hall_tickets_no_uq').on(t.tenantId, t.ticketNo)],
+);
+
+/** A student's processed result for a session. */
+export const examResults = pgTable(
+  'exam_results',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    sgpa: numeric('sgpa', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    cgpa: numeric('cgpa', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    creditsAttempted: numeric('credits_attempted', { precision: 6, scale: 1, mode: 'number' }).notNull(),
+    creditsEarned: numeric('credits_earned', { precision: 6, scale: 1, mode: 'number' }).notNull(),
+    creditPoints: numeric('credit_points', { precision: 9, scale: 4, mode: 'number' }).notNull(),
+    outcome: text('outcome').notNull(),
+    computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('exam_results_uq').on(t.sessionId, t.studentId)],
+);
+
+export const examResultLines = pgTable(
+  'exam_result_lines',
+  {
+    tenantId: tenantId(),
+    resultId: uuid('result_id').notNull().references(() => examResults.id, { onDelete: 'cascade' }),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
+    percent: numeric('percent', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    grade: text('grade').notNull(),
+    gradePoint: numeric('grade_point', { precision: 4, scale: 2, mode: 'number' }).notNull(),
+    passed: boolean('passed').notNull(),
+    reasons: jsonb('reasons').notNull().default(sql`'[]'::jsonb`),
+    components: jsonb('components').notNull().default(sql`'[]'::jsonb`),
+  },
+  (t) => [primaryKey({ columns: [t.resultId, t.subjectId] })],
+);
+
+export const revaluationStatus = pgEnum('revaluation_status', ['requested', 'accepted', 'rejected', 'completed']);
+
+export const revaluationRequests = pgTable('revaluation_requests', {
+  id: id(),
+  tenantId: tenantId(),
+  sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+  status: revaluationStatus('status').notNull().default('requested'),
+  reason: text('reason'),
+  previousPercent: numeric('previous_percent', { precision: 5, scale: 2, mode: 'number' }),
+  newPercent: numeric('new_percent', { precision: 5, scale: 2, mode: 'number' }),
+  decisionNote: text('decision_note'),
+  requestedBy: uuid('requested_by').notNull().references(() => users.id),
+  decidedBy: uuid('decided_by').references(() => users.id),
+  createdAt: createdAt(),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+});
+
+
+// ---------------------------------------------------------------------------------------------
+// OBE / accreditation
+// ---------------------------------------------------------------------------------------------
+
+export const outcomeKind = pgEnum('outcome_kind', ['mission', 'vision', 'peo', 'po', 'pso']);
+export const coSetStatus = pgEnum('co_set_status', ['draft', 'active', 'retired']);
+export const surveyKind = pgEnum('survey_kind', ['course_exit', 'graduate_exit', 'alumni', 'employer']);
+export const actionStatus = pgEnum('action_status', ['open', 'in_progress', 'done']);
+
+/** Programme-level statements: mission, vision, PEOs, POs and PSOs. */
+export const programOutcomes = pgTable(
+  'program_outcomes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+    kind: outcomeKind('kind').notNull(),
+    code: text('code').notNull(),
+    statement: text('statement').notNull(),
+    ord: smallint('ord').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('program_outcomes_code_uq').on(t.programId, t.kind, t.code)],
+);
+
+/** Attainment rules for a programme (AttainmentConfig in obe/attainment.ts). */
+export const obeConfigs = pgTable('obe_configs', {
+  programId: uuid('program_id').primaryKey().references(() => programs.id, { onDelete: 'cascade' }),
+  tenantId: tenantId(),
+  config: jsonb('config').notNull(),
+  updatedBy: uuid('updated_by').notNull().references(() => users.id),
+  updatedAt: updatedAt(),
+});
+
+/** A version of a subject's course outcomes; only one is active, older ones stay for past results. */
+export const coSets = pgTable(
+  'co_sets',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    status: coSetStatus('status').notNull().default('draft'),
+    note: text('note'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+    activatedAt: timestamp('activated_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('co_sets_version_uq').on(t.subjectId, t.version)],
+);
+
+export const courseOutcomes = pgTable(
+  'course_outcomes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    coSetId: uuid('co_set_id').notNull().references(() => coSets.id, { onDelete: 'cascade' }),
+    code: text('code').notNull(),
+    statement: text('statement').notNull(),
+    bloomLevel: text('bloom_level'),
+    ord: smallint('ord').notNull().default(0),
+  },
+  (t) => [uniqueIndex('course_outcomes_code_uq').on(t.coSetId, t.code)],
+);
+
+/** CO → PO/PSO mapping strength (1 low, 2 medium, 3 high). */
+export const coOutcomeMap = pgTable(
+  'co_outcome_map',
+  {
+    tenantId: tenantId(),
+    coId: uuid('co_id').notNull().references(() => courseOutcomes.id, { onDelete: 'cascade' }),
+    outcomeId: uuid('outcome_id').notNull().references(() => programOutcomes.id, { onDelete: 'cascade' }),
+    strength: smallint('strength').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.coId, t.outcomeId] })],
+);
+
+/** Which share of an assessment's marks evidences a CO. */
+export const assessmentCoMap = pgTable(
+  'assessment_co_map',
+  {
+    tenantId: tenantId(),
+    assessmentId: uuid('assessment_id').notNull().references(() => assessments.id, { onDelete: 'cascade' }),
+    coId: uuid('co_id').notNull().references(() => courseOutcomes.id, { onDelete: 'cascade' }),
+    /** Fraction (0–1] of the assessment's marks that test this CO. */
+    share: numeric('share', { precision: 4, scale: 3, mode: 'number' }).notNull().default(1),
+  },
+  (t) => [primaryKey({ columns: [t.assessmentId, t.coId] })],
+);
+
+/** A survey whose ratings give indirect attainment (course exit, graduate exit, alumni, employer). */
+export const obeSurveys = pgTable('obe_surveys', {
+  id: id(),
+  tenantId: tenantId(),
+  programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+  subjectId: uuid('subject_id').references(() => subjects.id, { onDelete: 'cascade' }),
+  academicYearId: uuid('academic_year_id').notNull().references(() => academicYears.id),
+  kind: surveyKind('kind').notNull(),
+  title: text('title').notNull(),
+  scaleMax: smallint('scale_max').notNull().default(5),
+  minResponses: smallint('min_responses').notNull().default(5),
+  weight: numeric('weight', { precision: 5, scale: 2, mode: 'number' }).notNull().default(1),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** One rating of a CO (course surveys) or a PO/PSO (programme surveys). */
+export const obeSurveyRatings = pgTable('obe_survey_ratings', {
+  id: id(),
+  tenantId: tenantId(),
+  surveyId: uuid('survey_id').notNull().references(() => obeSurveys.id, { onDelete: 'cascade' }),
+  coId: uuid('co_id').references(() => courseOutcomes.id, { onDelete: 'cascade' }),
+  outcomeId: uuid('outcome_id').references(() => programOutcomes.id, { onDelete: 'cascade' }),
+  rating: numeric('rating', { precision: 4, scale: 2, mode: 'number' }).notNull(),
+  createdAt: createdAt(),
+}, (t) => [index('obe_survey_ratings_survey_idx').on(t.surveyId)]);
+
+/** A saved attainment calculation, kept so trends and accreditation reports stay reproducible. */
+export const attainmentSnapshots = pgTable(
+  'attainment_snapshots',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+    academicYearId: uuid('academic_year_id').notNull().references(() => academicYears.id),
+    /** 'co' (target is a course outcome) or 'po' (a PO/PSO). */
+    scope: text('scope').notNull(),
+    targetId: uuid('target_id').notNull(),
+    code: text('code').notNull(),
+    subjectId: uuid('subject_id').references(() => subjects.id, { onDelete: 'cascade' }),
+    direct: numeric('direct', { precision: 5, scale: 2, mode: 'number' }),
+    indirect: numeric('indirect', { precision: 5, scale: 2, mode: 'number' }),
+    combined: numeric('combined', { precision: 5, scale: 2, mode: 'number' }),
+    target: numeric('target', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    gap: numeric('gap', { precision: 5, scale: 2, mode: 'number' }),
+    met: boolean('met').notNull(),
+    detail: jsonb('detail').notNull().default(sql`'{}'::jsonb`),
+    computedBy: uuid('computed_by').notNull().references(() => users.id),
+    computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('attainment_snapshots_idx').on(t.programId, t.academicYearId, t.scope)],
+);
+
+export const improvementActions = pgTable('improvement_actions', {
+  id: id(),
+  tenantId: tenantId(),
+  programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+  scope: text('scope').notNull(),
+  targetId: uuid('target_id').notNull(),
+  title: text('title').notNull(),
+  detail: text('detail'),
+  ownerId: uuid('owner_id').references(() => users.id, { onDelete: 'set null' }),
+  dueOn: date('due_on'),
+  status: actionStatus('status').notNull().default('open'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+});
+
+/** Evidence for accreditation: a link or note tied to a CO, PO/PSO or an improvement action. */
+export const obeEvidence = pgTable('obe_evidence', {
+  id: id(),
+  tenantId: tenantId(),
+  programId: uuid('program_id').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+  scope: text('scope').notNull(),
+  targetId: uuid('target_id').notNull(),
+  title: text('title').notNull(),
+  url: text('url'),
+  note: text('note'),
+  uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
 export const TENANT_TABLES = [
   'campuses',
   'users',
@@ -1706,6 +2070,27 @@ export const TENANT_TABLES = [
   'merit_lists',
   'promotion_batches',
   'student_lifecycle_events',
+  'grade_scales',
+  'assessment_schemes',
+  'scheme_components',
+  'exam_sessions',
+  'exam_papers',
+  'exam_seats',
+  'hall_tickets',
+  'exam_results',
+  'exam_result_lines',
+  'revaluation_requests',
+  'program_outcomes',
+  'obe_configs',
+  'co_sets',
+  'course_outcomes',
+  'co_outcome_map',
+  'assessment_co_map',
+  'obe_surveys',
+  'obe_survey_ratings',
+  'attainment_snapshots',
+  'improvement_actions',
+  'obe_evidence',
   'audit_log',
   'transport_vehicles',
   'transport_drivers',
