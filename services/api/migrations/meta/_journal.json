@@ -288,6 +288,13 @@
       "when": 1791285235540,
       "tag": "0040_badges_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791400000000,
+      "tag": "0066_concept_video_scopes",
+      "breakpoints": true
     }
   ]
 }

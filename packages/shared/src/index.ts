@@ -431,8 +431,14 @@ export interface CreateHomeworkRequest {
 // ---------------------------------------------------------------------------------------------
 
 /** A concept video: played with YouTube's embedded player (youtube-nocookie.com), never downloaded. */
+/** Who linked a concept video: the KINETIX platform team (every institution), the institution's admin, or a teacher (their sections, or everyone once approved). */
+export type ConceptVideoSource = 'platform' | 'institution' | 'teacher';
+/** A teacher's video: none = for their sections only; pending / approved / rejected = asked to be shared institution-wide. */
+export type ConceptVideoShareStatus = 'none' | 'pending' | 'approved' | 'rejected';
+
 export interface ConceptVideo {
   id: string;
+  source: ConceptVideoSource;
   topicId: string;
   youtubeVideoId: string;
   title: string;
@@ -440,6 +446,26 @@ export interface ConceptVideo {
   durationSeconds: number | null;
   channelTitle: string | null;
   position: number;
+}
+
+/** What the admin and teacher screens manage: GET /v1/content/topics/:id/videos/mine, GET /v1/content/video-approvals. */
+export interface ManagedConceptVideo extends ConceptVideo {
+  shareStatus: ConceptVideoShareStatus;
+  reviewReason: string | null;
+  sectionIds: string[];
+  sections: { id: string; displayName: string }[];
+  createdBy: string | null;
+  createdByName: string | null;
+  topicTitle: string;
+  createdAt: string;
+}
+
+/** GET /v1/content/video-counts?courseId=: the institution's own videos per topic of a course. */
+export interface TopicVideoCount {
+  topicId: string;
+  institution: number;
+  teacher: number;
+  pending: number;
 }
 
 /** GET /v1/content/topics/:id/videos?lang=: the class's language first, then English, then the rest. */
