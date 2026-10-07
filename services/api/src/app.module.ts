@@ -3,6 +3,9 @@ import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
 import { FeesModule } from './fees/fees.module.js';
+import { HostelModule } from './hostel/hostel.module.js';
+import { InventoryModule } from './inventory/inventory.module.js';
+import { TransportModule } from './transport/transport.module.js';
 import { LibraryModule } from './library/library.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
@@ -78,6 +81,9 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     RecordingsModule,
     FeesModule,
     LibraryModule,
+    TransportModule,
+    HostelModule,
+    InventoryModule,
     MarksModule,
     MessagesModule,
     CodeModule,

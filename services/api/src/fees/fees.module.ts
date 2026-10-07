@@ -16,5 +16,6 @@ import { PaymentsAdminController } from './payments-admin.controller.js';
     { provide: RazorpayApi, inject: [ENV], useFactory: (env: Env) => (env.RAZORPAY_FAKE ? new FakeRazorpayApi() : new HttpRazorpayApi()) },
   ],
   controllers: [FeesController, PaymentsAdminController],
+  exports: [FeesService],
 })
 export class FeesModule {}

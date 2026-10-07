@@ -117,6 +117,12 @@ export const roleName = pgEnum('role_name', [
   'guardian',
   'librarian',
   'accountant',
+  // Campus operations (migration 0059).
+  'transport_manager',
+  'driver',
+  'hostel_warden',
+  'canteen_manager',
+  'store_keeper',
 ]);
 
 export const userRoles = pgTable(
@@ -579,7 +585,7 @@ export const guardians = pgTable(
   (t) => [uniqueIndex('guardians_user_student_uq').on(t.userId, t.studentId), index('guardians_student_idx').on(t.studentId)],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -1442,4 +1448,531 @@ export const TENANT_TABLES = [
   'poll_responses',
   'badges',
   'audit_log',
+  'transport_vehicles',
+  'transport_drivers',
+  'transport_routes',
+  'transport_stops',
+  'transport_assignments',
+  'transport_trips',
+  'transport_trip_events',
+  'hostel_blocks',
+  'hostel_rooms',
+  'hostel_beds',
+  'hostel_allotments',
+  'hostel_gate_passes',
+  'hostel_visitors',
+  'hostel_complaints',
+  'mess_plans',
+  'mess_subscriptions',
+  'mess_menu',
+  'canteen_items',
+  'canteen_wallets',
+  'canteen_wallet_txns',
+  'inv_stores',
+  'inv_items',
+  'inv_stock',
+  'inv_stock_moves',
+  'inv_vendors',
+  'inv_requisitions',
+  'inv_requisition_lines',
+  'inv_purchase_orders',
+  'inv_po_lines',
+  'inv_goods_receipts',
+  'inv_goods_receipt_lines',
+  'inv_invoices',
+  'assets',
+  'asset_allocations',
+  'asset_maintenance',
+  'doc_counters',
 ] as const;
+
+// ---------------------------------------------------------------------------------------------
+// Transport (migration 0060)
+// ---------------------------------------------------------------------------------------------
+
+export const transportVehicles = pgTable(
+  'transport_vehicles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    regNo: text('reg_no').notNull(),
+    model: text('model').notNull().default(''),
+    capacity: integer('capacity').notNull(),
+    status: text('status').notNull().default('active'),
+    insuranceExpiresOn: date('insurance_expires_on'),
+    fitnessExpiresOn: date('fitness_expires_on'),
+    pucExpiresOn: date('puc_expires_on'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('transport_vehicles_reg_uq').on(t.tenantId, t.regNo)],
+);
+
+/** Drivers and conductors; a driver with a login (`userId`) can run trips from the Teacher App. */
+export const transportDrivers = pgTable('transport_drivers', {
+  id: id(),
+  tenantId: tenantId(),
+  userId: uuid('user_id').references(() => users.id),
+  fullName: text('full_name').notNull(),
+  phone: text('phone').notNull().default(''),
+  role: text('role').notNull().default('driver'),
+  licenseNo: text('license_no'),
+  licenseExpiresOn: date('license_expires_on'),
+  active: boolean('active').notNull().default(true),
+  createdAt: createdAt(),
+});
+
+export const transportRoutes = pgTable(
+  'transport_routes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    vehicleId: uuid('vehicle_id').references(() => transportVehicles.id),
+    driverId: uuid('driver_id').references(() => transportDrivers.id),
+    monthlyFeePaise: integer('monthly_fee_paise').notNull().default(0),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('transport_routes_name_uq').on(t.tenantId, t.name)],
+);
+
+export const transportStops = pgTable(
+  'transport_stops',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    routeId: uuid('route_id').notNull().references(() => transportRoutes.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    seq: integer('seq').notNull(),
+    lat: numeric('lat', { precision: 9, scale: 6, mode: 'number' }).notNull(),
+    lng: numeric('lng', { precision: 9, scale: 6, mode: 'number' }).notNull(),
+    pickupTime: text('pickup_time'),
+  },
+  (t) => [uniqueIndex('transport_stops_seq_uq').on(t.routeId, t.seq)],
+);
+
+/** A student's seat: one active assignment per student. */
+export const transportAssignments = pgTable(
+  'transport_assignments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    routeId: uuid('route_id').notNull().references(() => transportRoutes.id),
+    stopId: uuid('stop_id').notNull().references(() => transportStops.id),
+    startsOn: date('starts_on').notNull(),
+    endedOn: date('ended_on'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('transport_assignments_active_uq').on(t.studentId).where(sql`ended_on is null`), index('transport_assignments_route_idx').on(t.routeId)],
+);
+
+/** One run of a route by a driver. `lastStopSeq` is the last stop reached (0 = none yet). */
+export const transportTrips = pgTable(
+  'transport_trips',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    routeId: uuid('route_id').notNull().references(() => transportRoutes.id),
+    driverUserId: uuid('driver_user_id').notNull().references(() => users.id),
+    direction: text('direction').notNull(),
+    status: text('status').notNull().default('running'),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    lastStopSeq: integer('last_stop_seq').notNull().default(0),
+    lastLat: numeric('last_lat', { precision: 9, scale: 6, mode: 'number' }),
+    lastLng: numeric('last_lng', { precision: 9, scale: 6, mode: 'number' }),
+    lastSpeedKmh: numeric('last_speed_kmh', { precision: 6, scale: 1, mode: 'number' }),
+    lastPingAt: timestamp('last_ping_at', { withTimezone: true }),
+    pings: integer('pings').notNull().default(0),
+  },
+  (t) => [index('transport_trips_route_idx').on(t.routeId, t.startedAt)],
+);
+
+/** The trip log: started, each stop reached, ended. */
+export const transportTripEvents = pgTable(
+  'transport_trip_events',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    tripId: uuid('trip_id').notNull().references(() => transportTrips.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(),
+    stopId: uuid('stop_id').references(() => transportStops.id),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('transport_trip_events_trip_idx').on(t.tripId, t.at)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Hostel and canteen (migrations 0061, 0062)
+// ---------------------------------------------------------------------------------------------
+
+export const hostelBlocks = pgTable(
+  'hostel_blocks',
+  { id: id(), tenantId: tenantId(), name: text('name').notNull(), gender: text('gender').notNull().default('mixed'), createdAt: createdAt() },
+  (t) => [uniqueIndex('hostel_blocks_name_uq').on(t.tenantId, t.name)],
+);
+
+export const hostelRooms = pgTable(
+  'hostel_rooms',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    blockId: uuid('block_id').notNull().references(() => hostelBlocks.id, { onDelete: 'cascade' }),
+    number: text('number').notNull(),
+    floor: integer('floor').notNull().default(0),
+    monthlyFeePaise: integer('monthly_fee_paise').notNull().default(0),
+  },
+  (t) => [uniqueIndex('hostel_rooms_number_uq').on(t.blockId, t.number)],
+);
+
+export const hostelBeds = pgTable(
+  'hostel_beds',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    roomId: uuid('room_id').notNull().references(() => hostelRooms.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+  },
+  (t) => [uniqueIndex('hostel_beds_label_uq').on(t.roomId, t.label)],
+);
+
+/** A student's bed: one active allotment per student and per bed. */
+export const hostelAllotments = pgTable(
+  'hostel_allotments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    bedId: uuid('bed_id').notNull().references(() => hostelBeds.id),
+    startsOn: date('starts_on').notNull(),
+    vacatedOn: date('vacated_on'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+  },
+  (t) => [
+    uniqueIndex('hostel_allotments_student_uq').on(t.studentId).where(sql`vacated_on is null`),
+    uniqueIndex('hostel_allotments_bed_uq').on(t.bedId).where(sql`vacated_on is null`),
+  ],
+);
+
+/** Out-pass: issued, then `out` at the gate, then `returned`. Families are told at each gate event. */
+export const hostelGatePasses = pgTable(
+  'hostel_gate_passes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    reason: text('reason').notNull(),
+    destination: text('destination').notNull().default(''),
+    expectedBackAt: timestamp('expected_back_at', { withTimezone: true }).notNull(),
+    status: text('status').notNull().default('issued'),
+    outAt: timestamp('out_at', { withTimezone: true }),
+    inAt: timestamp('in_at', { withTimezone: true }),
+    issuedBy: uuid('issued_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('hostel_gate_passes_student_idx').on(t.studentId, t.createdAt)],
+);
+
+export const hostelVisitors = pgTable(
+  'hostel_visitors',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    visitorName: text('visitor_name').notNull(),
+    relation: text('relation').notNull().default(''),
+    phone: text('phone').notNull().default(''),
+    idProof: text('id_proof').notNull().default(''),
+    inAt: timestamp('in_at', { withTimezone: true }).notNull().defaultNow(),
+    outAt: timestamp('out_at', { withTimezone: true }),
+    loggedBy: uuid('logged_by').notNull().references(() => users.id),
+  },
+  (t) => [index('hostel_visitors_student_idx').on(t.studentId, t.inAt)],
+);
+
+export const hostelComplaints = pgTable(
+  'hostel_complaints',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').references(() => students.id),
+    roomId: uuid('room_id').references(() => hostelRooms.id),
+    raisedBy: uuid('raised_by').notNull().references(() => users.id),
+    category: text('category').notNull(),
+    description: text('description').notNull(),
+    status: text('status').notNull().default('open'),
+    resolution: text('resolution'),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('hostel_complaints_status_idx').on(t.status, t.createdAt)],
+);
+
+export const messPlans = pgTable(
+  'mess_plans',
+  { id: id(), tenantId: tenantId(), name: text('name').notNull(), monthlyFeePaise: integer('monthly_fee_paise').notNull(), meals: jsonb('meals').$type<string[]>().notNull().default([]), active: boolean('active').notNull().default(true) },
+  (t) => [uniqueIndex('mess_plans_name_uq').on(t.tenantId, t.name)],
+);
+
+export const messSubscriptions = pgTable(
+  'mess_subscriptions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    planId: uuid('plan_id').notNull().references(() => messPlans.id),
+    startsOn: date('starts_on').notNull(),
+    endedOn: date('ended_on'),
+  },
+  (t) => [uniqueIndex('mess_subscriptions_active_uq').on(t.studentId).where(sql`ended_on is null`)],
+);
+
+/** The weekly mess menu: one row per weekday (0 = Sunday) and meal. */
+export const messMenu = pgTable(
+  'mess_menu',
+  { id: id(), tenantId: tenantId(), dayOfWeek: smallint('day_of_week').notNull(), meal: text('meal').notNull(), items: text('items').notNull() },
+  (t) => [uniqueIndex('mess_menu_slot_uq').on(t.tenantId, t.dayOfWeek, t.meal)],
+);
+
+export const canteenItems = pgTable(
+  'canteen_items',
+  { id: id(), tenantId: tenantId(), name: text('name').notNull(), pricePaise: integer('price_paise').notNull(), available: boolean('available').notNull().default(true) },
+  (t) => [uniqueIndex('canteen_items_name_uq').on(t.tenantId, t.name)],
+);
+
+export const canteenWallets = pgTable(
+  'canteen_wallets',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    balancePaise: integer('balance_paise').notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('canteen_wallets_student_uq').on(t.studentId)],
+);
+
+/** Wallet ledger: top-ups (+) and orders (−). `idempotencyKey` makes retries safe. */
+export const canteenWalletTxns = pgTable(
+  'canteen_wallet_txns',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    deltaPaise: integer('delta_paise').notNull(),
+    kind: text('kind').notNull(),
+    items: jsonb('items').$type<{ itemId: string; name: string; qty: number; pricePaise: number }[]>(),
+    idempotencyKey: text('idempotency_key'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('canteen_txn_key_uq').on(t.tenantId, t.idempotencyKey), index('canteen_txn_student_idx').on(t.studentId, t.createdAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Inventory, procurement and assets (migrations 0063, 0064)
+// ---------------------------------------------------------------------------------------------
+
+export const invStores = pgTable('inv_stores', { id: id(), tenantId: tenantId(), name: text('name').notNull(), location: text('location').notNull().default('') }, (t) => [uniqueIndex('inv_stores_name_uq').on(t.tenantId, t.name)]);
+
+export const invItems = pgTable(
+  'inv_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sku: text('sku').notNull(),
+    name: text('name').notNull(),
+    category: text('category').notNull().default('general'),
+    unit: text('unit').notNull().default('nos'),
+    reorderLevel: integer('reorder_level').notNull().default(0),
+    active: boolean('active').notNull().default(true),
+  },
+  (t) => [uniqueIndex('inv_items_sku_uq').on(t.tenantId, t.sku)],
+);
+
+/** On-hand quantity per store and item; every change is also a row in `inv_stock_moves`. */
+export const invStock = pgTable(
+  'inv_stock',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    storeId: uuid('store_id').notNull().references(() => invStores.id),
+    itemId: uuid('item_id').notNull().references(() => invItems.id),
+    qty: integer('qty').notNull().default(0),
+  },
+  (t) => [uniqueIndex('inv_stock_uq').on(t.storeId, t.itemId)],
+);
+
+export const invStockMoves = pgTable(
+  'inv_stock_moves',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    storeId: uuid('store_id').notNull().references(() => invStores.id),
+    itemId: uuid('item_id').notNull().references(() => invItems.id),
+    delta: integer('delta').notNull(),
+    kind: text('kind').notNull(),
+    refType: text('ref_type'),
+    refId: uuid('ref_id'),
+    issuedTo: text('issued_to'),
+    note: text('note').notNull().default(''),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('inv_stock_moves_item_idx').on(t.itemId, t.createdAt)],
+);
+
+export const invVendors = pgTable(
+  'inv_vendors',
+  { id: id(), tenantId: tenantId(), name: text('name').notNull(), gstin: text('gstin'), phone: text('phone').notNull().default(''), email: text('email'), active: boolean('active').notNull().default(true) },
+  (t) => [uniqueIndex('inv_vendors_name_uq').on(t.tenantId, t.name)],
+);
+
+export const invRequisitions = pgTable(
+  'inv_requisitions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    reason: text('reason').notNull().default(''),
+    /** submitted, approved, rejected, ordered */
+    status: text('status').notNull().default('submitted'),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_requisitions_number_uq').on(t.tenantId, t.number)],
+);
+
+export const invRequisitionLines = pgTable('inv_requisition_lines', {
+  id: id(),
+  tenantId: tenantId(),
+  requisitionId: uuid('requisition_id').notNull().references(() => invRequisitions.id, { onDelete: 'cascade' }),
+  itemId: uuid('item_id').notNull().references(() => invItems.id),
+  qty: integer('qty').notNull(),
+});
+
+export const invPurchaseOrders = pgTable(
+  'inv_purchase_orders',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    requisitionId: uuid('requisition_id').references(() => invRequisitions.id),
+    vendorId: uuid('vendor_id').notNull().references(() => invVendors.id),
+    storeId: uuid('store_id').notNull().references(() => invStores.id),
+    /** issued, partially_received, received, cancelled */
+    status: text('status').notNull().default('issued'),
+    totalPaise: bigint('total_paise', { mode: 'number' }).notNull(),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_po_number_uq').on(t.tenantId, t.number)],
+);
+
+export const invPoLines = pgTable('inv_po_lines', {
+  id: id(),
+  tenantId: tenantId(),
+  poId: uuid('po_id').notNull().references(() => invPurchaseOrders.id, { onDelete: 'cascade' }),
+  itemId: uuid('item_id').notNull().references(() => invItems.id),
+  qty: integer('qty').notNull(),
+  unitPricePaise: integer('unit_price_paise').notNull(),
+  receivedQty: integer('received_qty').notNull().default(0),
+});
+
+export const invGoodsReceipts = pgTable('inv_goods_receipts', {
+  id: id(),
+  tenantId: tenantId(),
+  poId: uuid('po_id').notNull().references(() => invPurchaseOrders.id),
+  receivedBy: uuid('received_by').notNull().references(() => users.id),
+  note: text('note').notNull().default(''),
+  /** Receipts retried with the same key are applied once. */
+  idempotencyKey: text('idempotency_key'),
+  receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex('inv_grn_key_uq').on(t.tenantId, t.idempotencyKey)]);
+
+export const invGoodsReceiptLines = pgTable('inv_goods_receipt_lines', {
+  id: id(),
+  tenantId: tenantId(),
+  receiptId: uuid('receipt_id').notNull().references(() => invGoodsReceipts.id, { onDelete: 'cascade' }),
+  poLineId: uuid('po_line_id').notNull().references(() => invPoLines.id),
+  qty: integer('qty').notNull(),
+});
+
+/** A vendor's invoice, matched to the PO and what was actually received (three-way match). */
+export const invInvoices = pgTable(
+  'inv_invoices',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    poId: uuid('po_id').notNull().references(() => invPurchaseOrders.id),
+    vendorId: uuid('vendor_id').notNull().references(() => invVendors.id),
+    invoiceNo: text('invoice_no').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    expectedPaise: bigint('expected_paise', { mode: 'number' }).notNull(),
+    /** matched, mismatch, approved (a mismatch accepted by an approver), paid */
+    status: text('status').notNull(),
+    note: text('note'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_invoices_vendor_no_uq').on(t.tenantId, t.vendorId, t.invoiceNo)],
+);
+
+export const assets = pgTable(
+  'assets',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    /** Printed on the QR label. */
+    tag: text('tag').notNull(),
+    name: text('name').notNull(),
+    category: text('category').notNull().default('general'),
+    location: text('location').notNull().default(''),
+    purchasedOn: date('purchased_on').notNull(),
+    costPaise: bigint('cost_paise', { mode: 'number' }).notNull(),
+    salvagePaise: bigint('salvage_paise', { mode: 'number' }).notNull().default(0),
+    usefulLifeYears: integer('useful_life_years').notNull(),
+    /** slm = straight line; wdv = written-down value at `wdvRatePct` a year */
+    method: text('method').notNull().default('slm'),
+    wdvRatePct: numeric('wdv_rate_pct', { precision: 5, scale: 2, mode: 'number' }),
+    /** active, in_maintenance, disposed */
+    status: text('status').notNull().default('active'),
+    disposedOn: date('disposed_on'),
+    disposalPaise: bigint('disposal_paise', { mode: 'number' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('assets_tag_uq').on(t.tenantId, t.tag)],
+);
+
+export const assetAllocations = pgTable(
+  'asset_allocations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    assetId: uuid('asset_id').notNull().references(() => assets.id, { onDelete: 'cascade' }),
+    assignedTo: text('assigned_to').notNull(),
+    userId: uuid('user_id').references(() => users.id),
+    allocatedOn: date('allocated_on').notNull(),
+    returnedOn: date('returned_on'),
+  },
+  (t) => [uniqueIndex('asset_allocations_active_uq').on(t.assetId).where(sql`returned_on is null`)],
+);
+
+export const assetMaintenance = pgTable('asset_maintenance', {
+  id: id(),
+  tenantId: tenantId(),
+  assetId: uuid('asset_id').notNull().references(() => assets.id, { onDelete: 'cascade' }),
+  kind: text('kind').notNull(),
+  description: text('description').notNull().default(''),
+  costPaise: bigint('cost_paise', { mode: 'number' }).notNull().default(0),
+  doneOn: date('done_on').notNull(),
+  nextDueOn: date('next_due_on'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+});
+
+/** Counters for numbered documents (REQ, PO, AST) per tenant. */
+export const docCounters = pgTable('doc_counters', { tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }), kind: text('kind').notNull(), lastNo: integer('last_no').notNull().default(0) }, (t) => [primaryKey({ columns: [t.tenantId, t.kind] })]);

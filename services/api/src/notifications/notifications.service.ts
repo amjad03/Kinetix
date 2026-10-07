@@ -12,7 +12,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge' | 'transport' | 'hostel';
 
 export { rupees } from './texts.js';
 
@@ -225,6 +225,26 @@ export class NotificationsService {
       text: texts.libraryIssued({ studentName: l.studentName, title: l.title, dueOn: l.dueOn }),
       data: { loanId: l.loanId, studentId: l.studentId },
       dedupeKey: `library:${l.loanId}`,
+    });
+  }
+
+  /** The bus is about to reach a stop: the guardians and students riding from it. */
+  async transportArrival(tx: Tx, a: { tripId: string; stopId: string; stopName: string; routeName: string; studentId: string; studentName: string }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(a.studentId), {
+      kind: 'transport',
+      text: texts.transportArrival({ studentName: a.studentName, stopName: a.stopName, routeName: a.routeName }),
+      data: { tripId: a.tripId, stopId: a.stopId, studentId: a.studentId },
+      dedupeKey: `transport:${a.tripId}:${a.stopId}:${a.studentId}`,
+    });
+  }
+
+  /** A student went out of or came back through the hostel gate. */
+  async hostelGate(tx: Tx, g: { passId: string; studentId: string; studentName: string; event: 'out' | 'in' }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(g.studentId), {
+      kind: 'hostel',
+      text: texts.hostelGate({ studentName: g.studentName, event: g.event }),
+      data: { passId: g.passId, studentId: g.studentId, event: g.event },
+      dedupeKey: `hostel-gate:${g.passId}:${g.event}`,
     });
   }
 

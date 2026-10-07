@@ -55,8 +55,8 @@ Missing:
 | 7 | OBE / accreditation | **Missing** |
 | 8 | Fees / finance | Partial — fees and Razorpay; no scholarships, budgets, cost centres, GL export |
 | 9 | HR / payroll | **Missing** |
-| 10 | Library / inventory / procurement | Partial — library only |
-| 11 | Transport / hostel / canteen | **Missing** |
+| 10 | Library / inventory / procurement | Mostly built — library; inventory (items, stores, stock ledger, issue, reorder levels), vendors, requisition → approval → PO → goods receipt → three-way invoice match, asset register (QR tag, allocation, maintenance, SLM/WDV depreciation, disposal). Missing: RFQ/quotation comparison, stock transfers between stores, returns, fixed-asset GL posting. See `docs/product/campus-operations.md` |
+| 11 | Transport / hostel / canteen | Mostly built — transport (vehicles, drivers, routes, stops, seats, fees, driver GPS → live bus + ETA + arrival notice, trip log, compliance expiry), hostel (blocks/rooms/beds, allot/vacate, fees, gate pass with family notice, visitors, mess plans + menu, complaints), canteen (menu, prepaid wallet, orders). Missing: hostel waitlist and room transfer, boarding attendance, fuel/expense tracking, incident reports, meal attendance, GPS-vendor adapter, online wallet top-up. See `docs/product/campus-operations.md` |
 | 12 | Communication / documents | Partial — messaging and broadcasts; no certificates or document vault |
 | 13 | Placements / internships / alumni | **Missing** |
 | 14 | Research / projects | **Missing** |

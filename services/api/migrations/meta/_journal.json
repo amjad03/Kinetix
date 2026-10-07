@@ -288,6 +288,27 @@
       "when": 1791285235540,
       "tag": "0040_badges_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1791403152012,
+      "tag": "0059_ops_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1791408387418,
+      "tag": "0060_campus_ops",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1791408393718,
+      "tag": "0061_campus_ops_rls",
+      "breakpoints": true
     }
   ]
 }

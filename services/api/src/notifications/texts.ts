@@ -150,6 +150,32 @@ export const texts = {
       }[l];
     }),
 
+  transportArrival: (p: { studentName: string; stopName: string; routeName: string }) =>
+    all((l) => {
+      const n = first(p.studentName);
+      return {
+        en: { title: `Bus arriving at ${p.stopName}`, body: `${p.routeName} is about to reach ${p.stopName} for ${n}.` },
+        hi: { title: `बस ${p.stopName} पहुँचने वाली है`, body: `${p.routeName} ${n} के लिए ${p.stopName} पहुँचने वाली है।` },
+        kn: { title: `ಬಸ್ ${p.stopName} ತಲುಪುತ್ತಿದೆ`, body: `${p.routeName} ${n} ಅವರಿಗಾಗಿ ${p.stopName} ತಲುಪುತ್ತಿದೆ.` },
+      }[l];
+    }),
+
+  hostelGate: (p: { studentName: string; event: 'out' | 'in' }) =>
+    all((l) => {
+      const n = first(p.studentName);
+      return p.event === 'out'
+        ? {
+            en: { title: `${n} left the hostel`, body: `${n} went out through the hostel gate.` },
+            hi: { title: `${n} हॉस्टल से बाहर गए`, body: `${n} हॉस्टल के गेट से बाहर गए हैं।` },
+            kn: { title: `${n} ಹಾಸ್ಟೆಲ್‌ನಿಂದ ಹೊರಟಿದ್ದಾರೆ`, body: `${n} ಹಾಸ್ಟೆಲ್ ಗೇಟ್ ಮೂಲಕ ಹೊರಗೆ ಹೋಗಿದ್ದಾರೆ.` },
+          }[l]
+        : {
+            en: { title: `${n} is back in the hostel`, body: `${n} came back through the hostel gate.` },
+            hi: { title: `${n} हॉस्टल लौट आए`, body: `${n} हॉस्टल के गेट से वापस आ गए हैं।` },
+            kn: { title: `${n} ಹಾಸ್ಟೆಲ್‌ಗೆ ಮರಳಿದ್ದಾರೆ`, body: `${n} ಹಾಸ್ಟೆಲ್ ಗೇಟ್ ಮೂಲಕ ಮರಳಿ ಬಂದಿದ್ದಾರೆ.` },
+          }[l];
+    }),
+
   calendar: (p: { kind: 'holiday' | 'exam' | 'event'; title: string; startsOn: string; endsOn: string }) =>
     all((l) => {
       const when = p.startsOn === p.endsOn ? dateIn(l, p.startsOn) : `${dateIn(l, p.startsOn)} – ${dateIn(l, p.endsOn)}`;
@@ -263,6 +289,8 @@ export const LOCK_SCREEN: Record<string, Record<Lang, string>> = {
   recording: { en: 'Lesson recording available', hi: 'पाठ की रिकॉर्डिंग उपलब्ध है', kn: 'ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್ ಲಭ್ಯವಿದೆ' },
   broadcast: { en: 'Message from your institution', hi: 'आपके संस्थान से संदेश', kn: 'ನಿಮ್ಮ ಸಂಸ್ಥೆಯಿಂದ ಸಂದೇಶ' },
   fee: { en: 'Fees update', hi: 'फ़ीस की सूचना', kn: 'ಶುಲ್ಕದ ಸೂಚನೆ' },
+  transport: { en: 'Bus update', hi: 'बस की सूचना', kn: 'ಬಸ್ ಸೂಚನೆ' },
+  hostel: { en: 'Hostel update', hi: 'हॉस्टल की सूचना', kn: 'ಹಾಸ್ಟೆಲ್ ಸೂಚನೆ' },
   library: { en: 'Library update', hi: 'पुस्तकालय की सूचना', kn: 'ಗ್ರಂಥಾಲಯದ ಸೂಚನೆ' },
   marks: { en: 'Marks published', hi: 'अंक जारी', kn: 'ಅಂಕಗಳು ಪ್ರಕಟವಾಗಿವೆ' },
   message: { en: 'New message', hi: 'नया संदेश', kn: 'ಹೊಸ ಸಂದೇಶ' },

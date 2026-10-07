@@ -8,7 +8,12 @@ export type RoleName =
   | 'student'
   | 'guardian'
   | 'librarian'
-  | 'accountant';
+  | 'accountant'
+  | 'transport_manager'
+  | 'driver'
+  | 'hostel_warden'
+  | 'canteen_manager'
+  | 'store_keeper';
 
 export interface UserPrincipal {
   kind: 'user';

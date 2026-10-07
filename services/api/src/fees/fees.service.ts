@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq, lte, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -80,6 +81,33 @@ export class FeesService {
       receiptNo,
     });
     return paid;
+  }
+
+  /**
+   * Charges fees to individual students (transport, hostel, mess). One invoice per student;
+   * a student who already has an invoice with the same title is skipped, so reruns are safe.
+   */
+  async chargeStudents(tx: Tx, p: UserPrincipal, title: string, dueOn: string, charges: { studentId: string; amountPaise: number }[]): Promise<{ charged: number; skipped: number }> {
+    const due = charges.filter((c) => c.amountPaise > 0);
+    if (due.length === 0) return { charged: 0, skipped: charges.length };
+    const ids = due.map((c) => c.studentId);
+    const rows = await tx
+      .select({ id: students.id, sectionId: students.sectionId })
+      .from(students)
+      .where(sql`${students.id} in (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`);
+    const have = await tx
+      .select({ studentId: feeInvoices.studentId })
+      .from(feeInvoices)
+      .where(and(eq(feeInvoices.title, title), sql`${feeInvoices.studentId} in (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`));
+    const skip = new Set(have.map((h) => h.studentId));
+    const batchId = randomUUID();
+    const sectionOf = new Map(rows.map((r) => [r.id, r.sectionId]));
+    const fresh = due.filter((c) => !skip.has(c.studentId) && sectionOf.has(c.studentId));
+    if (fresh.length > 0) {
+      await tx.insert(feeInvoices).values(fresh.map((c) => ({ tenantId: p.tenantId, studentId: c.studentId, sectionId: sectionOf.get(c.studentId)!, batchId, title, amountPaise: c.amountPaise, dueOn, createdBy: p.userId })));
+      for (const c of fresh) await this.notifications.feeIssued(tx, { batchId: `${batchId}:${c.studentId}`, title, amountPaise: c.amountPaise, dueOn, studentIds: [c.studentId] });
+    }
+    return { charged: fresh.length, skipped: charges.length - fresh.length };
   }
 
   async receipt(tx: Tx, p: UserPrincipal, paymentId: string) {

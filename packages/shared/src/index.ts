@@ -44,6 +44,8 @@ export const RealtimeEvents = {
   RemoteState: 'remote.state',
   /** Server → the student and their guardians: a teacher awarded a badge ({@link BadgeAwardedEvent}). */
   BadgeAwarded: 'badge.awarded',
+  /** Server → guardians, staff and the driver: the school bus moved ({@link TransportPositionEvent}). */
+  TransportPosition: 'transport.position',
 } as const;
 
 // --- Class questions (polls) and answer cards ------------------------------------------------
@@ -261,7 +263,7 @@ export type SyncOpResult =
 // Teacher App
 // ---------------------------------------------------------------------------------------------
 
-export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant';
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant' | 'transport_manager' | 'driver' | 'hostel_warden' | 'canteen_manager' | 'store_keeper';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 /** GET /v1/me */
@@ -496,4 +498,20 @@ export interface PlaylistPreview {
   chapter: { id: string; title: string };
   topics: { id: string; title: string }[];
   videos: { youtubeVideoId: string; title: string; position: number; durationSeconds: number | null; suggestedTopicId: string | null; alreadyOn: string[] }[];
+}
+
+// --- Transport ---------------------------------------------------------------------------------
+
+/** A school bus position, fanned out to the families riding that route. */
+export interface TransportPositionEvent {
+  tripId: string;
+  routeId: string;
+  lat: number;
+  lng: number;
+  speedKmh: number | null;
+  /** The stop the bus is heading to next (null after the last stop). */
+  nextStop: { id: string; name: string; seq: number } | null;
+  /** Minutes to the next stop at the bus's current pace. */
+  etaMinutes: number | null;
+  at: string;
 }
