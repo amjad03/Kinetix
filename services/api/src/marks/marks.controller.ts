@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
@@ -7,7 +7,7 @@ import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, marks, students, subjects, users } from '../db/schema.js';
+import { assessments, assessmentSchemes, examPapers, examSessions, marks, schemeComponents, students, subjects, users } from '../db/schema.js';
 import { headedDepartmentIds, headsSubject } from '../departments/departments.controller.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { isSchoolAdmin, parseDate, TeacherService } from '../teacher/teacher.service.js';
@@ -21,7 +21,15 @@ const CreateBody = z.object({
   kind: z.enum(['test', 'assignment', 'internal', 'exam', 'practical']),
   maxMarks: z.number().positive().max(1000),
   heldOn: z.string(),
+  /** The scheme component (IA test, SEE…) the marks count towards. */
+  componentId: z.uuid().optional(),
 });
+
+const ModerateBody = z.object({
+  adjustments: z.array(z.object({ studentId: z.uuid(), moderatedMarks: z.number().min(0), note: z.string().trim().min(1).max(300) })).min(1).max(500),
+});
+const ComponentBody = z.object({ componentId: z.uuid().nullable() });
+const VERIFIERS: RoleName[] = ['tenant_admin', 'principal', 'hod'];
 
 const MarksBody = z.object({
   entries: z
@@ -72,6 +80,7 @@ export class AssessmentsController {
           createdBy: p.userId,
         })
         .returning();
+      if (body.componentId) await this.linkComponent(tx, a, body.componentId);
       return this.detail(tx, a.id);
     });
   }
@@ -112,6 +121,7 @@ export class AssessmentsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const a = await this.load(tx, id);
       await this.assertTeaches(tx, p, a.sectionId);
+      await this.assertEditable(tx, a);
       const ids = body.entries.map((e) => e.studentId);
       const inClass = await tx
         .select({ id: students.id })
@@ -152,6 +162,90 @@ export class AssessmentsController {
     });
   }
 
+  /** The teacher hands the marks over for verification; they are locked for editing until reopened. */
+  @Post(':id/submit')
+  @HttpCode(200)
+  @Auth('user', STAFF)
+  submit(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await this.load(tx, id);
+      await this.assertTeaches(tx, p, a.sectionId);
+      if (a.markStatus !== 'draft') throw new ConflictException('The marks are already submitted');
+      await this.assertAllEntered(tx, a);
+      await tx.update(assessments).set({ markStatus: 'submitted', submittedAt: new Date() }).where(eq(assessments.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'marks.submitted', subjectType: 'assessment', subjectId: id });
+      return this.detail(tx, id);
+    });
+  }
+
+  /** The head of department (or principal) checks the submitted marks. A teacher cannot verify their own entry. */
+  @Post(':id/verify')
+  @HttpCode(200)
+  @Auth('user', VERIFIERS)
+  verify(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await this.load(tx, id);
+      await this.assertVerifier(tx, p, a);
+      if (a.markStatus !== 'submitted') throw new ConflictException('Only submitted marks can be verified');
+      await tx.update(assessments).set({ markStatus: 'verified', verifiedBy: p.userId, verifiedAt: new Date() }).where(eq(assessments.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'marks.verified', subjectType: 'assessment', subjectId: id });
+      return this.detail(tx, id);
+    });
+  }
+
+  /** Moderation: adjusts individual marks with a recorded reason (grace marks, scaling). The original mark is kept. */
+  @Post(':id/moderate')
+  @HttpCode(200)
+  @Auth('user', VERIFIERS)
+  moderate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ModerateBody)) body: z.infer<typeof ModerateBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await this.load(tx, id);
+      await this.assertVerifier(tx, p, a);
+      if (a.markStatus !== 'verified' && a.markStatus !== 'moderated') throw new ConflictException('Verify the marks before moderating');
+      await this.assertEditable(tx, a, true);
+      for (const adj of body.adjustments) {
+        if (adj.moderatedMarks > a.maxMarks) throw new BadRequestException(`Marks cannot be more than ${a.maxMarks}`);
+        const res = await tx.update(marks).set({ moderatedMarks: adj.moderatedMarks, moderationNote: adj.note, absent: false, updatedAt: new Date() }).where(and(eq(marks.assessmentId, id), eq(marks.studentId, adj.studentId))).returning({ s: marks.studentId });
+        if (res.length === 0) throw new BadRequestException('Some students have no marks to moderate');
+      }
+      await tx.update(assessments).set({ markStatus: 'moderated', moderatedBy: p.userId, moderatedAt: new Date() }).where(eq(assessments.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'marks.moderated', subjectType: 'assessment', subjectId: id, data: { adjusted: body.adjustments.length } });
+      return this.detail(tx, id);
+    });
+  }
+
+  /** Sends submitted, verified or moderated marks back to the teacher (clears moderation). */
+  @Post(':id/reopen')
+  @HttpCode(200)
+  @Auth('user', VERIFIERS)
+  reopen(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await this.load(tx, id);
+      await this.assertVerifier(tx, p, a, true);
+      if (a.markStatus === 'draft') throw new ConflictException('The marks are already open');
+      await this.assertEditable(tx, a, true);
+      await tx.update(marks).set({ moderatedMarks: null, moderationNote: null }).where(eq(marks.assessmentId, id));
+      await tx.update(assessments).set({ markStatus: 'draft', submittedAt: null, verifiedBy: null, verifiedAt: null, moderatedBy: null, moderatedAt: null }).where(eq(assessments.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'marks.reopened', subjectType: 'assessment', subjectId: id });
+      return this.detail(tx, id);
+    });
+  }
+
+  /** Counts this assessment towards a scheme component (or clears the link). */
+  @Put(':id/component')
+  @Auth('user', STAFF)
+  setComponent(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ComponentBody)) body: z.infer<typeof ComponentBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await this.load(tx, id);
+      if (!(await headsSubject(tx, p, a.subjectId))) await this.assertTeaches(tx, p, a.sectionId);
+      await this.assertEditable(tx, a, true);
+      if (body.componentId) await this.linkComponent(tx, a, body.componentId);
+      else await tx.update(assessments).set({ componentId: null }).where(eq(assessments.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'marks.component_linked', subjectType: 'assessment', subjectId: id, data: { componentId: body.componentId } });
+      return this.detail(tx, id);
+    });
+  }
+
   @Post(':id/publish')
   @HttpCode(200)
   @Auth('user', STAFF)
@@ -187,12 +281,14 @@ export class AssessmentsController {
         maxMarks: assessments.maxMarks,
         heldOn: assessments.heldOn,
         publishedAt: assessments.publishedAt,
+        markStatus: assessments.markStatus,
+        componentId: assessments.componentId,
         sectionId: assessments.sectionId,
         subject: { id: subjects.id, name: subjects.name },
         createdBy: users.fullName,
         entered: sql<number>`(select count(*)::int from marks m where m.assessment_id = "assessments"."id")`,
         classSize: sql<number>`(select count(*)::int from students s where s.section_id = "assessments"."section_id" and s.status = 'active')`,
-        average: sql<number | null>`(select round(avg(m.marks)::numeric, 1)::float from marks m where m.assessment_id = "assessments"."id" and m.marks is not null)`,
+        average: sql<number | null>`(select round(avg(coalesce(m.moderated_marks, m.marks))::numeric, 1)::float from marks m where m.assessment_id = "assessments"."id" and coalesce(m.moderated_marks, m.marks) is not null)`,
       })
       .from(assessments)
       .innerJoin(subjects, eq(subjects.id, assessments.subjectId))
@@ -210,6 +306,8 @@ export class AssessmentsController {
         marks: marks.marks,
         absent: marks.absent,
         remark: marks.remark,
+        moderatedMarks: marks.moderatedMarks,
+        moderationNote: marks.moderationNote,
       })
       .from(students)
       .leftJoin(marks, and(eq(marks.studentId, students.id), eq(marks.assessmentId, id)))
@@ -217,9 +315,41 @@ export class AssessmentsController {
       .orderBy(asc(students.rollNo));
     return {
       ...summary,
-      stats: stats(roster.map((r) => r.marks)),
+      stats: stats(roster.map((r) => r.moderatedMarks ?? r.marks)),
       students: roster.map((r) => ({ ...r, absent: r.absent ?? false })),
     };
+  }
+
+  /** Marks cannot change once handed over, nor after the exam they belong to has its results published. */
+  private async assertEditable(tx: Tx, a: typeof assessments.$inferSelect, allowWorkflow = false) {
+    if (!allowWorkflow && a.markStatus !== 'draft') throw new ConflictException('The marks are submitted; ask the head of department to reopen them');
+    const [paper] = await tx.select({ status: examSessions.status }).from(examPapers).innerJoin(examSessions, eq(examSessions.id, examPapers.sessionId)).where(eq(examPapers.assessmentId, a.id));
+    if (paper && (paper.status === 'published' || paper.status === 'locked' || paper.status === 'processed')) throw new ConflictException('Results are already processed for this exam; use revaluation to correct a mark');
+  }
+
+  private async assertAllEntered(tx: Tx, a: typeof assessments.$inferSelect) {
+    const [{ missing }] = await tx
+      .select({ missing: sql<number>`count(*)::int` })
+      .from(students)
+      .leftJoin(marks, and(eq(marks.studentId, students.id), eq(marks.assessmentId, a.id)))
+      .where(and(eq(students.sectionId, a.sectionId), eq(students.status, 'active'), sql`${marks.studentId} is null`));
+    if (missing > 0) throw new BadRequestException(`${missing} student(s) have no marks yet (enter marks or mark them absent)`);
+  }
+
+  private async assertVerifier(tx: Tx, p: UserPrincipal, a: typeof assessments.$inferSelect, allowOwn = false) {
+    if (!isSchoolAdmin(p) && !(await headsSubject(tx, p, a.subjectId))) throw new ForbiddenException('Only the head of the department or the principal can do this');
+    if (!allowOwn && a.createdBy === p.userId && !isSchoolAdmin(p)) throw new ForbiddenException('You cannot verify marks you created');
+  }
+
+  private async linkComponent(tx: Tx, a: typeof assessments.$inferSelect, componentId: string) {
+    const [row] = await tx
+      .select({ subjectId: assessmentSchemes.subjectId })
+      .from(schemeComponents)
+      .innerJoin(assessmentSchemes, eq(assessmentSchemes.id, schemeComponents.schemeId))
+      .where(eq(schemeComponents.id, componentId));
+    if (!row) throw new BadRequestException('Unknown scheme component');
+    if (row.subjectId !== a.subjectId) throw new BadRequestException('That component belongs to another subject');
+    await tx.update(assessments).set({ componentId }).where(eq(assessments.id, a.id));
   }
 
   private async load(tx: Tx, id: string) {
@@ -266,11 +396,11 @@ export class StudentMarksController {
           maxMarks: assessments.maxMarks,
           heldOn: assessments.heldOn,
           subject: subjects.name,
-          marks: marks.marks,
+          marks: sql<number | null>`coalesce(${marks.moderatedMarks}, ${marks.marks})::float`,
           absent: marks.absent,
           remark: marks.remark,
-          classAverage: sql<number | null>`(select round(avg(m.marks)::numeric, 1)::float from marks m where m.assessment_id = "assessments"."id" and m.marks is not null)`,
-          classHighest: sql<number | null>`(select max(m.marks)::float from marks m where m.assessment_id = "assessments"."id")`,
+          classAverage: sql<number | null>`(select round(avg(coalesce(m.moderated_marks, m.marks))::numeric, 1)::float from marks m where m.assessment_id = "assessments"."id" and coalesce(m.moderated_marks, m.marks) is not null)`,
+          classHighest: sql<number | null>`(select max(coalesce(m.moderated_marks, m.marks))::float from marks m where m.assessment_id = "assessments"."id")`,
         })
         .from(assessments)
         .innerJoin(subjects, eq(subjects.id, assessments.subjectId))

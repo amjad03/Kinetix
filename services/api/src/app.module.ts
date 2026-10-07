@@ -4,6 +4,8 @@ import { AiModule } from './ai/ai.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
 import { FeesModule } from './fees/fees.module.js';
 import { LibraryModule } from './library/library.module.js';
+import { ExamsModule } from './exams/exams.module.js';
+import { ObeModule } from './obe/obe.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
 import { PushModule } from './push/push.module.js';
@@ -79,6 +81,8 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     FeesModule,
     LibraryModule,
     MarksModule,
+    ExamsModule,
+    ObeModule,
     MessagesModule,
     CodeModule,
     PlatformModule,
