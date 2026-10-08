@@ -14,6 +14,7 @@ import { boardSessions, deviceProfiles, devices, pairingCodes, userRoles, users 
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 
 /** Sessions without a timetable period (extra class, substitution) last this long. */
 const AD_HOC_SESSION_MS = 2 * 3600_000;
@@ -39,6 +40,7 @@ export class PairingService {
     private readonly sessions: SessionsService,
     private readonly realtime: RealtimeGateway,
     private readonly limiter: RateLimiter,
+    private readonly events: EventBus,
     private readonly clock: Clock,
     @Inject(ENV) private readonly env: Env,
   ) {}
@@ -126,6 +128,13 @@ export class PairingService {
         expiresAt,
       })
       .returning();
+    await this.events.emit(tx, device.tenantId, {
+      type: DomainEvents.ClassStarted,
+      aggregateType: 'board_session',
+      aggregateId: session.id,
+      actorId: teacherId,
+      payload: { deviceId: device.id, sectionId: session.sectionId, subjectId: session.subjectId, timetableSlotId: session.timetableSlotId, method },
+    });
 
     // The board's list of teachers who use it. A full sign-in also lifts a lockout from wrong
     // PINs: the teacher has just proved who they are.

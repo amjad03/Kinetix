@@ -18,6 +18,7 @@ import { SystemLookups } from '../db/system-lookups.service.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { WhiteboardsService } from './whiteboards.service.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 
 const MAX_BYTES = 6 * 1024 * 1024;
 /** Earlier saves kept per board. */
@@ -100,6 +101,7 @@ export class WhiteboardsController {
     private readonly notifications: NotificationsService,
     private readonly boards: WhiteboardsService,
     private readonly storage: ObjectStorage,
+    private readonly events: EventBus,
   ) {}
 
   /** Save (or save again) the board's pages. The board picks the id, so saving is idempotent. */
@@ -140,6 +142,7 @@ export class WhiteboardsController {
         .onConflictDoUpdate({ target: whiteboards.id, set: values });
 
       if ('sharedAt' in values) await this.notifyShared(tx, id);
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.BoardSaved, aggregateType: 'whiteboard', aggregateId: id, actorId: p.teacherId, payload: { version: values.version, pages: body.pages.length, sessionId: session?.id, shared: !!body.share } });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.teacherId, action: 'whiteboard.saved', subjectType: 'whiteboard', subjectId: id, data: { pages: body.pages.length, sizeBytes, shared: body.share } });
       return this.boards.summary(tx, id);
     });

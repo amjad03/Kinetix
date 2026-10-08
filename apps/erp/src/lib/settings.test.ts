@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { consentShares, DEFAULT_BOARD_KIOSK, grievanceBody, grievanceProblem, kioskPinProblem, needsConfirm, settingDisabled, type InstitutionSettings } from './settings';
+import { consentShares, DEFAULT_BOARD_KIOSK, grievanceBody, grievanceProblem, kioskPinProblem, needsConfirm, settingDisabled, type InstitutionSettings , parsePastExamCsv } from './settings';
 
 const s: InstitutionSettings = { liveViewEnabled: true, liveViewIndicator: true, classroomAudioToViewers: false, pinFallbackEnabled: false };
 
@@ -54,5 +54,16 @@ describe('board kiosk IT PIN', () => {
 
   it('is on, without a PIN, until the institution changes it', () => {
     expect(DEFAULT_BOARD_KIOSK).toEqual({ enabled: true, pinSet: false, pinSetAt: null });
+  });
+});
+
+describe('past-exam question CSV', () => {
+  it('reads question, exam, year and marks; skips the header; reports bad lines', () => {
+    const { rows, bad } = parsePastExamCsv('question,exam,year,marks\n"What is goodwill, and how is it valued?",BU BCom Sem 3,2023,5\nWhy,BU,2023\nDefine a partnership deed.,CBSE 12,20x\nExplain sacrificing ratio.,BU BCom Sem 3,2024');
+    expect(rows).toEqual([
+      { question: 'What is goodwill, and how is it valued?', exam: 'BU BCom Sem 3', year: 2023, marks: 5 },
+      { question: 'Explain sacrificing ratio.', exam: 'BU BCom Sem 3', year: 2024 },
+    ]);
+    expect(bad).toEqual([3, 4]);
   });
 });

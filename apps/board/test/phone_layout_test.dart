@@ -375,7 +375,7 @@ void main() {
           } else {
             expect(panel, Size(size.width / 2, size.height));
           }
-          expect(find.text(l.aiGroupTeach), findsOneWidget);
+          expect(find.byKey(const Key('ai-ask')), findsOneWidget);
           p.step = 'AI explanation';
           await tester.enterText(find.byKey(const Key('ai-ask')), 'Photosynthesis');
           await tester.testTextInput.receiveAction(TextInputAction.done);

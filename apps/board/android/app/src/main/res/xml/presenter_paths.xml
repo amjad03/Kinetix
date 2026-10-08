@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Presentations handed to the installed presenter app (Presenter.kt): the app cache only. -->
+<paths>
+    <cache-path name="presentations" path="presentations/"/>
+</paths>

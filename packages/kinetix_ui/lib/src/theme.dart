@@ -18,6 +18,9 @@ abstract final class KxFonts {
   /// Board text for LKG to Class 5 (single-storey a and g).
   static const primary = '$_pkg/Andika';
 
+  /// Text AI's handwriting-style font (Kalam, OFL): Latin and Devanagari.
+  static const kalam = '$_pkg/Kalam';
+
   /// Code blocks.
   static const code = '$_pkg/JetBrainsMono';
 

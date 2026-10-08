@@ -15,6 +15,66 @@ export interface InstitutionSettings {
   grievanceOfficer?: GrievanceOfficer | null;
   /** Kiosk mode on boards (docs/hardware/kiosk-mode.md). The API never returns the PIN or its hash. */
   boardKiosk?: BoardKiosk;
+  /** Board profile → Schedule a Training: the link its QR opens and who to contact. */
+  boardTraining?: { url?: string | null; contact?: string | null } | null;
+  /** Institution announcements in the board's What's New, newest first. */
+  boardWhatsNew?: WhatsNewItem[];
+}
+
+export interface WhatsNewItem {
+  title: string;
+  body: string;
+  /** YYYY-MM-DD */
+  at: string;
+}
+
+/** One past-exam question parsed from a pasted CSV line: question,exam,year[,marks]. */
+export interface PastExamRow {
+  question: string;
+  exam: string;
+  year: number;
+  marks?: number;
+}
+
+/** Splits one CSV line; fields may be quoted ("a, b") with "" for a quote. */
+export function csvCells(line: string): string[] {
+  const out: string[] = [];
+  let cur = '';
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (quoted) {
+      if (c === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (c === '"') quoted = false;
+      else cur += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ',') {
+      out.push(cur.trim());
+      cur = '';
+    } else cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+/** Parses pasted CSV (question,exam,year[,marks]). Returns rows and the 1-based lines that could not be read. */
+export function parsePastExamCsv(text: string): { rows: PastExamRow[]; bad: number[] } {
+  const rows: PastExamRow[] = [];
+  const bad: number[] = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    if (!line.trim() || /^question\s*,/i.test(line.trim())) return;
+    const [question, exam, year, marks] = csvCells(line);
+    const y = Number(year);
+    if (!question || question.length < 5 || !exam || !Number.isInteger(y) || y < 1950 || y > 2100) {
+      bad.push(i + 1);
+      return;
+    }
+    const m = marks ? Number(marks) : NaN;
+    rows.push({ question, exam, year: y, ...(Number.isInteger(m) ? { marks: m } : {}) });
+  });
+  return { rows, bad };
 }
 
 export interface BoardKiosk {

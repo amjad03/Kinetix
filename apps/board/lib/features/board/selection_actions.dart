@@ -7,6 +7,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'popovers.dart';
+import 'sb_strings.dart';
 
 /// The bar floating above a selection: colour, line width and style, fill, measurements (on
 /// and off, which ones, units), the shape's points and arrow heads, order, flips, align, group,
@@ -205,6 +206,8 @@ class SelectionActions extends StatelessWidget {
       if (!locked) ...[
         btn(Icons.flip_to_front, l.bringToFront, wb.bringSelectionToFront, key: const Key('sel-front')),
         btn(Icons.flip_to_back, l.sendToBack, wb.sendSelectionToBack, key: const Key('sel-back')),
+        btn(Icons.arrow_upward, SbStrings.of(context)('bringForward'), wb.bringSelectionForward, key: const Key('sel-forward')),
+        btn(Icons.arrow_downward, SbStrings.of(context)('sendBackward'), wb.sendSelectionBackward, key: const Key('sel-backward')),
         btn(Icons.flip, l.selFlipH, () => wb.flipSelection(horizontal: true), key: const Key('sel-flip-h')),
         Transform.rotate(
           angle: 1.5708,

@@ -112,6 +112,20 @@ class FlowPalette extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (from != FlowBlock.topic) ...[
+                Text(s.t('suggestedNext'), style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final shape in suggestedNextFlow(from))
+                      if (paletteShapes(from).contains(shape))
+                        tile('flow-suggest-${shape.name}', s.shape(shape), ShapeIconPainter(shape), (shape: shape, pattern: null)),
+                  ],
+                ),
+                const SizedBox(height: 18),
+              ],
               Text(s.t('blocks'), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 10),
               Wrap(

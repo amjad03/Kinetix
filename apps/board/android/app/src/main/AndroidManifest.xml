@@ -37,6 +37,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- PPT: presentations shared with the installed presenter app (Presenter.kt). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.presenter"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/presenter_paths"/>
+        </provider>
         <!-- Kiosk mode: the board as the home app. Disabled until kiosk mode is entered as device
              owner (Kiosk.kt enables it), so ordinary installs never ask which home app to use. -->
         <activity-alias

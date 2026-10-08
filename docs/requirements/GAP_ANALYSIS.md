@@ -25,9 +25,13 @@ TOTP MFA with per-role policy and session control, per-tenant feature flags, a t
 domain-event outbox, structured logs + Prometheus metrics + OTLP traces, ClamAV upload scanning
 (vault documents), content licensing, global search (trigram).
 
-Missing:
-- A message broker behind the event outbox; semantic (embedding) search.
-- Virus scanning on upload paths other than the vault; dashboards and alert rules for the new metrics.
+Also (2026-10-08): inline virus scanning on every untrusted upload path (homework photos,
+public admission documents, profile photos; refused while the scanner is down) and Prometheus
+alert rules (`infra/monitoring/prometheus-rules.yml`).
+
+Decided, not built (owner, 2026-10-08): the event outbox stays in-process (no broker yet);
+semantic search deferred; TURN = self-hosted coturn; offline-board alerts by SMS via MSG91;
+iOS cast and audio deferred.
 
 ## Phase 01 — Smartboard
 
@@ -49,6 +53,13 @@ Also built (see [screen-share-and-devices](../architecture/screen-share-and-devi
 Missing:
 - iOS cross-app screen capture (needs a broadcast extension); audio in casts.
 - Offline alerts by SMS or email (shown in the console only); a deployed TURN server.
+
+
+Smartboard spec V1 (2026-10-08): every item of the source documents' developer acceptance
+summary is built; see `docs/product/board-features.md` §13 and ADR 0002 (PPT animations through
+the panel's presenter app; Text AI on ML Kit / Windows ink). Open: checks on real IFP hardware
+(pen tips, palm, touch counts, presenter apps) in the Soundarya pilot; ERP screens for the
+past-exam question bank import and the training link / What's New (API ready).
 
 ## Phase 02 — ERP domains, in the pack's dependency order
 

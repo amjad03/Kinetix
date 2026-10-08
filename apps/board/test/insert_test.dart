@@ -213,10 +213,14 @@ void main() {
       files.document = PickedFile('plants.pptx', _deck());
       await insert(tester, 'insert-document');
       expect(renderer.kind, DocKind.pptx);
+      // The deck opens beside the writing (spec 28); Add All Pages puts it on the board.
+      expect(find.byKey(const Key('presentation')), findsOneWidget);
+      expect(wb.pageCount, 1);
+      await tester.tap(find.byKey(const Key('ppt-add-all')));
+      await tester.pumpAndSettle();
       expect(wb.pageCount, 4);
       expect(wb.pageIndex, 1);
       expect((wb.elements.single as ImageElement).backdrop, isTrue);
-      expect(find.text('Added 3 pages after this one'), findsOneWidget);
     });
 
     testWidgets('an old .ppt asks for .pptx or PDF', (tester) async {

@@ -32,6 +32,12 @@ void smoothStroke(List<InkPoint> points, double amount) {
 }
 
 /// What a pointer does on the board.
+/// What a stylus end does (Two Side → Front Tip / Back Tip).
+enum StylusTip { write, erase, select, highlight }
+
+/// Which end of a two-sided stylus is on the board.
+enum StylusEnd { front, back }
+
 enum BoardTool {
   /// Tap to pick, drag a loop to pick several, drag the picked things to move them.
   select,
@@ -978,6 +984,30 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
     setElements([...page.elements.where((e) => _selection.contains(e.id)), ...page.elements.where((e) => !_selection.contains(e.id))]);
   }
 
+  /// One step up (spec §23 "bring forward"): each selected element swaps with the unselected
+  /// one just above it.
+  void bringSelectionForward() => _stepSelection(up: true);
+
+  /// One step down ("send backward").
+  void sendSelectionBackward() => _stepSelection(up: false);
+
+  void _stepSelection({required bool up}) {
+    if (_selection.isEmpty) return;
+    final els = [...page.elements];
+    final order = up ? [for (var i = els.length - 2; i >= 0; i--) i] : [for (var i = 1; i < els.length; i++) i];
+    var moved = false;
+    for (final i in order) {
+      final j = up ? i + 1 : i - 1;
+      if (_selection.contains(els[i].id) && !_selection.contains(els[j].id)) {
+        final t = els[i];
+        els[i] = els[j];
+        els[j] = t;
+        moved = true;
+      }
+    }
+    if (moved) setElements(els);
+  }
+
   /// Applies [f] to every selected element (not locked ones) as one undo step (keyboard nudges, tests).
   void transformSelection(BoardElement Function(BoardElement) f) => _editFree(f);
 
@@ -1283,13 +1313,28 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   /// per board unit), for sizes given in pixels. [palm] marks a contact the canvas judged to be a
   /// palm or fist; [contactRadius] is its size in board units. [forceEraser] is for the eraser
   /// end of a stylus.
-  void pointerDown(int pointer, InkPoint p, {double scale = 1, bool palm = false, double contactRadius = 0, bool forceEraser = false}) {
+  /// Two-Side stylus (spec §16): what each end of a two-ended stylus does. The front tip
+  /// writing means "the tool picked in the toolbar"; the back tip defaults to erasing.
+  StylusTip frontTip = StylusTip.write;
+  StylusTip backTip = StylusTip.erase;
+
+  /// The tool a stylus end uses, given the tool picked in the toolbar.
+  BoardTool toolForTip(StylusTip tip, {required bool front}) => switch (tip) {
+    StylusTip.write => front || _tool.draws ? _tool : BoardTool.pen,
+    StylusTip.erase => BoardTool.eraser,
+    StylusTip.select => BoardTool.select,
+    StylusTip.highlight => BoardTool.highlighter,
+  };
+
+  /// [stylus] says which end of a stylus touched (null: a finger, a mouse or a palm).
+  void pointerDown(int pointer, InkPoint p, {double scale = 1, bool palm = false, double contactRadius = 0, bool forceEraser = false, StylusEnd? stylus}) {
     _scale = scale;
     var tool = _tool;
     if (palm && palmMode != PalmMode.off) {
       if (palmMode == PalmMode.ignore) return;
       tool = BoardTool.eraser;
     }
+    if (stylus != null) tool = toolForTip(stylus == StylusEnd.front ? frontTip : backTip, front: stylus == StylusEnd.front);
     if (forceEraser) tool = BoardTool.eraser;
     if (_selection.isNotEmpty && tool != BoardTool.select && tool != BoardTool.eraser) {
       // Just placed or pasted: anything else lets it go and carries on with the tool.

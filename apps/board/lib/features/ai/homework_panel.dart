@@ -8,6 +8,7 @@ import '../board/chrome.dart';
 import 'ai_controller.dart';
 import 'ai_widgets.dart';
 import '../board/panel/panel_host.dart';
+import 'quiz_setup.dart';
 
 const homeworkAccent = Color(0xFFF28B82);
 
@@ -100,6 +101,8 @@ class _HomeworkPanelState extends State<HomeworkPanel> {
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _generate(),
               ),
+              const SizedBox(height: Kx.s12),
+              QuizSetup(ai: ai, homework: true, onChanged: () => setState(() {})),
               const SizedBox(height: Kx.s12),
               Wrap(
                 spacing: Kx.s16,
@@ -222,7 +225,7 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
   Widget _questionRow(BuildContext context, int i) {
     final q = draft.questions[i];
     final l = context.l10n;
-    final field = TextField(
+    final questionField = TextField(
       key: Key('homework-q$i'),
       controller: _questions[i],
       minLines: 1,
@@ -246,6 +249,22 @@ class _HomeworkEditorState extends State<_HomeworkEditor> {
         child: Text('${i + 1}.', style: context.text.titleMedium),
       ),
     );
+    // What the AI added for the teacher: options, the diagram to draw, model answer, rubric.
+    final details = [
+      if (q.options.isNotEmpty) [for (final (k, o) in q.options.indexed) '${String.fromCharCode(97 + k)}) $o'].join('    '),
+      if (q.diagram != null) '✎ ${q.diagram}',
+      if (q.answer != null) '✓ ${q.answer}',
+      if (q.rubric != null) '☰ ${q.rubric}',
+    ];
+    final field = details.isEmpty
+        ? questionField
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              questionField,
+              for (final d in details) Padding(padding: const EdgeInsets.only(top: 4), child: Text(d, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant))),
+            ],
+          );
     return Padding(
       key: ObjectKey(q),
       padding: const EdgeInsets.only(bottom: Kx.s12),

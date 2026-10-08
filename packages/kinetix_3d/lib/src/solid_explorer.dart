@@ -24,6 +24,19 @@ class _SolidExplorerState extends State<SolidExplorer> {
   late Solid _solid;
   late double _fit;
   late Model3D _model;
+  late final ModelViewController _ctrl = widget.controller ?? ModelViewController();
+  bool _lengths = true, _angles = false;
+
+  /// Colours a tapped face can be painted (spec §20: face-level colouring).
+  static const faceColours = [Color(0xFFE53935), Color(0xFFFB8C00), Color(0xFFFDD835), Color(0xFF43A047), Color(0xFF1E88E5), Color(0xFF8E24AA)];
+
+  @override
+  void dispose() {
+    if (widget.controller == null) _ctrl.dispose();
+    super.dispose();
+  }
+
+  Model3D _build(Solid s) => s.toModel(lengths: _lengths, angles: _angles);
 
   @override
   void initState() {
@@ -39,19 +52,73 @@ class _SolidExplorerState extends State<SolidExplorer> {
 
   void _reset() {
     _solid = Solid(widget.kind, widget.initialDims);
-    _model = _solid.toModel();
+    _model = _build(_solid);
+    _ctrl.faceColors.clear();
     _fit = _model.bounds.$2;
   }
 
   void _update(Solid s) {
     setState(() {
       _solid = s;
-      _model = s.toModel();
+      _model = _build(s);
       // The view only zooms out when the solid outgrows it, so shrinking a dimension
       // visibly shrinks the solid.
       _fit = math.max(_fit, _model.bounds.$2);
     });
   }
+
+  /// Show Lengths, Show Angles, Lined/Filled and face colouring.
+  Widget _display(BuildContext context) => ListenableBuilder(
+    listenable: _ctrl,
+    builder: (context, _) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: Kx.s8,
+          runSpacing: Kx.s8,
+          children: [
+            FilterChip(key: const Key('solid-lengths'), label: const Text('Show lengths'), selected: _lengths, onSelected: (v) => setState(() {
+              _lengths = v;
+              _model = _build(_solid);
+            })),
+            FilterChip(key: const Key('solid-angles'), label: const Text('Show angles'), selected: _angles, onSelected: (v) => setState(() {
+              _angles = v;
+              _model = _build(_solid);
+            })),
+            SegmentedButton<bool>(
+              key: const Key('solid-lined'),
+              showSelectedIcon: false,
+              segments: const [ButtonSegment(value: false, label: Text('Filled')), ButtonSegment(value: true, label: Text('Lined'))],
+              selected: {_ctrl.wireframe},
+              onSelectionChanged: (v) {
+                if (v.single != _ctrl.wireframe) _ctrl.toggleWireframe();
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: Kx.s8),
+        Text('Colour a face: pick a colour, then tap a face', style: context.text.bodySmall),
+        const SizedBox(height: Kx.s4),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final (i, c) in faceColours.indexed)
+              InkResponse(
+                key: Key('face-colour-$i'),
+                onTap: () => _ctrl.setPaintColor(_ctrl.paintColor == c ? null : c),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: c, shape: BoxShape.circle, border: Border.all(width: _ctrl.paintColor == c ? 4 : 1, color: context.colors.onSurface)),
+                ),
+              ),
+            IconButton(key: const Key('face-colour-clear'), tooltip: 'Clear colours', onPressed: _ctrl.clearFaceColors, icon: const Icon(Icons.format_color_reset)),
+          ],
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +126,7 @@ class _SolidExplorerState extends State<SolidExplorer> {
       final wide = box.maxWidth >= 860;
       final viewer = ModelViewer(
         model: _model,
-        controller: widget.controller,
+        controller: _ctrl,
         fitRadius: _fit,
         showCaption: false,
         toolbarLeading: [
@@ -70,7 +137,7 @@ class _SolidExplorerState extends State<SolidExplorer> {
           ),
         ],
       );
-      final panel = _Panel(solid: _solid, onChanged: _update, compact: !wide);
+      final panel = _Panel(solid: _solid, onChanged: _update, compact: !wide, display: _display(context));
       if (wide) {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -92,8 +159,9 @@ class _SolidExplorerState extends State<SolidExplorer> {
 }
 
 class _Panel extends StatelessWidget {
-  const _Panel({required this.solid, required this.onChanged, required this.compact});
+  const _Panel({required this.solid, required this.onChanged, required this.compact, required this.display});
   final Solid solid;
+  final Widget display;
   final ValueChanged<Solid> onChanged;
   final bool compact;
 
@@ -133,6 +201,8 @@ class _Panel extends StatelessWidget {
             _MeasurementCard(m: m, compact: compact),
             const SizedBox(height: Kx.s8),
           ],
+          const SizedBox(height: Kx.s8),
+          display,
         ],
       ),
     );

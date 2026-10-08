@@ -15,6 +15,7 @@ ones it needs into `apps/erp/src/fonts`.
 | `JetBrainsMono` | JetBrains Mono 2.304, NL cut | `JetBrainsMono-*.ttf` | 2020 The JetBrains Mono Project Authors | OFL 1.1 | Code blocks on the board |
 | `NotoSansDevanagari` | Noto Sans Devanagari | `NotoSansDevanagari-*.ttf` | 2022 The Noto Project Authors | OFL 1.1 (`LICENSE-Noto-OFL.txt`) | Hindi |
 | `NotoSansKannada` | Noto Sans Kannada | `NotoSansKannada-*.ttf` | 2022 The Noto Project Authors | OFL 1.1 (`LICENSE-Noto-OFL.txt`) | Kannada |
+| `Kalam` | Kalam | `Kalam-400.ttf` | 2014 Indian Type Foundry | OFL 1.1 (`LICENSE-Kalam-OFL.txt`) | Text AI handwriting font |
 | `NotoSansMath` | Noto Sans Math, subset to the signs Inter lacks (∠ ⊥ ∥ ≅ ∝ ∴ …) | `NotoSansMath-400.ttf` | 2022 The Noto Project Authors | OFL 1.1 | Geometry signs |
 
 Equations are typeset by `flutter_math_fork` (MIT), which brings its own KaTeX fonts (OFL).

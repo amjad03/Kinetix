@@ -410,21 +410,63 @@ class Explanation {
 }
 
 class QuizQuestion {
-  QuizQuestion({required this.question, required this.options, required this.answer, required this.explanation});
+  QuizQuestion({
+    required this.question,
+    required this.options,
+    required this.answer,
+    required this.explanation,
+    this.type = 'mcq',
+    this.answerText,
+    this.misconception,
+    this.examCount,
+    this.exams = const [],
+    this.important = false,
+  });
 
-  factory QuizQuestion.fromJson(Map<String, dynamic> j) => QuizQuestion(
-    question: j['question'] as String,
-    options: _strings(j['options']),
-    answer: j['answer'] as int,
-    explanation: j['explanation'] as String? ?? '',
-  );
+  factory QuizQuestion.fromJson(Map<String, dynamic> j) {
+    final freq = j['examFrequency'] as Map<String, dynamic>?;
+    return QuizQuestion(
+      question: j['question'] as String,
+      options: _strings(j['options']),
+      answer: j['answer'] as int? ?? 0,
+      explanation: j['explanation'] as String? ?? '',
+      type: j['type'] as String? ?? 'mcq',
+      answerText: j['answerText'] as String?,
+      misconception: j['misconception'] as String?,
+      examCount: freq?['count'] as int?,
+      exams: _strings(freq?['exams']),
+      important: j['important'] as bool? ?? false,
+    );
+  }
 
   final String question;
 
-  /// Four options; [answer] is the index of the correct one.
+  /// Four options for multiple choice, two for true/false, none for fill in the blank and
+  /// short answer; [answer] is the index of the correct one.
   final List<String> options;
   final int answer;
   final String explanation;
+
+  /// mcq, trueFalse, fillBlank or shortAnswer.
+  final String type;
+
+  /// The expected answer when there are no options.
+  final String? answerText;
+
+  /// The usual wrong idea, for the AI explanation after the reveal.
+  final String? misconception;
+
+  /// How many past papers asked this (only from the institution's question bank).
+  final int? examCount;
+  final List<String> exams;
+
+  /// Asked in two or more past papers.
+  final bool important;
+
+  bool get hasOptions => options.isNotEmpty;
+
+  /// The right answer as words.
+  String get rightAnswer => hasOptions && answer < options.length ? options[answer] : (answerText ?? '');
 }
 
 class Quiz {
@@ -438,12 +480,31 @@ class Quiz {
 }
 
 class HomeworkQuestion {
-  HomeworkQuestion({required this.question, required this.marks});
+  HomeworkQuestion({required this.question, required this.marks, this.type = 'qa', this.options = const [], this.answer, this.rubric, this.diagram});
 
-  factory HomeworkQuestion.fromJson(Map<String, dynamic> j) => HomeworkQuestion(question: j['question'] as String, marks: j['marks'] as int);
+  factory HomeworkQuestion.fromJson(Map<String, dynamic> j) => HomeworkQuestion(
+    question: j['question'] as String,
+    marks: j['marks'] as int,
+    type: j['type'] as String? ?? 'qa',
+    options: _strings(j['options']),
+    answer: j['answer'] as String?,
+    rubric: j['rubric'] as String?,
+    diagram: j['diagram'] as String?,
+  );
 
   String question;
   int marks;
+
+  /// qa, fillBlank, mcq, trueFalse, twoMark, threeMark, fiveMark or diagram.
+  String type;
+  List<String> options;
+
+  /// Model answer and marking rubric, for the teacher (not sent to students).
+  String? answer;
+  String? rubric;
+
+  /// For diagram questions: what the diagram must show.
+  String? diagram;
 }
 
 /// A homework draft the teacher edits before sending.
@@ -580,4 +641,51 @@ class WhiteboardVersion {
   final String title;
   final int pageCount;
   final DateTime savedAt;
+}
+
+/// Summary AI's lesson summary (spec §41).
+class BoardSummary {
+  BoardSummary({required this.keyConcepts, required this.definitions, required this.formulas, required this.examples, required this.importantPoints, required this.questions});
+
+  factory BoardSummary.fromJson(Map<String, dynamic> j) => BoardSummary(
+    keyConcepts: _strings(j['keyConcepts']),
+    definitions: [for (final d in (j['definitions'] as List<dynamic>? ?? const [])) ((d as Map)['term'] as String, d['meaning'] as String)],
+    formulas: _strings(j['formulas']),
+    examples: _strings(j['examples']),
+    importantPoints: _strings(j['importantPoints']),
+    questions: _strings(j['questions']),
+  );
+
+  final List<String> keyConcepts;
+  final List<(String, String)> definitions;
+  final List<String> formulas, examples, importantPoints, questions;
+}
+
+/// Lecture AI's lecture (spec §42).
+class Lecture {
+  Lecture({required this.outline, required this.explanation, required this.examples, required this.analogies, required this.boardPlan, required this.activities, required this.recap});
+
+  factory Lecture.fromJson(Map<String, dynamic> j) => Lecture(
+    outline: _strings(j['outline']),
+    explanation: j['explanation'] as String? ?? '',
+    examples: _strings(j['examples']),
+    analogies: _strings(j['analogies']),
+    boardPlan: _strings(j['boardPlan']),
+    activities: _strings(j['activities']),
+    recap: j['recap'] as String? ?? '',
+  );
+
+  final List<String> outline, examples, analogies, boardPlan, activities;
+  final String explanation, recap;
+}
+
+/// Select & Ask's answer (spec §39).
+class SelectAskResult {
+  SelectAskResult({required this.title, required this.answer, required this.items});
+
+  factory SelectAskResult.fromJson(Map<String, dynamic> j) =>
+      SelectAskResult(title: j['title'] as String? ?? '', answer: j['answer'] as String? ?? '', items: _strings(j['items']));
+
+  final String title, answer;
+  final List<String> items;
 }

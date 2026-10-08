@@ -40,6 +40,9 @@ class FakeReceiver implements CastReceiver {
   Future<Uint8List?> snapshot() async => null;
 
   @override
+  final ValueNotifier<Size?> frameSize = ValueNotifier(null);
+
+  @override
   Future<void> close() async => closed = true;
 }
 
@@ -186,6 +189,15 @@ void main() {
     expect(find.byKey(const Key('cast-request-c1')), findsNothing);
     expect(find.text('Asha'), findsOneWidget);
     expect(find.byKey(const Key('cast-stop-c1')), findsOneWidget);
+
+    // The phone turns: the same connection, the picture follows (spec 60).
+    h.receivers.single.frameSize.value = const Size(720, 1600);
+    await tester.pump();
+    expect(find.byKey(const Key('cast-orientation-c1-portrait')), findsOneWidget);
+    h.receivers.single.frameSize.value = const Size(1600, 720);
+    await tester.pump();
+    expect(find.byKey(const Key('cast-orientation-c1-landscape')), findsOneWidget);
+    expect(h.receivers, hasLength(1), reason: 'no reconnect');
 
     await tester.tap(find.byKey(const Key('cast-annotate-c1')));
     await tester.pump();

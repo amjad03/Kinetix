@@ -75,6 +75,8 @@ class BoardImages extends ChangeNotifier {
 String boardFontFamily(BoardFont font) => switch (font) {
   BoardFont.inter => KxFonts.board,
   BoardFont.andika => KxFonts.primary,
+  BoardFont.kalam => KxFonts.kalam,
+  BoardFont.custom => customBoardFontFamily,
 };
 
 TextStyle boardTextStyle({required double fontSize, required Color color, bool bold = false, BoardFont font = BoardFont.inter}) => TextStyle(

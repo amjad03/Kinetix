@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -14,8 +14,12 @@ abstract class CastReceiver {
   /// The sender's offer or an ICE candidate.
   Future<void> handleSignal(Map<String, dynamic> data);
 
-  /// The video, fitted to its box.
+  /// The video, fitted to its box (letterboxed, never stretched).
   Widget view();
+
+  /// The sender's frame size as it arrives: it flips between portrait and landscape when the
+  /// phone or tablet turns, on the same connection (spec §60: no reconnect, no distortion).
+  ValueListenable<Size?> get frameSize;
 
   /// The picture on screen now as a PNG, or null where the platform cannot grab it.
   Future<Uint8List?> snapshot();
@@ -28,6 +32,9 @@ typedef CastReceiverFactory = CastReceiver Function();
 /// flutter_webrtc (Android panels and Windows): one receive-only peer connection.
 class WebRtcCastReceiver implements CastReceiver {
   RTCPeerConnection? _pc;
+
+  @override
+  final ValueNotifier<Size?> frameSize = ValueNotifier(null);
   final _renderer = RTCVideoRenderer();
   MediaStream? _stream;
   final _pendingIce = <RTCIceCandidate>[];
@@ -37,6 +44,10 @@ class WebRtcCastReceiver implements CastReceiver {
   @override
   Future<void> start(List<Map<String, dynamic>> iceServers, {required void Function(Map<String, dynamic>) sendSignal, required void Function(bool live) onLive}) async {
     await _renderer.initialize();
+    _renderer.onResize = () {
+      final w = _renderer.videoWidth, h = _renderer.videoHeight;
+      if (w > 0 && h > 0) frameSize.value = Size(w.toDouble(), h.toDouble());
+    };
     _rendererReady = true;
     final pc = await createPeerConnection({'iceServers': iceServers, 'sdpSemantics': 'unified-plan'});
     _pc = pc;

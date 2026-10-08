@@ -53,6 +53,10 @@ flutter:
         - asset: fonts/Andika-400.ttf
         - asset: fonts/Andika-700.ttf
           weight: 700
+    # Text AI's handwriting-style font (Latin and Devanagari).
+    - family: Kalam
+      fonts:
+        - asset: fonts/Kalam-400.ttf
     # Code blocks (the NL cut: no ligatures, so != reads as typed).
     - family: JetBrainsMono
       fonts:

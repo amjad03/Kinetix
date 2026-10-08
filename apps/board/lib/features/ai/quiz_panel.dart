@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -9,6 +11,8 @@ import 'ai_controller.dart';
 import 'ai_widgets.dart';
 import 'homework_panel.dart';
 import '../board/panel/panel_host.dart';
+import 'quiz_setup.dart';
+import '../board/sb_strings.dart';
 
 const quizAccent = Color(0xFF81C995);
 const _correct = Color(0xFF188038);
@@ -43,12 +47,12 @@ class _QuizPanelState extends State<QuizPanel> {
       showBoardMessage(context, context.l10n.quizNeedsSignIn);
       return;
     }
-    if (_topic.text.trim().length < 2) {
+    if (ai.quizScan == null && _topic.text.trim().length < 2) {
       showBoardMessage(context, context.l10n.quizTypeTopic);
       return;
     }
     FocusScope.of(context).unfocus();
-    ai.generateQuiz(_topic.text, fresh: fresh);
+    ai.generateQuiz(_topic.text.trim().length < 2 ? 'the board' : _topic.text, fresh: fresh);
   }
 
   Future<void> _sendAsHomework(Quiz quiz) async {
@@ -84,6 +88,8 @@ class _QuizPanelState extends State<QuizPanel> {
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _generate(),
               ),
+              const SizedBox(height: Kx.s12),
+              QuizSetup(ai: ai, onChanged: () => setState(() {})),
               const SizedBox(height: Kx.s12),
               Wrap(
                 spacing: Kx.s16,
@@ -125,7 +131,7 @@ class _QuizPanelState extends State<QuizPanel> {
                   children: [
                     FilledButton.icon(
                       key: const Key('quiz-present'),
-                      onPressed: () => showQuizPresenter(context, quiz, preview: task.value!.meta.preview),
+                      onPressed: () => showQuizPresenter(context, quiz, preview: task.value!.meta.preview, onAddToBoard: ai.addQuestionToBoard),
                       icon: const Icon(Icons.slideshow),
                       label: Text(l.quizPresent),
                     ),
@@ -214,22 +220,25 @@ class _QuestionCard extends StatelessWidget {
 }
 
 /// Opens the quiz in the split panel (⤢ takes it across the screen).
-Future<void> showQuizPresenter(BuildContext context, Quiz quiz, {bool preview = false}) => showPanelDialog<void>(
+Future<void> showQuizPresenter(BuildContext context, Quiz quiz, {bool preview = false, ValueChanged<QuizQuestion>? onAddToBoard}) => showPanelDialog<void>(
   context: context,
   barrierDismissible: false,
   builder: (_) => BoardChromeTheme(
     child: Dialog.fullscreen(
-      child: QuizPresenter(quiz: quiz, preview: preview),
+      child: QuizPresenter(quiz: quiz, preview: preview, onAddToBoard: onAddToBoard),
     ),
   ),
 );
 
 /// One question at a time, big enough to read from the back row. Reveal shows the answer.
 class QuizPresenter extends StatefulWidget {
-  const QuizPresenter({super.key, required this.quiz, this.preview = false});
+  const QuizPresenter({super.key, required this.quiz, this.preview = false, this.onAddToBoard});
 
   final Quiz quiz;
   final bool preview;
+
+  /// Add to Board: the question (and, once revealed, its answer) onto the whiteboard.
+  final ValueChanged<QuizQuestion>? onAddToBoard;
 
   @override
   State<QuizPresenter> createState() => _QuizPresenterState();
@@ -242,8 +251,101 @@ class _QuizPresenterState extends State<QuizPresenter> {
   List<QuizQuestion> get _qs => widget.quiz.questions;
   bool get _shown => _revealed.contains(_index);
 
-  void _go(int d) => setState(() => _index = (_index + d).clamp(0, _qs.length - 1));
-  void _reveal() => setState(() => _shown ? _revealed.remove(_index) : _revealed.add(_index));
+  void _go(int d) {
+    setState(() => _index = (_index + d).clamp(0, _qs.length - 1));
+    _startTimer();
+  }
+
+  void _reveal() {
+    _tick?.cancel();
+    setState(() => _shown ? _revealed.remove(_index) : _revealed.add(_index));
+  }
+
+  // Timer (spec §43): per question; the answer shows when it runs out.
+  int _timerSeconds = 0;
+  int _left = 0;
+  Timer? _tick;
+
+  void _startTimer() {
+    _tick?.cancel();
+    if (_timerSeconds == 0 || _shown) return;
+    setState(() => _left = _timerSeconds);
+    _tick = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      setState(() => _left--);
+      if (_left <= 0) {
+        t.cancel();
+        if (!_shown) _reveal();
+      }
+    });
+  }
+
+  // Teams (participant splitting): a score each, +1 from the header.
+  int _teams = 0;
+  List<int> _scores = const [];
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  Widget _setupBar(BuildContext context, QuizQuestion q) {
+    final s = SbStrings.of(context);
+    return Wrap(
+      spacing: Kx.s8,
+      runSpacing: Kx.s8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (q.important)
+          Chip(
+            key: const Key('presenter-important'),
+            avatar: const Icon(Icons.star, size: 18, color: Color(0xFFB26A00)),
+            label: Text(s('important')),
+            backgroundColor: const Color(0x33FFB300),
+            side: BorderSide.none,
+          ),
+        if (q.examCount != null)
+          Tooltip(message: q.exams.join('\n'), child: Chip(key: const Key('presenter-frequency'), label: Text(s('askedIn', {'n': q.examCount!})), side: BorderSide.none)),
+        DropdownButton<int>(
+          key: const Key('presenter-timer'),
+          value: _timerSeconds,
+          items: [for (final n in const [0, 15, 30, 45, 60, 90, 120]) DropdownMenuItem(value: n, child: Text(n == 0 ? s('timerOff') : s('seconds', {'n': n})))],
+          onChanged: (v) {
+            setState(() => _timerSeconds = v ?? 0);
+            _startTimer();
+          },
+        ),
+        if (_timerSeconds > 0 && !_shown)
+          Text('$_left s', key: const Key('presenter-countdown'), style: context.text.headlineSmall?.copyWith(color: _left <= 5 ? context.colors.error : null)),
+        DropdownButton<int>(
+          key: const Key('presenter-teams'),
+          value: _teams,
+          items: [for (final n in const [0, 2, 3, 4]) DropdownMenuItem(value: n, child: Text(n == 0 ? s('teamsOff') : '${s('teams')}: $n'))],
+          onChanged: (v) => setState(() {
+            _teams = v ?? 0;
+            _scores = List.filled(_teams, 0);
+          }),
+        ),
+        for (var t = 0; t < _teams; t++)
+          ActionChip(
+            key: Key('presenter-team-$t'),
+            label: Text('${s('teamN', {'n': t + 1})}: ${_scores[t]}  ${s('point')}'),
+            onPressed: () => setState(() => _scores = [..._scores]..[t] += 1),
+          ),
+        if (widget.onAddToBoard != null)
+          OutlinedButton.icon(
+            key: const Key('presenter-add-board'),
+            onPressed: () {
+              widget.onAddToBoard!(q);
+              showBoardMessage(context, s('addedToBoard'));
+            },
+            icon: const Icon(Icons.note_add_outlined),
+            label: Text(s('addToBoard')),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -315,6 +417,7 @@ class _QuizPresenterState extends State<QuizPresenter> {
                     ),
                   ),
                   LinearProgressIndicator(value: (_index + 1) / _qs.length, minHeight: 4, color: quizAccent),
+                  Padding(padding: EdgeInsets.fromLTRB(64 * scale, 8, 64 * scale, 0), child: _setupBar(context, q)),
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(64 * scale, 32 * scale, 64 * scale, 16 * scale),
@@ -334,7 +437,13 @@ class _QuizPresenterState extends State<QuizPresenter> {
                           SizedBox(height: 16 * scale),
                           Expanded(
                             flex: 5,
-                            child: Column(
+                            child: !q.hasOptions
+                                ? Center(
+                                    child: _shown
+                                        ? FitText(SbStrings.of(context)('answerIs', {'a': q.rightAnswer}), key: const Key('presenter-answer'), maxSize: 48 * scale, minSize: 20, center: true, style: const TextStyle(fontWeight: FontWeight.w600, color: _correct))
+                                        : const SizedBox.shrink(),
+                                  )
+                                : Column(
                               children: [
                                 for (final row in [
                                   [0, 1],
@@ -376,8 +485,11 @@ class _QuizPresenterState extends State<QuizPresenter> {
                                   SizedBox(width: 16 * scale),
                                   Expanded(
                                     child: Text(
-                                      context.l10n.quizAnswerExplanation(optionLetter(q.answer), q.explanation),
-                                      maxLines: 3,
+                                      [
+                                        q.hasOptions ? context.l10n.quizAnswerExplanation(optionLetter(q.answer), q.explanation) : q.explanation,
+                                        if (q.misconception != null) '${SbStrings.of(context)('misconception')}: ${q.misconception}',
+                                      ].join('\n'),
+                                      maxLines: 4,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(fontSize: 28 * scale, height: 1.3, color: c.onSurface),
                                     ),

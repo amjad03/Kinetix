@@ -23,7 +23,12 @@ class InsertPopover extends StatelessWidget {
     required this.onLab,
     required this.onClose,
     this.extras = const [],
+    this.categories = const [],
   });
+
+  /// The spec's Insert categories (§24) as big tiles on top: PDF, Images, Videos, PPT,
+  /// Clipboard, Geometry, Table, Flowchart.
+  final List<InsertExtra> categories;
 
   final WhiteboardController wb;
   final bool primary;
@@ -53,6 +58,37 @@ class InsertPopover extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (categories.isNotEmpty) ...[
+              Wrap(
+                spacing: Kx.s8,
+                runSpacing: Kx.s8,
+                children: [
+                  for (final c in categories)
+                    SizedBox(
+                      width: 84,
+                      height: 84,
+                      child: Material(
+                        color: context.colors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(Kx.rMd),
+                        child: InkWell(
+                          key: c.key,
+                          borderRadius: BorderRadius.circular(Kx.rMd),
+                          onTap: () => then(c.onTap),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(c.icon, size: 30),
+                              const SizedBox(height: 4),
+                              Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.labelMedium),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const Divider(height: Kx.s24),
+            ],
             KxMenuItem(
               key: const Key('insert-equation'),
               icon: Icons.functions,

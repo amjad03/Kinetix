@@ -62,6 +62,10 @@ export interface TenantSettings {
    * PIN's salted hash (src/common/kiosk-pin.ts), never the PIN; null until one is set.
    */
   boardKiosk?: BoardKioskSettings;
+  /** Teacher profile → Schedule a Training: the link its QR opens and who to contact (spec §8). */
+  boardTraining?: { url?: string | null; contact?: string | null } | null;
+  /** Institution announcements shown in the board's What's New, newest first. */
+  boardWhatsNew?: { title: string; body: string; at: string }[];
 }
 
 export interface BoardKioskSettings {
@@ -717,6 +721,27 @@ export const whiteboards = pgTable(
   (t) => [index('whiteboards_owner_idx').on(t.ownerId, t.updatedAt), index('whiteboards_section_idx').on(t.sectionId, t.sharedAt)],
 );
 
+/**
+ * Questions from past examinations (board, university or the institution's own papers), imported
+ * by the exam cell. The only source for Quiz AI's exam-frequency and Important badges: with no
+ * rows, no badge is shown (spec §43: never fabricate exam frequency).
+ */
+export const pastExamQuestions = pgTable(
+  'past_exam_questions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    question: text('question').notNull(),
+    /** E.g. "CBSE Class 12 Board", "Bangalore University BCom Sem 3", "Internal test 2". */
+    exam: text('exam').notNull(),
+    year: integer('year').notNull(),
+    marks: integer('marks'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('past_exam_questions_subject_idx').on(t.subjectId)],
+);
+
 /** Earlier saves of a board, newest kept (whiteboards.controller.ts keeps the last 20); restore copies one back. */
 export const whiteboardVersions = pgTable(
   'whiteboard_versions',
@@ -817,7 +842,7 @@ export const auditLog = pgTable('audit_log', {
 // AI (India-hosted; see docs/architecture/ai-platform.md)
 // ---------------------------------------------------------------------------------------------
 
-export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe']);
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk']);
 export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
@@ -2557,6 +2582,7 @@ export const TENANT_TABLES = [
   'upload_scans',
   'whiteboard_versions',
   'whiteboard_exports',
+  'past_exam_questions',
   'report_schedules',
   'report_runs',
   'student_leave_requests',

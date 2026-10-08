@@ -203,10 +203,23 @@ class ApiClient {
     required AiLanguage language,
     bool fresh = false,
     String? topicId,
+    List<String> types = const ['mcq'],
+    String? boardText,
+    String? level,
   }) =>
       _ai(
         'quiz',
-        {'topic': topic, 'count': count, 'difficulty': difficulty.name, 'language': language.name, 'fresh': fresh, 'topicId': ?topicId},
+        {
+          'topic': topic,
+          'count': count,
+          'difficulty': difficulty.name,
+          'language': language.name,
+          'fresh': fresh,
+          'topicId': ?topicId,
+          'types': types,
+          'boardText': ?boardText,
+          'level': ?level,
+        },
         (j) => Quiz.fromJson(topic, j),
       );
 
@@ -267,7 +280,31 @@ class ApiClient {
     required AiDifficulty difficulty,
     required AiLanguage language,
     bool fresh = false,
-  }) => _ai('homework', {'topic': topic, 'count': count, 'difficulty': difficulty.name, 'language': language.name, 'fresh': fresh}, HomeworkDraft.fromJson);
+    List<String> types = const ['qa'],
+    String? boardText,
+    String? level,
+  }) => _ai('homework', {
+    'topic': topic,
+    'count': count,
+    'difficulty': difficulty.name,
+    'language': language.name,
+    'fresh': fresh,
+    'types': types,
+    'boardText': ?boardText,
+    'level': ?level,
+  }, HomeworkDraft.fromJson);
+
+  /// Summary AI: from the board's text (read from its pages) or a topic.
+  Future<AiResult<BoardSummary>> boardSummary({String? topic, String? boardText, required String format, required AiLanguage language, String? level}) =>
+      _ai('board-summary', {'topic': ?topic, 'boardText': ?boardText, 'format': format, 'language': language.name, 'level': ?level}, BoardSummary.fromJson);
+
+  /// Lecture AI.
+  Future<AiResult<Lecture>> lecture(String topic, {required int minutes, required AiLanguage language, String? level}) =>
+      _ai('lecture', {'topic': topic, 'minutes': minutes, 'language': language.name, 'level': ?level}, Lecture.fromJson);
+
+  /// Select & Ask: [action] on what the teacher selected.
+  Future<AiResult<SelectAskResult>> selectAsk(String action, String content, {required AiLanguage language, AiLanguage? target, String? level}) =>
+      _ai('select-ask', {'action': action, 'content': content, 'language': language.name, 'targetLanguage': ?target?.name, 'level': ?level}, SelectAskResult.fromJson);
 
   Future<AiResult<LessonPlan>> lessonPlan(String topic, {required int minutes, required AiLanguage language, bool fresh = false}) =>
       _ai('lesson-plan', {'topic': topic, 'minutes': minutes, 'language': language.name, 'fresh': fresh}, LessonPlan.fromJson);

@@ -8,6 +8,7 @@ import '../search/solids3d.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import 'chrome.dart';
+import 'sb_strings.dart';
 
 const inkPalette = [
   Color(0xFF1B1B1F), // black (chalk white on dark boards)
@@ -181,9 +182,12 @@ class _WidthChip extends StatelessWidget {
 
 /// Erase: eraser size and clearing the page.
 class ErasePopover extends StatefulWidget {
-  const ErasePopover({super.key, required this.wb, required this.onClear});
+  const ErasePopover({super.key, required this.wb, required this.onClear, this.onSlideClear});
 
   final WhiteboardController wb;
+
+  /// Clears the page at once after the deliberate slide (spec §21), with Undo.
+  final VoidCallback? onSlideClear;
   /// Closes the card and asks before clearing the page.
   final VoidCallback onClear;
 
@@ -204,14 +208,38 @@ class _ErasePopoverState extends State<ErasePopover> {
         children: [
           Text(l.eraserSize, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
           const SizedBox(height: Kx.s8),
-          SegmentedButton<double>(
-            segments: [
-              ButtonSegment(value: 10, label: Text(l.sizeSmall)),
-              ButtonSegment(value: 18, label: Text(l.sizeMedium)),
-              ButtonSegment(value: 36, label: Text(l.sizeLarge)),
+          Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  key: const Key('eraser-size'),
+                  min: 6,
+                  max: 60,
+                  value: wb.eraserRadius.clamp(6, 60).toDouble(),
+                  onChanged: (v) => setState(() => wb.update(() => wb.eraserRadius = v.roundToDouble())),
+                ),
+              ),
+              // The eraser's real size on the board, so the teacher sees what it will rub out.
+              SizedBox(
+                width: 124,
+                height: 124,
+                child: Center(
+                  child: Container(
+                    key: const Key('eraser-preview'),
+                    width: wb.eraserRadius * 2,
+                    height: wb.eraserRadius * 2,
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: context.colors.outline, width: 2), color: context.colors.surfaceContainerHighest),
+                  ),
+                ),
+              ),
             ],
-            selected: {wb.eraserRadius},
-            onSelectionChanged: (s) => setState(() => wb.update(() => wb.eraserRadius = s.first)),
+          ),
+          Wrap(
+            spacing: Kx.s8,
+            children: [
+              for (final (v, name) in [(10.0, l.sizeSmall), (18.0, l.sizeMedium), (36.0, l.sizeLarge)])
+                ChoiceChip(label: Text(name), selected: wb.eraserRadius == v, onSelected: (_) => setState(() => wb.update(() => wb.eraserRadius = v))),
+            ],
           ),
           const SizedBox(height: Kx.s8),
           Text(
@@ -219,6 +247,10 @@ class _ErasePopoverState extends State<ErasePopover> {
             style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant),
           ),
           const SizedBox(height: Kx.s16),
+          if (widget.onSlideClear != null && wb.elements.isNotEmpty) ...[
+            SlideToClear(key: const Key('slide-to-clear'), label: SbStrings.of(context)('slideToClear'), onCleared: widget.onSlideClear!),
+            const SizedBox(height: Kx.s8),
+          ],
           SizedBox(
             width: double.infinity,
             child: FilledButton.tonalIcon(
@@ -501,6 +533,59 @@ class _SliderRow extends StatelessWidget {
           child: Slider(value: value, onChanged: onChanged),
         ),
       ],
+    );
+  }
+}
+
+/// Clear All by sliding (spec §21): the thumb must be dragged all the way across, so a stray
+/// touch never clears the page. Lets go and springs back when not dragged far enough.
+class SlideToClear extends StatefulWidget {
+  const SlideToClear({super.key, required this.label, required this.onCleared});
+
+  final String label;
+  final VoidCallback onCleared;
+
+  @override
+  State<SlideToClear> createState() => _SlideToClearState();
+}
+
+class _SlideToClearState extends State<SlideToClear> {
+  double _x = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    const thumb = 56.0;
+    return LayoutBuilder(
+      builder: (context, box) {
+        final travel = box.maxWidth - thumb;
+        return Container(
+          height: thumb,
+          decoration: BoxDecoration(color: context.colors.errorContainer, borderRadius: BorderRadius.circular(thumb / 2)),
+          child: Stack(
+            children: [
+              Center(child: Text(widget.label, style: context.text.labelLarge?.copyWith(color: context.colors.onErrorContainer))),
+              Positioned(
+                left: _x,
+                child: GestureDetector(
+                  key: const Key('slide-to-clear-thumb'),
+                  onHorizontalDragUpdate: (d) => setState(() => _x = (_x + d.delta.dx).clamp(0, travel)),
+                  onHorizontalDragEnd: (_) {
+                    final done = _x >= travel * 0.95;
+                    setState(() => _x = 0);
+                    if (done) widget.onCleared();
+                  },
+                  child: Container(
+                    width: thumb,
+                    height: thumb,
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: context.colors.error),
+                    child: Icon(Icons.chevron_right, color: context.colors.onError, size: 32),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

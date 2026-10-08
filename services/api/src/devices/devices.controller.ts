@@ -197,7 +197,14 @@ export class DevicesController {
       const [d] = await tx.select({ locked: devices.locked, kioskOverride: devices.kioskOverride }).from(devices).where(eq(devices.id, p.deviceId));
       const kiosk = boardKioskConfig(t?.settings ?? {});
       // IT can lock one board or switch its kiosk mode (device console); both survive a restart.
-      return { kiosk: { ...kiosk, enabled: d?.kioskOverride ?? kiosk.enabled }, locked: d?.locked ?? false };
+      const st = t?.settings ?? {};
+      return {
+        kiosk: { ...kiosk, enabled: d?.kioskOverride ?? kiosk.enabled },
+        locked: d?.locked ?? false,
+        // Teacher profile: Schedule a Training and the institution's What's New items.
+        training: st.boardTraining ?? null,
+        whatsNew: st.boardWhatsNew ?? [],
+      };
     });
   }
 

@@ -22,6 +22,16 @@ abstract final class InkModels {
   static String text(String language) => switch (language) {
     'hi' => 'hi-IN',
     'kn' => 'kn-IN',
+    'ar' => 'ar',
+    'mr' => 'mr-IN',
+    'gu' => 'gu-IN',
+    'ta' => 'ta-IN',
+    'pa' => 'pa-Guru-IN',
+    'te' => 'te-IN',
+    'bn' => 'bn-IN',
+    'or' => 'or-IN',
+    'ml' => 'ml-IN',
+    'ne' => 'ne-NP',
     _ => 'en-US',
   };
 }

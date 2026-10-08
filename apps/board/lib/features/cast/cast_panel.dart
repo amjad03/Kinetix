@@ -256,6 +256,22 @@ class _CastTileViewState extends State<_CastTileView> {
                 child: CustomPaint(painter: _Marks(t.strokes), size: Size.infinite),
               ),
             ),
+            // The source's orientation, following the phone as it turns.
+            if (t.receiver case final r?)
+              Positioned(
+                right: Kx.s8,
+                top: Kx.s8,
+                child: ValueListenableBuilder<Size?>(
+                  valueListenable: r.frameSize,
+                  builder: (context, size, _) => size == null
+                      ? const SizedBox.shrink()
+                      : Icon(
+                          size.height > size.width ? Icons.stay_current_portrait : Icons.stay_current_landscape,
+                          key: Key('cast-orientation-${t.id}-${size.height > size.width ? 'portrait' : 'landscape'}'),
+                          color: Colors.white70,
+                        ),
+                ),
+              ),
             Positioned(
               left: Kx.s8,
               top: Kx.s8,

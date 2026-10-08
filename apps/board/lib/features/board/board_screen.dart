@@ -86,6 +86,11 @@ import '../extras/board_extras.dart';
 import '../extras/extras_hooks.dart';
 import 'board_shot.dart';
 import 'calculator.dart';
+import '../insert/presentation_pane.dart';
+import '../safe_web/safe_web.dart';
+import 'layout/pen_modes.dart';
+import 'classroom_apps.dart';
+import 'profile_extras.dart';
 import 'sb_strings.dart';
 import 'share_whiteboard.dart';
 import 'touch_lock.dart';
@@ -200,6 +205,8 @@ class _BoardScreenState extends State<BoardScreen> {
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    unawaited(loadCustomBoardFont(board));
+    presentationHost = _showPresentation;
     _phet.addListener(_onPhetChanged);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
@@ -209,6 +216,21 @@ class _BoardScreenState extends State<BoardScreen> {
     };
     _ai = AiController(board)
       ..captureBoard = _captureForAi
+      ..readPages = _readPagesForAi
+      ..addTextToBoard = _addTextToBoard
+      ..runTool = ((id) {
+        for (final t in _drawerTools(context.l10n)) {
+          if (t.id == id) return t.onTap();
+        }
+      })
+      ..openSearch = ((engine) {
+        SafeBrowserPanel.nextEngine = engine;
+        _show(PanelKind.web);
+      })
+      ..addQuestionToBoard = ((q) => _addTextToBoard(
+        [q.question, for (final (k, o) in q.options.indexed) '${String.fromCharCode(65 + k)}. $o', if (q.answerText != null) '____'].join('\n'),
+      ))
+      ..pageCount = (() => _wb.pageCount)
       ..openSplit = _openSplit
       ..openBooks = (() => _openPanel(PanelKind.books));
     _lastSessionId = board.session?.sessionId;
@@ -244,7 +266,7 @@ class _BoardScreenState extends State<BoardScreen> {
       _aiPenOffered = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        if (await offerAiPenModels(context, board.handwriting, board.aiPenLanguage)) _pen.modelsChanged();
+        if (await offerAiPenModels(context, board.handwriting, board.textAiLanguage)) _pen.modelsChanged();
       });
     }
     final paper = _wb.background;
@@ -316,6 +338,8 @@ class _BoardScreenState extends State<BoardScreen> {
 
   @override
   void dispose() {
+    if (presentationHost == _showPresentation) presentationHost = null;
+    _ppt?.dispose();
     DemoClassSwitcher.detach(board);
     _wb.removeListener(_onWbChanged);
     if (PanelHost.active == _pushInPanel) PanelHost.active = null;
@@ -355,6 +379,28 @@ class _BoardScreenState extends State<BoardScreen> {
     return base64Encode(await renderPagePng(elements, _background, _canvasSize, area: area));
   }
 
+  /// Scan Board (Quiz AI, Summary AI): the writing on [pages] (every page when empty) read by
+  /// KINETIX AI, page by page. Typed text on the board is taken as it is.
+  Future<String> _readPagesForAi(List<int> pages) async {
+    final api = board.api;
+    if (api == null) return '';
+    final all = _wb.pages;
+    final picked = pages.isEmpty ? [for (var i = 0; i < all.length; i++) i] : pages.where((i) => i >= 0 && i < all.length).toList();
+    final out = StringBuffer();
+    for (final i in picked) {
+      final page = all[i];
+      if (page.elements.isEmpty) continue;
+      final typed = [for (final e in page.elements) if (e is TextElement) e.text];
+      final png = await renderPagePng(page.elements, page.background, _canvasSize);
+      final read = await api.readBoard(base64Encode(png), _ai.language);
+      out.writeln('Page ${i + 1}:');
+      if (typed.isNotEmpty) out.writeln(typed.join('\n'));
+      out.writeln(read.result.text);
+      if (read.result.math.isNotEmpty) out.writeln(read.result.math.join('\n'));
+    }
+    return out.toString();
+  }
+
   /// Touch lock (Tools): the board takes no touches until the lock is held.
   bool _touchLocked = false;
 
@@ -363,6 +409,19 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// Screen Freeze (spec §61): nothing on the board can change until Close.
   bool _frozen = false;
+
+  /// The open presentation beside the writing (PPT, spec §28).
+  Presentation? _ppt;
+
+  void _showPresentation(Presentation p) {
+    _ppt?.dispose();
+    setState(() => _ppt = p..addListener(() => setState(() {})));
+  }
+
+  void _closePresentation() {
+    _ppt?.dispose();
+    setState(() => _ppt = null);
+  }
 
   /// Switch: the quick group and the page navigation trade sides (kept per teacher).
   bool get _barsSwapped => board.sbPref('barsSwapped') == 'true';
@@ -415,11 +474,13 @@ class _BoardScreenState extends State<BoardScreen> {
   void _syncPen() {
     if (_pen.mode != board.aiPenMode) _pen.mode = board.aiPenMode;
     _pen
-      ..language = board.aiPenLanguage.name
+      ..language = board.textAiLanguage
+      ..textFont = board.textAiFont
       ..snapShapes = board.snapShapes
       ..convertShapes = board.aiPenConvert.contains('shapes')
       ..convertMaths = board.aiPenConvert.contains('maths')
       ..convertText = board.aiPenConvert.contains('text');
+    applyStylusTips(_wb, board);
     _wb.measureNewShapes = board.measureShapes;
     if (_wb.measureUnit != board.measureUnit) _wb.measureUnit = board.measureUnit;
     if (_primary && (_wb.tool == BoardTool.aiPen || _wb.tool == BoardTool.laser)) _wb.tool = BoardTool.pen;
@@ -638,8 +699,13 @@ class _BoardScreenState extends State<BoardScreen> {
       showBoardMessage(context, context.l10n.aiAskNeedsSignIn);
       return;
     }
-    _openAi(AiView.readBoard);
-    unawaited(_ai.readBoard());
+    // Select & Ask (spec §39): typed text goes as it is; ink is read when an action is picked.
+    _ai.selectedContent = [
+      for (final e in _wb.selectedElements)
+        if (e is TextElement) e.text,
+    ].join('\n');
+    _ai.selectAsk.clear();
+    _openAi(AiView.selectAsk);
   }
 
   /// Puts a picture of the 3D model or lab in the split pane on the board, linked to it, so a
@@ -1722,7 +1788,7 @@ class _BoardScreenState extends State<BoardScreen> {
           Positioned(
             left: phone ? Kx.s8 + safe.left : null,
             right: phone ? Kx.s8 + safe.right : Kx.s16,
-            bottom: phone ? phoneBottom : 100,
+            bottom: phone ? phoneBottom : 100 + Kx.boardTarget + 16,
             child: BoardChromeTheme(
               child: PracticePanel(
                 tracker: _practice!,
@@ -1731,6 +1797,34 @@ class _BoardScreenState extends State<BoardScreen> {
                   final (text, icon, key) = practiceText(context.l10n, t);
                   unawaited(_showMe(key, icon, text, ''));
                 },
+              ),
+            ),
+          ),
+        if (_ppt case final ppt?)
+          Positioned(
+            key: const Key('presentation'),
+            top: ppt.edgeToEdge ? 0 : 64,
+            bottom: ppt.edgeToEdge ? 0 : 96,
+            left: ppt.edgeToEdge || ppt.left ? 0 : null,
+            right: ppt.edgeToEdge || !ppt.left ? 0 : null,
+            width: ppt.edgeToEdge ? null : _canvasSize.width * ppt.fraction,
+            child: BoardChromeTheme(
+              child: PresentationPane(
+                p: ppt,
+                wb: _wb,
+                width: _canvasSize.width,
+                onClose: _closePresentation,
+                labels: PresentationLabels(
+                  previous: SbStrings.of(context)('pptPrev'),
+                  next: SbStrings.of(context)('pptNext'),
+                  addPage: SbStrings.of(context)('pptAddPage'),
+                  addAll: SbStrings.of(context)('pptAddAll'),
+                  edgeToEdge: SbStrings.of(context)('pptEdge'),
+                  present: SbStrings.of(context)('pptPresent'),
+                  close: SbStrings.of(context)('pptClose'),
+                  noPresenter: SbStrings.of(context)('pptNoPresenter'),
+                  added: (n) => SbStrings.of(context)('pptAdded', {'n': n}),
+                ),
               ),
             ),
           ),
@@ -1863,6 +1957,7 @@ class _BoardScreenState extends State<BoardScreen> {
       'stopwatch': kit(ToolkitItem.stopwatch),
       'picker': kit(ToolkitItem.picker),
       'spotlight': kit(ToolkitItem.spotlight),
+      'apps': BarItem(const Key('tbar-apps'), Icons.apps, SbStrings.of(context)('apps'), _run(_openClassroomApps)),
       'screenshot': BarItem(const Key('tbar-screenshot'), Icons.photo_camera_outlined, l.toolScreenshot, _run(() => unawaited(BoardShot.take(context, _captureScreen)))),
       'models3d': BarItem(const Key('tbar-models3d'), Icons.view_in_ar_outlined, l.splitModel3d, _run(() => _openSplit(SplitContent.model3d))),
       'labs': BarItem(const Key('tbar-labs'), Icons.biotech_outlined, s.tabLabs, _run(() => _openSplit(SplitContent.lab))),
@@ -1942,7 +2037,7 @@ class _BoardScreenState extends State<BoardScreen> {
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
     final swapped = _barsSwapped;
-    final menuRoom = recording == null ? 190.0 : 420.0, pageRoom = (compact ? 330.0 : 400.0) + 2 * Kx.boardTarget;
+    final menuRoom = recording == null ? 190.0 : 470.0, pageRoom = compact ? 330.0 : 400.0;
     final leftRoom = swapped ? pageRoom : menuRoom, rightRoom = swapped ? menuRoom : pageRoom;
     final quick = QuickGroup(
       onSwitch: _switchSides,
@@ -2008,8 +2103,8 @@ class _BoardScreenState extends State<BoardScreen> {
             left: dock == ToolbarDock.left ? Kx.s12 : null,
             right: dock == ToolbarDock.right ? Kx.s12 : null,
             top: 64,
-            // Above the quick group when it is on the same side.
-            bottom: (dock == ToolbarDock.left) != swapped ? 96 + Kx.boardTarget + 16 : 96,
+            // Above the small bar over each corner (quick group, Hide/Switch).
+            bottom: 96 + Kx.boardTarget + 16,
             child: Align(
               alignment: dock == ToolbarDock.left ? Alignment.centerLeft : Alignment.centerRight,
               child: FittedBox(fit: BoxFit.scaleDown, child: toolbar),
@@ -2102,6 +2197,7 @@ class _BoardScreenState extends State<BoardScreen> {
       (const Key('menu-open'), Icons.folder_open_outlined, l.open, _openWhiteboards, true),
       (const Key('save-board'), Icons.save_outlined, l.save, () => unawaited(_save()), true),
       (const Key('menu-share'), Icons.share_outlined, s.share, () => unawaited(_shareWhiteboard()), true),
+      (const Key('menu-apps'), Icons.apps, SbStrings.of(context)('apps'), _openClassroomApps, true),
       (const Key('menu-freeze'), Icons.ac_unit, SbStrings.of(context)('freeze'), () => setState(() => _frozen = true), true),
       (const Key('menu-versions'), Icons.history, SbStrings.of(context)('versions'), () => unawaited(_versions()), board.isSignedIn && board.whiteboardId.isNotEmpty),
       (const Key('menu-import'), Icons.upload_file_outlined, l.importFiles, () => unawaited(importDocument(context, _wb)), true),
@@ -2131,6 +2227,106 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// Share: saves the board and shares it with the class.
+  /// Insert's eight categories (spec §24), each running the board's own tool for it.
+  List<InsertExtra> _insertCategories(BuildContext context) {
+    final s = SbStrings.of(context);
+    void tool(String id) {
+      for (final t in _drawerTools(context.l10n)) {
+        if (t.id == id) return t.onTap();
+      }
+    }
+
+    return [
+      InsertExtra(key: const Key('insert-cat-pdf'), icon: Icons.picture_as_pdf_outlined, title: s('catPdf'), hint: '', onTap: () => unawaited(importDocument(context, _wb))),
+      InsertExtra(key: const Key('insert-cat-images'), icon: Icons.image_outlined, title: s('catImages'), hint: '', onTap: () => unawaited(insertDevicePicture(context, _wb))),
+      InsertExtra(key: const Key('insert-cat-videos'), icon: Icons.smart_display_outlined, title: s('catVideos'), hint: '', onTap: () => tool('concept-videos')),
+      InsertExtra(key: const Key('insert-cat-ppt'), icon: Icons.slideshow_outlined, title: s('catPpt'), hint: '', onTap: () => unawaited(importDocument(context, _wb))),
+      InsertExtra(key: const Key('insert-cat-clipboard'), icon: Icons.content_paste, title: s('catClipboard'), hint: '', onTap: () => unawaited(_pasteClipboard())),
+      InsertExtra(key: const Key('insert-cat-geometry'), icon: Icons.architecture, title: s('catGeometry'), hint: '', onTap: () => _toggle(BoardPopover.shapes)),
+      InsertExtra(key: const Key('insert-cat-table'), icon: Icons.table_chart_outlined, title: s('catTable'), hint: '', onTap: () => tool('spreadsheet')),
+      InsertExtra(key: const Key('insert-cat-flowchart'), icon: Icons.account_tree_outlined, title: s('catFlowchart'), hint: '', onTap: () => unawaited(CanvasTools.insertFlowchart(context, _wb))),
+    ];
+  }
+
+  /// Clipboard (spec §29): the board's own copied objects, else text copied in any app as a
+  /// text box in the middle of the view.
+  Future<void> _pasteClipboard() async {
+    if (_wb.canPaste) {
+      _wb.paste();
+      return;
+    }
+    final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text?.trim() ?? '';
+    if (!mounted) return;
+    if (text.isEmpty) {
+      showBoardMessage(context, SbStrings.of(context)('clipboardEmpty'));
+      return;
+    }
+    _addTextToBoard(text);
+  }
+
+  /// Text (clipboard, AI output, a quiz question) as a text box in the middle of the view.
+  void _addTextToBoard(String text) {
+    const size = 32.0;
+    final view = _wb.visibleArea ?? Offset.zero & _canvasSize;
+    final box = measureBoardText(text, size, font: _wb.font);
+    final at = view.center - Offset(box.width / 2, box.height / 2);
+    _wb.insert([TextElement(id: newElementId(), position: at, text: text, color: _wb.penColor, fontSize: size, size: box, font: _wb.font)]);
+  }
+
+  /// Classroom Apps (spec §33), each opening the board's own feature.
+  void _openClassroomApps() {
+    final s = SbStrings.of(context);
+    unawaited(showClassroomApps(
+      context,
+      apps: [
+        ('study-material', Icons.library_books_outlined, s('appStudyMaterial'), _openSearch),
+        ('live-class', Icons.sensors, s('appLiveClass'), () => unawaited(toggleClassLive(context, board))),
+        ('homework', Icons.assignment_outlined, s('appHomework'), () => _openAi(AiView.homework)),
+        ('lessons', Icons.event_note_outlined, s('appLessons'), () => _runDrawerTool('todays-plan')),
+        ('attendance', Icons.how_to_reg_outlined, s('appAttendance'), _attendance),
+        ('class-prep', Icons.co_present_outlined, s('appClassPrep'), () => _openAi(AiView.lessonPlan)),
+        ('students', Icons.groups_outlined, s('appStudents'), () => _runDrawerTool('ask-class')),
+        ('tests', Icons.quiz_outlined, s('appTests'), () => _openAi(AiView.quiz)),
+        ('recordings', Icons.video_library_outlined, s('appRecordings'), _openRecordings),
+        ('books', Icons.menu_book_outlined, s('appBooks'), () => _openPanel(PanelKind.books)),
+      ],
+      others: [
+        ('calculator', Icons.calculate_outlined, s('appCalculator'), () => unawaited(_calculator())),
+        ('spotlight', Icons.highlight, s('appSpotlight'), () => _showKit(ToolkitItem.spotlight)),
+      ],
+    ));
+  }
+
+  void _runDrawerTool(String id) {
+    for (final t in _drawerTools(context.l10n)) {
+      if (t.id == id) return t.onTap();
+    }
+  }
+
+  /// Profile → New: a fresh whiteboard (offering to save this one first).
+  Future<void> _newWhiteboard() async {
+    if (!_wb.isBlank) {
+      final s = SbStrings.of(context);
+      final choice = await showPanelDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          key: const Key('new-board-dialog'),
+          content: Text(s('newBoardSave')),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(s('cancel'))),
+            TextButton(key: const Key('new-board-discard'), onPressed: () => Navigator.of(ctx).pop('discard'), child: Text(s('discardAndNew'))),
+            if (board.isSignedIn) FilledButton(key: const Key('new-board-save'), onPressed: () => Navigator.of(ctx).pop('save'), child: Text(s('saveAndNew'))),
+          ],
+        ),
+      );
+      if (choice == null || !mounted) return;
+      if (choice == 'save' && !await _saveAs(_boardTitle ?? _defaultTitle(), share: false)) return;
+    }
+    _wb.load(SavedBoard(background: _background, canvas: _canvasSize, pages: const [[]]));
+    board.whiteboardId = board.newId();
+    _boardTitle = null;
+  }
+
   /// Share whiteboard: WhatsApp, Email, QR and other apps (share_whiteboard.dart).
   Future<void> _shareWhiteboard() async {
     if (_wb.isBlank) {
@@ -2157,6 +2353,11 @@ class _BoardScreenState extends State<BoardScreen> {
       BoardPopover.pen => PenPopover(wb: _wb, board: board, memory: _penMemory, primary: _primary),
       BoardPopover.erase => ErasePopover(
         wb: _wb,
+        onSlideClear: () {
+          close();
+          _wb.clearPage();
+          showBoardMessage(context, l.clearedPage, action: (l.toolUndo, _wb.undo));
+        },
         onClear: () {
           close();
           unawaited(confirmClearBoard(context, _wb, scope: ClearScope.page));
@@ -2179,6 +2380,7 @@ class _BoardScreenState extends State<BoardScreen> {
         onGraph: () => unawaited(_subjectTools.run(SubjectTool.graph, Rect.zero)),
         onModel3d: () => _openSplit(SplitContent.model3d),
         onLab: () => _openSplit(SplitContent.lab),
+        categories: _insertCategories(context),
         extras: [
           InsertExtra(key: const Key('insert-text'), icon: Icons.title, title: l.toolText, hint: l.tapToPlace, onTap: () => _wb.tool = BoardTool.text),
           ...insertExtras(context, wb: _wb, subject: board.session?.subjectName, onSimulation: () => unawaited(_openSim())),
@@ -2210,6 +2412,11 @@ class _BoardScreenState extends State<BoardScreen> {
         onTour: () => unawaited(_startTour()),
         onSettings: _openSettings,
         onClose: close,
+        onNewBoard: () => unawaited(_newWhiteboard()),
+        onClassrooms: () => _runDrawerTool('todays-plan'),
+        onTraining: () => unawaited(showTrainingDialog(context, board, onTour: () => unawaited(_startTour()), onPractice: _startPractice)),
+        onWhatsNew: () => unawaited(showWhatsNewDialog(context, board)),
+        onExit: () => unawaited(_endClass()),
       ),
       BoardPopover.menu => BoardMenu(items: _menuItems(phone: phone), onClose: close),
       BoardPopover.pages => PageOverview(

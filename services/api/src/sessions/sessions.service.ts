@@ -6,11 +6,15 @@ import { and, asc, eq, isNull } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
 import { boardSessions, programs, sections, students, subjects, tenants, timetableSlots, users } from '../db/schema.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
 @Injectable()
 export class SessionsService {
-  constructor(private readonly realtime: RealtimeGateway) {}
+  constructor(
+    private readonly realtime: RealtimeGateway,
+    private readonly events: EventBus,
+  ) {}
 
   async context(tx: Tx, sessionId: string): Promise<SessionContext> {
     const [row] = await tx
@@ -68,6 +72,7 @@ export class SessionsService {
       .returning({ id: boardSessions.id });
     for (const s of ended) {
       await audit(tx, { tenantId, actorType: 'system', action: 'board_session.ended', subjectType: 'board_session', subjectId: s.id, data: { reason } });
+      await this.events.emit(tx, tenantId, { type: DomainEvents.ClassEnded, aggregateType: 'board_session', aggregateId: s.id, payload: { reason } });
     }
     return ended.map((s) => s.id);
   }
@@ -80,6 +85,7 @@ export class SessionsService {
       .returning({ id: boardSessions.id, deviceId: boardSessions.deviceId });
     if (!s) return;
     await audit(tx, { tenantId, actorType: 'system', action: 'board_session.ended', subjectType: 'board_session', subjectId: s.id, data: { reason } });
+    await this.events.emit(tx, tenantId, { type: DomainEvents.ClassEnded, aggregateType: 'board_session', aggregateId: s.id, payload: { reason } });
     if (notify) this.realtime.toDevices([s.deviceId], RealtimeEvents.SessionEnded, { sessionId: s.id, reason });
     this.realtime.liveEnded(s.deviceId, 'class_ended', tenantId);
   }

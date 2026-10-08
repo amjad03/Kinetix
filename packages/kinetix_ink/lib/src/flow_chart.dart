@@ -180,3 +180,14 @@ List<BoardElement> absorbTextIntoFlow(List<BoardElement> before, List<BoardEleme
       if (!taken.contains(e.id)) e is FlowNodeElement && into[e.id] != null ? e.copyWith(text: into[e.id]) : e,
   ];
 }
+
+/// Flowchart AI's next-step suggestions (spec §32): what usually follows [from] in a classroom
+/// flowchart, most likely first. Offered, never forced: the full palette stays below.
+List<FlowBlock> suggestedNextFlow(FlowBlock from) => switch (from) {
+  FlowBlock.terminal => const [FlowBlock.inputOutput, FlowBlock.process],
+  FlowBlock.inputOutput || FlowBlock.manualInput => const [FlowBlock.process, FlowBlock.decision],
+  FlowBlock.process || FlowBlock.subprocess => const [FlowBlock.decision, FlowBlock.process, FlowBlock.inputOutput, FlowBlock.terminal],
+  FlowBlock.decision => const [FlowBlock.process, FlowBlock.terminal, FlowBlock.connector],
+  FlowBlock.loopLimit => const [FlowBlock.process, FlowBlock.decision],
+  _ => const [FlowBlock.process, FlowBlock.terminal],
+};

@@ -17,6 +17,24 @@ import 'ink_parser.dart' show inkBounds, isPenInk;
 /// Languages the AI pen writes in: the board's languages.
 const aiPenLanguages = ['en', 'hi', 'kn'];
 
+/// Text AI's handwriting languages (spec §17), each named in its own script. A language whose
+/// model this device lacks shows as unavailable and its words stay as ink.
+const textAiLanguages = <String, String>{
+  'en': 'English',
+  'hi': 'हिन्दी',
+  'kn': 'ಕನ್ನಡ',
+  'ar': 'العربية',
+  'mr': 'मराठी',
+  'gu': 'ગુજરાતી',
+  'ta': 'தமிழ்',
+  'pa': 'ਪੰਜਾਬੀ',
+  'te': 'తెలుగు',
+  'bn': 'বাংলা',
+  'or': 'ଓଡ଼ିଆ',
+  'ml': 'മലയാളം',
+  'ne': 'नेपाली',
+};
+
 /// Whether words in a language can be read now.
 enum HandwritingModelState {
   /// Ready: words become text.

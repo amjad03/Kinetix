@@ -25,6 +25,10 @@ export interface Grounding {
 }
 
 const Topic = z.string().trim().min(2).max(300);
+const BoardText = z.string().trim().max(20_000).optional();
+const Level = z.string().trim().max(120).optional();
+export const QuizType = z.enum(['mcq', 'trueFalse', 'fillBlank', 'shortAnswer']);
+export const HomeworkType = z.enum(['qa', 'fillBlank', 'mcq', 'trueFalse', 'twoMark', 'threeMark', 'fiveMark', 'diagram']);
 const Difficulty = z.enum(['easy', 'medium', 'hard']).default('medium');
 
 export const TaskInputs = {
@@ -34,12 +38,46 @@ export const TaskInputs = {
     count: z.number().int().min(1).max(20).default(5),
     difficulty: Difficulty,
     language: Language.default('en'),
+    /** Question types to mix (spec §43); multiple choice when not given. */
+    types: z.array(QuizType).min(1).max(4).default(['mcq']),
+    /** Scan Board: the text read from the chosen board pages; questions come from it. */
+    boardText: BoardText,
+    /** Class, board and stream as the teacher put it, e.g. "Class 11 CBSE Science". */
+    level: Level,
   }),
   homework: z.object({
     topic: Topic,
     count: z.number().int().min(1).max(15).default(5),
     difficulty: Difficulty,
     language: Language.default('en'),
+    /** Formats to include (spec §44). */
+    types: z.array(HomeworkType).min(1).max(8).default(['qa']),
+    boardText: BoardText,
+    level: Level,
+  }),
+  /** Summary AI (spec §41): the lesson's key concepts, definitions, formulas, examples, points and questions. */
+  boardSummary: z.object({
+    topic: Topic.optional(),
+    boardText: BoardText,
+    format: z.enum(['teacher', 'student', 'revision', 'recap']).default('student'),
+    language: Language.default('en'),
+    level: Level,
+  }),
+  /** Lecture AI (spec §42). */
+  lecture: z.object({
+    topic: Topic,
+    minutes: z.number().int().min(10).max(180).default(40),
+    language: Language.default('en'),
+    level: Level,
+  }),
+  /** Select & Ask (spec §39): an action on what the teacher selected on the board. */
+  selectAsk: z.object({
+    action: z.enum(['explain', 'simplify', 'expand', 'solve', 'translate', 'example', 'quiz', 'homework', 'diagram', 'boardReady']),
+    content: z.string().trim().min(1).max(6000),
+    /** For translate. */
+    targetLanguage: Language.optional(),
+    language: Language.default('en'),
+    level: Level,
   }),
   lessonPlan: z.object({
     topic: Topic,
@@ -64,12 +102,24 @@ export const TaskOutputs = {
       .array(
         z
           .object({
+            type: QuizType.default('mcq'),
             question: Text(600),
-            options: z.array(Text(300)).length(4),
-            answer: z.number().int().min(0).max(3),
+            /** Four for multiple choice, two (True, False) for true/false, none otherwise. */
+            options: z.array(Text(300)).max(4).default([]),
+            /** The correct option's index (multiple choice, true/false). */
+            answer: z.number().int().min(0).max(3).optional(),
+            /** The expected answer (fill in the blank, short answer). */
+            answerText: Text(400).optional(),
             explanation: Text(800),
+            /** The usual wrong idea behind the likely wrong answer. */
+            misconception: Text(400).optional(),
           })
-          .refine((q) => new Set(q.options.map((o) => o.toLowerCase())).size === 4, 'The four options must differ'),
+          .refine((q) => {
+            if (q.type === 'mcq') return q.options.length === 4 && q.answer !== undefined;
+            if (q.type === 'trueFalse') return q.options.length === 2 && (q.answer === 0 || q.answer === 1);
+            return !!q.answerText;
+          }, 'Each question needs the options and answer its type requires')
+          .refine((q) => q.type !== 'mcq' || new Set(q.options.map((o) => o.toLowerCase())).size === 4, 'The four options must differ'),
       )
       .min(1)
       .max(20),
@@ -77,7 +127,46 @@ export const TaskOutputs = {
   homework: z.object({
     title: Text(200),
     instructions: Text(1500),
-    questions: z.array(z.object({ question: Text(800), marks: z.number().int().min(1).max(20) })).min(1).max(15),
+    questions: z
+      .array(
+        z.object({
+          question: Text(800),
+          marks: z.number().int().min(1).max(20),
+          type: HomeworkType.default('qa'),
+          options: z.array(Text(300)).max(4).default([]),
+          /** A model answer for the teacher to check against. */
+          answer: Text(1500).optional(),
+          /** What earns the marks. */
+          rubric: Text(800).optional(),
+          /** For diagram questions: what the diagram must show. */
+          diagram: Text(600).optional(),
+        }),
+      )
+      .min(1)
+      .max(15),
+  }),
+  boardSummary: z.object({
+    keyConcepts: z.array(Text(400)).min(1).max(10),
+    definitions: z.array(z.object({ term: Text(120), meaning: Text(500) })).max(10).default([]),
+    formulas: z.array(Text(300)).max(10).default([]),
+    examples: z.array(Text(500)).max(6).default([]),
+    importantPoints: z.array(Text(400)).max(10).default([]),
+    questions: z.array(Text(400)).max(8).default([]),
+  }),
+  lecture: z.object({
+    outline: z.array(Text(300)).min(2).max(12),
+    explanation: Text(4000),
+    examples: z.array(Text(600)).max(6).default([]),
+    analogies: z.array(Text(400)).max(4).default([]),
+    boardPlan: z.array(Text(300)).max(10).default([]),
+    activities: z.array(Text(400)).max(5).default([]),
+    recap: Text(800),
+  }),
+  selectAsk: z.object({
+    title: Text(200),
+    answer: Text(5000),
+    /** Questions, steps or examples, when the action produces a list. */
+    items: z.array(Text(600)).max(12).default([]),
   }),
   lessonPlan: z.object({
     objectives: z.array(Text(300)).min(1).max(6),
@@ -141,7 +230,44 @@ const SHAPES: Record<TaskName, string> = {
   lessonPlan: '{"objectives": string[], "steps": [{"minutes": integer, "activity": string}], "materials": string[], "assessment": string}',
   summarize: '{"summary": string (one paragraph for a student who missed class), "keyPoints": string[]}',
   readBoard: '{"text": string (the handwriting, line by line, as written), "math": string[] (each mathematical expression in LaTeX)}',
+  boardSummary:
+    '{"keyConcepts": string[], "definitions": [{"term": string, "meaning": string}], "formulas": string[], "examples": string[], "importantPoints": string[], "questions": string[]}',
+  lecture: '{"outline": string[], "explanation": string, "examples": string[], "analogies": string[], "boardPlan": string[] (what to write on the board, in order), "activities": string[], "recap": string}',
+  selectAsk: '{"title": string, "answer": string, "items": string[]}',
 };
+
+const QUIZ_TYPE_SHAPE =
+  '{"questions": [{"type": "mcq"|"trueFalse"|"fillBlank"|"shortAnswer", "question": string, "options": string[] (4 for mcq, ["True","False"] for trueFalse, [] otherwise), "answer": index of the correct option (mcq, trueFalse), "answerText": string (fillBlank, shortAnswer), "explanation": string (why it is right), "misconception": string (the usual wrong idea)}]}';
+const HOMEWORK_TYPE_SHAPE =
+  '{"title": string, "instructions": string, "questions": [{"type": string, "question": string, "marks": integer, "options": string[] (mcq: 4, trueFalse: 2), "answer": string (model answer), "rubric": string (what earns the marks), "diagram": string (diagram questions: what to draw)}]}';
+
+const HOMEWORK_TYPE_NAMES: Record<z.infer<typeof HomeworkType>, string> = {
+  qa: 'question and answer',
+  fillBlank: 'fill in the blanks',
+  mcq: 'multiple choice',
+  trueFalse: 'true or false',
+  twoMark: '2-mark',
+  threeMark: '3-mark',
+  fiveMark: '5-mark',
+  diagram: 'diagram-based',
+};
+
+const SELECT_ASK: Record<TaskInput<'selectAsk'>['action'], string> = {
+  explain: 'Explain this for the class',
+  simplify: 'Explain this more simply, for students who found it hard',
+  expand: 'Expand on this with more detail and depth',
+  solve: 'Solve this step by step; put each step in "items"',
+  translate: 'Translate this',
+  example: 'Give worked examples of this; one per item',
+  quiz: 'Write quick check questions on this; one per item, each with its answer',
+  homework: 'Write homework questions on this; one per item, with marks',
+  diagram: 'Describe a clear diagram to draw on the board for this; one drawing step per item',
+  boardReady: 'Rewrite this as short board-ready notes (headings and bullet points); one line per item',
+};
+
+function scanned(i: Record<string, unknown>): string {
+  return i.boardText ? `\nUse only what is on the class's board (read from the chosen pages):\n\"\"\"\n${i.boardText}\n\"\"\"` : '';
+}
 
 function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
   const i = input as Record<string, unknown>;
@@ -149,10 +275,21 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
     switch (task) {
       case 'explain':
         return `Explain for the class: ${i.question}`;
-      case 'quiz':
-        return `Write ${i.count} multiple-choice questions (${i.difficulty}) on: ${i.topic}. Exactly one option is correct; vary its position.`;
-      case 'homework':
-        return `Write a homework assignment of ${i.count} questions (${i.difficulty}) on: ${i.topic}. Mix short and long answers; marks reflect effort.`;
+      case 'quiz': {
+        const types = i.types as string[];
+        const kinds = types.length === 1 && types[0] === 'mcq' ? 'multiple-choice questions' : `questions mixing these types: ${types.join(', ')}`;
+        return `Write ${i.count} ${kinds} (${i.difficulty}) on: ${i.topic}${i.level ? ` for ${i.level}` : ''}. Ask about concepts examinations test, not trivia. In multiple choice exactly one option is correct; vary its position.${scanned(i)}`;
+      }
+      case 'homework': {
+        const kinds = (i.types as (keyof typeof HOMEWORK_TYPE_NAMES)[]).map((t) => HOMEWORK_TYPE_NAMES[t]).join(', ');
+        return `Write a homework assignment of ${i.count} questions (${i.difficulty}) on: ${i.topic}${i.level ? ` for ${i.level}` : ''}. Include: ${kinds}. 2-, 3- and 5-mark questions carry those marks; give each a model answer and a short rubric.${scanned(i)}`;
+      }
+      case 'boardSummary':
+        return `Summarise ${i.topic ? `the lesson on ${i.topic}` : 'this lesson'}${i.level ? ` (${i.level})` : ''} as ${i.format === 'teacher' ? 'a summary for the teacher' : i.format === 'revision' ? 'a revision sheet' : i.format === 'recap' ? 'a short class recap' : 'student notes'}: key concepts, definitions, formulas, examples, important points and questions to check understanding.${scanned(i)}`;
+      case 'lecture':
+        return `Prepare a ${i.minutes}-minute lecture on: ${i.topic}${i.level ? ` for ${i.level}` : ''}: an outline, the explanation, examples, analogies, what to write on the board, activities and a recap.`;
+      case 'selectAsk':
+        return `${SELECT_ASK[i.action as keyof typeof SELECT_ASK]}${i.action === 'translate' ? ` into ${LANGUAGE_NAMES[(i.targetLanguage as Language) ?? 'hi']}` : ''}${i.level ? ` (${i.level})` : ''}. The teacher selected on the board:\n\"\"\"\n${i.content}\n\"\"\"`;
       case 'lessonPlan':
         return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}.`;
       case 'summarize':
@@ -161,7 +298,8 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return 'Read the handwriting on this classroom whiteboard exactly as written. Do not solve or correct anything.';
     }
   })();
-  return `${ask}\n\nReturn JSON shaped like: ${SHAPES[task]}`;
+  const shape = task === 'quiz' && JSON.stringify(i.types) !== '["mcq"]' ? QUIZ_TYPE_SHAPE : task === 'homework' ? HOMEWORK_TYPE_SHAPE : SHAPES[task];
+  return `${ask}\n\nReturn JSON shaped like: ${shape}`;
 }
 
 export function buildMessages<T extends TaskName>(task: T, input: TaskInput<T>, g: Grounding): ChatMessage[] {
@@ -245,12 +383,13 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
         };
       case 'quiz':
         return {
-          questions: Array.from({ length: i.count }, (_, n) => ({
-            question: `Preview question ${n + 1} on ${topic}`,
-            options: ['First option', 'Second option', 'Third option', 'Fourth option'],
-            answer: n % 4,
-            explanation: 'Preview only. Real questions need the KINETIX AI server.',
-          })),
+          questions: Array.from({ length: i.count }, (_, n) => {
+            const type = (i.types as string[])[n % (i.types as string[]).length];
+            const base = { type, question: `Preview question ${n + 1} on ${topic}`, explanation: 'Preview only. Real questions need the KINETIX AI server.' };
+            if (type === 'trueFalse') return { ...base, options: ['True', 'False'], answer: n % 2 };
+            if (type === 'fillBlank' || type === 'shortAnswer') return { ...base, options: [], answerText: 'Preview answer' };
+            return { ...base, options: ['First option', 'Second option', 'Third option', 'Fourth option'], answer: n % 4 };
+          }),
         };
       case 'homework':
         return {
@@ -277,6 +416,27 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
       }
       case 'readBoard':
         return { text: 'Preview: connect a KINETIX AI server with a vision model to read the handwriting on the board.', math: [] };
+      case 'boardSummary':
+        return {
+          keyConcepts: [`Preview: the main idea of ${i.topic ?? 'this lesson'}`],
+          definitions: [],
+          formulas: [],
+          examples: [],
+          importantPoints: ['Preview only. Connect the KINETIX AI server for a real summary of the board.'],
+          questions: [],
+        };
+      case 'lecture':
+        return {
+          outline: ['Recall', `Introduce ${topic}`, 'Worked example', 'Practice', 'Recap'],
+          explanation: `Preview lecture on ${topic}. Connect the KINETIX AI server for a real one that follows your syllabus.`,
+          examples: [],
+          analogies: [],
+          boardPlan: [`Title: ${topic}`],
+          activities: [],
+          recap: 'Preview only.',
+        };
+      case 'selectAsk':
+        return { title: `Preview: ${i.action}`, answer: 'Preview only. Connect the KINETIX AI server to act on the selection.', items: [] };
       case 'summarize':
         return {
           summary: `Preview summary. The lesson transcript has ${String(i.transcript).split(/\s+/).length} words; connect the KINETIX AI server for a real summary.`,

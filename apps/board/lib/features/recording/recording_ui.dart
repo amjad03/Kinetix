@@ -7,6 +7,7 @@ import '../../core/recording/recordings.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import '../board/panel/panel_host.dart';
+import '../board/sb_strings.dart';
 
 /// "03:12", or "1:03:12" past an hour.
 String formatElapsed(Duration d) {
@@ -87,6 +88,13 @@ class RecordingIndicator extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: Kx.s4),
+              // Marker (spec §56): a chapter in the recording here; the Student App lists them.
+              IconButton(
+                key: const Key('rec-marker'),
+                tooltip: '${SbStrings.of(context)('recMarker')}${capture.chapters > 0 ? ' (${capture.chapters})' : ''}',
+                onPressed: paused ? null : () => capture.mark(),
+                icon: const Icon(Icons.bookmark_add_outlined),
+              ),
               IconButton(
                 key: const Key('rec-pause'),
                 tooltip: paused ? context.l10n.recResume : context.l10n.recPause,

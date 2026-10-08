@@ -14,6 +14,13 @@ export const DomainEvents = {
   ResultsPublished: 'exams.results_published',
   FeePaid: 'fees.payment_received',
   PayrollLocked: 'payroll.run_locked',
+  // Classroom (Smartboard spec §72): one event per change, written with it (idempotent by design).
+  ClassStarted: 'classroom.class_started',
+  ClassEnded: 'classroom.class_ended',
+  AttendanceCaptured: 'classroom.attendance_captured',
+  BoardSaved: 'classroom.board_page_updated',
+  LessonRecorded: 'classroom.lesson_recorded',
+  HomeworkPublished: 'classroom.homework_published',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

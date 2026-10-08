@@ -617,6 +617,13 @@
       "when": 1791410885229,
       "tag": "0094_smartboard_share",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1791410886229,
+      "tag": "0095_smartboard_ai",
+      "breakpoints": true
     }
   ]
 }

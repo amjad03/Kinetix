@@ -24,7 +24,7 @@ void main() {
   testWidgets('the paper follows the theme; a template stays', (tester) async {
     final (board, wb) = await pump(tester);
     expect(wb.background, BoardBackground.plain);
-    wb.addPage();
+    wb.addPage(force: true);
     wb.background = BoardBackground.grid;
     board.setTheme(BoardTheme.dark);
     await tester.pumpAndSettle();

@@ -109,6 +109,55 @@ describe('KINETIX AI gateway', () => {
     expect(sent.messages[1].content).toContain('Write 3 multiple-choice questions (medium) on: Goodwill');
   });
 
+  it('scans the board, mixes question types, and marks exam frequency only from the past-exam bank', async () => {
+    const mixed = {
+      questions: [
+        { type: 'mcq', question: 'Which account records goodwill on admission of a partner?', options: ['Goodwill account', 'Cash account', 'Capital account', 'Sales account'], answer: 0, explanation: 'It is an intangible asset.', misconception: 'Some think it goes to cash.' },
+        { type: 'trueFalse', question: 'Goodwill is a fictitious asset.', options: ['True', 'False'], answer: 1, explanation: 'It is intangible, not fictitious.' },
+        { type: 'fillBlank', question: 'Goodwill is an ____ asset.', options: [], answerText: 'intangible', explanation: 'It cannot be touched.' },
+      ],
+    };
+    model.replies.push(JSON.stringify(mixed));
+    const first = await http()
+      .post('/v1/ai/quiz')
+      .set(auth('board'))
+      .send({ topic: 'Goodwill', count: 3, types: ['mcq', 'trueFalse', 'fillBlank'], boardText: 'Goodwill = average profit x years of purchase', level: 'BCom Sem 3', fresh: true })
+      .expect(200);
+    const asked = model.requests.at(-1)!.messages[1].content;
+    expect(asked).toContain('mixing these types: mcq, trueFalse, fillBlank');
+    expect(asked).toContain('average profit x years of purchase');
+    expect(first.body.result.questions.map((q: { type: string }) => q.type)).toEqual(['mcq', 'trueFalse', 'fillBlank']);
+    expect(first.body.result.questions.every((q: { important?: boolean }) => q.important === undefined)).toBe(true);
+
+    // The exam cell imports past papers; matching questions now carry their frequency.
+    await http()
+      .post('/v1/past-exam-questions/import')
+      .set(auth('principal'))
+      .send({ rows: [
+        { question: 'Which account records goodwill on admission of a partner?', exam: 'BU BCom Sem 3', year: 2023 },
+        { question: 'Which account records goodwill on the admission of a new partner?', exam: 'BU BCom Sem 3', year: 2024 },
+      ] })
+      .expect(200);
+    await http().post('/v1/past-exam-questions/import').set(auth('teacher')).send({ rows: [{ question: 'x'.repeat(10), exam: 'Test', year: 2024 }] }).expect(403);
+    model.replies.push(JSON.stringify(mixed));
+    const again = await http().post('/v1/ai/quiz').set(auth('board')).send({ topic: 'Goodwill', count: 3, types: ['mcq', 'trueFalse', 'fillBlank'], fresh: true }).expect(200);
+    expect(again.body.result.questions[0]).toMatchObject({ important: true, examFrequency: { count: 2, exams: ['BU BCom Sem 3 2024', 'BU BCom Sem 3 2023'] } });
+    expect(again.body.result.questions[2].examFrequency).toBeUndefined();
+  });
+
+  it('summarises the board, prepares a lecture, and acts on a selection', async () => {
+    model.replies.push(JSON.stringify({ keyConcepts: ['Goodwill'], definitions: [{ term: 'Goodwill', meaning: 'Reputation value' }], formulas: ['Avg profit × years'], examples: [], importantPoints: [], questions: ['What is goodwill?'] }));
+    const sum = await http().post('/v1/ai/board-summary').set(auth('board')).send({ boardText: 'Goodwill = avg profit x years', format: 'revision' }).expect(200);
+    expect(sum.body.result.formulas).toEqual(['Avg profit × years']);
+    expect(model.requests.at(-1)!.messages[1].content).toContain('a revision sheet');
+    model.replies.push(JSON.stringify({ outline: ['Recall', 'Define'], explanation: 'Goodwill is…', examples: [], analogies: [], boardPlan: ['Title'], activities: [], recap: 'Done' }));
+    await http().post('/v1/ai/lecture').set(auth('board')).send({ topic: 'Goodwill', minutes: 40 }).expect(200);
+    model.replies.push(JSON.stringify({ title: 'Simpler', answer: 'Goodwill is the extra value of a good name.', items: [] }));
+    const ask = await http().post('/v1/ai/select-ask').set(auth('board')).send({ action: 'simplify', content: 'Goodwill is an intangible asset arising from…' }).expect(200);
+    expect(ask.body.result.answer).toContain('good name');
+    expect(model.requests.at(-1)!.messages[1].content).toContain('more simply');
+  });
+
   it('answers the same request from the cache, and regenerates on request', async () => {
     const body = { topic: 'Partnership deed', count: 2 };
     model.replies.push(JSON.stringify(quiz(2)));

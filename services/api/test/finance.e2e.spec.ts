@@ -14,7 +14,7 @@ describe('finance: scholarships, refunds, budgets, GL export', () => {
   const http = () => request(app.getHttpServer());
   const as = (who: string) => ({ authorization: `Bearer ${tokens[who]}` });
   const login = async (email: string) => (await http().post('/v1/auth/login').send({ tenant: t.slug, login: email, password: 'pw' }).expect(201)).body.accessToken as string;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
   const fy = (() => { const n = new Date(); const y = n.getUTCMonth() >= 3 ? n.getUTCFullYear() : n.getUTCFullYear() - 1; return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; })();
   let schemeId = '';
   let appId = '';

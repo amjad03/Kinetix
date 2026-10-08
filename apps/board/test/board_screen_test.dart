@@ -324,7 +324,7 @@ void main() {
       await tapKey(tester, 'add-page');
       await tapKey(tester, 'board-menu');
       await tapKey(tester, 'tool-theme');
-      await tester.tap(find.text('Colours'));
+      await tester.tap(find.descendant(of: find.byKey(const Key('bg-tabs')), matching: find.text('Background')));
       await tester.pumpAndSettle();
       await tapKey(tester, 'bg-paperSky');
       wb.previous();

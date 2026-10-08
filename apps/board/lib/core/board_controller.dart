@@ -205,6 +205,13 @@ class BoardController extends ChangeNotifier {
   BoardLanguage? _aiPenLanguage;
   BoardLanguage get aiPenLanguage => _aiPenLanguage ?? language;
 
+  /// Text AI's handwriting language (one of textAiLanguages): the teacher's pick, else the AI
+  /// pen's board language.
+  String get textAiLanguage => sbPref('textAiLang') ?? aiPenLanguage.name;
+
+  /// Text AI's font: Default (the board's), Kalam or the teacher's own.
+  BoardFont? get textAiFont => BoardFont.values.asNameMap()[sbPref('textAiFont') ?? ''];
+
   /// The pen tidies rough shapes too (the AI pen always does). For primary classes, where the
   /// AI pen is hidden, this is the one part of it on offer.
   bool snapShapes = false;
@@ -342,6 +349,10 @@ class BoardController extends ChangeNotifier {
       boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
       toolbarDock = ToolbarDock.values.asNameMap()[await _store.setting('toolbarDock')] ?? ToolbarDock.bottom;
       sbPrefs = _decodePrefs(await _store.setting('smartboard'));
+      try {
+        final info = await _store.setting('boardInfo');
+        if (info != null) institutionBoardInfo = (jsonDecode(info) as Map).cast<String, dynamic>();
+      } catch (_) {}
       toolbarPanel = _ids(await _store.setting('toolbarPanel'));
       toolbarPhone = _ids(await _store.setting('toolbarPhone'));
       palmRejection = await _store.setting('palmRejection') != 'false';
@@ -415,6 +426,9 @@ class BoardController extends ChangeNotifier {
     if (v['fingerTaps'] != null) fingerTaps = v['fingerTaps'] != 'false';
     if (v.containsKey('smartboard')) sbPrefs = _decodePrefs(v['smartboard']);
   }
+
+  /// The institution's training link and What's New items (board config).
+  Map<String, dynamic> institutionBoardInfo = const {};
 
   /// Smartboard preferences (toolbar sides, branding, stylus tips, Text AI font): one JSON
   /// teacher setting, so each teacher keeps their own.
@@ -819,6 +833,9 @@ class BoardController extends ChangeNotifier {
       if (config['locked'] is bool) unawaited(setDeviceLocked(config['locked'] as bool));
       final kioskConfig = config['kiosk'];
       if (kioskConfig is Map<String, dynamic>) await kiosk.applyPolicy(KioskPolicy.fromConfig(kioskConfig));
+      // Profile → Schedule a Training and What's New; kept for offline.
+      institutionBoardInfo = {'training': config['training'], 'whatsNew': config['whatsNew']};
+      unawaited(_store.setSetting('boardInfo', jsonEncode(institutionBoardInfo)));
       for (final l in configListeners) {
         l(config);
       }

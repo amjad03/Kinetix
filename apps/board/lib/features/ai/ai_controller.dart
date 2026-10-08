@@ -11,7 +11,7 @@ import '../board/side_panel.dart';
 import '../offline_ai/offline_ai.dart';
 
 /// Which page the KINETIX AI panel shows.
-enum AiView { home, quiz, homework, lessonPlan, math, readBoard }
+enum AiView { home, quiz, homework, lessonPlan, math, readBoard, summary, lecture, selectAsk }
 
 /// One AI request and its outcome: loading, an error, or the result.
 class AiTask<T> extends ChangeNotifier {
@@ -98,6 +98,31 @@ class AiController extends ChangeNotifier {
   AiDifficulty quizDifficulty = AiDifficulty.medium;
   final quiz = AiTask<Quiz>();
 
+  /// Question types to mix (spec §43): mcq, trueFalse, fillBlank, shortAnswer.
+  Set<String> quizTypes = {'mcq'};
+
+  /// Scan Board: null asks from the topic; an empty list scans every page; otherwise the
+  /// chosen pages (0-based).
+  List<int>? quizScan;
+
+  /// Class, board and subject, e.g. "Class 11 CBSE Science" (defaults to the open class).
+  String? level;
+
+  /// Reads the given board pages (all when empty) as text, for Scan Board. Set by the board screen.
+  Future<String> Function(List<int> pages)? readPages;
+
+  /// How many pages the board has. Set by the board screen.
+  int Function()? pageCount;
+
+  // Summary, Lecture, Select & Ask
+  final summary = AiTask<BoardSummary>();
+  final lecture = AiTask<Lecture>();
+  final selectAsk = AiTask<SelectAskResult>();
+  String summaryFormat = 'student';
+
+  /// Homework formats (spec §44).
+  Set<String> homeworkTypes = {'qa'};
+
   // Homework
   String? homeworkTopic;
   int homeworkCount = 5;
@@ -127,6 +152,22 @@ class AiController extends ChangeNotifier {
 
   /// Opens Books, the class textbooks (the board screen sets this).
   VoidCallback? openBooks;
+
+  /// Opens a board tool by its Tools-drawer id (periodic-table, calculator, dictionary). Set by the board screen.
+  ValueChanged<String>? runTool;
+
+  /// Opens the safe browser on a search engine ('google', 'wikipedia'). Set by the board screen.
+  ValueChanged<String>? openSearch;
+
+  /// What Select & Ask acts on (the selected text, or what was read from the selection).
+  String selectedContent = '';
+
+  /// Add to Board for a quiz question. Set by the board screen.
+  ValueChanged<QuizQuestion>? addQuestionToBoard;
+
+  /// Puts AI output (a summary, a lecture's board plan, an answer) on the board as text. Set by
+  /// the board screen.
+  ValueChanged<String>? addTextToBoard;
 
   /// Renders the open board page as a PNG (base64). Set by the board screen.
   Future<String> Function()? captureBoard;
@@ -207,7 +248,17 @@ class AiController extends ChangeNotifier {
     if (!fresh) this.topicId = topicId;
     await quiz.run(
       () => _withOffline(
-        () => _api.quiz(quizTopic!, count: quizCount, difficulty: quizDifficulty, language: language, fresh: fresh, topicId: this.topicId),
+        () async => _api.quiz(
+          quizTopic!,
+          count: quizCount,
+          difficulty: quizDifficulty,
+          language: language,
+          fresh: fresh,
+          topicId: this.topicId,
+          types: quizTypes.toList(),
+          boardText: await _scanned(quizScan),
+          level: level,
+        ),
         () => offlineAi.quiz(quizTopic!, count: quizCount, subject: _subject),
       ),
     );
@@ -217,7 +268,7 @@ class AiController extends ChangeNotifier {
     homeworkTopic = topic.trim();
     final r = await homework.run(
       () => _withOffline(
-        () => _api.homeworkDraft(homeworkTopic!, count: homeworkCount, difficulty: homeworkDifficulty, language: language, fresh: fresh),
+        () => _api.homeworkDraft(homeworkTopic!, count: homeworkCount, difficulty: homeworkDifficulty, language: language, fresh: fresh, types: homeworkTypes.toList(), level: level),
         () => offlineAi.homework(homeworkTopic!, count: homeworkCount, subject: _subject),
       ),
     );
@@ -256,6 +307,28 @@ class AiController extends ChangeNotifier {
       ),
     );
   }
+
+  /// The text on the chosen pages for Scan Board; null when asking from a topic.
+  Future<String?> _scanned(List<int>? pages) async {
+    final read = readPages;
+    if (pages == null || read == null) return null;
+    final text = (await read(pages)).trim();
+    if (text.isEmpty) throw const FormatException('Nothing could be read on those pages');
+    return text.length > 20000 ? text.substring(0, 20000) : text;
+  }
+
+  /// Summary AI over every page of the board (or [topic] when given).
+  Future<void> summarise({String? topic, bool fresh = false}) => summary.run(() async {
+    final text = topic == null ? await _scanned(const []) : null;
+    return _api.boardSummary(topic: topic, boardText: text, format: summaryFormat, language: language, level: level);
+  });
+
+  Future<void> prepareLecture(String topic, {int minutes = 40}) => lecture.run(() => _api.lecture(topic.trim(), minutes: minutes, language: language, level: level));
+
+  /// Select & Ask: [action] (explain, simplify, expand, solve, translate, example, quiz,
+  /// homework, diagram, boardReady) on [content].
+  Future<void> askAbout(String action, String content, {AiLanguage? target}) =>
+      selectAsk.run(() => _api.selectAsk(action, content, language: language, target: target, level: level));
 
   Future<void> readBoard() async {
     final capture = captureBoard;
@@ -316,7 +389,13 @@ String homeworkInstructions(HomeworkDraft d, [AppLocalizations? l]) {
   if (qs.isNotEmpty) {
     if (b.isNotEmpty) b.write('\n\n');
     for (var i = 0; i < qs.length; i++) {
-      b.write('${i + 1}. ${qs[i].question.trim()} (${l.marks(qs[i].marks)})\n');
+      final q = qs[i];
+      b.write('${i + 1}. ${q.question.trim()} (${l.marks(q.marks)})\n');
+      // Options go to students; model answers and rubrics stay with the teacher.
+      for (final (k, o) in q.options.indexed) {
+        b.write('   ${String.fromCharCode(97 + k)}) $o\n');
+      }
+      if (q.diagram != null && q.diagram!.trim().isNotEmpty) b.write('   [${q.diagram!.trim()}]\n');
     }
     final total = qs.fold(0, (s, q) => s + q.marks);
     b.write('\n${l.homeworkTotalLine(l.marks(total))}');

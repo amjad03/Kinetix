@@ -29,7 +29,7 @@ describe('analytics and reporting', () => {
   const http = () => request(app.getHttpServer());
   const as = (who: string) => ({ authorization: `Bearer ${tokens[who]}` });
   const login = async (slug: string, email: string) => (await http().post('/v1/auth/login').send({ tenant: slug, login: email, password: 'pw' }).expect(201)).body.accessToken as string;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
   let n = 0;
   const staff = async (tenantId: string, campusId: string, role: (typeof s.roleName.enumValues)[number]) => {
     const [u] = await db.insert(s.users).values({ tenantId, fullName: `${role} person`, email: `${role}${++n}-${Math.random().toString(36).slice(2, 6)}@x.in`, passwordHash: await argon2.hash('pw') }).returning();

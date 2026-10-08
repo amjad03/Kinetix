@@ -14,6 +14,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { attendanceRecords, boardSessions, devices, guardians, homework, sections, students, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 
 /** Teaching staff plus admins, who can look at (and correct) any class. */
 const CLASS_ROLES: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -289,6 +290,7 @@ export class HomeworkController {
     private readonly db: DbService,
     private readonly teacher: TeacherService,
     private readonly notifications: NotificationsService,
+    private readonly events: EventBus,
   ) {}
 
   @Post()
@@ -361,6 +363,7 @@ export class HomeworkController {
       .returning();
     await audit(tx, { tenantId: h.tenantId, actorType: h.actor, actorId: h.actorId, action: 'homework.created', subjectType: 'homework', subjectId: hw.id });
     await this.notifications.homeworkCreated(tx, { id: hw.id, sectionId: h.sectionId, title: hw.title, dueOn: hw.dueOn, subjectName: h.subject.name });
+    await this.events.emit(tx, h.tenantId, { type: DomainEvents.HomeworkPublished, aggregateType: 'homework', aggregateId: hw.id, actorId: h.actorId, payload: { sectionId: h.sectionId, boardSessionId: h.boardSessionId ?? null, dueOn: hw.dueOn } });
     const [created] = await this.teacher.homeworkList(tx, eq(homework.id, hw.id), 'created');
     return created;
   }

@@ -3,6 +3,7 @@ import { ENV, type Env } from '../config/env.js';
 import { ContentModule } from '../content/content.module.js';
 import { DbService } from '../db/db.service.js';
 import { AiController } from './ai.controller.js';
+import { PastExamsController } from './past-exams.js';
 import { AsrGateway, NoSpeechToText, OpenAiCompatibleAsr, SarvamAsr, SpeechToText } from './asr.js';
 import { AiService, LLM_PROVIDER, providerFromEnv } from './ai.service.js';
 import { CircuitBreaker } from './providers.js';
@@ -29,7 +30,7 @@ export function speechToTextFromEnv(env: Env, db: DbService): SpeechToText {
     { provide: LLM_PROVIDER, inject: [ENV], useFactory: (env: Env) => providerFromEnv(env) },
     { provide: SpeechToText, inject: [ENV, DbService], useFactory: speechToTextFromEnv },
   ],
-  controllers: [AiController],
+  controllers: [AiController, PastExamsController],
   exports: [AiService, SpeechToText],
 })
 export class AiModule {}

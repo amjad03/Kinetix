@@ -129,3 +129,40 @@ These come from [the Teachmint analysis](../research/teachmint-competitive-analy
 - ⬜ Guided tour, and a five-minute practice board that ticks off each task as it is done.
 - ⬜ "Show me" help that points at the right button.
 - ⬜ Simple mode with bigger buttons and fewer tools.
+
+## 13. Smartboard spec V1: developer acceptance summary
+
+Status against the source reference documents' acceptance summary (spec §91). Tests named are
+in `apps/board/test` unless a package is given. Device items still need checking on each IFP
+model in the pilot (ADR 0002).
+
+| Requirement | Status | Where / tests |
+|---|---|---|
+| Screen Share portrait/landscape, auto-rotate without reconnect | ✅ | receiver tracks frame size, fit not stretch (`cast_test`) |
+| Screen Freeze until Close (bottom left) | ✅ | Menu → Freeze screen (`smartboard_toolbar_test`) |
+| Quick group (Switch, Profile/Guest, Share, WhatsApp, End class) and nav group (Hide, Previous, n/N, Next, Switch); Switch remembered per teacher | ✅ | `smartboard_toolbar_test` |
+| Hide leaves the canvas and a restore button bottom left | ✅ | `smartboard_toolbar_test` |
+| Add Page only after meaningful content | ✅ | `WhiteboardController.canAddPage` (`kinetix_ink/test/pages_paper_test`) |
+| Theme Template / Background / Custom; JPG/PNG ≤ 10 MB with preview; logo, brand and watermark on exports | ✅ | `custom_theme_tab.dart`, `paintBranding`, server PDF (`families.e2e`) |
+| Templates: Black, Grid Lines, Horizontal Lines, English Lines, 2/3 Columns, Isometric Grid, Graph, Hindi Lines, Dotted, Checks, Music Lines, Basketball, Football, World Map (Natural Earth, public domain) | ✅ | `board_background.dart` |
+| Pen: Solid Pen, Highlighter, Two Side, Text AI, Shape AI; Single/Multi Touch | ✅ | `pen_modes.dart` |
+| Two Side front/back tip: Write, Erase, Select, Highlight, persisted | ✅ | `toolForTip`; device test pending |
+| Text AI: 13 languages, Default / Kalam / custom font, correct and re-recognise | ✅ | ML Kit / Windows (ADR 0002) |
+| Global two-finger zoom; palm rejection and palm eraser | ✅ (existing) | device test pending |
+| Eraser size with preview; Clear All by a deliberate slide, with Undo | ✅ | `SlideToClear` |
+| 2D colour, lengths, angles; 3D rotate, lined/filled, per-face colour, lengths, angles | ✅ | `kinetix_3d/test/solid_display_test` |
+| Object controls incl. one-step forward/backward, lock, duplicate | ✅ | `pages_paper_test` |
+| PPT: intelligent split, draggable divider, Add Page, Add All Pages, Edge-to-Edge; animations via presenter app | ✅ | `presentation_pane_test`, `insert_test` |
+| Insert: PDF, Images, Videos, PPT, Clipboard, Geometry, Table, Flowchart | ✅ | Insert → category tiles |
+| Flowchart AI next-step suggestions | ✅ | `suggestedNextFlow` |
+| Quiz AI: topic or Scan Board (complete/chosen pages), class/board/subject, difficulty, types, count, timer, teams, reveal, explanation + usual mistake, Add to Board | ✅ | `quiz_ai_spec_test`, `ai.e2e` |
+| Exam frequency / Important only from the institution's past-exam bank (never invented) | ✅ | `past_exam_questions`, `ai.e2e` |
+| Homework AI: Q&A, fill blanks, MCQ, T/F, 2/3/5-mark, diagrams, rubric, model answers | ✅ | `QuizSetup(homework)` |
+| Kinetix AI Smart Tools: Summary, Quick Quiz, Lecture, Homework, Google, Wikipedia, Simulations, Periodic Table, Dictionary, Books, Graph, Calculator | ✅ | AI panel → Smart Tools |
+| Select & Ask: explain, simplify, expand, solve, translate, example, quiz, homework, diagram, board-ready | ✅ | `smart_panels.dart`, `ai.e2e` |
+| Classroom Apps + Other Tools (Calculator, Spotlight) | ✅ | Menu → Classroom Apps |
+| Profile: New, Import, Your Whiteboards, Your Classrooms, Configurations, Schedule a Training (QR), What's New, Exit; Guest | ✅ | `profile_extras.dart`; training link and announcements from ERP settings |
+| Share: WhatsApp, Email, QR with a branded PDF link (30 days) | ✅ | `share_whiteboard.dart`, `families.e2e` |
+| Whiteboard version history and restore | ✅ | `families.e2e` |
+| Recording: start, pause, resume, stop, chapter markers | ✅ | `lesson_test` |
+| Classroom events (§72): class started/ended, attendance captured, board saved, lesson recorded, homework published | ✅ | domain-event outbox |

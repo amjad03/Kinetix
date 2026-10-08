@@ -121,7 +121,17 @@ enum BoardFont {
 
   /// Andika: single-storey a and g, as children in LKG to Class 5 learn to write them.
   andika,
+
+  /// Kalam: Text AI's handwriting-style font (Latin and Devanagari).
+  kalam,
+
+  /// A font the teacher added (Text AI → Font → Custom), loaded on this board as
+  /// [customBoardFontFamily]; elsewhere it shows in the everyday font.
+  custom,
 }
+
+/// The family name a teacher's own font is loaded under (FontLoader).
+const customBoardFontFamily = 'KinetixCustom';
 
 /// Typed text. [size] is its laid-out size, measured when the text was committed, so viewers
 /// know its box without laying it out again.

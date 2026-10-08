@@ -31,6 +31,7 @@ import { JobsService } from '../jobs/jobs.service.js';
 import { bufferStream, ObjectStorage, TooLargeError } from '../storage/storage.service.js';
 import { RecordingsService, TRANSCRIBE } from './recordings.service.js';
 import { RetentionService } from './retention.service.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 
 const MAX_EVENTS_BYTES = 32 * 1024 * 1024;
 /** About three hours of AAC at 64 kbit/s. */
@@ -66,6 +67,7 @@ export class RecordingsController {
     private readonly storage: ObjectStorage,
     private readonly jobs: JobsService,
     private readonly recs: RecordingsService,
+    private readonly bus: EventBus,
   ) {}
 
   @Put(':id')
@@ -155,6 +157,7 @@ export class RecordingsController {
           .set({ durationMs: body.durationMs, finishedAt: new Date(), transcriptState: transcribe ? 'queued' : 'none', updatedAt: new Date() })
           .where(eq(recordings.id, id));
         if (transcribe) await this.jobs.enqueue(tx, p.tenantId, TRANSCRIBE, { recordingId: id });
+        await this.bus.emit(tx, p.tenantId, { type: DomainEvents.LessonRecorded, aggregateType: 'recording', aggregateId: id, actorId: p.teacherId, payload: { sessionId: p.sessionId, durationMs: body.durationMs } });
       }
       if (body.share) await this.shareChecked(tx, { ...rec, finishedAt: rec.finishedAt ?? new Date() });
       return this.view(tx, id);

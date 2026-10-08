@@ -97,6 +97,8 @@ const safeWebStringTable = <String, Map<String, String>>{
 abstract final class SafeWebPolicy {
   static const defaults = [
     'wikipedia.org',
+    // Google search with SafeSearch on (Smart Tools → Google); results open only on allowed sites.
+    'google.com',
     'wiktionary.org',
     'wikimedia.org',
     'ncert.nic.in',
@@ -174,6 +176,7 @@ abstract final class SafeWebPolicy {
       'diksha' => Uri.parse('https://diksha.gov.in/explore?key=$q'),
       'khan' => Uri.parse('https://www.khanacademy.org/search?page_search_query=$q'),
       'phet' => Uri.parse('https://phet.colorado.edu/en/simulations/filter?type=html&search=$q'),
+      'google' => Uri.parse('https://www.google.com/search?q=$q&safe=active'),
       _ => Uri.parse('https://${const {'hi', 'kn'}.contains(lang) ? lang : 'en'}.wikipedia.org/w/index.php?search=$q'),
     };
   }
@@ -295,6 +298,9 @@ class SafeBrowserPanel extends StatefulWidget {
   final WhiteboardController wb;
   final BoardController? board;
 
+  /// The search engine the next browser opens with (Smart Tools: Google or Wikipedia).
+  static String? nextEngine;
+
   @override
   State<SafeBrowserPanel> createState() => SafeBrowserPanelState();
 }
@@ -305,7 +311,7 @@ class SafeBrowserPanelState extends State<SafeBrowserPanel> {
   SafeWebView? _view;
   String? url;
   String? blocked;
-  String _engine = 'wikipedia';
+  String _engine = SafeBrowserPanel.nextEngine ?? 'wikipedia';
   bool _loaded = false;
 
   @override
@@ -410,7 +416,7 @@ class SafeBrowserPanelState extends State<SafeBrowserPanel> {
     final s = safeWebStrings(context);
     final c = context.colors;
     final view = url == null ? null : _ensureView();
-    final engines = {'wikipedia': 'Wikipedia', 'diksha': 'DIKSHA', 'khan': 'Khan Academy', 'phet': 'PhET'};
+    final engines = {'google': 'Google', 'wikipedia': 'Wikipedia', 'diksha': 'DIKSHA', 'khan': 'Khan Academy', 'phet': 'PhET'};
     Widget body;
     if (url == null) {
       body = !_loaded

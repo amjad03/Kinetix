@@ -15,6 +15,7 @@ import '../search/fuzzy.dart';
 import '../search/search_strings.dart';
 import 'ai_pen_ui.dart';
 import 'chrome.dart';
+import 'sb_strings.dart';
 import 'panel/panel_host.dart';
 import 'layout/ui_strings.dart';
 
@@ -28,6 +29,11 @@ class ProfileMenu extends StatelessWidget {
     required this.onWhiteboards,
     required this.onSettings,
     required this.onClose,
+    this.onNewBoard,
+    this.onClassrooms,
+    this.onTraining,
+    this.onWhatsNew,
+    this.onExit,
     this.onRecordings,
     this.onImport,
     this.onHelp,
@@ -38,6 +44,10 @@ class ProfileMenu extends StatelessWidget {
   final VoidCallback onSignIn;
   final VoidCallback onNewPage;
   final VoidCallback onWhiteboards;
+
+  /// New (a fresh whiteboard), Your Classrooms, Schedule a Training, What's New and Exit
+  /// (spec §8 teacher profile).
+  final VoidCallback? onNewBoard, onClassrooms, onTraining, onWhatsNew, onExit;
   final VoidCallback? onRecordings;
 
   /// Opens a PDF or PowerPoint (lib/features/insert); Help, the tour and practice (lib/features/help).
@@ -115,9 +125,11 @@ class ProfileMenu extends StatelessWidget {
                 ),
               ),
             const Divider(height: Kx.s16),
+            if (onNewBoard != null) item(Icons.add_box_outlined, SbStrings.of(context)('profileNew'), onNewBoard!, key: const Key('menu-new')),
             item(Icons.note_add_outlined, l.toolNewPage, onNewPage),
             if (onImport != null) item(Icons.folder_open_outlined, l.importFiles, onImport!, key: const Key('menu-import')),
             item(Icons.dashboard_outlined, l.yourWhiteboards, onWhiteboards, key: const Key('menu-whiteboards')),
+            if (onClassrooms != null && s != null) item(Icons.meeting_room_outlined, SbStrings.of(context)('yourClassrooms'), onClassrooms!, key: const Key('menu-classrooms')),
             if (onRecordings != null)
               ListTile(
                 key: const Key('menu-recordings'),
@@ -148,9 +160,12 @@ class ProfileMenu extends StatelessWidget {
               if (board.profiles.current?.pinSet == true) item(Icons.lock_outline, l.lockBoard, board.profiles.lock, key: const Key('menu-lock')),
             ],
             const Divider(height: Kx.s16),
-            item(Icons.settings_outlined, l.boardSettings, onSettings, key: const Key('menu-settings')),
+            item(Icons.tune, SbStrings.of(context)('configurations'), onSettings, key: const Key('menu-settings')),
+            if (onTraining != null) item(Icons.school_outlined, SbStrings.of(context)('scheduleTraining'), onTraining!, key: const Key('menu-training')),
+            if (onWhatsNew != null) item(Icons.new_releases_outlined, SbStrings.of(context)('whatsNew'), onWhatsNew!, key: const Key('menu-whats-new')),
             if (onHelp != null) item(Icons.help_outline, l.helpTitle, onHelp!, key: const Key('menu-help')),
             if (onTour != null) item(Icons.school_outlined, l.guidedTour, onTour!, key: const Key('menu-tour')),
+            if (onExit != null && s != null) item(Icons.logout, SbStrings.of(context)('exit'), onExit!, key: const Key('menu-exit')),
             // Also IT's way out of kiosk mode: hold for 3 seconds.
             KioskExitGesture(
               key: const Key('kiosk-exit-version'),

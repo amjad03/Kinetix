@@ -31,6 +31,17 @@ class MainActivity : FlutterActivity() {
             }
         }
         // Projector mode: the board on a second display (Projector.kt).
+        val presenter = Presenter(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/presenter").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "open" -> result.success(presenter.open(call.argument<String>("path")!!, call.argument<Boolean>("adjacent") ?: true))
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("presenter", e.message, null)
+            }
+        }
         val projectorChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/projector")
         val p = Projector(this, projectorChannel)
         projector = p

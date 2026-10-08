@@ -117,3 +117,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // FileProvider for handing presentations to the presenter app (Presenter.kt).
+    implementation("androidx.core:core-ktx:1.13.1")
+}

@@ -146,6 +146,12 @@ class LessonRecorder {
     if (_recording && !_paused) _events.add([_t, 'k', b.name]);
   }
 
+  /// A chapter marker at this moment (spec §56): `[t, 'c', title]`. Players that predate
+  /// markers skip it.
+  void mark(String title) {
+    if (_recording) _events.add([_t, 'c', title.trim().isEmpty ? 'Chapter' : title.trim()]);
+  }
+
   /// Stops and returns the event log, ready to upload.
   Map<String, Object?> stop() {
     if (_recording) {
@@ -860,3 +866,9 @@ void paintLaser(Canvas canvas, List<LaserPoint> pts, int now, {double scale = 1}
   final last = pts.last;
   if (now - last.t < 300) canvas.drawCircle(last.at, 7 / scale, Paint()..color = const Color(0xFFFF453A));
 }
+
+/// The chapter markers in a recorded lesson's event log: (milliseconds from the start, title).
+List<(int, String)> lessonChapters(Map<String, Object?> log) => [
+  for (final e in (log['events'] as List<dynamic>? ?? const []))
+    if (e is List && e.length > 2 && e[1] == 'c') ((e[0] as num).toInt(), '${e[2]}'),
+];

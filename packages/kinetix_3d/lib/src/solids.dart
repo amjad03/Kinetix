@@ -249,7 +249,9 @@ class Solid {
   }
 
   /// The solid standing on a 1 cm floor grid, with dimension lines and labels.
-  Model3D toModel({bool grid = true}) {
+  /// [lengths]: the dimension arrows and their cm labels (Show Lengths); [angles]: the angles
+  /// between the solid's edges at its corners, each distinct one labelled once (Show Angles).
+  Model3D toModel({bool grid = true, bool lengths = true, bool angles = false}) {
     final color = _palette[kind]!;
     final cap = Color.lerp(color, const Color(0xFFFFFFFF), 0.22)!;
     final parts = <ModelPart>[];
@@ -371,6 +373,11 @@ class Solid {
       }
     }
 
+    if (!lengths) {
+      lines.removeWhere((l) => l.accent && l.arrows);
+      labels.removeWhere((l) => l.kind == LabelKind.dimension);
+    }
+    if (angles) labels.addAll(_angleLabels(parts));
     return Model3D(
       title: kind.title,
       caption: 'Drag to turn it. Change the dimensions; the measurements update. Floor grid: 1 cm squares.',
@@ -399,4 +406,34 @@ class Solid {
             normal: Vec3(math.cos((k + 0.5) / arcs * 2 * math.pi), 0, -math.sin((k + 0.5) / arcs * 2 * math.pi)),
           ),
       ];
+}
+
+/// One label per distinct corner angle between feature edges (90° on a cuboid; the apex and
+/// base angles of a pyramid or prism), placed just inside the corner where it was found.
+List<Label3D> _angleLabels(List<ModelPart> parts) {
+  final out = <Label3D>[];
+  final seen = <int>{};
+  for (final part in parts) {
+    final m = part.mesh;
+    final byVertex = <String, List<(Vec3, Vec3)>>{};
+    String key(Vec3 v) => '${v.x.toStringAsFixed(3)},${v.y.toStringAsFixed(3)},${v.z.toStringAsFixed(3)}';
+    for (final e in m.featureEdges) {
+      final a = m.vertex(e.a), b = m.vertex(e.b);
+      (byVertex[key(a)] ??= []).add((a, b));
+      (byVertex[key(b)] ??= []).add((b, a));
+    }
+    for (final edges in byVertex.values) {
+      for (var i = 0; i < edges.length; i++) {
+        for (var j = i + 1; j < edges.length; j++) {
+          final (o, p) = edges[i];
+          final (_, q) = edges[j];
+          final deg = (p - o).angleTo(q - o).round();
+          if (deg < 5 || deg > 170 || !seen.add(deg)) continue;
+          final inside = o + ((p - o).normalized + (q - o).normalized) * (0.12 * math.min((p - o).length, (q - o).length));
+          out.add(Label3D('$deg°', inside, kind: LabelKind.dimension));
+        }
+      }
+    }
+  }
+  return out;
 }

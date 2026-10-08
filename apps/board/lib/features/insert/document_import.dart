@@ -11,6 +11,7 @@ import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'device_files.dart';
 import 'pptx_render.dart';
+import 'presentation_pane.dart';
 
 /// What kind of document a file is, from its first bytes (and its name for the old .ppt).
 enum DocKind { pdf, pptx, ppt, other }
@@ -154,6 +155,12 @@ Future<void> importDocument(BuildContext context, WhiteboardController wb) async
   if (!context.mounted) return;
   if (pages == null || pages.isEmpty) {
     showBoardMessage(context, kind == DocKind.pdf ? l.importPdfFailed : l.importPptxFailed);
+    return;
+  }
+  final host = presentationHost;
+  if (kind == DocKind.pptx && host != null) {
+    // PPT opens beside the writing, on the side the intelligent split picks (spec §28).
+    host(Presentation(name: file.name, bytes: file.bytes, pages: pages, left: presentationGoesLeft(wb.elements)));
     return;
   }
   wb.addPages(backdropPages(pages));

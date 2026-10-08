@@ -240,4 +240,14 @@ void main() {
     expectSameBoard(late, pages.current.strokes);
     expectSameBoard(early, pages.current.strokes);
   });
+
+  test('chapter markers are recorded with their time and read back (spec 56)', () {
+    rec.start();
+    clock.advance(5000);
+    rec.mark('Definitions');
+    clock.advance(7000);
+    rec.mark('');
+    final log = rec.stop();
+    expect(lessonChapters(log), [(5000, 'Definitions'), (12000, 'Chapter')]);
+  });
 }

@@ -24,6 +24,30 @@ class ModelViewController extends ChangeNotifier {
   /// Animation time in seconds (orbits, spin).
   double time = 0;
 
+  /// Face colouring (spec §20): while set, a tap paints the tapped flat face this colour
+  /// instead of selecting a part. The solid stays rotatable.
+  Color? paintColor;
+
+  /// Painted faces: triangle index → ARGB.
+  final Map<int, int> faceColors = {};
+
+  void setPaintColor(Color? c) {
+    paintColor = c;
+    notifyListeners();
+  }
+
+  void paintFaces(Iterable<int> triangles, Color c) {
+    for (final t in triangles) {
+      faceColors[t] = c.toARGB32();
+    }
+    notifyListeners();
+  }
+
+  void clearFaceColors() {
+    faceColors.clear();
+    notifyListeners();
+  }
+
   void setHome(double yaw, double pitch) {
     _homeYaw = yaw;
     _homePitch = pitch;
@@ -243,6 +267,12 @@ class _ModelViewerState extends State<ModelViewer> with SingleTickerProviderStat
                   },
                   onDoubleTap: _ctrl.resetView,
                   onTapUp: (d) {
+                    final paint = _ctrl.paintColor;
+                    if (paint != null) {
+                      final t = _renderer.hitTriangle(d.localPosition);
+                      if (t != null) _ctrl.paintFaces(_renderer.planarFace(t), paint);
+                      return;
+                    }
                     final id = _renderer.hitTest(d.localPosition);
                     _ctrl.select(id == _ctrl.selectedPartId ? null : id);
                   },
@@ -302,7 +332,7 @@ class _ScenePainter extends CustomPainter {
       size,
       ctrl.camera,
       style,
-      RenderOptions(labels: ctrl.labels, wireframe: ctrl.wireframe, selectedPartId: ctrl.selectedPartId, time: ctrl.time),
+      RenderOptions(labels: ctrl.labels, wireframe: ctrl.wireframe, selectedPartId: ctrl.selectedPartId, time: ctrl.time, faceColors: ctrl.faceColors),
       fitRadius: fitRadius,
     );
   }

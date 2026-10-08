@@ -100,4 +100,23 @@ void main() {
     wb.addPage();
     expect(wb.pageCount, 2);
   });
+
+  test('bring forward and send backward move one step (spec 23)', () {
+    final wb = WhiteboardController();
+    Stroke dot(String id) => Stroke(id: id, points: const [InkPoint(10, 10)], style: const InkStyle(tool: InkTool.pen, color: Color(0xFF000000), width: 4));
+    wb.setElements([dot('a'), dot('b'), dot('c')]);
+    wb.select({'a'});
+    wb.bringSelectionForward();
+    expect(wb.page.elements.map((e) => e.id), ['b', 'a', 'c']);
+    wb.sendSelectionBackward();
+    expect(wb.page.elements.map((e) => e.id), ['a', 'b', 'c']);
+    wb.sendSelectionBackward();
+    expect(wb.page.elements.map((e) => e.id), ['a', 'b', 'c']);
+  });
+
+  test('Flowchart AI suggests the usual next step after Start (spec 32)', () {
+    expect(suggestedNextFlow(FlowBlock.terminal).first, FlowBlock.inputOutput);
+    expect(suggestedNextFlow(FlowBlock.process), contains(FlowBlock.decision));
+    expect(suggestedNextFlow(FlowBlock.decision), contains(FlowBlock.terminal));
+  });
 }

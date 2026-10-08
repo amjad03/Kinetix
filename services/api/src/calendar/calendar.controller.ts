@@ -170,6 +170,8 @@ const SettingsBody = z
       .object({ name: z.string().trim().min(1).max(120), email: z.email().optional(), phone: z.string().trim().max(20).optional() })
       .nullable(),
     recordingRetentionGraceDays: z.number().int().min(0).max(90),
+    boardTraining: z.object({ url: z.url().max(500).nullable().optional(), contact: z.string().trim().max(200).nullable().optional() }).strict().nullable(),
+    boardWhatsNew: z.array(z.object({ title: z.string().trim().min(1).max(120), body: z.string().trim().max(1000), at: z.iso.date() })).max(30),
     /** Kiosk mode on boards. `pin` sets the IT PIN (4–8 digits; only its hash is kept) or removes it (null). */
     boardKiosk: z
       .object({ enabled: z.boolean(), pin: z.string().regex(KIOSK_PIN, 'The PIN must be 4 to 8 digits').nullable() })

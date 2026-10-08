@@ -7,6 +7,7 @@ import type { Tx } from '../db/db.service.js';
 import { attendanceRecords, boardSessions, participationEvents, students, syncOps } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 
 export interface IncomingOp {
   opId: string;
@@ -28,6 +29,7 @@ export class SyncService {
   constructor(
     private readonly timetable: TimetableService,
     private readonly notifications: NotificationsService,
+    private readonly events: EventBus,
   ) {}
 
   async push(tx: Tx, p: BoardPrincipal, ops: IncomingOp[]): Promise<SyncOpResult[]> {
@@ -98,6 +100,7 @@ export class SyncService {
             setWhere: sql`${attendanceRecords.occurredAt} <= excluded.occurred_at`,
           });
         await this.notifications.attendanceChanged(tx, session.timetableSlotId, localParts(occurredAt, tz).date, [studentId]);
+        await this.events.emit(tx, p.tenantId, { type: DomainEvents.AttendanceCaptured, aggregateType: 'board_session', aggregateId: session.id, actorId: p.teacherId, payload: { studentId, status, source: 'board' } });
         return;
       }
       case 'participation.recorded': {

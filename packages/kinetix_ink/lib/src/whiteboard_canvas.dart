@@ -342,7 +342,16 @@ class WhiteboardCanvasState extends State<WhiteboardCanvas> with SingleTickerPro
     }
     if (kind == PointerDeviceKind.touch) _startHold(e.localPosition);
     _drawing.add(e.pointer);
-    c.pointerDown(e.pointer, _point(e), scale: _scale, forceEraser: kind == PointerDeviceKind.invertedStylus);
+    c.pointerDown(
+      e.pointer,
+      _point(e),
+      scale: _scale,
+      stylus: switch (kind) {
+        PointerDeviceKind.stylus => StylusEnd.front,
+        PointerDeviceKind.invertedStylus => StylusEnd.back,
+        _ => null,
+      },
+    );
   }
 
   String? _tapAnswer;

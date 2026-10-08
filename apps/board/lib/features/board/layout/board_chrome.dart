@@ -661,14 +661,13 @@ class PageBar extends StatelessWidget {
         Widget button(Key key, IconData icon, String label, VoidCallback? onTap, {bool selected = false}) => compact
             ? IconButton(key: key, tooltip: label, isSelected: selected, onPressed: onTap, icon: Icon(icon))
             : ToolButton(key: key, icon: icon, label: label, enabled: onTap != null, selected: selected, onTap: onTap);
-        return ChromeSurface(
+        final bar = ChromeSurface(
           key: const Key('page-bar'),
           radius: compact ? Kx.rFull : Kx.rLg,
           padding: compact ? const EdgeInsets.symmetric(horizontal: 2) : const EdgeInsets.all(6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (onHide != null) ToolbarDensity(compact: true, child: button(const Key('hide-ui'), Icons.visibility_off_outlined, SbStrings.of(context)('hide'), onHide)),
               button(const Key('previous-page'), Icons.chevron_left, l.toolPrevious, wb.hasPrevious ? wb.previous : null),
               SizedBox(
                 width: compact ? 44 : 52,
@@ -682,9 +681,32 @@ class PageBar extends StatelessWidget {
               button(const Key('next-page'), Icons.chevron_right, l.toolNext, wb.hasNext ? wb.next : null),
               button(const Key('add-page'), Icons.add, wb.canAddPage ? s.addPage : SbStrings.of(context)('addPageBlank'), wb.canAddPage ? wb.addPage : null),
               button(const Key('page-overview'), Icons.grid_view, s.pageOverview, onOverview, selected: overviewOpen),
-              if (onSwitch != null) ToolbarDensity(compact: true, child: button(const Key('switch-sides-right'), Icons.swap_horiz, SbStrings.of(context)('switch'), onSwitch)),
             ],
           ),
+        );
+        if (onHide == null && onSwitch == null) return bar;
+        // Hide and Switch sit just above the pages, so the toolbar keeps its room between the corners.
+        final s2 = SbStrings.of(context);
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            ChromeSurface(
+              key: const Key('nav-extras'),
+              child: ToolbarDensity(
+                compact: true,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onHide != null) ToolButton(key: const Key('hide-ui'), icon: Icons.visibility_off_outlined, label: s2('hide'), onTap: onHide!),
+                    if (onSwitch != null) ToolButton(key: const Key('switch-sides-right'), icon: Icons.swap_horiz, label: s2('switch'), onTap: onSwitch!),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: Kx.s8),
+            bar,
+          ],
         );
       },
     );

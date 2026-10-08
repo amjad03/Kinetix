@@ -20,7 +20,7 @@ describe('campus operations depth: hostel, transport, canteen', () => {
   const http = () => request(app.getHttpServer());
   const as = (who: string) => ({ authorization: `Bearer ${tokens[who]}` });
   const login = async (email: string) => (await http().post('/v1/auth/login').send({ tenant: t.slug, login: email, password: 'pw' }).expect(201)).body.accessToken as string;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
 
   beforeAll(async () => {
     t = await createTenant(owner);
@@ -95,7 +95,7 @@ describe('campus operations depth: hostel, transport, canteen', () => {
       // out on a pass: next night's absence becomes leave and no alert
       const pass = (await http().post('/v1/hostel/gate-passes').set(as('hostel_warden')).send({ studentId: s2.id, reason: 'Home', expectedBackAt: new Date(Date.now() + 86400_000).toISOString() }).expect(201)).body;
       await http().post(`/v1/hostel/gate-passes/${pass.id}/out`).set(as('hostel_warden')).expect(200);
-      const yesterday = new Date(Date.now() - 86400_000).toISOString().slice(0, 10);
+      const yesterday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date(Date.now() - 86400_000));
       await http().post('/v1/hostel/night-attendance').set(as('hostel_warden')).send({ night: yesterday, marks: [{ studentId: s2.id, status: 'absent' }] }).expect(200);
       const [row] = await db.select().from(s.hostelNightAttendance).where(and(eq(s.hostelNightAttendance.studentId, s2.id), eq(s.hostelNightAttendance.night, yesterday)));
       expect(row.status).toBe('leave');

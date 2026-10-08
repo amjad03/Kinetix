@@ -13,6 +13,8 @@ import 'math_panel.dart';
 import 'read_board_panel.dart';
 import 'quiz_panel.dart';
 import 'voice_input.dart';
+import '../board/sb_strings.dart';
+import 'smart_panels.dart';
 
 /// KINETIX AI: ask anything, plus the smart tools. Each tool opens as a page inside the
 /// panel; the back arrow returns here.
@@ -34,6 +36,9 @@ class AiPanel extends StatelessWidget {
           AiView.lessonPlan => LessonPlanPanel(ai: ai, onBack: home),
           AiView.math => MathPanel(key: ValueKey('math-${ai.mathRequest}'), ai: ai, onBack: home),
           AiView.readBoard => ReadBoardPanel(ai: ai, onBack: home),
+          AiView.summary => SummaryPanel(ai: ai, onBack: home),
+          AiView.lecture => LecturePanel(ai: ai, onBack: home),
+          AiView.selectAsk => SelectAskPanel(ai: ai, onBack: home),
         };
       },
     );
@@ -211,18 +216,21 @@ class _AiHomeState extends State<_AiHome> {
               );
             },
           ),
-          group(l.aiGroupTeach, [
+          // Kinetix AI Smart Tools (spec §38), in the reference's order.
+          group(SbStrings.of(context)('smartTools'), [
+            tool(Icons.summarize_outlined, SbStrings.of(context)('smartSummary'), const Color(0xFF8AB4F8), AiView.summary),
             tool(Icons.quiz_outlined, l.aiQuickQuiz, const Color(0xFF81C995), AiView.quiz),
-            tool(Icons.co_present_outlined, l.aiLessonPlan, const Color(0xFFFDD663), AiView.lessonPlan),
+            tool(Icons.record_voice_over_outlined, SbStrings.of(context)('smartLecture'), const Color(0xFFFDD663), AiView.lecture),
             tool(Icons.assignment_outlined, l.toolHomework, const Color(0xFFF28B82), AiView.homework),
-          ]),
-          group(l.aiGroupMathsScience, [
-            tool(Icons.functions, l.aiMathSolver, const Color(0xFF8AB4F8), AiView.math),
-            open(Icons.show_chart, l.aiGraph, const Color(0xFF81C995), SplitContent.lab, 'lab.graph-plotter'),
-            open(Icons.view_in_ar_outlined, l.ai3dModels, const Color(0xFFF28B82), SplitContent.model3d),
+            if (ai.openSearch != null) ...[
+              ChromeTile(key: const Key('smart-google'), icon: Icons.travel_explore, label: 'Google', color: const Color(0xFF8AB4F8), width: tileWidth, onTap: () => ai.openSearch!('google')),
+              ChromeTile(key: const Key('smart-wikipedia'), icon: Icons.public, label: 'Wikipedia', color: const Color(0xFFDADCE0), width: tileWidth, onTap: () => ai.openSearch!('wikipedia')),
+            ],
             open(Icons.science_outlined, l.aiSimulations, const Color(0xFFC58AF9), SplitContent.lab),
-          ]),
-          group(l.aiGroupLookUp, [
+            if (ai.runTool != null) ...[
+              ChromeTile(key: const Key('smart-periodic'), icon: Icons.grid_on, label: SbStrings.of(context)('smartPeriodic'), color: const Color(0xFF81C995), width: tileWidth, onTap: () => ai.runTool!('periodic-table')),
+              ChromeTile(key: const Key('smart-dictionary'), icon: Icons.translate, label: SbStrings.of(context)('smartDictionary'), color: const Color(0xFFFCAD70), width: tileWidth, onTap: () => ai.runTool!('dictionary')),
+            ],
             if (ai.openBooks != null)
               ChromeTile(
                 key: const Key('ai-open-books'),
@@ -232,7 +240,16 @@ class _AiHomeState extends State<_AiHome> {
                 width: tileWidth,
                 onTap: ai.openBooks,
               ),
+            open(Icons.show_chart, l.aiGraph, const Color(0xFF81C995), SplitContent.lab, 'lab.graph-plotter'),
+            if (ai.runTool != null)
+              ChromeTile(key: const Key('smart-calculator'), icon: Icons.calculate_outlined, label: SbStrings.of(context)('smartCalculator'), color: const Color(0xFFDADCE0), width: tileWidth, onTap: () => ai.runTool!('calculator')),
+          ]),
+          group(l.aiGroupTeach, [
+            tool(Icons.co_present_outlined, l.aiLessonPlan, const Color(0xFFFDD663), AiView.lessonPlan),
+            tool(Icons.functions, l.aiMathSolver, const Color(0xFF8AB4F8), AiView.math),
+            open(Icons.view_in_ar_outlined, l.ai3dModels, const Color(0xFFF28B82), SplitContent.model3d),
             tool(Icons.document_scanner_outlined, l.aiReadBoard, const Color(0xFFFCAD70), AiView.readBoard),
+            tool(Icons.ads_click, SbStrings.of(context)('selectAsk'), const Color(0xFFC58AF9), AiView.selectAsk),
           ]),
         ],
       ),

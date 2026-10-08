@@ -11,14 +11,14 @@ import 'panel/panel_host.dart' show showPanelDialog;
 
 /// The on-device models the AI pen uses for [language]: its handwriting, English for digits
 /// and symbols (maths is written in them in every language), and shapes.
-List<String> aiPenModelsFor(BoardLanguage language) => [
-  InkModels.text(language.name),
-  if (language != BoardLanguage.en) InkModels.text('en'),
+List<String> aiPenModelsFor(String language) => [
+  InkModels.text(language),
+  if (language != 'en') InkModels.text('en'),
   InkModels.shapes,
 ];
 
 /// The AI pen's models for [language] that are not on this device yet (and could be).
-Future<List<String>> missingAiPenModels(InkModelReader reader, BoardLanguage language) async {
+Future<List<String>> missingAiPenModels(InkModelReader reader, String language) async {
   final out = <String>[];
   for (final m in aiPenModelsFor(language)) {
     try {
@@ -31,8 +31,8 @@ Future<List<String>> missingAiPenModels(InkModelReader reader, BoardLanguage lan
 /// A model's name for the teacher: "English handwriting", "Shapes".
 String aiPenModelName(AppLocalizations l, String model) {
   if (model == InkModels.shapes) return l.aiPenModelShapes;
-  final lang = BoardLanguage.values.firstWhere((b) => InkModels.text(b.name) == model, orElse: () => BoardLanguage.en);
-  return l.aiPenModelHandwriting(lang.label);
+  final code = textAiLanguages.keys.firstWhere((c) => InkModels.text(c) == model, orElse: () => 'en');
+  return l.aiPenModelHandwriting(textAiLanguages[code]!);
 }
 
 /// A demo board fetches English and shapes by itself when it is online, so the AI pen converts
@@ -52,7 +52,7 @@ Future<void> autoDownloadDemoModels(HandwritingRecognizer handwriting, {VoidCall
 /// The first time the AI pen is picked on a device whose models are not downloaded: offers to
 /// download them, with progress, so writing converts from then on. Asked once per device (Board
 /// settings → AI pen downloads them later too). True when the models were downloaded.
-Future<bool> offerAiPenModels(BuildContext context, HandwritingRecognizer handwriting, BoardLanguage language, {bool force = false}) async {
+Future<bool> offerAiPenModels(BuildContext context, HandwritingRecognizer handwriting, String language, {bool force = false}) async {
   if (handwriting is! InkModelReader) return false;
   final reader = handwriting as InkModelReader;
   const key = 'aiPen.modelsOffered';

@@ -3,6 +3,7 @@ import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ConsentSummaryView } from '@/components/settings/ConsentSummary';
 import { GrievanceOfficerForm } from '@/components/settings/GrievanceOfficerForm';
+import { BoardContentSection } from '@/components/settings/BoardContentSection';
 import { KioskSection } from '@/components/settings/KioskSection';
 import { RazorpayForm } from '@/components/settings/RazorpayForm';
 import { RecordingRetentionSection } from '@/components/settings/RecordingRetentionSection';
@@ -35,6 +36,7 @@ export default async function SettingsPage() {
         <>
           <SettingsForm initial={settings.data} />
           <KioskSection initial={settings.data.boardKiosk ?? DEFAULT_BOARD_KIOSK} />
+          <BoardContentSection initial={settings.data} />
           <GrievanceOfficerForm initial={settings.data.grievanceOfficer ?? null} />
         </>
       )}

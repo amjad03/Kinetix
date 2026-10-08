@@ -37,7 +37,7 @@ describe('board kiosk setting', () => {
   it('is on by default with no PIN, for the ERP and for boards', async () => {
     const res = await http().get('/v1/admin/settings').set('authorization', `Bearer ${principal}`).expect(200);
     expect(res.body.boardKiosk).toEqual({ enabled: true, pinSet: false, pinSetAt: null });
-    expect(await config()).toEqual({ kiosk: { enabled: true, algo: null, iterations: null, pinSalt: null, pinHash: null }, locked: false });
+    expect(await config()).toEqual({ kiosk: { enabled: true, algo: null, iterations: null, pinSalt: null, pinHash: null }, locked: false, training: null, whatsNew: [] });
   });
 
   it('stores only a salted hash of the PIN, returns neither, and audits without it', async () => {
@@ -60,6 +60,13 @@ describe('board kiosk setting', () => {
     expect(rows.at(-1)).toEqual({ boardKiosk: { pin: 'set' } });
     expect(JSON.stringify(rows)).not.toContain('482915');
     expect(JSON.stringify(rows)).not.toContain((await stored()).boardKiosk.pinHash.split('$')[3]);
+  });
+
+  it("gives boards the training link and the institution's What's New items", async () => {
+    expect(await config()).toMatchObject({ training: null, whatsNew: [] });
+    await put({ boardTraining: { url: 'https://training.example.edu/board', contact: 'IT desk, ext 204' }, boardWhatsNew: [{ title: 'Smart Tools', body: 'Summary and Lecture are on the AI panel.', at: '2026-10-08' }] }).expect(200);
+    expect(await config()).toMatchObject({ training: { url: 'https://training.example.edu/board', contact: 'IT desk, ext 204' }, whatsNew: [{ title: 'Smart Tools' }] });
+    await put({ boardTraining: { url: 'not a url' } }).expect(400);
   });
 
   it('gives boards the salt, hash and parameters to check the PIN offline', async () => {

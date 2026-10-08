@@ -94,6 +94,17 @@ class LessonCapture extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Chapters marked so far (Marker button), for the recording bar.
+  int chapters = 0;
+
+  /// Marks a chapter here (spec §56); titled "Chapter n" unless the teacher names it.
+  void mark([String? title]) {
+    if (!isRecording) return;
+    chapters++;
+    _ink.mark(title ?? 'Chapter $chapters');
+    notifyListeners();
+  }
+
   Future<CapturedLesson> stop() async {
     _stopped = true;
     _tick?.cancel();

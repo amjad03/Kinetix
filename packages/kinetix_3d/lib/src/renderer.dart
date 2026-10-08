@@ -47,10 +47,13 @@ class RenderStyle {
 
 /// What to draw this frame.
 class RenderOptions {
-  const RenderOptions({this.labels = true, this.wireframe = false, this.selectedPartId, this.time = 0});
+  const RenderOptions({this.labels = true, this.wireframe = false, this.selectedPartId, this.time = 0, this.faceColors = const {}});
   final bool labels, wireframe;
   final String? selectedPartId;
   final double time;
+
+  /// Colours the teacher painted on single faces: triangle index (across parts) → ARGB.
+  final Map<int, int> faceColors;
 }
 
 /// A software renderer: transforms, culls back faces, sorts by depth (painter's algorithm),
@@ -261,7 +264,7 @@ class SceneRenderer {
           _outUv[o * 2] = uvs![local * 2] * tex.width;
           _outUv[o * 2 + 1] = uvs[local * 2 + 1] * tex.height;
         }
-        final base = vcols != null ? vcols[local] : plain;
+        final base = opts.faceColors[ft] ?? (vcols != null ? vcols[local] : plain);
         final light = smooth ? _vLight[v] : _faceShade[ft];
         _outCol[o] = _litColor(base, light, hl ? accent : null, alpha);
         o++;
@@ -611,6 +614,40 @@ class SceneRenderer {
   }
 
   static Offset _nearestOnRect(Rect r, Offset p) => Offset(p.dx.clamp(r.left, r.right), p.dy.clamp(r.top, r.bottom));
+
+  /// The triangle (index across parts) under [p] in the last frame, front-most; null if none.
+  int? hitTriangle(Offset p) {
+    final sorted = Int32List.sublistView(_order, 0, _visibleCount);
+    for (var k = sorted.length - 1; k >= 0; k--) {
+      final ft = sorted[k];
+      final pi = _facePart[ft];
+      final idx = model.parts[pi].mesh.indices;
+      final t = ft - _tBase[pi];
+      final vb = _vBase[pi];
+      if (_inTriangle(p, vb + idx[t * 3], vb + idx[t * 3 + 1], vb + idx[t * 3 + 2])) return ft;
+    }
+    return null;
+  }
+
+  /// Every triangle of the flat face [ft] belongs to: same part, same plane, same side. A cube's
+  /// side is two triangles; a curved surface's facet is just itself.
+  List<int> planarFace(int ft) {
+    final pi = _facePart[ft];
+    final mesh = model.parts[pi].mesh;
+    final tb = _tBase[pi];
+    (Vec3, double) plane(int t) {
+      final a = mesh.vertex(mesh.indices[t * 3]), b = mesh.vertex(mesh.indices[t * 3 + 1]), c = mesh.vertex(mesh.indices[t * 3 + 2]);
+      final n = (b - a).cross(c - a).normalized;
+      return (n, n.dot(a));
+    }
+
+    final (n0, d0) = plane(ft - tb);
+    final size = math.max(1e-6, mesh.vertex(mesh.indices[(ft - tb) * 3]).length);
+    return [
+      for (var t = 0; t < mesh.triangleCount; t++)
+        if (plane(t) case (final n, final d) when n.dot(n0) > 0.999 && (d - d0).abs() < size * 1e-3) tb + t,
+    ];
+  }
 
   /// The named part under [p] in the last frame, front-most first.
   String? hitTest(Offset p) {

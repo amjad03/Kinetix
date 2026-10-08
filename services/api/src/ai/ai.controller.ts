@@ -8,6 +8,7 @@ import { consentWithdrawn } from '../consent/consent.controller.js';
 import { DbService } from '../db/db.service.js';
 import { aiUsage, boardSessions, students } from '../db/schema.js';
 import { AiService, type AiCaller } from './ai.service.js';
+import { examFrequency } from './past-exams.js';
 import { TaskInputs, type TaskName } from './tasks.js';
 
 /** Optional class context for app callers; the board takes it from its session. */
@@ -19,6 +20,9 @@ const Bodies = {
   homework: TaskInputs.homework.extend(Context.shape),
   lessonPlan: TaskInputs.lessonPlan.extend(Context.shape),
   readBoard: TaskInputs.readBoard.extend(Context.shape),
+  boardSummary: TaskInputs.boardSummary.extend(Context.shape),
+  lecture: TaskInputs.lecture.extend(Context.shape),
+  selectAsk: TaskInputs.selectAsk.extend(Context.shape),
 };
 
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
@@ -45,8 +49,43 @@ export class AiController {
   @Post('quiz')
   @HttpCode(200)
   @Auth(['board', 'user'], STAFF)
-  quiz(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.quiz)) body: z.infer<typeof Bodies.quiz>) {
-    return this.run(p, 'quiz', body);
+  async quiz(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.quiz)) body: z.infer<typeof Bodies.quiz>) {
+    const res = await this.run(p, 'quiz', body);
+    if (!('result' in res) || !res.result) return res;
+    // Exam frequency only from the institution's past-exam question bank (spec §43: never invented).
+    const subjectId = await this.subjectOf(p, body.subjectId);
+    const freq = await this.db.withTenant(p.tenantId, (tx) => examFrequency(tx, res.result.questions.map((q) => q.question), subjectId));
+    return { ...res, result: { ...res.result, questions: res.result.questions.map((q, i) => ({ ...q, ...freq[i] })) } };
+  }
+
+  /** Summary AI (spec §41): from the board's pages (read text) or a topic. */
+  @Post('board-summary')
+  @HttpCode(200)
+  @Auth(['board', 'user'], STAFF)
+  boardSummary(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.boardSummary)) body: z.infer<typeof Bodies.boardSummary>) {
+    return this.run(p, 'boardSummary', body);
+  }
+
+  /** Lecture AI (spec §42). */
+  @Post('lecture')
+  @HttpCode(200)
+  @Auth(['board', 'user'], STAFF)
+  lecture(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.lecture)) body: z.infer<typeof Bodies.lecture>) {
+    return this.run(p, 'lecture', body);
+  }
+
+  /** Select & Ask (spec §39): explain, simplify, solve, translate… what the teacher selected. */
+  @Post('select-ask')
+  @HttpCode(200)
+  @Auth(['board', 'user'], STAFF)
+  selectAsk(@CurrentPrincipal() p: BoardPrincipal | UserPrincipal, @Body(new ZodBody(Bodies.selectAsk)) body: z.infer<typeof Bodies.selectAsk>) {
+    return this.run(p, 'selectAsk', body);
+  }
+
+  private async subjectOf(p: BoardPrincipal | UserPrincipal, given?: string): Promise<string | undefined> {
+    if (p.kind !== 'board') return given;
+    const [s] = await this.db.withTenant(p.tenantId, (tx) => tx.select({ subjectId: boardSessions.subjectId }).from(boardSessions).where(eq(boardSessions.id, p.sessionId)));
+    return s?.subjectId ?? undefined;
   }
 
   @Post('homework')

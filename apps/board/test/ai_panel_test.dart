@@ -283,7 +283,7 @@ void main() {
       await tapKey(tester, 'quiz-generate');
 
       final sent = bodyOf(calls('/v1/ai/quiz').single);
-      expect(sent, {'topic': 'Journal entries', 'count': 3, 'difficulty': 'hard', 'language': 'en', 'fresh': false});
+      expect(sent, {'topic': 'Journal entries', 'count': 3, 'difficulty': 'hard', 'language': 'en', 'fresh': false, 'types': ['mcq']});
       expect(find.text('1. Question 1 on Journal entries'), findsOneWidget);
       expect(find.text('3 questions · Journal entries'), findsOneWidget);
       expect(find.text(previewLabel), findsOneWidget);

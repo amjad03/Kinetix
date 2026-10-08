@@ -164,6 +164,9 @@ class AiPenController extends ChangeNotifier {
   /// The language words are read in (en, hi, kn).
   String language = 'en';
 
+  /// Text AI's font for converted words (Kalam, the teacher's own); null: the board's font.
+  BoardFont? textFont;
+
   /// How long after the last stroke [AiPenMode.auto] converts.
   Duration pause = const Duration(milliseconds: 900);
 
@@ -538,8 +541,8 @@ class AiPenController extends ChangeNotifier {
       text: text,
       color: color,
       fontSize: fs,
-      size: measureBoardText(text, fs, font: board.font),
-      font: board.font,
+      size: measureBoardText(text, fs, font: textFont ?? board.font),
+      font: textFont ?? board.font,
     );
     _replace(ids, el);
     conversions[el.id] = PenConversion(kind: ConversionKind.text, ink: cluster, inkBox: box, origin: el.position, candidates: readings.candidates);

@@ -10,6 +10,7 @@ import '../ai_pen_ui.dart' show SnapShapesSwitch;
 import '../chrome.dart';
 import '../popovers.dart' show highlighterPalette, inkPalette;
 import 'layout_strings.dart';
+import 'pen_modes.dart';
 
 /// The pen types of the pen popover (screen 2). Calligraphy, dashed and the arrow pen are the
 /// pen (or the AI pen) with another nib.
@@ -68,6 +69,9 @@ class PenPopover extends StatefulWidget {
 
 class _PenPopoverState extends State<PenPopover> {
   bool _wheel = false;
+
+  /// Two Side's settings are open (the pen keeps writing meanwhile).
+  bool _twoSide = false;
 
   WhiteboardController get wb => widget.wb;
   bool get _hl => wb.tool == BoardTool.highlighter;
@@ -144,6 +148,19 @@ class _PenPopoverState extends State<PenPopover> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (!widget.primary) ...[
+                PenModeBar(
+                  mode: currentPenMode(wb, board, twoSide: _twoSide),
+                  onPick: (m) {
+                    setState(() => _twoSide = m == PenMode.twoSide);
+                    pickPenMode(m, wb, board);
+                  },
+                ),
+                const SizedBox(height: Kx.s12),
+                if (_twoSide) ...[TwoSideSettings(wb: wb, board: board), const SizedBox(height: Kx.s12)],
+                if (currentPenMode(wb, board) == PenMode.textAi) ...[TextAiSettings(board: board), const SizedBox(height: Kx.s12)],
+                const Divider(height: Kx.s8),
+              ],
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
