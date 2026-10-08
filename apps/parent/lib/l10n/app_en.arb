@@ -1803,5 +1803,18 @@
   "eventCancelRegistration": "Cancel registration",
   "eventRegisteredDone": "Registered for the event",
   "eventWaitlistDone": "Added to the waitlist",
-  "eventCancelled": "Registration cancelled"
+  "eventCancelled": "Registration cancelled",
+  "lifePasses": "Event passes",
+  "lifePassesSub": "QR codes and feedback",
+  "passesTitle": "{name}'s event passes",
+  "@passesTitle": {"placeholders": {"name": {"type": "String"}}},
+  "passesNone": "No event registrations yet.",
+  "passShowAtDoor": "Show this code at the door",
+  "passCheckedIn": "Checked in",
+  "passFeedback": "Give feedback",
+  "passFeedbackDone": "Feedback sent",
+  "passFeedbackTitle": "How was it?",
+  "passFeedbackComment": "Comment (optional)",
+  "passFeedbackSend": "Send",
+  "passFeedbackThanks": "Thank you for your feedback."
 }

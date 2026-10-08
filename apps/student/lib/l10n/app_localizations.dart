@@ -5066,6 +5066,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thank you for your feedback.'**
   String get passFeedbackThanks;
+
+  /// No description provided for @classNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Class notes & recaps'**
+  String get classNotesTitle;
+
+  /// No description provided for @classNotesRecaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson recaps'**
+  String get classNotesRecaps;
+
+  /// No description provided for @classNotesBoards.
+  ///
+  /// In en, this message translates to:
+  /// **'Whiteboards'**
+  String get classNotesBoards;
+
+  /// No description provided for @classNotesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been shared with your class yet.'**
+  String get classNotesEmpty;
+
+  /// No description provided for @classNotesNoRecap.
+  ///
+  /// In en, this message translates to:
+  /// **'The recap for this lesson is not ready yet.'**
+  String get classNotesNoRecap;
+
+  /// No description provided for @classNotesKeyPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Key points'**
+  String get classNotesKeyPoints;
+
+  /// No description provided for @classNotesWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the lesson'**
+  String get classNotesWatch;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

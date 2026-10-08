@@ -2822,4 +2822,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passFeedbackThanks => 'Thank you for your feedback.';
+
+  @override
+  String get classNotesTitle => 'Class notes & recaps';
+
+  @override
+  String get classNotesRecaps => 'Lesson recaps';
+
+  @override
+  String get classNotesBoards => 'Whiteboards';
+
+  @override
+  String get classNotesEmpty => 'Nothing has been shared with your class yet.';
+
+  @override
+  String get classNotesNoRecap => 'The recap for this lesson is not ready yet.';
+
+  @override
+  String get classNotesKeyPoints => 'Key points';
+
+  @override
+  String get classNotesWatch => 'Watch the lesson';
 }

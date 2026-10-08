@@ -2289,4 +2289,99 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clubNoMembers => 'No members yet.';
+
+  @override
+  String get insightsTitle => 'Student insights';
+
+  @override
+  String get insightsBody => 'Attendance, marks and risk flags for a class';
+
+  @override
+  String get insightsAttendance => 'Attendance';
+
+  @override
+  String get insightsMarks => 'Marks average';
+
+  @override
+  String get insightsFlagged => 'Need attention';
+
+  @override
+  String insightsAttendanceValue(String value) {
+    return 'Attendance $value';
+  }
+
+  @override
+  String insightsMarksValue(String value) {
+    return 'Marks $value';
+  }
+
+  @override
+  String get copilotTitle => 'AI copilot';
+
+  @override
+  String get copilotBody => 'Draft explanations, quizzes, homework and lesson plans';
+
+  @override
+  String get copilotExplain => 'Explain';
+
+  @override
+  String get copilotQuiz => 'Quiz';
+
+  @override
+  String get copilotHomework => 'Homework';
+
+  @override
+  String get copilotLessonPlan => 'Lesson plan';
+
+  @override
+  String get copilotQuestionLabel => 'What do you want explained?';
+
+  @override
+  String get copilotTopicLabel => 'Topic';
+
+  @override
+  String copilotHowMany(int n) {
+    return 'Questions: $n';
+  }
+
+  @override
+  String copilotMinutes(int n) {
+    return 'Minutes: $n';
+  }
+
+  @override
+  String get copilotGenerate => 'Generate draft';
+
+  @override
+  String get copilotDraftNote => 'AI draft. Check it before you use it; nothing is sent to students from here.';
+
+  @override
+  String get copilotSampleDraft => 'Sample only: no AI model is connected to this school\'s server yet. Check everything before use.';
+
+  @override
+  String get copilotKeyPoints => 'Key points';
+
+  @override
+  String get copilotFollowUps => 'Students may ask next';
+
+  @override
+  String get copilotQuestions => 'Questions';
+
+  @override
+  String get copilotObjectives => 'Objectives';
+
+  @override
+  String get copilotSteps => 'Steps';
+
+  @override
+  String get copilotMaterials => 'Materials';
+
+  @override
+  String get copilotAssessment => 'Assessment';
+
+  @override
+  String get copilotCopy => 'Copy draft';
+
+  @override
+  String get copilotCopied => 'Draft copied.';
 }

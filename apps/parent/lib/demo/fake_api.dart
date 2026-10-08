@@ -1375,6 +1375,28 @@ class FakeParentApi implements ParentApi {
     }
   }
 
+  List<Map<String, dynamic>> passJson = [
+    {'id': 'p1', 'eventId': 'ev2', 'title': 'Science fair', 'venue': 'Hall', 'startsAt': '2026-11-20T04:00:00Z', 'status': 'registered', 'qrToken': 'abc12345', 'checkedIn': false, 'feedbackGiven': false, 'canGiveFeedback': false},
+    {'id': 'p2', 'eventId': 'ev0', 'title': 'Annual day', 'venue': 'Hall', 'startsAt': '2026-09-20T04:00:00Z', 'status': 'registered', 'qrToken': 'zzz99999', 'checkedIn': true, 'feedbackGiven': false, 'canGiveFeedback': true},
+  ];
+
+  @override
+  Future<List<EventPass>> eventPasses(String childId) async {
+    calls.add('eventPasses $childId');
+    return [for (final p in passJson) EventPass.fromJson(p)];
+  }
+
+  @override
+  Future<void> giveEventFeedback(String eventId, String childId, {required int rating, String comment = ''}) async {
+    calls.add('eventFeedback $eventId $childId $rating $comment');
+    for (final p in passJson) {
+      if (p['eventId'] == eventId) {
+        p['feedbackGiven'] = true;
+        p['canGiveFeedback'] = false;
+      }
+    }
+  }
+
   @override
   Future<void> cancelEventRegistration(String eventId, String childId) async {
     calls.add('cancelEventRegistration $eventId $childId');

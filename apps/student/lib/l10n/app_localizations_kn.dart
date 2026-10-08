@@ -2836,4 +2836,25 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get passFeedbackThanks => 'ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದ.';
+
+  @override
+  String get classNotesTitle => 'ತರಗತಿ ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಸಾರಾಂಶ';
+
+  @override
+  String get classNotesRecaps => 'ಪಾಠದ ಸಾರಾಂಶ';
+
+  @override
+  String get classNotesBoards => 'ವೈಟ್‌ಬೋರ್ಡ್‌ಗಳು';
+
+  @override
+  String get classNotesEmpty => 'ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಇನ್ನೂ ಏನನ್ನೂ ಹಂಚಿಕೊಂಡಿಲ್ಲ.';
+
+  @override
+  String get classNotesNoRecap => 'ಈ ಪಾಠದ ಸಾರಾಂಶ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ.';
+
+  @override
+  String get classNotesKeyPoints => 'ಮುಖ್ಯ ಅಂಶಗಳು';
+
+  @override
+  String get classNotesWatch => 'ಪಾಠ ನೋಡಿ';
 }

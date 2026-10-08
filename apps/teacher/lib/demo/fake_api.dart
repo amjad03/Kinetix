@@ -11,6 +11,7 @@ import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/hr_models.dart';
+import '../core/insights_models.dart';
 import '../core/models.dart';
 import '../core/work_models.dart';
 import '../core/push.dart';
@@ -235,6 +236,43 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<List<Student>> roster(String sectionId) async => students;
+
+  /// What [sectionInsights] returns; tests set [insightsError] to fail it.
+  SectionInsights insights = SectionInsights.fromJson({
+    'classAttendancePct': 81,
+    'classMarksAvgPct': 62,
+    'students': [
+      {'studentId': 'st2', 'studentName': 'Meera Rao', 'rollNo': '02', 'level': 'none', 'attendancePct': 96, 'marksAvgPct': 80, 'failingMarks': 0},
+      {'studentId': 'st1', 'studentName': 'Aarav Patel', 'rollNo': '01', 'level': 'high', 'attendancePct': 50, 'marksAvgPct': 15, 'failingMarks': 2},
+    ],
+  });
+  ApiException? insightsError;
+
+  @override
+  Future<SectionInsights> sectionInsights(String sectionId) async {
+    calls.add('sectionInsights $sectionId');
+    if (insightsError != null) throw insightsError!;
+    return insights;
+  }
+
+  /// Set to make [aiDraft] return the "no AI model connected" sample.
+  bool aiSample = false;
+
+  @override
+  Future<AiDraft> aiDraft(AiTask task, {required String input, int? count, int? minutes, String language = 'en', String? sectionId, String? subjectId}) async {
+    calls.add('ai ${task.path} $input ${task == AiTask.quiz || task == AiTask.homework ? count ?? '' : ''} ${task == AiTask.lessonPlan ? minutes ?? '' : ''} $language');
+    final result = switch (task) {
+      AiTask.explain => {'answer': 'Shares are units of ownership.', 'keyPoints': ['Issued at par or premium'], 'followUps': ['What is a rights issue?']},
+      AiTask.quiz => {
+        'questions': [
+          {'question': 'What is par value?', 'options': ['Face value', 'Market value', 'Book value', 'Issue price'], 'answer': 0, 'explanation': 'The nominal value of a share.'},
+        ],
+      },
+      AiTask.homework => {'title': 'Share capital practice', 'instructions': 'Answer all.', 'questions': [{'question': 'Define forfeiture.', 'marks': 2}]},
+      AiTask.lessonPlan => {'objectives': ['Understand shares'], 'steps': [{'minutes': 10, 'activity': 'Recap'}, {'minutes': 45, 'activity': 'Worked examples'}], 'materials': ['Board'], 'assessment': 'Exit ticket'},
+    };
+    return AiDraft.fromJson(task, {'task': task.path, 'result': result, 'meta': {'preview': aiSample}});
+  }
 
   @override
   Future<List<AnswerCard>> answerCards(String sectionId) async => [

@@ -11,6 +11,8 @@ import '../driver/driver_screen.dart';
 import '../hr/check_in_screen.dart';
 import '../hr/leave_screen.dart';
 import '../hr/payslips_screen.dart';
+import '../ai/ai_copilot_screen.dart';
+import '../insights/section_insights_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import '../work/duties_screens.dart';
@@ -179,6 +181,22 @@ class ProfileTab extends StatelessWidget {
               subtitle: Text(l.classRosterBody),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RosterScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openInsights'),
+              leading: const Icon(Icons.insights_outlined),
+              title: Text(l.insightsTitle),
+              subtitle: Text(l.insightsBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SectionInsightsScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openCopilot'),
+              leading: const Icon(Icons.auto_awesome_outlined),
+              title: Text(l.copilotTitle),
+              subtitle: Text(l.copilotBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => AiCopilotScreen(api: state.api, language: language))),
             ),
             ListTile(
               key: const Key('openCalendar'),

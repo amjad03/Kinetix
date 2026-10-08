@@ -2827,4 +2827,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get passFeedbackThanks => 'आपकी प्रतिक्रिया के लिए धन्यवाद।';
+
+  @override
+  String get classNotesTitle => 'कक्षा नोट्स और सारांश';
+
+  @override
+  String get classNotesRecaps => 'पाठ का सारांश';
+
+  @override
+  String get classNotesBoards => 'व्हाइटबोर्ड';
+
+  @override
+  String get classNotesEmpty => 'आपकी कक्षा के साथ अभी कुछ साझा नहीं किया गया है।';
+
+  @override
+  String get classNotesNoRecap => 'इस पाठ का सारांश अभी तैयार नहीं है।';
+
+  @override
+  String get classNotesKeyPoints => 'मुख्य बिंदु';
+
+  @override
+  String get classNotesWatch => 'पाठ देखें';
 }

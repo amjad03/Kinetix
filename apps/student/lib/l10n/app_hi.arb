@@ -828,5 +828,12 @@
   "passFeedbackTitle": "कैसा रहा?",
   "passFeedbackComment": "टिप्पणी (वैकल्पिक)",
   "passFeedbackSend": "भेजें",
-  "passFeedbackThanks": "आपकी प्रतिक्रिया के लिए धन्यवाद।"
+  "passFeedbackThanks": "आपकी प्रतिक्रिया के लिए धन्यवाद।",
+  "classNotesTitle": "कक्षा नोट्स और सारांश",
+  "classNotesRecaps": "पाठ का सारांश",
+  "classNotesBoards": "व्हाइटबोर्ड",
+  "classNotesEmpty": "आपकी कक्षा के साथ अभी कुछ साझा नहीं किया गया है।",
+  "classNotesNoRecap": "इस पाठ का सारांश अभी तैयार नहीं है।",
+  "classNotesKeyPoints": "मुख्य बिंदु",
+  "classNotesWatch": "पाठ देखें"
 }

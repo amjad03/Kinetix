@@ -6,6 +6,7 @@ import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import 'diary_screen.dart';
 import 'early_years_screen.dart';
+import 'event_passes_screen.dart';
 import 'events_screen.dart';
 import 'health_screen.dart';
 import 'passport_screen.dart';
@@ -47,6 +48,7 @@ class SchoolLifeScreen extends StatelessWidget {
           tile('lifeHealth', Icons.health_and_safety_outlined, l.lifeHealth, l.lifeHealthSub, () => HealthScreen(api: api, child: child)),
           tile('lifePassport', Icons.workspace_premium_outlined, l.lifePassport, l.lifePassportSub, () => PassportScreen(api: api, child: child, openFile: openFile)),
           tile('lifeSurveys', Icons.poll_outlined, l.lifeSurveys, l.lifeSurveysSub, () => SurveysScreen(api: api)),
+          tile('lifePasses', Icons.qr_code_2_outlined, l.lifePasses, l.lifePassesSub, () => EventPassesScreen(api: api, child: child)),
           tile('lifeEvents', Icons.celebration_outlined, l.lifeEvents, l.lifeEventsSub, () => EventsScreen(api: api, child: child)),
         ],
       ),
