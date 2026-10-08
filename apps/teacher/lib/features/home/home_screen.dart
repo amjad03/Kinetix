@@ -7,10 +7,11 @@ import '../../core/app_state.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../core/push.dart';
-import '../../widgets/common.dart';
 import '../calendar/calendar_screen.dart';
 import '../driver/driver_screen.dart';
 import '../homework/homework_tab.dart';
+import '../roster/roster_screen.dart';
+import 'teacher_home_tab.dart';
 import '../marks/marks_tab.dart';
 import '../messages/messages_tab.dart';
 import '../profile/profile_tab.dart';
@@ -43,12 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final _subscriptions = <StreamSubscription<Object?>>[];
   int _tab = 0;
 
-  static const _homeworkTab = 1, _marksTab = 2, _messagesTab = 3, _recordingsTab = 4;
+  static const _moreTab = 3;
 
   @override
   void initState() {
     super.initState();
     _lifecycle;
+    // Loaded up front (these are lazy): homework feeds the quick action as well as its page.
+    homework;
     final live = widget.state.realtime;
     _subscriptions
       ..add(live.messages.listen(messages.messageArrived))
@@ -89,19 +92,24 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(context).popUntil((r) => r.isFirst);
     switch (tap.kind) {
       case 'message':
-        _go(_messagesTab);
         final conversationId = data['conversationId'];
+        _go(_moreTab);
+        _openMessages();
+        messages.refresh();
         if (conversationId == null) return;
         Conversation? find() => messages.items?.where((c) => c.id == conversationId).firstOrNull;
         if (find() == null) await messages.load();
         final c = find();
         if (c != null && mounted) await MessagesTab.open(context, messages, c, widget.state.me!.id);
       case 'homework':
-        _go(_homeworkTab);
+        _go(_moreTab);
+        _openHomework();
       case 'marks':
-        _go(_marksTab);
+        _go(_moreTab);
+        _openMarks();
       case 'recording':
-        _go(_recordingsTab);
+        _go(_moreTab);
+        _openRecordings();
       case 'calendar':
         await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CalendarScreen(api: api)));
       case 'transport':
@@ -135,58 +143,100 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _go(int i) {
-    if (_tab != i) {
-      // Fresh on every visit: the board uploads recordings after class. Messages refresh on any
-      // tab change so the badge stays current.
-      if (i == _recordingsTab && !recordings.loading) recordings.load();
-      _refreshMessages();
-      if (i == _marksTab && marks.items == null && !marks.loading) marks.load();
-    }
+    // Messages refresh on any tab change so the badge stays current.
+    if (_tab != i) _refreshMessages();
     setState(() => _tab = i);
   }
 
-  void _openProfile() => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => Scaffold(body: ProfileTab(state: widget.state)),
+  /// Homework, Marks, Messages and Recordings open from More as full pages of their own.
+  void _push(Widget page) => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+
+  void _openHomework() => _push(
+    Scaffold(
+      body: HomeworkTab(controller: homework),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('assignHomeworkFab'),
+        onPressed: () => HomeworkTab.assign(context, homework),
+        icon: const Icon(Icons.add),
+        label: Text(context.l10n.assignHomework),
+      ),
     ),
   );
+
+  Future<void> _newAssessment() async {
+    if (marks.items == null && !marks.loading) await marks.load();
+    if (mounted) await MarksTab.create(context, marks);
+  }
+
+  void _openMarks() {
+    if (marks.items == null && !marks.loading) marks.load();
+    _push(
+      Scaffold(
+        body: MarksTab(controller: marks),
+        floatingActionButton: FloatingActionButton.extended(
+          key: const Key('newAssessmentFab'),
+          onPressed: () => MarksTab.create(context, marks),
+          icon: const Icon(Icons.add),
+          label: Text(context.l10n.newAssessment),
+        ),
+      ),
+    );
+  }
+
+  void _openMessages() {
+    _push(
+      Scaffold(
+        body: MessagesTab(controller: messages, myId: widget.state.me!.id),
+        floatingActionButton: FloatingActionButton.extended(
+          key: const Key('newMessageFab'),
+          onPressed: () => MessagesTab.compose(context, messages, widget.state.me!.id),
+          icon: const Icon(Icons.edit_outlined),
+          label: Text(context.l10n.newMessage),
+        ),
+      ),
+    );
+  }
+
+  void _openRecordings() {
+    // Fresh on every visit: the board uploads recordings after class.
+    if (!recordings.loading) recordings.load();
+    _push(Scaffold(body: RecordingsTab(controller: recordings)));
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final profile = ProfileButton(name: widget.state.me!.fullName, image: widget.state.api.photo(widget.state.me!.photoUrl), onPressed: _openProfile);
+    final me = widget.state.me!;
     return Scaffold(
       body: IndexedStack(
         index: _tab,
         children: [
-          TodayTab(controller: today, me: widget.state.me!, onOpenProfile: _openProfile),
-          HomeworkTab(controller: homework, profileButton: profile),
-          MarksTab(controller: marks, profileButton: profile),
-          MessagesTab(controller: messages, myId: widget.state.me!.id, profileButton: profile),
-          RecordingsTab(controller: recordings, profileButton: profile),
+          TeacherHomeTab(
+            controller: today,
+            me: me,
+            photo: widget.state.api.photo(me.photoUrl),
+            onOpenProfile: () => _go(_moreTab),
+            onOpenClasses: () => _go(1),
+            onAssign: () => HomeworkTab.assign(context, homework),
+            onNewAssessment: _newAssessment,
+          ),
+          TodayTab(controller: today, me: me, onOpenProfile: () => _go(_moreTab)),
+          RosterScreen(api: widget.state.api),
+          ListenableBuilder(
+            listenable: messages,
+            builder: (context, _) => ProfileTab(
+              state: widget.state,
+              title: l.navMore,
+              teachingTiles: [
+                _MoreTile(key: const Key('openHomework'), icon: Icons.assignment_outlined, title: l.navHomework, onTap: _openHomework),
+                _MoreTile(key: const Key('openMarks'), icon: Icons.grading_outlined, title: l.navMarks, onTap: _openMarks),
+                _MoreTile(key: const Key('openMessages'), icon: Icons.forum_outlined, title: l.navMessages, badge: messages.unread, onTap: _openMessages),
+                _MoreTile(key: const Key('openRecordings'), icon: Icons.video_library_outlined, title: l.navRecordings, onTap: _openRecordings),
+              ],
+            ),
+          ),
         ],
       ),
-      floatingActionButton: switch (_tab) {
-        _homeworkTab => FloatingActionButton.extended(
-          key: const Key('assignHomeworkFab'),
-          onPressed: () => HomeworkTab.assign(context, homework),
-          icon: const Icon(Icons.add),
-          label: Text(l.assignHomework),
-        ),
-        _marksTab => FloatingActionButton.extended(
-          key: const Key('newAssessmentFab'),
-          onPressed: () => MarksTab.create(context, marks),
-          icon: const Icon(Icons.add),
-          label: Text(l.newAssessment),
-        ),
-        _messagesTab => FloatingActionButton.extended(
-          key: const Key('newMessageFab'),
-          onPressed: () => MessagesTab.compose(context, messages, widget.state.me!.id),
-          icon: const Icon(Icons.edit_outlined),
-          label: Text(l.newMessage),
-        ),
-        _ => null,
-      },
       bottomNavigationBar: ListenableBuilder(
         listenable: messages,
         builder: (context, _) {
@@ -195,40 +245,14 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _tab,
             onDestinationSelected: _go,
             destinations: [
+              NavigationDestination(key: const Key('navHome'), icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l.navHome),
+              NavigationDestination(key: const Key('navClasses'), icon: const Icon(Icons.class_outlined), selectedIcon: const Icon(Icons.class_), label: l.navClasses),
+              NavigationDestination(key: const Key('navStudents'), icon: const Icon(Icons.groups_outlined), selectedIcon: const Icon(Icons.groups), label: l.navStudents),
               NavigationDestination(
-                key: const Key('navToday'),
-                icon: const Icon(Icons.today_outlined),
-                selectedIcon: const Icon(Icons.today),
-                label: l.navToday,
-              ),
-              NavigationDestination(
-                key: const Key('navHomework'),
-                icon: const Icon(Icons.assignment_outlined),
-                selectedIcon: const Icon(Icons.assignment),
-                label: l.navHomework,
-              ),
-              NavigationDestination(
-                key: const Key('navMarks'),
-                icon: const Icon(Icons.grading_outlined),
-                selectedIcon: const Icon(Icons.grading),
-                label: l.navMarks,
-              ),
-              NavigationDestination(
-                key: const Key('navMessages'),
-                icon: Badge(
-                  key: const Key('messagesBadge'),
-                  isLabelVisible: unread > 0,
-                  label: Text('$unread'),
-                  child: const Icon(Icons.forum_outlined),
-                ),
-                selectedIcon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.forum)),
-                label: l.navMessages,
-              ),
-              NavigationDestination(
-                key: const Key('navRecordings'),
-                icon: const Icon(Icons.video_library_outlined),
-                selectedIcon: const Icon(Icons.video_library),
-                label: l.navRecordings,
+                key: const Key('navMore'),
+                icon: Badge(key: const Key('messagesBadge'), isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.menu)),
+                selectedIcon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.menu)),
+                label: l.navMore,
               ),
             ],
           );
@@ -236,4 +260,21 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _MoreTile extends StatelessWidget {
+  const _MoreTile({super.key, required this.icon, required this.title, required this.onTap, this.badge = 0});
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final int badge;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    leading: Icon(icon),
+    title: Text(title),
+    trailing: badge > 0 ? Badge(label: Text('$badge')) : const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
 }

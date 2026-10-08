@@ -49,7 +49,7 @@ void main() {
   testWidgets('Profile → Calendar lists holidays, exams and events by month', (tester) async {
     phone(tester);
     await pumpApp(tester, api, prefs: {'token': 'tok'});
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     await tester.scrollUntilVisible(find.byKey(const Key('openCalendar')), 200, scrollable: find.byType(Scrollable).last);
     await tapAndSettle(tester, find.byKey(const Key('openCalendar')));
     expect(api.calls, contains('calendar'));
@@ -71,7 +71,7 @@ void main() {
     await pumpApp(tester, api, prefs: {'token': 'tok'});
     final s = strings('hi');
     expect(find.text(s.holidayNoClasses('Gandhi Jayanti')), findsOneWidget);
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     await tester.scrollUntilVisible(find.byKey(const Key('openCalendar')), 200, scrollable: find.byType(Scrollable).last);
     await tapAndSettle(tester, find.byKey(const Key('openCalendar')));
     expect(find.text(s.calendarExam), findsOneWidget);

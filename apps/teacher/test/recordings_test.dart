@@ -9,6 +9,7 @@ import 'package:kinetix_teacher/core/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
+import 'helpers.dart' show openMore;
 
 void main() {
   Future<FakeTeacherApi> pumpRecordings(WidgetTester tester, [void Function(FakeTeacherApi)? setup]) async {
@@ -25,7 +26,7 @@ void main() {
     await state.restore();
     await tester.pumpAndSettle();
     expect(api.calls, isNot(contains('recordings')));
-    await tester.tap(find.byKey(const Key('navRecordings')));
+    await openMore(tester, 'navRecordings');
     await tester.pumpAndSettle();
     return api;
   }

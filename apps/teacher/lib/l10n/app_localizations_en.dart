@@ -969,7 +969,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get topicVideoLink => 'YouTube link';
 
   @override
-  String get topicVideoLinkHelp => 'Paste a link. The title comes from YouTube. Only this class sees it until the principal approves sharing it.';
+  String get topicVideoLinkHelp =>
+      'Paste a link. The title comes from YouTube. Only this class sees it until the principal approves sharing it.';
 
   @override
   String get topicVideoAdd => 'Add video';
@@ -1765,4 +1766,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleHr => 'HR manager';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navClasses => 'Classes';
+
+  @override
+  String get navStudents => 'Students';
+
+  @override
+  String get navMore => 'More';
+
+  @override
+  String get homeSubtitle => 'Let\'s make today a great day!';
+
+  @override
+  String get viewAll => 'View all';
+
+  @override
+  String get startClass => 'Start class';
+
+  @override
+  String get quickActions => 'Quick actions';
+
+  @override
+  String get qaAttendance => 'Attendance';
+
+  @override
+  String get qaAssignment => 'Assignment';
+
+  @override
+  String get qaQuiz => 'Quiz';
+
+  @override
+  String get qaSmartboard => 'Smartboard';
+
+  @override
+  String get qaStudyMaterial => 'Study material';
+
+  @override
+  String get qaAiAssistant => 'AI Assistant';
+
+  @override
+  String get pendingApprovals => 'Pending approvals';
+
+  @override
+  String get allCaughtUp => 'Nothing waiting for you.';
+
+  @override
+  String get pickAClass => 'Choose a class';
+
+  @override
+  String leaveRequestLine(String type, String days) {
+    return '$type: $days day(s)';
+  }
 }

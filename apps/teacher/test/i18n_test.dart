@@ -31,7 +31,7 @@ void main() {
         expect(find.text(s.takeAttendance), findsNWidgets(2));
         expect(find.text(s.teachOnBoard), findsOneWidget);
         expect(find.text(s.connectToBoard), findsOneWidget);
-        expect(find.text(s.navToday), findsOneWidget);
+        expect(find.text(s.navClasses), findsOneWidget);
         // Dates are in the language too, with Western digits; nothing left in English.
         final greeting = tester.widget<Text>(find.byKey(const Key('greeting'))).data!;
         expect(greeting, contains('Anita'));
@@ -43,7 +43,7 @@ void main() {
 
       testWidgets('Homework tab', (tester) async {
         await start(tester);
-        await tapAndSettle(tester, find.byKey(const Key('navHomework')));
+        await openMore(tester, 'navHomework');
         expect(find.descendant(of: find.byKey(const Key('homework-h1')), matching: find.text(s.dueTomorrow)), findsOneWidget);
         expect(
           find.descendant(
@@ -63,7 +63,7 @@ void main() {
 
       testWidgets('Marks tab', (tester) async {
         await start(tester);
-        await tapAndSettle(tester, find.byKey(const Key('navMarks')));
+        await openMore(tester, 'navMarks');
         final published = find.byKey(const Key('assessment-a1'));
         expect(find.descendant(of: published, matching: find.text(s.published)), findsOneWidget);
         expect(find.descendant(of: published, matching: find.text(s.enteredOf(3, 3))), findsOneWidget);
@@ -76,7 +76,7 @@ void main() {
 
       testWidgets('Marks entry: hints, validation, plurals and the publish dialog', (tester) async {
         await start(tester);
-        await tapAndSettle(tester, find.byKey(const Key('navMarks')));
+        await openMore(tester, 'navMarks');
         await tapAndSettle(tester, find.byKey(const Key('assessment-a2')));
         expect(find.text(s.outOfN('10')), findsOneWidget);
         expect(find.text(s.typeMarksHint('10')), findsOneWidget);
@@ -110,7 +110,7 @@ void main() {
 
       testWidgets('Messages tab and chat', (tester) async {
         await start(tester);
-        await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+        await openMore(tester, 'navMessages');
         final c1 = find.byKey(const Key('conversation-c1'));
         expect(find.descendant(of: c1, matching: find.text(s.aboutParent('Aarav Patel', 'BCom Sem 3 A'))), findsOneWidget);
         // Message text is the family's, not translated.
@@ -139,7 +139,7 @@ void main() {
 
       testWidgets('Recordings tab', (tester) async {
         await start(tester);
-        await tapAndSettle(tester, find.byKey(const Key('navRecordings')));
+        await openMore(tester, 'navRecordings');
         Finder inCard(String id, Finder f) => find.descendant(of: find.byKey(Key('recording-$id')), matching: f);
         expect(inCard('r1', find.text(s.notShared)), findsOneWidget);
         expect(inCard('r1', find.text(s.preparingTranscript)), findsOneWidget);
@@ -179,7 +179,7 @@ void main() {
         await tapAndSettle(tester, find.byKey(const Key('connectDone')));
         expect(find.text(s.connected), findsOneWidget);
 
-        await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+        await openProfile(tester);
         expect(find.text(s.roleTeacher), findsOneWidget);
         expect(find.text(s.roleHod), findsOneWidget);
         expect(find.text(s.language), findsOneWidget);
@@ -197,7 +197,7 @@ void main() {
       await pumpApp(tester, api, prefs: {'token': 'tok'});
       expect(find.text(strings('en').todaysClasses), findsOneWidget);
 
-      await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+      await openProfile(tester);
       await tapAndSettle(tester, find.byKey(const Key('languageSetting')));
       expect(find.text('English'), findsWidgets);
       expect(find.text('हिन्दी'), findsOneWidget);
@@ -205,9 +205,10 @@ void main() {
       await tapAndSettle(tester, find.byKey(const Key('language-kn')));
 
       expect(api.calls, contains('language kn'));
-      expect(find.text(strings('kn').profile), findsWidgets);
+      expect(find.text(strings('kn').navMore), findsWidgets);
       expect(find.text('ಕನ್ನಡ'), findsOneWidget);
       await pop(tester);
+      await tapAndSettle(tester, find.byKey(const Key('navClasses')));
       expect(find.text(strings('kn').todaysClasses), findsOneWidget);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('language'), 'kn');
@@ -227,12 +228,13 @@ void main() {
       await pumpApp(tester, api, prefs: {'token': 'tok'});
       expect(find.text(strings('hi').todaysClasses), findsOneWidget);
 
-      await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+      await openProfile(tester);
       await tapAndSettle(tester, find.byKey(const Key('languageSetting')));
       await tapAndSettle(tester, find.byKey(const Key('language-en')));
       expect(find.text(strings('en').languageSaveFailed), findsOneWidget);
       expect(api.profile.preferredLanguage, 'hi');
       await pop(tester);
+      await tapAndSettle(tester, find.byKey(const Key('navClasses')));
       expect(find.text(strings('en').todaysClasses), findsOneWidget);
 
       // Next start: still English (the account still says Hindi), and the save is retried quietly.

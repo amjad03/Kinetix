@@ -2173,14 +2173,22 @@
   "driverNextStops": "Next stops",
   "driverNoMoreStops": "No more stops",
   "driverLastSent": "Location sent at {time}",
-  "@driverLastSent": {"placeholders": {"time": {}}},
+  "@driverLastSent": {
+    "placeholders": {
+      "time": {}
+    }
+  },
   "driverWaitingGps": "Waiting for GPS...",
   "driverLocationDenied": "Location permission is needed to share the bus location. Allow it in Settings.",
   "driverLocationOff": "Turn on the phone location (GPS) to start the trip.",
   "driverSendFailing": "Cannot reach the server. Still trying...",
   "driverKeepOpen": "Keep this screen open while the bus is moving.",
   "driverVehicle": "Bus {regNo}",
-  "@driverVehicle": {"placeholders": {"regNo": {}}},
+  "@driverVehicle": {
+    "placeholders": {
+      "regNo": {}
+    }
+  },
   "workSection": "Work",
   "@workSection": {
     "description": "HR screens (leave, check-in, payslips)."
@@ -2405,5 +2413,85 @@
   "roleHr": "HR manager",
   "@roleHr": {
     "description": "HR screens (leave, check-in, payslips)."
+  },
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Bottom navigation tab."
+  },
+  "navClasses": "Classes",
+  "@navClasses": {
+    "description": "Bottom navigation tab: the timetable."
+  },
+  "navStudents": "Students",
+  "@navStudents": {
+    "description": "Bottom navigation tab: the class roster."
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "Bottom navigation tab: everything else."
+  },
+  "homeSubtitle": "Let's make today a great day!",
+  "@homeSubtitle": {
+    "description": "Line under the greeting on Home."
+  },
+  "viewAll": "View all",
+  "@viewAll": {
+    "description": "Link to the full list."
+  },
+  "startClass": "Start class",
+  "@startClass": {
+    "description": "Button on a period: connects the board."
+  },
+  "quickActions": "Quick actions",
+  "@quickActions": {
+    "description": "Section title on Home."
+  },
+  "qaAttendance": "Attendance",
+  "@qaAttendance": {
+    "description": "Quick action."
+  },
+  "qaAssignment": "Assignment",
+  "@qaAssignment": {
+    "description": "Quick action."
+  },
+  "qaQuiz": "Quiz",
+  "@qaQuiz": {
+    "description": "Quick action: a new assessment."
+  },
+  "qaSmartboard": "Smartboard",
+  "@qaSmartboard": {
+    "description": "Quick action: connect to the board."
+  },
+  "qaStudyMaterial": "Study material",
+  "@qaStudyMaterial": {
+    "description": "Quick action: the syllabus and its videos."
+  },
+  "qaAiAssistant": "AI Assistant",
+  "@qaAiAssistant": {
+    "description": "Quick action: AI lesson plan."
+  },
+  "pendingApprovals": "Pending approvals",
+  "@pendingApprovals": {
+    "description": "Section title on Home: leave requests waiting."
+  },
+  "allCaughtUp": "Nothing waiting for you.",
+  "@allCaughtUp": {
+    "description": "Empty state for pending approvals."
+  },
+  "pickAClass": "Choose a class",
+  "@pickAClass": {
+    "description": "Title of the sheet that picks a period."
+  },
+  "leaveRequestLine": "{type}: {days} day(s)",
+  "@leaveRequestLine": {
+    "description": "Under a leave request's name on Home.",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
   }
 }

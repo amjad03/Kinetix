@@ -3212,6 +3212,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HR manager'**
   String get roleHr;
+
+  /// Bottom navigation tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// Bottom navigation tab: the timetable.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes'**
+  String get navClasses;
+
+  /// Bottom navigation tab: the class roster.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get navStudents;
+
+  /// Bottom navigation tab: everything else.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get navMore;
+
+  /// Line under the greeting on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s make today a great day!'**
+  String get homeSubtitle;
+
+  /// Link to the full list.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
+  /// Button on a period: connects the board.
+  ///
+  /// In en, this message translates to:
+  /// **'Start class'**
+  String get startClass;
+
+  /// Section title on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick actions'**
+  String get quickActions;
+
+  /// Quick action.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get qaAttendance;
+
+  /// Quick action.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment'**
+  String get qaAssignment;
+
+  /// Quick action: a new assessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get qaQuiz;
+
+  /// Quick action: connect to the board.
+  ///
+  /// In en, this message translates to:
+  /// **'Smartboard'**
+  String get qaSmartboard;
+
+  /// Quick action: the syllabus and its videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Study material'**
+  String get qaStudyMaterial;
+
+  /// Quick action: AI lesson plan.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant'**
+  String get qaAiAssistant;
+
+  /// Section title on Home: leave requests waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending approvals'**
+  String get pendingApprovals;
+
+  /// Empty state for pending approvals.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing waiting for you.'**
+  String get allCaughtUp;
+
+  /// Title of the sheet that picks a period.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a class'**
+  String get pickAClass;
+
+  /// Under a leave request's name on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'{type}: {days} day(s)'**
+  String leaveRequestLine(String type, String days);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

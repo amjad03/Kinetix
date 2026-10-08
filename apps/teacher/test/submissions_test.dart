@@ -45,7 +45,7 @@ void main() {
   testWidgets('homework opens from the Homework tab with its submissions', (tester) async {
     phone(tester);
     await pumpApp(tester, api, prefs: {'token': 'tok'});
-    await tapAndSettle(tester, find.byKey(const Key('navHomework')));
+    await openMore(tester, 'navHomework');
     await tapAndSettle(tester, find.byKey(const Key('homework-h1')));
     expect(api.calls, contains('submissions h1'));
     expect(find.byType(HomeworkDetailScreen), findsOneWidget);

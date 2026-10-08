@@ -20,7 +20,7 @@ void main() {
   testWidgets('edits the name, email and subjects; the phone stays read-only', (tester) async {
     phone(tester);
     final state = await pumpApp(tester, api, prefs: {'token': 'tok'});
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     await tapAndSettle(tester, find.byKey(const Key('editProfile')));
     expect(find.byType(KxProfileEditScreen), findsOneWidget);
     expect(find.textContaining('only your institution’s office can change it'), findsOneWidget);
@@ -42,7 +42,7 @@ void main() {
     await tester.pumpAndSettle();
     final avatar = tester.widget<KxAvatar>(find.descendant(of: find.byKey(const Key('profileButton')), matching: find.byType(KxAvatar)));
     expect(avatar.image, isA<MemoryImage>());
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     final big = tester.widget<KxAvatar>(find.descendant(of: find.byKey(const Key('profileAvatar')), matching: find.byType(KxAvatar)));
     expect(big.image, isA<MemoryImage>());
   });

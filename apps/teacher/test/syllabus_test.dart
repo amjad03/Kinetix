@@ -87,7 +87,7 @@ void main() {
     api.syllabusOutline = null;
     phone(tester);
     await pumpApp(tester, api, prefs: {'token': 'tok'});
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     await tester.scrollUntilVisible(find.byKey(const Key('openSyllabus')), 200, scrollable: find.byType(Scrollable).last);
     await tapAndSettle(tester, find.byKey(const Key('openSyllabus')));
     expect(find.text('Syllabus progress'), findsWidgets);

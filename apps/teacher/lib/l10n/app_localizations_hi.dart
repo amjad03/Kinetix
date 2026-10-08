@@ -970,7 +970,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get topicVideoLink => 'यूट्यूब लिंक';
 
   @override
-  String get topicVideoLinkHelp => 'लिंक चिपकाएँ। शीर्षक यूट्यूब से आता है। प्राचार्य के साझा करने की मंज़ूरी तक केवल यही कक्षा इसे देखती है।';
+  String get topicVideoLinkHelp =>
+      'लिंक चिपकाएँ। शीर्षक यूट्यूब से आता है। प्राचार्य के साझा करने की मंज़ूरी तक केवल यही कक्षा इसे देखती है।';
 
   @override
   String get topicVideoAdd => 'वीडियो जोड़ें';
@@ -1765,4 +1766,60 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get roleHr => 'एचआर प्रबंधक';
+
+  @override
+  String get navHome => 'होम';
+
+  @override
+  String get navClasses => 'कक्षाएँ';
+
+  @override
+  String get navStudents => 'छात्र';
+
+  @override
+  String get navMore => 'और';
+
+  @override
+  String get homeSubtitle => 'आइए आज का दिन शानदार बनाएँ!';
+
+  @override
+  String get viewAll => 'सभी देखें';
+
+  @override
+  String get startClass => 'कक्षा शुरू करें';
+
+  @override
+  String get quickActions => 'त्वरित कार्य';
+
+  @override
+  String get qaAttendance => 'उपस्थिति';
+
+  @override
+  String get qaAssignment => 'असाइनमेंट';
+
+  @override
+  String get qaQuiz => 'क्विज़';
+
+  @override
+  String get qaSmartboard => 'स्मार्टबोर्ड';
+
+  @override
+  String get qaStudyMaterial => 'अध्ययन सामग्री';
+
+  @override
+  String get qaAiAssistant => 'AI सहायक';
+
+  @override
+  String get pendingApprovals => 'लंबित स्वीकृतियाँ';
+
+  @override
+  String get allCaughtUp => 'आपके लिए कुछ भी लंबित नहीं है।';
+
+  @override
+  String get pickAClass => 'कक्षा चुनें';
+
+  @override
+  String leaveRequestLine(String type, String days) {
+    return '$type: $days दिन';
+  }
 }

@@ -19,6 +19,8 @@ void main() {
     await tester.pumpWidget(TeacherApp(state: state));
     await state.restore();
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('navClasses')));
+    await tester.pumpAndSettle();
     return api;
   }
 

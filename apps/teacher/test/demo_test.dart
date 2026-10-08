@@ -23,13 +23,13 @@ void main() {
     expect(find.byKey(const Key('demoChip')), findsOneWidget);
     expect(find.text('Corporate Accounting'), findsWidgets);
 
-    await tapAndSettle(tester, find.byKey(const Key('navHomework')));
+    await openMore(tester, 'navHomework');
     expect(find.text('Exercise 4.2: Issue of shares'), findsOneWidget);
-    await tapAndSettle(tester, find.byKey(const Key('navMarks')));
+    await openMore(tester, 'navMarks');
     expect(find.text('Unit test 1: Underwriting of shares'), findsOneWidget);
-    await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+    await openMore(tester, 'navMessages');
     expect(find.text('Rajesh Patel'), findsWidgets);
-    await tapAndSettle(tester, find.byKey(const Key('navRecordings')));
+    await openMore(tester, 'navRecordings');
     expect(find.text('Forfeiture of shares'), findsOneWidget);
 
     // A family reply arrives a few seconds after sign-in.

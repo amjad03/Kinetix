@@ -975,7 +975,8 @@ class AppLocalizationsKn extends AppLocalizations {
   String get topicVideoLink => 'ಯೂಟ್ಯೂಬ್ ಲಿಂಕ್';
 
   @override
-  String get topicVideoLinkHelp => 'ಲಿಂಕ್ ಅಂಟಿಸಿ. ಶೀರ್ಷಿಕೆ ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಬರುತ್ತದೆ. ಪ್ರಾಂಶುಪಾಲರು ಹಂಚಲು ಅನುಮೋದಿಸುವವರೆಗೆ ಈ ತರಗತಿ ಮಾತ್ರ ನೋಡುತ್ತದೆ.';
+  String get topicVideoLinkHelp =>
+      'ಲಿಂಕ್ ಅಂಟಿಸಿ. ಶೀರ್ಷಿಕೆ ಯೂಟ್ಯೂಬ್‌ನಿಂದ ಬರುತ್ತದೆ. ಪ್ರಾಂಶುಪಾಲರು ಹಂಚಲು ಅನುಮೋದಿಸುವವರೆಗೆ ಈ ತರಗತಿ ಮಾತ್ರ ನೋಡುತ್ತದೆ.';
 
   @override
   String get topicVideoAdd => 'ವೀಡಿಯೊ ಸೇರಿಸಿ';
@@ -1771,4 +1772,60 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get roleHr => 'ಎಚ್‌ಆರ್ ವ್ಯವಸ್ಥಾಪಕ';
+
+  @override
+  String get navHome => 'ಮುಖಪುಟ';
+
+  @override
+  String get navClasses => 'ತರಗತಿಗಳು';
+
+  @override
+  String get navStudents => 'ವಿದ್ಯಾರ್ಥಿಗಳು';
+
+  @override
+  String get navMore => 'ಇನ್ನಷ್ಟು';
+
+  @override
+  String get homeSubtitle => 'ಇಂದಿನ ದಿನವನ್ನು ಉತ್ತಮಗೊಳಿಸೋಣ!';
+
+  @override
+  String get viewAll => 'ಎಲ್ಲವನ್ನೂ ನೋಡಿ';
+
+  @override
+  String get startClass => 'ತರಗತಿ ಆರಂಭಿಸಿ';
+
+  @override
+  String get quickActions => 'ತ್ವರಿತ ಕ್ರಿಯೆಗಳು';
+
+  @override
+  String get qaAttendance => 'ಹಾಜರಾತಿ';
+
+  @override
+  String get qaAssignment => 'ಅಸೈನ್‌ಮೆಂಟ್';
+
+  @override
+  String get qaQuiz => 'ರಸಪ್ರಶ್ನೆ';
+
+  @override
+  String get qaSmartboard => 'ಸ್ಮಾರ್ಟ್‌ಬೋರ್ಡ್';
+
+  @override
+  String get qaStudyMaterial => 'ಅಧ್ಯಯನ ಸಾಮಗ್ರಿ';
+
+  @override
+  String get qaAiAssistant => 'AI ಸಹಾಯಕ';
+
+  @override
+  String get pendingApprovals => 'ಬಾಕಿ ಇರುವ ಅನುಮೋದನೆಗಳು';
+
+  @override
+  String get allCaughtUp => 'ನಿಮಗಾಗಿ ಯಾವುದೂ ಬಾಕಿ ಇಲ್ಲ.';
+
+  @override
+  String get pickAClass => 'ತರಗತಿ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String leaveRequestLine(String type, String days) {
+    return '$type: $days ದಿನ';
+  }
 }

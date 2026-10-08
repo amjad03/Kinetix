@@ -15,9 +15,15 @@ import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 
 class ProfileTab extends StatelessWidget {
-  const ProfileTab({super.key, required this.state});
+  const ProfileTab({super.key, required this.state, this.teachingTiles = const [], this.title});
 
   final AppState state;
+
+  /// Entries shown first under Teaching: the shell puts Homework, Marks, Messages and Recordings here.
+  final List<Widget> teachingTiles;
+
+  /// The app bar title; Profile when null.
+  final String? title;
 
   Future<void> _signOut(BuildContext context) async {
     final ok = await showDialog<bool>(
@@ -103,7 +109,7 @@ class ProfileTab extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(l.profile)),
+        SliverAppBar.large(title: Text(title ?? l.profile)),
         SliverList.list(
           children: [
             Padding(
@@ -159,6 +165,7 @@ class ProfileTab extends StatelessWidget {
             ),
             ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
             KxSectionHeader(l.teaching),
+            ...teachingTiles,
             ListTile(
               key: const Key('openRoster'),
               leading: const Icon(Icons.military_tech_outlined),

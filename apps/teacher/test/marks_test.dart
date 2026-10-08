@@ -21,7 +21,7 @@ void main() {
     await tester.pumpWidget(TeacherApp(state: state));
     await state.restore();
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('navMarks')));
+    await openMore(tester, 'navMarks');
     await tester.pumpAndSettle();
   }
 

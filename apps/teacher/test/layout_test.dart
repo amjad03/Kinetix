@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_teacher/core/api.dart';
+import 'package:kinetix_teacher/core/hr_models.dart';
 
 import 'fake_api.dart';
 import 'helpers.dart';
@@ -34,6 +35,31 @@ void main() {
     for (final size in sizes) {
       for (final scale in scales) {
         final name = '$lang ${size.width.toInt()}×${size.height.toInt()} ×$scale';
+
+        testWidgets('$name: Home and More fit', (tester) async {
+          phone(tester, size: size, textScale: scale);
+          final api = FakeTeacherApi();
+          seed(api, language: lang);
+          api.pendingLeaves = [
+            LeaveRequestInfo(
+              id: 'p1',
+              userId: 'u1',
+              userName: 'Ravi Kumar',
+              type: const LeaveTypeInfo(id: 'lt', code: 'CL', name: 'Casual leave', paid: true),
+              fromDate: DateTime.utc(2026, 10, 12),
+              toDate: DateTime.utc(2026, 10, 13),
+              halfDay: false,
+              days: 2,
+              reason: 'Family',
+              status: LeaveStatus.pending,
+            ),
+          ];
+          await pumpApp(tester, api, prefs: {'token': 'tok'}, tab: null);
+          await tester.drag(find.byType(CustomScrollView).hitTestable().first, const Offset(0, -2000));
+          await tester.pumpAndSettle();
+          await tapAndSettle(tester, find.byKey(const Key('navStudents')));
+          await openProfile(tester);
+        }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
         testWidgets('$name: signed-in screens fit', (tester) async {
           phone(tester, size: size, textScale: scale);
@@ -163,7 +189,7 @@ void main() {
           await clearSnackBars(tester);
 
           // Homework and its form.
-          await tapAndSettle(tester, find.byKey(const Key('navHomework')));
+          await openMore(tester, 'navHomework');
           await tapAndSettle(tester, find.byKey(const Key('assignHomeworkFab')));
           await tapAndSettle(tester, find.byKey(const Key('assignHomework')));
           await pop(tester);
@@ -186,7 +212,7 @@ void main() {
           await clearSnackBars(tester);
 
           // Marks, the new-assessment form and marks entry with errors, stats and dialogs.
-          await tapAndSettle(tester, find.byKey(const Key('navMarks')));
+          await openMore(tester, 'navMarks');
           await tapAndSettle(tester, find.byKey(const Key('newAssessmentFab')));
           await tapAndSettle(tester, find.byKey(const Key('createAssessment')));
           await pop(tester);
@@ -221,7 +247,7 @@ void main() {
 
           // Messages, a chat with a failed message, and New message.
           await clearSnackBars(tester);
-          await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+          await openMore(tester, 'navMessages');
           await tapAndSettle(tester, find.byKey(const Key('conversation-c1')));
           api.sendFails = true;
           await tester.enterText(find.byKey(const Key('messageField')), 'OK');
@@ -238,7 +264,7 @@ void main() {
           await pop(tester);
 
           // Recordings and the share dialog.
-          await tapAndSettle(tester, find.byKey(const Key('navRecordings')));
+          await openMore(tester, 'navRecordings');
           await tapAndSettle(tester, find.byKey(const Key('share-r1')));
           await tapAndSettle(tester, find.byKey(const Key('confirmShare')));
           // Keep / Don't keep: kept, deleted on a date, and soon.
@@ -253,7 +279,7 @@ void main() {
 
           // Profile, the language picker and the sign-out dialog.
           await clearSnackBars(tester);
-          await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+          await openProfile(tester);
           await tapAndSettle(tester, find.byKey(const Key('languageSetting')));
           await pop(tester);
           await reveal(tester, const Key('openCalendar'));
@@ -261,6 +287,7 @@ void main() {
           await tester.drag(find.byType(CustomScrollView).last, const Offset(0, -600));
           await tester.pumpAndSettle();
           await pop(tester);
+          await reveal(tester, const Key('openSyllabus'));
           await tapAndSettle(tester, find.byKey(const Key('openSyllabus')));
           await tapAndSettle(tester, find.byKey(const Key('syllabusClass-sec1-sub1')));
           await pop(tester);
@@ -285,13 +312,16 @@ void main() {
             ..calendarEvents = []
             ..syllabusOutline = null;
           for (final tab in ['navHomework', 'navMarks', 'navMessages', 'navRecordings']) {
-            await tapAndSettle(tester, find.byKey(Key(tab)));
+            await openMore(tester, tab);
           }
-          await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+          await openMore(tester, 'navRecordings');
+          await pop(tester);
+          await openProfile(tester);
           await reveal(tester, const Key('openCalendar'));
           await tapAndSettle(tester, find.byKey(const Key('openCalendar')));
           expect(find.byKey(const Key('calendarEmpty')), findsOneWidget);
           await pop(tester);
+          await reveal(tester, const Key('openSyllabus'));
           await tapAndSettle(tester, find.byKey(const Key('openSyllabus')));
           await tapAndSettle(tester, find.byKey(const Key('syllabusClass-sec1-sub1')));
           expect(find.byKey(const Key('syllabusUnlinked')), findsOneWidget);

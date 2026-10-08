@@ -66,7 +66,9 @@ void main() {
     expect(find.text('Messages about Aarav Patel with Rajesh Patel'), findsOneWidget);
     expect(api.calls, containsAll(['read notification n1', 'messages c1']));
 
-    // Back lands on the Messages tab.
+    // Back lands on the Messages page, and back again on More.
+    await pop(tester);
+    expect(find.byKey(const Key('newMessageFab')), findsOneWidget);
     await pop(tester);
     expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 3);
   });
@@ -82,16 +84,19 @@ void main() {
   testWidgets('other kinds open their tab, closing what was open', (tester) async {
     phone(tester);
     await pumpApp(tester, api, prefs: {'token': 'tok'}, push: push);
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     push.tap(const PushTap(kind: 'homework', notificationId: 'n2'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('profileButton')), findsWidgets);
-    expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 1);
+    expect(find.byKey(const Key('assignHomeworkFab')), findsOneWidget);
+    await pop(tester);
+    expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 3);
 
     // An unknown conversation (deleted, or another account's): the Messages tab.
     api.notificationItems = [];
     push.tap(const PushTap(kind: 'message', notificationId: 'gone'));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('newMessageFab')), findsOneWidget);
+    await pop(tester);
     expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 3);
   });
 }

@@ -6,6 +6,7 @@ import 'package:kinetix_teacher/core/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_api.dart';
+import 'helpers.dart' show openMore;
 
 void main() {
   late FakeTeacherApi api;
@@ -26,7 +27,7 @@ void main() {
   Finder navBadge() => find.descendant(of: find.byType(NavigationBar), matching: find.text('2'));
 
   Future<void> openInbox(WidgetTester tester) async {
-    await tester.tap(find.byKey(const Key('navMessages')));
+    await openMore(tester, 'navMessages');
     await tester.pumpAndSettle();
   }
 

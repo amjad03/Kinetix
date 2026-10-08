@@ -33,7 +33,7 @@ void main() {
     await start(tester);
     // The remembered server (the default here) and the signed-in token.
     expect(live.connectedWith, 'http://localhost:4000 tok');
-    await tapAndSettle(tester, find.byKey(const Key('profileButton')));
+    await openProfile(tester);
     await tester.scrollUntilVisible(find.byKey(const Key('signOut')), 200, scrollable: find.byType(Scrollable).last);
     await tester.ensureVisible(find.byKey(const Key('signOut')));
     await tester.pumpAndSettle();
@@ -44,19 +44,20 @@ void main() {
 
   testWidgets('a new message refreshes the inbox and the badge', (tester) async {
     await start(tester);
-    await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+    await openMore(tester, 'navMessages');
     final loads = api.conversationLoads;
     live.send(sunitaWrites());
     await tester.pumpAndSettle();
     expect(api.conversationLoads, loads + 1);
     expect(find.descendant(of: find.byKey(const Key('conversation-c2')), matching: find.text('Can we meet on Friday?')), findsOneWidget);
     expect(find.byKey(const Key('unread-c2')), findsOneWidget);
+    await toRoot(tester);
     expect(find.descendant(of: find.byType(NavigationBar), matching: find.text('3')), findsOneWidget);
   });
 
   testWidgets('the open thread shows a new message straight away and marks it read', (tester) async {
     await start(tester);
-    await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+    await openMore(tester, 'navMessages');
     await tapAndSettle(tester, find.byKey(const Key('conversation-c2')));
     api.calls.clear();
     live.send(sunitaWrites());
@@ -73,7 +74,7 @@ void main() {
 
   testWidgets("the teacher's own sent message is not fetched again", (tester) async {
     await start(tester);
-    await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+    await openMore(tester, 'navMessages');
     await tapAndSettle(tester, find.byKey(const Key('conversation-c1')));
     await tester.enterText(find.byKey(const Key('messageField')), 'See you at 4');
     await tester.pump();
@@ -101,7 +102,7 @@ void main() {
     await pumpApp(tester, api, prefs: {'token': 'tok'});
     final loads = api.conversationLoads;
     sunitaWrites();
-    await tapAndSettle(tester, find.byKey(const Key('navMessages')));
+    await openMore(tester, 'navMessages');
     expect(api.conversationLoads, loads + 1);
     expect(find.text('Can we meet on Friday?'), findsOneWidget);
   });
