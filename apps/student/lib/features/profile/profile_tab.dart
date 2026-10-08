@@ -13,6 +13,8 @@ import '../attendance/attendance_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
+import '../careers/careers.dart';
+import '../grievances/grievances.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
@@ -247,6 +249,40 @@ class ProfileTabState extends State<ProfileTab> {
                   subtitle: Text(_libraryLine(l, widget.study.library)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, widget.study),
+                ),
+                ListTile(
+                  key: const Key('openCareers'),
+                  leading: const Icon(Icons.work_outline),
+                  title: Text(l.careersTitle),
+                  subtitle: Text(l.careersSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    final api = widget.study.api;
+                    CareersScreen.open(
+                      context,
+                      load: () => api.careerOverview(st.id),
+                      onRegister: (drive) => api.registerForDrive(st.id, drive),
+                      onWithdraw: (drive) => api.withdrawFromDrive(st.id, drive),
+                      onRespond: (offer, accept) => api.respondToOffer(offer, accept: accept),
+                    );
+                  },
+                ),
+                ListTile(
+                  key: const Key('openGrievances'),
+                  leading: const Icon(Icons.report_problem_outlined),
+                  title: Text(l.grievancesTitle),
+                  subtitle: Text(l.grievancesSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    final api = widget.study.api;
+                    GrievancesScreen.open(
+                      context,
+                      load: api.myGrievances,
+                      raise: ({required category, required subject, required description, required anonymous}) =>
+                          api.raiseGrievance(category: category, subject: subject, description: description, anonymous: anonymous),
+                      rate: api.rateGrievance,
+                    );
+                  },
                 ),
                 if (widget.messages?.available ?? false)
                   ListTile(

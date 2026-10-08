@@ -1210,5 +1210,117 @@
   },
   "busPassed": "The bus has passed this stop.",
   "busStops": "Stops",
-  "busLive": "Live"
+  "busLive": "Live",
+  "careersTitle": "Careers",
+  "careersSubtitle": "Campus drives, offers and internships",
+  "careersAcademics": "CGPA {cgpa} · {backlogs, plural, =0{no backlogs} =1{1 backlog} other{{backlogs} backlogs}}",
+  "@careersAcademics": {
+    "placeholders": {
+      "cgpa": {},
+      "backlogs": {
+        "type": "int"
+      }
+    }
+  },
+  "careersNoResult": "No published result yet",
+  "careersDrives": "Drives",
+  "careersNoDrives": "No drives are open right now.",
+  "careersOffers": "Offers",
+  "careersInternships": "Internships",
+  "careersPlaced": "An offer has been accepted. Congratulations!",
+  "careersRegister": "Register",
+  "careersWithdraw": "Withdraw",
+  "careersAccept": "Accept",
+  "careersDecline": "Decline",
+  "careersViewOnly": "You can follow drives and offers here. Only your child can register or answer an offer.",
+  "careersPackage": "{ctc} lakh a year",
+  "@careersPackage": {
+    "placeholders": {
+      "ctc": {}
+    }
+  },
+  "careersMinCgpa": "Minimum CGPA {cgpa}",
+  "@careersMinCgpa": {
+    "placeholders": {
+      "cgpa": {}
+    }
+  },
+  "careersRegisteredNote": "You are registered for {drive}",
+  "@careersRegisteredNote": {
+    "placeholders": {
+      "drive": {}
+    }
+  },
+  "careersReg_registered": "Registered",
+  "careersReg_shortlisted": "Shortlisted",
+  "careersReg_rejected": "Not selected",
+  "careersReg_selected": "Selected",
+  "careersReg_withdrawn": "Withdrawn",
+  "careersOffer_offered": "Waiting for an answer",
+  "careersOffer_accepted": "Accepted",
+  "careersOffer_declined": "Declined",
+  "careersOffer_withdrawn": "Withdrawn by the company",
+  "careersOffer_expired": "Expired",
+  "careersReason_not_open": "Not open for registration",
+  "careersReason_deadline_passed": "Registration has closed",
+  "careersReason_no_results": "No published result yet",
+  "careersReason_cgpa_below": "CGPA is below the minimum",
+  "careersReason_backlogs_exceeded": "Too many backlogs",
+  "careersReason_program_not_eligible": "Not open to your programme",
+  "grievancesTitle": "Grievances",
+  "grievancesSubtitle": "Raise a concern and follow it to a resolution",
+  "grievanceNone": "No grievances raised yet.",
+  "grievanceRaise": "Raise a grievance",
+  "grievanceCategory": "Category",
+  "grievanceSubject": "Subject",
+  "grievanceDescription": "What happened?",
+  "grievanceAnonymous": "Hide my name from the staff",
+  "grievanceAnonymousHint": "The team will not see who raised it. You can still follow it here.",
+  "grievanceConfidentialHint": "Ragging and harassment go to a confidential committee. Nobody else can read them.",
+  "grievanceSubmit": "Submit",
+  "grievanceRecorded": "Your grievance was recorded as {ticketNo}",
+  "@grievanceRecorded": {
+    "placeholders": {
+      "ticketNo": {}
+    }
+  },
+  "grievanceDue": "Reply due {date}",
+  "@grievanceDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "grievanceResolution": "Resolution",
+  "grievanceRate": "How satisfied are you with the resolution?",
+  "grievanceRated": "Thank you for rating",
+  "grievanceAnonymousTag": "Anonymous",
+  "grievanceCat_academic": "Academic",
+  "grievanceCat_exam": "Examination",
+  "grievanceCat_fees": "Fees",
+  "grievanceCat_hostel": "Hostel",
+  "grievanceCat_transport": "Transport",
+  "grievanceCat_infrastructure": "Infrastructure",
+  "grievanceCat_staff_conduct": "Staff conduct",
+  "grievanceCat_ragging": "Ragging",
+  "grievanceCat_harassment": "Harassment",
+  "grievanceCat_other": "Other",
+  "grievanceStatus_open": "Received",
+  "grievanceStatus_assigned": "With a team member",
+  "grievanceStatus_in_progress": "Being looked into",
+  "grievanceStatus_escalated": "Sent to a senior",
+  "grievanceStatus_resolved": "Resolved",
+  "grievanceStatus_closed": "Closed",
+  "grievanceStatus_reopened": "Reopened",
+  "childCareers": "{name}'s careers",
+  "@childCareers": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "childGrievances": "{name}'s grievances",
+  "@childGrievances": {
+    "placeholders": {
+      "name": {}
+    }
+  }
 }

@@ -58,9 +58,9 @@ Missing:
 | 10 | Library / inventory / procurement | Mostly built — library; inventory (items, stores, stock ledger, issue, reorder levels), vendors, requisition → approval → PO → goods receipt → three-way invoice match, asset register (QR tag, allocation, maintenance, SLM/WDV depreciation, disposal). Missing: RFQ/quotation comparison, stock transfers between stores, returns, fixed-asset GL posting. See `docs/product/campus-operations.md` |
 | 11 | Transport / hostel / canteen | Mostly built — transport (vehicles, drivers, routes, stops, seats, fees, driver GPS → live bus + ETA + arrival notice, trip log, compliance expiry), hostel (blocks/rooms/beds, allot/vacate, fees, gate pass with family notice, visitors, mess plans + menu, complaints), canteen (menu, prepaid wallet, orders). Missing: hostel waitlist and room transfer, boarding attendance, fuel/expense tracking, incident reports, meal attendance, GPS-vendor adapter, online wallet top-up. See `docs/product/campus-operations.md` |
 | 12 | Communication / documents | **Built** — messaging, broadcasts, certificate templates and request → approve → issue with serial numbers, QR and public verification, student/staff ID cards, fee-receipt PDF, access-controlled document vault. See `docs/architecture/documents-certificates.md` |
-| 13 | Placements / internships / alumni | **Missing** |
-| 14 | Research / projects | **Missing** |
-| 15 | Grievance / discipline / welfare | **Missing** |
+| 13 | Placements / internships / alumni | **Built (core)** — companies, drives with server-side eligibility (CGPA, backlogs, programme, deadline), rounds, offers, placement stats, internships with mentor, evaluation and diary, alumni records, events and mentoring requests; ERP desk, Student App (register, withdraw, answer offers) and Parent App (read only). Not built: offer-letter documents, alumni donations. See `docs/product/campus-operations.md` |
+| 14 | Research / projects | **Built (core)** — proposals with ethics review and decision, projects with members and milestones, scholars, publications, conferences, patents, grants with expense limits, KPIs; ERP desk. Not built: DOI import, document upload. See `docs/product/campus-operations.md` |
+| 15 | Grievance / discipline / welfare | **Built (core)** — grievances with SLA, escalation, anonymous raising and rating; confidential anti-ragging / ICC / POSH committee handling; discipline incidents, actions and appeals; welfare requests; counselling sessions with private notes; ERP desk, Student App and Parent App screens. Not built: SMS/email notices, outside referrals. See `docs/product/campus-operations.md` and `GRIEVANCE_DISCIPLINE_WELFARE_DETAILED_SPEC.md` |
 | 16 | Analytics / reporting | **Missing** |
 
 ## Phase 03–05 — mobile
@@ -76,7 +76,7 @@ above land, since most missing mobile screens are views onto missing domains.
 3. HR/payroll + documents/certificates.
 4. Campus operations: transport, hostel/canteen, inventory/procurement/assets.
 
-Then: placements/alumni, research, grievance, analytics, and the Phase 00 foundation gaps.
+Then: analytics (placements, research and grievance are built), and the Phase 00 foundation gaps.
 
 ## Definition of done, per the pack
 

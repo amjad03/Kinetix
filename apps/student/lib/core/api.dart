@@ -9,6 +9,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
 import 'models.dart';
+import 'campus.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
 enum ApiProblem { timeout, unreachable, wrongLogin, notStudent, guardianAccount, teacherAccount, notLinked }
@@ -124,6 +125,19 @@ abstract class StudentApi {
 
   /// Books the student has out and has returned, with fines.
   Future<LibraryAccount> library(String studentId);
+
+  /// Open drives with eligibility, the student's registrations, offers and internships (`GET /v1/placements/students/:id/overview`).
+  Future<CareerOverview> careerOverview(String studentId);
+
+  /// Registers for a drive (the server re-checks eligibility and answers 409 with the reasons).
+  Future<void> registerForDrive(String studentId, String driveId);
+  Future<void> withdrawFromDrive(String studentId, String driveId);
+  Future<void> respondToOffer(String offerId, {required bool accept});
+
+  /// Grievances this person raised, newest first (`GET /v1/grievances/mine`).
+  Future<List<GrievanceTicket>> myGrievances();
+  Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId});
+  Future<void> rateGrievance(String id, int rating);
 
   /// The student's published marks with class averages and per-subject percentages.
   Future<StudentMarks> marks(String studentId);
@@ -372,6 +386,34 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<LibraryAccount> library(String studentId) async =>
       LibraryAccount.fromJson(await _send('GET', '/v1/library/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<CareerOverview> careerOverview(String studentId) async =>
+      CareerOverview.fromJson(await _send('GET', '/v1/placements/students/$studentId/overview') as Map<String, dynamic>);
+
+  @override
+  Future<void> registerForDrive(String studentId, String driveId) async => _send('POST', '/v1/placements/students/$studentId/drives/$driveId/registration');
+
+  @override
+  Future<void> withdrawFromDrive(String studentId, String driveId) async => _send('POST', '/v1/placements/students/$studentId/drives/$driveId/withdraw');
+
+  @override
+  Future<void> respondToOffer(String offerId, {required bool accept}) async =>
+      _send('POST', '/v1/placements/offers/$offerId/respond', body: {'response': accept ? 'accepted' : 'declined'});
+
+  @override
+  Future<List<GrievanceTicket>> myGrievances() async => [
+    for (final t in await _send('GET', '/v1/grievances/mine') as List) GrievanceTicket.fromJson((t as Map).cast<String, dynamic>()),
+  ];
+
+  @override
+  Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId}) async =>
+      GrievanceTicket.fromJson(
+        await _send('POST', '/v1/grievances', body: {'category': category, 'subject': subject, 'description': description, 'anonymous': anonymous, 'studentId': ?studentId}) as Map<String, dynamic>,
+      );
+
+  @override
+  Future<void> rateGrievance(String id, int rating) async => _send('POST', '/v1/grievances/$id/rating', body: {'rating': rating});
 
   @override
   Future<StudentMarks> marks(String studentId) async =>

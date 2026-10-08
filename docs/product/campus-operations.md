@@ -24,5 +24,22 @@ Every write is tenant-scoped (RLS), role-checked, validated with zod and audited
 - Buying chain: requisition (any staff) → decision by an approver who is not the requester → PO from an approved requisition (lines limited to what was approved) → goods receipts (partial allowed, idempotent by key, raise stock) → vendor invoice matched to received quantity x PO price: a difference is held as `mismatch` until an approver (not the recorder) approves it; only `matched` or `approved` invoices can be marked paid.
 - Assets: numbered tags `AST-0001` (QR payload `kinetix://asset/<tag>`, `GET by-tag/:tag` resolves a scan), allocation to one holder at a time, maintenance (optionally keeping the asset out of use) with next-due alerts, disposal, and depreciation: straight-line (cost minus salvage over the life) or written-down value at a fixed yearly rate, never below salvage.
 
+## Placements, internships and alumni (`/v1/placements`)
+- Companies and drives (role, CTC in lakh, minimum CGPA, maximum backlogs, eligible programmes, registration deadline, status). Drives move draft, open, closed, completed.
+- Eligibility is worked out by the server from the latest published CGPA and the open backlogs (`eligibility.ts`): `not_open`, `deadline_passed`, `no_results`, `cgpa_below`, `backlogs_exceeded`, `program_not_eligible`. Registering an ineligible student answers 409 with the reasons; the apps show the same reasons.
+- Rounds with per-student results, shortlisting, offers (one open offer per drive and student; the student accepts or declines, the placement cell can withdraw), `GET stats` for placement figures.
+- Internships: create, mentor, status, evaluation score, and a diary the student keeps. Alumni records, alumni events with RSVPs, and mentoring requests that an alumnus accepts or declines.
+- Students and guardians: `GET students/:studentId/overview` (drives with eligibility and registration, offers, internships, CGPA and backlogs). Only the student registers, withdraws or answers an offer.
+
+## Research and projects (`/v1/research`)
+- Proposals (draft, submit, withdraw), ethics review and a decision; approved proposals become projects with members, status and milestones.
+- Scholars and their status, publications, conferences, patents (with status), grants with expenses that cannot pass the sanctioned amount, and `GET kpis`.
+
+## Grievance, discipline and welfare (`/v1/grievances`, `/v1/discipline`, `/v1/welfare`, `/v1/counselling`)
+- Grievances: any signed-in person raises one (a guardian may name the child); `anonymous` hides the name from staff while the raiser still sees it under `GET mine`. Tickets get a number (`GRV-0001`), a severity and an SLA due time (critical 24 h, high 48 h, medium 120 h, low 240 h). Assign, comment, status, resolve, rate (1 to 5, closes the ticket), reopen, and `escalate-overdue` (up to two levels).
+- Ragging goes to the anti-ragging committee and harassment to the ICC (or POSH for a staff matter). They are never below high severity and only committee members can read them (`committee-stage`).
+- Discipline: incidents, review, actions, close, and appeals decided by someone other than the reviewer. Welfare: scholarship and aid requests (review, decision, disburse, withdraw). Counselling: sessions with private notes (readable only by the counsellor), schedule, outcome, cancel.
+
 ## Not yet built
 RFQ comparison, store-to-store transfers and returns, hostel waitlist and room transfer, boarding and meal attendance, fuel and incident logs, GPS-vendor adapter (the driver's phone is the tracker), online canteen top-up, reports and exports.
+Placement offer letters as documents, alumni donations, research publication import (DOI lookup), grievance SMS and email notices, counselling referral to outside services.

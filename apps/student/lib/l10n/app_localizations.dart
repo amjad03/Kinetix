@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -3152,9 +3159,412 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your teacher has ended this question.'**
   String get liveQuestionClosed;
+
+  /// No description provided for @careersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Careers'**
+  String get careersTitle;
+
+  /// No description provided for @careersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus drives, offers and internships'**
+  String get careersSubtitle;
+
+  /// No description provided for @careersAcademics.
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA {cgpa} · {backlogs, plural, =0{no backlogs} =1{1 backlog} other{{backlogs} backlogs}}'**
+  String careersAcademics(Object cgpa, int backlogs);
+
+  /// No description provided for @careersNoResult.
+  ///
+  /// In en, this message translates to:
+  /// **'No published result yet'**
+  String get careersNoResult;
+
+  /// No description provided for @careersDrives.
+  ///
+  /// In en, this message translates to:
+  /// **'Drives'**
+  String get careersDrives;
+
+  /// No description provided for @careersNoDrives.
+  ///
+  /// In en, this message translates to:
+  /// **'No drives are open right now.'**
+  String get careersNoDrives;
+
+  /// No description provided for @careersOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers'**
+  String get careersOffers;
+
+  /// No description provided for @careersInternships.
+  ///
+  /// In en, this message translates to:
+  /// **'Internships'**
+  String get careersInternships;
+
+  /// No description provided for @careersPlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'An offer has been accepted. Congratulations!'**
+  String get careersPlaced;
+
+  /// No description provided for @careersRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get careersRegister;
+
+  /// No description provided for @careersWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get careersWithdraw;
+
+  /// No description provided for @careersAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get careersAccept;
+
+  /// No description provided for @careersDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get careersDecline;
+
+  /// No description provided for @careersViewOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'You can follow drives and offers here. Only your child can register or answer an offer.'**
+  String get careersViewOnly;
+
+  /// No description provided for @careersPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'{ctc} lakh a year'**
+  String careersPackage(Object ctc);
+
+  /// No description provided for @careersMinCgpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum CGPA {cgpa}'**
+  String careersMinCgpa(Object cgpa);
+
+  /// No description provided for @careersRegisteredNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You are registered for {drive}'**
+  String careersRegisteredNote(Object drive);
+
+  /// No description provided for @careersReg_registered.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered'**
+  String get careersReg_registered;
+
+  /// No description provided for @careersReg_shortlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortlisted'**
+  String get careersReg_shortlisted;
+
+  /// No description provided for @careersReg_rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get careersReg_rejected;
+
+  /// No description provided for @careersReg_selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get careersReg_selected;
+
+  /// No description provided for @careersReg_withdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get careersReg_withdrawn;
+
+  /// No description provided for @careersOffer_offered.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for an answer'**
+  String get careersOffer_offered;
+
+  /// No description provided for @careersOffer_accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get careersOffer_accepted;
+
+  /// No description provided for @careersOffer_declined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get careersOffer_declined;
+
+  /// No description provided for @careersOffer_withdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn by the company'**
+  String get careersOffer_withdrawn;
+
+  /// No description provided for @careersOffer_expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get careersOffer_expired;
+
+  /// No description provided for @careersReason_not_open.
+  ///
+  /// In en, this message translates to:
+  /// **'Not open for registration'**
+  String get careersReason_not_open;
+
+  /// No description provided for @careersReason_deadline_passed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration has closed'**
+  String get careersReason_deadline_passed;
+
+  /// No description provided for @careersReason_no_results.
+  ///
+  /// In en, this message translates to:
+  /// **'No published result yet'**
+  String get careersReason_no_results;
+
+  /// No description provided for @careersReason_cgpa_below.
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA is below the minimum'**
+  String get careersReason_cgpa_below;
+
+  /// No description provided for @careersReason_backlogs_exceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many backlogs'**
+  String get careersReason_backlogs_exceeded;
+
+  /// No description provided for @careersReason_program_not_eligible.
+  ///
+  /// In en, this message translates to:
+  /// **'Not open to your programme'**
+  String get careersReason_program_not_eligible;
+
+  /// No description provided for @grievancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grievances'**
+  String get grievancesTitle;
+
+  /// No description provided for @grievancesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Raise a concern and follow it to a resolution'**
+  String get grievancesSubtitle;
+
+  /// No description provided for @grievanceNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No grievances raised yet.'**
+  String get grievanceNone;
+
+  /// No description provided for @grievanceRaise.
+  ///
+  /// In en, this message translates to:
+  /// **'Raise a grievance'**
+  String get grievanceRaise;
+
+  /// No description provided for @grievanceCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get grievanceCategory;
+
+  /// No description provided for @grievanceSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get grievanceSubject;
+
+  /// No description provided for @grievanceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened?'**
+  String get grievanceDescription;
+
+  /// No description provided for @grievanceAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide my name from the staff'**
+  String get grievanceAnonymous;
+
+  /// No description provided for @grievanceAnonymousHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The team will not see who raised it. You can still follow it here.'**
+  String get grievanceAnonymousHint;
+
+  /// No description provided for @grievanceConfidentialHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ragging and harassment go to a confidential committee. Nobody else can read them.'**
+  String get grievanceConfidentialHint;
+
+  /// No description provided for @grievanceSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get grievanceSubmit;
+
+  /// No description provided for @grievanceRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your grievance was recorded as {ticketNo}'**
+  String grievanceRecorded(Object ticketNo);
+
+  /// No description provided for @grievanceDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply due {date}'**
+  String grievanceDue(Object date);
+
+  /// No description provided for @grievanceResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution'**
+  String get grievanceResolution;
+
+  /// No description provided for @grievanceRate.
+  ///
+  /// In en, this message translates to:
+  /// **'How satisfied are you with the resolution?'**
+  String get grievanceRate;
+
+  /// No description provided for @grievanceRated.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for rating'**
+  String get grievanceRated;
+
+  /// No description provided for @grievanceAnonymousTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous'**
+  String get grievanceAnonymousTag;
+
+  /// No description provided for @grievanceCat_academic.
+  ///
+  /// In en, this message translates to:
+  /// **'Academic'**
+  String get grievanceCat_academic;
+
+  /// No description provided for @grievanceCat_exam.
+  ///
+  /// In en, this message translates to:
+  /// **'Examination'**
+  String get grievanceCat_exam;
+
+  /// No description provided for @grievanceCat_fees.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees'**
+  String get grievanceCat_fees;
+
+  /// No description provided for @grievanceCat_hostel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel'**
+  String get grievanceCat_hostel;
+
+  /// No description provided for @grievanceCat_transport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get grievanceCat_transport;
+
+  /// No description provided for @grievanceCat_infrastructure.
+  ///
+  /// In en, this message translates to:
+  /// **'Infrastructure'**
+  String get grievanceCat_infrastructure;
+
+  /// No description provided for @grievanceCat_staff_conduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff conduct'**
+  String get grievanceCat_staff_conduct;
+
+  /// No description provided for @grievanceCat_ragging.
+  ///
+  /// In en, this message translates to:
+  /// **'Ragging'**
+  String get grievanceCat_ragging;
+
+  /// No description provided for @grievanceCat_harassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment'**
+  String get grievanceCat_harassment;
+
+  /// No description provided for @grievanceCat_other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get grievanceCat_other;
+
+  /// No description provided for @grievanceStatus_open.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get grievanceStatus_open;
+
+  /// No description provided for @grievanceStatus_assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'With a team member'**
+  String get grievanceStatus_assigned;
+
+  /// No description provided for @grievanceStatus_in_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Being looked into'**
+  String get grievanceStatus_in_progress;
+
+  /// No description provided for @grievanceStatus_escalated.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to a senior'**
+  String get grievanceStatus_escalated;
+
+  /// No description provided for @grievanceStatus_resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get grievanceStatus_resolved;
+
+  /// No description provided for @grievanceStatus_closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get grievanceStatus_closed;
+
+  /// No description provided for @grievanceStatus_reopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopened'**
+  String get grievanceStatus_reopened;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3163,7 +3573,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

@@ -9,6 +9,7 @@ import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
+import '../core/campus.dart';
 import '../core/models.dart';
 
 /// In-memory [StudentApi] for widget tests.
@@ -652,6 +653,93 @@ class FakeStudentApi implements StudentApi {
   Future<LibraryAccount> library(String studentId) async {
     calls.add('library $studentId');
     return libraryAccount;
+  }
+
+  // ── Careers and grievances ────────────────────────────────────────────────────────────────
+
+  Map<String, dynamic> careers = {
+    'academics': {'cgpa': 7.5, 'backlogs': 0},
+    'placed': false,
+    'drives': [
+      {
+        'id': 'd1', 'title': 'Acme campus drive', 'company': 'Acme Corp', 'kind': 'placement', 'roleTitle': 'Analyst', 'ctcLpa': 6, 'location': 'Bengaluru',
+        'driveDate': '2026-11-05', 'status': 'open', 'minCgpa': 6.5, 'maxBacklogs': 0,
+        'eligibility': {'eligible': true, 'reasons': <String>[]}, 'registration': null,
+      },
+      {
+        'id': 'd2', 'title': 'Globex fintech drive', 'company': 'Globex', 'kind': 'placement', 'roleTitle': 'Associate', 'ctcLpa': 9.5, 'location': '',
+        'driveDate': null, 'status': 'open', 'minCgpa': 8.5, 'maxBacklogs': 0,
+        'eligibility': {'eligible': false, 'reasons': ['cgpa_below']}, 'registration': null,
+      },
+    ],
+    'offers': <Map<String, dynamic>>[],
+    'internships': [
+      {'id': 'i1', 'title': 'Summer intern', 'orgName': 'Acme Corp', 'startsOn': '2026-10-01', 'endsOn': '2026-12-01', 'status': 'ongoing', 'evaluationScore': null},
+    ],
+  };
+
+  /// Set to make the next register / respond call fail like the server would (a 409 with its message).
+  ApiException? careerFailure;
+
+  @override
+  Future<CareerOverview> careerOverview(String studentId) async {
+    calls.add('careerOverview $studentId');
+    return CareerOverview.fromJson(careers);
+  }
+
+  @override
+  Future<void> registerForDrive(String studentId, String driveId) async {
+    calls.add('registerForDrive $driveId');
+    if (careerFailure != null) throw careerFailure!;
+    for (final d in careers['drives'] as List) {
+      if (d['id'] == driveId) d['registration'] = {'id': 'r-$driveId', 'status': 'registered'};
+    }
+  }
+
+  @override
+  Future<void> withdrawFromDrive(String studentId, String driveId) async {
+    calls.add('withdrawFromDrive $driveId');
+    for (final d in careers['drives'] as List) {
+      if (d['id'] == driveId) d['registration'] = {'id': 'r-$driveId', 'status': 'withdrawn'};
+    }
+  }
+
+  @override
+  Future<void> respondToOffer(String offerId, {required bool accept}) async {
+    calls.add('respondToOffer $offerId ${accept ? 'accepted' : 'declined'}');
+    for (final o in careers['offers'] as List) {
+      if (o['id'] == offerId) o['status'] = accept ? 'accepted' : 'declined';
+    }
+    if (accept) careers['placed'] = true;
+  }
+
+  final List<Map<String, dynamic>> grievances = [
+    {'id': 'g1', 'ticketNo': 'GRV-0001', 'category': 'fees', 'subject': 'Fee receipt is wrong', 'status': 'resolved', 'anonymous': false, 'slaDueAt': '2026-10-25T04:30:00Z', 'resolution': 'Receipt reissued', 'rating': null},
+  ];
+
+  @override
+  Future<List<GrievanceTicket>> myGrievances() async {
+    calls.add('myGrievances');
+    return [for (final g in grievances) GrievanceTicket.fromJson(g)];
+  }
+
+  @override
+  Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId}) async {
+    calls.add('raiseGrievance $category anonymous=$anonymous student=$studentId');
+    final g = {'id': 'g${grievances.length + 1}', 'ticketNo': 'GRV-000${grievances.length + 1}', 'category': category, 'subject': subject, 'status': 'open', 'anonymous': anonymous, 'slaDueAt': '2026-10-30T04:30:00Z', 'resolution': null, 'rating': null};
+    grievances.insert(0, g);
+    return GrievanceTicket.fromJson(g);
+  }
+
+  @override
+  Future<void> rateGrievance(String id, int rating) async {
+    calls.add('rateGrievance $id $rating');
+    for (final g in grievances) {
+      if (g['id'] == id) {
+        g['rating'] = rating;
+        g['status'] = 'closed';
+      }
+    }
   }
 
   // ── Marks ─────────────────────────────────────────────────────────────────────────────────

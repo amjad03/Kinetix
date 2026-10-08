@@ -8,6 +8,7 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
+import 'campus.dart';
 import 'models.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
@@ -107,6 +108,14 @@ abstract class ParentApi {
 
   /// Books the child has out and has returned, with fines (`GET /v1/library/students/:id`).
   Future<LibraryAccount> library(String childId);
+
+  /// The child's drives with eligibility, offers and internships (`GET /v1/placements/students/:id/overview`). Read only here.
+  Future<CareerOverview> careerOverview(String childId);
+
+  /// Grievances this guardian raised, newest first (`GET /v1/grievances/mine`).
+  Future<List<GrievanceTicket>> myGrievances();
+  Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId});
+  Future<void> rateGrievance(String id, int rating);
 
   /// The child's school bus: route, stop, pickup time and the bus now (`GET /v1/transport/students/:id`).
   Future<StudentBus> bus(String childId);
@@ -343,6 +352,24 @@ class HttpParentApi implements ParentApi {
   @override
   Future<LibraryAccount> library(String childId) async =>
       LibraryAccount.fromJson(await _send('GET', '/v1/library/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<CareerOverview> careerOverview(String childId) async =>
+      CareerOverview.fromJson(await _send('GET', '/v1/placements/students/$childId/overview') as Map<String, dynamic>);
+
+  @override
+  Future<List<GrievanceTicket>> myGrievances() async => [
+    for (final t in await _send('GET', '/v1/grievances/mine') as List) GrievanceTicket.fromJson((t as Map).cast<String, dynamic>()),
+  ];
+
+  @override
+  Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId}) async =>
+      GrievanceTicket.fromJson(
+        await _send('POST', '/v1/grievances', body: {'category': category, 'subject': subject, 'description': description, 'anonymous': anonymous, 'studentId': ?studentId}) as Map<String, dynamic>,
+      );
+
+  @override
+  Future<void> rateGrievance(String id, int rating) async => _send('POST', '/v1/grievances/$id/rating', body: {'rating': rating});
 
   @override
   Future<ChildMarks> marks(String childId) async =>

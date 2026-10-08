@@ -9,6 +9,8 @@ import '../../widgets/common.dart';
 import '../calendar/calendar_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
+import '../careers/careers.dart';
+import '../grievances/grievances.dart';
 import '../marks/marks.dart';
 import '../privacy/privacy.dart';
 import '../syllabus/syllabus_screen.dart';
@@ -154,6 +156,28 @@ class ProfileTab extends StatelessWidget {
                   subtitle: Text(l.librarySubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, family, child),
+                ),
+                ListTile(
+                  key: Key('profile-careers-${child.id}'),
+                  leading: const Icon(Icons.work_outline),
+                  title: Text(family.children.length == 1 ? l.careersTitle : l.childCareers(child.firstName)),
+                  subtitle: Text(l.careersSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => CareersScreen.open(context, load: () => family.api.careerOverview(child.id)),
+                ),
+                ListTile(
+                  key: Key('profile-grievances-${child.id}'),
+                  leading: const Icon(Icons.report_problem_outlined),
+                  title: Text(family.children.length == 1 ? l.grievancesTitle : l.childGrievances(child.firstName)),
+                  subtitle: Text(l.grievancesSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => GrievancesScreen.open(
+                    context,
+                    load: family.api.myGrievances,
+                    raise: ({required category, required subject, required description, required anonymous}) =>
+                        family.api.raiseGrievance(category: category, subject: subject, description: description, anonymous: anonymous, studentId: child.id),
+                    rate: family.api.rateGrievance,
+                  ),
                 ),
               ],
               if (family.children.isNotEmpty) KxSectionHeader(l.syllabusProgress),
