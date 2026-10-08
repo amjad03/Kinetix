@@ -13,6 +13,12 @@ import '../hr/leave_screen.dart';
 import '../hr/payslips_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
+import '../work/duties_screens.dart';
+import '../work/evaluation_screens.dart';
+import '../work/mentoring_screens.dart';
+import '../work/requests_screen.dart';
+import '../work/roster_surveys_clubs.dart';
+import '../work/tasks_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, this.teachingTiles = const [], this.title});
@@ -238,6 +244,26 @@ class ProfileTab extends StatelessWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PayslipsScreen(api: state.api))),
             ),
+            KxSectionHeader(l.workToolsSection),
+            for (final (key, icon, title, body, open) in <(String, IconData, String, String, Widget Function())>[
+              ('openTasks', Icons.task_alt_outlined, l.tasksTitle, l.tasksBody, () => TasksScreen(api: state.api)),
+              ('openRequests', Icons.approval_outlined, l.requestsTitle, l.requestsBody, () => RequestsScreen(api: state.api)),
+              ('openSubstitutions', Icons.swap_horiz, l.subsTitle, l.subsBody, () => SubstitutionsScreen(api: state.api)),
+              ('openDuties', Icons.fact_check_outlined, l.dutiesTitle, l.dutiesBody, () => DutiesScreen(api: state.api)),
+              ('openEvaluation', Icons.rate_review_outlined, l.evalTitle, l.evalBody, () => EvaluationScreen(api: state.api)),
+              ('openMentoring', Icons.diversity_3_outlined, l.mentoringTitle, l.mentoringBody, () => MentoringScreen(api: state.api)),
+              ('openCourseRoster', Icons.groups_outlined, l.courseRosterTitle, l.courseRosterBody, () => CourseRosterScreen(api: state.api, userId: me.id)),
+              ('openSurveys', Icons.poll_outlined, l.surveysTitle, l.surveysBody, () => SurveysScreen(api: state.api)),
+              ('openClubs', Icons.groups_2_outlined, l.clubsTitle, l.clubsBody, () => ClubsScreen(api: state.api, userId: me.id)),
+            ])
+              ListTile(
+                key: Key(key),
+                leading: Icon(icon),
+                title: Text(title),
+                subtitle: Text(body),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => open())),
+              ),
             KxSectionHeader(l.comingSoon),
             ListTile(
               leading: const Icon(Icons.campaign_outlined),

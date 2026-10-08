@@ -1822,4 +1822,471 @@ class AppLocalizationsHi extends AppLocalizations {
   String leaveRequestLine(String type, String days) {
     return '$type: $days दिन';
   }
+
+  @override
+  String get workToolsSection => 'स्टाफ के उपकरण';
+
+  @override
+  String get tasksTitle => 'कार्य';
+
+  @override
+  String get tasksBody => 'आपको सौंपे गए और आपके द्वारा सौंपे गए कार्य';
+
+  @override
+  String get requestsTitle => 'अनुरोध और स्वीकृतियाँ';
+
+  @override
+  String get requestsBody => 'अनुरोध शुरू करें, उसे देखें और अपने पास आए अनुरोधों पर निर्णय लें';
+
+  @override
+  String get subsTitle => 'विकल्प कक्षाएँ';
+
+  @override
+  String get subsBody => 'सहकर्मियों की जगह आपकी कक्षाएँ';
+
+  @override
+  String get dutiesTitle => 'निरीक्षण ड्यूटी';
+
+  @override
+  String get dutiesBody => 'परीक्षा कक्ष में आपकी ड्यूटी';
+
+  @override
+  String get evalTitle => 'मूल्यांकन डेस्क';
+
+  @override
+  String get evalBody => 'आपको आवंटित उत्तर पुस्तिकाओं का मूल्यांकन करें';
+
+  @override
+  String get mentoringTitle => 'मार्गदर्शन';
+
+  @override
+  String get mentoringBody => 'आपके मेंटी, सत्र और योजनाएँ';
+
+  @override
+  String get courseRosterTitle => 'पाठ्यक्रम सूची';
+
+  @override
+  String get courseRosterBody => 'आपके पढ़ाए पाठ्यक्रमों में किसने पंजीकरण किया';
+
+  @override
+  String get surveysTitle => 'सर्वेक्षण';
+
+  @override
+  String get surveysBody => 'आपके उत्तर की प्रतीक्षा में सर्वेक्षण';
+
+  @override
+  String get clubsTitle => 'मेरे संयोजित क्लब';
+
+  @override
+  String get clubsBody => 'आपके क्लबों के सदस्य और अंक';
+
+  @override
+  String get tasksMineTab => 'मुझे सौंपे गए';
+
+  @override
+  String get tasksByMeTab => 'मेरे द्वारा सौंपे गए';
+
+  @override
+  String get tasksEmpty => 'कोई खुला कार्य नहीं है।';
+
+  @override
+  String taskFrom(String name) {
+    return '$name की ओर से';
+  }
+
+  @override
+  String taskTo(String name) {
+    return '$name को';
+  }
+
+  @override
+  String taskDue(String when) {
+    return 'अंतिम तिथि $when';
+  }
+
+  @override
+  String get taskOverdue => 'समय बीत चुका';
+
+  @override
+  String get taskStatusOpen => 'खुला';
+
+  @override
+  String get taskStatusInProgress => 'जारी है';
+
+  @override
+  String get taskStatusDone => 'पूरा हुआ';
+
+  @override
+  String get taskStatusCancelled => 'रद्द';
+
+  @override
+  String get taskStart => 'शुरू करें';
+
+  @override
+  String get taskMarkDone => 'पूरा करें';
+
+  @override
+  String get taskCancelAction => 'कार्य रद्द करें';
+
+  @override
+  String get taskPriorityHigh => 'उच्च प्राथमिकता';
+
+  @override
+  String get taskPriorityUrgent => 'अत्यावश्यक';
+
+  @override
+  String get requestsInboxTab => 'मेरे निर्णय हेतु';
+
+  @override
+  String get requestsMineTab => 'मेरे अनुरोध';
+
+  @override
+  String get requestsStart => 'नया अनुरोध';
+
+  @override
+  String get requestsInboxEmpty => 'आपके निर्णय के लिए कुछ भी लंबित नहीं है।';
+
+  @override
+  String get requestsMineEmpty => 'आपने कोई अनुरोध नहीं किया है।';
+
+  @override
+  String requestStep(String n, String total, String name) {
+    return 'चरण $n / $total · $name';
+  }
+
+  @override
+  String requestBy(String name) {
+    return '$name द्वारा';
+  }
+
+  @override
+  String get reqStatusPending => 'लंबित';
+
+  @override
+  String get reqStatusApproved => 'स्वीकृत';
+
+  @override
+  String get reqStatusRejected => 'अस्वीकृत';
+
+  @override
+  String get reqStatusReturned => 'वापस भेजा गया';
+
+  @override
+  String get reqStatusCancelled => 'वापस लिया गया';
+
+  @override
+  String get requestApprove => 'स्वीकृत करें';
+
+  @override
+  String get requestReject => 'अस्वीकार करें';
+
+  @override
+  String get requestReturn => 'बदलाव हेतु वापस भेजें';
+
+  @override
+  String get requestComment => 'टिप्पणी (वैकल्पिक)';
+
+  @override
+  String get requestWithdraw => 'अनुरोध वापस लें';
+
+  @override
+  String get requestHistory => 'इतिहास';
+
+  @override
+  String get requestAmountLabel => 'राशि (₹)';
+
+  @override
+  String get requestTitleLabel => 'शीर्षक';
+
+  @override
+  String get requestKindLabel => 'अनुरोध का प्रकार';
+
+  @override
+  String get requestSubmit => 'अनुरोध भेजें';
+
+  @override
+  String get requestNoRoutes => 'अभी कोई अनुरोध प्रकार तय नहीं किया गया है।';
+
+  @override
+  String requestFieldNeeded(String field) {
+    return '$field भरें';
+  }
+
+  @override
+  String get requestActionSubmitted => 'भेजा गया';
+
+  @override
+  String get requestActionResubmitted => 'फिर भेजा गया';
+
+  @override
+  String get subsEmpty => 'अगले दो सप्ताह में आपकी कोई विकल्प कक्षा नहीं है।';
+
+  @override
+  String subsFor(String name) {
+    return '$name की जगह';
+  }
+
+  @override
+  String get dutiesEmpty => 'आपको कोई निरीक्षण ड्यूटी नहीं मिली है।';
+
+  @override
+  String get dutyRoleChief => 'मुख्य निरीक्षक';
+
+  @override
+  String get dutyRoleInvigilator => 'निरीक्षक';
+
+  @override
+  String get evalEmpty => 'आपको कोई उत्तर पुस्तिका आवंटित नहीं है।';
+
+  @override
+  String evalScript(String no) {
+    return 'पुस्तिका $no';
+  }
+
+  @override
+  String evalRound(String n) {
+    return 'मूल्यांकन $n';
+  }
+
+  @override
+  String get evalStatusTodo => 'करना है';
+
+  @override
+  String get evalStatusSubmitted => 'जमा किया गया';
+
+  @override
+  String evalTotal(String total) {
+    return 'कुल $total';
+  }
+
+  @override
+  String evalQuestionLabel(String no, String max) {
+    return 'प्रश्न $no ($max में से)';
+  }
+
+  @override
+  String get evalMarksLabel => 'अंक';
+
+  @override
+  String get evalCommentLabel => 'टिप्पणी';
+
+  @override
+  String get evalSave => 'अंक सहेजें';
+
+  @override
+  String get evalSavedMsg => 'अंक सहेजे गए';
+
+  @override
+  String get evalSubmit => 'मूल्यांकन जमा करें';
+
+  @override
+  String get evalSubmitConfirm => 'यह मूल्यांकन जमा करें? बाद में अंक बदले नहीं जा सकेंगे।';
+
+  @override
+  String evalSubmittedMsg(String total) {
+    return 'मूल्यांकन जमा हुआ। कुल $total।';
+  }
+
+  @override
+  String get evalThirdNeeded => 'दोनों मूल्यांकनों में बहुत अंतर है, इसलिए तीसरा मूल्यांकन कराया जाएगा।';
+
+  @override
+  String evalOverMax(String max) {
+    return 'अधिकतम $max';
+  }
+
+  @override
+  String get evalMissing => 'हर प्रश्न के अंक भरें (कुछ न लिखा हो तो 0)।';
+
+  @override
+  String get evalLockedMsg => 'यह मूल्यांकन जमा हो चुका है और बदला नहीं जा सकता।';
+
+  @override
+  String evalPageLabel(String n, String total) {
+    return 'पृष्ठ $n / $total';
+  }
+
+  @override
+  String get evalNoPages => 'इस पुस्तिका में कोई पृष्ठ नहीं है।';
+
+  @override
+  String get menteesEmpty => 'आपका कोई मेंटी नहीं है।';
+
+  @override
+  String get riskHigh => 'उच्च जोखिम';
+
+  @override
+  String get riskMedium => 'मध्यम जोखिम';
+
+  @override
+  String get riskLow => 'कम जोखिम';
+
+  @override
+  String get riskNone => 'ठीक चल रहा है';
+
+  @override
+  String menteeAttendance(String pct) {
+    return 'उपस्थिति $pct%';
+  }
+
+  @override
+  String menteeFailing(String n) {
+    return '$n परीक्षाओं में अनुत्तीर्ण';
+  }
+
+  @override
+  String menteeFees(String n) {
+    return '$n बकाया शुल्क';
+  }
+
+  @override
+  String menteeCases(String n) {
+    return '$n खुले मामले';
+  }
+
+  @override
+  String get mentorLogSession => 'सत्र दर्ज करें';
+
+  @override
+  String get mentorSessions => 'सत्र';
+
+  @override
+  String get mentorPlans => 'हस्तक्षेप योजनाएँ';
+
+  @override
+  String get sessionModeInPerson => 'आमने-सामने';
+
+  @override
+  String get sessionModePhone => 'फ़ोन';
+
+  @override
+  String get sessionModeOnline => 'ऑनलाइन';
+
+  @override
+  String get sessionModeLabel => 'मुलाकात का तरीका';
+
+  @override
+  String get sessionSummary => 'सारांश';
+
+  @override
+  String get sessionNotes => 'निजी टिप्पणियाँ (केवल आप, विभागाध्यक्ष और परामर्शदाता देख सकते हैं)';
+
+  @override
+  String get sessionFollowUp => 'अगली बैठक';
+
+  @override
+  String get sessionSave => 'सत्र सहेजें';
+
+  @override
+  String get sessionsNone => 'अभी कोई सत्र नहीं।';
+
+  @override
+  String get plansNone => 'अभी कोई योजना नहीं।';
+
+  @override
+  String get planNew => 'नई योजना';
+
+  @override
+  String get planGoal => 'लक्ष्य';
+
+  @override
+  String get planActionsLabel => 'कार्य (हर पंक्ति में एक)';
+
+  @override
+  String get planReviewLabel => 'समीक्षा की तिथि';
+
+  @override
+  String get planCreate => 'योजना बनाएँ';
+
+  @override
+  String get planClose => 'योजना बंद करें';
+
+  @override
+  String get planOutcome => 'परिणाम';
+
+  @override
+  String get planRatingImproved => 'सुधार हुआ';
+
+  @override
+  String get planRatingNoChange => 'कोई बदलाव नहीं';
+
+  @override
+  String get planRatingWorsened => 'बिगड़ा';
+
+  @override
+  String planReviewOn(String date) {
+    return 'समीक्षा $date को';
+  }
+
+  @override
+  String get planClosed => 'बंद';
+
+  @override
+  String get rosterTermLabel => 'सत्र';
+
+  @override
+  String get rosterNoTerms => 'कोई सत्र नहीं मिला।';
+
+  @override
+  String get rosterNoOfferings => 'इस सत्र में आप किसी पाठ्यक्रम के शिक्षक नहीं हैं।';
+
+  @override
+  String rosterCounts(String reg, String wait) {
+    return '$reg पंजीकृत, $wait प्रतीक्षा सूची में';
+  }
+
+  @override
+  String rosterWaitlist(String pos) {
+    return 'प्रतीक्षा सूची $pos';
+  }
+
+  @override
+  String get rosterEmpty => 'अभी तक किसी ने पंजीकरण नहीं किया।';
+
+  @override
+  String get surveysEmpty => 'आपके लिए कोई सर्वेक्षण लंबित नहीं है।';
+
+  @override
+  String get surveyAnonymous => 'गुमनाम';
+
+  @override
+  String surveyClosesOn(String when) {
+    return '$when को बंद होगा';
+  }
+
+  @override
+  String get surveyAnswered => 'उत्तर दिया';
+
+  @override
+  String get surveySubmit => 'उत्तर भेजें';
+
+  @override
+  String get surveyThanks => 'धन्यवाद, आपके उत्तर भेज दिए गए।';
+
+  @override
+  String get surveyRequired => 'सभी आवश्यक प्रश्नों का उत्तर दें।';
+
+  @override
+  String get surveyAnswerHint => 'आपका उत्तर';
+
+  @override
+  String get clubsEmpty => 'आप किसी क्लब के संयोजक नहीं हैं।';
+
+  @override
+  String clubMembersCount(String n) {
+    return '$n सदस्य';
+  }
+
+  @override
+  String clubPendingCount(String n) {
+    return '$n अनुरोध लंबित';
+  }
+
+  @override
+  String clubPoints(String n) {
+    return '$n अंक';
+  }
+
+  @override
+  String get clubNoMembers => 'अभी कोई सदस्य नहीं।';
 }

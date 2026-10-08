@@ -1822,4 +1822,471 @@ class AppLocalizationsEn extends AppLocalizations {
   String leaveRequestLine(String type, String days) {
     return '$type: $days day(s)';
   }
+
+  @override
+  String get workToolsSection => 'Staff tools';
+
+  @override
+  String get tasksTitle => 'Tasks';
+
+  @override
+  String get tasksBody => 'What is assigned to you and what you asked of others';
+
+  @override
+  String get requestsTitle => 'Requests and approvals';
+
+  @override
+  String get requestsBody => 'Start a request, track it and decide what waits for you';
+
+  @override
+  String get subsTitle => 'Substitutions';
+
+  @override
+  String get subsBody => 'Periods you cover for colleagues';
+
+  @override
+  String get dutiesTitle => 'Invigilation duties';
+
+  @override
+  String get dutiesBody => 'Your exam hall duties';
+
+  @override
+  String get evalTitle => 'Evaluation desk';
+
+  @override
+  String get evalBody => 'Value the answer scripts allocated to you';
+
+  @override
+  String get mentoringTitle => 'Mentoring';
+
+  @override
+  String get mentoringBody => 'Your mentees, sessions and plans';
+
+  @override
+  String get courseRosterTitle => 'Course rosters';
+
+  @override
+  String get courseRosterBody => 'Who registered for the courses you teach';
+
+  @override
+  String get surveysTitle => 'Surveys';
+
+  @override
+  String get surveysBody => 'Surveys waiting for your answers';
+
+  @override
+  String get clubsTitle => 'Clubs I coordinate';
+
+  @override
+  String get clubsBody => 'Members and points of your clubs';
+
+  @override
+  String get tasksMineTab => 'Assigned to me';
+
+  @override
+  String get tasksByMeTab => 'Assigned by me';
+
+  @override
+  String get tasksEmpty => 'No open tasks.';
+
+  @override
+  String taskFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String taskTo(String name) {
+    return 'To $name';
+  }
+
+  @override
+  String taskDue(String when) {
+    return 'Due $when';
+  }
+
+  @override
+  String get taskOverdue => 'Overdue';
+
+  @override
+  String get taskStatusOpen => 'Open';
+
+  @override
+  String get taskStatusInProgress => 'In progress';
+
+  @override
+  String get taskStatusDone => 'Done';
+
+  @override
+  String get taskStatusCancelled => 'Cancelled';
+
+  @override
+  String get taskStart => 'Start';
+
+  @override
+  String get taskMarkDone => 'Mark done';
+
+  @override
+  String get taskCancelAction => 'Cancel task';
+
+  @override
+  String get taskPriorityHigh => 'High priority';
+
+  @override
+  String get taskPriorityUrgent => 'Urgent';
+
+  @override
+  String get requestsInboxTab => 'Waiting for me';
+
+  @override
+  String get requestsMineTab => 'My requests';
+
+  @override
+  String get requestsStart => 'New request';
+
+  @override
+  String get requestsInboxEmpty => 'Nothing is waiting for your decision.';
+
+  @override
+  String get requestsMineEmpty => 'You have not made any requests.';
+
+  @override
+  String requestStep(String n, String total, String name) {
+    return 'Step $n of $total · $name';
+  }
+
+  @override
+  String requestBy(String name) {
+    return 'By $name';
+  }
+
+  @override
+  String get reqStatusPending => 'Pending';
+
+  @override
+  String get reqStatusApproved => 'Approved';
+
+  @override
+  String get reqStatusRejected => 'Rejected';
+
+  @override
+  String get reqStatusReturned => 'Returned';
+
+  @override
+  String get reqStatusCancelled => 'Withdrawn';
+
+  @override
+  String get requestApprove => 'Approve';
+
+  @override
+  String get requestReject => 'Reject';
+
+  @override
+  String get requestReturn => 'Return for changes';
+
+  @override
+  String get requestComment => 'Comment (optional)';
+
+  @override
+  String get requestWithdraw => 'Withdraw request';
+
+  @override
+  String get requestHistory => 'History';
+
+  @override
+  String get requestAmountLabel => 'Amount (₹)';
+
+  @override
+  String get requestTitleLabel => 'Title';
+
+  @override
+  String get requestKindLabel => 'Kind of request';
+
+  @override
+  String get requestSubmit => 'Send request';
+
+  @override
+  String get requestNoRoutes => 'No request types have been set up yet.';
+
+  @override
+  String requestFieldNeeded(String field) {
+    return 'Fill in $field';
+  }
+
+  @override
+  String get requestActionSubmitted => 'Submitted';
+
+  @override
+  String get requestActionResubmitted => 'Sent again';
+
+  @override
+  String get subsEmpty => 'You are not covering any periods in the next two weeks.';
+
+  @override
+  String subsFor(String name) {
+    return 'Covering for $name';
+  }
+
+  @override
+  String get dutiesEmpty => 'No invigilation duties assigned to you.';
+
+  @override
+  String get dutyRoleChief => 'Chief invigilator';
+
+  @override
+  String get dutyRoleInvigilator => 'Invigilator';
+
+  @override
+  String get evalEmpty => 'No scripts are allocated to you.';
+
+  @override
+  String evalScript(String no) {
+    return 'Script $no';
+  }
+
+  @override
+  String evalRound(String n) {
+    return 'Valuation $n';
+  }
+
+  @override
+  String get evalStatusTodo => 'To do';
+
+  @override
+  String get evalStatusSubmitted => 'Submitted';
+
+  @override
+  String evalTotal(String total) {
+    return 'Total $total';
+  }
+
+  @override
+  String evalQuestionLabel(String no, String max) {
+    return 'Question $no (out of $max)';
+  }
+
+  @override
+  String get evalMarksLabel => 'Marks';
+
+  @override
+  String get evalCommentLabel => 'Comment';
+
+  @override
+  String get evalSave => 'Save marks';
+
+  @override
+  String get evalSavedMsg => 'Marks saved';
+
+  @override
+  String get evalSubmit => 'Submit valuation';
+
+  @override
+  String get evalSubmitConfirm => 'Submit this valuation? You cannot change the marks afterwards.';
+
+  @override
+  String evalSubmittedMsg(String total) {
+    return 'Valuation submitted. Total $total.';
+  }
+
+  @override
+  String get evalThirdNeeded => 'The two valuations differ a lot, so a third valuation will be arranged.';
+
+  @override
+  String evalOverMax(String max) {
+    return 'At most $max';
+  }
+
+  @override
+  String get evalMissing => 'Enter marks for every question (0 where nothing was written).';
+
+  @override
+  String get evalLockedMsg => 'This valuation is submitted and cannot be changed.';
+
+  @override
+  String evalPageLabel(String n, String total) {
+    return 'Page $n of $total';
+  }
+
+  @override
+  String get evalNoPages => 'This script has no pages.';
+
+  @override
+  String get menteesEmpty => 'You have no mentees.';
+
+  @override
+  String get riskHigh => 'High risk';
+
+  @override
+  String get riskMedium => 'Medium risk';
+
+  @override
+  String get riskLow => 'Low risk';
+
+  @override
+  String get riskNone => 'On track';
+
+  @override
+  String menteeAttendance(String pct) {
+    return 'Attendance $pct%';
+  }
+
+  @override
+  String menteeFailing(String n) {
+    return '$n failed tests';
+  }
+
+  @override
+  String menteeFees(String n) {
+    return '$n overdue fees';
+  }
+
+  @override
+  String menteeCases(String n) {
+    return '$n open cases';
+  }
+
+  @override
+  String get mentorLogSession => 'Log session';
+
+  @override
+  String get mentorSessions => 'Sessions';
+
+  @override
+  String get mentorPlans => 'Intervention plans';
+
+  @override
+  String get sessionModeInPerson => 'In person';
+
+  @override
+  String get sessionModePhone => 'Phone';
+
+  @override
+  String get sessionModeOnline => 'Online';
+
+  @override
+  String get sessionModeLabel => 'How you met';
+
+  @override
+  String get sessionSummary => 'Summary';
+
+  @override
+  String get sessionNotes => 'Private notes (only you, the head of department and the counsellor see these)';
+
+  @override
+  String get sessionFollowUp => 'Follow up on';
+
+  @override
+  String get sessionSave => 'Save session';
+
+  @override
+  String get sessionsNone => 'No sessions yet.';
+
+  @override
+  String get plansNone => 'No plans yet.';
+
+  @override
+  String get planNew => 'New plan';
+
+  @override
+  String get planGoal => 'Goal';
+
+  @override
+  String get planActionsLabel => 'Actions (one per line)';
+
+  @override
+  String get planReviewLabel => 'Review on';
+
+  @override
+  String get planCreate => 'Create plan';
+
+  @override
+  String get planClose => 'Close plan';
+
+  @override
+  String get planOutcome => 'Outcome';
+
+  @override
+  String get planRatingImproved => 'Improved';
+
+  @override
+  String get planRatingNoChange => 'No change';
+
+  @override
+  String get planRatingWorsened => 'Worsened';
+
+  @override
+  String planReviewOn(String date) {
+    return 'Review on $date';
+  }
+
+  @override
+  String get planClosed => 'Closed';
+
+  @override
+  String get rosterTermLabel => 'Term';
+
+  @override
+  String get rosterNoTerms => 'No terms found.';
+
+  @override
+  String get rosterNoOfferings => 'You are not the faculty of any course in this term.';
+
+  @override
+  String rosterCounts(String reg, String wait) {
+    return '$reg registered, $wait on the waitlist';
+  }
+
+  @override
+  String rosterWaitlist(String pos) {
+    return 'Waitlist $pos';
+  }
+
+  @override
+  String get rosterEmpty => 'Nobody has registered yet.';
+
+  @override
+  String get surveysEmpty => 'No surveys are waiting for you.';
+
+  @override
+  String get surveyAnonymous => 'Anonymous';
+
+  @override
+  String surveyClosesOn(String when) {
+    return 'Closes $when';
+  }
+
+  @override
+  String get surveyAnswered => 'Answered';
+
+  @override
+  String get surveySubmit => 'Send answers';
+
+  @override
+  String get surveyThanks => 'Thank you, your answers were sent.';
+
+  @override
+  String get surveyRequired => 'Answer every required question.';
+
+  @override
+  String get surveyAnswerHint => 'Your answer';
+
+  @override
+  String get clubsEmpty => 'You do not coordinate any clubs.';
+
+  @override
+  String clubMembersCount(String n) {
+    return '$n members';
+  }
+
+  @override
+  String clubPendingCount(String n) {
+    return '$n requests waiting';
+  }
+
+  @override
+  String clubPoints(String n) {
+    return '$n points';
+  }
+
+  @override
+  String get clubNoMembers => 'No members yet.';
 }

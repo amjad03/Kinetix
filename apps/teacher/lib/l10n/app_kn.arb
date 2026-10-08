@@ -537,5 +537,359 @@
   "pendingApprovals": "ಬಾಕಿ ಇರುವ ಅನುಮೋದನೆಗಳು",
   "allCaughtUp": "ನಿಮಗಾಗಿ ಯಾವುದೂ ಬಾಕಿ ಇಲ್ಲ.",
   "pickAClass": "ತರಗತಿ ಆಯ್ಕೆಮಾಡಿ",
-  "leaveRequestLine": "{type}: {days} ದಿನ"
+  "leaveRequestLine": "{type}: {days} ದಿನ",
+  "workToolsSection": "ಸಿಬ್ಬಂದಿ ಸಾಧನಗಳು",
+  "tasksTitle": "ಕಾರ್ಯಗಳು",
+  "tasksBody": "ನಿಮಗೆ ವಹಿಸಿದ ಮತ್ತು ನೀವು ಇತರರಿಗೆ ವಹಿಸಿದ ಕಾರ್ಯಗಳು",
+  "requestsTitle": "ಮನವಿಗಳು ಮತ್ತು ಅನುಮೋದನೆಗಳು",
+  "requestsBody": "ಮನವಿ ಪ್ರಾರಂಭಿಸಿ, ಅದನ್ನು ಗಮನಿಸಿ ಮತ್ತು ನಿಮ್ಮ ಬಳಿ ಬಂದವುಗಳ ಬಗ್ಗೆ ತೀರ್ಮಾನಿಸಿ",
+  "subsTitle": "ಬದಲಿ ತರಗತಿಗಳು",
+  "subsBody": "ಸಹೋದ್ಯೋಗಿಗಳ ಬದಲು ನೀವು ತೆಗೆದುಕೊಳ್ಳುವ ತರಗತಿಗಳು",
+  "dutiesTitle": "ಮೇಲ್ವಿಚಾರಣೆ ಕರ್ತವ್ಯಗಳು",
+  "dutiesBody": "ಪರೀಕ್ಷಾ ಕೊಠಡಿಯಲ್ಲಿ ನಿಮ್ಮ ಕರ್ತವ್ಯಗಳು",
+  "evalTitle": "ಮೌಲ್ಯಮಾಪನ ಮೇಜು",
+  "evalBody": "ನಿಮಗೆ ಹಂಚಿದ ಉತ್ತರ ಪತ್ರಿಕೆಗಳನ್ನು ಮೌಲ್ಯಮಾಪನ ಮಾಡಿ",
+  "mentoringTitle": "ಮಾರ್ಗದರ್ಶನ",
+  "mentoringBody": "ನಿಮ್ಮ ಮಾರ್ಗದರ್ಶಿತರು, ಅವಧಿಗಳು ಮತ್ತು ಯೋಜನೆಗಳು",
+  "courseRosterTitle": "ಕೋರ್ಸ್ ಪಟ್ಟಿಗಳು",
+  "courseRosterBody": "ನೀವು ಬೋಧಿಸುವ ಕೋರ್ಸ್‌ಗಳಿಗೆ ಯಾರು ನೋಂದಾಯಿಸಿದ್ದಾರೆ",
+  "surveysTitle": "ಸಮೀಕ್ಷೆಗಳು",
+  "surveysBody": "ನಿಮ್ಮ ಉತ್ತರಕ್ಕಾಗಿ ಕಾಯುತ್ತಿರುವ ಸಮೀಕ್ಷೆಗಳು",
+  "clubsTitle": "ನಾನು ಸಂಯೋಜಿಸುವ ಕ್ಲಬ್‌ಗಳು",
+  "clubsBody": "ನಿಮ್ಮ ಕ್ಲಬ್‌ಗಳ ಸದಸ್ಯರು ಮತ್ತು ಅಂಕಗಳು",
+  "tasksMineTab": "ನನಗೆ ವಹಿಸಿದ್ದು",
+  "tasksByMeTab": "ನಾನು ವಹಿಸಿದ್ದು",
+  "tasksEmpty": "ಯಾವುದೇ ಬಾಕಿ ಕಾರ್ಯಗಳಿಲ್ಲ.",
+  "taskFrom": "{name} ಅವರಿಂದ",
+  "@taskFrom": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskTo": "{name} ಅವರಿಗೆ",
+  "@taskTo": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskDue": "ಕೊನೆಯ ದಿನ {when}",
+  "@taskDue": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "taskOverdue": "ಅವಧಿ ಮೀರಿದೆ",
+  "taskStatusOpen": "ತೆರೆದಿದೆ",
+  "taskStatusInProgress": "ನಡೆಯುತ್ತಿದೆ",
+  "taskStatusDone": "ಮುಗಿದಿದೆ",
+  "taskStatusCancelled": "ರದ್ದಾಗಿದೆ",
+  "taskStart": "ಪ್ರಾರಂಭಿಸಿ",
+  "taskMarkDone": "ಮುಗಿಸಿ",
+  "taskCancelAction": "ಕಾರ್ಯ ರದ್ದುಮಾಡಿ",
+  "taskPriorityHigh": "ಹೆಚ್ಚಿನ ಆದ್ಯತೆ",
+  "taskPriorityUrgent": "ತುರ್ತು",
+  "requestsInboxTab": "ನನ್ನ ನಿರ್ಧಾರಕ್ಕೆ",
+  "requestsMineTab": "ನನ್ನ ಮನವಿಗಳು",
+  "requestsStart": "ಹೊಸ ಮನವಿ",
+  "requestsInboxEmpty": "ನಿಮ್ಮ ನಿರ್ಧಾರಕ್ಕಾಗಿ ಏನೂ ಬಾಕಿ ಇಲ್ಲ.",
+  "requestsMineEmpty": "ನೀವು ಯಾವುದೇ ಮನವಿ ಮಾಡಿಲ್ಲ.",
+  "requestStep": "ಹಂತ {n} / {total} · {name}",
+  "@requestStep": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "requestBy": "{name} ಅವರಿಂದ",
+  "@requestBy": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reqStatusPending": "ಬಾಕಿ",
+  "reqStatusApproved": "ಅನುಮೋದಿತ",
+  "reqStatusRejected": "ತಿರಸ್ಕೃತ",
+  "reqStatusReturned": "ಹಿಂದಿರುಗಿಸಿದೆ",
+  "reqStatusCancelled": "ಹಿಂಪಡೆಯಲಾಗಿದೆ",
+  "requestApprove": "ಅನುಮೋದಿಸಿ",
+  "requestReject": "ತಿರಸ್ಕರಿಸಿ",
+  "requestReturn": "ಬದಲಾವಣೆಗೆ ಹಿಂದಿರುಗಿಸಿ",
+  "requestComment": "ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)",
+  "requestWithdraw": "ಮನವಿ ಹಿಂಪಡೆಯಿರಿ",
+  "requestHistory": "ಇತಿಹಾಸ",
+  "requestAmountLabel": "ಮೊತ್ತ (₹)",
+  "requestTitleLabel": "ಶೀರ್ಷಿಕೆ",
+  "requestKindLabel": "ಮನವಿಯ ಪ್ರಕಾರ",
+  "requestSubmit": "ಮನವಿ ಕಳುಹಿಸಿ",
+  "requestNoRoutes": "ಇನ್ನೂ ಯಾವುದೇ ಮನವಿ ಪ್ರಕಾರ ಹೊಂದಿಸಿಲ್ಲ.",
+  "requestFieldNeeded": "{field} ಭರ್ತಿ ಮಾಡಿ",
+  "@requestFieldNeeded": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "requestActionSubmitted": "ಸಲ್ಲಿಸಲಾಗಿದೆ",
+  "requestActionResubmitted": "ಮತ್ತೆ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "subsEmpty": "ಮುಂದಿನ ಎರಡು ವಾರಗಳಲ್ಲಿ ನಿಮಗೆ ಯಾವುದೇ ಬದಲಿ ತರಗತಿ ಇಲ್ಲ.",
+  "subsFor": "{name} ಅವರ ಬದಲು",
+  "@subsFor": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dutiesEmpty": "ನಿಮಗೆ ಯಾವುದೇ ಮೇಲ್ವಿಚಾರಣೆ ಕರ್ತವ್ಯ ನೀಡಿಲ್ಲ.",
+  "dutyRoleChief": "ಮುಖ್ಯ ಮೇಲ್ವಿಚಾರಕ",
+  "dutyRoleInvigilator": "ಮೇಲ್ವಿಚಾರಕ",
+  "evalEmpty": "ನಿಮಗೆ ಯಾವುದೇ ಉತ್ತರ ಪತ್ರಿಕೆ ಹಂಚಿಲ್ಲ.",
+  "evalScript": "ಪತ್ರಿಕೆ {no}",
+  "@evalScript": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "evalRound": "ಮೌಲ್ಯಮಾಪನ {n}",
+  "@evalRound": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "evalStatusTodo": "ಮಾಡಬೇಕಿದೆ",
+  "evalStatusSubmitted": "ಸಲ್ಲಿಸಲಾಗಿದೆ",
+  "evalTotal": "ಒಟ್ಟು {total}",
+  "@evalTotal": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalQuestionLabel": "ಪ್ರಶ್ನೆ {no} ({max} ರಲ್ಲಿ)",
+  "@evalQuestionLabel": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "evalMarksLabel": "ಅಂಕಗಳು",
+  "evalCommentLabel": "ಟಿಪ್ಪಣಿ",
+  "evalSave": "ಅಂಕಗಳನ್ನು ಉಳಿಸಿ",
+  "evalSavedMsg": "ಅಂಕಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ",
+  "evalSubmit": "ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಸಿ",
+  "evalSubmitConfirm": "ಈ ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಸುವಿರಾ? ನಂತರ ಅಂಕಗಳನ್ನು ಬದಲಿಸಲಾಗುವುದಿಲ್ಲ.",
+  "evalSubmittedMsg": "ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಕೆಯಾಯಿತು. ಒಟ್ಟು {total}.",
+  "@evalSubmittedMsg": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalThirdNeeded": "ಎರಡು ಮೌಲ್ಯಮಾಪನಗಳ ನಡುವೆ ಹೆಚ್ಚು ವ್ಯತ್ಯಾಸವಿದೆ, ಆದ್ದರಿಂದ ಮೂರನೇ ಮೌಲ್ಯಮಾಪನ ಏರ್ಪಡಿಸಲಾಗುವುದು.",
+  "evalOverMax": "ಗರಿಷ್ಠ {max}",
+  "@evalOverMax": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "evalMissing": "ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ ಅಂಕ ನಮೂದಿಸಿ (ಏನೂ ಬರೆದಿಲ್ಲದಿದ್ದರೆ 0).",
+  "evalLockedMsg": "ಈ ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಕೆಯಾಗಿದ್ದು ಬದಲಿಸಲಾಗುವುದಿಲ್ಲ.",
+  "evalPageLabel": "ಪುಟ {n} / {total}",
+  "@evalPageLabel": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalNoPages": "ಈ ಪತ್ರಿಕೆಯಲ್ಲಿ ಪುಟಗಳಿಲ್ಲ.",
+  "menteesEmpty": "ನಿಮಗೆ ಮಾರ್ಗದರ್ಶಿತರು ಇಲ್ಲ.",
+  "riskHigh": "ಹೆಚ್ಚಿನ ಅಪಾಯ",
+  "riskMedium": "ಮಧ್ಯಮ ಅಪಾಯ",
+  "riskLow": "ಕಡಿಮೆ ಅಪಾಯ",
+  "riskNone": "ಸರಿಯಾಗಿದೆ",
+  "menteeAttendance": "ಹಾಜರಾತಿ {pct}%",
+  "@menteeAttendance": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeFailing": "{n} ಪರೀಕ್ಷೆಗಳಲ್ಲಿ ಅನುತ್ತೀರ್ಣ",
+  "@menteeFailing": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeFees": "{n} ಬಾಕಿ ಶುಲ್ಕಗಳು",
+  "@menteeFees": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeCases": "{n} ತೆರೆದ ಪ್ರಕರಣಗಳು",
+  "@menteeCases": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "mentorLogSession": "ಅವಧಿ ದಾಖಲಿಸಿ",
+  "mentorSessions": "ಅವಧಿಗಳು",
+  "mentorPlans": "ಮಧ್ಯಸ್ಥಿಕೆ ಯೋಜನೆಗಳು",
+  "sessionModeInPerson": "ನೇರವಾಗಿ",
+  "sessionModePhone": "ಫೋನ್",
+  "sessionModeOnline": "ಆನ್‌ಲೈನ್",
+  "sessionModeLabel": "ಭೇಟಿಯ ವಿಧಾನ",
+  "sessionSummary": "ಸಾರಾಂಶ",
+  "sessionNotes": "ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು (ನೀವು, ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಮತ್ತು ಸಲಹೆಗಾರರು ಮಾತ್ರ ನೋಡಬಹುದು)",
+  "sessionFollowUp": "ಮುಂದಿನ ಭೇಟಿ",
+  "sessionSave": "ಅವಧಿ ಉಳಿಸಿ",
+  "sessionsNone": "ಇನ್ನೂ ಯಾವುದೇ ಅವಧಿ ಇಲ್ಲ.",
+  "plansNone": "ಇನ್ನೂ ಯಾವುದೇ ಯೋಜನೆ ಇಲ್ಲ.",
+  "planNew": "ಹೊಸ ಯೋಜನೆ",
+  "planGoal": "ಗುರಿ",
+  "planActionsLabel": "ಕ್ರಮಗಳು (ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು)",
+  "planReviewLabel": "ಪರಿಶೀಲನೆ ದಿನಾಂಕ",
+  "planCreate": "ಯೋಜನೆ ರಚಿಸಿ",
+  "planClose": "ಯೋಜನೆ ಮುಚ್ಚಿ",
+  "planOutcome": "ಫಲಿತಾಂಶ",
+  "planRatingImproved": "ಸುಧಾರಿಸಿದೆ",
+  "planRatingNoChange": "ಬದಲಾವಣೆ ಇಲ್ಲ",
+  "planRatingWorsened": "ಹದಗೆಟ್ಟಿದೆ",
+  "planReviewOn": "{date} ರಂದು ಪರಿಶೀಲನೆ",
+  "@planReviewOn": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planClosed": "ಮುಚ್ಚಲಾಗಿದೆ",
+  "rosterTermLabel": "ಅವಧಿ",
+  "rosterNoTerms": "ಯಾವುದೇ ಅವಧಿ ಕಂಡುಬಂದಿಲ್ಲ.",
+  "rosterNoOfferings": "ಈ ಅವಧಿಯಲ್ಲಿ ನೀವು ಯಾವುದೇ ಕೋರ್ಸ್‌ನ ಬೋಧಕರಲ್ಲ.",
+  "rosterCounts": "{reg} ನೋಂದಾಯಿತ, {wait} ಕಾಯುವ ಪಟ್ಟಿಯಲ್ಲಿ",
+  "@rosterCounts": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "reg": {
+        "type": "String"
+      },
+      "wait": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterWaitlist": "ಕಾಯುವ ಪಟ್ಟಿ {pos}",
+  "@rosterWaitlist": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "pos": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterEmpty": "ಇನ್ನೂ ಯಾರೂ ನೋಂದಾಯಿಸಿಲ್ಲ.",
+  "surveysEmpty": "ನಿಮಗಾಗಿ ಯಾವುದೇ ಸಮೀಕ್ಷೆ ಬಾಕಿ ಇಲ್ಲ.",
+  "surveyAnonymous": "ಅನಾಮಧೇಯ",
+  "surveyClosesOn": "{when} ರಂದು ಮುಚ್ಚುತ್ತದೆ",
+  "@surveyClosesOn": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "surveyAnswered": "ಉತ್ತರಿಸಲಾಗಿದೆ",
+  "surveySubmit": "ಉತ್ತರಗಳನ್ನು ಕಳುಹಿಸಿ",
+  "surveyThanks": "ಧನ್ಯವಾದಗಳು, ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ.",
+  "surveyRequired": "ಎಲ್ಲಾ ಕಡ್ಡಾಯ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ.",
+  "surveyAnswerHint": "ನಿಮ್ಮ ಉತ್ತರ",
+  "clubsEmpty": "ನೀವು ಯಾವುದೇ ಕ್ಲಬ್‌ನ ಸಂಯೋಜಕರಲ್ಲ.",
+  "clubMembersCount": "{n} ಸದಸ್ಯರು",
+  "@clubMembersCount": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubPendingCount": "{n} ಮನವಿಗಳು ಬಾಕಿ",
+  "@clubPendingCount": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubPoints": "{n} ಅಂಕಗಳು",
+  "@clubPoints": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubNoMembers": "ಇನ್ನೂ ಸದಸ್ಯರಿಲ್ಲ."
 }
