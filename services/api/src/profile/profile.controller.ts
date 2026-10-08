@@ -10,6 +10,7 @@ import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { guardians, students, userRoles, users } from '../db/schema.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { loadMe } from '../teacher/teacher.controller.js';
@@ -33,6 +34,7 @@ export class ProfilePhotoController {
   constructor(
     private readonly db: DbService,
     private readonly storage: ObjectStorage,
+    private readonly scans: UploadScanService,
     private readonly system: SystemLookups,
     private readonly clock: Clock,
   ) {}
@@ -48,6 +50,7 @@ export class ProfilePhotoController {
     if (!mime) throw new BadRequestException('The photo must be a JPEG, PNG or WebP image');
     const now = this.clock.now();
     const key = `tenants/${p.tenantId}/users/${p.userId}/photo-${now.getTime()}.${mime.slice(6)}`;
+    await this.scans.assertClean(file.buffer, 'This photo');
     await this.storage.put(key, Readable.from(file.buffer), MAX_PHOTO_BYTES, mime);
     const old = await this.db.withTenant(p.tenantId, async (tx) => {
       const [u] = await tx.select({ photoKey: users.photoKey }).from(users).where(eq(users.id, p.userId));

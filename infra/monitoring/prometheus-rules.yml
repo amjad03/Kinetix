@@ -1,0 +1,56 @@
+# Alert rules for the API's /metrics (services/api/src/observability/metrics.ts).
+# Load into Prometheus (rule_files) or Grafana Alerting; CloudWatch alarms in
+# infra/terraform/monitoring.tf cover the load balancer, database and containers.
+groups:
+  - name: kinetix-api
+    rules:
+      - alert: KinetixHigh5xxRate
+        expr: sum(rate(kinetix_http_requests_total{status="5xx"}[5m])) / clamp_min(sum(rate(kinetix_http_requests_total[5m])), 1) > 0.02
+        for: 10m
+        labels: { severity: page }
+        annotations:
+          summary: More than 2% of API requests are failing with 5xx.
+      - alert: KinetixSlowRequests
+        expr: histogram_quantile(0.95, sum by (le) (rate(kinetix_http_request_duration_seconds_bucket[5m]))) > 1.5
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: p95 API latency above 1.5 s.
+      - alert: KinetixDomainEventsDead
+        expr: increase(kinetix_domain_events_total{outcome="dead"}[15m]) > 0
+        labels: { severity: ticket }
+        annotations:
+          summary: Domain events exhausted their retries ({{ $labels.type }}). Check the outbox consumer.
+      - alert: KinetixDomainEventRetries
+        expr: sum(rate(kinetix_domain_events_total{outcome="retry"}[10m])) > 0.5
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: Domain-event consumers keep failing and retrying.
+      - alert: KinetixVirusScannerDown
+        expr: increase(kinetix_upload_scans_total{outcome="error"}[10m]) > 3
+        labels: { severity: page }
+        annotations:
+          summary: clamd is not answering; uploads are quarantined or refused.
+      - alert: KinetixInfectedUpload
+        expr: increase(kinetix_upload_scans_total{outcome="infected"}[1h]) > 0
+        labels: { severity: ticket }
+        annotations:
+          summary: An infected upload was blocked. Review the audit log.
+      - alert: KinetixReportFailures
+        expr: increase(kinetix_report_runs_total{outcome="failed"}[1h]) > 3
+        labels: { severity: ticket }
+        annotations:
+          summary: Scheduled reports are failing ({{ $labels.report }}).
+      - alert: KinetixApiRestarting
+        expr: kinetix_process_uptime_seconds < 120 and on() count(kinetix_process_uptime_seconds) > 0
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: An API process keeps restarting.
+      - alert: KinetixApiMemoryHigh
+        expr: kinetix_process_resident_memory_bytes > 1.5e9
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: API process above 1.5 GB resident memory.

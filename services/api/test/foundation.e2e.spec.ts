@@ -260,6 +260,16 @@ describe('Phase 00 foundation', () => {
       expect(await db.select().from(s.auditLog).where(and(eq(s.auditLog.tenantId, t.tenantId), eq(s.auditLog.action, 'upload.infected')))).toHaveLength(1);
     });
 
+    it('scans small uploads inline: infected files are refused, and nothing is stored while the scanner is down', async () => {
+      const jpeg = (body: string) => Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from(body)]);
+      const up = (b: Buffer) => http().post('/v1/me/photo').set(as('teacher')).attach('photo', b, { filename: 'p.jpg', contentType: 'image/jpeg' });
+      expect((await up(jpeg('EICAR'))).status).toBe(422);
+      scanner.down = true;
+      expect((await up(jpeg('fine'))).status).toBe(503);
+      scanner.down = false;
+      expect((await up(jpeg('fine'))).status).toBe(200);
+    });
+
     it('can be switched off for an institution with the feature flag', async () => {
       await http().put('/v1/admin/features/documents.virus_scan').set(as('principal')).send({ enabled: false }).expect(200);
       const d = (await up('Unscanned', PDF('x')).expect(201)).body;

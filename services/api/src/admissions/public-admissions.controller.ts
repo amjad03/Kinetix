@@ -13,6 +13,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { admissionCycles, applicationDocuments, applicationPayments, applications, enquiries, programs, tenants } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { ApplicationFeesService } from '../fees/application-fees.service.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { AdmissionsService, cycleConfig, hashToken, newToken, type Application } from './admissions.service.js';
 import { EnquiriesService } from './enquiries.service.js';
@@ -67,6 +68,7 @@ export class PublicAdmissionsController {
     private readonly enquiriesSvc: EnquiriesService,
     private readonly fees: ApplicationFeesService,
     private readonly storage: ObjectStorage,
+    private readonly scans: UploadScanService,
     private readonly limiter: RateLimiter,
   ) {}
 
@@ -212,6 +214,7 @@ export class PublicAdmissionsController {
       return { oldKey: old?.storageKey, docKey: spec.key };
     });
     const storageKey = `tenants/${t.id}/admissions/${id}/${docKey}-${Date.now()}`;
+    await this.scans.assertClean(file.buffer, 'This document');
     await this.storage.put(storageKey, Readable.from(file.buffer), MAX_DOC_BYTES, type);
     const name = file.originalname.replace(/[^\w.\- ]/g, '_').slice(0, 120) || 'document';
     const row = await this.db.withTenant(t.id, async (tx) => {

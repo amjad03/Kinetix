@@ -1,4 +1,4 @@
-import { BeforeApplicationShutdown, Global, Inject, Injectable, Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
+import { BeforeApplicationShutdown, ServiceUnavailableException, UnprocessableEntityException, Global, Inject, Injectable, Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { asc, eq } from 'drizzle-orm';
 import { connect } from 'node:net';
 import { audit } from '../common/audit.js';
@@ -98,6 +98,25 @@ export class UploadScanService implements OnApplicationBootstrap, BeforeApplicat
 
   get enabled(): boolean {
     return this.scanner.enabled;
+  }
+
+  /**
+   * Inline scan for small uploads stored outside the vault (homework photos, public admission
+   * documents, profile photos). Infected files are refused; when the scanner is down the upload is
+   * refused too, so nothing unscanned is stored while scanning is on.
+   */
+  async assertClean(data: Buffer, name = 'This file'): Promise<void> {
+    if (!this.scanner.enabled) return;
+    let result: ScanResult;
+    try {
+      result = await this.scanner.scan(data);
+    } catch (e) {
+      uploadScansTotal.inc({ outcome: 'error' });
+      this.log.warn(`inline scan failed: ${(e as Error).message}`);
+      throw new ServiceUnavailableException('Files cannot be checked for viruses right now. Try again in a few minutes.');
+    }
+    uploadScansTotal.inc({ outcome: result.clean ? 'clean' : 'infected' });
+    if (!result.clean) throw new UnprocessableEntityException(`${name} looks unsafe and was not uploaded`);
   }
 
   /** Call in the upload's transaction once the object is stored. Returns the state the record should start in. */

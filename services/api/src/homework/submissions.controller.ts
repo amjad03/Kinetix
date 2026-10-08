@@ -27,6 +27,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { guardians, homework, homeworkSubmissions, students, subjects, type SubmissionFile, tenants, users } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { addDays, isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
@@ -57,6 +58,7 @@ export class SubmissionsController {
     private readonly teacher: TeacherService,
     private readonly timetable: TimetableService,
     private readonly storage: ObjectStorage,
+    private readonly scans: UploadScanService,
     private readonly notifications: NotificationsService,
     private readonly clock: Clock,
   ) {}
@@ -109,6 +111,7 @@ export class SubmissionsController {
     });
 
     // Files first (outside the transaction), then the row; old files beyond the new count are removed.
+    for (const f of uploads) await this.scans.assertClean(f.buffer, `"${f.originalname}"`);
     const files: SubmissionFile[] = [];
     for (const [i, f] of uploads.entries()) {
       const key = `tenants/${p.tenantId}/homework/${id}/students/${studentId}/${i}`;
