@@ -8,6 +8,7 @@ import type { Metadata } from 'next';
 import { FormField, TextInput } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
+import { ClassEngagementTable } from '@/components/reports/ClassEngagementTable';
 import { CatalogueTable, CoverageTable, ReportResultTable, ToolUseTable } from '@/components/reports/ReportTables';
 import { Schedules } from '@/components/reports/Schedules';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -26,7 +27,8 @@ const MAX_ROWS = 200;
 /** Reports and analytics: KPIs, classroom analytics, the report catalogue (view, CSV, PDF), accreditation packs and schedules. */
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const me = await requireSection('reports');
-  const { t, fmt } = await getI18n();
+  const i18n = await getI18n();
+  const { t, fmt } = i18n;
   const sp = await searchParams;
   const from = isDay(sp.from) ? sp.from : undefined;
   const to = isDay(sp.to) ? sp.to : undefined;
@@ -89,7 +91,14 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           <StatGrid min={180}>
             <StatTile label={t('reports.classroom.sessions')} value={fmt.number(classroom.data.sessions.total)} testId="classroom-sessions" />
             <StatTile label={t('reports.classroom.hours')} value={fmt.number(classroom.data.sessions.hours)} />
+            <StatTile label={t('reports.classroom.teachers')} value={fmt.number(classroom.data.sessions.teachers)} />
+            <StatTile label={t('reports.classroom.boardsUsed')} value={fmt.number(classroom.data.sessions.boards)} />
           </StatGrid>
+          <SectionTitle>{t('reports.classroom.byClass')}</SectionTitle>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {t('reports.classroom.byClassHint')}
+          </Typography>
+          <ClassEngagementTable rows={classroom.data.bySection} i18n={i18n} />
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mt: 2 }}>
             <ToolUseTable rows={classroom.data.tools} />
             <CoverageTable rows={classroom.data.coverage} />

@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Screen sharing to the board (kinetix_cast): Android needs a mediaProjection foreground service while the screen is captured. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
     <!-- Push notifications (Android 13+ asks; the app asks first in its own words after sign-in). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Plain http:// only in debug/profile builds (dev server http://10.0.2.2:4000); release is HTTPS-only (build.gradle.kts). -->
@@ -8,6 +11,11 @@
         android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="mediaProjection"
+            android:stopWithTask="true"
+            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

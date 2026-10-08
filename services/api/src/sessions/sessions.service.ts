@@ -78,6 +78,6 @@ export class SessionsService {
     if (!s) return;
     await audit(tx, { tenantId, actorType: 'system', action: 'board_session.ended', subjectType: 'board_session', subjectId: s.id, data: { reason } });
     if (notify) this.realtime.toDevices([s.deviceId], RealtimeEvents.SessionEnded, { sessionId: s.id, reason });
-    this.realtime.liveEnded(s.deviceId, 'class_ended');
+    this.realtime.liveEnded(s.deviceId, 'class_ended', tenantId);
   }
 }

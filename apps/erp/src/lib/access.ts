@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances';
+export type Section = 'dashboard' | 'school' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -12,6 +12,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // Today, Classes, Attendance, Homework, Messages: v1/admin/*
   school: ['principal', 'tenant_admin', 'hod'],
   boards: ['principal', 'tenant_admin', 'hod'],
+  // fleet.controller.ts: STAFF_ADMIN_ROLES (IT console: health, remote actions)
+  devices: ['principal', 'tenant_admin'],
   // realtime.gateway.ts LIVE_VIEW_ROLES
   live: ['principal', 'tenant_admin', 'hod'],
   // fees.service.ts FEE_ROLES
@@ -125,6 +127,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'school';
     case 'boards':
       return 'boards';
+    case 'devices':
+      return 'devices';
     case 'live':
       return 'live';
     case 'fees':

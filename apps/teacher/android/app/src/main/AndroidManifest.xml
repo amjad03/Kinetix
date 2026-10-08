@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Screen sharing to the board (kinetix_cast): Android needs a mediaProjection foreground service while the screen is captured. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
     <!-- Scanning the board's pairing QR code. mobile_scanner also declares this. -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <!-- Driver mode: the bus location while a trip runs. -->
@@ -13,6 +16,11 @@
         android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="mediaProjection"
+            android:stopWithTask="true"
+            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

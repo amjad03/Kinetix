@@ -101,6 +101,15 @@ const EnvSchema = z.object({
    * the socket.io adapter. Unset: all of that stays in this process (one instance).
    */
   REDIS_URL: z.url().optional(),
+  /**
+   * Screen sharing (WebRTC) ICE servers, comma-separated URLs. Empty STUN/TURN = same-network casts only
+   * (host candidates). TURN uses coturn's time-limited credentials (use-auth-secret / static-auth-secret):
+   * see infra/docs/coturn.md.
+   */
+  CAST_STUN_URLS: z.string().default(''),
+  CAST_TURN_URLS: z.string().default(''),
+  CAST_TURN_SECRET: z.string().optional(),
+  CAST_TURN_TTL_S: z.coerce.number().int().min(60).default(3600),
   /** Sign-in codes by SMS: console logs them (development and tests); msg91 sends them (India, DLT). */
   SMS_PROVIDER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: z.string().optional(),

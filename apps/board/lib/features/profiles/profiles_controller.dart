@@ -166,6 +166,20 @@ class ProfilesController extends ChangeNotifier {
     unawaited(refresh());
   }
 
+  /// IT cleared this board's cached teacher profiles (device console): the list, the offline PIN
+  /// checks and the kept sign-ins go. Teachers set a new PIN the next time they sign in here.
+  Future<void> clearCache() async {
+    for (final p in profiles) {
+      await _secrets.delete(_sessionKey(p.userId)).catchError((Object _) {});
+    }
+    profiles = [];
+    _failures.clear();
+    locked = false;
+    await _save();
+    await _saveFailures();
+    _notify();
+  }
+
   /// The list from the server; offline, the cached one stays.
   Future<void> refresh() async {
     final api = board.api;

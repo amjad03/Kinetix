@@ -37,10 +37,18 @@ hub (PhET), virtual labs, 3D/interactive, student interaction (polls, answer car
 hooks, quiz/poll, AI copilot, recording/transcription/recap, offline mode, sync, kiosk/device
 enrollment, shared-device PIN profiles.
 
+Also built (see [screen-share-and-devices](../architecture/screen-share-and-devices.md)):
+- Screen sharing: a teacher's or student's phone (Teacher and Student apps) or laptop (`/cast` in the ERP) casts to
+  the board over WebRTC, signalled on the realtime gateway; the class teacher approves on the board and can stop
+  any cast; up to four tiles side by side or full panel, draw over, snapshot to the board; STUN/TURN by env
+  (`infra/docs/coturn.md`).
+- Device management console in the ERP: fleet health (online, version, OS, kiosk, class, storage, battery),
+  remote lock/unlock, restart, clear PIN profiles, message, kiosk policy, rename/move, unpair, audit log, offline alerts.
+- Classroom analytics in the ERP Reports page and the HOD dashboard: per-class engagement, tool usage, coverage.
+
 Missing:
-- Screen sharing (student or teacher device casting to the board).
-- A device-management console for IT (fleet view, remote lock, app version, health).
-- Classroom analytics (per-class engagement, tool usage, coverage) surfaced to the ERP.
+- iOS cross-app screen capture (needs a broadcast extension); audio in casts.
+- Offline alerts by SMS or email (shown in the console only); a deployed TURN server.
 
 ## Phase 02 — ERP domains, in the pack's dependency order
 

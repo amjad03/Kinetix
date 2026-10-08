@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:kinetix_ink/kinetix_ink.dart';
 
+import 'app_info.dart';
 import 'models.dart';
 import 'recording/recordings.dart' show RecordingSummary;
 
@@ -36,7 +37,7 @@ class ApiClient {
   String? sessionToken;
 
   Future<({String deviceToken, String deviceName})> enroll(String code, String platform) async {
-    final j = await _send('POST', '/v1/devices/enroll', body: {'code': code, 'platform': platform, 'appVersion': '0.1.0'}, auth: false);
+    final j = await _send('POST', '/v1/devices/enroll', body: {'code': code, 'platform': platform, 'appVersion': kBoardVersion}, auth: false);
     return (deviceToken: j['deviceToken'] as String, deviceName: (j['device'] as Map)['name'] as String);
   }
 
@@ -45,6 +46,9 @@ class ApiClient {
 
   /// What the institution has set for its boards: kiosk mode and the IT PIN's hash (the `kiosk` object).
   Future<Map<String, dynamic>> boardConfig() async => await _send('GET', '/v1/devices/me/config', useDeviceToken: true) as Map<String, dynamic>;
+
+  /// The board's periodic health report for the IT console (device token).
+  Future<void> postHealth(Map<String, Object?> body) async => _send('POST', '/v1/devices/me/health', body: body, useDeviceToken: true);
 
   Future<void> endSession() async => _send('POST', '/v1/sessions/current/end');
 

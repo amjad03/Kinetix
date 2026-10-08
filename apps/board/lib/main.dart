@@ -16,6 +16,7 @@ import 'features/broadcast/broadcast_overlay.dart';
 import 'features/comfort/eye_comfort.dart';
 import 'features/concept_videos/concept_video_suggestions.dart';
 import 'features/enrollment/enroll_screen.dart';
+import 'features/fleet/device_lock.dart';
 import 'features/insert/picture_library.dart';
 import 'features/preview/panel_preview.dart';
 import 'features/profiles/profiles_ui.dart';
@@ -100,7 +101,7 @@ class KinetixBoardApp extends StatelessWidget {
                       messages: controller.broadcasts,
                       acknowledged: controller.acknowledgedEmergencies,
                       onDismiss: controller.dismissBroadcast,
-                      child: Theme(data: boardAppTheme(look), child: child!),
+                      child: Theme(data: boardAppTheme(look), child: DeviceLockGate(board: controller, child: child!)),
                     ),
                   ),
                 ),

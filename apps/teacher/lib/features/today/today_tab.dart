@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:kinetix_cast/kinetix_cast.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../demo/demo.dart';
 import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
@@ -89,6 +93,7 @@ class TodayTab extends StatelessWidget {
                       ? _ConnectedCard(
                           connection: controller.connection!,
                           onEnd: () => _endClass(context),
+                          onCast: Demo.enabled ? null : () => unawaited(openCastPage(context, baseUrl: api.baseUrl, token: api.token ?? '')),
                           onRemote: controller.connection!.boardId == null
                               ? null
                               : () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RemoteScreen(api: api, connection: controller.connection!))),
@@ -277,13 +282,16 @@ class _ConnectCard extends StatelessWidget {
 }
 
 class _ConnectedCard extends StatelessWidget {
-  const _ConnectedCard({required this.connection, required this.onEnd, this.onRemote});
+  const _ConnectedCard({required this.connection, required this.onEnd, this.onRemote, this.onCast});
 
   final BoardConnection connection;
   final VoidCallback onEnd;
 
   /// Opens the phone remote for this board.
   final VoidCallback? onRemote;
+
+  /// Opens "Share screen to the board" (the phone's screen on the board).
+  final VoidCallback? onCast;
 
   @override
   Widget build(BuildContext context) {
@@ -343,6 +351,18 @@ class _ConnectedCard extends StatelessWidget {
                   onPressed: onRemote,
                   icon: const Icon(Icons.settings_remote_outlined, size: 18),
                   label: Text(context.l10n.phoneRemote),
+                ),
+              ),
+            ],
+            if (onCast != null) ...[
+              const SizedBox(height: Kx.s8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  key: const Key('openCast'),
+                  onPressed: onCast,
+                  icon: const Icon(Icons.screen_share_outlined, size: 18),
+                  label: Text(CastStrings(Localizations.localeOf(context).languageCode).title),
                 ),
               ),
             ],

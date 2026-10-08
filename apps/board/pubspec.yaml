@@ -68,6 +68,9 @@ dependencies:
   webview_windows: ^0.4.0
   # The slides inside a .pptx.
   xml: ^7.0.1
+  flutter_webrtc: ^1.6.2+hotfix.4
+  battery_plus: ^7.1.2
+  disk_space_plus: ^0.2.6
 
 dev_dependencies:
   flutter_test:

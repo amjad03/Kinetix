@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
 import { ClassesTable, DeptAssessmentsTable, TeachersTable } from '@/components/department/DepartmentTables';
+import { ClassEngagementTable } from '@/components/reports/ClassEngagementTable';
 import { RangeControl } from '@/components/department/RangeControl';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
@@ -22,6 +23,7 @@ import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
 import type { I18n } from '@/i18n/format';
 import { deptQuery, formatPercent, RANGE_LABEL, rangeFrom, rangeText, syllabusTotal, TONE_COLOR, toneOf } from '@/lib/department';
+import type { ClassEngagement, ClassroomAnalytics } from '@/lib/insights';
 import { schoolToday } from '@/lib/school';
 import type { DepartmentOverview, DepartmentRef } from '@/lib/types';
 
@@ -72,6 +74,10 @@ export default async function DepartmentPage({ searchParams }: { searchParams: P
 
   const ov = await load(() => api<DepartmentOverview>(`/v1/departments/${dept.id}/overview?from=${range.from}&to=${range.to}`));
   const many = list.length > 1;
+  // Classroom engagement of this department's classes (the institution-wide figures, narrowed to its sections).
+  const classroom = ov.error === undefined ? await load(() => api<ClassroomAnalytics>(`/v1/analytics/classroom?from=${range.from}&to=${range.to}`)) : null;
+  const sectionIds = new Set(ov.error === undefined ? ov.data.classes.map((c) => c.sectionId) : []);
+  const engagement = classroom?.data ? classroom.data.bySection.filter((r) => sectionIds.has(r.id)) : null;
 
   return (
     <>
@@ -92,12 +98,12 @@ export default async function DepartmentPage({ searchParams }: { searchParams: P
           </>
         }
       />
-      {ov.error !== undefined ? <ErrorState message={ov.error} /> : <Overview o={ov.data} canManage={canManage} i18n={i18n} />}
+      {ov.error !== undefined ? <ErrorState message={ov.error} /> : <Overview o={ov.data} canManage={canManage} i18n={i18n} engagement={engagement} />}
     </>
   );
 }
 
-function Overview({ o, canManage, i18n }: { o: DepartmentOverview; canManage: boolean; i18n: I18n }) {
+function Overview({ o, canManage, i18n, engagement }: { o: DepartmentOverview; canManage: boolean; i18n: I18n; engagement: ClassEngagement[] | null }) {
   const { t } = i18n;
   const tot = o.totals;
   if (!tot)
@@ -191,6 +197,13 @@ function Overview({ o, canManage, i18n }: { o: DepartmentOverview; canManage: bo
         </EmptyState>
       ) : (
         <ClassesTable rows={o.classes} />
+      )}
+
+      {engagement && (
+        <>
+          <SectionTitle>{t('dept.engagement')}</SectionTitle>
+          <ClassEngagementTable rows={engagement} i18n={i18n} />
+        </>
       )}
 
       <SectionTitle>{t('dept.assessments')}</SectionTitle>

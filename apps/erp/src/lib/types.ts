@@ -143,6 +143,52 @@ export interface Board {
   viewers?: number;
 }
 
+/** GET /v1/devices/fleet: a board with the health it reported. */
+export interface FleetBoard {
+  id: string;
+  name: string;
+  roomId: string | null;
+  room: string | null;
+  platform: string | null;
+  appVersion: string | null;
+  enrolled: boolean;
+  online: boolean;
+  lastSeenAt: string | null;
+  healthAt: string | null;
+  locked: boolean;
+  kioskOverride: boolean | null;
+  offlineHours: number;
+  alert: boolean;
+  currentClass: string | null;
+  health: {
+    os?: string;
+    osVersion?: string;
+    kiosk?: 'on' | 'off' | 'unknown';
+    storageFreeMb?: number;
+    storageTotalMb?: number;
+    battery?: { percent: number; charging: boolean };
+  } | null;
+}
+
+export interface Fleet {
+  offlineAlertHours: number;
+  alerts: number;
+  boards: FleetBoard[];
+}
+
+export interface DeviceActionRow {
+  id: string;
+  deviceId: string;
+  device: string;
+  type: string;
+  params: Record<string, unknown>;
+  status: 'queued' | 'sent' | 'done' | 'failed';
+  error: string | null;
+  by: string | null;
+  createdAt: string;
+  doneAt: string | null;
+}
+
 export type Priority = 'info' | 'important' | 'emergency';
 
 export interface Audience {

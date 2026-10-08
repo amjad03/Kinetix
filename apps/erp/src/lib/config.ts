@@ -7,3 +7,5 @@ export const TENANT_COOKIE = 'kx_tenant';
 export const SESSION_MAX_AGE = 12 * 3600;
 /** The academic year chosen in the top bar (an id); pages that can show another year read it. */
 export const YEAR_COOKIE = 'kx_year';
+/** Teachers and students sign in on /cast only: this cookie is read by the cast page and relay, never by the ERP. */
+export const CAST_COOKIE = 'kx_cast';

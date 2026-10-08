@@ -195,14 +195,14 @@ export const REPORTS: ReportDef[] = [
   {
     key: 'classroom.usage',
     title: 'Classroom usage',
-    description: 'Board sessions, hours taught and teachers per class.',
+    description: 'Board sessions, hours taught, teachers and engagement (polls, answers, whiteboards, recordings) per class.',
     category: 'classroom',
     roles: ACADEMIC,
     params: [...SCOPE_PARAMS, ...RANGE_PARAMS],
     async run(tx, c) {
       const a = await classroomAnalytics(tx, c.scope, c.range, c.timezone, c.today);
       return {
-        columns: [{ key: 'parent', label: 'Program' }, { key: 'label', label: 'Class' }, { key: 'sessions', label: 'Sessions', kind: 'int' }, { key: 'hours', label: 'Hours' }, { key: 'teachers', label: 'Teachers', kind: 'int' }],
+        columns: [{ key: 'parent', label: 'Program' }, { key: 'label', label: 'Class' }, { key: 'sessions', label: 'Sessions', kind: 'int' }, { key: 'hours', label: 'Hours' }, { key: 'teachers', label: 'Teachers', kind: 'int' }, { key: 'polls', label: 'Polls', kind: 'int' }, { key: 'answers', label: 'Answers', kind: 'int' }, { key: 'whiteboards', label: 'Whiteboards', kind: 'int' }, { key: 'recordings', label: 'Recordings', kind: 'int' }, { key: 'perSession', label: 'Activity per session' }],
         rows: a.bySection,
         summary: [{ label: 'Sessions', value: a.sessions.total }, { label: 'Hours', value: a.sessions.hours }, { label: 'Teachers', value: a.sessions.teachers }, { label: 'Boards used', value: a.sessions.boards }],
       };

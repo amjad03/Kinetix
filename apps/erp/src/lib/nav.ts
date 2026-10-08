@@ -6,7 +6,7 @@ import type { RoleName } from './types';
 export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
   | 'campus' | 'inventory' | 'communication' | 'reports' | 'settings'
-  | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
+  | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'devices' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
   | 'hostel' | 'canteen' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform';
 
 export interface NavItem {
@@ -79,6 +79,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/homework', label: 'nav.homework', section: 'school', icon: 'homework' },
       { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: 'topicVideos' },
       { href: '/boards', label: 'nav.boards', section: 'boards', icon: 'boards' },
+      { href: '/devices', label: 'nav.devices', section: 'devices', icon: 'devices' },
       { href: '/live', label: 'nav.live', section: 'live', icon: 'live' },
     ],
   },

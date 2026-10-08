@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  kinetix_cast:
+    path: ../../packages/kinetix_cast
   kinetix_ui:
     path: ../../packages/kinetix_ui
   kinetix_lesson:

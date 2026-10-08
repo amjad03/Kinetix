@@ -164,8 +164,16 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     this.server.to(deviceIds.map(deviceRoom)).emit(event, payload);
   }
 
+  private readonly classEndedListeners: ((tenantId: string, deviceId: string) => void)[] = [];
+
+  /** Other gateways (screen sharing) clean up when a board's class ends. */
+  onClassEnded(fn: (tenantId: string, deviceId: string) => void): void {
+    this.classEndedListeners.push(fn);
+  }
+
   /** Tells viewers a class is over (called when a board session ends). */
-  liveEnded(deviceId: string, reason: string): void {
+  liveEnded(deviceId: string, reason: string, tenantId?: string): void {
+    if (tenantId) for (const fn of this.classEndedListeners) fn(tenantId, deviceId);
     void this.audioOff(deviceId).catch((e) => this.log.warn(`Audio off failed: ${(e as Error).message}`));
     this.server?.to(liveRoom(deviceId)).emit(RealtimeEvents.LiveEnded, { deviceId, reason });
   }
