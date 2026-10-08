@@ -694,6 +694,13 @@
       "when": 1791410896229,
       "tag": "0105_school_life",
       "breakpoints": true
+    },
+    {
+      "idx": 99,
+      "version": "7",
+      "when": 1791410897229,
+      "tag": "0106_audit_reports_connectors_alumni_giving",
+      "breakpoints": true
     }
   ]
 }

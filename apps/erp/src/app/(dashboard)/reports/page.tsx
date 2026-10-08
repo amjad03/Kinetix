@@ -58,6 +58,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title={t('reports.title')} subtitle={t('reports.subtitle')} />
+      <Box sx={{ mb: 2 }}>
+        <LinkButton href="/reports/custom" variant="outlined" data-testid="custom-reports-link">
+          {t('rb.title')}
+        </LinkButton>
+      </Box>
       <Box component="form" method="get" sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
         <FormField label={t('reports.from')}>
           <TextInput type="date" name="from" defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />

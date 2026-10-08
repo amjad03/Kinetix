@@ -6,7 +6,7 @@ const hrefs = (roles: string[], platform = false) => visibleGroups(roles as neve
 
 describe('navigation groups', () => {
   it('shows a role only the pages access.ts lets it open', () => {
-    expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/budgets', '/calendar', '/documents', '/fees', '/gl-export', '/payroll', '/payroll/payslips', '/reports', '/scholarships', '/students', '/tasks', '/workflows'].sort());
+    expect([...hrefs(['accountant'])].sort()).toEqual(['/', '/alumni', '/budgets', '/calendar', '/documents', '/fees', '/gl-export', '/payroll', '/payroll/payslips', '/reports', '/scholarships', '/students', '/tasks', '/workflows'].sort());
     expect(hrefs(['accountant'])).not.toContain('/settings');
     expect([...hrefs(['librarian'])].sort()).toEqual(['/calendar', '/library', '/payroll/payslips', '/tasks', '/workflows'].sort());
     expect(hrefs(['principal'])).toContain('/obe');

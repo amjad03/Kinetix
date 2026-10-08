@@ -14,6 +14,10 @@ const ALLOWED = [
   // Reports and analytics: a report as CSV or PDF, and an accreditation pack as a ZIP.
   /^\/v1\/analytics\/reports\/[a-z_.]{3,60}\/export\?format=(csv|pdf)(&(campusId|programId|sectionId|from|to|by)=[0-9A-Za-z-]{1,40})*$/,
   /^\/v1\/analytics\/accreditation\/(naac|nirf|aishe)\?format=zip$/,
+  // Audit log (filters only), a saved custom report as CSV, and an alumni donation receipt.
+  /^\/v1\/audit\/export(\?[\w.*:%=&-]{0,500})?$/,
+  new RegExp(`^/v1/analytics/custom-reports/${UUID}/export\\?format=csv$`, 'i'),
+  new RegExp(`^/v1/alumni/donations/${UUID}/receipt$`, 'i'),
   new RegExp(`^/v1/obe/programs/${UUID}/report\\.(csv|pdf)\\?academicYearId=${UUID}(&framework=(nba|naac))?$`, 'i'),
 ];
 

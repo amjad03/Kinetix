@@ -24,6 +24,7 @@ export const DomainEvents = {
   SurveyClosed: 'surveys.closed',
   CourseRegistrationApproved: 'course_registration.approved',
   WorkflowsDecided: 'workflows.decided',
+  AlumniDonationReceived: 'alumni.donation_received',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 
