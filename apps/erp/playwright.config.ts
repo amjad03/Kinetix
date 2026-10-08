@@ -28,6 +28,14 @@ export default defineConfig({
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
     },
+    // The newer desks: surveys, tasks, campus life, mentoring, quality, exams, school life, audit, reports, connectors, alumni.
+    // Signed in as the principal; each spec also checks a role that must not get in (the accounts office or library desk).
+    {
+      name: 'desks',
+      testMatch: /(surveys|tasks|campus-life|mentoring|course-files|academic-audit|course-registration|skills|question-bank|workflows|evaluation|diary|ptm|early-years|health|audit|custom-reports|connectors|alumni|settings-smartboard)\.spec\.ts/,
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/principal.json' },
+    },
     // Signs in itself, to check where a head of department lands (and, for plans, as Ravi and the principal).
     // Adds a vice principal and resets their password through the API, then signs in as them.
     { name: 'password', testMatch: /password\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },

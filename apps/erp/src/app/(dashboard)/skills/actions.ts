@@ -11,8 +11,12 @@ const id = encodeURIComponent;
 export async function addSkill(v: V) {
   return send('/v1/skills', { code: v.code, name: v.name, category: v.category || 'skill', description: v.description ?? '' }, PAGE);
 }
-export const skillDetail = (skillId: string) => read<SkillDetail>(`/v1/skills/${id(skillId)}`);
-export const skillEvidence = (skillId: string) => read<ManualEvidence[]>(`/v1/skills/${id(skillId)}/evidence`);
+export async function skillDetail(skillId: string) {
+  return read<SkillDetail>(`/v1/skills/${id(skillId)}`);
+}
+export async function skillEvidence(skillId: string) {
+  return read<ManualEvidence[]>(`/v1/skills/${id(skillId)}/evidence`);
+}
 export async function addMap(skillId: string, v: V) {
   return send(`/v1/skills/${id(skillId)}/maps`, { kind: v.kind, ...(optStr(v.ref) ? { ref: v.ref } : {}) }, PAGE);
 }
@@ -24,7 +28,9 @@ export async function recordEvidence(skillId: string, v: V) {
 }
 
 // ---- passport ----
-export const openPassport = (studentId: string) => read<Passport>(`/v1/passport/students/${id(studentId)}`);
+export async function openPassport(studentId: string) {
+  return read<Passport>(`/v1/passport/students/${id(studentId)}`);
+}
 export async function verifyPassport(studentId: string) {
   return send(`/v1/passport/students/${id(studentId)}/verify`, undefined, PAGE);
 }

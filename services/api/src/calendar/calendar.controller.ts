@@ -233,6 +233,9 @@ function withDefaults(s: TenantSettings) {
     pinFallbackEnabled: s.pinFallbackEnabled ?? false,
     grievanceOfficer: s.grievanceOfficer ?? null,
     recordingRetentionGraceDays: s.recordingRetentionGraceDays ?? DEFAULT_RETENTION_GRACE_DAYS,
+    // The board profile's training link and the What's New announcements (Settings → Smartboard reads them back).
+    boardTraining: s.boardTraining ?? null,
+    boardWhatsNew: s.boardWhatsNew ?? [],
     // Whether an IT PIN is set, never the PIN or its hash.
     boardKiosk: { enabled: s.boardKiosk?.enabled ?? true, pinSet: kioskPinParts(s.boardKiosk?.pinHash) !== null, pinSetAt: s.boardKiosk?.pinSetAt ?? null },
   };

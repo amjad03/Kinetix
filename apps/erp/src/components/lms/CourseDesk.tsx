@@ -56,7 +56,7 @@ export function CourseDesk({ course }: { course: LmsCourse }) {
       {course.announcements.length === 0 && <Typography color="text.secondary">{t('lms.noAnnouncements')}</Typography>}
       {course.announcements.map((a) => (
         <Typography key={a.id} component="div" sx={{ py: 0.5 }}>
-          <strong>{a.title}</strong> <span style={{ opacity: 0.7 }}>{fmt.date(a.createdAt, 'short')}</span>
+          <strong>{a.title}</strong> <span style={{ opacity: 0.7 }}>{fmt.date(a.createdAt.slice(0, 10), 'short')}</span>
           <div>{a.body}</div>
         </Typography>
       ))}
