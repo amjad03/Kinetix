@@ -2393,4 +2393,56 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get coursesTab => 'पाठ्यक्रम';
+
+  @override
+  String get scholarshipTitle => 'छात्रवृत्ति';
+
+  @override
+  String get scholarshipNone => 'अभी कोई छात्रवृत्ति आवेदन के लिए खुली नहीं है।';
+
+  @override
+  String scholarshipPercentOff(int count) {
+    return 'आपकी फ़ीस में $count% की छूट';
+  }
+
+  @override
+  String scholarshipAmountOff(String amount) {
+    return 'आपकी फ़ीस में $amount की छूट';
+  }
+
+  @override
+  String scholarshipMinMarks(int count) {
+    return 'प्रकाशित अंकों में कम से कम $count% चाहिए';
+  }
+
+  @override
+  String scholarshipMaxIncome(String amount) {
+    return 'पारिवारिक आय $amount तक';
+  }
+
+  @override
+  String get scholarshipApply => 'आवेदन करें';
+
+  @override
+  String get scholarshipMine => 'मेरे आवेदन';
+
+  @override
+  String scholarshipAwarded(String amount) {
+    return 'आपकी फ़ीस से $amount घटाए गए';
+  }
+
+  @override
+  String get scholarshipIncomeLabel => 'वार्षिक पारिवारिक आय (₹)';
+
+  @override
+  String get scholarshipIncomeRequired => 'पारिवारिक आय संख्या में लिखें।';
+
+  @override
+  String get scholarshipNoteLabel => 'कॉलेज को कुछ बताना हो तो (वैकल्पिक)';
+
+  @override
+  String get scholarshipSend => 'आवेदन भेजें';
+
+  @override
+  String get scholarshipSentSnack => 'आवेदन लेखा कार्यालय को भेज दिया गया।';
 }

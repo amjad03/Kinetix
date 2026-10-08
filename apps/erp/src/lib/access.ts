@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -13,6 +13,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   school: ['principal', 'tenant_admin', 'hod'],
   // lms.controller.ts: teachers of the class manage in the Teacher App; the ERP is for heads of department and leaders
   courses: ['principal', 'tenant_admin', 'hod'],
+  // finance.controller.ts FINANCE_ROLES: scholarships, budgets, GL export (fees.service.ts FEE_ROLES)
+  finance: ['principal', 'tenant_admin', 'accountant'],
   boards: ['principal', 'tenant_admin', 'hod'],
   // fleet.controller.ts: STAFF_ADMIN_ROLES (IT console: health, remote actions)
   devices: ['principal', 'tenant_admin'],
@@ -129,6 +131,10 @@ export function sectionOf(pathname: string): Section | null {
       return 'school';
     case 'courses':
       return 'courses';
+    case 'scholarships':
+    case 'budgets':
+    case 'gl-export':
+      return 'finance';
     case 'boards':
       return 'boards';
     case 'devices':

@@ -32,6 +32,7 @@ import { PlatformModule } from './platform/platform.module.js';
 import { CoverageModule } from './coverage/coverage.module.js';
 import { HrModule } from './hr/hr.module.js';
 import { LmsModule } from './lms/lms.module.js';
+import { FinanceModule } from './finance/finance.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
@@ -115,6 +116,7 @@ import { SearchModule } from './search/search.controller.js';
     CodeModule,
     HrModule,
     LmsModule,
+    FinanceModule,
     PlacementsModule,
     ResearchModule,
     WelfareModule,

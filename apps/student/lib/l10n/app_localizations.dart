@@ -4280,6 +4280,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Courses'**
   String get coursesTab;
+
+  /// scholarshipTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Scholarships'**
+  String get scholarshipTitle;
+
+  /// scholarshipNone
+  ///
+  /// In en, this message translates to:
+  /// **'No scholarships are open right now.'**
+  String get scholarshipNone;
+
+  /// scholarshipPercentOff
+  ///
+  /// In en, this message translates to:
+  /// **'{count}% off your fees'**
+  String scholarshipPercentOff(int count);
+
+  /// scholarshipAmountOff
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} off your fees'**
+  String scholarshipAmountOff(String amount);
+
+  /// scholarshipMinMarks
+  ///
+  /// In en, this message translates to:
+  /// **'Needs at least {count}% in published marks'**
+  String scholarshipMinMarks(int count);
+
+  /// scholarshipMaxIncome
+  ///
+  /// In en, this message translates to:
+  /// **'Family income up to {amount}'**
+  String scholarshipMaxIncome(String amount);
+
+  /// scholarshipApply
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get scholarshipApply;
+
+  /// scholarshipMine
+  ///
+  /// In en, this message translates to:
+  /// **'My applications'**
+  String get scholarshipMine;
+
+  /// scholarshipAwarded
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} taken off your fees'**
+  String scholarshipAwarded(String amount);
+
+  /// scholarshipIncomeLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly family income (₹)'**
+  String get scholarshipIncomeLabel;
+
+  /// scholarshipIncomeRequired
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the family income as a number.'**
+  String get scholarshipIncomeRequired;
+
+  /// scholarshipNoteLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Anything the college should know (optional)'**
+  String get scholarshipNoteLabel;
+
+  /// scholarshipSend
+  ///
+  /// In en, this message translates to:
+  /// **'Send application'**
+  String get scholarshipSend;
+
+  /// scholarshipSentSnack
+  ///
+  /// In en, this message translates to:
+  /// **'Application sent to the accounts office.'**
+  String get scholarshipSentSnack;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

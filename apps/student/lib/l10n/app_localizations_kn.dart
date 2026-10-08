@@ -2402,4 +2402,56 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get coursesTab => 'ಕೋರ್ಸ್‌ಗಳು';
+
+  @override
+  String get scholarshipTitle => 'ವಿದ್ಯಾರ್ಥಿವೇತನ';
+
+  @override
+  String get scholarshipNone => 'ಈಗ ಯಾವ ವಿದ್ಯಾರ್ಥಿವೇತನವೂ ಅರ್ಜಿಗೆ ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String scholarshipPercentOff(int count) {
+    return 'ನಿಮ್ಮ ಶುಲ್ಕದಲ್ಲಿ $count% ರಿಯಾಯಿತಿ';
+  }
+
+  @override
+  String scholarshipAmountOff(String amount) {
+    return 'ನಿಮ್ಮ ಶುಲ್ಕದಲ್ಲಿ $amount ರಿಯಾಯಿತಿ';
+  }
+
+  @override
+  String scholarshipMinMarks(int count) {
+    return 'ಪ್ರಕಟಿತ ಅಂಕಗಳಲ್ಲಿ ಕನಿಷ್ಠ $count% ಬೇಕು';
+  }
+
+  @override
+  String scholarshipMaxIncome(String amount) {
+    return 'ಕುಟುಂಬದ ಆದಾಯ $amount ವರೆಗೆ';
+  }
+
+  @override
+  String get scholarshipApply => 'ಅರ್ಜಿ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get scholarshipMine => 'ನನ್ನ ಅರ್ಜಿಗಳು';
+
+  @override
+  String scholarshipAwarded(String amount) {
+    return 'ನಿಮ್ಮ ಶುಲ್ಕದಿಂದ $amount ಕಳೆಯಲಾಗಿದೆ';
+  }
+
+  @override
+  String get scholarshipIncomeLabel => 'ವಾರ್ಷಿಕ ಕುಟುಂಬ ಆದಾಯ (₹)';
+
+  @override
+  String get scholarshipIncomeRequired => 'ಕುಟುಂಬದ ಆದಾಯವನ್ನು ಸಂಖ್ಯೆಯಲ್ಲಿ ನಮೂದಿಸಿ.';
+
+  @override
+  String get scholarshipNoteLabel => 'ಕಾಲೇಜಿಗೆ ತಿಳಿಸಬೇಕಾದದ್ದು (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get scholarshipSend => 'ಅರ್ಜಿ ಕಳುಹಿಸಿ';
+
+  @override
+  String get scholarshipSentSnack => 'ಅರ್ಜಿಯನ್ನು ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
 }

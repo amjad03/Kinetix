@@ -13,12 +13,37 @@ import '../core/campus.dart';
 import '../core/campus_services.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
+import '../core/scholarships.dart';
 
 /// In-memory [StudentApi] for widget tests.
 class FakeStudentApi implements StudentApi {
   /// LMS courses by student; the demo school publishes one with a grade.
   List<LmsCourseSummary> lmsCourseList = const [LmsCourseSummary(courseId: 'c1', title: 'Mathematics 7 B', subject: 'Mathematics', moduleCount: 2, overall: 82, letter: 'A')];
   ApiException? lmsError;
+
+  List<ScholarshipScheme> schemes = const [ScholarshipScheme(id: 'sc1', name: 'Merit scholarship', percent: true, value: 25, minPercentage: 75, maxIncomePaise: 50000000)];
+  List<ScholarshipApplication> scholarshipApps = [];
+  ApiException? scholarshipError;
+
+  @override
+  Future<List<ScholarshipScheme>> scholarshipSchemes() async {
+    calls.add('scholarshipSchemes');
+    if (scholarshipError != null) throw scholarshipError!;
+    return List.of(schemes);
+  }
+
+  @override
+  Future<List<ScholarshipApplication>> scholarshipApplications(String studentId) async {
+    calls.add('scholarshipApplications $studentId');
+    return List.of(scholarshipApps);
+  }
+
+  @override
+  Future<void> applyScholarship(String studentId, {required String schemeId, int? incomePaise, String note = ''}) async {
+    calls.add('applyScholarship $schemeId $incomePaise $note');
+    if (scholarshipError != null) throw scholarshipError!;
+    scholarshipApps = [ScholarshipApplication(id: 'sa${scholarshipApps.length + 1}', scheme: schemes.firstWhere((s) => s.id == schemeId).name, status: ScholarshipStatus.pending), ...scholarshipApps];
+  }
 
   @override
   Future<List<LmsCourseSummary>> lmsCourses(String studentId) async {

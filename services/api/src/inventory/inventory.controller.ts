@@ -24,7 +24,7 @@ const MoveBody = z.object({ storeId: z.uuid(), itemId: z.uuid(), qty: Qty, note:
 const IssueBody = MoveBody.extend({ issuedTo: z.string().trim().min(1).max(120) });
 const ReqBody = z.object({ reason: z.string().trim().max(300).default(''), lines: z.array(z.object({ itemId: z.uuid(), qty: Qty })).min(1).max(50) });
 const DecisionBody = z.object({ approve: z.boolean(), note: z.string().trim().max(300).optional() });
-const PoBody = z.object({ requisitionId: z.uuid(), vendorId: z.uuid(), storeId: z.uuid(), lines: z.array(z.object({ itemId: z.uuid(), qty: Qty, unitPricePaise: Paise.min(1) })).min(1).max(50) });
+const PoBody = z.object({ requisitionId: z.uuid(), vendorId: z.uuid(), storeId: z.uuid(), departmentId: z.uuid().optional(), lines: z.array(z.object({ itemId: z.uuid(), qty: Qty, unitPricePaise: Paise.min(1) })).min(1).max(50) });
 const GrnBody = z.object({ idempotencyKey: z.string().min(8).max(80), note: z.string().trim().max(200).default(''), lines: z.array(z.object({ poLineId: z.uuid(), qty: Qty })).min(1) });
 const InvoiceBody = z.object({ invoiceNo: z.string().trim().min(1).max(60), amountPaise: Paise.min(1) });
 
@@ -233,7 +233,7 @@ export class InventoryController {
       if (!vendor || !store) throw new BadRequestException('Vendor or store not found');
       const number = await nextNumber(tx, p.tenantId, 'PO');
       const total = b.lines.reduce((t, l) => t + l.qty * l.unitPricePaise, 0);
-      const [po] = await tx.insert(invPurchaseOrders).values({ tenantId: p.tenantId, number, requisitionId: req.id, vendorId: b.vendorId, storeId: b.storeId, totalPaise: total, createdBy: p.userId }).returning();
+      const [po] = await tx.insert(invPurchaseOrders).values({ tenantId: p.tenantId, number, requisitionId: req.id, vendorId: b.vendorId, storeId: b.storeId, departmentId: b.departmentId ?? null, totalPaise: total, createdBy: p.userId }).returning();
       await tx.insert(invPoLines).values(b.lines.map((l) => ({ tenantId: p.tenantId, poId: po.id, ...l })));
       await tx.update(invRequisitions).set({ status: 'ordered' }).where(eq(invRequisitions.id, req.id));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.po_issued', subjectType: 'inv_purchase_order', subjectId: po.id, data: { number, totalPaise: total } });

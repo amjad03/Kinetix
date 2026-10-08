@@ -697,5 +697,19 @@
   "courseNoGrade": "अभी कुछ भी ग्रेड नहीं हुआ है।",
   "courseAnnouncements": "घोषणाएँ",
   "courseNoModules": "अभी कोई मॉड्यूल नहीं।",
-  "coursesTab": "पाठ्यक्रम"
+  "coursesTab": "पाठ्यक्रम",
+  "scholarshipTitle": "छात्रवृत्ति",
+  "scholarshipNone": "अभी कोई छात्रवृत्ति आवेदन के लिए खुली नहीं है।",
+  "scholarshipPercentOff": "आपकी फ़ीस में {count}% की छूट",
+  "scholarshipAmountOff": "आपकी फ़ीस में {amount} की छूट",
+  "scholarshipMinMarks": "प्रकाशित अंकों में कम से कम {count}% चाहिए",
+  "scholarshipMaxIncome": "पारिवारिक आय {amount} तक",
+  "scholarshipApply": "आवेदन करें",
+  "scholarshipMine": "मेरे आवेदन",
+  "scholarshipAwarded": "आपकी फ़ीस से {amount} घटाए गए",
+  "scholarshipIncomeLabel": "वार्षिक पारिवारिक आय (₹)",
+  "scholarshipIncomeRequired": "पारिवारिक आय संख्या में लिखें।",
+  "scholarshipNoteLabel": "कॉलेज को कुछ बताना हो तो (वैकल्पिक)",
+  "scholarshipSend": "आवेदन भेजें",
+  "scholarshipSentSnack": "आवेदन लेखा कार्यालय को भेज दिया गया।"
 }

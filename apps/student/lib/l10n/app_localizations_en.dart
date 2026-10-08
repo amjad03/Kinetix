@@ -2387,4 +2387,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coursesTab => 'Courses';
+
+  @override
+  String get scholarshipTitle => 'Scholarships';
+
+  @override
+  String get scholarshipNone => 'No scholarships are open right now.';
+
+  @override
+  String scholarshipPercentOff(int count) {
+    return '$count% off your fees';
+  }
+
+  @override
+  String scholarshipAmountOff(String amount) {
+    return '$amount off your fees';
+  }
+
+  @override
+  String scholarshipMinMarks(int count) {
+    return 'Needs at least $count% in published marks';
+  }
+
+  @override
+  String scholarshipMaxIncome(String amount) {
+    return 'Family income up to $amount';
+  }
+
+  @override
+  String get scholarshipApply => 'Apply';
+
+  @override
+  String get scholarshipMine => 'My applications';
+
+  @override
+  String scholarshipAwarded(String amount) {
+    return '$amount taken off your fees';
+  }
+
+  @override
+  String get scholarshipIncomeLabel => 'Yearly family income (₹)';
+
+  @override
+  String get scholarshipIncomeRequired => 'Enter the family income as a number.';
+
+  @override
+  String get scholarshipNoteLabel => 'Anything the college should know (optional)';
+
+  @override
+  String get scholarshipSend => 'Send application';
+
+  @override
+  String get scholarshipSentSnack => 'Application sent to the accounts office.';
 }

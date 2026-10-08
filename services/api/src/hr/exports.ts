@@ -71,7 +71,7 @@ export function statutoryCsv(kind: 'pf' | 'esi' | 'pt' | 'tds', rows: StatRow[])
   return csv([['Employee Code', 'Employee', 'PAN', 'Regime', 'Gross Salary', 'TDS'], ...rows.filter((r) => r.tdsPaise > 0).map((r) => [r.employeeCode ?? '', r.name, r.pan ?? '', r.regime, rs(r.grossPaise), rs(r.tdsPaise)])]);
 }
 
-const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+export const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export interface TallyTotals {
   grossPaise: number;

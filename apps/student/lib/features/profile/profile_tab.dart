@@ -15,6 +15,7 @@ import '../campus/bus_screen.dart';
 import '../campus/certificates_screen.dart';
 import '../campus/gate_pass_screen.dart';
 import '../campus/leave_screen.dart';
+import '../fees/scholarship_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
 import '../careers/careers.dart';
@@ -331,6 +332,13 @@ class ProfileTabState extends State<ProfileTab> {
                   title: Text(l.leaveApplyTitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LeaveScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openScholarships'),
+                  leading: const Icon(Icons.workspace_premium_outlined),
+                  title: Text(l.scholarshipTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ScholarshipScreen.open(context, widget.study.api, st.id),
                 ),
                 ListTile(
                   key: const Key('openBus'),

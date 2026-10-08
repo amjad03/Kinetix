@@ -2576,6 +2576,11 @@ export const TENANT_TABLES = [
   'lms_announcements',
   'lms_grade_categories',
   'lms_grade_overrides',
+  'scholarship_schemes',
+  'scholarship_applications',
+  'fee_refunds',
+  'budgets',
+  'cost_expenses',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -2979,6 +2984,8 @@ export const invPurchaseOrders = pgTable(
     /** issued, partially_received, received, cancelled */
     status: text('status').notNull().default('issued'),
     totalPaise: bigint('total_paise', { mode: 'number' }).notNull(),
+    /** The cost centre (department) the purchase is charged to, for budget actuals. */
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -3616,4 +3623,95 @@ export const lmsGradeOverrides = pgTable(
     setAt: timestamp('set_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.categoryId, t.studentId] })],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Finance: scholarships, refunds, budgets (docs/product/finance.md)
+// ---------------------------------------------------------------------------------------------
+
+export const scholarshipSchemes = pgTable('scholarship_schemes', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  /** percent: `value` is 1-100 off each open fee; fixed: `value` is paise off the open fees. */
+  kind: text('kind').$type<'percent' | 'fixed'>().notNull(),
+  value: bigint('value', { mode: 'number' }).notNull(),
+  /** Eligibility: the student's average of published marks, and the declared family income ceiling. */
+  minPercentage: numeric('min_percentage', { precision: 5, scale: 2, mode: 'number' }),
+  maxIncomePaise: bigint('max_income_paise', { mode: 'number' }),
+  validUntil: date('valid_until'),
+  active: boolean('active').notNull().default(true),
+  createdAt: createdAt(),
+});
+
+export const scholarshipApplications = pgTable(
+  'scholarship_applications',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    schemeId: uuid('scheme_id').notNull().references(() => scholarshipSchemes.id),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    incomePaise: bigint('income_paise', { mode: 'number' }),
+    note: text('note').notNull().default(''),
+    status: text('status').$type<'pending' | 'approved' | 'rejected' | 'cancelled'>().notNull().default('pending'),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decisionNote: text('decision_note'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    /** What was taken off fee dues on approval, and which invoices. */
+    awardedPaise: bigint('awarded_paise', { mode: 'number' }).notNull().default(0),
+    adjustments: jsonb('adjustments').$type<{ invoiceId: string; paise: number }[]>().notNull().default([]),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('scholarship_app_open_uq').on(t.schemeId, t.studentId).where(sql`status IN ('pending', 'approved')`),
+    index('scholarship_app_status_idx').on(t.tenantId, t.status),
+  ],
+);
+
+export const feeRefunds = pgTable(
+  'fee_refunds',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    paymentId: uuid('payment_id').notNull().references(() => feePayments.id),
+    invoiceId: uuid('invoice_id').notNull().references(() => feeInvoices.id),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    reason: text('reason').notNull(),
+    refundedBy: uuid('refunded_by').notNull().references(() => users.id),
+    refundedAt: timestamp('refunded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('fee_refunds_payment_idx').on(t.paymentId)],
+);
+
+/** A budget for one cost centre (department) for one financial year ("2026-27"). */
+export const budgets = pgTable(
+  'budgets',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    departmentId: uuid('department_id').notNull().references(() => departments.id, { onDelete: 'cascade' }),
+    fiscalYear: text('fiscal_year').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    note: text('note').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [unique('budgets_dept_year_uq').on(t.departmentId, t.fiscalYear)],
+);
+
+/** Money spent by a department that is not a purchase order or payroll (events, travel, repairs). */
+export const costExpenses = pgTable(
+  'cost_expenses',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    departmentId: uuid('department_id').notNull().references(() => departments.id, { onDelete: 'cascade' }),
+    spentOn: date('spent_on').notNull(),
+    description: text('description').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('cost_expenses_dept_idx').on(t.departmentId, t.spentOn)],
 );

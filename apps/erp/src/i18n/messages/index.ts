@@ -31,11 +31,12 @@ import obe from './obe';
 
 import hr from './hr';
 import lms from './lms';
+import finance from './finance';
 import documents from './documents';
 import campus from './campus';
 import insights from './insights';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance } as const;
 import topicVideos from './topic-videos';
 
 

@@ -1813,5 +1813,86 @@
   "coursesTab": "Courses",
   "@coursesTab": {
     "description": "coursesTab"
+  },
+  "scholarshipTitle": "Scholarships",
+  "@scholarshipTitle": {
+    "description": "scholarshipTitle"
+  },
+  "scholarshipNone": "No scholarships are open right now.",
+  "@scholarshipNone": {
+    "description": "scholarshipNone"
+  },
+  "scholarshipPercentOff": "{count}% off your fees",
+  "@scholarshipPercentOff": {
+    "description": "scholarshipPercentOff",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scholarshipAmountOff": "{amount} off your fees",
+  "@scholarshipAmountOff": {
+    "description": "scholarshipAmountOff",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "scholarshipMinMarks": "Needs at least {count}% in published marks",
+  "@scholarshipMinMarks": {
+    "description": "scholarshipMinMarks",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scholarshipMaxIncome": "Family income up to {amount}",
+  "@scholarshipMaxIncome": {
+    "description": "scholarshipMaxIncome",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "scholarshipApply": "Apply",
+  "@scholarshipApply": {
+    "description": "scholarshipApply"
+  },
+  "scholarshipMine": "My applications",
+  "@scholarshipMine": {
+    "description": "scholarshipMine"
+  },
+  "scholarshipAwarded": "{amount} taken off your fees",
+  "@scholarshipAwarded": {
+    "description": "scholarshipAwarded",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "scholarshipIncomeLabel": "Yearly family income (₹)",
+  "@scholarshipIncomeLabel": {
+    "description": "scholarshipIncomeLabel"
+  },
+  "scholarshipIncomeRequired": "Enter the family income as a number.",
+  "@scholarshipIncomeRequired": {
+    "description": "scholarshipIncomeRequired"
+  },
+  "scholarshipNoteLabel": "Anything the college should know (optional)",
+  "@scholarshipNoteLabel": {
+    "description": "scholarshipNoteLabel"
+  },
+  "scholarshipSend": "Send application",
+  "@scholarshipSend": {
+    "description": "scholarshipSend"
+  },
+  "scholarshipSentSnack": "Application sent to the accounts office.",
+  "@scholarshipSentSnack": {
+    "description": "scholarshipSentSnack"
   }
 }

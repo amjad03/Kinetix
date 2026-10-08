@@ -697,5 +697,19 @@
   "courseNoGrade": "ಇನ್ನೂ ಯಾವುದೂ ಗ್ರೇಡ್ ಆಗಿಲ್ಲ.",
   "courseAnnouncements": "ಪ್ರಕಟಣೆಗಳು",
   "courseNoModules": "ಇನ್ನೂ ಮಾಡ್ಯೂಲ್‌ಗಳಿಲ್ಲ.",
-  "coursesTab": "ಕೋರ್ಸ್‌ಗಳು"
+  "coursesTab": "ಕೋರ್ಸ್‌ಗಳು",
+  "scholarshipTitle": "ವಿದ್ಯಾರ್ಥಿವೇತನ",
+  "scholarshipNone": "ಈಗ ಯಾವ ವಿದ್ಯಾರ್ಥಿವೇತನವೂ ಅರ್ಜಿಗೆ ತೆರೆದಿಲ್ಲ.",
+  "scholarshipPercentOff": "ನಿಮ್ಮ ಶುಲ್ಕದಲ್ಲಿ {count}% ರಿಯಾಯಿತಿ",
+  "scholarshipAmountOff": "ನಿಮ್ಮ ಶುಲ್ಕದಲ್ಲಿ {amount} ರಿಯಾಯಿತಿ",
+  "scholarshipMinMarks": "ಪ್ರಕಟಿತ ಅಂಕಗಳಲ್ಲಿ ಕನಿಷ್ಠ {count}% ಬೇಕು",
+  "scholarshipMaxIncome": "ಕುಟುಂಬದ ಆದಾಯ {amount} ವರೆಗೆ",
+  "scholarshipApply": "ಅರ್ಜಿ ಸಲ್ಲಿಸಿ",
+  "scholarshipMine": "ನನ್ನ ಅರ್ಜಿಗಳು",
+  "scholarshipAwarded": "ನಿಮ್ಮ ಶುಲ್ಕದಿಂದ {amount} ಕಳೆಯಲಾಗಿದೆ",
+  "scholarshipIncomeLabel": "ವಾರ್ಷಿಕ ಕುಟುಂಬ ಆದಾಯ (₹)",
+  "scholarshipIncomeRequired": "ಕುಟುಂಬದ ಆದಾಯವನ್ನು ಸಂಖ್ಯೆಯಲ್ಲಿ ನಮೂದಿಸಿ.",
+  "scholarshipNoteLabel": "ಕಾಲೇಜಿಗೆ ತಿಳಿಸಬೇಕಾದದ್ದು (ಐಚ್ಛಿಕ)",
+  "scholarshipSend": "ಅರ್ಜಿ ಕಳುಹಿಸಿ",
+  "scholarshipSentSnack": "ಅರ್ಜಿಯನ್ನು ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ."
 }

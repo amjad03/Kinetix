@@ -11,6 +11,6 @@ import { RecruitmentController } from './recruitment.controller.js';
 @Module({
   controllers: [HrController, LeaveController, RecruitmentController, PayrollController],
   providers: [HrService, LeaveService, PayrollService],
-  exports: [HrService],
+  exports: [HrService, PayrollService],
 })
 export class HrModule {}

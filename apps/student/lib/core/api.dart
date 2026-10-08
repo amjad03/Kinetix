@@ -12,6 +12,7 @@ import 'campus.dart';
 import 'campus_services.dart';
 import 'lms.dart';
 import 'models.dart';
+import 'scholarships.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
 enum ApiProblem { timeout, unreachable, wrongLogin, notStudent, guardianAccount, teacherAccount, notLinked }
@@ -249,6 +250,15 @@ abstract class StudentApi {
 
   /// One course: modules, content, announcements and the grade breakdown (`GET /v1/lms/courses/:id`).
   Future<LmsCourseDetail> lmsCourse(String courseId, String studentId);
+
+  /// Scholarships open for applications (`GET /v1/finance/scholarship-schemes`).
+  Future<List<ScholarshipScheme>> scholarshipSchemes();
+
+  /// This student's applications (`GET /v1/finance/scholarships?studentId=`).
+  Future<List<ScholarshipApplication>> scholarshipApplications(String studentId);
+
+  /// Applies for a scheme; the server checks eligibility (400 with the reason when not eligible).
+  Future<void> applyScholarship(String studentId, {required String schemeId, int? incomePaise, String note = ''});
 }
 
 /// Lets the lesson player load recordings through a [StudentApi].
@@ -741,4 +751,16 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<LmsCourseDetail> lmsCourse(String courseId, String studentId) async =>
       LmsCourseDetail.fromJson(await _send('GET', '/v1/lms/courses/$courseId?studentId=$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<List<ScholarshipScheme>> scholarshipSchemes() async =>
+      [for (final c in await _send('GET', '/v1/finance/scholarship-schemes') as List) ScholarshipScheme.fromJson((c as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<ScholarshipApplication>> scholarshipApplications(String studentId) async =>
+      [for (final c in await _send('GET', '/v1/finance/scholarships?studentId=$studentId') as List) ScholarshipApplication.fromJson((c as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> applyScholarship(String studentId, {required String schemeId, int? incomePaise, String note = ''}) =>
+      _send('POST', '/v1/finance/scholarships/apply', body: {'studentId': studentId, 'schemeId': schemeId, 'incomePaise': ?incomePaise, 'note': note});
 }

@@ -32,6 +32,13 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id') ?? '';
   // The staff and own-card PDFs need no id.
   const FIXED: Record<string, string> = { 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
+  // GL journals for a date range: gl-csv / gl-tally with ?from=&to=
+  const range = ['from', 'to'].map((k) => req.nextUrl.searchParams.get(k) ?? '');
+  const GL: Record<string, string> = { 'gl-csv': 'csv', 'gl-tally': 'xml' };
+  if (GL[kind]) {
+    if (!range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/finance/gl.${GL[kind]}?from=${range[0]}&to=${range[1]}`;
+  }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.
   const validId = kind === 'asset-tags' ? id.split(',').every((x) => UUID.test(x)) : UUID.test(id);

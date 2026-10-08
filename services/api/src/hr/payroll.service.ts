@@ -13,6 +13,7 @@ import { HrService } from './hr.service.js';
 import { requireVersion } from './hr.access.js';
 import { computePayslip, daysInMonth, fyStart, type StructureLine } from './payroll-math.js';
 import { monthLabel } from './payslip-pdf.js';
+import type { TallyTotals } from './exports.js';
 
 export const DEFAULT_COMPONENTS = [
   { code: 'BASIC', name: 'Basic pay', kind: 'earning', pfWage: true, taxable: true, sortOrder: 1 },
@@ -300,6 +301,25 @@ export class PayrollService {
   }
 
   /** All the figures an export needs, with identity details from the stored payslips. */
+  /** The run's journal totals for Tally and the finance GL export. */
+  async journalTotals(tx: Tx, tenantId: string, id: string) {
+    const { run, settings, rows } = await this.exportRows(tx, tenantId, id);
+    const sum = (f: (r: (typeof rows)[number]) => number) => rows.reduce((s, r) => s + f(r), 0);
+    const totals: TallyTotals = {
+      grossPaise: sum((r) => r.d.grossPaise),
+      employeePfPaise: sum((r) => r.d.employeePfPaise),
+      employerPfPaise: sum((r) => r.d.employer.epfPaise + r.d.employer.epsPaise),
+      employeeEsiPaise: sum((r) => r.d.esiPaise),
+      employerEsiPaise: sum((r) => r.d.employer.esiPaise),
+      ptPaise: sum((r) => r.d.ptPaise),
+      tdsPaise: sum((r) => r.d.tdsPaise),
+      otherDeductionsPaise: 0,
+      netPaise: sum((r) => r.d.netPaise),
+    };
+    totals.otherDeductionsPaise = sum((r) => r.d.deductionsPaise) - totals.employeePfPaise - totals.employeeEsiPaise - totals.ptPaise - totals.tdsPaise;
+    return { run, settings, totals };
+  }
+
   async exportRows(tx: Tx, tenantId: string, id: string) {
     const run = await this.run(tx, id);
     if (run.status === 'draft') throw new ConflictException('Approve the run before exporting');

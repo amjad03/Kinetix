@@ -10,7 +10,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { payrollSettings, salaryComponents, tenants } from '../db/schema.js';
 import { monthEnd } from './dates.js';
-import { bankTransferCsv, statutoryCsv, tallyXml, type StatRow, type TallyTotals } from './exports.js';
+import { bankTransferCsv, statutoryCsv, tallyXml, type StatRow } from './exports.js';
 import { PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES, hasAnyRole } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { PayrollService } from './payroll.service.js';
@@ -231,20 +231,7 @@ export class PayrollController {
   @Auth('user', PAYROLL_ROLES)
   tally(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const { run, settings, rows } = await this.payroll.exportRows(tx, p.tenantId, id);
-      const sum = (f: (r: (typeof rows)[number]) => number) => rows.reduce((s, r) => s + f(r), 0);
-      const totals: TallyTotals = {
-        grossPaise: sum((r) => r.d.grossPaise),
-        employeePfPaise: sum((r) => r.d.employeePfPaise),
-        employerPfPaise: sum((r) => r.d.employer.epfPaise + r.d.employer.epsPaise),
-        employeeEsiPaise: sum((r) => r.d.esiPaise),
-        employerEsiPaise: sum((r) => r.d.employer.esiPaise),
-        ptPaise: sum((r) => r.d.ptPaise),
-        tdsPaise: sum((r) => r.d.tdsPaise),
-        otherDeductionsPaise: 0,
-        netPaise: sum((r) => r.d.netPaise),
-      };
-      totals.otherDeductionsPaise = sum((r) => r.d.deductionsPaise) - totals.employeePfPaise - totals.employeeEsiPaise - totals.ptPaise - totals.tdsPaise;
+      const { run, settings, totals } = await this.payroll.journalTotals(tx, p.tenantId, id);
       const [t] = await tx.select({ name: tenants.name }).from(tenants);
       const xml = tallyXml({ company: t?.name ?? '', month: run.month, lastDay: monthEnd(run.month), narration: `Salary for ${monthLabel(run.month)}`, totals, ledgers: settings.ledgers });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.export_tally', subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version } });
