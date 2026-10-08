@@ -80,6 +80,7 @@ export function DataTable<T>({
   exportName,
   pageSize = 25,
   initialSort,
+  initialQuery = '',
   loading,
   empty,
   toolbar,
@@ -101,6 +102,8 @@ export function DataTable<T>({
   exportName?: string;
   pageSize?: number;
   initialSort?: { id: string; dir: SortDir };
+  /** Starts with this search text (a link from global search). */
+  initialQuery?: string;
   loading?: boolean;
   /** Shown when there are no rows at all (not when filters hide them). */
   empty?: ReactNode;
@@ -112,7 +115,7 @@ export function DataTable<T>({
 }) {
   const { t } = useI18n();
   const toast = useToastOptional();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [fv, setFv] = useState<Record<string, string>>({});
   const [sort, setSort] = useState<{ id: string; dir: SortDir } | null>(initialSort ?? null);
   const [page, setPage] = useState(0);

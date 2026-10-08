@@ -13,11 +13,11 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 |---|---|---|
 | Typeface | **Google Sans** (OFL), bundled | Static 400/500/700 cut from the variable font, subset to Latin + symbols incl. ₹ |
 | Indic fallback | Noto Sans Devanagari, Noto Sans Kannada (OFL), bundled | Hindi and Kannada render offline without system fonts |
-| Colour | `ColorScheme.fromSeed(Kx.seed)` with seed `#0B57D0` | **Brand colour is not final.** Change `Kx.seed` only |
+| Colour | Deep blue `#1D4ED8` (`KxColor.accent`, dark `KxColorDark.accent`), marigold `#8F5B00` for AI only, success `#15803D`, warning `#B45309`, danger `#B3261E`; white cards on a cool-grey ground `#F3F6FB` | Defined once in `packages/kinetix_ui/lib/src/tokens.dart`, mirrored in `apps/erp/src/theme/tokens.css` and `scheme.ts`. Chalkboard green is only a board theme. Components: `apps/erp/src/components/ui`. Screenshots: `docs/design/erp/` |
 | Shape | M3 scale: 4 / 8 / 12 / 16 / 28 | Cards 16, dialogs and popovers 28 |
 | Spacing | 4-pt grid: `Kx.s4 … Kx.s48` | |
 | Touch targets | 48 px on phones, 56 px on the board | People stand at the board with a pen |
-| Fixed semantic colours | Live `#E8710A`, Record `#D93025`, Success `#188038` | Do not follow the theme |
+| Fixed semantic colours | Live `#E8710A`, Record `#D93025`, Success `#15803D`, Warning `#B45309` | Do not follow the theme |
 
 ### Themes
 
