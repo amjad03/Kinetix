@@ -245,3 +245,15 @@ function penalty(m: boolean[][]): number {
   score += Math.floor(Math.abs((dark * 100) / (n * n) - 50) / 5) * 10;
   return score;
 }
+
+/** The QR code of `text` as a self-contained SVG (one path, a 2-module quiet zone), for pages and labels. */
+export function qrSvg(text: string): string {
+  const m = qrMatrix(text);
+  const quiet = 2;
+  const n = m.length + 2 * quiet;
+  let d = '';
+  m.forEach((row, r) => row.forEach((dark, c) => {
+    if (dark) d += `M${c + quiet} ${r + quiet}h1v1h-1z`;
+  }));
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" role="img" aria-label="QR code"><rect width="${n}" height="${n}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}

@@ -1,9 +1,12 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res, StreamableFile } from '@nestjs/common';
+import { and, asc, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
+import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { qrSvg } from '../common/qr.js';
+import { assetTagsPdf } from '../documents/pdfs.js';
 import { bookValueAfter, Day, depreciationSchedule, nextNumber, Paise } from '../common/ops.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
@@ -65,6 +68,23 @@ export class AssetsController {
         .orderBy(asc(assets.tag))
         .limit(500);
       return rows.map((r) => ({ ...this.view(r.asset), assignedTo: r.assignedTo, bookValuePaise: this.bookValue(r.asset, today) }));
+    });
+  }
+
+  /** Printable tag sheet (PDF, 24 to a page) with a QR on each tag: the chosen assets, or every asset still in service. */
+  @Get('tags.pdf')
+  @Auth('user', STORE_ROLES)
+  tagSheet(@CurrentPrincipal() p: UserPrincipal, @Res({ passthrough: true }) res: Response, @Query('ids') ids?: string) {
+    const parsed = ids ? z.array(z.uuid()).min(1).max(500).safeParse(ids.split(',')) : undefined;
+    if (parsed && !parsed.success) throw new BadRequestException('Bad ids');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [t] = await tx.select({ name: tenants.name }).from(tenants).where(eq(tenants.id, p.tenantId));
+      const rows = await tx.select().from(assets).where(parsed?.success ? inArray(assets.id, parsed.data) : ne(assets.status, 'disposed')).orderBy(asc(assets.tag)).limit(500);
+      if (!rows.length) throw new NotFoundException('No assets to print');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.tags_printed', subjectType: 'asset', data: { count: rows.length } });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="asset-tags.pdf"');
+      return new StreamableFile(assetTagsPdf(t?.name ?? '', rows.map((a) => ({ tag: a.tag, name: a.name, location: a.location, qr: `kinetix://asset/${a.tag}` }))));
     });
   }
 
@@ -179,7 +199,7 @@ export class AssetsController {
       tx.select().from(assetAllocations).where(eq(assetAllocations.assetId, id)).orderBy(desc(assetAllocations.allocatedOn)),
       tx.select().from(assetMaintenance).where(eq(assetMaintenance.assetId, id)).orderBy(desc(assetMaintenance.doneOn)),
     ]);
-    return { ...this.view(a), allocations, maintenance, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
+    return { ...this.view(a), qrSvg: qrSvg(`kinetix://asset/${a.tag}`), allocations, maintenance, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
   }
 
   private async lock(tx: Tx, id: string) {

@@ -51,6 +51,9 @@ export const docDownload = {
   me: '/api/download?kind=id-me',
 };
 
+/** The asset tag sheet (PDF) for the chosen assets, or for every asset in service. */
+export const assetTagsUrl = (ids?: string[]) => (ids?.length ? `/api/download?kind=asset-tags&id=${ids.join(',')}` : '/api/download?kind=asset-tags-all');
+
 /** Fields of a template as `{{fields.key}}` hints for the editor. */
 export const fieldsHelp = (fields: { key: string }[]) => fields.map((f) => `{{fields.${f.key}}}`);
 

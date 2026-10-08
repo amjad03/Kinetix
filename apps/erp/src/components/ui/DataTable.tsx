@@ -86,6 +86,7 @@ export function DataTable<T>({
   toolbar,
   onRowClick,
   rowTone,
+  bare,
   testId,
 }: {
   columns: Column<T>[];
@@ -111,6 +112,8 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void;
   /** Tint a row that needs attention. */
   rowTone?: (row: T) => 'warning' | 'danger' | undefined;
+  /** A short, plain list: no search or filter bar (it still sorts, and exports when `exportName` is set). */
+  bare?: boolean;
   testId?: string;
 }) {
   const { t } = useI18n();
@@ -248,7 +251,7 @@ export function DataTable<T>({
             </Button>
           )}
         </Box>
-      ) : (
+      ) : bare && !exportName ? null : (
         <Box role="search" aria-label={label} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, minHeight: 56 }}>
           <TextField
             size="small"
@@ -308,7 +311,7 @@ export function DataTable<T>({
         </Box>
       )}
 
-      <Box sx={{ overflowX: 'auto', borderTop: 1, borderColor: 'm3.outlineVariant' }}>
+      <Box sx={{ overflowX: 'auto', borderTop: bare && !exportName && nBulk === 0 ? 0 : 1, borderColor: 'm3.outlineVariant' }}>
         <Table size="small" aria-label={label} aria-rowcount={sorted.length} sx={{ '& .MuiTableRow-root:last-of-type > .MuiTableCell-body': { borderBottom: 0 } }}>
           <TableHead>
             <TableRow>

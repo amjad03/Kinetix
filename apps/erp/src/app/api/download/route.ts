@@ -18,6 +18,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   esi: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=esi`,
   pt: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=pt`,
   tds: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=tds`,
+  'asset-tags': (id) => `/v1/assets/tags.pdf?ids=${id}`,
   payslip: (id) => `/v1/payroll/payslips/${id}/pdf`,
 };
 
@@ -29,9 +30,11 @@ export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get('kind') ?? '';
   const id = req.nextUrl.searchParams.get('id') ?? '';
   // The staff and own-card PDFs need no id.
-  const FIXED: Record<string, string> = { 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
+  const FIXED: Record<string, string> = { 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
-  if (!target || (!FIXED[kind] && !UUID.test(id))) return new Response('Not found', { status: 404 });
+  // Asset tags take one id or a comma-separated list.
+  const validId = kind === 'asset-tags' ? id.split(',').every((x) => UUID.test(x)) : UUID.test(id);
+  if (!target || (!FIXED[kind] && !validId)) return new Response('Not found', { status: 404 });
   const site = req.headers.get('sec-fetch-site');
   if (site && site !== 'same-origin') return new Response('Forbidden', { status: 403 });
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
