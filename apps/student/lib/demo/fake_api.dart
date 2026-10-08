@@ -12,6 +12,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/campus.dart';
+import '../core/campus_life.dart';
 import '../core/campus_services.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
@@ -26,6 +27,245 @@ class FakeStudentApi implements StudentApi {
   List<ScholarshipScheme> schemes = const [ScholarshipScheme(id: 'sc1', name: 'Merit scholarship', percent: true, value: 25, minPercentage: 75, maxIncomePaise: 50000000)];
   List<ScholarshipApplication> scholarshipApps = [];
   ApiException? scholarshipError;
+
+  // ── Course registration, passport, surveys, clubs and events ────────────────────────────────
+
+  ApiException? campusLifeError;
+
+  final regTerms = [RegTerm(id: 'term1', name: 'Semester 3', startsOn: DateTime(2026, 7, 1), endsOn: DateTime(2026, 12, 20))];
+  RegWindow regWindow = RegWindow(opensAt: DateTime(2026, 1, 1), closesAt: DateTime(2036, 1, 1), addDropUntil: DateTime(2036, 1, 2), minCredits: 4, maxCredits: 8);
+
+  /// Offerings by id; register / drop / rank change them.
+  Map<String, CourseOffering> offerings = {
+    'o1': const CourseOffering(offeringId: 'o1', subjectCode: 'COM301', subjectName: 'Corporate Accounting', category: 'core', credits: 4, seatCap: 60, seatsLeft: 20, eligible: true, facultyName: 'Anita Sharma', myStatus: 'registered', myApproval: 'approved'),
+    'o2': const CourseOffering(offeringId: 'o2', subjectCode: 'COM3E1', subjectName: 'Financial Markets', category: 'elective', credits: 3, seatCap: 30, seatsLeft: 4, eligible: true),
+    'o3': const CourseOffering(offeringId: 'o3', subjectCode: 'COM3E2', subjectName: 'Business Analytics', category: 'elective', credits: 3, seatCap: 30, seatsLeft: 0, eligible: true),
+    'o4': const CourseOffering(offeringId: 'o4', subjectCode: 'COM3E3', subjectName: 'Advanced Taxation', category: 'elective', credits: 4, seatCap: 30, seatsLeft: 9, eligible: false, blockedText: 'Needs Taxation 1 first.'),
+  };
+
+  @override
+  Future<List<RegTerm>> registrationTerms() async {
+    calls.add('regTerms');
+    if (campusLifeError != null) throw campusLifeError!;
+    return List.of(regTerms);
+  }
+
+  @override
+  Future<OfferingList> courseOfferings(String termId) async {
+    calls.add('offerings $termId');
+    if (campusLifeError != null) throw campusLifeError!;
+    return OfferingList(window: regWindow, offerings: offerings.values.toList());
+  }
+
+  @override
+  Future<MyRegistrations> myRegistrations(String termId) async {
+    calls.add('myRegistrations $termId');
+    final mine = [
+      for (final o in offerings.values)
+        if (o.myStatus != null)
+          MyRegistration(offeringId: o.offeringId, subjectCode: o.subjectCode, subjectName: o.subjectName, credits: o.credits, category: o.category, status: o.myStatus!, approval: o.myApproval ?? 'pending', preferenceRank: o.myRank),
+    ];
+    final regd = mine.where((r) => r.status == 'registered');
+    return MyRegistrations(
+      window: regWindow,
+      registeredCredits: regd.fold(0.0, (a, r) => a + r.credits),
+      approvedCredits: regd.where((r) => r.approval == 'approved').fold(0.0, (a, r) => a + r.credits),
+      minCredits: regWindow.minCredits,
+      maxCredits: regWindow.maxCredits,
+      registrations: mine,
+    );
+  }
+
+  CourseOffering _with(CourseOffering o, {String? status, int? rank, bool clear = false}) => CourseOffering(
+    offeringId: o.offeringId,
+    subjectCode: o.subjectCode,
+    subjectName: o.subjectName,
+    category: o.category,
+    credits: o.credits,
+    seatCap: o.seatCap,
+    seatsLeft: o.seatsLeft,
+    eligible: o.eligible,
+    facultyName: o.facultyName,
+    blockedText: o.blockedText,
+    myStatus: clear ? null : (status ?? o.myStatus),
+    myRank: clear ? null : rank,
+    myApproval: clear ? null : o.myApproval,
+  );
+
+  @override
+  Future<void> registerCourse(String offeringId) async {
+    calls.add('registerCourse $offeringId');
+    if (campusLifeError != null) throw campusLifeError!;
+    offerings[offeringId] = _with(offerings[offeringId]!, status: 'registered');
+  }
+
+  @override
+  Future<void> dropCourse(String offeringId) async {
+    calls.add('dropCourse $offeringId');
+    if (campusLifeError != null) throw campusLifeError!;
+    offerings[offeringId] = _with(offerings[offeringId]!, clear: true);
+  }
+
+  @override
+  Future<void> setCoursePreferences(String termId, List<String> offeringIds) async {
+    calls.add('preferences ${offeringIds.join(',')}');
+    if (campusLifeError != null) throw campusLifeError!;
+    for (final e in offerings.entries.toList()) {
+      if (e.value.myStatus == 'preference') offerings[e.key] = _with(e.value, clear: true);
+    }
+    for (var i = 0; i < offeringIds.length; i++) {
+      offerings[offeringIds[i]] = _with(offerings[offeringIds[i]]!, status: 'preference', rank: i + 1);
+    }
+  }
+
+  OutcomePassport passportData = const OutcomePassport(
+    studentId: 's1',
+    fullName: 'Aarav Rao',
+    rollNo: '21',
+    className: 'BCom Sem 3 A',
+    skills: [
+      PassportSkill(skillId: 'k1', code: 'COM', name: 'Communication', category: 'Life skills', level: 4, evidence: [EvidenceLine(source: 'club', title: 'Debate club', detail: 'Finalist', level: 4)]),
+      PassportSkill(skillId: 'k2', code: 'NUM', name: 'Numeracy', category: 'Core', level: null),
+    ],
+    certificates: ['Participation certificate - Debate club'],
+    clubs: ['Debate club · 40'],
+    events: ['Annual day'],
+    verified: true,
+  );
+
+  @override
+  Future<OutcomePassport> passport(String studentId) async {
+    calls.add('passport $studentId');
+    if (campusLifeError != null) throw campusLifeError!;
+    return passportData;
+  }
+
+  @override
+  Future<Uint8List> passportPdf(String studentId) async {
+    calls.add('passportPdf $studentId');
+    return Uint8List.fromList('%PDF-1.4 passport'.codeUnits);
+  }
+
+  List<MySurvey> surveyList = const [
+    MySurvey(
+      id: 'sv1',
+      title: 'Course feedback',
+      description: 'Tell us how the term went.',
+      anonymous: true,
+      answered: false,
+      questions: [
+        SurveyQuestion(id: 'q1', kind: 'single', prompt: 'How was the pace?', options: ['Too slow', 'Just right', 'Too fast'], required: true),
+        SurveyQuestion(id: 'q2', kind: 'multiple', prompt: 'What helped?', options: ['Notes', 'Labs', 'Recordings'], required: false),
+        SurveyQuestion(id: 'q3', kind: 'rating', prompt: 'Rate the course', options: [], required: true),
+        SurveyQuestion(id: 'q4', kind: 'text', prompt: 'Anything else?', options: [], required: false),
+      ],
+    ),
+  ];
+  List<SurveyAnswer>? lastSurveyAnswers;
+
+  @override
+  Future<List<MySurvey>> mySurveys() async {
+    calls.add('mySurveys');
+    if (campusLifeError != null) throw campusLifeError!;
+    return List.of(surveyList);
+  }
+
+  @override
+  Future<void> submitSurvey(String surveyId, List<SurveyAnswer> answers) async {
+    calls.add('submitSurvey $surveyId ${answers.length}');
+    if (campusLifeError != null) throw campusLifeError!;
+    lastSurveyAnswers = answers;
+    surveyList = [
+      for (final s in surveyList)
+        if (s.id != surveyId) s,
+    ];
+  }
+
+  List<MyClub> clubList = const [
+    MyClub(id: 'cl1', name: 'Debate club', category: 'Arts', description: 'Weekly debates.', points: 40, membershipStatus: 'active'),
+    MyClub(id: 'cl2', name: 'Robotics club', category: 'Science', description: 'Build and compete.', points: 0),
+  ];
+
+  MyClub _club(MyClub c, String? status) => MyClub(id: c.id, name: c.name, category: c.category, description: c.description, points: c.points, membershipStatus: status);
+
+  @override
+  Future<List<MyClub>> myClubs(String studentId) async {
+    calls.add('myClubs $studentId');
+    if (campusLifeError != null) throw campusLifeError!;
+    return List.of(clubList);
+  }
+
+  @override
+  Future<void> joinClub(String studentId, String clubId) async {
+    calls.add('joinClub $clubId');
+    if (campusLifeError != null) throw campusLifeError!;
+    clubList = [for (final c in clubList) c.id == clubId ? _club(c, 'requested') : c];
+  }
+
+  @override
+  Future<void> leaveClub(String studentId, String clubId) async {
+    calls.add('leaveClub $clubId');
+    if (campusLifeError != null) throw campusLifeError!;
+    clubList = [for (final c in clubList) c.id == clubId ? _club(c, 'left') : c];
+  }
+
+  List<CampusEvent> eventList = [
+    CampusEvent(id: 'ev1', title: 'Annual day', description: 'Cultural programme.', eventType: 'cultural', venue: 'Main hall', startsAt: DateTime(2036, 1, 10, 10), endsAt: DateTime(2036, 1, 10, 14), feePaise: 0, seatsLeft: 50),
+    CampusEvent(id: 'ev2', title: 'Hackathon', description: '', eventType: 'technical', venue: 'Lab 2', startsAt: DateTime(2036, 1, 12, 9), endsAt: DateTime(2036, 1, 12, 18), feePaise: 5000, seatsLeft: 0, seat: const EventSeat(id: 'r2', status: 'registered', qrToken: 'tok-hackathon-0002', checkedIn: false)),
+  ];
+  List<MyEventRegistration> eventRegs = [
+    MyEventRegistration(id: 'r2', eventId: 'ev2', title: 'Hackathon', venue: 'Lab 2', startsAt: DateTime(2036, 1, 12, 9), status: 'registered', qrToken: 'tok-hackathon-0002', checkedIn: false, feedbackGiven: false, canGiveFeedback: false),
+    MyEventRegistration(id: 'r0', eventId: 'ev0', title: 'Science fair', venue: 'Ground', startsAt: DateTime(2026, 9, 1, 9), status: 'registered', qrToken: 'tok-fair-0000', checkedIn: true, feedbackGiven: false, canGiveFeedback: true),
+  ];
+
+  CampusEvent _event(CampusEvent e, EventSeat? seat) => CampusEvent(id: e.id, title: e.title, description: e.description, eventType: e.eventType, venue: e.venue, startsAt: e.startsAt, endsAt: e.endsAt, feePaise: e.feePaise, seatsLeft: e.seatsLeft, seat: seat);
+
+  @override
+  Future<List<CampusEvent>> campusEvents(String studentId) async {
+    calls.add('campusEvents $studentId');
+    if (campusLifeError != null) throw campusLifeError!;
+    return List.of(eventList);
+  }
+
+  @override
+  Future<void> registerForEvent(String studentId, String eventId) async {
+    calls.add('registerForEvent $eventId');
+    if (campusLifeError != null) throw campusLifeError!;
+    final e = eventList.firstWhere((e) => e.id == eventId);
+    final seat = EventSeat(id: 'r-$eventId', status: 'registered', qrToken: 'tok-$eventId-0001', checkedIn: false);
+    eventList = [for (final x in eventList) x.id == eventId ? _event(x, seat) : x];
+    eventRegs = [MyEventRegistration(id: seat.id, eventId: eventId, title: e.title, venue: e.venue, startsAt: e.startsAt, status: 'registered', qrToken: seat.qrToken, checkedIn: false, feedbackGiven: false, canGiveFeedback: false), ...eventRegs];
+  }
+
+  @override
+  Future<void> cancelEventRegistration(String studentId, String eventId) async {
+    calls.add('cancelEvent $eventId');
+    if (campusLifeError != null) throw campusLifeError!;
+    eventList = [for (final x in eventList) x.id == eventId ? _event(x, null) : x];
+    eventRegs = [
+      for (final r in eventRegs)
+        if (r.eventId != eventId) r,
+    ];
+  }
+
+  @override
+  Future<List<MyEventRegistration>> myEventRegistrations(String studentId) async {
+    calls.add('myEventRegistrations $studentId');
+    if (campusLifeError != null) throw campusLifeError!;
+    return List.of(eventRegs);
+  }
+
+  @override
+  Future<void> giveEventFeedback(String studentId, String eventId, {required int rating, String comment = ''}) async {
+    calls.add('eventFeedback $eventId $rating $comment');
+    if (campusLifeError != null) throw campusLifeError!;
+    eventRegs = [
+      for (final r in eventRegs)
+        r.eventId == eventId
+            ? MyEventRegistration(id: r.id, eventId: r.eventId, title: r.title, venue: r.venue, startsAt: r.startsAt, status: r.status, qrToken: r.qrToken, checkedIn: r.checkedIn, feedbackGiven: true, canGiveFeedback: false)
+            : r,
+    ];
+  }
 
   @override
   Future<List<ScholarshipScheme>> scholarshipSchemes() async {

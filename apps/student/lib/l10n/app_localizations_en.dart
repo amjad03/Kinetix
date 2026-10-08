@@ -2565,4 +2565,261 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletAmount => 'Amount';
+
+  @override
+  String get courseRegTitle => 'Course registration';
+
+  @override
+  String courseRegCredits(String registered, String max, String min) {
+    return 'Credits: $registered of $max (at least $min)';
+  }
+
+  @override
+  String courseRegAddDropUntil(String when) {
+    return 'You can add or drop until $when.';
+  }
+
+  @override
+  String get courseRegClosed => 'Registration is not open for you right now.';
+
+  @override
+  String get courseRegNoTerm => 'There is no term to register in yet.';
+
+  @override
+  String get courseRegNoOfferings => 'No courses are offered this term yet.';
+
+  @override
+  String get courseRegMine => 'My registrations';
+
+  @override
+  String get courseRegAvailable => 'Available courses';
+
+  @override
+  String get courseRegRegister => 'Register';
+
+  @override
+  String get courseRegDrop => 'Drop';
+
+  @override
+  String courseRegDropTitle(String name) {
+    return 'Drop $name?';
+  }
+
+  @override
+  String get courseRegRegisteredNow => 'You are registered.';
+
+  @override
+  String get courseRegDropped => 'The course is dropped.';
+
+  @override
+  String get courseRegCore => 'Core';
+
+  @override
+  String get courseRegElective => 'Elective';
+
+  @override
+  String courseRegCreditsOf(String n) {
+    return '$n credits';
+  }
+
+  @override
+  String courseRegSeatsLeft(String n) {
+    return '$n seats left';
+  }
+
+  @override
+  String get courseRegFull => 'Full';
+
+  @override
+  String get courseRegRegisteredPill => 'Registered';
+
+  @override
+  String get courseRegWaitlisted => 'Waitlisted';
+
+  @override
+  String get courseRegNotAllotted => 'Not allotted';
+
+  @override
+  String courseRegRanked(String rank) {
+    return 'Preference $rank';
+  }
+
+  @override
+  String get courseRegApprovalPending => 'Waiting for approval';
+
+  @override
+  String get courseRegApproved => 'Approved';
+
+  @override
+  String get courseRegRejected => 'Not approved';
+
+  @override
+  String get courseRegRank => 'Rank electives';
+
+  @override
+  String get courseRegRankHelp =>
+      'Tick the electives you want and drag them into order, most wanted first. Seats in full courses go by this order.';
+
+  @override
+  String get courseRegRankSave => 'Save order';
+
+  @override
+  String get courseRegRankSaved => 'Your preferences are saved.';
+
+  @override
+  String get courseRegRankNone => 'There are no electives to rank.';
+
+  @override
+  String get passportTitle => 'Outcome passport';
+
+  @override
+  String get passportVerified => 'Verified by the institution';
+
+  @override
+  String get passportNotVerified => 'Not yet verified by the institution';
+
+  @override
+  String get passportSkills => 'Skills';
+
+  @override
+  String get passportNoSkills => 'No skills recorded yet.';
+
+  @override
+  String passportLevel(String n) {
+    return 'Level $n of 5';
+  }
+
+  @override
+  String get passportNoEvidence => 'No evidence yet';
+
+  @override
+  String get passportCertificates => 'Certificates';
+
+  @override
+  String get passportActivities => 'Clubs and events';
+
+  @override
+  String get passportDownload => 'Download PDF';
+
+  @override
+  String get surveysTitle => 'Surveys';
+
+  @override
+  String get surveysNone => 'No surveys are waiting for you.';
+
+  @override
+  String get surveyAnonymous => 'Your answers are anonymous.';
+
+  @override
+  String get surveySubmit => 'Submit';
+
+  @override
+  String get surveySent => 'Thank you. Your answers are sent.';
+
+  @override
+  String get surveyRequired => 'Please answer the questions marked required.';
+
+  @override
+  String get surveyOptional => 'Optional';
+
+  @override
+  String surveyClosesOn(String when) {
+    return 'Closes $when';
+  }
+
+  @override
+  String get surveyAnswerHint => 'Your answer';
+
+  @override
+  String get campusLifeTitle => 'Clubs and events';
+
+  @override
+  String get campusTabClubs => 'Clubs';
+
+  @override
+  String get campusTabEvents => 'Events';
+
+  @override
+  String get campusTabPasses => 'My passes';
+
+  @override
+  String get clubJoin => 'Join';
+
+  @override
+  String get clubLeave => 'Leave';
+
+  @override
+  String get clubRequested => 'Waiting for approval';
+
+  @override
+  String get clubMember => 'Member';
+
+  @override
+  String clubPoints(String n) {
+    return '$n points';
+  }
+
+  @override
+  String get clubsNone => 'There are no clubs yet.';
+
+  @override
+  String get clubJoinSent => 'Request sent. A coordinator will approve it.';
+
+  @override
+  String get eventsNone => 'No events are open for registration.';
+
+  @override
+  String get eventRegister => 'Register';
+
+  @override
+  String get eventJoinWaitlist => 'Join waitlist';
+
+  @override
+  String get eventCancelRegistration => 'Cancel registration';
+
+  @override
+  String get eventRegisteredPill => 'You are registered';
+
+  @override
+  String get eventWaitlistedPill => 'On the waitlist';
+
+  @override
+  String eventSeatsLeft(String n) {
+    return '$n seats left';
+  }
+
+  @override
+  String eventFee(String amount) {
+    return 'Fee $amount';
+  }
+
+  @override
+  String get eventFree => 'Free';
+
+  @override
+  String get passNone => 'You have not registered for any event.';
+
+  @override
+  String get passShowAtDoor => 'Show this code at the door';
+
+  @override
+  String get passCheckedIn => 'Checked in';
+
+  @override
+  String get passFeedback => 'Give feedback';
+
+  @override
+  String get passFeedbackDone => 'Feedback sent';
+
+  @override
+  String get passFeedbackTitle => 'How was it?';
+
+  @override
+  String get passFeedbackComment => 'Comment (optional)';
+
+  @override
+  String get passFeedbackSend => 'Send';
+
+  @override
+  String get passFeedbackThanks => 'Thank you for your feedback.';
 }

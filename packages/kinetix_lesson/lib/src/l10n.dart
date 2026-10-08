@@ -43,6 +43,7 @@ abstract class LessonStrings {
   String get summaryPending;
   String get transcriptPending;
   String get keyPoints;
+  String get chapters;
   String get retry;
   String get loadFailed;
   String get recordingNotShared;
@@ -89,6 +90,8 @@ class _En extends LessonStrings {
   String get transcriptPending => 'Transcript is being prepared. Check back in a few minutes.';
   @override
   String get keyPoints => 'Key points';
+  @override
+  String get chapters => 'Chapters';
   @override
   String get retry => 'Retry';
   @override
@@ -143,6 +146,8 @@ class _Hi extends LessonStrings {
   @override
   String get keyPoints => 'मुख्य बातें';
   @override
+  String get chapters => 'अध्याय';
+  @override
   String get retry => 'फिर से कोशिश करें';
   @override
   String get loadFailed => 'यह पाठ लोड नहीं हो सका। फिर से कोशिश करें।';
@@ -195,6 +200,8 @@ class _Kn extends LessonStrings {
   String get transcriptPending => 'ಪ್ರತಿಲಿಪಿ ಸಿದ್ಧವಾಗುತ್ತಿದೆ. ಕೆಲವು ನಿಮಿಷಗಳ ನಂತರ ಮತ್ತೆ ನೋಡಿ.';
   @override
   String get keyPoints => 'ಮುಖ್ಯ ಅಂಶಗಳು';
+  @override
+  String get chapters => 'ಅಧ್ಯಾಯಗಳು';
   @override
   String get retry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
   @override

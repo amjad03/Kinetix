@@ -2570,4 +2570,261 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get walletAmount => 'राशि';
+
+  @override
+  String get courseRegTitle => 'पाठ्यक्रम पंजीकरण';
+
+  @override
+  String courseRegCredits(String registered, String max, String min) {
+    return 'क्रेडिट: $registered / $max (कम से कम $min)';
+  }
+
+  @override
+  String courseRegAddDropUntil(String when) {
+    return 'आप $when तक जोड़ या छोड़ सकते हैं।';
+  }
+
+  @override
+  String get courseRegClosed => 'अभी आपके लिए पंजीकरण खुला नहीं है।';
+
+  @override
+  String get courseRegNoTerm => 'अभी पंजीकरण के लिए कोई सत्र नहीं है।';
+
+  @override
+  String get courseRegNoOfferings => 'इस सत्र में अभी कोई पाठ्यक्रम नहीं है।';
+
+  @override
+  String get courseRegMine => 'मेरे पंजीकरण';
+
+  @override
+  String get courseRegAvailable => 'उपलब्ध पाठ्यक्रम';
+
+  @override
+  String get courseRegRegister => 'पंजीकरण करें';
+
+  @override
+  String get courseRegDrop => 'छोड़ें';
+
+  @override
+  String courseRegDropTitle(String name) {
+    return '$name छोड़ें?';
+  }
+
+  @override
+  String get courseRegRegisteredNow => 'आपका पंजीकरण हो गया।';
+
+  @override
+  String get courseRegDropped => 'पाठ्यक्रम छोड़ दिया गया।';
+
+  @override
+  String get courseRegCore => 'मुख्य';
+
+  @override
+  String get courseRegElective => 'वैकल्पिक';
+
+  @override
+  String courseRegCreditsOf(String n) {
+    return '$n क्रेडिट';
+  }
+
+  @override
+  String courseRegSeatsLeft(String n) {
+    return '$n सीटें बाकी';
+  }
+
+  @override
+  String get courseRegFull => 'भरा हुआ';
+
+  @override
+  String get courseRegRegisteredPill => 'पंजीकृत';
+
+  @override
+  String get courseRegWaitlisted => 'प्रतीक्षा सूची में';
+
+  @override
+  String get courseRegNotAllotted => 'आवंटित नहीं';
+
+  @override
+  String courseRegRanked(String rank) {
+    return 'पसंद $rank';
+  }
+
+  @override
+  String get courseRegApprovalPending => 'मंज़ूरी की प्रतीक्षा';
+
+  @override
+  String get courseRegApproved => 'मंज़ूर';
+
+  @override
+  String get courseRegRejected => 'मंज़ूर नहीं';
+
+  @override
+  String get courseRegRank => 'वैकल्पिक विषयों को क्रम दें';
+
+  @override
+  String get courseRegRankHelp =>
+      'जो वैकल्पिक विषय चाहिए उन्हें चुनें और सबसे ज़्यादा पसंद वाले को ऊपर रखें। भरे हुए पाठ्यक्रमों की सीटें इसी क्रम से मिलती हैं।';
+
+  @override
+  String get courseRegRankSave => 'क्रम सहेजें';
+
+  @override
+  String get courseRegRankSaved => 'आपकी पसंद सहेज ली गई।';
+
+  @override
+  String get courseRegRankNone => 'क्रम देने के लिए कोई वैकल्पिक विषय नहीं है।';
+
+  @override
+  String get passportTitle => 'परिणाम पासपोर्ट';
+
+  @override
+  String get passportVerified => 'संस्था द्वारा सत्यापित';
+
+  @override
+  String get passportNotVerified => 'संस्था द्वारा अभी सत्यापित नहीं';
+
+  @override
+  String get passportSkills => 'कौशल';
+
+  @override
+  String get passportNoSkills => 'अभी कोई कौशल दर्ज नहीं है।';
+
+  @override
+  String passportLevel(String n) {
+    return 'स्तर $n / 5';
+  }
+
+  @override
+  String get passportNoEvidence => 'अभी कोई प्रमाण नहीं';
+
+  @override
+  String get passportCertificates => 'प्रमाणपत्र';
+
+  @override
+  String get passportActivities => 'क्लब और कार्यक्रम';
+
+  @override
+  String get passportDownload => 'PDF डाउनलोड करें';
+
+  @override
+  String get surveysTitle => 'सर्वेक्षण';
+
+  @override
+  String get surveysNone => 'आपके लिए कोई सर्वेक्षण बाकी नहीं है।';
+
+  @override
+  String get surveyAnonymous => 'आपके उत्तर गोपनीय हैं।';
+
+  @override
+  String get surveySubmit => 'जमा करें';
+
+  @override
+  String get surveySent => 'धन्यवाद। आपके उत्तर भेज दिए गए।';
+
+  @override
+  String get surveyRequired => 'कृपया ज़रूरी प्रश्नों के उत्तर दें।';
+
+  @override
+  String get surveyOptional => 'वैकल्पिक';
+
+  @override
+  String surveyClosesOn(String when) {
+    return '$when को बंद होगा';
+  }
+
+  @override
+  String get surveyAnswerHint => 'आपका उत्तर';
+
+  @override
+  String get campusLifeTitle => 'क्लब और कार्यक्रम';
+
+  @override
+  String get campusTabClubs => 'क्लब';
+
+  @override
+  String get campusTabEvents => 'कार्यक्रम';
+
+  @override
+  String get campusTabPasses => 'मेरे पास';
+
+  @override
+  String get clubJoin => 'जुड़ें';
+
+  @override
+  String get clubLeave => 'छोड़ें';
+
+  @override
+  String get clubRequested => 'मंज़ूरी की प्रतीक्षा';
+
+  @override
+  String get clubMember => 'सदस्य';
+
+  @override
+  String clubPoints(String n) {
+    return '$n अंक';
+  }
+
+  @override
+  String get clubsNone => 'अभी कोई क्लब नहीं है।';
+
+  @override
+  String get clubJoinSent => 'अनुरोध भेज दिया गया। समन्वयक इसे मंज़ूर करेंगे।';
+
+  @override
+  String get eventsNone => 'पंजीकरण के लिए कोई कार्यक्रम खुला नहीं है।';
+
+  @override
+  String get eventRegister => 'पंजीकरण करें';
+
+  @override
+  String get eventJoinWaitlist => 'प्रतीक्षा सूची में जुड़ें';
+
+  @override
+  String get eventCancelRegistration => 'पंजीकरण रद्द करें';
+
+  @override
+  String get eventRegisteredPill => 'आप पंजीकृत हैं';
+
+  @override
+  String get eventWaitlistedPill => 'प्रतीक्षा सूची में';
+
+  @override
+  String eventSeatsLeft(String n) {
+    return '$n सीटें बाकी';
+  }
+
+  @override
+  String eventFee(String amount) {
+    return 'शुल्क $amount';
+  }
+
+  @override
+  String get eventFree => 'निःशुल्क';
+
+  @override
+  String get passNone => 'आपने किसी कार्यक्रम के लिए पंजीकरण नहीं किया है।';
+
+  @override
+  String get passShowAtDoor => 'दरवाज़े पर यह कोड दिखाएँ';
+
+  @override
+  String get passCheckedIn => 'प्रवेश दर्ज';
+
+  @override
+  String get passFeedback => 'प्रतिक्रिया दें';
+
+  @override
+  String get passFeedbackDone => 'प्रतिक्रिया भेजी गई';
+
+  @override
+  String get passFeedbackTitle => 'कैसा रहा?';
+
+  @override
+  String get passFeedbackComment => 'टिप्पणी (वैकल्पिक)';
+
+  @override
+  String get passFeedbackSend => 'भेजें';
+
+  @override
+  String get passFeedbackThanks => 'आपकी प्रतिक्रिया के लिए धन्यवाद।';
 }

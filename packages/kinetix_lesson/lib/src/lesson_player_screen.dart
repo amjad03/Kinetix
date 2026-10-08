@@ -45,6 +45,9 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
   LessonPlayer? _player;
   LessonAudio? _audio;
   Duration _total = Duration.zero;
+
+  /// The teacher's chapter markers: (milliseconds from the start, title).
+  List<(int, String)> _chapters = const [];
   /// What went wrong, worded in the viewer's language at build time.
   String Function(BuildContext context)? _error;
   bool _loading = true;
@@ -96,6 +99,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
       setState(() {
         _info = info;
         _total = total;
+        _chapters = lessonChapters({'events': lesson.events});
         _player = LessonPlayer(lesson);
         _audio = audio..addListener(_onAudio);
         _loading = false;
@@ -420,6 +424,51 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> with SingleTick
               ),
               const Expanded(child: SizedBox()),
             ],
+          ),
+          if (_chapters.isNotEmpty) _chapterChips(context),
+        ],
+      ),
+    );
+  }
+
+  /// One chip per chapter marker; the one being played is highlighted, and tapping seeks to it.
+  Widget _chapterChips(BuildContext context) {
+    final s = LessonStrings.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: Kx.s4),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Kx.s8),
+            child: Text(s.chapters, style: context.text.labelMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+          ),
+          Expanded(
+            child: SizedBox(
+              height: Kx.target,
+              child: ValueListenableBuilder(
+                valueListenable: _position,
+                builder: (context, pos, _) {
+                  final current = _chapters.lastIndexWhere((c) => c.$1 <= pos.inMilliseconds);
+                  return ListView.separated(
+                    key: const Key('lessonChapters'),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _chapters.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: Kx.s8),
+                    itemBuilder: (context, i) {
+                      final (ms, title) = _chapters[i];
+                      return Center(
+                        child: ActionChip(
+                          key: Key('chapter-$i'),
+                          label: Text('${LessonFmt.clock(Duration(milliseconds: ms))} · $title'),
+                          backgroundColor: i == current ? context.colors.secondaryContainer : null,
+                          onPressed: () => _seek(Duration(milliseconds: ms)),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),
