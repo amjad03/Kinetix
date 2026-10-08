@@ -2364,6 +2364,8 @@ export const vaultDocuments = pgTable(
     replacesId: uuid('replaces_id'),
     visibility: text('visibility').notNull().default('staff'), // staff | owner
     expiresOn: date('expires_on'),
+    /** Virus scan state (common/upload-scan.ts): 'clean' unless scanning is on and the file is still waiting; only clean files download. */
+    scanStatus: text('scan_status').notNull().default('clean'),
     uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: createdAt(),
@@ -2495,6 +2497,17 @@ export const TENANT_TABLES = [
   'asset_allocations',
   'asset_maintenance',
   'doc_counters',
+  // Phase 00 foundation and analytics (schema-foundation.ts)
+  'user_mfa',
+  'user_sessions',
+  'tenant_security_policies',
+  'feature_flags',
+  'domain_events',
+  'upload_scans',
+  'report_schedules',
+  'report_runs',
+  'placement_records',
+  'research_outputs',
   'designations',
   'staff_profiles',
   'staff_attendance',

@@ -2,6 +2,7 @@
 
 import Check from '@mui/icons-material/Check';
 import LockOutlined from '@mui/icons-material/LockOutlined';
+import SecurityOutlined from '@mui/icons-material/SecurityOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
@@ -285,6 +286,12 @@ export function TopBar({
             <LockOutlined fontSize="small" />
           </ListItemIcon>
           {t('shell.changePassword')}
+        </MenuItem>
+        <MenuItem component={Link} href="/account/security" onClick={() => setProfile(null)} sx={{ px: 2.5 }} data-testid="security">
+          <ListItemIcon>
+            <SecurityOutlined fontSize="small" />
+          </ListItemIcon>
+          {t('shell.security')}
         </MenuItem>
         <form action={signOut}>
           <MenuItem component="button" type="submit" sx={{ width: '100%', px: 2.5 }}>

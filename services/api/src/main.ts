@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ConsoleLogger } from '@nestjs/common';
+import { StructuredLogger } from './observability/structured-logger.js';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
@@ -10,7 +10,8 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const env = loadEnv();
   // LOG_FORMAT=json: one JSON object per line (level, context, message, timestamp, pid) for log shipping.
-  const logger = env.LOG_FORMAT === 'json' ? new ConsoleLogger({ json: true, colors: false }) : undefined;
+  // Each line carries the request id, trace id, tenant and user of the request being served.
+  const logger = env.LOG_FORMAT === 'json' ? new StructuredLogger() : undefined;
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true, ...(logger && { logger }) }); // rawBody: payment webhook signatures
   configureApp(app);
 

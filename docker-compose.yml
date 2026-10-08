@@ -21,6 +21,10 @@ x-api-env: &api-env
   SMS_PROVIDER: console
   STORAGE_DRIVER: local
   LOG_FORMAT: ${LOG_FORMAT:-text}
+  # Traces (OTLP/HTTP) and virus scanning are off unless set; /metrics is always served (docs/operations/observability.md).
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  UPLOAD_SCAN: ${UPLOAD_SCAN:-off}
+  CLAMAV_HOST: ${CLAMAV_HOST:-clamav}
   # C, C++ and Java for the code lab, on the code runner's Unix socket (shared volume).
   CODE_RUNNER_URL: unix:/run/kx-runner/runner.sock
   CODE_RUNNER_TOKEN: ${CODE_RUNNER_TOKEN:-local-compose-runner-token}

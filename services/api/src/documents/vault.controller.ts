@@ -1,4 +1,5 @@
-import { BadRequestException, Controller, Delete, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, PayloadTooLargeException, Query, Req, Res, StreamableFile, UnsupportedMediaTypeException } from '@nestjs/common';
+import { UploadScanService } from '../scanning/upload-scan.js';
+import { BadRequestException, HttpException, Controller, Delete, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, PayloadTooLargeException, Query, Req, Res, StreamableFile, UnsupportedMediaTypeException } from '@nestjs/common';
 import type { VaultDocument, VaultOwner, VaultVisibility } from '@kinetix/shared';
 import { and, asc, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 import type { Request, Response } from 'express';
@@ -48,6 +49,7 @@ export class VaultController {
   constructor(
     private readonly db: DbService,
     private readonly storage: ObjectStorage,
+    private readonly scans: UploadScanService,
     @Inject(HrService) private readonly hr: HrService,
   ) {}
 
@@ -102,6 +104,7 @@ export class VaultController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [r] = await tx.select().from(vaultDocuments).where(eq(vaultDocuments.id, id));
       if (!r || (r.archivedAt && !this.isManager(p, r.ownerType as VaultOwner)) || !(await this.canRead(tx, p, r))) throw new NotFoundException('Document not found');
+      if (r.scanStatus !== 'clean') throw new HttpException({ message: r.scanStatus === 'pending' ? 'This file is waiting for its virus scan' : 'This file did not pass the virus scan', code: 'UPLOAD_QUARANTINED' }, 423);
       const { stream } = await this.storage.get(r.storageKey);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'vault.downloaded', subjectType: 'vault_document', subjectId: id, data: { owner: this.ownerOf(r), category: r.category } });
       res.setHeader('Content-Type', r.contentType);
@@ -169,10 +172,12 @@ export class VaultController {
         .returning();
       const key = `tenants/${p.tenantId}/vault/${row.id}`;
       await this.storage.put(key, bufferStream(body), MAX_VAULT_BYTES, contentType);
-      await tx.update(vaultDocuments).set({ storageKey: key }).where(eq(vaultDocuments.id, row.id));
+      // Quarantined until the virus scan is clean when scanning is on (scanning/upload-scan.ts).
+      const scanStatus = await this.scans.register(tx, p.tenantId, 'vault_document', row.id, key);
+      await tx.update(vaultDocuments).set({ storageKey: key, scanStatus }).where(eq(vaultDocuments.id, row.id));
       if (replaced) await tx.update(vaultDocuments).set({ archivedAt: new Date() }).where(eq(vaultDocuments.id, replaced.id));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'vault.uploaded', subjectType: 'vault_document', subjectId: row.id, data: { owner: { type, id: ownerId }, category: meta.data.category, version, bytes: body.length } });
-      return (await this.views(tx, [{ ...row, storageKey: key }]))[0];
+      return (await this.views(tx, [{ ...row, storageKey: key, scanStatus }]))[0];
     });
   }
 }

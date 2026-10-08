@@ -20,14 +20,14 @@ Built: monorepo, web shell, backend shell, Flutter workspace, shared contracts
 (`packages/shared`), CI/CD, Postgres + migrations, in-house identity, tenant/institution/campus,
 RBAC, audit log, object storage, notification abstraction, curriculum foundation.
 
+Also built (see `docs/architecture/platform-foundation.md` and `docs/operations/observability.md`):
+TOTP MFA with per-role policy and session control, per-tenant feature flags, a transactional
+domain-event outbox, structured logs + Prometheus metrics + OTLP traces, ClamAV upload scanning
+(vault documents), content licensing, global search (trigram).
+
 Missing:
-- MFA beyond phone OTP, and device/session control for staff.
-- Feature-flag / configuration service per tenant (settings exist; flags do not).
-- Event-bus abstraction (realtime exists; a domain event bus does not).
-- Observability foundation (health endpoints exist; no tracing, metrics or structured log pipeline).
-- Content licensing and rights metadata as a first-class capability.
-- Virus-scanning hook on uploads.
-- Global faceted/semantic search across domains (the board has its own search).
+- A message broker behind the event outbox; semantic (embedding) search.
+- Virus scanning on upload paths other than the vault; dashboards and alert rules for the new metrics.
 
 ## Phase 01 — Smartboard
 
@@ -61,7 +61,7 @@ Missing:
 | 13 | Placements / internships / alumni | **Missing** |
 | 14 | Research / projects | **Missing** |
 | 15 | Grievance / discipline / welfare | **Missing** |
-| 16 | Analytics / reporting | **Missing** |
+| 16 | Analytics / reporting | **Built (core)** — KPIs and drill-down by campus/program/section, 12-report catalogue with CSV and PDF export, scheduled delivery, classroom analytics, NAAC/NIRF/AISHE data packs, placement and research entry, ERP page and global search. Not built: custom report builder, BI/warehouse connector. See `docs/architecture/analytics-reporting.md` |
 
 ## Phase 03–05 — mobile
 

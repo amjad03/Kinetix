@@ -15,6 +15,7 @@ import {
 import { createHash, randomBytes } from 'node:crypto';
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import type { Tx } from '../db/db.service.js';
 import { academicYears, admissionCycles, applicationDocuments, applications, enquiries, meritLists, programs, sections, students, userRoles, users } from '../db/schema.js';
 import { LifecycleService } from '../students/lifecycle.service.js';
@@ -60,7 +61,10 @@ export function configProblems(cfg: CycleConfig): string[] {
 
 @Injectable()
 export class AdmissionsService {
-  constructor(private readonly lifecycle: LifecycleService) {}
+  constructor(
+    private readonly lifecycle: LifecycleService,
+    private readonly events: EventBus,
+  ) {}
 
   // ---- cycles ------------------------------------------------------------------------------
 
@@ -311,6 +315,7 @@ export class AdmissionsService {
     await tx.update(applications).set({ status: 'enrolled', studentId: st.id, statusReason: null, updatedAt: new Date() }).where(eq(applications.id, id));
     if (a.enquiryId) await tx.update(enquiries).set({ stage: 'converted', applicationId: a.id, updatedAt: new Date() }).where(eq(enquiries.id, a.enquiryId));
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.ApplicationEnrolled, subjectType: 'application', subjectId: id, data: { studentId: st.id, sectionId: section.id, rollNo } });
+    await this.events.emit(tx, actor.tenantId, { type: DomainEvents.StudentEnrolled, aggregateType: 'student', aggregateId: st.id, actorId: actor.userId, payload: { applicationId: id, sectionId: section.id, rollNo } });
     return { studentId: st.id, sectionId: section.id, className: section.displayName, rollNo, status: input.activate ? 'active' : 'enrolled' };
   }
 

@@ -24,6 +24,10 @@ export interface UserPrincipal {
   roles: RoleName[];
   /** From the token: the user signed in with a temporary password and must change it (AuthGuard). */
   mustChangePassword?: true;
+  /** The sign-in (user_sessions row) behind the token; absent on tokens issued before sessions existed. */
+  sessionId?: string;
+  /** Second factor required by the institution but not set up yet (AuthGuard). */
+  mustSetUpMfa?: true;
 }
 
 /** An enrolled board, not signed in by a teacher. */

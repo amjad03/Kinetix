@@ -34,6 +34,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (!canUseErp(me.data.roles)) redirect('/auth/end?reason=denied');
   // Signed in with a temporary password: nothing else until a new one is chosen.
   if (me.data.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
+  if (me.data.mustSetUpMfa) redirect('/account/security');
   // The top bar's extras are best effort: a failure hides them rather than the page.
   const roles = me.data.roles;
   const [structure, notes] = await Promise.all([

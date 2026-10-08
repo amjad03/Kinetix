@@ -10,6 +10,17 @@ export interface UserClaims {
   roles: RoleName[];
   /** Signed in with a temporary password: only changing it (and GET /v1/me, sign-out) is allowed. */
   pwc?: true;
+  /** The sign-in this token belongs to (user_sessions); revoking it signs the token out. */
+  sid?: string;
+  /** The institution requires a second factor and the user has none yet: only setting one up is allowed. */
+  mfe?: true;
+}
+
+/** Proof of a correct password, good for five minutes, exchanged with a code for a real token. */
+export interface MfaChallengeClaims {
+  sub: string;
+  tid: string;
+  method: 'password' | 'otp';
 }
 
 export interface DeviceClaims {
@@ -33,6 +44,7 @@ export interface BoardClaims {
 export type Claims = UserClaims | DeviceClaims | BoardClaims;
 
 const AUDIENCE = 'kinetix-api';
+const MFA_AUDIENCE = 'kinetix-mfa';
 
 /**
  * HS256 for now. TODO: switch to EdDSA keys from KMS so the offline-pairing credential can be
@@ -48,6 +60,20 @@ export class TokensService {
 
   signUser(claims: Omit<UserClaims, 'typ'>): string {
     return this.jwt.sign({ ...claims, typ: 'user' }, { expiresIn: '12h', audience: AUDIENCE });
+  }
+
+  signMfaChallenge(claims: MfaChallengeClaims): string {
+    return this.jwt.sign({ ...claims, typ: 'mfa' }, { expiresIn: '5m', audience: MFA_AUDIENCE });
+  }
+
+  verifyMfaChallenge(token: string): MfaChallengeClaims {
+    try {
+      const c = this.jwt.verify<MfaChallengeClaims & { typ: string }>(token, { audience: MFA_AUDIENCE });
+      if (c.typ !== 'mfa') throw new Error('wrong type');
+      return c;
+    } catch {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   }
 
   signDevice(claims: Omit<DeviceClaims, 'typ'>): string {

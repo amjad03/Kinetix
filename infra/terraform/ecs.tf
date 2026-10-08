@@ -57,6 +57,10 @@ locals {
       CODE_RUNNER_URL            = local.code_runner_url
       CODE_RUN_TENANT_PER_MINUTE = tostring(var.code_run_tenant_per_minute)
     },
+    # Traces to an OTLP/HTTP collector (docs/operations/observability.md); unset = no tracing.
+    var.otel_exporter_endpoint != "" ? { OTEL_EXPORTER_OTLP_ENDPOINT = var.otel_exporter_endpoint, OTEL_SERVICE_NAME = "kinetix-api-${var.environment}" } : {},
+    # ClamAV quarantine for uploaded documents (off by default).
+    var.upload_scan == "clamav" ? { UPLOAD_SCAN = "clamav", CLAMAV_HOST = var.clamav_host } : {},
     var.ai_base_url != "" ? { AI_BASE_URL = var.ai_base_url } : {},
     var.asr_base_url != "" ? { ASR_BASE_URL = var.asr_base_url } : {},
     # PhET sims from our mirror in India (phet.tf); without it boards fetch from phet.colorado.edu.
