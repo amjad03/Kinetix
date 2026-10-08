@@ -1,5 +1,3 @@
-// The ERP dictionary: one file per area, each with English, Hindi and Kannada.
-// See docs/i18n/erp.md for how to add strings.
 import type { Locale } from '../locales';
 import common from './common';
 import admin from './admin';
@@ -25,10 +23,8 @@ import ops from './ops';
 import admissions from './admissions';
 import ui from './ui';
 import dashboard from './dashboard';
-
 import exams from './exams';
 import obe from './obe';
-
 import hr from './hr';
 import lms from './lms';
 import finance from './finance';
@@ -37,9 +33,16 @@ import campus from './campus';
 import insights from './insights';
 import work from './work';
 import campusLife from './campus-life';
-
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife } as const;
+import quality from './quality';
 import topicVideos from './topic-videos';
+
+export const AREAS = {  common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife , quality  } as const;
+
+// The ERP dictionary: one file per area, each with English, Hindi and Kannada.
+// See docs/i18n/erp.md for how to add strings.
+
+
+
 
 
 type Areas = typeof AREAS;

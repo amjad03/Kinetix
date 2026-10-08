@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -83,6 +83,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   tasks: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member'],
   // campus-life: committees are COMMITTEE_STAFF (campus-life.access.ts); teachers run clubs and events in the Teacher App
   campusLife: ['principal', 'tenant_admin', 'hod'],
+  // mentoring.controller.ts MENTORING_ADMIN (teachers and counsellors log sessions in the Teacher App)
+  mentoring: ['principal', 'tenant_admin', 'hod'],
+  // course-files.controller.ts: leaders and the head of department build and review course files here; teachers use the Teacher App
+  courseFiles: ['principal', 'tenant_admin', 'hod'],
+  // academic-audit.controller.ts AUDITORS: leaders write templates, a head of department audits their own department
+  academicAudit: ['principal', 'tenant_admin', 'hod'],
   // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
   reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager'],
 };
@@ -202,6 +208,12 @@ export function sectionOf(pathname: string): Section | null {
     case 'research':
     case 'grievances':
       return first;
+    case 'mentoring':
+      return 'mentoring';
+    case 'course-files':
+      return 'courseFiles';
+    case 'academic-audit':
+      return 'academicAudit';
     case 'payroll':
       return pathname.startsWith('/payroll/payslips') ? 'payslips' : 'payroll';
     default:
