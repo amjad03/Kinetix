@@ -8,8 +8,8 @@ describe('payroll access', () => {
     expect(canSee(r, 'hr')).toBe(true);
     expect(canSee(r, 'payroll')).toBe(true);
     expect(canApprovePayroll(r)).toBe(false);
-    expect(homeFor(r)).toBe('/hr');
-    expect(landingFor(r, '/fees')).toBe('/hr');
+    expect(homeFor(r)).toBe('/');
+    expect(landingFor(r, '/fees')).toBe('/');
   });
   it('keeps the accounts office out of HR records but in payroll', () => {
     expect(canSee(['accountant'], 'hr')).toBe(false);

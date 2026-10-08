@@ -8,7 +8,7 @@ describe('documents access', () => {
     for (const r of ['hod', 'teacher', 'librarian']) expect(canSee([r], 'documents')).toBe(false);
     expect(sectionOf('/documents/vault')).toBe('documents');
     expect(sectionOf('/verify/abc/def')).toBeNull();
-    expect(homeFor(['accountant'])).toBe('/fees');
+    expect(homeFor(['accountant'])).toBe('/');
   });
 });
 

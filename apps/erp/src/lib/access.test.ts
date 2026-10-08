@@ -7,8 +7,8 @@ describe('access', () => {
     expect(canUseErp(r)).toBe(true);
     expect(canSee(r, 'fees')).toBe(true);
     for (const s of ['school', 'boards', 'live', 'syllabus', 'ai', 'library', 'results', 'timetable', 'conversations'] as const) expect(canSee(r, s)).toBe(false);
-    expect(homeFor(r)).toBe('/fees');
-    expect(landingFor(r, '/')).toBe('/fees');
+    expect(homeFor(r)).toBe('/');
+    expect(landingFor(r, '/')).toBe('/');
     expect(landingFor(r, '/fees/invoices?status=due')).toBe('/fees/invoices?status=due');
   });
 
@@ -46,20 +46,20 @@ describe('access', () => {
     expect(canSee(r, 'library')).toBe(false);
     expect(canSee(r, 'timetable')).toBe(false);
     expect(canSee(r, 'conversations')).toBe(false);
-    expect(landingFor(r, '/fees')).toBe('/department');
-    expect(landingFor(r, '/conversations/abc')).toBe('/department');
+    expect(landingFor(r, '/fees')).toBe('/');
+    expect(landingFor(r, '/conversations/abc')).toBe('/');
   });
 
-  it('lands a head of department on Department, and keeps Today for a principal who is also HOD', () => {
+  it('lands a head of department on the dashboard, which has the Department page one click away', () => {
     const hod = ['teacher', 'hod'];
     expect(isOnlyHod(hod)).toBe(true);
-    expect(homeFor(hod)).toBe('/department');
-    expect(landingFor(hod, '')).toBe('/department');
+    expect(homeFor(hod)).toBe('/');
+    expect(landingFor(hod, '')).toBe('/');
     expect(landingFor(hod, '/')).toBe('/');
     expect(canSee(hod, 'school')).toBe(true);
     expect(canSee(hod, 'department')).toBe(true);
     expect(canSee(hod, 'departments')).toBe(false);
-    expect(landingFor(hod, '/departments')).toBe('/department');
+    expect(landingFor(hod, '/departments')).toBe('/');
     for (const r of [['principal', 'hod'], ['tenant_admin'], ['principal']]) {
       expect(isOnlyHod(r)).toBe(false);
       expect(homeFor(r)).toBe('/');
@@ -88,7 +88,7 @@ describe('access', () => {
     expect(sectionOf('/calendar')).toBe('calendar');
     expect(sectionOf('/settings')).toBe('settings');
     expect(landingFor(['accountant'], '/calendar?month=2026-11')).toBe('/calendar?month=2026-11');
-    expect(landingFor(['teacher', 'hod'], '/settings')).toBe('/department');
+    expect(landingFor(['teacher', 'hod'], '/settings')).toBe('/');
   });
 
   it('refuses teachers, students and parents', () => {
@@ -98,7 +98,7 @@ describe('access', () => {
   });
 
   it('maps paths to sections and ignores unsafe next paths', () => {
-    expect(sectionOf('/')).toBe('school');
+    expect(sectionOf('/')).toBe('dashboard');
     expect(sectionOf('/live/abc')).toBe('live');
     expect(sectionOf('/fees/receipts/1')).toBe('fees');
     expect(sectionOf('/results/abc')).toBe('results');
@@ -133,7 +133,7 @@ describe('access', () => {
     expect(canSee(r, 'admissions')).toBe(true);
     expect(canSee(r, 'students')).toBe(true);
     for (const s of ['school', 'fees', 'settings', 'import'] as const) expect(canSee(r, s)).toBe(false);
-    expect(homeFor(r)).toBe('/admissions');
+    expect(homeFor(r)).toBe('/');
     expect(sectionOf('/admissions/applications/x')).toBe('admissions');
     expect(sectionOf('/students/promotion')).toBe('students');
     expect(canChangeLifecycle(r)).toBe(false);
@@ -147,5 +147,17 @@ describe('access', () => {
     expect(sectionOf('/topic-videos/abc')).toBe('topicVideos');
     expect(canReviewVideos(['principal'])).toBe(true);
     expect(canReviewVideos(['hod'])).toBe(false);
+  });
+
+  it('gives the roles with a role dashboard "/" as home; desk roles keep their own desk', () => {
+    for (const r of ['principal', 'tenant_admin', 'hod', 'accountant', 'admissions_officer', 'hr_manager']) {
+      expect(canSee([r], 'dashboard')).toBe(true);
+      expect(homeFor([r])).toBe('/');
+    }
+    for (const r of ['librarian', 'transport_manager', 'hostel_warden', 'store_keeper']) expect(canSee([r], 'dashboard')).toBe(false);
+    expect(homeFor(['librarian'])).toBe('/library');
+    expect(homeFor(['transport_manager'])).toBe('/transport');
+    expect(sectionOf('/')).toBe('dashboard');
+    expect(sectionOf('/classes')).toBe('school');
   });
 });

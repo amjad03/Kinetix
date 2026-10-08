@@ -22,6 +22,8 @@ import payments from './payments';
 import platform from './platform';
 import ops from './ops';
 import admissions from './admissions';
+import ui from './ui';
+import dashboard from './dashboard';
 
 import exams from './exams';
 import obe from './obe';
@@ -29,7 +31,7 @@ import obe from './obe';
 import hr from './hr';
 import documents from './documents';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard } as const;
 import topicVideos from './topic-videos';
 
 
