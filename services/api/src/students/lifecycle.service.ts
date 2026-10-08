@@ -1,10 +1,10 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { AdmissionsEvents, STUDENT_TRANSITIONS, transitionProblem, type StudentStatus } from '@kinetix/shared';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { AdmissionsEvents, LOGIN_DISABLED_STATUSES, READMIT_FROM, STUDENT_APPROVER_STATUSES, STUDENT_TRANSITIONS, transitionProblem, type StudentStatus } from '@kinetix/shared';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { academicYears, guardians, programs, promotionBatches, sections, studentLifecycleEvents, students, tenants, userRoles, users } from '../db/schema.js';
+import { academicYears, certificateTemplates, certificates, guardians, programs, promotionBatches, sections, studentLifecycleEvents, students, tenants, userRoles, users } from '../db/schema.js';
 
 export interface LifecycleActor {
   tenantId: string;
@@ -53,18 +53,148 @@ export class LifecycleService {
     await tx.insert(studentLifecycleEvents).values({ actorId: a.userId, ...e, effectiveOn: e.effectiveOn ?? (await this.today(tx)), tenantId: a.tenantId });
   }
 
-  /** Changes a student's status. Validates the move, records the event and audits it. */
-  async changeStatus(tx: Tx, actor: LifecycleActor, studentId: string, to: StudentStatus, opts: { reason?: string | null; effectiveOn?: string; batchId?: string; kind?: 'status' | 'promotion' } = {}) {
+  /**
+   * Changes a student's status. Validates the move, records the event (with reason, effective date,
+   * approver and, where they apply, the return date and transfer certificate) and audits it.
+   */
+  async changeStatus(
+    tx: Tx,
+    actor: LifecycleActor,
+    studentId: string,
+    to: StudentStatus,
+    opts: { reason?: string | null; effectiveOn?: string; batchId?: string; kind?: 'status' | 'promotion'; returnOn?: string | null; approverId?: string | null; certificateId?: string | null } = {},
+  ) {
     const ctx = await this.load(tx, studentId, true);
     const from = ctx.student.status as StudentStatus;
     const problem = transitionProblem(from, to, { reason: opts.reason, finalTerm: ctx.finalTerm });
     if (problem) throw new BadRequestException(problem);
+    const effectiveOn = opts.effectiveOn ?? (await this.today(tx));
+    if (to === 'on_leave' && !opts.returnOn) throw new BadRequestException('Give the date the student returns from leave');
+    if (opts.returnOn && opts.returnOn < effectiveOn) throw new BadRequestException('The return date cannot be before the leave starts');
+    const approverId = STUDENT_APPROVER_STATUSES.includes(to) ? await this.approver(tx, opts.approverId ?? actor.userId) : null;
+    const certificateId = to === 'transferred' ? await this.transferCertificate(tx, studentId, opts.certificateId ?? null) : null;
     await tx.update(students).set({ status: to, statusChangedAt: this.clockNow(), updatedAt: this.clockNow() }).where(eq(students.id, studentId));
-    await this.addEvent(tx, actor, { studentId, kind: opts.kind ?? 'status', fromStatus: from, toStatus: to, fromSectionId: ctx.student.sectionId, toSectionId: ctx.student.sectionId, reason: opts.reason?.trim() || null, effectiveOn: opts.effectiveOn, batchId: opts.batchId });
+    await this.addEvent(tx, actor, {
+      studentId,
+      kind: opts.kind ?? 'status',
+      fromStatus: from,
+      toStatus: to,
+      fromSectionId: ctx.student.sectionId,
+      toSectionId: ctx.student.sectionId,
+      reason: opts.reason?.trim() || null,
+      effectiveOn,
+      returnOn: to === 'on_leave' || to === 'suspended' ? (opts.returnOn ?? null) : null,
+      approverId,
+      certificateId,
+      batchId: opts.batchId,
+    });
     // A student who has left cannot sign in; a graduate (alumni) keeps their account.
-    if ((to === 'transferred' || to === 'dropped') && ctx.student.userId) await this.disableIfOnlyStudent(tx, ctx.student.userId);
-    await audit(tx, { tenantId: actor.tenantId, actorType: 'user', actorId: actor.userId, action: AdmissionsEvents.StudentStatusChanged, subjectType: 'student', subjectId: studentId, data: { from, to, reason: opts.reason ?? null, batchId: opts.batchId ?? null } });
-    return { id: studentId, from, to };
+    if (LOGIN_DISABLED_STATUSES.includes(to) && ctx.student.userId) await this.disableIfOnlyStudent(tx, ctx.student.userId);
+    await audit(tx, { tenantId: actor.tenantId, actorType: 'user', actorId: actor.userId, action: AdmissionsEvents.StudentStatusChanged, subjectType: 'student', subjectId: studentId, data: { from, to, reason: opts.reason ?? null, batchId: opts.batchId ?? null, effectiveOn, returnOn: opts.returnOn ?? null, approverId, certificateId } });
+    return { id: studentId, from, to, effectiveOn, approverId, certificateId, returnOn: opts.returnOn ?? null };
+  }
+
+  /**
+   * Readmits a student who dropped out, was transferred out or was expelled: they become active
+   * again, in their old class or another class of the same program. Needs a reason and an approver.
+   */
+  async readmit(tx: Tx, actor: LifecycleActor, studentId: string, input: { reason: string; sectionId?: string; effectiveOn?: string; approverId?: string | null }) {
+    const ctx = await this.load(tx, studentId, true);
+    const from = ctx.student.status as StudentStatus;
+    if (!READMIT_FROM.includes(from)) throw new BadRequestException(`A student who is ${from.replace('_', ' ')} cannot be readmitted`);
+    if (input.reason.trim().length < 3) throw new BadRequestException('Give a reason for the readmission');
+    let sectionId = ctx.student.sectionId;
+    if (input.sectionId && input.sectionId !== sectionId) {
+      const [target] = await tx.select().from(sections).where(eq(sections.id, input.sectionId));
+      if (!target) throw new NotFoundException('Class not found');
+      if (target.programId !== ctx.section.programId) throw new BadRequestException('Choose a class of the same program');
+      sectionId = target.id;
+    }
+    const approverId = await this.approver(tx, input.approverId ?? actor.userId);
+    const effectiveOn = input.effectiveOn ?? (await this.today(tx));
+    const rollNo = sectionId === ctx.student.sectionId ? ctx.student.rollNo : await this.freeRollNo(tx, sectionId, ctx.student.rollNo);
+    await tx.update(students).set({ status: 'active', sectionId, rollNo, statusChangedAt: this.clockNow(), updatedAt: this.clockNow() }).where(eq(students.id, studentId));
+    await this.addEvent(tx, actor, { studentId, kind: 'status', fromStatus: from, toStatus: 'active', fromSectionId: ctx.student.sectionId, toSectionId: sectionId, reason: input.reason.trim(), effectiveOn, approverId, data: { readmission: true, rollNo } });
+    if (ctx.student.userId) {
+      const [u] = await tx.select({ status: users.status }).from(users).where(eq(users.id, ctx.student.userId));
+      if (u?.status === 'disabled') await tx.update(users).set({ status: 'active', updatedAt: this.clockNow() }).where(eq(users.id, ctx.student.userId));
+    }
+    await audit(tx, { tenantId: actor.tenantId, actorType: 'user', actorId: actor.userId, action: 'students.readmitted.v1', subjectType: 'student', subjectId: studentId, data: { from, reason: input.reason, sectionId, approverId } });
+    return { id: studentId, from, to: 'active' as const, sectionId, rollNo, approverId };
+  }
+
+  /** The approver must be a staff member of the institution, not a student or guardian. */
+  private async approver(tx: Tx, userId: string): Promise<string> {
+    const roles = await tx.select({ role: userRoles.role }).from(userRoles).innerJoin(users, eq(users.id, userRoles.userId)).where(and(eq(userRoles.userId, userId), eq(users.status, 'active')));
+    if (roles.length === 0 || roles.every((r) => r.role === 'student' || r.role === 'guardian')) throw new BadRequestException('Choose a staff member as the approver');
+    return userId;
+  }
+
+  /** Validates the linked transfer certificate, or finds the student's latest issued one. */
+  private async transferCertificate(tx: Tx, studentId: string, certificateId: string | null): Promise<string | null> {
+    const q = tx
+      .select({ id: certificates.id, status: certificates.status, studentId: certificates.studentId, kind: certificateTemplates.kind })
+      .from(certificates)
+      .innerJoin(certificateTemplates, eq(certificateTemplates.id, certificates.templateId));
+    if (certificateId) {
+      const [c] = await q.where(eq(certificates.id, certificateId));
+      if (!c || c.studentId !== studentId) throw new BadRequestException('That certificate does not belong to this student');
+      if (c.kind !== 'transfer_certificate') throw new BadRequestException('Link a transfer certificate');
+      if (c.status !== 'issued') throw new BadRequestException('The transfer certificate has not been issued yet');
+      return c.id;
+    }
+    const [latest] = await q.where(and(eq(certificates.studentId, studentId), eq(certificates.status, 'issued'), eq(certificateTemplates.kind, 'transfer_certificate'))).orderBy(desc(certificates.issuedAt)).limit(1);
+    return latest?.id ?? null;
+  }
+
+  /** Status changes of one student, newest first: reason, effective date, approver, return date, linked TC. */
+  async statusHistory(tx: Tx, studentId: string) {
+    await this.load(tx, studentId);
+    const rows = await tx
+      .select({ e: studentLifecycleEvents, approverName: users.fullName, serial: certificates.serialNo })
+      .from(studentLifecycleEvents)
+      .leftJoin(users, eq(users.id, studentLifecycleEvents.approverId))
+      .leftJoin(certificates, eq(certificates.id, studentLifecycleEvents.certificateId))
+      .where(and(eq(studentLifecycleEvents.studentId, studentId), eq(studentLifecycleEvents.kind, 'status')))
+      .orderBy(desc(studentLifecycleEvents.createdAt), desc(studentLifecycleEvents.id));
+    const actorIds = [...new Set(rows.map((r) => r.e.actorId).filter((x): x is string => !!x))];
+    const actors = actorIds.length ? await tx.select({ id: users.id, name: users.fullName }).from(users).where(inArray(users.id, actorIds)) : [];
+    const name = new Map(actors.map((a) => [a.id, a.name]));
+    return rows.map(({ e, approverName, serial }) => ({
+      id: e.id,
+      fromStatus: e.fromStatus,
+      toStatus: e.toStatus,
+      reason: e.reason,
+      effectiveOn: e.effectiveOn,
+      returnOn: e.returnOn,
+      approverName,
+      certificateId: e.certificateId,
+      certificateSerial: serial,
+      readmission: (e.data as { readmission?: boolean } | null)?.readmission === true,
+      recordedBy: e.actorId ? (name.get(e.actorId) ?? null) : null,
+      at: e.createdAt.toISOString(),
+    }));
+  }
+
+  /** Students on a leave of absence or suspended now, with the day they are due back (overdue when past). */
+  async absences(tx: Tx) {
+    const today = await this.today(tx);
+    const rows = await tx
+      .select({ id: students.id, fullName: students.fullName, rollNo: students.rollNo, status: students.status, className: sections.displayName })
+      .from(students)
+      .innerJoin(sections, eq(sections.id, students.sectionId))
+      .where(inArray(students.status, ['on_leave', 'suspended']))
+      .orderBy(asc(sections.displayName), asc(students.rollNo));
+    if (rows.length === 0) return [];
+    const events = await tx
+      .select({ studentId: studentLifecycleEvents.studentId, toStatus: studentLifecycleEvents.toStatus, returnOn: studentLifecycleEvents.returnOn, effectiveOn: studentLifecycleEvents.effectiveOn, reason: studentLifecycleEvents.reason })
+      .from(studentLifecycleEvents)
+      .where(and(inArray(studentLifecycleEvents.studentId, rows.map((r) => r.id)), eq(studentLifecycleEvents.kind, 'status')))
+      .orderBy(desc(studentLifecycleEvents.createdAt), desc(studentLifecycleEvents.id));
+    return rows.map((r) => {
+      const e = events.find((x) => x.studentId === r.id && x.toStatus === r.status);
+      return { ...r, since: e?.effectiveOn ?? null, returnOn: e?.returnOn ?? null, reason: e?.reason ?? null, overdue: !!e?.returnOn && e.returnOn < today };
+    });
   }
 
   private clockNow() {

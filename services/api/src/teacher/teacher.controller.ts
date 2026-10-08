@@ -246,7 +246,7 @@ export class AttendanceController {
   submit(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(AttendanceBody)) body: z.infer<typeof AttendanceBody>): Promise<AttendanceSheet> {
     const day = parseDate(body.date);
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const slot = await this.teacher.slotFor(tx, p, body.slotId);
+      const slot = await this.teacher.slotFor(tx, p, body.slotId, day);
       if (isoWeekday(day) !== slot.dayOfWeek) throw new BadRequestException('This period is not on that day');
       const now = await this.teacher.localNow(tx);
       if (day > now.date) throw new BadRequestException('Attendance cannot be taken for a future date');

@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { and, eq, gt, inArray, isNull, lt, ne, or } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { TIMETABLE_CLASH_CODES } from '../common/error-codes.js';
+import { TIMETABLE_CAPACITY_CODE, TIMETABLE_CLASH_CODES } from '../common/error-codes.js';
 import type { Tx } from '../db/db.service.js';
-import { academicYears, rooms, sections, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
+import { academicYears, rooms, sections, students, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
 
 /**
  * The timetable's rules, shared by the timetable editor (timetable-admin.controller.ts) and the
@@ -74,8 +74,13 @@ export async function validateSlot(tx: Tx, b: SlotInput, replacing: string | nul
     .where(and(eq(users.id, b.teacherId), inArray(userRoles.role, ['teacher', 'hod', 'principal'])));
   if (!teacher) throw new BadRequestException('Choose a member of the teaching staff');
   if (b.roomId) {
-    const [room] = await tx.select({ id: rooms.id }).from(rooms).where(eq(rooms.id, b.roomId));
+    const [room] = await tx.select().from(rooms).where(eq(rooms.id, b.roomId));
     if (!room) throw new NotFoundException('Room not found');
+    // A lab or room has only so many seats: the class must fit (rooms with no capacity set are not checked).
+    if (room.capacity != null) {
+      const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(students).where(and(eq(students.sectionId, section.id), eq(students.status, 'active')));
+      if (n > room.capacity) throw new ConflictException({ statusCode: 409, message: `${room.name} seats ${room.capacity} but ${section.displayName} has ${n} students`, error: 'Conflict', code: TIMETABLE_CAPACITY_CODE });
+    }
   }
   const clash = await findClash(tx, b, replacing);
   if (clash) throw new ConflictException({ statusCode: 409, message: clash.message, error: 'Conflict', code: clash.code });

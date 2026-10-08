@@ -3,6 +3,8 @@ import { getI18n } from '@/i18n/server';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { TimetableEditor, type TimetableView } from '@/components/timetable/TimetableEditor';
+import { SubstitutionsPanel } from '@/components/timetable/SubstitutionsPanel';
+import { schoolToday } from '@/lib/school';
 import { UrlSelect } from '@/components/UrlSelect';
 import { api, load, requireSection } from '@/lib/api';
 import type { StaffMember, Structure, TimetableSlot } from '@/lib/types';
@@ -56,6 +58,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
           staff={people}
         />
       )}
+      <SubstitutionsPanel today={schoolToday()} />
     </>
   );
 }

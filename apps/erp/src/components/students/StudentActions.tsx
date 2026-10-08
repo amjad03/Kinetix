@@ -13,14 +13,15 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
-import { changeStudentSection, changeStudentStatus, linkGuardian, unlinkGuardian } from '@/app/(dashboard)/students/actions';
+import { changeStudentSection, changeStudentStatus, linkGuardian, readmitStudent, unlinkGuardian } from '@/app/(dashboard)/students/actions';
 import { ReasonDialog } from '@/components/admissions/ReasonDialog';
 import { SectionTitle } from '@/components/PageHeader';
+import { StatusDialog } from '@/components/students/StatusDialog';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { STUDENT_REASON_REQUIRED, type StudentProfile } from '@/lib/admissions';
+import { STUDENT_READMIT_FROM, STUDENT_REASON_REQUIRED, STUDENT_RETURN_STATUSES, type StudentProfile } from '@/lib/admissions';
 
-type Dialog = { kind: 'status'; status: string } | { kind: 'section'; sectionId: string } | null;
+type Dialog = { kind: 'status'; status: string } | { kind: 'section'; sectionId: string } | { kind: 'readmit' } | null;
 
 /** Status buttons (only the moves the rules allow), class change, and the student's guardians. */
 export function StudentActions({ student: s, canChange, canGuardians, classes }: { student: StudentProfile; canChange: boolean; canGuardians: boolean; classes: { id: string; name: string }[] }) {
@@ -48,17 +49,22 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
           <SectionTitle flush>{t('stu.changeStatus')}</SectionTitle>
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
             {s.allowedStatuses.map((to) => (
-              <Button key={to} size="small" variant="outlined" color={to === 'dropped' || to === 'transferred' ? 'error' : 'primary'} disabled={pending} onClick={() => (STUDENT_REASON_REQUIRED.includes(to) ? setDialog({ kind: 'status', status: to }) : run(() => changeStudentStatus(s.id, to)))}>
+              <Button key={to} size="small" variant="outlined" color={['dropped', 'transferred', 'expelled', 'deceased'].includes(to) ? 'error' : 'primary'} disabled={pending} onClick={() => (STUDENT_REASON_REQUIRED.includes(to) ? setDialog({ kind: 'status', status: to }) : run(() => changeStudentStatus(s.id, to)))}>
                 {t(`stu.moveTo.${to}` as MessageKey)}
               </Button>
             ))}
-            {s.allowedStatuses.length === 0 && (
+            {STUDENT_READMIT_FROM.includes(s.status) && (
+              <Button size="small" variant="contained" disabled={pending} onClick={() => setDialog({ kind: 'readmit' })}>
+                {t('stu.readmit')}
+              </Button>
+            )}
+            {s.allowedStatuses.length === 0 && !STUDENT_READMIT_FROM.includes(s.status) && (
               <Typography variant="body2" color="text.secondary">
                 {t('stu.final')}
               </Typography>
             )}
           </Stack>
-          {classes.length > 0 && !['transferred', 'alumni', 'dropped'].includes(s.status) && (
+          {classes.length > 0 && !['transferred', 'alumni', 'dropped', 'expelled', 'deceased'].includes(s.status) && (
             <Stack direction="row" spacing={1} sx={{ mt: 2, alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
               <FormField label={t('stu.moveClass')}>
                 <TextInput select value={target} onChange={(e) => setTarget(e.target.value)} sx={{ minWidth: 220 }}>
@@ -142,14 +148,15 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
         )}
       </Paper>
 
-      {dialog?.kind === 'status' && (
+      {dialog?.kind === 'status' && <StatusDialog studentId={s.id} status={dialog.status} withReturn={STUDENT_RETURN_STATUSES.includes(dialog.status)} onClose={(done) => { setDialog(null); if (done) router.refresh(); }} />}
+      {dialog?.kind === 'readmit' && (
         <ReasonDialog
-          title={t(`stu.moveTo.${dialog.status}` as MessageKey)}
-          help={t('stu.reasonHelp')}
+          title={t('stu.readmit')}
+          help={t('stu.readmitHelp')}
           label={t('adm.field.reason')}
           required
           confirm={t('common.save')}
-          onSubmit={(reason) => changeStudentStatus(s.id, dialog.status, reason)}
+          onSubmit={(reason) => readmitStudent(s.id, reason)}
           onClose={(done) => {
             setDialog(null);
             if (done) router.refresh();

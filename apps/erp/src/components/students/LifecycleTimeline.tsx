@@ -39,6 +39,9 @@ export function LifecycleTimeline({ events }: { events: LifecycleEventRow[] }) {
           )}
           <Typography variant="caption" color="text.secondary">
             {formatDate(e.effectiveOn, 'short', locale)} · {e.actorName ?? t('adm.system')}
+            {e.approverName ? ` · ${t('stu.approvedBy', { name: e.approverName })}` : ''}
+            {e.returnOn ? ` · ${t('stu.returnsOn', { date: formatDate(e.returnOn, 'short', locale) })}` : ''}
+            {e.certificateId ? ` · ${t('stu.tcLinked')}` : ''}
           </Typography>
         </Box>
       ))}

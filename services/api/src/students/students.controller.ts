@@ -20,7 +20,17 @@ export const GUARDIAN_ROLES: RoleName[] = ['tenant_admin', 'principal', 'admissi
 
 const Reason = z.string().trim().max(500);
 
-const StatusBody = z.object({ status: z.enum(STUDENT_STATUSES), reason: Reason.optional(), effectiveOn: Day.optional() });
+const StatusBody = z.object({
+  status: z.enum(STUDENT_STATUSES),
+  reason: Reason.optional(),
+  effectiveOn: Day.optional(),
+  /** When a leave of absence or suspension ends. */
+  returnOn: Day.optional(),
+  approverId: z.uuid().optional(),
+  /** The issued transfer certificate, for a transfer-out. */
+  certificateId: z.uuid().optional(),
+});
+const ReadmitBody = z.object({ reason: Reason.min(3, 'Give a reason'), sectionId: z.uuid().optional(), effectiveOn: Day.optional(), approverId: z.uuid().optional() });
 const SectionBody = z.object({ sectionId: z.uuid(), reason: Reason.min(3, 'Give a reason') });
 const PromoteBody = z.object({
   label: z.string().trim().min(3).max(120),
@@ -68,6 +78,13 @@ export class StudentsController {
   }
 
   /** The student, their class, guardians, admission and the full lifecycle timeline (newest first). */
+  /** Students on a leave of absence or suspended now, and when they are due back. */
+  @Get('absences')
+  @Auth('user', PROFILE_ROLES)
+  absences(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.lifecycle.absences(tx));
+  }
+
   @Get(':id/profile')
   @Auth('user', PROFILE_ROLES)
   profile(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
@@ -75,15 +92,17 @@ export class StudentsController {
       const ctx = await this.lifecycle.load(tx, id);
       const from = alias(sections, 'from_section');
       const to = alias(sections, 'to_section');
+      const approver = alias(users, 'approver');
       const events = await tx
-        .select({ e: studentLifecycleEvents, actorName: users.fullName, fromName: from.displayName, toName: to.displayName })
+        .select({ e: studentLifecycleEvents, actorName: users.fullName, fromName: from.displayName, toName: to.displayName, approverName: approver.fullName })
         .from(studentLifecycleEvents)
         .leftJoin(users, eq(users.id, studentLifecycleEvents.actorId))
+        .leftJoin(approver, eq(approver.id, studentLifecycleEvents.approverId))
         .leftJoin(from, eq(from.id, studentLifecycleEvents.fromSectionId))
         .leftJoin(to, eq(to.id, studentLifecycleEvents.toSectionId))
         .where(eq(studentLifecycleEvents.studentId, id))
         .orderBy(desc(studentLifecycleEvents.createdAt), desc(studentLifecycleEvents.id));
-      const timeline: LifecycleEvent[] = events.map(({ e, actorName, fromName, toName }) => ({
+      const timeline: LifecycleEvent[] = events.map(({ e, actorName, fromName, toName, approverName }) => ({
         id: e.id,
         kind: e.kind,
         fromStatus: e.fromStatus as StudentStatus | null,
@@ -92,6 +111,9 @@ export class StudentsController {
         toSection: toName,
         reason: e.reason,
         effectiveOn: e.effectiveOn,
+        returnOn: e.returnOn,
+        approverName,
+        certificateId: e.certificateId,
         batchId: e.batchId,
         data: e.data,
         actorName,
@@ -133,7 +155,22 @@ export class StudentsController {
   @HttpCode(200)
   @Auth('user', LIFECYCLE_ROLES)
   status(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(StatusBody)) body: z.infer<typeof StatusBody>) {
-    return this.db.withTenant(p.tenantId, (tx) => this.lifecycle.changeStatus(tx, p, id, body.status, { reason: body.reason, effectiveOn: body.effectiveOn }));
+    return this.db.withTenant(p.tenantId, (tx) => this.lifecycle.changeStatus(tx, p, id, body.status, body));
+  }
+
+  /** A student who dropped out, was transferred out or expelled comes back as active. */
+  @Post(':id/readmit')
+  @HttpCode(200)
+  @Auth('user', LIFECYCLE_ROLES)
+  readmit(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ReadmitBody)) body: z.infer<typeof ReadmitBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.lifecycle.readmit(tx, p, id, body));
+  }
+
+  /** Every status change of the student with its approver, return date and linked transfer certificate. */
+  @Get(':id/status-history')
+  @Auth('user', PROFILE_ROLES)
+  statusHistory(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, (tx) => this.lifecycle.statusHistory(tx, id));
   }
 
   @Post(':id/section')

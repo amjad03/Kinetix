@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AdmissionsEvents, canMoveEnquiry, type EnquiryActivityKind, type EnquirySource, type EnquiryStage } from '@kinetix/shared';
 import { and, asc, eq, gte, inArray, lte, notInArray, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
-import { enquiries, enquiryActivities, programs, userRoles, users } from '../db/schema.js';
+import { admissionCampaigns, enquiries, enquiryActivities, programs, userRoles, users } from '../db/schema.js';
 
 export const COUNSELLOR_ROLES = ['admissions_officer', 'principal', 'tenant_admin'] as const;
 const CLOSED_STAGES: EnquiryStage[] = ['converted', 'lost'];
@@ -18,7 +19,8 @@ export const auditActor = (a: Actor) => ({ tenantId: a.tenantId, actorType: (a.u
 /** The admissions pipeline: enquiries from the public form, walk-ins and calls, owned by counsellors. */
 @Injectable()
 export class EnquiriesService {
-  async create(tx: Tx, actor: Actor, input: { name: string; phone: string; email?: string | null; programId?: string | null; source: EnquirySource; message?: string | null; counsellorId?: string | null; nextFollowUpOn?: string | null }, today: string) {
+  async create(tx: Tx, actor: Actor, input: { name: string; phone: string; email?: string | null; programId?: string | null; source: EnquirySource; message?: string | null; counsellorId?: string | null; nextFollowUpOn?: string | null; campaignId?: string | null; utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null }, today: string) {
+    const campaignId = await this.resolveCampaign(tx, input.campaignId ?? null, input.utmCampaign ?? null);
     if (input.programId) {
       const [p] = await tx.select({ id: programs.id }).from(programs).where(eq(programs.id, input.programId));
       if (!p) throw new BadRequestException('Program not found');
@@ -45,6 +47,9 @@ export class EnquiriesService {
         email: input.email ?? null,
         programId: input.programId ?? null,
         source: input.source,
+        campaignId,
+        utmSource: input.utmSource?.trim().slice(0, 80) || null,
+        utmMedium: input.utmMedium?.trim().slice(0, 80) || null,
         message: input.message ?? null,
         counsellorId,
         createdBy: actor.userId,
@@ -54,6 +59,60 @@ export class EnquiriesService {
       .returning();
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.EnquiryCreated, subjectType: 'enquiry', subjectId: row.id, data: { source: input.source, counsellorId } });
     return { enquiry: row, duplicate: false };
+  }
+
+  /** The campaign an enquiry belongs to: named by id, or found by its UTM campaign tag. Unknown tags are ignored. */
+  async resolveCampaign(tx: Tx, campaignId: string | null, utmCampaign: string | null): Promise<string | null> {
+    if (campaignId) {
+      const [c] = await tx.select({ id: admissionCampaigns.id }).from(admissionCampaigns).where(eq(admissionCampaigns.id, campaignId));
+      if (!c) throw new BadRequestException('Campaign not found');
+      return c.id;
+    }
+    const tag = utmCampaign?.trim().toLowerCase();
+    if (!tag) return null;
+    const [c] = await tx.select({ id: admissionCampaigns.id }).from(admissionCampaigns).where(and(sql`lower(${admissionCampaigns.utmCampaign}) = ${tag}`, eq(admissionCampaigns.active, true))).limit(1);
+    return c?.id ?? null;
+  }
+
+  async createCampaign(tx: Tx, actor: Actor, input: { name: string; channel: string; utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null; startsOn?: string | null; endsOn?: string | null; budgetPaise: number }) {
+    if (input.startsOn && input.endsOn && input.endsOn < input.startsOn) throw new BadRequestException('The campaign cannot end before it starts');
+    const [dup] = await tx.select({ id: admissionCampaigns.id }).from(admissionCampaigns).where(eq(admissionCampaigns.name, input.name));
+    if (dup) throw new BadRequestException('A campaign with this name already exists');
+    const [row] = await tx.insert(admissionCampaigns).values({ tenantId: actor.tenantId, name: input.name, channel: input.channel, utmSource: input.utmSource ?? null, utmMedium: input.utmMedium ?? null, utmCampaign: input.utmCampaign ?? null, startsOn: input.startsOn ?? null, endsOn: input.endsOn ?? null, budgetPaise: input.budgetPaise, createdBy: actor.userId }).returning();
+    await audit(tx, { ...auditActor(actor), action: 'admissions.campaign_created.v1', subjectType: 'admission_campaign', subjectId: row.id, data: { name: row.name, channel: row.channel } });
+    return row;
+  }
+
+  async updateCampaign(tx: Tx, actor: Actor, id: string, patch: { active?: boolean; budgetPaise?: number; endsOn?: string | null }) {
+    const [row] = await tx.update(admissionCampaigns).set(patch).where(eq(admissionCampaigns.id, id)).returning();
+    if (!row) throw new NotFoundException('Campaign not found');
+    await audit(tx, { ...auditActor(actor), action: 'admissions.campaign_updated.v1', subjectType: 'admission_campaign', subjectId: id, data: patch });
+    return row;
+  }
+
+  /**
+   * Enquiries, applications and enrolments per campaign (and one row for enquiries with none), with
+   * the conversion rate and the spend per enrolled student. `from`/`to` filter on the enquiry date.
+   */
+  async campaignReport(tx: Tx, range: { from?: string; to?: string }) {
+    const campaigns = await tx.select().from(admissionCampaigns).orderBy(asc(admissionCampaigns.name));
+    const conds: (SQL | undefined)[] = [range.from ? gte(enquiries.createdAt, new Date(`${range.from}T00:00:00Z`)) : undefined, range.to ? lte(enquiries.createdAt, new Date(`${range.to}T23:59:59Z`)) : undefined];
+    const rows = await tx
+      .select({ campaignId: enquiries.campaignId, stage: enquiries.stage, applied: sql<boolean>`${enquiries.applicationId} is not null or ${enquiries.stage} in ('applied', 'converted')` })
+      .from(enquiries)
+      .where(and(...conds));
+    const line = (id: string | null) => {
+      const mine = rows.filter((r) => r.campaignId === id);
+      const enquiriesN = mine.length;
+      const applied = mine.filter((r) => r.applied).length;
+      const enrolled = mine.filter((r) => r.stage === 'converted').length;
+      return { enquiries: enquiriesN, applied, enrolled, lost: mine.filter((r) => r.stage === 'lost').length, conversionPct: enquiriesN ? Math.round((enrolled / enquiriesN) * 1000) / 10 : 0 };
+    };
+    const out = campaigns.map((c) => {
+      const l = line(c.id);
+      return { id: c.id, name: c.name, channel: c.channel, utmSource: c.utmSource, utmMedium: c.utmMedium, utmCampaign: c.utmCampaign, active: c.active, budgetPaise: c.budgetPaise, ...l, costPerEnrolmentPaise: l.enrolled ? Math.round(c.budgetPaise / l.enrolled) : null };
+    });
+    return { campaigns: out, unattributed: line(null) };
   }
 
   /** The active counsellor with the fewest open enquiries; null when the institution has none. */

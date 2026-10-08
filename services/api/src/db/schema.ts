@@ -273,6 +273,10 @@ export const rooms = pgTable('rooms', {
   tenantId: tenantId(),
   campusId: uuid('campus_id').notNull().references(() => campuses.id),
   name: text('name').notNull(),
+  /** Seats; null = not set, so no capacity check. */
+  capacity: integer('capacity'),
+  /** 'classroom' | 'lab' | 'hall'. */
+  kind: text('kind').notNull().default('classroom'),
 });
 
 export const timetableSlots = pgTable(
@@ -296,6 +300,26 @@ export const timetableSlots = pgTable(
     archivedAt: timestamp('archived_at', { withTimezone: true }),
   },
   (t) => [index('timetable_teacher_day_idx').on(t.teacherId, t.dayOfWeek)],
+);
+
+/** A period covered by another teacher on one date (the usual teacher is on leave). */
+export const teacherSubstitutions = pgTable(
+  'teacher_substitutions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    slotId: uuid('slot_id').notNull().references(() => timetableSlots.id),
+    date: date('date').notNull(),
+    originalTeacherId: uuid('original_teacher_id').notNull().references(() => users.id),
+    substituteTeacherId: uuid('substitute_teacher_id').notNull().references(() => users.id),
+    reason: text('reason').notNull().default(''),
+    leaveRequestId: uuid('leave_request_id').references((): AnyPgColumn => leaveRequests.id, { onDelete: 'set null' }),
+    /** assigned | cancelled */
+    status: text('status').notNull().default('assigned'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('teacher_substitutions_slot_day_uq').on(t.slotId, t.date).where(sql`${t.status} = 'assigned'`), index('teacher_substitutions_sub_idx').on(t.substituteTeacherId, t.date)],
 );
 
 // ---------------------------------------------------------------------------------------------
@@ -1541,6 +1565,10 @@ export const enquiries = pgTable(
     nextFollowUpOn: date('next_follow_up_on'),
     /** The application this enquiry turned into. */
     applicationId: uuid('application_id'),
+    /** The marketing campaign it came from, with the UTM-style source and medium it arrived with. */
+    campaignId: uuid('campaign_id').references((): AnyPgColumn => admissionCampaigns.id, { onDelete: 'set null' }),
+    utmSource: text('utm_source'),
+    utmMedium: text('utm_medium'),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -1562,6 +1590,27 @@ export const enquiryActivities = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('enquiry_activities_enquiry_idx').on(t.enquiryId, t.createdAt)],
+);
+
+/** A marketing campaign enquiries are tagged with, for the conversion report. */
+export const admissionCampaigns = pgTable(
+  'admission_campaigns',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    channel: text('channel').notNull(),
+    utmSource: text('utm_source'),
+    utmMedium: text('utm_medium'),
+    utmCampaign: text('utm_campaign'),
+    startsOn: date('starts_on'),
+    endsOn: date('ends_on'),
+    budgetPaise: bigint('budget_paise', { mode: 'number' }).notNull().default(0),
+    active: boolean('active').notNull().default(true),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_campaigns_name_uq').on(t.tenantId, t.name)],
 );
 
 export const admissionCycleStatus = pgEnum('admission_cycle_status', ['draft', 'open', 'closed']);
@@ -1625,6 +1674,8 @@ export const applications = pgTable(
     status: applicationStatus('status').notNull().default('submitted'),
     statusReason: text('status_reason'),
     feeStatus: applicationFeeStatus('fee_status').notNull().default('none'),
+    /** Seat-quota category (for example "OBC"); falls back to the form answer `category`. */
+    category: text('category'),
     meritScore: numeric('merit_score', { precision: 10, scale: 3, mode: 'number' }),
     meritRank: integer('merit_rank'),
     eligibilityNotes: jsonb('eligibility_notes').$type<string[]>().notNull().default([]),
@@ -1705,6 +1756,72 @@ export const meritLists = pgTable(
   (t) => [uniqueIndex('merit_lists_version_uq').on(t.cycleId, t.version)],
 );
 
+/** Seats held back for a category in a cycle; the rest of the seats are general. */
+export const admissionQuotas = pgTable(
+  'admission_quotas',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    category: text('category').notNull(),
+    reservedSeats: integer('reserved_seats').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_quotas_uq').on(t.cycleId, t.category)],
+);
+
+/** An entrance test for a cycle: when, how it is scored. Halls and seats hang off it. */
+export const entranceTests = pgTable(
+  'entrance_tests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => admissionCycles.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    testDate: date('test_date').notNull(),
+    startsAt: time('starts_at').notNull(),
+    durationMinutes: integer('duration_minutes').notNull().default(90),
+    maxScore: numeric('max_score', { precision: 7, scale: 2, mode: 'number' }).notNull(),
+    passScore: numeric('pass_score', { precision: 7, scale: 2, mode: 'number' }),
+    venue: text('venue'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('entrance_tests_cycle_idx').on(t.cycleId)],
+);
+
+export const entranceHalls = pgTable(
+  'entrance_halls',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    testId: uuid('test_id').notNull().references(() => entranceTests.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    capacity: integer('capacity').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('entrance_halls_name_uq').on(t.testId, t.name)],
+);
+
+/** One candidate's seat in a hall, and later the score (or absence) entered for it. */
+export const entranceSeats = pgTable(
+  'entrance_seats',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    testId: uuid('test_id').notNull().references(() => entranceTests.id, { onDelete: 'cascade' }),
+    hallId: uuid('hall_id').notNull().references(() => entranceHalls.id, { onDelete: 'cascade' }),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    seatNo: integer('seat_no').notNull(),
+    score: numeric('score', { precision: 7, scale: 2, mode: 'number' }),
+    absent: boolean('absent').notNull().default(false),
+    scoredBy: uuid('scored_by').references(() => users.id, { onDelete: 'set null' }),
+    scoredAt: timestamp('scored_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('entrance_seats_app_uq').on(t.testId, t.applicationId), uniqueIndex('entrance_seats_seat_uq').on(t.hallId, t.seatNo)],
+);
+
 // ---------------------------------------------------------------------------------------------
 // Student lifecycle
 // ---------------------------------------------------------------------------------------------
@@ -1739,6 +1856,12 @@ export const studentLifecycleEvents = pgTable(
     toSectionId: uuid('to_section_id').references(() => sections.id, { onDelete: 'set null' }),
     reason: text('reason'),
     effectiveOn: date('effective_on').notNull(),
+    /** When a leave of absence or suspension ends. */
+    returnOn: date('return_on'),
+    /** Who approved the change (a staff user). */
+    approverId: uuid('approver_id').references(() => users.id, { onDelete: 'set null' }),
+    /** The issued transfer certificate linked to a transfer-out. */
+    certificateId: uuid('certificate_id').references((): AnyPgColumn => certificates.id, { onDelete: 'set null' }),
     batchId: uuid('batch_id').references(() => promotionBatches.id, { onDelete: 'set null' }),
     data: jsonb('data').$type<Record<string, unknown>>(),
     actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
@@ -2694,6 +2817,12 @@ export const TENANT_TABLES = [
   'skill_evidence',
   'outcome_passports',
   'sdg_tags',
+  'teacher_substitutions',
+  'entrance_tests',
+  'entrance_halls',
+  'entrance_seats',
+  'admission_quotas',
+  'admission_campaigns',
   'qb_questions',
   'qb_question_versions',
   'qb_blueprints',

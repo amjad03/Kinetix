@@ -4,7 +4,7 @@ import { and, asc, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm'
 import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { attendanceRecords, homework, lessonPlans, rooms, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
+import { attendanceRecords, homework, lessonPlans, rooms, sections, students, subjects, teacherSubstitutions, timetableSlots, users } from '../db/schema.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 
@@ -130,7 +130,15 @@ export class TeacherService {
       .from(timetableSlots)
       .where(and(eq(timetableSlots.teacherId, teacherId), eq(timetableSlots.sectionId, sectionId)))
       .limit(1);
-    return !!slot;
+    if (slot) return true;
+    // A teacher covering a period for a colleague can see that class.
+    const [covering] = await tx
+      .select({ id: teacherSubstitutions.id })
+      .from(teacherSubstitutions)
+      .innerJoin(timetableSlots, eq(timetableSlots.id, teacherSubstitutions.slotId))
+      .where(and(eq(teacherSubstitutions.substituteTeacherId, teacherId), eq(teacherSubstitutions.status, 'assigned'), eq(timetableSlots.sectionId, sectionId)))
+      .limit(1);
+    return !!covering;
   }
 
   async assertCanSeeSection(tx: Tx, p: UserPrincipal, sectionId: string) {
@@ -142,10 +150,16 @@ export class TeacherService {
   }
 
   /** The slot under RLS. Teachers may only use their own periods; principals and admins any. */
-  async slotFor(tx: Tx, p: UserPrincipal, slotId: string) {
+  async slotFor(tx: Tx, p: UserPrincipal, slotId: string, date?: string) {
     const [slot] = await tx.select().from(timetableSlots).where(eq(timetableSlots.id, slotId));
     if (!slot) throw new NotFoundException('Period not found');
-    if (slot.teacherId !== p.userId && !isSchoolAdmin(p)) throw new ForbiddenException('This is not your period');
+    if (slot.teacherId !== p.userId && !isSchoolAdmin(p)) {
+      // The substitute for that day may take the period's attendance.
+      const [sub] = date
+        ? await tx.select({ id: teacherSubstitutions.id }).from(teacherSubstitutions).where(and(eq(teacherSubstitutions.slotId, slotId), eq(teacherSubstitutions.date, date), eq(teacherSubstitutions.substituteTeacherId, p.userId), eq(teacherSubstitutions.status, 'assigned')))
+        : [];
+      if (!sub) throw new ForbiddenException('This is not your period');
+    }
     return slot;
   }
 

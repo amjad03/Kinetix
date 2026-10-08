@@ -10,9 +10,19 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const bad = async (): Promise<ActionResult<never>> => ({ ok: false, error: (await getI18n()).t('adm.err.invalid') });
 const refresh = () => revalidatePath('/students', 'layout');
 
-export async function changeStudentStatus(id: string, status: string, reason?: string): Promise<ActionResult<unknown>> {
+export async function changeStudentStatus(id: string, status: string, reason?: string, when?: { effectiveOn?: string; returnOn?: string }): Promise<ActionResult<unknown>> {
   if (!UUID.test(id) || !(STUDENT_STATUSES as readonly string[]).includes(status)) return bad();
-  const res = await act(() => api(`/v1/students/${id}/status`, { method: 'POST', body: { status, ...(reason?.trim() ? { reason: reason.trim() } : {}) } }));
+  const day = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined);
+  const body = { status, ...(reason?.trim() ? { reason: reason.trim() } : {}), ...(day(when?.effectiveOn) ? { effectiveOn: day(when?.effectiveOn) } : {}), ...(day(when?.returnOn) ? { returnOn: day(when?.returnOn) } : {}) };
+  const res = await act(() => api(`/v1/students/${id}/status`, { method: 'POST', body }));
+  if (res.ok) refresh();
+  return res;
+}
+
+/** Brings back a student who dropped out, was transferred out or expelled (a reason is required). */
+export async function readmitStudent(id: string, reason: string, sectionId?: string): Promise<ActionResult<unknown>> {
+  if (!UUID.test(id) || (sectionId && !UUID.test(sectionId))) return bad();
+  const res = await act(() => api(`/v1/students/${id}/readmit`, { method: 'POST', body: { reason: reason.trim(), ...(sectionId ? { sectionId } : {}) } }));
   if (res.ok) refresh();
   return res;
 }
