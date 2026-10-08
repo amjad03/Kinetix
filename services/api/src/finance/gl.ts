@@ -4,6 +4,9 @@ import type { TallyLedgers } from '@kinetix/shared';
 /** Ledger names used for fee journals; payroll uses the ledgers set in payroll settings. */
 export const FEE_LEDGERS = { cash: 'Cash', bank: 'Bank Account', feeIncome: 'Fee Income', refunds: 'Fee Refunds' } as const;
 
+/** Ledgers for fixed-asset journals. */
+export const ASSET_LEDGERS = { expense: 'Depreciation', accumulated: 'Accumulated Depreciation', assets: 'Fixed Assets', bank: 'Bank Account', gain: 'Profit on Sale of Assets', loss: 'Loss on Sale of Assets' } as const;
+
 export interface JournalLine { ledger: string; debitPaise: number; creditPaise: number }
 export interface Voucher { date: string; type: 'Receipt' | 'Payment' | 'Journal'; number: string; narration: string; lines: JournalLine[] }
 
@@ -66,3 +69,21 @@ export const variance = (budgetPaise: number, actualPaise: number) => ({ varianc
 /** A scholarship's discount on one open balance. */
 export const discountFor = (kind: 'percent' | 'fixed', value: number, balancePaise: number, remainingFixedPaise: number) =>
   kind === 'percent' ? Math.floor((balancePaise * value) / 100) : Math.min(balancePaise, remainingFixedPaise);
+
+/** One year's depreciation: expense against the accumulated-depreciation contra account. */
+export const depreciationLines = (paise: number): JournalLine[] => [dr(ASSET_LEDGERS.expense, paise), cr(ASSET_LEDGERS.accumulated, paise)];
+
+/**
+ * Disposal: the asset leaves at cost, its accumulated depreciation is cleared, the proceeds come
+ * in, and the difference from book value (cost less accumulated) is the gain or loss.
+ */
+export function disposalLines(costPaise: number, accumulatedPaise: number, proceedsPaise: number): JournalLine[] {
+  const gain = proceedsPaise - (costPaise - accumulatedPaise);
+  return [
+    ...(proceedsPaise > 0 ? [dr(ASSET_LEDGERS.bank, proceedsPaise)] : []),
+    ...(accumulatedPaise > 0 ? [dr(ASSET_LEDGERS.accumulated, accumulatedPaise)] : []),
+    ...(gain < 0 ? [dr(ASSET_LEDGERS.loss, -gain)] : []),
+    cr(ASSET_LEDGERS.assets, costPaise),
+    ...(gain > 0 ? [cr(ASSET_LEDGERS.gain, gain)] : []),
+  ];
+}

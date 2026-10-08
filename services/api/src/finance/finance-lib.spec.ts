@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { balanced, discountFor, feeReceiptVoucher, feeRefundVoucher, fiscalRange, glCsv, glTallyXml, payrollVoucher, variance } from './gl.js';
+import { balanced, depreciationLines, disposalLines, discountFor, feeReceiptVoucher, feeRefundVoucher, fiscalRange, glCsv, glTallyXml, payrollVoucher, variance } from './gl.js';
 
 const ledgers = { salaryExpense: 'Salary', employerPfExpense: 'ER PF', employerEsiExpense: 'ER ESI', pfPayable: 'PF', esiPayable: 'ESI', ptPayable: 'PT', tdsPayable: 'TDS', salaryPayable: 'Net', otherDeductions: 'Other' };
 
@@ -30,5 +30,13 @@ describe('finance helpers', () => {
     expect(discountFor('percent', 25, 10001, 0)).toBe(2500);
     expect(discountFor('fixed', 0, 3000, 5000)).toBe(3000);
     expect(discountFor('fixed', 0, 9000, 5000)).toBe(5000);
+  });
+
+  it('asset journals balance for a gain, a loss and a scrap', () => {
+    const v = (lines: ReturnType<typeof disposalLines>) => balanced({ date: '2026-04-01', type: 'Journal', number: 'x', narration: '', lines });
+    expect(v(depreciationLines(2000))).toBe(true);
+    expect([v(disposalLines(10000, 4000, 9000)), v(disposalLines(10000, 4000, 2000)), v(disposalLines(10000, 10000, 0))]).toEqual([true, true, true]);
+    expect(disposalLines(10000, 4000, 9000).map((l) => l.ledger)).toContain('Profit on Sale of Assets');
+    expect(disposalLines(10000, 4000, 2000).map((l) => l.ledger)).toContain('Loss on Sale of Assets');
   });
 });

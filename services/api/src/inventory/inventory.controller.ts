@@ -7,7 +7,7 @@ import { audit } from '../common/audit.js';
 import { nextNumber, orConflict, Paise } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { invGoodsReceiptLines, invGoodsReceipts, invInvoices, invItems, invPoLines, invPurchaseOrders, invRequisitionLines, invRequisitions, invStock, invStockMoves, invStores, invVendors } from '../db/schema.js';
+import { invGoodsReceiptLines, invQuoteLines, invQuotes, invReturns, invRfqs, invTransfers, invGoodsReceipts, invInvoices, invItems, invPoLines, invPurchaseOrders, invRequisitionLines, invRequisitions, invStock, invStockMoves, invStores, invVendors } from '../db/schema.js';
 
 export const STORE_ROLES: RoleName[] = ['store_keeper', 'tenant_admin', 'principal'];
 /** Who approves requisitions and invoice mismatches. */
@@ -26,6 +26,11 @@ const ReqBody = z.object({ reason: z.string().trim().max(300).default(''), lines
 const DecisionBody = z.object({ approve: z.boolean(), note: z.string().trim().max(300).optional() });
 const PoBody = z.object({ requisitionId: z.uuid(), vendorId: z.uuid(), storeId: z.uuid(), departmentId: z.uuid().optional(), lines: z.array(z.object({ itemId: z.uuid(), qty: Qty, unitPricePaise: Paise.min(1) })).min(1).max(50) });
 const GrnBody = z.object({ idempotencyKey: z.string().min(8).max(80), note: z.string().trim().max(200).default(''), lines: z.array(z.object({ poLineId: z.uuid(), qty: Qty })).min(1) });
+const RfqBody = z.object({ requisitionId: z.uuid(), closesOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() });
+const QuoteBody = z.object({ vendorId: z.uuid(), deliveryDays: z.number().int().min(0).max(365).default(0), note: z.string().trim().max(300).default(''), lines: z.array(z.object({ itemId: z.uuid(), unitPricePaise: Paise.min(1) })).min(1).max(50) });
+const AwardBody = z.object({ quoteId: z.uuid(), storeId: z.uuid(), departmentId: z.uuid().optional() });
+const TransferBody = z.object({ fromStoreId: z.uuid(), toStoreId: z.uuid(), itemId: z.uuid(), qty: Qty, note: z.string().trim().max(200).default('') });
+const ReturnBody = z.object({ kind: z.enum(['vendor', 'issue']), itemId: z.uuid(), qty: Qty, reason: z.string().trim().min(2).max(200), poId: z.uuid().optional(), storeId: z.uuid().optional(), issuedTo: z.string().trim().min(1).max(120).optional() });
 const InvoiceBody = z.object({ invoiceNo: z.string().trim().min(1).max(60), amountPaise: Paise.min(1) });
 
 /**
@@ -366,6 +371,159 @@ export class InventoryController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.invoice_paid', subjectType: 'inv_invoice', subjectId: id });
       return inv;
     });
+  }
+
+  // --- RFQ and quotation comparison -------------------------------------------------------
+
+  /** Asks vendors to quote for an approved requisition. */
+  @Post('rfqs')
+  @Auth('user', STORE_ROLES)
+  createRfq(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(RfqBody)) b: z.infer<typeof RfqBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [req] = await tx.select().from(invRequisitions).where(eq(invRequisitions.id, b.requisitionId));
+      if (!req) throw new NotFoundException('Requisition not found');
+      if (req.status !== 'approved') throw new ConflictException('Only an approved requisition can go to quotation');
+      const number = await nextNumber(tx, p.tenantId, 'RFQ');
+      const [rfq] = await tx.insert(invRfqs).values({ tenantId: p.tenantId, number, requisitionId: req.id, closesOn: b.closesOn ?? null, createdBy: p.userId }).returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.rfq_opened', subjectType: 'inv_rfq', subjectId: rfq.id, data: { number } });
+      return rfq;
+    });
+  }
+
+  @Get('rfqs')
+  @Auth('user', STORE_ROLES)
+  rfqs(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(invRfqs).orderBy(desc(invRfqs.createdAt)).limit(200));
+  }
+
+  /** The requisition's lines and each vendor's quote side by side, with the cheapest total and per-item best price marked. */
+  @Get('rfqs/:id')
+  @Auth('user', STORE_ROLES)
+  rfq(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [rfq] = await tx.select().from(invRfqs).where(eq(invRfqs.id, id));
+      if (!rfq) throw new NotFoundException('RFQ not found');
+      const lines = await tx.select({ itemId: invItems.id, item: invItems.name, unit: invItems.unit, qty: invRequisitionLines.qty }).from(invRequisitionLines).innerJoin(invItems, eq(invItems.id, invRequisitionLines.itemId)).where(eq(invRequisitionLines.requisitionId, rfq.requisitionId));
+      const quotes = await tx.select({ q: invQuotes, vendor: invVendors.name }).from(invQuotes).innerJoin(invVendors, eq(invVendors.id, invQuotes.vendorId)).where(eq(invQuotes.rfqId, id)).orderBy(asc(invQuotes.totalPaise));
+      const prices = quotes.length ? await tx.select().from(invQuoteLines).where(inArray(invQuoteLines.quoteId, quotes.map((x) => x.q.id))) : [];
+      const best = new Map<string, number>();
+      for (const l of prices) best.set(l.itemId, Math.min(best.get(l.itemId) ?? Infinity, l.unitPricePaise));
+      return {
+        ...rfq,
+        lines,
+        quotes: quotes.map(({ q, vendor }, i) => ({ ...q, vendor, lowest: i === 0, prices: lines.map((ln) => { const price = prices.find((x) => x.quoteId === q.id && x.itemId === ln.itemId)?.unitPricePaise ?? 0; return { itemId: ln.itemId, unitPricePaise: price, best: price === best.get(ln.itemId) }; }) })),
+      };
+    });
+  }
+
+  /** A vendor's quote must price every requisition line; a vendor quotes once. */
+  @Post('rfqs/:id/quotes')
+  @Auth('user', STORE_ROLES)
+  addQuote(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(QuoteBody)) b: z.infer<typeof QuoteBody>) {
+    return orConflict('This vendor has already quoted', () =>
+      this.db.withTenant(p.tenantId, async (tx) => {
+        const [rfq] = await tx.select().from(invRfqs).where(eq(invRfqs.id, id)).for('update');
+        if (!rfq) throw new NotFoundException('RFQ not found');
+        if (rfq.status !== 'open') throw new ConflictException(`This RFQ is ${rfq.status}`);
+        const [vendor] = await tx.select({ id: invVendors.id }).from(invVendors).where(and(eq(invVendors.id, b.vendorId), eq(invVendors.active, true)));
+        if (!vendor) throw new BadRequestException('Vendor not found');
+        const asked = await tx.select().from(invRequisitionLines).where(eq(invRequisitionLines.requisitionId, rfq.requisitionId));
+        const given = new Set(b.lines.map((l) => l.itemId));
+        if (given.size !== b.lines.length || asked.length !== given.size || !asked.every((a) => given.has(a.itemId))) throw new BadRequestException('Price every line of the requisition, once');
+        const total = b.lines.reduce((t, l) => t + l.unitPricePaise * asked.find((a) => a.itemId === l.itemId)!.qty, 0);
+        const [q] = await tx.insert(invQuotes).values({ tenantId: p.tenantId, rfqId: id, vendorId: b.vendorId, deliveryDays: b.deliveryDays, note: b.note, totalPaise: total }).returning();
+        await tx.insert(invQuoteLines).values(b.lines.map((l) => ({ tenantId: p.tenantId, quoteId: q.id, ...l })));
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.quote_received', subjectType: 'inv_quote', subjectId: q.id, data: { totalPaise: total } });
+        return q;
+      }),
+    );
+  }
+
+  /** The approver picks a quote: it becomes the purchase order at the quoted prices for the requisitioned quantities. */
+  @Post('rfqs/:id/award')
+  @HttpCode(200)
+  @Auth('user', APPROVER_ROLES)
+  award(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(AwardBody)) b: z.infer<typeof AwardBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [rfq] = await tx.select().from(invRfqs).where(eq(invRfqs.id, id)).for('update');
+      if (!rfq) throw new NotFoundException('RFQ not found');
+      if (rfq.status !== 'open') throw new ConflictException(`This RFQ is ${rfq.status}`);
+      const [q] = await tx.select().from(invQuotes).where(and(eq(invQuotes.id, b.quoteId), eq(invQuotes.rfqId, id)));
+      if (!q) throw new NotFoundException('Quote not found');
+      const [req] = await tx.select().from(invRequisitions).where(eq(invRequisitions.id, rfq.requisitionId)).for('update');
+      if (req.status !== 'approved') throw new ConflictException('The requisition is no longer open for ordering');
+      const [store] = await tx.select({ id: invStores.id }).from(invStores).where(eq(invStores.id, b.storeId));
+      if (!store) throw new BadRequestException('Store not found');
+      const asked = await tx.select().from(invRequisitionLines).where(eq(invRequisitionLines.requisitionId, req.id));
+      const prices = await tx.select().from(invQuoteLines).where(eq(invQuoteLines.quoteId, q.id));
+      const number = await nextNumber(tx, p.tenantId, 'PO');
+      const [po] = await tx.insert(invPurchaseOrders).values({ tenantId: p.tenantId, number, requisitionId: req.id, vendorId: q.vendorId, storeId: b.storeId, departmentId: b.departmentId ?? null, totalPaise: q.totalPaise, createdBy: p.userId }).returning();
+      await tx.insert(invPoLines).values(asked.map((a) => ({ tenantId: p.tenantId, poId: po.id, itemId: a.itemId, qty: a.qty, unitPricePaise: prices.find((x) => x.itemId === a.itemId)!.unitPricePaise })));
+      await tx.update(invRequisitions).set({ status: 'ordered' }).where(eq(invRequisitions.id, req.id));
+      await tx.update(invRfqs).set({ status: 'awarded', awardedQuoteId: q.id }).where(eq(invRfqs.id, id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.rfq_awarded', subjectType: 'inv_rfq', subjectId: id, data: { quoteId: q.id, po: number } });
+      return po;
+    });
+  }
+
+  // --- Stock transfers and returns ------------------------------------------------------------
+
+  /** Moves stock between two stores: one ledger row out, one in, both under one transfer number. */
+  @Post('stock/transfers')
+  @Auth('user', STORE_ROLES)
+  transfer(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(TransferBody)) b: z.infer<typeof TransferBody>) {
+    if (b.fromStoreId === b.toStoreId) throw new BadRequestException('Choose two different stores');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const number = await nextNumber(tx, p.tenantId, 'TRF');
+      const [t] = await tx.insert(invTransfers).values({ tenantId: p.tenantId, number, createdBy: p.userId, ...b }).returning();
+      const ref = { refType: 'inv_transfer', refId: t.id, qty: b.qty, note: number };
+      await this.applyMove(tx, p, { storeId: b.fromStoreId, itemId: b.itemId, delta: -b.qty, kind: 'transfer_out', ...ref });
+      await this.applyMove(tx, p, { storeId: b.toStoreId, itemId: b.itemId, delta: b.qty, kind: 'transfer_in', ...ref });
+      return t;
+    });
+  }
+
+  @Get('stock/transfers')
+  @Auth('user', STORE_ROLES)
+  transfers(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(invTransfers).orderBy(desc(invTransfers.createdAt)).limit(200));
+  }
+
+  /** Vendor return: goods received on a PO go back (stock out, credit at the PO price). Issue return: what was issued to someone comes back (stock in). */
+  @Post('returns')
+  @Auth('user', STORE_ROLES)
+  giveBack(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ReturnBody)) b: z.infer<typeof ReturnBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      let storeId = b.storeId;
+      let vendorId: string | null = null;
+      let credit = 0;
+      if (b.kind === 'vendor') {
+        if (!b.poId) throw new BadRequestException('Say which purchase order the goods came on');
+        const [po] = await tx.select().from(invPurchaseOrders).where(eq(invPurchaseOrders.id, b.poId));
+        const [line] = po ? await tx.select().from(invPoLines).where(and(eq(invPoLines.poId, po.id), eq(invPoLines.itemId, b.itemId))) : [];
+        if (!po || !line) throw new NotFoundException('That item is not on this purchase order');
+        const [done] = await tx.select({ n: sql<number>`coalesce(sum(${invReturns.qty}), 0)::int` }).from(invReturns).where(and(eq(invReturns.poId, po.id), eq(invReturns.itemId, b.itemId)));
+        if (b.qty > line.receivedQty - done.n) throw new ConflictException(`Only ${line.receivedQty - done.n} can still be returned on this order`);
+        storeId = po.storeId;
+        vendorId = po.vendorId;
+        credit = b.qty * line.unitPricePaise;
+      } else {
+        if (!b.issuedTo || !b.storeId) throw new BadRequestException('Say who returned it and to which store');
+        const [out] = await tx.select({ n: sql<number>`coalesce(-sum(${invStockMoves.delta}), 0)::int` }).from(invStockMoves).where(and(eq(invStockMoves.kind, 'issue'), eq(invStockMoves.storeId, b.storeId), eq(invStockMoves.itemId, b.itemId), eq(invStockMoves.issuedTo, b.issuedTo)));
+        const [back] = await tx.select({ n: sql<number>`coalesce(sum(${invReturns.qty}), 0)::int` }).from(invReturns).where(and(eq(invReturns.kind, 'issue'), eq(invReturns.storeId, b.storeId), eq(invReturns.itemId, b.itemId), eq(invReturns.issuedTo, b.issuedTo)));
+        if (b.qty > out.n - back.n) throw new ConflictException(`Only ${out.n - back.n} are out with ${b.issuedTo}`);
+      }
+      const number = await nextNumber(tx, p.tenantId, 'RTN');
+      const [r] = await tx.insert(invReturns).values({ tenantId: p.tenantId, number, kind: b.kind, storeId: storeId!, itemId: b.itemId, qty: b.qty, vendorId, poId: b.poId ?? null, issuedTo: b.issuedTo ?? null, reason: b.reason, creditPaise: credit, createdBy: p.userId }).returning();
+      await this.applyMove(tx, p, { storeId: storeId!, itemId: b.itemId, delta: b.kind === 'vendor' ? -b.qty : b.qty, kind: `return_${b.kind}`, qty: b.qty, note: b.reason, issuedTo: b.issuedTo, refType: 'inv_return', refId: r.id });
+      return r;
+    });
+  }
+
+  @Get('returns')
+  @Auth('user', STORE_ROLES)
+  returns(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(invReturns).orderBy(desc(invReturns.createdAt)).limit(200));
   }
 
   // --- helpers -----------------------------------------------------------------------------

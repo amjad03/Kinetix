@@ -8,7 +8,7 @@ import { audit } from '../common/audit.js';
 import { Day, Paise } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { budgets, costExpenses, departmentStaff, departments, feeInvoices, feePayments, feeRefunds, invPurchaseOrders, payrollRuns, payslips, students, tenants } from '../db/schema.js';
+import { assetGlPostings, budgets, costExpenses, departmentStaff, departments, feeInvoices, feePayments, feeRefunds, invPurchaseOrders, payrollRuns, payslips, students, tenants } from '../db/schema.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { monthEnd, requireDay } from '../hr/dates.js';
 import { PayrollService } from '../hr/payroll.service.js';
@@ -156,6 +156,8 @@ export class FinanceController {
       const { settings, totals } = await this.payroll.journalTotals(tx, tenantId, run.id);
       out.push(payrollVoucher({ date, month: run.month, totals, ledgers: settings.ledgers }));
     }
+    const posts = await tx.select().from(assetGlPostings).where(and(gte(assetGlPostings.postedOn, from), lte(assetGlPostings.postedOn, to)));
+    for (const g of posts) out.push({ date: g.postedOn, type: 'Journal', number: g.voucherNo, narration: g.narration, lines: g.lines });
     if (!out.every(balanced)) throw new Error('A journal entry does not balance');
     return out.sort((a, b) => a.date.localeCompare(b.date) || a.number.localeCompare(b.number));
   }

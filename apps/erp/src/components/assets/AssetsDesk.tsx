@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import PrintOutlined from '@mui/icons-material/PrintOutlined';
-import { allocateAsset, disposeAsset, loadAsset, logMaintenance, registerAsset, returnAsset } from '@/app/(dashboard)/assets/actions';
+import { allocateAsset, disposeAsset, loadAsset, logMaintenance, postDepreciation, registerAsset, returnAsset } from '@/app/(dashboard)/assets/actions';
 import { assetTagsUrl } from '@/lib/documents';
 import { DataTable, EmptyState } from '@/components/ui';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, useToast } from '@/components/ops/kit';
@@ -15,7 +15,7 @@ import { useI18n } from '@/i18n/client';
 import { st } from '@/lib/ops-labels';
 import type { Asset, AssetDetail, MaintDue } from '@/lib/ops';
 
-type Dialog = 'register' | { detail: AssetDetail } | { allocate: AssetDetail } | { maintain: AssetDetail } | { dispose: AssetDetail };
+type Dialog = 'register' | 'depr' | { detail: AssetDetail } | { allocate: AssetDetail } | { maintain: AssetDetail } | { dispose: AssetDetail };
 
 /** The printable label: the tag large, the name, the QR code a scanner reads (`kinetix://asset/<tag>`) and that text beneath it. */
 export function AssetLabel({ a }: { a: Pick<AssetDetail, 'tag' | 'name' | 'qr' | 'qrSvg'> }) {
@@ -50,6 +50,7 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
       <Bar>
         <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('register')} sx={{ mt: 3 }}>{t('as.register')}</Button>
         <Button variant="outlined" startIcon={<PrintOutlined />} href={assetTagsUrl()} target="_blank" disabled={assets.length === 0} sx={{ mt: 3 }}>{t('as.printAllTags')}</Button>
+        <Button variant="outlined" onClick={() => setDlg('depr')} disabled={assets.length === 0} sx={{ mt: 3 }}>{t('as.postDep')}</Button>
       </Bar>
       {assets.length === 0 ? (
         <EmptyState dense icon={<Box component="span">·</Box>} title={t('as.none')} testId="as-list-empty" />
@@ -82,6 +83,7 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
         </>
       )}
 
+      {dlg === 'depr' && <FormDialog title={t('as.postDep')} onSubmit={postDepreciation} onClose={(m) => done(m ? t('as.postedMsg') : undefined)} fields={[{ name: 'fiscalYear', label: t('as.fy'), required: true }]} />}
       {dlg === 'register' && (
         <FormDialog
           title={t('as.register')}

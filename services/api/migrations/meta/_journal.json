@@ -596,6 +596,20 @@
       "when": 1791410764229,
       "tag": "0091_finance",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1791410824229,
+      "tag": "0092_procurement_gl",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1791410884229,
+      "tag": "0093_campus_ops2",
+      "breakpoints": true
     }
   ]
 }

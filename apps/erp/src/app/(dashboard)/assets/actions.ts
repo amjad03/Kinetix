@@ -31,3 +31,7 @@ export async function logMaintenance(assetId: string, v: V) {
 export async function disposeAsset(assetId: string, v: V) {
   return send(`/v1/assets/${id(assetId)}/dispose`, { disposedOn: v.disposedOn, disposalPaise: num(v.proceeds || '0') }, PAGE);
 }
+
+export async function postDepreciation(v: V) {
+  return send('/v1/assets/gl/depreciation', { fiscalYear: v.fiscalYear }, PAGE);
+}

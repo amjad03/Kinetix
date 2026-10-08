@@ -2,7 +2,7 @@
 
 import { qtyRows } from '@/lib/ops';
 import { read, send, num, optStr } from '@/lib/ops-server';
-import type { IPoDetail } from '@/lib/ops';
+import type { IPoDetail, IRfqDetail } from '@/lib/ops';
 import type { ActionResult } from '@/lib/types';
 
 const PAGE = '/inventory';
@@ -58,4 +58,32 @@ export async function approveInvoice(invoiceId: string) {
 
 export async function markInvoicePaid(invoiceId: string) {
   return send(`${I}/invoices/${id(invoiceId)}/paid`, undefined, PAGE);
+}
+
+export async function loadRfq(rfqId: string): Promise<ActionResult<IRfqDetail>> {
+  return read<IRfqDetail>(`${I}/rfqs/${id(rfqId)}`);
+}
+
+export async function openRfq(v: V) {
+  return send(`${I}/rfqs`, { requisitionId: v.requisitionId, ...(optStr(v.closesOn) ? { closesOn: v.closesOn } : {}) }, PAGE);
+}
+
+export async function addQuote(rfqId: string, v: V, itemIds: string[]) {
+  return send(`${I}/rfqs/${id(rfqId)}/quotes`, { vendorId: v.vendorId, deliveryDays: num(v.deliveryDays || '0'), note: v.note ?? '', lines: itemIds.map((itemId) => ({ itemId, unitPricePaise: num(v[`p_${itemId}`]) })) }, PAGE);
+}
+
+export async function awardQuote(rfqId: string, quoteId: string, v: V) {
+  return send(`${I}/rfqs/${id(rfqId)}/award`, { quoteId, storeId: v.storeId }, PAGE);
+}
+
+export async function transferStock(v: V) {
+  return send(`${I}/stock/transfers`, { fromStoreId: v.fromStoreId, toStoreId: v.toStoreId, itemId: v.itemId, qty: num(v.qty), note: v.note ?? '' }, PAGE);
+}
+
+export async function returnToVendor(v: V) {
+  return send(`${I}/returns`, { kind: 'vendor', poId: v.poId, itemId: v.itemId, qty: num(v.qty), reason: v.reason }, PAGE);
+}
+
+export async function returnFromIssue(v: V) {
+  return send(`${I}/returns`, { kind: 'issue', storeId: v.storeId, itemId: v.itemId, qty: num(v.qty), issuedTo: v.issuedTo, reason: v.reason }, PAGE);
 }

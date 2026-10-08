@@ -8,10 +8,11 @@ import { audit } from '../common/audit.js';
 import { qrSvg } from '../common/qr.js';
 import { assetTagsPdf } from '../documents/pdfs.js';
 import { bookValueAfter, Day, depreciationSchedule, nextNumber, Paise } from '../common/ops.js';
+import { depreciationLines, disposalLines } from '../finance/gl.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assetAllocations, assetMaintenance, assets, tenants } from '../db/schema.js';
+import { assetAllocations, assetGlPostings, assetMaintenance, assets, tenants } from '../db/schema.js';
 import { STORE_ROLES } from './inventory.controller.js';
 
 const AssetBody = z
@@ -30,6 +31,8 @@ const AssetBody = z
   .refine((a) => a.method !== 'wdv' || a.wdvRatePct != null, { message: 'Give the written-down rate', path: ['wdvRatePct'] });
 const AllocateBody = z.object({ assignedTo: z.string().trim().min(1).max(120), userId: z.uuid().optional(), allocatedOn: Day.optional() });
 const MaintBody = z.object({ kind: z.enum(['service', 'repair', 'inspection']), description: z.string().trim().max(300).default(''), costPaise: Paise.default(0), doneOn: Day, nextDueOn: Day.optional(), ongoing: z.boolean().default(false) });
+const FyBody = z.object({ fiscalYear: z.string().regex(/^\d{4}-\d{2}$/, 'Use a financial year like 2026-27') });
+const fiscalYearOf = (day: string) => { const y = Number(day.slice(0, 4)) - (Number(day.slice(5, 7)) < 4 ? 1 : 0); return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; };
 const DisposeBody = z.object({ disposedOn: Day, disposalPaise: Paise.default(0) });
 
 /**
@@ -116,6 +119,33 @@ export class AssetsController {
     });
   }
 
+  /**
+   * Posts a financial year's depreciation journals (one per asset, dated 31 March) for the GL
+   * export: the register's schedule year for that year, none in the year of disposal. Safe to rerun.
+   */
+  @Post('gl/depreciation')
+  @HttpCode(200)
+  @Auth('user', STORE_ROLES)
+  postDepreciation(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FyBody)) b: z.infer<typeof FyBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const start = Number(b.fiscalYear.slice(0, 4));
+      if (Number(b.fiscalYear.slice(5)) !== (start + 1) % 100) throw new BadRequestException('Use a financial year like 2026-27');
+      const end = `${start + 1}-03-31`;
+      const rows = await tx.select().from(assets).where(and(sql`${assets.purchasedOn} <= ${end}::date`, sql`(${assets.disposedOn} is null or ${assets.disposedOn} > ${end}::date)`)).orderBy(asc(assets.tag));
+      let posted = 0;
+      let totalPaise = 0;
+      for (const a of rows) {
+        const k = start - Number(fiscalYearOf(a.purchasedOn).slice(0, 4)) + 1;
+        const paise = depreciationSchedule(a)[k - 1]?.depreciationPaise ?? 0;
+        if (paise <= 0) continue;
+        const done = await tx.insert(assetGlPostings).values({ tenantId: p.tenantId, assetId: a.id, kind: 'depreciation', fiscalYear: b.fiscalYear, postedOn: end, voucherNo: `DEP-${a.tag}-${b.fiscalYear}`, narration: `Depreciation ${b.fiscalYear} on ${a.name} (${a.tag})`, lines: depreciationLines(paise), postedBy: p.userId }).onConflictDoNothing().returning({ id: assetGlPostings.id });
+        if (done.length) { posted++; totalPaise += paise; }
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.depreciation_posted', subjectType: 'asset', data: { fiscalYear: b.fiscalYear, posted, totalPaise } });
+      return { fiscalYear: b.fiscalYear, posted, totalPaise };
+    });
+  }
+
   @Get(':id')
   @Auth('user', STORE_ROLES)
   get(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
@@ -175,6 +205,9 @@ export class AssetsController {
       if (b.disposedOn < a.purchasedOn) throw new BadRequestException('Disposed before it was bought');
       await tx.update(assetAllocations).set({ returnedOn: b.disposedOn }).where(and(eq(assetAllocations.assetId, id), isNull(assetAllocations.returnedOn)));
       const [done] = await tx.update(assets).set({ status: 'disposed', disposedOn: b.disposedOn, disposalPaise: b.disposalPaise }).where(eq(assets.id, id)).returning();
+      const [acc] = await tx.select({ n: sql<number>`coalesce(sum((${assetGlPostings.lines}->0->>'debitPaise')::bigint), 0)::float8` }).from(assetGlPostings).where(and(eq(assetGlPostings.assetId, id), eq(assetGlPostings.kind, 'depreciation')));
+      const fy = fiscalYearOf(b.disposedOn);
+      await tx.insert(assetGlPostings).values({ tenantId: p.tenantId, assetId: id, kind: 'disposal', fiscalYear: fy, postedOn: b.disposedOn, voucherNo: `DSP-${a.tag}`, narration: `Disposal of ${a.name} (${a.tag})`, lines: disposalLines(a.costPaise, acc.n, b.disposalPaise), postedBy: p.userId });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.disposed', subjectType: 'asset', subjectId: id, data: b });
       return this.view(done);
     });

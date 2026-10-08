@@ -2581,6 +2581,20 @@ export const TENANT_TABLES = [
   'fee_refunds',
   'budgets',
   'cost_expenses',
+  'inv_rfqs',
+  'inv_quotes',
+  'inv_quote_lines',
+  'inv_transfers',
+  'inv_returns',
+  'asset_gl_postings',
+  'hostel_waitlist',
+  'hostel_transfers',
+  'hostel_night_attendance',
+  'transport_expenses',
+  'transport_incidents',
+  'transport_gps_sources',
+  'canteen_meal_attendance',
+  'canteen_topups',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -3714,4 +3728,222 @@ export const costExpenses = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('cost_expenses_dept_idx').on(t.departmentId, t.spentOn)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Procurement depth and fixed-asset GL (migration 0092); campus operations depth (0093)
+// ---------------------------------------------------------------------------------------------
+
+export const invRfqs = pgTable(
+  'inv_rfqs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    requisitionId: uuid('requisition_id').notNull().references(() => invRequisitions.id),
+    status: text('status').$type<'open' | 'awarded' | 'cancelled'>().notNull().default('open'),
+    closesOn: date('closes_on'),
+    awardedQuoteId: uuid('awarded_quote_id'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_rfq_number_uq').on(t.tenantId, t.number)],
+);
+
+export const invQuotes = pgTable(
+  'inv_quotes',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    rfqId: uuid('rfq_id').notNull().references(() => invRfqs.id, { onDelete: 'cascade' }),
+    vendorId: uuid('vendor_id').notNull().references(() => invVendors.id),
+    deliveryDays: integer('delivery_days').notNull().default(0),
+    note: text('note').notNull().default(''),
+    totalPaise: bigint('total_paise', { mode: 'number' }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_quote_vendor_uq').on(t.rfqId, t.vendorId)],
+);
+
+export const invQuoteLines = pgTable('inv_quote_lines', {
+  id: id(),
+  tenantId: tenantId(),
+  quoteId: uuid('quote_id').notNull().references(() => invQuotes.id, { onDelete: 'cascade' }),
+  itemId: uuid('item_id').notNull().references(() => invItems.id),
+  unitPricePaise: bigint('unit_price_paise', { mode: 'number' }).notNull(),
+});
+
+export const invTransfers = pgTable('inv_transfers', {
+  id: id(),
+  tenantId: tenantId(),
+  number: text('number').notNull(),
+  fromStoreId: uuid('from_store_id').notNull().references(() => invStores.id),
+  toStoreId: uuid('to_store_id').notNull().references(() => invStores.id),
+  itemId: uuid('item_id').notNull().references(() => invItems.id),
+  qty: integer('qty').notNull(),
+  note: text('note').notNull().default(''),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** Goods sent back to the vendor (stock out) or returned by whoever they were issued to (stock in). */
+export const invReturns = pgTable('inv_returns', {
+  id: id(),
+  tenantId: tenantId(),
+  number: text('number').notNull(),
+  kind: text('kind').$type<'vendor' | 'issue'>().notNull(),
+  storeId: uuid('store_id').notNull().references(() => invStores.id),
+  itemId: uuid('item_id').notNull().references(() => invItems.id),
+  qty: integer('qty').notNull(),
+  vendorId: uuid('vendor_id').references(() => invVendors.id),
+  poId: uuid('po_id').references(() => invPurchaseOrders.id),
+  issuedTo: text('issued_to'),
+  reason: text('reason').notNull(),
+  creditPaise: bigint('credit_paise', { mode: 'number' }).notNull().default(0),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** A fixed-asset journal (depreciation for a financial year, or a disposal) that the GL export picks up. */
+export const assetGlPostings = pgTable(
+  'asset_gl_postings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    assetId: uuid('asset_id').notNull().references(() => assets.id),
+    kind: text('kind').$type<'depreciation' | 'disposal'>().notNull(),
+    fiscalYear: text('fiscal_year').notNull(),
+    postedOn: date('posted_on').notNull(),
+    voucherNo: text('voucher_no').notNull(),
+    narration: text('narration').notNull(),
+    lines: jsonb('lines').$type<{ ledger: string; debitPaise: number; creditPaise: number }[]>().notNull(),
+    postedBy: uuid('posted_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('asset_gl_uq').on(t.assetId, t.kind, t.fiscalYear)],
+);
+
+export const hostelWaitlist = pgTable(
+  'hostel_waitlist',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    blockId: uuid('block_id').references(() => hostelBlocks.id),
+    note: text('note').notNull().default(''),
+    status: text('status').$type<'waiting' | 'allotted' | 'cancelled'>().notNull().default('waiting'),
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    allottedAt: timestamp('allotted_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('hostel_waitlist_open_uq').on(t.studentId).where(sql`status = 'waiting'`)],
+);
+
+export const hostelTransfers = pgTable('hostel_transfers', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  fromBedId: uuid('from_bed_id').notNull().references(() => hostelBeds.id),
+  toBedId: uuid('to_bed_id').notNull().references(() => hostelBeds.id),
+  reason: text('reason').notNull(),
+  movedOn: date('moved_on').notNull(),
+  movedBy: uuid('moved_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** The night roll call. `leave` = out on a gate pass, so no alert. */
+export const hostelNightAttendance = pgTable(
+  'hostel_night_attendance',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    night: date('night').notNull(),
+    status: text('status').$type<'present' | 'absent' | 'leave'>().notNull(),
+    markedBy: uuid('marked_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('hostel_night_uq').on(t.studentId, t.night)],
+);
+
+export const transportExpenses = pgTable(
+  'transport_expenses',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    vehicleId: uuid('vehicle_id').notNull().references(() => transportVehicles.id),
+    kind: text('kind').$type<'fuel' | 'repair' | 'toll' | 'other'>().notNull(),
+    spentOn: date('spent_on').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    litres: numeric('litres', { precision: 8, scale: 2, mode: 'number' }),
+    odometerKm: integer('odometer_km'),
+    note: text('note').notNull().default(''),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('transport_expenses_vehicle_idx').on(t.vehicleId, t.spentOn)],
+);
+
+export const transportIncidents = pgTable('transport_incidents', {
+  id: id(),
+  tenantId: tenantId(),
+  vehicleId: uuid('vehicle_id').references(() => transportVehicles.id),
+  tripId: uuid('trip_id').references(() => transportTrips.id),
+  kind: text('kind').$type<'accident' | 'breakdown' | 'delay' | 'behaviour' | 'other'>().notNull(),
+  severity: text('severity').$type<'low' | 'medium' | 'high'>().notNull().default('low'),
+  description: text('description').notNull(),
+  occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+  status: text('status').$type<'open' | 'resolved'>().notNull().default('open'),
+  resolution: text('resolution'),
+  reportedBy: uuid('reported_by').notNull().references(() => users.id),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});
+
+/** A GPS vendor allowed to post positions; only the SHA-256 of its token is kept. */
+export const transportGpsSources = pgTable(
+  'transport_gps_sources',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    active: boolean('active').notNull().default(true),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('transport_gps_token_uq').on(t.tokenHash)],
+);
+
+export const canteenMealAttendance = pgTable(
+  'canteen_meal_attendance',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    mealDate: date('meal_date').notNull(),
+    meal: text('meal').$type<'breakfast' | 'lunch' | 'snacks' | 'dinner'>().notNull(),
+    markedBy: uuid('marked_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('canteen_meal_uq').on(t.studentId, t.mealDate, t.meal)],
+);
+
+/** An online wallet top-up through the institution's Razorpay account; credited once when paid. */
+export const canteenTopups = pgTable(
+  'canteen_topups',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    provider: text('provider').notNull(),
+    providerOrderId: text('provider_order_id').notNull(),
+    providerPaymentId: text('provider_payment_id'),
+    status: text('status').$type<'created' | 'paid'>().notNull().default('created'),
+    payerUserId: uuid('payer_user_id').references(() => users.id, { onDelete: 'set null' }),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('canteen_topup_order_uq').on(t.providerOrderId)],
 );

@@ -53,6 +53,10 @@ export interface IStore { id: string; name: string; location: string }
 export interface IVendor { id: string; name: string; gstin: string | null; phone: string; email: string | null }
 export interface IStock { storeId: string; store: string; itemId: string; sku: string; item: string; unit: string; qty: number; reorderLevel: number }
 export interface IReq { id: string; number: string; reason: string; status: string; decisionNote: string | null; lines: { itemId: string; item: string; unit: string; qty: number }[] }
+export interface IRfq { id: string; number: string; requisitionId: string; status: string; closesOn: string | null }
+export interface IRfqDetail extends IRfq { lines: { itemId: string; item: string; unit: string; qty: number }[]; quotes: { id: string; vendor: string; totalPaise: number; deliveryDays: number; note: string; lowest: boolean; prices: { itemId: string; unitPricePaise: number; best: boolean }[] }[] }
+export interface ITransfer { id: string; number: string; fromStoreId: string; toStoreId: string; itemId: string; qty: number; note: string; createdAt: string }
+export interface IReturn { id: string; number: string; kind: 'vendor' | 'issue'; storeId: string; itemId: string; qty: number; issuedTo: string | null; reason: string; creditPaise: number; createdAt: string }
 export interface IPoRow { id: string; number: string; status: string; totalPaise: number; vendor: string }
 export interface IPoDetail extends IPoRow { storeId?: string; lines: { id: string; itemId: string; item: string; unit: string; qty: number; unitPricePaise: number; receivedQty: number }[]; invoices: { id: string; invoiceNo: string; amountPaise: number; expectedPaise: number; status: string }[]; receipts: { id: string; receivedAt: string }[] }
 export interface IInvoiceRow { invoice: { id: string; invoiceNo: string; amountPaise: number; expectedPaise: number; status: string; note: string | null }; po: string; vendor: string }
