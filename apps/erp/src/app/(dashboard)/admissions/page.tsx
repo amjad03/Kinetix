@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { EnquiryBoard } from '@/components/admissions/EnquiryBoard';
 import { PageHeader } from '@/components/PageHeader';
-import { StatGrid, StatTile } from '@/components/StatTile';
+import { StatGrid, StatTile } from '@/components/ui';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import type { Counsellor, Enquiry, Pipeline } from '@/lib/admissions';

@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { NewCycleButton } from '@/components/admissions/CycleDialog';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
@@ -45,7 +45,7 @@ export default async function CyclesPage() {
           {t('adm.cycles.noneBody')}
         </EmptyState>
       ) : (
-        <TableFrame testId="cycles">
+        <Card padded={false} testId="cycles" sx={{ overflowX: 'auto' }}>
           <Table sx={{ minWidth: 720 }}>
             <TableHead>
               <TableRow>
@@ -79,7 +79,7 @@ export default async function CyclesPage() {
               ))}
             </TableBody>
           </Table>
-        </TableFrame>
+        </Card>
       )}
     </>
   );

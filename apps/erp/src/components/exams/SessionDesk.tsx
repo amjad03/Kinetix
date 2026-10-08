@@ -4,7 +4,6 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -16,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addPaper, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep } from '@/app/(dashboard)/exams/actions';
 import { TableFrame } from '@/components/DataTable';
-import { StatGrid, StatTile } from '@/components/StatTile';
+import { StatGrid, StatTile, StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { exportHref, nextStep, type ExamSessionDetail, type ResultRow, type Revaluation } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
@@ -246,7 +245,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
                     <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{r.sgpa.toFixed(2)}</TableCell>
                     <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{r.cgpa.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Chip size="small" color={r.outcome === 'pass' ? 'success' : 'error'} label={t(r.outcome === 'pass' ? 'exm.pass' : 'exm.fail')} />
+                      <StatusPill tone={r.outcome === 'pass' ? 'success' : 'danger'}>{t(r.outcome === 'pass' ? 'exm.pass' : 'exm.fail')}</StatusPill>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -272,7 +271,7 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
                     <TableCell>{r.reason}</TableCell>
                     <TableCell>{r.previousPercent ?? '—'}% → {r.newPercent ?? '—'}%</TableCell>
                     <TableCell>
-                      <Chip size="small" label={t(`exm.rv.${r.status}`)} />
+                      <StatusPill tone={r.status === 'requested' ? 'warning' : r.status === 'rejected' ? 'danger' : 'neutral'}>{t(`exm.rv.${r.status}`)}</StatusPill>
                     </TableCell>
                     <TableCell align="right">
                       {canManage && r.status === 'requested' && (

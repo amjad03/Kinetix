@@ -4,7 +4,7 @@ import Download from '@mui/icons-material/Download';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runAction } from '@/app/(dashboard)/payroll/actions';
 import { TableFrame } from '@/components/DataTable';
-import { useNotice } from '@/components/hr/Common';
+import { pillTone, useNotice } from '@/components/hr/Common';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -51,7 +51,7 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
     <>
       {view}
       <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
-        <Chip color={RUN_TONE[run.status]} label={t(`pay.status.${run.status}` as MessageKey)} />
+        <StatusPill tone={pillTone(RUN_TONE[run.status])}>{t(`pay.status.${run.status}` as MessageKey)}</StatusPill>
         <Box sx={{ flex: 1 }} />
         {can.recompute && <Button variant="outlined" disabled={pending} onClick={() => go('recompute')}>{t('pay.recompute')}</Button>}
         {can.reopen && <Button variant="outlined" disabled={pending} onClick={() => setConfirm('reopen')}>{t('pay.reopen')}</Button>}

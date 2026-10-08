@@ -29,10 +29,10 @@ abstract final class KxFonts {
   static String boardFor({required bool primaryClass}) => primaryClass ? primary : board;
 }
 
-/// Material 3 themes for every KINETIX app: chalkboard green, quiet light surfaces, marigold
+/// Material 3 themes for every KINETIX app: deep blue, white cards on a cool-grey ground, marigold
 /// for AI (docs/design/design-system.md).
 abstract final class KinetixTheme {
-  /// The light scheme, tuned by hand around the brand green rather than generated, so surfaces
+  /// The light scheme, tuned by hand around the brand blue rather than generated, so surfaces
   /// stay nearly neutral.
   static const lightScheme = ColorScheme(
     brightness: Brightness.light,
@@ -40,7 +40,7 @@ abstract final class KinetixTheme {
     onPrimary: KxColor.onAccent,
     primaryContainer: KxColor.accentContainer,
     onPrimaryContainer: KxColor.onAccentContainer,
-    secondary: Color(0xFF4D6357),
+    secondary: Color(0xFF475569),
     onSecondary: Color(0xFFFFFFFF),
     secondaryContainer: KxColor.secondaryContainer,
     onSecondaryContainer: KxColor.onSecondaryContainer,
@@ -56,22 +56,22 @@ abstract final class KinetixTheme {
     onSurface: KxColor.text,
     onSurfaceVariant: KxColor.muted,
     surfaceContainerLowest: KxColor.surface,
-    surfaceContainerLow: Color(0xFFF0F4F0),
+    surfaceContainerLow: Color(0xFFEEF2F8),
     surfaceContainer: KxColor.rail,
     surfaceContainerHigh: KxColor.surfaceHi,
-    surfaceContainerHighest: Color(0xFFDEE4DE),
+    surfaceContainerHighest: Color(0xFFD8DFEB),
     outline: KxColor.outline,
     outlineVariant: KxColor.line,
     inverseSurface: KxColor.inverse,
     onInverseSurface: KxColor.onInverse,
-    inversePrimary: Color(0xFF8DD7B1),
+    inversePrimary: Color(0xFF9DB8FF),
     shadow: Color(0xFF000000),
     scrim: Color(0xFF000000),
     surfaceTint: Color(0x00000000),
   );
 
   static ThemeData light() => _build(lightScheme);
-  static ThemeData dark() => _build(ColorScheme.fromSeed(seedColor: Kx.seed, brightness: Brightness.dark).copyWith(tertiary: const Color(0xFFFFB95C)));
+  static ThemeData dark() => _build(darkScheme);
 
   /// The board's light floating chrome: white surfaces over the board, larger
   /// touch targets for a teacher standing at the panel.
@@ -79,9 +79,44 @@ abstract final class KinetixTheme {
 
   /// The board's dark chrome (the Dark app theme, split-screen 3D models and labs): reads
   /// clearly over a bright canvas from the back of a classroom.
-  static ThemeData boardChrome() => _build(
-    ColorScheme.fromSeed(seedColor: Kx.seed, brightness: Brightness.dark).copyWith(tertiary: const Color(0xFFFFB95C)),
-    large: true,
+  static ThemeData boardChrome() => _build(darkScheme, large: true);
+
+  /// The dark scheme, tuned by hand like [lightScheme]: a deep blue-black ground, lighter blue
+  /// for action, marigold for AI.
+  static const darkScheme = ColorScheme(
+    brightness: Brightness.dark,
+    primary: KxColorDark.accent,
+    onPrimary: KxColorDark.onAccent,
+    primaryContainer: KxColorDark.accentContainer,
+    onPrimaryContainer: KxColorDark.onAccentContainer,
+    secondary: KxColorDark.secondary,
+    onSecondary: Color(0xFF1E2B45),
+    secondaryContainer: KxColorDark.secondaryContainer,
+    onSecondaryContainer: KxColorDark.onSecondaryContainer,
+    tertiary: KxColorDark.spark,
+    onTertiary: Color(0xFF2B1B00),
+    tertiaryContainer: KxColorDark.sparkContainer,
+    onTertiaryContainer: KxColorDark.onSparkContainer,
+    error: KxColorDark.danger,
+    onError: Color(0xFF5C0A06),
+    errorContainer: KxColorDark.dangerContainer,
+    onErrorContainer: KxColorDark.onDangerContainer,
+    surface: KxColorDark.bg,
+    onSurface: KxColorDark.text,
+    onSurfaceVariant: KxColorDark.muted,
+    surfaceContainerLowest: KxColorDark.surfaceLowest,
+    surfaceContainerLow: KxColorDark.surface,
+    surfaceContainer: KxColorDark.rail,
+    surfaceContainerHigh: KxColorDark.surfaceHi,
+    surfaceContainerHighest: KxColorDark.surfaceHighest,
+    outline: KxColorDark.outline,
+    outlineVariant: KxColorDark.line,
+    inverseSurface: KxColorDark.inverse,
+    onInverseSurface: KxColorDark.onInverse,
+    inversePrimary: KxColor.accent,
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    surfaceTint: Color(0x00000000),
   );
 
   /// Chalkboard green: dark green surfaces and chalk-coloured accents. [large] for the board's

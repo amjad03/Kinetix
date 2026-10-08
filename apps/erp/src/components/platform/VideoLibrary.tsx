@@ -6,7 +6,6 @@ import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -16,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import type { PlatformLibraryCurriculum, PlatformTopicHit, VideoLanguage } from '@/lib/types';
@@ -120,8 +120,8 @@ export function TopicHits({ hits }: { hits: PlatformTopicHit[] }) {
 export function VideoCountChip({ n }: { n: number }) {
   const { t } = useI18n();
   return n === 0 ? (
-    <Chip size="small" label={t('pv.noVideos')} sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer', height: 24 }} data-testid="no-videos" />
+    <StatusPill tone="danger" testId="no-videos">{t('pv.noVideos')}</StatusPill>
   ) : (
-    <Chip size="small" label={t.plural('pv.videos', n)} sx={{ bgcolor: 'm3.secondaryContainer', color: 'm3.onSecondaryContainer', height: 24 }} />
+    <StatusPill tone="neutral">{t.plural('pv.videos', n)}</StatusPill>
   );
 }

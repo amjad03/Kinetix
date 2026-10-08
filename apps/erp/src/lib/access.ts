@@ -3,10 +3,12 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'placements' | 'research' | 'grievances' | 'reports';
+export type Section = 'dashboard' | 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
+  // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
+  dashboard: ['principal', 'tenant_admin', 'hod', 'accountant', 'admissions_officer', 'hr_manager'],
   // Today, Classes, Attendance, Homework, Messages: v1/admin/*
   school: ['principal', 'tenant_admin', 'hod'],
   boards: ['principal', 'tenant_admin', 'hod'],
@@ -115,6 +117,7 @@ export function sectionOf(pathname: string): Section | null {
   const first = pathname.split('/')[1] ?? '';
   switch (first) {
     case '':
+      return 'dashboard';
     case 'classes':
     case 'attendance':
     case 'homework':
@@ -166,6 +169,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'obe';
     case 'hr':
       return 'hr';
+    case 'reports':
+      return 'reports';
     case 'documents':
       return 'documents';
     case 'placements':
@@ -185,17 +190,14 @@ export function isOnlyHod(roles: readonly RoleName[]): boolean {
 }
 
 /**
- * Where a role lands after signing in: Department for a head of department, Today for the
- * principal and administrator, Fees for the accounts office, Library for the librarian, and the desk of the transport, hostel, canteen or store role.
+ * Where a role lands after signing in: their dashboard (/) for the principal, administrator, head of
+ * department, accounts office, admissions officer and HR manager; the library for the librarian; and
+ * the desk of the transport, hostel, canteen or store role.
  */
 export function homeFor(roles: readonly RoleName[]): string {
-  if (isOnlyHod(roles)) return '/department';
-  if (canSee(roles, 'school')) return '/';
-  if (canSee(roles, 'admissions')) return '/admissions';
-  if (canSee(roles, 'fees')) return '/fees';
+  if (canSee(roles, 'dashboard')) return '/';
   if (canSee(roles, 'library')) return '/library';
   for (const s of ['transport', 'hostel', 'canteen', 'inventory'] as const) if (canSee(roles, s)) return `/${s}`;
-  if (canSee(roles, 'hr')) return '/hr';
   for (const s of ['placements', 'research', 'grievances'] as const) if (canSee(roles, s)) return `/${s}`;
   return '/login';
 }

@@ -12,10 +12,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { StatusPill } from '@/components/admissions/Chips';
 import { CycleActions } from '@/components/admissions/CycleActions';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
-import { StatGrid, StatTile } from '@/components/StatTile';
+import { StatGrid, StatTile } from '@/components/ui';
 import { ErrorState } from '@/components/States';
 import { ApiError, api, load, requireSection } from '@/lib/api';
 import type { CycleDetail, CycleRow, MeritListDetail, MeritListSummary } from '@/lib/admissions';
@@ -86,7 +86,7 @@ export default async function CyclePage({ params }: { params: Promise<{ id: stri
       {!latest ? (
         <Typography color="text.secondary">{t('adm.cycle.noList')}</Typography>
       ) : (
-        <TableFrame testId="merit-list">
+        <Card padded={false} testId="merit-list" sx={{ overflowX: 'auto' }}>
           <Table sx={{ minWidth: 640 }}>
             <TableHead>
               <TableRow>
@@ -118,7 +118,7 @@ export default async function CyclePage({ params }: { params: Promise<{ id: stri
               ))}
             </TableBody>
           </Table>
-        </TableFrame>
+        </Card>
       )}
     </>
   );

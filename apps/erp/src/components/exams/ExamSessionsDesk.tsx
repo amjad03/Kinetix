@@ -2,7 +2,6 @@
 
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -15,6 +14,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { createSession } from '@/app/(dashboard)/exams/actions';
 import { TableFrame } from '@/components/DataTable';
+import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { sessionTone, type ExamSession } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
@@ -87,12 +87,12 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
                 <TableRow key={s.id} hover>
                   <TableCell>
                     <Link href={`/exams/${s.id}`}>{s.name}</Link>
-                    {s.kind === 'supplementary' && <Chip size="small" label={t('exm.kind.supplementary')} sx={{ ml: 1 }} />}
+                    {s.kind === 'supplementary' && <span style={{ marginInlineStart: 8 }}><StatusPill tone="info">{t('exm.kind.supplementary')}</StatusPill></span>}
                   </TableCell>
                   <TableCell>{s.term}</TableCell>
                   <TableCell>{fmt.date(s.startsOn)} – {fmt.date(s.endsOn)}</TableCell>
                   <TableCell>
-                    <Chip size="small" color={sessionTone(s.status) === 'success' ? 'success' : sessionTone(s.status) === 'warning' ? 'warning' : 'default'} label={t(`exm.st.${s.status}`)} />
+                    <StatusPill tone={sessionTone(s.status) === 'success' ? 'success' : sessionTone(s.status) === 'warning' ? 'warning' : 'neutral'}>{t(`exm.st.${s.status}`)}</StatusPill>
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,6 +1,6 @@
 import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
 import SearchOff from '@mui/icons-material/SearchOff';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import type { Metadata } from 'next';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -27,7 +27,7 @@ export default async function ConceptVideosPage({ searchParams }: { searchParams
 
   return (
     <>
-      <PageHeader title={t('nav.conceptVideos')} subtitle={t('pv.subtitle')} actions={<Chip label={t('pv.teamOnly')} sx={{ bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer' }} />} />
+      <PageHeader title={t('nav.conceptVideos')} subtitle={t('pv.subtitle')} actions={<StatusPill tone="info">{t('pv.teamOnly')}</StatusPill>} />
       <VideoSearch q={query} missingOnly={missingOnly} />
 
       {hits ? (

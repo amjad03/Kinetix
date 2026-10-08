@@ -35,6 +35,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
 import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
+import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { addDays } from '@/lib/dates';
 import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, LOAN_DAYS } from '@/lib/library';
@@ -159,7 +160,7 @@ function DueText({ loan, today }: { loan: LibraryLoan; today: string }) {
 
 function OverdueChip() {
   const { t } = useI18n();
-  return <Chip size="small" label={t('lib.overdueChip')} sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-status="overdue" />;
+  return <span data-status="overdue"><StatusPill tone="danger">{t('lib.overdueChip')}</StatusPill></span>;
 }
 
 function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; overdue: number; today: string; onReturn: (l: LibraryLoan) => void }) {
@@ -360,7 +361,7 @@ function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: Libr
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? fmt.dateTime(f.returnedAt, undefined, false) : '—'}</TableCell>
                 <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap', color: 'error.main', fontWeight: 500 }}>
                   {formatRupees(f.finePaise)}
-                  <Chip size="small" label={t('lib.unpaid')} variant="outlined" sx={{ ml: 1, color: 'error.main', borderColor: 'error.main' }} data-status="unpaid" />
+                  <Box component="span" sx={{ ml: 1 }} data-status="unpaid"><StatusPill tone="danger">{t('lib.unpaid')}</StatusPill></Box>
                 </TableCell>
                 <TableCell align="right" sx={{ pr: 1.5 }}>
                   <Button size="small" variant="outlined" onClick={() => onCollect(f)}>
@@ -430,8 +431,8 @@ function FinePaidDialog({ loan, onClose }: { loan: LibraryLoan; onClose: (done?:
 function Availability({ book }: { book: LibraryBook }) {
   const { t } = useI18n();
   const free = availableCopies(book);
-  if (free === 0) return <Chip size="small" label={t('lib.allOut')} variant="outlined" sx={{ color: 'text.secondary' }} data-available="0" />;
-  return <Chip size="small" label={t('lib.available', { n: free, d: book.copies })} sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} data-available={free} />;
+  if (free === 0) return <span data-available="0"><StatusPill>{t('lib.allOut')}</StatusPill></span>;
+  return <span data-available={free}><StatusPill tone="success">{t('lib.available', { n: free, d: book.copies })}</StatusPill></span>;
 }
 
 function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (b: LibraryBook) => void; onAdd: () => void }) {

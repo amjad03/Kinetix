@@ -3,12 +3,7 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
@@ -19,11 +14,10 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import { usePathname } from 'next/navigation';
 import { useState, useTransition, type ReactNode } from 'react';
 import { TableFrame } from '@/components/DataTable';
-import { EmptyState } from '@/components/States';
+import { Dialog, EmptyState, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { rupeesToPaise } from '@/lib/money';
 import { UUID_RE } from '@/lib/ops';
@@ -84,27 +78,36 @@ export function FormDialog({ title, fields, submitLabel, onSubmit, onClose, intr
   };
 
   return (
-    <Dialog open onClose={() => !pending && onClose()} fullWidth maxWidth="sm" aria-labelledby="ops-dlg">
-      <DialogTitle id="ops-dlg">{title}</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          {intro}
-          {fields.map((f) => {
-            const k = f.kind ?? 'text';
-            const type = k === 'date' ? 'date' : k === 'time' ? 'time' : k === 'datetime' ? 'datetime-local' : 'text';
-            return (
-              <TextField
-                key={f.name}
-                label={f.label}
+    <Dialog
+      title={title}
+      onClose={() => onClose()}
+      busy={pending}
+      actions={
+        <>
+          <Button onClick={() => onClose()} disabled={pending}>
+            {t('ops.cancel')}
+          </Button>
+          <Button variant="contained" onClick={submit} disabled={pending} startIcon={pending ? <CircularProgress size={16} /> : undefined} data-testid="ops-submit">
+            {submitLabel ?? t('ops.save')}
+          </Button>
+        </>
+      }
+    >
+      <Stack spacing={2} sx={{ pt: 1 }}>
+        {intro}
+        {fields.map((f) => {
+          const k = f.kind ?? 'text';
+          const type = k === 'date' ? 'date' : k === 'time' ? 'time' : k === 'datetime' ? 'datetime-local' : 'text';
+          return (
+            <FormField key={f.name} label={f.label} required={f.required}>
+              <TextInput
                 value={v[f.name] ?? ''}
                 onChange={(e) => setV({ ...v, [f.name]: e.target.value })}
-                required={f.required}
                 select={k === 'select'}
                 multiline={k === 'multiline'}
                 minRows={k === 'multiline' ? 2 : undefined}
                 type={type}
-                slotProps={{ inputLabel: type !== 'text' ? { shrink: true } : undefined, htmlInput: k === 'number' ? { inputMode: 'numeric' } : k === 'rupees' ? { inputMode: 'decimal' } : undefined }}
-                size="small"
+                slotProps={{ htmlInput: k === 'number' ? { inputMode: 'numeric' } : k === 'rupees' ? { inputMode: 'decimal' } : undefined, select: k === 'select' ? { displayEmpty: true, SelectDisplayProps: { 'aria-label': f.label } as never } : undefined }}
                 fullWidth
                 data-testid={`f-${f.name}`}
               >
@@ -113,20 +116,12 @@ export function FormDialog({ title, fields, submitLabel, onSubmit, onClose, intr
                     {o.label}
                   </MenuItem>
                 ))}
-              </TextField>
-            );
-          })}
-          {error && <Alert severity="error">{error}</Alert>}
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => onClose()} disabled={pending}>
-          {t('ops.cancel')}
-        </Button>
-        <Button variant="contained" onClick={submit} disabled={pending} startIcon={pending ? <CircularProgress size={16} /> : undefined} data-testid="ops-submit">
-          {submitLabel ?? t('ops.save')}
-        </Button>
-      </DialogActions>
+              </TextInput>
+            </FormField>
+          );
+        })}
+        {error && <Alert severity="error">{error}</Alert>}
+      </Stack>
     </Dialog>
   );
 }
@@ -135,12 +130,8 @@ export function FormDialog({ title, fields, submitLabel, onSubmit, onClose, intr
 export function InfoDialog({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
   const { t } = useI18n();
   return (
-    <Dialog open onClose={onClose} fullWidth maxWidth="md" aria-labelledby="ops-info">
-      <DialogTitle id="ops-info">{title}</DialogTitle>
-      <DialogContent>{children}</DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t('ops.close')}</Button>
-      </DialogActions>
+    <Dialog title={title} size="md" onClose={onClose} actions={<Button onClick={onClose}>{t('ops.close')}</Button>}>
+      {children}
     </Dialog>
   );
 }
@@ -205,7 +196,7 @@ export function ActionButton({ label, run, onDone, tone, disabled }: { label: st
 }
 
 export const Pill = ({ label, warn }: { label: string; warn?: boolean }) => (
-  <Chip size="small" label={label} sx={warn ? { bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' } : undefined} />
+  <StatusPill tone={warn ? 'danger' : 'neutral'}>{label}</StatusPill>
 );
 
 export function useToast() {

@@ -22,7 +22,7 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
 import { archiveVaultFile, classStudents, listVault } from '@/app/(dashboard)/documents/actions';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -88,7 +88,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
         docs.length === 0 && !pending ? (
           <EmptyState icon={<FolderOutlined />} title={t('doc.vault.empty', { name: owner.name })} />
         ) : (
-          <TableFrame testId="vault-docs">
+          <Card padded={false} testId="vault-docs" sx={{ overflowX: 'auto' }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -125,7 +125,7 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
                 ))}
               </TableBody>
             </Table>
-          </TableFrame>
+          </Card>
         )
       ) : (
         <EmptyState icon={<FolderOutlined />} title={t('doc.vault.pick')} />

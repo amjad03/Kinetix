@@ -151,19 +151,20 @@ test("the language menu switches the ERP and saves it to the account", async ({
   await page.getByRole("button", { name: "Account" }).click();
   await page.getByTestId("language-kn").click();
   const nav = page.getByRole("navigation", { name: "ಮುಖ್ಯ" });
-  await expect(nav.getByRole("link", { name: "ಇಂದು" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("ಇಂದು");
+  await expect(nav.getByRole("link", { name: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("ಮರಳಿ ಸ್ವಾಗತ");
   // Back to English (the account's preferredLanguage too).
   await page.getByRole("button", { name: "ಖಾತೆ" }).click();
   await page.getByTestId("language-en").click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Today");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Welcome back");
 });
 
 test.describe("the account language applies when the browser has not picked one", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
   test("Ravi's ERP is in Kannada (his preferredLanguage)", async ({ page }) => {
     await signIn(page, "ravi@demo.kinetix.in", undefined, undefined, null);
-    await expect(page).toHaveURL(/\/department$/);
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto("/department");
     const nav = page.getByRole("navigation", { name: "ಮುಖ್ಯ" });
     await expect(
       nav.getByRole("link", { name: "ವಿಭಾಗ", exact: true }),

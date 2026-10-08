@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { bulkIssue, classStudents, decideCertificate, requestCertificate } from '@/app/(dashboard)/documents/actions';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -75,7 +75,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
           {t('doc.noneBody')}
         </EmptyState>
       ) : (
-        <TableFrame testId="certificate-requests">
+        <Card padded={false} testId="certificate-requests" sx={{ overflowX: 'auto' }}>
           <Table size="small">
             <TableHead>
               <TableRow>
@@ -120,7 +120,7 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
               })}
             </TableBody>
           </Table>
-        </TableFrame>
+        </Card>
       )}
 
       {asking && (

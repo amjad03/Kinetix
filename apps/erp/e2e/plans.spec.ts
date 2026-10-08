@@ -54,7 +54,8 @@ async function raviPlansAPeriod(request: APIRequestContext) {
 
 test('a head of department sees the year plan status, opens the class plan and reviews a lesson plan', async ({ page, request }) => {
   await signIn(page, 'ravi@demo.kinetix.in');
-  await expect(page).toHaveURL(/\/department$/);
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto("/department");
   await page.waitForLoadState('networkidle');
 
   const classes = page.getByTestId('dept-classes');
@@ -132,7 +133,7 @@ test("a head may not review plans outside their department: the API's reason is 
   const url = `/department/plan?section=${mine.section}&subject=${mine.subject}`;
 
   await signIn(page, 'ravi@demo.kinetix.in');
-  await expect(page).toHaveURL(/\/department$/);
+  await expect(page).toHaveURL(/\/$/);
   await page.goto(url);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('BCA Sem 1 A · Discrete Mathematics');
   await expect(page.getByTestId('no-year-plan')).toContainText('No year plan yet');

@@ -244,6 +244,15 @@ describe('families, saved boards and the dashboard', () => {
       expect(o.boards).toMatchObject({ total: 1, online: 1, inClass: 1 });
     });
 
+    it('dashboard rolls up head counts, fees, pending decisions and a six-month trend', async () => {
+      const d = (await http().get('/v1/admin/dashboard').set(auth('principal')).expect(200)).body;
+      expect(d).toMatchObject({ date: monday, students: { total: expect.any(Number) }, fees: { collected: expect.any(Number), overdueInvoices: expect.any(Number) } });
+      expect(d.pending).toMatchObject({ leave: expect.any(Number), marksToVerify: expect.any(Number), examPapers: expect.any(Number), admissionsReview: expect.any(Number) });
+      expect(d.performance).toHaveLength(6);
+      expect(d.performance[5].month).toBe(monday.slice(0, 7));
+      await http().get('/v1/admin/dashboard').set(auth('teacher')).expect(403);
+    });
+
     it('classes show who taught on which board and attendance', async () => {
       const c = (await http().get('/v1/admin/classes').set(auth('principal')).expect(200)).body;
       expect(c.classes[0]).toMatchObject({

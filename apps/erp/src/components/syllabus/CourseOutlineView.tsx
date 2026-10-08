@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -30,7 +30,7 @@ type TopicRow = Chapter['topics'][number];
 
 function OwnChip() {
   const { t } = useI18n();
-  return <Chip size="small" label={t('syl.yourTopic')} sx={{ bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', height: 22 }} />;
+  return <StatusPill tone="info">{t('syl.yourTopic')}</StatusPill>;
 }
 const ownChip = <OwnChip />;
 

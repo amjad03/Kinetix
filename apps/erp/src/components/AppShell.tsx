@@ -1,172 +1,18 @@
 'use client';
 
-import AccountTree from '@mui/icons-material/AccountTree';
-import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
-import Assignment from '@mui/icons-material/Assignment';
-import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
-import CalendarMonth from '@mui/icons-material/CalendarMonth';
-import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
-import Campaign from '@mui/icons-material/Campaign';
-import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
-import DirectionsBus from '@mui/icons-material/DirectionsBus';
-import DirectionsBusOutlined from '@mui/icons-material/DirectionsBusOutlined';
-import Hotel from '@mui/icons-material/Hotel';
-import HotelOutlined from '@mui/icons-material/HotelOutlined';
-import Inventory2 from '@mui/icons-material/Inventory2';
-import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
-import QrCode2 from '@mui/icons-material/QrCode2';
-import QrCode2Outlined from '@mui/icons-material/QrCode2Outlined';
-import Restaurant from '@mui/icons-material/Restaurant';
-import RestaurantOutlined from '@mui/icons-material/RestaurantOutlined';
-import Check from '@mui/icons-material/Check';
-import EventNote from '@mui/icons-material/EventNote';
-import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
-import HowToReg from '@mui/icons-material/HowToReg';
-import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
-import Groups from '@mui/icons-material/Groups';
-import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
-import Settings from '@mui/icons-material/Settings';
-import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
-import UploadFile from '@mui/icons-material/UploadFile';
-import UploadFileOutlined from '@mui/icons-material/UploadFileOutlined';
-import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
-import CastForEducation from '@mui/icons-material/CastForEducation';
-import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
-import Class from '@mui/icons-material/Class';
-import ClassOutlined from '@mui/icons-material/ClassOutlined';
-import FactCheck from '@mui/icons-material/FactCheck';
-import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
-import Assessment from '@mui/icons-material/Assessment';
-import AssessmentOutlined from '@mui/icons-material/AssessmentOutlined';
-import SecurityOutlined from '@mui/icons-material/SecurityOutlined';
-import AutoAwesome from '@mui/icons-material/AutoAwesome';
-import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
-import Forum from '@mui/icons-material/Forum';
-import ForumOutlined from '@mui/icons-material/ForumOutlined';
-import Grading from '@mui/icons-material/Grading';
-import Quiz from '@mui/icons-material/Quiz';
-import QuizOutlined from '@mui/icons-material/QuizOutlined';
-import TrackChanges from '@mui/icons-material/TrackChanges';
-import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
-import GradingOutlined from '@mui/icons-material/GradingOutlined';
-import Insights from '@mui/icons-material/Insights';
-import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
-import LocalLibrary from '@mui/icons-material/LocalLibrary';
-import LocalLibraryOutlined from '@mui/icons-material/LocalLibraryOutlined';
-import LiveTv from '@mui/icons-material/LiveTv';
-import LiveTvOutlined from '@mui/icons-material/LiveTvOutlined';
-import LockOutlined from '@mui/icons-material/LockOutlined';
-import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
-import MenuBook from '@mui/icons-material/MenuBook';
-import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
-import VideoLibrary from '@mui/icons-material/VideoLibrary';
-import VideoLibraryOutlined from '@mui/icons-material/VideoLibraryOutlined';
-import OndemandVideo from '@mui/icons-material/OndemandVideo';
-import OndemandVideoOutlined from '@mui/icons-material/OndemandVideoOutlined';
-import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
-import Badge from '@mui/icons-material/Badge';
-import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
-import RequestQuote from '@mui/icons-material/RequestQuote';
-import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
-import ReceiptLong from '@mui/icons-material/ReceiptLong';
-import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
-import FolderCopy from '@mui/icons-material/FolderCopy';
-import Payments from '@mui/icons-material/Payments';
-import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
-import BusinessCenter from '@mui/icons-material/BusinessCenter';
-import BusinessCenterOutlined from '@mui/icons-material/BusinessCenterOutlined';
-import Science from '@mui/icons-material/Science';
-import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
-import ReportProblem from '@mui/icons-material/ReportProblem';
-import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
-import Today from '@mui/icons-material/Today';
-import TodayOutlined from '@mui/icons-material/TodayOutlined';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import Drawer from '@mui/material/Drawer';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState, useTransition, type ReactNode } from 'react';
-import { setLanguage } from '@/app/language/actions';
-import { signOut } from '@/app/login/actions';
+import { usePathname } from 'next/navigation';
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
-import { LANGUAGE_NAMES, LOCALES, BCP47 } from '@/i18n/locales';
-import type { MessageKey } from '@/i18n/messages';
-import { canSee, homeFor, type Section } from '@/lib/access';
-import { initials } from './initials';
+import { crumbsFor, visibleGroups } from '@/lib/nav';
+import { homeFor } from '@/lib/access';
 import { Logo, LogoMark } from './Logo';
-import { GlobalSearch } from './search/GlobalSearch';
-
-const NAV: { href: string; label: MessageKey; section: Section | 'platform'; icon: typeof TodayOutlined; active: typeof Today }[] = [
-  { href: '/', label: 'nav.today', section: 'school', icon: TodayOutlined, active: Today },
-  { href: '/department', label: 'nav.department', section: 'department', icon: InsightsOutlined, active: Insights },
-  { href: '/classes', label: 'nav.classes', section: 'school', icon: ClassOutlined, active: Class },
-  { href: '/calendar', label: 'nav.calendar', section: 'calendar', icon: EventNoteOutlined, active: EventNote },
-  { href: '/timetable', label: 'nav.timetable', section: 'timetable', icon: CalendarMonthOutlined, active: CalendarMonth },
-  { href: '/attendance', label: 'nav.attendance', section: 'school', icon: FactCheckOutlined, active: FactCheck },
-  { href: '/homework', label: 'nav.homework', section: 'school', icon: AssignmentOutlined, active: Assignment },
-  { href: '/results', label: 'nav.results', section: 'results', icon: GradingOutlined, active: Grading },
-  { href: '/exams', label: 'nav.exams', section: 'exams', icon: QuizOutlined, active: Quiz },
-  { href: '/obe', label: 'nav.obe', section: 'obe', icon: TrackChangesOutlined, active: TrackChanges },
-  { href: '/messages', label: 'nav.messages', section: 'school', icon: CampaignOutlined, active: Campaign },
-  { href: '/conversations', label: 'nav.conversations', section: 'conversations', icon: ForumOutlined, active: Forum },
-  { href: '/boards', label: 'nav.boards', section: 'boards', icon: CastForEducationOutlined, active: CastForEducation },
-  { href: '/live', label: 'nav.live', section: 'live', icon: LiveTvOutlined, active: LiveTv },
-  { href: '/admissions', label: 'nav.admissions', section: 'admissions', icon: HowToRegOutlined, active: HowToReg },
-  { href: '/students', label: 'nav.students', section: 'students', icon: GroupsOutlined, active: Groups },
-  { href: '/fees', label: 'nav.fees', section: 'fees', icon: PaymentsOutlined, active: Payments },
-  { href: '/hr', label: 'nav.hr', section: 'hr', icon: BadgeOutlined, active: Badge },
-  { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: RequestQuoteOutlined, active: RequestQuote },
-  { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: ReceiptLongOutlined, active: ReceiptLong },
-  { href: '/documents', label: 'nav.documents', section: 'documents', icon: FolderCopyOutlined, active: FolderCopy },
-  { href: '/placements', label: 'nav.placements', section: 'placements', icon: BusinessCenterOutlined, active: BusinessCenter },
-  { href: '/research', label: 'nav.research', section: 'research', icon: ScienceOutlined, active: Science },
-  { href: '/grievances', label: 'nav.grievances', section: 'grievances', icon: ReportProblemOutlined, active: ReportProblem },
-  { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
-  { href: '/transport', label: 'nav.transport', section: 'transport', icon: DirectionsBusOutlined, active: DirectionsBus },
-  { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: HotelOutlined, active: Hotel },
-  { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: RestaurantOutlined, active: Restaurant },
-  { href: '/inventory', label: 'nav.inventory', section: 'inventory', icon: Inventory2Outlined, active: Inventory2 },
-  { href: '/assets', label: 'nav.assets', section: 'assets', icon: QrCode2Outlined, active: QrCode2 },
-  { href: '/reports', label: 'nav.reports', section: 'reports', icon: AssessmentOutlined, active: Assessment },
-  { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
-  { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: VideoLibraryOutlined, active: VideoLibrary },
-  { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
-  { href: '/departments', label: 'nav.departments', section: 'departments', icon: AccountTreeOutlined, active: AccountTree },
-  { href: '/import', label: 'nav.import', section: 'import', icon: UploadFileOutlined, active: UploadFile },
-  { href: '/settings', label: 'nav.settings', section: 'settings', icon: SettingsOutlined, active: Settings },
-  // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.
-  { href: '/platform/concept-videos', label: 'nav.conceptVideos', section: 'platform', icon: OndemandVideoOutlined, active: OndemandVideo },
-];
-
-const ROLE_LABEL: Record<string, MessageKey> = {
-  principal: 'role.principal',
-  tenant_admin: 'role.tenant_admin',
-  hod: 'role.hod',
-  teacher: 'role.teacher',
-  accountant: 'role.accountant',
-  librarian: 'role.librarian',
-  transport_manager: 'role.transport_manager',
-  hostel_warden: 'role.hostel_warden',
-  canteen_manager: 'role.canteen_manager',
-  store_keeper: 'role.store_keeper',
-  admissions_officer: 'role.admissions_officer',
-  hr_manager: 'role.hr_manager',
-  placement_officer: 'role.placement_officer',
-  research_coordinator: 'role.research_coordinator',
-  grievance_officer: 'role.grievance_officer',
-  counsellor: 'role.counsellor',
-  icc_member: 'role.icc_member',
-};
+import { Breadcrumbs } from './shell/Breadcrumbs';
+import { Sidebar, SIDEBAR_W } from './shell/Sidebar';
+import { TopBar, type ShellNotice, type ShellYear } from './shell/TopBar';
+import { ToastProvider } from './ui/Toast';
 
 export interface ShellUser {
   fullName: string;
@@ -176,198 +22,127 @@ export interface ShellUser {
   platformAdmin?: boolean;
 }
 
-function isActive(pathname: string, href: string) {
-  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+const RAIL_KEY = 'kx.nav.rail';
+const RAIL_EVENT = 'kx-rail-change';
+
+function subscribeRail(cb: () => void) {
+  window.addEventListener(RAIL_EVENT, cb);
+  window.addEventListener('storage', cb);
+  return () => {
+    window.removeEventListener(RAIL_EVENT, cb);
+    window.removeEventListener('storage', cb);
+  };
+}
+function readRail(): boolean | null {
+  try {
+    const v = localStorage.getItem(RAIL_KEY);
+    return v === '1' ? true : v === '0' ? false : null;
+  } catch {
+    return null;
+  }
 }
 
-export function AppShell({ user, school, children }: { user: ShellUser; school: string; children: ReactNode }) {
+/**
+ * The app shell: a collapsible left navigation grouped by domain (only what the role may open),
+ * a top bar (search, academic year, language, notifications, profile), breadcrumbs and the page.
+ * Wide screens show the full sidebar, tablets an icon rail, phones a drawer behind the menu button.
+ */
+export function AppShell({
+  user,
+  school,
+  years = [],
+  yearId = '',
+  notices = [],
+  unread = 0,
+  children,
+}: {
+  user: ShellUser;
+  school: string;
+  years?: ShellYear[];
+  yearId?: string;
+  notices?: ShellNotice[];
+  unread?: number;
+  children: ReactNode;
+}) {
+  const { t } = useI18n();
   const pathname = usePathname();
-  const router = useRouter();
-  const { t, locale } = useI18n();
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const [switching, startSwitch] = useTransition();
-  const roleText = user.roles
-    .map((r) => ROLE_LABEL[r])
-    .filter(Boolean)
-    .map((k) => t(k))
-    .join(' · ');
-  const nav = NAV.filter((item) => (item.section === 'platform' ? !!user.platformAdmin : canSee(user.roles, item.section)));
-  const home = homeFor(user.roles);
+  const [mobile, setMobile] = useState(false);
+  // null: follow the screen (rail on tablets, full on desktops); otherwise the person's choice, remembered.
+  const pref = useSyncExternalStore(subscribeRail, readRail, () => null);
+  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin), [user.roles, user.platformAdmin]);
+  const crumbs = useMemo(() => crumbsFor(groups, pathname), [groups, pathname]);
+  const home = homeFor(user.roles as never);
+
+  const toggleRail = (currentlyRail: boolean) => {
+    try {
+      localStorage.setItem(RAIL_KEY, currentlyRail ? '0' : '1');
+    } catch {
+      /* storage blocked: the choice is not remembered */
+    }
+    window.dispatchEvent(new Event(RAIL_EVENT));
+  };
+  // Below lg the rail is the default; the toggle only matters from lg up, so CSS decides the width.
+  const railLg = pref === true;
+  const w = (rail: boolean) => (rail ? SIDEBAR_W.rail : SIDEBAR_W.open);
+
+  const logo = (
+    <Box component={Link} href={home} aria-label={t('shell.home')} sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: 64, px: 2.5, flexShrink: 0 }}>
+      <Logo size={30} />
+    </Box>
+  );
 
   return (
-    <Box className="kx-shell" sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', display: 'grid', gridTemplateRows: '64px 1fr', gridTemplateColumns: { xs: '80px 1fr', lg: '256px 1fr' } }}>
-      {/* Top app bar */}
-      <Box
-        component="header"
-        className="kx-chrome"
-        sx={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 2, px: { xs: 2, lg: 3 }, position: 'sticky', top: 0, zIndex: 3, bgcolor: 'kx.frame' }}
-      >
-        <Box component={Link} href={home} aria-label={t('shell.home')} sx={{ textDecoration: 'none', display: { xs: 'none', lg: 'block' }, width: 208 }}>
-          <Logo size={30} />
+    <ToastProvider>
+      <Box className="kx-shell" sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', display: 'flex' }}>
+        <Box component="a" href="#main" sx={{ position: 'absolute', left: 8, top: -48, zIndex: 2000, bgcolor: 'm3.primary', color: 'm3.onPrimary', px: 2, py: 1, borderRadius: '8px', '&:focus': { top: 8 } }}>
+          {t('shell.skip')}
         </Box>
-        <Box component={Link} href={home} aria-label={t('shell.home')} sx={{ display: { xs: 'block', lg: 'none' }, ml: 0.5, mr: 1 }}>
-          <LogoMark size={32} />
-        </Box>
-        <Typography variant="h5" component="p" noWrap sx={{ fontSize: { xs: '1.0625rem', md: '1.25rem' }, color: 'text.primary', minWidth: 0 }} data-testid="school-name">
-          {school}
-        </Typography>
-        <Box sx={{ flex: 1 }} />
-        <GlobalSearch />
-        <Tooltip title={`${user.fullName}${roleText ? ` · ${roleText}` : ''}`}>
-          <IconButton onClick={(e) => setAnchor(e.currentTarget)} aria-label={t('shell.account')} aria-haspopup="menu" sx={{ p: 0.5 }}>
-            <Avatar sx={{ width: 36, height: 36, bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', fontSize: 15, fontWeight: 500 }}>
-              {initials(user.fullName)}
-            </Avatar>
-          </IconButton>
-        </Tooltip>
-        <Menu
-          anchorEl={anchor}
-          open={!!anchor}
-          onClose={() => setAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          slotProps={{ paper: { sx: { borderRadius: '28px', minWidth: 300, mt: 1, bgcolor: 'm3.surfaceContainerHigh' } } }}
+
+        {/* Sidebar: full on desktop, rail on tablet; hidden on phones (drawer). */}
+        <Box
+          component="aside"
+          className="kx-chrome"
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            position: 'sticky',
+            top: 0,
+            height: '100dvh',
+            flexShrink: 0,
+            bgcolor: 'kx.pane',
+            borderRight: 1,
+            borderColor: 'm3.outlineVariant',
+            width: { md: SIDEBAR_W.rail, lg: w(railLg) },
+            transition: 'width 200ms var(--kx-ease-emphasized)',
+            '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+          }}
         >
-          <Box sx={{ px: 3, pt: 2, pb: 2, textAlign: 'center' }}>
-            <Avatar sx={{ width: 64, height: 64, mx: 'auto', mb: 1.5, bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', fontSize: 26 }}>
-              {initials(user.fullName)}
-            </Avatar>
-            <Typography variant="h6" component="p">
-              {t('shell.hi', { name: user.fullName })}
-            </Typography>
-            {user.email && (
-              <Typography variant="body2" color="text.secondary">
-                {user.email}
-              </Typography>
-            )}
-            {roleText && (
-              <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.5 }}>
-                {roleText} · {school}
-              </Typography>
-            )}
+          <Box sx={{ display: { md: 'none', lg: railLg ? 'none' : 'block' } }}>{logo}</Box>
+          <Box component={Link} href={home} aria-label={t('shell.home')} sx={{ display: { md: 'flex', lg: railLg ? 'flex' : 'none' }, justifyContent: 'center', alignItems: 'center', height: 64, flexShrink: 0 }}>
+            <LogoMark size={32} />
           </Box>
-          <Divider />
-          <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '36px', px: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TranslateOutlined fontSize="small" /> {t('shell.language')}
-          </ListSubheader>
-          {LOCALES.map((l) => (
-            <MenuItem
-              key={l}
-              lang={BCP47[l]}
-              selected={l === locale}
-              disabled={switching}
-              data-testid={`language-${l}`}
-              onClick={() => {
-                if (l === locale) return;
-                startSwitch(async () => {
-                  await setLanguage(l);
-                  setAnchor(null);
-                  router.refresh();
-                });
-              }}
-              sx={{ px: 3 }}
-            >
-              <ListItemIcon>{l === locale && <Check fontSize="small" />}</ListItemIcon>
-              <ListItemText>{LANGUAGE_NAMES[l]}</ListItemText>
-            </MenuItem>
-          ))}
-          <Divider />
-          <MenuItem component={Link} href="/account/password" onClick={() => setAnchor(null)} sx={{ mt: 1, px: 3 }} data-testid="change-password">
-            <ListItemIcon>
-              <LockOutlined fontSize="small" />
-            </ListItemIcon>
-            {t('shell.changePassword')}
-          </MenuItem>
-          <MenuItem component={Link} href="/account/security" onClick={() => setAnchor(null)} sx={{ px: 3 }} data-testid="security">
-            <ListItemIcon>
-              <SecurityOutlined fontSize="small" />
-            </ListItemIcon>
-            {t('shell.security')}
-          </MenuItem>
-          <form action={signOut}>
-            <MenuItem component="button" type="submit" sx={{ width: '100%', px: 3 }}>
-              <ListItemIcon>
-                <LogoutOutlined fontSize="small" />
-              </ListItemIcon>
-              {t('shell.signOut')}
-            </MenuItem>
-          </form>
-        </Menu>
-      </Box>
+          {/* Two instances so CSS can pick the rail on tablets without waiting for JS. */}
+          <Box sx={{ display: { md: 'block', lg: 'none' }, flex: 1, minHeight: 0 }}>
+            <Sidebar groups={groups} pathname={pathname} rail canCollapse={false} />
+          </Box>
+          <Box sx={{ display: { md: 'none', lg: 'block' }, flex: 1, minHeight: 0 }}>
+            <Sidebar groups={groups} pathname={pathname} rail={railLg} canCollapse onToggleRail={() => toggleRail(railLg)} />
+          </Box>
+        </Box>
 
-      {/* Navigation: M3 drawer on wide screens, rail on tablets */}
-      <Box
-        component="nav"
-        aria-label={t('nav.main')}
-        className="kx-chrome"
-        // Scrolls on its own when the list is taller than the window (the principal sees every page).
-        sx={{ position: 'sticky', top: 64, alignSelf: 'start', maxHeight: 'calc(100dvh - 64px)', overflowY: 'auto', scrollbarWidth: 'thin', px: { xs: 0, lg: 1.5 }, pt: { xs: 0.5, lg: 1 }, pb: 1 }}
-      >
-        {nav.map((item) => {
-          const active = isActive(pathname, item.href);
-          const Icon = active ? item.active : item.icon;
-          return (
-            <ButtonBase
-              key={item.href}
-              component={Link}
-              href={item.href}
-              aria-current={active ? 'page' : undefined}
-              sx={{
-                width: '100%',
-                display: 'flex',
-                textDecoration: 'none',
-                color: active ? 'm3.onSecondaryContainer' : 'm3.onSurfaceVariant',
-                // Drawer item
-                '@media (min-width: 1200px)': {
-                  height: 56,
-                  borderRadius: '28px',
-                  px: 2,
-                  gap: 1.5,
-                  justifyContent: 'flex-start',
-                  bgcolor: active ? 'm3.secondaryContainer' : 'transparent',
-                  '&:hover': { bgcolor: active ? 'm3.secondaryContainer' : 'action.hover' },
-                },
-                // Rail item
-                '@media (max-width: 1199.95px)': {
-                  flexDirection: 'column',
-                  minHeight: 64,
-                  py: 0.5,
-                  gap: 0.5,
-                  '& .kx-ind': { bgcolor: active ? 'm3.secondaryContainer' : 'transparent' },
-                  '&:hover .kx-ind': { bgcolor: active ? 'm3.secondaryContainer' : 'action.hover' },
-                },
-              }}
-            >
-              <Box className="kx-ind" sx={{ display: 'grid', placeItems: 'center', width: { xs: 56, lg: 'auto' }, height: { xs: 32, lg: 'auto' }, borderRadius: 16 }}>
-                <Icon sx={{ fontSize: 24 }} />
-              </Box>
-              <Typography
-                component="span"
-                sx={{ fontSize: { xs: '0.75rem', lg: '0.875rem' }, fontWeight: active ? 700 : 500, lineHeight: { xs: '16px', lg: '20px' }, letterSpacing: '0.1px', textAlign: { xs: 'center', lg: 'left' }, px: { xs: 0.5, lg: 0 }, overflowWrap: 'anywhere' }}
-              >
-                {t(item.label)}
-              </Typography>
-            </ButtonBase>
-          );
-        })}
-      </Box>
+        <Drawer open={mobile} onClose={() => setMobile(false)} sx={{ display: { md: 'none' } }} slotProps={{ paper: { sx: { width: SIDEBAR_W.open, maxWidth: '85vw', bgcolor: 'kx.pane', backgroundImage: 'none' }, 'aria-label': t('nav.main') } as never }}>
+          {logo}
+          <Sidebar groups={groups} pathname={pathname} rail={false} canCollapse={false} onNavigate={() => setMobile(false)} />
+        </Drawer>
 
-      {/* Content pane */}
-      <Box
-        component="main"
-        className="kx-main"
-        sx={{
-          bgcolor: 'kx.pane',
-          borderRadius: '16px',
-          mr: { xs: 1.5, lg: 2 },
-          mb: { xs: 1.5, lg: 2 },
-          minWidth: 0,
-          px: { xs: 2.5, md: 4 },
-          py: { xs: 2.5, md: 3 },
-        }}
-      >
-        {children}
+        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <TopBar user={user} school={school} groups={groups} years={years} yearId={yearId} notices={notices} unread={unread} onMenu={() => setMobile(true)} />
+          <Box component="main" id="main" tabIndex={-1} className="kx-main" sx={{ flex: 1, minWidth: 0, width: '100%', maxWidth: 1600, mx: 'auto', px: { xs: 2, md: 3, xl: 4 }, py: { xs: 2, md: 3 }, outline: 'none' }}>
+            <Breadcrumbs crumbs={crumbs} />
+            {children}
+          </Box>
+        </Box>
       </Box>
-    </Box>
+    </ToastProvider>
   );
 }

@@ -5,7 +5,7 @@ import PersonAddOutlined from '@mui/icons-material/PersonAddOutlined';
 import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -74,7 +74,7 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
                   <TableCell>{t(`hr.rec.status.${o.status}` as MessageKey)}</TableCell>
                   <TableCell>
                     {STAGES.filter((s) => o.pipeline[s]).map((s) => (
-                      <Chip key={s} size="small" sx={{ mr: 0.5 }} label={`${t(`hr.rec.stage.${s}` as MessageKey)} ${o.pipeline[s]}`} />
+                      <Box component="span" key={s} sx={{ mr: 0.5 }}><StatusPill>{`${t(`hr.rec.stage.${s}` as MessageKey)} ${o.pipeline[s]}`}</StatusPill></Box>
                     ))}
                   </TableCell>
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>

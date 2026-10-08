@@ -102,6 +102,6 @@ test.describe('only the principal and administrator', () => {
   test.use({ storageState: 'e2e/.auth/accountant.json' });
   test('the accounts office is sent back to Fees', async ({ page }) => {
     await open(page, '/settings');
-    await expect(page).toHaveURL(/\/fees$/);
+    await expect(page).toHaveURL(/\/$/);
   });
 });

@@ -43,7 +43,7 @@ export function ThreadList({ threads, timeZone }: { threads: ConversationSummary
           {t('conv.noMatchBody')}
         </EmptyState>
       ) : (
-        <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '12px', overflow: 'hidden' }} data-testid="threads">
+        <Box sx={{ border: 1, borderColor: 'm3.outlineVariant', borderRadius: '16px', bgcolor: 'kx.pane', boxShadow: 'var(--kx-elev-card)', overflow: 'hidden' }} data-testid="threads">
           {rows.map((c, i) => (
             <ButtonBase
               key={c.id}

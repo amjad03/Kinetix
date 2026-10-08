@@ -6,12 +6,12 @@ test.beforeEach(async ({ page }) => {
   await open(page, '/');
 });
 
-test('Today shows the stat tiles and the school name', async ({ page }) => {
+test('the dashboard shows the stat tiles and the school name', async ({ page }) => {
   await expect(page.getByTestId('school-name')).toHaveText('KINETIX Demo College of Commerce & Science');
-  for (const id of ['stat-classes', 'stat-attendance', 'stat-absent', 'stat-homework', 'stat-boards', 'stat-messages']) {
+  for (const id of ['stat-students', 'stat-classes', 'stat-attendance', 'stat-absent', 'stat-homework', 'stat-boards', 'stat-messages']) {
     await expect(page.getByTestId(id)).toBeVisible();
   }
-  await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
 });
 
 test('Today on a school day lists the classes with their status', async ({ page }) => {
@@ -32,7 +32,7 @@ test('date navigation moves a day at a time and back to Today', async ({ page })
   await expect(page).not.toHaveURL(new RegExp(`date=${day}`));
   await expect(page).toHaveURL(/date=\d{4}-\d{2}-\d{2}/);
   await page.getByRole('button', { name: 'Today', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Today');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome back');
 });
 
 test('a Sunday explains there are no classes and offers Saturday and Monday', async ({ page }) => {

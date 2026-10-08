@@ -4,7 +4,7 @@ import UploadFile from '@mui/icons-material/UploadFile';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import MenuItem from '@mui/material/MenuItem';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -96,7 +96,7 @@ export function AttendanceDesk({ date, today, timeZone, rows }: { date: string; 
                       · {r.employeeCode}
                     </Typography>
                   )}
-                  {r.onLeave && <Chip size="small" sx={{ ml: 1 }} label={t('hr.att.onLeave')} />}
+                  {r.onLeave && <Box component="span" sx={{ ml: 1 }}><StatusPill tone="info">{t('hr.att.onLeave')}</StatusPill></Box>}
                 </TableCell>
                 <TableCell sx={{ minWidth: 170 }}>
                   <TextField select size="small" fullWidth value={edits[r.userId] ?? r.status ?? ''} onChange={(e) => setEdits({ ...edits, [r.userId]: e.target.value as StaffAttendanceStatus })} aria-label={`${t('hr.att.status')} ${r.fullName}`}>

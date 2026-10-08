@@ -53,11 +53,11 @@ describe('m3Scheme (ColorScheme.fromSeed, TonalSpot)', () => {
 });
 
 describe('brandScheme (the KINETIX design tokens)', () => {
-  it('uses chalkboard green and marigold for AI in light, as kinetix_ui does', () => {
+  it('uses deep blue and marigold for AI in light, as kinetix_ui does', () => {
     const light = brandScheme(false);
-    expect(light.primary).toBe('#006545');
-    expect(light.tertiary).toBe('#835400');
-    expect(light.surface).toBe('#f4f7f4');
+    expect(light.primary).toBe('#1d4ed8');
+    expect(light.tertiary).toBe('#8f5b00');
+    expect(light.surface).toBe('#f3f6fb');
     expect(light.surfaceContainerLowest).toBe('#ffffff');
     for (const [role, value] of Object.entries(BRAND_LIGHT)) expect(light[role as keyof typeof light]).toBe(value);
   });
@@ -68,6 +68,27 @@ describe('brandScheme (the KINETIX design tokens)', () => {
       expect(contrastRatio(s.onSurface, s.surface)).toBeGreaterThanOrEqual(7);
       expect(contrastRatio(s.onPrimaryContainer, s.primaryContainer)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(s.onTertiaryContainer, s.tertiaryContainer)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.onSurfaceVariant, s.surfaceContainerLowest)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.onSurfaceVariant, s.surfaceContainerLow)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.primary, s.surfaceContainerLowest)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.tertiary, s.surfaceContainerLowest)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(s.outline, s.surfaceContainerLowest)).toBeGreaterThanOrEqual(3);
+    }
+  });
+});
+
+describe('semantic and chart colours', () => {
+  it('keeps status text and chart series readable on a card in both modes', () => {
+    for (const dark of [false, true]) {
+      const { kx } = paletteFor(brandScheme(dark), dark);
+      for (const [fg, bg] of [
+        [kx.success, kx.pane],
+        [kx.warning, kx.pane],
+        [kx.onSuccessContainer, kx.successContainer],
+        [kx.onWarningContainer, kx.warningContainer],
+        [kx.onLiveContainer, kx.liveContainer],
+      ]) expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+      for (const c of kx.chart) expect(contrastRatio(c, kx.pane)).toBeGreaterThanOrEqual(3);
     }
   });
 });
