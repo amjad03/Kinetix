@@ -65,6 +65,10 @@ const EnquiryCreate = z.object({
   message: z.string().trim().max(1000).optional(),
   counsellorId: Id.optional(),
   nextFollowUpOn: Day.optional(),
+  campaignId: Id.optional(),
+  utmSource: z.string().trim().max(80).optional(),
+  utmMedium: z.string().trim().max(80).optional(),
+  utmCampaign: z.string().trim().max(80).optional(),
 });
 const EnquiryPatch = z.object({ name: z.string().trim().min(2).max(120).optional(), phone: Phone.optional(), email: z.email().max(200).nullable().optional(), programId: Id.nullable().optional(), message: z.string().trim().max(1000).nullable().optional(), nextFollowUpOn: Day.nullable().optional() });
 const StageBody = z.object({ stage: z.enum(ENQUIRY_STAGES), reason: z.string().trim().max(500).optional() });

@@ -41,7 +41,7 @@ describe('student lifecycle', () => {
     await status(s1.id, { status: 'enrolled' }).expect(400); // cannot go back
     await status(s1.id, { status: 'on_leave' }).expect(400); // a reason is needed
     await status(s1.id, { status: 'alumni', reason: 'done' }).expect(400); // Sem 3 of 6 is not the final term
-    await status(s1.id, { status: 'on_leave', reason: 'Medical leave for a term' }).expect(200);
+    await status(s1.id, { status: 'on_leave', reason: 'Medical leave for a term', returnOn: '2099-01-01' }).expect(200);
     await http().post(`/v1/students/${s1.id}/status`).set(as('teacher')).send({ status: 'active' }).expect(403);
     await http().post(`/v1/students/${s1.id}/status`).set(as('outsider')).send({ status: 'active' }).expect(404);
     await status(s1.id, { status: 'active' }).expect(200);
@@ -52,7 +52,7 @@ describe('student lifecycle', () => {
     expect(p).toMatchObject({ status: 'active', finalTerm: false, section: { displayName: 'BCom Sem 3 A' } });
     expect(p.timeline.map((e: { fromStatus: string; toStatus: string; reason: string | null }) => [e.fromStatus, e.toStatus, e.reason])).toEqual([['on_leave', 'active', null], ['active', 'on_leave', 'Medical leave for a term']]);
     expect(p.timeline[0].actorName).toBe(t.principal.fullName);
-    expect(p.allowedStatuses).toEqual(['on_leave', 'detained', 'promoted', 'transferred', 'dropped']);
+    expect(p.allowedStatuses).toEqual(['on_leave', 'detained', 'promoted', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased']);
     expect((await owner.query(`select count(*)::int as n from audit_log where subject_id = $1 and action = 'students.status_changed.v1'`, [s1.id])).rows[0].n).toBe(2);
   });
 

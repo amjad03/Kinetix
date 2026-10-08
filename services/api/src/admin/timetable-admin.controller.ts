@@ -21,6 +21,8 @@ const SlotBody = z
   })
   .refine((s) => s.startsAt < s.endsAt, { message: 'The period must end after it starts', path: ['endsAt'] });
 
+const RoomPatch = z.object({ capacity: z.number().int().min(1).max(5000).nullable().optional(), kind: z.enum(['classroom', 'lab', 'hall']).optional() });
+
 /** Editing the timetable: the principal or admin office adds, moves and removes periods. */
 @Controller('v1/admin')
 export class TimetableAdminController {
@@ -58,6 +60,24 @@ export class TimetableAdminController {
         .where(and(isNull(timetableSlots.archivedAt), sectionId ? eq(timetableSlots.sectionId, sectionId) : undefined, teacherId ? eq(timetableSlots.teacherId, teacherId) : undefined))
         .orderBy(asc(timetableSlots.dayOfWeek), asc(timetableSlots.startsAt)),
     );
+  }
+
+  /** Rooms and labs with their seats, for the capacity check. */
+  @Get('rooms')
+  @Auth('user', STAFF_ADMIN_ROLES)
+  rooms(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => tx.select({ id: rooms.id, name: rooms.name, campusId: rooms.campusId, capacity: rooms.capacity, kind: rooms.kind }).from(rooms).orderBy(asc(rooms.name)));
+  }
+
+  @Patch('rooms/:id')
+  @Auth('user', STAFF_ADMIN_ROLES)
+  setRoom(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(RoomPatch)) body: z.infer<typeof RoomPatch>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [room] = await tx.update(rooms).set(body).where(eq(rooms.id, id)).returning();
+      if (!room) throw new NotFoundException('Room not found');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'timetable.room_changed', subjectType: 'room', subjectId: id, data: body });
+      return { id: room.id, name: room.name, capacity: room.capacity, kind: room.kind };
+    });
   }
 
   @Post('timetable/slots')

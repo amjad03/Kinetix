@@ -203,7 +203,7 @@ export function rankMerit<T extends { id: string; score: number; submittedAt: Da
 // Student lifecycle
 // ---------------------------------------------------------------------------------------------
 
-export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped'] as const;
+export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased'] as const;
 export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 
 /**
@@ -214,17 +214,32 @@ export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 export const STUDENT_TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]> = {
   applicant: ['enrolled', 'dropped'],
   enrolled: ['active', 'transferred', 'dropped'],
-  active: ['on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped'],
-  on_leave: ['active', 'transferred', 'dropped'],
-  detained: ['active', 'transferred', 'dropped'],
-  promoted: ['active', 'transferred', 'dropped'],
+  active: ['on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased'],
+  on_leave: ['active', 'transferred', 'dropped', 'deceased'],
+  detained: ['active', 'transferred', 'dropped', 'deceased'],
+  promoted: ['active', 'transferred', 'dropped', 'deceased'],
+  suspended: ['active', 'transferred', 'dropped', 'expelled', 'deceased'],
   transferred: [],
   alumni: [],
   dropped: [],
+  expelled: [],
+  deceased: [],
 };
 
 /** Changes that need a written reason (they are on the student's permanent record). */
-export const STUDENT_REASON_REQUIRED: readonly StudentStatus[] = ['on_leave', 'detained', 'transferred', 'dropped'];
+export const STUDENT_REASON_REQUIRED: readonly StudentStatus[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased'];
+
+/** Changes that record who approved them (the approver defaults to the person making the change). */
+export const STUDENT_APPROVER_STATUSES: readonly StudentStatus[] = ['on_leave', 'suspended', 'expelled', 'dropped', 'transferred', 'deceased'];
+
+/** Statuses a student can be readmitted from: the student returns to `active` through a readmission. */
+export const READMIT_FROM: readonly StudentStatus[] = ['dropped', 'transferred', 'expelled'];
+
+/** Statuses that take the student off every roster (attendance, marks, fees runs): anything but `active`. */
+export const OFF_ROLL_STATUSES: readonly StudentStatus[] = ['on_leave', 'suspended', 'detained', 'transferred', 'dropped', 'expelled', 'deceased', 'alumni'];
+
+/** Statuses that also switch off the student's own login. */
+export const LOGIN_DISABLED_STATUSES: readonly StudentStatus[] = ['transferred', 'dropped', 'expelled', 'deceased'];
 
 export function canTransition(from: StudentStatus, to: StudentStatus): boolean {
   return (STUDENT_TRANSITIONS[from] ?? []).includes(to);
@@ -255,6 +270,13 @@ export interface LifecycleEvent {
   toSection: string | null;
   reason: string | null;
   effectiveOn: string;
+  /** When a leave of absence or suspension ends. */
+  returnOn?: string | null;
+  /** Who approved the change. */
+  approverName?: string | null;
+  /** The issued transfer certificate linked to a transfer-out. */
+  certificateId?: string | null;
+  certificateSerial?: string | null;
   batchId: string | null;
   data: Record<string, unknown> | null;
   actorName: string | null;
@@ -287,3 +309,52 @@ export const AdmissionsEvents = {
   GuardianUpdated: 'students.guardian_updated.v1',
   GuardianUnlinked: 'students.guardian_unlinked.v1',
 } as const;
+
+
+// ---------------------------------------------------------------------------------------------
+// Seat quotas
+// ---------------------------------------------------------------------------------------------
+
+export interface SeatQuota {
+  category: string;
+  reservedSeats: number;
+}
+
+/**
+ * Whether one more applicant of `category` may take a seat. Each category has its reserved seats;
+ * everything not reserved is general. A categorised applicant uses a reserved seat first, then a
+ * general one; an uncategorised applicant (or one whose category has no quota) uses a general
+ * seat only. `held` counts the seats already offered, accepted or taken, by category ('' = none).
+ */
+export function seatAvailable(totalSeats: number, quotas: readonly SeatQuota[], held: Readonly<Record<string, number>>, category: string | null): boolean {
+  const reserved = new Map(quotas.map((q) => [q.category, q.reservedSeats]));
+  const general = totalSeats - quotas.reduce((n, q) => n + q.reservedSeats, 0);
+  let generalUsed = 0;
+  let total = 0;
+  for (const [cat, n] of Object.entries(held)) {
+    total += n;
+    generalUsed += Math.max(0, n - (reserved.get(cat) ?? 0));
+  }
+  if (total >= totalSeats) return false;
+  const cat = category ?? '';
+  const room = reserved.get(cat);
+  if (room !== undefined && (held[cat] ?? 0) < room) return true;
+  return generalUsed < general;
+}
+
+/**
+ * Decides offer or waitlist down a ranked list, honouring category quotas. `held` is what is
+ * already taken. The list must already be in rank order.
+ */
+export function allocateSeats<T extends { category: string | null }>(ranked: readonly T[], totalSeats: number, quotas: readonly SeatQuota[], held: Readonly<Record<string, number>>): ('offer' | 'waitlist')[] {
+  const taken: Record<string, number> = { ...held };
+  return ranked.map((c) => {
+    if (!seatAvailable(totalSeats, quotas, taken, c.category)) return 'waitlist';
+    const key = c.category ?? '';
+    taken[key] = (taken[key] ?? 0) + 1;
+    return 'offer';
+  });
+}
+
+/** The merit-rule field that stands for the applicant's entrance test score. */
+export const ENTRANCE_SCORE_FIELD = 'entrance_score';

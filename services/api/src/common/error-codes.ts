@@ -129,6 +129,8 @@ export const ERROR_CODES: Record<string, string> = {
 };
 
 /** Timetable clashes (409): the message names the class or time, so the code says which kind. */
+/** A room or lab too small for the class (409). */
+export const TIMETABLE_CAPACITY_CODE = 'TIMETABLE_ROOM_CAPACITY';
 export const TIMETABLE_CLASH_CODES = { class: 'TIMETABLE_CLASS_CLASH', teacher: 'TIMETABLE_TEACHER_CLASH', room: 'TIMETABLE_ROOM_CLASH' } as const;
 
 const BY_STATUS: Record<number, string> = {

@@ -1,23 +1,27 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   AdmissionsEvents,
+  allocateSeats,
   APPLICATION_REASON_REQUIRED,
   canMoveApplication,
+  ENTRANCE_SCORE_FIELD,
   eligibilityFailures,
   meritScore,
   rankMerit,
+  seatAvailable,
   type AdmissionDocumentSpec,
   type AdmissionFormField,
   type ApplicationStatus,
   type EligibilityRules,
   type MeritRule,
+  type SeatQuota,
 } from '@kinetix/shared';
 import { createHash, randomBytes } from 'node:crypto';
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import type { Tx } from '../db/db.service.js';
-import { academicYears, admissionCycles, applicationDocuments, applications, enquiries, meritLists, programs, sections, students, userRoles, users } from '../db/schema.js';
+import { academicYears, admissionCycles, admissionQuotas, applicationDocuments, applications, enquiries, entranceSeats, entranceTests, meritLists, programs, sections, students, userRoles, users } from '../db/schema.js';
 import { LifecycleService } from '../students/lifecycle.service.js';
 import { addDays, auditActor, type Actor } from './enquiries.service.js';
 
@@ -55,9 +59,18 @@ export function configProblems(cfg: CycleConfig): string[] {
   if (new Set(docKeys).size !== docKeys.length) out.push('Two documents share a key');
   for (const m of cfg.eligibility.minimums ?? []) if (byKey.get(m.field)?.type !== 'number') out.push(`Eligibility: ${m.field} is not a number question`);
   for (const a of cfg.eligibility.allowed ?? []) if (byKey.get(a.field)?.type !== 'select') out.push(`Eligibility: ${a.field} is not a choice question`);
-  for (const r of cfg.meritRules) if (byKey.get(r.field)?.type !== 'number') out.push(`Merit: ${r.field} is not a number question`);
+  for (const r of cfg.meritRules) if (r.field !== ENTRANCE_SCORE_FIELD && byKey.get(r.field)?.type !== 'number') out.push(`Merit: ${r.field} is not a number question`);
   return out;
 }
+
+/** Quota categories are compared without case or stray spaces. */
+export const normCategory = (c: string | null | undefined) => (c ?? '').trim().toLowerCase();
+
+/** The category an application is counted under: the office's setting, else the form answer `category`. */
+export const categoryOf = (a: Pick<Application, 'category' | 'answers'>): string | null => {
+  const raw = a.category ?? (typeof a.answers?.category === 'string' ? a.answers.category : null);
+  return normCategory(raw) || null;
+};
 
 @Injectable()
 export class AdmissionsService {
@@ -98,6 +111,8 @@ export class AdmissionsService {
     if (problems.length) throw new BadRequestException(problems.join('; '));
     if (next.closesOn < next.opensOn) throw new BadRequestException('The cycle cannot close before it opens');
     if (patch.seats !== undefined) {
+      const reserved = (await this.quotas(tx, id)).reduce((n, q) => n + q.reservedSeats, 0);
+      if (patch.seats < reserved) throw new BadRequestException(`${reserved} seats are reserved by quotas`);
       const [held] = await tx.select({ n: count() }).from(applications).where(and(eq(applications.cycleId, id), inArray(applications.status, SEAT_HOLDING)));
       if (patch.seats < held.n) throw new BadRequestException(`${held.n} seats are already offered or taken`);
     }
@@ -154,7 +169,14 @@ export class AdmissionsService {
     const cycle = await this.cycle(tx, a.cycleId);
     let offerExpiresOn: string | null | undefined;
     if (to === 'offered') {
-      if (!opts.skipSeatCheck && (await this.seatsLeft(tx, cycle)) < 1) throw new ConflictException('No seats are left in this cycle');
+      if (!opts.skipSeatCheck) {
+        if ((await this.seatsLeft(tx, cycle)) < 1) throw new ConflictException('No seats are left in this cycle');
+        // Seat quotas: a category's reserved seats, then the general seats.
+        const category = categoryOf(a);
+        if (!seatAvailable(cycle.seats, await this.seatQuotas(tx, cycle.id), await this.heldByCategory(tx, cycle.id), category)) {
+          throw new ConflictException(category ? `No seat is left for the ${category} category` : 'No general seats are left in this cycle');
+        }
+      }
       offerExpiresOn = addDays(await this.lifecycle.today(tx), cycle.offerValidDays);
     }
     if (to === 'accepted' && a.offerExpiresOn && a.offerExpiresOn < (await this.lifecycle.today(tx))) throw new BadRequestException('This offer has expired');
@@ -167,6 +189,90 @@ export class AdmissionsService {
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.ApplicationStatusChanged, subjectType: 'application', subjectId: id, data: { from, to, reason: reason ?? null, by: opts.by ?? (actor.userId ? 'staff' : 'applicant') } });
     if (event !== AdmissionsEvents.ApplicationStatusChanged) await audit(tx, { ...auditActor(actor), action: event, subjectType: 'application', subjectId: id, data: { by: opts.by ?? (actor.userId ? 'staff' : 'applicant') } });
     return row;
+  }
+
+  /** The cycle's category quotas (categories normalised) with the display name. */
+  async quotas(tx: Tx, cycleId: string) {
+    const rows = await tx.select().from(admissionQuotas).where(eq(admissionQuotas.cycleId, cycleId)).orderBy(asc(admissionQuotas.category));
+    return rows;
+  }
+
+  async seatQuotas(tx: Tx, cycleId: string): Promise<SeatQuota[]> {
+    return (await this.quotas(tx, cycleId)).map((q) => ({ category: normCategory(q.category), reservedSeats: q.reservedSeats }));
+  }
+
+  /** Seats held (offered, accepted, enrolled) per category; '' counts those with no category. */
+  async heldByCategory(tx: Tx, cycleId: string): Promise<Record<string, number>> {
+    const rows = await tx.select({ category: applications.category, answers: applications.answers }).from(applications).where(and(eq(applications.cycleId, cycleId), inArray(applications.status, SEAT_HOLDING)));
+    const held: Record<string, number> = {};
+    for (const r of rows) {
+      const k = categoryOf(r) ?? '';
+      held[k] = (held[k] ?? 0) + 1;
+    }
+    return held;
+  }
+
+  /** Replaces the cycle's category quotas. Reserved seats can never exceed the cycle's seats. */
+  async setQuotas(tx: Tx, actor: Actor, cycleId: string, input: { category: string; reservedSeats: number }[]) {
+    const cycle = await this.cycle(tx, cycleId);
+    const keys = input.map((q) => normCategory(q.category));
+    if (keys.some((k) => !k)) throw new BadRequestException('Give each quota a category');
+    if (new Set(keys).size !== keys.length) throw new BadRequestException('A category appears twice');
+    const reserved = input.reduce((n, q) => n + q.reservedSeats, 0);
+    if (reserved > cycle.seats) throw new BadRequestException(`The quotas reserve ${reserved} seats but the cycle has only ${cycle.seats}`);
+    const held = await this.heldByCategory(tx, cycleId);
+    const general = cycle.seats - reserved;
+    const reservedBy = new Map(input.map((q) => [normCategory(q.category), q.reservedSeats]));
+    const overflow = Object.entries(held).reduce((n, [k, v]) => n + Math.max(0, v - (reservedBy.get(k) ?? 0)), 0);
+    if (overflow > general) throw new ConflictException('Offers already made would not fit these quotas');
+    await tx.delete(admissionQuotas).where(eq(admissionQuotas.cycleId, cycleId));
+    if (input.length) await tx.insert(admissionQuotas).values(input.map((q) => ({ tenantId: actor.tenantId, cycleId, category: q.category.trim(), reservedSeats: q.reservedSeats })));
+    await audit(tx, { ...auditActor(actor), action: 'admissions.quotas_set.v1', subjectType: 'admission_cycle', subjectId: cycleId, data: { quotas: input } });
+    return this.quotaView(tx, cycleId);
+  }
+
+  /** Quotas with how many seats are taken, and the general seats left. */
+  async quotaView(tx: Tx, cycleId: string) {
+    const cycle = await this.cycle(tx, cycleId);
+    const quotas = await this.quotas(tx, cycleId);
+    const held = await this.heldByCategory(tx, cycleId);
+    const reservedBy = new Map(quotas.map((q) => [normCategory(q.category), q.reservedSeats]));
+    const reserved = quotas.reduce((n, q) => n + q.reservedSeats, 0);
+    const generalUsed = Object.entries(held).reduce((n, [k, v]) => n + Math.max(0, v - (reservedBy.get(k) ?? 0)), 0);
+    return {
+      seats: cycle.seats,
+      generalSeats: cycle.seats - reserved,
+      generalLeft: cycle.seats - reserved - generalUsed,
+      quotas: quotas.map((q) => ({ category: q.category, reservedSeats: q.reservedSeats, taken: held[normCategory(q.category)] ?? 0, left: Math.max(0, q.reservedSeats - (held[normCategory(q.category)] ?? 0)) })),
+    };
+  }
+
+  /** Sets (or clears) the category an application counts under for seat quotas. */
+  async setCategory(tx: Tx, actor: Actor, id: string, category: string | null) {
+    const a = await this.application(tx, id, true);
+    if (a.status === 'enrolled') throw new BadRequestException('This applicant is already enrolled');
+    const [row] = await tx.update(applications).set({ category: category?.trim() || null, updatedAt: new Date() }).where(eq(applications.id, id)).returning();
+    await audit(tx, { ...auditActor(actor), action: 'admissions.category_set.v1', subjectType: 'application', subjectId: id, data: { category: row.category } });
+    return row;
+  }
+
+  /** Entrance test result per application of a cycle: the best score, and whether to leave them out of the merit list. */
+  async entranceResults(tx: Tx, cycleId: string) {
+    const rows = await tx
+      .select({ applicationId: entranceSeats.applicationId, score: entranceSeats.score, absent: entranceSeats.absent, passScore: entranceTests.passScore })
+      .from(entranceSeats)
+      .innerJoin(entranceTests, eq(entranceTests.id, entranceSeats.testId))
+      .where(eq(entranceTests.cycleId, cycleId));
+    const out = new Map<string, { score: number; absent: boolean; failed: boolean; pending: boolean }>();
+    for (const r of rows) {
+      const prev = out.get(r.applicationId);
+      const score = r.score ?? 0;
+      const failed = !r.absent && r.score != null && r.passScore != null && r.score < r.passScore;
+      const pending = !r.absent && r.score == null;
+      // Several tests: the applicant is judged on their best one.
+      if (!prev || score > prev.score) out.set(r.applicationId, { score, absent: r.absent, failed, pending });
+    }
+    return out;
   }
 
   async seatsLeft(tx: Tx, cycle: Cycle): Promise<number> {
@@ -198,11 +304,12 @@ export class AdmissionsService {
     const rules: EligibilityRules = { ...cfg.eligibility, ageOn: cfg.eligibility.ageOn ?? y.startsOn };
     const today = await this.lifecycle.today(tx);
     const apps = await tx.select().from(applications).where(and(eq(applications.cycleId, cycleId), eq(applications.status, 'under_review')));
+    const entrance = await this.entranceResults(tx, cycleId);
     const out = { eligible: 0, ineligible: 0, waiting: 0 };
     for (const a of apps) {
       const failures = eligibilityFailures(rules, { dateOfBirth: a.dateOfBirth, answers: a.answers }, today);
       const gaps = await this.documentGaps(tx, a, cycle);
-      const score = meritScore(cfg.meritRules, a.answers);
+      const score = meritScore(cfg.meritRules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0 });
       await tx.update(applications).set({ meritScore: score, eligibilityNotes: [...failures, ...gaps], updatedAt: new Date() }).where(eq(applications.id, a.id));
       if (failures.length) {
         await this.setStatus(tx, actor, a.id, 'ineligible', failures.join('; '), { by: 'eligibility_rules' });
@@ -227,7 +334,19 @@ export class AdmissionsService {
     const pool = await tx.select().from(applications).where(and(eq(applications.cycleId, cycleId), inArray(applications.status, ['eligible', 'waitlisted'])));
     if (pool.length === 0) throw new BadRequestException('No eligible applications to rank');
     const seats = Math.max(0, await this.seatsLeft(tx, cycle));
-    const ranked = rankMerit(pool.map((a) => ({ id: a.id, score: meritScore(rules, a.answers), submittedAt: a.submittedAt })), seats);
+    const entrance = await this.entranceResults(tx, cycleId);
+    // Candidates who missed the entrance test or fell below its pass mark are not ranked; scores must be in first.
+    const pending = pool.filter((a) => entrance.get(a.id)?.pending);
+    if (pending.length) throw new ConflictException(`Enter the entrance test scores first: ${pending.length} candidate${pending.length === 1 ? ' has' : 's have'} no score`);
+    const sat = pool.filter((a) => {
+      const e = entrance.get(a.id);
+      return !e?.absent && !e?.failed;
+    });
+    if (sat.length === 0) throw new BadRequestException('No candidates cleared the entrance test');
+    const byId = new Map(sat.map((a) => [a.id, a]));
+    const order = rankMerit(sat.map((a) => ({ id: a.id, score: meritScore(rules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0 }), submittedAt: a.submittedAt })), sat.length);
+    const decisions = allocateSeats(order.map((o) => ({ category: categoryOf(byId.get(o.id)!) })), cycle.seats, await this.seatQuotas(tx, cycleId), await this.heldByCategory(tx, cycleId));
+    const ranked = order.map((o, i) => ({ ...o, decision: decisions[i] }));
     const [last] = await tx.select({ v: meritLists.version }).from(meritLists).where(eq(meritLists.cycleId, cycleId)).orderBy(desc(meritLists.version)).limit(1);
     const entries = ranked.map((r) => ({ applicationId: r.id, rank: r.rank, score: r.score, decision: r.decision }));
     const [list] = await tx.insert(meritLists).values({ tenantId: actor.tenantId, cycleId, version: (last?.v ?? 0) + 1, seats, entries, generatedBy: actor.userId }).returning();

@@ -44,6 +44,12 @@ export async function GET(req: NextRequest) {
     if (!range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/finance/gl.${GL[kind]}?from=${range[0]}&to=${range[1]}`;
   }
+  if (kind === 'hall-ticket') {
+    const test = req.nextUrl.searchParams.get('test') ?? '';
+    const app = req.nextUrl.searchParams.get('app') ?? '';
+    if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
+  }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.
   const validId = kind === 'asset-tags' ? id.split(',').every((x) => UUID.test(x)) : UUID.test(id);

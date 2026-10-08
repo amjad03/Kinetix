@@ -21,16 +21,20 @@ export const APPLICATION_STATUSES = ['submitted', 'under_review', 'eligible', 'i
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
 /** Moves that need a written reason (APPLICATION_REASON_REQUIRED). */
 export const APPLICATION_REASON_REQUIRED: readonly string[] = ['rejected', 'ineligible', 'withdrawn', 'eligible'];
-export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped'] as const;
+export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased'] as const;
 export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 /** Changes that need a written reason (STUDENT_REASON_REQUIRED). */
-export const STUDENT_REASON_REQUIRED: readonly string[] = ['on_leave', 'detained', 'transferred', 'dropped'];
+export const STUDENT_REASON_REQUIRED: readonly string[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased'];
+/** Statuses that ask when the student returns (a leave of absence needs it; a suspension may have it). */
+export const STUDENT_RETURN_STATUSES: readonly string[] = ['on_leave', 'suspended'];
+/** Statuses a student can be readmitted from. */
+export const STUDENT_READMIT_FROM: readonly string[] = ['dropped', 'transferred', 'expelled'];
 
 export type Tone = 'default' | 'info' | 'success' | 'warning' | 'error';
 export const applicationTone = (s: string): Tone =>
   s === 'enrolled' || s === 'accepted' ? 'success' : s === 'offered' || s === 'eligible' ? 'info' : s === 'rejected' || s === 'ineligible' || s === 'declined' || s === 'withdrawn' ? 'error' : s === 'waitlisted' ? 'warning' : 'default';
 export const studentTone = (s: string): Tone =>
-  s === 'active' || s === 'enrolled' ? 'success' : s === 'on_leave' || s === 'detained' || s === 'promoted' ? 'warning' : s === 'transferred' || s === 'dropped' ? 'error' : s === 'alumni' ? 'info' : 'default';
+  s === 'active' || s === 'enrolled' ? 'success' : s === 'on_leave' || s === 'detained' || s === 'promoted' || s === 'suspended' ? 'warning' : s === 'transferred' || s === 'dropped' || s === 'expelled' || s === 'deceased' ? 'error' : s === 'alumni' ? 'info' : 'default';
 
 export interface Enquiry {
   id: string;
@@ -184,6 +188,9 @@ export interface LifecycleEventRow {
   toSection: string | null;
   reason: string | null;
   effectiveOn: string;
+  returnOn?: string | null;
+  approverName?: string | null;
+  certificateId?: string | null;
   batchId: string | null;
   actorName: string | null;
   at: string;

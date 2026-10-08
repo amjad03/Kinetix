@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Res, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@kinetix/shared';
 import { timingSafeEqual } from 'node:crypto';
@@ -17,6 +18,7 @@ import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { AdmissionsService, cycleConfig, hashToken, newToken, type Application } from './admissions.service.js';
 import { EnquiriesService } from './enquiries.service.js';
+import { EntranceService, hallTicketPdf } from './entrance.service.js';
 
 const MAX_DOC_BYTES = 5 * 1024 * 1024;
 
@@ -35,6 +37,10 @@ const EnquiryBody = z.object({
   email: z.email().max(200).optional(),
   programId: z.uuid().optional(),
   message: z.string().trim().max(1000).optional(),
+  /** UTM tags from the landing page link; a known utmCampaign ties the enquiry to its campaign. */
+  utmSource: z.string().trim().max(80).optional(),
+  utmMedium: z.string().trim().max(80).optional(),
+  utmCampaign: z.string().trim().max(80).optional(),
   /** A hidden field real visitors never fill: bots do. */
   website: z.string().max(200).optional(),
 });
@@ -66,6 +72,7 @@ export class PublicAdmissionsController {
     private readonly system: SystemLookups,
     private readonly svc: AdmissionsService,
     private readonly enquiriesSvc: EnquiriesService,
+    private readonly entrance: EntranceService,
     private readonly fees: ApplicationFeesService,
     private readonly storage: ObjectStorage,
     private readonly scans: UploadScanService,
@@ -157,6 +164,19 @@ export class PublicAdmissionsController {
       // With no fee due the application goes straight to review; otherwise when the fee is paid it waits for staff.
       return { id: a.id, applicationNo, token, feeDuePaise: cycle.applicationFeePaise, status: a.status, feeStatus: a.feeStatus };
     });
+  }
+
+  /** The applicant's hall ticket PDF, once seats are allocated. */
+  @Get('applications/:id/hall-ticket')
+  async hallTicket(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response, @Headers('x-application-token') token?: string) {
+    const t = await this.tenant(slug);
+    const data = await this.db.withTenant(t.id, async (tx) => {
+      await this.mine(tx, id, token);
+      return this.entrance.ticketForApplicant(tx, id);
+    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="hall-ticket.pdf"');
+    return new StreamableFile(hallTicketPdf(data));
   }
 
   /** Where the application stands, for the applicant's tracking page. */
