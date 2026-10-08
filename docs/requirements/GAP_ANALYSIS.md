@@ -136,7 +136,11 @@ Mobile: Teacher (staff tools, student insights, AI copilot), Student (course reg
 passport, surveys, clubs/events with QR passes, chapter markers, notes and recaps), Parent
 (diary, PTM, early years, health, passport, surveys, event passes).
 
-Still open: domain-specific AI assistants (§64); bank-transfer and PO-invoice payments (§66);
-Koha/Zoom/Teams/BI connectors beyond the registry (§67); ERP screen for examiners (API and
-Teacher App exist); OBE indirect attainment reading survey data; browser e2e for the new ERP
-pages; real-device checks; Indic text in server-built PDFs (Latin-1 font only).
+Final wave: finance/admissions/HR AI insights (aggregates only), survey CO ratings in OBE
+indirect attainment, ERP examiner desk, bank-transfer verification and sponsor invoicing,
+Koha/Zoom/Teams/BI-export connectors (tested against local stubs), Playwright specs for every
+new ERP page (20 specs, 56 tests).
+
+Still open: real-device checks; live checks of Koha/Zoom/Teams against real servers; Indic text
+in server-built PDFs (Latin-1 font; needs an embedded Indic font with shaping); deferred items
+above (semantic search, on-prem packaging, SSO).
