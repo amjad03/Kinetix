@@ -215,7 +215,7 @@ describe('Phase 00 foundation', () => {
       await bus.drain();
       expect(seen).toEqual([id]);
       expect((await db.select().from(domainEvents).where(eq(domainEvents.id, flaky.id)))[0].dispatchedAt).not.toBeNull();
-      expect(await db.select().from(eventConsumptions).where(eq(eventConsumptions.eventId, id))).toHaveLength(2); // test-counter and the audit trail
+      expect(await db.select().from(eventConsumptions).where(eq(eventConsumptions.eventId, id))).toHaveLength(3); // test-counter, the audit trail and outbound webhooks
       expect(await db.select().from(s.auditLog).where(and(eq(s.auditLog.tenantId, t.tenantId), eq(s.auditLog.action, 'event.test.happened')))).toHaveLength(1);
     });
 
