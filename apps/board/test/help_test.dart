@@ -10,6 +10,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'support/layout.dart';
+import 'support/marks.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -101,6 +102,7 @@ void main() {
     expect(t.next, PracticeTask.erase);
     wb.undo();
     expect(t.done, containsAll([PracticeTask.erase]));
+    markPage(wb);
     wb.addPage();
     kit.show(ToolkitItem.timer);
     expect(t.done, containsAll([PracticeTask.page, PracticeTask.timer]));

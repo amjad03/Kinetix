@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_board/features/board/chrome.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/features/preview/panel_preview.dart';
 import 'package:kinetix_board/main.dart';
@@ -9,6 +10,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_cloud.dart';
+import 'support/marks.dart';
 
 /// Preview as interactive panel: on a phone the board is laid out as on a 1920 × 1080 panel,
 /// scaled to fit, and still works: buttons and the pen land where they are drawn.
@@ -127,6 +129,8 @@ void main() {
       await tester.tap(find.byKey(const Key('tool-highlighter')));
       await tester.pumpAndSettle();
       expect(wb.tool, BoardTool.highlighter);
+      markPage(wb);
+      await tester.pumpAndSettle();
       final pages = wb.pageCount;
       await tester.tap(find.byKey(const Key('add-page')));
       await tester.pumpAndSettle();

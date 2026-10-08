@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 import 'dart:io' show Platform, exit;
 import 'dart:math';
@@ -340,6 +341,7 @@ class BoardController extends ChangeNotifier {
       eyeComfort = EyeComfortSettings.decode(await _store.setting('eyeComfort'));
       boardLanguage = BoardLanguage.tryParse(await _store.setting('language')) ?? BoardLanguage.en;
       toolbarDock = ToolbarDock.values.asNameMap()[await _store.setting('toolbarDock')] ?? ToolbarDock.bottom;
+      sbPrefs = _decodePrefs(await _store.setting('smartboard'));
       toolbarPanel = _ids(await _store.setting('toolbarPanel'));
       toolbarPhone = _ids(await _store.setting('toolbarPhone'));
       palmRejection = await _store.setting('palmRejection') != 'false';
@@ -366,7 +368,7 @@ class BoardController extends ChangeNotifier {
   /// teacher is signed in, changes are saved under `profile.<teacherId>.` and the board's own
   /// come back when they sign out. The board's language, touch surface, kiosk and projector
   /// stay the board's.
-  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'toolbarPanel', 'toolbarPhone', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps', 'measureShapes', 'measureUnit'];
+  static const teacherSettings = ['eyeComfort', 'toolbarDock', 'toolbarPanel', 'toolbarPhone', 'aiPenConvert', 'theme', 'simpleBoard', 'inputMode', 'aiPenMode', 'aiPenLanguage', 'snapShapes', 'fingerTaps', 'measureShapes', 'measureUnit', 'smartboard'];
 
   String? _settingsTeacher;
 
@@ -393,6 +395,7 @@ class BoardController extends ChangeNotifier {
     'measureShapes': '$measureShapes',
     'measureUnit': measureUnit.name,
     'fingerTaps': '$fingerTaps',
+    'smartboard': jsonEncode(sbPrefs),
   };
 
   void _setTeacherSettingValues(Map<String, String?> v) {
@@ -410,6 +413,29 @@ class BoardController extends ChangeNotifier {
     if (v['measureShapes'] != null) measureShapes = v['measureShapes'] == 'true';
     measureUnit = MeasureUnit.values.asNameMap()[v['measureUnit']] ?? measureUnit;
     if (v['fingerTaps'] != null) fingerTaps = v['fingerTaps'] != 'false';
+    if (v.containsKey('smartboard')) sbPrefs = _decodePrefs(v['smartboard']);
+  }
+
+  /// Smartboard preferences (toolbar sides, branding, stylus tips, Text AI font): one JSON
+  /// teacher setting, so each teacher keeps their own.
+  Map<String, String> sbPrefs = {};
+
+  String? sbPref(String key) => sbPrefs[key];
+
+  void setSbPref(String key, String? value) {
+    sbPrefs = {...sbPrefs}..remove(key);
+    if (value != null) sbPrefs[key] = value;
+    unawaited(_saveTeacherSetting('smartboard', jsonEncode(sbPrefs)));
+    notifyListeners();
+  }
+
+  static Map<String, String> _decodePrefs(String? v) {
+    if (v == null || v.isEmpty) return {};
+    try {
+      return (jsonDecode(v) as Map).map((k, x) => MapEntry('$k', '$x'));
+    } catch (_) {
+      return {};
+    }
   }
 
   /// Applies the signed-in teacher's own settings, or puts the board's back after they sign out.

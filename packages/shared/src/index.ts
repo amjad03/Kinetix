@@ -231,6 +231,8 @@ export interface SessionContext {
   sessionId: string;
   expiresAt: string;
   teacher: { id: string; fullName: string; preferredLanguage: Language };
+  /** The institution's name: the default brand on shared board PDFs. */
+  institutionName?: string;
   /**
    * The class open on the board. `term` is the grade (K-12; 0 and -1 for UKG and LKG where a
    * school numbers them so) or the semester; `level` is the programme's level.

@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 import 'ink_models.dart';
+import 'world_land.g.dart';
 
 /// The board's paper. Saved by name; readers fall back to plain for a name they do not know,
 /// so a new paper never breaks an older viewer. Each page has its own.
@@ -38,6 +41,13 @@ enum BoardBackground {
   cricketField,
   footballField,
 
+  /// Spec §22 templates: a black board, Hindi (Devanagari) lines with the shirorekha, a
+  /// check pattern, and a basketball court.
+  black,
+  hindiLines,
+  checks,
+  basketballCourt,
+
   /// Plain coloured paper.
   paperCream,
   paperSky,
@@ -53,11 +63,12 @@ enum BoardBackground {
 const Size boardSheet = Size(1920, 1080);
 
 extension BoardBackgroundColors on BoardBackground {
-  bool get isDark => this == BoardBackground.chalkboard || this == BoardBackground.paperSlate || this == BoardBackground.night;
+  bool get isDark => this == BoardBackground.chalkboard || this == BoardBackground.paperSlate || this == BoardBackground.night || this == BoardBackground.black;
   Color get paper => switch (this) {
     BoardBackground.chalkboard => const Color(0xFF1F2A24),
     BoardBackground.paperSlate => const Color(0xFF263238),
     BoardBackground.night => const Color(0xFF141517),
+    BoardBackground.black => const Color(0xFF000000),
     BoardBackground.paperCream => const Color(0xFFFFF6DC),
     BoardBackground.paperSky => const Color(0xFFE3F1FD),
     BoardBackground.paperMint => const Color(0xFFE2F5EA),
@@ -88,6 +99,10 @@ extension BoardBackgroundColors on BoardBackground {
     BoardBackground.threeColumns => 'Three columns',
     BoardBackground.cricketField => 'Cricket field',
     BoardBackground.footballField => 'Football field',
+    BoardBackground.black => 'Black',
+    BoardBackground.hindiLines => 'Hindi lines',
+    BoardBackground.checks => 'Checks',
+    BoardBackground.basketballCourt => 'Basketball court',
     BoardBackground.paperCream => 'Cream',
     BoardBackground.paperSky => 'Sky',
     BoardBackground.paperMint => 'Mint',
@@ -190,6 +205,31 @@ void paintBoardBackground(Canvas canvas, Rect area, BoardBackground background, 
         canvas.drawLine(Offset(area.left, y + 112), Offset(area.right, y + 112), red);
         canvas.drawLine(Offset(area.left, y + 140), Offset(area.right, y + 140), blue);
       }
+    case BoardBackground.hindiLines:
+      // A 140-unit band: room for matras above, the shirorekha (red), the letter body, the
+      // base line, and room below.
+      const band = 140.0;
+      if (band * scale < 20) return;
+      final blue = coloured(0x552F6FB5);
+      final red = coloured(0x88D7263D, 1.6);
+      for (var y = first(area.top, 0, band); y < area.bottom; y += band) {
+        canvas.drawLine(Offset(area.left, y + 22), Offset(area.right, y + 22), blue);
+        canvas.drawLine(Offset(area.left, y + 50), Offset(area.right, y + 50), red);
+        _dashedH(canvas, area, y + 80, 12 / scale, blue);
+        canvas.drawLine(Offset(area.left, y + 108), Offset(area.right, y + 108), blue);
+      }
+    case BoardBackground.checks:
+      final s = step(pxPerCm * 2);
+      final fill = Paint()..color = const Color(0x0F1A3A6B);
+      for (var x = first(area.left, 0, s); x < area.right; x += s) {
+        for (var y = first(area.top, 0, s); y < area.bottom; y += s) {
+          if (((x / s).round() + (y / s).round()).isEven) canvas.drawRect(Rect.fromLTWH(x, y, s, s), fill);
+        }
+      }
+      vLines(0, s, line);
+      hLines(0, s, line);
+    case BoardBackground.basketballCourt:
+      _paintBasketball(canvas, scale);
     case BoardBackground.musicStaff:
       const staff = 140.0, gap = 14.0;
       if (gap * scale < 3) return;
@@ -226,8 +266,10 @@ void paintBoardBackground(Canvas canvas, Rect area, BoardBackground background, 
       _paintCricket(canvas, scale);
     case BoardBackground.footballField:
       _paintFootball(canvas, scale);
-    case BoardBackground.indiaMap || BoardBackground.worldMap:
-      _paintMapPlaceholder(canvas, scale, background == BoardBackground.indiaMap ? 'India map' : 'World map');
+    case BoardBackground.worldMap:
+      _paintWorld(canvas, scale);
+    case BoardBackground.indiaMap:
+      _paintMapPlaceholder(canvas, scale, 'India map');
     case BoardBackground.plain ||
         BoardBackground.chalkboard ||
         BoardBackground.paperCream ||
@@ -235,7 +277,8 @@ void paintBoardBackground(Canvas canvas, Rect area, BoardBackground background, 
         BoardBackground.paperMint ||
         BoardBackground.paperRose ||
         BoardBackground.paperSlate ||
-        BoardBackground.night:
+        BoardBackground.night ||
+        BoardBackground.black:
       break;
   }
 }
@@ -327,6 +370,79 @@ void _paintFootball(Canvas canvas, double scale) {
     canvas.drawRect(box, p);
     canvas.drawRect(small, p);
     canvas.drawCircle(Offset(x + dir * 150, c.dy), 4, Paint()..color = p.color);
+  }
+}
+
+void _paintBasketball(Canvas canvas, double scale) {
+  // 28 m × 15 m at 60 units a metre.
+  const field = Rect.fromLTWH(120, 90, 1680, 900);
+  canvas.drawRect(field, Paint()..color = const Color(0x22C8803A));
+  final p = _fieldLine(scale);
+  canvas.drawRect(field, p);
+  final c = field.center;
+  canvas.drawLine(Offset(c.dx, field.top), Offset(c.dx, field.bottom), p);
+  canvas.drawCircle(c, 108, p);
+  for (final left in [true, false]) {
+    final x = left ? field.left : field.right;
+    final dir = left ? 1.0 : -1.0;
+    // The key (5.8 m × 4.9 m), its free-throw circle, the hoop and the three-point line (6.75 m).
+    final key = Rect.fromPoints(Offset(x, c.dy - 147), Offset(x + dir * 348, c.dy + 147));
+    canvas.drawRect(key, p);
+    canvas.drawCircle(Offset(x + dir * 348, c.dy), 108, p);
+    final hoop = Offset(x + dir * 94, c.dy);
+    canvas.drawCircle(hoop, 14, p);
+    const r = 405.0, side = 396.0;
+    final a = math.asin(side / r);
+    canvas.drawLine(Offset(x, c.dy - side), Offset(hoop.dx + dir * r * math.cos(a), c.dy - side), p);
+    canvas.drawLine(Offset(x, c.dy + side), Offset(hoop.dx + dir * r * math.cos(a), c.dy + side), p);
+    canvas.drawArc(Rect.fromCircle(center: hoop, radius: r), left ? -a : math.pi - a, 2 * a, false, p);
+  }
+}
+
+/// The continents (Natural Earth 1:110m, public domain), decoded once.
+final List<Path> _worldLand = () {
+  final b = base64Decode(worldLandData);
+  final d = ByteData.sublistView(b);
+  final paths = <Path>[];
+  var i = 0;
+  while (i + 2 <= b.length) {
+    final n = d.getUint16(i, Endian.little);
+    i += 2;
+    final path = Path();
+    for (var k = 0; k < n; k++, i += 4) {
+      final x = d.getUint16(i, Endian.little).toDouble(), y = d.getUint16(i + 2, Endian.little).toDouble();
+      k == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+    }
+    paths.add(path..close());
+  }
+  return paths;
+}();
+
+void _paintWorld(Canvas canvas, double scale) {
+  const frame = Rect.fromLTWH(160, 224, 1600, 631);
+  canvas.drawRect(frame, Paint()..color = const Color(0x142F6FB5));
+  final grid = Paint()
+    ..color = const Color(0x222F6FB5)
+    ..strokeWidth = 1 / scale
+    ..style = PaintingStyle.stroke;
+  // Meridians every 30°, parallels every 30° from the equator (y = 224 + 84° × 4.44).
+  for (var lon = 0; lon <= 360; lon += 30) {
+    final x = frame.left + lon * 1600 / 360;
+    canvas.drawLine(Offset(x, frame.top), Offset(x, frame.bottom), grid);
+  }
+  for (final lat in [60, 30, 0, -30]) {
+    final y = frame.top + (84 - lat) * 1600 / 360;
+    canvas.drawLine(Offset(frame.left, y), Offset(frame.right, y), grid);
+  }
+  final land = Paint()..color = const Color(0x332E9E4F);
+  final coast = Paint()
+    ..color = const Color(0x99406050)
+    ..strokeWidth = 1.4 / scale
+    ..style = PaintingStyle.stroke;
+  for (final p in _worldLand) {
+    canvas
+      ..drawPath(p, land)
+      ..drawPath(p, coast);
   }
 }
 

@@ -86,7 +86,10 @@ import '../extras/board_extras.dart';
 import '../extras/extras_hooks.dart';
 import 'board_shot.dart';
 import 'calculator.dart';
+import 'sb_strings.dart';
+import 'share_whiteboard.dart';
 import 'touch_lock.dart';
+import 'version_history.dart';
 
 /// The teaching screen, as in the approved wireframes (docs/design/board-wireframes.html): the
 /// endless whiteboard ([WhiteboardController]) with
@@ -354,6 +357,16 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// Touch lock (Tools): the board takes no touches until the lock is held.
   bool _touchLocked = false;
+
+  /// Hide (spec §10): every tool hidden, the canvas and a restore button left.
+  bool _uiHidden = false;
+
+  /// Screen Freeze (spec §61): nothing on the board can change until Close.
+  bool _frozen = false;
+
+  /// Switch: the quick group and the page navigation trade sides (kept per teacher).
+  bool get _barsSwapped => board.sbPref('barsSwapped') == 'true';
+  void _switchSides() => board.setSbPref('barsSwapped', _barsSwapped ? null : 'true');
 
   /// Screenshot (Tools): what the board shows now, as a PNG.
   Future<Uint8List> _captureScreen() =>
@@ -1579,6 +1592,12 @@ class _BoardScreenState extends State<BoardScreen> {
                 children: [
                   Positioned.fill(child: LayoutBuilder(builder: (context, size) => _layout(context, size))),
                   // Touch lock (Tools): over everything, the board and its panels, until held.
+                  if (_frozen)
+                    Positioned.fill(
+                      child: BoardChromeTheme(
+                        child: ScreenFreezeOverlay(onClose: () => setState(() => _frozen = false), closeLabel: SbStrings.of(context)('unfreeze'), frozenLabel: SbStrings.of(context)('frozen')),
+                      ),
+                    ),
                   if (_touchLocked) Positioned.fill(child: BoardChromeTheme(child: TouchLockOverlay(onUnlock: () => setState(() => _touchLocked = false)))),
                 ],
               ),
@@ -1717,7 +1736,20 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         Positioned.fill(child: ClassCheckOverlay(check: _classCheck, onPutOnBoard: _addPollResults, insets: _wb.safeInsets)),
         Positioned.fill(child: RemotePointer(remote: _remote)),
-        if (phone) ..._phoneChrome(context, safe) else ..._panelChrome(context, compact: compact, short: short, dock: dock, collapsed: collapsed),
+        if (phone)
+          ..._phoneChrome(context, safe)
+        else if (_uiHidden)
+          Positioned(
+            left: Kx.s12,
+            bottom: Kx.s12,
+            child: BoardChromeTheme(
+              child: ChromeSurface(
+                child: ToolButton(key: const Key('restore-ui'), icon: Icons.visibility_outlined, label: SbStrings.of(context)('restore'), onTap: () => setState(() => _uiHidden = false)),
+              ),
+            ),
+          )
+        else
+          ..._panelChrome(context, compact: compact, short: short, dock: dock, collapsed: collapsed),
         if (_popover != null)
           Positioned.fill(
             child: GestureDetector(
@@ -1909,7 +1941,18 @@ class _BoardScreenState extends State<BoardScreen> {
     final drag = _toolbarDrag ?? Offset.zero;
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
-    final leftRoom = recording == null ? 190.0 : 420.0, rightRoom = compact ? 330.0 : 400.0;
+    final swapped = _barsSwapped;
+    final menuRoom = recording == null ? 190.0 : 420.0, pageRoom = (compact ? 330.0 : 400.0) + 2 * Kx.boardTarget;
+    final leftRoom = swapped ? pageRoom : menuRoom, rightRoom = swapped ? menuRoom : pageRoom;
+    final quick = QuickGroup(
+      onSwitch: _switchSides,
+      profileLabel: board.session?.teacherName.split(' ').first ?? SbStrings.of(context)('guest'),
+      signedIn: board.isSignedIn,
+      onProfile: () => _toggle(BoardPopover.profile),
+      onShare: () => unawaited(_shareWhiteboard()),
+      onWhatsApp: () => unawaited(_shareWhiteboard()),
+      onEndClass: () => unawaited(_endClass()),
+    );
     final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 840.0 : 1040.0));
     _toolbarRaised = width - leftRoom - rightRoom < toolbarW;
     return [
@@ -1933,14 +1976,27 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
       if (!_bottomChromeHidden) ...[
         Positioned(
-          left: Kx.s12,
+          left: swapped ? null : Kx.s12,
+          right: swapped ? Kx.s12 : null,
           bottom: Kx.s12,
-          child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording)),
+          child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording, quick: quick)),
         ),
         Positioned(
-          right: Kx.s12,
+          right: swapped ? null : Kx.s12,
+          left: swapped ? Kx.s12 : null,
           bottom: Kx.s12,
-          child: themed(PageBar(wb: _wb, onOverview: () => _toggle(BoardPopover.pages), overviewOpen: _popover == BoardPopover.pages)),
+          child: themed(
+            PageBar(
+              wb: _wb,
+              onOverview: () => _toggle(BoardPopover.pages),
+              overviewOpen: _popover == BoardPopover.pages,
+              onHide: () => setState(() {
+                _popover = null;
+                _uiHidden = true;
+              }),
+              onSwitch: _switchSides,
+            ),
+          ),
         ),
         if (dock == ToolbarDock.bottom)
           if (!_toolbarRaised)
@@ -1952,7 +2008,8 @@ class _BoardScreenState extends State<BoardScreen> {
             left: dock == ToolbarDock.left ? Kx.s12 : null,
             right: dock == ToolbarDock.right ? Kx.s12 : null,
             top: 64,
-            bottom: 96,
+            // Above the quick group when it is on the same side.
+            bottom: (dock == ToolbarDock.left) != swapped ? 96 + Kx.boardTarget + 16 : 96,
             child: Align(
               alignment: dock == ToolbarDock.left ? Alignment.centerLeft : Alignment.centerRight,
               child: FittedBox(fit: BoxFit.scaleDown, child: toolbar),
@@ -2044,7 +2101,9 @@ class _BoardScreenState extends State<BoardScreen> {
       ],
       (const Key('menu-open'), Icons.folder_open_outlined, l.open, _openWhiteboards, true),
       (const Key('save-board'), Icons.save_outlined, l.save, () => unawaited(_save()), true),
-      (const Key('menu-share'), Icons.share_outlined, s.share, () => unawaited(_share()), true),
+      (const Key('menu-share'), Icons.share_outlined, s.share, () => unawaited(_shareWhiteboard()), true),
+      (const Key('menu-freeze'), Icons.ac_unit, SbStrings.of(context)('freeze'), () => setState(() => _frozen = true), true),
+      (const Key('menu-versions'), Icons.history, SbStrings.of(context)('versions'), () => unawaited(_versions()), board.isSignedIn && board.whiteboardId.isNotEmpty),
       (const Key('menu-import'), Icons.upload_file_outlined, l.importFiles, () => unawaited(importDocument(context, _wb)), true),
       (const Key('tool-theme'), Icons.texture, s.background, () => setState(() => _popover = BoardPopover.background), true),
       (const Key('menu-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), true),
@@ -2072,16 +2131,22 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// Share: saves the board and shares it with the class.
-  Future<void> _share() async {
-    if (!board.isSignedIn) {
-      showBoardMessage(context, context.l10n.saveNeedsSignIn);
-      return;
-    }
+  /// Share whiteboard: WhatsApp, Email, QR and other apps (share_whiteboard.dart).
+  Future<void> _shareWhiteboard() async {
     if (_wb.isBlank) {
       showBoardMessage(context, context.l10n.nothingToSave);
       return;
     }
-    await _saveAs(_boardTitle ?? _defaultTitle(), share: true);
+    final title = _boardTitle ?? _defaultTitle();
+    await showShareWhiteboard(context, board: board, wb: _wb, canvas: _canvasSize, title: title, ensureSaved: () => _saveAs(title, share: false));
+  }
+
+  /// Version history: earlier saves of this board, newest first; restoring keeps the current one.
+  Future<void> _versions() async {
+    final picked = await showVersionHistory(context, board);
+    if (picked == null || !mounted) return;
+    _wb.load(picked.$1);
+    showBoardMessage(context, SbStrings.of(context)('restored', {'d': picked.$2}));
   }
 
   Widget _popoverLayer(BuildContext context, {required bool phone, required EdgeInsets safe, required ToolbarDock dock, required bool collapsed}) {
@@ -2097,7 +2162,7 @@ class _BoardScreenState extends State<BoardScreen> {
           unawaited(confirmClearBoard(context, _wb, scope: ClearScope.page));
         },
       ),
-      BoardPopover.background => BackgroundsPopover(wb: _wb, onChanged: _setBackground),
+      BoardPopover.background => BackgroundsPopover(wb: _wb, onChanged: _setBackground, board: board),
       BoardPopover.shapes => ShapesPopover(wb: _wb, primary: _primary, onPicked: () {}, onOpenModel: (id) => _openSplit(SplitContent.model3d, id)),
       BoardPopover.tools => ToolsDrawer(
         tools: _drawerTools(l),

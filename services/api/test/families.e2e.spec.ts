@@ -192,6 +192,41 @@ describe('families, saved boards and the dashboard', () => {
       expect((await inbox('parent')).items.filter((n) => n.kind === 'board_shared')).toHaveLength(1);
     });
 
+    it('keeps earlier saves as versions and restores one, keeping what was there', async () => {
+      const bt = { authorization: `Bearer ${boardToken}` };
+      const before = (await http().get(`/v1/whiteboards/${boardId}/versions`).set(bt).expect(200)).body;
+      expect(before.map((v: { version: number }) => v.version)).toEqual([1]);
+      expect(before[0].title).toBe('Issue of shares');
+      const restored = (await http().post(`/v1/whiteboards/${boardId}/versions/1/restore`).set(auth('teacher')).expect(200)).body;
+      expect(restored.title).toBe('Issue of shares');
+      const after = (await http().get(`/v1/whiteboards/${boardId}/versions`).set(bt).expect(200)).body;
+      expect(after.map((v: { version: number }) => v.version)).toEqual([2, 1]);
+      await http().get(`/v1/whiteboards/${boardId}/versions`).set(auth('parent')).expect(404);
+      await http().post(`/v1/whiteboards/${boardId}/versions/9/restore`).set(auth('teacher')).expect(404);
+    });
+
+    it('exports a branded PDF behind a public link for WhatsApp, email and QR', async () => {
+      const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x00, 0x10, 0x00, 0x20, 0x03, 1, 0x22, 0, 2, 0x11, 1, 3, 0x11, 1, 0xff, 0xd9]);
+      const bt = { authorization: `Bearer ${boardToken}` };
+      await http().post(`/v1/whiteboards/${boardId}/export`).set(bt).attach('pages', Buffer.from('not a jpeg'), 'p.jpg').expect(400);
+      const r = (
+        await http().post(`/v1/whiteboards/${boardId}/export`).set(bt).field('watermark', 'Ms Anita').attach('pages', jpeg, 'p1.jpg').attach('pages', jpeg, 'p2.jpg').attach('logo', jpeg, 'logo.jpg').expect(201)
+      ).body;
+      expect(r).toMatchObject({ pageCount: 2 });
+      expect(r.path).toMatch(/^\/v1\/public\/boards\/[a-z0-9-]+\/[0-9a-f]{32}\.pdf$/);
+      const pdf = await http().get(r.path).buffer(true).parse((res, cb) => { const c: Buffer[] = []; res.on('data', (d: Buffer) => c.push(d)); res.on('end', () => cb(null, Buffer.concat(c))); }).expect(200);
+      expect(pdf.headers['content-type']).toBe('application/pdf');
+      const text = (pdf.body as Buffer).toString('latin1');
+      expect(text.startsWith('%PDF-1.4')).toBe(true);
+      expect(text).toContain('/DCTDecode');
+      expect(text).toContain('(Ms Anita)');
+      expect(text).toContain('/Count 2');
+      await http().get(r.path.replace(/[0-9a-f]{32}/, '0'.repeat(32))).expect(404);
+      const own = (await http().post(`/v1/whiteboards/${boardId}/export`).set(bt).attach('pdf', Buffer.from('%PDF-1.4 board'), 'b.pdf').expect(201)).body;
+      expect(own.pageCount).toBe(2);
+      await http().post(`/v1/whiteboards/${boardId}/export`).set(bt).attach('pdf', Buffer.from('nope'), 'b.pdf').expect(400);
+    });
+
     it("another teacher can neither overwrite nor share it", async () => {
       await http().post(`/v1/whiteboards/${boardId}/share`).set(auth('teacher2')).expect(404);
       await http().get(`/v1/whiteboards/${boardId}`).set(auth('teacher2')).expect(404);

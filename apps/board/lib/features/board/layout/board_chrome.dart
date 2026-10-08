@@ -9,6 +9,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../../../core/api_client.dart';
 import '../../../core/board_controller.dart';
 import '../../../demo/demo.dart';
+import '../sb_strings.dart';
 import '../../../l10n/l10n.dart';
 import '../../kiosk/kiosk_ui.dart';
 import '../../search/search_strings.dart';
@@ -587,7 +588,10 @@ String boardTimeText(DateTime now) => DateFormat('h:mm a', dateLocaleFor(const L
 
 /// Bottom left (callout 4): the menu, and Record with its running time.
 class MenuRecordBar extends StatelessWidget {
-  const MenuRecordBar({super.key, required this.onMenu, required this.menuOpen, required this.onRecord, this.recording});
+  const MenuRecordBar({super.key, required this.onMenu, required this.menuOpen, required this.onRecord, this.recording, this.quick});
+
+  /// The spec's left quick group (Switch, Profile/Guest, Share, WhatsApp, End class).
+  final QuickGroup? quick;
 
   final VoidCallback onMenu;
   final bool menuOpen;
@@ -600,7 +604,7 @@ class MenuRecordBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final s = LayoutStrings.of(context);
-    return Row(
+    final corner = Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -616,14 +620,31 @@ class MenuRecordBar extends StatelessWidget {
         if (recording != null) ...[const SizedBox(width: Kx.s8), recording!],
       ],
     );
+    if (quick == null) return corner;
+    // The quick group sits just above the corner, so the toolbar keeps its room between the corners.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ChromeSurface(key: const Key('quick-group'), child: Row(mainAxisSize: MainAxisSize.min, children: quick!.buttons(context))),
+        const SizedBox(height: Kx.s8),
+        corner,
+      ],
+    );
   }
 }
 
 /// Bottom right (callout 3): previous, "3/8", next, add page and the page overview.
 class PageBar extends StatelessWidget {
-  const PageBar({super.key, required this.wb, required this.onOverview, this.overviewOpen = false, this.compact = false});
+  const PageBar({super.key, required this.wb, required this.onOverview, this.overviewOpen = false, this.compact = false, this.onHide, this.onSwitch});
 
   final WhiteboardController wb;
+
+  /// Hide every tool, leaving the canvas and a restore button (spec §10).
+  final VoidCallback? onHide;
+
+  /// Swap the quick group and this navigation group between the two sides.
+  final VoidCallback? onSwitch;
   final VoidCallback onOverview;
   final bool overviewOpen;
 
@@ -647,6 +668,7 @@ class PageBar extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (onHide != null) ToolbarDensity(compact: true, child: button(const Key('hide-ui'), Icons.visibility_off_outlined, SbStrings.of(context)('hide'), onHide)),
               button(const Key('previous-page'), Icons.chevron_left, l.toolPrevious, wb.hasPrevious ? wb.previous : null),
               SizedBox(
                 width: compact ? 44 : 52,
@@ -658,8 +680,9 @@ class PageBar extends StatelessWidget {
                 ),
               ),
               button(const Key('next-page'), Icons.chevron_right, l.toolNext, wb.hasNext ? wb.next : null),
-              button(const Key('add-page'), Icons.add, s.addPage, wb.addPage),
+              button(const Key('add-page'), Icons.add, wb.canAddPage ? s.addPage : SbStrings.of(context)('addPageBlank'), wb.canAddPage ? wb.addPage : null),
               button(const Key('page-overview'), Icons.grid_view, s.pageOverview, onOverview, selected: overviewOpen),
+              if (onSwitch != null) ToolbarDensity(compact: true, child: button(const Key('switch-sides-right'), Icons.swap_horiz, SbStrings.of(context)('switch'), onSwitch)),
             ],
           ),
         );
@@ -712,4 +735,33 @@ class BoardMenu extends StatelessWidget {
   }
 
   static const _groupStarts = {'menu-open', 'tool-theme', 'clear-board', 'end-class', 'menu-sign-in'};
+}
+
+/// The left quick group from the spec's bottom toolbar: Switch, Profile/Guest, Share, WhatsApp
+/// and End class. Each stays usable whichever side it is on.
+class QuickGroup {
+  const QuickGroup({required this.onSwitch, required this.profileLabel, required this.onProfile, required this.onShare, required this.onWhatsApp, required this.onEndClass, this.signedIn = true});
+
+  final VoidCallback onSwitch;
+  final String profileLabel;
+  final VoidCallback onProfile;
+  final VoidCallback onShare;
+  final VoidCallback onWhatsApp;
+  final VoidCallback onEndClass;
+  final bool signedIn;
+
+  List<Widget> buttons(BuildContext context) {
+    final s = SbStrings.of(context);
+    // Icons only (names in tooltips), so the corners leave room for the toolbar between them.
+    Widget compact(Widget b) => ToolbarDensity(compact: true, child: b);
+    return [
+      for (final b in <Widget>[
+      ToolButton(key: const Key('switch-sides'), icon: Icons.swap_horiz, label: s('switch'), onTap: onSwitch),
+      ToolButton(key: const Key('quick-profile'), icon: signedIn ? Icons.person_outline : Icons.person_off_outlined, label: profileLabel, onTap: onProfile),
+      ToolButton(key: const Key('quick-share'), icon: Icons.share_outlined, label: s('share'), onTap: onShare),
+      ToolButton(key: const Key('quick-whatsapp'), icon: Icons.chat_outlined, label: s('whatsapp'), onTap: onWhatsApp),
+      ToolButton(key: const Key('quick-end-class'), icon: Icons.stop_circle_outlined, iconColor: Kx.record, label: s('endClass'), onTap: onEndClass),
+      ]) compact(b),
+    ];
+  }
 }

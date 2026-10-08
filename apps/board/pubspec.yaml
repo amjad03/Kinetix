@@ -71,6 +71,7 @@ dependencies:
   flutter_webrtc: ^1.6.2+hotfix.4
   battery_plus: ^7.1.2
   disk_space_plus: ^0.2.6
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

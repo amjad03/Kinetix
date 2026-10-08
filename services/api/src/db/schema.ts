@@ -709,10 +709,48 @@ export const whiteboards = pgTable(
     sizeBytes: integer('size_bytes').notNull(),
     /** When it was shared with the class (students and parents can then open it). */
     sharedAt: timestamp('shared_at', { withTimezone: true }),
+    /** Bumped on every save; earlier saves are in whiteboard_versions. */
+    version: integer('version').notNull().default(1),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [index('whiteboards_owner_idx').on(t.ownerId, t.updatedAt), index('whiteboards_section_idx').on(t.sectionId, t.sharedAt)],
+);
+
+/** Earlier saves of a board, newest kept (whiteboards.controller.ts keeps the last 20); restore copies one back. */
+export const whiteboardVersions = pgTable(
+  'whiteboard_versions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    whiteboardId: uuid('whiteboard_id').notNull().references(() => whiteboards.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    title: text('title').notNull(),
+    pageCount: integer('page_count').notNull(),
+    content: jsonb('content').$type<WhiteboardContent>().notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('whiteboard_versions_uq').on(t.whiteboardId, t.version)],
+);
+
+/** A branded PDF of a board, opened by anyone holding the link (WhatsApp, email, QR) until it expires. */
+export const whiteboardExports = pgTable(
+  'whiteboard_exports',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    whiteboardId: uuid('whiteboard_id').notNull().references(() => whiteboards.id, { onDelete: 'cascade' }),
+    /** Random 128-bit hex; the public link is /v1/public/boards/<slug>/<token>.pdf. */
+    token: text('token').notNull().unique(),
+    storageKey: text('storage_key').notNull(),
+    pageCount: integer('page_count').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('whiteboard_exports_board_idx').on(t.whiteboardId)],
 );
 
 // ---------------------------------------------------------------------------------------------
@@ -2517,6 +2555,8 @@ export const TENANT_TABLES = [
   'feature_flags',
   'domain_events',
   'upload_scans',
+  'whiteboard_versions',
+  'whiteboard_exports',
   'report_schedules',
   'report_runs',
   'student_leave_requests',

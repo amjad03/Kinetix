@@ -5,7 +5,7 @@ import { RealtimeEvents } from '@kinetix/shared';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
-import { boardSessions, programs, sections, students, subjects, timetableSlots, users } from '../db/schema.js';
+import { boardSessions, programs, sections, students, subjects, tenants, timetableSlots, users } from '../db/schema.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
 @Injectable()
@@ -21,8 +21,10 @@ export class SessionsService {
         level: programs.level,
         subject: { id: subjects.id, code: subjects.code, name: subjects.name },
         slot: { id: timetableSlots.id, startsAt: timetableSlots.startsAt, endsAt: timetableSlots.endsAt },
+        institution: tenants.name,
       })
       .from(boardSessions)
+      .innerJoin(tenants, eq(tenants.id, boardSessions.tenantId))
       .innerJoin(users, eq(users.id, boardSessions.teacherId))
       .leftJoin(sections, eq(sections.id, boardSessions.sectionId))
       .leftJoin(programs, eq(programs.id, sections.programId))
@@ -34,6 +36,7 @@ export class SessionsService {
       sessionId: row.session.id,
       expiresAt: row.session.expiresAt.toISOString(),
       teacher: row.teacher,
+      institutionName: row.institution,
       // The class level lets the board choose its primary-class layout (LKG to Class 5).
       section: row.section ? { ...row.section, level: row.level ?? undefined } : null,
       subject: row.subject,

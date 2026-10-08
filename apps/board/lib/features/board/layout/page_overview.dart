@@ -356,10 +356,59 @@ class _ThumbPainter extends CustomPainter {
 Future<void> Function(String name, Uint8List pdf) sharePdf = (name, pdf) =>
     SharePlus.instance.share(ShareParams(files: [XFile.fromData(pdf, name: name, mimeType: 'application/pdf')], fileNameOverrides: [name]));
 
-/// Every page of [wb] as a PDF: one picture per page, at most 1600 px wide.
-Future<Uint8List> boardPdf(WhiteboardController wb, Size canvas) async {
+/// What a shared or exported PDF carries besides the board: the institution's or teacher's
+/// name and logo, a watermark and the board's title (spec: branding survives export).
+class PdfBranding {
+  const PdfBranding({this.brand, this.watermark, this.title, this.logo});
+
+  final String? brand;
+  final String? watermark;
+  final String? title;
+  final ui.Image? logo;
+
+  bool get isEmpty => (brand ?? '').isEmpty && (watermark ?? '').isEmpty && (title ?? '').isEmpty && logo == null;
+}
+
+/// Paints [b] over a rendered page of [size] pixels: logo and name top left, title top right,
+/// "n / N" at the foot and the watermark across the middle.
+void paintBranding(Canvas c, Size size, PdfBranding b, int page, int count) {
+  final unit = size.shortestSide / 40;
+  void text(String s, Offset at, {double scale = 1, Color color = const Color(0xFF1F3A5F), bool bold = false, double alignX = 0, double alignY = 0}) {
+    final tp = TextPainter(
+      text: TextSpan(text: s, style: TextStyle(fontSize: unit * scale, color: color, fontWeight: bold ? FontWeight.w700 : FontWeight.w400)),
+      textDirection: ui.TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '…',
+    )..layout(maxWidth: size.width * 0.6);
+    tp.paint(c, at - Offset(tp.width * alignX, tp.height * alignY));
+  }
+
+  var x = unit;
+  final logo = b.logo;
+  if (logo != null) {
+    final h = unit * 1.8;
+    final w = h * logo.width / logo.height;
+    c.drawImageRect(logo, Offset.zero & Size(logo.width.toDouble(), logo.height.toDouble()), Rect.fromLTWH(unit, unit * 0.6, w, h), Paint()..filterQuality = FilterQuality.medium);
+    x += w + unit * 0.5;
+  }
+  if ((b.brand ?? '').isNotEmpty) text(b.brand!, Offset(x, unit * 1.5), bold: true, alignY: 0.5);
+  if ((b.title ?? '').isNotEmpty) text(b.title!, Offset(size.width - unit, unit * 1.5), color: const Color(0xFF555555), alignX: 1, alignY: 0.5);
+  final mark = b.watermark ?? '';
+  if (mark.isNotEmpty) {
+    c
+      ..save()
+      ..translate(size.width / 2, size.height / 2)
+      ..rotate(-math.pi / 9);
+    text(mark, Offset.zero, scale: 3, color: const Color(0x22000000), bold: true, alignX: 0.5, alignY: 0.5);
+    c.restore();
+  }
+  if (count > 1) text('$page / $count', Offset(size.width / 2, size.height - unit * 0.8), scale: 0.7, color: const Color(0xFF777777), alignX: 0.5, alignY: 1);
+}
+
+/// Every page of [wb] as a PDF: one picture per page, at most 1600 px wide, with [branding].
+Future<Uint8List> boardPdf(WhiteboardController wb, Size canvas, {PdfBranding branding = const PdfBranding()}) async {
   final pages = <(int, int, Uint8List)>[];
-  for (final p in wb.pages) {
+  for (final (index, p) in wb.pages.indexed) {
     final area = pageArea(p.elements, canvas);
     final k = area.width > 1600 ? 1600 / area.width : 1.0;
     final w = math.max(1, (area.width * k).round()), h = math.max(1, (area.height * k).round());
@@ -367,12 +416,15 @@ Future<Uint8List> boardPdf(WhiteboardController wb, Size canvas) async {
     await images.preload(p.elements);
     final recorder = ui.PictureRecorder();
     final c = Canvas(recorder)
+      ..save()
       ..scale(k)
       ..translate(-area.left, -area.top);
     paintBoardBackground(c, area, p.background);
     for (final e in p.elements) {
       paintElement(c, e, p.background, images: images, paintMath: true);
     }
+    c.restore();
+    if (!branding.isEmpty) paintBranding(c, Size(w.toDouble(), h.toDouble()), branding, index + 1, wb.pages.length);
     final image = await recorder.endRecording().toImage(w, h);
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();

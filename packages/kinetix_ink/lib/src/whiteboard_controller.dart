@@ -299,7 +299,14 @@ class WhiteboardController extends ChangeNotifier implements RecordableBoard {
   }
 
   /// Adds a blank page after the open one and opens it.
-  void addPage() {
+  /// Spec §11.2: a new page only after this one has something on it (a dot, a line, writing,
+  /// a shape, text or anything inserted). A blank page cannot spawn another blank page.
+  bool get canAddPage => page.elements.isNotEmpty;
+
+  /// Adds a blank page after this one and opens it; does nothing while this page is blank
+  /// unless [force] (imports and restores that fill the page at once).
+  void addPage({bool force = false}) {
+    if (!force && !canAddPage) return;
     _finishGestures();
     page.view = _autoView ? null : view.value;
     _pages.insert(_index + 1, WhiteboardPage(background: page.background));

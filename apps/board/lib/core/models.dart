@@ -8,6 +8,7 @@ class SessionContext {
     required this.expiresAt,
     required this.teacherId,
     required this.teacherName,
+    this.institutionName,
     required this.language,
     this.sectionId,
     this.sectionName,
@@ -28,6 +29,7 @@ class SessionContext {
       expiresAt: DateTime.parse(j['expiresAt'] as String),
       teacherId: teacher['id'] as String,
       teacherName: teacher['fullName'] as String,
+      institutionName: j['institutionName'] as String?,
       language: teacher['preferredLanguage'] as String,
       sectionId: section?['id'] as String?,
       sectionName: section?['displayName'] as String?,
@@ -46,6 +48,7 @@ class SessionContext {
       'sessionId': sessionId,
       'expiresAt': expiresAt.toUtc().toIso8601String(),
       'teacher': {'id': teacherId, 'fullName': teacherName, 'preferredLanguage': language},
+      'institutionName': ?institutionName,
       'section': sectionName == null ? null : {'id': ?sectionId, 'displayName': sectionName, 'term': classTerm, 'level': programLevel},
       'subject': subjectName == null ? null : {'name': subjectName},
       'period': period == null || period.length != 2 ? null : {'startsAt': period[0], 'endsAt': period[1]},
@@ -56,6 +59,9 @@ class SessionContext {
   final DateTime expiresAt;
   final String teacherId;
   final String teacherName;
+
+  /// The institution's name (the default brand on shared PDFs).
+  final String? institutionName;
   final String language;
 
   /// The class's id, when the server sends it (badges are given to a student of a class).
@@ -557,4 +563,21 @@ class SavedLessonPlan {
   final LessonPlan content;
   final String homework;
   final bool aiDrafted;
+}
+
+/// An earlier save of a board (version history).
+class WhiteboardVersion {
+  const WhiteboardVersion({required this.version, required this.title, required this.pageCount, required this.savedAt});
+
+  factory WhiteboardVersion.fromJson(Map<String, dynamic> j) => WhiteboardVersion(
+    version: j['version'] as int,
+    title: j['title'] as String,
+    pageCount: j['pageCount'] as int,
+    savedAt: DateTime.parse(j['savedAt'] as String).toLocal(),
+  );
+
+  final int version;
+  final String title;
+  final int pageCount;
+  final DateTime savedAt;
 }

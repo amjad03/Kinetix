@@ -92,3 +92,40 @@ class _TouchLockOverlayState extends State<TouchLockOverlay> with SingleTickerPr
     );
   }
 }
+
+/// Screen Freeze (spec §61): what is on the board stays exactly as it is and takes no touch,
+/// pen or gesture (a student can come up and point) until Close, bottom left, is tapped.
+class ScreenFreezeOverlay extends StatelessWidget {
+  const ScreenFreezeOverlay({super.key, required this.onClose, required this.closeLabel, required this.frozenLabel});
+
+  final VoidCallback onClose;
+  final String closeLabel;
+  final String frozenLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      key: const Key('screen-freeze'),
+      children: [
+        // Swallows every pointer (stylus, palm, fingers) before the canvas sees it.
+        Positioned.fill(
+          child: Semantics(
+            label: frozenLabel,
+            child: Listener(behavior: HitTestBehavior.opaque, onPointerDown: (_) {}, child: const AbsorbPointer(child: SizedBox.expand())),
+          ),
+        ),
+        Positioned(
+          left: Kx.s12,
+          bottom: Kx.s12,
+          child: FilledButton.icon(
+            key: const Key('unfreeze'),
+            style: FilledButton.styleFrom(minimumSize: const Size(120, 56)),
+            onPressed: onClose,
+            icon: const Icon(Icons.close),
+            label: Text(closeLabel),
+          ),
+        ),
+      ],
+    );
+  }
+}

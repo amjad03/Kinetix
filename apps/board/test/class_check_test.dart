@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/marks.dart';
 import 'package:kinetix_board/core/board_controller.dart';
 import 'package:kinetix_board/core/realtime.dart';
 import 'package:kinetix_board/demo/demo.dart';
@@ -101,6 +103,8 @@ void main() {
     expect(find.text('Phone remote connected.'), findsOneWidget);
     expect(server.realtime.sent.last.$2, containsPair('page', 0));
 
+    // A new page only follows one with something on it (spec 11.2).
+    markPage(wb);
     command({'type': 'page.next'});
     await tester.pumpAndSettle();
     expect(wb.pageCount, 2);

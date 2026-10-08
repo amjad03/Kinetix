@@ -7,7 +7,7 @@ void main() {
   test('each page keeps its own paper; new pages take the open page\'s', () {
     final wb = WhiteboardController();
     wb.background = BoardBackground.graph;
-    wb.addPage();
+    wb.addPage(force: true);
     expect(wb.background, BoardBackground.graph);
     wb.background = BoardBackground.ledger;
     wb.previous();
@@ -29,13 +29,13 @@ void main() {
     wb.background = BoardBackground.paperSlate;
     expect(wb.penColor, WhiteboardController.inkBlack);
     expect(inkColorFor(wb.penColor, wb.background).computeLuminance(), greaterThan(0.8));
-    wb.addPage();
+    wb.addPage(force: true);
     wb.background = BoardBackground.plain;
     expect(inkColorFor(WhiteboardController.chalkWhite, wb.background).computeLuminance(), lessThan(0.05));
   });
 
   test('replaceBackground follows the theme on plain pages only', () {
-    final wb = WhiteboardController()..addPage();
+    final wb = WhiteboardController()..addPage(force: true);
     wb.background = BoardBackground.grid;
     wb.replaceBackground(BoardBackground.plain, BoardBackground.night);
     expect(wb.pages.first.background, BoardBackground.night);
@@ -45,8 +45,8 @@ void main() {
   test('movePage reorders and keeps the open page open', () {
     final wb = WhiteboardController();
     wb.add(TextElement(id: 'a', position: Offset.zero, text: 'one', color: const Color(0xFF000000), fontSize: 20, size: const Size(40, 20)));
-    wb.addPage();
-    wb.addPage();
+    wb.addPage(force: true);
+    wb.addPage(force: true);
     final open = wb.page;
     wb.movePage(0, 2);
     expect(wb.page, same(open));
@@ -86,5 +86,18 @@ void main() {
       paintBoardBackground(Canvas(r), const Rect.fromLTWH(-100, -100, 2200, 1300), b, scale: 0.5);
       r.endRecording().dispose();
     }
+  });
+
+  test('Add Page needs something on the open page (spec 11.2)', () {
+    final wb = WhiteboardController();
+    expect(wb.canAddPage, isFalse);
+    wb.addPage();
+    expect(wb.pageCount, 1);
+    wb.add(Stroke(id: 'dot', points: const [InkPoint(10, 10)], style: const InkStyle(tool: InkTool.pen, color: Color(0xFF000000), width: 4)));
+    expect(wb.canAddPage, isTrue);
+    wb.addPage();
+    expect((wb.pageCount, wb.pageIndex, wb.canAddPage), (2, 1, false));
+    wb.addPage();
+    expect(wb.pageCount, 2);
   });
 }

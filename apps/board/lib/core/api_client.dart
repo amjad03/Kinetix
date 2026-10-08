@@ -88,6 +88,33 @@ class ApiClient {
     return SavedBoard.fromJson(j['content'] as Map<String, dynamic>);
   }
 
+  /// Earlier saves of a board, newest first.
+  Future<List<WhiteboardVersion>> whiteboardVersions(String id) async =>
+      (await _send('GET', '/v1/whiteboards/$id/versions') as List<dynamic>).map((e) => WhiteboardVersion.fromJson(e as Map<String, dynamic>)).toList();
+
+  /// Brings back an earlier save and returns its content.
+  Future<SavedBoard> restoreWhiteboard(String id, int version) async {
+    final j = await _send('POST', '/v1/whiteboards/$id/versions/$version/restore') as Map<String, dynamic>;
+    return SavedBoard.fromJson(j['content'] as Map<String, dynamic>);
+  }
+
+  /// Uploads the board's own branded [pdf] (or JPEG [pages] for the server to compose) and
+  /// returns the public link that WhatsApp, email and the QR code carry.
+  Future<Uri> exportWhiteboard(String id, List<Uint8List> pages, {String? brand, String? watermark, Uint8List? logo, Uint8List? pdf}) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/whiteboards/$id/export'))..headers['accept'] = 'application/json';
+    final token = sessionToken ?? deviceToken;
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    if (brand != null && brand.isNotEmpty) req.fields['brand'] = brand;
+    if (watermark != null && watermark.isNotEmpty) req.fields['watermark'] = watermark;
+    for (final (i, p) in pages.indexed) {
+      req.files.add(http.MultipartFile.fromBytes('pages', p, filename: 'page-${i + 1}.jpg'));
+    }
+    if (logo != null) req.files.add(http.MultipartFile.fromBytes('logo', logo, filename: 'logo.jpg'));
+    if (pdf != null) req.files.add(http.MultipartFile.fromBytes('pdf', pdf, filename: 'board.pdf'));
+    final j = _decode(await http.Response.fromStream(await _http.send(req))) as Map<String, dynamic>;
+    return Uri.parse('$baseUrl${j['path']}');
+  }
+
   Future<WhiteboardSummary> shareWhiteboard(String id) async =>
       WhiteboardSummary.fromJson(await _send('POST', '/v1/whiteboards/$id/share') as Map<String, dynamic>);
 

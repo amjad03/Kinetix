@@ -15,6 +15,8 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/marks.dart';
+
 /// The approved layout (docs/design/board-wireframes.html) on an interactive panel.
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -81,8 +83,9 @@ void main() {
       for (final key in ['sign-in-chip', 'open-search', 'board-clock', 'profile-button', 'board-menu', 'record', 'previous-page', 'page-indicator', 'next-page', 'add-page', 'page-overview']) {
         expect(find.byKey(Key(key)), findsOneWidget, reason: key);
       }
-      // Bottom centre, menu bottom left, pages bottom right.
+      // Bottom centre, the quick group and menu bottom left, pages bottom right.
       expect(tester.getCenter(find.byKey(const Key('main-toolbar'))).dx, closeTo(960, 120));
+      expect(tester.getCenter(find.byKey(const Key('switch-sides'))).dx, lessThan(100));
       expect(tester.getCenter(find.byKey(const Key('board-menu'))).dx, lessThan(300));
       expect(tester.getCenter(find.byKey(const Key('page-overview'))).dx, greaterThan(1700));
       expect(find.byKey(const Key('tool-hand')), findsNothing);
@@ -316,6 +319,8 @@ void main() {
       expect(wb.background, BoardBackground.ledger);
       await tester.tapAt(const Offset(1300, 150));
       await tester.pumpAndSettle();
+      markPage(wb);
+      await tester.pump();
       await tapKey(tester, 'add-page');
       await tapKey(tester, 'board-menu');
       await tapKey(tester, 'tool-theme');

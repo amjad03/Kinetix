@@ -53,8 +53,23 @@ interface Page {
   ops: string[];
 }
 
+/** Width and height of a baseline or progressive JPEG, or undefined when `b` is not one. */
+export function jpegSize(b: Buffer): { w: number; h: number } | undefined {
+  if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8) return undefined;
+  let i = 2;
+  while (i + 9 < b.length) {
+    if (b[i] !== 0xff) return undefined;
+    const marker = b[i + 1];
+    const len = b.readUInt16BE(i + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
+    i += 2 + len;
+  }
+  return undefined;
+}
+
 export class Pdf {
   private readonly pages: Page[] = [];
+  private readonly images: { data: Buffer; w: number; h: number; gray: boolean }[] = [];
 
   constructor(private readonly title = 'Document') {}
 
@@ -115,6 +130,25 @@ export class Pdf {
     return this;
   }
 
+  /** Draws a JPEG scaled into the box (top-left origin, like the rest). Throws on anything but a JPEG. */
+  jpeg(data: Buffer, x: number, y: number, w: number, h: number): this {
+    const size = jpegSize(data);
+    if (!size) throw new Error('Not a JPEG image');
+    // Components: SOF byte 9 after the marker; 1 = greyscale.
+    let gray = false;
+    for (let i = 2; i + 9 < data.length; ) {
+      const m = data[i + 1];
+      if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) {
+        gray = data[i + 9] === 1;
+        break;
+      }
+      i += 2 + data.readUInt16BE(i + 2);
+    }
+    const id = this.images.push({ data, w: size.w, h: size.h, gray }) - 1;
+    this.page.ops.push(`q ${num(w)} 0 0 ${num(h)} ${num(x)} ${num(this.page.h - y - h)} cm /Im${id} Do Q`);
+    return this;
+  }
+
   build(): Buffer {
     if (this.pages.length === 0) this.addPage();
     const objs: Buffer[] = [];
@@ -125,11 +159,17 @@ export class Pdf {
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
     add(`<< /Title (${latin1(this.title).replace(/[\\()]/g, '\\$&')}) /Producer (KINETIX) >>`);
+    const firstImage = 6 + this.pages.length * 2;
+    const xobjects = this.images.length ? ` /XObject << ${this.images.map((_, k) => `/Im${k} ${firstImage + k} 0 R`).join(' ')} >>` : '';
     this.pages.forEach((p, i) => {
-      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(p.w)} ${num(p.h)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${7 + i * 2} 0 R >>`);
+      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(p.w)} ${num(p.h)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>${xobjects} >> /Contents ${7 + i * 2} 0 R >>`);
       const content = Buffer.from(p.ops.join('\n'), 'latin1');
       add(Buffer.concat([Buffer.from(`<< /Length ${content.length} >>\nstream\n`, 'latin1'), content, Buffer.from('\nendstream', 'latin1')]));
     });
+    for (const im of this.images) {
+      const head = `<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /${im.gray ? 'DeviceGray' : 'DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.data.length} >>\nstream\n`;
+      add(Buffer.concat([Buffer.from(head, 'latin1'), im.data, Buffer.from('\nendstream', 'latin1')]));
+    }
     const parts: Buffer[] = [Buffer.from('%PDF-1.4\n', 'latin1')];
     const offsets: number[] = [];
     let pos = parts[0].length;

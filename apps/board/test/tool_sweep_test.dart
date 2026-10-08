@@ -99,12 +99,13 @@ void main() {
           Navigator.of(tester.element(find.byKey(const Key('more-sheet')))).pop();
           await tester.pumpAndSettle();
         }
-        // Undo, redo, Clear, Fit and the pages need something to act on: their own tests cover them.
-        return (found..removeAll(['undo', 'redo', 'previous-page', 'next-page', 'clear-board', 'zoom-fit', 'phone-more', 'end-class'])).toList()..sort();
+        // Undo, redo, Clear, Fit and the pages need something to act on (Add Page needs a page
+        // with something on it); Switch only moves the bars: their own tests cover them.
+        return (found..removeAll(['undo', 'redo', 'previous-page', 'next-page', 'clear-board', 'zoom-fit', 'phone-more', 'end-class', 'add-page', 'tbar-add-page', 'switch-sides', 'switch-sides-right'])).toList()..sort();
       }
 
       final keys = await buttons();
-      expect(keys, containsAll(['tool-pen', 'tool-highlighter', 'tool-select', 'tool-erase', 'tool-shapes', 'tool-tools', 'tool-insert', 'panel-ai', 'page-overview', 'add-page']));
+      expect(keys, containsAll(['tool-pen', 'tool-highlighter', 'tool-select', 'tool-erase', 'tool-shapes', 'tool-tools', 'tool-insert', 'panel-ai', 'page-overview']));
       for (final key in keys) {
         wb = await fresh();
         // From the More sheet too, compared with the board before the sheet opened.

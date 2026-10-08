@@ -9,7 +9,7 @@ void main() {
 
   group('imported pages (backdrops)', () {
     test('addPages puts one page each after the open page and opens the first', () {
-      final board = WhiteboardController()..addPage();
+      final board = WhiteboardController()..addPage(force: true);
       board.goToPage(0);
       board.addPages([
         [backdrop()],

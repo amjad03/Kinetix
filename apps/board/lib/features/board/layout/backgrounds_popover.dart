@@ -1,35 +1,43 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../core/board_controller.dart';
 import '../../insert/device_files.dart';
 import '../chrome.dart';
 import '../popovers.dart' show backgroundName;
+import 'custom_theme_tab.dart';
 import 'layout_strings.dart';
 
-/// The papers in the Templates tab, in the wireframe's order (screen 10).
+/// The papers in the Template tab: the spec's list (§22) in its order, then the extras.
 const templateBackgrounds = [
   BoardBackground.plain,
+  BoardBackground.black,
   BoardBackground.grid,
-  BoardBackground.graph,
   BoardBackground.ruled,
-  BoardBackground.dots,
   BoardBackground.fourLine,
-  BoardBackground.kannadaLines,
-  BoardBackground.musicStaff,
-  BoardBackground.isometric,
-  BoardBackground.ledger,
-  BoardBackground.journal,
-  BoardBackground.indiaMap,
-  BoardBackground.worldMap,
   BoardBackground.twoColumns,
   BoardBackground.threeColumns,
-  BoardBackground.chalkboard,
-  BoardBackground.cricketField,
+  BoardBackground.isometric,
+  BoardBackground.graph,
+  BoardBackground.hindiLines,
+  BoardBackground.kannadaLines,
+  BoardBackground.dots,
+  BoardBackground.checks,
+  BoardBackground.musicStaff,
+  BoardBackground.basketballCourt,
   BoardBackground.footballField,
+  BoardBackground.cricketField,
+  BoardBackground.worldMap,
+  BoardBackground.indiaMap,
+  BoardBackground.ledger,
+  BoardBackground.journal,
+  BoardBackground.chalkboard,
 ];
 
 const colourBackgrounds = [
@@ -53,9 +61,12 @@ String paperName(BuildContext context, BoardBackground b) {
 /// Backgrounds and templates for this page (or every page): the papers, plain colours, or the
 /// teacher's own picture under the ink.
 class BackgroundsPopover extends StatefulWidget {
-  const BackgroundsPopover({super.key, required this.wb, required this.onChanged, this.width = 600});
+  const BackgroundsPopover({super.key, required this.wb, required this.onChanged, this.width = 600, this.board});
 
   final WhiteboardController wb;
+
+  /// For the Custom tab's branding (kept per teacher).
+  final BoardController? board;
 
   /// Tells the board (recording, live view, projector) the paper changed.
   final ValueChanged<BoardBackground> onChanged;
@@ -79,17 +90,9 @@ class _BackgroundsPopoverState extends State<BackgroundsPopover> {
     setState(() {});
   }
 
-  Future<void> _picture() async {
+  Future<void> _picture(Uint8List bytes) async {
     final l = context.l10n;
-    PickedFile? file;
-    try {
-      file = await DeviceFiles.instance.pickPicture();
-    } catch (_) {
-      if (mounted) showBoardMessage(context, l.pictureCouldNotOpen);
-      return;
-    }
-    if (file == null) return;
-    final picture = await boardPicture(file.bytes, maxSide: 2400);
+    final picture = await boardPicture(bytes, maxSide: 2400);
     if (!mounted) return;
     if (picture == null) {
       showBoardMessage(context, l.pictureCouldNotOpen);
@@ -160,12 +163,7 @@ class _BackgroundsPopoverState extends State<BackgroundsPopover> {
           ),
           const SizedBox(height: Kx.s12),
           if (_tab == 2)
-            FilledButton.tonalIcon(
-              key: const Key('bg-picture'),
-              onPressed: _picture,
-              icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: Text(s.ownPicture),
-            )
+            CustomThemeTab(board: widget.board, onApply: (b) => unawaited(_picture(b)))
           else
             Wrap(spacing: Kx.s8, runSpacing: Kx.s8, children: [for (final b in _tab == 0 ? templateBackgrounds : colourBackgrounds) tile(b)]),
         ],
