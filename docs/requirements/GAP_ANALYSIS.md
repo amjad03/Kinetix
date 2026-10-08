@@ -122,3 +122,21 @@ integration. Everything else is partial or missing; build waves, in order:
 
 Deferred by decision: semantic search (§65, §68), dedicated/on-prem deployment packaging (§71),
 enterprise SSO (§6) until a tenant asks.
+
+### Status after the build waves (2026-10-09)
+
+Built, each with API e2e tests, ERP pages (en/hi/kn) and migrations 0096–0106: surveys and
+task engine; clubs, committees and events; mentoring, course files, academic audit; CBCS course
+registration; skill passport and SDG; question bank and paper generator; approval workflow
+engine; on-screen evaluation, invigilation, supplementary, malpractice, grace marks, ranks,
+progression; student lifecycle states, entrance tests, seat quotas, campaigns, substitutions,
+room capacity; school diary, PTM booking, early years, health records; audit-log viewer,
+custom report builder, connector registry with signed outbound webhooks, alumni giving.
+Mobile: Teacher (staff tools, student insights, AI copilot), Student (course registration,
+passport, surveys, clubs/events with QR passes, chapter markers, notes and recaps), Parent
+(diary, PTM, early years, health, passport, surveys, event passes).
+
+Still open: domain-specific AI assistants (§64); bank-transfer and PO-invoice payments (§66);
+Koha/Zoom/Teams/BI connectors beyond the registry (§67); ERP screen for examiners (API and
+Teacher App exist); OBE indirect attainment reading survey data; browser e2e for the new ERP
+pages; real-device checks; Indic text in server-built PDFs (Latin-1 font only).
