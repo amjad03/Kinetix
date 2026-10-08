@@ -76,3 +76,55 @@ export async function completeRevaluation(sessionId: string, id: string, marks: 
   if (!UUID.test(id) || !Number.isFinite(marks) || marks < 0) return bad('exm.err.reval');
   return post(`/v1/revaluations/${id}/complete`, { marks }, [`/exams/${sessionId}`]);
 }
+
+// ---- Exam controller depth: invigilation, supplementary registration, malpractice ----
+
+export async function addDuty(sessionId: string, v: Record<string, string>) {
+  if (!UUID.test(sessionId) || !UUID.test(v.staffId ?? '') || !UUID.test(v.roomId ?? '')) return bad('exm.err.paper.pick');
+  if (!isIsoDate(v.dutyDate ?? '') || !TIME.test(v.startsAt ?? '') || !TIME.test(v.endsAt ?? '') || v.endsAt <= v.startsAt) return bad('exm.err.paper.time');
+  return post(`/v1/exam-sessions/${sessionId}/duties`, { staffId: v.staffId, roomId: v.roomId, dutyDate: v.dutyDate, startsAt: v.startsAt, endsAt: v.endsAt, role: v.role || 'invigilator' }, [`/exams/${sessionId}`]);
+}
+
+export async function substituteDuty(sessionId: string, dutyId: string, v: Record<string, string>) {
+  if (!UUID.test(sessionId) || !UUID.test(dutyId) || !UUID.test(v.staffId ?? '')) return bad('exm.err.paper.pick');
+  return post(`/v1/exam-sessions/${sessionId}/duties/${dutyId}/substitute`, { staffId: v.staffId }, [`/exams/${sessionId}`]);
+}
+
+export async function removeDuty(sessionId: string, dutyId: string) {
+  if (!UUID.test(sessionId) || !UUID.test(dutyId)) return bad('exm.err.paper.pick');
+  return post(`/v1/exam-sessions/${sessionId}/duties/${dutyId}`, undefined, [`/exams/${sessionId}`], 'DELETE');
+}
+
+export async function registerSupplementary(sessionId: string, v: Record<string, string>) {
+  if (!UUID.test(sessionId) || !UUID.test(v.studentId ?? '') || !UUID.test(v.subjectId ?? '')) return bad('exm.err.paper.pick');
+  return post(`/v1/exam-sessions/${sessionId}/supplementary`, { studentId: v.studentId, subjectIds: [v.subjectId] }, [`/exams/${sessionId}`]);
+}
+
+export async function cancelSupplementary(sessionId: string, regId: string) {
+  if (!UUID.test(sessionId) || !UUID.test(regId)) return bad('exm.err.paper.pick');
+  return post(`/v1/exam-sessions/${sessionId}/supplementary/${regId}`, undefined, [`/exams/${sessionId}`], 'DELETE');
+}
+
+export async function reportMalpractice(sessionId: string, v: Record<string, string>) {
+  if (!UUID.test(sessionId) || !UUID.test(v.studentId ?? '') || (v.description ?? '').trim().length < 3) return bad('exm.err.paper.pick');
+  return post(`/v1/exam-sessions/${sessionId}/malpractice`, { studentId: v.studentId, description: v.description.trim() }, [`/exams/${sessionId}`]);
+}
+
+export async function decideMalpractice(sessionId: string, caseId: string, v: Record<string, string>) {
+  if (!UUID.test(caseId) || (v.outcome !== 'penalised' && v.outcome !== 'dismissed')) return bad('exm.err.paper.pick');
+  return post(`/v1/malpractice/${caseId}/decide`, { outcome: v.outcome, penalty: v.penalty?.trim() || undefined }, [`/exams/${sessionId}`]);
+}
+
+// ---- Results depth: rules, grace marks ----
+
+export async function saveResultRules(sessionId: string, v: Record<string, string>) {
+  const n = (s: string | undefined) => (s && s.trim() ? Number(s) : null);
+  const body = { graceMaxPerSubject: Number(v.graceMaxPerSubject), graceMaxTotal: Number(v.graceMaxTotal), progressionMinCredits: n(v.progressionMinCredits), progressionMaxBacklogs: n(v.progressionMaxBacklogs) };
+  if (!UUID.test(sessionId) || !Number.isFinite(body.graceMaxPerSubject) || !Number.isFinite(body.graceMaxTotal) || [body.progressionMinCredits, body.progressionMaxBacklogs].some((x) => x !== null && !Number.isFinite(x))) return bad('ev.err.numbers');
+  return post(`/v1/exam-sessions/${sessionId}/result-rules`, body, [`/exams/${sessionId}`], 'PUT');
+}
+
+export async function applyGrace(sessionId: string, dryRun: boolean) {
+  if (!UUID.test(sessionId)) return bad('exm.err.session.pick');
+  return post<{ students: number }>(`/v1/exam-sessions/${sessionId}/grace`, { dryRun }, [`/exams/${sessionId}`, '/results']);
+}

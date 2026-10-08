@@ -2,6 +2,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { ExamDepthPanel } from '@/components/exams/ExamDepthPanel';
 import { SessionDesk } from '@/components/exams/SessionDesk';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
@@ -9,6 +10,7 @@ import { ErrorState } from '@/components/States';
 import { canPublishMarks } from '@/lib/access';
 import { api, ApiError, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
+import type { Duty, GraceRow, MalpracticeCase, ProgressionReport, RankRow, ResultRules, StaffMember, SupplementaryRow } from '@/lib/evaluation';
 import type { ExamSessionDetail, ResultRow, Revaluation } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
 
@@ -50,11 +52,24 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
     load(() => api<ResultRow[]>(`/v1/exam-sessions/${id}/results`)),
     load(() => api<Revaluation[]>(`/v1/exam-sessions/${id}/revaluations`)),
   ]);
+  const opt = async <T,>(path: string, fallback: T): Promise<T> => (await load(() => api<T>(path))).data ?? fallback;
+  const [duties, supplementary, malpractice, rules, grace, ranks, progression, staff] = await Promise.all([
+    opt<Duty[]>(`/v1/exam-sessions/${id}/duties`, []),
+    opt<SupplementaryRow[]>(`/v1/exam-sessions/${id}/supplementary`, []),
+    opt<MalpracticeCase[]>(`/v1/exam-sessions/${id}/malpractice`, []),
+    opt<ResultRules | null>(`/v1/exam-sessions/${id}/result-rules`, null),
+    opt<GraceRow[]>(`/v1/exam-sessions/${id}/grace`, []),
+    opt<{ students: RankRow[] } | null>(`/v1/exam-sessions/${id}/ranks`, null),
+    opt<ProgressionReport | null>(`/v1/exam-sessions/${id}/progression`, null),
+    opt<StaffMember[]>('/v1/admin/staff', []),
+  ]);
+  const canManage = !!me && canPublishMarks(me.roles);
   return (
     <>
       {back}
       <PageHeader title={session.data.name} subtitle={t('exm.sessionSubtitle', { term: session.data.term })} />
-      {structure.error !== undefined ? <ErrorState message={structure.error} /> : <SessionDesk session={session.data} structure={structure.data} results={results.data ?? []} revaluations={revals.data ?? []} canManage={!!me && canPublishMarks(me.roles)} />}
+      {structure.error !== undefined ? <ErrorState message={structure.error} /> : <SessionDesk session={session.data} structure={structure.data} results={results.data ?? []} revaluations={revals.data ?? []} canManage={canManage} />}
+      {structure.data && <ExamDepthPanel session={session.data} canManage={canManage} data={{ duties, supplementary, malpractice, rules, grace, ranks: ranks?.students ?? null, progression, staff, rooms: structure.data.rooms }} />}
     </>
   );
 }

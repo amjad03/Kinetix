@@ -24,6 +24,7 @@ import admissions from './admissions';
 import ui from './ui';
 import dashboard from './dashboard';
 import exams from './exams';
+import evaluation from './evaluation';
 import obe from './obe';
 import hr from './hr';
 import lms from './lms';
@@ -38,7 +39,7 @@ import courseRegistration from './course-registration';
 import skills from './skills';
 import topicVideos from './topic-videos';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, evaluation, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife, skills, courseRegistration, quality } as const;
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.
