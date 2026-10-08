@@ -98,6 +98,13 @@ describe('course registration (CBCS)', () => {
       expect((await get('outsider', `/v1/course-registration/offerings?termId=${ids.t1}`).expect(200)).body).toHaveLength(0);
     });
 
+    it("shows a teacher the offerings they teach, and nobody else's", async () => {
+      const mine = (await get('teacher', '/v1/course-registration/me/teaching').expect(200)).body as { id: string; facultyId: string }[];
+      expect(mine.map((o) => o.id)).toContain(ids.oE1);
+      expect(mine.every((o) => o.facultyId === t.teacher.id)).toBe(true);
+      await get('teacher', `/v1/course-registration/offerings?termId=${ids.t1}`).expect(403);
+    });
+
     it('lets only the principal set the registration window, and validates it', async () => {
       const w = { termId: ids.t1, opensAt: day(-1), closesAt: day(7), addDropUntil: day(14), minCredits: 8, maxCredits: 10, allocationRule: 'cgpa' };
       await put('hod', '/v1/course-registration/windows', w).expect(403);

@@ -1,7 +1,7 @@
 import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
+import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
@@ -59,6 +59,21 @@ export class CourseRegistrationController {
   @Auth('user', ['tenant_admin', 'principal', 'hod', 'student'])
   terms(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) => tx.select().from(academicTerms).orderBy(asc(academicTerms.startsOn)));
+  }
+
+  /** The offerings a teacher teaches, every term, newest term first (Teacher App rosters). */
+  @Get('me/teaching')
+  @Auth('user', TEACHING_ROLES)
+  teaching(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({ id: courseOfferings.id, termId: courseOfferings.termId, term: academicTerms.name, facultyId: courseOfferings.facultyId, code: subjects.code, name: subjects.name, category: courseOfferings.category, credits: courseOfferings.credits, seatCap: courseOfferings.seatCap })
+        .from(courseOfferings)
+        .innerJoin(subjects, eq(subjects.id, courseOfferings.subjectId))
+        .innerJoin(academicTerms, eq(academicTerms.id, courseOfferings.termId))
+        .where(eq(courseOfferings.facultyId, p.userId))
+        .orderBy(desc(academicTerms.startsOn), asc(subjects.code)),
+    );
   }
 
   @Get('offerings')

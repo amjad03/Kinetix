@@ -530,10 +530,20 @@ class HttpTeacherApi implements TeacherApi {
       _send('POST', '/v1/mentoring/plans/$id/close', body: {'outcome': outcome, 'outcomeRating': rating});
 
   @override
-  Future<List<TermInfo>> courseTerms() async => _rows(await _send('GET', '/v1/course-registration/terms'), TermInfo.fromJson);
+  Future<List<TermInfo>> courseTerms() async {
+    // The terms this teacher teaches in (the all-terms list is for administrators).
+    final seen = <String>{};
+    return [
+      for (final o in (await _send('GET', '/v1/course-registration/me/teaching') as List).cast<Map<String, dynamic>>())
+        if (seen.add(o['termId'] as String)) TermInfo.fromJson({'id': o['termId'], 'name': o['term']}),
+    ];
+  }
 
   @override
-  Future<List<OfferingInfo>> courseOfferings(String termId) async => _rows(await _send('GET', '/v1/course-registration/offerings?termId=$termId'), OfferingInfo.fromJson);
+  Future<List<OfferingInfo>> courseOfferings(String termId) async => [
+    for (final o in (await _send('GET', '/v1/course-registration/me/teaching') as List).cast<Map<String, dynamic>>())
+      if (o['termId'] == termId) OfferingInfo.fromJson({'id': o['id'], 'subjectCode': o['code'], 'subjectName': o['name'], 'facultyId': o['facultyId']}),
+  ];
 
   @override
   Future<List<RosterEntry>> offeringRoster(String offeringId) async {
