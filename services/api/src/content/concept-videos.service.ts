@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { ConceptVideo, ConceptVideoSource, Language, ManagedConceptVideo, PeriodConceptVideos, PeriodTopicSource, TopicVideoCount } from '@kinetix/shared';
 import { and, asc, eq, gt, inArray, isNull, max, sql, type SQL } from 'drizzle-orm';
+import { licenceAllows } from './licensing.js';
 import { audit } from '../common/audit.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
@@ -96,7 +97,7 @@ export class ConceptVideosService {
    */
   async forTopics(tx: Tx, topicIds: string[], preferred: Language, viewer: VideoViewer | null = null): Promise<ConceptVideo[]> {
     if (topicIds.length === 0) return [];
-    const rows = ((await tx.select(videoColumns).from(conceptVideos).where(inArray(conceptVideos.topicId, topicIds))) as VideoRow[]).filter((r) => visibleTo(r, viewer));
+    const rows = ((await tx.select(videoColumns).from(conceptVideos).where(and(inArray(conceptVideos.topicId, topicIds), licenceAllows('concept_video', conceptVideos.id)))) as VideoRow[]).filter((r) => visibleTo(r, viewer));
     return topicIds.flatMap((id) => mergeSources(rows.filter((r) => r.topicId === id), preferred).map(strip));
   }
 

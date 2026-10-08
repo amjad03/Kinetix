@@ -129,6 +129,25 @@ const EnvSchema = z.object({
    * which per-IP rate limits use. Unset: the socket address.
    */
   TRUST_PROXY: z.coerce.number().int().min(0).optional(),
+  /** How often the domain event dispatcher polls the outbox (ms); 0 = only when drained by hand (tests). */
+  EVENTS_POLL_MS: z.coerce.number().int().min(0).default(2000),
+  /** How often scheduled reports and pending upload scans are checked (ms); 0 = off (tests). */
+  REPORTS_POLL_MS: z.coerce.number().int().min(0).default(60_000),
+  SCAN_POLL_MS: z.coerce.number().int().min(0).default(5000),
+  /** `off`: uploads are accepted as they are. `clamav`: quarantined until clamd says they are clean. */
+  UPLOAD_SCAN: z.enum(['off', 'clamav']).default('off'),
+  CLAMAV_HOST: z.string().default('127.0.0.1'),
+  CLAMAV_PORT: z.coerce.number().int().default(3310),
+  /** OTLP/HTTP traces endpoint base (e.g. http://otel-collector:4318); unset = no tracing. Standard OTEL_* names. */
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+  OTEL_SERVICE_NAME: z.string().default('kinetix-api'),
+  /** Fraction of requests traced (0 to 1). */
+  OTEL_TRACES_SAMPLER_ARG: z.coerce.number().min(0).max(1).default(1),
+  /** When set, GET /metrics needs `Authorization: Bearer <token>`. */
+  METRICS_TOKEN: z.string().optional(),
+  /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */
+  MAIL_WEBHOOK_URL: z.url().optional(),
+  MAIL_FROM: z.string().default('reports@kinetix.local'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

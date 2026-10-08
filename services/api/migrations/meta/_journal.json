@@ -428,6 +428,76 @@
       "when": 1791409384229,
       "tag": "0066_concept_video_scopes",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1791409444229,
+      "tag": "0076_mfa_sessions",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1791409504229,
+      "tag": "0077_feature_flags",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1791409564229,
+      "tag": "0078_event_outbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1791409624229,
+      "tag": "0079_upload_scans",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1791409684229,
+      "tag": "0080_search_trgm",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1791409744229,
+      "tag": "0081_content_licenses",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1791409804229,
+      "tag": "0082_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1791409864229,
+      "tag": "0083_placement_research",
+      "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1791409924229,
+      "tag": "0084_foundation_analytics_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1791409984229,
+      "tag": "0085_analytics_indexes",
+      "breakpoints": true
     }
   ]
 }

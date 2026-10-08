@@ -6,6 +6,8 @@ import { ENV, type Env } from '../config/env.js';
 import { REDIS } from '../redis/redis.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';
+import { MfaController, SecurityPolicyController } from './mfa.controller.js';
+import { MfaService } from './mfa.service.js';
 import { OtpService } from './otp.service.js';
 import { MePasswordController, PasswordResetController } from './password.controller.js';
 import { ConsoleSmsSender, Msg91SmsSender, SmsSender } from './sms-sender.js';
@@ -13,9 +15,10 @@ import { TokensService } from './tokens.service.js';
 
 @Global()
 @Module({
-  controllers: [AuthController, MePasswordController, PasswordResetController],
+  controllers: [AuthController, MePasswordController, PasswordResetController, MfaController, SecurityPolicyController],
   providers: [
     TokensService,
+    MfaService,
     OtpService,
     { provide: RateLimiter, inject: [REDIS], useFactory: (redis: Redis | null) => (redis ? new RedisRateLimiter(redis) : new MemoryRateLimiter()) },
     {
@@ -27,6 +30,6 @@ import { TokensService } from './tokens.service.js';
     AuthGuard,
     { provide: APP_GUARD, useExisting: AuthGuard },
   ],
-  exports: [TokensService, RateLimiter, AuthGuard],
+  exports: [TokensService, MfaService, RateLimiter, AuthGuard],
 })
 export class AuthModule {}

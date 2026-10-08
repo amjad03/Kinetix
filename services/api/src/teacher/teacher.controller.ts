@@ -126,6 +126,8 @@ export function loadMe(db: DbService, system: SystemLookups, p: UserPrincipal): 
       // As the token says (AuthGuard enforces the token): true until the user changes the temporary password.
       mustChangePassword: !!p.mustChangePassword,
       hasPassword: !!u.passwordHash,
+      // The institution requires a second factor for this role and none is set up: only /account/security works.
+      ...(p.mustSetUpMfa ? { mustSetUpMfa: true } : {}),
       photoUrl: photoUrl(u),
       teachingSubjects: u.teachingSubjects,
       // The KINETIX platform team (the ERP shows its Platform area); absent for everyone else.
