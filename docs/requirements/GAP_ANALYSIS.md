@@ -102,3 +102,23 @@ Then: analytics (placements, research and grievance are built), and the Phase 00
 A module is not done because screens exist. It is done when domain logic, authorization,
 persistence, APIs and events, validation, auditability, tests, observability, documentation and
 production readiness are all satisfied.
+
+## ERP PRD V1 (Tier 2) audit — 2026-10-09
+
+The pack's newest ERP PRD (`KINETIX_COMPLETE_ERP_EDUCATION_OS_PRD_V1.md`) compared with the
+code. Built in full: certificates, payroll, hostel, transport, grievance, discipline, Smartboard
+integration. Everything else is partial or missing; build waves, in order:
+
+1. Survey/feedback engine (§53) + task engine (§69); clubs, committees, events (§50–52);
+   mentoring and early intervention (§41), course file (§29), academic audit (§30).
+2. CBCS course registration (§11); skill passport and SDG mapping (§42, §44); question bank and
+   paper blueprint in the ERP (§22); reusable approval workflow (§57).
+3. On-screen evaluation (§24); exam controller depth (invigilation, supplementary, §23);
+   results depth (grace marks, rank, progression, §25).
+4. Depth items: student lifecycle states (§7), admissions entrance tests/quotas/campaigns (§8),
+   timetable substitutions (§13), school diary and PTM booking (§15, §59), early-years model
+   (§4.1), health records (§40), alumni giving (§49), audit-log viewer (§70), custom report
+   builder (§63), connector registry (§67).
+
+Deferred by decision: semantic search (§65, §68), dedicated/on-prem deployment packaging (§71),
+enterprise SSO (§6) until a tenant asks.
