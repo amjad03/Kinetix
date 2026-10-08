@@ -1,44 +1,61 @@
 /*
  * KINETIX design tokens for the web (docs/design/design-system.md). The same values as
- * packages/kinetix_ui (`KxColor`, `Kx`, `KxFonts`), so the ERP, the Board and the apps look
- * like one product. MUI reads its palette from theme.ts; these variables are for plain CSS,
- * canvases (the live board view) and anything outside MUI.
+ * packages/kinetix_ui (`KxColor`, `KxColorDark`, `Kx`, `KxType`, `KxFonts`), so the ERP, the Board
+ * and the apps look like one product. MUI reads its palette from scheme.ts / palette.ts (which
+ * hold the same hex values); these variables are for plain CSS, SVG charts, canvases (the live
+ * board view) and anything outside MUI.
+ *
+ * Deep trustworthy blue = the one strong action; marigold = AI only; success / warning / danger
+ * for state; white cards on a soft cool-grey ground. Chalkboard green is only the board theme.
  */
 :root {
   /* Colour roles */
-  --kx-bg: #f4f7f4;
-  --kx-rail: #ecf1ec;
+  --kx-bg: #f3f6fb;
+  --kx-rail: #e8edf5;
   --kx-surface: #ffffff;
-  --kx-surface-hi: #e4eae4;
-  --kx-line: #d7ded8;
-  --kx-outline: #707973;
-  --kx-text: #171d19;
-  --kx-muted: #4e5852;
+  --kx-surface-hi: #e0e6f0;
+  --kx-line: #d5dde9;
+  --kx-outline: #64748b;
+  --kx-text: #0f172a;
+  --kx-muted: #475569;
 
-  /* Brand: chalkboard green. The one strong action on a screen. */
-  --kx-accent: #006545;
+  /* Brand: deep blue. The one strong action on a screen. */
+  --kx-accent: #1d4ed8;
   --kx-on-accent: #ffffff;
-  --kx-accent-container: #b4f0d2;
-  --kx-on-accent-container: #002114;
-  --kx-secondary-container: #d3e8da;
-  --kx-on-secondary-container: #0e1f16;
+  --kx-accent-container: #dbe6ff;
+  --kx-on-accent-container: #0b2a7a;
+  --kx-secondary-container: #e3eafa;
+  --kx-on-secondary-container: #0f2a5c;
 
   /* AI: marigold. Only AI uses it. */
-  --kx-spark: #835400;
-  --kx-spark-container: #ffddb5;
-  --kx-on-spark-container: #2a1800;
+  --kx-spark: #8f5b00;
+  --kx-spark-container: #ffe2a8;
+  --kx-on-spark-container: #2b1b00;
 
-  --kx-inverse: #2c322e;
-  --kx-on-inverse: #edf2ec;
-  --kx-danger: #ba1a1a;
-  --kx-danger-container: #ffdad6;
+  --kx-inverse: #1e293b;
+  --kx-on-inverse: #eef2f8;
 
-  /* Fixed semantic colours */
+  /* State */
+  --kx-danger: #b3261e;
+  --kx-danger-container: #fde3e1;
+  --kx-on-danger-container: #5c0a06;
+  --kx-success: #15803d;
+  --kx-success-container: #dcf3e4;
+  --kx-on-success-container: #0b4a22;
+  --kx-warning: #b45309;
+  --kx-warning-container: #fef0d4;
+  --kx-on-warning-container: #5a2a00;
   --kx-live: #e8710a;
   --kx-record: #d93025;
-  --kx-success: #188038;
 
-  /* The board */
+  /* Categorical chart series (each 3:1 against a card) */
+  --kx-chart-1: #1d4ed8;
+  --kx-chart-2: #0e7490;
+  --kx-chart-3: #7c3aed;
+  --kx-chart-4: #be185d;
+  --kx-chart-5: #8f5b00;
+
+  /* The board (Board app only; chalkboard green is a board theme, not the brand) */
   --kx-paper: #fbfaf6;
   --kx-ink: #1b1f24;
   --kx-chalkboard: #1f3a30;
@@ -46,15 +63,34 @@
   /* Type: Google Sans Flex for the interface, its display cut for headlines. */
   --kx-font: var(--font-sans-flex), 'Google Sans Flex', var(--font-noto-devanagari), var(--font-noto-kannada), Roboto, 'Segoe UI', Arial, sans-serif;
   --kx-font-display: var(--font-sans-flex-display), var(--kx-font);
+  /* Type scale (size / line height) */
+  --kx-text-xs: 0.75rem;
+  --kx-text-sm: 0.875rem;
+  --kx-text-md: 1rem;
+  --kx-text-lg: 1.125rem;
+  --kx-text-xl: 1.5rem;
+  --kx-text-2xl: 2rem;
 
-  /* Shape: inputs 12, cards 16–20, sheets and dialogs 28, buttons full. */
+  /* Spacing (4-pt grid) */
+  --kx-s4: 4px;
+  --kx-s8: 8px;
+  --kx-s12: 12px;
+  --kx-s16: 16px;
+  --kx-s20: 20px;
+  --kx-s24: 24px;
+  --kx-s32: 32px;
+  --kx-s48: 48px;
+
+  /* Shape: buttons and inputs 10, cards 16, dialogs and sheets 20–28, pills full. */
   --kx-radius-sm: 8px;
   --kx-radius-md: 12px;
   --kx-radius-lg: 16px;
   --kx-radius-xl: 28px;
   --kx-radius-full: 999px;
 
-  /* Floating surfaces over the board: white with a soft two-layer shadow. */
+  /* Elevation: cards sit almost flat; menus and dialogs lift; the board floats. */
+  --kx-elev-card: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --kx-elev-raised: 0 1px 3px rgba(15, 23, 42, 0.1), 0 4px 12px 1px rgba(15, 23, 42, 0.08);
   --kx-shadow-floating: 0 1px 3px rgba(0, 0, 0, 0.1), 0 4px 12px 1px rgba(0, 0, 0, 0.08);
 
   /* Motion */
@@ -66,20 +102,41 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --kx-bg: #0f1511;
-    --kx-rail: #1b211d;
-    --kx-surface: #171d19;
-    --kx-surface-hi: #252b27;
-    --kx-line: #3f4943;
-    --kx-outline: #89938c;
-    --kx-text: #dee4de;
-    --kx-muted: #bfc9c1;
-    --kx-accent: #8dd7b1;
-    --kx-on-accent: #00382a;
-    --kx-accent-container: #00513a;
-    --kx-on-accent-container: #a9f2cc;
-    --kx-spark: #ffb95c;
-    --kx-spark-container: #633f00;
-    --kx-on-spark-container: #ffddb5;
+    --kx-bg: #0b1220;
+    --kx-rail: #162137;
+    --kx-surface: #111a2c;
+    --kx-surface-hi: #1d2940;
+    --kx-line: #2e3b55;
+    --kx-outline: #7d8ba3;
+    --kx-text: #e2e8f5;
+    --kx-muted: #a9b5ca;
+    --kx-accent: #9db8ff;
+    --kx-on-accent: #0a2463;
+    --kx-accent-container: #1f3e8f;
+    --kx-on-accent-container: #dbe6ff;
+    --kx-secondary-container: #26385c;
+    --kx-on-secondary-container: #dce6fa;
+    --kx-spark: #ffc25e;
+    --kx-spark-container: #5e3f00;
+    --kx-on-spark-container: #ffe2a8;
+    --kx-inverse: #e2e8f5;
+    --kx-on-inverse: #1e293b;
+    --kx-danger: #ffb4ab;
+    --kx-danger-container: #7a1a14;
+    --kx-on-danger-container: #ffdad6;
+    --kx-success: #86d9a0;
+    --kx-success-container: #0f3d1f;
+    --kx-on-success-container: #cdeed8;
+    --kx-warning: #fbbf6a;
+    --kx-warning-container: #4a2c00;
+    --kx-on-warning-container: #ffe2b8;
+    --kx-live: #fcad70;
+    --kx-record: #f28b82;
+    --kx-chart-1: #9db8ff;
+    --kx-chart-2: #5eead4;
+    --kx-chart-3: #c4b5fd;
+    --kx-chart-4: #f9a8d4;
+    --kx-chart-5: #ffc25e;
+    --kx-elev-card: none;
   }
 }

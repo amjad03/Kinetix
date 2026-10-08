@@ -19,11 +19,11 @@ void main() {
     expect(KinetixTheme.light().inputDecorationTheme.border, isA<UnderlineInputBorder>());
   });
 
-  test('brand: chalkboard green, marigold for AI', () {
+  test('brand: deep blue, marigold for AI', () {
     final s = KinetixTheme.light().colorScheme;
-    expect(s.primary, const Color(0xFF006545));
+    expect(s.primary, const Color(0xFF1D4ED8));
     expect(s.primary, KxColor.accent);
-    expect(s.tertiary, const Color(0xFF835400));
+    expect(s.tertiary, const Color(0xFF8F5B00));
     expect(s.tertiary, KxColor.spark);
     expect(s.surfaceContainerLowest, const Color(0xFFFFFFFF));
     expect(KxFonts.boardFor(primaryClass: true), KxFonts.primary);

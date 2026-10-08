@@ -1,44 +1,83 @@
 import { argbFromHex, Hct, hexFromArgb, MaterialDynamicColors, SchemeTonalSpot } from '@material/material-color-utilities';
 
-/** KINETIX seed colour, chalkboard green (mirrors `Kx.seed` in kinetix_ui). */
-export const SEED = '#16805A';
+/** KINETIX seed colour, a deep trustworthy blue (mirrors `Kx.seed` in kinetix_ui). */
+export const SEED = '#1D4ED8';
 
 /**
  * The light scheme's hand-tuned roles (mirrors `KinetixTheme.lightScheme` in kinetix_ui and
- * tokens.css): quiet, nearly neutral surfaces, the brand green `#006545` and marigold for AI.
+ * tokens.css): white cards on a soft cool-grey ground, deep blue for the one strong action and
+ * marigold (tertiary) for AI only. Every text pair is WCAG AA (scheme.test.ts).
  */
 export const BRAND_LIGHT: Partial<M3Scheme> = {
-  primary: '#006545',
+  primary: '#1d4ed8',
   onPrimary: '#ffffff',
-  primaryContainer: '#b4f0d2',
-  onPrimaryContainer: '#002114',
-  secondary: '#4d6357',
-  secondaryContainer: '#d3e8da',
-  onSecondaryContainer: '#0e1f16',
-  tertiary: '#835400',
+  primaryContainer: '#dbe6ff',
+  onPrimaryContainer: '#0b2a7a',
+  secondary: '#475569',
+  onSecondary: '#ffffff',
+  secondaryContainer: '#e3eafa',
+  onSecondaryContainer: '#0f2a5c',
+  tertiary: '#8f5b00',
   onTertiary: '#ffffff',
-  tertiaryContainer: '#ffddb5',
-  onTertiaryContainer: '#2a1800',
-  error: '#ba1a1a',
-  errorContainer: '#ffdad6',
-  onErrorContainer: '#410002',
-  surface: '#f4f7f4',
-  onSurface: '#171d19',
-  onSurfaceVariant: '#4e5852',
+  tertiaryContainer: '#ffe2a8',
+  onTertiaryContainer: '#2b1b00',
+  error: '#b3261e',
+  onError: '#ffffff',
+  errorContainer: '#fde3e1',
+  onErrorContainer: '#5c0a06',
+  surface: '#f3f6fb',
+  onSurface: '#0f172a',
+  surfaceVariant: '#e0e6f0',
+  onSurfaceVariant: '#475569',
+  surfaceDim: '#d8dfeb',
+  surfaceBright: '#ffffff',
   surfaceContainerLowest: '#ffffff',
-  surfaceContainerLow: '#f0f4f0',
-  surfaceContainer: '#ecf1ec',
-  surfaceContainerHigh: '#e4eae4',
-  surfaceContainerHighest: '#dee4de',
-  inverseSurface: '#2c322e',
-  inverseOnSurface: '#edf2ec',
-  inversePrimary: '#8dd7b1',
-  outline: '#707973',
-  outlineVariant: '#d7ded8',
+  surfaceContainerLow: '#eef2f8',
+  surfaceContainer: '#e8edf5',
+  surfaceContainerHigh: '#e0e6f0',
+  surfaceContainerHighest: '#d8dfeb',
+  inverseSurface: '#1e293b',
+  inverseOnSurface: '#eef2f8',
+  inversePrimary: '#9db8ff',
+  outline: '#64748b',
+  outlineVariant: '#d5dde9',
 };
 
-/** Marigold for AI in the dark scheme (as `KinetixTheme.dark` in kinetix_ui). */
-const BRAND_DARK: Partial<M3Scheme> = { tertiary: '#ffb95c' };
+/** The dark scheme: the same roles on a deep blue-black ground. */
+export const BRAND_DARK: Partial<M3Scheme> = {
+  primary: '#9db8ff',
+  onPrimary: '#0a2463',
+  primaryContainer: '#1f3e8f',
+  onPrimaryContainer: '#dbe6ff',
+  secondary: '#b7c4dd',
+  onSecondary: '#1e2b45',
+  secondaryContainer: '#26385c',
+  onSecondaryContainer: '#dce6fa',
+  tertiary: '#ffc25e',
+  onTertiary: '#2b1b00',
+  tertiaryContainer: '#5e3f00',
+  onTertiaryContainer: '#ffe2a8',
+  error: '#ffb4ab',
+  onError: '#5c0a06',
+  errorContainer: '#7a1a14',
+  onErrorContainer: '#ffdad6',
+  surface: '#0b1220',
+  onSurface: '#e2e8f5',
+  surfaceVariant: '#26334c',
+  onSurfaceVariant: '#a9b5ca',
+  surfaceDim: '#0b1220',
+  surfaceBright: '#26334c',
+  surfaceContainerLowest: '#080d18',
+  surfaceContainerLow: '#111a2c',
+  surfaceContainer: '#162137',
+  surfaceContainerHigh: '#1d2940',
+  surfaceContainerHighest: '#26334c',
+  inverseSurface: '#e2e8f5',
+  inverseOnSurface: '#1e293b',
+  inversePrimary: '#1d4ed8',
+  outline: '#7d8ba3',
+  outlineVariant: '#2e3b55',
+};
 
 /** Material 3 colour roles that the dashboard uses. */
 export const M3_ROLES = [
@@ -101,7 +140,8 @@ export function brandScheme(dark = false): M3Scheme {
 export const SEMANTIC = {
   live: '#E8710A',
   record: '#D93025',
-  success: '#188038',
+  success: '#15803D',
+  warning: '#B45309',
 } as const;
 
 /** `#rrggbb` → `rgba(r, g, b, a)`; used for M3 state layers. */
