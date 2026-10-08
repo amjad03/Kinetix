@@ -21,6 +21,8 @@ const TARGETS: Record<string, (id: string) => string> = {
   'asset-tags': (id) => `/v1/assets/tags.pdf?ids=${id}`,
   gradebook: (id) => `/v1/lms/courses/${id}/gradebook.csv`,
   'course-file': (id) => `/v1/course-files/${id}/download`,
+  'qb-paper': (id) => `/v1/question-bank/papers/${id}/paper.pdf`,
+  'qb-key': (id) => `/v1/question-bank/papers/${id}/answer-key.pdf`,
   payslip: (id) => `/v1/payroll/payslips/${id}/pdf`,
   'survey-csv': (id) => `/v1/surveys/${id}/export.csv`,
   passport: (id) => `/v1/passport/students/${id}/pdf`,

@@ -7,7 +7,7 @@ export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
   | 'campus' | 'inventory' | 'communication' | 'reports' | 'settings'
   | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'devices' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
-  | 'hostel' | 'canteen' | 'campusLife' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills';
+  | 'hostel' | 'canteen' | 'campusLife' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank';
 
 export interface NavItem {
   href: string;
@@ -53,6 +53,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/course-files', label: 'nav.courseFiles', section: 'courseFiles', icon: 'courseFiles' },
       { href: '/academic-audit', label: 'nav.academicAudit', section: 'academicAudit', icon: 'academicAudit' },
       { href: '/course-registration', label: 'nav.courseRegistration', section: 'courseRegistration', icon: 'courseRegistration' },
+      { href: '/question-bank', label: 'nav.questionBank', section: 'questionBank', icon: 'questionBank' },
     ],
   },
   {
