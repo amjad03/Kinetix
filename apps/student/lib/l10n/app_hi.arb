@@ -690,5 +690,12 @@
   "certificateIssued": "डाउनलोड के लिए तैयार",
   "certificateRevoked": "कॉलेज ने वापस ले लिया",
   "certificateDownload": "PDF डाउनलोड करें",
-  "certificateSerial": "क्र. {serial}"
+  "certificateSerial": "क्र. {serial}",
+  "coursesNone": "अभी कोई पाठ्यक्रम नहीं। शिक्षकों के प्रकाशित करने पर यहाँ दिखेंगे।",
+  "courseModulesCount": "{count} मॉड्यूल",
+  "courseGradeTitle": "अब तक का ग्रेड",
+  "courseNoGrade": "अभी कुछ भी ग्रेड नहीं हुआ है।",
+  "courseAnnouncements": "घोषणाएँ",
+  "courseNoModules": "अभी कोई मॉड्यूल नहीं।",
+  "coursesTab": "पाठ्यक्रम"
 }

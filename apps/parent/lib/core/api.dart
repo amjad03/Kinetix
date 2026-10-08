@@ -10,6 +10,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../l10n/l10n.dart';
 import 'campus.dart';
 import 'exam_models.dart';
+import 'lms.dart';
 import 'models.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
@@ -205,6 +206,12 @@ abstract class ParentApi {
 
   /// The badges teachers awarded a student, newest first.
   Future<List<BadgeAward>> badges(String studentId);
+
+  /// The published LMS courses of a student with the running grade (`GET /v1/lms/my`).
+  Future<List<LmsCourseSummary>> lmsCourses(String childId);
+
+  /// One course: modules, content, announcements and the grade breakdown (`GET /v1/lms/courses/:id`).
+  Future<LmsCourseDetail> lmsCourse(String courseId, String childId);
 }
 
 /// Lets the lesson player load recordings through a [ParentApi].
@@ -617,4 +624,12 @@ class HttpParentApi implements ParentApi {
     // Nothing useful from the server: the app words it from the status (l10n/l10n.dart).
     return '';
   }
+
+  @override
+  Future<List<LmsCourseSummary>> lmsCourses(String childId) async =>
+      [for (final c in await _send('GET', '/v1/lms/my?studentId=$childId') as List) LmsCourseSummary.fromJson((c as Map).cast<String, dynamic>())];
+
+  @override
+  Future<LmsCourseDetail> lmsCourse(String courseId, String childId) async =>
+      LmsCourseDetail.fromJson(await _send('GET', '/v1/lms/courses/$courseId?studentId=$childId') as Map<String, dynamic>);
 }

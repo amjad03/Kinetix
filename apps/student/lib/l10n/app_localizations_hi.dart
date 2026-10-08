@@ -2370,4 +2370,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String certificateSerial(String serial) {
     return 'क्र. $serial';
   }
+
+  @override
+  String get coursesNone => 'अभी कोई पाठ्यक्रम नहीं। शिक्षकों के प्रकाशित करने पर यहाँ दिखेंगे।';
+
+  @override
+  String courseModulesCount(int count) {
+    return '$count मॉड्यूल';
+  }
+
+  @override
+  String get courseGradeTitle => 'अब तक का ग्रेड';
+
+  @override
+  String get courseNoGrade => 'अभी कुछ भी ग्रेड नहीं हुआ है।';
+
+  @override
+  String get courseAnnouncements => 'घोषणाएँ';
+
+  @override
+  String get courseNoModules => 'अभी कोई मॉड्यूल नहीं।';
+
+  @override
+  String get coursesTab => 'पाठ्यक्रम';
 }

@@ -582,5 +582,14 @@
   "recentUpdates": "हाल की सूचनाएँ",
   "examsForChild": "{name} की परीक्षाएँ",
   "examsSubtitle": "समय-सारणी, प्रवेश-पत्र और परिणाम",
-  "moreFamily": "परिवार"
+  "moreFamily": "परिवार",
+  "coursesNone": "अभी कोई पाठ्यक्रम नहीं। शिक्षकों के प्रकाशित करने पर यहाँ दिखेंगे।",
+  "courseModulesCount": "{count} मॉड्यूल",
+  "courseGradeTitle": "अब तक का ग्रेड",
+  "courseNoGrade": "अभी कुछ भी ग्रेड नहीं हुआ है।",
+  "courseAnnouncements": "घोषणाएँ",
+  "courseNoModules": "अभी कोई मॉड्यूल नहीं।",
+  "gradesTitle": "पाठ्यक्रम ग्रेड",
+  "gradesSubtitle": "हर विषय के मॉड्यूल और अब तक का ग्रेड",
+  "childGrades": "ग्रेड: {name}"
 }

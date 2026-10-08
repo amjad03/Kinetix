@@ -11,10 +11,41 @@ import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/campus.dart';
 import '../core/campus_services.dart';
+import '../core/lms.dart';
 import '../core/models.dart';
 
 /// In-memory [StudentApi] for widget tests.
 class FakeStudentApi implements StudentApi {
+  /// LMS courses by student; the demo school publishes one with a grade.
+  List<LmsCourseSummary> lmsCourseList = const [LmsCourseSummary(courseId: 'c1', title: 'Mathematics 7 B', subject: 'Mathematics', moduleCount: 2, overall: 82, letter: 'A')];
+  ApiException? lmsError;
+
+  @override
+  Future<List<LmsCourseSummary>> lmsCourses(String studentId) async {
+    calls.add('lmsCourses $studentId');
+    if (lmsError != null) throw lmsError!;
+    return List.of(lmsCourseList);
+  }
+
+  @override
+  Future<LmsCourseDetail> lmsCourse(String courseId, String studentId) async {
+    calls.add('lmsCourse $courseId');
+    if (lmsError != null) throw lmsError!;
+    return const LmsCourseDetail(
+      title: 'Mathematics 7 B',
+      subject: 'Mathematics',
+      description: '',
+      modules: [
+        LmsModule(title: 'Fractions', items: [LmsItem(kind: 'topic', title: 'Adding fractions'), LmsItem(kind: 'link', title: 'Practice sheet', url: 'https://example.com/p')]),
+        LmsModule(title: 'Decimals', items: []),
+      ],
+      announcements: ['Unit test on Friday'],
+      parts: [LmsGradePart(name: 'Tests', weight: 60, percent: 80), LmsGradePart(name: 'Homework', weight: 40, percent: 85)],
+      overall: 82,
+      letter: 'A',
+    );
+  }
+
   @override
   String baseUrl = 'http://test';
   @override

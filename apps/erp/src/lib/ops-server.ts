@@ -5,7 +5,7 @@ import { act, api } from '@/lib/api';
 import type { ActionResult } from '@/lib/types';
 
 /** Sends a change to the API and refreshes the page it came from. */
-export async function send<T = unknown>(path: string, body: unknown, page: string, method: 'POST' | 'PATCH' | 'PUT' = 'POST'): Promise<ActionResult<T>> {
+export async function send<T = unknown>(path: string, body: unknown, page: string, method: 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'POST'): Promise<ActionResult<T>> {
   const res = await act(() => api<T>(path, { method, ...(body === undefined ? {} : { body }) }));
   if (res.ok) revalidatePath(page);
   return res;

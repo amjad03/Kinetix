@@ -7,6 +7,7 @@ import '../../core/family.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../calendar/calendar_screen.dart';
+import '../courses/courses_screen.dart';
 import '../exams/exams_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
@@ -179,6 +180,14 @@ class ProfileTab extends StatelessWidget {
                   subtitle: Text(l.examsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => ExamsScreen.open(context, family.api, child),
+                ),
+                ListTile(
+                  key: Key('profile-grades-${child.id}'),
+                  leading: const Icon(Icons.school_outlined),
+                  title: Text(family.children.length == 1 ? l.gradesTitle : l.childGrades(child.firstName)),
+                  subtitle: Text(l.gradesSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => CoursesScreen.open(context, family.api, child),
                 ),
                 ListTile(
                   key: Key('profile-library-${child.id}'),

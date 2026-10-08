@@ -76,6 +76,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'grp.lms',
     icon: 'lms',
     items: [
+      { href: '/courses', label: 'nav.courses', section: 'courses', icon: 'lms' },
       { href: '/homework', label: 'nav.homework', section: 'school', icon: 'homework' },
       { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: 'topicVideos' },
       { href: '/boards', label: 'nav.boards', section: 'boards', icon: 'boards' },
@@ -83,7 +84,14 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/live', label: 'nav.live', section: 'live', icon: 'live' },
     ],
   },
-  { id: 'finance', label: 'grp.finance', icon: 'finance', items: [{ href: '/fees', label: 'nav.fees', section: 'fees', icon: 'finance' }] },
+  {
+    id: 'finance',
+    label: 'grp.finance',
+    icon: 'finance',
+    items: [
+      { href: '/fees', label: 'nav.fees', section: 'fees', icon: 'finance' },
+    ],
+  },
   {
     id: 'hr',
     label: 'grp.hr',

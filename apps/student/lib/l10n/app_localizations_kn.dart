@@ -2379,4 +2379,27 @@ class AppLocalizationsKn extends AppLocalizations {
   String certificateSerial(String serial) {
     return 'ಸಂ. $serial';
   }
+
+  @override
+  String get coursesNone => 'ಇನ್ನೂ ಕೋರ್ಸ್‌ಗಳಿಲ್ಲ. ಶಿಕ್ಷಕರು ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
+
+  @override
+  String courseModulesCount(int count) {
+    return '$count ಮಾಡ್ಯೂಲ್‌ಗಳು';
+  }
+
+  @override
+  String get courseGradeTitle => 'ಇಲ್ಲಿಯವರೆಗಿನ ಗ್ರೇಡ್';
+
+  @override
+  String get courseNoGrade => 'ಇನ್ನೂ ಯಾವುದೂ ಗ್ರೇಡ್ ಆಗಿಲ್ಲ.';
+
+  @override
+  String get courseAnnouncements => 'ಪ್ರಕಟಣೆಗಳು';
+
+  @override
+  String get courseNoModules => 'ಇನ್ನೂ ಮಾಡ್ಯೂಲ್‌ಗಳಿಲ್ಲ.';
+
+  @override
+  String get coursesTab => 'ಕೋರ್ಸ್‌ಗಳು';
 }

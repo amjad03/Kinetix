@@ -3530,6 +3530,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Family'**
   String get moreFamily;
+
+  /// coursesNone
+  ///
+  /// In en, this message translates to:
+  /// **'No courses yet. They appear here when your teachers publish them.'**
+  String get coursesNone;
+
+  /// courseModulesCount
+  ///
+  /// In en, this message translates to:
+  /// **'{count} modules'**
+  String courseModulesCount(int count);
+
+  /// courseGradeTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Grade so far'**
+  String get courseGradeTitle;
+
+  /// courseNoGrade
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been graded yet.'**
+  String get courseNoGrade;
+
+  /// courseAnnouncements
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get courseAnnouncements;
+
+  /// courseNoModules
+  ///
+  /// In en, this message translates to:
+  /// **'No modules yet.'**
+  String get courseNoModules;
+
+  /// gradesTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Course grades'**
+  String get gradesTitle;
+
+  /// gradesSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Modules and running grade for each subject'**
+  String get gradesSubtitle;
+
+  /// childGrades
+  ///
+  /// In en, this message translates to:
+  /// **'Grades: {name}'**
+  String childGrades(String name);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

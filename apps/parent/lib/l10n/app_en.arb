@@ -1596,5 +1596,51 @@
   "moreFamily": "Family",
   "@moreFamily": {
     "description": "Heading in More for messages and exams."
+  },
+  "coursesNone": "No courses yet. They appear here when your teachers publish them.",
+  "@coursesNone": {
+    "description": "coursesNone"
+  },
+  "courseModulesCount": "{count} modules",
+  "@courseModulesCount": {
+    "description": "courseModulesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "courseGradeTitle": "Grade so far",
+  "@courseGradeTitle": {
+    "description": "courseGradeTitle"
+  },
+  "courseNoGrade": "Nothing has been graded yet.",
+  "@courseNoGrade": {
+    "description": "courseNoGrade"
+  },
+  "courseAnnouncements": "Announcements",
+  "@courseAnnouncements": {
+    "description": "courseAnnouncements"
+  },
+  "courseNoModules": "No modules yet.",
+  "@courseNoModules": {
+    "description": "courseNoModules"
+  },
+  "gradesTitle": "Course grades",
+  "@gradesTitle": {
+    "description": "gradesTitle"
+  },
+  "gradesSubtitle": "Modules and running grade for each subject",
+  "@gradesSubtitle": {
+    "description": "gradesSubtitle"
+  },
+  "childGrades": "Grades: {name}",
+  "@childGrades": {
+    "description": "childGrades",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

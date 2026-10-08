@@ -2063,4 +2063,35 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get moreFamily => 'ಕುಟುಂಬ';
+
+  @override
+  String get coursesNone => 'ಇನ್ನೂ ಕೋರ್ಸ್‌ಗಳಿಲ್ಲ. ಶಿಕ್ಷಕರು ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.';
+
+  @override
+  String courseModulesCount(int count) {
+    return '$count ಮಾಡ್ಯೂಲ್‌ಗಳು';
+  }
+
+  @override
+  String get courseGradeTitle => 'ಇಲ್ಲಿಯವರೆಗಿನ ಗ್ರೇಡ್';
+
+  @override
+  String get courseNoGrade => 'ಇನ್ನೂ ಯಾವುದೂ ಗ್ರೇಡ್ ಆಗಿಲ್ಲ.';
+
+  @override
+  String get courseAnnouncements => 'ಪ್ರಕಟಣೆಗಳು';
+
+  @override
+  String get courseNoModules => 'ಇನ್ನೂ ಮಾಡ್ಯೂಲ್‌ಗಳಿಲ್ಲ.';
+
+  @override
+  String get gradesTitle => 'ಕೋರ್ಸ್ ಗ್ರೇಡ್‌ಗಳು';
+
+  @override
+  String get gradesSubtitle => 'ಪ್ರತಿ ವಿಷಯದ ಮಾಡ್ಯೂಲ್‌ಗಳು ಮತ್ತು ಇಲ್ಲಿಯವರೆಗಿನ ಗ್ರೇಡ್';
+
+  @override
+  String childGrades(String name) {
+    return 'ಗ್ರೇಡ್‌ಗಳು: $name';
+  }
 }

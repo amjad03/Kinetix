@@ -2570,6 +2570,12 @@ export const TENANT_TABLES = [
   'discipline_appeals',
   'counselling_sessions',
   'welfare_requests',
+  'lms_courses',
+  'lms_modules',
+  'lms_items',
+  'lms_announcements',
+  'lms_grade_categories',
+  'lms_grade_overrides',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -3531,3 +3537,83 @@ export const welfareRequests = pgTable('welfare_requests', {
   version: integer('version').notNull().default(0),
   createdAt: createdAt(),
 });
+
+// ---------------------------------------------------------------------------------------------
+// LMS course shells and gradebook (docs/product/lms-courses.md)
+// ---------------------------------------------------------------------------------------------
+
+/** One course shell per section-subject offering. */
+export const lmsCourses = pgTable(
+  'lms_courses',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    /** draft (staff only) or published (students and families see it). */
+    status: text('status').$type<'draft' | 'published'>().notNull().default('draft'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [unique('lms_courses_offering_uq').on(t.sectionId, t.subjectId)],
+);
+
+export const lmsModules = pgTable('lms_modules', {
+  id: id(),
+  tenantId: tenantId(),
+  courseId: uuid('course_id').notNull().references(() => lmsCourses.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  position: integer('position').notNull(),
+});
+
+export type LmsItemKind = 'topic' | 'video' | 'homework' | 'assessment' | 'file' | 'link';
+
+/** A content item in a module: a link to an existing topic, video, homework or assessment, or a file or web link. */
+export const lmsItems = pgTable('lms_items', {
+  id: id(),
+  tenantId: tenantId(),
+  moduleId: uuid('module_id').notNull().references(() => lmsModules.id, { onDelete: 'cascade' }),
+  position: integer('position').notNull(),
+  kind: text('kind').$type<LmsItemKind>().notNull(),
+  title: text('title').notNull(),
+  refId: uuid('ref_id'),
+  url: text('url'),
+});
+
+export const lmsAnnouncements = pgTable('lms_announcements', {
+  id: id(),
+  tenantId: tenantId(),
+  courseId: uuid('course_id').notNull().references(() => lmsCourses.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  body: text('body').notNull().default(''),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** A weighted grade category fed by homework completion or by assessments of one kind. */
+export const lmsGradeCategories = pgTable('lms_grade_categories', {
+  id: id(),
+  tenantId: tenantId(),
+  courseId: uuid('course_id').notNull().references(() => lmsCourses.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  source: text('source').$type<'homework' | 'test' | 'assignment' | 'internal' | 'exam' | 'practical'>().notNull(),
+  weight: numeric('weight', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+  position: integer('position').notNull(),
+});
+
+/** A teacher's override of one student's category percentage; every change is also in the audit log. */
+export const lmsGradeOverrides = pgTable(
+  'lms_grade_overrides',
+  {
+    tenantId: tenantId(),
+    categoryId: uuid('category_id').notNull().references(() => lmsGradeCategories.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    percent: numeric('percent', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    reason: text('reason').notNull(),
+    setBy: uuid('set_by').notNull().references(() => users.id),
+    setAt: timestamp('set_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.categoryId, t.studentId] })],
+);

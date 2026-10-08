@@ -2364,4 +2364,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String certificateSerial(String serial) {
     return 'No. $serial';
   }
+
+  @override
+  String get coursesNone => 'No courses yet. They appear here when your teachers publish them.';
+
+  @override
+  String courseModulesCount(int count) {
+    return '$count modules';
+  }
+
+  @override
+  String get courseGradeTitle => 'Grade so far';
+
+  @override
+  String get courseNoGrade => 'Nothing has been graded yet.';
+
+  @override
+  String get courseAnnouncements => 'Announcements';
+
+  @override
+  String get courseNoModules => 'No modules yet.';
+
+  @override
+  String get coursesTab => 'Courses';
 }

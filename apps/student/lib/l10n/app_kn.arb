@@ -690,5 +690,12 @@
   "certificateIssued": "ಡೌನ್‌ಲೋಡ್‌ಗೆ ಸಿದ್ಧ",
   "certificateRevoked": "ಕಾಲೇಜು ಹಿಂಪಡೆದಿದೆ",
   "certificateDownload": "PDF ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
-  "certificateSerial": "ಸಂ. {serial}"
+  "certificateSerial": "ಸಂ. {serial}",
+  "coursesNone": "ಇನ್ನೂ ಕೋರ್ಸ್‌ಗಳಿಲ್ಲ. ಶಿಕ್ಷಕರು ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.",
+  "courseModulesCount": "{count} ಮಾಡ್ಯೂಲ್‌ಗಳು",
+  "courseGradeTitle": "ಇಲ್ಲಿಯವರೆಗಿನ ಗ್ರೇಡ್",
+  "courseNoGrade": "ಇನ್ನೂ ಯಾವುದೂ ಗ್ರೇಡ್ ಆಗಿಲ್ಲ.",
+  "courseAnnouncements": "ಪ್ರಕಟಣೆಗಳು",
+  "courseNoModules": "ಇನ್ನೂ ಮಾಡ್ಯೂಲ್‌ಗಳಿಲ್ಲ.",
+  "coursesTab": "ಕೋರ್ಸ್‌ಗಳು"
 }

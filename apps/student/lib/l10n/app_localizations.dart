@@ -4238,6 +4238,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No. {serial}'**
   String certificateSerial(String serial);
+
+  /// coursesNone
+  ///
+  /// In en, this message translates to:
+  /// **'No courses yet. They appear here when your teachers publish them.'**
+  String get coursesNone;
+
+  /// courseModulesCount
+  ///
+  /// In en, this message translates to:
+  /// **'{count} modules'**
+  String courseModulesCount(int count);
+
+  /// courseGradeTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Grade so far'**
+  String get courseGradeTitle;
+
+  /// courseNoGrade
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been graded yet.'**
+  String get courseNoGrade;
+
+  /// courseAnnouncements
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get courseAnnouncements;
+
+  /// courseNoModules
+  ///
+  /// In en, this message translates to:
+  /// **'No modules yet.'**
+  String get courseNoModules;
+
+  /// coursesTab
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get coursesTab;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

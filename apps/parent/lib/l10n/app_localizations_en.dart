@@ -2052,4 +2052,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moreFamily => 'Family';
+
+  @override
+  String get coursesNone => 'No courses yet. They appear here when your teachers publish them.';
+
+  @override
+  String courseModulesCount(int count) {
+    return '$count modules';
+  }
+
+  @override
+  String get courseGradeTitle => 'Grade so far';
+
+  @override
+  String get courseNoGrade => 'Nothing has been graded yet.';
+
+  @override
+  String get courseAnnouncements => 'Announcements';
+
+  @override
+  String get courseNoModules => 'No modules yet.';
+
+  @override
+  String get gradesTitle => 'Course grades';
+
+  @override
+  String get gradesSubtitle => 'Modules and running grade for each subject';
+
+  @override
+  String childGrades(String name) {
+    return 'Grades: $name';
+  }
 }

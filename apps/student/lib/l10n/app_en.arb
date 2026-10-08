@@ -1780,5 +1780,38 @@
         "type": "String"
       }
     }
+  },
+  "coursesNone": "No courses yet. They appear here when your teachers publish them.",
+  "@coursesNone": {
+    "description": "coursesNone"
+  },
+  "courseModulesCount": "{count} modules",
+  "@courseModulesCount": {
+    "description": "courseModulesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "courseGradeTitle": "Grade so far",
+  "@courseGradeTitle": {
+    "description": "courseGradeTitle"
+  },
+  "courseNoGrade": "Nothing has been graded yet.",
+  "@courseNoGrade": {
+    "description": "courseNoGrade"
+  },
+  "courseAnnouncements": "Announcements",
+  "@courseAnnouncements": {
+    "description": "courseAnnouncements"
+  },
+  "courseNoModules": "No modules yet.",
+  "@courseNoModules": {
+    "description": "courseNoModules"
+  },
+  "coursesTab": "Courses",
+  "@coursesTab": {
+    "description": "coursesTab"
   }
 }

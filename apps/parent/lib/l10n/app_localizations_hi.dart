@@ -2058,4 +2058,35 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get moreFamily => 'परिवार';
+
+  @override
+  String get coursesNone => 'अभी कोई पाठ्यक्रम नहीं। शिक्षकों के प्रकाशित करने पर यहाँ दिखेंगे।';
+
+  @override
+  String courseModulesCount(int count) {
+    return '$count मॉड्यूल';
+  }
+
+  @override
+  String get courseGradeTitle => 'अब तक का ग्रेड';
+
+  @override
+  String get courseNoGrade => 'अभी कुछ भी ग्रेड नहीं हुआ है।';
+
+  @override
+  String get courseAnnouncements => 'घोषणाएँ';
+
+  @override
+  String get courseNoModules => 'अभी कोई मॉड्यूल नहीं।';
+
+  @override
+  String get gradesTitle => 'पाठ्यक्रम ग्रेड';
+
+  @override
+  String get gradesSubtitle => 'हर विषय के मॉड्यूल और अब तक का ग्रेड';
+
+  @override
+  String childGrades(String name) {
+    return 'ग्रेड: $name';
+  }
 }

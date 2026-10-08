@@ -9,7 +9,7 @@ Audit of `docs/requirements/` (Detailed System Requirements Pack v2) against the
 |---|---|---|
 | Smartboard: Android native, Kotlin + Jetpack Compose | Flutter (`apps/board`) | **Keep Flutter.** Approved by the product owner 2026-10-08. The Flutter board already covers ~90% of the Phase 01 surface list, passes 588 tests, and runs on Android panels **and** Windows panels from one codebase; a Kotlin rewrite would drop Windows and restart the work. Treat "Android native" in the pack as superseded. |
 | AI: cloud AI APIs + local 2–3B models | India-hosted provider chain (self-hosted/E2E first, Sarvam fallback) | Keep. Satisfies the data-residency rule the owner set, which outranks the pack's wording. |
-| Identity: Kinetix in-house | Phone OTP (MSG91) + our own tokens, RLS per tenant | Matches in-house identity. MFA beyond OTP is still missing (see below). |
+| Identity: Kinetix in-house | Phone OTP (MSG91) + our own tokens, RLS per tenant | Matches in-house identity. TOTP MFA with per-role policy is built (see Phase 00). |
 
 Everything else in the locked baseline matches: Next.js + TypeScript web, NestJS + TypeScript
 backend, PostgreSQL, Flutter mobile, multi-tenant SaaS, en/hi/kn from day one.
@@ -58,7 +58,7 @@ Missing:
 | 2 | Academic structure / curriculum | Built |
 | 3 | Admissions / student lifecycle | Built — enquiry pipeline, per-program cycles and application forms, documents, application fee (Razorpay), eligibility and merit lists, offers, enrolment; lifecycle statuses with rules and audit, bulk promotion, guardians, `admissions_officer` role ([design](../architecture/admissions-lifecycle.md)). Not yet: SMS/email to applicants, entrance-test scheduling, seat quotas/reservation categories, sibling and transfer-certificate workflows |
 | 4 | Timetable / attendance | Built |
-| 5 | LMS / content | Partial — homework, library, content; no course shells, no gradebook |
+| 5 | LMS / content | **Built (core)** — homework, library, content; course shells per class and subject (modules, ordered items linking topics, videos, homework, assessments, files and links; announcements); weighted gradebook from homework and assessment marks with audited teacher overrides, running grade and CSV; ERP course and gradebook pages, Student App Courses tab, Parent App course grades. Not built: file upload into courses, quizzes, forums, completion tracking. See `docs/product/lms-courses.md` |
 | 6 | Assessment / examination / results | **Built (core)** — schemes (BU NEP / CBSE presets), marks verify and moderate, exam sessions, seating, hall ticket / marks card / transcript PDFs, SGPA/CGPA, publish + lock, revaluation. Not built: question bank, paper generation, answer capture, supplementary-specific rules. See docs/assessment-obe.md |
 | 7 | OBE / accreditation | **Built (core)** — mission/vision/PEO/PO/PSO, versioned COs, CO-PO/PSO matrix, assessment-to-CO mapping, direct + survey (indirect) attainment, targets, gaps, actions, evidence, NAAC/NBA CSV and PDF. Not built: file upload for evidence (links and notes only), question-level CO mapping, survey collection UI. See docs/assessment-obe.md |
 | 8 | Fees / finance | Partial — fees and Razorpay; no scholarships, budgets, cost centres, GL export |

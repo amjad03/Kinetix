@@ -582,5 +582,14 @@
   "recentUpdates": "ಇತ್ತೀಚಿನ ಸೂಚನೆಗಳು",
   "examsForChild": "{name} ಅವರ ಪರೀಕ್ಷೆಗಳು",
   "examsSubtitle": "ವೇಳಾಪಟ್ಟಿ, ಪ್ರವೇಶ ಪತ್ರ ಮತ್ತು ಫಲಿತಾಂಶ",
-  "moreFamily": "ಕುಟುಂಬ"
+  "moreFamily": "ಕುಟುಂಬ",
+  "coursesNone": "ಇನ್ನೂ ಕೋರ್ಸ್‌ಗಳಿಲ್ಲ. ಶಿಕ್ಷಕರು ಪ್ರಕಟಿಸಿದಾಗ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.",
+  "courseModulesCount": "{count} ಮಾಡ್ಯೂಲ್‌ಗಳು",
+  "courseGradeTitle": "ಇಲ್ಲಿಯವರೆಗಿನ ಗ್ರೇಡ್",
+  "courseNoGrade": "ಇನ್ನೂ ಯಾವುದೂ ಗ್ರೇಡ್ ಆಗಿಲ್ಲ.",
+  "courseAnnouncements": "ಪ್ರಕಟಣೆಗಳು",
+  "courseNoModules": "ಇನ್ನೂ ಮಾಡ್ಯೂಲ್‌ಗಳಿಲ್ಲ.",
+  "gradesTitle": "ಕೋರ್ಸ್ ಗ್ರೇಡ್‌ಗಳು",
+  "gradesSubtitle": "ಪ್ರತಿ ವಿಷಯದ ಮಾಡ್ಯೂಲ್‌ಗಳು ಮತ್ತು ಇಲ್ಲಿಯವರೆಗಿನ ಗ್ರೇಡ್",
+  "childGrades": "ಗ್ರೇಡ್‌ಗಳು: {name}"
 }
