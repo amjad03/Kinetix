@@ -2661,6 +2661,15 @@ export const TENANT_TABLES = [
   'transport_gps_sources',
   'canteen_meal_attendance',
   'canteen_topups',
+  'mentor_assignments',
+  'mentoring_sessions',
+  'intervention_plans',
+  'course_files',
+  'audit_templates',
+  'audit_template_items',
+  'academic_audits',
+  'academic_audit_results',
+  'audit_non_conformities',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4012,4 +4021,169 @@ export const canteenTopups = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('canteen_topup_order_uq').on(t.providerOrderId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Student mentoring, course files and academic audit (migration 0098)
+// ---------------------------------------------------------------------------------------------
+
+/** A faculty mentor for a student. At most one open assignment per student. */
+export const mentorAssignments = pgTable(
+  'mentor_assignments',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    mentorUserId: uuid('mentor_user_id').notNull().references(() => users.id),
+    startedOn: date('started_on').notNull(),
+    endedOn: date('ended_on'),
+    assignedBy: uuid('assigned_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('mentor_assignments_open_uq').on(t.studentId).where(sql`ended_on is null`), index('mentor_assignments_mentor_idx').on(t.mentorUserId)],
+);
+
+/** One mentoring conversation. The private notes are for the mentor, the head of department and the counsellor only. */
+export const mentoringSessions = pgTable(
+  'mentoring_sessions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    mentorUserId: uuid('mentor_user_id').notNull().references(() => users.id),
+    heldOn: date('held_on').notNull(),
+    mode: text('mode').notNull().default('in_person'), // in_person | phone | online
+    summary: text('summary').notNull().default(''),
+    privateNotes: text('private_notes'),
+    followUpOn: date('follow_up_on'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('mentoring_sessions_student_idx').on(t.studentId, t.heldOn)],
+);
+
+export interface InterventionAction {
+  text: string;
+  done: boolean;
+}
+
+/** A plan to help a student at risk: goal, actions, review date, and the outcome when it is closed. */
+export const interventionPlans = pgTable(
+  'intervention_plans',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    mentorUserId: uuid('mentor_user_id').notNull().references(() => users.id),
+    goal: text('goal').notNull(),
+    actions: jsonb('actions').$type<InterventionAction[]>().notNull().default([]),
+    reviewOn: date('review_on').notNull(),
+    status: text('status').notNull().default('open'), // open | in_progress | closed
+    outcome: text('outcome'),
+    outcomeRating: text('outcome_rating'), // improved | no_change | worsened
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('intervention_plans_student_idx').on(t.studentId), index('intervention_plans_mentor_idx').on(t.mentorUserId, t.status)],
+);
+
+/** A generated course file (PDF) for a section and subject; each generation is a new version. */
+export const courseFiles = pgTable(
+  'course_files',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    version: integer('version').notNull(),
+    storageKey: text('storage_key').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    summary: jsonb('summary').$type<Record<string, number>>().notNull().default({}),
+    generatedBy: uuid('generated_by').notNull().references(() => users.id),
+    generatedAt: timestamp('generated_at', { withTimezone: true }).notNull(),
+    reviewedBy: uuid('reviewed_by').references(() => users.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    reviewRemark: text('review_remark'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('course_files_version_uq').on(t.sectionId, t.subjectId, t.version)],
+);
+
+export const auditTemplates = pgTable('audit_templates', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  active: boolean('active').notNull().default(true),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+export const auditTemplateItems = pgTable(
+  'audit_template_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    templateId: uuid('template_id').notNull().references(() => auditTemplates.id, { onDelete: 'cascade' }),
+    ord: smallint('ord').notNull(),
+    category: text('category').notNull().default(''),
+    text: text('text').notNull(),
+  },
+  (t) => [index('audit_template_items_tpl_idx').on(t.templateId, t.ord)],
+);
+
+/** An audit of one department for one term, run from a template. */
+export const academicAudits = pgTable(
+  'academic_audits',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    templateId: uuid('template_id').notNull().references(() => auditTemplates.id),
+    departmentId: uuid('department_id').notNull().references(() => departments.id),
+    academicTermId: uuid('academic_term_id').references(() => academicTerms.id),
+    title: text('title').notNull(),
+    status: text('status').notNull().default('in_progress'), // in_progress | completed
+    auditorUserId: uuid('auditor_user_id').notNull().references(() => users.id),
+    conductedOn: date('conducted_on').notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('academic_audits_dept_idx').on(t.departmentId)],
+);
+
+/** The audit's copy of each checklist item and the auditor's finding. */
+export const academicAuditResults = pgTable(
+  'academic_audit_results',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    auditId: uuid('audit_id').notNull().references(() => academicAudits.id, { onDelete: 'cascade' }),
+    ord: smallint('ord').notNull(),
+    category: text('category').notNull().default(''),
+    itemText: text('item_text').notNull(),
+    result: text('result').notNull().default('pending'), // pending | compliant | partial | non_compliant
+    remark: text('remark').notNull().default(''),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('academic_audit_results_audit_idx').on(t.auditId, t.ord)],
+);
+
+export const auditNonConformities = pgTable(
+  'audit_non_conformities',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    auditId: uuid('audit_id').notNull().references(() => academicAudits.id, { onDelete: 'cascade' }),
+    resultId: uuid('result_id').references(() => academicAuditResults.id, { onDelete: 'set null' }),
+    description: text('description').notNull(),
+    severity: text('severity').notNull().default('minor'), // minor | major
+    correctiveAction: text('corrective_action').notNull().default(''),
+    ownerUserId: uuid('owner_user_id').references(() => users.id),
+    dueOn: date('due_on'),
+    status: text('status').notNull().default('open'), // open | in_progress | closed
+    closureNote: text('closure_note'),
+    closedBy: uuid('closed_by').references(() => users.id),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('audit_ncs_audit_idx').on(t.auditId), index('audit_ncs_owner_idx').on(t.ownerUserId, t.status)],
 );

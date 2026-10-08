@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'mentoring' | 'courseFiles' | 'academicAudit';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -78,6 +78,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   research: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
   // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
   grievances: ['principal', 'tenant_admin', 'grievance_officer', 'icc_member'],
+  // mentoring.controller.ts MENTORING_ADMIN (teachers and counsellors log sessions in the Teacher App)
+  mentoring: ['principal', 'tenant_admin', 'hod'],
+  // course-files.controller.ts: leaders and the head of department build and review course files here; teachers use the Teacher App
+  courseFiles: ['principal', 'tenant_admin', 'hod'],
+  // academic-audit.controller.ts AUDITORS: leaders write templates, a head of department audits their own department
+  academicAudit: ['principal', 'tenant_admin', 'hod'],
   // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
   reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager'],
 };
@@ -191,6 +197,12 @@ export function sectionOf(pathname: string): Section | null {
     case 'research':
     case 'grievances':
       return first;
+    case 'mentoring':
+      return 'mentoring';
+    case 'course-files':
+      return 'courseFiles';
+    case 'academic-audit':
+      return 'academicAudit';
     case 'payroll':
       return pathname.startsWith('/payroll/payslips') ? 'payslips' : 'payroll';
     default:
