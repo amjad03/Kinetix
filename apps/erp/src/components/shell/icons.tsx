@@ -38,6 +38,7 @@ import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
 import PollOutlined from '@mui/icons-material/PollOutlined';
 import TaskAltOutlined from '@mui/icons-material/TaskAltOutlined';
 import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
+import Diversity3Outlined from '@mui/icons-material/Diversity3Outlined';
 import UploadFileOutlined from '@mui/icons-material/UploadFileOutlined';
 import VideoLibraryOutlined from '@mui/icons-material/VideoLibraryOutlined';
 import type { SvgIconComponent } from '@mui/icons-material';
@@ -77,6 +78,7 @@ export const NAV_ICONS: Record<NavIcon, SvgIconComponent> = {
   transport: DirectionsBusOutlined,
   hostel: HotelOutlined,
   canteen: RestaurantOutlined,
+  campusLife: Diversity3Outlined,
   placements: BusinessCenterOutlined,
   research: ScienceOutlined,
   grievances: ReportProblemOutlined,

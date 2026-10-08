@@ -2666,6 +2666,17 @@ export const TENANT_TABLES = [
   'transport_gps_sources',
   'canteen_meal_attendance',
   'canteen_topups',
+  'clubs',
+  'club_members',
+  'club_activities',
+  'club_activity_attendance',
+  'committees',
+  'committee_members',
+  'committee_meetings',
+  'committee_action_items',
+  'campus_events',
+  'event_registrations',
+  'event_feedback',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4106,4 +4117,179 @@ export const tasks = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index('tasks_assignee_idx').on(t.tenantId, t.assigneeId, t.status), index('tasks_owner_idx').on(t.tenantId, t.ownerId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Clubs, committees and campus events (migration 0097)
+// ---------------------------------------------------------------------------------------------
+
+export const clubs = pgTable(
+  'clubs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    category: text('category').notNull().default('general'), // academic | cultural | sports | service | technical | general
+    description: text('description').notNull().default(''),
+    facultyCoordinatorId: uuid('faculty_coordinator_id').references(() => users.id),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('clubs_name_uq').on(t.tenantId, t.name)],
+);
+
+export const clubMembers = pgTable(
+  'club_members',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    clubId: uuid('club_id').notNull().references(() => clubs.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    role: text('role').notNull().default('member'), // member | lead
+    status: text('status').notNull().default('requested'), // requested | active | rejected | left
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('club_members_uq').on(t.clubId, t.studentId), index('club_members_student_idx').on(t.studentId)],
+);
+
+export const clubActivities = pgTable(
+  'club_activities',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    clubId: uuid('club_id').notNull().references(() => clubs.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    activityOn: date('activity_on').notNull(),
+    points: integer('points').notNull().default(0),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('club_activities_club_idx').on(t.clubId)],
+);
+
+/** Who attended an activity; `points` is the activity's points at the time, kept so later edits do not change history. */
+export const clubActivityAttendance = pgTable(
+  'club_activity_attendance',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    activityId: uuid('activity_id').notNull().references(() => clubActivities.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    points: integer('points').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('club_activity_attendance_uq').on(t.activityId, t.studentId)],
+);
+
+export const committees = pgTable(
+  'committees',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    statutory: boolean('statutory').notNull().default(false), // IQAC, anti-ragging, ICC and the like
+    description: text('description').notNull().default(''),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('committees_name_uq').on(t.tenantId, t.name)],
+);
+
+export const committeeMembers = pgTable(
+  'committee_members',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    committeeId: uuid('committee_id').notNull().references(() => committees.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id),
+    role: text('role').notNull().default('member'), // chair | secretary | member | external
+    tenureStart: date('tenure_start').notNull(),
+    tenureEnd: date('tenure_end'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('committee_members_committee_idx').on(t.committeeId)],
+);
+
+export const committeeMeetings = pgTable(
+  'committee_meetings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    committeeId: uuid('committee_id').notNull().references(() => committees.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    meetingOn: date('meeting_on').notNull(),
+    agenda: text('agenda').notNull().default(''),
+    minutes: text('minutes').notNull().default(''),
+    status: text('status').notNull().default('scheduled'), // scheduled | held | cancelled
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('committee_meetings_committee_idx').on(t.committeeId)],
+);
+
+export const committeeActionItems = pgTable(
+  'committee_action_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    meetingId: uuid('meeting_id').notNull().references(() => committeeMeetings.id, { onDelete: 'cascade' }),
+    committeeId: uuid('committee_id').notNull().references(() => committees.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    ownerUserId: uuid('owner_user_id').notNull().references(() => users.id),
+    dueOn: date('due_on').notNull(),
+    status: text('status').notNull().default('open'), // open | in_progress | done | dropped
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('committee_action_items_meeting_idx').on(t.meetingId), index('committee_action_items_owner_idx').on(t.ownerUserId)],
+);
+
+export const campusEvents = pgTable('campus_events', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  description: text('description').notNull().default(''),
+  eventType: text('event_type').notNull().default('other'), // seminar | workshop | parent_meeting | fest | sports | competition | conference | alumni | other
+  venue: text('venue').notNull().default(''),
+  capacity: integer('capacity').notNull(),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  audience: text('audience').notNull().default('all'), // all | students | parents | staff
+  feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0), // recorded only; no payment is taken here
+  status: text('status').notNull().default('draft'), // draft | published | cancelled
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+export const eventRegistrations = pgTable(
+  'event_registrations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    eventId: uuid('event_id').notNull().references(() => campusEvents.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    registeredBy: uuid('registered_by').notNull().references(() => users.id),
+    status: text('status').notNull().default('registered'), // registered | waitlisted | cancelled
+    qrToken: text('qr_token').notNull(),
+    checkedInAt: timestamp('checked_in_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('event_registrations_uq').on(t.eventId, t.studentId), uniqueIndex('event_registrations_token_uq').on(t.qrToken)],
+);
+
+export const eventFeedback = pgTable(
+  'event_feedback',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    eventId: uuid('event_id').notNull().references(() => campusEvents.id, { onDelete: 'cascade' }),
+    registrationId: uuid('registration_id').notNull().references(() => eventRegistrations.id, { onDelete: 'cascade' }),
+    rating: integer('rating').notNull(),
+    comment: text('comment').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('event_feedback_uq').on(t.registrationId)],
 );

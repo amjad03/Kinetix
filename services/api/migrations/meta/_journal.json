@@ -631,6 +631,13 @@
       "when": 1791410887229,
       "tag": "0096_surveys_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1791410888229,
+      "tag": "0097_campus_life",
+      "breakpoints": true
     }
   ]
 }
