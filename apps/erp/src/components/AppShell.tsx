@@ -70,6 +70,12 @@ import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
 import FolderCopy from '@mui/icons-material/FolderCopy';
 import Payments from '@mui/icons-material/Payments';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
+import BusinessCenter from '@mui/icons-material/BusinessCenter';
+import BusinessCenterOutlined from '@mui/icons-material/BusinessCenterOutlined';
+import Science from '@mui/icons-material/Science';
+import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
+import ReportProblem from '@mui/icons-material/ReportProblem';
+import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
 import Today from '@mui/icons-material/Today';
 import TodayOutlined from '@mui/icons-material/TodayOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -118,6 +124,9 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: RequestQuoteOutlined, active: RequestQuote },
   { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: ReceiptLongOutlined, active: ReceiptLong },
   { href: '/documents', label: 'nav.documents', section: 'documents', icon: FolderCopyOutlined, active: FolderCopy },
+  { href: '/placements', label: 'nav.placements', section: 'placements', icon: BusinessCenterOutlined, active: BusinessCenter },
+  { href: '/research', label: 'nav.research', section: 'research', icon: ScienceOutlined, active: Science },
+  { href: '/grievances', label: 'nav.grievances', section: 'grievances', icon: ReportProblemOutlined, active: ReportProblem },
   { href: '/library', label: 'nav.library', section: 'library', icon: LocalLibraryOutlined, active: LocalLibrary },
   { href: '/transport', label: 'nav.transport', section: 'transport', icon: DirectionsBusOutlined, active: DirectionsBus },
   { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: HotelOutlined, active: Hotel },
@@ -147,6 +156,11 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   store_keeper: 'role.store_keeper',
   admissions_officer: 'role.admissions_officer',
   hr_manager: 'role.hr_manager',
+  placement_officer: 'role.placement_officer',
+  research_coordinator: 'role.research_coordinator',
+  grievance_officer: 'role.grievance_officer',
+  counsellor: 'role.counsellor',
+  icc_member: 'role.icc_member',
 };
 
 export interface ShellUser {

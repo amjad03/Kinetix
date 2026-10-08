@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'placements' | 'research' | 'grievances';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -64,6 +64,12 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // content.controller / concept-videos.controller: the principal and admin manage the institution's videos and approve
   // teachers'; a head of department adds videos for their own classes (teachers do that in the Teacher App).
   topicVideos: ['principal', 'tenant_admin', 'hod'],
+  // placements.access.ts PLACEMENT_VIEW_ROLES (the placement cell edits; a head of department reads)
+  placements: ['principal', 'tenant_admin', 'placement_officer', 'hod'],
+  // research.controller.ts RESEARCH_VIEW_ROLES
+  research: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
+  // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
+  grievances: ['principal', 'tenant_admin', 'grievance_officer', 'icc_member'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -160,6 +166,10 @@ export function sectionOf(pathname: string): Section | null {
       return 'hr';
     case 'documents':
       return 'documents';
+    case 'placements':
+    case 'research':
+    case 'grievances':
+      return first;
     case 'payroll':
       return pathname.startsWith('/payroll/payslips') ? 'payslips' : 'payroll';
     default:
@@ -184,6 +194,7 @@ export function homeFor(roles: readonly RoleName[]): string {
   if (canSee(roles, 'library')) return '/library';
   for (const s of ['transport', 'hostel', 'canteen', 'inventory'] as const) if (canSee(roles, s)) return `/${s}`;
   if (canSee(roles, 'hr')) return '/hr';
+  for (const s of ['placements', 'research', 'grievances'] as const) if (canSee(roles, s)) return `/${s}`;
   return '/login';
 }
 
