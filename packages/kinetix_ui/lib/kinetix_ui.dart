@@ -3,6 +3,7 @@ library;
 
 export 'src/badges.dart';
 export 'src/count_chips.dart';
+export 'src/home_widgets.dart';
 export 'src/lesson_minutes.dart';
 export 'src/photo.dart';
 export 'src/picker.dart';
