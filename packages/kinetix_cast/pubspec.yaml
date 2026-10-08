@@ -1,0 +1,22 @@
+name: kinetix_cast
+description: KINETIX screen sharing to the board - the sending side for the Teacher and Student apps (WebRTC, signalled over the realtime socket) and the shared message types.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Screen capture (getDisplayMedia) and the peer connection to the board.
+  flutter_foreground_task: ^11.0.3
+  flutter_webrtc: ^1.1.0
+  http: ^1.6.0
+  socket_io_client: ^3.1.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

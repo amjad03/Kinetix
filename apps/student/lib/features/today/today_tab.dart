@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:kinetix_cast/kinetix_cast.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/format.dart';
+import '../../demo/demo.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
@@ -69,6 +73,7 @@ class TodayTab extends StatelessWidget {
             HomeworkCard(summary: summary, study: study),
             if (study.comingUp.any) ComingUpCard(study: study, onOpenTopic: onOpenTopic),
             if (onAsk != null) _AskCard(onAsk: onAsk!),
+            if (!Demo.enabled && study.api.token != null) _CastCard(onOpen: () => unawaited(openCastPage(context, baseUrl: study.api.baseUrl, token: study.api.token!))),
             ResultsCard(study: study),
             if (messages?.available ?? false) MessagesCard(controller: messages!),
             LibraryCard(study: study),
@@ -416,6 +421,23 @@ class HomeworkRow extends StatelessWidget {
 }
 
 /// A gentle nudge to the Learn tab.
+/// "Share screen to the board": a student's phone on the classroom board, when the teacher allows it.
+class _CastCard extends StatelessWidget {
+  const _CastCard({required this.onOpen});
+
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = CastStrings(Localizations.localeOf(context).languageCode).title;
+    return Card(
+      key: const Key('castCard'),
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(leading: const Icon(Icons.screen_share_outlined), title: Text(title), trailing: const Icon(Icons.chevron_right), onTap: onOpen),
+    );
+  }
+}
+
 class _AskCard extends StatelessWidget {
   const _AskCard({required this.onAsk});
 
