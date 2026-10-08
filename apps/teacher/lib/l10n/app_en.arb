@@ -2493,5 +2493,359 @@
         "type": "String"
       }
     }
-  }
+  },
+  "workToolsSection": "Staff tools",
+  "tasksTitle": "Tasks",
+  "tasksBody": "What is assigned to you and what you asked of others",
+  "requestsTitle": "Requests and approvals",
+  "requestsBody": "Start a request, track it and decide what waits for you",
+  "subsTitle": "Substitutions",
+  "subsBody": "Periods you cover for colleagues",
+  "dutiesTitle": "Invigilation duties",
+  "dutiesBody": "Your exam hall duties",
+  "evalTitle": "Evaluation desk",
+  "evalBody": "Value the answer scripts allocated to you",
+  "mentoringTitle": "Mentoring",
+  "mentoringBody": "Your mentees, sessions and plans",
+  "courseRosterTitle": "Course rosters",
+  "courseRosterBody": "Who registered for the courses you teach",
+  "surveysTitle": "Surveys",
+  "surveysBody": "Surveys waiting for your answers",
+  "clubsTitle": "Clubs I coordinate",
+  "clubsBody": "Members and points of your clubs",
+  "tasksMineTab": "Assigned to me",
+  "tasksByMeTab": "Assigned by me",
+  "tasksEmpty": "No open tasks.",
+  "taskFrom": "From {name}",
+  "@taskFrom": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskTo": "To {name}",
+  "@taskTo": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskDue": "Due {when}",
+  "@taskDue": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "taskOverdue": "Overdue",
+  "taskStatusOpen": "Open",
+  "taskStatusInProgress": "In progress",
+  "taskStatusDone": "Done",
+  "taskStatusCancelled": "Cancelled",
+  "taskStart": "Start",
+  "taskMarkDone": "Mark done",
+  "taskCancelAction": "Cancel task",
+  "taskPriorityHigh": "High priority",
+  "taskPriorityUrgent": "Urgent",
+  "requestsInboxTab": "Waiting for me",
+  "requestsMineTab": "My requests",
+  "requestsStart": "New request",
+  "requestsInboxEmpty": "Nothing is waiting for your decision.",
+  "requestsMineEmpty": "You have not made any requests.",
+  "requestStep": "Step {n} of {total} · {name}",
+  "@requestStep": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "requestBy": "By {name}",
+  "@requestBy": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reqStatusPending": "Pending",
+  "reqStatusApproved": "Approved",
+  "reqStatusRejected": "Rejected",
+  "reqStatusReturned": "Returned",
+  "reqStatusCancelled": "Withdrawn",
+  "requestApprove": "Approve",
+  "requestReject": "Reject",
+  "requestReturn": "Return for changes",
+  "requestComment": "Comment (optional)",
+  "requestWithdraw": "Withdraw request",
+  "requestHistory": "History",
+  "requestAmountLabel": "Amount (₹)",
+  "requestTitleLabel": "Title",
+  "requestKindLabel": "Kind of request",
+  "requestSubmit": "Send request",
+  "requestNoRoutes": "No request types have been set up yet.",
+  "requestFieldNeeded": "Fill in {field}",
+  "@requestFieldNeeded": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "requestActionSubmitted": "Submitted",
+  "requestActionResubmitted": "Sent again",
+  "subsEmpty": "You are not covering any periods in the next two weeks.",
+  "subsFor": "Covering for {name}",
+  "@subsFor": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dutiesEmpty": "No invigilation duties assigned to you.",
+  "dutyRoleChief": "Chief invigilator",
+  "dutyRoleInvigilator": "Invigilator",
+  "evalEmpty": "No scripts are allocated to you.",
+  "evalScript": "Script {no}",
+  "@evalScript": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "evalRound": "Valuation {n}",
+  "@evalRound": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "evalStatusTodo": "To do",
+  "evalStatusSubmitted": "Submitted",
+  "evalTotal": "Total {total}",
+  "@evalTotal": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalQuestionLabel": "Question {no} (out of {max})",
+  "@evalQuestionLabel": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "evalMarksLabel": "Marks",
+  "evalCommentLabel": "Comment",
+  "evalSave": "Save marks",
+  "evalSavedMsg": "Marks saved",
+  "evalSubmit": "Submit valuation",
+  "evalSubmitConfirm": "Submit this valuation? You cannot change the marks afterwards.",
+  "evalSubmittedMsg": "Valuation submitted. Total {total}.",
+  "@evalSubmittedMsg": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalThirdNeeded": "The two valuations differ a lot, so a third valuation will be arranged.",
+  "evalOverMax": "At most {max}",
+  "@evalOverMax": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "evalMissing": "Enter marks for every question (0 where nothing was written).",
+  "evalLockedMsg": "This valuation is submitted and cannot be changed.",
+  "evalPageLabel": "Page {n} of {total}",
+  "@evalPageLabel": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalNoPages": "This script has no pages.",
+  "menteesEmpty": "You have no mentees.",
+  "riskHigh": "High risk",
+  "riskMedium": "Medium risk",
+  "riskLow": "Low risk",
+  "riskNone": "On track",
+  "menteeAttendance": "Attendance {pct}%",
+  "@menteeAttendance": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeFailing": "{n} failed tests",
+  "@menteeFailing": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeFees": "{n} overdue fees",
+  "@menteeFees": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeCases": "{n} open cases",
+  "@menteeCases": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "mentorLogSession": "Log session",
+  "mentorSessions": "Sessions",
+  "mentorPlans": "Intervention plans",
+  "sessionModeInPerson": "In person",
+  "sessionModePhone": "Phone",
+  "sessionModeOnline": "Online",
+  "sessionModeLabel": "How you met",
+  "sessionSummary": "Summary",
+  "sessionNotes": "Private notes (only you, the head of department and the counsellor see these)",
+  "sessionFollowUp": "Follow up on",
+  "sessionSave": "Save session",
+  "sessionsNone": "No sessions yet.",
+  "plansNone": "No plans yet.",
+  "planNew": "New plan",
+  "planGoal": "Goal",
+  "planActionsLabel": "Actions (one per line)",
+  "planReviewLabel": "Review on",
+  "planCreate": "Create plan",
+  "planClose": "Close plan",
+  "planOutcome": "Outcome",
+  "planRatingImproved": "Improved",
+  "planRatingNoChange": "No change",
+  "planRatingWorsened": "Worsened",
+  "planReviewOn": "Review on {date}",
+  "@planReviewOn": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planClosed": "Closed",
+  "rosterTermLabel": "Term",
+  "rosterNoTerms": "No terms found.",
+  "rosterNoOfferings": "You are not the faculty of any course in this term.",
+  "rosterCounts": "{reg} registered, {wait} on the waitlist",
+  "@rosterCounts": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "reg": {
+        "type": "String"
+      },
+      "wait": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterWaitlist": "Waitlist {pos}",
+  "@rosterWaitlist": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "pos": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterEmpty": "Nobody has registered yet.",
+  "surveysEmpty": "No surveys are waiting for you.",
+  "surveyAnonymous": "Anonymous",
+  "surveyClosesOn": "Closes {when}",
+  "@surveyClosesOn": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "surveyAnswered": "Answered",
+  "surveySubmit": "Send answers",
+  "surveyThanks": "Thank you, your answers were sent.",
+  "surveyRequired": "Answer every required question.",
+  "surveyAnswerHint": "Your answer",
+  "clubsEmpty": "You do not coordinate any clubs.",
+  "clubMembersCount": "{n} members",
+  "@clubMembersCount": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubPendingCount": "{n} requests waiting",
+  "@clubPendingCount": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubPoints": "{n} points",
+  "@clubPoints": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubNoMembers": "No members yet."
 }

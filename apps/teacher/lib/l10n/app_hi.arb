@@ -537,5 +537,359 @@
   "pendingApprovals": "लंबित स्वीकृतियाँ",
   "allCaughtUp": "आपके लिए कुछ भी लंबित नहीं है।",
   "pickAClass": "कक्षा चुनें",
-  "leaveRequestLine": "{type}: {days} दिन"
+  "leaveRequestLine": "{type}: {days} दिन",
+  "workToolsSection": "स्टाफ के उपकरण",
+  "tasksTitle": "कार्य",
+  "tasksBody": "आपको सौंपे गए और आपके द्वारा सौंपे गए कार्य",
+  "requestsTitle": "अनुरोध और स्वीकृतियाँ",
+  "requestsBody": "अनुरोध शुरू करें, उसे देखें और अपने पास आए अनुरोधों पर निर्णय लें",
+  "subsTitle": "विकल्प कक्षाएँ",
+  "subsBody": "सहकर्मियों की जगह आपकी कक्षाएँ",
+  "dutiesTitle": "निरीक्षण ड्यूटी",
+  "dutiesBody": "परीक्षा कक्ष में आपकी ड्यूटी",
+  "evalTitle": "मूल्यांकन डेस्क",
+  "evalBody": "आपको आवंटित उत्तर पुस्तिकाओं का मूल्यांकन करें",
+  "mentoringTitle": "मार्गदर्शन",
+  "mentoringBody": "आपके मेंटी, सत्र और योजनाएँ",
+  "courseRosterTitle": "पाठ्यक्रम सूची",
+  "courseRosterBody": "आपके पढ़ाए पाठ्यक्रमों में किसने पंजीकरण किया",
+  "surveysTitle": "सर्वेक्षण",
+  "surveysBody": "आपके उत्तर की प्रतीक्षा में सर्वेक्षण",
+  "clubsTitle": "मेरे संयोजित क्लब",
+  "clubsBody": "आपके क्लबों के सदस्य और अंक",
+  "tasksMineTab": "मुझे सौंपे गए",
+  "tasksByMeTab": "मेरे द्वारा सौंपे गए",
+  "tasksEmpty": "कोई खुला कार्य नहीं है।",
+  "taskFrom": "{name} की ओर से",
+  "@taskFrom": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskTo": "{name} को",
+  "@taskTo": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskDue": "अंतिम तिथि {when}",
+  "@taskDue": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "taskOverdue": "समय बीत चुका",
+  "taskStatusOpen": "खुला",
+  "taskStatusInProgress": "जारी है",
+  "taskStatusDone": "पूरा हुआ",
+  "taskStatusCancelled": "रद्द",
+  "taskStart": "शुरू करें",
+  "taskMarkDone": "पूरा करें",
+  "taskCancelAction": "कार्य रद्द करें",
+  "taskPriorityHigh": "उच्च प्राथमिकता",
+  "taskPriorityUrgent": "अत्यावश्यक",
+  "requestsInboxTab": "मेरे निर्णय हेतु",
+  "requestsMineTab": "मेरे अनुरोध",
+  "requestsStart": "नया अनुरोध",
+  "requestsInboxEmpty": "आपके निर्णय के लिए कुछ भी लंबित नहीं है।",
+  "requestsMineEmpty": "आपने कोई अनुरोध नहीं किया है।",
+  "requestStep": "चरण {n} / {total} · {name}",
+  "@requestStep": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "requestBy": "{name} द्वारा",
+  "@requestBy": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reqStatusPending": "लंबित",
+  "reqStatusApproved": "स्वीकृत",
+  "reqStatusRejected": "अस्वीकृत",
+  "reqStatusReturned": "वापस भेजा गया",
+  "reqStatusCancelled": "वापस लिया गया",
+  "requestApprove": "स्वीकृत करें",
+  "requestReject": "अस्वीकार करें",
+  "requestReturn": "बदलाव हेतु वापस भेजें",
+  "requestComment": "टिप्पणी (वैकल्पिक)",
+  "requestWithdraw": "अनुरोध वापस लें",
+  "requestHistory": "इतिहास",
+  "requestAmountLabel": "राशि (₹)",
+  "requestTitleLabel": "शीर्षक",
+  "requestKindLabel": "अनुरोध का प्रकार",
+  "requestSubmit": "अनुरोध भेजें",
+  "requestNoRoutes": "अभी कोई अनुरोध प्रकार तय नहीं किया गया है।",
+  "requestFieldNeeded": "{field} भरें",
+  "@requestFieldNeeded": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "requestActionSubmitted": "भेजा गया",
+  "requestActionResubmitted": "फिर भेजा गया",
+  "subsEmpty": "अगले दो सप्ताह में आपकी कोई विकल्प कक्षा नहीं है।",
+  "subsFor": "{name} की जगह",
+  "@subsFor": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dutiesEmpty": "आपको कोई निरीक्षण ड्यूटी नहीं मिली है।",
+  "dutyRoleChief": "मुख्य निरीक्षक",
+  "dutyRoleInvigilator": "निरीक्षक",
+  "evalEmpty": "आपको कोई उत्तर पुस्तिका आवंटित नहीं है।",
+  "evalScript": "पुस्तिका {no}",
+  "@evalScript": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "evalRound": "मूल्यांकन {n}",
+  "@evalRound": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "evalStatusTodo": "करना है",
+  "evalStatusSubmitted": "जमा किया गया",
+  "evalTotal": "कुल {total}",
+  "@evalTotal": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalQuestionLabel": "प्रश्न {no} ({max} में से)",
+  "@evalQuestionLabel": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "evalMarksLabel": "अंक",
+  "evalCommentLabel": "टिप्पणी",
+  "evalSave": "अंक सहेजें",
+  "evalSavedMsg": "अंक सहेजे गए",
+  "evalSubmit": "मूल्यांकन जमा करें",
+  "evalSubmitConfirm": "यह मूल्यांकन जमा करें? बाद में अंक बदले नहीं जा सकेंगे।",
+  "evalSubmittedMsg": "मूल्यांकन जमा हुआ। कुल {total}।",
+  "@evalSubmittedMsg": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalThirdNeeded": "दोनों मूल्यांकनों में बहुत अंतर है, इसलिए तीसरा मूल्यांकन कराया जाएगा।",
+  "evalOverMax": "अधिकतम {max}",
+  "@evalOverMax": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "evalMissing": "हर प्रश्न के अंक भरें (कुछ न लिखा हो तो 0)।",
+  "evalLockedMsg": "यह मूल्यांकन जमा हो चुका है और बदला नहीं जा सकता।",
+  "evalPageLabel": "पृष्ठ {n} / {total}",
+  "@evalPageLabel": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "evalNoPages": "इस पुस्तिका में कोई पृष्ठ नहीं है।",
+  "menteesEmpty": "आपका कोई मेंटी नहीं है।",
+  "riskHigh": "उच्च जोखिम",
+  "riskMedium": "मध्यम जोखिम",
+  "riskLow": "कम जोखिम",
+  "riskNone": "ठीक चल रहा है",
+  "menteeAttendance": "उपस्थिति {pct}%",
+  "@menteeAttendance": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeFailing": "{n} परीक्षाओं में अनुत्तीर्ण",
+  "@menteeFailing": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeFees": "{n} बकाया शुल्क",
+  "@menteeFees": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "menteeCases": "{n} खुले मामले",
+  "@menteeCases": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "mentorLogSession": "सत्र दर्ज करें",
+  "mentorSessions": "सत्र",
+  "mentorPlans": "हस्तक्षेप योजनाएँ",
+  "sessionModeInPerson": "आमने-सामने",
+  "sessionModePhone": "फ़ोन",
+  "sessionModeOnline": "ऑनलाइन",
+  "sessionModeLabel": "मुलाकात का तरीका",
+  "sessionSummary": "सारांश",
+  "sessionNotes": "निजी टिप्पणियाँ (केवल आप, विभागाध्यक्ष और परामर्शदाता देख सकते हैं)",
+  "sessionFollowUp": "अगली बैठक",
+  "sessionSave": "सत्र सहेजें",
+  "sessionsNone": "अभी कोई सत्र नहीं।",
+  "plansNone": "अभी कोई योजना नहीं।",
+  "planNew": "नई योजना",
+  "planGoal": "लक्ष्य",
+  "planActionsLabel": "कार्य (हर पंक्ति में एक)",
+  "planReviewLabel": "समीक्षा की तिथि",
+  "planCreate": "योजना बनाएँ",
+  "planClose": "योजना बंद करें",
+  "planOutcome": "परिणाम",
+  "planRatingImproved": "सुधार हुआ",
+  "planRatingNoChange": "कोई बदलाव नहीं",
+  "planRatingWorsened": "बिगड़ा",
+  "planReviewOn": "समीक्षा {date} को",
+  "@planReviewOn": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planClosed": "बंद",
+  "rosterTermLabel": "सत्र",
+  "rosterNoTerms": "कोई सत्र नहीं मिला।",
+  "rosterNoOfferings": "इस सत्र में आप किसी पाठ्यक्रम के शिक्षक नहीं हैं।",
+  "rosterCounts": "{reg} पंजीकृत, {wait} प्रतीक्षा सूची में",
+  "@rosterCounts": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "reg": {
+        "type": "String"
+      },
+      "wait": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterWaitlist": "प्रतीक्षा सूची {pos}",
+  "@rosterWaitlist": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "pos": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterEmpty": "अभी तक किसी ने पंजीकरण नहीं किया।",
+  "surveysEmpty": "आपके लिए कोई सर्वेक्षण लंबित नहीं है।",
+  "surveyAnonymous": "गुमनाम",
+  "surveyClosesOn": "{when} को बंद होगा",
+  "@surveyClosesOn": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "surveyAnswered": "उत्तर दिया",
+  "surveySubmit": "उत्तर भेजें",
+  "surveyThanks": "धन्यवाद, आपके उत्तर भेज दिए गए।",
+  "surveyRequired": "सभी आवश्यक प्रश्नों का उत्तर दें।",
+  "surveyAnswerHint": "आपका उत्तर",
+  "clubsEmpty": "आप किसी क्लब के संयोजक नहीं हैं।",
+  "clubMembersCount": "{n} सदस्य",
+  "@clubMembersCount": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubPendingCount": "{n} अनुरोध लंबित",
+  "@clubPendingCount": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubPoints": "{n} अंक",
+  "@clubPoints": {
+    "description": "Staff work screens.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubNoMembers": "अभी कोई सदस्य नहीं।"
 }

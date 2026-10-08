@@ -8,6 +8,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'hr_models.dart';
 import 'models.dart';
+import 'work_models.dart';
 
 /// Where an [ApiException] came from; the UI turns it into words with AppLocalizations.errorText.
 enum ApiErrorKind {
@@ -89,6 +90,63 @@ abstract class TeacherApi {
   Future<AttendanceDayInfo> checkOut();
   Future<List<PayslipInfo>> myPayslips();
   Future<Uint8List> payslipPdf(String id);
+
+  // --- Work: tasks, requests, duties, evaluation, mentoring, rosters, surveys, clubs -------------
+
+  /// Tasks given to me (`active` hides finished ones) and tasks I asked others to do.
+  Future<List<TaskInfo>> myTasks({bool all = false});
+  Future<List<TaskInfo>> tasksAssignedByMe({bool all = false});
+
+  /// Moves a task along (POST /v1/tasks/:id/status); [version] guards against a stale screen.
+  Future<void> setTaskStatus(String id, TaskStatus status, {int? version});
+
+  /// Workflow: the routes I can start, requests waiting for me, my own requests and one request with its timeline.
+  Future<List<WorkflowDefinition>> workflowDefinitions();
+  Future<List<WorkflowRequestInfo>> workflowInbox();
+  Future<List<WorkflowRequestInfo>> myWorkflowRequests();
+  Future<WorkflowRequestInfo> workflowRequest(String id);
+  Future<void> submitWorkflowRequest({required String requestType, required String title, required Map<String, dynamic> payload, double? amount});
+
+  /// [decision] is approve, reject or return.
+  Future<void> decideWorkflowRequest(String id, {required String decision, String comment = '', int? version});
+  Future<void> cancelWorkflowRequest(String id);
+
+  /// Periods I cover for colleagues (today and the next two weeks).
+  Future<List<SubstitutionInfo>> mySubstitutions();
+
+  /// My exam invigilation duties.
+  Future<List<InvigilationDuty>> myInvigilation();
+
+  /// On-screen evaluation: scripts allocated to me, one script, a scanned page, saving per-question marks and submitting.
+  Future<List<EvalAllocation>> evaluationAllocations();
+  Future<EvalScript> evaluationScript(String id);
+  Future<Uint8List> evaluationPage(String id, int index);
+  Future<List<EvalEntry>> saveEvaluationMarks(String id, List<EvalEntry> entries);
+
+  /// Locks the valuation; `needsThird` is true when a second valuation differs too much from the first.
+  Future<({double total, bool needsThird})> submitEvaluation(String id);
+
+  /// Mentoring: my mentees with risk flags, a mentee's sessions and plans, logging a session, intervention plans.
+  Future<List<MenteeInfo>> myMentees();
+  Future<List<MentoringSession>> mentoringSessions(String studentId);
+  Future<void> logMentoringSession({required String studentId, required String heldOn, required String mode, required String summary, String? privateNotes, String? followUpOn});
+  Future<List<InterventionPlan>> interventionPlans({String? studentId});
+  Future<void> createInterventionPlan({required String studentId, required String goal, required List<String> actions, required String reviewOn});
+  Future<void> updateInterventionPlan(String id, List<PlanAction> actions);
+  Future<void> closeInterventionPlan(String id, {required String outcome, required String rating});
+
+  /// Course registration rosters for the offerings I teach (the term and offering lists need a head-of-department role).
+  Future<List<TermInfo>> courseTerms();
+  Future<List<OfferingInfo>> courseOfferings(String termId);
+  Future<List<RosterEntry>> offeringRoster(String offeringId);
+
+  /// Open surveys addressed to me, and sending my answers.
+  Future<List<SurveyInfo>> mySurveys();
+  Future<void> submitSurvey(String id, List<SurveyAnswer> answers);
+
+  /// Clubs (the staff list; the screen keeps those I coordinate) and a club's members.
+  Future<List<ClubInfo>> clubs();
+  Future<List<ClubMember>> clubMembers(String clubId);
 
   /// Saves the teacher's language on the server (notifications and pushes use it).
   Future<Me> updatePreferredLanguage(String language);
@@ -375,6 +433,127 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<Uint8List> payslipPdf(String id) async => (await _request('GET', '/v1/payroll/payslips/$id/pdf', timeout: const Duration(seconds: 60))).bodyBytes;
+
+  // --- Work ---------------------------------------------------------------------------------
+
+  List<T> _rows<T>(Object? j, T Function(Map<String, dynamic>) f) => [for (final e in j as List) f(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<TaskInfo>> myTasks({bool all = false}) async => _rows(await _send('GET', '/v1/tasks/mine?status=${all ? 'all' : 'active'}'), TaskInfo.fromJson);
+
+  @override
+  Future<List<TaskInfo>> tasksAssignedByMe({bool all = false}) async =>
+      _rows(await _send('GET', '/v1/tasks/assigned-by-me?status=${all ? 'all' : 'active'}'), TaskInfo.fromJson);
+
+  @override
+  Future<void> setTaskStatus(String id, TaskStatus status, {int? version}) async =>
+      _send('POST', '/v1/tasks/$id/status', body: {'status': taskStatusCode(status), 'expectedVersion': ?version});
+
+  @override
+  Future<List<WorkflowDefinition>> workflowDefinitions() async => _rows(await _send('GET', '/v1/workflows/definitions'), WorkflowDefinition.fromJson);
+
+  @override
+  Future<List<WorkflowRequestInfo>> workflowInbox() async => _rows(await _send('GET', '/v1/workflows/requests/inbox'), WorkflowRequestInfo.fromJson);
+
+  @override
+  Future<List<WorkflowRequestInfo>> myWorkflowRequests() async => _rows(await _send('GET', '/v1/workflows/requests/mine'), WorkflowRequestInfo.fromJson);
+
+  @override
+  Future<WorkflowRequestInfo> workflowRequest(String id) async => WorkflowRequestInfo.fromJson(await _send('GET', '/v1/workflows/requests/$id') as Map<String, dynamic>);
+
+  @override
+  Future<void> submitWorkflowRequest({required String requestType, required String title, required Map<String, dynamic> payload, double? amount}) async =>
+      _send('POST', '/v1/workflows/requests', body: {'requestType': requestType, 'title': title, 'payload': payload, 'amount': ?amount});
+
+  @override
+  Future<void> decideWorkflowRequest(String id, {required String decision, String comment = '', int? version}) async =>
+      _send('POST', '/v1/workflows/requests/$id/decide', body: {'decision': decision, 'comment': comment, 'expectedVersion': ?version});
+
+  @override
+  Future<void> cancelWorkflowRequest(String id) async => _send('POST', '/v1/workflows/requests/$id/cancel', body: {'comment': ''});
+
+  @override
+  Future<List<SubstitutionInfo>> mySubstitutions() async => _rows(await _send('GET', '/v1/timetable/me/substitutions'), SubstitutionInfo.fromJson);
+
+  @override
+  Future<List<InvigilationDuty>> myInvigilation() async => _rows(await _send('GET', '/v1/invigilation/mine'), InvigilationDuty.fromJson);
+
+  @override
+  Future<List<EvalAllocation>> evaluationAllocations() async => _rows(await _send('GET', '/v1/evaluation/allocations/mine'), EvalAllocation.fromJson);
+
+  @override
+  Future<EvalScript> evaluationScript(String id) async => EvalScript.fromJson(await _send('GET', '/v1/evaluation/allocations/$id') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> evaluationPage(String id, int index) async =>
+      (await _request('GET', '/v1/evaluation/allocations/$id/pages/$index', timeout: const Duration(seconds: 60))).bodyBytes;
+
+  @override
+  Future<List<EvalEntry>> saveEvaluationMarks(String id, List<EvalEntry> entries) async {
+    final j = await _send('PUT', '/v1/evaluation/allocations/$id/marks', body: {
+      'entries': [for (final e in entries) {'questionId': e.questionId, 'marks': e.marks, if (e.comment != null && e.comment!.isNotEmpty) 'comment': e.comment}],
+    }) as Map<String, dynamic>;
+    return EvalScript.fromJson({'id': id, 'entries': j['entries']}).entries;
+  }
+
+  @override
+  Future<({double total, bool needsThird})> submitEvaluation(String id) async {
+    final j = await _send('POST', '/v1/evaluation/allocations/$id/submit') as Map<String, dynamic>;
+    return (total: (j['total'] as num).toDouble(), needsThird: j['needsThird'] == true);
+  }
+
+  @override
+  Future<List<MenteeInfo>> myMentees() async => _rows(await _send('GET', '/v1/mentoring/risk?all=true'), MenteeInfo.fromJson);
+
+  @override
+  Future<List<MentoringSession>> mentoringSessions(String studentId) async =>
+      _rows(await _send('GET', '/v1/mentoring/sessions?studentId=$studentId'), MentoringSession.fromJson);
+
+  @override
+  Future<void> logMentoringSession({required String studentId, required String heldOn, required String mode, required String summary, String? privateNotes, String? followUpOn}) async =>
+      _send('POST', '/v1/mentoring/sessions', body: {'studentId': studentId, 'heldOn': heldOn, 'mode': mode, 'summary': summary, 'privateNotes': ?privateNotes, 'followUpOn': ?followUpOn});
+
+  @override
+  Future<List<InterventionPlan>> interventionPlans({String? studentId}) async =>
+      _rows(await _send('GET', '/v1/mentoring/plans${studentId == null ? '' : '?studentId=$studentId'}'), InterventionPlan.fromJson);
+
+  @override
+  Future<void> createInterventionPlan({required String studentId, required String goal, required List<String> actions, required String reviewOn}) async =>
+      _send('POST', '/v1/mentoring/plans', body: {'studentId': studentId, 'goal': goal, 'actions': actions, 'reviewOn': reviewOn});
+
+  @override
+  Future<void> updateInterventionPlan(String id, List<PlanAction> actions) async =>
+      _send('PUT', '/v1/mentoring/plans/$id', body: {'actions': [for (final a in actions) {'text': a.text, 'done': a.done}]});
+
+  @override
+  Future<void> closeInterventionPlan(String id, {required String outcome, required String rating}) async =>
+      _send('POST', '/v1/mentoring/plans/$id/close', body: {'outcome': outcome, 'outcomeRating': rating});
+
+  @override
+  Future<List<TermInfo>> courseTerms() async => _rows(await _send('GET', '/v1/course-registration/terms'), TermInfo.fromJson);
+
+  @override
+  Future<List<OfferingInfo>> courseOfferings(String termId) async => _rows(await _send('GET', '/v1/course-registration/offerings?termId=$termId'), OfferingInfo.fromJson);
+
+  @override
+  Future<List<RosterEntry>> offeringRoster(String offeringId) async {
+    final j = await _send('GET', '/v1/course-registration/offerings/$offeringId/roster') as Map<String, dynamic>;
+    return _rows(j['students'], RosterEntry.fromJson);
+  }
+
+  @override
+  Future<List<SurveyInfo>> mySurveys() async => _rows(await _send('GET', '/v1/surveys/mine'), SurveyInfo.fromJson);
+
+  @override
+  Future<void> submitSurvey(String id, List<SurveyAnswer> answers) async =>
+      _send('POST', '/v1/surveys/$id/responses', body: {'answers': [for (final a in answers) a.toJson()]});
+
+  @override
+  Future<List<ClubInfo>> clubs() async => _rows(await _send('GET', '/v1/campus-life/clubs'), ClubInfo.fromJson);
+
+  @override
+  Future<List<ClubMember>> clubMembers(String clubId) async =>
+      _rows(await _send('GET', '/v1/campus-life/clubs/$clubId/members?status=active'), ClubMember.fromJson);
 
   @override
   Future<Me> updatePreferredLanguage(String language) async =>

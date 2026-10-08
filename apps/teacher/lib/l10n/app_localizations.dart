@@ -3320,6 +3320,840 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{type}: {days} day(s)'**
   String leaveRequestLine(String type, String days);
+
+  /// No description provided for @workToolsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff tools'**
+  String get workToolsSection;
+
+  /// No description provided for @tasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get tasksTitle;
+
+  /// No description provided for @tasksBody.
+  ///
+  /// In en, this message translates to:
+  /// **'What is assigned to you and what you asked of others'**
+  String get tasksBody;
+
+  /// No description provided for @requestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests and approvals'**
+  String get requestsTitle;
+
+  /// No description provided for @requestsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a request, track it and decide what waits for you'**
+  String get requestsBody;
+
+  /// No description provided for @subsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Substitutions'**
+  String get subsTitle;
+
+  /// No description provided for @subsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Periods you cover for colleagues'**
+  String get subsBody;
+
+  /// No description provided for @dutiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invigilation duties'**
+  String get dutiesTitle;
+
+  /// No description provided for @dutiesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your exam hall duties'**
+  String get dutiesBody;
+
+  /// No description provided for @evalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluation desk'**
+  String get evalTitle;
+
+  /// No description provided for @evalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Value the answer scripts allocated to you'**
+  String get evalBody;
+
+  /// No description provided for @mentoringTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mentoring'**
+  String get mentoringTitle;
+
+  /// No description provided for @mentoringBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mentees, sessions and plans'**
+  String get mentoringBody;
+
+  /// No description provided for @courseRosterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course rosters'**
+  String get courseRosterTitle;
+
+  /// No description provided for @courseRosterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Who registered for the courses you teach'**
+  String get courseRosterBody;
+
+  /// No description provided for @surveysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get surveysTitle;
+
+  /// No description provided for @surveysBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys waiting for your answers'**
+  String get surveysBody;
+
+  /// No description provided for @clubsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs I coordinate'**
+  String get clubsTitle;
+
+  /// No description provided for @clubsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Members and points of your clubs'**
+  String get clubsBody;
+
+  /// No description provided for @tasksMineTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to me'**
+  String get tasksMineTab;
+
+  /// No description provided for @tasksByMeTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned by me'**
+  String get tasksByMeTab;
+
+  /// No description provided for @tasksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No open tasks.'**
+  String get tasksEmpty;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String taskFrom(String name);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'To {name}'**
+  String taskTo(String name);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {when}'**
+  String taskDue(String when);
+
+  /// No description provided for @taskOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get taskOverdue;
+
+  /// No description provided for @taskStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get taskStatusOpen;
+
+  /// No description provided for @taskStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get taskStatusInProgress;
+
+  /// No description provided for @taskStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get taskStatusDone;
+
+  /// No description provided for @taskStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get taskStatusCancelled;
+
+  /// No description provided for @taskStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get taskStart;
+
+  /// No description provided for @taskMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark done'**
+  String get taskMarkDone;
+
+  /// No description provided for @taskCancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel task'**
+  String get taskCancelAction;
+
+  /// No description provided for @taskPriorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High priority'**
+  String get taskPriorityHigh;
+
+  /// No description provided for @taskPriorityUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get taskPriorityUrgent;
+
+  /// No description provided for @requestsInboxTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for me'**
+  String get requestsInboxTab;
+
+  /// No description provided for @requestsMineTab.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get requestsMineTab;
+
+  /// No description provided for @requestsStart.
+  ///
+  /// In en, this message translates to:
+  /// **'New request'**
+  String get requestsStart;
+
+  /// No description provided for @requestsInboxEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for your decision.'**
+  String get requestsInboxEmpty;
+
+  /// No description provided for @requestsMineEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not made any requests.'**
+  String get requestsMineEmpty;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {n} of {total} · {name}'**
+  String requestStep(String n, String total, String name);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'By {name}'**
+  String requestBy(String name);
+
+  /// No description provided for @reqStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get reqStatusPending;
+
+  /// No description provided for @reqStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get reqStatusApproved;
+
+  /// No description provided for @reqStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get reqStatusRejected;
+
+  /// No description provided for @reqStatusReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get reqStatusReturned;
+
+  /// No description provided for @reqStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get reqStatusCancelled;
+
+  /// No description provided for @requestApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get requestApprove;
+
+  /// No description provided for @requestReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get requestReject;
+
+  /// No description provided for @requestReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Return for changes'**
+  String get requestReturn;
+
+  /// No description provided for @requestComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment (optional)'**
+  String get requestComment;
+
+  /// No description provided for @requestWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw request'**
+  String get requestWithdraw;
+
+  /// No description provided for @requestHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get requestHistory;
+
+  /// No description provided for @requestAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (₹)'**
+  String get requestAmountLabel;
+
+  /// No description provided for @requestTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get requestTitleLabel;
+
+  /// No description provided for @requestKindLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind of request'**
+  String get requestKindLabel;
+
+  /// No description provided for @requestSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get requestSubmit;
+
+  /// No description provided for @requestNoRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'No request types have been set up yet.'**
+  String get requestNoRoutes;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in {field}'**
+  String requestFieldNeeded(String field);
+
+  /// No description provided for @requestActionSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get requestActionSubmitted;
+
+  /// No description provided for @requestActionResubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent again'**
+  String get requestActionResubmitted;
+
+  /// No description provided for @subsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not covering any periods in the next two weeks.'**
+  String get subsEmpty;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Covering for {name}'**
+  String subsFor(String name);
+
+  /// No description provided for @dutiesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No invigilation duties assigned to you.'**
+  String get dutiesEmpty;
+
+  /// No description provided for @dutyRoleChief.
+  ///
+  /// In en, this message translates to:
+  /// **'Chief invigilator'**
+  String get dutyRoleChief;
+
+  /// No description provided for @dutyRoleInvigilator.
+  ///
+  /// In en, this message translates to:
+  /// **'Invigilator'**
+  String get dutyRoleInvigilator;
+
+  /// No description provided for @evalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No scripts are allocated to you.'**
+  String get evalEmpty;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Script {no}'**
+  String evalScript(String no);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Valuation {n}'**
+  String evalRound(String n);
+
+  /// No description provided for @evalStatusTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get evalStatusTodo;
+
+  /// No description provided for @evalStatusSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get evalStatusSubmitted;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {total}'**
+  String evalTotal(String total);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {no} (out of {max})'**
+  String evalQuestionLabel(String no, String max);
+
+  /// No description provided for @evalMarksLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks'**
+  String get evalMarksLabel;
+
+  /// No description provided for @evalCommentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get evalCommentLabel;
+
+  /// No description provided for @evalSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save marks'**
+  String get evalSave;
+
+  /// No description provided for @evalSavedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks saved'**
+  String get evalSavedMsg;
+
+  /// No description provided for @evalSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit valuation'**
+  String get evalSubmit;
+
+  /// No description provided for @evalSubmitConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit this valuation? You cannot change the marks afterwards.'**
+  String get evalSubmitConfirm;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Valuation submitted. Total {total}.'**
+  String evalSubmittedMsg(String total);
+
+  /// No description provided for @evalThirdNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'The two valuations differ a lot, so a third valuation will be arranged.'**
+  String get evalThirdNeeded;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {max}'**
+  String evalOverMax(String max);
+
+  /// No description provided for @evalMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter marks for every question (0 where nothing was written).'**
+  String get evalMissing;
+
+  /// No description provided for @evalLockedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This valuation is submitted and cannot be changed.'**
+  String get evalLockedMsg;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {n} of {total}'**
+  String evalPageLabel(String n, String total);
+
+  /// No description provided for @evalNoPages.
+  ///
+  /// In en, this message translates to:
+  /// **'This script has no pages.'**
+  String get evalNoPages;
+
+  /// No description provided for @menteesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no mentees.'**
+  String get menteesEmpty;
+
+  /// No description provided for @riskHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High risk'**
+  String get riskHigh;
+
+  /// No description provided for @riskMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium risk'**
+  String get riskMedium;
+
+  /// No description provided for @riskLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low risk'**
+  String get riskLow;
+
+  /// No description provided for @riskNone.
+  ///
+  /// In en, this message translates to:
+  /// **'On track'**
+  String get riskNone;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance {pct}%'**
+  String menteeAttendance(String pct);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} failed tests'**
+  String menteeFailing(String n);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} overdue fees'**
+  String menteeFees(String n);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} open cases'**
+  String menteeCases(String n);
+
+  /// No description provided for @mentorLogSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Log session'**
+  String get mentorLogSession;
+
+  /// No description provided for @mentorSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get mentorSessions;
+
+  /// No description provided for @mentorPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Intervention plans'**
+  String get mentorPlans;
+
+  /// No description provided for @sessionModeInPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'In person'**
+  String get sessionModeInPerson;
+
+  /// No description provided for @sessionModePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get sessionModePhone;
+
+  /// No description provided for @sessionModeOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get sessionModeOnline;
+
+  /// No description provided for @sessionModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'How you met'**
+  String get sessionModeLabel;
+
+  /// No description provided for @sessionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get sessionSummary;
+
+  /// No description provided for @sessionNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Private notes (only you, the head of department and the counsellor see these)'**
+  String get sessionNotes;
+
+  /// No description provided for @sessionFollowUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow up on'**
+  String get sessionFollowUp;
+
+  /// No description provided for @sessionSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save session'**
+  String get sessionSave;
+
+  /// No description provided for @sessionsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet.'**
+  String get sessionsNone;
+
+  /// No description provided for @plansNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet.'**
+  String get plansNone;
+
+  /// No description provided for @planNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New plan'**
+  String get planNew;
+
+  /// No description provided for @planGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get planGoal;
+
+  /// No description provided for @planActionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions (one per line)'**
+  String get planActionsLabel;
+
+  /// No description provided for @planReviewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Review on'**
+  String get planReviewLabel;
+
+  /// No description provided for @planCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create plan'**
+  String get planCreate;
+
+  /// No description provided for @planClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close plan'**
+  String get planClose;
+
+  /// No description provided for @planOutcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome'**
+  String get planOutcome;
+
+  /// No description provided for @planRatingImproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Improved'**
+  String get planRatingImproved;
+
+  /// No description provided for @planRatingNoChange.
+  ///
+  /// In en, this message translates to:
+  /// **'No change'**
+  String get planRatingNoChange;
+
+  /// No description provided for @planRatingWorsened.
+  ///
+  /// In en, this message translates to:
+  /// **'Worsened'**
+  String get planRatingWorsened;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Review on {date}'**
+  String planReviewOn(String date);
+
+  /// No description provided for @planClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get planClosed;
+
+  /// No description provided for @rosterTermLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Term'**
+  String get rosterTermLabel;
+
+  /// No description provided for @rosterNoTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'No terms found.'**
+  String get rosterNoTerms;
+
+  /// No description provided for @rosterNoOfferings.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not the faculty of any course in this term.'**
+  String get rosterNoOfferings;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{reg} registered, {wait} on the waitlist'**
+  String rosterCounts(String reg, String wait);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Waitlist {pos}'**
+  String rosterWaitlist(String pos);
+
+  /// No description provided for @rosterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has registered yet.'**
+  String get rosterEmpty;
+
+  /// No description provided for @surveysEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No surveys are waiting for you.'**
+  String get surveysEmpty;
+
+  /// No description provided for @surveyAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous'**
+  String get surveyAnonymous;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Closes {when}'**
+  String surveyClosesOn(String when);
+
+  /// No description provided for @surveyAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get surveyAnswered;
+
+  /// No description provided for @surveySubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send answers'**
+  String get surveySubmit;
+
+  /// No description provided for @surveyThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you, your answers were sent.'**
+  String get surveyThanks;
+
+  /// No description provided for @surveyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer every required question.'**
+  String get surveyRequired;
+
+  /// No description provided for @surveyAnswerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get surveyAnswerHint;
+
+  /// No description provided for @clubsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not coordinate any clubs.'**
+  String get clubsEmpty;
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} members'**
+  String clubMembersCount(String n);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} requests waiting'**
+  String clubPendingCount(String n);
+
+  /// Staff work screens.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} points'**
+  String clubPoints(String n);
+
+  /// No description provided for @clubNoMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'No members yet.'**
+  String get clubNoMembers;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

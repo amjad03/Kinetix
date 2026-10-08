@@ -12,6 +12,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/hr_models.dart';
 import '../core/models.dart';
+import '../core/work_models.dart';
 import '../core/push.dart';
 import '../core/realtime.dart';
 
@@ -813,6 +814,186 @@ class FakeTeacherApi implements TeacherApi {
     calls.add('payslipPdf $id');
     return Uint8List.fromList('%PDF-1.4'.codeUnits);
   }
+
+  // --- Work: tasks, requests, duties, evaluation, mentoring, rosters, surveys, clubs -------------
+
+  List<TaskInfo> taskList = [];
+  List<TaskInfo> assignedTaskList = [];
+
+  @override
+  Future<List<TaskInfo>> myTasks({bool all = false}) async => List.of(taskList);
+
+  @override
+  Future<List<TaskInfo>> tasksAssignedByMe({bool all = false}) async => List.of(assignedTaskList);
+
+  @override
+  Future<void> setTaskStatus(String id, TaskStatus status, {int? version}) async {
+    calls.add('setTaskStatus $id ${taskStatusCode(status)} ${version ?? '-'}');
+    TaskInfo moved(TaskInfo t) => TaskInfo(
+      id: t.id, title: t.title, description: t.description, ownerName: t.ownerName, assigneeName: t.assigneeName, priority: t.priority,
+      status: status, overdue: t.overdue, version: t.version + 1, dueAt: t.dueAt,
+    );
+    taskList = [for (final t in taskList) t.id == id ? moved(t) : t];
+    assignedTaskList = [for (final t in assignedTaskList) t.id == id ? moved(t) : t];
+  }
+
+  List<WorkflowDefinition> workflowRoutes = [];
+  List<WorkflowRequestInfo> workflowInboxList = [];
+  List<WorkflowRequestInfo> workflowMineList = [];
+
+  @override
+  Future<List<WorkflowDefinition>> workflowDefinitions() async => workflowRoutes;
+
+  @override
+  Future<List<WorkflowRequestInfo>> workflowInbox() async => List.of(workflowInboxList);
+
+  @override
+  Future<List<WorkflowRequestInfo>> myWorkflowRequests() async => List.of(workflowMineList);
+
+  @override
+  Future<WorkflowRequestInfo> workflowRequest(String id) async =>
+      [...workflowInboxList, ...workflowMineList].firstWhere((r) => r.id == id);
+
+  @override
+  Future<void> submitWorkflowRequest({required String requestType, required String title, required Map<String, dynamic> payload, double? amount}) async {
+    calls.add('submitWorkflow $requestType $title ${jsonEncode(payload)}');
+    workflowMineList = [
+      WorkflowRequestInfo(id: 'wr${workflowMineList.length + 1}', requestType: requestType, title: title, status: 'pending', requesterName: profile.fullName, stepName: 'Head of department', stepNumber: 1, stepCount: 2, version: 0),
+      ...workflowMineList,
+    ];
+  }
+
+  @override
+  Future<void> decideWorkflowRequest(String id, {required String decision, String comment = '', int? version}) async {
+    calls.add('decideWorkflow $id $decision ${comment.isEmpty ? '-' : comment}');
+    workflowInboxList = workflowInboxList.where((r) => r.id != id).toList();
+  }
+
+  @override
+  Future<void> cancelWorkflowRequest(String id) async {
+    calls.add('cancelWorkflow $id');
+    workflowMineList = workflowMineList.where((r) => r.id != id).toList();
+  }
+
+  List<SubstitutionInfo> substitutionList = [];
+  List<InvigilationDuty> dutyList = [];
+
+  @override
+  Future<List<SubstitutionInfo>> mySubstitutions() async => substitutionList;
+
+  @override
+  Future<List<InvigilationDuty>> myInvigilation() async => dutyList;
+
+  List<EvalAllocation> evalList = [];
+  EvalScript? evalScriptData;
+  List<EvalEntry> evalSaved = [];
+  bool evalNeedsThird = false;
+
+  @override
+  Future<List<EvalAllocation>> evaluationAllocations() async => evalList;
+
+  @override
+  Future<EvalScript> evaluationScript(String id) async {
+    final s = evalScriptData!;
+    return EvalScript(id: s.id, status: s.status, dummyNo: s.dummyNo, pageCount: s.pageCount, questions: s.questions, entries: evalSaved.isEmpty ? s.entries : evalSaved, total: s.total);
+  }
+
+  @override
+  Future<Uint8List> evaluationPage(String id, int index) async {
+    calls.add('evaluationPage $id $index');
+    return onePixelPng;
+  }
+
+  @override
+  Future<List<EvalEntry>> saveEvaluationMarks(String id, List<EvalEntry> entries) async {
+    calls.add('saveEvaluation $id ${entries.map((e) => '${e.questionId}=${numText(e.marks)}${e.comment == null ? '' : '/${e.comment}'}').join(',')}');
+    return evalSaved = entries;
+  }
+
+  @override
+  Future<({double total, bool needsThird})> submitEvaluation(String id) async {
+    calls.add('submitEvaluation $id');
+    return (total: evalSaved.fold<double>(0, (a, e) => a + e.marks), needsThird: evalNeedsThird);
+  }
+
+  List<MenteeInfo> menteeList = [];
+  List<MentoringSession> mentoringSessionList = [];
+  List<InterventionPlan> planList = [];
+
+  @override
+  Future<List<MenteeInfo>> myMentees() async => menteeList;
+
+  @override
+  Future<List<MentoringSession>> mentoringSessions(String studentId) async => List.of(mentoringSessionList);
+
+  @override
+  Future<void> logMentoringSession({required String studentId, required String heldOn, required String mode, required String summary, String? privateNotes, String? followUpOn}) async {
+    calls.add('logSession $studentId $mode $summary ${privateNotes ?? '-'} ${followUpOn ?? '-'}');
+    mentoringSessionList = [MentoringSession(id: 'ms${mentoringSessionList.length + 1}', heldOn: heldOn, mode: mode, summary: summary, privateNotes: privateNotes, followUpOn: followUpOn), ...mentoringSessionList];
+  }
+
+  @override
+  Future<List<InterventionPlan>> interventionPlans({String? studentId}) async => planList.where((p) => studentId == null || p.studentId == studentId).toList();
+
+  @override
+  Future<void> createInterventionPlan({required String studentId, required String goal, required List<String> actions, required String reviewOn}) async {
+    calls.add('createPlan $studentId $goal ${actions.join('|')}');
+    planList = [
+      ...planList,
+      InterventionPlan(id: 'ip${planList.length + 1}', studentId: studentId, studentName: menteeList.firstWhere((m) => m.studentId == studentId).studentName, goal: goal, reviewOn: reviewOn, status: 'open', actions: [for (final a in actions) PlanAction(a, false)]),
+    ];
+  }
+
+  @override
+  Future<void> updateInterventionPlan(String id, List<PlanAction> actions) async {
+    calls.add('updatePlan $id ${actions.map((a) => a.done ? 'x' : 'o').join()}');
+    planList = [for (final p in planList) p.id == id ? InterventionPlan(id: p.id, studentId: p.studentId, studentName: p.studentName, goal: p.goal, reviewOn: p.reviewOn, status: 'in_progress', actions: actions) : p];
+  }
+
+  @override
+  Future<void> closeInterventionPlan(String id, {required String outcome, required String rating}) async {
+    calls.add('closePlan $id $rating $outcome');
+    planList = [for (final p in planList) p.id == id ? InterventionPlan(id: p.id, studentId: p.studentId, studentName: p.studentName, goal: p.goal, reviewOn: p.reviewOn, status: 'closed', actions: p.actions) : p];
+  }
+
+  List<TermInfo> termList = [];
+  List<OfferingInfo> offeringList = [];
+  List<RosterEntry> rosterList = [];
+
+  @override
+  Future<List<TermInfo>> courseTerms() async => termList;
+
+  @override
+  Future<List<OfferingInfo>> courseOfferings(String termId) async => offeringList;
+
+  @override
+  Future<List<RosterEntry>> offeringRoster(String offeringId) async {
+    calls.add('offeringRoster $offeringId');
+    return rosterList;
+  }
+
+  List<SurveyInfo> surveyList = [];
+
+  @override
+  Future<List<SurveyInfo>> mySurveys() async => List.of(surveyList);
+
+  @override
+  Future<void> submitSurvey(String id, List<SurveyAnswer> answers) async {
+    calls.add('submitSurvey $id ${jsonEncode([for (final a in answers) a.toJson()])}');
+    surveyList = [
+      for (final s in surveyList)
+        s.id == id ? SurveyInfo(id: s.id, title: s.title, description: s.description, anonymous: s.anonymous, answered: true, questions: const []) : s,
+    ];
+  }
+
+  List<ClubInfo> clubList = [];
+  List<ClubMember> clubMemberList = [];
+
+  @override
+  Future<List<ClubInfo>> clubs() async => clubList;
+
+  @override
+  Future<List<ClubMember>> clubMembers(String clubId) async => clubMemberList;
 
   // --- Syllabus coverage -----------------------------------------------------------------------
 
