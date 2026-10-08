@@ -7,7 +7,7 @@ export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
   | 'campus' | 'inventory' | 'communication' | 'reports' | 'settings'
   | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'devices' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
-  | 'hostel' | 'canteen' | 'campusLife' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows';
+  | 'hostel' | 'canteen' | 'campusLife' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'diary' | 'ptm' | 'earlyYears' | 'health';
 
 export interface NavItem {
   href: string;
@@ -39,6 +39,10 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/students', label: 'nav.students', section: 'students', icon: 'students' },
       { href: '/mentoring', label: 'nav.mentoring', section: 'mentoring', icon: 'mentoring' },
+      { href: '/diary', label: 'nav.diary', section: 'diary', icon: 'diary' },
+      { href: '/ptm', label: 'nav.ptm', section: 'ptm', icon: 'ptm' },
+      { href: '/early-years', label: 'nav.earlyYears', section: 'earlyYears', icon: 'earlyYears' },
+      { href: '/health', label: 'nav.health', section: 'health', icon: 'health' },
       { href: '/documents', label: 'nav.documents', section: 'documents', icon: 'documents' },
     ],
   },

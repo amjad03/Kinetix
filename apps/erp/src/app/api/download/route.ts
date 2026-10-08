@@ -49,6 +49,11 @@ export async function GET(req: NextRequest) {
     const app = req.nextUrl.searchParams.get('app') ?? '';
     if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
+  // A child's learning story for a term: ?kind=learning-story&id=<student>&termId=<term>
+  const termId = req.nextUrl.searchParams.get('termId') ?? '';
+  if (kind === 'learning-story') {
+    if (!UUID.test(id) || !UUID.test(termId)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/early-years/students/${id}/learning-story.pdf?termId=${termId}`;
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

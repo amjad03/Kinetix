@@ -687,6 +687,13 @@
       "when": 1791410895229,
       "tag": "0104_lifecycle_admissions_timetable",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1791410896229,
+      "tag": "0105_school_life",
+      "breakpoints": true
     }
   ]
 }

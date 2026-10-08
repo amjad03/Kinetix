@@ -1,3 +1,6 @@
+import ChildCareOutlined from '@mui/icons-material/ChildCareOutlined';
+import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
+import HealthAndSafetyOutlined from '@mui/icons-material/HealthAndSafetyOutlined';
 import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
 import AppRegistrationOutlined from '@mui/icons-material/AppRegistrationOutlined';
 import AltRouteOutlined from '@mui/icons-material/AltRouteOutlined';
@@ -99,6 +102,10 @@ export const NAV_ICONS: Record<NavIcon, SvgIconComponent> = {
   surveys: PollOutlined,
   tasks: TaskAltOutlined,
   workflows: AltRouteOutlined,
+  diary: MenuBookOutlined,
+  ptm: EventAvailableOutlined,
+  earlyYears: ChildCareOutlined,
+  health: HealthAndSafetyOutlined,
   work: WorkOutlineOutlined,
   courseRegistration: AppRegistrationOutlined,
   platform: OndemandVideoOutlined,

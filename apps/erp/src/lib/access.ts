@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'diary' | 'ptm' | 'earlyYears' | 'health';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -99,6 +99,14 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   skills: ['principal', 'tenant_admin', 'hod'],
   // question-bank.controller.ts EXAM_STAFF: leaders and heads of department run the bank and papers here; teachers write and moderate in the Teacher App
   questionBank: ['principal', 'tenant_admin', 'hod'],
+  // school-life/diary.controller.ts DIARY_WRITERS (teachers write in the Teacher App; the ERP is for leaders and heads of department)
+  diary: ['principal', 'tenant_admin', 'hod'],
+  // school-life/ptm.controller.ts PTM_ORGANISERS (teachers give their slots in the Teacher App)
+  ptm: ['principal', 'tenant_admin', 'hod'],
+  // school-life/early-years.controller.ts EARLY_YEARS_STAFF
+  earlyYears: ['principal', 'tenant_admin', 'hod'],
+  // school-life/school-life.service.ts HEALTH_STAFF (no nurse role yet; teachers never see health records)
+  health: ['principal', 'tenant_admin', 'counsellor'],
   // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
   reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager'],
 };
@@ -232,6 +240,14 @@ export function sectionOf(pathname: string): Section | null {
       return 'courseFiles';
     case 'question-bank':
       return 'questionBank';
+    case 'diary':
+      return 'diary';
+    case 'ptm':
+      return 'ptm';
+    case 'early-years':
+      return 'earlyYears';
+    case 'health':
+      return 'health';
     case 'academic-audit':
       return 'academicAudit';
     case 'payroll':
