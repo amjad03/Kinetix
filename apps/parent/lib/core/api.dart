@@ -9,6 +9,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
 import 'campus.dart';
+import 'exam_models.dart';
 import 'models.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
@@ -105,6 +106,18 @@ abstract class ParentApi {
   /// Reports the gateway's result; the server checks the signature (403 when it does not match).
   Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature});
   Future<FeeReceipt> receipt(String paymentId);
+
+  /// What the child sits and when, with hall tickets and revaluation requests (`GET /v1/results/students/:id/exams`).
+  Future<List<ExamSession>> exams(String childId);
+
+  /// Published term results with SGPA and CGPA (`GET /v1/results/students/:id`).
+  Future<ExamResults> examResults(String childId);
+
+  /// The child's hall ticket as a PDF; the server refuses (403) when the college withholds it.
+  Future<Uint8List> hallTicketPdf(String sessionId, String childId);
+
+  /// Asks for a paper to be re-checked while the results are published and open.
+  Future<void> requestRevaluation(String childId, {required String sessionId, required String subjectId, required String reason});
 
   /// Books the child has out and has returned, with fines (`GET /v1/library/students/:id`).
   Future<LibraryAccount> library(String childId);
@@ -344,6 +357,41 @@ class HttpParentApi implements ParentApi {
   @override
   Future<FeeReceipt> receipt(String paymentId) async =>
       FeeReceipt.fromJson(await _send('GET', '/v1/fees/payments/$paymentId/receipt') as Map<String, dynamic>);
+
+  @override
+  Future<List<ExamSession>> exams(String childId) async {
+    final j = await _send('GET', '/v1/results/students/$childId/exams') as Map<String, dynamic>;
+    return [for (final e in j['sessions'] as List) ExamSession.fromJson((e as Map).cast<String, dynamic>())];
+  }
+
+  @override
+  Future<ExamResults> examResults(String childId) async => ExamResults.fromJson(await _send('GET', '/v1/results/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> hallTicketPdf(String sessionId, String childId) => _download('/v1/exam-sessions/$sessionId/hall-tickets/$childId/pdf');
+
+  @override
+  Future<void> requestRevaluation(String childId, {required String sessionId, required String subjectId, required String reason}) =>
+      _send('POST', '/v1/results/students/$childId/revaluations', body: {'sessionId': sessionId, 'subjectId': subjectId, 'reason': reason});
+
+  /// A binary file (a PDF) the signed-in user may read.
+  Future<Uint8List> _download(String path) async {
+    final req = http.Request('GET', Uri.parse('$baseUrl$path'));
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final http.Response res;
+    try {
+      res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 60));
+    } on TimeoutException {
+      throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
+    } catch (_) {
+      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
+    }
+    if (res.statusCode >= 400) {
+      if (res.statusCode == 401) onUnauthorized?.call();
+      throw ApiException(res.statusCode, _message(res), code: _code(res));
+    }
+    return res.bodyBytes;
+  }
 
   @override
   Future<StudentBus> bus(String childId) async =>

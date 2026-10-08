@@ -70,7 +70,7 @@ Please check in particular:
 - The question hint "forfeiture of shares": "शेयरों का हरण" / "ಷೇರುಗಳ ಮುಟ್ಟುಗೋಲು" (textbooks may use "अंशों का हरण").
 - Greetings: "नमस्ते" for good afternoon; "शुभ संध्या", "ಶುಭ ಮಧ್ಯಾಹ್ನ".
 - Kannada date suffixes written apart from the date ("ಶುಕ್ರ 9 ಅಕ್ಟೋ ರೊಳಗೆ").
-- "LIVE" badge: "लाइव" / "ಲೈವ್"; "Learn" tab: "सीखें" / "ಕಲಿಯಿರಿ".
+- "LIVE" badge: "लाइव" / "ಲೈವ್"; "My Learning" tab: "मेरी पढ़ाई" / "ನನ್ನ ಕಲಿಕೆ".
 - Live class audio: "Teacher's mic is on/off" ("शिक्षक का माइक चालू/बंद है" / "ಶಿಕ್ಷಕರ ಮೈಕ್ ಆನ್/ಆಫ್ ಆಗಿದೆ"); Mute: "कक्षा की आवाज़ बंद करें" / "ತರಗತಿಯ ಧ್ವನಿ ಮ್ಯೂಟ್ ಮಾಡಿ".
 - Privacy (consent) screens and the notice (docs/product/privacy-notice.md): the purpose
   texts, "If you say no", "Who decides" and the grievance-officer line ("शिकायत अधिकारी" /

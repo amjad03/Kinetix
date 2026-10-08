@@ -10,7 +10,7 @@ import 'helpers.dart';
 /// A parent edits their profile: photo, name and email; the phone number is the sign-in.
 void main() {
   Future<void> openProfile(WidgetTester tester) async {
-    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Profile')));
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('More')));
     await tester.pumpAndSettle();
   }
 

@@ -83,13 +83,18 @@ class KxHomeHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
+            // The headline stops growing at 1.3x: at 2x on a small phone it would fill the screen
+            // and push everything else off it. The line under it still follows the setting.
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(greeting, key: const Key('greeting'), style: (big ? context.text.headlineMedium : context.text.headlineSmall)?.copyWith(fontWeight: FontWeight.w500)),
+                MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.3,
+                  child: Text(greeting, key: const Key('greeting'), style: (big ? context.text.headlineMedium : context.text.headlineSmall)?.copyWith(fontWeight: FontWeight.w500)),
+                ),
                 if (subtitle != null) ...[
                   const SizedBox(height: Kx.s4),
-                  Text(subtitle!, style: (big ? context.text.bodyLarge : context.text.bodyMedium)?.copyWith(color: context.colors.onSurfaceVariant)),
+                  Text(subtitle!, style: (big ? context.text.bodyLarge : context.text.bodyMedium)?.copyWith(color: context.colors.onSurfaceVariant), maxLines: 3, overflow: TextOverflow.ellipsis),
                 ],
               ],
             ),

@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -3561,10 +3554,693 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reopened'**
   String get grievanceStatus_reopened;
+
+  /// Title of the exams screen and its bottom tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams'**
+  String get examsTitle;
+
+  /// Section: the papers of an exam session, by date.
+  ///
+  /// In en, this message translates to:
+  /// **'Timetable'**
+  String get examTimetable;
+
+  /// Section: published term results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get examResultsTitle;
+
+  /// Empty state of the timetable.
+  ///
+  /// In en, this message translates to:
+  /// **'No exams are scheduled yet. They appear here once the college publishes the timetable.'**
+  String get noExamsScheduled;
+
+  /// Empty state of the results.
+  ///
+  /// In en, this message translates to:
+  /// **'No results published yet.'**
+  String get noExamResults;
+
+  /// The dates an exam session runs.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} – {to}'**
+  String examDates(String from, String to);
+
+  /// A paper's start and end time.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String examPaperTime(String start, String end);
+
+  /// Where the student sits.
+  ///
+  /// In en, this message translates to:
+  /// **'{room} · Seat {seat}'**
+  String examSeat(String room, int seat);
+
+  /// A paper's maximum marks.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} marks'**
+  String examMaxMarks(int n);
+
+  /// The ticket that lets a student into the exam hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket'**
+  String get hallTicket;
+
+  /// Button: open the hall ticket PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Download hall ticket'**
+  String get hallTicketDownload;
+
+  /// The college is withholding the hall ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket withheld: {reason}'**
+  String hallTicketWithheld(String reason);
+
+  /// Withheld without a reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket withheld. Contact the examination office.'**
+  String get hallTicketWithheldNoReason;
+
+  /// No hall ticket yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket not issued yet.'**
+  String get hallTicketNotIssued;
+
+  /// Shown when no app can open a downloaded PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this file. Install an app that opens PDFs.'**
+  String get fileOpenFailed;
+
+  /// Semester grade point average.
+  ///
+  /// In en, this message translates to:
+  /// **'SGPA'**
+  String get sgpaLabel;
+
+  /// Cumulative grade point average.
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA'**
+  String get cgpaLabel;
+
+  /// Headline of the results.
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA {value}'**
+  String cgpaLine(String value);
+
+  /// A term's result.
+  ///
+  /// In en, this message translates to:
+  /// **'SGPA {value}'**
+  String sgpaLine(String value);
+
+  /// Outcome of a term.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get resultPass;
+
+  /// Outcome of a term when a paper is not cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Not cleared'**
+  String get resultFail;
+
+  /// One subject's result.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% · Grade {grade}'**
+  String resultLine(String percent, String grade);
+
+  /// Button on a result line.
+  ///
+  /// In en, this message translates to:
+  /// **'Request revaluation'**
+  String get revaluationRequest;
+
+  /// Prompt in the revaluation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Why should this paper be re-checked?'**
+  String get revaluationWhy;
+
+  /// Validation.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a few words (at least 3 letters).'**
+  String get revaluationNeedReason;
+
+  /// Snackbar after requesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. The examination office will decide.'**
+  String get revaluationSent;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation requested'**
+  String get revaluationRequested;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation accepted'**
+  String get revaluationAccepted;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation declined'**
+  String get revaluationRejected;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation done'**
+  String get revaluationCompleted;
+
+  /// Label for a session that has finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get examDone;
+
+  /// Bottom navigation tab: ask, syllabus, labs and code.
+  ///
+  /// In en, this message translates to:
+  /// **'My Learning'**
+  String get navMyLearning;
+
+  /// Bottom navigation tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams'**
+  String get navExams;
+
+  /// Bottom navigation tab: profile and everything else.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get navMore;
+
+  /// Line under the greeting on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep learning, keep growing!'**
+  String get homeSubtitle;
+
+  /// Tooltip of the bell on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTooltip;
+
+  /// Card on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Next class'**
+  String get nextClass;
+
+  /// Next class card with nothing to show.
+  ///
+  /// In en, this message translates to:
+  /// **'No class coming up right now.'**
+  String get nextClassNone;
+
+  /// Next class card while a class is live.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} is live now'**
+  String nextClassLive(String subject);
+
+  /// Next class card: the next topic in the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up in {subject}'**
+  String nextClassTopic(String subject);
+
+  /// Button on the next class card when it is live.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get watchLive;
+
+  /// Button on the next class card.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewAction;
+
+  /// Home tile label.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignments'**
+  String get tilePendingAssignments;
+
+  /// Home tile value.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} pending'**
+  String tilePendingValue(int n);
+
+  /// Home tile value when nothing is pending.
+  ///
+  /// In en, this message translates to:
+  /// **'All done'**
+  String get tileAllDone;
+
+  /// Home tile label.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming exam'**
+  String get tileUpcomingExam;
+
+  /// Home tile value: days to the next paper.
+  ///
+  /// In en, this message translates to:
+  /// **'In {n} days'**
+  String tileExamDays(int n);
+
+  /// Home tile value: an exam today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get tileExamToday;
+
+  /// Home tile value: no exam scheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'None yet'**
+  String get tileExamNone;
+
+  /// Home tile label: days in a row the student opened the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning streak'**
+  String get tileStreak;
+
+  /// Home tile value.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 day} other{{n} days}}'**
+  String tileStreakDays(int n);
+
+  /// Section on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning'**
+  String get continueLearning;
+
+  /// Continue learning card with no plan yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask KINETIX AI a doubt or open a topic from My Learning.'**
+  String get continueLearningEmpty;
+
+  /// Under the progress bar of Continue learning.
+  ///
+  /// In en, this message translates to:
+  /// **'{taught} of {total} topics taught'**
+  String continueProgress(int taught, int total);
+
+  /// Heading in More for leave, bus, hostel and certificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus'**
+  String get moreSchoolLife;
+
+  /// Title of the form and the entry in More.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply for leave'**
+  String get leaveApplyTitle;
+
+  /// Title of the leave screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leaveScreenTitle;
+
+  /// First day of leave.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get leaveFromLabel;
+
+  /// Last day of leave.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get leaveToLabel;
+
+  /// Why the student needs leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get leaveReasonLabel;
+
+  /// Validation.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a few words (at least 3 letters).'**
+  String get leaveReasonRequired;
+
+  /// Submit button.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get leaveSend;
+
+  /// After sending.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to your class teacher.'**
+  String get leaveSentSnack;
+
+  /// Empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No leave applications yet.'**
+  String get leaveNone;
+
+  /// Leave status.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get leaveStatusPending;
+
+  /// Leave status.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get leaveStatusApproved;
+
+  /// Leave status.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get leaveStatusRejected;
+
+  /// Leave status.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get leaveStatusCancelled;
+
+  /// Button on a waiting request.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get leaveWithdraw;
+
+  /// Validation.
+  ///
+  /// In en, this message translates to:
+  /// **'The last day cannot be before the first day.'**
+  String get leaveToBeforeFrom;
+
+  /// Title and entry in More.
+  ///
+  /// In en, this message translates to:
+  /// **'My bus'**
+  String get busTitle;
+
+  /// Not assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have a bus seat. Ask the transport office.'**
+  String get busNone;
+
+  /// Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get busRoute;
+
+  /// Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Your stop'**
+  String get busYourStop;
+
+  /// Label: pickup time.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get busPickup;
+
+  /// Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get busVehicle;
+
+  /// Heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops'**
+  String get busStopsHeading;
+
+  /// Live ETA.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrives at your stop in about {n} min'**
+  String busEta(int n);
+
+  /// Live.
+  ///
+  /// In en, this message translates to:
+  /// **'The bus has passed your stop'**
+  String get busPassed;
+
+  /// Live.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{At your stop} =1{1 stop away} other{{n} stops away}}'**
+  String busStopsAway(int n);
+
+  /// No live trip.
+  ///
+  /// In en, this message translates to:
+  /// **'The bus is not on the road right now.'**
+  String get busNotRunning;
+
+  /// Title and entry in More.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel gate pass'**
+  String get gatePassTitle;
+
+  /// Not a resident.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not in the hostel. Gate passes are for hostel residents.'**
+  String get gatePassNotResident;
+
+  /// Where the student lives.
+  ///
+  /// In en, this message translates to:
+  /// **'{block} · Room {room}'**
+  String gatePassRoom(String block, String room);
+
+  /// Button and form title.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a gate pass'**
+  String get gatePassRequest;
+
+  /// Field.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get gatePassReason;
+
+  /// Field.
+  ///
+  /// In en, this message translates to:
+  /// **'Where are you going?'**
+  String get gatePassDestination;
+
+  /// Field.
+  ///
+  /// In en, this message translates to:
+  /// **'Back by'**
+  String get gatePassBackBy;
+
+  /// Submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to warden'**
+  String get gatePassSend;
+
+  /// After sending.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to the warden.'**
+  String get gatePassSent;
+
+  /// Validation.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a return time in the future.'**
+  String get gatePassBackFuture;
+
+  /// Empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No gate passes yet.'**
+  String get gatePassNone;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the warden'**
+  String get gatePassRequested;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get gatePassIssued;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of hostel'**
+  String get gatePassOut;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get gatePassReturned;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get gatePassRejected;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get gatePassCancelled;
+
+  /// Under a pass.
+  ///
+  /// In en, this message translates to:
+  /// **'Back by {when}'**
+  String gatePassBackLine(String when);
+
+  /// Title and entry in More.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get certificatesTitle;
+
+  /// Button and form title.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a certificate'**
+  String get certificateRequestAction;
+
+  /// Picker label.
+  ///
+  /// In en, this message translates to:
+  /// **'Which certificate?'**
+  String get certificateChoose;
+
+  /// Field.
+  ///
+  /// In en, this message translates to:
+  /// **'What is it for? (optional)'**
+  String get certificatePurpose;
+
+  /// Validation.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in this field.'**
+  String get certificateRequiredField;
+
+  /// After requesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to the office.'**
+  String get certificateSent;
+
+  /// Empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No certificates yet.'**
+  String get certificateNone;
+
+  /// No templates.
+  ///
+  /// In en, this message translates to:
+  /// **'The college has no certificates open for request.'**
+  String get certificateNoTemplates;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the office'**
+  String get certificateRequested;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved, being prepared'**
+  String get certificateApproved;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get certificateRejected;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to download'**
+  String get certificateIssued;
+
+  /// Status.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn by the college'**
+  String get certificateRevoked;
+
+  /// Button.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get certificateDownload;
+
+  /// Serial number of an issued certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'No. {serial}'**
+  String certificateSerial(String serial);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3573,8 +4249,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

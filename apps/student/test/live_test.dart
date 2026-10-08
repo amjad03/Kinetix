@@ -79,7 +79,7 @@ void main() {
     // It comes first, above attendance.
     expect(
       tester.getTopLeft(find.byKey(const Key('liveBanner'))).dy,
-      lessThan(tester.getTopLeft(find.byKey(const Key('attendanceCard'))).dy),
+      lessThan(tester.getTopLeft(find.byKey(const Key('tileAttendance'))).dy),
     );
 
     await watch(tester);

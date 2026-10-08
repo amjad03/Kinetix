@@ -11,6 +11,10 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../campus/bus_screen.dart';
+import '../campus/certificates_screen.dart';
+import '../campus/gate_pass_screen.dart';
+import '../campus/leave_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
 import '../careers/careers.dart';
@@ -159,7 +163,7 @@ class ProfileTabState extends State<ProfileTab> {
       listenable: Listenable.merge([state, widget.study, ?widget.messages]),
       builder: (context, _) => CustomScrollView(
         slivers: [
-          SliverAppBar.large(title: Text(l.profile)),
+          SliverAppBar.large(title: Text(l.navMore)),
           CenteredSliver(
             flush: true,
             sliver: SliverList.list(
@@ -319,6 +323,35 @@ class ProfileTabState extends State<ProfileTab> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Kx.s16),
                   child: Text(feesNote(l), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+                ),
+                KxSectionHeader(l.moreSchoolLife),
+                ListTile(
+                  key: const Key('openLeave'),
+                  leading: const Icon(Icons.event_busy_outlined),
+                  title: Text(l.leaveApplyTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => LeaveScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openBus'),
+                  leading: const Icon(Icons.directions_bus_outlined),
+                  title: Text(l.busTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => BusScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openGatePass'),
+                  leading: const Icon(Icons.apartment_outlined),
+                  title: Text(l.gatePassTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => GatePassScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openCertificates'),
+                  leading: const Icon(Icons.workspace_premium_outlined),
+                  title: Text(l.certificatesTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => CertificatesScreen.open(context, widget.study.api, st.id),
                 ),
                 KxSectionHeader(l.settings),
                 LanguageTile(onChanged: state.setLanguage),

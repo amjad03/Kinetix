@@ -10,7 +10,7 @@ void main() {
   Finder profileList() => find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
 
   Future<void> open(WidgetTester tester, String key) async {
-    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Profile')));
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('More')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(Key(key)), 200, scrollable: profileList());
     await Scrollable.ensureVisible(tester.element(find.byKey(Key(key))), alignment: 0.5);

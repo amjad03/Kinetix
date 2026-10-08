@@ -12,6 +12,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/campus.dart';
+import '../core/exam_models.dart';
 import '../core/realtime.dart';
 import '../core/models.dart';
 
@@ -819,6 +820,103 @@ class FakeParentApi implements ParentApi {
   }
 
   final _references = <String, String>{};
+
+  // ── Exams ───────────────────────────────────────────────────────────────────────────────
+
+  ApiException? examsError;
+  ApiException? hallTicketError;
+  ApiException? revaluationError;
+
+  static DateTime _day(int offset) => DateTime(today.year, today.month, today.day).add(Duration(days: offset));
+
+  /// Per child id: an end-of-semester session in about a week and a published one.
+  late Map<String, List<ExamSession>> examSessions = {
+    'c1': [
+      ExamSession(
+        id: 'ex1',
+        name: 'Semester 3 end exam',
+        kind: 'regular',
+        startsOn: _day(9),
+        endsOn: _day(15),
+        status: 'scheduled',
+        hallTicket: const HallTicket(ticketNo: 'HT-EX1-U03BC001', blocked: false),
+        papers: [
+          ExamPaper(subjectId: 'sub1', subject: 'Corporate Accounting', examDate: _day(9), startsAt: const ClockTime(600), endsAt: const ClockTime(780), maxMarks: 60, room: 'Hall 2', seat: 14),
+          ExamPaper(subjectId: 'sub2', subject: 'Business Law', examDate: _day(12), startsAt: const ClockTime(840), endsAt: const ClockTime(1020), maxMarks: 60, room: 'Hall 2', seat: 14),
+        ],
+      ),
+      ExamSession(
+        id: 'ex0',
+        name: 'Semester 2 end exam',
+        kind: 'regular',
+        startsOn: _day(-120),
+        endsOn: _day(-114),
+        status: 'published',
+        papers: [ExamPaper(subjectId: 'sub1', subject: 'Financial Accounting', examDate: _day(-120), startsAt: const ClockTime(600), endsAt: const ClockTime(780), maxMarks: 60)],
+      ),
+    ],
+  };
+
+  Map<String, ExamResults> examResultsByChild = {
+    'c1': const ExamResults(
+      cgpa: 7.9,
+      terms: [
+        TermResult(
+          sessionId: 'ex0',
+          sessionName: 'Semester 2 end exam',
+          term: 2,
+          sgpa: 7.9,
+          cgpa: 7.9,
+          outcome: 'pass',
+          lines: [
+            ResultLine(code: 'BCOM-2.1', subject: 'Financial Accounting', credits: 4, percent: 82, grade: 'A', gradePoint: 8.2, passed: true),
+            ResultLine(code: 'BCOM-2.2', subject: 'Business Statistics', credits: 3, percent: 71, grade: 'B+', gradePoint: 7.1, passed: true),
+          ],
+        ),
+      ],
+    ),
+  };
+
+  @override
+  Future<List<ExamSession>> exams(String childId) async {
+    calls.add('exams $childId');
+    if (examsError != null) throw examsError!;
+    return List.of(examSessions[childId] ?? const []);
+  }
+
+  @override
+  Future<ExamResults> examResults(String childId) async {
+    calls.add('examResults $childId');
+    if (examsError != null) throw examsError!;
+    return examResultsByChild[childId] ?? const ExamResults(cgpa: null, terms: []);
+  }
+
+  @override
+  Future<Uint8List> hallTicketPdf(String sessionId, String childId) async {
+    calls.add('hallTicket $sessionId $childId');
+    if (hallTicketError != null) throw hallTicketError!;
+    return Uint8List.fromList('%PDF-1.4 hall ticket'.codeUnits);
+  }
+
+  @override
+  Future<void> requestRevaluation(String childId, {required String sessionId, required String subjectId, required String reason}) async {
+    calls.add('revaluation $childId $sessionId $subjectId $reason');
+    if (revaluationError != null) throw revaluationError!;
+    final list = examSessions[childId]!;
+    final i = list.indexWhere((e) => e.id == sessionId);
+    final cur = list[i];
+    list[i] = ExamSession(
+      id: cur.id,
+      name: cur.name,
+      kind: cur.kind,
+      startsOn: cur.startsOn,
+      endsOn: cur.endsOn,
+      status: cur.status,
+      hallTicket: cur.hallTicket,
+      papers: cur.papers,
+      revaluations: [...cur.revaluations, RevaluationRequest(id: 'rv${cur.revaluations.length + 1}', subjectId: subjectId, subject: cur.papers.firstWhere((p) => p.subjectId == subjectId).subject, status: RevaluationStatus.requested)],
+    );
+  }
 
   @override
   Future<FeeReceipt> receipt(String paymentId) async {

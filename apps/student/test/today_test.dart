@@ -9,14 +9,15 @@ import 'fake_api.dart';
 import 'helpers.dart';
 
 void main() {
-  testWidgets('greets the student with their class and roll number', (tester) async {
+  testWidgets('greets the student by name', (tester) async {
     await pumpApp(tester);
     expect(find.textContaining(', Aarav'), findsOneWidget);
-    expect(find.text('BCom Sem 3 A · Roll no. U03BC001'), findsOneWidget);
+    expect(find.text('Keep learning, keep growing!'), findsOneWidget);
   });
 
   testWidgets('the attendance card shows the rate, counts, a note and recent absences', (tester) async {
     await pumpApp(tester);
+    await scrollTo(tester, find.byKey(const Key('attendanceCard')));
     final card = find.byKey(const Key('attendanceCard'));
     expect(find.descendant(of: card, matching: find.text('80%')), findsOneWidget);
     expect(find.descendant(of: card, matching: find.text('Attended 24 of 30 classes')), findsOneWidget);
@@ -43,8 +44,11 @@ void main() {
         boards: [],
       ),
     );
-    expect(find.text('75%'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tileAttendance')), matching: find.text('75%')), findsOneWidget);
+    await scrollTo(tester, find.byKey(const Key('homeworkCard')));
     expect(find.text('Nothing due right now. New homework from your teachers will show here.'), findsOneWidget);
+    await scrollTo(tester, find.byKey(const Key('attendanceCard')));
+    expect(find.descendant(of: find.byKey(const Key('attendanceCard')), matching: find.text('75%')), findsOneWidget);
     await scrollTo(tester, find.byKey(const Key('boardsCard')));
     expect(find.text('When a teacher shares the class board after a lesson, it appears here so you can revise.'), findsOneWidget);
     expect(find.text('When a teacher records a lesson on the board and shares it, you can watch it again here.'), findsOneWidget);
@@ -62,6 +66,7 @@ void main() {
         boards: [],
       ),
     );
+    await scrollTo(tester, find.byKey(const Key('attendanceCard')));
     expect(find.text('No attendance has been taken for you in the last 30 days.'), findsOneWidget);
   });
 
@@ -71,7 +76,7 @@ void main() {
     api.summaryError = null;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('attendanceCard')), findsOneWidget);
+    expect(find.byKey(const Key('tileAttendance')), findsOneWidget);
   });
 
   testWidgets('homework due soon in words, past collapsed, detail with instructions', (tester) async {
@@ -94,6 +99,7 @@ void main() {
 
   testWidgets('attendance history groups marks by day and filters absences', (tester) async {
     final (api, _) = await pumpApp(tester);
+    await scrollTo(tester, find.text('See attendance history'));
     await tester.tap(find.text('See attendance history'));
     await tester.pumpAndSettle();
     expect(api.calls, contains('attendance s1'));
@@ -122,6 +128,7 @@ void main() {
 
   testWidgets('a count on Today opens the history showing only that status', (tester) async {
     await pumpApp(tester);
+    await scrollTo(tester, find.byKey(const Key('absentCount')));
     await tester.tap(find.byKey(const Key('absentCount')));
     await tester.pumpAndSettle();
     expect(find.text('Your attendance'), findsOneWidget);

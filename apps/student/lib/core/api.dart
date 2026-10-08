@@ -8,8 +8,9 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
-import 'models.dart';
 import 'campus.dart';
+import 'campus_services.dart';
+import 'models.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
 enum ApiProblem { timeout, unreachable, wrongLogin, notStudent, guardianAccount, teacherAccount, notLinked }
@@ -122,6 +123,36 @@ abstract class StudentApi {
 
   Future<FeeAccount> fees(String studentId);
   Future<FeeReceipt> receipt(String paymentId);
+
+  /// What the student sits and when, with hall tickets and revaluation requests (`GET /v1/results/students/:id/exams`).
+  Future<List<ExamSession>> exams(String studentId);
+
+  /// Published term results with SGPA and CGPA (`GET /v1/results/students/:id`).
+  Future<ExamResults> examResults(String studentId);
+
+  /// The hall ticket as a PDF; the server refuses (403) when the college withholds it.
+  Future<Uint8List> hallTicketPdf(String sessionId, String studentId);
+
+  /// Asks for a paper to be re-checked while the results are published and open.
+  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason});
+
+  /// The student's leave applications, newest first.
+  Future<List<LeaveRequest>> leaveRequests(String studentId);
+  Future<LeaveRequest> applyLeave(String studentId, {required DateTime from, required DateTime to, required String reason});
+  Future<LeaveRequest> cancelLeave(String id);
+
+  /// The student's bus: the seat and the bus right now (`GET /v1/transport/students/:id`).
+  Future<StudentBus> bus(String studentId);
+
+  /// The hostel bed and gate passes (`GET /v1/hostel/students/:id`).
+  Future<HostelView> hostel(String studentId);
+  Future<GatePass> requestGatePass(String studentId, {required String reason, required String destination, required DateTime backAt});
+
+  /// Certificates the student may ask for, and the ones already asked for.
+  Future<List<CertificateTemplate>> certificateTemplates();
+  Future<List<CertificateRequest>> myCertificates();
+  Future<CertificateRequest> requestCertificate(String studentId, {required String templateId, required String purpose, required Map<String, String> fields});
+  Future<Uint8List> certificatePdf(String id);
 
   /// Books the student has out and has returned, with fines.
   Future<LibraryAccount> library(String studentId);
@@ -375,6 +406,78 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<FeeReceipt> receipt(String paymentId) async => FeeReceipt.fromJson(await _send('GET', '/v1/fees/payments/$paymentId/receipt'));
+
+  @override
+  Future<List<ExamSession>> exams(String studentId) async {
+    final j = await _send('GET', '/v1/results/students/$studentId/exams') as Map<String, dynamic>;
+    return [for (final e in j['sessions'] as List) ExamSession.fromJson((e as Map).cast<String, dynamic>())];
+  }
+
+  @override
+  Future<ExamResults> examResults(String studentId) async => ExamResults.fromJson(await _send('GET', '/v1/results/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> hallTicketPdf(String sessionId, String studentId) => _download('/v1/exam-sessions/$sessionId/hall-tickets/$studentId/pdf');
+
+  @override
+  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason}) =>
+      _send('POST', '/v1/results/students/$studentId/revaluations', body: {'sessionId': sessionId, 'subjectId': subjectId, 'reason': reason});
+
+  @override
+  Future<List<LeaveRequest>> leaveRequests(String studentId) async =>
+      [for (final r in await _send('GET', '/v1/student-leave?studentId=$studentId') as List) LeaveRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<LeaveRequest> applyLeave(String studentId, {required DateTime from, required DateTime to, required String reason}) async =>
+      LeaveRequest.fromJson(await _send('POST', '/v1/student-leave', body: {'studentId': studentId, 'fromDate': isoDate(from), 'toDate': isoDate(to), 'reason': reason}) as Map<String, dynamic>);
+
+  @override
+  Future<LeaveRequest> cancelLeave(String id) async => LeaveRequest.fromJson(await _send('POST', '/v1/student-leave/$id/cancel') as Map<String, dynamic>);
+
+  @override
+  Future<StudentBus> bus(String studentId) async => StudentBus.fromJson(await _send('GET', '/v1/transport/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<HostelView> hostel(String studentId) async => HostelView.fromJson(await _send('GET', '/v1/hostel/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<GatePass> requestGatePass(String studentId, {required String reason, required String destination, required DateTime backAt}) async => GatePass.fromJson(
+    await _send('POST', '/v1/hostel/gate-passes/requests', body: {'studentId': studentId, 'reason': reason, 'destination': destination, 'expectedBackAt': backAt.toUtc().toIso8601String()}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<List<CertificateTemplate>> certificateTemplates() async =>
+      [for (final t in await _send('GET', '/v1/documents/templates/available') as List) CertificateTemplate.fromJson((t as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<CertificateRequest>> myCertificates() async =>
+      [for (final c in await _send('GET', '/v1/documents/requests/mine') as List) CertificateRequest.fromJson((c as Map).cast<String, dynamic>())];
+
+  @override
+  Future<CertificateRequest> requestCertificate(String studentId, {required String templateId, required String purpose, required Map<String, String> fields}) async =>
+      CertificateRequest.fromJson(await _send('POST', '/v1/documents/requests', body: {'templateId': templateId, 'studentId': studentId, 'purpose': purpose, 'fields': fields}) as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> certificatePdf(String id) => _download('/v1/documents/requests/$id/pdf');
+
+  /// A binary file (a PDF) the signed-in user may read.
+  Future<Uint8List> _download(String path) async {
+    final req = http.Request('GET', Uri.parse('$baseUrl$path'));
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    final http.Response res;
+    try {
+      res = await http.Response.fromStream(await _http.send(req)).timeout(const Duration(seconds: 60));
+    } on TimeoutException {
+      throw ApiException(0, 'The server is taking too long to respond. Try again.', problem: ApiProblem.timeout);
+    } catch (_) {
+      throw ApiException(0, "Can't reach KINETIX. Check your internet connection and the server address.", problem: ApiProblem.unreachable);
+    }
+    if (res.statusCode >= 400) {
+      if (res.statusCode == 401) onUnauthorized?.call();
+      throw ApiException(res.statusCode, _message(res), code: _code(res));
+    }
+    return res.bodyBytes;
+  }
 
   @override
   Future<void> registerPushDevice({required String token, required String platform}) async =>

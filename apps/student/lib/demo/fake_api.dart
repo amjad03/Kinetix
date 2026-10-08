@@ -10,6 +10,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
 import '../core/campus.dart';
+import '../core/campus_services.dart';
 import '../core/models.dart';
 
 /// In-memory [StudentApi] for widget tests.
@@ -550,6 +551,215 @@ class FakeStudentApi implements StudentApi {
       reference: 'UPI-778812',
       paidAt: DateTime(2026, 10, 2, 11, 30),
     );
+  }
+
+  // ── Exams, leave, bus, hostel and certificates ───────────────────────────────────────────────
+
+  ApiException? examsError;
+  ApiException? hallTicketError;
+
+  /// An end-of-semester session in about a week and a published internal one, as the server sends them.
+  late List<ExamSession> examSessions = [
+    ExamSession(
+      id: 'ex1',
+      name: 'Semester 3 end exam',
+      kind: 'regular',
+      startsOn: _day(9),
+      endsOn: _day(15),
+      status: 'scheduled',
+      hallTicket: const HallTicket(ticketNo: 'HT-EX1-U03BC001', blocked: false),
+      papers: [
+        ExamPaper(subjectId: 'sub1', subject: 'Corporate Accounting', examDate: _day(9), startsAt: const ClockTime(600), endsAt: const ClockTime(780), maxMarks: 60, room: 'Hall 2', seat: 14),
+        ExamPaper(subjectId: 'sub2', subject: 'Business Law', examDate: _day(12), startsAt: const ClockTime(840), endsAt: const ClockTime(1020), maxMarks: 60, room: 'Hall 2', seat: 14),
+      ],
+    ),
+    ExamSession(
+      id: 'ex0',
+      name: 'Semester 2 end exam',
+      kind: 'regular',
+      startsOn: _day(-120),
+      endsOn: _day(-114),
+      status: 'published',
+      papers: [ExamPaper(subjectId: 'sub1', subject: 'Financial Accounting', examDate: _day(-120), startsAt: const ClockTime(600), endsAt: const ClockTime(780), maxMarks: 60)],
+    ),
+  ];
+
+  ExamResults results = const ExamResults(
+    cgpa: 7.9,
+    terms: [
+      TermResult(
+        sessionId: 'ex0',
+        sessionName: 'Semester 2 end exam',
+        term: 2,
+        sgpa: 7.9,
+        cgpa: 7.9,
+        outcome: 'pass',
+        lines: [
+          ResultLine(code: 'BCOM-2.1', subject: 'Financial Accounting', credits: 4, percent: 82, grade: 'A', gradePoint: 8.2, passed: true),
+          ResultLine(code: 'BCOM-2.2', subject: 'Business Statistics', credits: 3, percent: 71, grade: 'B+', gradePoint: 7.1, passed: true),
+        ],
+      ),
+    ],
+  );
+
+  static DateTime _day(int offset) {
+    final n = DateTime.now();
+    return DateTime(n.year, n.month, n.day).add(Duration(days: offset));
+  }
+
+  @override
+  Future<List<ExamSession>> exams(String studentId) async {
+    calls.add('exams $studentId');
+    if (examsError != null) throw examsError!;
+    return List.of(examSessions);
+  }
+
+  @override
+  Future<ExamResults> examResults(String studentId) async {
+    calls.add('examResults $studentId');
+    if (examsError != null) throw examsError!;
+    return results;
+  }
+
+  @override
+  Future<Uint8List> hallTicketPdf(String sessionId, String studentId) async {
+    calls.add('hallTicket $sessionId');
+    if (hallTicketError != null) throw hallTicketError!;
+    return Uint8List.fromList('%PDF-1.4 hall ticket'.codeUnits);
+  }
+
+  ApiException? revaluationError;
+
+  @override
+  Future<void> requestRevaluation(String studentId, {required String sessionId, required String subjectId, required String reason}) async {
+    calls.add('revaluation $sessionId $subjectId $reason');
+    if (revaluationError != null) throw revaluationError!;
+    final i = examSessions.indexWhere((e) => e.id == sessionId);
+    final cur = examSessions[i];
+    examSessions[i] = ExamSession(
+      id: cur.id,
+      name: cur.name,
+      kind: cur.kind,
+      startsOn: cur.startsOn,
+      endsOn: cur.endsOn,
+      status: cur.status,
+      hallTicket: cur.hallTicket,
+      papers: cur.papers,
+      revaluations: [...cur.revaluations, RevaluationRequest(id: 'rv${cur.revaluations.length + 1}', subjectId: subjectId, subject: cur.papers.firstWhere((p) => p.subjectId == subjectId).subject, status: RevaluationStatus.requested)],
+    );
+  }
+
+  List<LeaveRequest> leaves = [
+    LeaveRequest(id: 'lv1', fromDate: DateTime(2026, 9, 14), toDate: DateTime(2026, 9, 15), reason: 'Fever', status: LeaveStatus.approved),
+  ];
+  ApiException? leaveError;
+
+  @override
+  Future<List<LeaveRequest>> leaveRequests(String studentId) async {
+    calls.add('leave $studentId');
+    if (leaveError != null) throw leaveError!;
+    return List.of(leaves);
+  }
+
+  @override
+  Future<LeaveRequest> applyLeave(String studentId, {required DateTime from, required DateTime to, required String reason}) async {
+    calls.add('applyLeave ${isoDate(from)} ${isoDate(to)} $reason');
+    if (leaveError != null) throw leaveError!;
+    final r = LeaveRequest(id: 'lv${leaves.length + 1}', fromDate: from, toDate: to, reason: reason, status: LeaveStatus.pending);
+    leaves = [r, ...leaves];
+    return r;
+  }
+
+  @override
+  Future<LeaveRequest> cancelLeave(String id) async {
+    calls.add('cancelLeave $id');
+    final cur = leaves.firstWhere((l) => l.id == id);
+    final r = LeaveRequest(id: cur.id, fromDate: cur.fromDate, toDate: cur.toDate, reason: cur.reason, status: LeaveStatus.cancelled);
+    leaves = [for (final l in leaves) l.id == id ? r : l];
+    return r;
+  }
+
+  StudentBus busInfo = const StudentBus(
+    assigned: true,
+    routeName: 'Route 4 · Jayanagar',
+    regNo: 'KA01AB1234',
+    stopId: 'st2',
+    stopName: 'Jayanagar 4th Block',
+    pickupTime: ClockTime(450),
+    stops: [BusStop(id: 'st1', name: 'Banashankari', seq: 1), BusStop(id: 'st2', name: 'Jayanagar 4th Block', seq: 2), BusStop(id: 'st3', name: 'Demo College', seq: 3)],
+    bus: BusPosition(speedKmh: 28, etaMinutes: 6, stopsAway: 1),
+  );
+  ApiException? busError;
+
+  @override
+  Future<StudentBus> bus(String studentId) async {
+    calls.add('bus $studentId');
+    if (busError != null) throw busError!;
+    return busInfo;
+  }
+
+  HostelView hostelView = HostelView(
+    resident: true,
+    block: 'Block A',
+    room: '101',
+    bed: 'B',
+    passes: [GatePass(id: 'gp1', reason: 'Weekend at home', destination: 'Mysuru', expectedBackAt: DateTime(2026, 9, 21, 19), status: 'returned')],
+  );
+  ApiException? hostelError;
+
+  @override
+  Future<HostelView> hostel(String studentId) async {
+    calls.add('hostel $studentId');
+    if (hostelError != null) throw hostelError!;
+    return hostelView;
+  }
+
+  @override
+  Future<GatePass> requestGatePass(String studentId, {required String reason, required String destination, required DateTime backAt}) async {
+    calls.add('gatePass $reason $destination');
+    if (hostelError != null) throw hostelError!;
+    final p = GatePass(id: 'gp${hostelView.passes.length + 1}', reason: reason, destination: destination, expectedBackAt: backAt, status: 'requested');
+    hostelView = HostelView(resident: true, block: hostelView.block, room: hostelView.room, bed: hostelView.bed, passes: [p, ...hostelView.passes]);
+    return p;
+  }
+
+  List<CertificateTemplate> certTemplates = const [
+    CertificateTemplate(id: 'ct1', kind: 'bonafide', name: 'Bonafide certificate', fields: []),
+    CertificateTemplate(id: 'ct2', kind: 'custom', name: 'Study certificate', fields: [CertificateField(key: 'purpose', label: 'Needed for', required: true)]),
+  ];
+  List<CertificateRequest> certs = [
+    CertificateRequest(id: 'c1', name: 'Bonafide certificate', status: 'issued', purpose: 'Bank account', serialNo: 'BON/2026/0007', issuedAt: DateTime(2026, 8, 3), createdAt: DateTime(2026, 8, 1)),
+  ];
+  ApiException? certError;
+
+  @override
+  Future<List<CertificateTemplate>> certificateTemplates() async {
+    calls.add('certTemplates');
+    if (certError != null) throw certError!;
+    return certTemplates;
+  }
+
+  @override
+  Future<List<CertificateRequest>> myCertificates() async {
+    calls.add('certs');
+    if (certError != null) throw certError!;
+    return List.of(certs);
+  }
+
+  @override
+  Future<CertificateRequest> requestCertificate(String studentId, {required String templateId, required String purpose, required Map<String, String> fields}) async {
+    calls.add('requestCert $templateId $purpose');
+    if (certError != null) throw certError!;
+    final t = certTemplates.firstWhere((t) => t.id == templateId);
+    final r = CertificateRequest(id: 'c${certs.length + 1}', name: t.name, status: 'requested', purpose: purpose, createdAt: DateTime.now());
+    certs = [r, ...certs];
+    return r;
+  }
+
+  @override
+  Future<Uint8List> certificatePdf(String id) async {
+    calls.add('certPdf $id');
+    return Uint8List.fromList('%PDF-1.4 certificate'.codeUnits);
   }
 
   // ── Profile, photo and badges ─────────────────────────────────────────────────────────────

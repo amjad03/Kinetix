@@ -7,19 +7,25 @@ import '../../core/family.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../calendar/calendar_screen.dart';
+import '../exams/exams_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
 import '../careers/careers.dart';
 import '../grievances/grievances.dart';
 import '../marks/marks.dart';
+import '../messages/messages_controller.dart';
+import '../messages/messages_tab.dart';
 import '../privacy/privacy.dart';
 import '../syllabus/syllabus_screen.dart';
 
 class ProfileTab extends StatelessWidget {
-  const ProfileTab({super.key, required this.state, required this.family});
+  const ProfileTab({super.key, required this.state, required this.family, this.messages});
 
   final AppState state;
   final FamilyController family;
+
+  /// Messages with the teachers open from here (they are not a tab of their own).
+  final MessagesController? messages;
 
   /// "+919800000001" → "+91 98000 00001"
   static String phone(String p) {
@@ -78,7 +84,7 @@ class ProfileTab extends StatelessWidget {
       listenable: family,
       builder: (context, _) => CustomScrollView(
         slivers: [
-          SliverAppBar.large(title: Text(l.profile)),
+          SliverAppBar.large(title: Text(l.navMore)),
           SliverList.list(
             children: [
               Padding(
@@ -129,6 +135,23 @@ class ProfileTab extends StatelessWidget {
                 ),
               if (family.children.isEmpty && !family.loading)
                 ListTile(leading: const Icon(Icons.info_outline), title: Text(l.noChildrenYet)),
+              if (messages != null) ...[
+                KxSectionHeader(l.moreFamily),
+                ListenableBuilder(
+                  listenable: messages!,
+                  builder: (context, _) => ListTile(
+                    key: const Key('openMessages'),
+                    minTileHeight: 64,
+                    leading: Badge(isLabelVisible: messages!.unread > 0, label: Text('${messages!.unread}'), child: const Icon(Icons.forum_outlined)),
+                    title: Text(l.navMessages),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      messages!.load();
+                      MessagesTab.open(context, messages!, family);
+                    },
+                  ),
+                ),
+              ],
               if (family.children.isNotEmpty) KxSectionHeader(l.feesReceiptsHeader),
               for (final child in family.children)
                 ListTile(
@@ -148,6 +171,14 @@ class ProfileTab extends StatelessWidget {
                   subtitle: Text(l.resultsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => ResultsScreen.open(context, family, child),
+                ),
+                ListTile(
+                  key: Key('profile-exams-${child.id}'),
+                  leading: const Icon(Icons.event_note_outlined),
+                  title: Text(family.children.length == 1 ? l.examsTitle : l.examsForChild(child.firstName)),
+                  subtitle: Text(l.examsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ExamsScreen.open(context, family.api, child),
                 ),
                 ListTile(
                   key: Key('profile-library-${child.id}'),

@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -3219,10 +3212,327 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name}\'s grievances'**
   String childGrievances(Object name);
+
+  /// Title of the exams screen and its bottom tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams'**
+  String get examsTitle;
+
+  /// Section: the papers of an exam session, by date.
+  ///
+  /// In en, this message translates to:
+  /// **'Timetable'**
+  String get examTimetable;
+
+  /// Section: published term results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get examResultsTitle;
+
+  /// Empty state of the timetable.
+  ///
+  /// In en, this message translates to:
+  /// **'No exams are scheduled yet. They appear here once the college publishes the timetable.'**
+  String get noExamsScheduled;
+
+  /// Empty state of the results.
+  ///
+  /// In en, this message translates to:
+  /// **'No results published yet.'**
+  String get noExamResults;
+
+  /// The dates an exam session runs.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} – {to}'**
+  String examDates(String from, String to);
+
+  /// A paper's start and end time.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String examPaperTime(String start, String end);
+
+  /// Where the student sits.
+  ///
+  /// In en, this message translates to:
+  /// **'{room} · Seat {seat}'**
+  String examSeat(String room, int seat);
+
+  /// A paper's maximum marks.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} marks'**
+  String examMaxMarks(int n);
+
+  /// The ticket that lets a student into the exam hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket'**
+  String get hallTicket;
+
+  /// Button: open the hall ticket PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Download hall ticket'**
+  String get hallTicketDownload;
+
+  /// The college is withholding the hall ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket withheld: {reason}'**
+  String hallTicketWithheld(String reason);
+
+  /// Withheld without a reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket withheld. Contact the examination office.'**
+  String get hallTicketWithheldNoReason;
+
+  /// No hall ticket yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall ticket not issued yet.'**
+  String get hallTicketNotIssued;
+
+  /// Shown when no app can open a downloaded PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this file. Install an app that opens PDFs.'**
+  String get fileOpenFailed;
+
+  /// Semester grade point average.
+  ///
+  /// In en, this message translates to:
+  /// **'SGPA'**
+  String get sgpaLabel;
+
+  /// Cumulative grade point average.
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA'**
+  String get cgpaLabel;
+
+  /// Headline of the results.
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA {value}'**
+  String cgpaLine(String value);
+
+  /// A term's result.
+  ///
+  /// In en, this message translates to:
+  /// **'SGPA {value}'**
+  String sgpaLine(String value);
+
+  /// Outcome of a term.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get resultPass;
+
+  /// Outcome of a term when a paper is not cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Not cleared'**
+  String get resultFail;
+
+  /// One subject's result.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% · Grade {grade}'**
+  String resultLine(String percent, String grade);
+
+  /// Button on a result line.
+  ///
+  /// In en, this message translates to:
+  /// **'Request revaluation'**
+  String get revaluationRequest;
+
+  /// Prompt in the revaluation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Why should this paper be re-checked?'**
+  String get revaluationWhy;
+
+  /// Validation.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a few words (at least 3 letters).'**
+  String get revaluationNeedReason;
+
+  /// Snackbar after requesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. The examination office will decide.'**
+  String get revaluationSent;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation requested'**
+  String get revaluationRequested;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation accepted'**
+  String get revaluationAccepted;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation declined'**
+  String get revaluationRejected;
+
+  /// Status of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Revaluation done'**
+  String get revaluationCompleted;
+
+  /// Label for a session that has finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get examDone;
+
+  /// Bottom navigation tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees'**
+  String get navFees;
+
+  /// Bottom navigation tab: messages, exams, profile and the rest.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get navMore;
+
+  /// Tab on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get homeTabOverview;
+
+  /// Tab on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Academics'**
+  String get homeTabAcademics;
+
+  /// Tab on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees'**
+  String get homeTabFees;
+
+  /// Tab on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get homeTabAttendance;
+
+  /// Title of the child switcher sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a child'**
+  String get chooseChild;
+
+  /// Under the child's name when there are several children.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to switch child'**
+  String get switchChildHint;
+
+  /// Home tile: average of published marks.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal marks'**
+  String get tileInternalMarks;
+
+  /// Home tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignments'**
+  String get tileAssignments;
+
+  /// Home tile value.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} pending'**
+  String tilePendingValue(int n);
+
+  /// Home tile value when nothing is pending.
+  ///
+  /// In en, this message translates to:
+  /// **'All done'**
+  String get tileAllDone;
+
+  /// Home tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall progress'**
+  String get tileOverall;
+
+  /// Overall progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get progressExcellent;
+
+  /// Overall progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get progressGood;
+
+  /// Overall progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair'**
+  String get progressFair;
+
+  /// Overall progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get progressNeedsAttention;
+
+  /// Overall progress with no attendance or marks.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough yet'**
+  String get progressNoData;
+
+  /// Section on Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent updates'**
+  String get recentUpdates;
+
+  /// Entry in More and on Academics.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s exams'**
+  String examsForChild(String name);
+
+  /// Under the Exams entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Timetable, hall ticket and results'**
+  String get examsSubtitle;
+
+  /// Heading in More for messages and exams.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get moreFamily;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3231,8 +3541,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

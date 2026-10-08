@@ -178,7 +178,8 @@ abstract final class KinetixTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         color: light ? scheme.surfaceContainerLowest : scheme.surfaceContainerLow,
-        shape: const RoundedRectangleBorder(borderRadius: Kx.radiusLg),
+        // A hairline on phones, as on KxCard, so every card reads as one family.
+        shape: RoundedRectangleBorder(borderRadius: Kx.radiusLg, side: large ? BorderSide.none : BorderSide(color: scheme.outlineVariant)),
         margin: EdgeInsets.zero,
       ),
       filledButtonTheme: FilledButtonThemeData(

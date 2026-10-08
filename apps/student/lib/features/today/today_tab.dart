@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/streak.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
@@ -17,12 +20,26 @@ import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
 import '../recordings/recordings.dart';
+import 'home_sections.dart';
 
 /// The student's day: the class being taught live (if any), attendance, homework due soon,
 /// results, library books, messages (colleges), lesson recordings (missed ones first) and the
 /// boards teachers shared after class.
-class TodayTab extends StatelessWidget {
-  const TodayTab({super.key, required this.study, required this.me, this.messages, this.onAsk, this.onOpenTopic, this.now});
+class TodayTab extends StatefulWidget {
+  const TodayTab({
+    super.key,
+    required this.study,
+    required this.me,
+    this.messages,
+    this.onAsk,
+    this.onOpenTopic,
+    this.now,
+    this.prefs,
+    this.unread = 0,
+    this.onOpenUpdates,
+    this.onOpenExams,
+    this.onOpenMore,
+  });
 
   final StudyController study;
   final Me me;
@@ -39,11 +56,46 @@ class TodayTab extends StatelessWidget {
   /// For tests; defaults to the device clock.
   final DateTime Function()? now;
 
+  /// Where the learning streak is kept; no streak is counted without it.
+  final SharedPreferences? prefs;
+
+  /// Unread notifications, shown on the bell.
+  final int unread;
+  final VoidCallback? onOpenUpdates;
+  final VoidCallback? onOpenExams;
+  final VoidCallback? onOpenMore;
+
+  @override
+  State<TodayTab> createState() => _TodayTabState();
+}
+
+class _TodayTabState extends State<TodayTab> {
+  int _streak = 1;
+  final _homeworkKey = GlobalKey();
+
+  StudyController get study => widget.study;
+  Me get me => widget.me;
+
+  @override
+  void initState() {
+    super.initState();
+    final prefs = widget.prefs;
+    if (prefs != null) {
+      LearningStreak.touch(prefs, study.student.id, (widget.now ?? DateTime.now)()).then((n) {
+        if (mounted) setState(() => _streak = n);
+      });
+    }
+  }
+
   void _openCalendar(BuildContext context) => CalendarScreen.open(context, study.api, program: study.student.programName);
 
   @override
   Widget build(BuildContext context) {
     final student = study.student;
+    final messages = widget.messages;
+    final now = widget.now;
+    final onAsk = widget.onAsk;
+    final onOpenTopic = widget.onOpenTopic;
     return ListenableBuilder(
       listenable: Listenable.merge([study, ?messages]),
       builder: (context, _) {
@@ -61,14 +113,29 @@ class TodayTab extends StatelessWidget {
             ),
           if (study.error != null) ErrorBanner(study.error!, onRetry: study.loadSummary),
           if (summary != null) ...[
+            NextClassCard(study: study, onOpenTopic: (id) => onOpenTopic?.call(id)),
+            HomeTiles(
+              study: study,
+              summary: summary,
+              streak: _streak,
+              onAttendance: () => AttendanceScreen.open(context, study.api, student),
+              onAssignments: () {
+                final ctx = _homeworkKey.currentContext;
+                if (ctx != null) Scrollable.ensureVisible(ctx, duration: Kx.medium, curve: Kx.emphasized);
+              },
+              onExams: () => widget.onOpenExams?.call(),
+            ),
+            SectionTitle(context.l10n.continueLearning),
+            ContinueLearningCard(study: study, onOpenTopic: (id) => onOpenTopic?.call(id)),
+            KeyedSubtree(key: _homeworkKey, child: HomeworkCard(summary: summary, study: study)),
+            // The detail behind the attendance tile: counts, a plain note and recent absences.
             AttendanceCard(
               summary: summary,
               onOpen: () => AttendanceScreen.open(context, study.api, student),
               onStatus: (s) => AttendanceScreen.open(context, study.api, student, status: s),
             ),
-            HomeworkCard(summary: summary, study: study),
             if (study.comingUp.any) ComingUpCard(study: study, onOpenTopic: onOpenTopic),
-            if (onAsk != null) _AskCard(onAsk: onAsk!),
+            if (onAsk != null) _AskCard(onAsk: onAsk),
             ResultsCard(study: study),
             if (messages?.available ?? false) MessagesCard(controller: messages!),
             LibraryCard(study: study),
@@ -94,27 +161,23 @@ class TodayTab extends StatelessWidget {
                   top: Kx.s24,
                   bottom: Kx.s8,
                   sliver: SliverToBoxAdapter(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.l10n.greetingName(context.fmt.greeting((now ?? DateTime.now)()), me.firstName),
-                                key: const Key('greeting'),
-                                style: context.text.headlineSmall,
-                              ),
-                              const SizedBox(height: Kx.s4),
-                              Text(
-                                '${student.sectionName} · ${context.l10n.rollNo(student.rollNo)}',
-                                style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
+                    child: KxHomeHeader(
+                      greeting: context.l10n.greetingName(context.fmt.greeting((now ?? DateTime.now)()), me.firstName),
+                      subtitle: context.l10n.homeSubtitle,
+                      trailing: [
+                        IconButton(
+                          key: const Key('openUpdates'),
+                          tooltip: context.l10n.notificationsTooltip,
+                          constraints: const BoxConstraints(minWidth: Kx.target, minHeight: Kx.target),
+                          onPressed: widget.onOpenUpdates,
+                          icon: Badge(isLabelVisible: widget.unread > 0, label: Text('${widget.unread}'), child: const Icon(Icons.notifications_outlined)),
                         ),
-                        const SizedBox(width: Kx.s12),
-                        KxAvatar(name: me.fullName, size: 48, image: study.api.photo(me.photoUrl)),
+                        IconButton(
+                          key: const Key('openProfile'),
+                          constraints: const BoxConstraints(minWidth: Kx.target, minHeight: Kx.target),
+                          onPressed: widget.onOpenMore,
+                          icon: KxAvatar(name: me.fullName, size: 36, image: study.api.photo(me.photoUrl)),
+                        ),
                       ],
                     ),
                   ),

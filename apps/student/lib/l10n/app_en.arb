@@ -1211,5 +1211,574 @@
   "grievanceStatus_escalated": "Sent to a senior",
   "grievanceStatus_resolved": "Resolved",
   "grievanceStatus_closed": "Closed",
-  "grievanceStatus_reopened": "Reopened"
+  "grievanceStatus_reopened": "Reopened",
+  "examsTitle": "Exams",
+  "@examsTitle": {
+    "description": "Title of the exams screen and its bottom tab."
+  },
+  "examTimetable": "Timetable",
+  "@examTimetable": {
+    "description": "Section: the papers of an exam session, by date."
+  },
+  "examResultsTitle": "Results",
+  "@examResultsTitle": {
+    "description": "Section: published term results."
+  },
+  "noExamsScheduled": "No exams are scheduled yet. They appear here once the college publishes the timetable.",
+  "@noExamsScheduled": {
+    "description": "Empty state of the timetable."
+  },
+  "noExamResults": "No results published yet.",
+  "@noExamResults": {
+    "description": "Empty state of the results."
+  },
+  "examDates": "{from} – {to}",
+  "@examDates": {
+    "description": "The dates an exam session runs.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "examPaperTime": "{start} – {end}",
+  "@examPaperTime": {
+    "description": "A paper's start and end time.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "examSeat": "{room} · Seat {seat}",
+  "@examSeat": {
+    "description": "Where the student sits.",
+    "placeholders": {
+      "room": {
+        "type": "String"
+      },
+      "seat": {
+        "type": "int"
+      }
+    }
+  },
+  "examMaxMarks": "{n} marks",
+  "@examMaxMarks": {
+    "description": "A paper's maximum marks.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "hallTicket": "Hall ticket",
+  "@hallTicket": {
+    "description": "The ticket that lets a student into the exam hall."
+  },
+  "hallTicketDownload": "Download hall ticket",
+  "@hallTicketDownload": {
+    "description": "Button: open the hall ticket PDF."
+  },
+  "hallTicketWithheld": "Hall ticket withheld: {reason}",
+  "@hallTicketWithheld": {
+    "description": "The college is withholding the hall ticket.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "hallTicketWithheldNoReason": "Hall ticket withheld. Contact the examination office.",
+  "@hallTicketWithheldNoReason": {
+    "description": "Withheld without a reason."
+  },
+  "hallTicketNotIssued": "Hall ticket not issued yet.",
+  "@hallTicketNotIssued": {
+    "description": "No hall ticket yet."
+  },
+  "fileOpenFailed": "Couldn't open this file. Install an app that opens PDFs.",
+  "@fileOpenFailed": {
+    "description": "Shown when no app can open a downloaded PDF."
+  },
+  "sgpaLabel": "SGPA",
+  "@sgpaLabel": {
+    "description": "Semester grade point average."
+  },
+  "cgpaLabel": "CGPA",
+  "@cgpaLabel": {
+    "description": "Cumulative grade point average."
+  },
+  "cgpaLine": "CGPA {value}",
+  "@cgpaLine": {
+    "description": "Headline of the results.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sgpaLine": "SGPA {value}",
+  "@sgpaLine": {
+    "description": "A term's result.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "resultPass": "Passed",
+  "@resultPass": {
+    "description": "Outcome of a term."
+  },
+  "resultFail": "Not cleared",
+  "@resultFail": {
+    "description": "Outcome of a term when a paper is not cleared."
+  },
+  "resultLine": "{percent}% · Grade {grade}",
+  "@resultLine": {
+    "description": "One subject's result.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "revaluationRequest": "Request revaluation",
+  "@revaluationRequest": {
+    "description": "Button on a result line."
+  },
+  "revaluationWhy": "Why should this paper be re-checked?",
+  "@revaluationWhy": {
+    "description": "Prompt in the revaluation dialog."
+  },
+  "revaluationNeedReason": "Write a few words (at least 3 letters).",
+  "@revaluationNeedReason": {
+    "description": "Validation."
+  },
+  "revaluationSent": "Request sent. The examination office will decide.",
+  "@revaluationSent": {
+    "description": "Snackbar after requesting."
+  },
+  "revaluationRequested": "Revaluation requested",
+  "@revaluationRequested": {
+    "description": "Status of a request."
+  },
+  "revaluationAccepted": "Revaluation accepted",
+  "@revaluationAccepted": {
+    "description": "Status of a request."
+  },
+  "revaluationRejected": "Revaluation declined",
+  "@revaluationRejected": {
+    "description": "Status of a request."
+  },
+  "revaluationCompleted": "Revaluation done",
+  "@revaluationCompleted": {
+    "description": "Status of a request."
+  },
+  "examDone": "Done",
+  "@examDone": {
+    "description": "Label for a session that has finished."
+  },
+  "navMyLearning": "My Learning",
+  "@navMyLearning": {
+    "description": "Bottom navigation tab: ask, syllabus, labs and code."
+  },
+  "navExams": "Exams",
+  "@navExams": {
+    "description": "Bottom navigation tab."
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "Bottom navigation tab: profile and everything else."
+  },
+  "homeSubtitle": "Keep learning, keep growing!",
+  "@homeSubtitle": {
+    "description": "Line under the greeting on Home."
+  },
+  "notificationsTooltip": "Notifications",
+  "@notificationsTooltip": {
+    "description": "Tooltip of the bell on Home."
+  },
+  "nextClass": "Next class",
+  "@nextClass": {
+    "description": "Card on Home."
+  },
+  "nextClassNone": "No class coming up right now.",
+  "@nextClassNone": {
+    "description": "Next class card with nothing to show."
+  },
+  "nextClassLive": "{subject} is live now",
+  "@nextClassLive": {
+    "description": "Next class card while a class is live.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "nextClassTopic": "Coming up in {subject}",
+  "@nextClassTopic": {
+    "description": "Next class card: the next topic in the plan.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "watchLive": "Join",
+  "@watchLive": {
+    "description": "Button on the next class card when it is live."
+  },
+  "viewAction": "View",
+  "@viewAction": {
+    "description": "Button on the next class card."
+  },
+  "tilePendingAssignments": "Assignments",
+  "@tilePendingAssignments": {
+    "description": "Home tile label."
+  },
+  "tilePendingValue": "{n} pending",
+  "@tilePendingValue": {
+    "description": "Home tile value.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tileAllDone": "All done",
+  "@tileAllDone": {
+    "description": "Home tile value when nothing is pending."
+  },
+  "tileUpcomingExam": "Upcoming exam",
+  "@tileUpcomingExam": {
+    "description": "Home tile label."
+  },
+  "tileExamDays": "In {n} days",
+  "@tileExamDays": {
+    "description": "Home tile value: days to the next paper.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tileExamToday": "Today",
+  "@tileExamToday": {
+    "description": "Home tile value: an exam today."
+  },
+  "tileExamNone": "None yet",
+  "@tileExamNone": {
+    "description": "Home tile value: no exam scheduled."
+  },
+  "tileStreak": "Learning streak",
+  "@tileStreak": {
+    "description": "Home tile label: days in a row the student opened the app."
+  },
+  "tileStreakDays": "{n, plural, =1{1 day} other{{n} days}}",
+  "@tileStreakDays": {
+    "description": "Home tile value.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "continueLearning": "Continue learning",
+  "@continueLearning": {
+    "description": "Section on Home."
+  },
+  "continueLearningEmpty": "Ask KINETIX AI a doubt or open a topic from My Learning.",
+  "@continueLearningEmpty": {
+    "description": "Continue learning card with no plan yet."
+  },
+  "continueProgress": "{taught} of {total} topics taught",
+  "@continueProgress": {
+    "description": "Under the progress bar of Continue learning.",
+    "placeholders": {
+      "taught": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "moreSchoolLife": "Campus",
+  "@moreSchoolLife": {
+    "description": "Heading in More for leave, bus, hostel and certificates."
+  },
+  "leaveApplyTitle": "Apply for leave",
+  "@leaveApplyTitle": {
+    "description": "Title of the form and the entry in More."
+  },
+  "leaveScreenTitle": "Leave",
+  "@leaveScreenTitle": {
+    "description": "Title of the leave screen."
+  },
+  "leaveFromLabel": "From",
+  "@leaveFromLabel": {
+    "description": "First day of leave."
+  },
+  "leaveToLabel": "To",
+  "@leaveToLabel": {
+    "description": "Last day of leave."
+  },
+  "leaveReasonLabel": "Reason",
+  "@leaveReasonLabel": {
+    "description": "Why the student needs leave."
+  },
+  "leaveReasonRequired": "Write a few words (at least 3 letters).",
+  "@leaveReasonRequired": {
+    "description": "Validation."
+  },
+  "leaveSend": "Send request",
+  "@leaveSend": {
+    "description": "Submit button."
+  },
+  "leaveSentSnack": "Request sent to your class teacher.",
+  "@leaveSentSnack": {
+    "description": "After sending."
+  },
+  "leaveNone": "No leave applications yet.",
+  "@leaveNone": {
+    "description": "Empty state."
+  },
+  "leaveStatusPending": "Waiting",
+  "@leaveStatusPending": {
+    "description": "Leave status."
+  },
+  "leaveStatusApproved": "Approved",
+  "@leaveStatusApproved": {
+    "description": "Leave status."
+  },
+  "leaveStatusRejected": "Not approved",
+  "@leaveStatusRejected": {
+    "description": "Leave status."
+  },
+  "leaveStatusCancelled": "Withdrawn",
+  "@leaveStatusCancelled": {
+    "description": "Leave status."
+  },
+  "leaveWithdraw": "Withdraw",
+  "@leaveWithdraw": {
+    "description": "Button on a waiting request."
+  },
+  "leaveToBeforeFrom": "The last day cannot be before the first day.",
+  "@leaveToBeforeFrom": {
+    "description": "Validation."
+  },
+  "busTitle": "My bus",
+  "@busTitle": {
+    "description": "Title and entry in More."
+  },
+  "busNone": "You do not have a bus seat. Ask the transport office.",
+  "@busNone": {
+    "description": "Not assigned."
+  },
+  "busRoute": "Route",
+  "@busRoute": {
+    "description": "Label."
+  },
+  "busYourStop": "Your stop",
+  "@busYourStop": {
+    "description": "Label."
+  },
+  "busPickup": "Pickup",
+  "@busPickup": {
+    "description": "Label: pickup time."
+  },
+  "busVehicle": "Vehicle",
+  "@busVehicle": {
+    "description": "Label."
+  },
+  "busStopsHeading": "Stops",
+  "@busStopsHeading": {
+    "description": "Heading."
+  },
+  "busEta": "Arrives at your stop in about {n} min",
+  "@busEta": {
+    "description": "Live ETA.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "busPassed": "The bus has passed your stop",
+  "@busPassed": {
+    "description": "Live."
+  },
+  "busStopsAway": "{n, plural, =0{At your stop} =1{1 stop away} other{{n} stops away}}",
+  "@busStopsAway": {
+    "description": "Live.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "busNotRunning": "The bus is not on the road right now.",
+  "@busNotRunning": {
+    "description": "No live trip."
+  },
+  "gatePassTitle": "Hostel gate pass",
+  "@gatePassTitle": {
+    "description": "Title and entry in More."
+  },
+  "gatePassNotResident": "You are not in the hostel. Gate passes are for hostel residents.",
+  "@gatePassNotResident": {
+    "description": "Not a resident."
+  },
+  "gatePassRoom": "{block} · Room {room}",
+  "@gatePassRoom": {
+    "description": "Where the student lives.",
+    "placeholders": {
+      "block": {
+        "type": "String"
+      },
+      "room": {
+        "type": "String"
+      }
+    }
+  },
+  "gatePassRequest": "Request a gate pass",
+  "@gatePassRequest": {
+    "description": "Button and form title."
+  },
+  "gatePassReason": "Reason",
+  "@gatePassReason": {
+    "description": "Field."
+  },
+  "gatePassDestination": "Where are you going?",
+  "@gatePassDestination": {
+    "description": "Field."
+  },
+  "gatePassBackBy": "Back by",
+  "@gatePassBackBy": {
+    "description": "Field."
+  },
+  "gatePassSend": "Send to warden",
+  "@gatePassSend": {
+    "description": "Submit."
+  },
+  "gatePassSent": "Request sent to the warden.",
+  "@gatePassSent": {
+    "description": "After sending."
+  },
+  "gatePassBackFuture": "Choose a return time in the future.",
+  "@gatePassBackFuture": {
+    "description": "Validation."
+  },
+  "gatePassNone": "No gate passes yet.",
+  "@gatePassNone": {
+    "description": "Empty."
+  },
+  "gatePassRequested": "Waiting for the warden",
+  "@gatePassRequested": {
+    "description": "Status."
+  },
+  "gatePassIssued": "Approved",
+  "@gatePassIssued": {
+    "description": "Status."
+  },
+  "gatePassOut": "Out of hostel",
+  "@gatePassOut": {
+    "description": "Status."
+  },
+  "gatePassReturned": "Returned",
+  "@gatePassReturned": {
+    "description": "Status."
+  },
+  "gatePassRejected": "Not approved",
+  "@gatePassRejected": {
+    "description": "Status."
+  },
+  "gatePassCancelled": "Cancelled",
+  "@gatePassCancelled": {
+    "description": "Status."
+  },
+  "gatePassBackLine": "Back by {when}",
+  "@gatePassBackLine": {
+    "description": "Under a pass.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "certificatesTitle": "Certificates",
+  "@certificatesTitle": {
+    "description": "Title and entry in More."
+  },
+  "certificateRequestAction": "Request a certificate",
+  "@certificateRequestAction": {
+    "description": "Button and form title."
+  },
+  "certificateChoose": "Which certificate?",
+  "@certificateChoose": {
+    "description": "Picker label."
+  },
+  "certificatePurpose": "What is it for? (optional)",
+  "@certificatePurpose": {
+    "description": "Field."
+  },
+  "certificateRequiredField": "Fill in this field.",
+  "@certificateRequiredField": {
+    "description": "Validation."
+  },
+  "certificateSent": "Request sent to the office.",
+  "@certificateSent": {
+    "description": "After requesting."
+  },
+  "certificateNone": "No certificates yet.",
+  "@certificateNone": {
+    "description": "Empty."
+  },
+  "certificateNoTemplates": "The college has no certificates open for request.",
+  "@certificateNoTemplates": {
+    "description": "No templates."
+  },
+  "certificateRequested": "Waiting for the office",
+  "@certificateRequested": {
+    "description": "Status."
+  },
+  "certificateApproved": "Approved, being prepared",
+  "@certificateApproved": {
+    "description": "Status."
+  },
+  "certificateRejected": "Not approved",
+  "@certificateRejected": {
+    "description": "Status."
+  },
+  "certificateIssued": "Ready to download",
+  "@certificateIssued": {
+    "description": "Status."
+  },
+  "certificateRevoked": "Withdrawn by the college",
+  "@certificateRevoked": {
+    "description": "Status."
+  },
+  "certificateDownload": "Download PDF",
+  "@certificateDownload": {
+    "description": "Button."
+  },
+  "certificateSerial": "No. {serial}",
+  "@certificateSerial": {
+    "description": "Serial number of an issued certificate.",
+    "placeholders": {
+      "serial": {
+        "type": "String"
+      }
+    }
+  }
 }

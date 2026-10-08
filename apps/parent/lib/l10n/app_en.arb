@@ -1322,5 +1322,279 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "examsTitle": "Exams",
+  "@examsTitle": {
+    "description": "Title of the exams screen and its bottom tab."
+  },
+  "examTimetable": "Timetable",
+  "@examTimetable": {
+    "description": "Section: the papers of an exam session, by date."
+  },
+  "examResultsTitle": "Results",
+  "@examResultsTitle": {
+    "description": "Section: published term results."
+  },
+  "noExamsScheduled": "No exams are scheduled yet. They appear here once the college publishes the timetable.",
+  "@noExamsScheduled": {
+    "description": "Empty state of the timetable."
+  },
+  "noExamResults": "No results published yet.",
+  "@noExamResults": {
+    "description": "Empty state of the results."
+  },
+  "examDates": "{from} – {to}",
+  "@examDates": {
+    "description": "The dates an exam session runs.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "examPaperTime": "{start} – {end}",
+  "@examPaperTime": {
+    "description": "A paper's start and end time.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "examSeat": "{room} · Seat {seat}",
+  "@examSeat": {
+    "description": "Where the student sits.",
+    "placeholders": {
+      "room": {
+        "type": "String"
+      },
+      "seat": {
+        "type": "int"
+      }
+    }
+  },
+  "examMaxMarks": "{n} marks",
+  "@examMaxMarks": {
+    "description": "A paper's maximum marks.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "hallTicket": "Hall ticket",
+  "@hallTicket": {
+    "description": "The ticket that lets a student into the exam hall."
+  },
+  "hallTicketDownload": "Download hall ticket",
+  "@hallTicketDownload": {
+    "description": "Button: open the hall ticket PDF."
+  },
+  "hallTicketWithheld": "Hall ticket withheld: {reason}",
+  "@hallTicketWithheld": {
+    "description": "The college is withholding the hall ticket.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "hallTicketWithheldNoReason": "Hall ticket withheld. Contact the examination office.",
+  "@hallTicketWithheldNoReason": {
+    "description": "Withheld without a reason."
+  },
+  "hallTicketNotIssued": "Hall ticket not issued yet.",
+  "@hallTicketNotIssued": {
+    "description": "No hall ticket yet."
+  },
+  "fileOpenFailed": "Couldn't open this file. Install an app that opens PDFs.",
+  "@fileOpenFailed": {
+    "description": "Shown when no app can open a downloaded PDF."
+  },
+  "sgpaLabel": "SGPA",
+  "@sgpaLabel": {
+    "description": "Semester grade point average."
+  },
+  "cgpaLabel": "CGPA",
+  "@cgpaLabel": {
+    "description": "Cumulative grade point average."
+  },
+  "cgpaLine": "CGPA {value}",
+  "@cgpaLine": {
+    "description": "Headline of the results.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sgpaLine": "SGPA {value}",
+  "@sgpaLine": {
+    "description": "A term's result.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "resultPass": "Passed",
+  "@resultPass": {
+    "description": "Outcome of a term."
+  },
+  "resultFail": "Not cleared",
+  "@resultFail": {
+    "description": "Outcome of a term when a paper is not cleared."
+  },
+  "resultLine": "{percent}% · Grade {grade}",
+  "@resultLine": {
+    "description": "One subject's result.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "revaluationRequest": "Request revaluation",
+  "@revaluationRequest": {
+    "description": "Button on a result line."
+  },
+  "revaluationWhy": "Why should this paper be re-checked?",
+  "@revaluationWhy": {
+    "description": "Prompt in the revaluation dialog."
+  },
+  "revaluationNeedReason": "Write a few words (at least 3 letters).",
+  "@revaluationNeedReason": {
+    "description": "Validation."
+  },
+  "revaluationSent": "Request sent. The examination office will decide.",
+  "@revaluationSent": {
+    "description": "Snackbar after requesting."
+  },
+  "revaluationRequested": "Revaluation requested",
+  "@revaluationRequested": {
+    "description": "Status of a request."
+  },
+  "revaluationAccepted": "Revaluation accepted",
+  "@revaluationAccepted": {
+    "description": "Status of a request."
+  },
+  "revaluationRejected": "Revaluation declined",
+  "@revaluationRejected": {
+    "description": "Status of a request."
+  },
+  "revaluationCompleted": "Revaluation done",
+  "@revaluationCompleted": {
+    "description": "Status of a request."
+  },
+  "examDone": "Done",
+  "@examDone": {
+    "description": "Label for a session that has finished."
+  },
+  "navFees": "Fees",
+  "@navFees": {
+    "description": "Bottom navigation tab."
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "Bottom navigation tab: messages, exams, profile and the rest."
+  },
+  "homeTabOverview": "Overview",
+  "@homeTabOverview": {
+    "description": "Tab on Home."
+  },
+  "homeTabAcademics": "Academics",
+  "@homeTabAcademics": {
+    "description": "Tab on Home."
+  },
+  "homeTabFees": "Fees",
+  "@homeTabFees": {
+    "description": "Tab on Home."
+  },
+  "homeTabAttendance": "Attendance",
+  "@homeTabAttendance": {
+    "description": "Tab on Home."
+  },
+  "chooseChild": "Choose a child",
+  "@chooseChild": {
+    "description": "Title of the child switcher sheet."
+  },
+  "switchChildHint": "Tap to switch child",
+  "@switchChildHint": {
+    "description": "Under the child's name when there are several children."
+  },
+  "tileInternalMarks": "Internal marks",
+  "@tileInternalMarks": {
+    "description": "Home tile: average of published marks."
+  },
+  "tileAssignments": "Assignments",
+  "@tileAssignments": {
+    "description": "Home tile."
+  },
+  "tilePendingValue": "{n} pending",
+  "@tilePendingValue": {
+    "description": "Home tile value.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tileAllDone": "All done",
+  "@tileAllDone": {
+    "description": "Home tile value when nothing is pending."
+  },
+  "tileOverall": "Overall progress",
+  "@tileOverall": {
+    "description": "Home tile."
+  },
+  "progressExcellent": "Excellent",
+  "@progressExcellent": {
+    "description": "Overall progress."
+  },
+  "progressGood": "Good",
+  "@progressGood": {
+    "description": "Overall progress."
+  },
+  "progressFair": "Fair",
+  "@progressFair": {
+    "description": "Overall progress."
+  },
+  "progressNeedsAttention": "Needs attention",
+  "@progressNeedsAttention": {
+    "description": "Overall progress."
+  },
+  "progressNoData": "Not enough yet",
+  "@progressNoData": {
+    "description": "Overall progress with no attendance or marks."
+  },
+  "recentUpdates": "Recent updates",
+  "@recentUpdates": {
+    "description": "Section on Home."
+  },
+  "examsForChild": "{name}'s exams",
+  "@examsForChild": {
+    "description": "Entry in More and on Academics.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "examsSubtitle": "Timetable, hall ticket and results",
+  "@examsSubtitle": {
+    "description": "Under the Exams entry."
+  },
+  "moreFamily": "Family",
+  "@moreFamily": {
+    "description": "Heading in More for messages and exams."
   }
 }

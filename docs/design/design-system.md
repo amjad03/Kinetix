@@ -65,3 +65,36 @@ Code: `packages/kinetix_ui` (themes, tokens, shared widgets) is used by the Boar
 - **Messages appear above the toolbar**, never over it (`showBoardMessage`), so they don't catch
   the teacher's next tap.
 - Everything works at 1280×720 and 1920×1080; tests check both sizes for overflow.
+
+## Mobile apps (Teacher, Student, Parent)
+
+The three phone apps use the same tokens as the ERP and the board, and one set of Home building
+blocks from `packages/kinetix_ui` (`home_widgets.dart`): `KxHomeHeader`, `KxCard`, `KxStatTile`
+and `KxTileGrid`, `KxActionTile` and `KxActionGrid`, `KxProgressBar`, `KxFeedRow`, `KxIconBox`.
+Tone (`KxTone`) picks the tonal container and its on-colour in light and dark, so a screen never
+chooses a colour by hand. Marigold (`KxTone.spark`) is for AI only (the Teacher's AI Assistant)
+and the learning streak flame.
+
+| App | Bottom navigation | Home |
+|---|---|---|
+| Teacher | Home, Classes, Students, More | Greeting; today's classes with **Start class**; quick actions (attendance, assignment, quiz, smartboard, study material, AI assistant); leave requests to approve for heads (one tap) |
+| Student | Home, My Learning, Exams, More | Next class; tiles (attendance, pending assignments, upcoming exam, learning streak); continue learning; what is due; notifications from the bell |
+| Parent | Home, Updates, Fees, More | Child switcher card; Overview / Academics / Fees / Attendance; tiles (attendance, internal marks, assignments, overall progress in one plain word); recent updates |
+
+Rules the screens follow:
+
+- Every tap target is at least 48 dp; the whole card is the target when it opens something.
+- Cards are white on the cool-grey ground with a hairline border (the `Card` theme does this too,
+  so older screens match).
+- The Home headline stops growing at 1.3x text scale, so it never pushes the content off a small
+  phone; everything else follows the setting. Layout tests run at 360x640 and 2x text in English,
+  Hindi and Kannada.
+- Every list has a loading, an empty and an error state (`KxLoading`, `KxEmptyState`,
+  `ErrorBanner` with Retry).
+- The Parent app is plainer: bigger type (`KxHomeHeader(big: true)`), one word for how things are
+  going, and the child switcher is a card, not chips.
+
+Screenshots (light and dark) are in `docs/design/mobile/`. Regenerate them with
+`KINETIX_SCREENSHOTS=1 flutter test --update-goldens test/home_test.dart` in `apps/teacher`
+(`test/screenshots_test.dart` in the Student and Parent apps). Without the variable those tests
+are skipped, so the normal run never compares pixels.

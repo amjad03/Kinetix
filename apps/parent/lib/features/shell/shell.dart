@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../core/family.dart';
 import '../../core/realtime.dart';
+import 'package:kinetix_ui/kinetix_ui.dart';
+
 import '../../l10n/l10n.dart';
+import '../fees/fees_screen.dart';
 import '../home/home_tab.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
@@ -15,7 +18,7 @@ import '../updates/notifications_prompt.dart';
 import '../updates/updates_controller.dart';
 import '../updates/updates_tab.dart';
 
-/// The signed-in shell: Home, Messages, Updates and Profile behind a bottom NavigationBar.
+/// The signed-in shell: Home, Updates, Fees and More behind a bottom NavigationBar. Messages open from More.
 class ParentShell extends StatefulWidget {
   const ParentShell({super.key, required this.state});
 
@@ -37,7 +40,7 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
   /// Pushes arriving while the app is open.
   StreamSubscription<void>? _pushes;
 
-  static const _messagesTab = 1, _updatesTab = 2;
+  static const _updatesTab = 1, _moreTab = 3;
 
   @override
   void initState() {
@@ -77,7 +80,11 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
     if (!mounted) return;
     final n = updates.items.where((n) => n.id == tap.notificationId).firstOrNull;
     // Not in the inbox (any more): the tab for its kind.
-    if (n == null) return _go(tap.kind == 'message' ? _messagesTab : _updatesTab);
+    if (n == null) {
+      if (tap.kind != 'message') return _go(_updatesTab);
+      _go(_moreTab);
+      return MessagesTab.open(context, messages, family);
+    }
     await UpdatesTab.openNotification(context, n, controller: updates, family: family, messages: messages);
   }
 
@@ -113,7 +120,7 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
   void _go(int i) {
     // Fresh on every visit: new notifications and replies arrive while the app is open.
     if (i == _updatesTab && _tab != _updatesTab && !updates.loading) updates.load();
-    if (i == _messagesTab && _tab != _messagesTab && !messages.loading) messages.load();
+    if (i == _moreTab && _tab != _moreTab && !messages.loading) messages.load();
     setState(() => _tab = i);
   }
 
@@ -126,10 +133,10 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
       body: IndexedStack(
         index: _tab,
         children: [
-          HomeTab(family: family, me: widget.state.me!),
-          MessagesTab(controller: messages, family: family),
+          HomeTab(family: family, me: widget.state.me!, updates: updates, onOpenUpdates: () => _go(_updatesTab)),
           UpdatesTab(controller: updates, family: family, messages: messages),
-          ProfileTab(state: widget.state, family: family),
+          _FeesTab(family: family),
+          ProfileTab(state: widget.state, family: family, messages: messages),
         ],
       ),
       bottomNavigationBar: ListenableBuilder(
@@ -138,21 +145,45 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
           selectedIndex: _tab,
           onDestinationSelected: _go,
           destinations: [
-            NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l.navHome),
+            NavigationDestination(key: const Key('navHome'), icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l.navHome),
             NavigationDestination(
-              icon: _badge(const Key('messagesBadge'), messages.unread, Icons.forum_outlined),
-              selectedIcon: _badge(null, messages.unread, Icons.forum),
-              label: l.navMessages,
-            ),
-            NavigationDestination(
+              key: const Key('navUpdates'),
               icon: _badge(const Key('updatesBadge'), updates.unread, Icons.notifications_outlined),
               selectedIcon: _badge(null, updates.unread, Icons.notifications),
               label: l.navUpdates,
             ),
-            NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: l.navProfile),
+            NavigationDestination(key: const Key('navFees'), icon: const Icon(Icons.account_balance_wallet_outlined), selectedIcon: const Icon(Icons.account_balance_wallet), label: l.navFees),
+            NavigationDestination(
+              key: const Key('navMore'),
+              icon: _badge(const Key('messagesBadge'), messages.unread, Icons.menu),
+              selectedIcon: _badge(null, messages.unread, Icons.menu),
+              label: l.navMore,
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+/// Fees for the selected child, as a tab: what is due, what is paid, and every receipt.
+class _FeesTab extends StatelessWidget {
+  const _FeesTab({required this.family});
+
+  final FamilyController family;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: family,
+    builder: (context, _) {
+      final child = family.selected;
+      if (child == null) {
+        return Scaffold(
+          appBar: AppBar(title: Text(context.l10n.navFees)),
+          body: family.loading ? const Center(child: CircularProgressIndicator()) : KxEmptyState(icon: Icons.family_restroom, message: context.l10n.noChildrenLinked),
+        );
+      }
+      return FeesScreen(key: ValueKey(child.id), family: family, child: child);
+    },
+  );
 }

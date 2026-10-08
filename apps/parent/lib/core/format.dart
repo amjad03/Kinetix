@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart' show LessonFmt;
 
 import '../l10n/app_localizations.dart';
+import 'models.dart' show ClockTime;
 
 /// Date and money labels in the style Indian families expect, in the app's language:
 /// "Thu 1 Oct", "गुरु 1 अक्टू॰", "₹1,23,456". Digits stay Western and money uses Indian grouping
@@ -33,6 +34,9 @@ class Fmt {
 
   /// "2:05 pm"
   String time(DateTime d) => LessonFmt.time(d, _locale);
+
+  /// A timetable time: "10:00 AM".
+  String clock(ClockTime t) => time(DateTime(2000, 1, 1, t.minutes ~/ 60, t.minutes % 60));
 
   static int daysBetween(DateTime from, DateTime to) =>
       DateTime(to.year, to.month, to.day).difference(DateTime(from.year, from.month, from.day)).inDays;

@@ -106,7 +106,7 @@ void main() {
     await pumpApp(tester, size: const Size(1280, 800));
     expect(find.byKey(const Key('rail')), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
-    final card = tester.getRect(find.byKey(const Key('attendanceCard')));
+    final card = tester.getRect(find.byKey(const Key('nextClassCard')));
     expect(card.width, lessThanOrEqualTo(720));
     // Centred in the space right of the rail.
     final rail = tester.getRect(find.byKey(const Key('rail')));

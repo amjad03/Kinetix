@@ -18,9 +18,23 @@ import 'helpers.dart';
 /// language before sign-in.
 void main() {
   /// Taps a bottom-bar destination by its icon (labels change with the language).
+  /// Taps a bottom-bar destination by its icon; Messages open from More (forum_outlined), Profile is More.
   Future<void> openTab(WidgetTester tester, IconData icon) async {
-    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.byIcon(icon)));
+    final bar = find.byType(NavigationBar);
+    for (var i = 0; i < 4 && bar.hitTestable().evaluate().isEmpty; i++) {
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+      await tester.pumpAndSettle();
+    }
+    final messages = icon == Icons.forum_outlined;
+    final tabIcon = messages || icon == Icons.person_outline ? Icons.menu : icon;
+    await tester.tap(find.descendant(of: bar, matching: find.byIcon(tabIcon)));
     await tester.pumpAndSettle();
+    if (messages) {
+      await tester.ensureVisible(find.byKey(const Key('openMessages')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('openMessages')));
+      await tester.pumpAndSettle();
+    }
   }
 
   /// [WidgetTester.pageBack] finds the back button by its English tooltip.

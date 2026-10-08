@@ -32,9 +32,22 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Taps a bottom-bar destination by its label; Profile is More now, and Messages open from More.
   Future<void> openTab(WidgetTester tester, String label) async {
-    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)));
+    final bar = find.byType(NavigationBar);
+    for (var i = 0; i < 4 && bar.hitTestable().evaluate().isEmpty; i++) {
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+      await tester.pumpAndSettle();
+    }
+    final name = const {'Profile': 'More', 'Messages': 'More'}[label] ?? label;
+    await tester.tap(find.descendant(of: bar, matching: find.text(name)));
     await tester.pumpAndSettle();
+    if (label == 'Messages') {
+      await tester.ensureVisible(find.byKey(const Key('openMessages')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('openMessages')));
+      await tester.pumpAndSettle();
+    }
   }
 
   late FakeAttachmentPicker picker;

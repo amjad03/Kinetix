@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart' show RecordingInfo;
 
 import 'api.dart';
+import 'campus_services.dart';
 import 'live.dart';
 import 'models.dart';
 
@@ -24,7 +25,7 @@ class StudyController extends ChangeNotifier {
   DateTime get today => summary?.today ?? DateTime.now();
 
   /// Everything on Today. Each part fails on its own, so one problem never hides the rest.
-  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadQuestion(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans(), loadBadges()]);
+  Future<void> load() => Future.wait([loadSummary(), loadLive(), loadQuestion(), loadMarks(), loadLibrary(), loadCalendar(), loadPlans(), loadBadges(), loadExams()]);
 
   Future<void> loadSummary() async {
     loading = true;
@@ -92,6 +93,34 @@ class StudyController extends ChangeNotifier {
 
   /// Badges teachers awarded, newest first (null until loaded).
   List<BadgeAward>? badges;
+
+  /// The exam sessions the student sits, for the "Upcoming exam" tile (null until loaded; a
+  /// failure leaves it null: the Exams tab shows the error).
+  List<ExamSession>? exams;
+
+  Future<void> loadExams() async {
+    try {
+      exams = await api.exams(student.id);
+    } on ApiException {
+      // The tile reads "None yet"; the Exams tab explains.
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// The next paper from [today] on (today's included), with its session's name.
+  ({ExamSession session, ExamPaper paper})? get nextPaper {
+    final day = DateTime(today.year, today.month, today.day);
+    ({ExamSession session, ExamPaper paper})? best;
+    for (final s in exams ?? const <ExamSession>[]) {
+      if (s.resultsOut) continue;
+      for (final p in s.papers) {
+        if (p.examDate.isBefore(day)) continue;
+        if (best == null || p.examDate.isBefore(best.paper.examDate)) best = (session: s, paper: p);
+      }
+    }
+    return best;
+  }
 
   Future<void> loadBadges() async {
     try {

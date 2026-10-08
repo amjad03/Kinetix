@@ -55,11 +55,26 @@ Future<(FakeStudentApi, AppState)> pumpApp(
   return (api, state);
 }
 
-/// Taps a bottom-bar (or rail) destination by its label.
+/// Taps a bottom-bar (or rail) destination by its label. The old names still work: Learn is
+/// My Learning, Profile is More, Today is Home, and Updates is the bell on Home.
 Future<void> openTab(WidgetTester tester, String label) async {
-  await tester.tap(
-    find.descendant(of: find.byWidgetPredicate((w) => w is NavigationBar || w is NavigationRail), matching: find.text(label)),
-  );
+  final bar = find.byWidgetPredicate((w) => w is NavigationBar || w is NavigationRail);
+  // Pages opened from Home (Updates) cover the bar: back out first.
+  for (var i = 0; i < 4 && bar.hitTestable().evaluate().isEmpty; i++) {
+    tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+    await tester.pumpAndSettle();
+  }
+  final name = const {'Learn': 'My Learning', 'Profile': 'More', 'Today': 'Home'}[label] ?? label;
+  if (label == 'Updates') {
+    await tester.tap(find.descendant(of: bar, matching: find.text('Home')));
+    await tester.pumpAndSettle();
+    // Home keeps its place: the bell is at the top.
+    await tester.drag(find.byType(CustomScrollView).hitTestable().first, const Offset(0, 4000));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('openUpdates')));
+  } else {
+    await tester.tap(find.descendant(of: bar, matching: find.text(name)));
+  }
   await tester.pumpAndSettle();
 }
 

@@ -61,7 +61,7 @@ void main() {
 
   testWidgets('no badges yet, in Hindi', (tester) async {
     await pumpApp(tester, prefs: {'language': 'hi'});
-    await openTab(tester, 'प्रोफ़ाइल');
+    await openTab(tester, 'और');
     expect(find.text('अभी कोई बैज नहीं'), findsOneWidget);
   });
 }

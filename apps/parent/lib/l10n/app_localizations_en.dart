@@ -36,12 +36,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String overdueBy(int days) {
-    String _temp0 = intl.Intl.pluralLogic(
-      days,
-      locale: localeName,
-      other: '$days days',
-      one: '1 day',
-    );
+    String _temp0 = intl.Intl.pluralLogic(days, locale: localeName, other: '$days days', one: '1 day');
     return 'Overdue by $_temp0';
   }
 
@@ -132,12 +127,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String pages(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count pages',
-      one: '1 page',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count pages', one: '1 page');
     return '$_temp0';
   }
 
@@ -152,12 +142,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errTimeout =>
-      'The server is taking too long to respond. Try again.';
+  String get errTimeout => 'The server is taking too long to respond. Try again.';
 
   @override
-  String get errUnreachable =>
-      'Can\'t reach KINETIX. Check your internet connection and the server address.';
+  String get errUnreachable => 'Can\'t reach KINETIX. Check your internet connection and the server address.';
 
   @override
   String get errForbidden => 'You don\'t have access to this.';
@@ -221,15 +209,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterValidEmail => 'Enter a valid email address';
 
   @override
-  String get enterValidPhone =>
-      'Enter a 10-digit phone number or a valid email';
+  String get enterValidPhone => 'Enter a 10-digit phone number or a valid email';
 
   @override
   String get enterPassword => 'Enter your password';
 
   @override
-  String get enterServer =>
-      'Enter a server address like https://api.kinetix.in';
+  String get enterServer => 'Enter a server address like https://api.kinetix.in';
 
   @override
   String get language => 'Language';
@@ -381,8 +367,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noBooksOut => 'No books out right now.';
 
   @override
-  String get fineRule =>
-      'The library charges a fine for each day a book is returned late.';
+  String get fineRule => 'The library charges a fine for each day a book is returned late.';
 
   @override
   String returnedHeading(Object count) {
@@ -425,8 +410,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get marksExplainer =>
-      'Marks scored out of the total, across published assessments.';
+  String get marksExplainer => 'Marks scored out of the total, across published assessments.';
 
   @override
   String get assessments => 'Assessments';
@@ -474,8 +458,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recordingNotShared =>
-      'This recording is no longer shared with the class.';
+  String get recordingNotShared => 'This recording is no longer shared with the class.';
 
   @override
   String get classBoard => 'Class board';
@@ -516,12 +499,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String feesToPay(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count fees to pay',
-      one: '1 fee to pay',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count fees to pay', one: '1 fee to pay');
     return '$_temp0';
   }
 
@@ -582,8 +560,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptNotFound => 'This receipt was not found.';
 
   @override
-  String get receiptCopied =>
-      'Receipt copied. Paste it into a message or email.';
+  String get receiptCopied => 'Receipt copied. Paste it into a message or email.';
 
   @override
   String get receipt => 'Receipt';
@@ -665,8 +642,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pullForEarlier => 'Pull down for earlier messages';
 
   @override
-  String get teachersReply =>
-      'Teachers reply when they can, usually during college hours.';
+  String get teachersReply => 'Teachers reply when they can, usually during college hours.';
 
   @override
   String get messageCopied => 'Message copied';
@@ -694,12 +670,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String attendedOf(Object attended, int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count classes',
-      one: '1 class',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count classes', one: '1 class');
     return 'Attended $attended of $_temp0';
   }
 
@@ -748,16 +719,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tryAgain => 'Try again';
 
   @override
-  String get signInHint =>
-      'Use the phone number or email you gave your child\'s college';
+  String get signInHint => 'Use the phone number or email you gave your child\'s college';
 
   @override
-  String get errNotGuardian =>
-      'This app is for parents and guardians. Ask your institution to link your account to your child.';
+  String get errNotGuardian => 'This app is for parents and guardians. Ask your institution to link your account to your child.';
 
   @override
-  String get errTeacherAccount =>
-      'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.';
+  String get errTeacherAccount => 'This app is for parents and guardians. Teachers can use the KINETIX Teacher app.';
 
   @override
   String homeSubtitle(Object name) {
@@ -765,15 +733,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noChildrenLinked =>
-      'No children are linked to your account yet.\nAsk your child\'s college to add you as their parent.';
+  String get noChildrenLinked => 'No children are linked to your account yet.\nAsk your child\'s college to add you as their parent.';
 
   @override
   String get attendanceFewMissed => 'Missed a few classes recently.';
 
   @override
-  String get attendanceBelow75 =>
-      'Below 75%. Colleges usually need 75% to sit exams.';
+  String get attendanceBelow75 => 'Below 75%. Colleges usually need 75% to sit exams.';
 
   @override
   String noAttendanceFor(Object name, Object days) {
@@ -781,8 +747,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get nothingDue =>
-      'Nothing due right now. New homework from teachers will show here.';
+  String get nothingDue => 'Nothing due right now. New homework from teachers will show here.';
 
   @override
   String get inClass => 'In class';
@@ -811,12 +776,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String askedNoAnswer(int count, Object subject) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count questions',
-      one: '1 question',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count questions', one: '1 question');
     return 'Was asked $_temp0 in $subject but did not answer.';
   }
 
@@ -832,12 +792,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String answeredDetail(int count, Object subject, Object detail) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count questions',
-      one: '1 question',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count questions', one: '1 question');
     return 'Answered $_temp0 in $subject, $detail.';
   }
 
@@ -889,8 +844,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shownOnHome => 'Shown on Home';
 
   @override
-  String get noChildrenYet =>
-      'No children are linked yet. Ask your child\'s college.';
+  String get noChildrenYet => 'No children are linked yet. Ask your child\'s college.';
 
   @override
   String get feesReceiptsHeader => 'Fees & receipts';
@@ -957,8 +911,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noRecordingsShared =>
-      'No lesson recordings have been shared with the class yet.';
+  String get noRecordingsShared => 'No lesson recordings have been shared with the class yet.';
 
   @override
   String get boardNotShared => 'This board is no longer shared with the class.';
@@ -1019,8 +972,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterAmount => 'Enter an amount';
 
   @override
-  String get enterAmountRupees =>
-      'Enter an amount in rupees, like 2500 or 2500.50';
+  String get enterAmountRupees => 'Enter an amount in rupees, like 2500 or 2500.50';
 
   @override
   String get smallestPayment => 'The smallest payment is ₹1';
@@ -1062,8 +1014,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get paymentNotSetUp =>
-      'Online payment isn\'t set up by the college yet. Please pay at the fees counter.';
+  String get paymentNotSetUp => 'Online payment isn\'t set up by the college yet. Please pay at the fees counter.';
 
   @override
   String get paymentPhonesOnly =>
@@ -1091,8 +1042,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The payment app did not return a confirmation. If money left your account, the fee will update shortly.';
 
   @override
-  String get failCouldNotOpen =>
-      'Couldn\'t open the payment screen. Try again.';
+  String get failCouldNotOpen => 'Couldn\'t open the payment screen. Try again.';
 
   @override
   String get failNetwork => 'No internet connection. Check it and try again.';
@@ -1119,12 +1069,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noMessagesChildren =>
-      'No messages yet.\nWrite to your children\'s teachers about homework, absences or progress.';
+  String get noMessagesChildren => 'No messages yet.\nWrite to your children\'s teachers about homework, absences or progress.';
 
   @override
-  String get noChildrenLinkedShort =>
-      'No children are linked to your account yet.\nAsk your child\'s college.';
+  String get noChildrenLinkedShort => 'No children are linked to your account yet.\nAsk your child\'s college.';
 
   @override
   String get aboutHeader => 'About';
@@ -1140,8 +1088,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noUpdates =>
-      'No updates yet.\nAbsences, homework and messages from the college will appear here.';
+  String get noUpdates => 'No updates yet.\nAbsences, homework and messages from the college will appear here.';
 
   @override
   String get phoneOrEmail => 'Phone or email';
@@ -1150,24 +1097,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterPhoneOrEmail => 'Enter your phone number or email';
 
   @override
-  String get errAccountInactive =>
-      'Your account is not active. Ask your institution\'s office.';
+  String get errAccountInactive => 'Your account is not active. Ask your institution\'s office.';
 
   @override
-  String get errSignInAgain =>
-      'Your sign-in has expired. Please sign in again.';
+  String get errSignInAgain => 'Your sign-in has expired. Please sign in again.';
 
   @override
-  String get errTooLarge =>
-      'A file is too big. Each photo or PDF can be up to 8 MB.';
+  String get errTooLarge => 'A file is too big. Each photo or PDF can be up to 8 MB.';
 
   @override
-  String get errConflict =>
-      'This was changed in the meantime. Refresh and try again.';
+  String get errConflict => 'This was changed in the meantime. Refresh and try again.';
 
   @override
-  String get errSubjectNotInClass =>
-      'That subject is not taught in this class.';
+  String get errSubjectNotInClass => 'That subject is not taught in this class.';
 
   @override
   String get errSubmissionEmpty => 'Write an answer or add a photo.';
@@ -1176,8 +1118,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errSubmissionChecked => 'This homework has already been checked.';
 
   @override
-  String get errSubmissionStudentOnly =>
-      'This student hands in their own homework from their own login.';
+  String get errSubmissionStudentOnly => 'This student hands in their own homework from their own login.';
 
   @override
   String get calendar => 'Calendar';
@@ -1192,8 +1133,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeCalendar => 'See the full calendar';
 
   @override
-  String get calendarEmpty =>
-      'No holidays, exams or events in the coming months.';
+  String get calendarEmpty => 'No holidays, exams or events in the coming months.';
 
   @override
   String get kindHoliday => 'Holiday';
@@ -1206,12 +1146,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'In $count days',
-      one: 'In 1 day',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'In $count days', one: 'In 1 day');
     return '$_temp0';
   }
 
@@ -1312,8 +1247,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addPdf => 'Add a PDF';
 
   @override
-  String get filesHint =>
-      'Up to 5 photos or PDFs, 8 MB each. Photos are made smaller before they are sent.';
+  String get filesHint => 'Up to 5 photos or PDFs, 8 MB each. Photos are made smaller before they are sent.';
 
   @override
   String uploading(String percent) {
@@ -1340,8 +1274,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacy => 'Privacy';
 
   @override
-  String get privacySubtitle =>
-      'What KINETIX may do with the student\'s information';
+  String get privacySubtitle => 'What KINETIX may do with the student\'s information';
 
   @override
   String get notNow => 'Not now';
@@ -1393,8 +1326,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noticeWhoDecides => 'Who decides';
 
   @override
-  String get noticeSchool =>
-      'School (students under 18): the parent or guardian decides for the child.';
+  String get noticeSchool => 'School (students under 18): the parent or guardian decides for the child.';
 
   @override
   String get noticeCollege =>
@@ -1438,8 +1370,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keeping the student\'s attendance, homework, marks, fees and library records so the institution can run classes and keep you informed.';
 
   @override
-  String get purposeDataNo =>
-      'the institution still keeps the records it must by law; you will not get updates in the app.';
+  String get purposeDataNo => 'the institution still keeps the records it must by law; you will not get updates in the app.';
 
   @override
   String get purposeAiTitle => 'KINETIX AI';
@@ -1449,8 +1380,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The student asking KINETIX AI for help with doubts. Questions are processed on servers in India and are not used to train AI models.';
 
   @override
-  String get purposeAiNo =>
-      'KINETIX AI is turned off for the student. Everything else works.';
+  String get purposeAiNo => 'KINETIX AI is turned off for the student. Everything else works.';
 
   @override
   String get purposeRecordingsTitle => 'Class recordings and live classes';
@@ -1460,23 +1390,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'The student\'s voice or image appearing in lesson recordings and live classes shared with the class.';
 
   @override
-  String get purposeRecordingsNo =>
-      'teachers are asked not to record the student; recordings already shared stay with the class.';
+  String get purposeRecordingsNo => 'teachers are asked not to record the student; recordings already shared stay with the class.';
 
   @override
   String get purposePhotosTitle => 'Photos';
 
   @override
-  String get purposePhotosBody =>
-      'Photos of the student (for example on homework or in class activities) shared with the class.';
+  String get purposePhotosBody => 'Photos of the student (for example on homework or in class activities) shared with the class.';
 
   @override
-  String get purposePhotosNo =>
-      'photos of the student are not shared with the class.';
+  String get purposePhotosNo => 'photos of the student are not shared with the class.';
 
   @override
-  String get errConsentGuardianDecides =>
-      'You can\'t change these choices for this student.';
+  String get errConsentGuardianDecides => 'You can\'t change these choices for this student.';
 
   @override
   String childWork(String name) {
@@ -1484,8 +1410,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get returnedNote =>
-      'The teacher has asked for this to be done again. Read the remark, then hand it in again.';
+  String get returnedNote => 'The teacher has asked for this to be done again. Read the remark, then hand it in again.';
 
   @override
   String handInFor(String name) {
@@ -1493,8 +1418,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get handInForNote =>
-      'Hand in here for a child who doesn\'t have their own KINETIX login.';
+  String get handInForNote => 'Hand in here for a child who doesn\'t have their own KINETIX login.';
 
   @override
   String consentTitleFor(String name) {
@@ -1535,12 +1459,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get syllabusProgressSubtitle =>
-      'What the class has been taught in each subject';
+  String get syllabusProgressSubtitle => 'What the class has been taught in each subject';
 
   @override
-  String get syllabusSubjectsEmpty =>
-      'Subjects appear here once teachers set homework in them.';
+  String get syllabusSubjectsEmpty => 'Subjects appear here once teachers set homework in them.';
 
   @override
   String syllabusNotLinked(String subject) {
@@ -1549,12 +1471,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chaptersTopics(int chapters) {
-    String _temp0 = intl.Intl.pluralLogic(
-      chapters,
-      locale: localeName,
-      other: '$chapters chapters',
-      one: '1 chapter',
-    );
+    String _temp0 = intl.Intl.pluralLogic(chapters, locale: localeName, other: '$chapters chapters', one: '1 chapter');
     return '$_temp0';
   }
 
@@ -1631,12 +1548,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usePhoneCode => 'Get a code on your phone instead';
 
   @override
-  String get errOtpInvalid =>
-      'That code is wrong or has expired. Check the SMS or ask for a new code.';
+  String get errOtpInvalid => 'That code is wrong or has expired. Check the SMS or ask for a new code.';
 
   @override
-  String get errOtpTooMany =>
-      'Too many codes asked for. Wait a few minutes and try again.';
+  String get errOtpTooMany => 'Too many codes asked for. Wait a few minutes and try again.';
 
   @override
   String get notificationsTitle => 'Get updates on this phone?';
@@ -1645,8 +1560,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsAllow => 'Turn on';
 
   @override
-  String get otpHint =>
-      'We\'ll text a code to the phone number you gave your child\'s college';
+  String get otpHint => 'We\'ll text a code to the phone number you gave your child\'s college';
 
   @override
   String get notificationsBody =>
@@ -1707,17 +1621,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get busVehicle => 'Vehicle';
 
   @override
-  String get busNotRunning =>
-      'No bus running right now. The live map appears when the driver starts the trip.';
+  String get busNotRunning => 'No bus running right now. The live map appears when the driver starts the trip.';
 
   @override
   String busArrivingIn(int minutes) {
-    String _temp0 = intl.Intl.pluralLogic(
-      minutes,
-      locale: localeName,
-      other: 'Arriving in $minutes min',
-      one: 'Arriving in 1 min',
-    );
+    String _temp0 = intl.Intl.pluralLogic(minutes, locale: localeName, other: 'Arriving in $minutes min', one: 'Arriving in 1 min');
     return '$_temp0';
   }
 
@@ -1750,13 +1658,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String careersAcademics(Object cgpa, int backlogs) {
-    String _temp0 = intl.Intl.pluralLogic(
-      backlogs,
-      locale: localeName,
-      other: '$backlogs backlogs',
-      one: '1 backlog',
-      zero: 'no backlogs',
-    );
+    String _temp0 = intl.Intl.pluralLogic(backlogs, locale: localeName, other: '$backlogs backlogs', one: '1 backlog', zero: 'no backlogs');
     return 'CGPA $cgpa · $_temp0';
   }
 
@@ -1791,8 +1693,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get careersDecline => 'Decline';
 
   @override
-  String get careersViewOnly =>
-      'You can follow drives and offers here. Only your child can register or answer an offer.';
+  String get careersViewOnly => 'You can follow drives and offers here. Only your child can register or answer an offer.';
 
   @override
   String careersPackage(Object ctc) {
@@ -1861,8 +1762,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get grievancesTitle => 'Grievances';
 
   @override
-  String get grievancesSubtitle =>
-      'Raise a concern and follow it to a resolution';
+  String get grievancesSubtitle => 'Raise a concern and follow it to a resolution';
 
   @override
   String get grievanceNone => 'No grievances raised yet.';
@@ -1883,12 +1783,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get grievanceAnonymous => 'Hide my name from the staff';
 
   @override
-  String get grievanceAnonymousHint =>
-      'The team will not see who raised it. You can still follow it here.';
+  String get grievanceAnonymousHint => 'The team will not see who raised it. You can still follow it here.';
 
   @override
-  String get grievanceConfidentialHint =>
-      'Ragging and harassment go to a confidential committee. Nobody else can read them.';
+  String get grievanceConfidentialHint => 'Ragging and harassment go to a confidential committee. Nobody else can read them.';
 
   @override
   String get grievanceSubmit => 'Submit';
@@ -1975,4 +1873,183 @@ class AppLocalizationsEn extends AppLocalizations {
   String childGrievances(Object name) {
     return '$name\'s grievances';
   }
+
+  @override
+  String get examsTitle => 'Exams';
+
+  @override
+  String get examTimetable => 'Timetable';
+
+  @override
+  String get examResultsTitle => 'Results';
+
+  @override
+  String get noExamsScheduled => 'No exams are scheduled yet. They appear here once the college publishes the timetable.';
+
+  @override
+  String get noExamResults => 'No results published yet.';
+
+  @override
+  String examDates(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String examPaperTime(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String examSeat(String room, int seat) {
+    return '$room · Seat $seat';
+  }
+
+  @override
+  String examMaxMarks(int n) {
+    return '$n marks';
+  }
+
+  @override
+  String get hallTicket => 'Hall ticket';
+
+  @override
+  String get hallTicketDownload => 'Download hall ticket';
+
+  @override
+  String hallTicketWithheld(String reason) {
+    return 'Hall ticket withheld: $reason';
+  }
+
+  @override
+  String get hallTicketWithheldNoReason => 'Hall ticket withheld. Contact the examination office.';
+
+  @override
+  String get hallTicketNotIssued => 'Hall ticket not issued yet.';
+
+  @override
+  String get fileOpenFailed => 'Couldn\'t open this file. Install an app that opens PDFs.';
+
+  @override
+  String get sgpaLabel => 'SGPA';
+
+  @override
+  String get cgpaLabel => 'CGPA';
+
+  @override
+  String cgpaLine(String value) {
+    return 'CGPA $value';
+  }
+
+  @override
+  String sgpaLine(String value) {
+    return 'SGPA $value';
+  }
+
+  @override
+  String get resultPass => 'Passed';
+
+  @override
+  String get resultFail => 'Not cleared';
+
+  @override
+  String resultLine(String percent, String grade) {
+    return '$percent% · Grade $grade';
+  }
+
+  @override
+  String get revaluationRequest => 'Request revaluation';
+
+  @override
+  String get revaluationWhy => 'Why should this paper be re-checked?';
+
+  @override
+  String get revaluationNeedReason => 'Write a few words (at least 3 letters).';
+
+  @override
+  String get revaluationSent => 'Request sent. The examination office will decide.';
+
+  @override
+  String get revaluationRequested => 'Revaluation requested';
+
+  @override
+  String get revaluationAccepted => 'Revaluation accepted';
+
+  @override
+  String get revaluationRejected => 'Revaluation declined';
+
+  @override
+  String get revaluationCompleted => 'Revaluation done';
+
+  @override
+  String get examDone => 'Done';
+
+  @override
+  String get navFees => 'Fees';
+
+  @override
+  String get navMore => 'More';
+
+  @override
+  String get homeTabOverview => 'Overview';
+
+  @override
+  String get homeTabAcademics => 'Academics';
+
+  @override
+  String get homeTabFees => 'Fees';
+
+  @override
+  String get homeTabAttendance => 'Attendance';
+
+  @override
+  String get chooseChild => 'Choose a child';
+
+  @override
+  String get switchChildHint => 'Tap to switch child';
+
+  @override
+  String get tileInternalMarks => 'Internal marks';
+
+  @override
+  String get tileAssignments => 'Assignments';
+
+  @override
+  String tilePendingValue(int n) {
+    return '$n pending';
+  }
+
+  @override
+  String get tileAllDone => 'All done';
+
+  @override
+  String get tileOverall => 'Overall progress';
+
+  @override
+  String get progressExcellent => 'Excellent';
+
+  @override
+  String get progressGood => 'Good';
+
+  @override
+  String get progressFair => 'Fair';
+
+  @override
+  String get progressNeedsAttention => 'Needs attention';
+
+  @override
+  String get progressNoData => 'Not enough yet';
+
+  @override
+  String get recentUpdates => 'Recent updates';
+
+  @override
+  String examsForChild(String name) {
+    return '$name\'s exams';
+  }
+
+  @override
+  String get examsSubtitle => 'Timetable, hall ticket and results';
+
+  @override
+  String get moreFamily => 'Family';
 }

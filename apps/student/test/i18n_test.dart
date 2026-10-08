@@ -169,11 +169,17 @@ void main() {
     await back(tester);
     await back(tester);
 
-    await openTabByIcon(tester, Icons.notifications_outlined);
+    // Updates: the bell on Home (Home keeps its place, so back to the top first).
+    await openTabByIcon(tester, Icons.home_outlined);
+    await tester.drag(today(), const Offset(0, 20000));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('openUpdates')));
+    await tester.pumpAndSettle();
     await scrollDown(tester);
+    await back(tester);
 
     // Profile, the language settings, fees and a receipt.
-    await openTabByIcon(tester, Icons.person_outline);
+    await openTabByIcon(tester, Icons.menu);
     final profile = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
     await tapShown(tester, find.byKey(const Key('languageSetting')), scrollable: profile);
     Navigator.of(tester.element(find.byType(SimpleDialog))).pop();
@@ -200,9 +206,9 @@ void main() {
   const sizes = {'360x640': Size(360, 640), '430x932': Size(430, 932)};
   // Words from the bottom bar and the live banner in each language.
   const words = {
-    'en': ['Today', 'Learn', 'LIVE'],
-    'hi': ['आज', 'सीखें', 'लाइव'],
-    'kn': ['ಇಂದು', 'ಕಲಿಯಿರಿ', 'ಲೈವ್'],
+    'en': ['Home', 'My Learning', 'LIVE'],
+    'hi': ['होम', 'मेरी पढ़ाई', 'लाइव'],
+    'kn': ['ಮುಖಪುಟ', 'ನನ್ನ ಕಲಿಕೆ', 'ಲೈವ್'],
   };
 
   for (final lang in ['en', 'hi', 'kn']) {
@@ -379,7 +385,7 @@ void main() {
 
   group('language setting', () {
     Future<void> pickLanguage(WidgetTester tester, String code) async {
-      await openTabByIcon(tester, Icons.person_outline);
+      await openTabByIcon(tester, Icons.menu);
       final profile = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
       await tapShown(tester, find.byKey(const Key('languageSetting')), scrollable: profile);
       await tester.tap(find.byKey(Key('language-$code')));

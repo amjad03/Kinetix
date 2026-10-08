@@ -34,7 +34,8 @@ void main() {
     expect(find.text('Solve questions 1 to 5 from the textbook. Show journal entries for each.'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(badgeLabel('1'), findsOneWidget);
+    // One of the two is read now (the bell on Home counts them).
+    expect(find.byKey(const Key('unreadDot')), findsOneWidget);
 
     // A payment opens its receipt.
     await tester.tap(find.byKey(const Key('notification-n2')));

@@ -315,3 +315,16 @@ class BulletLine extends StatelessWidget {
     );
   }
 }
+
+/// A section title inside an already padded column ("Exams", "Results").
+class SectionTitle extends StatelessWidget {
+  const SectionTitle(this.title, {super.key});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(Kx.s4, Kx.s24, Kx.s4, Kx.s8),
+    child: Text(title, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+  );
+}

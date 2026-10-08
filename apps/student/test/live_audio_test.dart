@@ -37,6 +37,8 @@ void main() {
       ..ack = LiveWatchAck(ok: true, teacher: 'Anita Sharma', subject: 'Corporate Accounting', audioAllowed: allowed, audioOn: on);
     FakeLiveAudioPlayer.last = null;
     await pumpApp(tester, live: server, size: size, setup: (api) => api.liveClass = FakeStudentApi.corporateLive());
+    await tester.ensureVisible(find.byKey(const Key('watchLive')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('watchLive')));
     await settle(tester);
     final conn = server.last;

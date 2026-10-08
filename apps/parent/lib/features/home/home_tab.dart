@@ -10,57 +10,65 @@ import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../boards/board_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../exams/exams_screen.dart';
 import '../fees/fees_card.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
 import '../transport/bus_screen.dart';
+import '../updates/updates_controller.dart';
+import '../updates/updates_tab.dart';
 import '../marks/marks.dart';
 import '../recordings/recordings.dart';
-import 'child_switcher.dart';
 
 /// Home for the selected child: attendance, homework, results, fees, library books, lesson
 /// recordings, class participation and shared boards.
-class HomeTab extends StatelessWidget {
-  const HomeTab({super.key, required this.family, required this.me});
+class HomeTab extends StatefulWidget {
+  const HomeTab({super.key, required this.family, required this.me, this.updates, this.onOpenUpdates});
 
   final FamilyController family;
   final Me me;
 
+  /// The notifications, for "Recent updates".
+  final UpdatesController? updates;
+  final VoidCallback? onOpenUpdates;
+
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+enum _HomeSection { overview, academics, fees, attendance }
+
+class _HomeTabState extends State<HomeTab> {
+  _HomeSection _section = _HomeSection.overview;
+
+  FamilyController get family => widget.family;
+  Me get me => widget.me;
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: family,
+      listenable: Listenable.merge([family, ?widget.updates]),
       builder: (context, _) {
         final child = family.selected;
         final l = context.l10n;
         return RefreshIndicator(
-          onRefresh: family.refresh,
+          onRefresh: () async {
+            await family.refresh();
+            await widget.updates?.load();
+          },
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverSafeArea(
                 bottom: false,
                 sliver: SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l.greetingName(context.fmt.greeting(DateTime.now()), me.firstName), style: context.text.headlineSmall),
-                        const SizedBox(height: Kx.s4),
-                        Text(
-                          child == null ? me.institution : l.homeSubtitle(child.firstName),
-                          style: context.text.bodyLarge?.copyWith(color: context.colors.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
+                  child: KxHomeHeader(
+                    big: true,
+                    greeting: l.greetingName(context.fmt.greeting(DateTime.now()), me.firstName),
+                    subtitle: child == null ? me.institution : l.homeSubtitle(child.firstName),
                   ),
                 ),
               ),
-              if (family.children.length > 1)
-                SliverToBoxAdapter(
-                  child: ChildSwitcher(children: family.children, selected: child, onSelect: family.select),
-                ),
               ..._body(context, child),
               const SliverToBoxAdapter(child: SizedBox(height: Kx.s24)),
             ],
@@ -91,59 +99,25 @@ class HomeTab extends StatelessWidget {
     final c = child!;
     final summary = family.summaryOf(c.id);
     final error = family.summaryErrorOf(c.id);
-    final holiday = family.holidaySoon(c);
-    void openCalendar() => CalendarScreen.open(context, family.api, program: c.programName);
     final cards = <Widget>[
-      if (holiday case (final h, final isToday)) HolidayBanner(holiday: h, isToday: isToday, onOpen: openCalendar),
-      _ChildCard(child: c),
-      if (summary == null && error == null)
-        const Padding(
-          padding: EdgeInsets.all(Kx.s48),
-          child: Center(child: CircularProgressIndicator()),
-        ),
+      _ChildCard(child: c, family: family),
+      _SectionChips(selected: _section, onSelected: (s) => setState(() => _section = s)),
+      if (summary == null && error == null) const KxLoading(),
       if (error != null) ErrorBanner(error, onRetry: () => family.loadSummary(c.id)),
-      if (summary != null) ...[
-        AttendanceCard(
-          child: c,
-          summary: summary,
-          onOpen: () => AttendanceScreen.open(context, family.api, c),
-          onStatus: (s) => AttendanceScreen.open(context, family.api, c, status: s),
-        ),
-        _HomeworkCard(child: c, summary: summary, api: family.api),
-        ResultsCard(family: family, child: c),
-        SectionCard(
-          key: const Key('badgesCard'),
-          icon: Icons.military_tech_outlined,
-          title: KxStrings.of(context).badges,
-          child: KxBadgeShelf(
-            entries: [
-              for (final b in family.badgesOf(c.id) ?? const <BadgeAward>[])
-                if (KxBadge.fromApi(b.badge) case final kind?)
-                  KxBadgeEntry(badge: kind, teacher: b.teacherName, subject: b.subjectName, awardedAt: b.awardedAt),
-            ],
-            formatDate: context.fmt.shortDay,
+      if (summary != null) ...switch (_section) {
+        _HomeSection.overview => _overview(context, c, summary),
+        _HomeSection.academics => _academics(context, c, summary),
+        _HomeSection.fees => [FeesCard(family: family, child: c, today: summary.today)],
+        _HomeSection.attendance => [
+          AttendanceCard(
+            child: c,
+            summary: summary,
+            onOpen: () => AttendanceScreen.open(context, family.api, c),
+            onStatus: (s) => AttendanceScreen.open(context, family.api, c, status: s),
           ),
-        ),
-        FeesCard(family: family, child: c, today: summary.today),
-        LibraryCard(family: family, child: c, today: summary.today),
-        SectionCard(
-          key: const Key('busCard'),
-          icon: Icons.directions_bus_outlined,
-          title: context.l10n.bus,
-          onTap: () => BusScreen.open(context, family, c),
-          child: Text(context.l10n.busSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
-        ),
-        UpcomingCard(
-          range: family.calendar,
-          program: c.programName,
-          error: family.calendarError,
-          onRetry: family.loadCalendar,
-          onOpen: openCalendar,
-        ),
-        RecordingsCard(child: c, summary: summary, api: family.api),
-        _InClassCard(child: c, summary: summary),
-        _BoardsCard(child: c, summary: summary, family: family),
-      ],
+          UpcomingCard(range: family.calendar, program: c.programName, error: family.calendarError, onRetry: family.loadCalendar, onOpen: () => CalendarScreen.open(context, family.api, program: c.programName)),
+        ],
+      },
     ];
     return [
       SliverPadding(
@@ -156,45 +130,235 @@ class HomeTab extends StatelessWidget {
       ),
     ];
   }
+
+  List<Widget> _overview(BuildContext context, Child c, ChildSummary summary) {
+    final l = context.l10n;
+    final holiday = family.holidaySoon(c);
+    final marks = family.marksOf(c.id);
+    final rate = summary.attendance.rate;
+    final marksAvg = marks == null || marks.subjects.isEmpty ? null : marks.subjects.map((s) => s.percent).reduce((a, b) => a + b) / marks.subjects.length;
+    final pending = summary.upcoming.length;
+    // One plain word for how things are going: the mean of attendance and marks.
+    final scores = [?rate, ?marksAvg];
+    final overall = scores.isEmpty ? null : scores.reduce((a, b) => a + b) / scores.length;
+    final (progressText, progressTone) = overall == null
+        ? (l.progressNoData, KxTone.neutral)
+        : overall >= 85
+        ? (l.progressExcellent, KxTone.success)
+        : overall >= 70
+        ? (l.progressGood, KxTone.success)
+        : overall >= 50
+        ? (l.progressFair, KxTone.warning)
+        : (l.progressNeedsAttention, KxTone.danger);
+    final updates = widget.updates?.items.take(3).toList() ?? const <AppNotification>[];
+    return [
+      if (holiday case (final h, final isToday)) HolidayBanner(holiday: h, isToday: isToday, onOpen: () => CalendarScreen.open(context, family.api, program: c.programName)),
+      KxTileGrid(
+        children: [
+          KxStatTile(
+            key: const Key('tileAttendance'),
+            icon: Icons.fact_check_outlined,
+            label: l.attendance,
+            value: rate == null ? '–' : '${rate.round()}%',
+            tone: rate == null || rate >= 75 ? KxTone.success : KxTone.warning,
+            onTap: () => setState(() => _section = _HomeSection.attendance),
+          ),
+          KxStatTile(
+            key: const Key('tileMarks'),
+            icon: Icons.grading_outlined,
+            label: l.tileInternalMarks,
+            value: marksAvg == null ? '–' : '${marksAvg.round()}%',
+            onTap: () => setState(() => _section = _HomeSection.academics),
+          ),
+          KxStatTile(
+            key: const Key('tileAssignments'),
+            icon: Icons.assignment_outlined,
+            label: l.tileAssignments,
+            value: pending == 0 ? l.tileAllDone : l.tilePendingValue(pending),
+            tone: pending == 0 ? KxTone.success : KxTone.primary,
+            onTap: () => setState(() => _section = _HomeSection.academics),
+          ),
+          KxStatTile(key: const Key('tileOverall'), icon: Icons.insights_outlined, label: l.tileOverall, value: progressText, tone: progressTone),
+        ],
+      ),
+      Row(
+        children: [
+          Expanded(child: Text(l.recentUpdates, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w600))),
+          if (widget.onOpenUpdates != null) TextButton(key: const Key('seeAllUpdates'), onPressed: widget.onOpenUpdates, child: Text(l.seeAll)),
+        ],
+      ),
+      if (updates.isEmpty)
+        KxCard(child: Text(l.noUpdates, style: context.text.bodyLarge))
+      else
+        KxCard(
+          key: const Key('recentUpdates'),
+          padding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s4),
+          child: Column(
+            children: [
+              for (var i = 0; i < updates.length; i++) ...[
+                if (i > 0) Divider(height: 1, color: context.colors.outlineVariant),
+                KxFeedRow(
+                  key: Key('update-${updates[i].id}'),
+                  icon: UpdatesTab.iconFor(updates[i].kind),
+                  title: updates[i].title,
+                  subtitle: updates[i].body.isEmpty ? null : updates[i].body,
+                  time: context.fmt.messageDay(updates[i].createdAt, DateTime.now()),
+                  unread: updates[i].unread,
+                  tone: switch (updates[i].kind) {
+                    NotificationKind.fee => KxTone.success,
+                    NotificationKind.transport || NotificationKind.absence => KxTone.warning,
+                    _ => KxTone.primary,
+                  },
+                  onTap: widget.onOpenUpdates,
+                ),
+              ],
+            ],
+          ),
+        ),
+      SectionCard(
+        key: const Key('busCard'),
+        icon: Icons.directions_bus_outlined,
+        title: l.bus,
+        onTap: () => BusScreen.open(context, family, c),
+        child: Text(l.busSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+      ),
+    ];
+  }
+
+  List<Widget> _academics(BuildContext context, Child c, ChildSummary summary) {
+    final l = context.l10n;
+    return [
+      _HomeworkCard(child: c, summary: summary, api: family.api),
+      ResultsCard(family: family, child: c),
+      SectionCard(
+        key: const Key('examsCard'),
+        icon: Icons.event_note_outlined,
+        title: l.examsForChild(c.firstName),
+        caption: l.examsSubtitle,
+        onTap: () => ExamsScreen.open(context, family.api, c),
+        child: const SizedBox.shrink(),
+      ),
+      SectionCard(
+        key: const Key('badgesCard'),
+        icon: Icons.military_tech_outlined,
+        title: KxStrings.of(context).badges,
+        child: KxBadgeShelf(
+          entries: [
+            for (final b in family.badgesOf(c.id) ?? const <BadgeAward>[])
+              if (KxBadge.fromApi(b.badge) case final kind?) KxBadgeEntry(badge: kind, teacher: b.teacherName, subject: b.subjectName, awardedAt: b.awardedAt),
+          ],
+          formatDate: context.fmt.shortDay,
+        ),
+      ),
+      LibraryCard(family: family, child: c, today: summary.today),
+      RecordingsCard(child: c, summary: summary, api: family.api),
+      _InClassCard(child: c, summary: summary),
+      _BoardsCard(child: c, summary: summary, family: family),
+    ];
+  }
 }
 
+/// Overview / Academics / Fees / Attendance, as chips that scroll sideways on a narrow phone.
+class _SectionChips extends StatelessWidget {
+  const _SectionChips({required this.selected, required this.onSelected});
+
+  final _HomeSection selected;
+  final ValueChanged<_HomeSection> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final labels = {
+      _HomeSection.overview: l.homeTabOverview,
+      _HomeSection.academics: l.homeTabAcademics,
+      _HomeSection.fees: l.homeTabFees,
+      _HomeSection.attendance: l.homeTabAttendance,
+    };
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final e in labels.entries) ...[
+            ChoiceChip(
+              key: Key('homeTab-${e.key.name}'),
+              selected: selected == e.key,
+              showCheckmark: false,
+              onSelected: (_) => onSelected(e.key),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              visualDensity: VisualDensity.standard,
+              padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s12),
+              label: Text(e.value, style: context.text.titleSmall),
+            ),
+            const SizedBox(width: Kx.s8),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The selected child, big and plain; with several children it opens a list to switch.
 class _ChildCard extends StatelessWidget {
-  const _ChildCard({required this.child});
+  const _ChildCard({required this.child, required this.family});
 
   final Child child;
+  final FamilyController family;
+
+  Future<void> _switch(BuildContext context) async {
+    final id = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s8), child: Align(alignment: AlignmentDirectional.centerStart, child: Text(ctx.l10n.chooseChild, style: ctx.text.titleLarge))),
+            for (final k in family.children)
+              ListTile(
+                key: Key('child-${k.id}'),
+                minTileHeight: 64,
+                leading: KxAvatar(name: k.fullName, size: 40),
+                title: Text(k.fullName, style: ctx.text.titleMedium),
+                subtitle: Text('${k.sectionName} · ${ctx.l10n.rollNo(k.rollNo)}'),
+                trailing: k.id == child.id ? Icon(Icons.check_circle, color: ctx.colors.primary) : null,
+                onTap: () => Navigator.pop(ctx, k.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (id != null) await family.select(id);
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Card(
+    final several = family.children.length > 1;
+    return KxCard(
+      key: const Key('childCard'),
       color: c.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(Kx.s16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: c.primary,
-              foregroundColor: c.onPrimary,
-              child: Text(KxAvatar.initials(child.fullName), style: context.text.titleLarge?.copyWith(color: c.onPrimary)),
+      onTap: several ? () => _switch(context) : null,
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: c.primary,
+            foregroundColor: c.onPrimary,
+            child: Text(KxAvatar.initials(child.fullName), style: context.text.titleLarge?.copyWith(color: c.onPrimary)),
+          ),
+          const SizedBox(width: Kx.s16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(child.fullName, style: context.text.titleLarge?.copyWith(color: c.onPrimaryContainer, fontWeight: FontWeight.w600)),
+                Text('${child.sectionName} · ${context.l10n.rollNo(child.rollNo)}', style: context.text.bodyLarge?.copyWith(color: c.onPrimaryContainer)),
+                if (several) Text(context.l10n.switchChildHint, style: context.text.bodyMedium?.copyWith(color: c.onPrimaryContainer.withValues(alpha: 0.85))),
+              ],
             ),
-            const SizedBox(width: Kx.s16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(child.fullName, style: context.text.titleLarge?.copyWith(color: c.onPrimaryContainer)),
-                  const SizedBox(height: 2),
-                  Text(child.sectionName, style: context.text.bodyLarge?.copyWith(color: c.onPrimaryContainer)),
-                  Text(
-                    context.l10n.rollNo(child.rollNo),
-                    style: context.text.bodyMedium?.copyWith(color: c.onPrimaryContainer.withValues(alpha: 0.8)),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          if (several) Icon(Icons.unfold_more, color: c.onPrimaryContainer),
+        ],
       ),
     );
   }

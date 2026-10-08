@@ -17,6 +17,10 @@ class MessagesTab extends StatelessWidget {
   final MessagesController controller;
   final FamilyController family;
 
+  /// Messages as a page of their own (they open from More).
+  static Future<void> open(BuildContext context, MessagesController controller, FamilyController family) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => MessagesTab(controller: controller, family: family)));
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(

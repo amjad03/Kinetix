@@ -26,6 +26,8 @@ dependencies:
   http_parser: ^4.1.2
   intl: ^0.20.3
   shared_preferences: ^2.5.5
+  path_provider: ^2.1.6
+  open_filex: ^4.7.0
   socket_io_client: ^3.1.6
   flutter_pcm_sound: ^3.3.3
   image_picker: ^1.2.3

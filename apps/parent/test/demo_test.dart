@@ -48,10 +48,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text("Here's how Diya is doing"), findsOneWidget);
 
-    for (final tab in ['Messages', 'Updates', 'Profile']) {
+    for (final tab in ['Updates', 'Fees', 'More']) {
       await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text(tab)));
       await tester.pumpAndSettle();
     }
+    await tester.ensureVisible(find.byKey(const Key('openMessages')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('openMessages')));
+    await tester.pumpAndSettle();
     expect(find.text('Rajesh Patel'), findsWidgets);
 
     // Anita's reply arrives a few seconds after sign-in.

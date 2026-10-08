@@ -8,6 +8,7 @@ import '../../core/message_feed.dart';
 import '../../core/models.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
+import '../exams/exams_tab.dart';
 import '../learn/learn_tab.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
@@ -18,8 +19,8 @@ import '../updates/notifications_prompt.dart';
 import '../updates/updates_controller.dart';
 import '../updates/updates_tab.dart';
 
-/// The signed-in shell: Today, Learn, Updates and Profile behind a bottom NavigationBar on
-/// phones and a NavigationRail on tablets.
+/// The signed-in shell: Home, My Learning, Exams and More behind a bottom NavigationBar on
+/// phones and a NavigationRail on tablets. Updates open from the bell on Home.
 class StudentShell extends StatefulWidget {
   const StudentShell({super.key, required this.state});
 
@@ -52,7 +53,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
   final _bodyKey = GlobalKey();
   int _tab = 0;
 
-  static const _updatesTab = 2;
+  static const _learnTab = 1, _moreTab = 3;
 
   @override
   void initState() {
@@ -89,7 +90,7 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     if (n == null) {
       // Not in the inbox (any more): the place for its kind.
       if (tap.kind == 'message' && messages.available) return MessagesScreen.open(context, messages);
-      return _go(_updatesTab);
+      return _openUpdates();
     }
     await UpdatesTab.openNotification(context, n, controller: updates, study: study, messages: messages);
   }
@@ -148,18 +149,18 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
     if (fresh.isNotEmpty) study.loadLive();
   }
 
-  void _go(int i) {
-    // Fresh on every visit: new notifications arrive while the app is open.
-    if (i == _updatesTab && _tab != _updatesTab && !updates.loading) updates.load();
-    setState(() => _tab = i);
+  void _go(int i) => setState(() => _tab = i);
+
+  /// The notifications, as a page of their own (fresh on every visit: they arrive while the app is open).
+  void _openUpdates() {
+    if (!updates.loading) updates.load();
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => Scaffold(body: UpdatesTab(controller: updates, study: study, messages: messages))));
   }
 
   void _ask() {
-    _go(1);
+    _go(_learnTab);
     WidgetsBinding.instance.addPostFrameCallback((_) => _learn.currentState?.showAsk());
   }
-
-  Widget _badge(IconData icon) => Badge(isLabelVisible: updates.unread > 0, label: Text('${updates.unread}'), child: Icon(icon));
 
   @override
   Widget build(BuildContext context) {
@@ -167,9 +168,26 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
       key: _bodyKey,
       index: _tab,
       children: [
-        TodayTab(study: study, me: widget.state.me!, messages: messages, onAsk: _ask, onOpenTopic: (id) => _learn.currentState?.openTopic(id)),
+        ListenableBuilder(
+          listenable: updates,
+          builder: (context, _) => TodayTab(
+            study: study,
+            me: widget.state.me!,
+            messages: messages,
+            prefs: widget.state.prefs,
+            unread: updates.unread,
+            onAsk: _ask,
+            onOpenTopic: (id) {
+              _go(_learnTab);
+              WidgetsBinding.instance.addPostFrameCallback((_) => _learn.currentState?.openTopic(id));
+            },
+            onOpenUpdates: _openUpdates,
+            onOpenExams: () => _go(2),
+            onOpenMore: () => _go(_moreTab),
+          ),
+        ),
         LearnTab(key: _learn, state: widget.state, study: study),
-        UpdatesTab(controller: updates, study: study, messages: messages),
+        ExamsTab(api: widget.state.api, student: widget.state.student!),
         ProfileTab(state: widget.state, study: study, messages: messages),
       ],
     );
@@ -192,26 +210,10 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
                     labelType: NavigationRailLabelType.all,
                     groupAlignment: -0.85,
                     destinations: [
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.today_outlined),
-                        selectedIcon: const Icon(Icons.today),
-                        label: Text(l.today),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.auto_awesome_outlined),
-                        selectedIcon: const Icon(Icons.auto_awesome),
-                        label: Text(l.navLearn),
-                      ),
-                      NavigationRailDestination(
-                        icon: _badge(Icons.notifications_outlined),
-                        selectedIcon: _badge(Icons.notifications),
-                        label: Text(l.navUpdates),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.person_outline),
-                        selectedIcon: const Icon(Icons.person),
-                        label: Text(l.navProfile),
-                      ),
+                      NavigationRailDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: Text(l.navHome)),
+                      NavigationRailDestination(icon: const Icon(Icons.auto_awesome_outlined), selectedIcon: const Icon(Icons.auto_awesome), label: Text(l.navMyLearning)),
+                      NavigationRailDestination(icon: const Icon(Icons.event_note_outlined), selectedIcon: const Icon(Icons.event_note), label: Text(l.navExams)),
+                      NavigationRailDestination(icon: const Icon(Icons.menu), selectedIcon: const Icon(Icons.menu), label: Text(l.navMore)),
                     ],
                   ),
                 ),
@@ -227,15 +229,10 @@ class _StudentShellState extends State<StudentShell> with WidgetsBindingObserver
             selectedIndex: _tab,
             onDestinationSelected: _go,
             destinations: [
-              NavigationDestination(icon: const Icon(Icons.today_outlined), selectedIcon: const Icon(Icons.today), label: l.today),
-              NavigationDestination(icon: const Icon(Icons.auto_awesome_outlined), selectedIcon: const Icon(Icons.auto_awesome), label: l.navLearn),
-              NavigationDestination(
-                key: const Key('updatesDestination'),
-                icon: _badge(Icons.notifications_outlined),
-                selectedIcon: _badge(Icons.notifications),
-                label: l.navUpdates,
-              ),
-              NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: l.navProfile),
+              NavigationDestination(key: const Key('navHome'), icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l.navHome),
+              NavigationDestination(key: const Key('navLearn'), icon: const Icon(Icons.auto_awesome_outlined), selectedIcon: const Icon(Icons.auto_awesome), label: l.navMyLearning),
+              NavigationDestination(key: const Key('navExams'), icon: const Icon(Icons.event_note_outlined), selectedIcon: const Icon(Icons.event_note), label: l.navExams),
+              NavigationDestination(key: const Key('navMore'), icon: const Icon(Icons.menu), selectedIcon: const Icon(Icons.menu), label: l.navMore),
             ],
           ),
         );
