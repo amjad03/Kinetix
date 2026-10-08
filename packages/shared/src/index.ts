@@ -263,7 +263,7 @@ export type SyncOpResult =
 // Teacher App
 // ---------------------------------------------------------------------------------------------
 
-export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant' | 'transport_manager' | 'driver' | 'hostel_warden' | 'canteen_manager' | 'store_keeper' | 'admissions_officer' | 'hr_manager';
+export type RoleName = 'tenant_admin' | 'principal' | 'hod' | 'teacher' | 'student' | 'guardian' | 'librarian' | 'accountant' | 'transport_manager' | 'driver' | 'hostel_warden' | 'canteen_manager' | 'store_keeper' | 'admissions_officer' | 'hr_manager' | 'placement_officer' | 'research_coordinator' | 'grievance_officer' | 'counsellor' | 'icc_member';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 /** GET /v1/me */

@@ -428,6 +428,62 @@
       "when": 1791409384229,
       "tag": "0066_concept_video_scopes",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1791409444229,
+      "tag": "0067_domain_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1791409504229,
+      "tag": "0068_placements",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1791409564229,
+      "tag": "0069_internships_alumni",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1791409624229,
+      "tag": "0070_placements_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1791409684229,
+      "tag": "0071_research",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1791409744229,
+      "tag": "0072_research_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1791409804229,
+      "tag": "0073_grievance_welfare",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1791409864229,
+      "tag": "0074_grievance_welfare_rls",
+      "breakpoints": true
     }
   ]
 }

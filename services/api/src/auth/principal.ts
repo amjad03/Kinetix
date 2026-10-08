@@ -15,7 +15,12 @@ export type RoleName =
   | 'canteen_manager'
   | 'store_keeper'
   | 'admissions_officer'
-  | 'hr_manager';
+  | 'hr_manager'
+  | 'placement_officer'
+  | 'research_coordinator'
+  | 'grievance_officer'
+  | 'counsellor'
+  | 'icc_member';
 
 export interface UserPrincipal {
   kind: 'user';

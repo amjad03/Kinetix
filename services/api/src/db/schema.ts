@@ -126,6 +126,12 @@ export const roleName = pgEnum('role_name', [
   'store_keeper',
   'admissions_officer',
   'hr_manager',
+  // Placements, research, grievance and welfare (migration 0067).
+  'placement_officer',
+  'research_coordinator',
+  'grievance_officer',
+  'counsellor',
+  'icc_member',
 ]);
 
 export const userRoles = pgTable(
@@ -601,7 +607,7 @@ export const guardians = pgTable(
   ],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate', 'placement', 'grievance', 'welfare']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -3005,3 +3011,452 @@ export const assetMaintenance = pgTable('asset_maintenance', {
 
 /** Counters for numbered documents (REQ, PO, AST) per tenant. */
 export const docCounters = pgTable('doc_counters', { tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }), kind: text('kind').notNull(), lastNo: integer('last_no').notNull().default(0) }, (t) => [primaryKey({ columns: [t.tenantId, t.kind] })]);
+
+// ---------------------------------------------------------------------------------------------
+// Placements, internships and alumni (migrations 0068-0070)
+// ---------------------------------------------------------------------------------------------
+
+const ref = (name: string, t: () => AnyPgColumn) => uuid(name).references(t);
+const money = (name: string) => numeric(name, { precision: 6, scale: 2, mode: 'number' });
+
+export const placementCompanies = pgTable('placement_companies', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  sector: text('sector').notNull().default(''),
+  website: text('website'),
+  contactName: text('contact_name'),
+  contactEmail: text('contact_email'),
+  contactPhone: text('contact_phone'),
+  status: text('status').notNull().default('active'), // active | blacklisted
+  createdAt: createdAt(),
+});
+
+export const placementDrives = pgTable('placement_drives', {
+  id: id(),
+  tenantId: tenantId(),
+  companyId: uuid('company_id').notNull().references(() => placementCompanies.id),
+  title: text('title').notNull(),
+  kind: text('kind').notNull().default('placement'), // placement | internship
+  roleTitle: text('role_title').notNull(),
+  ctcLpa: money('ctc_lpa'),
+  stipendMonthly: integer('stipend_monthly'),
+  location: text('location').notNull().default(''),
+  description: text('description').notNull().default(''),
+  driveDate: date('drive_date'),
+  registrationClosesOn: date('registration_closes_on'),
+  minCgpa: numeric('min_cgpa', { precision: 4, scale: 2, mode: 'number' }).notNull().default(0),
+  maxBacklogs: smallint('max_backlogs').notNull().default(0),
+  /** Empty = open to every programme. */
+  programIds: uuid('program_ids').array().notNull().default(sql`'{}'::uuid[]`),
+  status: text('status').notNull().default('draft'), // draft | open | closed | completed | cancelled
+  version: integer('version').notNull().default(0),
+  createdBy: ref('created_by', () => users.id),
+  createdAt: createdAt(),
+});
+
+export const driveRegistrations = pgTable('drive_registrations', {
+  id: id(),
+  tenantId: tenantId(),
+  driveId: uuid('drive_id').notNull().references(() => placementDrives.id, { onDelete: 'cascade' }),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  status: text('status').notNull().default('registered'), // registered | shortlisted | rejected | selected | withdrawn
+  cgpaAt: numeric('cgpa_at', { precision: 4, scale: 2, mode: 'number' }).notNull(),
+  backlogsAt: smallint('backlogs_at').notNull(),
+  createdAt: createdAt(),
+});
+
+export const driveRounds = pgTable('drive_rounds', {
+  id: id(),
+  tenantId: tenantId(),
+  driveId: uuid('drive_id').notNull().references(() => placementDrives.id, { onDelete: 'cascade' }),
+  seq: smallint('seq').notNull(),
+  name: text('name').notNull(),
+  kind: text('kind').notNull().default('interview'),
+  scheduledOn: date('scheduled_on'),
+});
+
+export const roundResults = pgTable(
+  'round_results',
+  {
+    tenantId: tenantId(),
+    roundId: uuid('round_id').notNull().references(() => driveRounds.id, { onDelete: 'cascade' }),
+    registrationId: uuid('registration_id').notNull().references(() => driveRegistrations.id, { onDelete: 'cascade' }),
+    result: text('result').notNull(), // pass | fail | absent
+    note: text('note').notNull().default(''),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.roundId, t.registrationId] })],
+);
+
+export const placementOffers = pgTable('placement_offers', {
+  id: id(),
+  tenantId: tenantId(),
+  driveId: uuid('drive_id').notNull().references(() => placementDrives.id, { onDelete: 'cascade' }),
+  registrationId: uuid('registration_id').notNull().references(() => driveRegistrations.id, { onDelete: 'cascade' }),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  roleTitle: text('role_title').notNull(),
+  ctcLpa: money('ctc_lpa'),
+  status: text('status').notNull().default('offered'), // offered | accepted | declined | withdrawn | expired
+  offeredOn: date('offered_on').notNull(),
+  respondBy: date('respond_by'),
+  respondedAt: timestamp('responded_at', { withTimezone: true }),
+  declineReason: text('decline_reason'),
+  createdAt: createdAt(),
+});
+
+export const internships = pgTable('internships', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  companyId: ref('company_id', () => placementCompanies.id),
+  orgName: text('org_name').notNull(),
+  title: text('title').notNull(),
+  startsOn: date('starts_on').notNull(),
+  endsOn: date('ends_on').notNull(),
+  stipendMonthly: integer('stipend_monthly'),
+  mentorUserId: ref('mentor_user_id', () => users.id),
+  industryMentor: text('industry_mentor'),
+  status: text('status').notNull().default('proposed'), // proposed | approved | ongoing | completed | cancelled
+  evaluationScore: numeric('evaluation_score', { precision: 5, scale: 2, mode: 'number' }),
+  evaluationRemarks: text('evaluation_remarks'),
+  evaluatedBy: ref('evaluated_by', () => users.id),
+  employerFeedback: text('employer_feedback'),
+  version: integer('version').notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const internshipDiary = pgTable('internship_diary', {
+  id: id(),
+  tenantId: tenantId(),
+  internshipId: uuid('internship_id').notNull().references(() => internships.id, { onDelete: 'cascade' }),
+  entryDate: date('entry_date').notNull(),
+  entry: text('entry').notNull(),
+  evidenceRef: text('evidence_ref'),
+  createdAt: createdAt(),
+});
+
+export const alumniProfiles = pgTable('alumni_profiles', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: ref('student_id', () => students.id),
+  fullName: text('full_name').notNull(),
+  graduationYear: smallint('graduation_year').notNull(),
+  program: text('program').notNull().default(''),
+  email: text('email'),
+  phone: text('phone'),
+  employer: text('employer'),
+  designation: text('designation'),
+  city: text('city'),
+  bio: text('bio').notNull().default(''),
+  /** Consent: only profiles with this set are shown to students in the directory. */
+  directoryVisible: boolean('directory_visible').notNull().default(false),
+  mentorAvailable: boolean('mentor_available').notNull().default(false),
+  createdAt: createdAt(),
+});
+
+export const alumniEvents = pgTable('alumni_events', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  startsOn: date('starts_on').notNull(),
+  venue: text('venue').notNull().default(''),
+  description: text('description').notNull().default(''),
+  status: text('status').notNull().default('scheduled'),
+  createdBy: ref('created_by', () => users.id),
+  createdAt: createdAt(),
+});
+
+export const alumniEventRsvps = pgTable(
+  'alumni_event_rsvps',
+  {
+    tenantId: tenantId(),
+    eventId: uuid('event_id').notNull().references(() => alumniEvents.id, { onDelete: 'cascade' }),
+    alumniId: uuid('alumni_id').notNull().references(() => alumniProfiles.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.alumniId] })],
+);
+
+export const mentoringRequests = pgTable('mentoring_requests', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  alumniId: uuid('alumni_id').notNull().references(() => alumniProfiles.id, { onDelete: 'cascade' }),
+  topic: text('topic').notNull(),
+  message: text('message').notNull().default(''),
+  status: text('status').notNull().default('pending'), // pending | accepted | declined | completed
+  respondedAt: timestamp('responded_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});
+
+// ---------------------------------------------------------------------------------------------
+// Research and projects (migrations 0071-0072)
+// ---------------------------------------------------------------------------------------------
+
+export const researchProposals = pgTable('research_proposals', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  abstract: text('abstract').notNull().default(''),
+  kind: text('kind').notNull().default('research'), // research | capstone | industry
+  piUserId: uuid('pi_user_id').notNull().references(() => users.id),
+  departmentId: ref('department_id', () => departments.id),
+  sponsorOrg: text('sponsor_org'),
+  fundingSoughtPaise: bigint('funding_sought_paise', { mode: 'number' }).notNull().default(0),
+  ethicsRequired: boolean('ethics_required').notNull().default(false),
+  ethicsStatus: text('ethics_status').notNull().default('not_required'), // not_required | pending | cleared | rejected
+  ethicsRef: text('ethics_ref'),
+  status: text('status').notNull().default('draft'), // draft | submitted | under_review | approved | rejected | withdrawn
+  reviewNote: text('review_note'),
+  decidedBy: ref('decided_by', () => users.id),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  version: integer('version').notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const researchProjects = pgTable('research_projects', {
+  id: id(),
+  tenantId: tenantId(),
+  proposalId: ref('proposal_id', () => researchProposals.id),
+  code: text('code').notNull(),
+  title: text('title').notNull(),
+  kind: text('kind').notNull().default('research'),
+  piUserId: uuid('pi_user_id').notNull().references(() => users.id),
+  departmentId: ref('department_id', () => departments.id),
+  sponsorOrg: text('sponsor_org'),
+  startsOn: date('starts_on').notNull(),
+  endsOn: date('ends_on'),
+  status: text('status').notNull().default('active'), // active | on_hold | completed | cancelled
+  outcomeSummary: text('outcome_summary'),
+  version: integer('version').notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const projectMembers = pgTable('project_members', {
+  id: id(),
+  tenantId: tenantId(),
+  projectId: uuid('project_id').notNull().references(() => researchProjects.id, { onDelete: 'cascade' }),
+  userId: ref('user_id', () => users.id),
+  studentId: ref('student_id', () => students.id),
+  role: text('role').notNull(), // supervisor | co_supervisor | member | student
+  createdAt: createdAt(),
+});
+
+export const projectMilestones = pgTable('project_milestones', {
+  id: id(),
+  tenantId: tenantId(),
+  projectId: uuid('project_id').notNull().references(() => researchProjects.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  dueOn: date('due_on').notNull(),
+  completedOn: date('completed_on'),
+  evidenceRef: text('evidence_ref'),
+  createdAt: createdAt(),
+});
+
+export const researchScholars = pgTable('research_scholars', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: ref('student_id', () => students.id),
+  fullName: text('full_name').notNull(),
+  programme: text('programme').notNull(), // phd | mphil
+  supervisorUserId: uuid('supervisor_user_id').notNull().references(() => users.id),
+  projectId: ref('project_id', () => researchProjects.id),
+  enrolledOn: date('enrolled_on').notNull(),
+  thesisTitle: text('thesis_title'),
+  status: text('status').notNull().default('enrolled'), // enrolled | thesis_submitted | awarded | withdrawn
+  completedOn: date('completed_on'),
+  createdAt: createdAt(),
+});
+
+export const publications = pgTable('publications', {
+  id: id(),
+  tenantId: tenantId(),
+  projectId: ref('project_id', () => researchProjects.id),
+  ownerUserId: uuid('owner_user_id').notNull().references(() => users.id),
+  title: text('title').notNull(),
+  kind: text('kind').notNull().default('journal'), // journal | conference | book | book_chapter
+  venue: text('venue').notNull(),
+  year: smallint('year').notNull(),
+  doi: text('doi'),
+  issn: text('issn'),
+  indexedIn: text('indexed_in').array().notNull().default(sql`'{}'::text[]`),
+  authors: jsonb('authors').notNull().default(sql`'[]'::jsonb`),
+  createdAt: createdAt(),
+});
+
+export const researchGrants = pgTable('research_grants', {
+  id: id(),
+  tenantId: tenantId(),
+  projectId: uuid('project_id').notNull().references(() => researchProjects.id, { onDelete: 'cascade' }),
+  agency: text('agency').notNull(),
+  scheme: text('scheme').notNull().default(''),
+  sanctionRef: text('sanction_ref'),
+  sanctionedPaise: bigint('sanctioned_paise', { mode: 'number' }).notNull(),
+  startsOn: date('starts_on').notNull(),
+  endsOn: date('ends_on').notNull(),
+  status: text('status').notNull().default('active'), // active | closed | cancelled
+  createdAt: createdAt(),
+});
+
+export const grantExpenses = pgTable('grant_expenses', {
+  id: id(),
+  tenantId: tenantId(),
+  grantId: uuid('grant_id').notNull().references(() => researchGrants.id, { onDelete: 'cascade' }),
+  head: text('head').notNull(),
+  amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+  spentOn: date('spent_on').notNull(),
+  description: text('description').notNull().default(''),
+  voucherRef: text('voucher_ref'),
+  createdBy: ref('created_by', () => users.id),
+  createdAt: createdAt(),
+});
+
+export const conferences = pgTable('conferences', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  role: text('role').notNull(), // attended | presented | organised
+  level: text('level').notNull().default('national'), // institutional | national | international
+  heldOn: date('held_on').notNull(),
+  location: text('location').notNull().default(''),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  paperTitle: text('paper_title'),
+  publicationId: ref('publication_id', () => publications.id),
+  createdAt: createdAt(),
+});
+
+export const patents = pgTable('patents', {
+  id: id(),
+  tenantId: tenantId(),
+  projectId: ref('project_id', () => researchProjects.id),
+  ownerUserId: uuid('owner_user_id').notNull().references(() => users.id),
+  title: text('title').notNull(),
+  kind: text('kind').notNull().default('patent'), // patent | copyright | design | trademark
+  inventors: jsonb('inventors').notNull().default(sql`'[]'::jsonb`),
+  applicationNo: text('application_no'),
+  filedOn: date('filed_on'),
+  status: text('status').notNull().default('filed'), // draft | filed | published | granted | rejected
+  grantedOn: date('granted_on'),
+  createdAt: createdAt(),
+});
+
+// ---------------------------------------------------------------------------------------------
+// Grievance, discipline, counselling and welfare (migrations 0073-0074)
+// ---------------------------------------------------------------------------------------------
+
+export const grievanceTickets = pgTable('grievance_tickets', {
+  id: id(),
+  tenantId: tenantId(),
+  ticketNo: text('ticket_no').notNull(),
+  category: text('category').notNull(),
+  severity: text('severity').notNull().default('medium'), // low | medium | high | critical
+  subject: text('subject').notNull(),
+  description: text('description').notNull(),
+  /** Hidden from every staff view; the reporter still sees and follows their own ticket. */
+  anonymous: boolean('anonymous').notNull().default(false),
+  /** Set for ragging, ICC and POSH matters: visible only to the committee (and the reporter). */
+  committee: text('committee'), // anti_ragging | icc | posh
+  committeeStage: text('committee_stage'),
+  raisedBy: uuid('raised_by').notNull().references(() => users.id),
+  studentId: ref('student_id', () => students.id),
+  status: text('status').notNull().default('open'),
+  assigneeUserId: ref('assignee_user_id', () => users.id),
+  slaDueAt: timestamp('sla_due_at', { withTimezone: true }).notNull(),
+  escalationLevel: smallint('escalation_level').notNull().default(0),
+  escalatedAt: timestamp('escalated_at', { withTimezone: true }),
+  resolution: text('resolution'),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  rating: smallint('rating'),
+  ratingComment: text('rating_comment'),
+  version: integer('version').notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const grievanceEvents = pgTable('grievance_events', {
+  id: id(),
+  tenantId: tenantId(),
+  ticketId: uuid('ticket_id').notNull().references(() => grievanceTickets.id, { onDelete: 'cascade' }),
+  actorUserId: ref('actor_user_id', () => users.id),
+  actorRole: text('actor_role').notNull(),
+  kind: text('kind').notNull(),
+  visibility: text('visibility').notNull().default('public'), // public | internal
+  body: text('body').notNull().default(''),
+  createdAt: createdAt(),
+});
+
+export const disciplineIncidents = pgTable('discipline_incidents', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  incidentOn: date('incident_on').notNull(),
+  kind: text('kind').notNull(),
+  severity: text('severity').notNull().default('minor'), // minor | major | severe
+  description: text('description').notNull(),
+  reportedBy: uuid('reported_by').notNull().references(() => users.id),
+  grievanceId: ref('grievance_id', () => grievanceTickets.id),
+  status: text('status').notNull().default('reported'), // reported | under_review | action_taken | appealed | closed
+  version: integer('version').notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const disciplineActions = pgTable('discipline_actions', {
+  id: id(),
+  tenantId: tenantId(),
+  incidentId: uuid('incident_id').notNull().references(() => disciplineIncidents.id, { onDelete: 'cascade' }),
+  action: text('action').notNull(),
+  detail: text('detail').notNull().default(''),
+  startsOn: date('starts_on'),
+  endsOn: date('ends_on'),
+  finePaise: bigint('fine_paise', { mode: 'number' }),
+  status: text('status').notNull().default('active'), // active | revoked | reduced
+  decidedBy: uuid('decided_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+export const disciplineAppeals = pgTable('discipline_appeals', {
+  id: id(),
+  tenantId: tenantId(),
+  incidentId: uuid('incident_id').notNull().references(() => disciplineIncidents.id, { onDelete: 'cascade' }),
+  actionId: uuid('action_id').notNull().references(() => disciplineActions.id, { onDelete: 'cascade' }),
+  appellantUserId: uuid('appellant_user_id').notNull().references(() => users.id),
+  grounds: text('grounds').notNull(),
+  status: text('status').notNull().default('pending'), // pending | upheld | reduced | revoked
+  decisionNote: text('decision_note'),
+  decidedBy: ref('decided_by', () => users.id),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});
+
+export const counsellingSessions = pgTable('counselling_sessions', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  counsellorUserId: ref('counsellor_user_id', () => users.id),
+  requestedBy: uuid('requested_by').notNull().references(() => users.id),
+  reason: text('reason').notNull().default(''),
+  scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
+  status: text('status').notNull().default('requested'), // requested | scheduled | completed | cancelled | no_show
+  /** Readable only by the counsellor who holds the session. Never returned by any other endpoint. */
+  confidentialNotes: text('confidential_notes'),
+  createdAt: createdAt(),
+});
+
+export const welfareRequests = pgTable('welfare_requests', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  requestedBy: uuid('requested_by').notNull().references(() => users.id),
+  kind: text('kind').notNull(), // scholarship | fee_waiver | medical_aid | hardship | other
+  title: text('title').notNull(),
+  details: text('details').notNull().default(''),
+  amountRequestedPaise: bigint('amount_requested_paise', { mode: 'number' }).notNull().default(0),
+  status: text('status').notNull().default('submitted'), // submitted | under_review | approved | rejected | disbursed | withdrawn
+  amountApprovedPaise: bigint('amount_approved_paise', { mode: 'number' }),
+  decisionNote: text('decision_note'),
+  decidedBy: ref('decided_by', () => users.id),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  disbursedOn: date('disbursed_on'),
+  version: integer('version').notNull().default(0),
+  createdAt: createdAt(),
+});
