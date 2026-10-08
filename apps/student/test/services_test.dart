@@ -267,7 +267,7 @@ void main() {
       expect(find.text('Semester 3 end exam'), findsOneWidget);
 
       await openTab(tester, 'More');
-      for (final k in ['openLeave', 'openBus', 'openGatePass', 'openCertificates']) {
+      for (final k in ['openLeave', 'openBus', 'openGatePass', 'openWallet', 'openCertificates']) {
         // Scroll the More list down until the entry is built.
         for (var i = 0; i < 20 && find.byKey(Key(k)).evaluate().isEmpty; i++) {
           await tester.drag(find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first, const Offset(0, -300));

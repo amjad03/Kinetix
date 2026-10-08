@@ -16,6 +16,7 @@ import '../fees/fees_screen.dart';
 import '../fees/receipt_screen.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
+import '../hostel/boarding_screen.dart';
 import '../transport/bus_screen.dart';
 import '../marks/marks.dart';
 import '../messages/chat_screen.dart';
@@ -114,6 +115,10 @@ class UpdatesTab extends StatelessWidget {
       case NotificationKind.calendar:
         return CalendarScreen.open(context, api, highlightId: n.calendarEventId);
       case NotificationKind.hostel:
+        // A night-roll absence (or a gate event) opens the child's hostel page.
+        if (family.children.isEmpty) await family.load();
+        final kid = family.byId(n.studentId) ?? family.selected;
+        if (kid != null && context.mounted) return BoardingScreen.open(context, family.api, kid);
       case NotificationKind.broadcast:
       case NotificationKind.other:
         break;

@@ -24,9 +24,11 @@ dependencies:
   # The code lab (Learn → Code lab): Python, JavaScript and SQL offline; C, C++ and Java on the server.
   kinetix_cs:
     path: ../../packages/kinetix_cs
+  crypto: ^3.0.7
   http: ^1.6.0
   http_parser: ^4.1.2
   intl: ^0.20.3
+  razorpay_flutter: ^1.4.7
   shared_preferences: ^2.5.5
   path_provider: ^2.1.6
   open_filex: ^4.7.0

@@ -3584,6 +3584,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Grades: {name}'**
   String childGrades(String name);
+
+  /// No description provided for @boarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel and canteen'**
+  String get boarding;
+
+  /// No description provided for @boardingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Night roll call, the wallet and meals'**
+  String get boardingSubtitle;
+
+  /// No description provided for @boardingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s hostel and canteen'**
+  String boardingTitle(Object name);
+
+  /// No description provided for @hostel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel'**
+  String get hostel;
+
+  /// No description provided for @hostelBedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{block}, room {room}, bed {bed}'**
+  String hostelBedLine(Object block, Object room, Object bed);
+
+  /// No description provided for @notInHostel.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in the hostel'**
+  String get notInHostel;
+
+  /// No description provided for @nightRoll.
+  ///
+  /// In en, this message translates to:
+  /// **'Night roll call'**
+  String get nightRoll;
+
+  /// No description provided for @noNights.
+  ///
+  /// In en, this message translates to:
+  /// **'No roll calls yet'**
+  String get noNights;
+
+  /// No description provided for @nightPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get nightPresent;
+
+  /// No description provided for @nightAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get nightAbsent;
+
+  /// No description provided for @nightLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'On leave'**
+  String get nightLeave;
+
+  /// No description provided for @canteenWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Canteen wallet'**
+  String get canteenWallet;
+
+  /// No description provided for @walletBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get walletBalance;
+
+  /// No description provided for @addMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Add money'**
+  String get addMoney;
+
+  /// No description provided for @walletAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} added to the wallet'**
+  String walletAdded(Object amount);
+
+  /// No description provided for @recentMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent meals'**
+  String get recentMeals;
+
+  /// No description provided for @noMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'No meals yet'**
+  String get noMeals;
+
+  /// No description provided for @mealBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get mealBreakfast;
+
+  /// No description provided for @mealLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get mealLunch;
+
+  /// No description provided for @mealSnacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Snacks'**
+  String get mealSnacks;
+
+  /// No description provided for @mealDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get mealDinner;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -8,6 +8,7 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
+import 'boarding.dart';
 import 'campus.dart';
 import 'exam_models.dart';
 import 'lms.dart';
@@ -107,6 +108,18 @@ abstract class ParentApi {
   /// Reports the gateway's result; the server checks the signature (403 when it does not match).
   Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature});
   Future<FeeReceipt> receipt(String paymentId);
+
+  /// The hostel bed and the recent night roll calls (`GET /v1/hostel/students/:id`).
+  Future<BoardingView> boarding(String childId);
+
+  /// The canteen wallet, recent meals and whether online top-up is available (`GET /v1/canteen/students/:id`).
+  Future<WalletView> wallet(String childId);
+
+  /// Starts an online top-up of [amountPaise]; the result's `paymentId` is the top-up id. 503 when online payment is off.
+  Future<FeeCheckout> walletCheckout(String childId, int amountPaise);
+
+  /// Reports the gateway's result; returns the new balance (403 when the signature does not match).
+  Future<int> confirmWalletTopUp(String topUpId, {required String providerPaymentId, required String signature});
 
   /// What the child sits and when, with hall tickets and revaluation requests (`GET /v1/results/students/:id/exams`).
   Future<List<ExamSession>> exams(String childId);
@@ -348,6 +361,25 @@ class HttpParentApi implements ParentApi {
   @override
   Future<StudentFees> fees(String childId) async =>
       StudentFees.fromJson(await _send('GET', '/v1/fees/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<BoardingView> boarding(String childId) async => BoardingView.fromJson(await _send('GET', '/v1/hostel/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<WalletView> wallet(String childId) async => WalletView.fromJson(await _send('GET', '/v1/canteen/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<FeeCheckout> walletCheckout(String childId, int amountPaise) async {
+    final j = await _send('POST', '/v1/canteen/students/$childId/topup-checkout', body: {'amountPaise': amountPaise}) as Map<String, dynamic>;
+    return FeeCheckout.fromJson({...j, 'paymentId': j['topupId']});
+  }
+
+  @override
+  Future<int> confirmWalletTopUp(String topUpId, {required String providerPaymentId, required String signature}) async =>
+      ((await _send('POST', '/v1/canteen/topups/$topUpId/confirm', body: {'providerPaymentId': providerPaymentId, 'signature': signature})
+              as Map<String, dynamic>)['balancePaise']
+          as num)
+          .toInt();
 
   @override
   Future<FeeCheckout> checkout(String invoiceId, {int? amountPaise}) async => FeeCheckout.fromJson(

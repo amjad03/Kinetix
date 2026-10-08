@@ -148,6 +148,15 @@ abstract class StudentApi {
 
   /// The hostel bed and gate passes (`GET /v1/hostel/students/:id`).
   Future<HostelView> hostel(String studentId);
+
+  /// The canteen wallet and recent meals (`GET /v1/canteen/students/:id`).
+  Future<WalletView> wallet(String studentId);
+
+  /// Starts an online top-up (503 when the institution takes no online payments).
+  Future<TopUpCheckout> walletCheckout(String studentId, int amountPaise);
+
+  /// Reports the checkout result; returns the new balance (403 when the signature does not match).
+  Future<int> confirmWalletTopUp(String topUpId, {required String providerPaymentId, required String signature});
   Future<GatePass> requestGatePass(String studentId, {required String reason, required String destination, required DateTime backAt});
 
   /// Certificates the student may ask for, and the ones already asked for.
@@ -453,6 +462,17 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<StudentBus> bus(String studentId) async => StudentBus.fromJson(await _send('GET', '/v1/transport/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<WalletView> wallet(String studentId) async => WalletView.fromJson(await _send('GET', '/v1/canteen/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<TopUpCheckout> walletCheckout(String studentId, int amountPaise) async =>
+      TopUpCheckout.fromJson(await _send('POST', '/v1/canteen/students/$studentId/topup-checkout', body: {'amountPaise': amountPaise}) as Map<String, dynamic>);
+
+  @override
+  Future<int> confirmWalletTopUp(String topUpId, {required String providerPaymentId, required String signature}) async =>
+      ((await _send('POST', '/v1/canteen/topups/$topUpId/confirm', body: {'providerPaymentId': providerPaymentId, 'signature': signature}) as Map<String, dynamic>)['balancePaise'] as num).toInt();
 
   @override
   Future<HostelView> hostel(String studentId) async => HostelView.fromJson(await _send('GET', '/v1/hostel/students/$studentId') as Map<String, dynamic>);

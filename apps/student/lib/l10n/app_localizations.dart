@@ -4364,6 +4364,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application sent to the accounts office.'**
   String get scholarshipSentSnack;
+
+  /// No description provided for @walletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel and canteen'**
+  String get walletTitle;
+
+  /// No description provided for @walletHostel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel'**
+  String get walletHostel;
+
+  /// No description provided for @walletBedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{block}, room {room}, bed {bed}'**
+  String walletBedLine(Object block, Object room, Object bed);
+
+  /// No description provided for @walletNotInHostel.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not in the hostel'**
+  String get walletNotInHostel;
+
+  /// No description provided for @walletNights.
+  ///
+  /// In en, this message translates to:
+  /// **'Night roll call'**
+  String get walletNights;
+
+  /// No description provided for @walletNoNights.
+  ///
+  /// In en, this message translates to:
+  /// **'No roll calls yet'**
+  String get walletNoNights;
+
+  /// No description provided for @walletPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get walletPresent;
+
+  /// No description provided for @walletAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get walletAbsent;
+
+  /// No description provided for @walletLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'On leave'**
+  String get walletLeave;
+
+  /// No description provided for @walletCanteen.
+  ///
+  /// In en, this message translates to:
+  /// **'Canteen wallet'**
+  String get walletCanteen;
+
+  /// No description provided for @walletBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get walletBalance;
+
+  /// No description provided for @walletAddMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Add money'**
+  String get walletAddMoney;
+
+  /// No description provided for @walletAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} added to your wallet'**
+  String walletAdded(Object amount);
+
+  /// No description provided for @walletMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent meals'**
+  String get walletMeals;
+
+  /// No description provided for @walletNoMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'No meals yet'**
+  String get walletNoMeals;
+
+  /// No description provided for @walletBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get walletBreakfast;
+
+  /// No description provided for @walletLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get walletLunch;
+
+  /// No description provided for @walletSnacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Snacks'**
+  String get walletSnacks;
+
+  /// No description provided for @walletDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get walletDinner;
+
+  /// No description provided for @walletEnterAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get walletEnterAmount;
+
+  /// No description provided for @walletEnterRupees.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount in rupees'**
+  String get walletEnterRupees;
+
+  /// No description provided for @walletMinAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'The smallest top-up is ₹1'**
+  String get walletMinAmount;
+
+  /// No description provided for @walletStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting payment…'**
+  String get walletStarting;
+
+  /// No description provided for @walletConfirming.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming payment…'**
+  String get walletConfirming;
+
+  /// No description provided for @walletCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cancelled'**
+  String get walletCancelled;
+
+  /// No description provided for @walletFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment did not go through'**
+  String get walletFailedTitle;
+
+  /// No description provided for @walletCouldNotConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not confirm the payment'**
+  String get walletCouldNotConfirm;
+
+  /// No description provided for @walletNotSetUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment is not set up yet. Add money at the canteen counter.'**
+  String get walletNotSetUp;
+
+  /// No description provided for @walletPhonesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment works on Android phones and iPhones.'**
+  String get walletPhonesOnly;
+
+  /// No description provided for @walletFailNoConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'The payment app did not return a confirmation. If money left your account, the wallet will update shortly.'**
+  String get walletFailNoConfirm;
+
+  /// No description provided for @walletFailOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the payment screen. Try again.'**
+  String get walletFailOpen;
+
+  /// No description provided for @walletFailNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Check it and try again.'**
+  String get walletFailNetwork;
+
+  /// No description provided for @walletFailGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'The payment did not go through. Try again.'**
+  String get walletFailGeneric;
+
+  /// No description provided for @walletFinishIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish in {app}'**
+  String walletFinishIn(Object app);
+
+  /// No description provided for @walletInWalletBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete the payment in that app. The wallet updates when it goes through.'**
+  String get walletInWalletBody;
+
+  /// No description provided for @walletDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo payment'**
+  String get walletDemo;
+
+  /// No description provided for @walletDemoNoMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo payment: no money moves'**
+  String get walletDemoNoMoney;
+
+  /// No description provided for @walletDemoPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay {amount}'**
+  String walletDemoPay(Object amount);
+
+  /// No description provided for @walletAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get walletAmount;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

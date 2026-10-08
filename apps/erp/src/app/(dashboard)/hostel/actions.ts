@@ -63,3 +63,24 @@ export async function setMenu(dayOfWeek: number, meal: string, v: V) {
 export async function setComplaintStatus(complaintId: string, status: 'in_progress' | 'resolved', v: V = {}) {
   return send(`${H}/complaints/${id(complaintId)}/status`, { status, ...(optStr(v.resolution) ? { resolution: v.resolution } : {}) }, PAGE);
 }
+
+export async function addToWaitlist(v: V) {
+  return send(`${H}/waitlist`, { studentId: v.studentId, ...(optStr(v.blockId) ? { blockId: v.blockId } : {}), note: v.note ?? '' }, PAGE);
+}
+
+export async function allotFromWaitlist(waitId: string, v: V) {
+  return send(`${H}/waitlist/${id(waitId)}/allot`, { bedId: v.bedId }, PAGE);
+}
+
+export async function cancelWaiting(waitId: string) {
+  return send(`${H}/waitlist/${id(waitId)}/cancel`, undefined, PAGE);
+}
+
+export async function transferRoom(allotmentId: string, v: V) {
+  return send(`${H}/allotments/${id(allotmentId)}/transfer`, { bedId: v.bedId, reason: v.reason }, PAGE);
+}
+
+/** One resident's mark on the night roll (a warden taps present or absent per student). */
+export async function markNight(night: string, studentId: string, status: 'present' | 'absent') {
+  return send(`${H}/night-attendance`, { night, marks: [{ studentId, status }] }, PAGE);
+}

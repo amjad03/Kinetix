@@ -14,6 +14,7 @@ import '../calendar/calendar_screen.dart';
 import '../campus/bus_screen.dart';
 import '../campus/certificates_screen.dart';
 import '../campus/gate_pass_screen.dart';
+import '../wallet/wallet_screen.dart';
 import '../campus/leave_screen.dart';
 import '../fees/scholarship_screen.dart';
 import '../fees/fees_screen.dart';
@@ -353,6 +354,13 @@ class ProfileTabState extends State<ProfileTab> {
                   title: Text(l.gatePassTitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => GatePassScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openWallet'),
+                  leading: const Icon(Icons.restaurant_outlined),
+                  title: Text(l.walletTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => WalletScreen.open(context, widget.study.api, st.id),
                 ),
                 ListTile(
                   key: const Key('openCertificates'),

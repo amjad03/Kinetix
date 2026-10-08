@@ -9,7 +9,7 @@ import { assertCanSeeStudent } from '../common/student-access.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { hostelAllotments, hostelBeds, hostelBlocks, hostelComplaints, hostelGatePasses, hostelRooms, hostelVisitors, messMenu, messPlans, messSubscriptions, students, tenants } from '../db/schema.js';
+import { hostelAllotments, hostelBeds, hostelBlocks, hostelComplaints, hostelGatePasses, hostelNightAttendance, hostelRooms, hostelTransfers, hostelWaitlist, hostelVisitors, messMenu, messPlans, messSubscriptions, students, tenants } from '../db/schema.js';
 import { FeesService } from '../fees/fees.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 
@@ -19,6 +19,9 @@ const MEALS = ['breakfast', 'lunch', 'snacks', 'dinner'] as const;
 const BlockBody = z.object({ name: z.string().trim().min(1).max(60), gender: z.enum(['boys', 'girls', 'mixed']).default('mixed') });
 const RoomBody = z.object({ number: z.string().trim().min(1).max(20), floor: z.number().int().min(0).max(50).default(0), beds: z.number().int().min(1).max(20), monthlyFeePaise: Paise.default(0) });
 const AllotBody = z.object({ studentId: z.uuid(), bedId: z.uuid(), startsOn: Day.optional() });
+const WaitBody = z.object({ studentId: z.uuid(), blockId: z.uuid().optional(), note: z.string().trim().max(200).default('') });
+const TransferBody = z.object({ bedId: z.uuid(), reason: z.string().trim().min(2).max(200) });
+const NightBody = z.object({ night: Day.optional(), marks: z.array(z.object({ studentId: z.uuid(), status: z.enum(['present', 'absent']) })).min(1).max(500) });
 const FeeBody = z.object({ title: z.string().trim().min(1).max(120), dueOn: Day });
 const PassBody = z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200), destination: z.string().trim().max(200).default(''), expectedBackAt: z.iso.datetime() });
 const PassRequestBody = z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200), destination: z.string().trim().max(200).default(''), expectedBackAt: z.iso.datetime() });
@@ -169,6 +172,145 @@ export class HostelController {
       const res = await this.fees.chargeStudents(tx, p, b.title, b.dueOn, rows);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.fees_charged', data: { ...b, ...res } });
       return res;
+    });
+  }
+
+  // --- Waitlist and room transfer -------------------------------------------------------------
+
+  /** A student with no bed asks for one (optionally in a block); the list is first come, first served. */
+  @Post('waitlist')
+  @Auth('user', HOSTEL_ROLES)
+  waitlist(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(WaitBody)) b: z.infer<typeof WaitBody>) {
+    return orConflict('This student is already on the waiting list', () =>
+      this.db.withTenant(p.tenantId, async (tx) => {
+        const [student] = await tx.select({ id: students.id }).from(students).where(and(eq(students.id, b.studentId), eq(students.status, 'active')));
+        if (!student) throw new NotFoundException('Student not found');
+        const [bed] = await tx.select({ id: hostelAllotments.id }).from(hostelAllotments).where(and(eq(hostelAllotments.studentId, b.studentId), isNull(hostelAllotments.vacatedOn)));
+        if (bed) throw new ConflictException('This student already has a bed');
+        const [w] = await tx.insert(hostelWaitlist).values({ tenantId: p.tenantId, studentId: b.studentId, blockId: b.blockId ?? null, note: b.note, requestedBy: p.userId }).returning();
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.waitlisted', subjectType: 'hostel_waitlist', subjectId: w.id, data: b });
+        return w;
+      }),
+    );
+  }
+
+  @Get('waitlist')
+  @Auth('user', HOSTEL_ROLES)
+  waiting(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx
+        .select({ id: hostelWaitlist.id, studentId: students.id, studentName: students.fullName, block: hostelBlocks.name, note: hostelWaitlist.note, createdAt: hostelWaitlist.createdAt })
+        .from(hostelWaitlist)
+        .innerJoin(students, eq(students.id, hostelWaitlist.studentId))
+        .leftJoin(hostelBlocks, eq(hostelBlocks.id, hostelWaitlist.blockId))
+        .where(eq(hostelWaitlist.status, 'waiting'))
+        .orderBy(asc(hostelWaitlist.createdAt))
+        .limit(500);
+      return rows.map((r, i) => ({ ...r, position: i + 1 }));
+    });
+  }
+
+  /** Gives the waiting student a bed and takes them off the list. */
+  @Post('waitlist/:id/allot')
+  @Auth('user', HOSTEL_ROLES)
+  allotWaiting(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ bedId: z.uuid() }))) b: { bedId: string }) {
+    return orConflict('That bed is taken, or the student already has a bed', () =>
+      this.db.withTenant(p.tenantId, async (tx) => {
+        const [w] = await tx.select().from(hostelWaitlist).where(and(eq(hostelWaitlist.id, id), eq(hostelWaitlist.status, 'waiting'))).for('update');
+        if (!w) throw new ConflictException('Not on the waiting list');
+        const [bed] = await tx.select({ id: hostelBeds.id }).from(hostelBeds).where(eq(hostelBeds.id, b.bedId));
+        if (!bed) throw new NotFoundException('Bed not found');
+        const [a] = await tx.insert(hostelAllotments).values({ tenantId: p.tenantId, studentId: w.studentId, bedId: b.bedId, startsOn: await this.today(tx), createdBy: p.userId }).returning();
+        await tx.update(hostelWaitlist).set({ status: 'allotted', allottedAt: this.clock.now() }).where(eq(hostelWaitlist.id, id));
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.allotted', subjectType: 'hostel_allotment', subjectId: a.id, data: { waitlistId: id, bedId: b.bedId } });
+        return a;
+      }),
+    );
+  }
+
+  @Post('waitlist/:id/cancel')
+  @HttpCode(200)
+  @Auth('user', HOSTEL_ROLES)
+  cancelWaiting(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [w] = await tx.update(hostelWaitlist).set({ status: 'cancelled' }).where(and(eq(hostelWaitlist.id, id), eq(hostelWaitlist.status, 'waiting'))).returning();
+      if (!w) throw new ConflictException('Not on the waiting list');
+      return w;
+    });
+  }
+
+  /** Moves a resident to another free bed: the old allotment closes today, the new one opens today, and the move is recorded. */
+  @Post('allotments/:id/transfer')
+  @Auth('user', HOSTEL_ROLES)
+  transfer(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(TransferBody)) b: z.infer<typeof TransferBody>) {
+    return orConflict('That bed is taken', () =>
+      this.db.withTenant(p.tenantId, async (tx) => {
+        const [a] = await tx.select().from(hostelAllotments).where(eq(hostelAllotments.id, id)).for('update');
+        if (!a) throw new NotFoundException('Allotment not found');
+        if (a.vacatedOn) throw new ConflictException('This student has already left the bed');
+        if (a.bedId === b.bedId) throw new BadRequestException('The student is already in that bed');
+        const [bed] = await tx.select({ id: hostelBeds.id }).from(hostelBeds).where(eq(hostelBeds.id, b.bedId));
+        if (!bed) throw new NotFoundException('Bed not found');
+        const today = await this.today(tx);
+        await tx.update(hostelAllotments).set({ vacatedOn: today }).where(eq(hostelAllotments.id, id));
+        const [next] = await tx.insert(hostelAllotments).values({ tenantId: p.tenantId, studentId: a.studentId, bedId: b.bedId, startsOn: today, createdBy: p.userId }).returning();
+        await tx.insert(hostelTransfers).values({ tenantId: p.tenantId, studentId: a.studentId, fromBedId: a.bedId, toBedId: b.bedId, reason: b.reason, movedOn: today, movedBy: p.userId });
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.room_transferred', subjectType: 'hostel_allotment', subjectId: next.id, data: { from: a.bedId, to: b.bedId } });
+        return next;
+      }),
+    );
+  }
+
+  // --- Night attendance -------------------------------------------------------------------------
+
+  /** Every resident with the night's mark (null until marked), and the counts. */
+  @Get('night-attendance')
+  @Auth('user', HOSTEL_ROLES)
+  nightRoll(@CurrentPrincipal() p: UserPrincipal, @Query('night') night?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const day = night ? Day.parse(night) : await this.today(tx);
+      const rows = await tx
+        .select({ studentId: students.id, studentName: students.fullName, room: hostelRooms.number, block: hostelBlocks.name, status: hostelNightAttendance.status })
+        .from(hostelAllotments)
+        .innerJoin(students, eq(students.id, hostelAllotments.studentId))
+        .innerJoin(hostelBeds, eq(hostelBeds.id, hostelAllotments.bedId))
+        .innerJoin(hostelRooms, eq(hostelRooms.id, hostelBeds.roomId))
+        .innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId))
+        .leftJoin(hostelNightAttendance, and(eq(hostelNightAttendance.studentId, students.id), eq(hostelNightAttendance.night, day)))
+        .where(and(isNull(hostelAllotments.vacatedOn), sql`${hostelAllotments.startsOn} <= ${day}::date`))
+        .orderBy(asc(hostelBlocks.name), asc(hostelRooms.number), asc(students.fullName))
+        .limit(1000);
+      const count = (s: string | null) => rows.filter((r) => r.status === s).length;
+      return { night: day, residents: rows, present: count('present'), absent: count('absent'), leave: count('leave'), unmarked: count(null) };
+    });
+  }
+
+  /**
+   * The warden's night roll call. Only residents can be marked; one out on a gate pass is
+   * recorded as `leave` rather than absent. Each new absence tells the student's family once.
+   */
+  @Post('night-attendance')
+  @HttpCode(200)
+  @Auth('user', HOSTEL_ROLES)
+  markNight(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(NightBody)) b: z.infer<typeof NightBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const night = b.night ?? (await this.today(tx));
+      if (night > (await this.today(tx))) throw new BadRequestException('That night has not happened yet');
+      const ids = [...new Set(b.marks.map((m) => m.studentId))];
+      const res = await tx.select({ id: students.id, name: students.fullName }).from(hostelAllotments).innerJoin(students, eq(students.id, hostelAllotments.studentId)).where(and(inArray(hostelAllotments.studentId, ids), isNull(hostelAllotments.vacatedOn)));
+      if (res.length !== ids.length) throw new BadRequestException('Only students with a hostel bed can be marked');
+      const out = await tx.select({ id: hostelGatePasses.studentId }).from(hostelGatePasses).where(and(inArray(hostelGatePasses.studentId, ids), eq(hostelGatePasses.status, 'out')));
+      let absent = 0;
+      for (const m of b.marks) {
+        const status = m.status === 'absent' && out.some((o) => o.id === m.studentId) ? 'leave' : m.status;
+        await tx.insert(hostelNightAttendance).values({ tenantId: p.tenantId, studentId: m.studentId, night, status, markedBy: p.userId }).onConflictDoUpdate({ target: [hostelNightAttendance.studentId, hostelNightAttendance.night], set: { status, markedBy: p.userId } });
+        if (status === 'absent') {
+          absent++;
+          await this.notifications.hostelAbsent(tx, { studentId: m.studentId, studentName: res.find((r) => r.id === m.studentId)!.name, night });
+        }
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.night_marked', data: { night, marked: b.marks.length, absent } });
+      return { night, marked: b.marks.length, absent };
     });
   }
 
@@ -429,7 +571,8 @@ export class HostelController {
         .innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId))
         .where(and(eq(hostelAllotments.studentId, studentId), isNull(hostelAllotments.vacatedOn)));
       const passes = await tx.select().from(hostelGatePasses).where(eq(hostelGatePasses.studentId, studentId)).orderBy(desc(hostelGatePasses.createdAt)).limit(20);
-      return { resident: !!bed, bed: bed ?? null, passes };
+      const nights = await tx.select({ night: hostelNightAttendance.night, status: hostelNightAttendance.status }).from(hostelNightAttendance).where(eq(hostelNightAttendance.studentId, studentId)).orderBy(desc(hostelNightAttendance.night)).limit(14);
+      return { resident: !!bed, bed: bed ?? null, passes, nights };
     });
   }
 

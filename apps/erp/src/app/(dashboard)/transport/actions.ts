@@ -53,3 +53,24 @@ export async function addDriver(v: V) {
 export async function chargeFees(v: V) {
   return send<{ created?: number }>('/v1/transport/fees', { title: v.title, dueOn: v.dueOn, ...(optStr(v.routeId) ? { routeId: v.routeId } : {}) }, PAGE);
 }
+
+export async function addExpense(v: V) {
+  return send('/v1/transport/expenses', { vehicleId: v.vehicleId, kind: v.kind, spentOn: v.spentOn, amountPaise: num(v.amount), ...(optStr(v.litres) ? { litres: num(v.litres) } : {}), ...(optStr(v.odometerKm) ? { odometerKm: num(v.odometerKm) } : {}), note: v.note ?? '' }, PAGE);
+}
+
+export async function reportIncident(v: V) {
+  return send('/v1/transport/incidents', { vehicleId: v.vehicleId, kind: v.kind, severity: v.severity || 'low', description: v.description }, PAGE);
+}
+
+export async function resolveIncident(incidentId: string, v: V) {
+  return send(`/v1/transport/incidents/${encodeURIComponent(incidentId)}/resolve`, { resolution: v.resolution }, PAGE);
+}
+
+/** The new vendor token comes back once; the desk shows it and never again. */
+export async function addGpsSource(name: string): Promise<ActionResult<{ id: string; name: string; token: string }>> {
+  return send('/v1/transport/gps/sources', { name }, PAGE);
+}
+
+export async function revokeGpsSource(sourceId: string) {
+  return send(`/v1/transport/gps/sources/${encodeURIComponent(sourceId)}/revoke`, undefined, PAGE);
+}

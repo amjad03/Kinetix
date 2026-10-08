@@ -3,17 +3,17 @@
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
-import { addBlock, addPlan, addRoom, allot, chargeHostelFees, chargeMessFees, issuePass, passStep, setComplaintStatus, setMenu, signInVisitor, signOutVisitor, subscribeMess, vacate } from '@/app/(dashboard)/hostel/actions';
+import { addBlock, addToWaitlist, allotFromWaitlist, cancelWaiting, markNight, transferRoom, addPlan, addRoom, allot, chargeHostelFees, chargeMessFees, issuePass, passStep, setComplaintStatus, setMenu, signInVisitor, signOutVisitor, subscribeMess, vacate } from '@/app/(dashboard)/hostel/actions';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import { weekdayName } from '@/lib/dates';
 import { MEALS } from '@/lib/ops';
 import { st } from '@/lib/ops-labels';
-import type { HBed, HBlock, HComplaint, HMenu, HPassRow, HPlan, HVisitorRow } from '@/lib/ops';
+import type { HBed, HBlock, HComplaint, HMenu, HNight, HPassRow, HPlan, HVisitorRow, HWait } from '@/lib/ops';
 
-type Dialog = 'block' | 'room' | 'allot' | 'fees' | 'pass' | 'visitor' | 'plan' | 'subscribe' | 'messFees' | { menu: { day: number; meal: string; items: string } } | { resolve: HComplaint };
+type Dialog = 'block' | 'room' | 'allot' | 'fees' | 'pass' | 'visitor' | 'plan' | 'subscribe' | 'messFees' | { menu: { day: number; meal: string; items: string } } | { resolve: HComplaint } | 'wait' | { fromWait: HWait } | { move: HBed };
 
-export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, complaints, initialTab }: { blocks: HBlock[]; beds: HBed[]; passes: HPassRow[]; visitors: HVisitorRow[]; plans: HPlan[]; menu: HMenu[]; complaints: HComplaint[]; initialTab: string }) {
+export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, complaints, waitlist, night, initialTab }: { blocks: HBlock[]; beds: HBed[]; passes: HPassRow[]; visitors: HVisitorRow[]; plans: HPlan[]; menu: HMenu[]; complaints: HComplaint[]; waitlist: HWait[]; night: HNight; initialTab: string }) {
   const { t, fmt, locale } = useI18n();
   const [dlg, setDlg] = useState<Dialog | null>(null);
   const [toast, toastNode] = useToast();
@@ -68,7 +68,7 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
                     { label: t('ho.room'), cell: (b) => `${b.room} · ${b.label}` },
                     { label: t('ho.fee'), cell: (b) => fmt.rupees(b.monthlyFeePaise), num: true },
                     { label: t('ops.f.student'), cell: (b) => b.studentName ?? <Pill label={t('ho.freeBed')} /> },
-                    { label: '', cell: (b) => (b.allotmentId ? <ActionButton tone="error" label={t('ho.vacate')} run={() => vacate(b.allotmentId!)} onDone={toast} /> : null) },
+                    { label: '', cell: (b) => (b.allotmentId ? <><Button size="small" onClick={() => setDlg({ move: b })} disabled={freeBeds.length === 0}>{t('ho.transfer')}</Button><ActionButton tone="error" label={t('ho.vacate')} run={() => vacate(b.allotmentId!)} onDone={toast} /></> : null) },
                   ]}
                 />
               </>
@@ -197,6 +197,48 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
               />
             ),
           },
+          {
+            id: 'waitlist',
+            label: t('ho.tab.waitlist', { n: waitlist.length }),
+            node: (
+              <>
+                <Bar>{add(t('ho.addWait'), 'wait')}</Bar>
+                <Grid
+                  testId="ho-waitlist"
+                  empty={t('ho.noWait')}
+                  rows={waitlist}
+                  cols={[
+                    { label: '#', cell: (w) => w.position, num: true },
+                    { label: t('ops.f.student'), cell: (w) => w.studentName },
+                    { label: t('ho.block'), cell: (w) => w.block ?? t('ops.none') },
+                    { label: t('ops.f.note'), cell: (w) => w.note || t('ops.none') },
+                    { label: '', cell: (w) => (<><Button size="small" onClick={() => setDlg({ fromWait: w })} disabled={freeBeds.length === 0}>{t('ho.allot')}</Button><ActionButton tone="error" label={t('ho.removeWait')} run={() => cancelWaiting(w.id)} onDone={toast} /></>) },
+                  ]}
+                />
+              </>
+            ),
+          },
+          {
+            id: 'night',
+            label: t('ho.tab.night', { n: night.absent }),
+            node: (
+              <>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} data-testid="ho-night-counts">{t('ho.nightCounts', { date: night.night, present: night.present, absent: night.absent, leave: night.leave, unmarked: night.unmarked })}</Typography>
+                <Grid
+                  testId="ho-night"
+                  empty={t('ho.noResidents')}
+                  rows={night.residents}
+                  tint={(r) => r.status === 'absent'}
+                  cols={[
+                    { label: t('ops.f.student'), cell: (r) => r.studentName },
+                    { label: t('ho.room'), cell: (r) => `${r.block} · ${r.room}` },
+                    { label: t('ops.f.status'), cell: (r) => (r.status ? <Pill warn={r.status === 'absent'} label={t(`ho.night.${r.status}`)} /> : t('ho.night.unmarked')) },
+                    { label: '', cell: (r) => (<><ActionButton label={t('ho.night.present')} run={() => markNight(night.night, r.studentId, 'present')} onDone={toast} /><ActionButton tone="error" label={t('ho.night.absent')} run={() => markNight(night.night, r.studentId, 'absent')} onDone={toast} /></>) },
+                  ]}
+                />
+              </>
+            ),
+          },
         ]}
       />
 
@@ -263,6 +305,9 @@ export function HostelDesk({ blocks, beds, passes, visitors, plans, menu, compla
       {dlg && typeof dlg === 'object' && 'resolve' in dlg && (
         <FormDialog title={t('ho.resolve')} onSubmit={(v) => setComplaintStatus(dlg.resolve.id, 'resolved', v)} onClose={done} fields={[{ name: 'resolution', label: t('ho.resolution'), kind: 'multiline', required: true }]} />
       )}
+      {dlg === 'wait' && <FormDialog title={t('ho.addWait')} onSubmit={addToWaitlist} onClose={done} fields={[studentId, { name: 'blockId', label: t('ho.block'), kind: 'select', options: blocks.map((b) => ({ value: b.id, label: b.name })) }, { name: 'note', label: t('ops.f.note') }]} />}
+      {dlg && typeof dlg === 'object' && 'fromWait' in dlg && <FormDialog title={`${t('ho.allot')} · ${dlg.fromWait.studentName}`} onSubmit={(v) => allotFromWaitlist(dlg.fromWait.id, v)} onClose={done} fields={[{ name: 'bedId', label: t('ho.bed'), kind: 'select', required: true, options: freeBeds.map((b) => ({ value: b.bedId, label: `${b.block} · ${b.room} · ${b.label}` })) }]} />}
+      {dlg && typeof dlg === 'object' && 'move' in dlg && <FormDialog title={`${t('ho.transfer')} · ${dlg.move.studentName}`} onSubmit={(v) => transferRoom(dlg.move.allotmentId!, v)} onClose={done} fields={[{ name: 'bedId', label: t('ho.bed'), kind: 'select', required: true, options: freeBeds.map((b) => ({ value: b.bedId, label: `${b.block} · ${b.room} · ${b.label}` })) }, { name: 'reason', label: t('ho.reason'), required: true }]} />}
       {toastNode}
     </>
   );

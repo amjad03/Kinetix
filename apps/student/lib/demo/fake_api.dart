@@ -3,8 +3,10 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
@@ -759,9 +761,42 @@ class FakeStudentApi implements StudentApi {
     block: 'Block A',
     room: '101',
     bed: 'B',
+    nights: [NightMark(night: '2026-10-07', status: 'absent'), NightMark(night: '2026-10-06', status: 'present')],
     passes: [GatePass(id: 'gp1', reason: 'Weekend at home', destination: 'Mysuru', expectedBackAt: DateTime(2026, 9, 21, 19), status: 'returned')],
   );
   ApiException? hostelError;
+
+  int walletBalancePaise = 250_00;
+  String? onlinePayments = 'demo';
+  List<MealMark> walletMeals = const [MealMark(date: '2026-10-07', meal: 'lunch')];
+  final _topUps = <String, ({String orderId, int amountPaise})>{};
+
+  @override
+  Future<WalletView> wallet(String studentId) async {
+    calls.add('wallet $studentId');
+    return WalletView(balancePaise: walletBalancePaise, meals: walletMeals, onlinePayments: onlinePayments);
+  }
+
+  @override
+  Future<TopUpCheckout> walletCheckout(String studentId, int amountPaise) async {
+    calls.add('walletCheckout $studentId $amountPaise');
+    if (onlinePayments == null) throw ApiException(503, 'Online payment is not available yet. Please pay at the fees counter.');
+    final id = 'topup${_topUps.length + 1}';
+    final orderId = '${onlinePayments}_wallet_${_topUps.length + 1}';
+    _topUps[id] = (orderId: orderId, amountPaise: amountPaise);
+    return TopUpCheckout(topupId: id, provider: onlinePayments!, keyId: onlinePayments == 'demo' ? 'demo' : 'rzp_test_key', orderId: orderId, amountPaise: amountPaise, name: 'Demo College', description: 'Canteen wallet');
+  }
+
+  @override
+  Future<int> confirmWalletTopUp(String topUpId, {required String providerPaymentId, required String signature}) async {
+    calls.add('confirmWallet $topUpId');
+    final o = _topUps[topUpId];
+    if (o == null) throw ApiException(404, 'Top-up not found');
+    final expected = Hmac(sha256, utf8.encode('kinetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    if (signature != expected) throw ApiException(403, 'The payment could not be verified');
+    walletBalancePaise += o.amountPaise;
+    return walletBalancePaise;
+  }
 
   @override
   Future<HostelView> hostel(String studentId) async {

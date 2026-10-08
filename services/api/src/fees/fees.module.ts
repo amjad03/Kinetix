@@ -6,6 +6,7 @@ import { FeesController } from './fees.controller.js';
 import { FeesService } from './fees.service.js';
 import { PaymentGateway } from './payment-gateway.service.js';
 import { FakeRazorpayApi, HttpRazorpayApi, RazorpayApi } from './payment-provider.js';
+import { WalletTopupService } from './wallet-topup.service.js';
 import { PaymentsAdminController } from './payments-admin.controller.js';
 
 @Module({
@@ -13,11 +14,12 @@ import { PaymentsAdminController } from './payments-admin.controller.js';
   providers: [
     FeesService,
     ApplicationFeesService,
+    WalletTopupService,
     PaymentGateway,
     // Each institution's own keys are used per request (PaymentGateway); RAZORPAY_FAKE keeps tests off the network.
     { provide: RazorpayApi, inject: [ENV], useFactory: (env: Env) => (env.RAZORPAY_FAKE ? new FakeRazorpayApi() : new HttpRazorpayApi()) },
   ],
   controllers: [FeesController, PaymentsAdminController],
-  exports: [FeesService, PaymentGateway, ApplicationFeesService],
+  exports: [FeesService, PaymentGateway, ApplicationFeesService, WalletTopupService],
 })
 export class FeesModule {}

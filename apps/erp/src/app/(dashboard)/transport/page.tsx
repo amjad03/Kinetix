@@ -5,7 +5,7 @@ import { ErrorState } from '@/components/States';
 import { TransportDesk } from '@/components/transport/TransportDesk';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
-import type { TCompliance, TDriver, TRoute, TTripRow, TVehicle } from '@/lib/ops';
+import type { TCompliance, TDriver, TRoute, TTripRow, TVehicle, TExpenseSummary, TGpsSource, TIncident } from '@/lib/ops';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.transport') };
@@ -14,15 +14,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TransportPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireSection('transport');
   const { tab } = await searchParams;
-  const [routes, vehicles, drivers, trips, compliance] = await Promise.all([
+  const [routes, vehicles, drivers, trips, compliance, expenses, incidents, sources] = await Promise.all([
     load(() => api<TRoute[]>('/v1/transport/routes')),
     load(() => api<TVehicle[]>('/v1/transport/vehicles')),
     load(() => api<TDriver[]>('/v1/transport/drivers')),
     load(() => api<TTripRow[]>('/v1/transport/trips')),
     load(() => api<TCompliance>('/v1/transport/compliance')),
+    load(() => api<TExpenseSummary[]>('/v1/transport/expenses/summary')),
+    load(() => api<TIncident[]>('/v1/transport/incidents')),
+    load(() => api<TGpsSource[]>('/v1/transport/gps/sources')),
   ]);
   const { t } = await getI18n();
-  const failed = routes.error ?? vehicles.error ?? drivers.error ?? trips.error ?? compliance.error;
+  const failed = routes.error ?? vehicles.error ?? drivers.error ?? trips.error ?? compliance.error ?? expenses.error ?? incidents.error ?? sources.error;
   const r = routes.data ?? [];
   const tr = trips.data ?? [];
   const due = compliance.data?.items ?? [];
@@ -41,7 +44,7 @@ export default async function TransportPage({ searchParams }: { searchParams: Pr
             <StatTile label={t('tr.live')} value={tr.filter((x) => x.trip.status === 'running').length} tone="live" testId="tr-live" />
             <StatTile label={t('tr.expiring')} value={due.length} tone={due.length ? 'warning' : 'default'} caption={due.some((x) => x.expired) ? t('tr.someExpired') : undefined} testId="tr-expiring" />
           </StatGrid>
-          <TransportDesk routes={r} vehicles={vehicles.data!} drivers={drivers.data!} trips={tr} compliance={compliance.data!} initialTab={tab ?? 'routes'} />
+          <TransportDesk routes={r} vehicles={vehicles.data!} drivers={drivers.data!} trips={tr} compliance={compliance.data!} expenses={expenses.data!} incidents={incidents.data!} sources={sources.data!} initialTab={tab ?? 'routes'} />
         </>
       )}
     </>

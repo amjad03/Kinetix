@@ -254,6 +254,16 @@ export class NotificationsService {
     });
   }
 
+  /** A resident was absent at the night roll call. */
+  async hostelAbsent(tx: Tx, g: { studentId: string; studentName: string; night: string }): Promise<void> {
+    await this.insertFor(tx, this.studentAndFamily(g.studentId), {
+      kind: 'hostel',
+      text: texts.hostelAbsent({ studentName: g.studentName, night: g.night }),
+      data: { studentId: g.studentId, night: g.night, event: 'absent' },
+      dedupeKey: `hostel-absent:${g.studentId}:${g.night}`,
+    });
+  }
+
   /** Marks published for a class: each student and their family. */
   async marksPublished(tx: Tx, a: { id: string; sectionId: string; title: string; subjectName: string }): Promise<void> {
     await this.insertFor(tx, this.sectionAudience([a.sectionId]), {

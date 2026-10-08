@@ -44,6 +44,16 @@ const STATUS: Record<string, MessageKey> = {
   lunch: 'ops.st.lunch',
   snacks: 'ops.st.snacks',
   dinner: 'ops.st.dinner',
+  awarded: 'ops.st.awarded',
+  fuel: 'ops.st.fuel',
+  toll: 'ops.st.toll',
+  accident: 'ops.st.accident',
+  breakdown: 'ops.st.breakdown',
+  delay: 'ops.st.delay',
+  behaviour: 'ops.st.behaviour',
+  low: 'ops.st.low',
+  medium: 'ops.st.medium',
+  high: 'ops.st.high',
 };
 
 export const st = (t: (k: MessageKey) => string, s: string): string => (STATUS[s] ? t(STATUS[s]) : s);

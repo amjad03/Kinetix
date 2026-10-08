@@ -5,7 +5,7 @@ import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
-import type { HBed, HBlock, HComplaint, HMenu, HPassRow, HPlan, HVisitorRow } from '@/lib/ops';
+import type { HBed, HBlock, HComplaint, HMenu, HPassRow, HPlan, HVisitorRow, HNight, HWait } from '@/lib/ops';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.hostel') };
@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HostelPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireSection('hostel');
   const { tab } = await searchParams;
-  const [blocks, beds, passes, visitors, plans, menu, complaints] = await Promise.all([
+  const [blocks, beds, passes, visitors, plans, menu, complaints, waitlist, night] = await Promise.all([
     load(() => api<HBlock[]>('/v1/hostel/blocks')),
     load(() => api<HBed[]>('/v1/hostel/beds')),
     load(() => api<HPassRow[]>('/v1/hostel/gate-passes')),
@@ -22,9 +22,11 @@ export default async function HostelPage({ searchParams }: { searchParams: Promi
     load(() => api<HPlan[]>('/v1/hostel/mess/plans')),
     load(() => api<HMenu[]>('/v1/hostel/mess/menu')),
     load(() => api<HComplaint[]>('/v1/hostel/complaints')),
+    load(() => api<HWait[]>('/v1/hostel/waitlist')),
+    load(() => api<HNight>('/v1/hostel/night-attendance')),
   ]);
   const { t } = await getI18n();
-  const failed = [blocks, beds, passes, visitors, plans, menu, complaints].find((x) => x.error !== undefined)?.error;
+  const failed = [blocks, beds, passes, visitors, plans, menu, complaints, waitlist, night].find((x) => x.error !== undefined)?.error;
   const b = blocks.data ?? [];
   const p = passes.data ?? [];
   const totalBeds = b.reduce((s, x) => s + x.beds, 0);
@@ -46,7 +48,7 @@ export default async function HostelPage({ searchParams }: { searchParams: Promi
             <StatTile label={t('ho.overdue')} value={late.length} tone={late.length ? 'warning' : 'default'} caption={late.length ? t('ho.overdueHelp') : undefined} testId="ho-overdue" />
             <StatTile label={t('ho.openComplaints')} value={(complaints.data ?? []).filter((x) => x.status !== 'resolved').length} testId="ho-complaints" />
           </StatGrid>
-          <HostelDesk blocks={b} beds={beds.data!} passes={p} visitors={visitors.data!} plans={plans.data!} menu={menu.data!} complaints={complaints.data!} initialTab={tab ?? 'rooms'} />
+          <HostelDesk blocks={b} beds={beds.data!} passes={p} visitors={visitors.data!} plans={plans.data!} menu={menu.data!} complaints={complaints.data!} waitlist={waitlist.data!} night={night.data!} initialTab={tab ?? 'rooms'} />
         </>
       )}
     </>

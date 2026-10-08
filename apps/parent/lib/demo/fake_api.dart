@@ -11,6 +11,7 @@ import 'package:flutter/painting.dart';
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
 import '../core/attachments.dart';
+import '../core/boarding.dart';
 import '../core/campus.dart';
 import '../core/exam_models.dart';
 import '../core/realtime.dart';
@@ -786,6 +787,65 @@ class FakeParentApi implements ParentApi {
       invoices: list,
       payments: [...?feePayments[childId]]..sort((a, b) => b.paidAt!.compareTo(a.paidAt!)),
     );
+  }
+
+  // ── Hostel nights and the canteen wallet ─────────────────────────────────────────────────────
+  BoardingView boardingView = const BoardingView(
+    resident: true,
+    block: 'Block A',
+    room: '101',
+    bed: 'B1',
+    nights: [NightMark(night: '2026-10-07', status: 'absent'), NightMark(night: '2026-10-06', status: 'present')],
+  );
+  int walletBalancePaise = 250_00;
+  List<MealMark> walletMeals = const [MealMark(date: '2026-10-07', meal: 'lunch')];
+  final _topUps = <String, ({String orderId, int amountPaise})>{};
+
+  @override
+  Future<BoardingView> boarding(String childId) async {
+    calls.add('boarding $childId');
+    return boardingView;
+  }
+
+  @override
+  Future<WalletView> wallet(String childId) async {
+    calls.add('wallet $childId');
+    final mode = switch (onlinePayments) {
+      'demo' => OnlinePayments.demo,
+      'razorpay' => OnlinePayments.razorpay,
+      _ => null,
+    };
+    return WalletView(balancePaise: walletBalancePaise, meals: walletMeals, onlinePayments: mode);
+  }
+
+  @override
+  Future<FeeCheckout> walletCheckout(String childId, int amountPaise) async {
+    calls.add('walletCheckout $childId $amountPaise');
+    if (onlinePayments == null) throw ApiException(503, 'Online payment is not available yet. Please pay at the fees counter.');
+    final id = 'topup${_topUps.length + 1}';
+    final orderId = '${onlinePayments}_wallet_${_topUps.length + 1}';
+    _topUps[id] = (orderId: orderId, amountPaise: amountPaise);
+    return FeeCheckout(
+      paymentId: id,
+      provider: onlinePayments!,
+      keyId: onlinePayments == 'demo' ? 'demo' : 'rzp_test_key',
+      orderId: orderId,
+      amountPaise: amountPaise,
+      currency: 'INR',
+      name: 'Demo College',
+      description: 'Canteen wallet',
+    );
+  }
+
+  @override
+  Future<int> confirmWalletTopUp(String topUpId, {required String providerPaymentId, required String signature}) async {
+    calls.add('confirmWallet $topUpId');
+    final o = _topUps[topUpId];
+    if (o == null) throw ApiException(404, 'Top-up not found');
+    final expected = Hmac(sha256, utf8.encode('kinetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    if (signature != expected) throw ApiException(403, 'The payment could not be verified');
+    walletBalancePaise += o.amountPaise;
+    return walletBalancePaise;
   }
 
   @override

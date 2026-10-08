@@ -4,11 +4,11 @@ import Add from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
-import { addDriver, addRoute, addStop, addVehicle, chargeFees, endSeat, loadRoute, loadTrip, seatStudent, setRouteActive, updateRoute } from '@/app/(dashboard)/transport/actions';
+import { addExpense, addGpsSource, reportIncident, resolveIncident, revokeGpsSource, addDriver, addRoute, addStop, addVehicle, chargeFees, endSeat, loadRoute, loadTrip, seatStudent, setRouteActive, updateRoute } from '@/app/(dashboard)/transport/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import { st } from '@/lib/ops-labels';
-import type { TCompliance, TDriver, TRoute, TRouteDetail, TTripDetail, TTripRow, TVehicle } from '@/lib/ops';
+import type { TCompliance, TDriver, TExpenseSummary, TGpsSource, TIncident, TRoute, TRouteDetail, TTripDetail, TTripRow, TVehicle } from '@/lib/ops';
 
 type Dialog =
   | { k: 'route' }
@@ -19,9 +19,14 @@ type Dialog =
   | { k: 'detail'; d: TRouteDetail }
   | { k: 'stop'; d: TRouteDetail }
   | { k: 'seat'; d: TRouteDetail; stopId: string }
-  | { k: 'trip'; d: TTripDetail };
+  | { k: 'trip'; d: TTripDetail }
+  | { k: 'gpsNew' }
+  | { k: 'expense' }
+  | { k: 'incident' }
+  | { k: 'resolve'; i: TIncident }
+  | { k: 'token'; token: string };
 
-export function TransportDesk({ routes, vehicles, drivers, trips, compliance, initialTab }: { routes: TRoute[]; vehicles: TVehicle[]; drivers: TDriver[]; trips: TTripRow[]; compliance: TCompliance; initialTab: string }) {
+export function TransportDesk({ routes, vehicles, drivers, trips, compliance, expenses, incidents, sources, initialTab }: { routes: TRoute[]; vehicles: TVehicle[]; drivers: TDriver[]; trips: TTripRow[]; compliance: TCompliance; expenses: TExpenseSummary[]; incidents: TIncident[]; sources: TGpsSource[]; initialTab: string }) {
   const { t, fmt } = useI18n();
   const [dlg, setDlg] = useState<Dialog | null>(null);
   const [toast, toastNode] = useToast();
@@ -163,6 +168,73 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, in
               />
             ),
           },
+          {
+            id: 'expenses',
+            label: t('tr.tab.expenses'),
+            node: (
+              <>
+                <Bar><Button variant="outlined" onClick={() => setDlg({ k: 'expense' })} disabled={vehicles.length === 0}>{t('tr.addExpense')}</Button></Bar>
+                <Grid
+                  testId="tr-expenses"
+                  empty={t('tr.noExpenses')}
+                  rows={expenses}
+                  cols={[
+                    { label: t('tr.regNo'), cell: (x) => x.regNo },
+                    { label: t('tr.expTotal'), cell: (x) => fmt.rupees(x.totalPaise), num: true },
+                    { label: t('tr.expFuel'), cell: (x) => fmt.rupees(x.fuelPaise), num: true },
+                    { label: t('tr.expLitres'), cell: (x) => x.litres, num: true },
+                    { label: t('tr.expKm'), cell: (x) => x.km, num: true },
+                    { label: t('tr.expPerKm'), cell: (x) => (x.costPerKmPaise == null ? t('ops.none') : fmt.rupees(x.costPerKmPaise)), num: true },
+                    { label: t('tr.expMileage'), cell: (x) => x.kmPerLitre ?? t('ops.none'), num: true },
+                  ]}
+                />
+              </>
+            ),
+          },
+          {
+            id: 'incidents',
+            label: t('tr.tab.incidents', { n: incidents.filter((i) => i.status === 'open').length }),
+            node: (
+              <>
+                <Bar><Button variant="outlined" onClick={() => setDlg({ k: 'incident' })} disabled={vehicles.length === 0}>{t('tr.reportIncident')}</Button></Bar>
+                <Grid
+                  testId="tr-incidents"
+                  empty={t('tr.noIncidents')}
+                  rows={incidents}
+                  tint={(i) => i.status === 'open' && i.severity === 'high'}
+                  cols={[
+                    { label: t('tr.regNo'), cell: (i) => i.regNo ?? t('ops.none') },
+                    { label: t('tr.incKind'), cell: (i) => st(t, i.kind) },
+                    { label: t('tr.incSeverity'), cell: (i) => <Pill warn={i.severity === 'high'} label={st(t, i.severity)} /> },
+                    { label: t('ops.f.note'), cell: (i) => (i.resolution ? `${i.description} — ${i.resolution}` : i.description) },
+                    { label: t('ops.f.status'), cell: (i) => <Pill label={st(t, i.status)} /> },
+                    { label: '', cell: (i) => (i.status === 'open' ? <Button size="small" onClick={() => setDlg({ k: 'resolve', i })}>{t('tr.resolve')}</Button> : null) },
+                  ]}
+                />
+              </>
+            ),
+          },
+          {
+            id: 'gps',
+            label: t('tr.tab.gps', { n: sources.filter((x) => x.active).length }),
+            node: (
+              <>
+                <Bar><Button variant="outlined" onClick={() => setDlg({ k: 'gpsNew' })}>{t('tr.addGps')}</Button></Bar>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('tr.gpsHelp')}</Typography>
+                <Grid
+                  testId="tr-gps"
+                  empty={t('tr.noGps')}
+                  rows={sources}
+                  cols={[
+                    { label: t('ops.f.name'), cell: (x) => x.name },
+                    { label: t('tr.gpsSeen'), cell: (x) => (x.lastSeenAt ? fmt.dateTime(x.lastSeenAt) : t('ops.none')) },
+                    { label: t('ops.f.status'), cell: (x) => <Pill label={x.active ? t('tr.gpsActive') : t('tr.gpsRevoked')} /> },
+                    { label: '', cell: (x) => (x.active ? <ActionButton tone="error" label={t('tr.gpsRevoke')} run={() => revokeGpsSource(x.id)} onDone={toast} /> : null) },
+                  ]}
+                />
+              </>
+            ),
+          },
         ]}
       />
 
@@ -267,6 +339,53 @@ export function TransportDesk({ routes, vehicles, drivers, trips, compliance, in
               { label: t('tr.at'), cell: (e) => fmt.dateTime(e.at) },
             ]}
           />
+        </InfoDialog>
+      )}
+      {dlg?.k === 'expense' && (
+        <FormDialog
+          title={t('tr.addExpense')}
+          onSubmit={addExpense}
+          onClose={done}
+          fields={[
+            { name: 'vehicleId', label: t('tr.regNo'), kind: 'select', required: true, options: vehicles.map((v) => ({ value: v.id, label: v.regNo })) },
+            { name: 'kind', label: t('tr.incKind'), kind: 'select', required: true, init: 'fuel', options: ['fuel', 'repair', 'toll', 'other'].map((k) => ({ value: k, label: st(t, k) })) },
+            { name: 'spentOn', label: t('ops.f.date'), kind: 'date', required: true },
+            { name: 'amount', label: t('ops.f.amount'), kind: 'rupees', required: true },
+            { name: 'litres', label: t('tr.expLitres'), kind: 'number' },
+            { name: 'odometerKm', label: t('tr.odometer'), kind: 'number' },
+          ]}
+        />
+      )}
+      {dlg?.k === 'incident' && (
+        <FormDialog
+          title={t('tr.reportIncident')}
+          onSubmit={reportIncident}
+          onClose={done}
+          fields={[
+            { name: 'vehicleId', label: t('tr.regNo'), kind: 'select', required: true, options: vehicles.map((v) => ({ value: v.id, label: v.regNo })) },
+            { name: 'kind', label: t('tr.incKind'), kind: 'select', required: true, options: ['accident', 'breakdown', 'delay', 'behaviour', 'other'].map((k) => ({ value: k, label: st(t, k) })) },
+            { name: 'severity', label: t('tr.incSeverity'), kind: 'select', required: true, init: 'low', options: ['low', 'medium', 'high'].map((k) => ({ value: k, label: st(t, k) })) },
+            { name: 'description', label: t('ops.f.note'), kind: 'multiline', required: true },
+          ]}
+        />
+      )}
+      {dlg?.k === 'resolve' && <FormDialog title={t('tr.resolve')} onSubmit={(v) => resolveIncident(dlg.i.id, v)} onClose={done} fields={[{ name: 'resolution', label: t('tr.resolution'), kind: 'multiline', required: true }]} />}
+      {dlg?.k === 'gpsNew' && (
+        <FormDialog
+          title={t('tr.addGps')}
+          onSubmit={async (v) => {
+            const res = await addGpsSource(v.name);
+            if (res.ok) setDlg({ k: 'token', token: res.data.token });
+            return res;
+          }}
+          onClose={(m) => { if (m === undefined) setDlg(null); }}
+          fields={[{ name: 'name', label: t('ops.f.name'), required: true }]}
+        />
+      )}
+      {dlg?.k === 'token' && (
+        <InfoDialog title={t('tr.gpsToken')} onClose={() => setDlg(null)}>
+          <Typography variant="body2" sx={{ mb: 1 }}>{t('tr.gpsTokenHelp')}</Typography>
+          <Typography component="code" data-testid="tr-gps-token" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>{dlg.token}</Typography>
         </InfoDialog>
       )}
       {toastNode}

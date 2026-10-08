@@ -1642,5 +1642,43 @@
         "type": "String"
       }
     }
-  }
+  },
+  "boarding": "Hostel and canteen",
+  "boardingSubtitle": "Night roll call, the wallet and meals",
+  "boardingTitle": "{name}'s hostel and canteen",
+  "@boardingTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "hostel": "Hostel",
+  "hostelBedLine": "{block}, room {room}, bed {bed}",
+  "@hostelBedLine": {
+    "placeholders": {
+      "block": {},
+      "room": {},
+      "bed": {}
+    }
+  },
+  "notInHostel": "Not in the hostel",
+  "nightRoll": "Night roll call",
+  "noNights": "No roll calls yet",
+  "nightPresent": "Present",
+  "nightAbsent": "Absent",
+  "nightLeave": "On leave",
+  "canteenWallet": "Canteen wallet",
+  "walletBalance": "Balance",
+  "addMoney": "Add money",
+  "walletAdded": "{amount} added to the wallet",
+  "@walletAdded": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "recentMeals": "Recent meals",
+  "noMeals": "No meals yet",
+  "mealBreakfast": "Breakfast",
+  "mealLunch": "Lunch",
+  "mealSnacks": "Snacks",
+  "mealDinner": "Dinner"
 }

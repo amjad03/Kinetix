@@ -2454,4 +2454,129 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get scholarshipSentSnack => 'ಅರ್ಜಿಯನ್ನು ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get walletTitle => 'ಹಾಸ್ಟೆಲ್ ಮತ್ತು ಕ್ಯಾಂಟೀನ್';
+
+  @override
+  String get walletHostel => 'ಹಾಸ್ಟೆಲ್';
+
+  @override
+  String walletBedLine(Object block, Object room, Object bed) {
+    return '$block, ಕೊಠಡಿ $room, ಹಾಸಿಗೆ $bed';
+  }
+
+  @override
+  String get walletNotInHostel => 'ನೀವು ಹಾಸ್ಟೆಲ್‌ನಲ್ಲಿ ಇಲ್ಲ';
+
+  @override
+  String get walletNights => 'ರಾತ್ರಿ ಹಾಜರಾತಿ';
+
+  @override
+  String get walletNoNights => 'ಇನ್ನೂ ಹಾಜರಾತಿ ಇಲ್ಲ';
+
+  @override
+  String get walletPresent => 'ಹಾಜರು';
+
+  @override
+  String get walletAbsent => 'ಗೈರು';
+
+  @override
+  String get walletLeave => 'ರಜೆಯಲ್ಲಿ';
+
+  @override
+  String get walletCanteen => 'ಕ್ಯಾಂಟೀನ್ ವಾಲೆಟ್';
+
+  @override
+  String get walletBalance => 'ಬಾಕಿ';
+
+  @override
+  String get walletAddMoney => 'ಹಣ ಸೇರಿಸಿ';
+
+  @override
+  String walletAdded(Object amount) {
+    return 'ನಿಮ್ಮ ವಾಲೆಟ್‌ಗೆ $amount ಸೇರಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get walletMeals => 'ಇತ್ತೀಚಿನ ಊಟಗಳು';
+
+  @override
+  String get walletNoMeals => 'ಇನ್ನೂ ಊಟಗಳಿಲ್ಲ';
+
+  @override
+  String get walletBreakfast => 'ಉಪಾಹಾರ';
+
+  @override
+  String get walletLunch => 'ಮಧ್ಯಾಹ್ನದ ಊಟ';
+
+  @override
+  String get walletSnacks => 'ತಿಂಡಿ';
+
+  @override
+  String get walletDinner => 'ರಾತ್ರಿಯ ಊಟ';
+
+  @override
+  String get walletEnterAmount => 'ಮೊತ್ತ ನಮೂದಿಸಿ';
+
+  @override
+  String get walletEnterRupees => 'ರೂಪಾಯಿಗಳಲ್ಲಿ ಮೊತ್ತ ನಮೂದಿಸಿ';
+
+  @override
+  String get walletMinAmount => 'ಕನಿಷ್ಠ ₹1 ಸೇರಿಸಬಹುದು';
+
+  @override
+  String get walletStarting => 'ಪಾವತಿ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ…';
+
+  @override
+  String get walletConfirming => 'ಪಾವತಿ ದೃಢೀಕರಿಸಲಾಗುತ್ತಿದೆ…';
+
+  @override
+  String get walletCancelled => 'ಪಾವತಿ ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get walletFailedTitle => 'ಪಾವತಿ ಆಗಲಿಲ್ಲ';
+
+  @override
+  String get walletCouldNotConfirm => 'ಪಾವತಿ ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ';
+
+  @override
+  String get walletNotSetUp => 'ಆನ್‌ಲೈನ್ ಪಾವತಿ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ. ಕ್ಯಾಂಟೀನ್ ಕೌಂಟರ್‌ನಲ್ಲಿ ಹಣ ಸೇರಿಸಿ.';
+
+  @override
+  String get walletPhonesOnly => 'ಆನ್‌ಲೈನ್ ಪಾವತಿ Android ಫೋನ್ ಮತ್ತು iPhone ಗಳಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get walletFailNoConfirm => 'ಪಾವತಿ ಆ್ಯಪ್‌ನಿಂದ ದೃಢೀಕರಣ ಬರಲಿಲ್ಲ. ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಹಣ ಕಡಿತವಾಗಿದ್ದರೆ ವಾಲೆಟ್ ಶೀಘ್ರದಲ್ಲೇ ನವೀಕರಣವಾಗುತ್ತದೆ.';
+
+  @override
+  String get walletFailOpen => 'ಪಾವತಿ ಪರದೆ ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get walletFailNetwork => 'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get walletFailGeneric => 'ಪಾವತಿ ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String walletFinishIn(Object app) {
+    return '$app ನಲ್ಲಿ ಪೂರ್ಣಗೊಳಿಸಿ';
+  }
+
+  @override
+  String get walletInWalletBody => 'ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ಪಾವತಿ ಪೂರ್ಣಗೊಳಿಸಿ. ಪೂರ್ಣವಾದ ಕೂಡಲೇ ವಾಲೆಟ್ ನವೀಕರಣವಾಗುತ್ತದೆ.';
+
+  @override
+  String get walletDemo => 'ಡೆಮೊ ಪಾವತಿ';
+
+  @override
+  String get walletDemoNoMoney => 'ಡೆಮೊ ಪಾವತಿ: ಹಣ ಕಡಿತವಾಗುವುದಿಲ್ಲ';
+
+  @override
+  String walletDemoPay(Object amount) {
+    return '$amount ಪಾವತಿಸಿ';
+  }
+
+  @override
+  String get walletAmount => 'ಮೊತ್ತ';
 }

@@ -1894,5 +1894,66 @@
   "scholarshipSentSnack": "Application sent to the accounts office.",
   "@scholarshipSentSnack": {
     "description": "scholarshipSentSnack"
-  }
+  },
+  "walletTitle": "Hostel and canteen",
+  "walletHostel": "Hostel",
+  "walletBedLine": "{block}, room {room}, bed {bed}",
+  "@walletBedLine": {
+    "placeholders": {
+      "block": {},
+      "room": {},
+      "bed": {}
+    }
+  },
+  "walletNotInHostel": "You are not in the hostel",
+  "walletNights": "Night roll call",
+  "walletNoNights": "No roll calls yet",
+  "walletPresent": "Present",
+  "walletAbsent": "Absent",
+  "walletLeave": "On leave",
+  "walletCanteen": "Canteen wallet",
+  "walletBalance": "Balance",
+  "walletAddMoney": "Add money",
+  "walletAdded": "{amount} added to your wallet",
+  "@walletAdded": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "walletMeals": "Recent meals",
+  "walletNoMeals": "No meals yet",
+  "walletBreakfast": "Breakfast",
+  "walletLunch": "Lunch",
+  "walletSnacks": "Snacks",
+  "walletDinner": "Dinner",
+  "walletEnterAmount": "Enter an amount",
+  "walletEnterRupees": "Enter an amount in rupees",
+  "walletMinAmount": "The smallest top-up is ₹1",
+  "walletStarting": "Starting payment…",
+  "walletConfirming": "Confirming payment…",
+  "walletCancelled": "Payment cancelled",
+  "walletFailedTitle": "Payment did not go through",
+  "walletCouldNotConfirm": "Could not confirm the payment",
+  "walletNotSetUp": "Online payment is not set up yet. Add money at the canteen counter.",
+  "walletPhonesOnly": "Online payment works on Android phones and iPhones.",
+  "walletFailNoConfirm": "The payment app did not return a confirmation. If money left your account, the wallet will update shortly.",
+  "walletFailOpen": "Couldn't open the payment screen. Try again.",
+  "walletFailNetwork": "No internet connection. Check it and try again.",
+  "walletFailGeneric": "The payment did not go through. Try again.",
+  "walletFinishIn": "Finish in {app}",
+  "@walletFinishIn": {
+    "placeholders": {
+      "app": {}
+    }
+  },
+  "walletInWalletBody": "Complete the payment in that app. The wallet updates when it goes through.",
+  "walletDemo": "Demo payment",
+  "walletDemoNoMoney": "Demo payment: no money moves",
+  "walletDemoPay": "Pay {amount}",
+  "@walletDemoPay": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "walletAmount": "Amount"
 }

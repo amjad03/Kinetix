@@ -2439,4 +2439,130 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scholarshipSentSnack => 'Application sent to the accounts office.';
+
+  @override
+  String get walletTitle => 'Hostel and canteen';
+
+  @override
+  String get walletHostel => 'Hostel';
+
+  @override
+  String walletBedLine(Object block, Object room, Object bed) {
+    return '$block, room $room, bed $bed';
+  }
+
+  @override
+  String get walletNotInHostel => 'You are not in the hostel';
+
+  @override
+  String get walletNights => 'Night roll call';
+
+  @override
+  String get walletNoNights => 'No roll calls yet';
+
+  @override
+  String get walletPresent => 'Present';
+
+  @override
+  String get walletAbsent => 'Absent';
+
+  @override
+  String get walletLeave => 'On leave';
+
+  @override
+  String get walletCanteen => 'Canteen wallet';
+
+  @override
+  String get walletBalance => 'Balance';
+
+  @override
+  String get walletAddMoney => 'Add money';
+
+  @override
+  String walletAdded(Object amount) {
+    return '$amount added to your wallet';
+  }
+
+  @override
+  String get walletMeals => 'Recent meals';
+
+  @override
+  String get walletNoMeals => 'No meals yet';
+
+  @override
+  String get walletBreakfast => 'Breakfast';
+
+  @override
+  String get walletLunch => 'Lunch';
+
+  @override
+  String get walletSnacks => 'Snacks';
+
+  @override
+  String get walletDinner => 'Dinner';
+
+  @override
+  String get walletEnterAmount => 'Enter an amount';
+
+  @override
+  String get walletEnterRupees => 'Enter an amount in rupees';
+
+  @override
+  String get walletMinAmount => 'The smallest top-up is ₹1';
+
+  @override
+  String get walletStarting => 'Starting payment…';
+
+  @override
+  String get walletConfirming => 'Confirming payment…';
+
+  @override
+  String get walletCancelled => 'Payment cancelled';
+
+  @override
+  String get walletFailedTitle => 'Payment did not go through';
+
+  @override
+  String get walletCouldNotConfirm => 'Could not confirm the payment';
+
+  @override
+  String get walletNotSetUp => 'Online payment is not set up yet. Add money at the canteen counter.';
+
+  @override
+  String get walletPhonesOnly => 'Online payment works on Android phones and iPhones.';
+
+  @override
+  String get walletFailNoConfirm =>
+      'The payment app did not return a confirmation. If money left your account, the wallet will update shortly.';
+
+  @override
+  String get walletFailOpen => 'Couldn\'t open the payment screen. Try again.';
+
+  @override
+  String get walletFailNetwork => 'No internet connection. Check it and try again.';
+
+  @override
+  String get walletFailGeneric => 'The payment did not go through. Try again.';
+
+  @override
+  String walletFinishIn(Object app) {
+    return 'Finish in $app';
+  }
+
+  @override
+  String get walletInWalletBody => 'Complete the payment in that app. The wallet updates when it goes through.';
+
+  @override
+  String get walletDemo => 'Demo payment';
+
+  @override
+  String get walletDemoNoMoney => 'Demo payment: no money moves';
+
+  @override
+  String walletDemoPay(Object amount) {
+    return 'Pay $amount';
+  }
+
+  @override
+  String get walletAmount => 'Amount';
 }

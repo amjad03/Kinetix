@@ -174,6 +174,16 @@ export const texts = {
       }[l];
     }),
 
+  hostelAbsent: (p: { studentName: string; night: string }) =>
+    all((l) => {
+      const n = first(p.studentName);
+      return {
+        en: { title: `${n} was not in the hostel tonight`, body: `${n} was marked absent at the night roll call on ${p.night}.` },
+        hi: { title: `${n} आज रात हॉस्टल में नहीं थे`, body: `${p.night} की रात की हाज़िरी में ${n} अनुपस्थित दर्ज हुए।` },
+        kn: { title: `${n} ಇಂದು ರಾತ್ರಿ ಹಾಸ್ಟೆಲ್‌ನಲ್ಲಿ ಇರಲಿಲ್ಲ`, body: `${p.night} ರಾತ್ರಿಯ ಹಾಜರಾತಿಯಲ್ಲಿ ${n} ಗೈರುಹಾಜರಾಗಿ ದಾಖಲಾಗಿದ್ದಾರೆ.` },
+      }[l];
+    }),
+
   hostelGate: (p: { studentName: string; event: 'out' | 'in' }) =>
     all((l) => {
       const n = first(p.studentName);

@@ -266,8 +266,18 @@ class GatePass {
   final String status;
 }
 
+/// One night's roll call: present, absent, or leave (out on a gate pass).
+class NightMark {
+  const NightMark({required this.night, required this.status});
+
+  factory NightMark.fromJson(Map<String, dynamic> j) => NightMark(night: j['night'] as String, status: j['status'] as String);
+
+  final String night;
+  final String status;
+}
+
 class HostelView {
-  const HostelView({required this.resident, this.block, this.room, this.bed, this.passes = const []});
+  const HostelView({required this.resident, this.block, this.room, this.bed, this.passes = const [], this.nights = const []});
 
   factory HostelView.fromJson(Map<String, dynamic> j) {
     final bed = j['bed'] as Map?;
@@ -277,6 +287,7 @@ class HostelView {
       room: bed?['room'] as String?,
       bed: bed?['bed'] as String?,
       passes: [for (final p in (j['passes'] as List? ?? const [])) GatePass.fromJson((p as Map).cast<String, dynamic>())],
+      nights: [for (final n in (j['nights'] as List? ?? const [])) NightMark.fromJson((n as Map).cast<String, dynamic>())],
     );
   }
 
@@ -285,6 +296,79 @@ class HostelView {
   final String? room;
   final String? bed;
   final List<GatePass> passes;
+  final List<NightMark> nights;
+}
+
+// ── Canteen wallet (GET /v1/canteen/students/:id, POST …/topup-checkout, POST /v1/canteen/topups/:id/confirm) ──
+
+class MealMark {
+  const MealMark({required this.date, required this.meal});
+
+  factory MealMark.fromJson(Map<String, dynamic> j) => MealMark(date: j['date'] as String, meal: j['meal'] as String);
+
+  final String date;
+
+  /// breakfast, lunch, snacks or dinner.
+  final String meal;
+}
+
+class WalletView {
+  const WalletView({required this.balancePaise, this.meals = const [], this.onlinePayments});
+
+  factory WalletView.fromJson(Map<String, dynamic> j) => WalletView(
+    balancePaise: (j['balancePaise'] as num).toInt(),
+    meals: [for (final m in (j['meals'] as List? ?? const [])) MealMark.fromJson((m as Map).cast<String, dynamic>())],
+    onlinePayments: j['onlinePayments'] as String?,
+  );
+
+  final int balancePaise;
+  final List<MealMark> meals;
+
+  /// 'razorpay' or 'demo'; null when the institution takes no online payments.
+  final String? onlinePayments;
+}
+
+/// The gateway order for a wallet top-up, as the checkout needs it.
+class TopUpCheckout {
+  const TopUpCheckout({
+    required this.topupId,
+    required this.provider,
+    required this.keyId,
+    required this.orderId,
+    required this.amountPaise,
+    required this.name,
+    required this.description,
+    this.prefillName = '',
+    this.prefillEmail = '',
+    this.prefillContact = '',
+  });
+
+  factory TopUpCheckout.fromJson(Map<String, dynamic> j) {
+    final p = (j['prefill'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return TopUpCheckout(
+      topupId: j['topupId'] as String,
+      provider: j['provider'] as String,
+      keyId: j['keyId'] as String? ?? '',
+      orderId: j['orderId'] as String,
+      amountPaise: (j['amountPaise'] as num).toInt(),
+      name: j['name'] as String? ?? 'KINETIX',
+      description: j['description'] as String? ?? '',
+      prefillName: p['name'] as String? ?? '',
+      prefillEmail: p['email'] as String? ?? '',
+      prefillContact: p['contact'] as String? ?? '',
+    );
+  }
+
+  final String topupId;
+  final String provider;
+  final String keyId;
+  final String orderId;
+  final int amountPaise;
+  final String name;
+  final String description;
+  final String prefillName;
+  final String prefillEmail;
+  final String prefillContact;
 }
 
 // ── Certificates (/v1/documents) ──────────────────────────────────────────────────────────────

@@ -33,6 +33,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { ApplicationFeesService } from './application-fees.service.js';
 import { FEE_ROLES, FeesService } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
+import { WalletTopupService } from './wallet-topup.service.js';
 import type { PaymentProvider } from './payment-provider.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
@@ -63,6 +64,7 @@ export class FeesController {
     private readonly notifications: NotificationsService,
     private readonly lookups: SystemLookups,
     private readonly applicationFees: ApplicationFeesService,
+    private readonly walletTopups: WalletTopupService,
   ) {}
 
   /** One invoice per active student of the class. */
@@ -292,8 +294,8 @@ export class FeesController {
       // RLS: an order of another institution is simply not found here.
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, entity.order_id));
       if (pay) await this.credit(tx, pay, entity);
-      // Otherwise it may be an admission application fee.
-      else await this.applicationFees.creditByOrder(tx, entity);
+      // Otherwise it may be a canteen wallet top-up or an admission application fee.
+      else if (!(await this.walletTopups.creditByOrder(tx, entity))) await this.applicationFees.creditByOrder(tx, entity);
     });
     return { ok: true };
   }

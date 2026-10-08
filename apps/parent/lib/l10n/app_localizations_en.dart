@@ -2083,4 +2083,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String childGrades(String name) {
     return 'Grades: $name';
   }
+
+  @override
+  String get boarding => 'Hostel and canteen';
+
+  @override
+  String get boardingSubtitle => 'Night roll call, the wallet and meals';
+
+  @override
+  String boardingTitle(Object name) {
+    return '$name\'s hostel and canteen';
+  }
+
+  @override
+  String get hostel => 'Hostel';
+
+  @override
+  String hostelBedLine(Object block, Object room, Object bed) {
+    return '$block, room $room, bed $bed';
+  }
+
+  @override
+  String get notInHostel => 'Not in the hostel';
+
+  @override
+  String get nightRoll => 'Night roll call';
+
+  @override
+  String get noNights => 'No roll calls yet';
+
+  @override
+  String get nightPresent => 'Present';
+
+  @override
+  String get nightAbsent => 'Absent';
+
+  @override
+  String get nightLeave => 'On leave';
+
+  @override
+  String get canteenWallet => 'Canteen wallet';
+
+  @override
+  String get walletBalance => 'Balance';
+
+  @override
+  String get addMoney => 'Add money';
+
+  @override
+  String walletAdded(Object amount) {
+    return '$amount added to the wallet';
+  }
+
+  @override
+  String get recentMeals => 'Recent meals';
+
+  @override
+  String get noMeals => 'No meals yet';
+
+  @override
+  String get mealBreakfast => 'Breakfast';
+
+  @override
+  String get mealLunch => 'Lunch';
+
+  @override
+  String get mealSnacks => 'Snacks';
+
+  @override
+  String get mealDinner => 'Dinner';
 }

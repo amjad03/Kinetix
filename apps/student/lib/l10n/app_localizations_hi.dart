@@ -2445,4 +2445,129 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get scholarshipSentSnack => 'आवेदन लेखा कार्यालय को भेज दिया गया।';
+
+  @override
+  String get walletTitle => 'हॉस्टल और कैंटीन';
+
+  @override
+  String get walletHostel => 'हॉस्टल';
+
+  @override
+  String walletBedLine(Object block, Object room, Object bed) {
+    return '$block, कमरा $room, बिस्तर $bed';
+  }
+
+  @override
+  String get walletNotInHostel => 'आप हॉस्टल में नहीं हैं';
+
+  @override
+  String get walletNights => 'रात की हाज़िरी';
+
+  @override
+  String get walletNoNights => 'अभी कोई हाज़िरी नहीं';
+
+  @override
+  String get walletPresent => 'उपस्थित';
+
+  @override
+  String get walletAbsent => 'अनुपस्थित';
+
+  @override
+  String get walletLeave => 'छुट्टी पर';
+
+  @override
+  String get walletCanteen => 'कैंटीन वॉलेट';
+
+  @override
+  String get walletBalance => 'बैलेंस';
+
+  @override
+  String get walletAddMoney => 'पैसे जोड़ें';
+
+  @override
+  String walletAdded(Object amount) {
+    return 'आपके वॉलेट में $amount जुड़ गए';
+  }
+
+  @override
+  String get walletMeals => 'हाल के भोजन';
+
+  @override
+  String get walletNoMeals => 'अभी कोई भोजन नहीं';
+
+  @override
+  String get walletBreakfast => 'नाश्ता';
+
+  @override
+  String get walletLunch => 'दोपहर का भोजन';
+
+  @override
+  String get walletSnacks => 'जलपान';
+
+  @override
+  String get walletDinner => 'रात का भोजन';
+
+  @override
+  String get walletEnterAmount => 'राशि लिखें';
+
+  @override
+  String get walletEnterRupees => 'रुपयों में राशि लिखें';
+
+  @override
+  String get walletMinAmount => 'कम से कम ₹1 जोड़ सकते हैं';
+
+  @override
+  String get walletStarting => 'भुगतान शुरू हो रहा है…';
+
+  @override
+  String get walletConfirming => 'भुगतान की पुष्टि हो रही है…';
+
+  @override
+  String get walletCancelled => 'भुगतान रद्द हुआ';
+
+  @override
+  String get walletFailedTitle => 'भुगतान नहीं हो पाया';
+
+  @override
+  String get walletCouldNotConfirm => 'भुगतान की पुष्टि नहीं हो पाई';
+
+  @override
+  String get walletNotSetUp => 'ऑनलाइन भुगतान अभी शुरू नहीं हुआ है। कैंटीन काउंटर पर पैसे जमा करें।';
+
+  @override
+  String get walletPhonesOnly => 'ऑनलाइन भुगतान Android फ़ोन और iPhone पर चलता है।';
+
+  @override
+  String get walletFailNoConfirm => 'भुगतान ऐप से पुष्टि नहीं मिली। अगर आपके खाते से पैसे कटे हैं तो वॉलेट जल्द अपडेट हो जाएगा।';
+
+  @override
+  String get walletFailOpen => 'भुगतान स्क्रीन नहीं खुल पाई। फिर कोशिश करें।';
+
+  @override
+  String get walletFailNetwork => 'इंटरनेट नहीं है। जाँचकर फिर कोशिश करें।';
+
+  @override
+  String get walletFailGeneric => 'भुगतान नहीं हो पाया। फिर कोशिश करें।';
+
+  @override
+  String walletFinishIn(Object app) {
+    return '$app में पूरा करें';
+  }
+
+  @override
+  String get walletInWalletBody => 'उस ऐप में भुगतान पूरा करें। पूरा होते ही वॉलेट अपडेट हो जाएगा।';
+
+  @override
+  String get walletDemo => 'डेमो भुगतान';
+
+  @override
+  String get walletDemoNoMoney => 'डेमो भुगतान: कोई पैसा नहीं कटता';
+
+  @override
+  String walletDemoPay(Object amount) {
+    return '$amount चुकाएँ';
+  }
+
+  @override
+  String get walletAmount => 'राशि';
 }

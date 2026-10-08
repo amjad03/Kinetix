@@ -1,6 +1,7 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, Headers, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { RealtimeEvents, type TransportPositionEvent } from '@kinetix/shared';
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { createHash, randomBytes } from 'node:crypto';
+import { and, asc, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
@@ -10,8 +11,10 @@ import { assertCanSeeStudent } from '../common/student-access.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { students, tenants, transportAssignments, transportDrivers, transportRoutes, transportStops, transportTripEvents, transportTrips, transportVehicles, userRoles } from '../db/schema.js';
+import { students, tenants, transportExpenses, transportGpsSources, transportIncidents, transportAssignments, transportDrivers, transportRoutes, transportStops, transportTripEvents, transportTrips, transportVehicles, userRoles } from '../db/schema.js';
 import { FeesService } from '../fees/fees.service.js';
+import { SystemLookups } from '../db/system-lookups.service.js';
+import { GPS_ADAPTERS } from './gps-adapter.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
@@ -48,6 +51,11 @@ const RoutePatch = z.object({ name: z.string().trim().min(1).max(80).optional(),
 const StopBody = z.object({ name: z.string().trim().min(1).max(100), lat: Lat, lng: Lng, pickupTime: Hhmm.optional(), seq: z.number().int().min(1).max(200).optional() });
 const AssignBody = z.object({ studentId: z.uuid(), routeId: z.uuid(), stopId: z.uuid(), startsOn: Day.optional() });
 const FeeBody = z.object({ title: z.string().trim().min(1).max(120), dueOn: Day, routeId: z.uuid().optional() });
+const ExpenseBody = z
+  .object({ vehicleId: z.uuid(), kind: z.enum(['fuel', 'repair', 'toll', 'other']), spentOn: Day, amountPaise: Paise.min(100), litres: z.number().positive().max(2000).optional(), odometerKm: z.number().int().min(0).max(5_000_000).optional(), note: z.string().trim().max(200).default('') })
+  .refine((e) => e.kind !== 'fuel' || e.litres != null, { message: 'Give the litres filled', path: ['litres'] });
+const IncidentBody = z.object({ vehicleId: z.uuid().optional(), tripId: z.uuid().optional(), kind: z.enum(['accident', 'breakdown', 'delay', 'behaviour', 'other']), severity: z.enum(['low', 'medium', 'high']).default('low'), description: z.string().trim().min(3).max(1000), occurredAt: z.iso.datetime().optional() });
+const SourceBody = z.object({ name: z.string().trim().min(1).max(60) });
 const TripBody = z.object({ routeId: z.uuid(), direction: z.enum(['pickup', 'drop']) });
 const PingBody = z.object({ lat: Lat, lng: Lng, speedKmh: z.number().min(0).max(200).optional() });
 
@@ -65,6 +73,7 @@ export class TransportController {
     private readonly fees: FeesService,
     private readonly notifications: NotificationsService,
     private readonly gateway: RealtimeGateway,
+    private readonly lookups: SystemLookups,
   ) {}
 
   // --- Masters ---------------------------------------------------------------------------
@@ -311,9 +320,14 @@ export class TransportController {
   @Post('trips/:id/position')
   @HttpCode(200)
   @Auth('user', ['driver'])
-  async position(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(PingBody)) b: z.infer<typeof PingBody>) {
-    const { event, recipients } = await this.db.withTenant(p.tenantId, async (tx) => {
-      const [trip] = await tx.select().from(transportTrips).where(and(eq(transportTrips.id, id), eq(transportTrips.driverUserId, p.userId))).for('update');
+  position(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(PingBody)) b: z.infer<typeof PingBody>) {
+    return this.ingest(p.tenantId, id, b, p.userId);
+  }
+
+  /** One position for a trip, from the driver's phone or a GPS vendor (`driverUserId` null). */
+  private async ingest(tenantId: string, id: string, b: z.infer<typeof PingBody>, driverUserId: string | null) {
+    const { event, recipients } = await this.db.withTenant(tenantId, async (tx) => {
+      const [trip] = await tx.select().from(transportTrips).where(driverUserId ? and(eq(transportTrips.id, id), eq(transportTrips.driverUserId, driverUserId)) : eq(transportTrips.id, id)).for('update');
       if (!trip) throw new NotFoundException('Trip not found');
       if (trip.status !== 'running') throw new ConflictException('This trip has ended');
       const [route] = await tx.select({ name: transportRoutes.name }).from(transportRoutes).where(eq(transportRoutes.id, trip.routeId));
@@ -323,7 +337,7 @@ export class TransportController {
       const now = this.clock.now();
       // Stops reached since the last ping (a fast bus can pass two between pings).
       while (reached < stops.length && haversineM(here, stops[reached]) <= REACHED_M) {
-        await tx.insert(transportTripEvents).values({ tenantId: p.tenantId, tripId: id, kind: 'stop_reached', stopId: stops[reached].id, at: now });
+        await tx.insert(transportTripEvents).values({ tenantId: tenantId, tripId: id, kind: 'stop_reached', stopId: stops[reached].id, at: now });
         reached++;
       }
       const next = stops[reached] ?? null;
@@ -331,7 +345,7 @@ export class TransportController {
       if (next && dist! <= APPROACH_M) {
         const [seen] = await tx.select({ id: transportTripEvents.id }).from(transportTripEvents).where(and(eq(transportTripEvents.tripId, id), eq(transportTripEvents.stopId, next.id), eq(transportTripEvents.kind, 'approaching')));
         if (!seen) {
-          await tx.insert(transportTripEvents).values({ tenantId: p.tenantId, tripId: id, kind: 'approaching', stopId: next.id, at: now });
+          await tx.insert(transportTripEvents).values({ tenantId: tenantId, tripId: id, kind: 'approaching', stopId: next.id, at: now });
           const riders = await tx
             .select({ id: students.id, fullName: students.fullName })
             .from(transportAssignments)
@@ -436,6 +450,166 @@ export class TransportController {
       }
       return { assigned: true as const, ...a, stops, bus };
     });
+  }
+
+  // --- Fuel and expenses -------------------------------------------------------------------
+
+  /** A fuel fill-up or other running cost for a vehicle; odometer readings never go backwards. */
+  @Post('expenses')
+  @Auth('user', TRANSPORT_ROLES)
+  addExpense(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ExpenseBody)) b: z.infer<typeof ExpenseBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [v] = await tx.select({ id: transportVehicles.id }).from(transportVehicles).where(eq(transportVehicles.id, b.vehicleId));
+      if (!v) throw new BadRequestException('Vehicle not found');
+      if (b.odometerKm != null) {
+        const [prev] = await tx.select({ km: sql<number | null>`max(${transportExpenses.odometerKm})` }).from(transportExpenses).where(and(eq(transportExpenses.vehicleId, b.vehicleId), lte(transportExpenses.spentOn, b.spentOn)));
+        if (prev?.km != null && b.odometerKm < prev.km) throw new BadRequestException(`The odometer was already at ${prev.km} km`);
+      }
+      const [e] = await tx.insert(transportExpenses).values({ tenantId: p.tenantId, createdBy: p.userId, ...b }).returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.expense_added', subjectType: 'transport_expense', subjectId: e.id, data: { kind: b.kind, amountPaise: b.amountPaise } });
+      return e;
+    });
+  }
+
+  @Get('expenses')
+  @Auth('user', TRANSPORT_ROLES)
+  expenses(@CurrentPrincipal() p: UserPrincipal, @Query('vehicleId') vehicleId?: string) {
+    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(transportExpenses).where(vehicleId ? eq(transportExpenses.vehicleId, vehicleId) : undefined).orderBy(desc(transportExpenses.spentOn), desc(transportExpenses.createdAt)).limit(300));
+  }
+
+  /** Per vehicle: spend by kind, litres, distance between the first and last fill, cost per km and km per litre (the first fill is the starting point, so its litres are not counted). */
+  @Get('expenses/summary')
+  @Auth('user', TRANSPORT_ROLES)
+  expenseSummary(@CurrentPrincipal() p: UserPrincipal, @Query('from') from?: string, @Query('to') to?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx.select({ e: transportExpenses, regNo: transportVehicles.regNo }).from(transportExpenses).innerJoin(transportVehicles, eq(transportVehicles.id, transportExpenses.vehicleId)).where(and(from ? gte(transportExpenses.spentOn, Day.parse(from)) : undefined, to ? lte(transportExpenses.spentOn, Day.parse(to)) : undefined)).orderBy(asc(transportExpenses.spentOn), asc(transportExpenses.createdAt));
+      const byVehicle = new Map<string, typeof rows>();
+      for (const r of rows) byVehicle.set(r.e.vehicleId, [...(byVehicle.get(r.e.vehicleId) ?? []), r]);
+      return [...byVehicle.entries()].map(([vehicleId, rs]) => {
+        const totalPaise = rs.reduce((t, r) => t + r.e.amountPaise, 0);
+        const fills = rs.filter((r) => r.e.kind === 'fuel' && r.e.odometerKm != null);
+        const km = fills.length > 1 ? fills[fills.length - 1].e.odometerKm! - fills[0].e.odometerKm! : 0;
+        const litresUsed = fills.slice(1).reduce((t, r) => t + (r.e.litres ?? 0), 0);
+        return {
+          vehicleId,
+          regNo: rs[0].regNo,
+          totalPaise,
+          fuelPaise: rs.filter((r) => r.e.kind === 'fuel').reduce((t, r) => t + r.e.amountPaise, 0),
+          litres: Math.round(rs.reduce((t, r) => t + (r.e.litres ?? 0), 0) * 100) / 100,
+          km,
+          costPerKmPaise: km > 0 ? Math.round(totalPaise / km) : null,
+          kmPerLitre: km > 0 && litresUsed > 0 ? Math.round((km / litresUsed) * 10) / 10 : null,
+        };
+      });
+    });
+  }
+
+  // --- Incidents ---------------------------------------------------------------------------
+
+  /** An accident, breakdown, long delay or behaviour report, from the office or the driver's phone (a driver's report is tied to their own trip). */
+  @Post('incidents')
+  @Auth('user', [...TRANSPORT_ROLES, 'driver'])
+  report(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(IncidentBody)) b: z.infer<typeof IncidentBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      let vehicleId = b.vehicleId ?? null;
+      if (b.tripId) {
+        const [trip] = await tx.select({ t: transportTrips, vehicleId: transportRoutes.vehicleId }).from(transportTrips).innerJoin(transportRoutes, eq(transportRoutes.id, transportTrips.routeId)).where(eq(transportTrips.id, b.tripId));
+        if (!trip || (!p.roles.some((r) => TRANSPORT_ROLES.includes(r)) && trip.t.driverUserId !== p.userId)) throw new NotFoundException('Trip not found');
+        vehicleId = vehicleId ?? trip.vehicleId;
+      }
+      if (!vehicleId && !b.tripId) throw new BadRequestException('Say which vehicle or trip');
+      if (vehicleId) {
+        const [v] = await tx.select({ id: transportVehicles.id }).from(transportVehicles).where(eq(transportVehicles.id, vehicleId));
+        if (!v) throw new BadRequestException('Vehicle not found');
+      }
+      const [i] = await tx.insert(transportIncidents).values({ tenantId: p.tenantId, vehicleId, tripId: b.tripId ?? null, kind: b.kind, severity: b.severity, description: b.description, occurredAt: b.occurredAt ? new Date(b.occurredAt) : this.clock.now(), reportedBy: p.userId }).returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.incident_reported', subjectType: 'transport_incident', subjectId: i.id, data: { kind: b.kind, severity: b.severity } });
+      return i;
+    });
+  }
+
+  @Get('incidents')
+  @Auth('user', TRANSPORT_ROLES)
+  incidents(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string) {
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({ i: transportIncidents, regNo: transportVehicles.regNo })
+        .from(transportIncidents)
+        .leftJoin(transportVehicles, eq(transportVehicles.id, transportIncidents.vehicleId))
+        .where(status === 'open' || status === 'resolved' ? eq(transportIncidents.status, status) : undefined)
+        .orderBy(desc(transportIncidents.occurredAt))
+        .limit(200)
+        .then((rows) => rows.map((r) => ({ ...r.i, regNo: r.regNo }))),
+    );
+  }
+
+  @Post('incidents/:id/resolve')
+  @HttpCode(200)
+  @Auth('user', TRANSPORT_ROLES)
+  resolve(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ resolution: z.string().trim().min(2).max(500) }))) b: { resolution: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [i] = await tx.update(transportIncidents).set({ status: 'resolved', resolution: b.resolution, resolvedAt: this.clock.now() }).where(and(eq(transportIncidents.id, id), eq(transportIncidents.status, 'open'))).returning();
+      if (!i) throw new ConflictException('Incident not found or already resolved');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.incident_resolved', subjectType: 'transport_incident', subjectId: id });
+      return i;
+    });
+  }
+
+  // --- GPS vendors -------------------------------------------------------------------------
+
+  /** Registers a vendor that posts positions. The token is shown once; only its hash is kept. */
+  @Post('gps/sources')
+  @Auth('user', TRANSPORT_ROLES)
+  addSource(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(SourceBody)) b: z.infer<typeof SourceBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const token = `gps_${randomBytes(24).toString('hex')}`;
+      const [src] = await tx.insert(transportGpsSources).values({ tenantId: p.tenantId, name: b.name, tokenHash: createHash('sha256').update(token).digest('hex') }).returning({ id: transportGpsSources.id, name: transportGpsSources.name });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.gps_source_added', subjectType: 'transport_gps_source', subjectId: src.id });
+      return { ...src, token };
+    });
+  }
+
+  @Get('gps/sources')
+  @Auth('user', TRANSPORT_ROLES)
+  sources(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => tx.select({ id: transportGpsSources.id, name: transportGpsSources.name, active: transportGpsSources.active, lastSeenAt: transportGpsSources.lastSeenAt }).from(transportGpsSources).orderBy(asc(transportGpsSources.name)));
+  }
+
+  @Post('gps/sources/:id/revoke')
+  @HttpCode(200)
+  @Auth('user', TRANSPORT_ROLES)
+  revokeSource(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [src] = await tx.update(transportGpsSources).set({ active: false }).where(eq(transportGpsSources.id, id)).returning({ id: transportGpsSources.id });
+      if (!src) throw new NotFoundException('Source not found');
+      return { ok: true };
+    });
+  }
+
+  /**
+   * A GPS vendor's webhook (public; the `x-gps-token` header is the source's token). Each fix is
+   * matched to a vehicle by registration and feeds the running trip on that vehicle's route, the
+   * same as the driver's phone would; fixes for vehicles with no trip running are ignored.
+   */
+  @Post('gps/:tenantSlug')
+  @HttpCode(200)
+  async gpsWebhook(@Param('tenantSlug') slug: string, @Body() body: unknown, @Headers('x-gps-token') token?: string, @Query('vendor') vendor = 'generic_http') {
+    const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    const adapter = GPS_ADAPTERS[vendor];
+    if (!tenant || !adapter || !token) throw new NotFoundException('Not found');
+    const hash = createHash('sha256').update(token).digest('hex');
+    const trips = await this.db.withTenant(tenant.id, async (tx) => {
+      const [src] = await tx.update(transportGpsSources).set({ lastSeenAt: this.clock.now() }).where(and(eq(transportGpsSources.tokenHash, hash), eq(transportGpsSources.active, true))).returning({ id: transportGpsSources.id });
+      if (!src) throw new UnauthorizedException('Bad token');
+      const out: { tripId: string; fix: { lat: number; lng: number; speedKmh?: number } }[] = [];
+      for (const fix of adapter.parse(body)) {
+        const [t] = await tx.select({ id: transportTrips.id }).from(transportTrips).innerJoin(transportRoutes, eq(transportRoutes.id, transportTrips.routeId)).innerJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId)).where(and(eq(transportTrips.status, 'running'), eq(transportVehicles.regNo, fix.vehicle)));
+        if (t) out.push({ tripId: t.id, fix });
+      }
+      return out;
+    });
+    for (const t of trips) await this.ingest(tenant.id, t.tripId, t.fix, null);
+    return { accepted: trips.length };
   }
 
   // --- helpers -----------------------------------------------------------------------------

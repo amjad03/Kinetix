@@ -39,6 +39,12 @@ export interface TCompliance { today: string; items: { kind: string; subject: st
 
 // ---- Hostel and canteen (v1/hostel, v1/canteen) ----
 export interface HBlock { id: string; name: string; gender: string; rooms: number; beds: number; occupied: number }
+export interface HWait { id: string; studentId: string; studentName: string; block: string | null; note: string; position: number }
+export interface HNight { night: string; present: number; absent: number; leave: number; unmarked: number; residents: { studentId: string; studentName: string; room: string; block: string; status: 'present' | 'absent' | 'leave' | null }[] }
+export interface TExpenseSummary { vehicleId: string; regNo: string; totalPaise: number; fuelPaise: number; litres: number; km: number; costPerKmPaise: number | null; kmPerLitre: number | null }
+export interface TIncident { id: string; regNo: string | null; kind: string; severity: string; description: string; occurredAt: string; status: string; resolution: string | null }
+export interface TGpsSource { id: string; name: string; active: boolean; lastSeenAt: string | null }
+export interface CMeals { date: string; meals: { meal: string; count: number; students: { id: string; name: string }[] }[] }
 export interface HBed { bedId: string; label: string; roomId: string; room: string; floor: number; block: string; monthlyFeePaise: number; allotmentId: string | null; studentId: string | null; studentName: string | null }
 export interface HPassRow { pass: { id: string; studentId: string; reason: string; destination: string; expectedBackAt: string; status: string; outAt: string | null; inAt: string | null }; studentName: string; overdue: boolean }
 export interface HVisitorRow { visitor: { id: string; visitorName: string; relation: string; phone: string; inAt: string; outAt: string | null }; studentName: string }

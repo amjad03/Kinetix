@@ -2089,4 +2089,73 @@ class AppLocalizationsHi extends AppLocalizations {
   String childGrades(String name) {
     return 'ग्रेड: $name';
   }
+
+  @override
+  String get boarding => 'हॉस्टल और कैंटीन';
+
+  @override
+  String get boardingSubtitle => 'रात की हाज़िरी, वॉलेट और भोजन';
+
+  @override
+  String boardingTitle(Object name) {
+    return '$name का हॉस्टल और कैंटीन';
+  }
+
+  @override
+  String get hostel => 'हॉस्टल';
+
+  @override
+  String hostelBedLine(Object block, Object room, Object bed) {
+    return '$block, कमरा $room, बिस्तर $bed';
+  }
+
+  @override
+  String get notInHostel => 'हॉस्टल में नहीं है';
+
+  @override
+  String get nightRoll => 'रात की हाज़िरी';
+
+  @override
+  String get noNights => 'अभी कोई हाज़िरी नहीं';
+
+  @override
+  String get nightPresent => 'उपस्थित';
+
+  @override
+  String get nightAbsent => 'अनुपस्थित';
+
+  @override
+  String get nightLeave => 'छुट्टी पर';
+
+  @override
+  String get canteenWallet => 'कैंटीन वॉलेट';
+
+  @override
+  String get walletBalance => 'बैलेंस';
+
+  @override
+  String get addMoney => 'पैसे जोड़ें';
+
+  @override
+  String walletAdded(Object amount) {
+    return 'वॉलेट में $amount जुड़ गए';
+  }
+
+  @override
+  String get recentMeals => 'हाल के भोजन';
+
+  @override
+  String get noMeals => 'अभी कोई भोजन नहीं';
+
+  @override
+  String get mealBreakfast => 'नाश्ता';
+
+  @override
+  String get mealLunch => 'दोपहर का भोजन';
+
+  @override
+  String get mealSnacks => 'जलपान';
+
+  @override
+  String get mealDinner => 'रात का भोजन';
 }
