@@ -214,7 +214,7 @@ export class NotificationsService {
   }
 
   /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */
-  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
+  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task' | 'homework' | 'calendar'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
     if (userIds.length === 0) return;
     await this.insertFor(tx, sql`select u from unnest(array[${uuidList(userIds)}]::uuid[]) as u`, n, opts);
   }

@@ -673,6 +673,13 @@
       "when": 1791410893229,
       "tag": "0102_workflows",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1791410894229,
+      "tag": "0105_school_life",
+      "breakpoints": true
     }
   ]
 }

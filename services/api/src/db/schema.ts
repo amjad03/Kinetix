@@ -2702,6 +2702,16 @@ export const TENANT_TABLES = [
   'workflow_definitions',
   'workflow_requests',
   'workflow_actions',
+  'diary_entries',
+  'diary_acks',
+  'ptm_events',
+  'ptm_slots',
+  'ey_milestones',
+  'ey_milestone_status',
+  'ey_observations',
+  'health_profiles',
+  'health_visits',
+  'health_vaccinations',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4857,4 +4867,179 @@ export const workflowActions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('workflow_actions_request_idx').on(t.requestId, t.createdAt)],
+);
+
+
+// ---------------------------------------------------------------------------------------------
+// School life: diary, parent-teacher meetings, early years, health records (migration 0105)
+// ---------------------------------------------------------------------------------------------
+
+/** One teacher's diary note for a section on a day: classwork, a homework note and notices. */
+export const diaryEntries = pgTable(
+  'diary_entries',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    subjectId: uuid('subject_id').references(() => subjects.id),
+    entryDate: date('entry_date').notNull(),
+    classwork: text('classwork').notNull().default(''),
+    homeworkNote: text('homework_note').notNull().default(''),
+    notice: text('notice').notNull().default(''),
+    authorId: uuid('author_id').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('diary_entries_section_idx').on(t.tenantId, t.sectionId, t.entryDate)],
+);
+
+/** A guardian saying they have read a diary entry for one child. */
+export const diaryAcks = pgTable(
+  'diary_acks',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    entryId: uuid('entry_id').notNull().references(() => diaryEntries.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    guardianUserId: uuid('guardian_user_id').notNull().references(() => users.id),
+    acknowledgedAt: timestamp('acknowledged_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('diary_acks_entry_student_uq').on(t.entryId, t.studentId)],
+);
+
+/** A parent-teacher meeting day. */
+export const ptmEvents = pgTable('ptm_events', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  eventDate: date('event_date').notNull(),
+  location: text('location').notNull().default(''),
+  status: text('status').notNull().default('open'), // open | closed
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** A teacher's time slot at a meeting; booked when `studentId` is set. */
+export const ptmSlots = pgTable(
+  'ptm_slots',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    eventId: uuid('event_id').notNull().references(() => ptmEvents.id, { onDelete: 'cascade' }),
+    teacherId: uuid('teacher_id').notNull().references(() => users.id),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    studentId: uuid('student_id').references(() => students.id),
+    bookedBy: uuid('booked_by').references(() => users.id),
+    bookedAt: timestamp('booked_at', { withTimezone: true }),
+    reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('ptm_slots_teacher_start_uq').on(t.eventId, t.teacherId, t.startsAt),
+    uniqueIndex('ptm_slots_child_teacher_uq').on(t.eventId, t.teacherId, t.studentId).where(sql`${t.studentId} is not null`),
+  ],
+);
+
+/** The developmental milestone framework: a domain and an age band each. */
+export const eyMilestones = pgTable(
+  'ey_milestones',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    domain: text('domain').notNull(), // physical | language | cognitive | social_emotional | creative
+    ageBand: text('age_band').notNull(), // 2-3 | 3-4 | 4-5 | 5-6
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('ey_milestones_uq').on(t.tenantId, t.domain, t.ageBand, t.title)],
+);
+
+/** Where a child stands on a milestone. */
+export const eyMilestoneStatus = pgTable(
+  'ey_milestone_status',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    milestoneId: uuid('milestone_id').notNull().references(() => eyMilestones.id, { onDelete: 'cascade' }),
+    status: text('status').notNull(), // emerging | developing | achieved
+    updatedBy: uuid('updated_by').notNull().references(() => users.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('ey_milestone_status_uq').on(t.studentId, t.milestoneId)],
+);
+
+/** A teacher's note about a child, with an optional photo and the milestone it shows. */
+export const eyObservations = pgTable(
+  'ey_observations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    milestoneId: uuid('milestone_id').references(() => eyMilestones.id),
+    domain: text('domain').notNull(),
+    note: text('note').notNull(),
+    photoKey: text('photo_key'),
+    status: text('status'), // the milestone status recorded with this note
+    observedOn: date('observed_on').notNull(),
+    observedBy: uuid('observed_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('ey_observations_student_idx').on(t.tenantId, t.studentId, t.observedOn)],
+);
+
+/** A student's health profile: one row each. */
+export const healthProfiles = pgTable(
+  'health_profiles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    bloodGroup: text('blood_group'),
+    allergies: text('allergies').array().notNull().default(sql`'{}'::text[]`),
+    conditions: text('conditions').array().notNull().default(sql`'{}'::text[]`),
+    medications: text('medications').array().notNull().default(sql`'{}'::text[]`),
+    emergencyContacts: jsonb('emergency_contacts').$type<{ name: string; relation: string; phone: string }[]>().notNull().default([]),
+    notes: text('notes').notNull().default(''),
+    updatedBy: uuid('updated_by').references(() => users.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('health_profiles_student_uq').on(t.studentId)],
+);
+
+/** A visit to the nurse. */
+export const healthVisits = pgTable(
+  'health_visits',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    visitedAt: timestamp('visited_at', { withTimezone: true }).notNull(),
+    complaint: text('complaint').notNull(),
+    action: text('action').notNull().default(''),
+    sentHome: boolean('sent_home').notNull().default(false),
+    recordedBy: uuid('recorded_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('health_visits_student_idx').on(t.tenantId, t.studentId, t.visitedAt)],
+);
+
+/** One vaccine dose given. */
+export const healthVaccinations = pgTable(
+  'health_vaccinations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    vaccine: text('vaccine').notNull(),
+    dose: text('dose').notNull().default(''),
+    givenOn: date('given_on').notNull(),
+    nextDueOn: date('next_due_on'),
+    notes: text('notes').notNull().default(''),
+    recordedBy: uuid('recorded_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('health_vaccinations_student_idx').on(t.tenantId, t.studentId)],
 );

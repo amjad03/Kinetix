@@ -39,6 +39,7 @@ import { WelfareModule } from './welfare/welfare.module.js';
 import { SurveysModule } from './surveys/surveys.module.js';
 import { CourseRegistrationModule } from './course-registration/course-registration.module.js';
 import { WorkflowsModule } from './workflows/workflows.module.js';
+import { SchoolLifeModule } from './school-life/school-life.module.js';
 import { TasksModule } from './tasks/tasks.module.js';
 import { CampusLifeModule } from './campus-life/campus-life.module.js';
 import { MentoringModule } from './mentoring/mentoring.module.js';
@@ -134,6 +135,7 @@ import { SearchModule } from './search/search.controller.js';
     CourseRegistrationModule,
     TasksModule,
     WorkflowsModule,
+    SchoolLifeModule,
     CampusLifeModule,
     MentoringModule,
     CourseFilesModule,
