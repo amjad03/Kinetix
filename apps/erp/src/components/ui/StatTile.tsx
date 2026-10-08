@@ -4,7 +4,7 @@ import Remove from '@mui/icons-material/Remove';
 import Box from '@mui/material/Box';
 import MuiCard from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import Link from 'next/link';
+import { LinkBox } from './LinkBox';
 import type { ReactNode } from 'react';
 
 export interface Trend {
@@ -111,9 +111,9 @@ export function StatTile({
   return (
     <MuiCard data-testid={testId} sx={{ height: '100%', position: 'relative', ...(href && { transition: 'border-color 150ms', '&:hover': { borderColor: 'm3.primary' } }) }}>
       {href ? (
-        <Box component={Link} href={href} sx={{ display: 'block', height: '100%', color: 'inherit', textDecoration: 'none', borderRadius: 'inherit' }}>
+        <LinkBox href={href} sx={{ display: 'block', height: '100%', color: 'inherit', textDecoration: 'none', borderRadius: 'inherit' }}>
           {body}
-        </Box>
+        </LinkBox>
       ) : (
         body
       )}

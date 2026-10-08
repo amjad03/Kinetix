@@ -6,7 +6,7 @@ import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
 import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Link from 'next/link';
+import { LinkBox } from '@/components/ui/LinkBox';
 import type { ReactNode } from 'react';
 import { LinkButton } from '@/components/LinkButton';
 import { EmptyState } from '@/components/States';
@@ -45,14 +45,14 @@ export function PendingTasks({ tasks, t }: { tasks: Task[]; t: TFunction }) {
         <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
           {shown.map((x) => (
             <Box component="li" key={x.key} sx={{ borderTop: 1, borderColor: 'm3.outlineVariant' }}>
-              <Box component={Link} href={x.href} data-testid={`task-${x.key}`} sx={{ ...link, display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.5, '&:hover': { bgcolor: 'action.hover' } }}>
+              <LinkBox href={x.href} data-testid={`task-${x.key}`} sx={{ ...link, display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.5, '&:hover': { bgcolor: 'action.hover' } }}>
                 <Box aria-hidden sx={{ display: 'grid', placeItems: 'center', width: 36, height: 36, borderRadius: '10px', bgcolor: 'm3.surfaceContainer', color: 'm3.onSurfaceVariant', '& svg': { fontSize: 20 } }}>
                   {x.icon}
                 </Box>
                 <Typography sx={{ flex: 1, fontSize: '0.875rem', fontWeight: 500 }}>{x.label}</Typography>
                 <CountBadge count={x.count ?? 0} tone={(x.count ?? 0) === 0 ? 'neutral' : (x.tone ?? 'info')} showZero />
                 <ChevronRight aria-hidden sx={{ fontSize: 20, color: 'text.secondary' }} />
-              </Box>
+              </LinkBox>
             </Box>
           ))}
         </Box>
@@ -69,21 +69,20 @@ export interface QuickAction {
   ai?: boolean;
 }
 
-export function QuickActions({ actions, t }: { actions: QuickAction[]; t: TFunction }) {
+export function QuickActions({ actions, t, wide = true }: { actions: QuickAction[]; t: TFunction; wide?: boolean }) {
   if (actions.length === 0) return null;
   return (
-    <Card title={t('dash.quick')} sx={{ gridColumn: { lg: '1 / -1', xl: 'auto' } }} testId="quick-actions">
+    <Card title={t('dash.quick')} sx={wide ? { gridColumn: { lg: '1 / -1', xl: 'auto' } } : undefined} testId="quick-actions">
       <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1.5, gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(2, minmax(0, 1fr))' } }}>
         {actions.map((a) => (
           <li key={a.href + a.label}>
-            <Box
-              component={Link}
+            <LinkBox
               href={a.href}
               sx={{ ...link, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center', p: 1.5, minHeight: 92, borderRadius: '12px', border: 1, borderColor: 'm3.outlineVariant', fontSize: '0.8125rem', fontWeight: 500, '&:hover': { borderColor: a.ai ? 'm3.tertiary' : 'm3.primary', bgcolor: 'action.hover' } }}
             >
               <Box aria-hidden sx={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: '12px', bgcolor: a.ai ? 'm3.tertiaryContainer' : 'm3.primaryContainer', color: a.ai ? 'm3.onTertiaryContainer' : 'm3.onPrimaryContainer', '& svg': { fontSize: 22 } }}>{a.icon}</Box>
               {a.label}
-            </Box>
+            </LinkBox>
           </li>
         ))}
       </Box>

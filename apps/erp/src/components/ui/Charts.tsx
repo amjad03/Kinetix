@@ -302,7 +302,7 @@ export function StackedBars({
         {rows.map((r) => {
           const total = r.total ?? r.values.reduce<number>((s, v) => s + (v ?? 0), 0);
           return (
-            <Box component="li" key={r.label} sx={{ display: 'grid', gridTemplateColumns: '44px 1fr 48px', alignItems: 'center', gap: 1.5 }}>
+            <Box component="li" key={r.label} sx={{ display: 'grid', gridTemplateColumns: '104px 1fr 52px', alignItems: 'center', gap: 1.5 }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {r.label}
               </Typography>

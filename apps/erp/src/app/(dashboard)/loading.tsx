@@ -1,27 +1,26 @@
 import Box from '@mui/material/Box';
-import Skeleton from '@mui/material/Skeleton';
+import { SkeletonBlock, SkeletonCard, SkeletonStats, SkeletonTable } from '@/components/ui/Skeleton';
 import { getI18n } from '@/i18n/server';
 
+/** Shown while a page loads: the shape of a typical page (title, stat tiles, a card and a table). */
 export default async function Loading() {
   const { t } = await getI18n();
   return (
-    <Box aria-busy="true" aria-label={t('common.loading')}>
+    <Box aria-busy="true" role="status" aria-label={t('common.loading')}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Box>
-          <Skeleton variant="text" width={180} height={36} />
-          <Skeleton variant="text" width={240} height={20} />
+        <Box sx={{ width: 260 }}>
+          <SkeletonBlock height={30} width={200} />
+          <Box sx={{ mt: 1 }}>
+            <SkeletonBlock height={16} width={260} />
+          </Box>
         </Box>
-        <Skeleton variant="rounded" width={280} height={40} sx={{ borderRadius: 5 }} />
+        <SkeletonBlock height={40} width={160} radius={10} />
       </Box>
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
-        {Array.from({ length: 6 }, (_, i) => (
-          <Skeleton key={i} variant="rounded" height={132} sx={{ borderRadius: 3 }} />
-        ))}
+      <SkeletonStats n={5} />
+      <Box sx={{ display: 'grid', gap: 2.5, mt: 2.5, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
+        <SkeletonCard height={220} />
+        <SkeletonTable rows={5} cols={3} />
       </Box>
-      <Skeleton variant="text" width={160} height={28} sx={{ mt: 4, mb: 1.5 }} />
-      {Array.from({ length: 4 }, (_, i) => (
-        <Skeleton key={i} variant="rounded" height={76} sx={{ borderRadius: 3, mb: 1.25 }} />
-      ))}
     </Box>
   );
 }

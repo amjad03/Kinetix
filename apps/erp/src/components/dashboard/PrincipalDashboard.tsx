@@ -79,7 +79,7 @@ export async function PrincipalDashboard({ me, date, today }: { me: Me; date: st
           title={isToday ? t('today.todaysClasses') : t('today.classes')}
           subtitle={t('dash.scheduleSub')}
           padded={false}
-          testId="schedule-card"
+          testId="schedule-card" sx={{ gridRow: { lg: 'span 2', xl: 'auto' } }}
           action={
             day.data?.classes.length ? (
               <LinkButton href={hrefFor('/classes', date, today)} endIcon={<ArrowForward />} size="small">
@@ -110,7 +110,7 @@ export async function PrincipalDashboard({ me, date, today }: { me: Me; date: st
         ) : (
           <Card title={t('dash.perf.title')}>{roll.error !== undefined ? <ErrorState message={roll.error} /> : <EmptyState dense icon={<GradingOutlined />} title={t('dash.perf.none')} />}</Card>
         )}
-        <QuickActions actions={actions} t={t} />
+        <QuickActions actions={actions} t={t} wide={false} />
       </Row>
 
       <Row cols={3}>
