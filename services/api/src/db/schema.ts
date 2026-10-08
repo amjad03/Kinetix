@@ -2686,6 +2686,11 @@ export const TENANT_TABLES = [
   'academic_audits',
   'academic_audit_results',
   'audit_non_conformities',
+  'qb_questions',
+  'qb_question_versions',
+  'qb_blueprints',
+  'qb_papers',
+  'qb_paper_items',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4473,4 +4478,114 @@ export const auditNonConformities = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('audit_ncs_audit_idx').on(t.auditId), index('audit_ncs_owner_idx').on(t.ownerUserId, t.status)],
+);
+
+
+/** One blueprint section: how many questions of what marks, and how they must spread over Bloom levels, difficulty and COs. */
+export interface BlueprintSection {
+  name: string;
+  count: number;
+  questionMarks: number;
+  type?: string;
+  bloom?: Record<string, number>;
+  difficulty?: Record<string, number>;
+  /** Course outcomes that must each have at least one question in the section. */
+  coverage?: string[];
+}
+
+/** A question in the question bank; every edit bumps `version` and sends it back to draft. */
+export const qbQuestions = pgTable(
+  'qb_questions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    unit: text('unit'),
+    topic: text('topic').notNull(),
+    coId: uuid('co_id').references(() => courseOutcomes.id, { onDelete: 'set null' }),
+    bloom: text('bloom').notNull(),
+    difficulty: text('difficulty').notNull(),
+    marks: integer('marks').notNull(),
+    type: text('type').notNull(),
+    text: text('text').notNull(),
+    options: jsonb('options').$type<{ text: string; correct: boolean }[]>().notNull().default([]),
+    answer: text('answer').notNull().default(''),
+    status: text('status').notNull().default('draft'),
+    version: integer('version').notNull().default(1),
+    authorId: uuid('author_id').notNull().references(() => users.id),
+    reviewedBy: uuid('reviewed_by').references(() => users.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    approvedBy: uuid('approved_by').references(() => users.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('qb_questions_subject_idx').on(t.subjectId, t.status)],
+);
+
+/** What a question said before each edit. */
+export const qbQuestionVersions = pgTable(
+  'qb_question_versions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    questionId: uuid('question_id').notNull().references(() => qbQuestions.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
+    editedBy: uuid('edited_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('qb_question_versions_uq').on(t.questionId, t.version)],
+);
+
+export const qbBlueprints = pgTable('qb_blueprints', {
+  id: id(),
+  tenantId: tenantId(),
+  subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+  title: text('title').notNull(),
+  totalMarks: integer('total_marks').notNull(),
+  durationMinutes: integer('duration_minutes').notNull(),
+  sections: jsonb('sections').$type<BlueprintSection[]>().notNull(),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** A question paper: draft -> scrutiny -> (returned | approved) -> locked. */
+export const qbPapers = pgTable(
+  'qb_papers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    blueprintId: uuid('blueprint_id').notNull().references(() => qbBlueprints.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    title: text('title').notNull(),
+    seed: text('seed').notNull(),
+    avoidLast: integer('avoid_last').notNull().default(3),
+    repeats: integer('repeats').notNull().default(0),
+    status: text('status').notNull().default('draft'),
+    setterId: uuid('setter_id').notNull().references(() => users.id),
+    moderatorId: uuid('moderator_id').references(() => users.id),
+    remarks: text('remarks'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lockedBy: uuid('locked_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('qb_papers_subject_idx').on(t.subjectId, t.createdAt)],
+);
+
+/** A question placed on a paper, copied as it stood so a locked paper never changes. */
+export const qbPaperItems = pgTable(
+  'qb_paper_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    paperId: uuid('paper_id').notNull().references(() => qbPapers.id, { onDelete: 'cascade' }),
+    questionId: uuid('question_id').notNull().references(() => qbQuestions.id),
+    section: smallint('section').notNull(),
+    position: smallint('position').notNull(),
+    marks: integer('marks').notNull(),
+    snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
+  },
+  (t) => [index('qb_paper_items_paper_idx').on(t.paperId), index('qb_paper_items_question_idx').on(t.questionId)],
 );

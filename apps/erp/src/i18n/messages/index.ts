@@ -34,9 +34,10 @@ import insights from './insights';
 import work from './work';
 import campusLife from './campus-life';
 import quality from './quality';
+import questionBank from './question-bank';
 import topicVideos from './topic-videos';
 
-export const AREAS = {  common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife , quality  } as const;
+export const AREAS = {  common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights, lms, finance, work, campusLife , quality, questionBank } as const;
 
 // The ERP dictionary: one file per area, each with English, Hindi and Kannada.
 // See docs/i18n/erp.md for how to add strings.

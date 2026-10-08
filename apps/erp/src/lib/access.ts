@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'questionBank';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -89,6 +89,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   courseFiles: ['principal', 'tenant_admin', 'hod'],
   // academic-audit.controller.ts AUDITORS: leaders write templates, a head of department audits their own department
   academicAudit: ['principal', 'tenant_admin', 'hod'],
+  // question-bank.controller.ts EXAM_STAFF: leaders and heads of department run the bank and papers here; teachers write and moderate in the Teacher App
+  questionBank: ['principal', 'tenant_admin', 'hod'],
   // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
   reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager'],
 };
@@ -212,6 +214,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'mentoring';
     case 'course-files':
       return 'courseFiles';
+    case 'question-bank':
+      return 'questionBank';
     case 'academic-audit':
       return 'academicAudit';
     case 'payroll':

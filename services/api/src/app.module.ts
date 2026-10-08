@@ -41,6 +41,7 @@ import { TasksModule } from './tasks/tasks.module.js';
 import { CampusLifeModule } from './campus-life/campus-life.module.js';
 import { MentoringModule } from './mentoring/mentoring.module.js';
 import { CourseFilesModule } from './course-files/course-files.module.js';
+import { QuestionBankModule } from './question-bank/question-bank.module.js';
 import { AcademicAuditModule } from './academic-audit/academic-audit.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
@@ -131,6 +132,7 @@ import { SearchModule } from './search/search.controller.js';
     CampusLifeModule,
     MentoringModule,
     CourseFilesModule,
+    QuestionBankModule,
     AcademicAuditModule,
     DocumentsModule,
     PlatformModule,

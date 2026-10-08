@@ -85,6 +85,7 @@ export const NAV_ICONS: Record<NavIcon, SvgIconComponent> = {
   mentoring: GroupsOutlined,
   courseFiles: FolderCopyOutlined,
   academicAudit: FactCheckOutlined,
+  questionBank: QuizOutlined,
   assets: QrCode2Outlined,
   messages: CampaignOutlined,
   conversations: ForumOutlined,
