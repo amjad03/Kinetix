@@ -17,6 +17,7 @@ import '../core/exam_models.dart';
 import '../core/realtime.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
+import '../core/school_life.dart';
 
 /// In-memory [ParentApi] for widget tests.
 class FakeParentApi implements ParentApi {
@@ -1146,6 +1147,239 @@ class FakeParentApi implements ParentApi {
         g['rating'] = rating;
         g['status'] = 'closed';
       }
+    }
+  }
+
+  // ── School life: diary, PTM, early years, health, passport, surveys, events ──────────────
+
+  final List<Map<String, dynamic>> diaryJson = [
+    {'id': 'de1', 'entryDate': '2026-10-08', 'classwork': 'Fractions: adding unlike denominators', 'homeworkNote': 'Exercise 4.2, questions 1 to 6', 'notice': 'Bring a ruler tomorrow', 'author': 'Meera Iyer', 'subject': 'Mathematics', 'acknowledgedAt': null},
+    {'id': 'de2', 'entryDate': '2026-10-07', 'classwork': 'Reading: The Banyan Tree', 'homeworkNote': '', 'notice': '', 'author': 'Asha Rao', 'subject': 'English', 'acknowledgedAt': '2026-10-07T12:00:00Z'},
+  ];
+  ApiException? diaryError;
+
+  @override
+  Future<List<DiaryEntry>> diary(String childId) async {
+    calls.add('diary $childId');
+    if (diaryError != null) throw diaryError!;
+    return [for (final e in diaryJson) DiaryEntry.fromJson(e)];
+  }
+
+  @override
+  Future<void> acknowledgeDiary(String childId, String entryId) async {
+    calls.add('acknowledgeDiary $childId $entryId');
+    for (final e in diaryJson) {
+      if (e['id'] == entryId) e['acknowledgedAt'] = '2026-10-09T05:00:00Z';
+    }
+  }
+
+  List<Map<String, dynamic>> ptmEventJson = [
+    {'id': 'pm1', 'title': 'Term 2 parent-teacher meeting', 'eventDate': '2026-10-24', 'location': 'Main block', 'status': 'open', 'slots': 4, 'booked': 1},
+  ];
+  final List<Map<String, dynamic>> ptmSlotJson = [
+    {'id': 'sl1', 'eventId': 'pm1', 'teacherId': 't1', 'teacher': 'Meera Iyer', 'startsAt': '2026-10-24T04:30:00Z', 'endsAt': '2026-10-24T04:45:00Z', 'student': null, 'mine': false},
+    {'id': 'sl2', 'eventId': 'pm1', 'teacherId': 't1', 'teacher': 'Meera Iyer', 'startsAt': '2026-10-24T04:45:00Z', 'endsAt': '2026-10-24T05:00:00Z', 'student': null, 'mine': false},
+    {'id': 'sl3', 'eventId': 'pm1', 'teacherId': 't2', 'teacher': 'Asha Rao', 'startsAt': '2026-10-24T05:00:00Z', 'endsAt': '2026-10-24T05:15:00Z', 'student': 'Aarav Patel', 'mine': true},
+  ];
+  ApiException? ptmBookError;
+
+  @override
+  Future<List<PtmEvent>> ptmEvents() async {
+    calls.add('ptmEvents');
+    return [for (final e in ptmEventJson) PtmEvent.fromJson(e)];
+  }
+
+  @override
+  Future<List<PtmSlot>> ptmSlots(String eventId, String childId) async {
+    calls.add('ptmSlots $eventId $childId');
+    return [for (final s in ptmSlotJson) if (s['eventId'] == eventId) PtmSlot.fromJson(s)];
+  }
+
+  @override
+  Future<List<PtmBooking>> ptmBookings() async {
+    calls.add('ptmBookings');
+    return [
+      for (final s in ptmSlotJson)
+        if (s['mine'] == true) PtmBooking.fromJson({...s, 'studentId': 'c1', 'student': 'Aarav Patel', 'event': 'Term 2 parent-teacher meeting'}),
+    ];
+  }
+
+  Map<String, dynamic> _slot(String id) => ptmSlotJson.firstWhere((s) => s['id'] == id);
+
+  @override
+  Future<void> ptmBook(String slotId, String childId) async {
+    calls.add('ptmBook $slotId $childId');
+    if (ptmBookError != null) throw ptmBookError!;
+    _slot(slotId)
+      ..['mine'] = true
+      ..['student'] = 'Aarav Patel';
+  }
+
+  @override
+  Future<void> ptmCancel(String slotId) async {
+    calls.add('ptmCancel $slotId');
+    _slot(slotId)
+      ..['mine'] = false
+      ..['student'] = null;
+  }
+
+  @override
+  Future<void> ptmReschedule(String slotId, String toSlotId) async {
+    calls.add('ptmReschedule $slotId $toSlotId');
+    _slot(slotId)
+      ..['mine'] = false
+      ..['student'] = null;
+    _slot(toSlotId)
+      ..['mine'] = true
+      ..['student'] = 'Aarav Patel';
+  }
+
+  Map<String, dynamic> earlyYearsJson = {
+    'milestones': [
+      {'id': 'm1', 'domain': 'physical', 'ageBand': '3-4', 'title': 'Climbs and jumps with balance', 'status': 'achieved'},
+      {'id': 'm2', 'domain': 'language', 'ageBand': '3-4', 'title': 'Speaks in full short sentences', 'status': 'developing'},
+    ],
+    'observations': [
+      {'id': 'o1', 'domain': 'creative', 'milestoneId': null, 'note': 'Painted a rainbow and named every colour', 'status': null, 'observedOn': '2026-10-06', 'hasPhoto': true},
+      {'id': 'o2', 'domain': 'social_emotional', 'milestoneId': null, 'note': 'Shared blocks with a friend', 'status': 'achieved', 'observedOn': '2026-10-02', 'hasPhoto': false},
+    ],
+  };
+
+  @override
+  Future<EarlyYearsView> earlyYears(String childId) async {
+    calls.add('earlyYears $childId');
+    return EarlyYearsView.fromJson(earlyYearsJson);
+  }
+
+  @override
+  Future<List<TermInfo>> terms() async {
+    calls.add('terms');
+    return [
+      TermInfo.fromJson({'id': 'tm2', 'name': 'Term 2', 'startsOn': '2026-09-01', 'endsOn': '2026-12-20'}),
+      TermInfo.fromJson({'id': 'tm1', 'name': 'Term 1', 'startsOn': '2026-06-01', 'endsOn': '2026-08-31'}),
+    ];
+  }
+
+  @override
+  Future<Uint8List> learningStoryPdf(String childId, String termId) async {
+    calls.add('learningStory $childId $termId');
+    return Uint8List.fromList('%PDF-1.4 learning story'.codeUnits);
+  }
+
+  Map<String, dynamic> healthJson = {
+    'profile': {
+      'bloodGroup': 'B+',
+      'allergies': ['Peanuts'],
+      'conditions': <String>[],
+      'medications': ['Inhaler as needed'],
+      'emergencyContacts': [
+        {'name': 'Rajesh Patel', 'relation': 'Father', 'phone': '+919800000001'},
+      ],
+      'notes': 'Carries an inhaler in the school bag',
+    },
+    'visits': [
+      {'id': 'v1', 'visitedAt': '2026-10-05T06:00:00Z', 'complaint': 'Headache', 'action': 'Rested and drank water', 'sentHome': false},
+      {'id': 'v2', 'visitedAt': '2026-09-20T05:00:00Z', 'complaint': 'Fever', 'action': 'Parents called', 'sentHome': true},
+    ],
+    'vaccinations': [
+      {'id': 'x1', 'vaccine': 'MMR', 'dose': 'Booster', 'givenOn': '2026-07-10', 'nextDueOn': null},
+      {'id': 'x2', 'vaccine': 'Typhoid', 'dose': 'Dose 1', 'givenOn': '2026-08-01', 'nextDueOn': '2026-11-01'},
+    ],
+  };
+
+  @override
+  Future<HealthRecord> health(String childId) async {
+    calls.add('health $childId');
+    return HealthRecord.fromJson(healthJson);
+  }
+
+  Map<String, dynamic> passportJson = {
+    'student': {'id': 'c1', 'fullName': 'Aarav Patel', 'rollNo': '12', 'className': 'BCom Sem 3 A'},
+    'skills': [
+      {'skillId': 's1', 'code': 'COMM', 'name': 'Communication', 'category': 'Soft skills', 'level': 4, 'evidence': [{}, {}]},
+      {'skillId': 's2', 'code': 'ANLY', 'name': 'Analysis', 'category': 'Cognitive', 'level': null, 'evidence': <Object>[]},
+    ],
+    'certificates': [
+      {'serialNo': 'CERT-001', 'title': 'Debate winner', 'issuedOn': '2026-09-01'},
+    ],
+    'activities': {
+      'clubs': [
+        {'club': 'Debating club', 'points': 12, 'activities': 3},
+      ],
+      'events': [
+        {'title': 'Annual fest', 'eventType': 'fest', 'on': '2026-08-15'},
+      ],
+    },
+    'verification': {'verified': true, 'verifiedAt': '2026-09-02T00:00:00Z'},
+  };
+
+  @override
+  Future<OutcomePassport> passport(String childId) async {
+    calls.add('passport $childId');
+    return OutcomePassport.fromJson(passportJson);
+  }
+
+  @override
+  Future<Uint8List> passportPdf(String childId) async {
+    calls.add('passportPdf $childId');
+    return Uint8List.fromList('%PDF-1.4 passport'.codeUnits);
+  }
+
+  final List<Map<String, dynamic>> surveyJson = [
+    {
+      'id': 'sv1', 'title': 'Parent feedback', 'description': 'Tell us how the term went', 'anonymous': true, 'closesAt': null, 'answered': false,
+      'questions': [
+        {'id': 'q1', 'ord': 1, 'kind': 'rating', 'prompt': 'How happy are you with the school?', 'options': <String>[], 'required': true},
+        {'id': 'q2', 'ord': 2, 'kind': 'single', 'prompt': 'How do you reach school?', 'options': ['Bus', 'Car'], 'required': true},
+        {'id': 'q3', 'ord': 3, 'kind': 'text', 'prompt': 'Any suggestions?', 'options': <String>[], 'required': false},
+      ],
+    },
+    {'id': 'sv2', 'title': 'Canteen survey', 'description': '', 'anonymous': false, 'closesAt': null, 'answered': true, 'questions': <Object>[]},
+  ];
+  final List<List<SurveyAnswer>> surveyAnswers = [];
+
+  @override
+  Future<List<Survey>> surveys() async {
+    calls.add('surveys');
+    return [for (final s in surveyJson) Survey.fromJson(s)];
+  }
+
+  @override
+  Future<void> answerSurvey(String surveyId, List<SurveyAnswer> answers) async {
+    calls.add('answerSurvey $surveyId ${answers.length}');
+    surveyAnswers.add(answers);
+    for (final s in surveyJson) {
+      if (s['id'] == surveyId) {
+        s['answered'] = true;
+        s['questions'] = <Object>[];
+      }
+    }
+  }
+
+  final List<Map<String, dynamic>> campusEventJson = [
+    {'id': 'ev1', 'title': 'Annual sports day', 'description': 'Races and relays', 'eventType': 'sports', 'venue': 'School ground', 'startsAt': '2026-11-10T04:00:00Z', 'endsAt': '2026-11-10T09:00:00Z', 'audience': 'all', 'feePaise': 0, 'capacity': 100, 'seatsLeft': 40, 'registration': null},
+    {'id': 'ev2', 'title': 'Science fair', 'description': '', 'eventType': 'fest', 'venue': 'Hall', 'startsAt': '2026-11-20T04:00:00Z', 'endsAt': '2026-11-20T09:00:00Z', 'audience': 'all', 'feePaise': 5000, 'capacity': 50, 'seatsLeft': 0, 'registration': {'id': 'r1', 'status': 'registered', 'qrToken': 'abc', 'checkedIn': false}},
+  ];
+
+  @override
+  Future<List<CampusEvent>> campusEvents(String childId) async {
+    calls.add('campusEvents $childId');
+    return [for (final e in campusEventJson) CampusEvent.fromJson(e)];
+  }
+
+  @override
+  Future<void> registerForEvent(String eventId, String childId) async {
+    calls.add('registerForEvent $eventId $childId');
+    for (final e in campusEventJson) {
+      if (e['id'] == eventId) e['registration'] = {'id': 'r9', 'status': (e['seatsLeft'] as int) > 0 ? 'registered' : 'waitlisted', 'qrToken': 'tok', 'checkedIn': false};
+    }
+  }
+
+  @override
+  Future<void> cancelEventRegistration(String eventId, String childId) async {
+    calls.add('cancelEventRegistration $eventId $childId');
+    for (final e in campusEventJson) {
+      if (e['id'] == eventId) e['registration'] = null;
     }
   }
 

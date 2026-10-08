@@ -17,6 +17,7 @@ import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
 import '../privacy/privacy.dart';
+import '../school_life/school_life_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -196,6 +197,14 @@ class ProfileTab extends StatelessWidget {
                   subtitle: Text(l.librarySubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, family, child),
+                ),
+                ListTile(
+                  key: Key('profile-schoollife-${child.id}'),
+                  leading: const Icon(Icons.menu_book_outlined),
+                  title: Text(family.children.length == 1 ? l.schoolLife : l.childSchoolLife(child.firstName)),
+                  subtitle: Text(l.schoolLifeSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => SchoolLifeScreen.open(context, family.api, child),
                 ),
                 ListTile(
                   key: Key('profile-careers-${child.id}'),
