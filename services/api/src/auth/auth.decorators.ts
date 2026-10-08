@@ -21,6 +21,11 @@ export const ALLOW_PASSWORD_CHANGE_META = 'kinetix:allow-pwc';
  */
 export const AllowDuringPasswordChange = () => SetMetadata(ALLOW_PASSWORD_CHANGE_META, true);
 
+export const ALLOW_MFA_SETUP_META = 'kinetix:allow-mfa-setup';
+
+/** Lets a user whose institution requires two-factor, and who has none yet, call this endpoint to set it up. */
+export const AllowDuringMfaSetup = () => SetMetadata(ALLOW_MFA_SETUP_META, true);
+
 export const CurrentPrincipal = createParamDecorator((_: unknown, ctx: ExecutionContext): Principal => {
   return ctx.switchToHttp().getRequest().principal;
 });

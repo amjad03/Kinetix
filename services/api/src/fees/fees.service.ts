@@ -5,6 +5,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { feeInvoices, feePayments, guardians, receiptCounters, sections, students, tenants } from '../db/schema.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { RoleName } from '../auth/principal.js';
 
@@ -19,7 +20,10 @@ export function financialYear(date: string): string {
 
 @Injectable()
 export class FeesService {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly events: EventBus,
+  ) {}
 
   isFeeStaff(p: UserPrincipal): boolean {
     return p.roles.some((r) => FEE_ROLES.includes(r));
@@ -72,6 +76,7 @@ export class FeesService {
       .where(eq(feeInvoices.id, payment.invoiceId))
       .returning();
     const [student] = await tx.select({ fullName: students.fullName }).from(students).where(eq(students.id, payment.studentId));
+    await this.events.emit(tx, payment.tenantId, { type: DomainEvents.FeePaid, aggregateType: 'fee_payment', aggregateId: paymentId, payload: { invoiceId: payment.invoiceId, studentId: payment.studentId, amountPaise: payment.amountPaise, receiptNo, method: payment.method } });
     await this.notifications.feePaid(tx, {
       paymentId,
       studentId: payment.studentId,

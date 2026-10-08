@@ -8,6 +8,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { boardSessions, chapters, courses, curricula, subjects, topics } from '../db/schema.js';
 import { ContentService } from './content.service.js';
+import { licenceAllows, topicLicensed } from './licensing.js';
 
 const EDITORS: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
 
@@ -40,7 +41,7 @@ export class ContentController {
   @Auth(['user', 'board'])
   courses(@CurrentPrincipal() p: UserPrincipal | BoardPrincipal, @Query('curriculum') curriculum?: string, @Query('term') term?: string) {
     return this.db.withTenant(p.tenantId, (tx) => {
-      const conds = [curriculum ? eq(courses.curriculumCode, curriculum) : undefined, term ? eq(courses.term, Number(term)) : undefined];
+      const conds = [curriculum ? eq(courses.curriculumCode, curriculum) : undefined, term ? eq(courses.term, Number(term)) : undefined, licenceAllows('course', courses.id)];
       return tx
         .select({ id: courses.id, curriculumCode: courses.curriculumCode, code: courses.code, title: courses.title, term: courses.term, reviewed: courses.reviewed })
         .from(courses)
@@ -100,7 +101,7 @@ export class ContentController {
         .from(topics)
         .innerJoin(chapters, eq(chapters.id, topics.chapterId))
         .innerJoin(courses, eq(courses.id, chapters.courseId))
-        .where(eq(topics.id, id));
+        .where(and(eq(topics.id, id), topicLicensed(topics.id, courses.id)));
       if (!t) throw new NotFoundException('Topic not found');
       return t;
     });
@@ -119,7 +120,7 @@ export class ContentController {
         .from(topics)
         .innerJoin(chapters, eq(chapters.id, topics.chapterId))
         .innerJoin(courses, eq(courses.id, chapters.courseId))
-        .where(and(or(ilike(topics.title, like), ilike(topics.summary, like), ilike(chapters.title, like)), courseId ? eq(courses.id, courseId) : undefined))
+        .where(and(or(ilike(topics.title, like), ilike(topics.summary, like), ilike(chapters.title, like)), courseId ? eq(courses.id, courseId) : undefined, topicLicensed(topics.id, courses.id)))
         .orderBy(asc(courses.title), asc(chapters.position), asc(topics.position))
         .limit(25),
     );

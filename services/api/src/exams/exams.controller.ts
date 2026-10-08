@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
@@ -49,6 +50,7 @@ export class ExamSessionsController {
     private readonly db: DbService,
     private readonly exams: ExamsService,
     private readonly notifications: NotificationsService,
+    private readonly events: EventBus,
   ) {}
 
   @Post()
@@ -299,6 +301,7 @@ export class ExamSessionsController {
       if (aIds.length) await tx.update(assessments).set({ publishedAt: now }).where(and(inArray(assessments.id, aIds), sql`${assessments.publishedAt} is null`));
       for (const sectionId of new Set(papers.map((x) => x.sectionId))) await this.notifications.marksPublished(tx, { id: `${id}:${sectionId}`, sectionId, title: 'Results', subjectName: s.name });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.results.published', subjectType: 'exam_session', subjectId: id });
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.ResultsPublished, aggregateType: 'exam_session', aggregateId: id, actorId: p.userId, payload: { name: s.name, papers: papers.length } });
       return { status: 'published' };
     });
   }

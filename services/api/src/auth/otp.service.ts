@@ -11,7 +11,7 @@ import { SystemLookups } from '../db/system-lookups.service.js';
 import { normalizePhone } from './phone.js';
 import { signInResponse } from './sign-in.js';
 import { maskPhone, SmsSender } from './sms-sender.js';
-import { TokensService } from './tokens.service.js';
+import { MfaService, type SignInContext } from './mfa.service.js';
 
 export const OTP_TTL_SECONDS = 300;
 export const OTP_RESEND_SECONDS = 30;
@@ -43,7 +43,7 @@ export class OtpService {
   constructor(
     private readonly db: DbService,
     private readonly system: SystemLookups,
-    private readonly tokens: TokensService,
+    private readonly mfa: MfaService,
     private readonly limiter: RateLimiter,
     private readonly sms: SmsSender,
     private readonly clock: Clock,
@@ -84,7 +84,7 @@ export class OtpService {
   }
 
   /** Checks the latest code for the phone; returns the same body as password login. */
-  async verify(slug: string, phoneInput: string, code: string, ip: string) {
+  async verify(slug: string, phoneInput: string, code: string, ip: string, device: Omit<SignInContext, 'ip'> = {}) {
     const phone = this.phone(phoneInput);
     await this.limiter.hit(`otp-verify-ip:${ip}`, OTP_LIMITS.verifyPerIp.limit, OTP_LIMITS.verifyPerIp.windowMs);
     await this.limiter.hit(`otp-verify:${slug}:${phone}`, OTP_LIMITS.verifyPerPhone.limit, OTP_LIMITS.verifyPerPhone.windowMs);
@@ -115,7 +115,7 @@ export class OtpService {
       await tx.update(otpCodes).set({ usedAt: now, attempts: otp.attempts + 1 }).where(eq(otpCodes.id, otp.id));
       const [user] = await tx.select().from(users).where(eq(users.id, otp.userId));
       if (!user || user.status !== 'active' || user.phone !== phone) return undefined;
-      return signInResponse(tx, this.tokens, tenant.id, user, 'otp');
+      return signInResponse(tx, this.mfa, tenant.id, user, 'otp', { ip, ...device });
     });
     if (!result) throw fail;
     return result;

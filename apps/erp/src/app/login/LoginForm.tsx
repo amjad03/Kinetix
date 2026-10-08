@@ -93,6 +93,24 @@ export function LoginForm({
                 {state.error}
               </Alert>
             )}
+            {state.mfaToken ? (
+              <>
+                <input type="hidden" name="mfaToken" value={state.mfaToken} />
+                <Typography variant="h6" component="h2">
+                  {t('login.mfa.title')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('login.mfa.lead')}
+                </Typography>
+                <TextField name="code" label={t('login.mfa.code')} autoComplete="one-time-code" autoFocus required slotProps={{ htmlInput: { inputMode: 'numeric', autoCapitalize: 'none', spellCheck: false } }} />
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
+                  <Button type="submit" variant="contained" disabled={pending} sx={{ minWidth: 104 }}>
+                    {pending ? <CircularProgress size={20} color="inherit" aria-label={t('login.signingIn')} /> : t('login.mfa.submit')}
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <>
             <TextField
               name="tenant"
               label={t('login.tenant')}
@@ -138,6 +156,8 @@ export function LoginForm({
                 {pending ? <CircularProgress size={20} color="inherit" aria-label={t('login.signingIn')} /> : t('login.submit')}
               </Button>
             </Box>
+              </>
+            )}
           </Stack>
         </Box>
       </Box>

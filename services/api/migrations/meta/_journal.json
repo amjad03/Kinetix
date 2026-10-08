@@ -484,6 +484,76 @@
       "when": 1791409864229,
       "tag": "0074_grievance_welfare_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1791409924229,
+      "tag": "0076_mfa_sessions",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1791409984229,
+      "tag": "0077_feature_flags",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1791410044229,
+      "tag": "0078_event_outbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1791410104229,
+      "tag": "0079_upload_scans",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1791410164229,
+      "tag": "0080_search_trgm",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1791410224229,
+      "tag": "0081_content_licenses",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1791410284229,
+      "tag": "0082_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1791410344229,
+      "tag": "0083_placement_research",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1791410404229,
+      "tag": "0084_foundation_analytics_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1791410464229,
+      "tag": "0085_analytics_indexes",
+      "breakpoints": true
     }
   ]
 }

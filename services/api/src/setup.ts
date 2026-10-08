@@ -2,6 +2,8 @@ import { HttpAdapterHost } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ErrorCodeFilter } from './common/error-codes.js';
 import { ENV, type Env } from './config/env.js';
+import { observabilityMiddleware, TRACER } from './observability/observability.js';
+import type { Tracer } from './observability/tracer.js';
 import { RedisIoAdapter } from './realtime/redis-io.adapter.js';
 
 /** Settings shared by the server and the e2e tests. */
@@ -9,6 +11,9 @@ export function configureApp(app: NestExpressApplication): void {
   const env = app.get<Env>(ENV);
   // Graceful shutdown on SIGTERM: sockets are closed, running jobs finish, then the database and Redis.
   app.enableShutdownHooks();
+  // Request id, trace context, metrics and an access log line per request (observability/).
+  const tracer = app.get<Tracer>(TRACER);
+  app.use(observabilityMiddleware(tracer, env.LOG_FORMAT === 'json' ? (line) => process.stdout.write(JSON.stringify({ timestamp: new Date().toISOString(), level: 'info', ...line }) + '\n') : () => undefined));
   app.enableCors();
   // Behind a load balancer the client IP (per-IP rate limits) comes from X-Forwarded-For.
   if (env.TRUST_PROXY !== undefined) app.set('trust proxy', env.TRUST_PROXY);

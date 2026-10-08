@@ -7,8 +7,16 @@ export const DASHBOARD_ROLES: RoleName[] = ['principal', 'tenant_admin', 'hod'];
 /** Roles the API lets register boards (POST /v1/devices). */
 export const BOARD_ADMIN_ROLES: RoleName[] = ['principal', 'tenant_admin'];
 
+/** Sign-in for a user with two-step sign-in on: no token yet, send `mfaToken` and a code to POST /v1/auth/mfa/verify. */
+export interface MfaChallenge {
+  mfaRequired: true;
+  mfaToken: string;
+}
+
 export interface LoginResponse {
   accessToken: string;
+  /** The institution requires two-step sign-in for this role and none is set up: only /account/security works. */
+  mustSetUpMfa?: boolean;
   /** Signed in with a temporary password: the token only allows choosing a new one (POST /v1/me/password). */
   mustChangePassword?: boolean;
   user: { id: string; fullName: string; preferredLanguage?: string; roles: RoleName[] };
@@ -31,6 +39,8 @@ export interface Me {
   tenant: { name: string; slug: string };
   /** The session's token is limited to changing the temporary password (the ERP shows nothing else). */
   mustChangePassword?: boolean;
+  /** Two-step sign-in is required for this role and not set up yet: the ERP shows only /account/security. */
+  mustSetUpMfa?: boolean;
   /** False for phone-code-only accounts, which set a first password without a current one. */
   hasPassword?: boolean;
   /** The KINETIX platform team (Platform › Concept videos); absent for everyone else. */

@@ -51,11 +51,21 @@ import { TeacherModule } from './teacher/teacher.module.js';
 import { TermsModule } from './terms/terms.module.js';
 import { TimetableModule } from './timetable/timetable.module.js';
 import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
+import { EventsModule } from './events/events.js';
+import { FlagsModule } from './flags/flags.js';
+import { ObservabilityModule } from './observability/observability.js';
+import { ScanningModule } from './scanning/upload-scan.js';
+import { SearchModule } from './search/search.controller.js';
 
 @Module({
   imports: [
     DbModule,
     RedisModule,
+    ObservabilityModule,
+    EventsModule,
+    FlagsModule,
+    ScanningModule,
     HealthModule,
     StorageModule,
     JobsModule,
@@ -106,6 +116,8 @@ import { WhiteboardsModule } from './whiteboards/whiteboards.module.js';
     WelfareModule,
     DocumentsModule,
     PlatformModule,
+    AnalyticsModule,
+    SearchModule,
   ],
 })
 export class AppModule {}

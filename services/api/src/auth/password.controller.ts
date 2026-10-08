@@ -64,7 +64,7 @@ export class MePasswordController {
         data: { wasTemporary: user.passwordMustChange, firstPassword: !user.passwordHash },
       });
       const roles = await userRoleNames(tx, user.id);
-      return { accessToken: this.tokens.signUser({ sub: user.id, tid: p.tenantId, roles }), mustChangePassword: false };
+      return { accessToken: this.tokens.signUser({ sub: user.id, tid: p.tenantId, roles, ...(p.sessionId ? { sid: p.sessionId } : {}), ...(p.mustSetUpMfa ? { mfe: true as const } : {}) }), mustChangePassword: false };
     });
   }
 }

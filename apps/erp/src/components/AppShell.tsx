@@ -36,6 +36,9 @@ import Class from '@mui/icons-material/Class';
 import ClassOutlined from '@mui/icons-material/ClassOutlined';
 import FactCheck from '@mui/icons-material/FactCheck';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
+import Assessment from '@mui/icons-material/Assessment';
+import AssessmentOutlined from '@mui/icons-material/AssessmentOutlined';
+import SecurityOutlined from '@mui/icons-material/SecurityOutlined';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import Forum from '@mui/icons-material/Forum';
@@ -101,6 +104,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { canSee, homeFor, type Section } from '@/lib/access';
 import { initials } from './initials';
 import { Logo, LogoMark } from './Logo';
+import { GlobalSearch } from './search/GlobalSearch';
 
 const NAV: { href: string; label: MessageKey; section: Section | 'platform'; icon: typeof TodayOutlined; active: typeof Today }[] = [
   { href: '/', label: 'nav.today', section: 'school', icon: TodayOutlined, active: Today },
@@ -133,6 +137,7 @@ const NAV: { href: string; label: MessageKey; section: Section | 'platform'; ico
   { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: RestaurantOutlined, active: Restaurant },
   { href: '/inventory', label: 'nav.inventory', section: 'inventory', icon: Inventory2Outlined, active: Inventory2 },
   { href: '/assets', label: 'nav.assets', section: 'assets', icon: QrCode2Outlined, active: QrCode2 },
+  { href: '/reports', label: 'nav.reports', section: 'reports', icon: AssessmentOutlined, active: Assessment },
   { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: MenuBookOutlined, active: MenuBook },
   { href: '/topic-videos', label: 'nav.topicVideos', section: 'topicVideos', icon: VideoLibraryOutlined, active: VideoLibrary },
   { href: '/ai', label: 'nav.ai', section: 'ai', icon: AutoAwesomeOutlined, active: AutoAwesome },
@@ -207,6 +212,7 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
           {school}
         </Typography>
         <Box sx={{ flex: 1 }} />
+        <GlobalSearch />
         <Tooltip title={`${user.fullName}${roleText ? ` · ${roleText}` : ''}`}>
           <IconButton onClick={(e) => setAnchor(e.currentTarget)} aria-label={t('shell.account')} aria-haspopup="menu" sx={{ p: 0.5 }}>
             <Avatar sx={{ width: 36, height: 36, bgcolor: 'm3.tertiaryContainer', color: 'm3.onTertiaryContainer', fontSize: 15, fontWeight: 500 }}>
@@ -271,6 +277,12 @@ export function AppShell({ user, school, children }: { user: ShellUser; school: 
               <LockOutlined fontSize="small" />
             </ListItemIcon>
             {t('shell.changePassword')}
+          </MenuItem>
+          <MenuItem component={Link} href="/account/security" onClick={() => setAnchor(null)} sx={{ px: 3 }} data-testid="security">
+            <ListItemIcon>
+              <SecurityOutlined fontSize="small" />
+            </ListItemIcon>
+            {t('shell.security')}
           </MenuItem>
           <form action={signOut}>
             <MenuItem component="button" type="submit" sx={{ width: '100%', px: 3 }}>

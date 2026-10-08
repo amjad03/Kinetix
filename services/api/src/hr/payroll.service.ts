@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import type { Payslip, PayrollRunDetail, PayrollRunSummary, SalaryComponent, SalaryStructure } from '@kinetix/shared';
 import { and, asc, desc, eq, gte, inArray, lt, lte, ne, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import type { Tx } from '../db/db.service.js';
 import { payrollRuns, payslips, salaryComponents, salaryStructureLines, salaryStructures, staffProfiles, tenants } from '../db/schema.js';
@@ -28,6 +29,7 @@ export class PayrollService {
   constructor(
     private readonly hr: HrService,
     private readonly notifications: NotificationsService,
+    private readonly events: EventBus,
   ) {}
 
   // ----- components and structures ----------------------------------------------------------------
@@ -274,6 +276,7 @@ export class PayrollService {
       if (earlier) throw new ConflictException(`Lock ${earlier.month} first`);
       await tx.update(payrollRuns).set({ status: 'locked', lockedBy: p.userId, lockedAt: now, version: run.version + 1 }).where(eq(payrollRuns.id, id));
       const rows = await tx.select({ userId: payslips.userId, id: payslips.id }).from(payslips).where(eq(payslips.runId, id));
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.PayrollLocked, aggregateType: 'payroll_run', aggregateId: id, actorId: p.userId, payload: { month: run.month, payslips: rows.length } });
       for (const r of rows) await this.notifications.notifyUsers(tx, [r.userId], { kind: 'payslip', text: texts.payslipReady({ month: monthLabel(run.month) }), data: { payslipId: r.id, month: run.month }, dedupeKey: `payslip:${r.id}` });
     } else {
       await tx.update(payrollRuns).set({ status: 'draft', approvedBy: null, approvedAt: null, version: run.version + 1 }).where(eq(payrollRuns.id, id));

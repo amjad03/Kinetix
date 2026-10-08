@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { licenceAllows } from './licensing.js';
 import type { Tx } from '../db/db.service.js';
 import { chapters, courses, subjects, topics, type TopicLesson } from '../db/schema.js';
 
@@ -38,14 +39,14 @@ export class ContentService {
 
   /** A course with its chapters and topic titles, global first then the institution's own. */
   async outline(tx: Tx, courseId: string) {
-    const [course] = await tx.select().from(courses).where(eq(courses.id, courseId));
+    const [course] = await tx.select().from(courses).where(and(eq(courses.id, courseId), licenceAllows('course', courses.id)));
     if (!course) return null;
     const chs = await tx.select().from(chapters).where(eq(chapters.courseId, courseId)).orderBy(sql`${chapters.tenantId} is not null`, asc(chapters.position));
     const tps = chs.length
       ? await tx
           .select({ id: topics.id, chapterId: topics.chapterId, title: topics.title, summary: topics.summary, resources: topics.resources, tenantId: topics.tenantId, position: topics.position })
           .from(topics)
-          .where(inArray(topics.chapterId, chs.map((c) => c.id)))
+          .where(and(inArray(topics.chapterId, chs.map((c) => c.id)), licenceAllows('topic', topics.id)))
           .orderBy(sql`${topics.tenantId} is not null`, asc(topics.position))
       : [];
     return {
