@@ -12,8 +12,12 @@ const id = encodeURIComponent;
 export async function addClub(v: V) {
   return send(`${C}/clubs`, { name: v.name, category: v.category || 'general', description: v.description ?? '', ...(optStr(v.coordinator) ? { facultyCoordinatorId: v.coordinator } : {}) }, PAGE);
 }
-export const clubMembers = (clubId: string) => read<ClubMember[]>(`${C}/clubs/${id(clubId)}/members`);
-export const clubActivities = (clubId: string) => read<ClubActivity[]>(`${C}/clubs/${id(clubId)}/activities`);
+export async function clubMembers(clubId: string) {
+  return read<ClubMember[]>(`${C}/clubs/${id(clubId)}/members`);
+}
+export async function clubActivities(clubId: string) {
+  return read<ClubActivity[]>(`${C}/clubs/${id(clubId)}/activities`);
+}
 export async function decideMember(clubId: string, memberId: string, decision: 'approve' | 'reject') {
   return send(`${C}/clubs/${id(clubId)}/members/${id(memberId)}/decision`, { decision }, PAGE);
 }
@@ -31,9 +35,15 @@ export async function markAttendance(activityId: string, studentIds: string[]) {
 export async function addCommittee(v: V) {
   return send(`${C}/committees`, { name: v.name, statutory: v.statutory === 'yes', description: v.description ?? '' }, PAGE);
 }
-export const committeeMembers = (cid: string) => read<CommitteeMember[]>(`${C}/committees/${id(cid)}/members`);
-export const committeeMeetings = (cid: string) => read<Meeting[]>(`${C}/committees/${id(cid)}/meetings`);
-export const meetingActions = (meetingId: string) => read<ActionItem[]>(`${C}/action-items?meetingId=${id(meetingId)}`);
+export async function committeeMembers(cid: string) {
+  return read<CommitteeMember[]>(`${C}/committees/${id(cid)}/members`);
+}
+export async function committeeMeetings(cid: string) {
+  return read<Meeting[]>(`${C}/committees/${id(cid)}/meetings`);
+}
+export async function meetingActions(meetingId: string) {
+  return read<ActionItem[]>(`${C}/action-items?meetingId=${id(meetingId)}`);
+}
 export async function addCommitteeMember(cid: string, v: V) {
   return send(`${C}/committees/${id(cid)}/members`, { userId: v.userId, role: v.role || 'member', tenureStart: v.tenureStart, ...(optStr(v.tenureEnd) ? { tenureEnd: v.tenureEnd } : {}) }, PAGE);
 }
@@ -67,5 +77,9 @@ export async function eventStep(eventId: string, step: 'publish' | 'cancel') {
 export async function checkIn(eventId: string, v: V) {
   return send(`${C}/events/${id(eventId)}/check-in`, { token: v.token }, PAGE);
 }
-export const eventRegistrations = (eventId: string) => read<EventRegistration[]>(`${C}/events/${id(eventId)}/registrations`);
-export const eventSummary = (eventId: string) => read<EventSummary>(`${C}/events/${id(eventId)}/summary`);
+export async function eventRegistrations(eventId: string) {
+  return read<EventRegistration[]>(`${C}/events/${id(eventId)}/registrations`);
+}
+export async function eventSummary(eventId: string) {
+  return read<EventSummary>(`${C}/events/${id(eventId)}/summary`);
+}

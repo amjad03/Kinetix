@@ -69,7 +69,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
     { label: t('wf.col.status'), cell: statusPill, sort: (r) => r.status },
     { label: t('wf.col.step'), cell: (r) => (r.stepName ? `${r.stepName} (${t('wf.step.of', { n: r.stepNumber, total: r.stepCount })})` : '-') },
     { label: t('wf.col.due'), cell: (r) => (r.dueAt ? fmt.dateTime(r.dueAt) : '-'), sort: (r) => r.dueAt },
-    { label: t('wf.col.created'), cell: (r) => fmt.date(r.createdAt), sort: (r) => r.createdAt },
+    { label: t('wf.col.created'), cell: (r) => fmt.date(r.createdAt.slice(0, 10)), sort: (r) => r.createdAt },
     { label: '', cell: (r) => <Button size="small" onClick={() => open(r.id)}>{t('wf.open')}</Button> },
   ];
 

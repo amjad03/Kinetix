@@ -36,8 +36,12 @@ export async function addQuestion(v: Record<string, string>) {
   );
 }
 
-export const reviewQuestion = (qid: string) => send(`${Q}/questions/${id(qid)}/review`, {}, PAGE);
-export const approveQuestion = (qid: string) => send(`${Q}/questions/${id(qid)}/approve`, {}, PAGE);
+export async function reviewQuestion(qid: string) {
+  return send(`${Q}/questions/${id(qid)}/review`, {}, PAGE);
+}
+export async function approveQuestion(qid: string) {
+  return send(`${Q}/questions/${id(qid)}/approve`, {}, PAGE);
+}
 
 /** Section lines: "name; count; marks; type; bloom=n,...; easy=n,...; CO1,CO2". */
 export async function addBlueprint(v: Record<string, string>) {
@@ -59,8 +63,18 @@ export async function addBlueprint(v: Record<string, string>) {
   return send(`${Q}/blueprints`, { subjectId: v.subjectId, title: v.title, totalMarks: Number(v.totalMarks), durationMinutes: Number(v.durationMinutes), sections }, PAGE);
 }
 
-export const generatePaper = (v: Record<string, string>) => send(`${Q}/papers`, { blueprintId: v.blueprintId, title: v.title, seed: optStr(v.seed), avoidLast: v.avoidLast ? Number(v.avoidLast) : 3 }, PAGE);
-export const submitPaper = (pid: string, v: Record<string, string>) => send(`${Q}/papers/${id(pid)}/submit`, { moderatorId: v.moderatorId }, PAGE);
-export const decidePaper = (pid: string, v: Record<string, string>) => send(`${Q}/papers/${id(pid)}/scrutiny`, { decision: v.decision, remarks: v.remarks ?? '' }, PAGE);
-export const lockPaper = (pid: string) => send(`${Q}/papers/${id(pid)}/lock`, {}, PAGE);
-export const loadPaper = (pid: string) => read<QbPaperDetail>(`${Q}/papers/${id(pid)}`);
+export async function generatePaper(v: Record<string, string>) {
+  return send(`${Q}/papers`, { blueprintId: v.blueprintId, title: v.title, seed: optStr(v.seed), avoidLast: v.avoidLast ? Number(v.avoidLast) : 3 }, PAGE);
+}
+export async function submitPaper(pid: string, v: Record<string, string>) {
+  return send(`${Q}/papers/${id(pid)}/submit`, { moderatorId: v.moderatorId }, PAGE);
+}
+export async function decidePaper(pid: string, v: Record<string, string>) {
+  return send(`${Q}/papers/${id(pid)}/scrutiny`, { decision: v.decision, remarks: v.remarks ?? '' }, PAGE);
+}
+export async function lockPaper(pid: string) {
+  return send(`${Q}/papers/${id(pid)}/lock`, {}, PAGE);
+}
+export async function loadPaper(pid: string) {
+  return read<QbPaperDetail>(`${Q}/papers/${id(pid)}`);
+}

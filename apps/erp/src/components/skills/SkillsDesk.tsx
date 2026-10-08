@@ -246,7 +246,7 @@ function PassportDialog({ studentId, onClose, toast }: { studentId: string; onCl
       {d && (
         <>
           <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-            <Pill warn={!d.verification.verified} label={d.verification.verified && d.verification.verifiedAt ? t('sk.pp.verified', { date: fmt.date(d.verification.verifiedAt, 'short') }) : t('sk.pp.unverified')} />
+            <Pill warn={!d.verification.verified} label={d.verification.verified && d.verification.verifiedAt ? t('sk.pp.verified', { date: fmt.date(d.verification.verifiedAt.slice(0, 10), 'short') }) : t('sk.pp.unverified')} />
             <ActionButton label={t('sk.pp.verify')} run={() => verifyPassport(studentId)} onDone={refresh} />
             {d.verification.verified && <ActionButton tone="error" label={t('sk.pp.revoke')} run={() => revokePassport(studentId)} onDone={refresh} />}
             <Button size="small" component="a" href={`/api/download?kind=passport&id=${studentId}`}>{t('sk.pp.download')}</Button>

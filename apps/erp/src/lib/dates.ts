@@ -16,7 +16,15 @@ interface Names {
   weekdaysShort: string[];
 }
 
-const NAMES: Record<Exclude<Locale, 'en'>, Names> = {
+const NAMES: Record<Locale, Names> = {
+  // English is spelled out too: Node and the browser ship different ICU data, so Intl formats the same date two ways
+  // (the server's "Thursday, 22 October 2026" against the browser's "Thursday 22 October, 2026"), a hydration mismatch.
+  en: {
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'],
+    weekdays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  },
   hi: {
     months: ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'],
     monthsShort: ['जन॰', 'फ़र॰', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुल॰', 'अग॰', 'सित॰', 'अक्टू॰', 'नव॰', 'दिस॰'],
@@ -85,28 +93,14 @@ export function isoWeekday(date: string): number {
 }
 
 export function formatDate(date: string, style: 'long' | 'short' | 'weekday' | 'day' | 'dayMonth' = 'long', locale: Locale = 'en'): string {
-  if (locale !== 'en') {
-    const n = NAMES[locale];
-    const [y, m, day] = date.split('-').map(Number);
-    const w = isoWeekday(date) - 1;
-    if (style === 'long') return `${n.weekdays[w]}, ${day} ${n.months[m - 1]} ${y}`;
-    if (style === 'weekday') return n.weekdays[w];
-    if (style === 'day') return `${day} ${n.monthsShort[m - 1]} ${y}`;
-    if (style === 'dayMonth') return `${day} ${n.monthsShort[m - 1]}`;
-    return `${n.weekdaysShort[w]}, ${day} ${n.monthsShort[m - 1]}`;
-  }
-  const d = new Date(`${date}T00:00:00Z`);
-  const opts: Intl.DateTimeFormatOptions =
-    style === 'long'
-      ? { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
-      : style === 'weekday'
-        ? { weekday: 'long' }
-        : style === 'day'
-          ? { day: 'numeric', month: 'short', year: 'numeric' }
-          : style === 'dayMonth'
-            ? { day: 'numeric', month: 'short' }
-          : { weekday: 'short', day: 'numeric', month: 'short' };
-  return new Intl.DateTimeFormat(BCP47[locale], { ...opts, timeZone: 'UTC' }).format(d);
+  const n = NAMES[locale];
+  const [y, m, day] = date.split('-').map(Number);
+  const w = isoWeekday(date) - 1;
+  if (style === 'long') return `${n.weekdays[w]}, ${day} ${n.months[m - 1]} ${y}`;
+  if (style === 'weekday') return n.weekdays[w];
+  if (style === 'day') return `${day} ${n.monthsShort[m - 1]} ${y}`;
+  if (style === 'dayMonth') return `${day} ${n.monthsShort[m - 1]}`;
+  return `${n.weekdaysShort[w]}, ${day} ${n.monthsShort[m - 1]}`;
 }
 
 /** "October 2026" for a calendar month (any date in it). */

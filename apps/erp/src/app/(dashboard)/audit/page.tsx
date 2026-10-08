@@ -7,7 +7,7 @@ import { DeskTable } from '@/components/campus/Desk';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
-import { FormField, TextInput } from '@/components/ui';
+import { FormField, TextInput } from '@/components/ui/Form';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { AUDIT_PAGE_SIZE, auditExportPath, auditPageNo, auditParams, type AuditPage, type AuditSearch } from '@/lib/govern';
@@ -33,9 +33,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
     return `/audit${p.toString() ? `?${p}` : ''}`;
   };
   const input = (name: keyof AuditSearch, label: string, type = 'text') => (
-    <FormField label={label}>
-      <TextInput type={type} name={name} defaultValue={sp[name] ?? ''} slotProps={type === 'date' ? { inputLabel: { shrink: true } } : undefined} />
-    </FormField>
+      <TextInput label={label} type={type} name={name} defaultValue={sp[name] ?? ''} slotProps={type === 'date' ? { inputLabel: { shrink: true } } : undefined} />
   );
   return (
     <>
