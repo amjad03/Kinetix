@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
-import { FormField, TextInput } from '@/components/ui';
+import { TextInput } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { ClassEngagementTable } from '@/components/reports/ClassEngagementTable';
@@ -64,12 +64,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         </LinkButton>
       </Box>
       <Box component="form" method="get" sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
-        <FormField label={t('reports.from')}>
-          <TextInput type="date" name="from" defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
-        </FormField>
-        <FormField label={t('reports.to')}>
-          <TextInput type="date" name="to" defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
-        </FormField>
+        <TextInput type="date" name="from" label={t('reports.from')} defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
+        <TextInput type="date" name="to" label={t('reports.to')} defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
         {sp.report && <input type="hidden" name="report" value={sp.report} />}
         <Button type="submit" variant="outlined">
           {t('reports.apply')}
