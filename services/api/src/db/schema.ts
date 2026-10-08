@@ -2699,6 +2699,9 @@ export const TENANT_TABLES = [
   'qb_blueprints',
   'qb_papers',
   'qb_paper_items',
+  'workflow_definitions',
+  'workflow_requests',
+  'workflow_actions',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4768,4 +4771,90 @@ export const qbPaperItems = pgTable(
     snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
   },
   (t) => [index('qb_paper_items_paper_idx').on(t.paperId), index('qb_paper_items_question_idx').on(t.questionId)],
+);
+
+// Merged from worktree-agent-a79eb44fc9b1f7251
+
+export type WorkflowRequestStatus = 'pending' | 'approved' | 'rejected' | 'returned' | 'cancelled';
+
+
+/** A resolved step on a request: who must decide it, fixed when the request is submitted. */
+export interface WorkflowStepSnapshot {
+  name: string;
+  kind: 'role' | 'department_head' | 'user';
+  role: string | null;
+  userId: string | null;
+  slaHours: number | null;
+}
+
+
+/** An approval route for one request type, with the form fields a custom request fills in. */
+export const workflowDefinitions = pgTable(
+  'workflow_definitions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    requestType: text('request_type').notNull(),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    fields: jsonb('fields').$type<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'select'; required: boolean; options?: string[] }[]>().notNull().default([]),
+    steps: jsonb('steps').$type<{ name: string; approver: { kind: 'role'; role: string } | { kind: 'department_head' } | { kind: 'user'; userId: string }; minAmount?: number | null; maxAmount?: number | null; slaHours?: number | null }[]>().notNull().default([]),
+    active: boolean('active').notNull().default(true),
+    version: integer('version').notNull().default(0),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('workflow_definitions_type_uq').on(t.tenantId, t.requestType)],
+);
+
+
+/** One request moving through the steps of its definition. */
+export const workflowRequests = pgTable(
+  'workflow_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    definitionId: uuid('definition_id').notNull().references(() => workflowDefinitions.id),
+    requestType: text('request_type').notNull(),
+    title: text('title').notNull(),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}),
+    amount: numeric('amount', { precision: 14, scale: 2, mode: 'number' }),
+    requesterId: uuid('requester_id').notNull().references(() => users.id),
+    status: text('status').$type<WorkflowRequestStatus>().notNull().default('pending'),
+    /** The steps that apply to this request, fixed at submission. */
+    steps: jsonb('steps').$type<WorkflowStepSnapshot[]>().notNull().default([]),
+    currentStep: integer('current_step').notNull().default(0),
+    /** Who may decide the current step (denormalised for the inbox): a named user, or anyone holding a role. */
+    approverUserId: uuid('approver_user_id').references(() => users.id),
+    approverRole: text('approver_role'),
+    taskId: uuid('task_id').references(() => tasks.id),
+    sourceModule: text('source_module'),
+    sourceId: text('source_id'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    version: integer('version').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('workflow_requests_requester_idx').on(t.tenantId, t.requesterId), index('workflow_requests_inbox_idx').on(t.tenantId, t.status, t.approverUserId)],
+);
+
+
+/** The timeline of a request: submitted, each decision, returns and resubmissions. */
+export const workflowActions = pgTable(
+  'workflow_actions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    /** Orders the timeline: entries written in one transaction share a timestamp. */
+    seq: bigint('seq', { mode: 'number' }).generatedAlwaysAsIdentity().notNull(),
+    requestId: uuid('request_id').notNull().references(() => workflowRequests.id, { onDelete: 'cascade' }),
+    stepIndex: integer('step_index'),
+    stepName: text('step_name'),
+    actorId: uuid('actor_id').references(() => users.id),
+    action: text('action').$type<'submitted' | 'approved' | 'rejected' | 'returned' | 'resubmitted' | 'cancelled' | 'skipped'>().notNull(),
+    comment: text('comment').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [index('workflow_actions_request_idx').on(t.requestId, t.createdAt)],
 );

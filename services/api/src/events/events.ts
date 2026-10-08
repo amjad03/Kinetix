@@ -23,6 +23,7 @@ export const DomainEvents = {
   HomeworkPublished: 'classroom.homework_published',
   SurveyClosed: 'surveys.closed',
   CourseRegistrationApproved: 'course_registration.approved',
+  WorkflowsDecided: 'workflows.decided',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 
