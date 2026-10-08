@@ -2677,6 +2677,11 @@ export const TENANT_TABLES = [
   'campus_events',
   'event_registrations',
   'event_feedback',
+  'skills',
+  'skill_maps',
+  'skill_evidence',
+  'outcome_passports',
+  'sdg_tags',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4292,4 +4297,90 @@ export const eventFeedback = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('event_feedback_uq').on(t.registrationId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Skill mapping, student outcome passport, SDG and impact mapping
+// ---------------------------------------------------------------------------------------------
+
+/** A skill in the institution's framework; a student's level (1-5) comes from evidence. */
+export const skills = pgTable(
+  'skills',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    category: text('category').notNull().default('skill'), // knowledge | skill | attitude | leadership | communication | career
+    description: text('description').notNull().default(''),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('skills_code_uq').on(t.tenantId, t.code)],
+);
+
+/** Where evidence for a skill comes from: a subject, a course outcome, a club, an event type, placements, internships, research or certificates. */
+export const skillMaps = pgTable(
+  'skill_maps',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    skillId: uuid('skill_id').notNull().references(() => skills.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(), // subject | course_outcome | club | event_type | placement | internship | research | certificate
+    /** The subject, course outcome or club id, or the event type; empty when the kind needs none. */
+    ref: text('ref').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('skill_maps_uq').on(t.skillId, t.kind, t.ref)],
+);
+
+/** Evidence a staff member records by hand (a project, a talk, a mentor's observation). */
+export const skillEvidence = pgTable('skill_evidence', {
+  id: id(),
+  tenantId: tenantId(),
+  skillId: uuid('skill_id').notNull().references(() => skills.id, { onDelete: 'cascade' }),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  level: smallint('level').notNull(),
+  title: text('title').notNull(),
+  note: text('note').notNull().default(''),
+  recordedBy: uuid('recorded_by').notNull().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** One passport per student: the institution verifies it and the QR on the PDF points at its token. */
+export const outcomePassports = pgTable(
+  'outcome_passports',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    verifyToken: text('verify_token').notNull(),
+    verifiedBy: uuid('verified_by').references(() => users.id, { onDelete: 'set null' }),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('outcome_passports_student_uq').on(t.studentId), uniqueIndex('outcome_passports_token_uq').on(t.verifyToken)],
+);
+
+/** The 17 UN Sustainable Development Goals (names only); shared reference data, not per institution. */
+export const sdgGoals = pgTable('sdg_goals', {
+  number: smallint('number').primaryKey(),
+  name: text('name').notNull(),
+});
+
+/** An item (course, research project, event, club or project) tagged to an SDG. */
+export const sdgTags = pgTable(
+  'sdg_tags',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sdgNumber: smallint('sdg_number').notNull().references(() => sdgGoals.number),
+    itemType: text('item_type').notNull(), // course | research | project | event | club
+    itemId: uuid('item_id').notNull(),
+    note: text('note').notNull().default(''),
+    taggedBy: uuid('tagged_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('sdg_tags_uq').on(t.sdgNumber, t.itemType, t.itemId)],
 );
