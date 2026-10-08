@@ -90,7 +90,9 @@ class _WhiteboardsDialogState extends State<WhiteboardsDialog> {
     setState(() => _busy = b.id);
     try {
       await widget.api.shareWhiteboard(b.id);
-      setState(() => _boards = widget.api.whiteboards());
+      setState(() {
+        _boards = widget.api.whiteboards();
+      });
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     } finally {

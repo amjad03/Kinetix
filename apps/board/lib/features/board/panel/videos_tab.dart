@@ -35,7 +35,13 @@ class _ConceptVideosTabState extends State<ConceptVideosTab> {
     _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson);
   }
 
-  void _reload() => setState(() => _load = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson));
+  void _reload() {
+    final next = widget.board.api?.conceptVideosNow().then(PeriodVideos.fromJson);
+    // A block body: setState asserts if its callback returns a Future.
+    setState(() {
+      _load = next;
+    });
+  }
 
   /// The teacher pastes a YouTube link; it is added to the topic for this class.
   Future<void> _add(PeriodVideos v) async {
