@@ -36,6 +36,8 @@ import { FinanceModule } from './finance/finance.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
+import { SurveysModule } from './surveys/surveys.module.js';
+import { TasksModule } from './tasks/tasks.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
@@ -120,6 +122,8 @@ import { SearchModule } from './search/search.controller.js';
     PlacementsModule,
     ResearchModule,
     WelfareModule,
+    SurveysModule,
+    TasksModule,
     DocumentsModule,
     PlatformModule,
     AnalyticsModule,

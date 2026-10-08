@@ -12,7 +12,7 @@ import {
   type BroadcastAudience,
 } from '../db/schema.js';
 
-type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge' | 'transport' | 'hostel' | 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare';
+type Kind = 'absence' | 'homework' | 'broadcast' | 'board_shared' | 'recording' | 'fee' | 'library' | 'marks' | 'message' | 'live' | 'calendar' | 'badge' | 'transport' | 'hostel' | 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task';
 
 export { rupees } from './texts.js';
 
@@ -214,7 +214,7 @@ export class NotificationsService {
   }
 
   /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */
-  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
+  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
     if (userIds.length === 0) return;
     await this.insertFor(tx, sql`select u from unnest(array[${uuidList(userIds)}]::uuid[]) as u`, n, opts);
   }
