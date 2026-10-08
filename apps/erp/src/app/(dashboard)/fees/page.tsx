@@ -44,6 +44,12 @@ export default async function FeesPage() {
             <LinkButton href="/fees/invoices" variant="outlined" startIcon={<ReceiptLongOutlined />}>
               {t('fees.invoices')}
             </LinkButton>
+            <LinkButton href="/fees/bank-transfers" variant="outlined">
+              {t('pd.link.transfers')}
+            </LinkButton>
+            <LinkButton href="/fees/sponsors" variant="outlined">
+              {t('pd.link.sponsors')}
+            </LinkButton>
             <IssueFeeButton classes={classes.data ?? []} today={today} />
           </>
         }

@@ -300,10 +300,10 @@ describe('audit viewer, custom reports, connectors and alumni giving', () => {
       campaignId = (await post('placement', '/v1/alumni/campaigns', { name: 'Hook campaign' }).expect(201)).body.id;
     });
 
-    it('lists the types with their forms; only the webhook is available', async () => {
+    it('lists the types with their forms; the webhook, Koha, video and BI export are available', async () => {
       const types = (await get('principal', '/v1/connectors/types').expect(200)).body as { type: string; available: boolean; fields: unknown[] }[];
       expect(types.map((x) => x.type)).toEqual(['webhook_out', 'sms_provider', 'payment', 'gps', 'library_koha', 'lms_video', 'bi_export']);
-      expect(types.filter((x) => x.available).map((x) => x.type)).toEqual(['webhook_out']);
+      expect(types.filter((x) => x.available).map((x) => x.type)).toEqual(['webhook_out', 'library_koha', 'lms_video', 'bi_export']);
       expect(types.every((x) => x.fields.length > 0)).toBe(true);
       await get('teacher', '/v1/connectors/types').expect(403);
     });

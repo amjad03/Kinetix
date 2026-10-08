@@ -3030,6 +3030,12 @@ export const TENANT_TABLES = [
   'alumni_donations',
   'alumni_volunteer_opportunities',
   'alumni_volunteer_signups',
+  'bank_transfer_submissions',
+  'sponsors',
+  'sponsor_invoices',
+  'sponsor_invoice_lines',
+  'sponsor_payments',
+  'class_meetings',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -5510,4 +5516,111 @@ export const alumniVolunteerSignups = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.opportunityId, t.alumniId] })],
+);
+
+
+// ---------------------------------------------------------------------------------------------
+// Bank-transfer payments, sponsor (PO) billing and online class meetings (migration 0108)
+// ---------------------------------------------------------------------------------------------
+
+/** A guardian's report of a NEFT/IMPS/RTGS transfer; the accountant checks it against the bank statement. */
+export const bankTransferSubmissions = pgTable(
+  'bank_transfer_submissions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    invoiceId: uuid('invoice_id').notNull().references(() => feeInvoices.id),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    submittedBy: uuid('submitted_by').notNull().references(() => users.id),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    utr: text('utr').notNull(),
+    transferDate: date('transfer_date').notNull(),
+    proofKey: text('proof_key'),
+    proofType: text('proof_type'),
+    status: text('status').$type<'pending' | 'verified' | 'rejected'>().notNull().default('pending'),
+    reviewedBy: uuid('reviewed_by').references(() => users.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    reviewNote: text('review_note'),
+    paymentId: uuid('payment_id').references(() => feePayments.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('bank_transfer_status_idx').on(t.tenantId, t.status, t.createdAt)],
+);
+
+/** An organisation that pays fees for students (a company, trust or department). */
+export const sponsors = pgTable(
+  'sponsors',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    contactName: text('contact_name'),
+    contactEmail: text('contact_email'),
+    gstin: text('gstin'),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('sponsors_name_uq').on(t.tenantId, t.name)],
+);
+
+/** An invoice to a sponsor against a purchase order, for the fees of one or more sponsored students. */
+export const sponsorInvoices = pgTable(
+  'sponsor_invoices',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sponsorId: uuid('sponsor_id').notNull().references(() => sponsors.id),
+    invoiceNo: text('invoice_no').notNull(),
+    poNumber: text('po_number'),
+    title: text('title').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    paidPaise: bigint('paid_paise', { mode: 'number' }).notNull().default(0),
+    dueOn: date('due_on').notNull(),
+    status: text('status').$type<'open' | 'partial' | 'paid' | 'cancelled'>().notNull().default('open'),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('sponsor_invoices_no_uq').on(t.tenantId, t.invoiceNo), index('sponsor_invoices_sponsor_idx').on(t.sponsorId, t.status)],
+);
+
+export const sponsorInvoiceLines = pgTable('sponsor_invoice_lines', {
+  id: id(),
+  tenantId: tenantId(),
+  invoiceId: uuid('invoice_id').notNull().references(() => sponsorInvoices.id, { onDelete: 'cascade' }),
+  studentId: uuid('student_id').notNull().references(() => students.id),
+  description: text('description').notNull(),
+  amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+});
+
+export const sponsorPayments = pgTable('sponsor_payments', {
+  id: id(),
+  tenantId: tenantId(),
+  invoiceId: uuid('invoice_id').notNull().references(() => sponsorInvoices.id, { onDelete: 'cascade' }),
+  amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+  method: text('method').notNull(),
+  reference: text('reference'),
+  receivedOn: date('received_on').notNull(),
+  recordedBy: uuid('recorded_by').references(() => users.id),
+  createdAt: createdAt(),
+});
+
+/** An online class created through a video connector (Zoom or Teams), optionally for a timetable slot. */
+export const classMeetings = pgTable(
+  'class_meetings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    connectorId: uuid('connector_id').references(() => connectors.id, { onDelete: 'set null' }),
+    provider: text('provider').notNull(),
+    slotId: uuid('slot_id').references(() => timetableSlots.id, { onDelete: 'set null' }),
+    topic: text('topic').notNull(),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    durationMin: integer('duration_min').notNull(),
+    externalId: text('external_id').notNull(),
+    joinUrl: text('join_url').notNull(),
+    hostUrl: text('host_url'),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('class_meetings_slot_idx').on(t.slotId, t.startsAt)],
 );

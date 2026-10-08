@@ -18,6 +18,8 @@ const ALLOWED = [
   /^\/v1\/audit\/export(\?[\w.*:%=&-]{0,500})?$/,
   new RegExp(`^/v1/analytics/custom-reports/${UUID}/export\\?format=csv$`, 'i'),
   new RegExp(`^/v1/alumni/donations/${UUID}/receipt$`, 'i'),
+  // The proof a guardian attached to a bank-transfer payment.
+  new RegExp(`^/v1/fees/bank-transfers/${UUID}/proof$`, 'i'),
   new RegExp(`^/v1/obe/programs/${UUID}/report\\.(csv|pdf)\\?academicYearId=${UUID}(&framework=(nba|naac))?$`, 'i'),
 ];
 
