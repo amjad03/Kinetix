@@ -1,16 +1,18 @@
+'use client';
+
 import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { MiniBar } from '@/components/Bars';
-import { getI18n } from '@/i18n/server';
+import { useI18n } from '@/i18n/client';
 import { formatPercent, TONE_COLOR, toneOf, type THRESHOLDS } from '@/lib/department';
 
 /**
  * A percentage for a table cell, with a small bar; low values are red with an icon, so they read
  * without colour too. `detail` is a second line ("12 of 15"). `compact` narrows the bar for wide tables.
  */
-export async function Rate({
+export function Rate({
   value,
   kind,
   detail,
@@ -23,8 +25,8 @@ export async function Rate({
   testId?: string;
   compact?: boolean;
 }) {
+  const { t } = useI18n();
   const tone = toneOf(value, kind);
-  const { t } = await getI18n();
   if (tone === 'none')
     return (
       <Typography variant="body2" color="text.secondary" data-testid={testId} data-tone="none">
