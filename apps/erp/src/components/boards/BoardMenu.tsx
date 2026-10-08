@@ -16,8 +16,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { newEnrollmentCode, renameBoard } from '@/app/(dashboard)/boards/actions';
 import type { CreatedDevice } from '@/lib/types';
 import { useI18n } from '@/i18n/client';
@@ -105,7 +105,9 @@ export function BoardMenu({ id, name, enrolled, timeZone }: { id: string; name: 
         >
           <DialogTitle>{t('boards.rename.title')}</DialogTitle>
           <DialogContent>
-            <TextField autoFocus fullWidth label={t('boards.rename.name')} value={value} onChange={(e) => setValue(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} sx={{ mt: 1 }} />
+            <FormField label={t('boards.rename.name')}>
+              <TextInput autoFocus fullWidth value={value} onChange={(e) => setValue(e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} sx={{ mt: 1 }} />
+            </FormField>
             {error && (
               <Alert severity="error" sx={{ mt: 2 }}>
                 {error}

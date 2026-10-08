@@ -6,7 +6,7 @@ engagement analytics.
 ## 1. Screen sharing
 
 Video is WebRTC between the sender and the board. The API only relays signalling over the `/realtime`
-namespace (`CastGateway`, `services/api/src/cast`) and keeps `cast_sessions` rows (migration 0087) and audit entries.
+namespace (`CastGateway`, `services/api/src/cast`) and keeps `cast_sessions` rows (migration 0088) and audit entries.
 
 Flow:
 
@@ -44,7 +44,7 @@ N hours (picker: 1 to 72 h, default 4; `GET /v1/devices/fleet?hours=`).
 
 Boards report with `POST /v1/devices/me/health` (device or board token) on connect and every 5 minutes
 (`apps/board/lib/core/fleet`). Remote actions (`POST /v1/devices/:id/actions`) are stored in `device_actions`
-(migration 0086), audited as `device.action.<type>`, and sent as `device.action`; an offline board gets them
+(migration 0087), audited as `device.action.<type>`, and sent as `device.action`; an offline board gets them
 queued for 24 hours and asks with `device.actions.pull` when it connects. The board answers `device.action.ack`.
 
 | Action | Effect |

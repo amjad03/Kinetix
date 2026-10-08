@@ -4,9 +4,9 @@ import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { docDownload } from '@/lib/documents';
 
@@ -24,13 +24,15 @@ export function IdCardsDesk({ classes, canStudents }: { classes: { id: string; n
         </Typography>
         {canStudents ? (
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            <TextField select size="small" label={t('doc.class')} value={sectionId} onChange={(e) => setSectionId(e.target.value)} sx={{ minWidth: 240 }}>
-              {classes.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            <FormField label={t('doc.class')}>
+              <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)} sx={{ minWidth: 240 }}>
+                {classes.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
             <Button variant="contained" startIcon={<BadgeOutlined />} disabled={!sectionId} href={docDownload.students(sectionId || 'none')} target="_blank">
               {t('doc.id.open')}
             </Button>

@@ -1,17 +1,10 @@
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { getI18n } from '@/i18n/server';
 import type { TFunction } from '@/i18n/translate';
-import type { MessageKey } from '@/i18n/messages';
-import { SegmentBar } from '@/components/Bars';
-import { TableFrame } from '@/components/DataTable';
+import { AI_COLORS, AiUsageTable } from '@/components/ai/AiUsageTable';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -24,10 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const n = (v: number) => v.toLocaleString('en-IN');
-const COLORS = { answered: 'kx.success', blocked: 'kx.live', failed: 'error.main' };
 
-const TASKS = ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize'];
-const taskLabel = (task: string, fallback: string, t: TFunction) => (TASKS.includes(task) ? t(`ai.task.${task}` as MessageKey) : fallback);
+
 
 function Legend({ t }: { t: TFunction }) {
   return (
@@ -40,7 +31,7 @@ function Legend({ t }: { t: TFunction }) {
         ] as const
       ).map(([k, label]) => (
         <Box key={k} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-          <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: COLORS[k] }} />
+          <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: AI_COLORS[k] }} />
           <Typography variant="caption">{label}</Typography>
         </Box>
       ))}
@@ -86,51 +77,7 @@ export default async function AiUsagePage() {
 
           <SectionTitle>{t('ai.byTask')}</SectionTitle>
           <Legend t={t} />
-          <TableFrame testId="ai-usage-table">
-            <Table sx={{ minWidth: 680 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('ai.col.task')}</TableCell>
-                  <TableCell align="right">{t('ai.col.requests')}</TableCell>
-                  <TableCell sx={{ width: '28%' }}>{t('ai.col.outcome')}</TableCell>
-                  <TableCell align="right">{t('ai.col.answered')}</TableCell>
-                  <TableCell align="right">{t('ai.col.blocked')}</TableCell>
-                  <TableCell align="right">{t('ai.col.failed')}</TableCell>
-                  <TableCell align="right">{t('ai.col.tokens')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {s!.tasks.map((r) => (
-                  <TableRow key={r.task} data-testid="ai-task-row">
-                    <TableCell>
-                      <Typography variant="subtitle2">{taskLabel(r.task, r.label, t)}</Typography>
-                    </TableCell>
-                    <TableCell align="right">{n(r.requests)}</TableCell>
-                    <TableCell>
-                      <SegmentBar
-                        label={t('ai.bar', { answered: r.answered, blocked: r.blocked, failed: r.failed })}
-                        parts={[
-                          { value: r.answered, color: COLORS.answered },
-                          { value: r.blocked, color: COLORS.blocked },
-                          { value: r.failed, color: COLORS.failed },
-                        ]}
-                      />
-                    </TableCell>
-                    <TableCell align="right">{n(r.answered)}</TableCell>
-                    <TableCell align="right" sx={{ color: r.blocked ? 'text.primary' : 'text.secondary' }}>
-                      {n(r.blocked)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ color: r.failed ? 'error.main' : 'text.secondary' }}>
-                      {n(r.failed)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                      {n(r.tokens)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableFrame>
+          <AiUsageTable tasks={s!.tasks} />
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
             {t('ai.tokensNote')}
           </Typography>

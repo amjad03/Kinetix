@@ -7,19 +7,14 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import FilterAltOffOutlined from '@mui/icons-material/FilterAltOffOutlined';
 import Button from '@mui/material/Button';
 import { useMemo, useState } from 'react';
+import { DataTable } from '@/components/ui';
 import { hhmm } from '@/lib/dates';
 import type { ClassRow, ClassStatus } from '@/lib/types';
 import { AttendanceSummary } from './ClassTimeline';
-import { TableFrame } from './DataTable';
 import { EmptyState } from './States';
 import { STATUS_ORDER } from '@/lib/status';
 import { useI18n } from '@/i18n/client';
@@ -112,47 +107,27 @@ export function ClassesTable({ classes, initialStatus }: { classes: ClassRow[]; 
           }
         />
       ) : (
-        <TableFrame testId="classes-table">
-          <Table sx={{ minWidth: 860 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('classes.col.time')}</TableCell>
-                <TableCell>{t('classes.col.class')}</TableCell>
-                <TableCell>{t('classes.col.teacher')}</TableCell>
-                <TableCell>{t('classes.col.room')}</TableCell>
-                <TableCell>{t('classes.col.board')}</TableCell>
-                <TableCell>{t('classes.col.attendance')}</TableCell>
-                <TableCell>{t('classes.col.status')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((c) => (
-                <TableRow key={c.id} hover data-status={c.status}>
-                  <TableCell sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                    {hhmm(c.startsAt)}–{hhmm(c.endsAt)}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2">{c.subject.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {c.section.displayName} · {c.subject.code}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{c.teacher.fullName}</TableCell>
-                  <TableCell>{c.room ?? '—'}</TableCell>
-                  <TableCell sx={{ color: c.board ? 'text.primary' : 'text.secondary' }}>{c.board ?? '—'}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" component="span">
-                      <AttendanceSummary c={c} />
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <StatusChip status={c.status} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="classes-table"
+          label={t('nav.classes')}
+          rows={rows}
+          rowId={(c) => c.id}
+          exportName="classes"
+          columns={[
+            { id: 'c0', header: t('classes.col.time'), rowHeader: true, sort: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}`, cell: (c) => `${hhmm(c.startsAt)}–${hhmm(c.endsAt)}` },
+            { id: 'c1', header: t('classes.col.class'), sort: (c) => c.subject.name, csv: (c) => `${c.subject.name} (${c.section.displayName} · ${c.subject.code})`, cell: (c) => (<><Typography variant="subtitle2">{c.subject.name}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {c.section.displayName} · {c.subject.code}
+                              </Typography></>) },
+            { id: 'c2', header: t('classes.col.teacher'), sort: (c) => c.teacher.fullName, cell: (c) => c.teacher.fullName },
+            { id: 'c3', header: t('classes.col.room'), sort: (c) => c.room ?? '', cell: (c) => c.room ?? '—' },
+            { id: 'c4', header: t('classes.col.board'), sort: (c) => c.board ?? '', cell: (c) => c.board ?? '—' },
+            { id: 'c5', header: t('classes.col.attendance'), csv: false, cell: (c) => (<><Typography variant="body2" component="span">
+                                <AttendanceSummary c={c} />
+                              </Typography></>) },
+            { id: 'c6', header: t('classes.col.status'), sort: (c) => c.status, cell: (c) => (<><StatusChip status={c.status} /></>) },
+          ]}
+        />
       )}
       {filtered && rows.length > 0 && (
         <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>

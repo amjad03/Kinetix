@@ -30,7 +30,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addVideo, getMine, removeVideo, reorderVideos, shareVideo } from '@/app/(dashboard)/topic-videos/actions';
-import { StatusPill } from '@/components/ui';
+import { FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { move, thumbnail, watchUrl, youtubeId } from '@/lib/concept-videos';
 import { canRequestShare, countsByTopic, sourceLabel, splitByScope, statusLabel } from '@/lib/topic-videos';
@@ -109,16 +109,22 @@ function AddDialog({ open, admin, classes, defaultLanguage, onClose, onAdd }: { 
       <DialogTitle>{t('tv.addVideo')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField autoFocus label={t('tv.link')} value={url} onChange={(e) => setUrl(e.target.value)} helperText={url && !id ? t('tv.notALink') : t('tv.linkHelp')} error={!!url && !id} fullWidth />
+          <FormField label={t('tv.link')}>
+            <TextInput autoFocus value={url} onChange={(e) => setUrl(e.target.value)} helperText={url && !id ? t('tv.notALink') : t('tv.linkHelp')} error={!!url && !id} fullWidth />
+          </FormField>
           {id && <Box component="img" src={thumbnail(id)} alt="" referrerPolicy="no-referrer" sx={{ width: 160, aspectRatio: '16 / 9', borderRadius: '8px' }} />}
-          <TextField label={t('tv.titleOptional')} value={title} onChange={(e) => setTitle(e.target.value)} fullWidth slotProps={{ htmlInput: { maxLength: 200 } }} />
-          <TextField select label={t('tv.language')} value={language} onChange={(e) => setLanguage(e.target.value as VideoLanguage)}>
-            {LANGS.map((l) => (
-              <MenuItem key={l} value={l}>
-                {t(LANG_LABEL[l])}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormField label={t('tv.titleOptional')}>
+            <TextInput value={title} onChange={(e) => setTitle(e.target.value)} fullWidth slotProps={{ htmlInput: { maxLength: 200 } }} />
+          </FormField>
+          <FormField label={t('tv.language')}>
+            <TextInput select value={language} onChange={(e) => setLanguage(e.target.value as VideoLanguage)}>
+              {LANGS.map((l) => (
+                <MenuItem key={l} value={l}>
+                  {t(LANG_LABEL[l])}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
           {!admin && (
             <Box>
               <Typography variant="subtitle2">{t('tv.classes')}</Typography>

@@ -327,6 +327,13 @@ describe('transport, hostel, canteen, inventory and assets', () => {
       const d = (await http().get(`/v1/assets/by-tag/AST-0001`).set(as('store_keeper')).expect(200)).body;
       expect(d.depreciation.map((r: { depreciationPaise: number }) => r.depreciationPaise)).toEqual(Array(5).fill(9_000_00));
       expect(d.depreciation[4].bookValuePaise).toBe(5_000_00);
+      // The tag's QR is drawn as SVG on the detail, and the tag sheet is a PDF with one QR per tag.
+      expect(d.qrSvg).toMatch(/^<svg [^>]*viewBox="0 0 \d+ \d+"[^>]*><rect [^>]*\/><path d="M/);
+      const sheet = await http().get(`/v1/assets/tags.pdf?ids=${a.id},${w.id}`).set(as('store_keeper')).buffer(true).parse((res, cb) => { const c: Buffer[] = []; res.on('data', (x: Buffer) => c.push(x)); res.on('end', () => cb(null, Buffer.concat(c))); }).expect(200);
+      expect(sheet.headers['content-type']).toContain('application/pdf');
+      expect((sheet.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+      await http().get('/v1/assets/tags.pdf?ids=nope').set(as('store_keeper')).expect(400);
+      await http().get('/v1/assets/tags.pdf').set(as('teacher')).expect(403);
       const wd = (await http().get(`/v1/assets/${w.id}`).set(as('store_keeper')).expect(200)).body;
       expect(wd.depreciation[0]).toMatchObject({ depreciationPaise: 20_000_00, bookValuePaise: 30_000_00 });
 

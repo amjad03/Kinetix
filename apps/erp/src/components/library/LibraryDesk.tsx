@@ -21,11 +21,6 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -33,9 +28,8 @@ import type { Theme } from '@mui/material/styles';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
-import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
-import { StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { addDays } from '@/lib/dates';
 import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, LOAN_DAYS } from '@/lib/library';
@@ -224,56 +218,84 @@ function Loans({ loans, overdue, today, onReturn }: { loans: LibraryLoan[]; over
       ) : (
         <>
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <TableFrame testId="loans-table">
-              <Table sx={{ minWidth: 860 }} size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('lib.col.book')}</TableCell>
-                    <TableCell>{t('lib.col.student')}</TableCell>
-                    <TableCell>{t('lib.col.issued')}</TableCell>
-                    <TableCell>{t('lib.col.due')}</TableCell>
-                    <TableCell align="right">{t('lib.col.fineToday')}</TableCell>
-                    <TableCell aria-label={t('lib.col.actions')} />
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((l) => {
+            <DataTable
+              testId="loans-table"
+              label={t('nav.library')}
+              rows={rows}
+              rowId={(l) => l.id}
+              exportName="library-loans"
+              rowTone={(l) => (l.overdue ? 'danger' : undefined)}
+              rowAttrs={(l) => ({ 'data-testid': 'loan-row', 'data-overdue': l.overdue ? 'true' : undefined })}
+              columns={[
+                {
+                  id: 'book',
+                  header: t('lib.col.book'),
+                  rowHeader: true,
+                  sort: (l) => l.book.title,
+                  csv: (l) => [l.book.title, l.book.author, l.book.callNo].filter(Boolean).join(' · '),
+                  cell: (l) => (
+                    <>
+                      <Typography variant="subtitle2">{l.book.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {[l.book.author, l.book.callNo].filter(Boolean).join(' · ')}
+                      </Typography>
+                    </>
+                  ),
+                },
+                {
+                  id: 'student',
+                  header: t('lib.col.student'),
+                  sort: (l) => l.student.fullName,
+                  csv: (l) => [l.student.fullName, l.student.rollNo, l.className].filter(Boolean).join(' · '),
+                  cell: (l) => (
+                    <>
+                      <Typography variant="body2">{l.student.fullName}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {[l.student.rollNo, l.className].filter(Boolean).join(' · ')}
+                      </Typography>
+                    </>
+                  ),
+                },
+                { id: 'issued', header: t('lib.col.issued'), sort: (l) => l.issuedAt, csv: (l) => l.issuedAt.slice(0, 10), cell: (l) => <Box sx={{ whiteSpace: 'nowrap' }}>{fmt.dateTime(l.issuedAt, undefined, false)}</Box> },
+                {
+                  id: 'due',
+                  header: t('lib.col.due'),
+                  sort: (l) => l.dueOn,
+                  cell: (l) => (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <DueText loan={l} today={today} />
+                      {l.overdue && <OverdueChip />}
+                    </Box>
+                  ),
+                },
+                {
+                  id: 'fine',
+                  header: t('lib.col.fineToday'),
+                  align: 'right',
+                  sort: (l) => finePreview(l.dueOn, today) / 100,
+                  csv: (l) => finePreview(l.dueOn, today) / 100,
+                  cell: (l) => {
                     const fine = finePreview(l.dueOn, today);
                     return (
-                      <TableRow key={l.id} hover data-testid="loan-row" data-overdue={l.overdue || undefined} sx={{ '& td': { py: 1.25 }, ...(l.overdue ? { '& > td': { bgcolor: overdueTint } } : {}) }}>
-                        <TableCell>
-                          <Typography variant="subtitle2">{l.book.title}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {[l.book.author, l.book.callNo].filter(Boolean).join(' · ')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{l.student.fullName}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {[l.student.rollNo, l.className].filter(Boolean).join(' · ')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.dateTime(l.issuedAt, undefined, false)}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <DueText loan={l} today={today} />
-                            {l.overdue && <OverdueChip />}
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap', color: fine ? 'error.main' : 'text.secondary', fontWeight: fine ? 500 : 400 }} data-testid="loan-fine">
-                          {fine ? formatRupees(fine) : '—'}
-                        </TableCell>
-                        <TableCell align="right" sx={{ pr: 1.5 }}>
-                          <Button size="small" variant="outlined" startIcon={<AssignmentReturnOutlined />} onClick={() => onReturn(l)}>
-                            {t('lib.return')}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      <Box component="span" data-testid="loan-fine" sx={{ ...num, whiteSpace: 'nowrap', color: fine ? 'error.main' : 'text.secondary', fontWeight: fine ? 500 : 400 }}>
+                        {fine ? formatRupees(fine) : '—'}
+                      </Box>
                     );
-                  })}
-                </TableBody>
-              </Table>
-            </TableFrame>
+                  },
+                },
+                {
+                  id: 'actions',
+                  header: '',
+                  csv: false,
+                  align: 'right',
+                  cell: (l) => (
+                    <Button size="small" variant="outlined" startIcon={<AssignmentReturnOutlined />} onClick={() => onReturn(l)}>
+                      {t('lib.return')}
+                    </Button>
+                  ),
+                },
+              ]}
+            />
           </Box>
           {/* Phones: a card per loan. */}
           <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="loans-list">
@@ -335,44 +357,59 @@ function Fines({ fines, onCollect }: { fines: LibraryLoan[]; onCollect: (l: Libr
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} data-testid="fines-summary">
         {t.plural('lib.finesSummary', fines.length, { amount: formatRupees(total) })}
       </Typography>
-      <TableFrame testId="fines-table">
-        <Table sx={{ minWidth: 720 }} size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('lib.col.student')}</TableCell>
-              <TableCell>{t('lib.col.book')}</TableCell>
-              <TableCell>{t('lib.col.due')}</TableCell>
-              <TableCell>{t('lib.col.returned')}</TableCell>
-              <TableCell align="right">{t('lib.col.fine')}</TableCell>
-              <TableCell aria-label={t('lib.col.actions')} />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {fines.map((f) => (
-              <TableRow key={f.id} hover data-testid="fine-row" sx={{ '& td': { py: 1.25 } }}>
-                <TableCell>
-                  <Typography variant="subtitle2">{f.student.fullName}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {[f.student.rollNo, f.className].filter(Boolean).join(' · ')}
-                  </Typography>
-                </TableCell>
-                <TableCell>{f.book.title}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.date(f.dueOn, 'short')}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? fmt.dateTime(f.returnedAt, undefined, false) : '—'}</TableCell>
-                <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap', color: 'error.main', fontWeight: 500 }}>
-                  {formatRupees(f.finePaise)}
-                  <Box component="span" sx={{ ml: 1 }} data-status="unpaid"><StatusPill tone="danger">{t('lib.unpaid')}</StatusPill></Box>
-                </TableCell>
-                <TableCell align="right" sx={{ pr: 1.5 }}>
-                  <Button size="small" variant="outlined" onClick={() => onCollect(f)}>
-                    {t('lib.markPaid')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <DataTable
+        testId="fines-table"
+        label={t('lib.col.fine')}
+        rows={fines}
+        rowId={(f) => f.id}
+        exportName="library-fines"
+        rowAttrs={() => ({ 'data-testid': 'fine-row' })}
+        columns={[
+          {
+            id: 'student',
+            header: t('lib.col.student'),
+            rowHeader: true,
+            sort: (f) => f.student.fullName,
+            csv: (f) => [f.student.fullName, f.student.rollNo, f.className].filter(Boolean).join(' · '),
+            cell: (f) => (
+              <>
+                <Typography variant="subtitle2">{f.student.fullName}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {[f.student.rollNo, f.className].filter(Boolean).join(' · ')}
+                </Typography>
+              </>
+            ),
+          },
+          { id: 'book', header: t('lib.col.book'), sort: (f) => f.book.title, cell: (f) => f.book.title },
+          { id: 'due', header: t('lib.col.due'), sort: (f) => f.dueOn, cell: (f) => <Box sx={{ whiteSpace: 'nowrap' }}>{fmt.date(f.dueOn, 'short')}</Box> },
+          { id: 'returned', header: t('lib.col.returned'), sort: (f) => f.returnedAt ?? '', csv: (f) => f.returnedAt?.slice(0, 10) ?? '', cell: (f) => <Box sx={{ whiteSpace: 'nowrap' }}>{f.returnedAt ? fmt.dateTime(f.returnedAt, undefined, false) : '—'}</Box> },
+          {
+            id: 'fine',
+            header: t('lib.col.fine'),
+            align: 'right',
+            sort: (f) => f.finePaise / 100,
+            cell: (f) => (
+              <Box component="span" sx={{ ...num, whiteSpace: 'nowrap', color: 'error.main', fontWeight: 500 }}>
+                {formatRupees(f.finePaise)}
+                <Box component="span" sx={{ ml: 1 }} data-status="unpaid">
+                  <StatusPill tone="danger">{t('lib.unpaid')}</StatusPill>
+                </Box>
+              </Box>
+            ),
+          },
+          {
+            id: 'actions',
+            header: '',
+            csv: false,
+            align: 'right',
+            cell: (f) => (
+              <Button size="small" variant="outlined" onClick={() => onCollect(f)}>
+                {t('lib.markPaid')}
+              </Button>
+            ),
+          },
+        ]}
+      />
     </>
   );
 }
@@ -476,45 +513,46 @@ function Catalogue({ books, onIssue, onAdd }: { books: LibraryBook[]; onIssue: (
       ) : (
         <>
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <TableFrame testId="books-table">
-              <Table sx={{ minWidth: 820 }} size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('lib.col.title')}</TableCell>
-                    <TableCell>{t('lib.col.callNo')}</TableCell>
-                    <TableCell>{t('lib.col.isbn')}</TableCell>
-                    <TableCell align="right">{t('lib.col.copies')}</TableCell>
-                    <TableCell>{t('lib.col.availability')}</TableCell>
-                    <TableCell aria-label={t('lib.col.actions')} />
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((b) => (
-                    <TableRow key={b.id} hover data-testid="book-row" sx={{ '& td': { py: 1.25 } }}>
-                      <TableCell>
-                        <Typography variant="subtitle2">{b.title}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {b.author || t('lib.noAuthor')}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.8125rem' }}>{b.callNo ?? '—'}</TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap', color: b.isbn ? 'text.primary' : 'text.secondary' }}>{b.isbn ?? '—'}</TableCell>
-                      <TableCell align="right" sx={num}>
-                        {b.copies}
-                      </TableCell>
-                      <TableCell>
-                        <Availability book={b} />
-                      </TableCell>
-                      <TableCell align="right" sx={{ pr: 1.5 }}>
-                        <Button size="small" onClick={() => onIssue(b)} disabled={availableCopies(b) === 0} aria-label={t('lib.issueTitle', { title: b.title })}>
-                          {t('lib.issue')}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableFrame>
+            <DataTable
+              testId="books-table"
+              label={t('nav.library')}
+              rows={rows}
+              rowId={(b) => b.id}
+              exportName="library-books"
+              rowAttrs={() => ({ 'data-testid': 'book-row' })}
+              columns={[
+                {
+                  id: 'title',
+                  header: t('lib.col.title'),
+                  rowHeader: true,
+                  sort: (b) => b.title,
+                  csv: (b) => (b.author ? `${b.title} (${b.author})` : b.title),
+                  cell: (b) => (
+                    <>
+                      <Typography variant="subtitle2">{b.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {b.author || t('lib.noAuthor')}
+                      </Typography>
+                    </>
+                  ),
+                },
+                { id: 'callNo', header: t('lib.col.callNo'), sort: (b) => b.callNo ?? '', cell: (b) => <Box sx={{ whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.8125rem' }}>{b.callNo ?? '—'}</Box> },
+                { id: 'isbn', header: t('lib.col.isbn'), sort: (b) => b.isbn ?? '', cell: (b) => <Box sx={{ whiteSpace: 'nowrap', color: b.isbn ? 'text.primary' : 'text.secondary' }}>{b.isbn ?? '—'}</Box> },
+                { id: 'copies', header: t('lib.col.copies'), align: 'right', sort: (b) => b.copies, cell: (b) => b.copies },
+                { id: 'availability', header: t('lib.col.availability'), sort: (b) => availableCopies(b), cell: (b) => <Availability book={b} /> },
+                {
+                  id: 'actions',
+                  header: '',
+                  csv: false,
+                  align: 'right',
+                  cell: (b) => (
+                    <Button size="small" onClick={() => onIssue(b)} disabled={availableCopies(b) === 0} aria-label={t('lib.issueTitle', { title: b.title })}>
+                      {t('lib.issue')}
+                    </Button>
+                  ),
+                },
+              ]}
+            />
           </Box>
           <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="books-list">
             {rows.map((b) => (
@@ -628,7 +666,7 @@ function IssueDialog({
                   </Typography>
                 </Box>
               )}
-              renderInput={(params) => <TextField {...params} label={t('lib.issue.book')} required placeholder={t('lib.issue.bookPlaceholder')} />}
+              renderInput={(params) => <FormField label={t('lib.issue.book')} required><TextInput {...params} required placeholder={t('lib.issue.bookPlaceholder')} /></FormField>}
               filterOptions={(opts, { inputValue }) => {
                 const s = inputValue.trim().toLowerCase();
                 return s ? opts.filter((b) => [b.title, b.author, b.callNo ?? ''].some((v) => v.toLowerCase().includes(s))) : opts;
@@ -658,30 +696,32 @@ function IssueDialog({
                 </Box>
               )}
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={!!searchError}
-                  label={t('lib.issue.student')}
-                  required
-                  placeholder={t('lib.issue.studentPlaceholder')}
-                  helperText={
-                    searchError ??
-                    (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : t('lib.issue.studentHelp'))
-                  }
-                />
+                <FormField label={t('lib.issue.student')} required>
+                  <TextInput
+                    {...params}
+                    error={!!searchError}
+                    required
+                    placeholder={t('lib.issue.studentPlaceholder')}
+                    helperText={
+                      searchError ??
+                      (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : t('lib.issue.studentHelp'))
+                    }
+                  />
+                </FormField>
               )}
               noOptionsText={searchable ? t('lib.issue.noStudent') : t('lib.issue.type2')}
             />
-            <TextField
-              label={t('lib.issue.dueOn')}
-              type="date"
-              value={dueOn}
-              onChange={(e) => setDueOn(e.target.value)}
-              required
-              helperText={dueOn >= today ? `${dueLabel(dueOn, today, t)} · ${fmt.date(dueOn, 'long')}` : t('lib.issue.passed')}
-              error={dueOn < today}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
-            />
+            <FormField label={t('lib.issue.dueOn')} required>
+              <TextInput
+                type="date"
+                value={dueOn}
+                onChange={(e) => setDueOn(e.target.value)}
+                required
+                helperText={dueOn >= today ? `${dueLabel(dueOn, today, t)} · ${fmt.date(dueOn, 'long')}` : t('lib.issue.passed')}
+                error={dueOn < today}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
+              />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -851,21 +891,30 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label={t('lib.add.bookTitle')} value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
-            <TextField label={t('lib.add.author')} value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
+            <FormField label={t('lib.add.bookTitle')} required>
+              <TextInput value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
+            </FormField>
+            <FormField label={t('lib.add.author')}>
+              <TextInput value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
+            </FormField>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField label={t('lib.add.callNo')} value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
-              <TextField
-                label={t('lib.add.copies')}
-                value={copies}
-                onChange={(e) => setCopies(e.target.value)}
-                required
-                error={!copiesOk}
-                helperText={copiesOk ? ' ' : t('lib.add.copiesRange')}
-                slotProps={{ htmlInput: { inputMode: 'numeric' } }}
-              />
+              <FormField label={t('lib.add.callNo')}>
+                <TextInput value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
+              </FormField>
+              <FormField label={t('lib.add.copies')} required>
+                <TextInput
+                  value={copies}
+                  onChange={(e) => setCopies(e.target.value)}
+                  required
+                  error={!copiesOk}
+                  helperText={copiesOk ? ' ' : t('lib.add.copiesRange')}
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              </FormField>
             </Box>
-            <TextField label={t('lib.add.isbn')} value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
+            <FormField label={t('lib.add.isbn')}>
+              <TextInput value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>

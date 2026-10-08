@@ -10,15 +10,10 @@ import Divider from '@mui/material/Divider';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useState, useTransition } from 'react';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { saveRetentionGraceDays } from '@/app/(dashboard)/settings/retention-actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -68,16 +63,16 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
             {t('retention.graceHelp')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
-            <TextField
-              size="small"
-              label={t('retention.graceLabel')}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              error={days === null}
-              helperText={days === null ? t('retention.graceProblem') : ' '}
-              sx={{ width: 260 }}
-              slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
-            />
+            <FormField label={t('retention.graceLabel')}>
+              <TextInput
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                error={days === null}
+                helperText={days === null ? t('retention.graceProblem') : ' '}
+                sx={{ width: 260 }}
+                slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
+              />
+            </FormField>
             <Button variant="contained" onClick={save} disabled={pending || days === null || days === saved} data-testid="retention-save" sx={{ mt: '2px' }}>
               {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : t('retention.save')}
             </Button>
@@ -94,30 +89,18 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
             </Typography>
           ) : (
             <Box sx={{ overflowX: 'auto' }}>
-              <Table size="small" aria-label={t('retention.overview')}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('retention.class')}</TableCell>
-                    <TableCell align="right">{t('retention.expiring')}</TableCell>
-                    <TableCell>{t('retention.next')}</TableCell>
-                    <TableCell align="right">{t('retention.kept')}</TableCell>
-                    <TableCell align="right">{t('retention.total')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {soon.map((c) => (
-                    <TableRow key={c.sectionId} data-testid="retention-class">
-                      <TableCell>{c.sectionName}</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>
-                        {fmt.number(c.expiringSoon)}
-                      </TableCell>
-                      <TableCell>{c.nextExpiresOn ? fmt.date(c.nextExpiresOn, 'short') : t('retention.none')}</TableCell>
-                      <TableCell align="right">{fmt.number(c.kept)}</TableCell>
-                      <TableCell align="right">{fmt.number(c.total)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <DataTable
+                label={t('retention.overview')}
+                rows={soon}
+                rowId={(c) => String(c.sectionId)}
+                columns={[
+                  { id: 'c0', header: t('retention.class'), rowHeader: true, sort: (c) => c.sectionName, cell: (c) => c.sectionName },
+                  { id: 'c1', header: t('retention.expiring'), align: 'right', sort: (c) => c.expiringSoon, cell: (c) => fmt.number(c.expiringSoon) },
+                  { id: 'c2', header: t('retention.next'), sort: (c) => c.nextExpiresOn ?? '', cell: (c) => c.nextExpiresOn ? fmt.date(c.nextExpiresOn, 'short') : t('retention.none') },
+                  { id: 'c3', header: t('retention.kept'), align: 'right', sort: (c) => c.kept, cell: (c) => fmt.number(c.kept) },
+                  { id: 'c4', header: t('retention.total'), align: 'right', sort: (c) => c.total, cell: (c) => fmt.number(c.total) },
+                ]}
+              />
             </Box>
           )}
           {overview.noTerm.count > 0 && (

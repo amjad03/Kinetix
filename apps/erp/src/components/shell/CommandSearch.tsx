@@ -1,6 +1,11 @@
 'use client';
 
+import DescriptionOutlined from '@mui/icons-material/DescriptionOutlined';
 import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
+import AssessmentOutlined from '@mui/icons-material/AssessmentOutlined';
+import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
+import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
+import PlayCircleOutlined from '@mui/icons-material/PlayCircleOutlined';
 import KeyboardReturn from '@mui/icons-material/KeyboardReturn';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import Box from '@mui/material/Box';
@@ -10,8 +15,10 @@ import InputBase from '@mui/material/InputBase';
 import Typography from '@mui/material/Typography';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/client';
+import { groupHits, safeHitUrl } from '@/lib/search';
+import type { SearchHit } from '@/lib/insights';
 import { matchesQuery } from '@/lib/table';
 import type { NavGroup } from '@/lib/nav';
 import { NAV_ICONS } from './icons';
@@ -22,20 +29,52 @@ interface Hit {
   label: string;
   hint: string;
   icon: SvgIconComponent;
+  /** The heading it sits under. */
+  group: string;
 }
+
+const TYPE_ICONS: Record<SearchHit['type'], SvgIconComponent> = { students: GroupsOutlined, staff: BadgeOutlined, courses: MenuBookOutlined, topics: PlayCircleOutlined, documents: DescriptionOutlined, reports: AssessmentOutlined };
 
 /**
  * Global search: a field in the top bar that opens a command palette (also Ctrl/⌘ K). It finds any
- * page the person may open, and offers to search students for what they typed. Arrow keys move,
- * Enter opens, Escape closes. The list is a listbox with aria-activedescendant.
+ * page the person may open, and, from two letters on, asks the search API (GET /v1/search through
+ * /api/search) for students, staff, courses, topics, documents and reports. The API scopes those by
+ * role, so the palette shows only what the person may see, in groups. Arrow keys move, Enter opens,
+ * Escape closes. The list is a listbox with aria-activedescendant.
  */
-export function CommandSearch({ groups, canSearchStudents }: { groups: NavGroup[]; canSearchStudents: boolean }) {
+export function CommandSearch({ groups }: { groups: NavGroup[] }) {
   const { t } = useI18n();
   const router = useRouter();
   const id = useId();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
+  const [found, setFound] = useState<SearchHit[]>([]);
+  const [loading, setLoading] = useState(false);
+  const term = q.trim();
+
+  useEffect(() => {
+    if (!open || term.length < 2) return;
+    const ctl = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`, { signal: ctl.signal });
+        if (res.status === 401) return router.refresh();
+        const body = (await res.json()) as { hits?: SearchHit[] };
+        setFound(body.hits ?? []);
+      } catch {
+        /* aborted or offline: pages still work */
+      } finally {
+        if (!ctl.signal.aborted) setLoading(false);
+      }
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      ctl.abort();
+      setLoading(false);
+    };
+  }, [open, term, router]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -49,12 +88,17 @@ export function CommandSearch({ groups, canSearchStudents }: { groups: NavGroup[
   }, []);
 
   const hits = useMemo<Hit[]>(() => {
-    const pages = groups.flatMap((g) => g.items.map((i) => ({ key: i.href, href: i.href, label: t(i.label), hint: t(g.label), icon: NAV_ICONS[i.icon] })));
-    const found = q.trim() ? pages.filter((p) => matchesQuery(`${p.label} ${p.hint}`, q)) : pages.slice(0, 8);
-    const term = q.trim();
-    const extra: Hit[] = canSearchStudents && term ? [{ key: 'students-search', href: `/students?q=${encodeURIComponent(term.slice(0, 60))}`, label: t('shell.searchStudents', { q: term }), hint: t('nav.students'), icon: GroupsOutlined }] : [];
-    return [...extra, ...found];
-  }, [groups, q, t, canSearchStudents]);
+    const pageGroup = t('shell.searchPages');
+    const pages = groups.flatMap((g) => g.items.map((i) => ({ key: i.href, href: i.href, label: t(i.label), hint: t(g.label), icon: NAV_ICONS[i.icon], group: pageGroup })));
+    const matched = term ? pages.filter((p) => matchesQuery(`${p.label} ${p.hint}`, term)) : pages.slice(0, 8);
+    const records: Hit[] = groupHits(term.length >= 2 && open ? found : []).flatMap((g) =>
+      g.hits.flatMap((h) => {
+        const href = safeHitUrl(h.url);
+        return href ? [{ key: `${h.type}:${h.id}`, href, label: h.title, hint: h.subtitle, icon: TYPE_ICONS[h.type], group: t(`search.type.${h.type}`) }] : [];
+      }),
+    );
+    return [...records, ...matched];
+  }, [groups, term, t, found, open]);
 
   const close = () => {
     setOpen(false);
@@ -77,7 +121,7 @@ export function CommandSearch({ groups, canSearchStudents }: { groups: NavGroup[
       >
         <SearchOutlined fontSize="small" />
         <Typography component="span" noWrap sx={{ flex: 1, textAlign: 'left', fontSize: '0.875rem' }}>
-          {t('shell.searchPlaceholder')}
+          {t('search.placeholder')}
         </Typography>
         <Box component="kbd" sx={{ display: { xs: 'none', md: 'inline-block' }, fontFamily: 'inherit', fontSize: '0.6875rem', px: 0.75, py: 0.25, borderRadius: '6px', border: 1, borderColor: 'm3.outlineVariant', bgcolor: 'kx.pane' }}>
           Ctrl K
@@ -90,7 +134,7 @@ export function CommandSearch({ groups, canSearchStudents }: { groups: NavGroup[
             autoFocus
             fullWidth
             value={q}
-            placeholder={t('shell.searchPlaceholder')}
+            placeholder={t('search.placeholder')}
             onChange={(e) => {
               setQ(e.target.value);
               setActive(0);
@@ -109,15 +153,20 @@ export function CommandSearch({ groups, canSearchStudents }: { groups: NavGroup[
         <Box component="ul" role="listbox" id={`${id}-list`} aria-label={t('shell.searchResults')} sx={{ listStyle: 'none', m: 0, p: 1, maxHeight: 360, overflowY: 'auto' }}>
           {hits.length === 0 && (
             <Typography role="status" variant="body2" color="text.secondary" sx={{ p: 2 }}>
-              {t('shell.searchNone')}
+              {loading ? t('common.loading') : t('shell.searchNone')}
             </Typography>
           )}
           {hits.map((h, i) => (
-            <Box
+            <Fragment key={h.key}>
+              {(i === 0 || hits[i - 1].group !== h.group) && (
+                <Typography component="li" role="presentation" variant="overline" sx={{ display: 'block', px: 1.5, pt: i === 0 ? 0.5 : 1.5, color: 'text.secondary', lineHeight: 2 }}>
+                  {h.group}
+                </Typography>
+              )}
+              <Box
               component="li"
               role="option"
               id={`${id}-${i}`}
-              key={h.key}
               aria-selected={i === active}
               onMouseMove={() => setActive(i)}
               onClick={() => go(h)}
@@ -131,7 +180,8 @@ export function CommandSearch({ groups, canSearchStudents }: { groups: NavGroup[
                 {h.hint}
               </Typography>
               {i === active && <KeyboardReturn fontSize="small" aria-hidden />}
-            </Box>
+              </Box>
+            </Fragment>
           ))}
         </Box>
       </Dialog>

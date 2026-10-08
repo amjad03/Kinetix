@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import type { RoleName } from '../auth/principal.js';
 import type { Tx } from '../db/db.service.js';
 import { classroomAnalytics, drilldown, institutionKpis, LEVELS, rows, scopeSql, type Cell, type Level, type Metric, type Range, type Row, type Scope } from './queries.js';
+import { placementOffersSql, researchOutputsSql } from './sources.js';
 
 export type ColumnKind = 'text' | 'int' | 'percent' | 'money' | 'date';
 export interface Column {
@@ -170,7 +171,7 @@ export const REPORTS: ReportDef[] = [
       return {
         columns: [{ key: 'offered_on', label: 'Offered on', kind: 'date' }, { key: 'student', label: 'Student' }, { key: 'section', label: 'Class' }, { key: 'company', label: 'Company' }, { key: 'role', label: 'Role' }, { key: 'package_paise', label: 'Package (yearly)', kind: 'money' }, { key: 'status', label: 'Status' }],
         rows: await rows(tx, sql`select to_char(p.offered_on, 'YYYY-MM-DD') as offered_on, s.full_name as student, sec.display_name as section, p.company, p.role, p.package_paise::float8 as package_paise, p.status
-          from placement_records p join students s on s.id = p.student_id join sections sec on sec.id = s.section_id join programs pr on pr.id = sec.program_id
+          from ${placementOffersSql} join students s on s.id = p.student_id join sections sec on sec.id = s.section_id join programs pr on pr.id = sec.program_id
           where p.offered_on between ${c.annual.from}::date and ${c.annual.to}::date ${sc} order by p.offered_on desc, p.company`),
       };
     },
@@ -186,7 +187,7 @@ export const REPORTS: ReportDef[] = [
       return {
         columns: [{ key: 'published_on', label: 'Date', kind: 'date' }, { key: 'kind', label: 'Kind' }, { key: 'title', label: 'Title' }, { key: 'venue', label: 'Venue' }, { key: 'author', label: 'Faculty' }, { key: 'grant_paise', label: 'Grant', kind: 'money' }],
         rows: await rows(tx, sql`select to_char(r.published_on, 'YYYY-MM-DD') as published_on, r.kind, r.title, r.venue, coalesce(u.full_name, '') as author, r.grant_paise::float8 as grant_paise
-          from research_outputs r left join users u on u.id = r.staff_user_id
+          from ${researchOutputsSql} left join users u on u.id = r.staff_user_id
           where r.published_on between ${c.annual.from}::date and ${c.annual.to}::date order by r.published_on desc`),
       };
     },

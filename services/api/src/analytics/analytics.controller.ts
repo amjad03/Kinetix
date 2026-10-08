@@ -8,8 +8,8 @@ import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { campuses, programs, sections, students, users } from '../db/schema.js';
-import { placementRecords, reportRuns, reportSchedules, researchOutputs } from '../db/schema-foundation.js';
+import { campuses, programs, sections } from '../db/schema.js';
+import { reportRuns, reportSchedules } from '../db/schema-foundation.js';
 import { RequireFeature } from '../flags/flags.js';
 import { FRAMEWORKS, type Framework } from './accreditation.js';
 import { reportsFor } from './catalogue.js';
@@ -19,7 +19,6 @@ import { FORMATS, FREQUENCIES, nextRun, ParamsSchema, ReportsService, type Repor
 const MGMT: RoleName[] = ['tenant_admin', 'principal'];
 const ACADEMIC: RoleName[] = [...MGMT, 'hod'];
 const FINANCE: RoleName[] = [...MGMT, 'accountant'];
-const PEOPLE: RoleName[] = [...MGMT, 'hr_manager'];
 /** Everyone who can open some report; each report then checks its own roles. */
 const ANALYTICS_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'accountant', 'hr_manager'];
 const METRIC_ROLES: Record<Metric, RoleName[]> = { enrolment: ACADEMIC, attendance: ACADEMIC, results: ACADEMIC, coverage: ACADEMIC, fees: FINANCE };
@@ -34,8 +33,6 @@ const ScheduleBody = z.object({
   recipients: z.array(z.email().max(200)).min(1).max(20),
 });
 const SchedulePatch = z.object({ active: z.boolean().optional(), frequency: z.enum(FREQUENCIES).optional(), format: z.enum(['csv', 'pdf']).optional(), recipients: z.array(z.email().max(200)).min(1).max(20).optional() }).refine((b) => Object.keys(b).length > 0, 'Nothing to change');
-const PlacementBody = z.object({ studentId: z.uuid(), company: z.string().trim().min(1).max(200), role: z.string().trim().max(200).default(''), packagePaise: z.number().int().min(0).max(100_000_000_000), offeredOn: Day, status: z.enum(['offered', 'joined', 'declined']).default('offered') });
-const ResearchBody = z.object({ staffUserId: z.uuid().nullable().default(null), kind: z.enum(['paper', 'book', 'patent', 'project', 'conference']), title: z.string().trim().min(1).max(400), venue: z.string().trim().max(300).default(''), publishedOn: Day, grantPaise: z.number().int().min(0).max(100_000_000_000).default(0) });
 
 const parseParams = (q: unknown): ReportParams => {
   const r = ParamsSchema.safeParse(q);
@@ -234,70 +231,6 @@ export class AnalyticsController {
       res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
       res.setHeader('Cache-Control', 'private, no-store');
       return new StreamableFile(out.body);
-    });
-  }
-
-  // ----- placement and research records (the sources for those KPIs) ---------------------------------------
-
-  @Get('placements')
-  @Auth('user', MGMT)
-  placements(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) =>
-      sqlRows(tx, sql`select pl.id, pl.student_id as "studentId", s.full_name as student, pl.company, pl.role, pl.package_paise::float8 as "packagePaise", to_char(pl.offered_on, 'YYYY-MM-DD') as "offeredOn", pl.status from placement_records pl join students s on s.id = pl.student_id order by pl.offered_on desc limit 500`),
-    );
-  }
-
-  @Post('placements')
-  @Auth('user', MGMT)
-  addPlacement(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(PlacementBody)) b: z.infer<typeof PlacementBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [s] = await tx.select({ id: students.id }).from(students).where(eq(students.id, b.studentId));
-      if (!s) throw new NotFoundException('Student not found');
-      const [row] = await tx.insert(placementRecords).values({ ...b, tenantId: p.tenantId, createdBy: p.userId }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'placement.recorded', subjectType: 'placement', subjectId: row.id, data: { studentId: b.studentId, company: b.company, packagePaise: b.packagePaise } });
-      return row;
-    });
-  }
-
-  @Delete('placements/:id')
-  @HttpCode(204)
-  @Auth('user', MGMT)
-  removePlacement(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const rows = await tx.delete(placementRecords).where(eq(placementRecords.id, id)).returning({ id: placementRecords.id });
-      if (!rows.length) throw new NotFoundException('Placement not found');
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'placement.removed', subjectType: 'placement', subjectId: id });
-    });
-  }
-
-  @Get('research')
-  @Auth('user', PEOPLE)
-  research(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(researchOutputs).orderBy(desc(researchOutputs.publishedOn)).limit(500));
-  }
-
-  @Post('research')
-  @Auth('user', PEOPLE)
-  addResearch(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ResearchBody)) b: z.infer<typeof ResearchBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      if (b.staffUserId) {
-        const [u] = await tx.select({ id: users.id }).from(users).where(eq(users.id, b.staffUserId));
-        if (!u) throw new NotFoundException('Staff member not found');
-      }
-      const [row] = await tx.insert(researchOutputs).values({ ...b, tenantId: p.tenantId, createdBy: p.userId }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'research.recorded', subjectType: 'research_output', subjectId: row.id, data: { kind: b.kind, title: b.title } });
-      return row;
-    });
-  }
-
-  @Delete('research/:id')
-  @HttpCode(204)
-  @Auth('user', PEOPLE)
-  removeResearch(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const rows = await tx.delete(researchOutputs).where(eq(researchOutputs.id, id)).returning({ id: researchOutputs.id });
-      if (!rows.length) throw new NotFoundException('Research output not found');
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'research.removed', subjectType: 'research_output', subjectId: id });
     });
   }
 }

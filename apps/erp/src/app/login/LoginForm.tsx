@@ -9,10 +9,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { setLanguage } from '@/app/language/actions';
 import { useI18n } from '@/i18n/client';
 import { BCP47, LANGUAGE_NAMES, LOCALES } from '@/i18n/locales';
@@ -102,7 +102,9 @@ export function LoginForm({
                 <Typography variant="body2" color="text.secondary">
                   {t('login.mfa.lead')}
                 </Typography>
-                <TextField name="code" label={t('login.mfa.code')} autoComplete="one-time-code" autoFocus required slotProps={{ htmlInput: { inputMode: 'numeric', autoCapitalize: 'none', spellCheck: false } }} />
+                <FormField label={t('login.mfa.code')} required>
+                  <TextInput name="code" autoComplete="one-time-code" autoFocus required slotProps={{ htmlInput: { inputMode: 'numeric', autoCapitalize: 'none', spellCheck: false } }} />
+                </FormField>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
                   <Button type="submit" variant="contained" disabled={pending} sx={{ minWidth: 104 }}>
                     {pending ? <CircularProgress size={20} color="inherit" aria-label={t('login.signingIn')} /> : t('login.mfa.submit')}
@@ -111,43 +113,46 @@ export function LoginForm({
               </>
             ) : (
               <>
-            <TextField
-              name="tenant"
-              label={t('login.tenant')}
-              defaultValue={state.fields?.tenant ?? defaultTenant}
-              autoComplete="organization"
-              helperText={t('login.tenantHelp')}
-              required
-              autoFocus={!defaultTenant}
-              slotProps={{ htmlInput: { autoCapitalize: 'none', spellCheck: false } }}
-            />
-            <TextField
-              name="login"
-              label={t('login.login')}
-              defaultValue={state.fields?.login ?? ''}
-              autoComplete="username"
-              required
-              autoFocus={!!defaultTenant}
-              slotProps={{ htmlInput: { autoCapitalize: 'none', spellCheck: false } }}
-            />
-            <TextField
-              name="password"
-              label={t('login.password')}
-              type={show ? 'text' : 'password'}
-              autoComplete="current-password"
-              required
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton aria-label={show ? t('login.hide') : t('login.show')} onClick={() => setShow((s) => !s)} edge="end">
-                        {show ? <VisibilityOffOutlined /> : <VisibilityOutlined />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
+            <FormField label={t('login.tenant')} required>
+              <TextInput
+                name="tenant"
+                defaultValue={state.fields?.tenant ?? defaultTenant}
+                autoComplete="organization"
+                helperText={t('login.tenantHelp')}
+                required
+                autoFocus={!defaultTenant}
+                slotProps={{ htmlInput: { autoCapitalize: 'none', spellCheck: false } }}
+              />
+            </FormField>
+            <FormField label={t('login.login')} required>
+              <TextInput
+                name="login"
+                defaultValue={state.fields?.login ?? ''}
+                autoComplete="username"
+                required
+                autoFocus={!!defaultTenant}
+                slotProps={{ htmlInput: { autoCapitalize: 'none', spellCheck: false } }}
+              />
+            </FormField>
+            <FormField label={t('login.password')} required>
+              <TextInput
+                name="password"
+                type={show ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton aria-label={show ? t('login.hide') : t('login.show')} onClick={() => setShow((s) => !s)} edge="end">
+                          {show ? <VisibilityOffOutlined /> : <VisibilityOutlined />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+            </FormField>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 2, gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 {t('login.forgot')}

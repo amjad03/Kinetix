@@ -5,7 +5,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
+import PrintOutlined from '@mui/icons-material/PrintOutlined';
 import { allocateAsset, disposeAsset, loadAsset, logMaintenance, registerAsset, returnAsset } from '@/app/(dashboard)/assets/actions';
+import { assetTagsUrl } from '@/lib/documents';
+import { DataTable, EmptyState } from '@/components/ui';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, useToast } from '@/components/ops/kit';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -14,13 +17,15 @@ import type { Asset, AssetDetail, MaintDue } from '@/lib/ops';
 
 type Dialog = 'register' | { detail: AssetDetail } | { allocate: AssetDetail } | { maintain: AssetDetail } | { dispose: AssetDetail };
 
-/** The printable label: the tag large, the name, and the text a scanner reads (`kinetix://asset/<tag>`). */
-export function AssetLabel({ a }: { a: Pick<Asset, 'tag' | 'name' | 'qr'> }) {
+/** The printable label: the tag large, the name, the QR code a scanner reads (`kinetix://asset/<tag>`) and that text beneath it. */
+export function AssetLabel({ a }: { a: Pick<AssetDetail, 'tag' | 'name' | 'qr' | 'qrSvg'> }) {
   return (
     <Box data-testid="asset-label" sx={{ border: 2, borderStyle: 'solid', borderColor: 'text.primary', borderRadius: 1, p: 2, maxWidth: 320, textAlign: 'center', '@media print': { breakInside: 'avoid' } }}>
       <Typography variant="h5" component="div" sx={{ fontWeight: 700, letterSpacing: 2 }}>{a.tag}</Typography>
       <Typography variant="body2">{a.name}</Typography>
-      <Typography variant="caption" component="div" sx={{ mt: 1, fontFamily: 'monospace', wordBreak: 'break-all' }}>{a.qr}</Typography>
+      {/* The SVG is drawn by our API from the tag alone, so it holds nothing a person typed. */}
+      <Box data-testid="asset-qr" role="img" aria-label={a.qr} sx={{ width: 160, height: 160, mx: 'auto', my: 1, '& svg': { width: '100%', height: '100%', display: 'block' } }} dangerouslySetInnerHTML={{ __html: a.qrSvg }} />
+      <Typography variant="caption" component="div" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>{a.qr}</Typography>
     </Box>
   );
 }
@@ -44,21 +49,32 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
     <>
       <Bar>
         <Button variant="contained" startIcon={<Add />} onClick={() => setDlg('register')} sx={{ mt: 3 }}>{t('as.register')}</Button>
+        <Button variant="outlined" startIcon={<PrintOutlined />} href={assetTagsUrl()} target="_blank" disabled={assets.length === 0} sx={{ mt: 3 }}>{t('as.printAllTags')}</Button>
       </Bar>
-      <Grid
-        testId="as-list"
-        empty={t('as.none')}
-        rows={assets}
-        cols={[
-          { label: t('as.tag'), cell: (a) => a.tag },
-          { label: t('ops.f.name'), cell: (a) => a.name },
-          { label: t('as.location'), cell: (a) => a.location || t('ops.none') },
-          { label: t('as.assignedTo'), cell: (a) => a.assignedTo ?? t('ops.none') },
-          { label: t('as.bookValue'), cell: (a) => fmt.rupees(a.bookValuePaise), num: true },
-          { label: t('ops.f.status'), cell: (a) => <Pill label={st(t, a.status)} /> },
-          { label: '', cell: (a) => <Button size="small" onClick={() => void open(a.id)}>{t('ops.details')}</Button> },
-        ]}
-      />
+      {assets.length === 0 ? (
+        <EmptyState dense icon={<Box component="span">·</Box>} title={t('as.none')} testId="as-list-empty" />
+      ) : (
+        <DataTable
+          testId="as-list"
+          label={t('nav.assets')}
+          rows={assets}
+          rowId={(a) => a.id}
+          selectable
+          exportName="assets"
+          bulkActions={[{ id: 'tags', label: t('as.printTags'), icon: <PrintOutlined />, onClick: (rows) => void window.open(assetTagsUrl(rows.map((r) => r.id)), '_blank') }]}
+          filters={[{ id: 'status', label: t('ops.f.status'), options: [...new Set(assets.map((a) => a.status))].map((s) => ({ value: s, label: st(t, s) })), match: (a, v) => a.status === v }]}
+          initialSort={{ id: 'tag', dir: 'asc' }}
+          columns={[
+            { id: 'tag', header: t('as.tag'), rowHeader: true, sort: (a) => a.tag, cell: (a) => a.tag },
+            { id: 'name', header: t('ops.f.name'), sort: (a) => a.name, cell: (a) => a.name },
+            { id: 'location', header: t('as.location'), hideBelow: 'md', sort: (a) => a.location, cell: (a) => a.location || t('ops.none') },
+            { id: 'assignedTo', header: t('as.assignedTo'), hideBelow: 'md', sort: (a) => a.assignedTo ?? '', cell: (a) => a.assignedTo ?? t('ops.none') },
+            { id: 'book', header: t('as.bookValue'), align: 'right', sort: (a) => a.bookValuePaise / 100, cell: (a) => fmt.rupees(a.bookValuePaise) },
+            { id: 'status', header: t('ops.f.status'), sort: (a) => st(t, a.status), cell: (a) => <Pill label={st(t, a.status)} /> },
+            { id: 'open', header: '', csv: false, align: 'right', cell: (a) => <Button size="small" onClick={() => void open(a.id)}>{t('ops.details')}</Button> },
+          ]}
+        />
+      )}
       {due.length > 0 && (
         <>
           <SectionTitle>{t('as.serviceDue')}</SectionTitle>
@@ -94,6 +110,7 @@ export function AssetsDesk({ assets, due }: { assets: Asset[]; due: MaintDue[] }
               <Typography variant="body2">{t('as.method')}: {st(t, dlg.detail.method)}{dlg.detail.method === 'wdv' && dlg.detail.wdvRatePct != null ? ` (${dlg.detail.wdvRatePct}%)` : ''}</Typography>
               <Typography variant="body2">{t('ops.f.status')}: {st(t, dlg.detail.status)}</Typography>
               <Button size="small" onClick={() => window.print()} sx={{ mt: 1 }}>{t('as.printLabel')}</Button>
+              <Button size="small" href={assetTagsUrl([dlg.detail.id])} target="_blank" sx={{ mt: 1 }}>{t('as.printTags')}</Button>
             </Box>
           </Box>
           {dlg.detail.status !== 'disposed' && (

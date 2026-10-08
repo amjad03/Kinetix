@@ -6,10 +6,10 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MfaStatus, SessionRow } from '@/lib/insights';
 import { confirmMfa, disableMfa, newBackupCodes, revokeOtherSessions, revokeSession, startMfa } from './actions';
@@ -59,7 +59,9 @@ export function SecurityPanel({ status, sessions, back }: { status: MfaStatus; s
             <Button href={setup.otpauthUri} size="small" sx={{ alignSelf: 'flex-start' }}>
               {t('security.mfa.open')}
             </Button>
-            <TextField size="small" label={t('security.mfa.code')} value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" slotProps={{ htmlInput: { inputMode: 'numeric' } }} sx={{ maxWidth: 240 }} />
+            <FormField label={t('security.mfa.code')}>
+              <TextInput value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" slotProps={{ htmlInput: { inputMode: 'numeric' } }} sx={{ maxWidth: 240 }} />
+            </FormField>
             <Button type="submit" variant="contained" disabled={pending || code.trim().length < 6} sx={{ alignSelf: 'flex-start' }}>
               {t('security.mfa.confirm')}
             </Button>
@@ -79,7 +81,9 @@ export function SecurityPanel({ status, sessions, back }: { status: MfaStatus; s
         {status.enrolled && !backup && (
           <Stack spacing={2} sx={{ maxWidth: 360 }}>
             <Typography variant="body2">{t('security.mfa.codesLeft', { n: status.backupCodesLeft })}</Typography>
-            <TextField size="small" label={t('security.mfa.code')} value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" />
+            <FormField label={t('security.mfa.code')}>
+              <TextInput value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" />
+            </FormField>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Button variant="outlined" disabled={pending || code.trim().length < 6} onClick={() => run(async () => { const r = await newBackupCodes(code); if (r.ok) setBackup(r.data.backupCodes); return r; }, () => setCode(''))}>
                 {t('security.mfa.newCodes')}

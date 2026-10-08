@@ -14,15 +14,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
 import { archiveVaultFile, classStudents, listVault } from '@/app/(dashboard)/documents/actions';
-import { Card } from '@/components/ui';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -58,26 +52,32 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
     <>
       {view}
       <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-        <TextField select size="small" label={t('doc.vault.owner')} value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }} sx={{ minWidth: 150 }}>
-          {canStudents && <MenuItem value="student">{t('doc.subject.student')}</MenuItem>}
-          {canStaff && <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>}
-        </TextField>
+        <FormField label={t('doc.vault.owner')}>
+          <TextInput select value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }} sx={{ minWidth: 150 }}>
+            {canStudents && <MenuItem value="student">{t('doc.subject.student')}</MenuItem>}
+            {canStaff && <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>}
+          </TextInput>
+        </FormField>
         {type === 'student' && (
-          <TextField select size="small" label={t('doc.class')} value={sectionId} onChange={(e) => { setSectionId(e.target.value); setOwner(null); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }} sx={{ minWidth: 220 }}>
-            {classes.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.name}
+          <FormField label={t('doc.class')}>
+            <TextInput select value={sectionId} onChange={(e) => { setSectionId(e.target.value); setOwner(null); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }} sx={{ minWidth: 220 }}>
+              {classes.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+        )}
+        <FormField label={type === 'student' ? t('doc.student') : t('doc.staffMember')}>
+          <TextInput select value={owner?.type === type ? owner.id : ''} onChange={(e) => { const p = people.find((x) => x.id === e.target.value); if (p) open({ type, id: p.id, name: p.name }); }} sx={{ minWidth: 260 }}>
+            {people.map((p) => (
+              <MenuItem key={p.id} value={p.id}>
+                {p.name}
               </MenuItem>
             ))}
-          </TextField>
-        )}
-        <TextField select size="small" label={type === 'student' ? t('doc.student') : t('doc.staffMember')} value={owner?.type === type ? owner.id : ''} onChange={(e) => { const p = people.find((x) => x.id === e.target.value); if (p) open({ type, id: p.id, name: p.name }); }} sx={{ minWidth: 260 }}>
-          {people.map((p) => (
-            <MenuItem key={p.id} value={p.id}>
-              {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
+          </TextInput>
+        </FormField>
         <Box sx={{ flex: 1 }} />
         <Button variant="contained" startIcon={<UploadFile />} disabled={!owner} onClick={() => setUploading({})}>
           {t('doc.vault.upload')}
@@ -88,44 +88,29 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
         docs.length === 0 && !pending ? (
           <EmptyState icon={<FolderOutlined />} title={t('doc.vault.empty', { name: owner.name })} />
         ) : (
-          <Card padded={false} testId="vault-docs" sx={{ overflowX: 'auto' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('doc.vault.title')}</TableCell>
-                  <TableCell>{t('doc.vault.category')}</TableCell>
-                  <TableCell>{t('doc.vault.version')}</TableCell>
-                  <TableCell>{t('doc.vault.visibility')}</TableCell>
-                  <TableCell>{t('doc.vault.expires')}</TableCell>
-                  <TableCell align="right" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {docs.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell>
-                      {d.title} <Chip size="small" label={fileSize(d.sizeBytes)} sx={{ ml: 0.5 }} />
-                    </TableCell>
-                    <TableCell>{d.category}</TableCell>
-                    <TableCell>v{d.version}</TableCell>
-                    <TableCell>{t(d.visibility === 'owner' ? 'doc.vault.vis.owner' : 'doc.vault.vis.staff')}</TableCell>
-                    <TableCell>{d.expiresOn ? formatDate(d.expiresOn, 'short', locale) : '–'}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      <Button size="small" href={docDownload.vault(d.id)}>
-                        {t('doc.vault.download')}
-                      </Button>
-                      <Button size="small" onClick={() => setUploading({ replaces: d })}>
-                        {t('doc.vault.newVersion')}
-                      </Button>
-                      <IconButton aria-label={t('doc.vault.archive')} disabled={pending} onClick={() => start(async () => { const r = await run(() => archiveVaultFile(d.id), t('hr.saved')); if (r.ok) refresh(); })}>
-                        <ArchiveOutlined />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+          <DataTable
+            testId="vault-docs"
+            label={t('doc.vault.title')}
+            rows={docs}
+            rowId={(d) => String(d.id)}
+            exportName="vault"
+            columns={[
+              { id: 'c0', header: t('doc.vault.title'), rowHeader: true, sort: (d) => d.title, cell: (d) => (<>{d.title} <Chip size="small" label={fileSize(d.sizeBytes)} sx={{ ml: 0.5 }} /></>) },
+              { id: 'c1', header: t('doc.vault.category'), sort: (d) => d.category, cell: (d) => d.category },
+              { id: 'c2', header: t('doc.vault.version'), sort: (d) => d.version, cell: (d) => `v${d.version}` },
+              { id: 'c3', header: t('doc.vault.visibility'), sort: (d) => d.visibility, cell: (d) => t(d.visibility === 'owner' ? 'doc.vault.vis.owner' : 'doc.vault.vis.staff') },
+              { id: 'c4', header: t('doc.vault.expires'), sort: (d) => d.expiresOn ?? '', cell: (d) => d.expiresOn ? formatDate(d.expiresOn, 'short', locale) : '–' },
+              { id: 'c5', header: '', align: 'right', csv: false, cell: (d) => (<><Button size="small" href={docDownload.vault(d.id)}>
+                                    {t('doc.vault.download')}
+                                  </Button>
+                                  <Button size="small" onClick={() => setUploading({ replaces: d })}>
+                                    {t('doc.vault.newVersion')}
+                                  </Button>
+                                  <IconButton aria-label={t('doc.vault.archive')} disabled={pending} onClick={() => start(async () => { const r = await run(() => archiveVaultFile(d.id), t('hr.saved')); if (r.ok) refresh(); })}>
+                                    <ArchiveOutlined />
+                                  </IconButton></>) },
+            ]}
+          />
         )
       ) : (
         <EmptyState icon={<FolderOutlined />} title={t('doc.vault.pick')} />
@@ -182,13 +167,21 @@ function UploadDialog({ owner, replaces, onClose, setError }: { owner: Owner; re
             <input hidden type="file" accept="application/pdf,image/jpeg,image/png" onChange={(e) => pick(e.target.files?.[0] ?? null)} />
           </Button>
           {problem && <Alert severity="error">{problem}</Alert>}
-          <TextField size="small" label={t('doc.vault.title')} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-          <TextField size="small" label={t('doc.vault.category')} value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} error={!!f.category && !CATEGORY.test(category)} helperText={t('doc.vault.categoryHelp')} />
-          <TextField select size="small" label={t('doc.vault.visibility')} value={f.visibility} onChange={(e) => setF({ ...f, visibility: e.target.value as 'staff' | 'owner' })}>
-            <MenuItem value="staff">{t('doc.vault.vis.staff')}</MenuItem>
-            <MenuItem value="owner">{t('doc.vault.vis.owner')}</MenuItem>
-          </TextField>
-          <TextField size="small" type="date" label={t('doc.vault.expires')} value={f.expiresOn} onChange={(e) => setF({ ...f, expiresOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+          <FormField label={t('doc.vault.title')}>
+            <TextInput value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+          </FormField>
+          <FormField label={t('doc.vault.category')}>
+            <TextInput value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} error={!!f.category && !CATEGORY.test(category)} helperText={t('doc.vault.categoryHelp')} />
+          </FormField>
+          <FormField label={t('doc.vault.visibility')}>
+            <TextInput select value={f.visibility} onChange={(e) => setF({ ...f, visibility: e.target.value as 'staff' | 'owner' })}>
+              <MenuItem value="staff">{t('doc.vault.vis.staff')}</MenuItem>
+              <MenuItem value="owner">{t('doc.vault.vis.owner')}</MenuItem>
+            </TextInput>
+          </FormField>
+          <FormField label={t('doc.vault.expires')}>
+            <TextInput type="date" value={f.expiresOn} onChange={(e) => setF({ ...f, expiresOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>

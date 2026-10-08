@@ -11,10 +11,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { createCycle } from '@/app/(dashboard)/admissions/actions';
 import { useI18n } from '@/i18n/client';
 import { DEFAULT_DOCUMENTS, DEFAULT_QUESTIONS, parseDocuments, parsePairs, parseQuestions } from '@/lib/cycle-config';
@@ -114,35 +114,63 @@ function CycleDialog({ programs, years, today, onClose }: Props & { onClose: () 
               {t('adm.cycle.help')}
             </Typography>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label={t('adm.field.name')} value={f.name} onChange={set('name')} required placeholder={t('adm.cycle.namePlaceholder')} />
+            <FormField label={t('adm.field.name')} required>
+              <TextInput value={f.name} onChange={set('name')} required placeholder={t('adm.cycle.namePlaceholder')} />
+            </FormField>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
-              <TextField select label={t('adm.field.program')} value={f.programId} onChange={set('programId')} required>
-                {programs.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select label={t('adm.cycle.year')} value={f.academicYearId} onChange={set('academicYearId')} required>
-                {years.map((y) => (
-                  <MenuItem key={y.id} value={y.id}>
-                    {y.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField label={t('adm.cycle.entryTerm')} type="number" value={f.entryTerm} onChange={set('entryTerm')} slotProps={{ htmlInput: { min: 1, max: 20 } }} />
-              <TextField label={t('adm.cycle.seats')} type="number" value={f.seats} onChange={set('seats')} required slotProps={{ htmlInput: { min: 1 } }} />
-              <TextField label={t('adm.cycle.opens')} type="date" value={f.opensOn} onChange={set('opensOn')} required slotProps={{ inputLabel: { shrink: true } }} />
-              <TextField label={t('adm.cycle.closes')} type="date" value={f.closesOn} onChange={set('closesOn')} required slotProps={{ inputLabel: { shrink: true } }} />
-              <TextField label={t('adm.cycle.fee')} value={f.fee} onChange={set('fee')} slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> } }} />
-              <TextField label={t('adm.cycle.offerDays')} type="number" value={f.offerValidDays} onChange={set('offerValidDays')} slotProps={{ htmlInput: { min: 1, max: 60 } }} />
-              <TextField label={t('adm.cycle.minAge')} type="number" value={f.minAge} onChange={set('minAge')} slotProps={{ htmlInput: { min: 0, max: 100 } }} />
+              <FormField label={t('adm.field.program')} required>
+                <TextInput select value={f.programId} onChange={set('programId')} required>
+                  {programs.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>
+                      {p.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('adm.cycle.year')} required>
+                <TextInput select value={f.academicYearId} onChange={set('academicYearId')} required>
+                  {years.map((y) => (
+                    <MenuItem key={y.id} value={y.id}>
+                      {y.label}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('adm.cycle.entryTerm')}>
+                <TextInput type="number" value={f.entryTerm} onChange={set('entryTerm')} slotProps={{ htmlInput: { min: 1, max: 20 } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.seats')} required>
+                <TextInput type="number" value={f.seats} onChange={set('seats')} required slotProps={{ htmlInput: { min: 1 } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.opens')} required>
+                <TextInput type="date" value={f.opensOn} onChange={set('opensOn')} required slotProps={{ inputLabel: { shrink: true } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.closes')} required>
+                <TextInput type="date" value={f.closesOn} onChange={set('closesOn')} required slotProps={{ inputLabel: { shrink: true } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.fee')}>
+                <TextInput value={f.fee} onChange={set('fee')} slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.offerDays')}>
+                <TextInput type="number" value={f.offerValidDays} onChange={set('offerValidDays')} slotProps={{ htmlInput: { min: 1, max: 60 } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.minAge')}>
+                <TextInput type="number" value={f.minAge} onChange={set('minAge')} slotProps={{ htmlInput: { min: 0, max: 100 } }} />
+              </FormField>
             </Box>
-            <TextField label={t('adm.cycle.questions')} helperText={t('adm.cycle.questionsHelp')} value={f.questions} onChange={set('questions')} multiline minRows={3} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
-            <TextField label={t('adm.cycle.documents')} helperText={t('adm.cycle.documentsHelp')} value={f.documents} onChange={set('documents')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+            <FormField label={t('adm.cycle.questions')}>
+              <TextInput helperText={t('adm.cycle.questionsHelp')} value={f.questions} onChange={set('questions')} multiline minRows={3} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+            </FormField>
+            <FormField label={t('adm.cycle.documents')}>
+              <TextInput helperText={t('adm.cycle.documentsHelp')} value={f.documents} onChange={set('documents')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+            </FormField>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-              <TextField label={t('adm.cycle.minimums')} helperText={t('adm.cycle.minimumsHelp')} value={f.minimums} onChange={set('minimums')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
-              <TextField label={t('adm.cycle.merit')} helperText={t('adm.cycle.meritHelp')} value={f.merit} onChange={set('merit')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+              <FormField label={t('adm.cycle.minimums')}>
+                <TextInput helperText={t('adm.cycle.minimumsHelp')} value={f.minimums} onChange={set('minimums')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+              </FormField>
+              <FormField label={t('adm.cycle.merit')}>
+                <TextInput helperText={t('adm.cycle.meritHelp')} value={f.merit} onChange={set('merit')} multiline minRows={2} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+              </FormField>
             </Box>
           </Stack>
         </DialogContent>

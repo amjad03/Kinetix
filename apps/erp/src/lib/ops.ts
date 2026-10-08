@@ -58,6 +58,8 @@ export interface IPoDetail extends IPoRow { storeId?: string; lines: { id: strin
 export interface IInvoiceRow { invoice: { id: string; invoiceNo: string; amountPaise: number; expectedPaise: number; status: string; note: string | null }; po: string; vendor: string }
 export interface Asset { id: string; tag: string; name: string; category: string; location: string; purchasedOn: string; costPaise: number; salvagePaise: number; usefulLifeYears: number; method: string; wdvRatePct: number | null; status: string; qr: string; assignedTo?: string | null; bookValuePaise: number }
 export interface AssetDetail extends Asset {
+  /** The tag's QR code as SVG, drawn by the API. */
+  qrSvg: string;
   allocations: { id: string; assignedTo: string; allocatedOn: string; returnedOn: string | null }[];
   maintenance: { id: string; kind: string; description: string; costPaise: number; doneOn: string; nextDueOn: string | null }[];
   depreciation: { year: number; depreciationPaise: number; bookValuePaise: number }[];

@@ -17,14 +17,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition, type ReactNode } from 'react';
+import { DataTable } from '@/components/ui';
 import { clearBroadcast, deliveryReport } from '@/app/(dashboard)/messages/actions';
 import { useI18n } from '@/i18n/client';
 import type { TFunction } from '@/i18n/translate';
@@ -222,24 +218,16 @@ export function SentMessages({
             </EmptyState>
           )}
           {report?.data && report.data.total > 0 && (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('msg.col.board')}</TableCell>
-                  <TableCell>{t('msg.col.displayed')}</TableCell>
-                  <TableCell>{t('msg.col.acknowledged')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {report.data.devices.map((r) => (
-                  <TableRow key={r.deviceId}>
-                    <TableCell>{r.deviceName}</TableCell>
-                    <TableCell>{r.displayedAt ? fmt.dateTime(r.displayedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>{t('msg.notYet')}{r.lastSeenAt ? '' : t('msg.offline')}</Box>}</TableCell>
-                    <TableCell>{r.acknowledgedAt ? fmt.dateTime(r.acknowledgedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              label={t('msg.col.board')}
+              rows={report.data.devices}
+              rowId={(r) => String(r.deviceId)}
+              columns={[
+                { id: 'c0', header: t('msg.col.board'), rowHeader: true, sort: (r) => r.deviceName, cell: (r) => r.deviceName },
+                { id: 'c1', header: t('msg.col.displayed'), sort: (r) => r.displayedAt ?? '', cell: (r) => (<>{r.displayedAt ? fmt.dateTime(r.displayedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>{t('msg.notYet')}{r.lastSeenAt ? '' : t('msg.offline')}</Box>}</>) },
+                { id: 'c2', header: t('msg.col.acknowledged'), sort: (r) => r.acknowledgedAt ?? '', cell: (r) => (<>{r.acknowledgedAt ? fmt.dateTime(r.acknowledgedAt, timeZone) : <Box component="span" sx={{ color: 'text.secondary' }}>—</Box>}</>) },
+              ]}
+            />
           )}
         </DialogContent>
         <DialogActions>

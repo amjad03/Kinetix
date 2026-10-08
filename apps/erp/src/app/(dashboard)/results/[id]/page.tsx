@@ -1,23 +1,18 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MiniBar } from '@/components/Bars';
-import { TableFrame } from '@/components/DataTable';
+import { MarksListTable } from '@/components/results/ResultsTables';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { MarksPanel } from '@/components/results/MarksPanel';
 import { Distribution } from '@/components/results/Distribution';
 import { PublishButton } from '@/components/results/PublishButton';
 import { PublishedChip } from '@/components/results/PublishedChip';
-import { StatGrid, StatTile, StatusPill } from '@/components/ui';
+import { StatGrid, StatTile } from '@/components/ui';
 import { ErrorState } from '@/components/States';
 import { canPublishMarks } from '@/lib/access';
 import { api, ApiError, load, requireSection } from '@/lib/api';
@@ -30,7 +25,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
 export default async function AssessmentPage({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireSection('results');
@@ -134,60 +128,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
       </Card>
 
       <SectionTitle>{t('results.marks')}</SectionTitle>
-      <TableFrame testId="marks-table">
-        <Table size="small" sx={{ minWidth: 640 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('results.col.roll')}</TableCell>
-              <TableCell>{t('results.col.student')}</TableCell>
-              <TableCell align="right">{t('results.col.marks')}</TableCell>
-              <TableCell sx={{ width: { md: '26%' } }}>{t('results.col.score')}</TableCell>
-              <TableCell>{t('results.col.remark')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {a.students.map((st) => {
-              const p = st.marks === null ? null : percent(st.marks, a.maxMarks);
-              return (
-                <TableRow key={st.id} hover data-testid="mark-row" sx={{ '& td': { py: 1 } }}>
-                  <TableCell sx={{ ...num, color: 'text.secondary', whiteSpace: 'nowrap' }}>{st.rollNo ?? '—'}</TableCell>
-                  <TableCell>{st.fullName}</TableCell>
-                  <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap' }}>
-                    {st.absent ? (
-                      <span data-status="absent"><StatusPill tone="neutral">{t('results.absent')}</StatusPill></span>
-                    ) : st.marks === null ? (
-                      <Typography variant="body2" color="text.secondary">
-                        {t('results.notEntered')}
-                      </Typography>
-                    ) : (
-                      <>
-                        <strong>{formatMarks(st.marks)}</strong>
-                        <Typography component="span" variant="body2" color="text.secondary">
-                          {' '}
-                          / {formatMarks(a.maxMarks)}
-                        </Typography>
-                      </>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {p !== null && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box sx={{ flex: 1, minWidth: 48 }}>
-                          <MiniBar value={p} color={p < 40 ? 'error.main' : 'primary.main'} label={`${p.toFixed(0)}%`} />
-                        </Box>
-                        <Typography variant="body2" sx={{ ...num, minWidth: 44, textAlign: 'right' }}>
-                          {p.toFixed(0)}%
-                        </Typography>
-                      </Box>
-                    )}
-                  </TableCell>
-                  <TableCell sx={{ color: 'text.secondary' }}>{st.remark ?? ''}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <MarksListTable rows={a.students} maxMarks={a.maxMarks} />
     </>
   );
 }

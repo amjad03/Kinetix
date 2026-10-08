@@ -30,7 +30,6 @@ import { markNotificationsRead, setAcademicYear } from '@/app/shell/actions';
 import { useI18n } from '@/i18n/client';
 import { BCP47, LANGUAGE_NAMES, LOCALES } from '@/i18n/locales';
 import type { MessageKey } from '@/i18n/messages';
-import { canSee } from '@/lib/access';
 import type { NavGroup } from '@/lib/nav';
 import type { RoleName } from '@/lib/types';
 import { initials } from '../initials';
@@ -116,7 +115,7 @@ export function TopBar({
         {school}
       </Typography>
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: { xs: 'flex-start', md: 'center' } }}>
-        <CommandSearch groups={groups} canSearchStudents={canSee(user.roles, 'students')} />
+        <CommandSearch groups={groups} />
       </Box>
 
       {current && (

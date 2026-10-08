@@ -86,6 +86,9 @@ export function DataTable<T>({
   toolbar,
   onRowClick,
   rowTone,
+  rowAttrs,
+  highlight,
+  bare,
   testId,
 }: {
   columns: Column<T>[];
@@ -111,6 +114,12 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void;
   /** Tint a row that needs attention. */
   rowTone?: (row: T) => 'warning' | 'danger' | undefined;
+  /** Marks the row a detail panel is open for. */
+  highlight?: (row: T) => boolean;
+  /** Extra attributes on a row (data-testid, data-status) for tests and styling hooks. */
+  rowAttrs?: (row: T) => Record<`data-${string}`, string | undefined>;
+  /** A short, plain list: no search or filter bar (it still sorts, and exports when `exportName` is set). */
+  bare?: boolean;
   testId?: string;
 }) {
   const { t } = useI18n();
@@ -248,7 +257,7 @@ export function DataTable<T>({
             </Button>
           )}
         </Box>
-      ) : (
+      ) : bare && !exportName ? null : (
         <Box role="search" aria-label={label} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, minHeight: 56 }}>
           <TextField
             size="small"
@@ -308,7 +317,7 @@ export function DataTable<T>({
         </Box>
       )}
 
-      <Box sx={{ overflowX: 'auto', borderTop: 1, borderColor: 'm3.outlineVariant' }}>
+      <Box sx={{ overflowX: 'auto', borderTop: bare && !exportName && nBulk === 0 ? 0 : 1, borderColor: 'm3.outlineVariant' }}>
         <Table size="small" aria-label={label} aria-rowcount={sorted.length} sx={{ '& .MuiTableRow-root:last-of-type > .MuiTableCell-body': { borderBottom: 0 } }}>
           <TableHead>
             <TableRow>
@@ -363,8 +372,9 @@ export function DataTable<T>({
                   <TableRow
                     key={id}
                     data-row
+                    {...rowAttrs?.(r)}
                     hover
-                    selected={on}
+                    selected={on || highlight?.(r) === true}
                     tabIndex={0}
                     onKeyDown={(e) => onRowKey(e, r, i)}
                     onClick={onRowClick ? () => onRowClick(r) : undefined}

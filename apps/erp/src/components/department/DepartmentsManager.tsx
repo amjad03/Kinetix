@@ -9,7 +9,6 @@ import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -21,13 +20,14 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useMemo, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { createDepartment, deleteDepartment, updateDepartment } from '@/app/(dashboard)/departments/actions';
 import { EmptyState } from '@/components/States';
+import { DataTable } from '@/components/ui';
 import { PageHeader } from '@/components/PageHeader';
 import { headCandidates, movedSubjects } from '@/lib/department';
 import type { AdminDepartment, StaffMember } from '@/lib/types';
@@ -81,39 +81,60 @@ export function DepartmentsManager({ departments, staff, subjects }: { departmen
           {t('depts.noneBody')}
         </EmptyState>
       ) : (
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
-          {departments.map((d) => (
-            <Card key={d.id} data-testid="department-card" sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="h6" component="h2" data-testid="department-name">
-                    {d.name}
-                  </Typography>
-                  <Typography variant="body2" color={d.head ? 'text.secondary' : 'error.main'} data-testid="department-head">
-                    {d.head ? t('depts.head', { name: d.head }) : t('depts.noHead')}
-                  </Typography>
+        <DataTable
+          testId="departments"
+          label={t('nav.departments')}
+          rows={departments}
+          rowId={(d) => d.id}
+          exportName="departments"
+          rowAttrs={() => ({ 'data-testid': 'department-card' })}
+          columns={[
+            {
+              id: 'name',
+              header: t('nav.departments'),
+              rowHeader: true,
+              sort: (d) => d.name,
+              cell: (d) => <span data-testid="department-name">{d.name}</span>,
+            },
+            {
+              id: 'head',
+              header: t('depts.headLabel'),
+              sort: (d) => d.head ?? '',
+              cell: (d) => (
+                <Typography variant="body2" color={d.head ? 'text.primary' : 'error.main'} data-testid="department-head">
+                  {d.head ? t('depts.head', { name: d.head }) : t('depts.noHead')}
+                </Typography>
+              ),
+            },
+            { id: 'subjects', header: t('depts.subjects'), hideBelow: 'md', sort: (d) => d.subjects.length, csv: (d) => d.subjects.map((s) => s.name).join(', '), cell: (d) => <ChipRow empty={t('depts.noSubjects')} items={d.subjects.map((s) => ({ id: s.id, label: s.name, title: s.code }))} testId="department-subjects" /> },
+            { id: 'staff', header: t('depts.staff'), hideBelow: 'lg', sort: (d) => d.staff.length, csv: (d) => d.staff.map((s) => s.fullName).join(', '), cell: (d) => <ChipRow empty={t('depts.noStaff')} items={d.staff.map((s) => ({ id: s.id, label: s.fullName }))} testId="department-staff" /> },
+            {
+              id: 'actions',
+              header: '',
+              csv: false,
+              align: 'right',
+              cell: (d) => (
+                <Box sx={{ display: 'inline-flex', whiteSpace: 'nowrap' }}>
+                  <Tooltip title={t('depts.view')}>
+                    <IconButton component={Link} href={`/department?dept=${d.id}`} aria-label={t('depts.viewName', { name: d.name })}>
+                      <InsightsOutlined />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('common.edit')}>
+                    <IconButton onClick={() => setOpen({ kind: 'edit', dept: d })} aria-label={t('depts.editName', { name: d.name })}>
+                      <EditOutlined />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('common.delete')}>
+                    <IconButton onClick={() => setOpen({ kind: 'delete', dept: d })} aria-label={t('depts.deleteName', { name: d.name })}>
+                      <DeleteOutlined />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
-                <Tooltip title={t('depts.view')}>
-                  <IconButton component={Link} href={`/department?dept=${d.id}`} aria-label={t('depts.viewName', { name: d.name })}>
-                    <InsightsOutlined />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('common.edit')}>
-                  <IconButton onClick={() => setOpen({ kind: 'edit', dept: d })} aria-label={t('depts.editName', { name: d.name })}>
-                    <EditOutlined />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('common.delete')}>
-                  <IconButton onClick={() => setOpen({ kind: 'delete', dept: d })} aria-label={t('depts.deleteName', { name: d.name })}>
-                    <DeleteOutlined />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <ChipRow label={t('depts.subjects')} empty={t('depts.noSubjects')} items={d.subjects.map((s) => ({ id: s.id, label: s.name, title: s.code }))} testId="department-subjects" />
-              <ChipRow label={t('depts.staff')} empty={t('depts.noStaff')} items={d.staff.map((s) => ({ id: s.id, label: s.fullName }))} testId="department-staff" />
-            </Card>
-          ))}
-        </Box>
+              ),
+            },
+          ]}
+        />
       )}
       {unassigned.length > 0 && departments.length > 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }} data-testid="unassigned-subjects">
@@ -129,12 +150,9 @@ export function DepartmentsManager({ departments, staff, subjects }: { departmen
   );
 }
 
-function ChipRow({ label, empty, items, testId }: { label: string; empty: string; items: { id: string; label: string; title?: string }[]; testId: string }) {
+function ChipRow({ empty, items, testId }: { empty: string; items: { id: string; label: string; title?: string }[]; testId: string }) {
   return (
     <Box data-testid={testId}>
-      <Typography variant="caption" component="h3" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.5px', mb: 0.75 }}>
-        {label}
-      </Typography>
       {items.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           {empty}
@@ -154,24 +172,25 @@ function HeadSelect({ staff, value, onChange }: { staff: StaffMember[]; value: s
   const { t } = useI18n();
   const heads = headCandidates(staff);
   return (
-    <TextField
-      select
-      label={t('depts.headLabel')}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      helperText={heads.length === 0 ? t('depts.noHods') : t('depts.onlyHods')}
-      fullWidth
-      slotProps={{ select: { 'data-testid': 'head-select' } as object }}
-    >
-      <MenuItem value="">
-        <em>{t('depts.noHeadOption')}</em>
-      </MenuItem>
-      {heads.map((s) => (
-        <MenuItem key={s.id} value={s.id}>
-          {s.fullName}
+    <FormField label={t('depts.headLabel')}>
+      <TextInput
+        select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        helperText={heads.length === 0 ? t('depts.noHods') : t('depts.onlyHods')}
+        fullWidth
+        slotProps={{ select: { 'data-testid': 'head-select' } as object }}
+      >
+        <MenuItem value="">
+          <em>{t('depts.noHeadOption')}</em>
         </MenuItem>
-      ))}
-    </TextField>
+        {heads.map((s) => (
+          <MenuItem key={s.id} value={s.id}>
+            {s.fullName}
+          </MenuItem>
+        ))}
+      </TextInput>
+    </FormField>
   );
 }
 
@@ -201,7 +220,9 @@ function CreateDialog({ staff, onClose }: { staff: StaffMember[]; onClose: (mess
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label={t('depts.name')} value={name} onChange={(e) => setName(e.target.value)} autoFocus required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} placeholder={t('depts.namePlaceholder')} />
+            <FormField label={t('depts.name')} required>
+              <TextInput value={name} onChange={(e) => setName(e.target.value)} autoFocus required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} placeholder={t('depts.namePlaceholder')} />
+            </FormField>
             <HeadSelect staff={staff} value={head} onChange={setHead} />
           </Stack>
         </DialogContent>
@@ -283,7 +304,9 @@ function EditDialog({
                 {error}
               </Alert>
             )}
-            <TextField label={t('depts.name')} value={name} onChange={(e) => setName(e.target.value)} required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} />
+            <FormField label={t('depts.name')} required>
+              <TextInput value={name} onChange={(e) => setName(e.target.value)} required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} />
+            </FormField>
             <HeadSelect staff={headOptions} value={head} onChange={setHead} />
             <Autocomplete
               multiple
@@ -309,7 +332,7 @@ function EditDialog({
                   </li>
                 );
               }}
-              renderInput={(params) => <TextField {...params} label={t('depts.subjects')} placeholder={subjectIds.length ? '' : t('depts.chooseSubjects')} />}
+              renderInput={(params) => <FormField label={t('depts.subjects')}><TextInput {...params} placeholder={subjectIds.length ? '' : t('depts.chooseSubjects')} /></FormField>}
               data-testid="subjects-select"
             />
             {moved.length > 0 && (
@@ -325,7 +348,7 @@ function EditDialog({
               onChange={(_, v) => setStaffIds(v.map((s) => s.id))}
               getOptionLabel={(s) => s.fullName}
               isOptionEqualToValue={(a, b) => a.id === b.id}
-              renderInput={(params) => <TextField {...params} label={t('depts.staff')} placeholder={staffIds.length ? '' : t('depts.chooseStaff')} />}
+              renderInput={(params) => <FormField label={t('depts.staff')}><TextInput {...params} placeholder={staffIds.length ? '' : t('depts.chooseStaff')} /></FormField>}
               data-testid="staff-select"
             />
           </Stack>

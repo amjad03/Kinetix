@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { canSee, homeFor, sectionOf } from './access';
-import { certActions, docDownload, fieldLines, fileSize, parseFieldLines, vaultFileProblem, vaultQuery } from './documents';
+import { assetTagsUrl, certActions, docDownload, fieldLines, fileSize, parseFieldLines, vaultFileProblem, vaultQuery } from './documents';
 
 describe('documents access', () => {
   it('opens Documents to the office roles only', () => {
@@ -63,5 +63,7 @@ describe('template fields', () => {
   it('builds download links', () => {
     expect(docDownload.certificate('c1')).toBe('/api/download?kind=certificate&id=c1');
     expect(docDownload.staff).toBe('/api/download?kind=id-staff');
+    expect(assetTagsUrl(['a', 'b'])).toBe('/api/download?kind=asset-tags&id=a,b');
+    expect(assetTagsUrl()).toBe('/api/download?kind=asset-tags-all');
   });
 });

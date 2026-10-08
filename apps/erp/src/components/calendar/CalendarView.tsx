@@ -34,13 +34,13 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Select from '@mui/material/Select';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '@/app/(dashboard)/calendar/actions';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState } from '@/components/States';
@@ -424,41 +424,44 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
               ))}
             </ToggleButtonGroup>
           </Box>
-          <TextField
-            label={t('cal.dialog.title')}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            autoFocus
-            error={!!show(['title', 'titleLong'])}
-            helperText={show(['title', 'titleLong']) ?? t('cal.dialog.titleHelp')}
-            slotProps={{ htmlInput: { maxLength: 200, 'data-testid': 'calendar-title' } }}
-          />
+          <FormField label={t('cal.dialog.title')} required>
+            <TextInput
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              autoFocus
+              error={!!show(['title', 'titleLong'])}
+              helperText={show(['title', 'titleLong']) ?? t('cal.dialog.titleHelp')}
+              slotProps={{ htmlInput: { maxLength: 200, 'data-testid': 'calendar-title' } }}
+            />
+          </FormField>
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <TextField
-              type="date"
-              label={t('cal.dialog.startsOn')}
-              value={startsOn}
-              onChange={(e) => {
-                const v = e.target.value;
-                setStartsOn(v);
-                if (!endsOn || endsOn < v) setEndsOn(v);
-              }}
-              required
-              error={!!show(['startsOn'])}
-              helperText={show(['startsOn']) ?? ' '}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { 'data-testid': 'calendar-starts' } }}
-            />
-            <TextField
-              type="date"
-              label={t('cal.dialog.endsOn')}
-              value={endsOn}
-              onChange={(e) => setEndsOn(e.target.value)}
-              required
-              error={!!show(['endsOn', 'range'])}
-              helperText={show(['endsOn', 'range']) ?? ' '}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startsOn || undefined, 'data-testid': 'calendar-ends' } }}
-            />
+            <FormField label={t('cal.dialog.startsOn')} required>
+              <TextInput
+                type="date"
+                value={startsOn}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setStartsOn(v);
+                  if (!endsOn || endsOn < v) setEndsOn(v);
+                }}
+                required
+                error={!!show(['startsOn'])}
+                helperText={show(['startsOn']) ?? ' '}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { 'data-testid': 'calendar-starts' } }}
+              />
+            </FormField>
+            <FormField label={t('cal.dialog.endsOn')} required>
+              <TextInput
+                type="date"
+                value={endsOn}
+                onChange={(e) => setEndsOn(e.target.value)}
+                required
+                error={!!show(['endsOn', 'range'])}
+                helperText={show(['endsOn', 'range']) ?? ' '}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startsOn || undefined, 'data-testid': 'calendar-ends' } }}
+              />
+            </FormField>
           </Box>
           <FormControl>
             <Typography variant="body2" color="text.secondary" id="cal-who">

@@ -9,9 +9,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Snackbar from '@mui/material/Snackbar';
 import Switch from '@mui/material/Switch';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useId, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { saveBoardKiosk } from '@/app/(dashboard)/settings/actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -105,30 +105,30 @@ export function KioskSection({ initial }: { initial: BoardKiosk }) {
             </Alert>
           )}
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
-            <TextField
-              size="small"
-              type="password"
-              label={k.pinSet ? t('kiosk.newPin') : t('kiosk.pinLabel')}
-              value={pin}
-              onChange={(e) => setPin(e.target.value.trim())}
-              autoComplete="new-password"
-              error={shown !== null && shown !== 'mismatch'}
-              helperText={shown && shown !== 'mismatch' ? t(`kiosk.problem.${shown}`) : t('kiosk.pinHint')}
-              sx={{ width: 220 }}
-              slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 8, 'data-testid': 'kiosk-pin' } }}
-            />
-            <TextField
-              size="small"
-              type="password"
-              label={t('kiosk.confirmPin')}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value.trim())}
-              autoComplete="new-password"
-              error={shown === 'mismatch'}
-              helperText={shown === 'mismatch' ? t('kiosk.problem.mismatch') : ' '}
-              sx={{ width: 220 }}
-              slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 8, 'data-testid': 'kiosk-pin-confirm' } }}
-            />
+            <FormField label={k.pinSet ? t('kiosk.newPin') : t('kiosk.pinLabel')}>
+              <TextInput
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.trim())}
+                autoComplete="new-password"
+                error={shown !== null && shown !== 'mismatch'}
+                helperText={shown && shown !== 'mismatch' ? t(`kiosk.problem.${shown}`) : t('kiosk.pinHint')}
+                sx={{ width: 220 }}
+                slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 8, 'data-testid': 'kiosk-pin' } }}
+              />
+            </FormField>
+            <FormField label={t('kiosk.confirmPin')}>
+              <TextInput
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value.trim())}
+                autoComplete="new-password"
+                error={shown === 'mismatch'}
+                helperText={shown === 'mismatch' ? t('kiosk.problem.mismatch') : ' '}
+                sx={{ width: 220 }}
+                slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 8, 'data-testid': 'kiosk-pin-confirm' } }}
+              />
+            </FormField>
             <Button variant="contained" onClick={savePin} disabled={pending || !typed || problem !== null} data-testid="kiosk-pin-save" sx={{ mt: '2px' }}>
               {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : k.pinSet ? t('kiosk.changePin') : t('kiosk.setPin')}
             </Button>

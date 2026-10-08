@@ -9,10 +9,10 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { changeStudentSection, changeStudentStatus, linkGuardian, unlinkGuardian } from '@/app/(dashboard)/students/actions';
 import { ReasonDialog } from '@/components/admissions/ReasonDialog';
 import { SectionTitle } from '@/components/PageHeader';
@@ -60,13 +60,15 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
           </Stack>
           {classes.length > 0 && !['transferred', 'alumni', 'dropped'].includes(s.status) && (
             <Stack direction="row" spacing={1} sx={{ mt: 2, alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
-              <TextField select size="small" label={t('stu.moveClass')} value={target} onChange={(e) => setTarget(e.target.value)} sx={{ minWidth: 220 }}>
-                {classes.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <FormField label={t('stu.moveClass')}>
+                <TextInput select value={target} onChange={(e) => setTarget(e.target.value)} sx={{ minWidth: 220 }}>
+                  {classes.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
               <Button variant="outlined" size="small" disabled={!target || pending} onClick={() => setDialog({ kind: 'section', sectionId: target })}>
                 {t('stu.moveClassGo')}
               </Button>
@@ -117,10 +119,18 @@ export function StudentActions({ student: s, canChange, canGuardians, classes }:
               {t('stu.addGuardian')}
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
-              <TextField size="small" label={t('adm.field.name')} value={g.fullName} onChange={(e) => setG({ ...g, fullName: e.target.value })} required />
-              <TextField size="small" label={t('adm.field.phone')} value={g.phone} onChange={(e) => setG({ ...g, phone: e.target.value })} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
-              <TextField size="small" label={t('adm.field.email')} value={g.email} onChange={(e) => setG({ ...g, email: e.target.value })} type="email" />
-              <TextField size="small" label={t('stu.relation')} value={g.relation} onChange={(e) => setG({ ...g, relation: e.target.value })} required />
+              <FormField label={t('adm.field.name')} required>
+                <TextInput value={g.fullName} onChange={(e) => setG({ ...g, fullName: e.target.value })} required />
+              </FormField>
+              <FormField label={t('adm.field.phone')} required>
+                <TextInput value={g.phone} onChange={(e) => setG({ ...g, phone: e.target.value })} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
+              </FormField>
+              <FormField label={t('adm.field.email')}>
+                <TextInput value={g.email} onChange={(e) => setG({ ...g, email: e.target.value })} type="email" />
+              </FormField>
+              <FormField label={t('stu.relation')} required>
+                <TextInput value={g.relation} onChange={(e) => setG({ ...g, relation: e.target.value })} required />
+              </FormField>
             </Box>
             <FormControlLabel control={<Checkbox size="small" checked={g.isPrimary} onChange={(e) => setG({ ...g, isPrimary: e.target.checked })} />} label={t('stu.makePrimary')} />
             <Box>
