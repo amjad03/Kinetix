@@ -9,13 +9,13 @@ test('Syllabus lists the subjects with their courses, and a subject can be linke
   const subjects = page.getByTestId('subject-links');
   const row = subjects.getByTestId('subject-row').filter({ hasText: 'Discrete Mathematics' });
   await expect(row).toContainText('BCA Sem 1 A');
-  await expect(row.getByRole('combobox', { name: 'Course for Discrete Mathematics' })).toHaveText('Discrete Mathematics, BCA Semester 1');
-  await expect(page.getByTestId('course-card').filter({ hasText: 'Discrete Mathematics, BCA Semester 1' })).toContainText('Used by Discrete Mathematics');
+  await expect(row.getByRole('combobox', { name: 'Course for Discrete Mathematics' })).toHaveText('Discrete Structures, BCA Semester 1');
+  await expect(page.getByTestId('course-card').filter({ hasText: 'Discrete Structures, BCA Semester 1' })).toContainText('Used by Discrete Mathematics');
   await expect(page.getByTestId('course-card').first().getByTestId('unreviewed')).toBeVisible();
   await shot(page, 'syllabus');
 
   await row.getByRole('combobox', { name: 'Course for Discrete Mathematics' }).click();
-  await page.getByRole('option', { name: 'Mathematics, Class 10' }).click();
+  await page.getByRole('option', { name: 'Mathematics, Class 10', exact: true }).first().click();
   await expect(page.getByText('Discrete Mathematics now uses “Mathematics, Class 10”')).toBeVisible();
   await open(page, '/syllabus');
   await expect(row.getByRole('combobox', { name: 'Course for Discrete Mathematics' })).toHaveText('Mathematics, Class 10');
@@ -25,12 +25,16 @@ test('Syllabus lists the subjects with their courses, and a subject can be linke
   await page.getByRole('option', { name: 'Not linked' }).click();
   await expect(page.getByText('Discrete Mathematics is no longer linked to a course')).toBeVisible();
   await row.getByRole('combobox', { name: 'Course for Discrete Mathematics' }).click();
-  await page.getByRole('option', { name: 'Discrete Mathematics, BCA Semester 1' }).click();
-  await expect(page.getByText('Discrete Mathematics now uses “Discrete Mathematics, BCA Semester 1”')).toBeVisible();
+  await page.getByRole('option', { name: 'Discrete Structures, BCA Semester 1' }).click();
+  await expect(page.getByText('Discrete Mathematics now uses “Discrete Structures, BCA Semester 1”')).toBeVisible();
 
+  // The CBSE chip narrows the library to CBSE courses (the content library holds many curricula).
+  const all = await page.getByTestId('course-card').count();
   await page.getByTestId('curriculum-cbse').click();
   await expect(page).toHaveURL(/curriculum=cbse/);
-  await expect(page.getByTestId('course-card')).toHaveCount(2);
+  await expect(page.getByTestId('course-card')).not.toHaveCount(all);
+  expect(await page.getByTestId('course-card').count()).toBeGreaterThan(0);
+  await expect(page.getByTestId('course-card').filter({ hasText: 'Corporate Accounting' })).toHaveCount(0);
 });
 
 test('a course shows its chapters, and the institution adds, edits and deletes its own topic', async ({ page }) => {

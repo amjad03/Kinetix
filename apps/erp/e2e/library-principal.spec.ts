@@ -10,8 +10,9 @@ test('the principal can open the library and find any student', async ({ page })
   await dialog.getByRole('combobox', { name: 'Student' }).fill('k');
   await expect(page.locator('.MuiAutocomplete-noOptions')).toHaveText('Type at least 2 letters');
   await dialog.getByRole('combobox', { name: 'Student' }).fill('kavya');
-  await expect(page.getByRole('option')).toHaveCount(1);
-  await expect(page.getByRole('option')).toContainText('Kavya Reddy');
-  await expect(page.getByRole('option')).toContainText('BCA Sem 1 A');
+  // Other specs (the CSV import) may have enrolled another Kavya: look for the seeded one.
+  const kavya = page.getByRole('option', { name: /Kavya Reddy/ });
+  await expect(kavya).toHaveCount(1);
+  await expect(kavya).toContainText('BCA Sem 1 A');
   await page.keyboard.press('Escape');
 });

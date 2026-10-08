@@ -34,9 +34,15 @@ export async function enterMarks(id: string, entries: { studentId: string; marks
   if (entries.length === 0 || entries.some((e) => !UUID.test(e.studentId) || (e.marks !== null && (!Number.isFinite(e.marks) || e.marks < 0)))) return { ok: false, error: t('results.entry.invalid') };
   return flow(id, 'marks', { entries: entries.map((e) => ({ studentId: e.studentId, marks: e.absent ? null : e.marks, absent: e.absent })) }, 'PUT');
 }
-export const submitMarks = (id: string) => flow(id, 'submit');
-export const verifyMarks = (id: string) => flow(id, 'verify');
-export const reopenMarks = (id: string) => flow(id, 'reopen');
+export async function submitMarks(id: string) {
+  return flow(id, 'submit');
+}
+export async function verifyMarks(id: string) {
+  return flow(id, 'verify');
+}
+export async function reopenMarks(id: string) {
+  return flow(id, 'reopen');
+}
 export async function moderateMarks(id: string, adjustments: { studentId: string; moderatedMarks: number; note: string }[]): Promise<ActionResult<AssessmentDetail>> {
   const { t } = await getI18n();
   if (adjustments.length === 0 || adjustments.some((a) => !UUID.test(a.studentId) || !Number.isFinite(a.moderatedMarks) || a.moderatedMarks < 0 || !a.note.trim())) return { ok: false, error: t('results.moderate.invalid') };

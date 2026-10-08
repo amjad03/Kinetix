@@ -76,7 +76,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ devi
       // Class audio: the API only relays it to viewers allowed to hear it (an institution setting for leaders).
       const audio: LiveAudioInfo = { allowed: false, on: false };
 
-      socket.on('connect', async () => {
+      // The API reports `ready` once it has checked the token: a watch sent on `connect` can arrive before that and be refused.
+      socket.on('ready', async () => {
         try {
           const ack = (await socket.timeout(10_000).emitWithAck(LiveEvents.Watch, { deviceId })) as LiveWatchAck;
           if (ack?.ok) {

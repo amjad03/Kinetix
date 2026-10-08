@@ -89,6 +89,7 @@ export function DataTable<T>({
   rowAttrs,
   highlight,
   bare,
+  dense,
   testId,
 }: {
   columns: Column<T>[];
@@ -120,6 +121,8 @@ export function DataTable<T>({
   rowAttrs?: (row: T) => Record<`data-${string}`, string | undefined>;
   /** A short, plain list: no search or filter bar (it still sorts, and exports when `exportName` is set). */
   bare?: boolean;
+  /** Tighter cell padding, for tables with many columns that must fit without scrolling sideways. */
+  dense?: boolean;
   testId?: string;
 }) {
   const { t } = useI18n();
@@ -318,7 +321,7 @@ export function DataTable<T>({
       )}
 
       <Box sx={{ overflowX: 'auto', borderTop: bare && !exportName && nBulk === 0 ? 0 : 1, borderColor: 'm3.outlineVariant' }}>
-        <Table size="small" aria-label={label} aria-rowcount={sorted.length} sx={{ '& .MuiTableRow-root:last-of-type > .MuiTableCell-body': { borderBottom: 0 } }}>
+        <Table size="small" aria-label={label} aria-rowcount={sorted.length} sx={{ '& .MuiTableRow-root:last-of-type > .MuiTableCell-body': { borderBottom: 0 }, ...(dense ? { '& .MuiTableCell-root': { px: 0.75 } } : {}) }}>
           <TableHead>
             <TableRow>
               {selectable && (

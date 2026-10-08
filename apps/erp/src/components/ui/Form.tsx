@@ -22,20 +22,24 @@ export function FormField({
   helper,
   error,
   required,
+  id: given,
   children,
 }: {
   label: string;
   helper?: ReactNode;
   error?: ReactNode;
   required?: boolean;
+  /** The control's own id when it sets one (an Autocomplete input), so the label points at it. */
+  id?: string;
   /** One control; it receives id and aria props. */
   children: ReactElement<Record<string, unknown>>;
 }) {
-  const id = useId();
+  const generated = useId();
+  const id = given ?? generated;
   const hid = `${id}-h`;
   return (
     <Box sx={{ display: 'grid', gap: 0.5 }}>
-      <Typography component="label" htmlFor={id} variant="subtitle2" sx={{ fontWeight: 600 }}>
+      <Typography component="label" id={`${id}-label`} htmlFor={id} variant="subtitle2" sx={{ fontWeight: 600 }}>
         {label}
         {required && (
           <Box component="span" aria-hidden sx={{ color: 'error.main', ml: 0.5 }}>
@@ -57,7 +61,9 @@ export type TextInputProps = Omit<TextFieldProps, 'variant' | 'size'> & { helper
 
 /** A single-line, multi-line or select input. Small by default: forms in an ERP are dense. */
 export function TextInput({ helper, error, helperText, ...props }: TextInputProps) {
-  return <TextField size="small" {...props} error={!!error} helperText={typeof error === 'string' ? error : (helper ?? helperText)} slotProps={{ ...props.slotProps, formHelperText: { role: error ? 'alert' : undefined } }} />;
+  // A select's combobox is a div, not the input the label's htmlFor points at: name it through the label's id (FormField sets `${id}-label`).
+  const select = props.select && props.id ? { labelId: `${props.id}-label`, ...(props.slotProps?.select as object | undefined) } : props.slotProps?.select;
+  return <TextField size="small" {...props} error={!!error} helperText={typeof error === 'string' ? error : (helper ?? helperText)} slotProps={{ ...props.slotProps, ...(select ? { select } : {}), formHelperText: { role: error ? 'alert' : undefined } }} />;
 }
 
 export function SelectInput({ options, empty, ...props }: Omit<TextInputProps, 'select' | 'children'> & { options: { value: string; label: string }[]; /** A leading "any" or "none" choice. */ empty?: string }) {

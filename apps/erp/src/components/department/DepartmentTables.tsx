@@ -148,7 +148,7 @@ export function ClassesTable({ rows }: { rows: DeptClass[] }) {
       },
     },
   ];
-  return <DataTable testId="dept-classes" label={t('dept.col.class')} rows={rows} rowId={(c) => `${c.sectionId}|${c.subjectId}|${c.teacherId}`} exportName="department-classes" rowAttrs={() => ({ 'data-testid': 'dept-class-row' })} columns={columns} />;
+  return <DataTable dense testId="dept-classes" label={t('dept.col.class')} rows={rows} rowId={(c) => `${c.sectionId}|${c.subjectId}|${c.teacherId}`} exportName="department-classes" rowAttrs={() => ({ 'data-testid': 'dept-class-row' })} columns={columns} />;
 }
 
 /** The department's recent assessments with the class average and publication state. */

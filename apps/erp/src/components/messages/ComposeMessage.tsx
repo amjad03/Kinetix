@@ -237,7 +237,7 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
                 })
               }
               renderInput={(params) => (
-                <FormField label={mode === 'programs' ? t('msg.mode.programs') : t('msg.mode.classes')}>
+                <FormField id={params.id} label={mode === 'programs' ? t('msg.mode.programs') : t('msg.mode.classes')}>
                   <TextInput
                     {...params}
                     placeholder={(mode === 'programs' ? programs : classes).length ? undefined : mode === 'programs' ? 'BCom, BCA…' : 'BCom Sem 3 A…'}

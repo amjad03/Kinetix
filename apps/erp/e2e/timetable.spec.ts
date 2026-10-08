@@ -18,9 +18,10 @@ test('add a period, catch clashes, move it and remove it', async ({ page }) => {
   await expect(saturday.getByTestId('slot')).toHaveCount(2);
   await shot(page, 'timetable');
 
-  // Add: Saturday 15:00, after the day's periods. The class has one subject, so it is chosen.
+  // Add: Saturday 15:00, after the day's periods. The class has several subjects (the seed links the whole BU syllabus), so the subject is picked.
   await page.getByRole('button', { name: 'Add period' }).first().click();
   let dialog = page.getByRole('dialog', { name: 'Add a period' });
+  await pick(page, 'Subject', 'Discrete Mathematics');
   await expect(dialog.getByRole('combobox', { name: 'Subject' })).toContainText('Discrete Mathematics');
   await pick(page, 'Teacher', 'Ravi Kumar');
   await pick(page, 'Day', 'Saturday');
@@ -34,6 +35,7 @@ test('add a period, catch clashes, move it and remove it', async ({ page }) => {
   // Clash: the class already has a period at 10:00 on Saturday.
   await page.getByRole('button', { name: 'Add period' }).first().click();
   dialog = page.getByRole('dialog', { name: 'Add a period' });
+  await pick(page, 'Subject', 'Discrete Mathematics');
   await pick(page, 'Teacher', 'Ravi Kumar');
   await pick(page, 'Day', 'Saturday');
   await dialog.getByLabel('Starts').fill('10:00');

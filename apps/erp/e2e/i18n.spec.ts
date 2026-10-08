@@ -23,13 +23,13 @@ const PAGES = [
 
 const HEADINGS = {
   hi: {
-    "/": "आज",
+    "/": "वापसी पर स्वागत है, Dr. Meera", // the dashboard greets the principal by name
     "/calendar": "कैलेंडर",
     "/settings": "सेटिंग्स",
     "/fees": "फ़ीस",
   },
   kn: {
-    "/": "ಇಂದು",
+    "/": "ಮರಳಿ ಸ್ವಾಗತ, Dr. Meera",
     "/calendar": "ಕ್ಯಾಲೆಂಡರ್",
     "/settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
     "/fees": "ಶುಲ್ಕ",

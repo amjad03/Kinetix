@@ -51,7 +51,8 @@ test('the principal sets up a department: name, head, subjects and staff, then d
   await expect(edited.getByTestId('department-head')).toHaveText('Head: Ravi Kumar');
   await expect(edited.getByTestId('department-subjects')).toContainText('Discrete Mathematics');
   await expect(edited.getByTestId('department-staff')).toContainText('Anita Sharma');
-  await expect(card(page, 'Computer Science').getByTestId('department-subjects')).toContainText('No subjects yet');
+  // Computer Science keeps its other papers (the seed links the whole BU syllabus), but Discrete Mathematics has moved.
+  await expect(card(page, 'Computer Science').getByTestId('department-subjects')).not.toContainText('Discrete Mathematics');
 
   // The principal can open any department: its class is BCA Sem 1 A, taught by Ravi.
   await edited.getByRole('link', { name: `View ${name} and Arts` }).click();

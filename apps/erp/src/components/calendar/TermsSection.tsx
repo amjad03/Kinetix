@@ -85,7 +85,7 @@ export function TermsSection({ terms, today, canEdit, programs }: { terms: Term[
                 <DateRangeOutlined />
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle1" component="p" sx={{ lineHeight: '24px', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="subtitle1" component="div" sx={{ lineHeight: '24px', display: 'flex', alignItems: 'center', gap: 1 }}>
                   {term.name}
                   {current?.id === term.id && term.startsOn <= today && <Chip size="small" color="primary" label={t('term.current')} data-testid="term-current" />}
                 </Typography>

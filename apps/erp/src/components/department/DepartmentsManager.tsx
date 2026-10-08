@@ -332,7 +332,7 @@ function EditDialog({
                   </li>
                 );
               }}
-              renderInput={(params) => <FormField label={t('depts.subjects')}><TextInput {...params} placeholder={subjectIds.length ? '' : t('depts.chooseSubjects')} /></FormField>}
+              renderInput={(params) => <FormField id={params.id} label={t('depts.subjects')}><TextInput {...params} placeholder={subjectIds.length ? '' : t('depts.chooseSubjects')} /></FormField>}
               data-testid="subjects-select"
             />
             {moved.length > 0 && (
@@ -348,7 +348,7 @@ function EditDialog({
               onChange={(_, v) => setStaffIds(v.map((s) => s.id))}
               getOptionLabel={(s) => s.fullName}
               isOptionEqualToValue={(a, b) => a.id === b.id}
-              renderInput={(params) => <FormField label={t('depts.staff')}><TextInput {...params} placeholder={staffIds.length ? '' : t('depts.chooseStaff')} /></FormField>}
+              renderInput={(params) => <FormField id={params.id} label={t('depts.staff')}><TextInput {...params} placeholder={staffIds.length ? '' : t('depts.chooseStaff')} /></FormField>}
               data-testid="staff-select"
             />
           </Stack>

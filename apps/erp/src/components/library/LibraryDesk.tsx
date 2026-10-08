@@ -666,7 +666,7 @@ function IssueDialog({
                   </Typography>
                 </Box>
               )}
-              renderInput={(params) => <FormField label={t('lib.issue.book')} required><TextInput {...params} required placeholder={t('lib.issue.bookPlaceholder')} /></FormField>}
+              renderInput={(params) => <FormField id={params.id} label={t('lib.issue.book')} required><TextInput {...params} required placeholder={t('lib.issue.bookPlaceholder')} /></FormField>}
               filterOptions={(opts, { inputValue }) => {
                 const s = inputValue.trim().toLowerCase();
                 return s ? opts.filter((b) => [b.title, b.author, b.callNo ?? ''].some((v) => v.toLowerCase().includes(s))) : opts;
@@ -696,7 +696,7 @@ function IssueDialog({
                 </Box>
               )}
               renderInput={(params) => (
-                <FormField label={t('lib.issue.student')} required>
+                <FormField id={params.id} label={t('lib.issue.student')} required>
                   <TextInput
                     {...params}
                     error={!!searchError}

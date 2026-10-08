@@ -15,7 +15,7 @@ test('a head of department lands on their department and sees how its classes we
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Commerce');
   await expect(page.getByTestId('dept-subtitle')).toContainText('Head: Ravi Kumar');
   await expect(page.getByTestId('dept-subtitle')).toContainText('This week');
-  await expect(page.getByTestId('dept-subjects')).toHaveText('Corporate Accounting · Cost Accounting');
+  await expect(page.getByTestId('dept-subjects')).toHaveText('Corporate Accounting · Financial Management · Cost Accounting · Indian Financial System');
   // Only one department: no picker.
   await expect(page.getByTestId('dept-picker')).toHaveCount(0);
   const nav = page.getByRole('navigation', { name: 'Main' });

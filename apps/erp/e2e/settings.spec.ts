@@ -79,19 +79,22 @@ test('the privacy & consent summary counts answers per purpose', async ({ page }
   await open(page, '/settings');
   const summary = page.getByTestId('consent-summary');
   await expect(summary.getByTestId('consent-version')).toHaveText('Privacy notice version 2026-10');
-  await expect(summary.getByTestId('consent-students')).toHaveText('20 active students');
+  // The seed has 20 students; specs that run earlier (the CSV import) may have enrolled more.
+  await expect(summary.getByTestId('consent-students')).toHaveText(/^\d+ active students$/);
+  const total = Number(((await summary.getByTestId('consent-students').textContent()) ?? '').match(/\d+/)![0]);
+  expect(total).toBeGreaterThanOrEqual(20);
   const rows = summary.getByTestId('consent-row');
   await expect(rows).toHaveCount(4);
   // Seed: Aarav agreed to data processing and AI; Diya's father agreed to data processing.
   const data = summary.locator('[data-purpose="data_processing"]');
   await expect(data.getByTestId('consent-granted')).toHaveText('2');
   await expect(data.getByTestId('consent-withdrawn')).toHaveText('0');
-  await expect(data.getByTestId('consent-not-asked')).toHaveText('18');
+  await expect(data.getByTestId('consent-not-asked')).toHaveText(String(total - 2));
   const ai = summary.locator('[data-purpose="ai_features"]');
   await expect(ai).toContainText('KINETIX AI');
   await expect(ai.getByTestId('consent-granted')).toHaveText('1');
-  await expect(ai.getByTestId('consent-not-asked')).toHaveText('19');
-  await expect(summary.locator('[data-purpose="photos"]').getByTestId('consent-not-asked')).toHaveText('20');
+  await expect(ai.getByTestId('consent-not-asked')).toHaveText(String(total - 1));
+  await expect(summary.locator('[data-purpose="photos"]').getByTestId('consent-not-asked')).toHaveText(String(total));
 
   await summary.getByTestId('consent-notice-toggle').click();
   await expect(summary.getByTestId('consent-notice')).toContainText('All data and all AI processing stay in India');
