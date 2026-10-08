@@ -1,5 +1,6 @@
 import { sql, type SQL } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
+import { LIVE_OFFER, placementOffersSql, researchOutputsSql } from './sources.js';
 
 /** Read-only aggregations over the other domains. Every query runs in the caller's tenant transaction, so row-level security keeps it to the institution. */
 
@@ -106,12 +107,12 @@ export async function institutionKpis(tx: Tx, scope: Scope, range: Range, annual
     tx,
     sql`select count(*)::int offers, count(distinct p.student_id)::int students, count(*) filter (where p.status = 'joined')::int joined,
           coalesce(avg(p.package_paise), 0)::float8 avg, coalesce(max(p.package_paise), 0)::float8 highest
-        from placement_records p join students s on s.id = p.student_id join sections sec on sec.id = s.section_id join programs pr on pr.id = sec.program_id
-        where p.status <> 'declined' and p.offered_on between ${annual.from}::date and ${annual.to}::date ${sc}`,
+        from ${placementOffersSql} join students s on s.id = p.student_id join sections sec on sec.id = s.section_id join programs pr on pr.id = sec.program_id
+        where ${LIVE_OFFER} and p.offered_on between ${annual.from}::date and ${annual.to}::date ${sc}`,
   );
   const rk = await rows<{ kind: string; n: number; grants: number }>(
     tx,
-    sql`select kind, count(*)::int n, coalesce(sum(grant_paise), 0)::float8 grants from research_outputs where published_on between ${annual.from}::date and ${annual.to}::date group by kind`,
+    sql`select r.kind, count(*)::int n, coalesce(sum(r.grant_paise), 0)::float8 grants from ${researchOutputsSql} where r.published_on between ${annual.from}::date and ${annual.to}::date group by r.kind`,
   );
   const byType: Record<string, number> = {};
   for (const r of staffRows.filter((x) => x.status === 'active')) byType[r.type] = (byType[r.type] ?? 0) + r.n;
