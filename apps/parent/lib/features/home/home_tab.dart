@@ -258,7 +258,7 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
-/// Overview / Academics / Fees / Attendance, as chips that scroll sideways on a narrow phone.
+/// Overview / Academics / Fees / Attendance, as chips that wrap onto a second line when needed.
 class _SectionChips extends StatelessWidget {
   const _SectionChips({required this.selected, required this.onSelected});
 
@@ -274,25 +274,22 @@ class _SectionChips extends StatelessWidget {
       _HomeSection.fees: l.homeTabFees,
       _HomeSection.attendance: l.homeTabAttendance,
     };
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (final e in labels.entries) ...[
-            ChoiceChip(
-              key: Key('homeTab-${e.key.name}'),
-              selected: selected == e.key,
-              showCheckmark: false,
-              onSelected: (_) => onSelected(e.key),
-              materialTapTargetSize: MaterialTapTargetSize.padded,
-              visualDensity: VisualDensity.standard,
-              padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s12),
-              label: Text(e.value, style: context.text.titleSmall),
-            ),
-            const SizedBox(width: Kx.s8),
-          ],
-        ],
-      ),
+    // A wrapping row, not a sideways scroll: every section is in view, in any language.
+    return Wrap(
+      spacing: Kx.s8,
+      runSpacing: Kx.s4,
+      children: [
+        for (final e in labels.entries)
+          ChoiceChip(
+            key: Key('homeTab-${e.key.name}'),
+            selected: selected == e.key,
+            showCheckmark: false,
+            onSelected: (_) => onSelected(e.key),
+            materialTapTargetSize: MaterialTapTargetSize.padded,
+            padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s12),
+            label: Text(e.value, style: context.text.titleSmall),
+          ),
+      ],
     );
   }
 }

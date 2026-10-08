@@ -11,7 +11,7 @@ void main() {
 
   group('library', () {
     testWidgets('the card shows books out with due dates and fines; history on its screen', (tester) async {
-      await pumpApp(tester);
+      await pumpApp(tester, section: 'academics');
       final card = find.byKey(const Key('libraryCard'));
       await tester.scrollUntilVisible(find.text('See library history'), 300, scrollable: home());
       await tester.ensureVisible(find.text('See library history'));
@@ -32,7 +32,7 @@ void main() {
     });
 
     testWidgets('an overdue book is flagged in red', (tester) async {
-      await pumpApp(tester, prefs: {'selected_child': 'c2'});
+      await pumpApp(tester, section: 'academics', prefs: {'selected_child': 'c2'});
       final card = find.byKey(const Key('libraryCard'));
       await tester.scrollUntilVisible(card, 300, scrollable: home());
       expect(find.text('1 book overdue. Please return it to the library.'), findsOneWidget);
@@ -72,7 +72,7 @@ void main() {
 
   group('results', () {
     testWidgets('the card compares the latest marks with the class and lists subject percentages', (tester) async {
-      await pumpApp(tester);
+      await pumpApp(tester, section: 'academics');
       final card = find.byKey(const Key('resultsCard'));
       await tester.scrollUntilVisible(card, 300, scrollable: home());
       expect(find.descendant(of: card, matching: find.text('22.5 / 25')), findsOneWidget);
@@ -94,7 +94,7 @@ void main() {
     });
 
     testWidgets('all results, and a child with none yet', (tester) async {
-      await pumpApp(tester);
+      await pumpApp(tester, section: 'academics');
       final card = find.byKey(const Key('resultsCard'));
       await tester.scrollUntilVisible(find.text('See all results'), 300, scrollable: home());
       await tester.ensureVisible(find.text('See all results'));
@@ -109,14 +109,14 @@ void main() {
 
       await tester.drag(home(), const Offset(0, 3000));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('child-c2')));
-      await tester.pumpAndSettle();
+      await pickChild(tester, 'c2');
       await tester.scrollUntilVisible(card, 300, scrollable: home());
       expect(find.textContaining('No marks published yet.'), findsOneWidget);
     });
 
     testWidgets('an absent result says so', (tester) async {
       await pumpApp(
+      section: 'academics',
         tester,
         setup: (api) => api.childMarks['c1'] = ChildMarks.fromJson({
           'assessments': [
@@ -170,7 +170,11 @@ void main() {
 
   group('messages', () {
     Future<void> openMessages(WidgetTester tester) async {
-      await tester.tap(find.text('Messages'));
+      await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('More')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byKey(const Key('openMessages')), 200, scrollable: find.byType(Scrollable).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('openMessages')));
       await tester.pumpAndSettle();
     }
 

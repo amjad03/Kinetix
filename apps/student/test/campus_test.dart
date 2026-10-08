@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_student/features/profile/profile_tab.dart';
 
-import 'fake_api.dart';
 import 'helpers.dart';
 
 /// Careers (drives, offers, internships) and grievances, both opened from Profile.

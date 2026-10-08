@@ -25,6 +25,9 @@ Future<(FakeParentApi, AppState)> pumpApp(
   TokenStore? tokens,
   PushMessaging messaging = const NoPushMessaging(),
   FakeRealtimeServer? realtime,
+
+  /// The Home section to open: overview (default), academics, fees or attendance.
+  String section = 'overview',
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -47,7 +50,21 @@ Future<(FakeParentApi, AppState)> pumpApp(
   await tester.pumpWidget(ParentApp(state: state));
   await state.restore();
   await tester.pumpAndSettle();
+  if (section != 'overview' && find.byKey(Key('homeTab-$section')).evaluate().isNotEmpty) {
+    await tester.ensureVisible(find.byKey(Key('homeTab-$section')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('homeTab-$section')));
+    await tester.pumpAndSettle();
+  }
   return (api, state);
+}
+
+/// Switches child from the card on Home.
+Future<void> pickChild(WidgetTester tester, String id) async {
+  await tester.tap(find.byKey(const Key('childCard')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(Key('child-$id')));
+  await tester.pumpAndSettle();
 }
 
 /// The token the app keeps in its secure store.

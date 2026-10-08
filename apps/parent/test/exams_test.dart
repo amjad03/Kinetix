@@ -96,14 +96,14 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.byKey(const Key('homeTab-academics')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('examsCard')), 200, scrollable: find.byType(Scrollable).first);
     await tapShown(tester, find.byKey(const Key('examsCard')));
     expect(find.text('Semester 3 end exam'), findsOneWidget);
     tester.state<NavigatorState>(find.byType(Navigator).first).pop();
     await tester.pumpAndSettle();
     await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('More')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('profile-exams-c1')));
-    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('profile-exams-c1')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.byKey(const Key('profile-exams-c1')), findsOneWidget);
   });
 }

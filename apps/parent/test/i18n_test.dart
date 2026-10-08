@@ -30,7 +30,7 @@ void main() {
     await tester.tap(find.descendant(of: bar, matching: find.byIcon(tabIcon)));
     await tester.pumpAndSettle();
     if (messages) {
-      await tester.ensureVisible(find.byKey(const Key('openMessages')));
+      await tester.scrollUntilVisible(find.byKey(const Key('openMessages')), 200, scrollable: find.byType(Scrollable).first);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('openMessages')));
       await tester.pumpAndSettle();
@@ -40,6 +40,16 @@ void main() {
   /// [WidgetTester.pageBack] finds the back button by its English tooltip.
   Future<void> back(WidgetTester tester) async {
     await tester.tap(find.byType(BackButton).last);
+    await tester.pumpAndSettle();
+  }
+
+  /// Opens a section of Home (overview, academics, fees, attendance) from the top.
+  Future<void> section(WidgetTester tester, String name) async {
+    await tester.drag(find.descendant(of: find.byType(HomeTab), matching: find.byType(Scrollable)).first, const Offset(0, 20000));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(Key('homeTab-$name')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('homeTab-$name')));
     await tester.pumpAndSettle();
   }
 
@@ -81,12 +91,14 @@ void main() {
     await tester.drag(home(), const Offset(0, 20000));
     await tester.pumpAndSettle();
 
+    await section(tester, 'attendance');
     await openCardLink(tester, 'attendanceCard');
     await scrollDown(tester);
     await back(tester);
 
     // Homework: returned with a remark, then handing in for the child with a photo and a PDF.
     // (The title, not `HomeworkRow.first`: a `.first` finder cannot be scrolled to before it is built.)
+    await section(tester, 'academics');
     await show(tester, find.text('Exercise 4.2: Issue of shares'));
     await tester.tap(find.text('Exercise 4.2: Issue of shares'));
     await tester.pumpAndSettle();
@@ -101,13 +113,17 @@ void main() {
     // The holiday banner and the calendar.
     await tester.drag(home(), const Offset(0, 20000));
     await tester.pumpAndSettle();
+    await section(tester, 'overview');
+    await show(tester, find.byKey(const Key('holidayBanner')));
     expect(find.byKey(const Key('holidayBanner')), findsOneWidget);
+    await section(tester, 'attendance');
     await openCardLink(tester, 'calendarCard');
     await scrollDown(tester);
     await back(tester);
     await tester.drag(home(), const Offset(0, 20000));
     await tester.pumpAndSettle();
 
+    await section(tester, 'academics');
     await show(tester, find.byKey(const Key('assessment-a1')));
     await tester.tap(find.byKey(const Key('assessment-a1')));
     await tester.pumpAndSettle();
@@ -117,6 +133,7 @@ void main() {
     await scrollDown(tester);
     await back(tester);
 
+    await section(tester, 'fees');
     await show(tester, find.byKey(const Key('feesView')));
     await tester.tap(find.byKey(const Key('feesView')));
     await tester.pumpAndSettle();
@@ -132,6 +149,7 @@ void main() {
     await back(tester);
     await back(tester);
 
+    await section(tester, 'academics');
     await openCardLink(tester, 'libraryCard');
     await scrollDown(tester);
     await back(tester);
@@ -193,9 +211,9 @@ void main() {
   const sizes = {'360x640': Size(360, 640), '430x932': Size(430, 932)};
   // Words from the bottom bar and the Home attendance card in each language.
   const words = {
-    'en': ['Home', 'Messages', 'Attendance'],
-    'hi': ['होम', 'संदेश', 'उपस्थिति'],
-    'kn': ['ಮುಖಪುಟ', 'ಸಂದೇಶಗಳು', 'ಹಾಜರಾತಿ'],
+    'en': ['Home', 'Updates', 'More'],
+    'hi': ['होम', 'सूचनाएँ', 'और'],
+    'kn': ['ಮುಖಪುಟ', 'ಸೂಚನೆಗಳು', 'ಇನ್ನಷ್ಟು'],
   };
 
   for (final lang in ['en', 'hi', 'kn']) {
@@ -235,8 +253,6 @@ void main() {
           await tester.tap(find.byKey(const Key('consentLater')));
           await tester.pumpAndSettle();
           for (final w in words[lang]!) {
-            // The holiday banner comes first: on a small phone the attendance card starts lower.
-            await tester.scrollUntilVisible(find.text(w), 100, scrollable: home());
             expect(find.text(w), findsWidgets, reason: w);
           }
           await visitEverything(tester);
@@ -307,20 +323,28 @@ void main() {
 
   group('Hindi and Kannada content', () {
     testWidgets('Hindi: dates, money and plurals read naturally with Western digits', (tester) async {
-      await pumpApp(tester, prefs: {'language': 'hi'});
+      await pumpApp(tester, prefs: {'language': 'hi'}, section: 'attendance');
       final card = find.byKey(const Key('attendanceCard'));
       expect(find.descendant(of: card, matching: find.text('30 कक्षाओं में से 24 में उपस्थित')), findsOneWidget);
       expect(find.descendant(of: card, matching: find.text('पिछले 30 दिन')), findsOneWidget);
+      await tester.drag(home(), const Offset(0, 20000));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('homeTab-academics')));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text('कल जमा करना है'), 300, scrollable: home());
       expect(find.text('कल जमा करना है'), findsOneWidget);
       // Fees in Indian grouping, digits Western.
+      await tester.drag(home(), const Offset(0, 20000));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('homeTab-fees')));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.byKey(const Key('feesDue')), 300, scrollable: home());
       expect(tester.widget<Text>(find.byKey(const Key('feesDue'))).data, matches(RegExp(r'^₹[0-9,]+$')));
       expect(find.textContaining(RegExp('[०-९]')), findsNothing);
     });
 
     testWidgets('Kannada: the overdue book shows the fine so far', (tester) async {
-      await pumpApp(tester, prefs: {'language': 'kn', 'selected_child': 'c2'});
+      await pumpApp(tester, prefs: {'language': 'kn', 'selected_child': 'c2'}, section: 'academics');
       await tester.scrollUntilVisible(find.byKey(const Key('libraryCard')), 300, scrollable: home());
       expect(find.text('4 ದಿನ ತಡವಾಗಿದೆ'), findsOneWidget);
       expect(tester.widget<Text>(find.byKey(const Key('fineSoFar-l3'))).data, 'ಇಲ್ಲಿಯವರೆಗೆ ₹8 ದಂಡ');
@@ -330,7 +354,7 @@ void main() {
     testWidgets('server content (names, titles, notification text) is shown as sent', (tester) async {
       await pumpApp(tester, prefs: {'language': 'kn'});
       expect(find.text('Aarav Patel'), findsOneWidget);
-      expect(find.text('BCom Sem 3 A'), findsOneWidget);
+      expect(find.textContaining('BCom Sem 3 A'), findsOneWidget);
       await openTab(tester, Icons.notifications_outlined);
       expect(find.text('ಸೂಚನೆಗಳು'), findsWidgets);
     });
@@ -369,7 +393,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('होम'), findsOneWidget);
-      expect(find.text('प्रोफ़ाइल'), findsWidgets);
+      expect(find.text('और'), findsWidgets);
       expect(find.descendant(of: find.byKey(const Key('languageSetting')), matching: find.text('हिन्दी')), findsOneWidget);
       expect(state.prefs.getString('language'), 'hi');
       expect(api.calls, contains('language hi'));
@@ -421,7 +445,7 @@ void main() {
     });
 
     testWidgets('the lesson player follows the app language', (tester) async {
-      await pumpApp(tester, prefs: {'language': 'hi'});
+      await pumpApp(tester, prefs: {'language': 'hi'}, section: 'academics');
       await show(tester, find.byKey(const Key('recording-r1')));
       await tester.tap(find.byKey(const Key('recording-r1')));
       await tester.pumpAndSettle();

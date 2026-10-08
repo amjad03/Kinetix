@@ -43,7 +43,7 @@ void main() {
     await tester.tap(find.descendant(of: bar, matching: find.text(name)));
     await tester.pumpAndSettle();
     if (label == 'Messages') {
-      await tester.ensureVisible(find.byKey(const Key('openMessages')));
+      await tester.scrollUntilVisible(find.byKey(const Key('openMessages')), 200, scrollable: find.byType(Scrollable).first);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('openMessages')));
       await tester.pumpAndSettle();
@@ -59,7 +59,7 @@ void main() {
 
   group('calendar', () {
     testWidgets('Home shows what is coming up for the selected child\'s program', (tester) async {
-      await pumpApp(tester);
+      await pumpApp(tester, section: 'attendance');
       final card = find.byKey(const Key('calendarCard'));
       await scrollTo(tester, card, home());
       expect(find.descendant(of: card, matching: find.text('Mid-semester exams')), findsOneWidget);
@@ -67,8 +67,7 @@ void main() {
 
       await tester.drag(home(), const Offset(0, 5000));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('child-c2')));
-      await tester.pumpAndSettle();
+      await pickChild(tester, 'c2');
       await scrollTo(tester, card, home());
       expect(find.descendant(of: card, matching: find.text('Mid-semester exams')), findsNothing);
       expect(find.descendant(of: card, matching: find.text('College day')), findsOneWidget);
@@ -116,7 +115,7 @@ void main() {
     }
 
     testWidgets('a parent hands in for a child: text and a photo, with progress', (tester) async {
-      final (api, _) = await pumpApp(tester);
+      final (api, _) = await pumpApp(tester, section: 'academics');
       api.submitGate = Completer<void>();
       await openHomework(tester);
       expect(find.text("Aarav's work"), findsOneWidget);
@@ -142,7 +141,7 @@ void main() {
     });
 
     testWidgets('when the server refuses (the child hands in for themselves), its error is shown', (tester) async {
-      final (api, _) = await pumpApp(tester);
+      final (api, _) = await pumpApp(tester, section: 'academics');
       api.submitError = ApiException(403, 'Forbidden', code: 'FORBIDDEN');
       await openHomework(tester);
       await tester.ensureVisible(find.byKey(const Key('handIn')));

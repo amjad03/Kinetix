@@ -6,7 +6,7 @@ import 'helpers.dart';
 void main() {
   testWidgets('profile lists the children, opens fees, results and library, shows the language setting and signs out', (tester) async {
     final (_, state) = await pumpApp(tester);
-    await tester.tap(find.text('Profile'));
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('More')));
     await tester.pumpAndSettle();
     expect(find.text('Rajesh Patel'), findsOneWidget);
     expect(find.text('+91 98000 00001'), findsOneWidget);

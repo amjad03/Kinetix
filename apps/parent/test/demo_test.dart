@@ -44,6 +44,8 @@ void main() {
     expect(state.me!.fullName, 'Rajesh Patel');
     expect(find.byKey(const Key('demoChip')), findsOneWidget);
     expect(find.text("Here's how Aarav is doing"), findsOneWidget);
+    await tester.tap(find.byKey(const Key('childCard')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('child-c2')));
     await tester.pumpAndSettle();
     expect(find.text("Here's how Diya is doing"), findsOneWidget);
@@ -52,11 +54,13 @@ void main() {
       await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text(tab)));
       await tester.pumpAndSettle();
     }
-    await tester.ensureVisible(find.byKey(const Key('openMessages')));
+    await tester.scrollUntilVisible(find.byKey(const Key('openMessages')), 200, scrollable: find.byType(Scrollable).first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('openMessages')));
     await tester.pumpAndSettle();
-    expect(find.text('Rajesh Patel'), findsWidgets);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('openMessages')), findsOneWidget);
 
     // Anita's reply arrives a few seconds after sign-in.
     await tester.pump(const Duration(seconds: 9));

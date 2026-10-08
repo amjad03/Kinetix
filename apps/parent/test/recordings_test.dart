@@ -11,7 +11,7 @@ void main() {
   }
 
   testWidgets('Home lists recordings with the missed one first and plays it', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'academics');
     final card = find.byKey(const Key('recordingsCard'));
     await scrollTo(tester, card);
     expect(find.descendant(of: card, matching: find.text('Lesson recordings')), findsOneWidget);
@@ -45,6 +45,7 @@ void main() {
 
   testWidgets('more than three recordings: see all', (tester) async {
     await pumpApp(
+      section: 'academics',
       tester,
       setup: (api) => api.recordings = [for (var i = 0; i < 5; i++) RecordingInfo.fromJson(api.recordingJsonFor('x$i', missed: i == 4))],
     );
@@ -58,7 +59,7 @@ void main() {
   });
 
   testWidgets('no recordings yet explains where they come from', (tester) async {
-    await pumpApp(tester, setup: (api) => api.recordings = []);
+    await pumpApp(tester, section: 'academics', setup: (api) => api.recordings = []);
     await scrollTo(tester, find.byKey(const Key('recordingsCard')));
     expect(
       find.text('When a teacher records a lesson on the board and shares it, it appears here so Aarav can watch it again.'),
@@ -68,6 +69,7 @@ void main() {
 
   testWidgets('a recording notification opens the player; a missing one explains itself', (tester) async {
     final (api, _) = await pumpApp(
+      section: 'academics',
       tester,
       setup: (api) {
         api.inbox.insert(0, api.recordingNotice('nr', 'r2'));
@@ -92,7 +94,7 @@ void main() {
   });
 
   testWidgets('a recording deleted with its term says until when it can be watched', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'academics');
     final card = find.byKey(const Key('recordingsCard'));
     await scrollTo(tester, card);
     // expiresOn 2027-01-10 is the day it is deleted: available until the day before.

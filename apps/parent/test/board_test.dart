@@ -6,7 +6,7 @@ import 'helpers.dart';
 
 void main() {
   testWidgets('opens a shared board from Home and swipes between pages', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'academics');
     await tester.scrollUntilVisible(find.text("Today's board: Corporate Accounting"), 200, scrollable: find.byType(Scrollable).first);
     await tester.ensureVisible(find.text("Today's board: Corporate Accounting"));
     await tester.pumpAndSettle();
@@ -29,6 +29,7 @@ void main() {
 
   testWidgets('a board shared notification opens the viewer; a missing board explains itself', (tester) async {
     final (api, _) = await pumpApp(
+      section: 'academics',
       tester,
       setup: (api) {
         api.inbox.insert(0, api.boardNotice('nb', 'wb1'));

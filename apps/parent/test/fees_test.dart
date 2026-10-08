@@ -55,7 +55,7 @@ void main() {
   });
 
   testWidgets('the fees card shows what is due, the overdue fee first, and Pay', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'fees');
     await scrollTo(tester, find.byKey(const Key('feesCard')));
     // ₹32,500 left on tuition + ₹2,500 exam fee.
     expect(inCard('₹35,000'), findsOneWidget);
@@ -66,9 +66,9 @@ void main() {
     expect(find.byKey(const Key('feesView')), findsOneWidget);
 
     // Diya has paid everything.
-    await tester.scrollUntilVisible(find.byKey(const Key('child-c2')), -200, scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.byKey(const Key('child-c2')));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 5000));
     await tester.pumpAndSettle();
+    await pickChild(tester, 'c2');
     await scrollTo(tester, find.byKey(const Key('feesCard')));
     expect(inCard('All fees paid'), findsOneWidget);
     expect(inCard('Last paid ₹38,000 · Fri 18 Sept'), findsOneWidget);
@@ -77,7 +77,7 @@ void main() {
   });
 
   testWidgets('the fees screen lists dues with part payments, overdue chips and receipts', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'fees');
     await openFees(tester);
     expect(find.text("Aarav's fees"), findsOneWidget);
     expect(find.byKey(const Key('totalDue')), findsOneWidget);
@@ -109,7 +109,7 @@ void main() {
   });
 
   testWidgets('Pay on Home takes the overdue fee through the demo checkout to a receipt', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'fees');
     await scrollTo(tester, find.byKey(const Key('feesCard')));
     await tester.tap(find.byKey(const Key('feesPay')));
     await tester.pumpAndSettle();
@@ -151,7 +151,7 @@ void main() {
   });
 
   testWidgets('a part payment is checked against the balance and the minimum', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'fees');
     await openFees(tester);
     await tester.tap(find.byKey(const Key('pay-i1')));
     await tester.pumpAndSettle();
@@ -196,7 +196,7 @@ void main() {
   testWidgets('a payment whose signature does not verify is not recorded', (tester) async {
     PaymentGateway.debugOverride = (_) => DemoPaymentGateway(secret: 'not-the-demo-secret');
     addTearDown(() => PaymentGateway.debugOverride = null);
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'fees');
     await openFees(tester);
     await tester.tap(find.byKey(const Key('pay-i2')));
     await tester.pumpAndSettle();
@@ -216,7 +216,7 @@ void main() {
   });
 
   testWidgets('cancelling the demo checkout pays nothing', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    final (api, _) = await pumpApp(tester, section: 'fees');
     await openFees(tester);
     await tester.tap(find.byKey(const Key('pay-i2')));
     await tester.pumpAndSettle();
@@ -229,7 +229,7 @@ void main() {
   });
 
   testWidgets('without online payment, parents are sent to the fees counter', (tester) async {
-    await pumpApp(tester, setup: (api) => api.onlinePayments = null);
+    await pumpApp(tester, section: 'fees', setup: (api) => api.onlinePayments = null);
     await scrollTo(tester, find.byKey(const Key('feesCard')));
     expect(inCard('₹35,000'), findsOneWidget);
     expect(inCard('Please pay at the fees counter.'), findsOneWidget);
@@ -246,7 +246,7 @@ void main() {
   testWidgets('Razorpay on a desktop build also points to the fees counter', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
     try {
-      await pumpApp(tester, setup: (api) => api.onlinePayments = 'razorpay');
+      await pumpApp(tester, section: 'fees', setup: (api) => api.onlinePayments = 'razorpay');
       await scrollTo(tester, find.byKey(const Key('feesCard')));
       expect(inCard('Please pay at the fees counter.'), findsOneWidget);
       await tester.tap(find.text('View fees and receipts'));
@@ -350,7 +350,7 @@ void main() {
     );
 
     testWidgets('a payment received opens its receipt', (tester) async {
-      final (api, _) = await pumpApp(tester, setup: (api) => api.inbox = [paid()]);
+      final (api, _) = await pumpApp(tester, section: 'fees', setup: (api) => api.inbox = [paid()]);
       await tester.tap(find.text('Updates'));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.currency_rupee), findsOneWidget);
@@ -362,7 +362,7 @@ void main() {
     });
 
     testWidgets("a new fee opens that child's fees", (tester) async {
-      await pumpApp(tester, setup: (api) => api.inbox = [due()]);
+      await pumpApp(tester, section: 'fees', setup: (api) => api.inbox = [due()]);
       await tester.tap(find.text('Updates'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('notification-f2')));

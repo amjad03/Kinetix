@@ -78,6 +78,8 @@ class _ParentShellState extends State<ParentShell> with WidgetsBindingObserver {
     widget.state.pendingPushTap.value = null;
     await updates.load();
     if (!mounted) return;
+    // Whatever page was open (Messages, a receipt) gives way to the one the push is about.
+    Navigator.of(context).popUntil((r) => r.isFirst);
     final n = updates.items.where((n) => n.id == tap.notificationId).firstOrNull;
     // Not in the inbox (any more): the tab for its kind.
     if (n == null) {

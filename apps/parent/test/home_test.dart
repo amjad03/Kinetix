@@ -7,7 +7,7 @@ import 'helpers.dart';
 
 void main() {
   testWidgets('the attendance card shows the rate, counts and recent absences', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'attendance');
     final card = find.byKey(const Key('attendanceCard'));
     expect(find.descendant(of: card, matching: find.text('80%')), findsOneWidget);
     // Attended = present + late + excused.
@@ -22,6 +22,7 @@ void main() {
   testWidgets('computes the rate when the server has none, and handles no attendance', (tester) async {
     await pumpApp(
       tester,
+      section: 'attendance',
       setup: (api) {
         final s = api.summaries['c1']!;
         api.summaries['c1'] = ChildSummary(
@@ -35,7 +36,9 @@ void main() {
         );
       },
     );
-    expect(find.text('75%'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('attendanceCard')), matching: find.text('75%')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('homeTab-academics')));
+    await tester.pumpAndSettle();
     expect(find.text('Nothing due right now. New homework from teachers will show here.'), findsOneWidget);
   });
 
@@ -44,12 +47,11 @@ void main() {
     expect(find.text("Here's how Aarav is doing"), findsOneWidget);
     expect(find.text('Aarav Patel'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('child-c2')));
-    await tester.pumpAndSettle();
+    await pickChild(tester, 'c2');
     expect(find.text("Here's how Diya is doing"), findsOneWidget);
     expect(find.text('Diya Patel'), findsOneWidget);
-    expect(find.text('BCA Sem 1 A'), findsOneWidget);
-    expect(find.text('100%'), findsOneWidget);
+    expect(find.textContaining('BCA Sem 1 A'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tileAttendance')), matching: find.text('100%')), findsOneWidget);
     expect(api.calls, containsAllInOrder(['summary c1', 'summary c2']));
     expect(state.prefs.getString('selected_child'), 'c2');
   });
@@ -65,7 +67,7 @@ void main() {
   });
 
   testWidgets('homework shows due dates in words and opens the instructions', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'academics');
     await tester.scrollUntilVisible(find.text('Cost sheet practice'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Due tomorrow'), findsOneWidget);
     expect(find.text('Due Fri 9 Oct'), findsOneWidget);
@@ -80,7 +82,9 @@ void main() {
   });
 
   testWidgets('attendance history groups marks by day', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'attendance');
+    await tester.ensureVisible(find.text('See attendance history'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('See attendance history'));
     await tester.pumpAndSettle();
     expect(find.text("Aarav's attendance"), findsOneWidget);
@@ -102,7 +106,9 @@ void main() {
   });
 
   testWidgets('a count on Home opens the history showing only that status', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'attendance');
+    await tester.ensureVisible(find.byKey(const Key('absentCount')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('absentCount')));
     await tester.pumpAndSettle();
     expect(find.text("Aarav's attendance"), findsOneWidget);
@@ -111,10 +117,12 @@ void main() {
   });
 
   testWidgets("the child's badges on Home", (tester) async {
-    final (api, _) = await pumpApp(tester, setup: (api) => api.addBadge(api.aarav.id, 'most_curious', teacher: 'Anita Sharma'));
+    final (api, _) = await pumpApp(tester, section: 'academics', setup: (api) => api.addBadge(api.aarav.id, 'most_curious', teacher: 'Anita Sharma'));
     expect(api.calls, contains('badges c1'));
     await tester.scrollUntilVisible(find.byKey(const Key('badgesCard')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Most Curious'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('shelf-most_curious')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('shelf-most_curious')));
     await tester.pumpAndSettle();
     expect(find.text('From Anita Sharma'), findsOneWidget);
@@ -132,7 +140,7 @@ void main() {
   });
 
   testWidgets('the in-class card shows a sentence and a stacked bar', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, section: 'academics');
     await tester.scrollUntilVisible(find.byKey(const Key('inClassCard')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Answered 5 questions in Corporate Accounting, 4 correct and 1 partly correct.', findRichText: true), findsOneWidget);
     expect(find.text('Partly correct'), findsOneWidget);
