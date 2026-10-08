@@ -1,18 +1,11 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import NextLink from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { StatusPill } from '@/components/admissions/Chips';
+import { MeritListTable } from '@/components/admissions/AdmissionsTables';
 import { CycleActions } from '@/components/admissions/CycleActions';
-import { Card } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/ui';
@@ -86,39 +79,7 @@ export default async function CyclePage({ params }: { params: Promise<{ id: stri
       {!latest ? (
         <Typography color="text.secondary">{t('adm.cycle.noList')}</Typography>
       ) : (
-        <Card padded={false} testId="merit-list" sx={{ overflowX: 'auto' }}>
-          <Table sx={{ minWidth: 640 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>#</TableCell>
-                <TableCell>{t('adm.col.applicant')}</TableCell>
-                <TableCell align="right">{t('adm.col.merit')}</TableCell>
-                <TableCell>{t('adm.cycle.decision')}</TableCell>
-                <TableCell>{t('adm.col.status')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {latest.entries.map((e) => (
-                <TableRow key={e.applicationId} hover>
-                  <TableCell>{e.rank}</TableCell>
-                  <TableCell>
-                    <Typography component={NextLink} href={`/admissions/applications/${e.applicationId}`} variant="body2" sx={{ color: 'primary.main', textDecoration: 'none' }}>
-                      {e.applicantName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" component="div">
-                      {e.applicationNo}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                    {e.score}
-                  </TableCell>
-                  <TableCell>{t(e.decision === 'offer' ? 'adm.cycle.offer' : 'adm.cycle.waitlist')}</TableCell>
-                  <TableCell>{e.status && <StatusPill kind="application" status={e.status} />}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+        <MeritListTable rows={latest.entries} />
       )}
     </>
   );

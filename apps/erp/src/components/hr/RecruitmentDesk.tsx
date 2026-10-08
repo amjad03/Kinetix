@@ -5,23 +5,17 @@ import PersonAddOutlined from '@mui/icons-material/PersonAddOutlined';
 import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addApplicant, moveApplicant, saveOpening } from '@/app/(dashboard)/hr/actions';
-import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -48,48 +42,33 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
       {openings.length === 0 ? (
         <EmptyState icon={<WorkOutlineOutlined />} title={t('hr.rec.noOpenings')} />
       ) : (
-        <TableFrame testId="openings">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('hr.rec.title')}</TableCell>
-                <TableCell align="right">{t('hr.rec.positions')}</TableCell>
-                <TableCell>{t('hr.f.status')}</TableCell>
-                <TableCell>{t('hr.rec.pipeline')}</TableCell>
-                <TableCell align="right" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {openings.map((o) => (
-                <TableRow key={o.id} selected={o.id === selected}>
-                  <TableCell>
-                    {o.title}
-                    {o.department && (
-                      <Typography variant="caption" color="text.secondary" component="div">
-                        {o.department.name}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">{o.positions}</TableCell>
-                  <TableCell>{t(`hr.rec.status.${o.status}` as MessageKey)}</TableCell>
-                  <TableCell>
-                    {STAGES.filter((s) => o.pipeline[s]).map((s) => (
-                      <Box component="span" key={s} sx={{ mr: 0.5 }}><StatusPill>{`${t(`hr.rec.stage.${s}` as MessageKey)} ${o.pipeline[s]}`}</StatusPill></Box>
-                    ))}
-                  </TableCell>
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                    <Button size="small" onClick={() => setEditing(o)}>
-                      {t('hr.edit')}
-                    </Button>
-                    <Button size="small" href={`/hr/recruitment?opening=${o.id}`}>
-                      {t('hr.rec.applicants')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="openings"
+          label={t('hr.rec.title')}
+          rows={openings}
+          rowId={(o) => String(o.id)}
+          exportName="job-openings"
+          highlight={(o) => o.id === selected}
+          columns={[
+            { id: 'c0', header: t('hr.rec.title'), rowHeader: true, sort: (o) => o.title, cell: (o) => (<>{o.title}
+                              {o.department && (
+                                <Typography variant="caption" color="text.secondary" component="div">
+                                  {o.department.name}
+                                </Typography>
+                              )}</>) },
+            { id: 'c1', header: t('hr.rec.positions'), align: 'right', sort: (o) => o.positions, cell: (o) => o.positions },
+            { id: 'c2', header: t('hr.f.status'), sort: (o) => t(`hr.rec.status.${o.status}` as MessageKey), cell: (o) => t(`hr.rec.status.${o.status}` as MessageKey) },
+            { id: 'c3', header: t('hr.rec.pipeline'), csv: false, cell: (o) => (<>{STAGES.filter((s) => o.pipeline[s]).map((s) => (
+                                <Box component="span" key={s} sx={{ mr: 0.5 }}><StatusPill>{`${t(`hr.rec.stage.${s}` as MessageKey)} ${o.pipeline[s]}`}</StatusPill></Box>
+                              ))}</>) },
+            { id: 'c4', header: '', align: 'right', csv: false, cell: (o) => (<><Button size="small" onClick={() => setEditing(o)}>
+                                {t('hr.edit')}
+                              </Button>
+                              <Button size="small" href={`/hr/recruitment?opening=${o.id}`}>
+                                {t('hr.rec.applicants')}
+                              </Button></>) },
+          ]}
+        />
       )}
 
       {current && (
@@ -105,49 +84,37 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
           {applicants.length === 0 ? (
             <EmptyState dense icon={<PersonAddOutlined />} title={t('hr.rec.noApplicants')} />
           ) : (
-            <TableFrame testId="applicants">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('hr.rec.fullName')}</TableCell>
-                    <TableCell>{t('hr.rec.contact')}</TableCell>
-                    <TableCell>{t('hr.rec.stage')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {applicants.map((a) => (
-                    <TableRow key={a.id}>
-                      <TableCell>
-                        {a.fullName}
-                        {a.notes && (
-                          <Typography variant="caption" color="text.secondary" component="div">
-                            {a.notes}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>{[a.email, a.phone].filter(Boolean).join(' · ') || '–'}</TableCell>
-                      <TableCell sx={{ minWidth: 180 }}>
-                        <TextField
-                          select
-                          size="small"
-                          fullWidth
-                          value={a.stage}
-                          disabled={pending || TERMINAL_STAGES.includes(a.stage)}
-                          aria-label={`${t('hr.rec.stage')} ${a.fullName}`}
-                          onChange={(e) => start(async () => void (await run(() => moveApplicant(a.id, e.target.value as ApplicantStage), t('hr.saved'))))}
-                        >
-                          {STAGES.map((s) => (
-                            <MenuItem key={s} value={s}>
-                              {t(`hr.rec.stage.${s}` as MessageKey)}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableFrame>
+            <DataTable
+              testId="applicants"
+              label={t('hr.rec.applicants')}
+              rows={applicants}
+              rowId={(a) => String(a.id)}
+              exportName="applicants"
+              columns={[
+                { id: 'c0', header: t('hr.rec.fullName'), rowHeader: true, sort: (a) => a.fullName, cell: (a) => (<>{a.fullName}
+                                      {a.notes && (
+                                        <Typography variant="caption" color="text.secondary" component="div">
+                                          {a.notes}
+                                        </Typography>
+                                      )}</>) },
+                { id: 'c1', header: t('hr.rec.contact'), sort: (a) => [a.email, a.phone].filter(Boolean).join(' · ') || '–', cell: (a) => [a.email, a.phone].filter(Boolean).join(' · ') || '–' },
+                { id: 'c2', header: t('hr.rec.stage'), sort: (a) => a.stage, cell: (a) => (<><TextField
+                                        select
+                                        size="small"
+                                        fullWidth
+                                        value={a.stage}
+                                        disabled={pending || TERMINAL_STAGES.includes(a.stage)}
+                                        aria-label={`${t('hr.rec.stage')} ${a.fullName}`}
+                                        onChange={(e) => start(async () => void (await run(() => moveApplicant(a.id, e.target.value as ApplicantStage), t('hr.saved'))))}
+                                      >
+                                        {STAGES.map((s) => (
+                                          <MenuItem key={s} value={s}>
+                                            {t(`hr.rec.stage.${s}` as MessageKey)}
+                                          </MenuItem>
+                                        ))}
+                                      </TextField></>) },
+              ]}
+            />
           )}
         </Box>
       )}

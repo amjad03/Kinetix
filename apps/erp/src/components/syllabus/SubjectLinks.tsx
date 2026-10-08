@@ -7,16 +7,11 @@ import ListSubheader from '@mui/material/ListSubheader';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Snackbar from '@mui/material/Snackbar';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { linkSubject } from '@/app/(dashboard)/syllabus/actions';
-import { TableFrame } from '@/components/DataTable';
+import { DataTable } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { Course, Curriculum, SubjectLink } from '@/lib/types';
 
@@ -48,30 +43,44 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
 
   return (
     <>
-      <TableFrame testId="subject-links">
-        <Table sx={{ minWidth: 720 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('syl.col.subject')}</TableCell>
-              <TableCell>{t('syl.col.classes')}</TableCell>
-              <TableCell sx={{ width: '48%' }}>{t('syl.col.course')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {subjects.map((s) => {
+      <DataTable
+        testId="subject-links"
+        label={t('syl.col.subject')}
+        rows={subjects}
+        rowId={(s) => s.id}
+        exportName="subject-links"
+        rowAttrs={() => ({ 'data-testid': 'subject-row' })}
+        columns={[
+          {
+            id: 'subject',
+            header: t('syl.col.subject'),
+            rowHeader: true,
+            sort: (s) => s.name,
+            csv: (s) => `${s.name} (${s.code})`,
+            cell: (s) => (
+              <>
+                <Typography variant="subtitle2">{s.name}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {s.code}
+                </Typography>
+              </>
+            ),
+          },
+          { id: 'classes', header: t('syl.col.classes'), sort: (s) => s.classes.join(', '), cell: (s) => (s.classes.length ? s.classes.join(', ') : <Box component="span" sx={{ color: 'text.secondary' }}>{t('syl.noClass')}</Box>) },
+          {
+            id: 'course',
+            header: t('syl.col.course'),
+            width: '48%',
+            sort: (s) => {
+              const linked = links.get(s.id) ?? null;
+              return (linked ? byId.get(linked)?.title : undefined) ?? '';
+            },
+            cell: (s) => {
               const linked = links.get(s.id) ?? null;
               const course = linked ? byId.get(linked) : undefined;
               return (
-                <TableRow key={s.id} data-testid="subject-row">
-                  <TableCell>
-                    <Typography variant="subtitle2">{s.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {s.code}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{s.classes.length ? s.classes.join(', ') : <Box component="span" sx={{ color: 'text.secondary' }}>{t('syl.noClass')}</Box>}</TableCell>
-                  <TableCell>
-                    {canLink ? (
+                <>
+                  {canLink ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Select
                           size="small"
@@ -113,13 +122,12 @@ export function SubjectLinks({ subjects, courses, curricula, canLink }: { subjec
                         {t('syl.notLinked')}
                       </Typography>
                     )}
-                  </TableCell>
-                </TableRow>
+                </>
               );
-            })}
-          </TableBody>
-        </Table>
-      </TableFrame>
+            },
+          },
+        ]}
+      />
       <Snackbar open={!!toast} autoHideDuration={5000} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} />
     </>
   );

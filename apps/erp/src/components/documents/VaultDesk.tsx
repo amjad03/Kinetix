@@ -14,15 +14,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
 import { archiveVaultFile, classStudents, listVault } from '@/app/(dashboard)/documents/actions';
-import { Card } from '@/components/ui';
+import { DataTable } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -88,44 +83,29 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
         docs.length === 0 && !pending ? (
           <EmptyState icon={<FolderOutlined />} title={t('doc.vault.empty', { name: owner.name })} />
         ) : (
-          <Card padded={false} testId="vault-docs" sx={{ overflowX: 'auto' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('doc.vault.title')}</TableCell>
-                  <TableCell>{t('doc.vault.category')}</TableCell>
-                  <TableCell>{t('doc.vault.version')}</TableCell>
-                  <TableCell>{t('doc.vault.visibility')}</TableCell>
-                  <TableCell>{t('doc.vault.expires')}</TableCell>
-                  <TableCell align="right" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {docs.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell>
-                      {d.title} <Chip size="small" label={fileSize(d.sizeBytes)} sx={{ ml: 0.5 }} />
-                    </TableCell>
-                    <TableCell>{d.category}</TableCell>
-                    <TableCell>v{d.version}</TableCell>
-                    <TableCell>{t(d.visibility === 'owner' ? 'doc.vault.vis.owner' : 'doc.vault.vis.staff')}</TableCell>
-                    <TableCell>{d.expiresOn ? formatDate(d.expiresOn, 'short', locale) : '–'}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      <Button size="small" href={docDownload.vault(d.id)}>
-                        {t('doc.vault.download')}
-                      </Button>
-                      <Button size="small" onClick={() => setUploading({ replaces: d })}>
-                        {t('doc.vault.newVersion')}
-                      </Button>
-                      <IconButton aria-label={t('doc.vault.archive')} disabled={pending} onClick={() => start(async () => { const r = await run(() => archiveVaultFile(d.id), t('hr.saved')); if (r.ok) refresh(); })}>
-                        <ArchiveOutlined />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+          <DataTable
+            testId="vault-docs"
+            label={t('doc.vault.title')}
+            rows={docs}
+            rowId={(d) => String(d.id)}
+            exportName="vault"
+            columns={[
+              { id: 'c0', header: t('doc.vault.title'), rowHeader: true, sort: (d) => d.title, cell: (d) => (<>{d.title} <Chip size="small" label={fileSize(d.sizeBytes)} sx={{ ml: 0.5 }} /></>) },
+              { id: 'c1', header: t('doc.vault.category'), sort: (d) => d.category, cell: (d) => d.category },
+              { id: 'c2', header: t('doc.vault.version'), sort: (d) => d.version, cell: (d) => `v${d.version}` },
+              { id: 'c3', header: t('doc.vault.visibility'), sort: (d) => d.visibility, cell: (d) => t(d.visibility === 'owner' ? 'doc.vault.vis.owner' : 'doc.vault.vis.staff') },
+              { id: 'c4', header: t('doc.vault.expires'), sort: (d) => d.expiresOn ?? '', cell: (d) => d.expiresOn ? formatDate(d.expiresOn, 'short', locale) : '–' },
+              { id: 'c5', header: '', align: 'right', csv: false, cell: (d) => (<><Button size="small" href={docDownload.vault(d.id)}>
+                                    {t('doc.vault.download')}
+                                  </Button>
+                                  <Button size="small" onClick={() => setUploading({ replaces: d })}>
+                                    {t('doc.vault.newVersion')}
+                                  </Button>
+                                  <IconButton aria-label={t('doc.vault.archive')} disabled={pending} onClick={() => start(async () => { const r = await run(() => archiveVaultFile(d.id), t('hr.saved')); if (r.ok) refresh(); })}>
+                                    <ArchiveOutlined />
+                                  </IconButton></>) },
+            ]}
+          />
         )
       ) : (
         <EmptyState icon={<FolderOutlined />} title={t('doc.vault.pick')} />

@@ -86,6 +86,8 @@ export function DataTable<T>({
   toolbar,
   onRowClick,
   rowTone,
+  rowAttrs,
+  highlight,
   bare,
   testId,
 }: {
@@ -112,6 +114,10 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void;
   /** Tint a row that needs attention. */
   rowTone?: (row: T) => 'warning' | 'danger' | undefined;
+  /** Marks the row a detail panel is open for. */
+  highlight?: (row: T) => boolean;
+  /** Extra attributes on a row (data-testid, data-status) for tests and styling hooks. */
+  rowAttrs?: (row: T) => Record<`data-${string}`, string | undefined>;
   /** A short, plain list: no search or filter bar (it still sorts, and exports when `exportName` is set). */
   bare?: boolean;
   testId?: string;
@@ -366,8 +372,9 @@ export function DataTable<T>({
                   <TableRow
                     key={id}
                     data-row
+                    {...rowAttrs?.(r)}
                     hover
-                    selected={on}
+                    selected={on || highlight?.(r) === true}
                     tabIndex={0}
                     onKeyDown={(e) => onRowKey(e, r, i)}
                     onClick={onRowClick ? () => onRowClick(r) : undefined}

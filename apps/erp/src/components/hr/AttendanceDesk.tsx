@@ -4,19 +4,13 @@ import UploadFile from '@mui/icons-material/UploadFile';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import MenuItem from '@mui/material/MenuItem';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { importAttendance, markAttendance } from '@/app/(dashboard)/hr/actions';
-import { TableFrame } from '@/components/DataTable';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { clockTime } from '@/lib/hr';
@@ -74,50 +68,36 @@ export function AttendanceDesk({ date, today, timeZone, rows }: { date: string; 
           {result.errors.length > 8 && <div>{t('hr.att.moreErrors', { n: result.errors.length - 8 })}</div>}
         </Alert>
       )}
-      <TableFrame testId="staff-attendance">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('hr.att.employee')}</TableCell>
-              <TableCell>{t('hr.att.status')}</TableCell>
-              <TableCell>{t('hr.att.in')}</TableCell>
-              <TableCell>{t('hr.att.out')}</TableCell>
-              <TableCell>{t('hr.att.source')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((r) => (
-              <TableRow key={r.userId}>
-                <TableCell>
-                  {r.fullName}
-                  {r.employeeCode && (
-                    <Typography variant="caption" color="text.secondary" component="span">
-                      {' '}
-                      · {r.employeeCode}
-                    </Typography>
-                  )}
-                  {r.onLeave && <Box component="span" sx={{ ml: 1 }}><StatusPill tone="info">{t('hr.att.onLeave')}</StatusPill></Box>}
-                </TableCell>
-                <TableCell sx={{ minWidth: 170 }}>
-                  <TextField select size="small" fullWidth value={edits[r.userId] ?? r.status ?? ''} onChange={(e) => setEdits({ ...edits, [r.userId]: e.target.value as StaffAttendanceStatus })} aria-label={`${t('hr.att.status')} ${r.fullName}`}>
-                    <MenuItem value="" disabled>
-                      {t('hr.att.unmarked')}
-                    </MenuItem>
-                    {STATUSES.map((s) => (
-                      <MenuItem key={s} value={s}>
-                        {t(`hr.att.s.${s}` as MessageKey)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </TableCell>
-                <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{clockTime(r.checkInAt, timeZone)}</TableCell>
-                <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{clockTime(r.checkOutAt, timeZone)}</TableCell>
-                <TableCell>{r.source ? t(`hr.att.src.${r.source}` as MessageKey) : '–'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <DataTable
+        testId="staff-attendance"
+        label={t('nav.attendance')}
+        rows={rows}
+        rowId={(r) => String(r.userId)}
+        exportName="staff-attendance"
+        columns={[
+          { id: 'c0', header: t('hr.att.employee'), rowHeader: true, sort: (r) => r.fullName, cell: (r) => (<>{r.fullName}
+                          {r.employeeCode && (
+                            <Typography variant="caption" color="text.secondary" component="span">
+                              {' '}
+                              · {r.employeeCode}
+                            </Typography>
+                          )}
+                          {r.onLeave && <Box component="span" sx={{ ml: 1 }}><StatusPill tone="info">{t('hr.att.onLeave')}</StatusPill></Box>}</>) },
+          { id: 'c1', header: t('hr.att.status'), sort: (r) => edits[r.userId] ?? r.status ?? '', cell: (r) => (<><TextField select size="small" fullWidth value={edits[r.userId] ?? r.status ?? ''} onChange={(e) => setEdits({ ...edits, [r.userId]: e.target.value as StaffAttendanceStatus })} aria-label={`${t('hr.att.status')} ${r.fullName}`}>
+                            <MenuItem value="" disabled>
+                              {t('hr.att.unmarked')}
+                            </MenuItem>
+                            {STATUSES.map((s) => (
+                              <MenuItem key={s} value={s}>
+                                {t(`hr.att.s.${s}` as MessageKey)}
+                              </MenuItem>
+                            ))}
+                          </TextField></>) },
+          { id: 'c2', header: t('hr.att.in'), sort: (r) => r.checkInAt ?? '', cell: (r) => clockTime(r.checkInAt, timeZone) },
+          { id: 'c3', header: t('hr.att.out'), sort: (r) => r.checkOutAt ?? '', cell: (r) => clockTime(r.checkOutAt, timeZone) },
+          { id: 'c4', header: t('hr.att.source'), sort: (r) => (r.source ? t(`hr.att.src.${r.source}` as MessageKey) : ''), cell: (r) => (r.source ? t(`hr.att.src.${r.source}` as MessageKey) : '–') },
+        ]}
+      />
     </>
   );
 }

@@ -4,22 +4,16 @@ import Download from '@mui/icons-material/Download';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { runAction } from '@/app/(dashboard)/payroll/actions';
-import { TableFrame } from '@/components/DataTable';
 import { pillTone, useNotice } from '@/components/hr/Common';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { useI18n } from '@/i18n/client';
@@ -28,7 +22,6 @@ import { downloadUrl, RUN_TONE, runActions, type StatutoryKind } from '@/lib/hr'
 import { formatRupees } from '@/lib/money';
 import type { PayrollRunDetail } from '@/lib/hr-types';
 
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
 type Step = 'recompute' | 'approve' | 'lock' | 'reopen';
 
 export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canApprove: boolean }) {
@@ -83,39 +76,22 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
       )}
 
       <Box sx={{ mt: 3 }}>
-        <TableFrame testId="payslips">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('hr.staff.name')}</TableCell>
-                <TableCell align="right">{t('pay.lop')}</TableCell>
-                <TableCell align="right">{t('pay.gross')}</TableCell>
-                <TableCell align="right">{t('pay.deductions')}</TableCell>
-                <TableCell align="right">{t('pay.net')}</TableCell>
-                <TableCell>{t('pay.deductionsList')}</TableCell>
-                <TableCell align="right" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {run.payslips.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    {p.user.fullName}
-                    {p.user.employeeCode ? ` · ${p.user.employeeCode}` : ''}
-                  </TableCell>
-                  <TableCell align="right" sx={num}>{p.lopDays}</TableCell>
-                  <TableCell align="right" sx={num}>{formatRupees(p.grossPaise)}</TableCell>
-                  <TableCell align="right" sx={num}>{formatRupees(p.deductionsPaise)}</TableCell>
-                  <TableCell align="right" sx={num}>{formatRupees(p.netPaise)}</TableCell>
-                  <TableCell sx={{ color: 'text.secondary' }}>{p.deductions.map((d) => `${d.code} ${formatRupees(d.amountPaise)}`).join(' · ') || '–'}</TableCell>
-                  <TableCell align="right">
-                    <Button size="small" href={downloadUrl.payslip(p.id)}>{t('pay.dl.pdf')}</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="payslips"
+          label={t('nav.payslips')}
+          rows={run.payslips}
+          rowId={(p) => String(p.id)}
+          exportName="run-payslips"
+          columns={[
+            { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (p) => p.user.fullName, cell: (p) => `${p.user.fullName} ${p.user.employeeCode ? ` · ${p.user.employeeCode}` : ''}` },
+            { id: 'c1', header: t('pay.lop'), align: 'right', sort: (p) => p.lopDays, cell: (p) => p.lopDays },
+            { id: 'c2', header: t('pay.gross'), align: 'right', sort: (p) => p.grossPaise, cell: (p) => formatRupees(p.grossPaise) },
+            { id: 'c3', header: t('pay.deductions'), align: 'right', sort: (p) => p.deductionsPaise, cell: (p) => formatRupees(p.deductionsPaise) },
+            { id: 'c4', header: t('pay.net'), align: 'right', sort: (p) => p.netPaise, cell: (p) => formatRupees(p.netPaise) },
+            { id: 'c5', header: t('pay.deductionsList'), sort: (p) => p.deductions.map((d) => `${d.code} ${formatRupees(d.amountPaise)}`).join(' · ') || '–', cell: (p) => p.deductions.map((d) => `${d.code} ${formatRupees(d.amountPaise)}`).join(' · ') || '–' },
+            { id: 'c6', header: '', align: 'right', csv: false, cell: (p) => (<><Button size="small" href={downloadUrl.payslip(p.id)}>{t('pay.dl.pdf')}</Button></>) },
+          ]}
+        />
       </Box>
 
       {confirm && (

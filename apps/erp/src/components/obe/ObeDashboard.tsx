@@ -4,15 +4,16 @@ import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { DataTable } from '@/components/ui';
 import { addAction, computeAttainment, setActionStatus } from '@/app/(dashboard)/obe/actions';
 import { useRun } from '@/components/exams/useRun';
 import { EmptyState } from '@/components/States';
@@ -70,34 +71,20 @@ export function ObeDashboard({
   const table = (rows: AttainmentRow[], title: string, id: string) => (
     <Card title={title} padded={false}>
       <Box data-testid={id} sx={{ overflowX: 'auto' }}>
-        <Table size="small" aria-label={title}>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.f.outcome')}</TableCell>
-              <TableCell align="right" sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.direct')}</TableCell>
-              <TableCell align="right" sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.indirect')}</TableCell>
-              <TableCell align="right" sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.level')}</TableCell>
-              <TableCell align="right" sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.target')}</TableCell>
-              <TableCell align="right" sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.gap')}</TableCell>
-              <TableCell sx={{ bgcolor: 'm3.surfaceContainerLow' }}>{t('obe.trend')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((r) => (
-              <TableRow key={r.targetId}>
-                <TableCell component="th" scope="row" sx={{ fontWeight: 600 }}>{r.code}</TableCell>
-                <TableCell align="right">{fmtLevel(r.direct)}</TableCell>
-                <TableCell align="right">{fmtLevel(r.indirect)}</TableCell>
-                <TableCell align="right">
-                  <StatusPill tone={PILL[levelTone(r)]}>{fmtLevel(r.combined)}</StatusPill>
-                </TableCell>
-                <TableCell align="right">{r.target}</TableCell>
-                <TableCell align="right">{r.gap === null ? '—' : r.gap}</TableCell>
-                <TableCell aria-label={r.trend}>{ARROW[r.trend]}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          label={title}
+          rows={rows}
+          rowId={(r) => r.targetId}
+          columns={[
+            { id: 'c0', header: t('obe.f.outcome'), rowHeader: true, sort: (r) => r.code, cell: (r) => r.code },
+            { id: 'c1', header: t('obe.direct'), align: 'right', sort: (r) => r.direct, cell: (r) => fmtLevel(r.direct) },
+            { id: 'c2', header: t('obe.indirect'), align: 'right', sort: (r) => r.indirect, cell: (r) => fmtLevel(r.indirect) },
+            { id: 'c3', header: t('obe.level'), align: 'right', sort: (r) => r.combined, cell: (r) => (<><StatusPill tone={PILL[levelTone(r)]}>{fmtLevel(r.combined)}</StatusPill></>) },
+            { id: 'c4', header: t('obe.target'), align: 'right', sort: (r) => r.target, cell: (r) => r.target },
+            { id: 'c5', header: t('obe.gap'), align: 'right', sort: (r) => r.gap, cell: (r) => r.gap === null ? '—' : r.gap },
+            { id: 'c6', header: t('obe.trend'), sort: (r) => r.trend, cell: (r) => ARROW[r.trend] },
+          ]}
+        />
       </Box>
     </Card>
   );

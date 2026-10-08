@@ -4,7 +4,7 @@ import Add from '@mui/icons-material/Add';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -15,16 +15,10 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { addDesignation, getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
-import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -51,43 +45,28 @@ export function StaffDirectory({ staff, designations, departments }: { staff: St
           {t('hr.staff.newDesignation')}
         </Button>
       </Box>
-      <TableFrame testId="staff-table">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('hr.staff.name')}</TableCell>
-              <TableCell>{t('hr.staff.code')}</TableCell>
-              <TableCell>{t('hr.f.department')}</TableCell>
-              <TableCell>{t('hr.f.designation')}</TableCell>
-              <TableCell>{t('hr.f.status')}</TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {staff.map((s) => (
-              <TableRow key={s.userId} hover>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {s.fullName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {s.email ?? s.phone ?? ''}
-                  </Typography>
-                </TableCell>
-                <TableCell>{s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill>}</TableCell>
-                <TableCell>{s.department?.name ?? '–'}</TableCell>
-                <TableCell>{s.designation?.name ?? '–'}</TableCell>
-                <TableCell>{s.status ? t(`hr.status.${s.status}` as MessageKey) : '–'}</TableCell>
-                <TableCell align="right">
-                  <IconButton aria-label={t('hr.staff.edit')} onClick={() => setEditing(s)}>
-                    <EditOutlined />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <DataTable
+        testId="staff-table"
+        label={t('nav.hr')}
+        rows={staff}
+        rowId={(s) => s.userId}
+        exportName="staff"
+        columns={[
+          { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => (<><Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {s.fullName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {s.email ?? s.phone ?? ''}
+                          </Typography></>) },
+          { id: 'c1', header: t('hr.staff.code'), sort: (s) => s.employeeCode ?? '', cell: (s) => s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill> },
+          { id: 'c2', header: t('hr.f.department'), sort: (s) => s.department?.name ?? '–', cell: (s) => s.department?.name ?? '–' },
+          { id: 'c3', header: t('hr.f.designation'), sort: (s) => s.designation?.name ?? '–', cell: (s) => s.designation?.name ?? '–' },
+          { id: 'c4', header: t('hr.f.status'), sort: (s) => s.status ? t(`hr.status.${s.status}` as MessageKey) : '', cell: (s) => s.status ? t(`hr.status.${s.status}` as MessageKey) : '–' },
+          { id: 'c5', header: '', align: 'right', csv: false, cell: (s) => (<><IconButton aria-label={t('hr.staff.edit')} onClick={() => setEditing(s)}>
+                            <EditOutlined />
+                          </IconButton></>) },
+        ]}
+      />
       {staff.length === 0 && <EmptyState icon={<EditOutlined />} title={t('hr.staff.empty')} />}
       {editing && <ProfileDialog person={editing} designations={designations} departments={departments} onClose={() => setEditing(null)} />}
       {adding && <DesignationDialog onClose={() => setAdding(false)} run={run} />}

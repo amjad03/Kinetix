@@ -3,18 +3,12 @@
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useState } from 'react';
 import { createSession } from '@/app/(dashboard)/exams/actions';
-import { TableFrame } from '@/components/DataTable';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { sessionTone, type ExamSession } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
@@ -72,33 +66,20 @@ export function ExamSessionsDesk({ sessions, structure, canManage }: { sessions:
       {sessions.length === 0 ? (
         <Typography color="text.secondary">{t('exm.none')}</Typography>
       ) : (
-        <TableFrame testId="exam-sessions">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('exm.f.name')}</TableCell>
-                <TableCell>{t('exm.f.term')}</TableCell>
-                <TableCell>{t('exm.dates')}</TableCell>
-                <TableCell>{t('exm.status')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sessions.map((s) => (
-                <TableRow key={s.id} hover>
-                  <TableCell>
-                    <Link href={`/exams/${s.id}`}>{s.name}</Link>
-                    {s.kind === 'supplementary' && <span style={{ marginInlineStart: 8 }}><StatusPill tone="info">{t('exm.kind.supplementary')}</StatusPill></span>}
-                  </TableCell>
-                  <TableCell>{s.term}</TableCell>
-                  <TableCell>{fmt.date(s.startsOn)} – {fmt.date(s.endsOn)}</TableCell>
-                  <TableCell>
-                    <StatusPill tone={sessionTone(s.status) === 'success' ? 'success' : sessionTone(s.status) === 'warning' ? 'warning' : 'neutral'}>{t(`exm.st.${s.status}`)}</StatusPill>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="exam-sessions"
+          label={t('nav.exams')}
+          rows={sessions}
+          rowId={(s) => String(s.id)}
+          exportName="exam-sessions"
+          columns={[
+            { id: 'c0', header: t('exm.f.name'), rowHeader: true, sort: (s) => s.name, cell: (s) => (<><Link href={`/exams/${s.id}`}>{s.name}</Link>
+                              {s.kind === 'supplementary' && <span style={{ marginInlineStart: 8 }}><StatusPill tone="info">{t('exm.kind.supplementary')}</StatusPill></span>}</>) },
+            { id: 'c1', header: t('exm.f.term'), sort: (s) => s.term, cell: (s) => s.term },
+            { id: 'c2', header: t('exm.dates'), sort: (s) => `${fmt.date(s.startsOn)} – ${fmt.date(s.endsOn)}`, cell: (s) => `${fmt.date(s.startsOn)} – ${fmt.date(s.endsOn)}` },
+            { id: 'c3', header: t('exm.status'), sort: (s) => t(`exm.st.${s.status}`), cell: (s) => (<><StatusPill tone={sessionTone(s.status) === 'success' ? 'success' : sessionTone(s.status) === 'warning' ? 'warning' : 'neutral'}>{t(`exm.st.${s.status}`)}</StatusPill></>) },
+          ]}
+        />
       )}
     </>
   );

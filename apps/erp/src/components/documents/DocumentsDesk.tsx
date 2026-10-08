@@ -11,17 +11,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { bulkIssue, classStudents, decideCertificate, requestCertificate } from '@/app/(dashboard)/documents/actions';
-import { Card } from '@/components/ui';
+import { DataTable } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -75,52 +70,56 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
           {t('doc.noneBody')}
         </EmptyState>
       ) : (
-        <Card padded={false} testId="certificate-requests" sx={{ overflowX: 'auto' }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('doc.certificate')}</TableCell>
-                <TableCell>{t('doc.subject')}</TableCell>
-                <TableCell>{t('doc.purpose')}</TableCell>
-                <TableCell>{t('hr.f.status')}</TableCell>
-                <TableCell>{t('doc.serial')}</TableCell>
-                <TableCell align="right" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {requests.map((r) => {
-                // HR managers decide staff certificates only; revoking is for the principal and administrator (the API checks too).
-                const can = certActions(r.status, { approver: r.subjectType === 'staff' ? approver : canBulk, office: true });
-                if (!canBulk) can.revoke = false;
-                return (
-                  <TableRow key={r.id}>
-                    <TableCell>{r.template.name}</TableCell>
-                    <TableCell>
-                      {r.subject.name}
-                      {r.subject.detail && (
-                        <Typography variant="caption" color="text.secondary" component="div">
-                          {r.subject.detail}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: 220 }}>{r.purpose || '–'}</TableCell>
-                    <TableCell>
-                      <Chip size="small" color={CERT_TONE[r.status]} label={t(`doc.status.${r.status}` as MessageKey)} />
-                    </TableCell>
-                    <TableCell>{r.serialNo ?? '–'}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {can.reject && <Button size="small" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'reject' }); }}>{t('doc.reject')}</Button>}
+        <DataTable
+            testId="certificate-requests"
+            label={t('doc.certificate')}
+            rows={requests}
+            rowId={(r) => r.id}
+            exportName="certificate-requests"
+            columns={[
+              { id: 'certificate', header: t('doc.certificate'), rowHeader: true, sort: (r) => r.template.name, cell: (r) => r.template.name },
+              {
+                id: 'subject',
+                header: t('doc.subject'),
+                sort: (r) => r.subject.name,
+                csv: (r) => [r.subject.name, r.subject.detail].filter(Boolean).join(' · '),
+                cell: (r) => (
+                  <>
+                    {r.subject.name}
+                    {r.subject.detail && (
+                      <Typography variant="caption" color="text.secondary" component="div">
+                        {r.subject.detail}
+                      </Typography>
+                    )}
+                  </>
+                ),
+              },
+              { id: 'purpose', header: t('doc.purpose'), sort: (r) => r.purpose, cell: (r) => <Box sx={{ maxWidth: 220 }}>{r.purpose || '–'}</Box> },
+              { id: 'status', header: t('hr.f.status'), sort: (r) => t(`doc.status.${r.status}` as MessageKey), cell: (r) => <Chip size="small" color={CERT_TONE[r.status]} label={t(`doc.status.${r.status}` as MessageKey)} /> },
+              { id: 'serial', header: t('doc.serial'), sort: (r) => r.serialNo ?? '', cell: (r) => r.serialNo ?? '–' },
+              {
+                id: 'actions',
+                header: '',
+                csv: false,
+                align: 'right',
+                cell: (r) => {
+                  // HR managers decide staff certificates only; revoking is for the principal and administrator (the API checks too).
+                  const can = certActions(r.status, { approver: r.subjectType === 'staff' ? approver : canBulk, office: true });
+                  if (!canBulk) can.revoke = false;
+                  return (
+                    <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                                            {can.reject && <Button size="small" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'reject' }); }}>{t('doc.reject')}</Button>}
                       {can.approve && <Button size="small" variant="contained" disabled={pending} onClick={() => step(r, 'approve')}>{t('doc.approve')}</Button>}
                       {can.issue && <Button size="small" variant="contained" disabled={pending} onClick={() => step(r, 'issue')}>{t('doc.issue')}</Button>}
                       {can.pdf && <Button size="small" href={docDownload.certificate(r.id)} target="_blank">{t('doc.openPdf')}</Button>}
                       {can.revoke && <Button size="small" color="error" disabled={pending} onClick={() => { setText(''); setAsking({ r, step: 'revoke' }); }}>{t('doc.revoke')}</Button>}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Card>
+                    
+                    </Box>
+                  );
+                },
+              },
+            ]}
+          />
       )}
 
       {asking && (

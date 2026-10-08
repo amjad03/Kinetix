@@ -13,16 +13,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { saveTemplate } from '@/app/(dashboard)/documents/actions';
-import { Card } from '@/components/ui';
+import { DataTable } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -46,42 +41,26 @@ export function TemplatesManager({ templates, canEdit }: { templates: Certificat
           </Button>
         </Box>
       )}
-      <Card padded={false} testId="templates" sx={{ overflowX: 'auto' }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('hr.leave.name')}</TableCell>
-              <TableCell>{t('doc.tpl.kind')}</TableCell>
-              <TableCell>{t('doc.tpl.subject')}</TableCell>
-              <TableCell>{t('doc.tpl.prefix')}</TableCell>
-              <TableCell>{t('doc.tpl.version')}</TableCell>
-              <TableCell>{t('hr.f.status')}</TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {templates.map((x) => (
-              <TableRow key={x.id}>
-                <TableCell>{x.name}</TableCell>
-                <TableCell>{t(`doc.kind.${x.kind}` as MessageKey)}</TableCell>
-                <TableCell>{t(`doc.subject.${x.subjectType}` as MessageKey)}</TableCell>
-                <TableCell>{x.serialPrefix}</TableCell>
-                <TableCell>{x.version}</TableCell>
-                <TableCell>
-                  <Chip size="small" color={x.active ? 'success' : 'default'} label={t(x.active ? 'doc.tpl.active' : 'doc.tpl.inactive')} />
-                </TableCell>
-                <TableCell align="right">
-                  {canEdit && (
-                    <Button size="small" onClick={() => setEditing(x)}>
-                      {t('hr.edit')}
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+      <DataTable
+        testId="templates"
+        label={t('nav.documents')}
+        rows={templates}
+        rowId={(x) => String(x.id)}
+        exportName="document-templates"
+        columns={[
+          { id: 'c0', header: t('hr.leave.name'), rowHeader: true, sort: (x) => x.name, cell: (x) => x.name },
+          { id: 'c1', header: t('doc.tpl.kind'), sort: (x) => t(`doc.kind.${x.kind}` as MessageKey), cell: (x) => t(`doc.kind.${x.kind}` as MessageKey) },
+          { id: 'c2', header: t('doc.tpl.subject'), sort: (x) => t(`doc.subject.${x.subjectType}` as MessageKey), cell: (x) => t(`doc.subject.${x.subjectType}` as MessageKey) },
+          { id: 'c3', header: t('doc.tpl.prefix'), sort: (x) => x.serialPrefix, cell: (x) => x.serialPrefix },
+          { id: 'c4', header: t('doc.tpl.version'), sort: (x) => x.version, cell: (x) => x.version },
+          { id: 'c5', header: t('hr.f.status'), sort: (x) => x.active ? 1 : 0, cell: (x) => (<><Chip size="small" color={x.active ? 'success' : 'default'} label={t(x.active ? 'doc.tpl.active' : 'doc.tpl.inactive')} /></>) },
+          { id: 'c6', header: '', align: 'right', csv: false, cell: (x) => canEdit && (
+                            <Button size="small" onClick={() => setEditing(x)}>
+                              {t('hr.edit')}
+                            </Button>
+                          ) },
+        ]}
+      />
       {editing && <TemplateDialog template={editing === 'new' ? null : editing} onClose={() => setEditing(null)} run={run} />}
     </>
   );

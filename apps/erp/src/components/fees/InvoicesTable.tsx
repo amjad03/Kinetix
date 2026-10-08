@@ -8,7 +8,6 @@ import Search from '@mui/icons-material/Search';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -23,11 +22,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -35,9 +29,8 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { cancelInvoice, invoicePayments, recordPayment } from '@/app/(dashboard)/fees/actions';
-import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { daysBetween } from '@/lib/dates';
 import { formatRupees, methodLabel, paiseToInput, PAY_METHODS, referenceKey, rupeesToPaise, type CounterMethod } from '@/lib/money';
@@ -113,61 +106,65 @@ export function InvoicesTable({ invoices, today, timeZone }: { invoices: FeeInvo
           {invoices.length ? t('fees.noMatchBody') : t('fees.noInvoicesBody')}
         </EmptyState>
       ) : (
-        <TableFrame testId="invoices-table">
-          <Table sx={{ minWidth: 900 }} size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('fees.col.student')}</TableCell>
-                <TableCell>{t('fees.col.fee')}</TableCell>
-                <TableCell align="right">{t('fees.col.amount')}</TableCell>
-                <TableCell align="right">{t('fees.col.balance')}</TableCell>
-                <TableCell>{t('fees.col.due')}</TableCell>
-                <TableCell>{t('fees.col.status')}</TableCell>
-                <TableCell aria-label={t('fees.col.actions')} />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((inv) => {
-                const bal = inv.amountPaise - inv.paidPaise;
-                return (
-                  <TableRow key={inv.id} hover data-testid="invoice-row" sx={{ '& td': { py: 1.25 } }}>
-                    <TableCell>
-                      <Typography variant="subtitle2">{inv.student.fullName}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {[inv.student.rollNo, inv.className].filter(Boolean).join(' · ')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{inv.title}</TableCell>
-                    <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-                      {formatRupees(inv.amountPaise)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: inv.status === 'due' ? 'text.primary' : 'text.secondary' }}>
-                      {inv.status === 'cancelled' ? '—' : formatRupees(Math.max(0, bal))}
-                    </TableCell>
-                    <TableCell>
-                      <DueCell inv={inv} today={today} />
-                    </TableCell>
-                    <TableCell>
-                      <StatusCell inv={inv} today={today} />
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap', pr: 1 }}>
-                      {inv.status === 'due' && (
-                        <Button size="small" variant="outlined" onClick={() => setPaying(inv)} sx={{ mr: 0.5 }}>
-                          {t('fees.recordPayment')}
-                        </Button>
-                      )}
-                      {(inv.paidPaise > 0 || inv.status === 'due') && (
-                        <IconButton size="small" aria-label={t('fees.moreFor', { name: inv.student.fullName })} onClick={(e) => setMenu({ el: e.currentTarget, inv })} data-testid="invoice-menu">
-                          <MoreVert fontSize="small" />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="invoices-table"
+          label={t('nav.fees')}
+          rows={rows}
+          rowId={(inv) => inv.id}
+          bare
+          rowAttrs={() => ({ 'data-testid': 'invoice-row' })}
+          columns={[
+            {
+              id: 'student',
+              header: t('fees.col.student'),
+              rowHeader: true,
+              sort: (inv) => inv.student.fullName,
+              cell: (inv) => (
+                <>
+                  <Typography variant="subtitle2">{inv.student.fullName}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {[inv.student.rollNo, inv.className].filter(Boolean).join(' · ')}
+                  </Typography>
+                </>
+              ),
+            },
+            { id: 'fee', header: t('fees.col.fee'), sort: (inv) => inv.title, cell: (inv) => inv.title },
+            { id: 'amount', header: t('fees.col.amount'), align: 'right', sort: (inv) => inv.amountPaise / 100, cell: (inv) => <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{formatRupees(inv.amountPaise)}</Box> },
+            {
+              id: 'balance',
+              header: t('fees.col.balance'),
+              align: 'right',
+              sort: (inv) => (inv.status === 'cancelled' ? 0 : Math.max(0, inv.amountPaise - inv.paidPaise) / 100),
+              cell: (inv) => (
+                <Box component="span" sx={{ whiteSpace: 'nowrap', color: inv.status === 'due' ? 'text.primary' : 'text.secondary' }}>
+                  {inv.status === 'cancelled' ? '—' : formatRupees(Math.max(0, inv.amountPaise - inv.paidPaise))}
+                </Box>
+              ),
+            },
+            { id: 'due', header: t('fees.col.due'), sort: (inv) => inv.dueOn, cell: (inv) => <DueCell inv={inv} today={today} /> },
+            { id: 'status', header: t('fees.col.status'), sort: (inv) => inv.status, cell: (inv) => <StatusCell inv={inv} today={today} /> },
+            {
+              id: 'actions',
+              header: '',
+              csv: false,
+              align: 'right',
+              cell: (inv) => (
+                <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                  {inv.status === 'due' && (
+                    <Button size="small" variant="outlined" onClick={() => setPaying(inv)} sx={{ mr: 0.5 }}>
+                      {t('fees.recordPayment')}
+                    </Button>
+                  )}
+                  {(inv.paidPaise > 0 || inv.status === 'due') && (
+                    <IconButton size="small" aria-label={t('fees.moreFor', { name: inv.student.fullName })} onClick={(e) => setMenu({ el: e.currentTarget, inv })} data-testid="invoice-menu">
+                      <MoreVert fontSize="small" />
+                    </IconButton>
+                  )}
+                </Box>
+              ),
+            },
+          ]}
+        />
       )}
 
       <Menu anchorEl={menu?.el} open={!!menu} onClose={() => setMenu(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }}>

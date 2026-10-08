@@ -5,18 +5,13 @@ import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import { StatusPill } from '@/components/ui';
+import { DataTable, StatusPill } from '@/components/ui';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Tab from '@mui/material/Tab';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -25,7 +20,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addComponent, createRun, loadStructures, saveSettings, saveStructure } from '@/app/(dashboard)/payroll/actions';
-import { TableFrame } from '@/components/DataTable';
 import { pillTone, useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -36,7 +30,6 @@ import { formatRupees, paiseToInput, rupeesToPaise } from '@/lib/money';
 import type { PayrollRunSummary, PayrollSettings, SalaryComponent, SalaryStructure, StaffSummary, TallyLedgers } from '@/lib/hr-types';
 
 export type PayrollTab = 'runs' | 'structures' | 'components' | 'settings';
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
 export function PayrollDesk({ initialTab, runs, components, settings, staff, thisMonth, canApprove }: { initialTab: PayrollTab; runs: PayrollRunSummary[]; components: SalaryComponent[]; settings: PayrollSettings; staff: StaffSummary[]; thisMonth: string; canApprove: boolean }) {
   const { t } = useI18n();
@@ -93,40 +86,24 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
           {t('pay.noRunsBody')}
         </EmptyState>
       ) : (
-        <TableFrame testId="payroll-runs">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('pay.month')}</TableCell>
-                <TableCell>{t('hr.f.status')}</TableCell>
-                <TableCell align="right">{t('pay.staff')}</TableCell>
-                <TableCell align="right">{t('pay.gross')}</TableCell>
-                <TableCell align="right">{t('pay.net')}</TableCell>
-                <TableCell align="right">{t('pay.cost')}</TableCell>
-                <TableCell align="right" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {runs.map((r) => (
-                <TableRow key={r.id} hover>
-                  <TableCell>{formatMonth(`${r.month}-01`, locale)}</TableCell>
-                  <TableCell>
-                    <StatusPill tone={pillTone(RUN_TONE[r.status])}>{t(`pay.status.${r.status}` as MessageKey)}</StatusPill>
-                  </TableCell>
-                  <TableCell align="right" sx={num}>{r.staffCount}</TableCell>
-                  <TableCell align="right" sx={num}>{formatRupees(r.grossPaise)}</TableCell>
-                  <TableCell align="right" sx={num}>{formatRupees(r.netPaise)}</TableCell>
-                  <TableCell align="right" sx={num}>{formatRupees(r.employerCostPaise)}</TableCell>
-                  <TableCell align="right">
-                    <Button size="small" component={Link} href={`/payroll/runs/${r.id}`}>
-                      {t('pay.open')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="payroll-runs"
+          label={t('nav.payroll')}
+          rows={runs}
+          rowId={(r) => String(r.id)}
+          exportName="payroll-runs"
+          columns={[
+            { id: 'c0', header: t('pay.month'), rowHeader: true, sort: (r) => r.month, cell: (r) => formatMonth(`${r.month}-01`, locale) },
+            { id: 'c1', header: t('hr.f.status'), sort: (r) => r.status, cell: (r) => (<><StatusPill tone={pillTone(RUN_TONE[r.status])}>{t(`pay.status.${r.status}` as MessageKey)}</StatusPill></>) },
+            { id: 'c2', header: t('pay.staff'), align: 'right', sort: (r) => r.staffCount, cell: (r) => r.staffCount },
+            { id: 'c3', header: t('pay.gross'), align: 'right', sort: (r) => r.grossPaise, cell: (r) => formatRupees(r.grossPaise) },
+            { id: 'c4', header: t('pay.net'), align: 'right', sort: (r) => r.netPaise, cell: (r) => formatRupees(r.netPaise) },
+            { id: 'c5', header: t('pay.cost'), align: 'right', sort: (r) => r.employerCostPaise, cell: (r) => formatRupees(r.employerCostPaise) },
+            { id: 'c6', header: '', align: 'right', csv: false, cell: (r) => (<><Button size="small" component={Link} href={`/payroll/runs/${r.id}`}>
+                                {t('pay.open')}
+                              </Button></>) },
+          ]}
+        />
       )}
     </>
   );
@@ -233,30 +210,20 @@ function Components({ components }: { components: SalaryComponent[] }) {
   return (
     <>
       {view}
-      <TableFrame testId="components">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('hr.leave.code')}</TableCell>
-              <TableCell>{t('hr.leave.name')}</TableCell>
-              <TableCell>{t('pay.co.kind')}</TableCell>
-              <TableCell>{t('pay.co.pfWage')}</TableCell>
-              <TableCell>{t('pay.co.taxable')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {components.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell>{c.code}</TableCell>
-                <TableCell>{c.name}</TableCell>
-                <TableCell>{t(`pay.co.${c.kind}` as MessageKey)}</TableCell>
-                <TableCell>{c.pfWage ? t('hr.yes') : t('hr.no')}</TableCell>
-                <TableCell>{c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <DataTable
+        testId="components"
+        label={t('nav.payroll')}
+        rows={components}
+        rowId={(c) => String(c.id)}
+        exportName="salary-components"
+        columns={[
+          { id: 'c0', header: t('hr.leave.code'), rowHeader: true, sort: (c) => c.code, cell: (c) => c.code },
+          { id: 'c1', header: t('hr.leave.name'), sort: (c) => c.name, cell: (c) => c.name },
+          { id: 'c2', header: t('pay.co.kind'), sort: (c) => t(`pay.co.${c.kind}` as MessageKey), cell: (c) => t(`pay.co.${c.kind}` as MessageKey) },
+          { id: 'c3', header: t('pay.co.pfWage'), sort: (c) => c.pfWage ? t('hr.yes') : t('hr.no'), cell: (c) => c.pfWage ? t('hr.yes') : t('hr.no') },
+          { id: 'c4', header: t('pay.co.taxable'), sort: (c) => c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–', cell: (c) => c.kind === 'earning' ? (c.taxable ? t('hr.yes') : t('hr.no')) : '–' },
+        ]}
+      />
       <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap', mt: 3 }}>
         <TextField size="small" label={t('hr.leave.code')} value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} sx={{ width: 120 }} />
         <TextField size="small" label={t('hr.leave.name')} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
