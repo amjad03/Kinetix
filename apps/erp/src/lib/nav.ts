@@ -7,7 +7,7 @@ export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
   | 'campus' | 'inventory' | 'communication' | 'reports' | 'settings'
   | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'devices' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
-  | 'hostel' | 'canteen' | 'campusLife' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration';
+  | 'hostel' | 'canteen' | 'campusLife' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills';
 
 export interface NavItem {
   href: string;
@@ -129,6 +129,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: 'hostel' },
       { href: '/canteen', label: 'nav.canteen', section: 'canteen', icon: 'canteen' },
       { href: '/campus-life', label: 'nav.campusLife', section: 'campusLife', icon: 'campusLife' },
+      { href: '/skills', label: 'nav.skills', section: 'skills', icon: 'skills' },
     ],
   },
   {

@@ -43,6 +43,7 @@ import { CampusLifeModule } from './campus-life/campus-life.module.js';
 import { MentoringModule } from './mentoring/mentoring.module.js';
 import { CourseFilesModule } from './course-files/course-files.module.js';
 import { AcademicAuditModule } from './academic-audit/academic-audit.module.js';
+import { SkillsModule } from './skills/skills.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
@@ -134,6 +135,7 @@ import { SearchModule } from './search/search.controller.js';
     MentoringModule,
     CourseFilesModule,
     AcademicAuditModule,
+    SkillsModule,
     DocumentsModule,
     PlatformModule,
     AnalyticsModule,

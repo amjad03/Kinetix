@@ -23,6 +23,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   'course-file': (id) => `/v1/course-files/${id}/download`,
   payslip: (id) => `/v1/payroll/payslips/${id}/pdf`,
   'survey-csv': (id) => `/v1/surveys/${id}/export.csv`,
+  passport: (id) => `/v1/passport/students/${id}/pdf`,
 };
 
 /**
