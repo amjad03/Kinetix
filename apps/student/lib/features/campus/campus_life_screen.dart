@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api.dart';
@@ -201,6 +202,15 @@ class _CampusLifeScreenState extends State<CampusLifeScreen> {
               else ...[
                 Text(l.passShowAtDoor, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
                 const SizedBox(height: Kx.s4),
+                Center(
+                  child: Container(
+                    key: Key('qr-${r.id}'),
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(Kx.s8),
+                    child: QrImageView(data: r.qrToken, size: 160, backgroundColor: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: Kx.s8),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(Kx.s12),

@@ -193,6 +193,12 @@ abstract class ParentApi {
   Future<void> registerForEvent(String eventId, String childId);
   Future<void> cancelEventRegistration(String eventId, String childId);
 
+  /// The child's event registrations with the QR token to show at the door (`GET /v1/campus-life/me/registrations`).
+  Future<List<EventPass>> eventPasses(String childId);
+
+  /// A 1-5 rating and comment for an event the child was checked in to (`POST /v1/campus-life/events/:id/feedback`).
+  Future<void> giveEventFeedback(String eventId, String childId, {required int rating, String comment = ''});
+
   /// The child's school bus: route, stop, pickup time and the bus now (`GET /v1/transport/students/:id`).
   Future<StudentBus> bus(String childId);
 
@@ -570,6 +576,14 @@ class HttpParentApi implements ParentApi {
   @override
   Future<void> cancelEventRegistration(String eventId, String childId) async =>
       _send('POST', '/v1/campus-life/events/$eventId/cancel-registration', body: {'studentId': childId});
+
+  @override
+  Future<List<EventPass>> eventPasses(String childId) async =>
+      [for (final r in await _send('GET', '/v1/campus-life/me/registrations?studentId=$childId') as List) EventPass.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> giveEventFeedback(String eventId, String childId, {required int rating, String comment = ''}) async =>
+      _send('POST', '/v1/campus-life/events/$eventId/feedback', body: {'studentId': childId, 'rating': rating, 'comment': comment});
 
   @override
   Future<ChildMarks> marks(String childId) async =>

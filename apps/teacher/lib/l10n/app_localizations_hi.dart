@@ -2289,4 +2289,99 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get clubNoMembers => 'अभी कोई सदस्य नहीं।';
+
+  @override
+  String get insightsTitle => 'विद्यार्थी जानकारी';
+
+  @override
+  String get insightsBody => 'कक्षा की उपस्थिति, अंक और जोखिम संकेत';
+
+  @override
+  String get insightsAttendance => 'उपस्थिति';
+
+  @override
+  String get insightsMarks => 'औसत अंक';
+
+  @override
+  String get insightsFlagged => 'ध्यान चाहिए';
+
+  @override
+  String insightsAttendanceValue(String value) {
+    return 'उपस्थिति $value';
+  }
+
+  @override
+  String insightsMarksValue(String value) {
+    return 'अंक $value';
+  }
+
+  @override
+  String get copilotTitle => 'एआई सहायक';
+
+  @override
+  String get copilotBody => 'व्याख्या, प्रश्नोत्तरी, गृहकार्य और पाठ योजना के मसौदे';
+
+  @override
+  String get copilotExplain => 'समझाएँ';
+
+  @override
+  String get copilotQuiz => 'प्रश्नोत्तरी';
+
+  @override
+  String get copilotHomework => 'गृहकार्य';
+
+  @override
+  String get copilotLessonPlan => 'पाठ योजना';
+
+  @override
+  String get copilotQuestionLabel => 'आप क्या समझाना चाहते हैं?';
+
+  @override
+  String get copilotTopicLabel => 'विषय';
+
+  @override
+  String copilotHowMany(int n) {
+    return 'प्रश्न: $n';
+  }
+
+  @override
+  String copilotMinutes(int n) {
+    return 'मिनट: $n';
+  }
+
+  @override
+  String get copilotGenerate => 'मसौदा बनाएँ';
+
+  @override
+  String get copilotDraftNote => 'एआई का मसौदा। उपयोग से पहले जाँच लें; यहाँ से विद्यार्थियों को कुछ नहीं भेजा जाता।';
+
+  @override
+  String get copilotSampleDraft => 'केवल नमूना: इस विद्यालय के सर्वर पर अभी कोई एआई मॉडल जुड़ा नहीं है। उपयोग से पहले सब कुछ जाँच लें।';
+
+  @override
+  String get copilotKeyPoints => 'मुख्य बिंदु';
+
+  @override
+  String get copilotFollowUps => 'विद्यार्थी आगे पूछ सकते हैं';
+
+  @override
+  String get copilotQuestions => 'प्रश्न';
+
+  @override
+  String get copilotObjectives => 'उद्देश्य';
+
+  @override
+  String get copilotSteps => 'चरण';
+
+  @override
+  String get copilotMaterials => 'सामग्री';
+
+  @override
+  String get copilotAssessment => 'मूल्यांकन';
+
+  @override
+  String get copilotCopy => 'मसौदा कॉपी करें';
+
+  @override
+  String get copilotCopied => 'मसौदा कॉपी हो गया।';
 }

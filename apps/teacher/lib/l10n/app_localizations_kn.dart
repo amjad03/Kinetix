@@ -2295,4 +2295,99 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get clubNoMembers => 'ಇನ್ನೂ ಸದಸ್ಯರಿಲ್ಲ.';
+
+  @override
+  String get insightsTitle => 'ವಿದ್ಯಾರ್ಥಿ ಒಳನೋಟ';
+
+  @override
+  String get insightsBody => 'ತರಗತಿಯ ಹಾಜರಾತಿ, ಅಂಕಗಳು ಮತ್ತು ಅಪಾಯದ ಸೂಚನೆ';
+
+  @override
+  String get insightsAttendance => 'ಹಾಜರಾತಿ';
+
+  @override
+  String get insightsMarks => 'ಸರಾಸರಿ ಅಂಕ';
+
+  @override
+  String get insightsFlagged => 'ಗಮನ ಬೇಕು';
+
+  @override
+  String insightsAttendanceValue(String value) {
+    return 'ಹಾಜರಾತಿ $value';
+  }
+
+  @override
+  String insightsMarksValue(String value) {
+    return 'ಅಂಕ $value';
+  }
+
+  @override
+  String get copilotTitle => 'ಎಐ ಸಹಾಯಕ';
+
+  @override
+  String get copilotBody => 'ವಿವರಣೆ, ರಸಪ್ರಶ್ನೆ, ಮನೆಕೆಲಸ ಮತ್ತು ಪಾಠ ಯೋಜನೆಯ ಕರಡುಗಳು';
+
+  @override
+  String get copilotExplain => 'ವಿವರಿಸಿ';
+
+  @override
+  String get copilotQuiz => 'ರಸಪ್ರಶ್ನೆ';
+
+  @override
+  String get copilotHomework => 'ಮನೆಕೆಲಸ';
+
+  @override
+  String get copilotLessonPlan => 'ಪಾಠ ಯೋಜನೆ';
+
+  @override
+  String get copilotQuestionLabel => 'ಏನನ್ನು ವಿವರಿಸಬೇಕು?';
+
+  @override
+  String get copilotTopicLabel => 'ವಿಷಯ';
+
+  @override
+  String copilotHowMany(int n) {
+    return 'ಪ್ರಶ್ನೆಗಳು: $n';
+  }
+
+  @override
+  String copilotMinutes(int n) {
+    return 'ನಿಮಿಷಗಳು: $n';
+  }
+
+  @override
+  String get copilotGenerate => 'ಕರಡು ರಚಿಸಿ';
+
+  @override
+  String get copilotDraftNote => 'ಎಐ ಕರಡು. ಬಳಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ; ಇಲ್ಲಿಂದ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಏನನ್ನೂ ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.';
+
+  @override
+  String get copilotSampleDraft => 'ಮಾದರಿ ಮಾತ್ರ: ಈ ಶಾಲೆಯ ಸರ್ವರ್‌ಗೆ ಇನ್ನೂ ಎಐ ಮಾದರಿ ಜೋಡಿಸಿಲ್ಲ. ಬಳಸುವ ಮೊದಲು ಎಲ್ಲವನ್ನೂ ಪರಿಶೀಲಿಸಿ.';
+
+  @override
+  String get copilotKeyPoints => 'ಮುಖ್ಯ ಅಂಶಗಳು';
+
+  @override
+  String get copilotFollowUps => 'ವಿದ್ಯಾರ್ಥಿಗಳು ಮುಂದೆ ಕೇಳಬಹುದು';
+
+  @override
+  String get copilotQuestions => 'ಪ್ರಶ್ನೆಗಳು';
+
+  @override
+  String get copilotObjectives => 'ಉದ್ದೇಶಗಳು';
+
+  @override
+  String get copilotSteps => 'ಹಂತಗಳು';
+
+  @override
+  String get copilotMaterials => 'ಸಾಮಗ್ರಿ';
+
+  @override
+  String get copilotAssessment => 'ಮೌಲ್ಯಮಾಪನ';
+
+  @override
+  String get copilotCopy => 'ಕರಡು ನಕಲಿಸಿ';
+
+  @override
+  String get copilotCopied => 'ಕರಡು ನಕಲಾಗಿದೆ.';
 }

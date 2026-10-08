@@ -735,5 +735,18 @@
   "eventCancelRegistration": "पंजीकरण रद्द करें",
   "eventRegisteredDone": "कार्यक्रम के लिए पंजीकरण हो गया",
   "eventWaitlistDone": "प्रतीक्षा सूची में जोड़ा गया",
-  "eventCancelled": "पंजीकरण रद्द हो गया"
+  "eventCancelled": "पंजीकरण रद्द हो गया",
+  "lifePasses": "कार्यक्रम पास",
+  "lifePassesSub": "क्यूआर कोड और प्रतिक्रिया",
+  "passesTitle": "{name} के कार्यक्रम पास",
+  "@passesTitle": {"placeholders": {"name": {"type": "String"}}},
+  "passesNone": "अभी कोई कार्यक्रम पंजीकरण नहीं है।",
+  "passShowAtDoor": "दरवाज़े पर यह कोड दिखाएँ",
+  "passCheckedIn": "प्रवेश दर्ज",
+  "passFeedback": "प्रतिक्रिया दें",
+  "passFeedbackDone": "प्रतिक्रिया भेजी गई",
+  "passFeedbackTitle": "कैसा रहा?",
+  "passFeedbackComment": "टिप्पणी (वैकल्पिक)",
+  "passFeedbackSend": "भेजें",
+  "passFeedbackThanks": "आपकी प्रतिक्रिया के लिए धन्यवाद।"
 }

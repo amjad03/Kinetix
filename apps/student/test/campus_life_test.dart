@@ -9,6 +9,7 @@ import 'package:kinetix_student/features/campus/campus_life_screen.dart';
 import 'package:kinetix_student/features/campus/course_registration_screen.dart';
 import 'package:kinetix_student/features/campus/passport_screen.dart';
 import 'package:kinetix_student/features/campus/surveys_screen.dart';
+import 'package:kinetix_student/features/recordings/class_notes_screen.dart';
 import 'package:kinetix_student/l10n/l10n.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -183,6 +184,23 @@ void main() {
     });
   });
 
+  group('Class notes and recaps', () {
+    testWidgets('lists recaps and boards; a recap shows the summary and key points', (tester) async {
+      phone(tester);
+      await tester.pumpWidget(host(ClassNotesScreen(api: api, studentId: 's1')));
+      await tester.pumpAndSettle();
+      expect(find.text('Lesson recaps'), findsOneWidget);
+      expect(find.text('Whiteboards'), findsOneWidget);
+      expect(find.byKey(const Key('recap-r1')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('recap-r1')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('recording r1'));
+      expect(find.text('How companies issue shares.'), findsOneWidget);
+      expect(find.text('Shares can be issued at par or at a premium'), findsOneWidget);
+      expect(find.byKey(const Key('watchLesson')), findsOneWidget);
+    });
+  });
+
   group('Clubs and events', () {
     Future<void> pump(WidgetTester tester) async {
       phone(tester);
@@ -217,6 +235,7 @@ void main() {
       expect(find.text('You are registered'), findsWidgets);
       await tab(tester, 'My passes');
       expect(find.byKey(const Key('token-r-ev1')), findsOneWidget);
+      expect(find.byKey(const Key('qr-r-ev1')), findsOneWidget);
       expect(find.text('tok-ev1-0001'), findsOneWidget);
       expect(find.text('Show this code at the door'), findsWidgets);
       await tab(tester, 'Events');

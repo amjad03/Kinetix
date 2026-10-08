@@ -377,3 +377,35 @@ class CampusEvent {
 
   bool get registered => registrationStatus != null;
 }
+
+/// One of the child's event registrations with the QR token to show at the door
+/// (`GET /v1/campus-life/me/registrations`).
+class EventPass {
+  const EventPass({required this.id, required this.eventId, required this.title, required this.venue, required this.startsAt, required this.status, required this.qrToken, required this.checkedIn, required this.feedbackGiven, required this.canGiveFeedback});
+
+  factory EventPass.fromJson(Map<String, dynamic> j) => EventPass(
+    id: j['id'] as String,
+    eventId: j['eventId'] as String,
+    title: j['title'] as String,
+    venue: j['venue'] as String? ?? '',
+    startsAt: _at(j['startsAt']),
+    status: j['status'] as String,
+    qrToken: j['qrToken'] as String? ?? '',
+    checkedIn: j['checkedIn'] as bool? ?? false,
+    feedbackGiven: j['feedbackGiven'] as bool? ?? false,
+    canGiveFeedback: j['canGiveFeedback'] as bool? ?? false,
+  );
+
+  final String id;
+  final String eventId;
+  final String title;
+  final String venue;
+  final DateTime startsAt;
+
+  /// registered or waitlisted.
+  final String status;
+  final String qrToken;
+  final bool checkedIn;
+  final bool feedbackGiven;
+  final bool canGiveFeedback;
+}

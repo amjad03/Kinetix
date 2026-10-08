@@ -64,7 +64,7 @@ void main() {
     await openHub(tester, 'lifeDiary');
     await tester.pageBack();
     await tester.pumpAndSettle();
-    for (final k in ['lifeDiary', 'lifePtm', 'lifeEarly', 'lifeHealth', 'lifePassport', 'lifeSurveys', 'lifeEvents']) {
+    for (final k in ['lifeDiary', 'lifePtm', 'lifeEarly', 'lifeHealth', 'lifePassport', 'lifeSurveys', 'lifePasses', 'lifeEvents']) {
       expect(find.byKey(Key(k)), findsOneWidget);
     }
   });
@@ -231,6 +231,25 @@ void main() {
       await tester.tap(find.byKey(const Key('opt-q2-Car')));
       await tapKey(tester, 'submitSurvey');
       expect(api.calls, contains('answerSurvey sv1 2'));
+    });
+  });
+
+  group('event passes', () {
+    testWidgets('shows the QR code to show at the door and sends feedback after check-in', (tester) async {
+      await openHub(tester, 'lifePasses');
+      expect(api.calls, contains('eventPasses c1'));
+      expect(find.byKey(const Key('qr-p1')), findsOneWidget);
+      expect(find.text('abc12345'), findsOneWidget);
+      // The checked-in pass has no QR, only feedback.
+      expect(find.byKey(const Key('qr-p2')), findsNothing);
+      await tester.tap(find.byKey(const Key('feedback-p2')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('star-4')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('sendFeedback')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('eventFeedback ev0 c1 4 '));
+      expect(find.text('Feedback sent'), findsOneWidget);
     });
   });
 

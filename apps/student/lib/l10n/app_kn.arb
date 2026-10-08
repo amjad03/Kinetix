@@ -828,5 +828,12 @@
   "passFeedbackTitle": "ಹೇಗಿತ್ತು?",
   "passFeedbackComment": "ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)",
   "passFeedbackSend": "ಕಳುಹಿಸಿ",
-  "passFeedbackThanks": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದ."
+  "passFeedbackThanks": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದ.",
+  "classNotesTitle": "ತರಗತಿ ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಸಾರಾಂಶ",
+  "classNotesRecaps": "ಪಾಠದ ಸಾರಾಂಶ",
+  "classNotesBoards": "ವೈಟ್‌ಬೋರ್ಡ್‌ಗಳು",
+  "classNotesEmpty": "ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಇನ್ನೂ ಏನನ್ನೂ ಹಂಚಿಕೊಂಡಿಲ್ಲ.",
+  "classNotesNoRecap": "ಈ ಪಾಠದ ಸಾರಾಂಶ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ.",
+  "classNotesKeyPoints": "ಮುಖ್ಯ ಅಂಶಗಳು",
+  "classNotesWatch": "ಪಾಠ ನೋಡಿ"
 }

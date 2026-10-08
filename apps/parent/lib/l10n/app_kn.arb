@@ -735,5 +735,18 @@
   "eventCancelRegistration": "ನೋಂದಣಿ ರದ್ದುಮಾಡಿ",
   "eventRegisteredDone": "ಕಾರ್ಯಕ್ರಮಕ್ಕೆ ನೋಂದಾಯಿಸಲಾಗಿದೆ",
   "eventWaitlistDone": "ಕಾಯುವ ಪಟ್ಟಿಗೆ ಸೇರಿಸಲಾಗಿದೆ",
-  "eventCancelled": "ನೋಂದಣಿ ರದ್ದಾಗಿದೆ"
+  "eventCancelled": "ನೋಂದಣಿ ರದ್ದಾಗಿದೆ",
+  "lifePasses": "ಕಾರ್ಯಕ್ರಮ ಪಾಸ್‌ಗಳು",
+  "lifePassesSub": "ಕ್ಯೂಆರ್ ಕೋಡ್ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆ",
+  "passesTitle": "{name} ಅವರ ಕಾರ್ಯಕ್ರಮ ಪಾಸ್‌ಗಳು",
+  "@passesTitle": {"placeholders": {"name": {"type": "String"}}},
+  "passesNone": "ಇನ್ನೂ ಯಾವುದೇ ಕಾರ್ಯಕ್ರಮ ನೋಂದಣಿ ಇಲ್ಲ.",
+  "passShowAtDoor": "ಬಾಗಿಲಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ",
+  "passCheckedIn": "ಪ್ರವೇಶ ದಾಖಲಾಗಿದೆ",
+  "passFeedback": "ಪ್ರತಿಕ್ರಿಯೆ ನೀಡಿ",
+  "passFeedbackDone": "ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "passFeedbackTitle": "ಹೇಗಿತ್ತು?",
+  "passFeedbackComment": "ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)",
+  "passFeedbackSend": "ಕಳುಹಿಸಿ",
+  "passFeedbackThanks": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದ."
 }

@@ -70,6 +70,18 @@ export class MentoringService {
     if (rows.length === 0) return [];
     const ids = rows.map((r) => r.studentId);
 
+    const inputs = await this.inputsFor(tx, ids, today);
+
+    const out = rows.map((r): RiskRow => {
+      const i = inputs.get(r.studentId)!;
+      const risk = riskOf(i, opts.attendanceThreshold);
+      return { ...r, attendancePct: i.attendancePct, failingMarks: i.failingMarks, overdueFees: i.overdueFees, openCases: i.openCases, ...risk };
+    });
+    return out.filter((r) => opts.includeNone || r.level !== 'none').sort((a, b) => b.score - a.score || a.studentName.localeCompare(b.studentName));
+  }
+
+  /** Attendance, failing marks, overdue fees and open cases for each student id. */
+  private async inputsFor(tx: Tx, ids: string[], today: string): Promise<Map<string, RiskInputs>> {
     const att = await tx
       .select({
         studentId: attendanceRecords.studentId,
@@ -108,20 +120,47 @@ export class MentoringService {
     const feeBy = by(fees);
     const welBy = by(welfare);
     const grvBy = by(grievances);
+    return new Map(
+      ids.map((id): [string, RiskInputs] => {
+        const a = attBy.get(id);
+        const days = a ? a.attended + a.absent : 0;
+        return [
+          id,
+          {
+            attendancePct: days > 0 ? Math.round((a!.attended / days) * 100) : null,
+            attendanceDays: days,
+            failingMarks: failBy.get(id)?.n ?? 0,
+            overdueFees: feeBy.get(id)?.n ?? 0,
+            openCases: (welBy.get(id)?.n ?? 0) + (grvBy.get(id)?.n ?? 0),
+          },
+        ];
+      }),
+    );
+  }
 
-    const out = rows.map((r): RiskRow => {
-      const a = attBy.get(r.studentId);
-      const days = a ? a.attended + a.absent : 0;
-      const inputs: RiskInputs = {
-        attendancePct: days > 0 ? Math.round((a!.attended / days) * 100) : null,
-        attendanceDays: days,
-        failingMarks: failBy.get(r.studentId)?.n ?? 0,
-        overdueFees: feeBy.get(r.studentId)?.n ?? 0,
-        openCases: (welBy.get(r.studentId)?.n ?? 0) + (grvBy.get(r.studentId)?.n ?? 0),
-      };
-      const risk = riskOf(inputs, opts.attendanceThreshold);
-      return { ...r, attendancePct: inputs.attendancePct, failingMarks: inputs.failingMarks, overdueFees: inputs.overdueFees, openCases: inputs.openCases, ...risk };
+  /** One class: every student's attendance %, average mark % over published assessments, and risk flag. Fees and welfare detail stay with mentors. */
+  async sectionInsights(tx: Tx, sectionId: string, attendanceThreshold: number) {
+    const today = await this.today(tx);
+    const roster = await tx.select({ studentId: students.id, studentName: students.fullName, rollNo: students.rollNo }).from(students).where(eq(students.sectionId, sectionId)).orderBy(students.rollNo);
+    if (roster.length === 0) return { sectionId, students: [], classAttendancePct: null, classMarksAvgPct: null };
+    const ids = roster.map((r) => r.studentId);
+    const inputs = await this.inputsFor(tx, ids, today);
+    const avg = await tx
+      .select({ studentId: marks.studentId, pct: sql<string | null>`avg(coalesce(${marks.moderatedMarks}, ${marks.marks}) * 100.0 / nullif(${assessments.maxMarks}, 0))` })
+      .from(marks)
+      .innerJoin(assessments, eq(assessments.id, marks.assessmentId))
+      .where(and(inArray(marks.studentId, ids), eq(marks.absent, false), sql`${assessments.publishedAt} is not null`, sql`coalesce(${marks.moderatedMarks}, ${marks.marks}) is not null`))
+      .groupBy(marks.studentId);
+    const pctBy = new Map(avg.map((a) => [a.studentId, a.pct === null ? null : Math.round(Number(a.pct))]));
+    const rows = roster.map((r) => {
+      const i = inputs.get(r.studentId)!;
+      const risk = riskOf(i, attendanceThreshold);
+      return { ...r, attendancePct: i.attendancePct, marksAvgPct: pctBy.get(r.studentId) ?? null, failingMarks: i.failingMarks, level: risk.level, signals: risk.signals };
     });
-    return out.filter((r) => opts.includeNone || r.level !== 'none').sort((a, b) => b.score - a.score || a.studentName.localeCompare(b.studentName));
+    const mean = (xs: (number | null)[]) => {
+      const v = xs.filter((x): x is number => x !== null);
+      return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+    };
+    return { sectionId, students: rows, classAttendancePct: mean(rows.map((r) => r.attendancePct)), classMarksAvgPct: mean(rows.map((r) => r.marksAvgPct)) };
   }
 }

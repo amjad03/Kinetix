@@ -17,6 +17,7 @@ import '../campus/certificates_screen.dart';
 import '../campus/course_registration_screen.dart';
 import '../campus/passport_screen.dart';
 import '../campus/surveys_screen.dart';
+import '../recordings/class_notes_screen.dart';
 import '../campus/gate_pass_screen.dart';
 import '../wallet/wallet_screen.dart';
 import '../campus/leave_screen.dart';
@@ -393,6 +394,13 @@ class ProfileTabState extends State<ProfileTab> {
                   title: Text(l.surveysTitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => SurveysScreen.open(context, widget.study.api),
+                ),
+                ListTile(
+                  key: const Key('openClassNotes'),
+                  leading: const Icon(Icons.sticky_note_2_outlined),
+                  title: Text(l.classNotesTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ClassNotesScreen.open(context, widget.study.api, st.id),
                 ),
                 ListTile(
                   key: const Key('openCampusLife'),

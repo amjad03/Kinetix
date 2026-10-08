@@ -2116,5 +2116,12 @@
   "passFeedbackTitle": "How was it?",
   "passFeedbackComment": "Comment (optional)",
   "passFeedbackSend": "Send",
-  "passFeedbackThanks": "Thank you for your feedback."
+  "passFeedbackThanks": "Thank you for your feedback.",
+  "classNotesTitle": "Class notes & recaps",
+  "classNotesRecaps": "Lesson recaps",
+  "classNotesBoards": "Whiteboards",
+  "classNotesEmpty": "Nothing has been shared with your class yet.",
+  "classNotesNoRecap": "The recap for this lesson is not ready yet.",
+  "classNotesKeyPoints": "Key points",
+  "classNotesWatch": "Watch the lesson"
 }

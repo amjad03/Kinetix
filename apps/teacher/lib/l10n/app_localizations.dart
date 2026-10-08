@@ -4154,6 +4154,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No members yet.'**
   String get clubNoMembers;
+
+  /// No description provided for @insightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Student insights'**
+  String get insightsTitle;
+
+  /// No description provided for @insightsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance, marks and risk flags for a class'**
+  String get insightsBody;
+
+  /// No description provided for @insightsAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get insightsAttendance;
+
+  /// No description provided for @insightsMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks average'**
+  String get insightsMarks;
+
+  /// No description provided for @insightsFlagged.
+  ///
+  /// In en, this message translates to:
+  /// **'Need attention'**
+  String get insightsFlagged;
+
+  /// No description provided for @insightsAttendanceValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance {value}'**
+  String insightsAttendanceValue(String value);
+
+  /// No description provided for @insightsMarksValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks {value}'**
+  String insightsMarksValue(String value);
+
+  /// No description provided for @copilotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI copilot'**
+  String get copilotTitle;
+
+  /// No description provided for @copilotBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft explanations, quizzes, homework and lesson plans'**
+  String get copilotBody;
+
+  /// No description provided for @copilotExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain'**
+  String get copilotExplain;
+
+  /// No description provided for @copilotQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get copilotQuiz;
+
+  /// No description provided for @copilotHomework.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get copilotHomework;
+
+  /// No description provided for @copilotLessonPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson plan'**
+  String get copilotLessonPlan;
+
+  /// No description provided for @copilotQuestionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want explained?'**
+  String get copilotQuestionLabel;
+
+  /// No description provided for @copilotTopicLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get copilotTopicLabel;
+
+  /// No description provided for @copilotHowMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions: {n}'**
+  String copilotHowMany(int n);
+
+  /// No description provided for @copilotMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes: {n}'**
+  String copilotMinutes(int n);
+
+  /// No description provided for @copilotGenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate draft'**
+  String get copilotGenerate;
+
+  /// No description provided for @copilotDraftNote.
+  ///
+  /// In en, this message translates to:
+  /// **'AI draft. Check it before you use it; nothing is sent to students from here.'**
+  String get copilotDraftNote;
+
+  /// No description provided for @copilotSampleDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample only: no AI model is connected to this school\'s server yet. Check everything before use.'**
+  String get copilotSampleDraft;
+
+  /// No description provided for @copilotKeyPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Key points'**
+  String get copilotKeyPoints;
+
+  /// No description provided for @copilotFollowUps.
+  ///
+  /// In en, this message translates to:
+  /// **'Students may ask next'**
+  String get copilotFollowUps;
+
+  /// No description provided for @copilotQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get copilotQuestions;
+
+  /// No description provided for @copilotObjectives.
+  ///
+  /// In en, this message translates to:
+  /// **'Objectives'**
+  String get copilotObjectives;
+
+  /// No description provided for @copilotSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get copilotSteps;
+
+  /// No description provided for @copilotMaterials.
+  ///
+  /// In en, this message translates to:
+  /// **'Materials'**
+  String get copilotMaterials;
+
+  /// No description provided for @copilotAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment'**
+  String get copilotAssessment;
+
+  /// No description provided for @copilotCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy draft'**
+  String get copilotCopy;
+
+  /// No description provided for @copilotCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft copied.'**
+  String get copilotCopied;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

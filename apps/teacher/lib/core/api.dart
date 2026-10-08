@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import 'hr_models.dart';
+import 'insights_models.dart';
 import 'models.dart';
 import 'work_models.dart';
 
@@ -153,6 +154,13 @@ abstract class TeacherApi {
   Future<DayTimetable> timetable({String? date});
   Future<List<TeacherClass>> classes();
   Future<List<Student>> roster(String sectionId);
+
+  /// A class at a glance: attendance %, average mark % and risk flag per student (`GET /v1/mentoring/sections/:id/insights`).
+  Future<SectionInsights> sectionInsights(String sectionId);
+
+  /// Asks KINETIX AI for a draft (`POST /v1/ai/<task>`): [input] is the topic or question, [count] the questions
+  /// for a quiz or homework, [minutes] the length of a lesson plan. The result is a draft for the teacher to check.
+  Future<AiDraft> aiDraft(AiTask task, {required String input, int? count, int? minutes, String language = 'en', String? sectionId, String? subjectId});
 
   /// The class's answer cards (card number per student, by roll number), to print.
   Future<List<AnswerCard>> answerCards(String sectionId);
@@ -576,6 +584,24 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<List<TeacherClass>> classes() async =>
       (await _send('GET', '/v1/teacher/classes') as List).map((e) => TeacherClass.fromJson(e as Map<String, dynamic>)).toList();
+
+  @override
+  Future<SectionInsights> sectionInsights(String sectionId) async =>
+      SectionInsights.fromJson(await _send('GET', '/v1/mentoring/sections/$sectionId/insights') as Map<String, dynamic>);
+
+  @override
+  Future<AiDraft> aiDraft(AiTask task, {required String input, int? count, int? minutes, String language = 'en', String? sectionId, String? subjectId}) async {
+    final body = <String, Object?>{
+      if (task == AiTask.explain) 'question': input else 'topic': input,
+      'language': language,
+      if (count != null && (task == AiTask.quiz || task == AiTask.homework)) 'count': count,
+      if (minutes != null && task == AiTask.lessonPlan) 'minutes': minutes,
+      'sectionId': ?sectionId,
+      'subjectId': ?subjectId,
+    };
+    final res = await _send('POST', '/v1/ai/${task.path}', body: body, timeout: const Duration(seconds: 90));
+    return AiDraft.fromJson(task, (res as Map).cast<String, dynamic>());
+  }
 
   @override
   Future<List<Student>> roster(String sectionId) async =>

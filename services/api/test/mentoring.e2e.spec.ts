@@ -104,6 +104,19 @@ describe('student mentoring and early intervention', () => {
     expect((await get('outsider', '/v1/mentoring/risk').expect(200)).body).toEqual([]);
   });
 
+  it('shows a class at a glance to its teachers only', async () => {
+    const r = (await get('teacher', `/v1/mentoring/sections/${t.section.id}/insights`).expect(200)).body;
+    expect(r.students).toHaveLength(t.students.length);
+    const a = r.students.find((x: { studentId: string }) => x.studentId === ids.a);
+    const c = r.students.find((x: { studentId: string }) => x.studentId === ids.c);
+    expect(a).toMatchObject({ attendancePct: 50, marksAvgPct: 15, failingMarks: 2, level: 'high' });
+    expect(c).toMatchObject({ marksAvgPct: 80, attendancePct: null });
+    expect(r.classMarksAvgPct).toBe(48);
+    await get('teacher2', `/v1/mentoring/sections/${t.section.id}/insights`).expect(403);
+    await get('parent', `/v1/mentoring/sections/${t.section.id}/insights`).expect(403);
+    await get('outsider', `/v1/mentoring/sections/${t.section.id}/insights`).expect(404);
+  });
+
   it('keeps private notes to the mentor, the head of department and the counsellor', async () => {
     const body = { studentId: ids.a, heldOn: '2026-10-19', mode: 'in_person', summary: 'Talked about attendance.', privateNotes: 'Cares for a sick parent.', followUpOn: '2026-11-02' };
     await post('teacher2', '/v1/mentoring/sessions', body).expect(403);

@@ -7,6 +7,7 @@ import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { interventionPlans, mentorAssignments, mentoringSessions, sections, students, userRoles, users } from '../db/schema.js';
+import { TeacherService } from '../teacher/teacher.service.js';
 import { found, hasRole } from '../placements/placements.access.js';
 import { MENTORING_ADMIN, MENTOR_CANDIDATE_ROLES, NOTES_ROLES } from './mentoring-rules.js';
 import { MentoringService } from './mentoring.service.js';
@@ -21,6 +22,7 @@ export class MentoringController {
   constructor(
     private readonly db: DbService,
     private readonly svc: MentoringService,
+    private readonly teacher: TeacherService,
   ) {}
 
   private isAdmin(p: UserPrincipal) {
@@ -142,6 +144,16 @@ export class MentoringController {
       const wide = this.isAdmin(p) || hasRole(p, ['counsellor']);
       const threshold = Math.min(100, Math.max(1, Number(below) || 75));
       return this.svc.riskList(tx, { mentorUserId: wide ? mentorUserId : p.userId, attendanceThreshold: threshold, includeNone: all === 'true' });
+    });
+  }
+
+  /** A class at a glance for its teachers: attendance %, average mark % and risk flag per student. */
+  @Get('sections/:id/insights')
+  @Auth('user', ['teacher', 'hod', 'principal', 'tenant_admin', 'counsellor'])
+  sectionInsights(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('attendanceBelow') below?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      if (!hasRole(p, ['counsellor'])) await this.teacher.assertCanSeeSection(tx, p, id);
+      return this.svc.sectionInsights(tx, id, Math.min(100, Math.max(1, Number(below) || 75)));
     });
   }
 
