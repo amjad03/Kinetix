@@ -7,7 +7,7 @@ export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
   | 'campus' | 'inventory' | 'communication' | 'reports' | 'settings'
   | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'devices' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
-  | 'hostel' | 'canteen' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform';
+  | 'hostel' | 'canteen' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work';
 
 export interface NavItem {
   href: string;
@@ -152,6 +152,15 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/reports', label: 'nav.reports', section: 'reports', icon: 'reports' },
       { href: '/department', label: 'nav.department', section: 'department', icon: 'department' },
       { href: '/ai', label: 'nav.ai', section: 'ai', icon: 'ai' },
+    ],
+  },
+  {
+    id: 'work',
+    label: 'grp.work',
+    icon: 'work',
+    items: [
+      { href: '/tasks', label: 'nav.tasks', section: 'tasks', icon: 'tasks' },
+      { href: '/surveys', label: 'nav.surveys', section: 'surveys', icon: 'surveys' },
     ],
   },
   {

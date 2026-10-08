@@ -21,6 +21,7 @@ export const DomainEvents = {
   BoardSaved: 'classroom.board_page_updated',
   LessonRecorded: 'classroom.lesson_recorded',
   HomeworkPublished: 'classroom.homework_published',
+  SurveyClosed: 'surveys.closed',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

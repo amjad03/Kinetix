@@ -35,6 +35,9 @@ import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
 import SchoolOutlined from '@mui/icons-material/SchoolOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import TrackChangesOutlined from '@mui/icons-material/TrackChangesOutlined';
+import PollOutlined from '@mui/icons-material/PollOutlined';
+import TaskAltOutlined from '@mui/icons-material/TaskAltOutlined';
+import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
 import UploadFileOutlined from '@mui/icons-material/UploadFileOutlined';
 import VideoLibraryOutlined from '@mui/icons-material/VideoLibraryOutlined';
 import type { SvgIconComponent } from '@mui/icons-material';
@@ -83,5 +86,8 @@ export const NAV_ICONS: Record<NavIcon, SvgIconComponent> = {
   ai: AutoAwesomeOutlined,
   department: InsightsOutlined,
   import: UploadFileOutlined,
+  surveys: PollOutlined,
+  tasks: TaskAltOutlined,
+  work: WorkOutlineOutlined,
   platform: OndemandVideoOutlined,
 };

@@ -21,6 +21,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   'asset-tags': (id) => `/v1/assets/tags.pdf?ids=${id}`,
   gradebook: (id) => `/v1/lms/courses/${id}/gradebook.csv`,
   payslip: (id) => `/v1/payroll/payslips/${id}/pdf`,
+  'survey-csv': (id) => `/v1/surveys/${id}/export.csv`,
 };
 
 /**

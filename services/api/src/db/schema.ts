@@ -618,7 +618,7 @@ export const guardians = pgTable(
   ],
 );
 
-export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate', 'placement', 'grievance', 'welfare']);
+export const notificationKind = pgEnum('notification_kind', ['absence', 'homework', 'broadcast', 'board_shared', 'recording', 'fee', 'library', 'marks', 'message', 'live', 'calendar', 'badge', 'transport', 'hostel', 'leave', 'payslip', 'certificate', 'placement', 'grievance', 'welfare', 'survey', 'task']);
 
 /**
  * In-app notifications for parents and students. Push (FCM/APNs) carries only the id; apps
@@ -2636,6 +2636,11 @@ export const TENANT_TABLES = [
   'discipline_appeals',
   'counselling_sessions',
   'welfare_requests',
+  'surveys',
+  'survey_questions',
+  'survey_responses',
+  'survey_answers',
+  'tasks',
   'lms_courses',
   'lms_modules',
   'lms_items',
@@ -4012,4 +4017,93 @@ export const canteenTopups = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('canteen_topup_order_uq').on(t.providerOrderId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Surveys and the task engine (PRD sections 53 and 69)
+// ---------------------------------------------------------------------------------------------
+
+/** A feedback survey for students, a section, staff or guardians. Draft, then open, then closed. */
+export const surveys = pgTable('surveys', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  description: text('description').notNull().default(''),
+  audience: text('audience').$type<'students' | 'section' | 'staff' | 'guardians'>().notNull(),
+  sectionId: ref('section_id', () => sections.id),
+  /** Anonymous surveys keep no link between a respondent and their answers. */
+  anonymous: boolean('anonymous').notNull().default(false),
+  opensAt: timestamp('opens_at', { withTimezone: true }),
+  closesAt: timestamp('closes_at', { withTimezone: true }),
+  status: text('status').$type<'draft' | 'open' | 'closed'>().notNull().default('draft'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});
+
+export const surveyQuestions = pgTable('survey_questions', {
+  id: id(),
+  tenantId: tenantId(),
+  surveyId: uuid('survey_id').notNull().references(() => surveys.id, { onDelete: 'cascade' }),
+  ord: smallint('ord').notNull(),
+  kind: text('kind').$type<'single' | 'multiple' | 'rating' | 'text'>().notNull(),
+  prompt: text('prompt').notNull(),
+  options: jsonb('options').$type<string[]>().notNull().default([]),
+  required: boolean('required').notNull().default(true),
+  /** The course outcome this question measures, for OBE indirect attainment. */
+  coId: ref('co_id', () => courseOutcomes.id),
+});
+
+/** One row per respondent per survey: the "already answered" marker. */
+export const surveyResponses = pgTable(
+  'survey_responses',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    surveyId: uuid('survey_id').notNull().references(() => surveys.id, { onDelete: 'cascade' }),
+    respondentId: uuid('respondent_id').notNull().references(() => users.id),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('survey_responses_once_uq').on(t.surveyId, t.respondentId)],
+);
+
+/** One answer to one question. `responseId` is null for anonymous surveys. */
+export const surveyAnswers = pgTable(
+  'survey_answers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    surveyId: uuid('survey_id').notNull().references(() => surveys.id, { onDelete: 'cascade' }),
+    questionId: uuid('question_id').notNull().references(() => surveyQuestions.id, { onDelete: 'cascade' }),
+    responseId: ref('response_id', () => surveyResponses.id),
+    choices: jsonb('choices').$type<string[]>().notNull().default([]),
+    rating: smallint('rating'),
+    text: text('text'),
+  },
+  (t) => [index('survey_answers_question_idx').on(t.questionId)],
+);
+
+/** Work one person asks of another, raised by hand or by another module. */
+export const tasks = pgTable(
+  'tasks',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    ownerId: uuid('owner_id').notNull().references(() => users.id),
+    assigneeId: uuid('assignee_id').notNull().references(() => users.id),
+    dueAt: timestamp('due_at', { withTimezone: true }),
+    priority: text('priority').$type<'low' | 'normal' | 'high' | 'urgent'>().notNull().default('normal'),
+    status: text('status').$type<'open' | 'in_progress' | 'done' | 'cancelled'>().notNull().default('open'),
+    sourceModule: text('source_module'),
+    sourceId: text('source_id'),
+    slaHours: integer('sla_hours'),
+    escalatedAt: timestamp('escalated_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    version: integer('version').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('tasks_assignee_idx').on(t.tenantId, t.assigneeId, t.status), index('tasks_owner_idx').on(t.tenantId, t.ownerId)],
 );
