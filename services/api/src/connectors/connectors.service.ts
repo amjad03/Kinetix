@@ -1,7 +1,6 @@
 import { BadRequestException, BeforeApplicationShutdown, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
 import { and, asc, eq, inArray, lte, sql } from 'drizzle-orm';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
-import { isIP } from 'node:net';
 import { z } from 'zod';
 import { auditUser } from '../common/audit.js';
 import { SecretBox } from '../common/secret-box.js';
@@ -9,6 +8,8 @@ import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { connectorDeliveries, connectors } from '../db/schema.js';
 import { type DomainEvent, EventBus } from '../events/events.js';
+import { ConnectorAdapters } from './adapters.js';
+import { assertSafeUrl } from './safe-url.js';
 import { configSchema, connectorType, type ConnectorType } from './connector-types.js';
 
 export const SECRETS_KEY_MISSING = 'Connector settings cannot be stored on this server yet (SECRETS_ENCRYPTION_KEY is not set)';
@@ -29,23 +30,7 @@ export function verifyWebhook(secret: string, body: string, header: string, now 
   return timingSafeEqual(want, Buffer.from(m[2], 'hex'));
 }
 
-/** In production a webhook must be HTTPS and must not point at this network (loopback, private ranges, internal names). */
-export function assertSafeUrl(raw: string, production = process.env.NODE_ENV === 'production'): void {
-  let u: URL;
-  try {
-    u = new URL(raw);
-  } catch {
-    throw new BadRequestException('The URL is not valid');
-  }
-  if (u.protocol !== 'https:' && u.protocol !== 'http:') throw new BadRequestException('The URL must start with https://');
-  if (!production) return;
-  if (u.protocol !== 'https:') throw new BadRequestException('The URL must start with https://');
-  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, '');
-  const privateV4 = /^(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/;
-  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal') || (isIP(h) === 4 && privateV4.test(h)) || (isIP(h) === 6 && /^(::1?$|f[cd]|fe80)/.test(h)) || (!h.includes('.') && isIP(h) === 0)) {
-    throw new BadRequestException('The URL must point to a public address');
-  }
-}
+export { assertSafeUrl };
 
 export interface ConnectorView {
   id: string;
@@ -76,6 +61,7 @@ export class ConnectorsService implements OnApplicationBootstrap, BeforeApplicat
     private readonly db: DbService,
     private readonly bus: EventBus,
     @Inject(ENV) private readonly env: Env,
+    private readonly adapters: ConnectorAdapters,
   ) {
     this.box = SecretBox.fromEnv(env);
   }
@@ -180,12 +166,20 @@ export class ConnectorsService implements OnApplicationBootstrap, BeforeApplicat
     return tx.select().from(connectorDeliveries).where(eq(connectorDeliveries.connectorId, id)).orderBy(sql`${connectorDeliveries.createdAt} desc`).limit(limit);
   }
 
-  /** Sends a signed `connector.test` event to a webhook; other types report that they are not available in this build. */
+  /** The settings of the first enabled connector of a type (or the one named), decrypted, for the adapters. */
+  async resolve(tx: Tx, tenantId: string, type: string, id?: string): Promise<{ id: string; config: Record<string, string | string[] | undefined> }> {
+    const rows = await tx.select().from(connectors).where(and(eq(connectors.type, type), eq(connectors.enabled, true), id ? eq(connectors.id, id) : undefined)).orderBy(asc(connectors.createdAt)).limit(1);
+    if (!rows[0]) throw new NotFoundException(`No ${connectorType(type)?.label ?? type} connector is switched on`);
+    return { id: rows[0].id, config: JSON.parse(this.requireBox().decrypt(rows[0].configEnc, aad(tenantId, rows[0].id))) };
+  }
+
+  /** Sends a signed `connector.test` event to a webhook; the other available types sign in to the outside system; the rest report that they are not available in this build. */
   async test(tx: Tx, p: { tenantId: string; userId: string }, id: string): Promise<{ status: 'ok' | 'failed' | 'not_available'; message: string; httpStatus?: number }> {
     const r = await this.row(tx, id);
     const t = connectorType(r.type)!;
     let result: { status: 'ok' | 'failed' | 'not_available'; message: string; httpStatus?: number };
     if (!t.available) result = { status: 'not_available', message: 'Not available in this build' };
+    else if (t.type !== 'webhook_out') result = await this.adapters.test(t.type, JSON.parse(this.requireBox().decrypt(r.configEnc, aad(p.tenantId, id))));
     else {
       const config = JSON.parse(this.requireBox().decrypt(r.configEnc, aad(p.tenantId, id))) as { url: string; secret: string };
       const body = JSON.stringify({ id: randomUUID(), type: 'connector.test', tenantId: p.tenantId, occurredAt: new Date().toISOString(), data: { message: 'This is a test from KINETIX' } });

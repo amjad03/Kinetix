@@ -25,6 +25,9 @@ export const DomainEvents = {
   CourseRegistrationApproved: 'course_registration.approved',
   WorkflowsDecided: 'workflows.decided',
   AlumniDonationReceived: 'alumni.donation_received',
+  BankTransferSubmitted: 'fees.bank_transfer_submitted',
+  BankTransferRejected: 'fees.bank_transfer_rejected',
+  SponsorPaymentReceived: 'fees.sponsor_payment_received',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

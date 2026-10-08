@@ -708,6 +708,13 @@
       "when": 1791410898229,
       "tag": "0107_ai_domain_insights",
       "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1791410899229,
+      "tag": "0108_bank_transfers_sponsors_meetings",
+      "breakpoints": true
     }
   ]
 }
