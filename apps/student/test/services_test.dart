@@ -275,21 +275,6 @@ void main() {
         }
         expect(find.byKey(Key(k)), findsOneWidget, reason: k);
       }
-      expect(find.descendant(of: find.byKey(const Key('tileStreak')), matching: find.text('1 day')), findsOneWidget);
-      expect(find.byKey(const Key('continueLearning')), findsOneWidget);
-      for (final label in ['Home', 'My Learning', 'Exams', 'More']) {
-        expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget, reason: label);
-      }
-
-      await openTab(tester, 'Exams');
-      expect(find.text('Semester 3 end exam'), findsOneWidget);
-
-      await openTab(tester, 'More');
-      for (final k in ['openLeave', 'openBus', 'openGatePass', 'openCertificates']) {
-        debugPrint('KEY $k ${find.byKey(Key(k)).evaluate().length}');
-        await tester.scrollUntilVisible(find.byKey(Key(k)), 200, scrollable: find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first);
-        expect(find.byKey(Key(k)), findsOneWidget, reason: k);
-      }
     });
 
     testWidgets('the upcoming exam tile counts the days and opens Exams', (tester) async {

@@ -70,6 +70,8 @@ void main() {
 
   Future<void> visitEverything(WidgetTester tester, FakeLiveServer server) async {
     // The live class: joining, the board, then the teacher stops it.
+    await tester.ensureVisible(find.byKey(const Key('watchLive')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('watchLive')));
     await settle(tester);
     server.last.send(
@@ -397,13 +399,13 @@ void main() {
         tester,
         setup: (api) => api.profile = Me(id: 'u1', fullName: 'Aarav Patel', roles: ['student'], preferredLanguage: 'kn', institution: 'Demo College'),
       );
-      expect(find.text('ಇಂದು'), findsWidgets);
+      expect(find.text('ಮುಖಪುಟ'), findsWidgets);
       expect(state.aiLanguage, AiLanguage.kn);
 
       // Choosing an AI answer language does not change the app's language.
       await state.setAiLanguage(AiLanguage.en);
       await tester.pumpAndSettle();
-      expect(find.text('ಇಂದು'), findsWidgets);
+      expect(find.text('ಮುಖಪುಟ'), findsWidgets);
       expect(state.aiLanguage, AiLanguage.en);
     });
 
@@ -411,8 +413,8 @@ void main() {
       final (api, state) = await pumpApp(tester);
       expect(state.aiLanguage, AiLanguage.en);
       await pickLanguage(tester, 'hi');
-      expect(find.text('आज'), findsWidgets);
-      expect(find.text('सीखें'), findsOneWidget);
+      expect(find.text('होम'), findsWidgets);
+      expect(find.text('मेरी पढ़ाई'), findsOneWidget);
       expect(state.prefs.getString('language'), 'hi');
       expect(api.calls, contains('language hi'));
       expect(state.prefs.getBool('language_unsynced'), isNull);
@@ -429,7 +431,7 @@ void main() {
     testWidgets('a save that fails offline is retried quietly on the next start', (tester) async {
       final (api, state) = await pumpApp(tester, setup: (api) => api.failLanguage = true);
       await pickLanguage(tester, 'kn');
-      expect(find.text('ಇಂದು'), findsWidgets);
+      expect(find.text('ಮುಖಪುಟ'), findsWidgets);
       expect(api.calls, contains('language kn'));
       expect(state.prefs.getBool('language_unsynced'), isTrue);
       expect(find.byType(ErrorBanner), findsNothing);
