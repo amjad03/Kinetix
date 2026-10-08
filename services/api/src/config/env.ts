@@ -139,14 +139,14 @@ const EnvSchema = z.object({
   CLAMAV_HOST: z.string().default('127.0.0.1'),
   CLAMAV_PORT: z.coerce.number().int().default(3310),
   /** OTLP/HTTP traces endpoint base (e.g. http://otel-collector:4318); unset = no tracing. Standard OTEL_* names. */
-  OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   OTEL_SERVICE_NAME: z.string().default('kinetix-api'),
   /** Fraction of requests traced (0 to 1). */
   OTEL_TRACES_SAMPLER_ARG: z.coerce.number().min(0).max(1).default(1),
   /** When set, GET /metrics needs `Authorization: Bearer <token>`. */
   METRICS_TOKEN: z.string().optional(),
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */
-  MAIL_WEBHOOK_URL: z.url().optional(),
+  MAIL_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   MAIL_FROM: z.string().default('reports@kinetix.local'),
 });
 

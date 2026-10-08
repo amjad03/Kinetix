@@ -396,3 +396,30 @@ variable "phet_mirror_countries" {
   type        = list(string)
   default     = ["IN"]
 }
+
+# ---------------------------------------------------------------------------------------------
+# Observability and upload scanning (docs/operations/observability.md)
+# ---------------------------------------------------------------------------------------------
+
+variable "otel_exporter_endpoint" {
+  description = "OTLP/HTTP collector base URL for API traces (e.g. http://otel-collector.kinetix.internal:4318). Empty = tracing off."
+  type        = string
+  default     = ""
+}
+
+variable "upload_scan" {
+  description = "Virus scanning of uploaded documents: off, or clamav (quarantine until a clamd at clamav_host says clean)."
+  type        = string
+  default     = "off"
+
+  validation {
+    condition     = contains(["off", "clamav"], var.upload_scan)
+    error_message = "upload_scan must be off or clamav."
+  }
+}
+
+variable "clamav_host" {
+  description = "Host of the clamd service (port 3310) when upload_scan = clamav."
+  type        = string
+  default     = ""
+}
