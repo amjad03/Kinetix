@@ -21,6 +21,8 @@ export interface NavGroup {
   label: MessageKey;
   icon: NavIcon;
   items: NavItem[];
+  /** The group has one page by design (its link carries the group's name); a group cut down to one page by access shows that page's name. */
+  solo?: boolean;
 }
 
 /**
@@ -144,7 +146,7 @@ export const NAV_GROUPS: NavGroup[] = [
 
 /** The groups (and the pages in them) this person may open; empty groups are dropped. */
 export function visibleGroups(roles: readonly RoleName[], platformAdmin = false): NavGroup[] {
-  return NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => (i.section === 'platform' ? platformAdmin : canSee(roles, i.section))) })).filter((g) => g.items.length > 0);
+  return NAV_GROUPS.map((g) => ({ ...g, solo: g.items.length === 1, items: g.items.filter((i) => (i.section === 'platform' ? platformAdmin : canSee(roles, i.section))) })).filter((g) => g.items.length > 0);
 }
 
 export function isActivePath(pathname: string, href: string): boolean {

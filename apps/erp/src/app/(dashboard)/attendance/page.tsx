@@ -4,7 +4,6 @@ import PersonOffOutlined from '@mui/icons-material/PersonOffOutlined';
 import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -19,6 +18,7 @@ import { DateNav } from '@/components/DateNav';
 import { NoClasses } from '@/components/NoClasses';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
+import { StatusPill } from '@/components/ui';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
@@ -201,7 +201,7 @@ function AttendanceView({ a, date, today, i18n: { t } }: { a: AttendanceDay; dat
                   <TableCell>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                       {s.periods.map((p, i) => (
-                        <Chip key={i} size="small" variant="outlined" label={`${hhmm(p.startsAt)} ${p.subject ?? t('att.unscheduled')}`} />
+                        <StatusPill key={i} tone="danger">{`${hhmm(p.startsAt)} ${p.subject ?? t('att.unscheduled')}`}</StatusPill>
                       ))}
                     </Box>
                   </TableCell>

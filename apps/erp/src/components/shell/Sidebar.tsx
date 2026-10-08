@@ -59,17 +59,20 @@ export function Sidebar({ groups, pathname, rail, onNavigate, onToggleRail, canC
 
           if (single) {
             const item = g.items[0];
+            const named = g.solo === false;
+            const text = t(named ? item.label : g.label);
+            const SoloIcon = named ? NAV_ICONS[item.icon] : Icon;
             const active = isActivePath(pathname, item.href);
             const link = (
-              <ButtonBase component={Link} href={item.href} aria-current={active ? 'page' : undefined} aria-label={rail ? t(g.label) : undefined} onClick={onNavigate} sx={rowSx(active, rail)}>
-                <Icon sx={{ fontSize: 22 }} />
-                {!rail && <span>{t(g.label)}</span>}
+              <ButtonBase component={Link} href={item.href} aria-current={active ? 'page' : undefined} aria-label={rail ? text : undefined} onClick={onNavigate} sx={rowSx(active, rail)}>
+                <SoloIcon sx={{ fontSize: 22 }} />
+                {!rail && <span>{text}</span>}
               </ButtonBase>
             );
             return (
               <li key={g.id}>
                 {rail ? (
-                  <Tooltip title={t(g.label)} placement="right">
+                  <Tooltip title={text} placement="right">
                     {link}
                   </Tooltip>
                 ) : (

@@ -7,7 +7,8 @@ test.describe.configure({ mode: 'serial' });
 
 test('a head of department lands on their department and sees how its classes went', async ({ page }) => {
   await signIn(page, 'ravi@demo.kinetix.in');
-  await expect(page).toHaveURL(/\/department$/);
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto("/department");
   await page.context().storageState({ path: 'e2e/.auth/hod.json' });
   await page.waitForLoadState('networkidle');
 
@@ -20,7 +21,7 @@ test('a head of department lands on their department and sees how its classes we
   const nav = page.getByRole('navigation', { name: 'Main' });
   await expect(nav.getByRole('link', { name: 'Department', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(nav.getByRole('link', { name: 'Departments' })).toHaveCount(0);
-  await expect(nav.getByRole('link', { name: 'Today' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Dashboard' })).toBeVisible();
 
   for (const id of ['held', 'taken', 'attendance', 'homework', 'recordings', 'assessments']) await expect(page.getByTestId(`dept-stat-${id}`)).toBeVisible();
   const teachers = page.getByTestId('dept-teachers');
@@ -131,6 +132,6 @@ test("a head of department sees their department's results, and cannot set up de
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Unit test 1');
 
   await page.goto('/departments');
-  await expect(page).toHaveURL(/\/department$/);
+  await expect(page).toHaveURL(/\/$/);
   await context.close();
 });

@@ -6,15 +6,16 @@ test.describe.configure({ mode: 'serial' });
 
 const FEE = `E2E Library fee ${Date.now() % 100000}`;
 
-test('the accounts office sees only Fees and the calendar', async ({ page }) => {
+test('the accounts office lands on its dashboard and sees only its own pages', async ({ page }) => {
   await open(page, '/');
-  await expect(page).toHaveURL(/\/fees$/);
+  await expect(page).toHaveURL(/\/$/);
   const nav = page.getByRole('navigation', { name: 'Main' });
-  await expect(nav.getByRole('link')).toHaveCount(2);
-  await expect(nav.getByRole('link', { name: 'Calendar' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Fees' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: 'Finance & Fees' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: 'Settings' })).toHaveCount(0);
+  await expect(page.getByTestId('stat-outstanding')).toBeVisible();
   await open(page, '/boards');
-  await expect(page).toHaveURL(/\/fees$/);
+  await expect(page).toHaveURL(/\/$/);
 });
 
 test('Fees overview shows totals in rupees and every class', async ({ page }) => {

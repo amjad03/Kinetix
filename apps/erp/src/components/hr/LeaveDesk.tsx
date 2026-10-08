@@ -4,7 +4,7 @@ import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -30,7 +30,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { formatDate } from '@/lib/dates';
 import { LEAVE_TONE } from '@/lib/hr';
 import type { Holiday, LeaveBalance, LeaveRequest, LeaveType, StaffSummary } from '@/lib/hr-types';
-import { useNotice } from './Common';
+import { pillTone, useNotice } from './Common';
 
 type Tab_ = 'requests' | 'balances' | 'types' | 'holidays';
 
@@ -83,7 +83,7 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
                     <TableCell align="right">{r.days}</TableCell>
                     <TableCell sx={{ maxWidth: 240 }}>{r.reason || '–'}</TableCell>
                     <TableCell>
-                      <Chip size="small" color={LEAVE_TONE[r.status]} label={t(`hr.leave.status.${r.status}` as MessageKey)} />
+                      <StatusPill tone={pillTone(LEAVE_TONE[r.status])}>{t(`hr.leave.status.${r.status}` as MessageKey)}</StatusPill>
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                       {r.status === 'pending' && (

@@ -3,13 +3,11 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Snackbar from '@mui/material/Snackbar';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
+import { LinkTabs, type Tone } from '@/components/ui';
 import type { ActionResult } from '@/lib/types';
 
 /** Section tabs as links, so each part keeps its own URL. */
@@ -18,15 +16,14 @@ export function SectionTabs({ tabs, label }: { tabs: { href: string; label: Mess
   const { t } = useI18n();
   const current = tabs.find((x) => (x.href === tabs[0].href ? pathname === x.href : pathname.startsWith(x.href)))?.href ?? tabs[0].href;
   return (
-    <Box sx={{ borderBottom: 1, borderColor: 'm3.outlineVariant', mb: 3 }}>
-      <Tabs value={current} aria-label={t(label)} variant="scrollable" scrollButtons={false}>
-        {tabs.map((x) => (
-          <Tab key={x.href} value={x.href} label={t(x.label)} component={Link} href={x.href} />
-        ))}
-      </Tabs>
+    <Box sx={{ mb: 3 }}>
+      <LinkTabs value={current} label={t(label)} items={tabs.map((x) => ({ value: x.href, href: x.href, label: t(x.label) }))} />
     </Box>
   );
 }
+
+/** The library's tone names (MUI colours) as StatusPill tones. */
+export const pillTone = (c: 'default' | 'warning' | 'success' | 'error' | 'info'): Tone => (c === 'default' ? 'neutral' : c === 'error' ? 'danger' : c);
 
 export const HR_TABS: { href: string; label: MessageKey }[] = [
   { href: '/hr', label: 'hr.tab.staff' },

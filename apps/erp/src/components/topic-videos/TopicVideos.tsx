@@ -14,7 +14,6 @@ import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -31,6 +30,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addVideo, getMine, removeVideo, reorderVideos, shareVideo } from '@/app/(dashboard)/topic-videos/actions';
+import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { move, thumbnail, watchUrl, youtubeId } from '@/lib/concept-videos';
 import { canRequestShare, countsByTopic, sourceLabel, splitByScope, statusLabel } from '@/lib/topic-videos';
@@ -47,9 +47,9 @@ function VideoRow({ v, canEdit, first, last, onMove, onRemove, onShare, busy }: 
       <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
         <Typography sx={{ fontWeight: 500 }}>{v.title}</Typography>
         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', mt: 0.5 }}>
-          <Chip size="small" label={t(sourceLabel(v.source))} />
-          <Chip size="small" variant="outlined" label={t(LANG_LABEL[v.language])} />
-          {v.source === 'teacher' && <Chip size="small" variant="outlined" color={v.shareStatus === 'rejected' ? 'error' : v.shareStatus === 'approved' ? 'success' : 'default'} label={t(statusLabel(v.shareStatus))} />}
+          <StatusPill tone="neutral">{t(sourceLabel(v.source))}</StatusPill>
+          <StatusPill tone="info">{t(LANG_LABEL[v.language])}</StatusPill>
+          {v.source === 'teacher' && <StatusPill tone={v.shareStatus === 'rejected' ? 'danger' : v.shareStatus === 'approved' ? 'success' : 'warning'}>{t(statusLabel(v.shareStatus))}</StatusPill>}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           {v.source === 'teacher' ? [t('tv.addedBy', { name: v.createdByName ?? '' }), v.sections.length ? t('tv.forClasses', { classes: v.sections.map((s) => s.displayName).join(', ') }) : ''].filter(Boolean).join(' · ') : ''}
@@ -225,9 +225,9 @@ export function TopicVideos({ course, counts, admin, classes }: { course: Course
                   <Box key={tp.id} sx={{ borderTop: 1, borderColor: 'divider' }} data-testid="topic-row">
                     <ButtonBase onClick={() => toggle(tp.id)} aria-expanded={open === tp.id} sx={{ width: '100%', px: 2.5, py: 1.5, justifyContent: 'flex-start', gap: 1.5, textAlign: 'left' }}>
                       <Typography sx={{ flex: 1 }}>{tp.title}</Typography>
-                      {!!c?.institution && <Chip size="small" label={t('tv.institutionCount', { count: c.institution })} />}
-                      {admin && !!c?.teacher && <Chip size="small" variant="outlined" label={t('tv.teacherCount', { count: c.teacher })} />}
-                      {admin && !!c?.pending && <Chip size="small" color="warning" label={t('tv.pendingBadge', { count: c.pending })} />}
+                      {!!c?.institution && <StatusPill tone="neutral">{t('tv.institutionCount', { count: c.institution })}</StatusPill>}
+                      {admin && !!c?.teacher && <StatusPill tone="info">{t('tv.teacherCount', { count: c.teacher })}</StatusPill>}
+                      {admin && !!c?.pending && <StatusPill tone="warning">{t('tv.pendingBadge', { count: c.pending })}</StatusPill>}
                       {open === tp.id ? <ExpandLess /> : <ExpandMore />}
                     </ButtonBase>
                     <Collapse in={open === tp.id} unmountOnExit>

@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import type { Metadata } from 'next';
 import { StatusPill } from '@/components/admissions/Chips';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -74,7 +74,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
           {t('stu.noneBody')}
         </EmptyState>
       ) : (
-        <TableFrame testId="students">
+        <Card padded={false} testId="students" sx={{ overflowX: 'auto' }}>
           <Table sx={{ minWidth: 560 }}>
             <TableHead>
               <TableRow>
@@ -101,7 +101,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
               ))}
             </TableBody>
           </Table>
-        </TableFrame>
+        </Card>
       )}
     </>
   );

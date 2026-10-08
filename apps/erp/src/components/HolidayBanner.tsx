@@ -20,11 +20,11 @@ export async function HolidayBanner({ title, date }: { title: string; date: stri
         py: 2,
         mb: 3,
         borderRadius: '16px',
-        bgcolor: 'm3.tertiaryContainer',
-        color: 'm3.onTertiaryContainer',
+        bgcolor: 'kx.warningContainer',
+        color: 'kx.onWarningContainer',
       }}
     >
-      <Box sx={{ width: 48, height: 48, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'm3.tertiary', color: 'm3.onTertiary', flexShrink: 0 }}>
+      <Box aria-hidden sx={{ width: 48, height: 48, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'kx.warning', color: 'kx.pane', flexShrink: 0 }}>
         <BeachAccessOutlined />
       </Box>
       <Box sx={{ flex: '1 1 260px', minWidth: 0 }}>

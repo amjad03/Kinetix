@@ -22,7 +22,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { saveTemplate } from '@/app/(dashboard)/documents/actions';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -46,7 +46,7 @@ export function TemplatesManager({ templates, canEdit }: { templates: Certificat
           </Button>
         </Box>
       )}
-      <TableFrame testId="templates">
+      <Card padded={false} testId="templates" sx={{ overflowX: 'auto' }}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -81,7 +81,7 @@ export function TemplatesManager({ templates, canEdit }: { templates: Certificat
             ))}
           </TableBody>
         </Table>
-      </TableFrame>
+      </Card>
       {editing && <TemplateDialog template={editing === 'new' ? null : editing} onClose={() => setEditing(null)} run={run} />}
     </>
   );

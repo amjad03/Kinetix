@@ -3,7 +3,6 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -15,6 +14,7 @@ import { useState } from 'react';
 import { enterMarks, moderateMarks, reopenMarks, submitMarks, verifyMarks } from '@/app/(dashboard)/results/actions';
 import { TableFrame } from '@/components/DataTable';
 import { useRun } from '@/components/exams/useRun';
+import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { canEnterMarks } from '@/lib/exams';
 import type { AssessmentDetail } from '@/lib/types';
@@ -34,7 +34,7 @@ export function MarksPanel({ assessment: a, canVerify }: { assessment: Assessmen
         <Typography variant="h6" component="h2">
           {t('results.entry.title')}
         </Typography>
-        <Chip size="small" color={status === 'draft' ? 'default' : status === 'submitted' ? 'warning' : 'success'} label={t(`results.ms.${status}`)} />
+        <StatusPill tone={status === 'draft' ? 'neutral' : status === 'submitted' ? 'warning' : 'success'}>{t(`results.ms.${status}`)}</StatusPill>
         <Box sx={{ flex: 1 }} />
         {status === 'draft' && (
           <Button variant="contained" disabled={pending} onClick={() => run(() => submitMarks(a.id), t('results.entry.submitted'))}>

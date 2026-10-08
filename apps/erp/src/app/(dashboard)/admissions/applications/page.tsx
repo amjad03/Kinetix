@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { StatusPill } from '@/components/admissions/Chips';
-import { TableFrame } from '@/components/DataTable';
+import { Card } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
@@ -68,7 +68,7 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
           {t('adm.apps.noneBody')}
         </EmptyState>
       ) : (
-        <TableFrame testId="applications">
+        <Card padded={false} testId="applications" sx={{ overflowX: 'auto' }}>
           <Table sx={{ minWidth: 760 }}>
             <TableHead>
               <TableRow>
@@ -104,7 +104,7 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
               ))}
             </TableBody>
           </Table>
-        </TableFrame>
+        </Card>
       )}
     </>
   );

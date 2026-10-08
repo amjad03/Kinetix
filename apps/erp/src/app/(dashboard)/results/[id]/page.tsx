@@ -1,7 +1,6 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -18,7 +17,7 @@ import { MarksPanel } from '@/components/results/MarksPanel';
 import { Distribution } from '@/components/results/Distribution';
 import { PublishButton } from '@/components/results/PublishButton';
 import { PublishedChip } from '@/components/results/PublishedChip';
-import { StatGrid, StatTile } from '@/components/StatTile';
+import { StatGrid, StatTile, StatusPill } from '@/components/ui';
 import { ErrorState } from '@/components/States';
 import { canPublishMarks } from '@/lib/access';
 import { api, ApiError, load, requireSection } from '@/lib/api';
@@ -155,7 +154,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
                   <TableCell>{st.fullName}</TableCell>
                   <TableCell align="right" sx={{ ...num, whiteSpace: 'nowrap' }}>
                     {st.absent ? (
-                      <Chip size="small" label={t('results.absent')} variant="outlined" sx={{ color: 'text.secondary' }} data-status="absent" />
+                      <span data-status="absent"><StatusPill tone="neutral">{t('results.absent')}</StatusPill></span>
                     ) : st.marks === null ? (
                       <Typography variant="body2" color="text.secondary">
                         {t('results.notEntered')}

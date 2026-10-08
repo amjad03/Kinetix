@@ -13,7 +13,7 @@ setup('sign in as the principal', async ({ page }) => {
 
 setup('sign in as the accounts office', async ({ page }) => {
   await signIn(page, 'accounts@demo.kinetix.in');
-  await expect(page).toHaveURL(/\/fees$/);
+  await expect(page).toHaveURL(/\/$/);
   await page.context().storageState({ path: ACCOUNTANT_STATE });
 });
 

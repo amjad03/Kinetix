@@ -61,9 +61,9 @@ import {
 import { weekdayShort } from '@/lib/dates';
 
 const KIND_COLORS: Record<CalendarKind, { bg: string; fg: string; dot: string }> = {
-  holiday: { bg: 'm3.tertiaryContainer', fg: 'm3.onTertiaryContainer', dot: 'm3.tertiary' },
-  exam: { bg: 'm3.errorContainer', fg: 'm3.onErrorContainer', dot: 'error.main' },
-  event: { bg: 'm3.primaryContainer', fg: 'm3.onPrimaryContainer', dot: 'primary.main' },
+  holiday: { bg: 'kx.warningContainer', fg: 'kx.onWarningContainer', dot: 'kx.warning' },
+  exam: { bg: 'm3.errorContainer', fg: 'm3.onErrorContainer', dot: 'm3.error' },
+  event: { bg: 'm3.primaryContainer', fg: 'm3.onPrimaryContainer', dot: 'm3.primary' },
 };
 
 const KIND_ICON: Record<CalendarKind, ReactNode> = {

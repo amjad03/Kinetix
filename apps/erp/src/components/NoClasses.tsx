@@ -27,7 +27,7 @@ export async function NoClasses({ date, today, path, extra }: { date: string; to
           <LinkButton variant="outlined" href={hrefFor(path, prev, today, extra)}>
             {t('noClasses.view', { date: fmt.date(prev, 'short') })}
           </LinkButton>
-          <LinkButton variant="contained" color="secondary" href={hrefFor(path, next, today, extra)}>
+          <LinkButton variant="contained"href={hrefFor(path, next, today, extra)}>
             {t('noClasses.view', { date: fmt.date(next, 'short') })}
           </LinkButton>
         </>

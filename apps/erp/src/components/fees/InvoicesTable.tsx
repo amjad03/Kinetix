@@ -37,6 +37,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { cancelInvoice, invoicePayments, recordPayment } from '@/app/(dashboard)/fees/actions';
 import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
+import { StatusPill } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { daysBetween } from '@/lib/dates';
 import { formatRupees, methodLabel, paiseToInput, PAY_METHODS, referenceKey, rupeesToPaise, type CounterMethod } from '@/lib/money';
@@ -46,11 +47,11 @@ import { ReceiptView } from './ReceiptView';
 function StatusCell({ inv, today }: { inv: FeeInvoice; today: string }) {
   const { t } = useI18n();
   if (inv.status === 'paid')
-    return <Chip size="small" label={t('fees.status.paid')} sx={{ bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }} data-status="paid" />;
-  if (inv.status === 'cancelled') return <Chip size="small" label={t('fees.status.cancelled')} variant="outlined" sx={{ color: 'text.secondary' }} data-status="cancelled" />;
+    return <span data-status="paid"><StatusPill tone="success">{t('fees.status.paid')}</StatusPill></span>;
+  if (inv.status === 'cancelled') return <span data-status="cancelled"><StatusPill>{t('fees.status.cancelled')}</StatusPill></span>;
   const late = inv.dueOn < today;
-  if (late) return <Chip size="small" label={t('fees.status.overdue')} sx={{ bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }} data-status="overdue" />;
-  return <Chip size="small" label={inv.paidPaise > 0 ? t('fees.status.partPaid') : t('fees.status.due')} variant="outlined" data-status="due" />;
+  if (late) return <span data-status="overdue"><StatusPill tone="danger">{t('fees.status.overdue')}</StatusPill></span>;
+  return <span data-status="due"><StatusPill tone={inv.paidPaise > 0 ? 'info' : 'warning'}>{inv.paidPaise > 0 ? t('fees.status.partPaid') : t('fees.status.due')}</StatusPill></span>;
 }
 
 function DueCell({ inv, today }: { inv: FeeInvoice; today: string }) {

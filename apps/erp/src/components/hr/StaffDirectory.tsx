@@ -4,7 +4,7 @@ import Add from '@mui/icons-material/Add';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -74,7 +74,7 @@ export function StaffDirectory({ staff, designations, departments }: { staff: St
                     {s.email ?? s.phone ?? ''}
                   </Typography>
                 </TableCell>
-                <TableCell>{s.employeeCode ?? <Chip size="small" color="warning" label={t('hr.staff.noRecord')} />}</TableCell>
+                <TableCell>{s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill>}</TableCell>
                 <TableCell>{s.department?.name ?? '–'}</TableCell>
                 <TableCell>{s.designation?.name ?? '–'}</TableCell>
                 <TableCell>{s.status ? t(`hr.status.${s.status}` as MessageKey) : '–'}</TableCell>

@@ -5,7 +5,7 @@ import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
+import { StatusPill } from '@/components/ui';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addComponent, createRun, loadStructures, saveSettings, saveStructure } from '@/app/(dashboard)/payroll/actions';
 import { TableFrame } from '@/components/DataTable';
-import { useNotice } from '@/components/hr/Common';
+import { pillTone, useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -111,7 +111,7 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
                 <TableRow key={r.id} hover>
                   <TableCell>{formatMonth(`${r.month}-01`, locale)}</TableCell>
                   <TableCell>
-                    <Chip size="small" color={RUN_TONE[r.status]} label={t(`pay.status.${r.status}` as MessageKey)} />
+                    <StatusPill tone={pillTone(RUN_TONE[r.status])}>{t(`pay.status.${r.status}` as MessageKey)}</StatusPill>
                   </TableCell>
                   <TableCell align="right" sx={num}>{r.staffCount}</TableCell>
                   <TableCell align="right" sx={num}>{formatRupees(r.grossPaise)}</TableCell>

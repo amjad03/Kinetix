@@ -12,7 +12,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
   const { t } = useI18n();
   if (crumbs.length === 0) return null;
   return (
-    <Box component="nav" aria-label={t('shell.breadcrumb')} sx={{ mb: 1.5 }}>
+    <Box component="nav" className="kx-chrome" aria-label={t('shell.breadcrumb')} sx={{ mb: 1.5 }}>
       <Box component="ol" sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.25, listStyle: 'none', m: 0, p: 0, fontSize: '0.8125rem', color: 'text.secondary' }}>
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1;

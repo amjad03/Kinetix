@@ -100,6 +100,7 @@ export function TopBar({
   return (
     <Box
       component="header"
+      className="kx-chrome"
       sx={{ position: 'sticky', top: 0, zIndex: 1100, height: 64, display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 }, px: { xs: 1.5, md: 3 }, bgcolor: 'kx.pane', borderBottom: 1, borderColor: 'm3.outlineVariant' }}
     >
       <IconButton onClick={onMenu} aria-label={t('shell.menu')} sx={{ display: { xs: 'inline-flex', md: 'none' } }}>
