@@ -12,7 +12,11 @@ import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../campus/bus_screen.dart';
+import '../campus/campus_life_screen.dart';
 import '../campus/certificates_screen.dart';
+import '../campus/course_registration_screen.dart';
+import '../campus/passport_screen.dart';
+import '../campus/surveys_screen.dart';
 import '../campus/gate_pass_screen.dart';
 import '../wallet/wallet_screen.dart';
 import '../campus/leave_screen.dart';
@@ -368,6 +372,34 @@ class ProfileTabState extends State<ProfileTab> {
                   title: Text(l.certificatesTitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => CertificatesScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openCourseReg'),
+                  leading: const Icon(Icons.menu_book_outlined),
+                  title: Text(l.courseRegTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => CourseRegistrationScreen.open(context, widget.study.api),
+                ),
+                ListTile(
+                  key: const Key('openPassport'),
+                  leading: const Icon(Icons.verified_outlined),
+                  title: Text(l.passportTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => PassportScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openSurveys'),
+                  leading: const Icon(Icons.poll_outlined),
+                  title: Text(l.surveysTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => SurveysScreen.open(context, widget.study.api),
+                ),
+                ListTile(
+                  key: const Key('openCampusLife'),
+                  leading: const Icon(Icons.groups_outlined),
+                  title: Text(l.campusLifeTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => CampusLifeScreen.open(context, widget.study.api, st.id),
                 ),
                 KxSectionHeader(l.settings),
                 LanguageTile(onChanged: state.setLanguage),

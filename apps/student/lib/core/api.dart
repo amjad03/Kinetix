@@ -9,6 +9,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
 import 'campus.dart';
+import 'campus_life.dart';
 import 'campus_services.dart';
 import 'lms.dart';
 import 'models.dart';
@@ -268,6 +269,52 @@ abstract class StudentApi {
 
   /// Applies for a scheme; the server checks eligibility (400 with the reason when not eligible).
   Future<void> applyScholarship(String studentId, {required String schemeId, int? incomePaise, String note = ''});
+
+  // ── Course registration, passport, surveys, clubs and events ───────────────────────────────
+
+  /// Terms to register in (`GET /v1/course-registration/terms`).
+  Future<List<RegTerm>> registrationTerms();
+
+  /// Offerings of a term with seats left and my status (`GET /v1/course-registration/me/offerings`).
+  Future<OfferingList> courseOfferings(String termId);
+
+  /// My registrations in a term with credit totals (`GET /v1/course-registration/me/registrations`).
+  Future<MyRegistrations> myRegistrations(String termId);
+
+  /// Registers for an offering; 409 with the reason when a rule refuses (`POST …/me/register`).
+  Future<void> registerCourse(String offeringId);
+
+  /// Drops an offering (`POST …/me/drop`).
+  Future<void> dropCourse(String offeringId);
+
+  /// Ranks electives, most wanted first (`PUT …/me/preferences`).
+  Future<void> setCoursePreferences(String termId, List<String> offeringIds);
+
+  /// My Outcome Passport (`GET /v1/passport/me`).
+  Future<OutcomePassport> passport(String studentId);
+
+  /// The passport as a PDF (`GET /v1/passport/students/:id/pdf`).
+  Future<Uint8List> passportPdf(String studentId);
+
+  /// Open surveys addressed to me (`GET /v1/surveys/mine`).
+  Future<List<MySurvey>> mySurveys();
+
+  /// Submits my answers; 409 if already answered (`POST /v1/surveys/:id/responses`).
+  Future<void> submitSurvey(String surveyId, List<SurveyAnswer> answers);
+
+  /// Active clubs with my membership (`GET /v1/campus-life/me/clubs`).
+  Future<List<MyClub>> myClubs(String studentId);
+  Future<void> joinClub(String studentId, String clubId);
+  Future<void> leaveClub(String studentId, String clubId);
+
+  /// Events I can register for (`GET /v1/campus-life/me/events`).
+  Future<List<CampusEvent>> campusEvents(String studentId);
+  Future<void> registerForEvent(String studentId, String eventId);
+  Future<void> cancelEventRegistration(String studentId, String eventId);
+
+  /// My event registrations with the QR token to show at the door.
+  Future<List<MyEventRegistration>> myEventRegistrations(String studentId);
+  Future<void> giveEventFeedback(String studentId, String eventId, {required int rating, String comment = ''});
 }
 
 /// Lets the lesson player load recordings through a [StudentApi].
@@ -783,4 +830,60 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<void> applyScholarship(String studentId, {required String schemeId, int? incomePaise, String note = ''}) =>
       _send('POST', '/v1/finance/scholarships/apply', body: {'studentId': studentId, 'schemeId': schemeId, 'incomePaise': ?incomePaise, 'note': note});
+
+  @override
+  Future<List<RegTerm>> registrationTerms() async => [for (final t in await _send('GET', '/v1/course-registration/terms') as List) RegTerm.fromJson((t as Map).cast<String, dynamic>())];
+
+  @override
+  Future<OfferingList> courseOfferings(String termId) async => OfferingList.fromJson(await _send('GET', '/v1/course-registration/me/offerings?termId=$termId') as Map<String, dynamic>);
+
+  @override
+  Future<MyRegistrations> myRegistrations(String termId) async => MyRegistrations.fromJson(await _send('GET', '/v1/course-registration/me/registrations?termId=$termId') as Map<String, dynamic>);
+
+  @override
+  Future<void> registerCourse(String offeringId) => _send('POST', '/v1/course-registration/me/register', body: {'offeringId': offeringId});
+
+  @override
+  Future<void> dropCourse(String offeringId) => _send('POST', '/v1/course-registration/me/drop', body: {'offeringId': offeringId});
+
+  @override
+  Future<void> setCoursePreferences(String termId, List<String> offeringIds) => _send('PUT', '/v1/course-registration/me/preferences', body: {'termId': termId, 'offeringIds': offeringIds});
+
+  @override
+  Future<OutcomePassport> passport(String studentId) async => OutcomePassport.fromJson(await _send('GET', '/v1/passport/me?studentId=$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> passportPdf(String studentId) => _download('/v1/passport/students/$studentId/pdf');
+
+  @override
+  Future<List<MySurvey>> mySurveys() async => [for (final s in await _send('GET', '/v1/surveys/mine') as List) MySurvey.fromJson((s as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> submitSurvey(String surveyId, List<SurveyAnswer> answers) => _send('POST', '/v1/surveys/$surveyId/responses', body: {'answers': [for (final a in answers) a.toJson()]});
+
+  @override
+  Future<List<MyClub>> myClubs(String studentId) async => [for (final c in await _send('GET', '/v1/campus-life/me/clubs?studentId=$studentId') as List) MyClub.fromJson((c as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> joinClub(String studentId, String clubId) => _send('POST', '/v1/campus-life/clubs/$clubId/join', body: {'studentId': studentId});
+
+  @override
+  Future<void> leaveClub(String studentId, String clubId) => _send('POST', '/v1/campus-life/clubs/$clubId/leave', body: {'studentId': studentId});
+
+  @override
+  Future<List<CampusEvent>> campusEvents(String studentId) async => [for (final e in await _send('GET', '/v1/campus-life/me/events?studentId=$studentId') as List) CampusEvent.fromJson((e as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> registerForEvent(String studentId, String eventId) => _send('POST', '/v1/campus-life/events/$eventId/register', body: {'studentId': studentId});
+
+  @override
+  Future<void> cancelEventRegistration(String studentId, String eventId) => _send('POST', '/v1/campus-life/events/$eventId/cancel-registration', body: {'studentId': studentId});
+
+  @override
+  Future<List<MyEventRegistration>> myEventRegistrations(String studentId) async =>
+      [for (final r in await _send('GET', '/v1/campus-life/me/registrations?studentId=$studentId') as List) MyEventRegistration.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> giveEventFeedback(String studentId, String eventId, {required int rating, String comment = ''}) =>
+      _send('POST', '/v1/campus-life/events/$eventId/feedback', body: {'studentId': studentId, 'rating': rating, 'comment': comment});
 }

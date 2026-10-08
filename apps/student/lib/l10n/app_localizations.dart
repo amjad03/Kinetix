@@ -4598,6 +4598,474 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount'**
   String get walletAmount;
+
+  /// No description provided for @courseRegTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course registration'**
+  String get courseRegTitle;
+
+  /// No description provided for @courseRegCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits: {registered} of {max} (at least {min})'**
+  String courseRegCredits(String registered, String max, String min);
+
+  /// No description provided for @courseRegAddDropUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add or drop until {when}.'**
+  String courseRegAddDropUntil(String when);
+
+  /// No description provided for @courseRegClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration is not open for you right now.'**
+  String get courseRegClosed;
+
+  /// No description provided for @courseRegNoTerm.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no term to register in yet.'**
+  String get courseRegNoTerm;
+
+  /// No description provided for @courseRegNoOfferings.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses are offered this term yet.'**
+  String get courseRegNoOfferings;
+
+  /// No description provided for @courseRegMine.
+  ///
+  /// In en, this message translates to:
+  /// **'My registrations'**
+  String get courseRegMine;
+
+  /// No description provided for @courseRegAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available courses'**
+  String get courseRegAvailable;
+
+  /// No description provided for @courseRegRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get courseRegRegister;
+
+  /// No description provided for @courseRegDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop'**
+  String get courseRegDrop;
+
+  /// No description provided for @courseRegDropTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop {name}?'**
+  String courseRegDropTitle(String name);
+
+  /// No description provided for @courseRegRegisteredNow.
+  ///
+  /// In en, this message translates to:
+  /// **'You are registered.'**
+  String get courseRegRegisteredNow;
+
+  /// No description provided for @courseRegDropped.
+  ///
+  /// In en, this message translates to:
+  /// **'The course is dropped.'**
+  String get courseRegDropped;
+
+  /// No description provided for @courseRegCore.
+  ///
+  /// In en, this message translates to:
+  /// **'Core'**
+  String get courseRegCore;
+
+  /// No description provided for @courseRegElective.
+  ///
+  /// In en, this message translates to:
+  /// **'Elective'**
+  String get courseRegElective;
+
+  /// No description provided for @courseRegCreditsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} credits'**
+  String courseRegCreditsOf(String n);
+
+  /// No description provided for @courseRegSeatsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} seats left'**
+  String courseRegSeatsLeft(String n);
+
+  /// No description provided for @courseRegFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get courseRegFull;
+
+  /// No description provided for @courseRegRegisteredPill.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered'**
+  String get courseRegRegisteredPill;
+
+  /// No description provided for @courseRegWaitlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Waitlisted'**
+  String get courseRegWaitlisted;
+
+  /// No description provided for @courseRegNotAllotted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allotted'**
+  String get courseRegNotAllotted;
+
+  /// No description provided for @courseRegRanked.
+  ///
+  /// In en, this message translates to:
+  /// **'Preference {rank}'**
+  String courseRegRanked(String rank);
+
+  /// No description provided for @courseRegApprovalPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get courseRegApprovalPending;
+
+  /// No description provided for @courseRegApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get courseRegApproved;
+
+  /// No description provided for @courseRegRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get courseRegRejected;
+
+  /// No description provided for @courseRegRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank electives'**
+  String get courseRegRank;
+
+  /// No description provided for @courseRegRankHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick the electives you want and drag them into order, most wanted first. Seats in full courses go by this order.'**
+  String get courseRegRankHelp;
+
+  /// No description provided for @courseRegRankSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save order'**
+  String get courseRegRankSave;
+
+  /// No description provided for @courseRegRankSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your preferences are saved.'**
+  String get courseRegRankSaved;
+
+  /// No description provided for @courseRegRankNone.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no electives to rank.'**
+  String get courseRegRankNone;
+
+  /// No description provided for @passportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome passport'**
+  String get passportTitle;
+
+  /// No description provided for @passportVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified by the institution'**
+  String get passportVerified;
+
+  /// No description provided for @passportNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet verified by the institution'**
+  String get passportNotVerified;
+
+  /// No description provided for @passportSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get passportSkills;
+
+  /// No description provided for @passportNoSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'No skills recorded yet.'**
+  String get passportNoSkills;
+
+  /// No description provided for @passportLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {n} of 5'**
+  String passportLevel(String n);
+
+  /// No description provided for @passportNoEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'No evidence yet'**
+  String get passportNoEvidence;
+
+  /// No description provided for @passportCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get passportCertificates;
+
+  /// No description provided for @passportActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs and events'**
+  String get passportActivities;
+
+  /// No description provided for @passportDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get passportDownload;
+
+  /// No description provided for @surveysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get surveysTitle;
+
+  /// No description provided for @surveysNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No surveys are waiting for you.'**
+  String get surveysNone;
+
+  /// No description provided for @surveyAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers are anonymous.'**
+  String get surveyAnonymous;
+
+  /// No description provided for @surveySubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get surveySubmit;
+
+  /// No description provided for @surveySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you. Your answers are sent.'**
+  String get surveySent;
+
+  /// No description provided for @surveyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please answer the questions marked required.'**
+  String get surveyRequired;
+
+  /// No description provided for @surveyOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get surveyOptional;
+
+  /// No description provided for @surveyClosesOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Closes {when}'**
+  String surveyClosesOn(String when);
+
+  /// No description provided for @surveyAnswerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get surveyAnswerHint;
+
+  /// No description provided for @campusLifeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs and events'**
+  String get campusLifeTitle;
+
+  /// No description provided for @campusTabClubs.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs'**
+  String get campusTabClubs;
+
+  /// No description provided for @campusTabEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get campusTabEvents;
+
+  /// No description provided for @campusTabPasses.
+  ///
+  /// In en, this message translates to:
+  /// **'My passes'**
+  String get campusTabPasses;
+
+  /// No description provided for @clubJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get clubJoin;
+
+  /// No description provided for @clubLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get clubLeave;
+
+  /// No description provided for @clubRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get clubRequested;
+
+  /// No description provided for @clubMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get clubMember;
+
+  /// No description provided for @clubPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} points'**
+  String clubPoints(String n);
+
+  /// No description provided for @clubsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no clubs yet.'**
+  String get clubsNone;
+
+  /// No description provided for @clubJoinSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. A coordinator will approve it.'**
+  String get clubJoinSent;
+
+  /// No description provided for @eventsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No events are open for registration.'**
+  String get eventsNone;
+
+  /// No description provided for @eventRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get eventRegister;
+
+  /// No description provided for @eventJoinWaitlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Join waitlist'**
+  String get eventJoinWaitlist;
+
+  /// No description provided for @eventCancelRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel registration'**
+  String get eventCancelRegistration;
+
+  /// No description provided for @eventRegisteredPill.
+  ///
+  /// In en, this message translates to:
+  /// **'You are registered'**
+  String get eventRegisteredPill;
+
+  /// No description provided for @eventWaitlistedPill.
+  ///
+  /// In en, this message translates to:
+  /// **'On the waitlist'**
+  String get eventWaitlistedPill;
+
+  /// No description provided for @eventSeatsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} seats left'**
+  String eventSeatsLeft(String n);
+
+  /// No description provided for @eventFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee {amount}'**
+  String eventFee(String amount);
+
+  /// No description provided for @eventFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get eventFree;
+
+  /// No description provided for @passNone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not registered for any event.'**
+  String get passNone;
+
+  /// No description provided for @passShowAtDoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this code at the door'**
+  String get passShowAtDoor;
+
+  /// No description provided for @passCheckedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in'**
+  String get passCheckedIn;
+
+  /// No description provided for @passFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Give feedback'**
+  String get passFeedback;
+
+  /// No description provided for @passFeedbackDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback sent'**
+  String get passFeedbackDone;
+
+  /// No description provided for @passFeedbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How was it?'**
+  String get passFeedbackTitle;
+
+  /// No description provided for @passFeedbackComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment (optional)'**
+  String get passFeedbackComment;
+
+  /// No description provided for @passFeedbackSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get passFeedbackSend;
+
+  /// No description provided for @passFeedbackThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your feedback.'**
+  String get passFeedbackThanks;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

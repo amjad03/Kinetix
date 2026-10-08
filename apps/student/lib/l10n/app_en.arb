@@ -1955,5 +1955,166 @@
       "amount": {}
     }
   },
-  "walletAmount": "Amount"
+  "walletAmount": "Amount",
+  "courseRegTitle": "Course registration",
+  "courseRegCredits": "Credits: {registered} of {max} (at least {min})",
+  "@courseRegCredits": {
+    "placeholders": {
+      "registered": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "courseRegAddDropUntil": "You can add or drop until {when}.",
+  "@courseRegAddDropUntil": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "courseRegClosed": "Registration is not open for you right now.",
+  "courseRegNoTerm": "There is no term to register in yet.",
+  "courseRegNoOfferings": "No courses are offered this term yet.",
+  "courseRegMine": "My registrations",
+  "courseRegAvailable": "Available courses",
+  "courseRegRegister": "Register",
+  "courseRegDrop": "Drop",
+  "courseRegDropTitle": "Drop {name}?",
+  "@courseRegDropTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseRegRegisteredNow": "You are registered.",
+  "courseRegDropped": "The course is dropped.",
+  "courseRegCore": "Core",
+  "courseRegElective": "Elective",
+  "courseRegCreditsOf": "{n} credits",
+  "@courseRegCreditsOf": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseRegSeatsLeft": "{n} seats left",
+  "@courseRegSeatsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseRegFull": "Full",
+  "courseRegRegisteredPill": "Registered",
+  "courseRegWaitlisted": "Waitlisted",
+  "courseRegNotAllotted": "Not allotted",
+  "courseRegRanked": "Preference {rank}",
+  "@courseRegRanked": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "courseRegApprovalPending": "Waiting for approval",
+  "courseRegApproved": "Approved",
+  "courseRegRejected": "Not approved",
+  "courseRegRank": "Rank electives",
+  "courseRegRankHelp": "Tick the electives you want and drag them into order, most wanted first. Seats in full courses go by this order.",
+  "courseRegRankSave": "Save order",
+  "courseRegRankSaved": "Your preferences are saved.",
+  "courseRegRankNone": "There are no electives to rank.",
+  "passportTitle": "Outcome passport",
+  "passportVerified": "Verified by the institution",
+  "passportNotVerified": "Not yet verified by the institution",
+  "passportSkills": "Skills",
+  "passportNoSkills": "No skills recorded yet.",
+  "passportLevel": "Level {n} of 5",
+  "@passportLevel": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "passportNoEvidence": "No evidence yet",
+  "passportCertificates": "Certificates",
+  "passportActivities": "Clubs and events",
+  "passportDownload": "Download PDF",
+  "surveysTitle": "Surveys",
+  "surveysNone": "No surveys are waiting for you.",
+  "surveyAnonymous": "Your answers are anonymous.",
+  "surveySubmit": "Submit",
+  "surveySent": "Thank you. Your answers are sent.",
+  "surveyRequired": "Please answer the questions marked required.",
+  "surveyOptional": "Optional",
+  "surveyClosesOn": "Closes {when}",
+  "@surveyClosesOn": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "surveyAnswerHint": "Your answer",
+  "campusLifeTitle": "Clubs and events",
+  "campusTabClubs": "Clubs",
+  "campusTabEvents": "Events",
+  "campusTabPasses": "My passes",
+  "clubJoin": "Join",
+  "clubLeave": "Leave",
+  "clubRequested": "Waiting for approval",
+  "clubMember": "Member",
+  "clubPoints": "{n} points",
+  "@clubPoints": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "clubsNone": "There are no clubs yet.",
+  "clubJoinSent": "Request sent. A coordinator will approve it.",
+  "eventsNone": "No events are open for registration.",
+  "eventRegister": "Register",
+  "eventJoinWaitlist": "Join waitlist",
+  "eventCancelRegistration": "Cancel registration",
+  "eventRegisteredPill": "You are registered",
+  "eventWaitlistedPill": "On the waitlist",
+  "eventSeatsLeft": "{n} seats left",
+  "@eventSeatsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "eventFee": "Fee {amount}",
+  "@eventFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eventFree": "Free",
+  "passNone": "You have not registered for any event.",
+  "passShowAtDoor": "Show this code at the door",
+  "passCheckedIn": "Checked in",
+  "passFeedback": "Give feedback",
+  "passFeedbackDone": "Feedback sent",
+  "passFeedbackTitle": "How was it?",
+  "passFeedbackComment": "Comment (optional)",
+  "passFeedbackSend": "Send",
+  "passFeedbackThanks": "Thank you for your feedback."
 }

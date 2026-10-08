@@ -95,6 +95,16 @@ class FakeSource implements LessonSource {
   LessonAudioLocation? audio(String id) => LessonAudioLocation(Uri.parse('http://test/v1/recordings/$id/audio'));
 }
 
+/// A recording whose lesson carries chapter markers.
+class ChaptersSource extends FakeSource {
+  ChaptersSource(this.log);
+
+  final Map<String, dynamic> log;
+
+  @override
+  Future<Lesson> lesson(String id) async => Lesson.fromJson(log);
+}
+
 void main() {
   late List<(bool, LessonAudioLocation?)> audioRequests;
 
@@ -221,6 +231,28 @@ void main() {
     final pos = player(tester).position;
     expect(pos.inSeconds, inInclusiveRange(12, 17));
     expect(player(tester).pageIndex, 1);
+  });
+
+  testWidgets('chapter markers show as chips that seek playback', (tester) async {
+    final log = lessonJson();
+    (log['events'] as List<List<Object>>).insertAll(1, <List<Object>>[
+      [0, 'c', 'Introduction'],
+      [9000, 'c', 'Premium'],
+    ]);
+    await pump(tester, source: ChaptersSource(log));
+    expect(find.byKey(const Key('chapter-0')), findsOneWidget);
+    expect(find.text('0:00 · Introduction'), findsOneWidget);
+    await tester.drag(find.byKey(const Key('lessonChapters')), const Offset(-300, 0));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chapter-1')));
+    await tester.pump();
+    expect(player(tester).position, const Duration(seconds: 9));
+    expect(player(tester).pageIndex, 1);
+  });
+
+  testWidgets('no markers, no chapter row', (tester) async {
+    await pump(tester);
+    expect(find.byKey(const Key('lessonChapters')), findsNothing);
   });
 
   testWidgets('a transcript still being prepared says so; none shows no tab', (tester) async {
