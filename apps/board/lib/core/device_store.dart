@@ -55,6 +55,19 @@ class DeviceStore {
     await p.setString(_name, name);
   }
 
+  /// Forgets the server, the device token and the name: the board must be enrolled again (IT unpaired it).
+  Future<void> clear() async {
+    final p = await SharedPreferences.getInstance();
+    try {
+      await _secrets.delete(_token);
+    } catch (e) {
+      debugPrint('Device token not removed: $e');
+    }
+    await p.remove(_token);
+    await p.remove(_server);
+    await p.remove(_name);
+  }
+
   Future<String?> setting(String key) async => (await SharedPreferences.getInstance()).getString('setting.$key');
 
   Future<void> setSetting(String key, String value) async => (await SharedPreferences.getInstance()).setString('setting.$key', value);

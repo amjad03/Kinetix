@@ -4,12 +4,13 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../cast/cast_panel.dart' show castStrings;
 import '../../extras/board_extras.dart' show extrasStrings;
 import '../../phet/phet_strings.dart';
 import '../layout/layout_strings.dart';
 
 /// The split panel's tabs (docs/design/board-wireframes.html, screen 3).
-enum PanelTab { ai, model3d, labs, videos, books, kit, animations, sims, camera, web }
+enum PanelTab { ai, model3d, labs, videos, books, kit, animations, sims, camera, web, cast }
 
 extension PanelTabInfo on PanelTab {
   String label(LayoutStrings s) => switch (this) {
@@ -23,6 +24,7 @@ extension PanelTabInfo on PanelTab {
     PanelTab.sims => PhetStrings(s.lang).tab,
     PanelTab.camera => extrasStrings(s.lang)['tabCamera'],
     PanelTab.web => extrasStrings(s.lang)['tabWeb'],
+    PanelTab.cast => castStrings(s.lang)['tab'],
   };
 
   IconData get icon => switch (this) {
@@ -36,6 +38,7 @@ extension PanelTabInfo on PanelTab {
     PanelTab.sims => Icons.science,
     PanelTab.camera => Icons.document_scanner_outlined,
     PanelTab.web => Icons.travel_explore,
+    PanelTab.cast => Icons.cast_connected,
   };
 }
 

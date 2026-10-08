@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, exit;
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show SystemNavigator;
 import 'package:intl/intl.dart';
 
 import '../features/board/kit/subjects.dart';
@@ -22,6 +23,8 @@ import 'kiosk/kiosk_controller.dart';
 import 'secret_store.dart';
 import 'models.dart';
 import 'outbox_store.dart';
+import 'cast/cast_controller.dart';
+import 'fleet/fleet_agent.dart';
 import 'realtime.dart';
 import 'recording/recordings.dart';
 
@@ -78,6 +81,8 @@ class BoardController extends ChangeNotifier {
     HandwritingRecognizer? handwriting,
     SecretStore? profileSecrets,
     ProjectorController? projector,
+    DeviceProbe? deviceProbe,
+    CastController? cast,
   }) : _store = store ?? DeviceStore(),
       handwriting = handwriting ?? platformHandwriting(),
       _outboxStore = outboxStore ?? FileOutboxStore(),
@@ -93,7 +98,30 @@ class BoardController extends ChangeNotifier {
       request: (event, data) => _realtime?.request(event, data) ?? Future.value(),
       emit: (event, data) => _realtime?.emit(event, data),
     )..addListener(notifyListeners);
+    this.cast = cast ?? CastController(emit: (event, data) => _realtime?.emit(event, data), request: (event, data) => _realtime?.request(event, data) ?? Future.value());
+    this.cast.addListener(notifyListeners);
+    fleet = FleetAgent(
+      send: (body) async => api?.postHealth(body),
+      probe: deviceProbe,
+      app: () => AppHealth(
+        kiosk: _demo ? 'unknown' : (this.kiosk.enabled && !this.kiosk.paused ? 'on' : 'off'),
+        currentClass: session == null ? null : [session!.subjectName, session!.sectionName].whereType<String>().join(' · '),
+        locked: deviceLocked,
+      ),
+    );
   }
+
+  /// Screens cast to the board by teachers' and students' devices (features/cast).
+  late final CastController cast;
+
+  /// Reports this board's health to the IT console (core/fleet).
+  late final FleetAgent fleet;
+
+  /// IT locked this board from the device console: a lock screen covers it until unlocked.
+  bool deviceLocked = false;
+
+  /// Replaces the app after IT's "restart app" (tests set it; the default exits and relies on kiosk mode or the OS to bring the app back).
+  Future<void> Function() restartApp = _exitApp;
 
   /// Kiosk mode: the device locked to the board (docs/hardware/kiosk-mode.md).
   late final KioskController kiosk;
@@ -272,6 +300,8 @@ class BoardController extends ChangeNotifier {
   bool get isEnrolled => api != null;
   bool get isSignedIn => session != null;
 
+  static const _lockedKey = 'deviceLocked';
+
   Future<void> start() async {
     try {
       _outbox.addAll(await _outboxStore.load());
@@ -286,6 +316,7 @@ class BoardController extends ChangeNotifier {
       debugPrint('Device store unreadable: $e');
     }
     await _loadSettings();
+    deviceLocked = (await _store.setting(_lockedKey).catchError((Object _) => null)) == 'true';
     // The policy this board last had from its institution, until it hears a newer one.
     unawaited(kiosk.start());
     unawaited(profiles.start());
@@ -729,10 +760,17 @@ class BoardController extends ChangeNotifier {
         if (!classEvents.isClosed) classEvents.add((event, e));
       });
     }
+    rt.on(RealtimeEvents.castPending, cast.onPending);
+    rt.on(RealtimeEvents.castIce, (e) => unawaited(cast.onIce(e)));
+    rt.on(RealtimeEvents.castSignal, (e) => unawaited(cast.onSignal(e)));
+    rt.on(RealtimeEvents.castEnded, cast.onEnded);
+    rt.on(RealtimeEvents.deviceAction, (e) => unawaited(_runDeviceAction(e)));
     rt.onReady = () {
       online = true;
       unawaited(_fetchConfig());
       classAudio.reconnected();
+      if (!_demo && !Platform.environment.containsKey('FLUTTER_TEST')) fleet.start();
+      unawaited(_pullDeviceActions());
       notifyListeners();
       unawaited(_fetchPendingBroadcasts());
       unawaited(flushOutbox());
@@ -752,6 +790,7 @@ class BoardController extends ChangeNotifier {
     if (_demo || api == null || api.deviceToken == null) return;
     try {
       final config = await api.boardConfig();
+      if (config['locked'] is bool) unawaited(setDeviceLocked(config['locked'] as bool));
       final kioskConfig = config['kiosk'];
       if (kioskConfig is Map<String, dynamic>) await kiosk.applyPolicy(KioskPolicy.fromConfig(kioskConfig));
       for (final l in configListeners) {
@@ -793,6 +832,7 @@ class BoardController extends ChangeNotifier {
     _sessionTimer?.cancel();
     liveViewers = liveLeaders = liveStudents = 0;
     classLive = false;
+    unawaited(cast.classEnded());
     unawaited(classAudio.turnOff());
     classAudio.setListeners(0);
     api?.sessionToken = null;
@@ -804,11 +844,102 @@ class BoardController extends ChangeNotifier {
     unawaited(_applyTeacherSettings());
   }
 
-  void _showBroadcast(BroadcastMessage m) {
+  void _showBroadcast(BroadcastMessage m, {bool report = true}) {
     if (broadcasts.any((b) => b.id == m.id)) return;
     broadcasts.insert(0, m);
     notifyListeners();
-    unawaited(api?.markDisplayed(m.id).catchError((_) {}));
+    if (report) unawaited(api?.markDisplayed(m.id).catchError((_) {}));
+  }
+
+  // --- IT device console (docs/architecture/screen-share-and-devices.md) -----------------------
+
+  /// Locks or unlocks the board. Kept on the board, so it stays locked across restarts and offline.
+  Future<void> setDeviceLocked(bool locked) async {
+    if (deviceLocked == locked) return;
+    deviceLocked = locked;
+    notifyListeners();
+    unawaited(_store.setSetting(_lockedKey, '$locked').catchError((Object _) {}));
+    unawaited(fleet.reportNow());
+  }
+
+  /// Actions IT sent while the board was offline.
+  Future<void> _pullDeviceActions() async {
+    final reply = await _realtime?.request(RealtimeEvents.deviceActionsPull, <String, Object>{});
+    if (reply is! List) return;
+    for (final a in reply) {
+      if (a is Map) await _runDeviceAction(Map<String, dynamic>.from(a));
+    }
+  }
+
+  /// One remote action from IT. The board says whether it worked; a restart is acknowledged first.
+  Future<void> _runDeviceAction(Map<String, dynamic> a) async {
+    final id = a['id'] as String?;
+    final type = a['type'] as String?;
+    if (id == null || type == null) return;
+    final params = a['params'] is Map ? Map<String, dynamic>.from(a['params'] as Map) : <String, dynamic>{};
+    String? error;
+    try {
+      switch (type) {
+        case 'lock':
+          await setDeviceLocked(true);
+        case 'unlock':
+          await setDeviceLocked(false);
+        case 'clear_pin_profiles':
+          await profiles.clearCache();
+        case 'message':
+          final seconds = (params['seconds'] as num?)?.toInt() ?? 30;
+          _showBroadcast(
+            BroadcastMessage(
+              id: 'it-$id',
+              title: 'IT',
+              body: params['text'] as String? ?? '',
+              priority: BroadcastPriority.important,
+              requiresAck: false,
+              senderName: 'IT',
+              expiresAt: DateTime.now().add(Duration(seconds: seconds.clamp(5, 600))),
+            ),
+            report: false,
+          );
+        case 'kiosk_policy':
+          await _fetchConfig();
+        case 'rename_move':
+          final name = params['name'] as String?;
+          if (name != null && name.isNotEmpty) {
+            deviceName = name;
+            final saved = await _store.load();
+            if (saved.server != null && saved.token != null) await _store.save(server: saved.server!, token: saved.token!, name: name);
+            notifyListeners();
+          }
+        case 'restart_app':
+          break; // after the acknowledgement below
+        case 'unpair':
+          break; // the token is revoked on the server; the board forgets it below
+        default:
+          error = 'Unknown action';
+      }
+    } catch (e) {
+      error = '$e';
+    }
+    await _realtime?.request(RealtimeEvents.deviceActionAck, {'id': id, 'ok': error == null, 'error': ?error});
+    if (error != null) return;
+    if (type == 'restart_app') await restartApp();
+    if (type == 'unpair') await _unpair();
+  }
+
+  /// IT unpaired this board: it forgets its token and asks to be enrolled again.
+  Future<void> _unpair() async {
+    fleet.stop();
+    await cast.classEnded();
+    _realtime?.dispose();
+    _realtime = null;
+    api = null;
+    deviceName = null;
+    online = false;
+    deviceLocked = false;
+    await _store.clear();
+    _signOut();
+    stage = BoardStage.needsEnrollment;
+    notifyListeners();
   }
 
   Future<void> _fetchPendingBroadcasts() async {
@@ -862,8 +993,20 @@ class BoardController extends ChangeNotifier {
     classAudio.removeListener(notifyListeners);
     classAudio.dispose();
     _realtime?.dispose();
+    fleet.stop();
+    cast.removeListener(notifyListeners);
+    cast.dispose();
     recordings.dispose();
     unawaited(classEvents.close());
     super.dispose();
+  }
+}
+
+/// IT's "restart app": the process ends and kiosk mode (Android) or the Windows startup task brings the board back.
+Future<void> _exitApp() async {
+  if (Platform.isAndroid) {
+    await SystemNavigator.pop();
+  } else {
+    exit(0);
   }
 }

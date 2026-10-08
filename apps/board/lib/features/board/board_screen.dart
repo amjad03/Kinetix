@@ -12,6 +12,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../cast/cast_panel.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../core/recording/lesson_capture.dart';
@@ -199,6 +200,10 @@ class _BoardScreenState extends State<BoardScreen> {
     _phet.addListener(_onPhetChanged);
     board.onLiveSnapshotRequest = _startLive;
     board.classAudio.onUnavailable = _classAudioUnavailable;
+    // Someone asked to cast, or a screen was approved: the Cast tab opens for the teacher.
+    board.cast.onAttention = () {
+      if (mounted && _panel != PanelKind.cast) _show(PanelKind.cast);
+    };
     _ai = AiController(board)
       ..captureBoard = _captureForAi
       ..openSplit = _openSplit
@@ -319,6 +324,7 @@ class _BoardScreenState extends State<BoardScreen> {
     board.profiles.onSwitch = null;
     if (board.onLiveSnapshotRequest == _startLive) board.onLiveSnapshotRequest = null;
     if (board.classAudio.onUnavailable == _classAudioUnavailable) board.classAudio.onUnavailable = null;
+    board.cast.onAttention = null;
     _live.stop();
     _remote.dispose();
     _remoteToolkit.dispose();
@@ -1400,6 +1406,7 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.phet => PanelTab.sims,
     PanelKind.camera => PanelTab.camera,
     PanelKind.web => PanelTab.web,
+    PanelKind.cast => PanelTab.cast,
     _ => null,
   };
 
@@ -1427,6 +1434,8 @@ class _BoardScreenState extends State<BoardScreen> {
         _show(PanelKind.camera);
       case PanelTab.web:
         _show(PanelKind.web);
+      case PanelTab.cast:
+        _show(PanelKind.cast);
     }
   }
 
@@ -1508,6 +1517,7 @@ class _BoardScreenState extends State<BoardScreen> {
     PanelKind.host => const SizedBox.shrink(),
     PanelKind.camera => docCameraPanel(_wb),
     PanelKind.web => safeBrowserPanel(_extras),
+    PanelKind.cast => CastPanel(cast: board.cast, wb: _wb),
   };
 
   /// The panel's body: its content, with dialogs pushed over it in the panel's own navigator.

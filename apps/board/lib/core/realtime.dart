@@ -16,6 +16,13 @@ abstract final class RealtimeEvents {
   static const pollAnswered = 'poll.answered';
   static const remoteCommand = 'remote.command';
   static const remoteState = 'remote.state';
+  static const castPending = 'cast.pending';
+  static const castIce = 'cast.ice';
+  static const castSignal = 'cast.signal';
+  static const castEnded = 'cast.ended';
+  static const deviceAction = 'device.action';
+  static const deviceActionAck = 'device.action.ack';
+  static const deviceActionsPull = 'device.actions.pull';
 }
 
 /// The board's live connection to KINETIX Cloud. Reconnects on its own.
