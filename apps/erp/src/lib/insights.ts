@@ -35,8 +35,25 @@ export interface Kpis {
   research: { outputs: number; grantsPaise: number };
 }
 
+/** One class's use of the board over the period (GET /v1/analytics/classroom `bySection`). */
+export interface ClassEngagement {
+  id: string;
+  label: string;
+  parent: string;
+  sessions: number;
+  hours: number;
+  teachers: number;
+  polls: number;
+  answers: number;
+  whiteboards: number;
+  recordings: number;
+  activity: number;
+  perSession: number | null;
+}
+
 export interface ClassroomAnalytics {
-  sessions: { total: number; hours: number; teachers: number; boards: number };
+  sessions: { total: number; hours: number; teachers: number; boards: number; liveForClass?: number };
+  bySection: ClassEngagement[];
   tools: { tool: string; label: string; uses: number }[];
   coverage: { id: string; label: string; parent: string; topics: number; covered: number; percent: number | null }[];
 }

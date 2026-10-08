@@ -5,6 +5,7 @@ import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
 import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
 import CastForEducationOutlined from '@mui/icons-material/CastForEducationOutlined';
+import SettingsRemoteOutlined from '@mui/icons-material/SettingsRemoteOutlined';
 import ClassOutlined from '@mui/icons-material/ClassOutlined';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import DirectionsBusOutlined from '@mui/icons-material/DirectionsBusOutlined';
@@ -62,6 +63,7 @@ export const NAV_ICONS: Record<NavIcon, SvgIconComponent> = {
   homework: AssignmentOutlined,
   results: GradingOutlined,
   boards: CastForEducationOutlined,
+  devices: SettingsRemoteOutlined,
   live: LiveTvOutlined,
   topicVideos: VideoLibraryOutlined,
   syllabus: MenuBookOutlined,

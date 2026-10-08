@@ -7,6 +7,7 @@ import syllabus from './syllabus';
 import library from './library';
 import fees from './fees';
 import boards from './boards';
+import devices from './devices';
 import messages from './messages';
 import school from './school';
 import results from './results';
@@ -33,7 +34,7 @@ import documents from './documents';
 import campus from './campus';
 import insights from './insights';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, devices, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, ui, dashboard, campus, insights } as const;
 import topicVideos from './topic-videos';
 
 

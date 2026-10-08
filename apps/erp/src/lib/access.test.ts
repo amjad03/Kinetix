@@ -160,4 +160,11 @@ describe('access', () => {
     expect(sectionOf('/')).toBe('dashboard');
     expect(sectionOf('/classes')).toBe('school');
   });
+
+  it('keeps the device console for the principal and administrators', () => {
+    expect(canSee(['principal'], 'devices')).toBe(true);
+    expect(canSee(['tenant_admin'], 'devices')).toBe(true);
+    expect(canSee(['hod'], 'devices')).toBe(false);
+    expect(sectionOf('/devices')).toBe('devices');
+  });
 });
