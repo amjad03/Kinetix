@@ -28,8 +28,9 @@ import obe from './obe';
 
 import hr from './hr';
 import documents from './documents';
+import insights from './insights';
 
-export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos } as const;
+export const AREAS = { common, admin, syllabus, library, fees, boards, messages, school, results, department, settings, calendar, today, plans, import: importArea, account, payments, terms, platform, ops, admissions, exams, obe, hr, documents, topicVideos, insights } as const;
 import topicVideos from './topic-videos';
 
 

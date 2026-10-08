@@ -11,6 +11,9 @@ const ALLOWED = [
   new RegExp(`^/v1/exam-sessions/${UUID}/results\\.csv$`, 'i'),
   new RegExp(`^/v1/exam-sessions/${UUID}/hall-tickets/${UUID}/pdf$`, 'i'),
   new RegExp(`^/v1/results/students/${UUID}/(marks-card|transcript)\\.pdf(\\?sessionId=${UUID})?$`, 'i'),
+  // Reports and analytics: a report as CSV or PDF, and an accreditation pack as a ZIP.
+  /^\/v1\/analytics\/reports\/[a-z_.]{3,60}\/export\?format=(csv|pdf)(&(campusId|programId|sectionId|from|to|by)=[0-9A-Za-z-]{1,40})*$/,
+  /^\/v1\/analytics\/accreditation\/(naac|nirf|aishe)\?format=zip$/,
   new RegExp(`^/v1/obe/programs/${UUID}/report\\.(csv|pdf)\\?academicYearId=${UUID}(&framework=(nba|naac))?$`, 'i'),
 ];
 

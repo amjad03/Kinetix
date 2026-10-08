@@ -98,6 +98,8 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
     const err = await errorFrom(res);
     // Signed in with a temporary password: the API allows nothing else until it is changed.
     if (err.code === 'PASSWORD_CHANGE_REQUIRED') redirect(CHANGE_PASSWORD_PATH);
+    // The institution requires two-step sign-in for this role: set it up before anything else.
+    if (err.code === 'MFA_SETUP_REQUIRED') redirect('/account/security');
     throw err;
   }
   if (res.status === 204) return undefined as T;

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ConsentSummaryView } from '@/components/settings/ConsentSummary';
 import { GrievanceOfficerForm } from '@/components/settings/GrievanceOfficerForm';
@@ -27,7 +28,7 @@ export default async function SettingsPage() {
   ]);
   return (
     <>
-      <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} />
+      <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} actions={<LinkButton href="/settings/security" variant="outlined">{t('security.features')}</LinkButton>} />
       {settings.error !== undefined ? (
         <ErrorState message={settings.error} />
       ) : (

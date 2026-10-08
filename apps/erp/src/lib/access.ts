@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos';
+export type Section = 'school' | 'boards' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -64,6 +64,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // content.controller / concept-videos.controller: the principal and admin manage the institution's videos and approve
   // teachers'; a head of department adds videos for their own classes (teachers do that in the Teacher App).
   topicVideos: ['principal', 'tenant_admin', 'hod'],
+  // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
+  reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager'],
 };
 
 /** Everyone who can use some part of the ERP. */
