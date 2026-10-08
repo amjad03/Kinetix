@@ -5,7 +5,7 @@ import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import { DataTable, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,7 +13,6 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import Link from 'next/link';
@@ -66,7 +65,9 @@ function Runs({ runs, thisMonth }: { runs: PayrollRunSummary[]; thisMonth: strin
     <>
       {view}
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
-        <TextField type="month" size="small" label={t('pay.month')} value={month} onChange={(e) => setMonth(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: thisMonth } }} />
+        <FormField label={t('pay.month')}>
+          <TextInput type="month" value={month} onChange={(e) => setMonth(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: thisMonth } }} />
+        </FormField>
         <Button
           variant="contained"
           startIcon={<Add />}
@@ -136,27 +137,35 @@ function Structures({ staff, components }: { staff: StaffSummary[]; components: 
   return (
     <>
       {view}
-      <TextField select size="small" label={t('pay.st.staff')} value={who} onChange={(e) => pick(e.target.value)} sx={{ minWidth: 280, mb: 3 }}>
-        {staff.map((s) => (
-          <MenuItem key={s.userId} value={s.userId} disabled={!s.employeeCode}>
-            {s.fullName}
-            {!s.employeeCode ? ` · ${t('hr.staff.noRecord')}` : ''}
-          </MenuItem>
-        ))}
-      </TextField>
+      <FormField label={t('pay.st.staff')}>
+        <TextInput select value={who} onChange={(e) => pick(e.target.value)} sx={{ minWidth: 280, mb: 3 }}>
+          {staff.map((s) => (
+            <MenuItem key={s.userId} value={s.userId} disabled={!s.employeeCode}>
+              {s.fullName}
+              {!s.employeeCode ? ` · ${t('hr.staff.noRecord')}` : ''}
+            </MenuItem>
+          ))}
+        </TextInput>
+      </FormField>
       {who && (
         <Stack spacing={2} sx={{ maxWidth: 640 }}>
-          <TextField size="small" type="date" label={t('pay.st.effective')} value={from} onChange={(e) => setFrom(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} sx={{ maxWidth: 220 }} />
+          <FormField label={t('pay.st.effective')}>
+            <TextInput type="date" value={from} onChange={(e) => setFrom(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} sx={{ maxWidth: 220 }} />
+          </FormField>
           {rows.map((r, i) => (
             <Stack key={i} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <TextField select size="small" fullWidth label={t('pay.st.component')} value={r.componentId} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, componentId: e.target.value } : x)))}>
-                {active.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name} ({t(`pay.co.${c.kind}` as MessageKey)})
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField size="small" label={t('pay.st.monthly')} value={r.amount} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} sx={{ width: 180 }} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
+              <FormField label={t('pay.st.component')}>
+                <TextInput select fullWidth value={r.componentId} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, componentId: e.target.value } : x)))}>
+                  {active.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name} ({t(`pay.co.${c.kind}` as MessageKey)})
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('pay.st.monthly')}>
+                <TextInput value={r.amount} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} sx={{ width: 180 }} slotProps={{ htmlInput: { inputMode: 'decimal' } }} />
+              </FormField>
               <IconButton aria-label={t('pay.st.removeLine')} onClick={() => setRows(rows.length > 1 ? rows.filter((_, k) => k !== i) : [{ componentId: '', amount: '' }])}>
                 <DeleteOutlined />
               </IconButton>
@@ -225,12 +234,18 @@ function Components({ components }: { components: SalaryComponent[] }) {
         ]}
       />
       <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap', mt: 3 }}>
-        <TextField size="small" label={t('hr.leave.code')} value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} sx={{ width: 120 }} />
-        <TextField size="small" label={t('hr.leave.name')} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-        <TextField select size="small" label={t('pay.co.kind')} value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as SalaryComponent['kind'] })} sx={{ width: 140 }}>
-          <MenuItem value="earning">{t('pay.co.earning')}</MenuItem>
-          <MenuItem value="deduction">{t('pay.co.deduction')}</MenuItem>
-        </TextField>
+        <FormField label={t('hr.leave.code')}>
+          <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} sx={{ width: 120 }} />
+        </FormField>
+        <FormField label={t('hr.leave.name')}>
+          <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+        </FormField>
+        <FormField label={t('pay.co.kind')}>
+          <TextInput select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as SalaryComponent['kind'] })} sx={{ width: 140 }}>
+            <MenuItem value="earning">{t('pay.co.earning')}</MenuItem>
+            <MenuItem value="deduction">{t('pay.co.deduction')}</MenuItem>
+          </TextInput>
+        </FormField>
         <FormControlLabel control={<Checkbox checked={f.pfWage} onChange={(e) => setF({ ...f, pfWage: e.target.checked })} />} label={t('pay.co.pfWage')} />
         <FormControlLabel control={<Checkbox checked={f.taxable} onChange={(e) => setF({ ...f, taxable: e.target.checked })} />} label={t('pay.co.taxable')} />
         <Button
@@ -285,19 +300,31 @@ function Settings({ settings, canEdit }: { settings: PayrollSettings; canEdit: b
         <Stack spacing={2}>
           <FormControlLabel control={<Switch checked={pfCap} disabled={!canEdit} onChange={(e) => setPfCap(e.target.checked)} />} label={t('pay.set.pfCap')} />
           <Stack direction="row" spacing={2}>
-            <TextField size="small" label={t('pay.set.pfCeiling')} value={pfCeil} disabled={!canEdit} onChange={(e) => setPfCeil(e.target.value)} />
-            <TextField size="small" label={t('pay.set.esiLimit')} value={esiLimit} disabled={!canEdit} onChange={(e) => setEsiLimit(e.target.value)} />
+            <FormField label={t('pay.set.pfCeiling')}>
+              <TextInput value={pfCeil} disabled={!canEdit} onChange={(e) => setPfCeil(e.target.value)} />
+            </FormField>
+            <FormField label={t('pay.set.esiLimit')}>
+              <TextInput value={esiLimit} disabled={!canEdit} onChange={(e) => setEsiLimit(e.target.value)} />
+            </FormField>
           </Stack>
         </Stack>
       </Box>
       <Box>
         <Typography variant="h6" component="h2" sx={{ fontSize: '1rem', mb: 1 }}>{t('pay.set.pt')}</Typography>
-        <TextField size="small" label={t('pay.set.ptState')} value={state} disabled={!canEdit} onChange={(e) => setState(e.target.value)} sx={{ mb: 2 }} />
+        <FormField label={t('pay.set.ptState')}>
+          <TextInput value={state} disabled={!canEdit} onChange={(e) => setState(e.target.value)} sx={{ mb: 2 }} />
+        </FormField>
         {slabs.map((s, i) => (
           <Stack key={i} direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-            <TextField size="small" label={t('pay.set.slabFrom')} value={s.from} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, from: e.target.value } : x)))} />
-            <TextField size="small" label={t('pay.set.slabAmt')} value={s.amount} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} />
-            <TextField size="small" label={t('pay.set.slabFeb')} value={s.february} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, february: e.target.value } : x)))} />
+            <FormField label={t('pay.set.slabFrom')}>
+              <TextInput value={s.from} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, from: e.target.value } : x)))} />
+            </FormField>
+            <FormField label={t('pay.set.slabAmt')}>
+              <TextInput value={s.amount} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} />
+            </FormField>
+            <FormField label={t('pay.set.slabFeb')}>
+              <TextInput value={s.february} disabled={!canEdit} onChange={(e) => setSlabs(slabs.map((x, k) => (k === i ? { ...x, february: e.target.value } : x)))} />
+            </FormField>
             {canEdit && slabs.length > 1 && (
               <IconButton aria-label={t('pay.st.removeLine')} onClick={() => setSlabs(slabs.filter((_, k) => k !== i))}>
                 <DeleteOutlined />
@@ -324,7 +351,9 @@ function Settings({ settings, canEdit }: { settings: PayrollSettings; canEdit: b
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>{t('pay.set.ledgersHelp')}</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
           {LEDGERS.map((k) => (
-            <TextField key={k} size="small" label={t(`pay.led.${k}` as MessageKey)} value={ledgers[k]} disabled={!canEdit} onChange={(e) => setLedgers({ ...ledgers, [k]: e.target.value })} />
+            <FormField key={k} label={t(`pay.led.${k}` as MessageKey)}>
+              <TextInput value={ledgers[k]} disabled={!canEdit} onChange={(e) => setLedgers({ ...ledgers, [k]: e.target.value })} />
+            </FormField>
           ))}
         </Box>
       </Box>

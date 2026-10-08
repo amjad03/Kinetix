@@ -29,7 +29,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { addBook, findStudents, issueBook, markFinePaid, returnBook } from '@/app/(dashboard)/library/actions';
 import { EmptyState } from '@/components/States';
-import { DataTable, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { addDays } from '@/lib/dates';
 import { availableCopies, canSearchStudents, daysLate, dueLabel, finePreview, LOAN_DAYS } from '@/lib/library';
@@ -666,7 +666,7 @@ function IssueDialog({
                   </Typography>
                 </Box>
               )}
-              renderInput={(params) => <TextField {...params} label={t('lib.issue.book')} required placeholder={t('lib.issue.bookPlaceholder')} />}
+              renderInput={(params) => <FormField label={t('lib.issue.book')} required><TextInput {...params} required placeholder={t('lib.issue.bookPlaceholder')} /></FormField>}
               filterOptions={(opts, { inputValue }) => {
                 const s = inputValue.trim().toLowerCase();
                 return s ? opts.filter((b) => [b.title, b.author, b.callNo ?? ''].some((v) => v.toLowerCase().includes(s))) : opts;
@@ -696,30 +696,32 @@ function IssueDialog({
                 </Box>
               )}
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={!!searchError}
-                  label={t('lib.issue.student')}
-                  required
-                  placeholder={t('lib.issue.studentPlaceholder')}
-                  helperText={
-                    searchError ??
-                    (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : t('lib.issue.studentHelp'))
-                  }
-                />
+                <FormField label={t('lib.issue.student')} required>
+                  <TextInput
+                    {...params}
+                    error={!!searchError}
+                    required
+                    placeholder={t('lib.issue.studentPlaceholder')}
+                    helperText={
+                      searchError ??
+                      (student ? [student.rollNo, student.className].filter(Boolean).join(' · ') : t('lib.issue.studentHelp'))
+                    }
+                  />
+                </FormField>
               )}
               noOptionsText={searchable ? t('lib.issue.noStudent') : t('lib.issue.type2')}
             />
-            <TextField
-              label={t('lib.issue.dueOn')}
-              type="date"
-              value={dueOn}
-              onChange={(e) => setDueOn(e.target.value)}
-              required
-              helperText={dueOn >= today ? `${dueLabel(dueOn, today, t)} · ${fmt.date(dueOn, 'long')}` : t('lib.issue.passed')}
-              error={dueOn < today}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
-            />
+            <FormField label={t('lib.issue.dueOn')} required>
+              <TextInput
+                type="date"
+                value={dueOn}
+                onChange={(e) => setDueOn(e.target.value)}
+                required
+                helperText={dueOn >= today ? `${dueLabel(dueOn, today, t)} · ${fmt.date(dueOn, 'long')}` : t('lib.issue.passed')}
+                error={dueOn < today}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
+              />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -889,21 +891,30 @@ function AddBookDialog({ onClose }: { onClose: (done?: string) => void }) {
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label={t('lib.add.bookTitle')} value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
-            <TextField label={t('lib.add.author')} value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
+            <FormField label={t('lib.add.bookTitle')} required>
+              <TextInput value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 300 } }} />
+            </FormField>
+            <FormField label={t('lib.add.author')}>
+              <TextInput value={author} onChange={(e) => setAuthor(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
+            </FormField>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField label={t('lib.add.callNo')} value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
-              <TextField
-                label={t('lib.add.copies')}
-                value={copies}
-                onChange={(e) => setCopies(e.target.value)}
-                required
-                error={!copiesOk}
-                helperText={copiesOk ? ' ' : t('lib.add.copiesRange')}
-                slotProps={{ htmlInput: { inputMode: 'numeric' } }}
-              />
+              <FormField label={t('lib.add.callNo')}>
+                <TextInput value={callNo} onChange={(e) => setCallNo(e.target.value)} placeholder="657.95 MAH" slotProps={{ htmlInput: { maxLength: 40 } }} />
+              </FormField>
+              <FormField label={t('lib.add.copies')} required>
+                <TextInput
+                  value={copies}
+                  onChange={(e) => setCopies(e.target.value)}
+                  required
+                  error={!copiesOk}
+                  helperText={copiesOk ? ' ' : t('lib.add.copiesRange')}
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              </FormField>
             </Box>
-            <TextField label={t('lib.add.isbn')} value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
+            <FormField label={t('lib.add.isbn')}>
+              <TextInput value={isbn} onChange={(e) => setIsbn(e.target.value)} placeholder="978-93-…" slotProps={{ htmlInput: { maxLength: 20 } }} />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>

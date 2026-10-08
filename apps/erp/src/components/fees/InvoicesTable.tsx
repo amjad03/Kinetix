@@ -30,7 +30,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { cancelInvoice, invoicePayments, recordPayment } from '@/app/(dashboard)/fees/actions';
 import { EmptyState } from '@/components/States';
-import { DataTable, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { daysBetween } from '@/lib/dates';
 import { formatRupees, methodLabel, paiseToInput, PAY_METHODS, referenceKey, rupeesToPaise, type CounterMethod } from '@/lib/money';
@@ -283,16 +283,17 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
           </Box>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              label={t('fees.pay.received')}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              autoFocus
-              error={amountError}
-              helperText={amountError ? (paise !== null && paise > balance ? t('fees.pay.tooMuch') : t('fees.pay.enterRupees')) : paise && paise < balance ? t('fees.pay.part', { amount: formatRupees(balance - paise) }) : ' '}
-              slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
-            />
+            <FormField label={t('fees.pay.received')} required>
+              <TextInput
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                autoFocus
+                error={amountError}
+                helperText={amountError ? (paise !== null && paise > balance ? t('fees.pay.tooMuch') : t('fees.pay.enterRupees')) : paise && paise < balance ? t('fees.pay.part', { amount: formatRupees(balance - paise) }) : ' '}
+                slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
+              />
+            </FormField>
             <Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} id="pay-method">
                 {t('fees.pay.paidBy')}
@@ -305,13 +306,14 @@ function PaymentDialog({ inv, timeZone, onClose }: { inv: FeeInvoice; timeZone: 
                 ))}
               </ToggleButtonGroup>
             </Box>
-            <TextField
-              label={t(referenceKey(method))}
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              required={needsRef}
-              slotProps={{ htmlInput: { maxLength: 100 } }}
-            />
+            <FormField label={t(referenceKey(method))} required={needsRef}>
+              <TextInput
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                required={needsRef}
+                slotProps={{ htmlInput: { maxLength: 100 } }}
+              />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>

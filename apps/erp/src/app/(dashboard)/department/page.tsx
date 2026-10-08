@@ -1,5 +1,4 @@
 import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
-import ChevronRight from '@mui/icons-material/ChevronRight';
 import ClassOutlined from '@mui/icons-material/ClassOutlined';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import GradingOutlined from '@mui/icons-material/GradingOutlined';
@@ -8,24 +7,13 @@ import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import AutoStoriesOutlined from '@mui/icons-material/AutoStoriesOutlined';
 import VideocamOutlined from '@mui/icons-material/VideocamOutlined';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { MiniBar } from '@/components/Bars';
-import { TableFrame } from '@/components/DataTable';
+import { ClassesTable, DeptAssessmentsTable, TeachersTable } from '@/components/department/DepartmentTables';
 import { RangeControl } from '@/components/department/RangeControl';
-import { Rate } from '@/components/department/Rate';
-import { Hint } from '@/components/Hint';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
-import { PublishedChip } from '@/components/results/PublishedChip';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { UrlSelect } from '@/components/UrlSelect';
@@ -33,17 +21,14 @@ import { canSee } from '@/lib/access';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
 import type { I18n } from '@/i18n/format';
-import { deptQuery, flagsFor, formatPercent, ofText, RANGE_LABEL, rangeFrom, rangeText, syllabusTotal, TONE_COLOR, toneOf } from '@/lib/department';
-import { lessonPlansText, planChip } from '@/lib/plans';
-import { kindLabel } from '@/lib/results';
+import { deptQuery, formatPercent, RANGE_LABEL, rangeFrom, rangeText, syllabusTotal, TONE_COLOR, toneOf } from '@/lib/department';
 import { schoolToday } from '@/lib/school';
-import type { DepartmentOverview, DepartmentRef, DeptClass, DeptTeacher } from '@/lib/types';
+import type { DepartmentOverview, DepartmentRef } from '@/lib/types';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.department') };
 }
 
-const num = { fontVariantNumeric: 'tabular-nums' } as const;
 
 export default async function DepartmentPage({ searchParams }: { searchParams: Promise<{ dept?: string; range?: string; from?: string; to?: string }> }) {
   const me = await requireSection('department');
@@ -196,7 +181,7 @@ function Overview({ o, canManage, i18n }: { o: DepartmentOverview; canManage: bo
           {canManage ? t('dept.noTeachersBodyManage') : t('dept.noTeachersBody')}
         </EmptyState>
       ) : (
-        <TeachersTable rows={o.teachers} i18n={i18n} />
+        <TeachersTable rows={o.teachers} />
       )}
 
       <SectionTitle>{t('dept.classes')}</SectionTitle>
@@ -205,7 +190,7 @@ function Overview({ o, canManage, i18n }: { o: DepartmentOverview; canManage: bo
           {t('dept.noClassesBody')}
         </EmptyState>
       ) : (
-        <ClassesTable rows={o.classes} i18n={i18n} />
+        <ClassesTable rows={o.classes} />
       )}
 
       <SectionTitle>{t('dept.assessments')}</SectionTitle>
@@ -214,287 +199,8 @@ function Overview({ o, canManage, i18n }: { o: DepartmentOverview; canManage: bo
           {t('dept.noAssessmentsBody')}
         </EmptyState>
       ) : (
-        <AssessmentsTable o={o} i18n={i18n} />
+        <DeptAssessmentsTable o={o} />
       )}
     </>
-  );
-}
-
-function Flags({ r, t }: { r: DeptTeacher | DeptClass; t: I18n['t'] }) {
-  const flags = flagsFor(r);
-  if (flags.length === 0) return null;
-  return (
-    <Hint title={flags.map((k) => t(k)).join(' · ')}>
-      <Chip size="small" label={t('dept.needsAttention')} data-testid="flag" sx={{ ml: 1, height: 22, bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer', fontWeight: 500 }} />
-    </Hint>
-  );
-}
-
-function TeachersTable({ rows, i18n: { t } }: { rows: DeptTeacher[]; i18n: I18n }) {
-  return (
-    <TableFrame testId="dept-teachers">
-      <Table sx={{ minWidth: 820 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('dept.col.teacher')}</TableCell>
-            <TableCell align="right">{t('dept.col.held')}</TableCell>
-            <TableCell align="right">{t('dept.col.taken')}</TableCell>
-            <TableCell align="right">{t('dept.col.attendance')}</TableCell>
-            <TableCell align="right">{t('dept.col.homework')}</TableCell>
-            <TableCell align="right">{t('dept.col.recordings')}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((r) => (
-            <TableRow key={r.id} hover data-testid="dept-teacher-row">
-              <TableCell>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Typography variant="subtitle2">{r.fullName}</Typography>
-                  <Flags r={r} t={t} />
-                </Box>
-                <Typography variant="caption" color="text.secondary">
-                  {r.scheduled ? t.plural('dept.periodsDue', r.scheduled) : t('dept.noPeriodsDue')}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Rate value={r.taughtPercent} kind="held" detail={ofText(r.taught, r.scheduled, t)} testId="teacher-held" />
-              </TableCell>
-              <TableCell align="right">
-                <Rate value={r.attendanceTakenPercent} kind="held" detail={ofText(r.attendanceTaken, r.scheduled, t)} testId="teacher-taken" />
-              </TableCell>
-              <TableCell align="right">
-                <Rate value={r.attendancePercent} kind="attendance" testId="teacher-attendance" />
-              </TableCell>
-              <TableCell align="right" sx={num}>
-                {r.homework}
-              </TableCell>
-              <TableCell align="right" sx={num}>
-                {r.recordings}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableFrame>
-  );
-}
-
-/**
- * One row per class and subject. Kept within its frame at 1280 px: the teacher sits under the
- * class, lesson plans under the year plan, and the link to the class's results under its latest
- * test, so nothing scrolls sideways on a laptop.
- */
-function ClassesTable({ rows, i18n: { t, fmt } }: { rows: DeptClass[]; i18n: I18n }) {
-  const results = (c: DeptClass) => (
-    <Link href={`/results?class=${c.sectionId}`} aria-label={t('dept.resultsFor', { section: c.section })} style={{ textDecoration: 'none' }}>
-      <Typography variant="caption" component="span" sx={{ color: 'primary.main', fontWeight: 500, display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', '&:hover': { textDecoration: 'underline' } }}>
-        {t('dept.col.results')}
-        <ChevronRight sx={{ fontSize: 16, mr: -0.5 }} />
-      </Typography>
-    </Link>
-  );
-  return (
-    <TableFrame testId="dept-classes">
-      <Table sx={{ minWidth: 880, '& .MuiTableCell-root': { px: 1.5 }, '& .MuiTableCell-root:first-of-type': { pl: 2 }, '& .MuiTableCell-root:last-of-type': { pr: 2 } }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              {t('dept.col.class')}
-              <Typography variant="caption" color="text.secondary" component="div">
-                {t('dept.col.teacher')}
-              </Typography>
-            </TableCell>
-            <TableCell align="right">{t('dept.col.heldShort')}</TableCell>
-            <TableCell align="right">{t('dept.col.attendance')}</TableCell>
-            <TableCell>{t('dept.col.syllabus')}</TableCell>
-            <TableCell>
-              {t('plan.col.yearPlan')}
-              <Typography variant="caption" color="text.secondary" component="div">
-                {t('plan.col.lessonPlans')}
-              </Typography>
-            </TableCell>
-            <TableCell align="right">{t('dept.col.homework')}</TableCell>
-            <TableCell align="right">
-              {t('dept.col.latest')}
-              <Typography variant="caption" color="text.secondary" component="div">
-                {t('dept.col.results')}
-              </Typography>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((c) => {
-            const latest = c.latestAssessment;
-            return (
-              <TableRow key={`${c.sectionId}|${c.subjectId}|${c.teacherId}`} hover data-testid="dept-class-row">
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <Typography variant="subtitle2">{c.section}</Typography>
-                    <Flags r={c} t={t} />
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" component="div">
-                    {c.subject} ·{' '}
-                    <Box component="span" data-testid="class-teacher" sx={{ whiteSpace: 'nowrap' }}>
-                      {c.teacher}
-                    </Box>
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Rate compact value={c.taughtPercent} kind="held" detail={ofText(c.taught, c.scheduled, t)} />
-                </TableCell>
-                <TableCell align="right">
-                  <Rate compact value={c.attendancePercent} kind="attendance" detail={c.scheduled ? t('dept.takenOf', { n: c.attendanceTaken, d: c.scheduled }) : undefined} />
-                </TableCell>
-                <TableCell data-testid="class-syllabus">
-                  <SyllabusCell c={c} t={t} />
-                </TableCell>
-                <TableCell>
-                  <Box data-testid="class-year-plan">
-                    <YearPlanCell c={c} t={t} />
-                  </Box>
-                  <Hint title={t('plan.lessonsHelp')}>
-                    <Typography
-                      variant="caption"
-                      component="span"
-                      data-testid="class-lesson-plans"
-                      sx={{ ...num, lineHeight: '20px', whiteSpace: 'nowrap', color: c.lessonPlans ? 'text.primary' : 'text.secondary' }}
-                    >
-                      {lessonPlansText(c.lessonPlans ?? 0, c.scheduled, t)}
-                    </Typography>
-                  </Hint>
-                </TableCell>
-                <TableCell align="right" sx={num} data-testid="class-homework">
-                  {c.homework}
-                </TableCell>
-                <TableCell align="right" data-testid="class-latest">
-                  {latest ? (
-                    <Hint title={`${latest.title} · ${fmt.date(latest.heldOn, 'short')} · ${t('dept.classAverage')}`} block>
-                      <Rate compact value={latest.averagePercent} kind="marks" detail={results(c)} />
-                    </Hint>
-                  ) : (
-                    <>
-                      <Typography variant="body2" color="text.secondary">
-                        —
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        {results(c)}
-                      </Typography>
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableFrame>
-  );
-}
-
-function AssessmentsTable({ o, i18n: { t, fmt } }: { o: DepartmentOverview; i18n: I18n }) {
-  return (
-    <TableFrame testId="dept-assessments">
-      <Table sx={{ minWidth: 820 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('dept.col.assessment')}</TableCell>
-            <TableCell>{t('dept.col.heldOn')}</TableCell>
-            <TableCell align="right">{t('dept.col.entered')}</TableCell>
-            <TableCell align="right">{t('dept.col.average')}</TableCell>
-            <TableCell>{t('dept.col.status')}</TableCell>
-            <TableCell aria-label={t('dept.col.open')} />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {o.assessments.map((a) => (
-            <TableRow key={a.id} hover data-testid="dept-assessment-row">
-              <TableCell>
-                <Typography variant="subtitle2">{a.title}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {a.section} · {a.subject} · {kindLabel(a.kind, t)} · {a.createdBy}
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmt.date(a.heldOn, 'short')}</TableCell>
-              <TableCell align="right" sx={num}>
-                {a.entered}
-              </TableCell>
-              <TableCell align="right">
-                <Rate value={a.averagePercent} kind="marks" />
-              </TableCell>
-              <TableCell>
-                <PublishedChip publishedAt={a.publishedAt} />
-              </TableCell>
-              <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                <LinkButton href={`/results/${a.id}`} size="small" endIcon={<ChevronRight />} aria-label={t('dept.marksFor', { title: a.title })}>
-                  {t('dept.marks')}
-                </LinkButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableFrame>
-  );
-}
-
-/** Topics of the class's syllabus taught so far, with a link to the topic list. */
-function SyllabusCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
-  const sy = c.syllabus;
-  if (!sy || sy.total === 0)
-    return (
-      <Hint title={t('dept.syllabus.noneHelp')}>
-        <Typography variant="body2" component="span" color="text.secondary" data-percent="none">
-          {t('dept.syllabus.none')}
-        </Typography>
-      </Hint>
-    );
-  const p = sy.percent ?? 0;
-  return (
-    <Link
-      href={`/department/syllabus?section=${c.sectionId}&subject=${c.subjectId}`}
-      aria-label={t('dept.syllabus.open', { section: c.section, subject: c.subject })}
-      data-percent={p}
-      style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}
-    >
-      <Box sx={{ width: 40, flexShrink: 0 }}>
-        <MiniBar value={p} color={p >= 100 ? 'kx.success' : 'primary.main'} />
-      </Box>
-      <Box>
-        <Typography variant="body2" sx={{ ...num, color: 'primary.main', fontWeight: 500 }}>
-          {formatPercent(p)}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" component="div" sx={{ ...num, lineHeight: '16px', whiteSpace: 'nowrap' }}>
-          {t('dept.syllabus.topics', { covered: sy.covered, total: sy.total })}
-        </Typography>
-      </Box>
-    </Link>
-  );
-}
-
-const planHref = (c: DeptClass) => `/department/plan?section=${c.sectionId}&subject=${c.subjectId}`;
-
-/** The class against its year plan, as a chip that opens the class's plans. */
-function YearPlanCell({ c, t }: { c: DeptClass; t: I18n['t'] }) {
-  const p = c.yearPlan;
-  const chip = planChip(p, t);
-  const sx =
-    chip.status === 'behind'
-      ? { bgcolor: 'm3.errorContainer', color: 'm3.onErrorContainer' }
-      : chip.tone === 'good'
-        ? { bgcolor: 'kx.successContainer', color: 'kx.onSuccessContainer' }
-        : { color: 'text.secondary' };
-  return (
-    <Hint title={p ? t('plan.status.help', { covered: p.covered, total: p.total, expected: p.expected }) : t('plan.status.noneHelp')}>
-      <Link href={planHref(c)} aria-label={t('plan.open', { section: c.section, subject: c.subject })} style={{ textDecoration: 'none' }}>
-        <Chip
-          size="small"
-          label={chip.label}
-          variant={chip.tone === 'none' ? 'outlined' : 'filled'}
-          data-testid="plan-status"
-          data-status={chip.status}
-          sx={{ ...sx, fontWeight: 500, maxWidth: 180, cursor: 'pointer' }}
-        />
-      </Link>
-    </Hint>
   );
 }

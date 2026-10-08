@@ -13,7 +13,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { DataTable } from '@/components/ui';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { addAction, computeAttainment, setActionStatus } from '@/app/(dashboard)/obe/actions';
 import { useRun } from '@/components/exams/useRun';
 import { EmptyState } from '@/components/States';
@@ -94,20 +94,24 @@ export function ObeDashboard({
     <>
       <Card padded sx={{ mb: 2.5 }}>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <TextField select size="small" label={t('exm.f.program')} value={programId} onChange={(e) => go(e.target.value, yearId)} sx={{ minWidth: 200, width: { xs: '100%', sm: 'auto' } }}>
-            {programs.map((p) => (
-              <MenuItem key={p.id} value={p.id}>
-                {p.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField select size="small" label={t('exm.f.year')} value={yearId} onChange={(e) => go(programId, e.target.value, subjectId)} sx={{ minWidth: 140, width: { xs: '100%', sm: 'auto' } }}>
-            {years.map((y) => (
-              <MenuItem key={y.id} value={y.id}>
-                {y.label}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormField label={t('exm.f.program')}>
+            <TextInput select value={programId} onChange={(e) => go(e.target.value, yearId)} sx={{ minWidth: 200, width: { xs: '100%', sm: 'auto' } }}>
+              {programs.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+          <FormField label={t('exm.f.year')}>
+            <TextInput select value={yearId} onChange={(e) => go(programId, e.target.value, subjectId)} sx={{ minWidth: 140, width: { xs: '100%', sm: 'auto' } }}>
+              {years.map((y) => (
+                <MenuItem key={y.id} value={y.id}>
+                  {y.label}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
           <Box sx={{ flex: 1 }} />
           <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.csv?academicYearId=${yearId}`)} download size="small">CSV</Button>
           <Button startIcon={<DownloadOutlined />} href={exportHref(`${base}.pdf?academicYearId=${yearId}&framework=nba`)} size="small">{t('obe.pdfNba')}</Button>
@@ -237,15 +241,21 @@ export function ObeDashboard({
         ))}
         {canManage && all.length > 0 && (
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
-            <TextField select size="small" label={t('obe.f.target')} value={draft.targetId} onChange={(e) => setDraft({ ...draft, targetId: e.target.value })} sx={{ minWidth: 200 }}>
-              {all.filter((r) => !r.met).map((r) => (
-                <MenuItem key={r.targetId} value={r.targetId}>
-                  {r.code}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField size="small" label={t('obe.f.action')} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} sx={{ flex: 1, minWidth: 220 }} />
-            <TextField size="small" type="date" label={t('obe.f.due')} value={draft.dueOn} onChange={(e) => setDraft({ ...draft, dueOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} sx={{ width: 170 }} />
+            <FormField label={t('obe.f.target')}>
+              <TextInput select value={draft.targetId} onChange={(e) => setDraft({ ...draft, targetId: e.target.value })} sx={{ minWidth: 200 }}>
+                {all.filter((r) => !r.met).map((r) => (
+                  <MenuItem key={r.targetId} value={r.targetId}>
+                    {r.code}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('obe.f.action')}>
+              <TextInput value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} sx={{ flex: 1, minWidth: 220 }} />
+            </FormField>
+            <FormField label={t('obe.f.due')}>
+              <TextInput type="date" value={draft.dueOn} onChange={(e) => setDraft({ ...draft, dueOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} sx={{ width: 170 }} />
+            </FormField>
             <Button
               variant="outlined"
               disabled={pending || !draft.targetId}

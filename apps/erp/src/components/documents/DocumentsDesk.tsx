@@ -11,12 +11,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { bulkIssue, classStudents, decideCertificate, requestCertificate } from '@/app/(dashboard)/documents/actions';
-import { DataTable } from '@/components/ui';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -47,14 +46,16 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
     <>
       {view}
       <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
-        <TextField select size="small" label={t('hr.f.status')} value={status} onChange={(e) => router.push(e.target.value ? `/documents?status=${e.target.value}` : '/documents')} sx={{ minWidth: 180 }}>
-          <MenuItem value="">{t('doc.allStatuses')}</MenuItem>
-          {CERT_STATUSES.map((s) => (
-            <MenuItem key={s} value={s}>
-              {t(`doc.status.${s}` as MessageKey)}
-            </MenuItem>
-          ))}
-        </TextField>
+        <FormField label={t('hr.f.status')}>
+          <TextInput select value={status} onChange={(e) => router.push(e.target.value ? `/documents?status=${e.target.value}` : '/documents')} sx={{ minWidth: 180 }}>
+            <MenuItem value="">{t('doc.allStatuses')}</MenuItem>
+            {CERT_STATUSES.map((s) => (
+              <MenuItem key={s} value={s}>
+                {t(`doc.status.${s}` as MessageKey)}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
         <Box sx={{ flex: 1 }} />
         {canBulk && (
           <Button variant="outlined" onClick={() => setBulk(true)}>
@@ -126,7 +127,9 @@ export function DocumentsDesk({ requests, status, templates, classes, staff, app
         <Dialog open onClose={() => setAsking(null)} fullWidth maxWidth="xs">
           <DialogTitle>{t(asking.step === 'reject' ? 'doc.rejectTitle' : 'doc.revokeTitle', { name: asking.r.subject.name })}</DialogTitle>
           <DialogContent>
-            <TextField fullWidth multiline minRows={2} sx={{ mt: 1 }} label={t(asking.step === 'reject' ? 'doc.note' : 'doc.reason')} value={text} onChange={(e) => setText(e.target.value)} />
+            <FormField label={t(asking.step === 'reject' ? 'doc.note' : 'doc.reason')}>
+              <TextInput fullWidth multiline minRows={2} sx={{ mt: 1 }} value={text} onChange={(e) => setText(e.target.value)} />
+            </FormField>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setAsking(null)}>{t('hr.cancel')}</Button>
@@ -168,44 +171,56 @@ function RequestDialog({ templates, classes, staff, onClose, run }: { templates:
       <DialogTitle>{t('doc.newRequest')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField select size="small" label={t('doc.certificate')} value={templateId} onChange={(e) => { setTemplateId(e.target.value); setSubject(''); setFields({}); }}>
-            {templates.map((x) => (
-              <MenuItem key={x.id} value={x.id}>
-                {x.name}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormField label={t('doc.certificate')}>
+            <TextInput select value={templateId} onChange={(e) => { setTemplateId(e.target.value); setSubject(''); setFields({}); }}>
+              {templates.map((x) => (
+                <MenuItem key={x.id} value={x.id}>
+                  {x.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
           {tpl?.subjectType === 'student' && (
             <>
-              <TextField select size="small" label={t('doc.class')} value={sectionId} onChange={(e) => { setSectionId(e.target.value); setSubject(''); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }}>
-                {classes.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select size="small" label={t('doc.student')} value={subject} onChange={(e) => setSubject(e.target.value)} helperText={sectionId && students.length === 0 && !pending ? t('doc.noStudents') : undefined}>
-                {students.map((s) => (
+              <FormField label={t('doc.class')}>
+                <TextInput select value={sectionId} onChange={(e) => { setSectionId(e.target.value); setSubject(''); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }}>
+                  {classes.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('doc.student')}>
+                <TextInput select value={subject} onChange={(e) => setSubject(e.target.value)} helperText={sectionId && students.length === 0 && !pending ? t('doc.noStudents') : undefined}>
+                  {students.map((s) => (
+                    <MenuItem key={s.id} value={s.id}>
+                      {s.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+            </>
+          )}
+          {tpl?.subjectType === 'staff' && (
+            <FormField label={t('doc.staffMember')}>
+              <TextInput select value={subject} onChange={(e) => setSubject(e.target.value)}>
+                {staff.map((s) => (
                   <MenuItem key={s.id} value={s.id}>
                     {s.name}
                   </MenuItem>
                 ))}
-              </TextField>
-            </>
-          )}
-          {tpl?.subjectType === 'staff' && (
-            <TextField select size="small" label={t('doc.staffMember')} value={subject} onChange={(e) => setSubject(e.target.value)}>
-              {staff.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.name}
-                </MenuItem>
-              ))}
-            </TextField>
+              </TextInput>
+            </FormField>
           )}
           {tpl?.fields.map((f) => (
-            <TextField key={f.key} size="small" required={f.required} label={f.label} value={fields[f.key] ?? ''} onChange={(e) => setFields({ ...fields, [f.key]: e.target.value })} />
+            <FormField key={f.key} label={f.label} required={f.required}>
+              <TextInput required={f.required} value={fields[f.key] ?? ''} onChange={(e) => setFields({ ...fields, [f.key]: e.target.value })} />
+            </FormField>
           ))}
-          <TextField size="small" label={t('doc.purpose')} value={purpose} onChange={(e) => setPurpose(e.target.value)} />
+          <FormField label={t('doc.purpose')}>
+            <TextInput value={purpose} onChange={(e) => setPurpose(e.target.value)} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -241,21 +256,27 @@ function BulkDialog({ templates, classes, onClose, run }: { templates: Available
           {t('doc.bulkHelp')}
         </Typography>
         <Stack spacing={2}>
-          <TextField select size="small" label={t('doc.certificate')} value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
-            {templates.map((x) => (
-              <MenuItem key={x.id} value={x.id}>
-                {x.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField select size="small" label={t('doc.class')} value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
-            {classes.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField size="small" label={t('doc.purpose')} value={purpose} onChange={(e) => setPurpose(e.target.value)} />
+          <FormField label={t('doc.certificate')}>
+            <TextInput select value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
+              {templates.map((x) => (
+                <MenuItem key={x.id} value={x.id}>
+                  {x.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+          <FormField label={t('doc.class')}>
+            <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
+              {classes.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+          <FormField label={t('doc.purpose')}>
+            <TextInput value={purpose} onChange={(e) => setPurpose(e.target.value)} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>

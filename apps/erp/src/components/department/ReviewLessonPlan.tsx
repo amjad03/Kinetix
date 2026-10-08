@@ -9,9 +9,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useId, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { reviewLessonPlan } from '@/app/(dashboard)/department/plan/actions';
 import { useI18n } from '@/i18n/client';
 import { REMARK_MAX } from '@/lib/plans';
@@ -58,17 +58,18 @@ export function ReviewLessonPlan({ id, date, reviewed, remark }: { id: string; d
           <Typography variant="body2" sx={{ mb: 2 }}>
             {t('plan.review.body', { date: fmt.date(date, 'long') })}
           </Typography>
-          <TextField
-            label={t('plan.review.remark')}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            multiline
-            minRows={3}
-            fullWidth
-            error={tooLong}
-            helperText={tooLong ? t('plan.review.tooLong', { n: REMARK_MAX }) : t('plan.review.remarkHelp', { n: REMARK_MAX })}
-            slotProps={{ htmlInput: { maxLength: REMARK_MAX + 200 } }}
-          />
+          <FormField label={t('plan.review.remark')}>
+            <TextInput
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              multiline
+              minRows={3}
+              fullWidth
+              error={tooLong}
+              helperText={tooLong ? t('plan.review.tooLong', { n: REMARK_MAX }) : t('plan.review.remarkHelp', { n: REMARK_MAX })}
+              slotProps={{ htmlInput: { maxLength: REMARK_MAX + 200 } }}
+            />
+          </FormField>
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
             {t('plan.review.again')}
           </Typography>

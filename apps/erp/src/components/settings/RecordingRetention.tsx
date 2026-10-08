@@ -10,11 +10,10 @@ import Divider from '@mui/material/Divider';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useState, useTransition } from 'react';
-import { DataTable } from '@/components/ui';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { saveRetentionGraceDays } from '@/app/(dashboard)/settings/retention-actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -64,16 +63,16 @@ export function RecordingRetention({ overview }: { overview: RetentionOverview }
             {t('retention.graceHelp')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
-            <TextField
-              size="small"
-              label={t('retention.graceLabel')}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              error={days === null}
-              helperText={days === null ? t('retention.graceProblem') : ' '}
-              sx={{ width: 260 }}
-              slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
-            />
+            <FormField label={t('retention.graceLabel')}>
+              <TextInput
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                error={days === null}
+                helperText={days === null ? t('retention.graceProblem') : ' '}
+                sx={{ width: 260 }}
+                slotProps={{ htmlInput: { inputMode: 'numeric', 'data-testid': 'retention-days' }, input: { endAdornment: <InputAdornment position="end">0–90</InputAdornment> } }}
+              />
+            </FormField>
             <Button variant="contained" onClick={save} disabled={pending || days === null || days === saved} data-testid="retention-save" sx={{ mt: '2px' }}>
               {pending ? <CircularProgress size={20} color="inherit" aria-label={t('common.saving')} /> : t('retention.save')}
             </Button>

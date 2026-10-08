@@ -3,23 +3,18 @@ import InboxOutlined from '@mui/icons-material/InboxOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
-import { TableFrame } from '@/components/DataTable';
+import { FormField, TextInput } from '@/components/ui';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
+import { CatalogueTable, CoverageTable, ReportResultTable, ToolUseTable } from '@/components/reports/ReportTables';
 import { Schedules } from '@/components/reports/Schedules';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
-import { accreditationPath, exportPath, isDay, showCell, type ClassroomAnalytics, type Kpis, type ReportMeta, type ReportResult, type Schedule } from '@/lib/insights';
+import { accreditationPath, isDay, type ClassroomAnalytics, type Kpis, type ReportMeta, type ReportResult, type Schedule } from '@/lib/insights';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.reports') };
@@ -57,14 +52,17 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   ]);
   const k = kpis?.data;
   const dash = t('reports.kpi.none');
-  const query = { from, to };
 
   return (
     <>
       <PageHeader title={t('reports.title')} subtitle={t('reports.subtitle')} />
       <Box component="form" method="get" sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
-        <TextField type="date" size="small" name="from" label={t('reports.from')} defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
-        <TextField type="date" size="small" name="to" label={t('reports.to')} defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
+        <FormField label={t('reports.from')}>
+          <TextInput type="date" name="from" defaultValue={from ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
+        </FormField>
+        <FormField label={t('reports.to')}>
+          <TextInput type="date" name="to" defaultValue={to ?? ''} slotProps={{ inputLabel: { shrink: true } }} />
+        </FormField>
         {sp.report && <input type="hidden" name="report" value={sp.report} />}
         <Button type="submit" variant="outlined">
           {t('reports.apply')}
@@ -93,74 +91,14 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             <StatTile label={t('reports.classroom.hours')} value={fmt.number(classroom.data.sessions.hours)} />
           </StatGrid>
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mt: 2 }}>
-            <TableFrame>
-              <Table size="small" aria-label={t('reports.classroom.tools')}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('reports.classroom.tools')}</TableCell>
-                    <TableCell align="right">#</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {classroom.data.tools.map((x) => (
-                    <TableRow key={x.tool}>
-                      <TableCell>{x.label}</TableCell>
-                      <TableCell align="right">{fmt.number(x.uses)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableFrame>
-            <TableFrame>
-              <Table size="small" aria-label={t('reports.classroom.coverage')}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('reports.classroom.coverage')}</TableCell>
-                    <TableCell align="right">%</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {classroom.data.coverage.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell>{c.label}</TableCell>
-                      <TableCell align="right">{c.percent === null ? '–' : `${c.percent}%`}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableFrame>
+            <ToolUseTable rows={classroom.data.tools} />
+            <CoverageTable rows={classroom.data.coverage} />
           </Box>
         </>
       )}
 
       <SectionTitle>{t('reports.catalogue')}</SectionTitle>
-      <TableFrame>
-        <Table size="small">
-          <TableBody>
-            {catalogue.data.map((r) => (
-              <TableRow key={r.key} hover selected={r.key === sp.report}>
-                <TableCell>
-                  <Typography variant="subtitle2">{r.title}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {r.description}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                  <LinkButton size="small" href={`/reports?report=${r.key}${range ? `&${range}` : ''}`}>
-                    {t('reports.view')}
-                  </LinkButton>
-                  <Button size="small" href={exportPath(r.key, 'csv', query)} startIcon={<FileDownloadOutlined />}>
-                    {t('reports.csv')}
-                  </Button>
-                  <Button size="small" href={exportPath(r.key, 'pdf', query)} startIcon={<FileDownloadOutlined />}>
-                    {t('reports.pdf')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <CatalogueTable rows={catalogue.data} selected={sp.report} range={range} from={from} to={to} />
 
       {result?.error !== undefined && <ErrorState message={result.error} />}
       {result?.data && (
@@ -169,30 +107,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           {result.data.rows.length === 0 ? (
             <EmptyState icon={<InboxOutlined />} title={t('reports.noRows')} />
           ) : (
-            <TableFrame testId="report-result">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    {result.data.columns.map((c) => (
-                      <TableCell key={c.key} align={c.kind && c.kind !== 'text' && c.kind !== 'date' ? 'right' : 'left'}>
-                        {c.label}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {result.data.rows.slice(0, MAX_ROWS).map((row, i) => (
-                    <TableRow key={i}>
-                      {result.data.columns.map((c) => (
-                        <TableCell key={c.key} align={c.kind && c.kind !== 'text' && c.kind !== 'date' ? 'right' : 'left'}>
-                          {showCell(c, row[c.key])}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableFrame>
+            <ReportResultTable result={result.data} limit={MAX_ROWS} />
           )}
         </>
       )}

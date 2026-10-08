@@ -4,7 +4,7 @@ import UploadFile from '@mui/icons-material/UploadFile';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { DataTable, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -46,7 +46,9 @@ export function AttendanceDesk({ date, today, timeZone, rows }: { date: string; 
     <>
       {view}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mb: 2 }}>
-        <TextField type="date" size="small" label={t('hr.att.date')} value={date} onChange={(e) => e.target.value && router.push(`/hr/attendance?date=${e.target.value}`)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} />
+        <FormField label={t('hr.att.date')}>
+          <TextInput type="date" value={date} onChange={(e) => e.target.value && router.push(`/hr/attendance?date=${e.target.value}`)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} />
+        </FormField>
         <Box sx={{ flex: 1 }} />
         <input ref={file} type="file" accept=".csv,text/csv" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <Button variant="outlined" startIcon={<UploadFile />} onClick={() => file.current?.click()} disabled={pending}>

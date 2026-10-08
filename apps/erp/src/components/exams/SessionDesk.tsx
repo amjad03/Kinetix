@@ -5,11 +5,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addPaper, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep } from '@/app/(dashboard)/exams/actions';
-import { DataTable, StatGrid, StatTile, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { exportHref, nextStep, type ExamSessionDetail, type ResultRow, type Revaluation } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
@@ -109,24 +108,36 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
             }}
             style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
           >
-            <TextField select size="small" label={t('exm.f.subject')} value={p.subjectId} onChange={(e) => setP({ ...p, subjectId: e.target.value })}>
-              {subjects.map((x) => (
-                <MenuItem key={x.id} value={x.id}>
-                  {x.code} {x.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField select size="small" label={t('exm.f.class')} value={p.sectionId} onChange={(e) => setP({ ...p, sectionId: e.target.value })}>
-              {sections.map((x) => (
-                <MenuItem key={x.id} value={x.id}>
-                  {x.displayName}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField size="small" type="date" label={t('exm.f.date')} value={p.examDate} onChange={(e) => setP({ ...p, examDate: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField size="small" type="time" label={t('exm.f.from')} value={p.startsAt} onChange={(e) => setP({ ...p, startsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField size="small" type="time" label={t('exm.f.to')} value={p.endsAt} onChange={(e) => setP({ ...p, endsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField size="small" type="number" label={t('exm.f.max')} value={p.maxMarks} onChange={(e) => setP({ ...p, maxMarks: e.target.value })} />
+            <FormField label={t('exm.f.subject')}>
+              <TextInput select value={p.subjectId} onChange={(e) => setP({ ...p, subjectId: e.target.value })}>
+                {subjects.map((x) => (
+                  <MenuItem key={x.id} value={x.id}>
+                    {x.code} {x.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('exm.f.class')}>
+              <TextInput select value={p.sectionId} onChange={(e) => setP({ ...p, sectionId: e.target.value })}>
+                {sections.map((x) => (
+                  <MenuItem key={x.id} value={x.id}>
+                    {x.displayName}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('exm.f.date')}>
+              <TextInput type="date" value={p.examDate} onChange={(e) => setP({ ...p, examDate: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('exm.f.from')}>
+              <TextInput type="time" value={p.startsAt} onChange={(e) => setP({ ...p, startsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('exm.f.to')}>
+              <TextInput type="time" value={p.endsAt} onChange={(e) => setP({ ...p, endsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('exm.f.max')}>
+              <TextInput type="number" value={p.maxMarks} onChange={(e) => setP({ ...p, maxMarks: e.target.value })} />
+            </FormField>
             <Button type="submit" variant="outlined" disabled={pending}>
               {t('exm.addPaper')}
             </Button>
@@ -144,14 +155,18 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
           </Typography>
           {halls.map((h, i) => (
             <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-              <TextField select size="small" label={t('exm.f.hall')} value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))} sx={{ minWidth: 180 }}>
-                {structure.rooms.map((r) => (
-                  <MenuItem key={r.id} value={r.id}>
-                    {r.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField size="small" type="number" label={t('exm.f.capacity')} value={h.capacity} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, capacity: e.target.value } : x)))} sx={{ width: 120 }} />
+              <FormField label={t('exm.f.hall')}>
+                <TextInput select value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))} sx={{ minWidth: 180 }}>
+                  {structure.rooms.map((r) => (
+                    <MenuItem key={r.id} value={r.id}>
+                      {r.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('exm.f.capacity')}>
+                <TextInput type="number" value={h.capacity} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, capacity: e.target.value } : x)))} sx={{ width: 120 }} />
+              </FormField>
               <Button size="small" onClick={() => setHalls(halls.filter((_, j) => j !== i))} disabled={halls.length === 1}>
                 {t('exm.remove')}
               </Button>
@@ -168,16 +183,16 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
           <Typography variant="subtitle1" component="h3" sx={{ mt: 3, mb: 0.5 }}>
             {t('exm.ticketsTitle')}
           </Typography>
-          <TextField
-            size="small"
-            fullWidth
-            multiline
-            minRows={2}
-            label={t('exm.blocks')}
-            helperText={t('exm.blocksHelp')}
-            value={blocks}
-            onChange={(e) => setBlocks(e.target.value)}
-          />
+          <FormField label={t('exm.blocks')}>
+            <TextInput
+              fullWidth
+              multiline
+              minRows={2}
+              helperText={t('exm.blocksHelp')}
+              value={blocks}
+              onChange={(e) => setBlocks(e.target.value)}
+            />
+          </FormField>
           <Button
             sx={{ mt: 1 }}
             variant="outlined"
@@ -253,7 +268,9 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
                                   )}
                                   {canManage && r.status === 'accepted' && s.status === 'published' && (
                                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                                      <TextField size="small" type="number" label={t('exm.newMarks')} value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} sx={{ width: 120 }} />
+                                      <FormField label={t('exm.newMarks')}>
+                                        <TextInput type="number" value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} sx={{ width: 120 }} />
+                                      </FormField>
                                       <Button size="small" disabled={pending || (newMarks[r.id] ?? '') === ''} onClick={() => run(() => completeRevaluation(s.id, r.id, Number(newMarks[r.id])), t('exm.rv.completed'))}>
                                         {t('exm.regrade')}
                                       </Button>

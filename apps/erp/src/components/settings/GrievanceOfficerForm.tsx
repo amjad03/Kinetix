@@ -7,9 +7,9 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { saveGrievanceOfficer } from '@/app/(dashboard)/settings/actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -77,32 +77,35 @@ export function GrievanceOfficerForm({ initial }: { initial: GrievanceOfficer | 
           }}
           sx={{ mt: 2, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '2fr 2fr 1.5fr' }, alignItems: 'start' }}
         >
-          <TextField
-            label={t('grievance.name')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            error={!!show(['name', 'nameLong'])}
-            helperText={show(['name', 'nameLong']) ?? ' '}
-            slotProps={{ htmlInput: { maxLength: 130, 'data-testid': 'grievance-name' } }}
-          />
-          <TextField
-            label={t('grievance.email')}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={!!show(['email'])}
-            helperText={show(['email']) ?? t('grievance.optional')}
-            slotProps={{ htmlInput: { 'data-testid': 'grievance-email' } }}
-          />
-          <TextField
-            label={t('grievance.phone')}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            error={!!show(['phone'])}
-            helperText={show(['phone']) ?? t('grievance.optional')}
-            slotProps={{ htmlInput: { inputMode: 'tel', 'data-testid': 'grievance-phone' } }}
-          />
+          <FormField label={t('grievance.name')} required>
+            <TextInput
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              error={!!show(['name', 'nameLong'])}
+              helperText={show(['name', 'nameLong']) ?? ' '}
+              slotProps={{ htmlInput: { maxLength: 130, 'data-testid': 'grievance-name' } }}
+            />
+          </FormField>
+          <FormField label={t('grievance.email')}>
+            <TextInput
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={!!show(['email'])}
+              helperText={show(['email']) ?? t('grievance.optional')}
+              slotProps={{ htmlInput: { 'data-testid': 'grievance-email' } }}
+            />
+          </FormField>
+          <FormField label={t('grievance.phone')}>
+            <TextInput
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              error={!!show(['phone'])}
+              helperText={show(['phone']) ?? t('grievance.optional')}
+              slotProps={{ htmlInput: { inputMode: 'tel', 'data-testid': 'grievance-phone' } }}
+            />
+          </FormField>
           <Box sx={{ gridColumn: '1 / -1', display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
             {saved && (
               <Button color="error" onClick={() => run(null)} disabled={pending} data-testid="grievance-remove">

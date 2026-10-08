@@ -4,7 +4,7 @@ import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import { DataTable, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -14,7 +14,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addLeaveType, decideLeave, getBalances } from '@/app/(dashboard)/hr/actions';
@@ -84,13 +83,15 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
 
       {tab === 'balances' && (
         <>
-          <TextField select size="small" label={t('hr.leave.pickStaff')} value={who} onChange={(e) => { setWho(e.target.value); setBalances(null); start(async () => { const r = await run(() => getBalances(e.target.value)); if (r.ok) setBalances(r.data); }); }} sx={{ minWidth: 260, mb: 2 }}>
-            {staff.map((s) => (
-              <MenuItem key={s.userId} value={s.userId}>
-                {s.fullName}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormField label={t('hr.leave.pickStaff')}>
+            <TextInput select value={who} onChange={(e) => { setWho(e.target.value); setBalances(null); start(async () => { const r = await run(() => getBalances(e.target.value)); if (r.ok) setBalances(r.data); }); }} sx={{ minWidth: 260, mb: 2 }}>
+              {staff.map((s) => (
+                <MenuItem key={s.userId} value={s.userId}>
+                  {s.fullName}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
           {balances && (
             <DataTable
               testId="leave-balances"
@@ -161,7 +162,9 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
             <Typography variant="body2" sx={{ mb: 2 }}>
               {deciding.r.leaveType.name} · {range(deciding.r)} · {deciding.r.days}
             </Typography>
-            <TextField label={t('hr.leave.note')} value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
+            <FormField label={t('hr.leave.note')}>
+              <TextInput value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
+            </FormField>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeciding(null)}>{t('hr.cancel')}</Button>
@@ -197,15 +200,25 @@ function TypeDialog({ onClose, run }: { onClose: () => void; run: ReturnType<typ
       <DialogTitle>{t('hr.leave.addType')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField size="small" label={t('hr.leave.code')} value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
-          <TextField size="small" label={t('hr.leave.name')} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          <FormField label={t('hr.leave.code')}>
+            <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
+          </FormField>
+          <FormField label={t('hr.leave.name')}>
+            <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          </FormField>
           <FormControlLabel control={<Checkbox checked={f.paid} onChange={(e) => setF({ ...f, paid: e.target.checked })} />} label={t('hr.leave.paid')} />
-          <TextField size="small" label={t('hr.leave.annual')} value={f.annualDays} onChange={(e) => setF({ ...f, annualDays: e.target.value })} />
-          <TextField select size="small" label={t('hr.leave.accrual')} value={f.accrual} onChange={(e) => setF({ ...f, accrual: e.target.value as 'yearly' | 'monthly' })}>
-            <MenuItem value="yearly">{t('hr.leave.yearly')}</MenuItem>
-            <MenuItem value="monthly">{t('hr.leave.monthly')}</MenuItem>
-          </TextField>
-          <TextField size="small" label={t('hr.leave.carry')} value={f.carryForwardMax} onChange={(e) => setF({ ...f, carryForwardMax: e.target.value })} />
+          <FormField label={t('hr.leave.annual')}>
+            <TextInput value={f.annualDays} onChange={(e) => setF({ ...f, annualDays: e.target.value })} />
+          </FormField>
+          <FormField label={t('hr.leave.accrual')}>
+            <TextInput select value={f.accrual} onChange={(e) => setF({ ...f, accrual: e.target.value as 'yearly' | 'monthly' })}>
+              <MenuItem value="yearly">{t('hr.leave.yearly')}</MenuItem>
+              <MenuItem value="monthly">{t('hr.leave.monthly')}</MenuItem>
+            </TextInput>
+          </FormField>
+          <FormField label={t('hr.leave.carry')}>
+            <TextInput value={f.carryForwardMax} onChange={(e) => setF({ ...f, carryForwardMax: e.target.value })} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>

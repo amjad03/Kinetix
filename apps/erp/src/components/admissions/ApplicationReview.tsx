@@ -8,11 +8,11 @@ import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { enrollApplicant, recordApplicationFee, reviewDocument, setApplicationStatus } from '@/app/(dashboard)/admissions/actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -64,14 +64,16 @@ export function ApplicationReview({ app, classes, canWaive }: { app: Application
               {t('adm.review.enrol')}
             </Typography>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
-              <TextField select size="small" label={t('adm.review.class')} value={sectionId} onChange={(e) => setSectionId(e.target.value)} sx={{ minWidth: 200 }}>
-                <MenuItem value="">{t('adm.review.autoClass')}</MenuItem>
-                {classes.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <FormField label={t('adm.review.class')}>
+                <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)} sx={{ minWidth: 200 }}>
+                  <MenuItem value="">{t('adm.review.autoClass')}</MenuItem>
+                  {classes.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
               <Button variant="contained" disabled={pending} onClick={() => run(() => enrollApplicant(app.id, sectionId || undefined))}>
                 {t('adm.review.enrolNow')}
               </Button>
@@ -151,14 +153,18 @@ export function ApplicationReview({ app, classes, canWaive }: { app: Application
           ))}
         {app.feeStatus === 'pending' && (
           <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', rowGap: 1, alignItems: 'center' }}>
-            <TextField select size="small" label={t('adm.fee.method')} value={method} onChange={(e) => setMethod(e.target.value as CounterMethod)} sx={{ minWidth: 140 }}>
-              {PAY_METHODS.map((m) => (
-                <MenuItem key={m} value={m}>
-                  {m}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField size="small" label={t('adm.fee.reference')} value={reference} onChange={(e) => setReference(e.target.value)} />
+            <FormField label={t('adm.fee.method')}>
+              <TextInput select value={method} onChange={(e) => setMethod(e.target.value as CounterMethod)} sx={{ minWidth: 140 }}>
+                {PAY_METHODS.map((m) => (
+                  <MenuItem key={m} value={m}>
+                    {m}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('adm.fee.reference')}>
+              <TextInput value={reference} onChange={(e) => setReference(e.target.value)} />
+            </FormField>
             <Button variant="contained" size="small" disabled={pending} onClick={() => run(() => recordApplicationFee(app.id, { kind: 'counter', method, reference }))}>
               {t('adm.fee.record')}
             </Button>

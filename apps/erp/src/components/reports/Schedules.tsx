@@ -5,9 +5,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { createSchedule, deleteSchedule, setScheduleActive } from '@/app/(dashboard)/reports/actions';
 import { useI18n } from '@/i18n/client';
 import type { ReportMeta, Schedule } from '@/lib/insights';
@@ -54,25 +54,33 @@ export function Schedules({ schedules, reports }: { schedules: Schedule[]; repor
         </Box>
       ))}
       <Box component="form" onSubmit={(e) => { e.preventDefault(); run(() => createSchedule({ reportKey, frequency, format, recipients })); }} sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, alignItems: 'start' }}>
-        <TextField select size="small" label={t('reports.schedules.report')} value={reportKey} onChange={(e) => setReportKey(e.target.value)}>
-          {reports.map((r) => (
-            <MenuItem key={r.key} value={r.key}>
-              {r.title}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField select size="small" label={t('reports.schedules.frequency')} value={frequency} onChange={(e) => setFrequency(e.target.value)}>
-          {(['daily', 'weekly', 'monthly'] as const).map((f) => (
-            <MenuItem key={f} value={f}>
-              {t(`reports.freq.${f}`)}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField select size="small" label={t('reports.schedules.format')} value={format} onChange={(e) => setFormat(e.target.value)}>
-          <MenuItem value="csv">{t('reports.csv')}</MenuItem>
-          <MenuItem value="pdf">{t('reports.pdf')}</MenuItem>
-        </TextField>
-        <TextField size="small" label={t('reports.schedules.recipients')} value={recipients} onChange={(e) => setRecipients(e.target.value)} sx={{ gridColumn: { md: '1 / 3' } }} />
+        <FormField label={t('reports.schedules.report')}>
+          <TextInput select value={reportKey} onChange={(e) => setReportKey(e.target.value)}>
+            {reports.map((r) => (
+              <MenuItem key={r.key} value={r.key}>
+                {r.title}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
+        <FormField label={t('reports.schedules.frequency')}>
+          <TextInput select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
+            {(['daily', 'weekly', 'monthly'] as const).map((f) => (
+              <MenuItem key={f} value={f}>
+                {t(`reports.freq.${f}`)}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
+        <FormField label={t('reports.schedules.format')}>
+          <TextInput select value={format} onChange={(e) => setFormat(e.target.value)}>
+            <MenuItem value="csv">{t('reports.csv')}</MenuItem>
+            <MenuItem value="pdf">{t('reports.pdf')}</MenuItem>
+          </TextInput>
+        </FormField>
+        <FormField label={t('reports.schedules.recipients')}>
+          <TextInput value={recipients} onChange={(e) => setRecipients(e.target.value)} sx={{ gridColumn: { md: '1 / 3' } }} />
+        </FormField>
         <Button type="submit" variant="contained" disabled={pending || !recipients.trim() || !reportKey}>
           {t('reports.schedules.add')}
         </Button>

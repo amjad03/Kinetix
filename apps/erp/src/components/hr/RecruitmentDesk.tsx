@@ -5,7 +5,7 @@ import PersonAddOutlined from '@mui/icons-material/PersonAddOutlined';
 import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { DataTable, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -135,25 +135,37 @@ function OpeningDialog({ opening, departments, onClose, run }: { opening: JobOpe
       <DialogTitle>{opening ? t('hr.rec.editOpening') : t('hr.rec.newOpening')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField size="small" label={t('hr.rec.title')} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} autoFocus />
-          <TextField select size="small" label={t('hr.f.department')} value={f.departmentId} onChange={(e) => setF({ ...f, departmentId: e.target.value })}>
-            <MenuItem value="">–</MenuItem>
-            {departments.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField size="small" label={t('hr.rec.positions')} value={f.positions} onChange={(e) => setF({ ...f, positions: e.target.value })} />
-          <TextField select size="small" label={t('hr.f.status')} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as JobOpening['status'] })}>
-            {(['open', 'on_hold', 'closed'] as const).map((s) => (
-              <MenuItem key={s} value={s}>
-                {t(`hr.rec.status.${s}` as MessageKey)}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField size="small" type="date" label={t('hr.rec.closes')} value={f.closesOn} onChange={(e) => setF({ ...f, closesOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-          <TextField size="small" label={t('hr.rec.description')} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} multiline minRows={3} />
+          <FormField label={t('hr.rec.title')}>
+            <TextInput value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} autoFocus />
+          </FormField>
+          <FormField label={t('hr.f.department')}>
+            <TextInput select value={f.departmentId} onChange={(e) => setF({ ...f, departmentId: e.target.value })}>
+              <MenuItem value="">–</MenuItem>
+              {departments.map((d) => (
+                <MenuItem key={d.id} value={d.id}>
+                  {d.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+          <FormField label={t('hr.rec.positions')}>
+            <TextInput value={f.positions} onChange={(e) => setF({ ...f, positions: e.target.value })} />
+          </FormField>
+          <FormField label={t('hr.f.status')}>
+            <TextInput select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as JobOpening['status'] })}>
+              {(['open', 'on_hold', 'closed'] as const).map((s) => (
+                <MenuItem key={s} value={s}>
+                  {t(`hr.rec.status.${s}` as MessageKey)}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+          <FormField label={t('hr.rec.closes')}>
+            <TextInput type="date" value={f.closesOn} onChange={(e) => setF({ ...f, closesOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+          </FormField>
+          <FormField label={t('hr.rec.description')}>
+            <TextInput value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} multiline minRows={3} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -184,10 +196,18 @@ function ApplicantDialog({ openingId, onClose, run }: { openingId: string; onClo
       <DialogTitle>{t('hr.rec.addApplicant')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField size="small" label={t('hr.rec.fullName')} value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} autoFocus />
-          <TextField size="small" type="email" label={t('hr.rec.email')} value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
-          <TextField size="small" label={t('hr.rec.phone')} value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
-          <TextField size="small" label={t('hr.rec.notes')} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} multiline minRows={2} />
+          <FormField label={t('hr.rec.fullName')}>
+            <TextInput value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} autoFocus />
+          </FormField>
+          <FormField label={t('hr.rec.email')}>
+            <TextInput type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
+          </FormField>
+          <FormField label={t('hr.rec.phone')}>
+            <TextInput value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+          </FormField>
+          <FormField label={t('hr.rec.notes')}>
+            <TextInput value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} multiline minRows={2} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>

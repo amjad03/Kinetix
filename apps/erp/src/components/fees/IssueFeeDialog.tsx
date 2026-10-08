@@ -13,9 +13,9 @@ import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { issueFee } from '@/app/(dashboard)/fees/actions';
 import { addDays, isIsoDate } from '@/lib/dates';
 import { formatRupees, rupeesToPaise } from '@/lib/money';
@@ -94,51 +94,56 @@ function IssueFeeDialog({ classes, today, defaultClassId, onClose }: { classes: 
           </Typography>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField select label={t('fees.class')} value={sectionId} onChange={(e) => setSectionId(e.target.value)} required>
-              {classes.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.name}
-                  {c.students !== null && (
-                    <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                      {t('fees.issue.students', { n: c.students })}
-                    </Typography>
-                  )}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label={t('fees.issue.fee')}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('fees.issue.feePlaceholder')}
-              required
-              slotProps={{ htmlInput: { maxLength: 120 } }}
-            />
-            <TextField
-              label={t('fees.issue.amount')}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              error={amountError}
-              helperText={
-                amountError
-                  ? t('fees.issue.amountError')
-                  : paise
-                    ? klass?.students
-                      ? t('fees.issue.total', { amount: formatRupees(paise), n: klass.students, total: formatRupees(paise * klass.students) })
-                      : formatRupees(paise)
-                    : ' '
-              }
-              slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
-            />
-            <TextField
-              label={t('fees.issue.dueOn')}
-              type="date"
-              value={dueOn}
-              onChange={(e) => setDueOn(e.target.value)}
-              required
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
-            />
+            <FormField label={t('fees.class')} required>
+              <TextInput select value={sectionId} onChange={(e) => setSectionId(e.target.value)} required>
+                {classes.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                    {c.students !== null && (
+                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        {t('fees.issue.students', { n: c.students })}
+                      </Typography>
+                    )}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('fees.issue.fee')} required>
+              <TextInput
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t('fees.issue.feePlaceholder')}
+                required
+                slotProps={{ htmlInput: { maxLength: 120 } }}
+              />
+            </FormField>
+            <FormField label={t('fees.issue.amount')} required>
+              <TextInput
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                error={amountError}
+                helperText={
+                  amountError
+                    ? t('fees.issue.amountError')
+                    : paise
+                      ? klass?.students
+                        ? t('fees.issue.total', { amount: formatRupees(paise), n: klass.students, total: formatRupees(paise * klass.students) })
+                        : formatRupees(paise)
+                      : ' '
+                }
+                slotProps={{ input: { startAdornment: <InputAdornment position="start">₹</InputAdornment> }, htmlInput: { inputMode: 'decimal' } }}
+              />
+            </FormField>
+            <FormField label={t('fees.issue.dueOn')} required>
+              <TextInput
+                type="date"
+                value={dueOn}
+                onChange={(e) => setDueOn(e.target.value)}
+                required
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
+              />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>

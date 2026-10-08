@@ -14,10 +14,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
 import { archiveVaultFile, classStudents, listVault } from '@/app/(dashboard)/documents/actions';
-import { DataTable } from '@/components/ui';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -53,26 +52,32 @@ export function VaultDesk({ classes, staff, canStudents, canStaff, expiring }: {
     <>
       {view}
       <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-        <TextField select size="small" label={t('doc.vault.owner')} value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }} sx={{ minWidth: 150 }}>
-          {canStudents && <MenuItem value="student">{t('doc.subject.student')}</MenuItem>}
-          {canStaff && <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>}
-        </TextField>
+        <FormField label={t('doc.vault.owner')}>
+          <TextInput select value={type} onChange={(e) => { setType(e.target.value as 'student' | 'staff'); setOwner(null); setDocs([]); }} sx={{ minWidth: 150 }}>
+            {canStudents && <MenuItem value="student">{t('doc.subject.student')}</MenuItem>}
+            {canStaff && <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>}
+          </TextInput>
+        </FormField>
         {type === 'student' && (
-          <TextField select size="small" label={t('doc.class')} value={sectionId} onChange={(e) => { setSectionId(e.target.value); setOwner(null); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }} sx={{ minWidth: 220 }}>
-            {classes.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.name}
+          <FormField label={t('doc.class')}>
+            <TextInput select value={sectionId} onChange={(e) => { setSectionId(e.target.value); setOwner(null); start(async () => { const r = await classStudents(e.target.value); setStudents(r.ok ? r.data : []); }); }} sx={{ minWidth: 220 }}>
+              {classes.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
+        )}
+        <FormField label={type === 'student' ? t('doc.student') : t('doc.staffMember')}>
+          <TextInput select value={owner?.type === type ? owner.id : ''} onChange={(e) => { const p = people.find((x) => x.id === e.target.value); if (p) open({ type, id: p.id, name: p.name }); }} sx={{ minWidth: 260 }}>
+            {people.map((p) => (
+              <MenuItem key={p.id} value={p.id}>
+                {p.name}
               </MenuItem>
             ))}
-          </TextField>
-        )}
-        <TextField select size="small" label={type === 'student' ? t('doc.student') : t('doc.staffMember')} value={owner?.type === type ? owner.id : ''} onChange={(e) => { const p = people.find((x) => x.id === e.target.value); if (p) open({ type, id: p.id, name: p.name }); }} sx={{ minWidth: 260 }}>
-          {people.map((p) => (
-            <MenuItem key={p.id} value={p.id}>
-              {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
+          </TextInput>
+        </FormField>
         <Box sx={{ flex: 1 }} />
         <Button variant="contained" startIcon={<UploadFile />} disabled={!owner} onClick={() => setUploading({})}>
           {t('doc.vault.upload')}
@@ -162,13 +167,21 @@ function UploadDialog({ owner, replaces, onClose, setError }: { owner: Owner; re
             <input hidden type="file" accept="application/pdf,image/jpeg,image/png" onChange={(e) => pick(e.target.files?.[0] ?? null)} />
           </Button>
           {problem && <Alert severity="error">{problem}</Alert>}
-          <TextField size="small" label={t('doc.vault.title')} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-          <TextField size="small" label={t('doc.vault.category')} value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} error={!!f.category && !CATEGORY.test(category)} helperText={t('doc.vault.categoryHelp')} />
-          <TextField select size="small" label={t('doc.vault.visibility')} value={f.visibility} onChange={(e) => setF({ ...f, visibility: e.target.value as 'staff' | 'owner' })}>
-            <MenuItem value="staff">{t('doc.vault.vis.staff')}</MenuItem>
-            <MenuItem value="owner">{t('doc.vault.vis.owner')}</MenuItem>
-          </TextField>
-          <TextField size="small" type="date" label={t('doc.vault.expires')} value={f.expiresOn} onChange={(e) => setF({ ...f, expiresOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+          <FormField label={t('doc.vault.title')}>
+            <TextInput value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+          </FormField>
+          <FormField label={t('doc.vault.category')}>
+            <TextInput value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} error={!!f.category && !CATEGORY.test(category)} helperText={t('doc.vault.categoryHelp')} />
+          </FormField>
+          <FormField label={t('doc.vault.visibility')}>
+            <TextInput select value={f.visibility} onChange={(e) => setF({ ...f, visibility: e.target.value as 'staff' | 'owner' })}>
+              <MenuItem value="staff">{t('doc.vault.vis.staff')}</MenuItem>
+              <MenuItem value="owner">{t('doc.vault.vis.owner')}</MenuItem>
+            </TextInput>
+          </FormField>
+          <FormField label={t('doc.vault.expires')}>
+            <TextInput type="date" value={f.expiresOn} onChange={(e) => setF({ ...f, expiresOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>

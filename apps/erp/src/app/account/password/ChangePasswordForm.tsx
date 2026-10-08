@@ -9,10 +9,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { signOut } from '@/app/login/actions';
 import { LogoMark } from '@/components/Logo';
 import { useI18n } from '@/i18n/client';
@@ -80,18 +80,23 @@ export function ChangePasswordForm({ forced, hasPassword, emailName, next, back 
               </Alert>
             )}
             {hasPassword && (
-              <TextField
-                name="current"
-                label={forced ? t('account.password.temporary') : t('account.password.current')}
-                type={type}
-                autoComplete="current-password"
-                required
-                autoFocus
-                slotProps={{ input: { endAdornment: toggle } }}
-              />
+              <FormField label={forced ? t('account.password.temporary') : t('account.password.current')} required>
+                <TextInput
+                  name="current"
+                  type={type}
+                  autoComplete="current-password"
+                  required
+                  autoFocus
+                  slotProps={{ input: { endAdornment: toggle } }}
+                />
+              </FormField>
             )}
-            <TextField name="new" label={t('account.password.new')} type={type} autoComplete="new-password" required autoFocus={!hasPassword} slotProps={{ htmlInput: { minLength: MIN_PASSWORD_LENGTH } }} />
-            <TextField name="confirm" label={t('account.password.confirm')} type={type} autoComplete="new-password" required />
+            <FormField label={t('account.password.new')} required>
+              <TextInput name="new" type={type} autoComplete="new-password" required autoFocus={!hasPassword} slotProps={{ htmlInput: { minLength: MIN_PASSWORD_LENGTH } }} />
+            </FormField>
+            <FormField label={t('account.password.confirm')} required>
+              <TextInput name="confirm" type={type} autoComplete="new-password" required />
+            </FormField>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', pt: 2, gap: 1 }}>
               {forced ? (
                 <Button type="submit" formAction={signOut} formNoValidate variant="text">

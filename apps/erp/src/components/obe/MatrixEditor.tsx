@@ -9,10 +9,10 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { activateCoSet, addCo, newCoSet, removeCo, saveMatrix } from '@/app/(dashboard)/obe/actions';
 import { TableFrame } from '@/components/DataTable';
 import { useRun } from '@/components/exams/useRun';
@@ -30,20 +30,24 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
   return (
     <>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <TextField select size="small" label={t('exm.f.subject')} value={subjectId} onChange={(e) => router.push(`/obe/matrix?subjectId=${e.target.value}`)} sx={{ minWidth: 280 }}>
-          {subjects.map((s) => (
-            <MenuItem key={s.id} value={s.id}>
-              {s.code} {s.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField select size="small" label={t('obe.f.version')} value={setId ?? ''} onChange={(e) => router.push(`/obe/matrix?subjectId=${subjectId}&setId=${e.target.value}`)} sx={{ minWidth: 200 }}>
-          {sets.map((s) => (
-            <MenuItem key={s.id} value={s.id}>
-              v{s.version} · {t(`obe.cs.${s.status}`)}
-            </MenuItem>
-          ))}
-        </TextField>
+        <FormField label={t('exm.f.subject')}>
+          <TextInput select value={subjectId} onChange={(e) => router.push(`/obe/matrix?subjectId=${e.target.value}`)} sx={{ minWidth: 280 }}>
+            {subjects.map((s) => (
+              <MenuItem key={s.id} value={s.id}>
+                {s.code} {s.name}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
+        <FormField label={t('obe.f.version')}>
+          <TextInput select value={setId ?? ''} onChange={(e) => router.push(`/obe/matrix?subjectId=${subjectId}&setId=${e.target.value}`)} sx={{ minWidth: 200 }}>
+            {sets.map((s) => (
+              <MenuItem key={s.id} value={s.id}>
+                v{s.version} · {t(`obe.cs.${s.status}`)}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
         {canEdit && (
           <Button variant="outlined" disabled={pending || sets.some((s) => s.status === 'draft')} onClick={() => run(() => newCoSet(subjectId, ''), t('obe.versionStarted'))}>
             {t('obe.newVersion')}
@@ -103,9 +107,15 @@ export function MatrixEditor({ subjects, subjectId, sets, setId, matrix, canEdit
           {canEdit && draft && (
             <>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
-                <TextField size="small" label={t('exm.f.code')} value={co.code} onChange={(e) => setCo({ ...co, code: e.target.value })} sx={{ width: 100 }} />
-                <TextField size="small" label={t('obe.f.statement')} value={co.statement} onChange={(e) => setCo({ ...co, statement: e.target.value })} sx={{ flex: 1, minWidth: 260 }} />
-                <TextField size="small" label={t('obe.f.bloom')} value={co.bloomLevel} onChange={(e) => setCo({ ...co, bloomLevel: e.target.value })} sx={{ width: 140 }} />
+                <FormField label={t('exm.f.code')}>
+                  <TextInput value={co.code} onChange={(e) => setCo({ ...co, code: e.target.value })} sx={{ width: 100 }} />
+                </FormField>
+                <FormField label={t('obe.f.statement')}>
+                  <TextInput value={co.statement} onChange={(e) => setCo({ ...co, statement: e.target.value })} sx={{ flex: 1, minWidth: 260 }} />
+                </FormField>
+                <FormField label={t('obe.f.bloom')}>
+                  <TextInput value={co.bloomLevel} onChange={(e) => setCo({ ...co, bloomLevel: e.target.value })} sx={{ width: 140 }} />
+                </FormField>
                 <Button variant="outlined" disabled={pending} onClick={() => run(() => addCo(matrix.set.id, co), t('obe.added'), () => setCo({ code: '', statement: '', bloomLevel: '' }))}>
                   {t('obe.addCo')}
                 </Button>

@@ -13,11 +13,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { saveTemplate } from '@/app/(dashboard)/documents/actions';
-import { DataTable } from '@/components/ui';
+import { DataTable, FormField, TextInput } from '@/components/ui';
 import { useNotice } from '@/components/hr/Common';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -87,24 +86,38 @@ function TemplateDialog({ template, onClose, run }: { template: CertificateTempl
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField size="small" label={t('hr.leave.name')} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-            <TextField size="small" label={t('doc.tpl.titleLabel')} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-            <TextField select size="small" label={t('doc.tpl.kind')} value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as CertificateTemplate['kind'] })}>
-              {CERT_KINDS.map((k) => (
-                <MenuItem key={k} value={k}>
-                  {t(`doc.kind.${k}` as MessageKey)}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField select size="small" label={t('doc.tpl.subject')} value={f.subjectType} onChange={(e) => setF({ ...f, subjectType: e.target.value as CertificateTemplate['subjectType'] })}>
-              <MenuItem value="student">{t('doc.subject.student')}</MenuItem>
-              <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>
-            </TextField>
-            <TextField size="small" label={t('doc.tpl.prefix')} value={f.prefix} onChange={(e) => setF({ ...f, prefix: e.target.value.toUpperCase() })} />
+            <FormField label={t('hr.leave.name')}>
+              <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+            </FormField>
+            <FormField label={t('doc.tpl.titleLabel')}>
+              <TextInput value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+            </FormField>
+            <FormField label={t('doc.tpl.kind')}>
+              <TextInput select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as CertificateTemplate['kind'] })}>
+                {CERT_KINDS.map((k) => (
+                  <MenuItem key={k} value={k}>
+                    {t(`doc.kind.${k}` as MessageKey)}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('doc.tpl.subject')}>
+              <TextInput select value={f.subjectType} onChange={(e) => setF({ ...f, subjectType: e.target.value as CertificateTemplate['subjectType'] })}>
+                <MenuItem value="student">{t('doc.subject.student')}</MenuItem>
+                <MenuItem value="staff">{t('doc.subject.staff')}</MenuItem>
+              </TextInput>
+            </FormField>
+            <FormField label={t('doc.tpl.prefix')}>
+              <TextInput value={f.prefix} onChange={(e) => setF({ ...f, prefix: e.target.value.toUpperCase() })} />
+            </FormField>
             <FormControlLabel control={<Checkbox checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />} label={t('doc.tpl.active')} />
           </Box>
-          <TextField multiline minRows={6} size="small" label={t('doc.tpl.body')} value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} />
-          <TextField multiline minRows={2} size="small" label={t('doc.tpl.fields')} value={f.fields} onChange={(e) => setF({ ...f, fields: e.target.value })} error={!fields} helperText={t('doc.tpl.fieldsHelp')} />
+          <FormField label={t('doc.tpl.body')}>
+            <TextInput multiline minRows={6} value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} />
+          </FormField>
+          <FormField label={t('doc.tpl.fields')}>
+            <TextInput multiline minRows={2} value={f.fields} onChange={(e) => setF({ ...f, fields: e.target.value })} error={!fields} helperText={t('doc.tpl.fieldsHelp')} />
+          </FormField>
           {fields && fields.length > 0 && (
             <Typography variant="caption" color="text.secondary">
               {fieldsHelp(fields).join(' ')}
