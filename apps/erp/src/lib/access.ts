@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -58,6 +58,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   students: ['principal', 'tenant_admin', 'admissions_officer', 'hod', 'accountant'],
   // exams.controller.ts / schemes.controller.ts / results.controller.ts: principal and administrator manage, heads of department read and verify
   exams: ['principal', 'tenant_admin', 'hod'],
+  // evaluation.controller.ts: the exam office (ADMIN roles) sets up papers, allocates examiners and pushes marks
+  evaluation: ['principal', 'tenant_admin'],
   // obe.controller.ts MANAGE: principal, administrator and heads of department
   obe: ['principal', 'tenant_admin', 'hod'],
   // hr.controller.ts, leave.controller.ts, recruitment.controller.ts: HR_ROLES (the head of department decides leave in the API)
@@ -198,6 +200,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'students';
     case 'exams':
       return 'exams';
+    case 'evaluation':
+      return 'evaluation';
     case 'obe':
       return 'obe';
     case 'hr':

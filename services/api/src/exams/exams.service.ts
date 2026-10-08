@@ -151,4 +151,24 @@ export class ExamsService {
         );
     }
   }
+
+  /** Per student, the latest attempt of each subject across published sessions of the programme and (optionally) the given session. */
+  async latestAttempts(tx: Tx, studentIds: string[], programId: string, includeSessionId?: string) {
+    if (studentIds.length === 0) return new Map<string, { subjectId: string; code: string; subject: string; credits: number; passed: boolean; sessionId: string }[]>();
+    const rows = await tx
+      .select({ studentId: examResults.studentId, subjectId: examResultLines.subjectId, code: subjects.code, subject: subjects.name, credits: examResultLines.credits, passed: examResultLines.passed, sessionId: examSessions.id })
+      .from(examResultLines)
+      .innerJoin(examResults, eq(examResults.id, examResultLines.resultId))
+      .innerJoin(examSessions, eq(examSessions.id, examResults.sessionId))
+      .innerJoin(subjects, eq(subjects.id, examResultLines.subjectId))
+      .where(and(inArray(examResults.studentId, studentIds), eq(examSessions.programId, programId), includeSessionId ? sql`(${examSessions.status} in ('published','locked') or ${examSessions.id} = ${includeSessionId})` : inArray(examSessions.status, ['published', 'locked'])))
+      .orderBy(asc(examSessions.startsOn), asc(examSessions.createdAt));
+    const latest = new Map<string, Map<string, (typeof rows)[number]>>();
+    for (const r of rows) {
+      const m = latest.get(r.studentId) ?? new Map();
+      m.set(r.subjectId, r);
+      latest.set(r.studentId, m);
+    }
+    return new Map([...latest].map(([sid, m]) => [sid, [...m.values()].map(({ studentId: _s, ...l }) => l)]));
+  }
 }

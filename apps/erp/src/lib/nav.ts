@@ -72,6 +72,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'exams',
     items: [
       { href: '/exams', label: 'nav.exams', section: 'exams', icon: 'exams' },
+      { href: '/evaluation', label: 'nav.evaluation', section: 'evaluation', icon: 'exams' },
       { href: '/results', label: 'nav.results', section: 'results', icon: 'results' },
     ],
   },

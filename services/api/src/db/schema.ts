@@ -1925,6 +1925,177 @@ export const revaluationRequests = pgTable('revaluation_requests', {
   decidedAt: timestamp('decided_at', { withTimezone: true }),
 });
 
+// On-screen evaluation (spec §24), exam controller depth (§23) and results depth (§25).
+
+/** Evaluation settings of one paper: examiner cap, second-valuation share and the gap that triggers a third valuation. */
+export const evalConfigs = pgTable('eval_configs', {
+  paperId: uuid('paper_id').primaryKey().references(() => examPapers.id, { onDelete: 'cascade' }),
+  tenantId: tenantId(),
+  perExaminerCap: integer('per_examiner_cap').notNull().default(50),
+  secondSharePercent: integer('second_share_percent').notNull().default(20),
+  /** A second valuation that differs from the first by more than this many marks needs a third. */
+  thresholdMarks: numeric('threshold_marks', { precision: 6, scale: 2, mode: 'number' }).notNull().default(10),
+  /** Set once the second-valuation scripts have been picked. */
+  secondPickedAt: timestamp('second_picked_at', { withTimezone: true }),
+  /** Set when final marks were pushed into the exam marks. */
+  finalisedAt: timestamp('finalised_at', { withTimezone: true }),
+});
+
+/** A question of the paper with its maximum marks. */
+export const evalQuestions = pgTable(
+  'eval_questions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    no: text('no').notNull(),
+    maxMarks: numeric('max_marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
+    ord: smallint('ord').notNull().default(0),
+  },
+  (t) => [uniqueIndex('eval_questions_uq').on(t.paperId, t.no)],
+);
+
+/** A scanned answer script. `dummyNo` is all an evaluator ever sees of the student. */
+export const evalScripts = pgTable(
+  'eval_scripts',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    dummyNo: text('dummy_no').notNull(),
+    files: jsonb('files').$type<SubmissionFile[]>().notNull().default(sql`'[]'::jsonb`),
+    /** uploaded, allocated, valued, needs_third, finalised */
+    status: text('status').notNull().default('uploaded'),
+    secondRequired: boolean('second_required').notNull().default(false),
+    thirdRequired: boolean('third_required').notNull().default(false),
+    finalMarks: numeric('final_marks', { precision: 6, scale: 2, mode: 'number' }),
+    uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('eval_scripts_student_uq').on(t.paperId, t.studentId), uniqueIndex('eval_scripts_dummy_uq').on(t.paperId, t.dummyNo)],
+);
+
+/** One valuation (round 1, 2 or 3) of a script by an examiner. */
+export const evalAllocations = pgTable(
+  'eval_allocations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    scriptId: uuid('script_id').notNull().references(() => evalScripts.id, { onDelete: 'cascade' }),
+    paperId: uuid('paper_id').notNull().references(() => examPapers.id, { onDelete: 'cascade' }),
+    examinerId: uuid('examiner_id').notNull().references(() => users.id),
+    round: smallint('round').notNull(),
+    /** pending or submitted */
+    status: text('status').notNull().default('pending'),
+    total: numeric('total', { precision: 6, scale: 2, mode: 'number' }),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('eval_alloc_round_uq').on(t.scriptId, t.round), uniqueIndex('eval_alloc_examiner_uq').on(t.scriptId, t.examinerId), index('eval_alloc_examiner_idx').on(t.examinerId, t.status)],
+);
+
+/** Marks for one question inside one valuation. */
+export const evalMarks = pgTable(
+  'eval_marks',
+  {
+    tenantId: tenantId(),
+    allocationId: uuid('allocation_id').notNull().references(() => evalAllocations.id, { onDelete: 'cascade' }),
+    questionId: uuid('question_id').notNull().references(() => evalQuestions.id, { onDelete: 'cascade' }),
+    marks: numeric('marks', { precision: 6, scale: 2, mode: 'number' }).notNull(),
+    comment: text('comment'),
+  },
+  (t) => [primaryKey({ columns: [t.allocationId, t.questionId] })],
+);
+
+/** An invigilation duty: a staff member in a room for a slot of an exam day. */
+export const invigilationDuties = pgTable(
+  'invigilation_duties',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    staffId: uuid('staff_id').notNull().references(() => users.id),
+    roomId: uuid('room_id').notNull().references(() => rooms.id),
+    dutyDate: date('duty_date').notNull(),
+    startsAt: time('starts_at').notNull(),
+    endsAt: time('ends_at').notNull(),
+    /** invigilator or chief */
+    role: text('role').notNull().default('invigilator'),
+    /** assigned, substituted */
+    status: text('status').notNull().default('assigned'),
+    substitutedFrom: uuid('substituted_from').references(() => users.id),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('invigilation_staff_idx').on(t.staffId, t.dutyDate), index('invigilation_session_idx').on(t.sessionId)],
+);
+
+/** A student's registration for a failed subject in a supplementary session. */
+export const supplementaryRegistrations = pgTable(
+  'supplementary_registrations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    /** The session in which the subject was failed. */
+    failedInSessionId: uuid('failed_in_session_id').notNull().references(() => examSessions.id),
+    registeredBy: uuid('registered_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('supplementary_reg_uq').on(t.sessionId, t.studentId, t.subjectId)],
+);
+
+/** A malpractice case from an exam hall, through inquiry to a penalty or dismissal. */
+export const malpracticeCases = pgTable(
+  'malpractice_cases',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    paperId: uuid('paper_id').references(() => examPapers.id, { onDelete: 'set null' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    roomId: uuid('room_id').references(() => rooms.id, { onDelete: 'set null' }),
+    description: text('description').notNull(),
+    reportedBy: uuid('reported_by').notNull().references(() => users.id),
+    /** reported, penalised or dismissed */
+    status: text('status').notNull().default('reported'),
+    penalty: text('penalty'),
+    decisionNote: text('decision_note'),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('malpractice_session_idx').on(t.sessionId, t.status)],
+);
+
+/** Grace-marks and progression rules of a session. */
+export const examResultRules = pgTable('exam_result_rules', {
+  sessionId: uuid('session_id').primaryKey().references(() => examSessions.id, { onDelete: 'cascade' }),
+  tenantId: tenantId(),
+  graceMaxPerSubject: numeric('grace_max_per_subject', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
+  graceMaxTotal: numeric('grace_max_total', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
+  progressionMinCredits: numeric('progression_min_credits', { precision: 6, scale: 1, mode: 'number' }),
+  progressionMaxBacklogs: integer('progression_max_backlogs'),
+});
+
+/** Grace marks given to one student in one subject (added to the exam marks, audited). */
+export const graceAwards = pgTable(
+  'grace_awards',
+  {
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    marks: numeric('marks', { precision: 5, scale: 2, mode: 'number' }).notNull(),
+    appliedBy: uuid('applied_by').notNull().references(() => users.id),
+    appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.studentId, t.subjectId] })],
+);
+
 
 // ---------------------------------------------------------------------------------------------
 // OBE / accreditation
@@ -2523,6 +2694,16 @@ export const TENANT_TABLES = [
   'hall_tickets',
   'exam_results',
   'exam_result_lines',
+  'eval_configs',
+  'eval_questions',
+  'eval_scripts',
+  'eval_allocations',
+  'eval_marks',
+  'invigilation_duties',
+  'supplementary_registrations',
+  'malpractice_cases',
+  'exam_result_rules',
+  'grace_awards',
   'revaluation_requests',
   'program_outcomes',
   'obe_configs',
