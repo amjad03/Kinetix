@@ -7,7 +7,7 @@ export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
   | 'campus' | 'inventory' | 'communication' | 'reports' | 'settings'
   | 'classes' | 'calendar' | 'homework' | 'results' | 'boards' | 'devices' | 'live' | 'topicVideos' | 'syllabus' | 'departments' | 'documents' | 'payroll' | 'payslips' | 'transport'
-  | 'hostel' | 'canteen' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work';
+  | 'hostel' | 'canteen' | 'assets' | 'placements' | 'research' | 'grievances' | 'messages' | 'conversations' | 'ai' | 'department' | 'import' | 'platform' | 'surveys' | 'tasks' | 'work' | 'courseRegistration';
 
 export interface NavItem {
   href: string;
@@ -49,6 +49,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/classes', label: 'nav.classes', section: 'school', icon: 'classes' },
       { href: '/syllabus', label: 'nav.syllabus', section: 'syllabus', icon: 'syllabus' },
       { href: '/departments', label: 'nav.departments', section: 'departments', icon: 'departments' },
+      { href: '/course-registration', label: 'nav.courseRegistration', section: 'courseRegistration', icon: 'courseRegistration' },
     ],
   },
   {

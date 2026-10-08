@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'courseRegistration';
 
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
@@ -80,6 +80,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   grievances: ['principal', 'tenant_admin', 'grievance_officer', 'icc_member'],
   // surveys.controller.ts SURVEY_ROLES (teachers build surveys in the Teacher App; the ERP is for leaders and heads of department)
   surveys: ['principal', 'tenant_admin', 'hod'],
+  // course-registration.controller.ts REGISTRATION_ADMIN (the principal sets the window; heads approve their department's courses)
+  courseRegistration: ['principal', 'tenant_admin', 'hod'],
   // tasks.controller.ts TASK_ROLES: every staff role that signs in to the ERP
   tasks: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member'],
   // analytics.controller.ts ANALYTICS_ROLES: each report then checks its own roles (the catalogue lists only the caller's)
@@ -193,6 +195,8 @@ export function sectionOf(pathname: string): Section | null {
       return 'surveys';
     case 'tasks':
       return 'tasks';
+    case 'course-registration':
+      return 'courseRegistration';
     case 'documents':
       return 'documents';
     case 'placements':

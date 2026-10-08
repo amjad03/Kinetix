@@ -2641,6 +2641,9 @@ export const TENANT_TABLES = [
   'survey_responses',
   'survey_answers',
   'tasks',
+  'course_offerings',
+  'registration_windows',
+  'course_registrations',
   'lms_courses',
   'lms_modules',
   'lms_items',
@@ -4106,4 +4109,78 @@ export const tasks = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index('tasks_assignee_idx').on(t.tenantId, t.assigneeId, t.status), index('tasks_owner_idx').on(t.tenantId, t.ownerId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Course registration, CBCS/CBE (migration 0099)
+// ---------------------------------------------------------------------------------------------
+
+export const OFFERING_CATEGORIES = ['core', 'elective', 'open_elective', 'skill', 'ability'] as const;
+export type OfferingCategory = (typeof OFFERING_CATEGORIES)[number];
+
+/** A subject offered in a term: its category, credits, seats, faculty, timetable slots and who may take it. */
+export const courseOfferings = pgTable(
+  'course_offerings',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    termId: uuid('term_id').notNull().references(() => academicTerms.id),
+    subjectId: uuid('subject_id').notNull().references(() => subjects.id),
+    category: text('category').$type<OfferingCategory>().notNull(),
+    credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
+    seatCap: integer('seat_cap').notNull(),
+    facultyId: uuid('faculty_id').references(() => users.id),
+    /** Timetable slots the course meets in; two courses clash when their slots overlap in time. */
+    slotIds: uuid('slot_ids').array().notNull().default(sql`'{}'::uuid[]`),
+    /** Null = every program / every semester. */
+    eligibleProgramIds: uuid('eligible_program_ids').array(),
+    eligibleSemesters: integer('eligible_semesters').array(),
+    prerequisiteSubjectId: uuid('prerequisite_subject_id').references(() => subjects.id),
+    status: text('status').$type<'open' | 'closed'>().notNull().default('open'),
+    version: integer('version').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('course_offerings_term_subject_uq').on(t.termId, t.subjectId)],
+);
+
+/** When students may register for a term (per program, or all programs when program is null), credit limits and the allocation rule. */
+export const registrationWindows = pgTable('registration_windows', {
+  id: id(),
+  tenantId: tenantId(),
+  termId: uuid('term_id').notNull().references(() => academicTerms.id),
+  programId: uuid('program_id').references(() => programs.id),
+  opensAt: timestamp('opens_at', { withTimezone: true }).notNull(),
+  closesAt: timestamp('closes_at', { withTimezone: true }).notNull(),
+  addDropUntil: timestamp('add_drop_until', { withTimezone: true }).notNull(),
+  minCredits: numeric('min_credits', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
+  maxCredits: numeric('max_credits', { precision: 5, scale: 1, mode: 'number' }).notNull(),
+  allocationRule: text('allocation_rule').$type<'cgpa' | 'time'>().notNull().default('cgpa'),
+  createdAt: createdAt(),
+});
+
+export type RegistrationStatus = 'preference' | 'registered' | 'waitlisted' | 'not_allotted' | 'dropped';
+
+/** One student's place (or ranked preference, or waitlist spot) in an offering. */
+export const courseRegistrations = pgTable(
+  'course_registrations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    offeringId: uuid('offering_id').notNull().references(() => courseOfferings.id),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    termId: uuid('term_id').notNull().references(() => academicTerms.id),
+    status: text('status').$type<RegistrationStatus>().notNull(),
+    preferenceRank: integer('preference_rank'),
+    waitlistPos: integer('waitlist_pos'),
+    /** Added automatically because the course is mandatory core. */
+    autoCore: boolean('auto_core').notNull().default(false),
+    approval: text('approval').$type<'pending' | 'approved' | 'rejected'>().notNull().default('pending'),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    version: integer('version').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('course_registrations_once_uq').on(t.offeringId, t.studentId), index('course_registrations_student_idx').on(t.studentId, t.termId)],
 );
