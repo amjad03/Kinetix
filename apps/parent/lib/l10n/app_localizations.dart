@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -3710,9 +3717,652 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dinner'**
   String get mealDinner;
+
+  /// No description provided for @schoolLife.
+  ///
+  /// In en, this message translates to:
+  /// **'School life'**
+  String get schoolLife;
+
+  /// No description provided for @schoolLifeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary, meetings, health, events and more'**
+  String get schoolLifeSubtitle;
+
+  /// No description provided for @schoolLifeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s school life'**
+  String schoolLifeTitle(Object name);
+
+  /// No description provided for @childSchoolLife.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s school life'**
+  String childSchoolLife(Object name);
+
+  /// No description provided for @lifeDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'School diary'**
+  String get lifeDiary;
+
+  /// No description provided for @lifeDiarySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Classwork, homework and notices'**
+  String get lifeDiarySub;
+
+  /// No description provided for @lifePtm.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent-teacher meetings'**
+  String get lifePtm;
+
+  /// No description provided for @lifePtmSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a time with each teacher'**
+  String get lifePtmSub;
+
+  /// No description provided for @lifeEarly.
+  ///
+  /// In en, this message translates to:
+  /// **'Early years'**
+  String get lifeEarly;
+
+  /// No description provided for @lifeEarlySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones, photos and learning story'**
+  String get lifeEarlySub;
+
+  /// No description provided for @lifeHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get lifeHealth;
+
+  /// No description provided for @lifeHealthSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile, nurse visits and vaccinations'**
+  String get lifeHealthSub;
+
+  /// No description provided for @lifePassport.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome passport'**
+  String get lifePassport;
+
+  /// No description provided for @lifePassportSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills, certificates and activities'**
+  String get lifePassportSub;
+
+  /// No description provided for @lifeSurveys.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get lifeSurveys;
+
+  /// No description provided for @lifeSurveysSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your views with the school'**
+  String get lifeSurveysSub;
+
+  /// No description provided for @lifeEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus events'**
+  String get lifeEvents;
+
+  /// No description provided for @lifeEventsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Register your child for events'**
+  String get lifeEventsSub;
+
+  /// No description provided for @diaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s diary'**
+  String diaryTitle(Object name);
+
+  /// No description provided for @diaryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No diary entries yet.'**
+  String get diaryEmpty;
+
+  /// No description provided for @diaryClasswork.
+  ///
+  /// In en, this message translates to:
+  /// **'Classwork'**
+  String get diaryClasswork;
+
+  /// No description provided for @diaryHomework.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get diaryHomework;
+
+  /// No description provided for @diaryNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get diaryNotice;
+
+  /// No description provided for @diaryBy.
+  ///
+  /// In en, this message translates to:
+  /// **'by {author}'**
+  String diaryBy(Object author);
+
+  /// No description provided for @diaryAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read this'**
+  String get diaryAcknowledge;
+
+  /// No description provided for @diaryAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get diaryAcknowledged;
+
+  /// No description provided for @diaryAckDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as read'**
+  String get diaryAckDone;
+
+  /// No description provided for @diaryToAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry to acknowledge} other{{count} entries to acknowledge}}'**
+  String diaryToAcknowledge(int count);
+
+  /// No description provided for @ptmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent-teacher meetings'**
+  String get ptmTitle;
+
+  /// No description provided for @ptmNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No meetings are planned.'**
+  String get ptmNone;
+
+  /// No description provided for @ptmMeetings.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetings'**
+  String get ptmMeetings;
+
+  /// No description provided for @ptmMyBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Your bookings'**
+  String get ptmMyBookings;
+
+  /// No description provided for @ptmClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get ptmClosed;
+
+  /// No description provided for @ptmNoSlots.
+  ///
+  /// In en, this message translates to:
+  /// **'No free times with {name}\'s teachers.'**
+  String ptmNoSlots(Object name);
+
+  /// No description provided for @ptmBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get ptmBook;
+
+  /// No description provided for @ptmBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting booked'**
+  String get ptmBooked;
+
+  /// No description provided for @ptmYourBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Your booking'**
+  String get ptmYourBooking;
+
+  /// No description provided for @ptmReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to another time'**
+  String get ptmReschedule;
+
+  /// No description provided for @ptmChooseNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new time'**
+  String get ptmChooseNew;
+
+  /// No description provided for @ptmMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting moved'**
+  String get ptmMoved;
+
+  /// No description provided for @ptmCancelBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel booking'**
+  String get ptmCancelBooking;
+
+  /// No description provided for @ptmCancelAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this meeting?'**
+  String get ptmCancelAsk;
+
+  /// No description provided for @ptmKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get ptmKeep;
+
+  /// No description provided for @ptmCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking cancelled'**
+  String get ptmCancelled;
+
+  /// No description provided for @earlyYearsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s early years'**
+  String earlyYearsTitle(Object name);
+
+  /// No description provided for @eyStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning story (PDF)'**
+  String get eyStory;
+
+  /// No description provided for @eyChooseTerm.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a term'**
+  String get eyChooseTerm;
+
+  /// No description provided for @eyMilestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get eyMilestones;
+
+  /// No description provided for @eyObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Observations'**
+  String get eyObservations;
+
+  /// No description provided for @eyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing recorded yet.'**
+  String get eyNone;
+
+  /// No description provided for @eyDomainPhysical.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical'**
+  String get eyDomainPhysical;
+
+  /// No description provided for @eyDomainLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get eyDomainLanguage;
+
+  /// No description provided for @eyDomainCognitive.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get eyDomainCognitive;
+
+  /// No description provided for @eyDomainSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social and emotional'**
+  String get eyDomainSocial;
+
+  /// No description provided for @eyDomainCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get eyDomainCreative;
+
+  /// No description provided for @eyEmerging.
+  ///
+  /// In en, this message translates to:
+  /// **'Emerging'**
+  String get eyEmerging;
+
+  /// No description provided for @eyDeveloping.
+  ///
+  /// In en, this message translates to:
+  /// **'Developing'**
+  String get eyDeveloping;
+
+  /// No description provided for @eyAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Achieved'**
+  String get eyAchieved;
+
+  /// No description provided for @healthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s health'**
+  String healthTitle(Object name);
+
+  /// No description provided for @healthReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'The school keeps this record. You can read it here.'**
+  String get healthReadOnly;
+
+  /// No description provided for @healthNoProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'No health profile has been recorded.'**
+  String get healthNoProfile;
+
+  /// No description provided for @healthBlood.
+  ///
+  /// In en, this message translates to:
+  /// **'Blood group'**
+  String get healthBlood;
+
+  /// No description provided for @healthAllergies.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergies'**
+  String get healthAllergies;
+
+  /// No description provided for @healthConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditions'**
+  String get healthConditions;
+
+  /// No description provided for @healthMedications.
+  ///
+  /// In en, this message translates to:
+  /// **'Medications'**
+  String get healthMedications;
+
+  /// No description provided for @healthContacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency contacts'**
+  String get healthContacts;
+
+  /// No description provided for @healthNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get healthNotes;
+
+  /// No description provided for @healthNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None recorded'**
+  String get healthNone;
+
+  /// No description provided for @healthVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'Nurse visits'**
+  String get healthVisits;
+
+  /// No description provided for @healthNoVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'No visits.'**
+  String get healthNoVisits;
+
+  /// No description provided for @healthSentHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent home'**
+  String get healthSentHome;
+
+  /// No description provided for @healthVaccinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccinations'**
+  String get healthVaccinations;
+
+  /// No description provided for @healthNoVaccinations.
+  ///
+  /// In en, this message translates to:
+  /// **'No vaccinations recorded.'**
+  String get healthNoVaccinations;
+
+  /// No description provided for @healthNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due {date}'**
+  String healthNextDue(Object date);
+
+  /// No description provided for @passportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s passport'**
+  String passportTitle(Object name);
+
+  /// No description provided for @passportVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified by the school'**
+  String get passportVerified;
+
+  /// No description provided for @passportNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet verified by the school'**
+  String get passportNotVerified;
+
+  /// No description provided for @passportDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download passport (PDF)'**
+  String get passportDownload;
+
+  /// No description provided for @passportSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get passportSkills;
+
+  /// No description provided for @passportNoSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'No skills yet.'**
+  String get passportNoSkills;
+
+  /// No description provided for @passportLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}'**
+  String passportLevel(int level);
+
+  /// No description provided for @passportNoLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough evidence yet'**
+  String get passportNoLevel;
+
+  /// No description provided for @passportEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 piece of evidence} other{{count} pieces of evidence}}'**
+  String passportEvidence(int count);
+
+  /// No description provided for @passportCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get passportCertificates;
+
+  /// No description provided for @passportIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued {date}'**
+  String passportIssued(Object date);
+
+  /// No description provided for @passportActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs and events'**
+  String get passportActivities;
+
+  /// No description provided for @surveysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get surveysTitle;
+
+  /// No description provided for @surveysNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No surveys need your answer.'**
+  String get surveysNone;
+
+  /// No description provided for @surveyAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get surveyAnswered;
+
+  /// No description provided for @surveyAnswerNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer'**
+  String get surveyAnswerNow;
+
+  /// No description provided for @surveyAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers are anonymous.'**
+  String get surveyAnonymous;
+
+  /// No description provided for @surveyYourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get surveyYourAnswer;
+
+  /// No description provided for @surveySubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get surveySubmit;
+
+  /// No description provided for @surveyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please answer every question marked with a star.'**
+  String get surveyRequired;
+
+  /// No description provided for @surveyThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your answers'**
+  String get surveyThanks;
+
+  /// No description provided for @eventsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s events'**
+  String eventsTitle(Object name);
+
+  /// No description provided for @eventsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No events are open right now.'**
+  String get eventsNone;
+
+  /// No description provided for @eventFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee {amount}'**
+  String eventFee(Object amount);
+
+  /// No description provided for @eventSeatsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Full} =1{1 seat left} other{{count} seats left}}'**
+  String eventSeatsLeft(int count);
+
+  /// No description provided for @eventRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get eventRegister;
+
+  /// No description provided for @eventJoinWaitlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the waitlist'**
+  String get eventJoinWaitlist;
+
+  /// No description provided for @eventRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered'**
+  String get eventRegistered;
+
+  /// No description provided for @eventWaitlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'On the waitlist'**
+  String get eventWaitlisted;
+
+  /// No description provided for @eventCancelRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel registration'**
+  String get eventCancelRegistration;
+
+  /// No description provided for @eventRegisteredDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered for the event'**
+  String get eventRegisteredDone;
+
+  /// No description provided for @eventWaitlistDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to the waitlist'**
+  String get eventWaitlistDone;
+
+  /// No description provided for @eventCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration cancelled'**
+  String get eventCancelled;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3721,7 +4371,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

@@ -15,6 +15,7 @@ import '../fees/fees_card.dart';
 import '../homework/homework_screen.dart';
 import '../library/library.dart';
 import '../hostel/boarding_screen.dart';
+import '../school_life/school_life_screen.dart';
 import '../transport/bus_screen.dart';
 import '../updates/updates_controller.dart';
 import '../updates/updates_tab.dart';
@@ -229,6 +230,13 @@ class _HomeTabState extends State<HomeTab> {
         title: l.boarding,
         onTap: () => BoardingScreen.open(context, family.api, c),
         child: Text(l.boardingSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
+      ),
+      SectionCard(
+        key: const Key('schoolLifeCard'),
+        icon: Icons.menu_book_outlined,
+        title: l.schoolLife,
+        onTap: () => SchoolLifeScreen.open(context, family.api, c),
+        child: Text(l.schoolLifeSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
       ),
     ];
   }

@@ -13,6 +13,7 @@ import 'campus.dart';
 import 'exam_models.dart';
 import 'lms.dart';
 import 'models.dart';
+import 'school_life.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
 enum ApiProblem { timeout, unreachable, wrongLogin, notGuardian, teacherAccount }
@@ -143,6 +144,54 @@ abstract class ParentApi {
   Future<List<GrievanceTicket>> myGrievances();
   Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId});
   Future<void> rateGrievance(String id, int rating);
+
+  /// The child's class diary, newest first, each entry saying whether a guardian acknowledged it
+  /// (`GET /v1/parent/children/:id/diary`).
+  Future<List<DiaryEntry>> diary(String childId);
+
+  /// Records that a guardian has read the entry (`POST /v1/parent/children/:id/diary/:entryId/acknowledge`).
+  Future<void> acknowledgeDiary(String childId, String entryId);
+
+  /// Parent-teacher meetings, newest first (`GET /v1/ptm/events`).
+  Future<List<PtmEvent>> ptmEvents();
+
+  /// Free slots of the child's teachers plus the child's own bookings (`GET /v1/ptm/events/:id/slots?studentId=`).
+  Future<List<PtmSlot>> ptmSlots(String eventId, String childId);
+
+  /// This guardian's bookings across their children (`GET /v1/ptm/my-bookings`).
+  Future<List<PtmBooking>> ptmBookings();
+
+  /// 409 when the slot was just taken or the child already has a slot with that teacher.
+  Future<void> ptmBook(String slotId, String childId);
+  Future<void> ptmCancel(String slotId);
+
+  /// Moves a booking to another free slot of the same teacher.
+  Future<void> ptmReschedule(String slotId, String toSlotId);
+
+  /// Milestones and observations (`GET /v1/parent/children/:id/early-years`).
+  Future<EarlyYearsView> earlyYears(String childId);
+
+  /// The academic terms, for choosing a learning story (`GET /v1/terms`).
+  Future<List<TermInfo>> terms();
+
+  /// The learning story of a term as a PDF (`GET /v1/parent/children/:id/early-years/learning-story.pdf`).
+  Future<Uint8List> learningStoryPdf(String childId, String termId);
+
+  /// The child's health profile, nurse visits and vaccinations, read only (`GET /v1/parent/children/:id/health`).
+  Future<HealthRecord> health(String childId);
+
+  /// The child's outcome passport (`GET /v1/passport/me?studentId=`) and its PDF.
+  Future<OutcomePassport> passport(String childId);
+  Future<Uint8List> passportPdf(String childId);
+
+  /// Open surveys addressed to this guardian (`GET /v1/surveys/mine`) and the answers to one.
+  Future<List<Survey>> surveys();
+  Future<void> answerSurvey(String surveyId, List<SurveyAnswer> answers);
+
+  /// Campus events the child can join, with the child's registration (`GET /v1/campus-life/me/events`).
+  Future<List<CampusEvent>> campusEvents(String childId);
+  Future<void> registerForEvent(String eventId, String childId);
+  Future<void> cancelEventRegistration(String eventId, String childId);
 
   /// The child's school bus: route, stop, pickup time and the bus now (`GET /v1/transport/students/:id`).
   Future<StudentBus> bus(String childId);
@@ -457,6 +506,70 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<void> rateGrievance(String id, int rating) async => _send('POST', '/v1/grievances/$id/rating', body: {'rating': rating});
+
+  @override
+  Future<List<DiaryEntry>> diary(String childId) async =>
+      [for (final e in await _send('GET', '/v1/parent/children/$childId/diary') as List) DiaryEntry.fromJson((e as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> acknowledgeDiary(String childId, String entryId) async => _send('POST', '/v1/parent/children/$childId/diary/$entryId/acknowledge');
+
+  @override
+  Future<List<PtmEvent>> ptmEvents() async => [for (final e in await _send('GET', '/v1/ptm/events') as List) PtmEvent.fromJson((e as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<PtmSlot>> ptmSlots(String eventId, String childId) async =>
+      [for (final s in await _send('GET', '/v1/ptm/events/$eventId/slots?studentId=$childId') as List) PtmSlot.fromJson((s as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<PtmBooking>> ptmBookings() async =>
+      [for (final b in await _send('GET', '/v1/ptm/my-bookings') as List) PtmBooking.fromJson((b as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> ptmBook(String slotId, String childId) async => _send('POST', '/v1/ptm/slots/$slotId/book', body: {'studentId': childId});
+
+  @override
+  Future<void> ptmCancel(String slotId) async => _send('POST', '/v1/ptm/slots/$slotId/cancel');
+
+  @override
+  Future<void> ptmReschedule(String slotId, String toSlotId) async => _send('POST', '/v1/ptm/slots/$slotId/reschedule', body: {'toSlotId': toSlotId});
+
+  @override
+  Future<EarlyYearsView> earlyYears(String childId) async =>
+      EarlyYearsView.fromJson(await _send('GET', '/v1/parent/children/$childId/early-years') as Map<String, dynamic>);
+
+  @override
+  Future<List<TermInfo>> terms() async => [for (final t in await _send('GET', '/v1/terms') as List) TermInfo.fromJson((t as Map).cast<String, dynamic>())];
+
+  @override
+  Future<Uint8List> learningStoryPdf(String childId, String termId) => _download('/v1/parent/children/$childId/early-years/learning-story.pdf?termId=$termId');
+
+  @override
+  Future<HealthRecord> health(String childId) async => HealthRecord.fromJson(await _send('GET', '/v1/parent/children/$childId/health') as Map<String, dynamic>);
+
+  @override
+  Future<OutcomePassport> passport(String childId) async => OutcomePassport.fromJson(await _send('GET', '/v1/passport/me?studentId=$childId') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> passportPdf(String childId) => _download('/v1/passport/students/$childId/pdf');
+
+  @override
+  Future<List<Survey>> surveys() async => [for (final s in await _send('GET', '/v1/surveys/mine') as List) Survey.fromJson((s as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> answerSurvey(String surveyId, List<SurveyAnswer> answers) async =>
+      _send('POST', '/v1/surveys/$surveyId/responses', body: {'answers': [for (final a in answers) a.toJson()]});
+
+  @override
+  Future<List<CampusEvent>> campusEvents(String childId) async =>
+      [for (final e in await _send('GET', '/v1/campus-life/me/events?studentId=$childId') as List) CampusEvent.fromJson((e as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> registerForEvent(String eventId, String childId) async => _send('POST', '/v1/campus-life/events/$eventId/register', body: {'studentId': childId});
+
+  @override
+  Future<void> cancelEventRegistration(String eventId, String childId) async =>
+      _send('POST', '/v1/campus-life/events/$eventId/cancel-registration', body: {'studentId': childId});
 
   @override
   Future<ChildMarks> marks(String childId) async =>
