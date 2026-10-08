@@ -37,14 +37,17 @@ export interface NewQuestion {
   prompt: string;
   options: string[];
   required: boolean;
+  /** The course outcome tag written on a rating line (`rating@CS101/CO2:`), not yet resolved to an id. */
+  coTag?: string;
 }
 
-const LINE = /^(single|multiple|rating|text)(\?)?\s*:\s*(.+)$/i;
+const LINE = /^(single|multiple|rating|text)(?:@([^\s:?]+))?(\?)?\s*:\s*(.+)$/i;
 
 /**
  * Reads the question box, one question per line: `single: How is the pace? | Slow; Right; Fast`,
  * `multiple: What helps? | Notes; Labs`, `rating: Rate the course`, `text: Any comments?`.
- * A `?` after the type (`text?: ...`) makes the question optional. Returns the first line it cannot read.
+ * A `?` after the type (`text?: ...`) makes the question optional. A rating can name the course
+ * outcome it measures (`rating@CS101/CO2: ...`, or just `rating@CO2:` when the code is unique). Returns the first line it cannot read.
  */
 export function parseQuestions(input: string): { ok: true; questions: NewQuestion[] } | { ok: false; line: number } {
   const questions: NewQuestion[] = [];
@@ -55,12 +58,13 @@ export function parseQuestions(input: string): { ok: true; questions: NewQuestio
     const m = LINE.exec(raw);
     if (!m) return { ok: false, line: i + 1 };
     const kind = m[1].toLowerCase() as QuestionKind;
-    const [prompt, rest = ''] = m[3].split('|').map((x) => x.trim());
+    const [prompt, rest = ''] = m[4].split('|').map((x) => x.trim());
     const options = rest ? rest.split(';').map((x) => x.trim()).filter(Boolean) : [];
     if (prompt.length < 3) return { ok: false, line: i + 1 };
     if ((kind === 'single' || kind === 'multiple') && new Set(options).size < 2) return { ok: false, line: i + 1 };
     if ((kind === 'rating' || kind === 'text') && options.length > 0) return { ok: false, line: i + 1 };
-    questions.push({ kind, prompt, options, required: !m[2] });
+    if (m[2] && kind !== 'rating') return { ok: false, line: i + 1 };
+    questions.push({ kind, prompt, options, required: !m[3], ...(m[2] ? { coTag: m[2] } : {}) });
   }
   return questions.length === 0 ? { ok: false, line: 1 } : { ok: true, questions };
 }
@@ -103,4 +107,42 @@ export function dueState(t: Pick<TaskRow, 'status' | 'dueAt'>, now: number): 'ov
   if (!t.dueAt || t.status === 'done' || t.status === 'cancelled') return 'none';
   const left = Date.parse(t.dueAt) - now;
   return left < 0 ? 'overdue' : left < 86_400_000 ? 'soon' : 'ok';
+}
+
+/** An active course outcome a rating question can measure. */
+export interface SurveyOutcome {
+  id: string;
+  code: string;
+  statement: string;
+  subjectCode: string;
+  subjectName: string;
+}
+
+/** `CS101/CO2`, the tag that names an outcome on a question line. */
+export const outcomeTag = (o: Pick<SurveyOutcome, 'subjectCode' | 'code'>): string => `${o.subjectCode}/${o.code}`;
+
+/**
+ * Turns the outcome tags on rating questions into outcome ids. A question without a tag gets
+ * `defaultId` (the dialog's picker). Returns the first tag that matches no outcome, or more than one.
+ */
+export function resolveOutcomes<Q extends { kind: QuestionKind; coTag?: string }>(
+  questions: Q[],
+  outcomes: SurveyOutcome[],
+  defaultId?: string,
+): { ok: true; questions: (Omit<Q, 'coTag'> & { coId?: string })[] } | { ok: false; tag: string } {
+  const out: (Omit<Q, 'coTag'> & { coId?: string })[] = [];
+  for (const q of questions) {
+    const { coTag, ...rest } = q;
+    let coId: string | undefined;
+    if (q.kind === 'rating') {
+      if (coTag) {
+        const want = coTag.toLowerCase();
+        const hits = outcomes.filter((o) => outcomeTag(o).toLowerCase() === want || o.code.toLowerCase() === want);
+        if (hits.length !== 1) return { ok: false, tag: coTag };
+        coId = hits[0].id;
+      } else coId = defaultId;
+    }
+    out.push(coId ? { ...rest, coId } : rest);
+  }
+  return { ok: true, questions: out };
 }

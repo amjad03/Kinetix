@@ -31,6 +31,9 @@ export const QuizType = z.enum(['mcq', 'trueFalse', 'fillBlank', 'shortAnswer'])
 export const HomeworkType = z.enum(['qa', 'fillBlank', 'mcq', 'trueFalse', 'twoMark', 'threeMark', 'fiveMark', 'diagram']);
 const Difficulty = z.enum(['easy', 'medium', 'hard']).default('medium');
 
+/** Aggregated figures only (counts, rupees, percentages, department or class names). */
+const Facts = z.record(z.string(), z.unknown());
+
 export const TaskInputs = {
   explain: z.object({ question: z.string().trim().min(2).max(1000), language: Language.default('en') }),
   quiz: z.object({
@@ -86,12 +89,27 @@ export const TaskInputs = {
   }),
   summarize: z.object({ transcript: z.string().trim().min(20).max(60_000), language: Language.default('en') }),
   /** A board page as a PNG (base64, no data: prefix), for reading handwriting. Needs a vision model. */
+  /** Domain assistants (PRD §64): the API computes the figures; the model only explains them. No names are ever sent. */
+  financeInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  admissionsInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  hrInsight: z.object({ facts: Facts, language: Language.default('en') }),
   readBoard: z.object({ image: z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'), language: Language.default('en') }),
 } as const;
 
 const Text = (max: number) => z.string().trim().min(1).max(max);
 
+/** What every domain insight returns: a one-line headline, what stands out, what to watch and what to do. */
+const Insight = z.object({
+  headline: Text(300),
+  highlights: z.array(Text(400)).min(1).max(6),
+  risks: z.array(Text(400)).max(5).default([]),
+  suggestions: z.array(Text(400)).max(5).default([]),
+});
+
 export const TaskOutputs = {
+  financeInsight: Insight,
+  admissionsInsight: Insight,
+  hrInsight: Insight,
   explain: z.object({
     answer: Text(6000),
     keyPoints: z.array(Text(400)).max(8).default([]),
@@ -223,6 +241,8 @@ function systemPrompt(g: Grounding, language: Language): string {
   return lines.filter(Boolean).join('\n');
 }
 
+const INSIGHT_SHAPE = '{"headline": string (one sentence), "highlights": string[] (2-5 findings that quote the figures), "risks": string[] (what to watch), "suggestions": string[] (practical next steps)}';
+
 const SHAPES: Record<TaskName, string> = {
   explain: '{"answer": string (clear explanation, short paragraphs), "keyPoints": string[] (3-5), "followUps": string[] (2-3 questions a student might ask next)}',
   quiz: '{"questions": [{"question": string, "options": [4 distinct strings], "answer": index 0-3 of the correct option, "explanation": string}]}',
@@ -234,6 +254,9 @@ const SHAPES: Record<TaskName, string> = {
     '{"keyConcepts": string[], "definitions": [{"term": string, "meaning": string}], "formulas": string[], "examples": string[], "importantPoints": string[], "questions": string[]}',
   lecture: '{"outline": string[], "explanation": string, "examples": string[], "analogies": string[], "boardPlan": string[] (what to write on the board, in order), "activities": string[], "recap": string}',
   selectAsk: '{"title": string, "answer": string, "items": string[]}',
+  financeInsight: INSIGHT_SHAPE,
+  admissionsInsight: INSIGHT_SHAPE,
+  hrInsight: INSIGHT_SHAPE,
 };
 
 const QUIZ_TYPE_SHAPE =
@@ -269,6 +292,10 @@ function scanned(i: Record<string, unknown>): string {
   return i.boardText ? `\nUse only what is on the class's board (read from the chosen pages):\n\"\"\"\n${i.boardText}\n\"\"\"` : '';
 }
 
+function insightAsk(what: string, facts: unknown): string {
+  return `${what}, for a principal or office head. Use only these figures (amounts in paise unless a name says rupees; divide by 100 for rupees). Do not invent numbers or mention individuals.\n\"\"\"\n${JSON.stringify(facts)}\n\"\"\"`;
+}
+
 function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
   const i = input as Record<string, unknown>;
   const ask = (() => {
@@ -294,6 +321,12 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}.`;
       case 'summarize':
         return `Summarise this classroom lesson transcript for students who were absent:\n"""\n${i.transcript}\n"""`;
+      case 'financeInsight':
+        return insightAsk('Explain fee collection, overdue dues and budget variance for the accounts office', i.facts);
+      case 'admissionsInsight':
+        return insightAsk('Summarise the admissions funnel and how each campaign converts', i.facts);
+      case 'hrInsight':
+        return insightAsk('Summarise leave, attendance and payroll for the HR office', i.facts);
       case 'readBoard':
         return 'Read the handwriting on this classroom whiteboard exactly as written. Do not solve or correct anything.';
     }
@@ -435,6 +468,20 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           activities: [],
           recap: 'Preview only.',
         };
+      case 'financeInsight':
+      case 'admissionsInsight':
+      case 'hrInsight': {
+        const figures = Object.entries(i.facts as Record<string, unknown>)
+          .filter(([, v]) => typeof v === 'number')
+          .slice(0, 4)
+          .map(([k, v]) => `${k}: ${v}`);
+        return {
+          headline: 'Preview only. Connect the KINETIX AI server for a written summary of these figures.',
+          highlights: figures.length ? figures : ['No figures yet'],
+          risks: [],
+          suggestions: [],
+        };
+      }
       case 'selectAsk':
         return { title: `Preview: ${i.action}`, answer: 'Preview only. Connect the KINETIX AI server to act on the selection.', items: [] };
       case 'summarize':

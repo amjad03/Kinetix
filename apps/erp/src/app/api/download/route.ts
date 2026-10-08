@@ -50,6 +50,12 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
   }
+  // One scanned page of the examiner's own script: ?kind=eval-page&id=<allocation>&index=<page>
+  if (kind === 'eval-page') {
+    const index = req.nextUrl.searchParams.get('index') ?? '';
+    if (!UUID.test(id) || !/^\d{1,3}$/.test(index)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/evaluation/allocations/${id}/pages/${index}`;
+  }
   // A child's learning story for a term: ?kind=learning-story&id=<student>&termId=<term>
   const termId = req.nextUrl.searchParams.get('termId') ?? '';
   if (kind === 'learning-story') {

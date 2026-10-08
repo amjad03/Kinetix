@@ -166,4 +166,27 @@ describe('OBE: outcomes, CO-PO matrix, attainment and accreditation exports', ()
     await http().get(`${base()}/report.csv?academicYearId=${year()}`).set(as('student')).expect(403);
     expect(await actions()).toEqual(expect.arrayContaining(['obe.outcome.created', 'obe.config.updated', 'obe.coset.created', 'obe.coset.activated', 'obe.co.created', 'obe.matrix.saved', 'obe.assessment.mapped', 'obe.survey.rated', 'obe.attainment.computed', 'obe.action.created', 'obe.evidence.added', 'obe.report.exported']));
   });
+
+  it('feeds rating questions tied to a CO (surveys module) into indirect attainment', async () => {
+    const outcomes = (await http().get('/v1/surveys/outcomes').set(as('teacher')).expect(200)).body as { id: string; code: string }[];
+    expect(outcomes.map((o) => o.code)).toEqual(expect.arrayContaining(['CO1', 'CO2']));
+    await http().get('/v1/surveys/outcomes').set(as('student')).expect(403);
+
+    const sv = (await http().post('/v1/surveys').set(as('teacher')).send({ title: 'Course feedback', audience: 'section', sectionId: t.section.id, anonymous: true, questions: [{ kind: 'rating', prompt: 'The labs built my design skills', coId: co2 }, { kind: 'text', prompt: 'Anything else?' }] }).expect(201)).body;
+    await http().post(`/v1/surveys/${sv.id}/publish`).set(as('teacher')).expect(200);
+    const qid = sv.questions.find((q: { kind: string }) => q.kind === 'rating').id as string;
+    // Below the minimum number of answers the survey is left out.
+    const answer = (n: number, rating: number) => owner.query(`insert into survey_answers (tenant_id, survey_id, question_id, rating) select $1, $2, $3, $4 from generate_series(1, $5)`, [t.tenantId, sv.id, qid, rating, n]);
+    await answer(2, 5);
+    await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
+    let a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
+    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ indirect: null, combined: 2 });
+
+    // Five answers averaging 5 of 5 give the top level (3) as indirect attainment: combined = (80*2 + 20*3)/100.
+    await answer(3, 5);
+    await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
+    a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
+    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ direct: 2, indirect: 3, combined: 2.2 });
+    expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO1'))).toMatchObject({ indirect: 2.4 });
+  });
 });

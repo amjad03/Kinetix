@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { BudgetsDesk } from '@/components/finance/BudgetsDesk';
+import { InsightCard } from '@/components/ai/InsightCard';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
@@ -19,6 +20,7 @@ export default async function BudgetsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title={t('nav.budgets')} subtitle={t('fin.bud.subtitle')} />
+      <InsightCard kind="finance" />
       {data.error !== undefined ? <ErrorState message={data.error} /> : <BudgetsDesk report={data.data} years={recentFiscalYears()} />}
     </>
   );

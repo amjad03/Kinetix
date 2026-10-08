@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -60,6 +60,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   exams: ['principal', 'tenant_admin', 'hod'],
   // evaluation.controller.ts: the exam office (ADMIN roles) sets up papers, allocates examiners and pushes marks
   evaluation: ['principal', 'tenant_admin'],
+  // evaluation.controller.ts EvaluationExaminerController (TEACHING_ROLES): the examiner's own scripts; teachers value in the Teacher App
+  evaluationDesk: ['hod', 'principal'],
   // audit.controller.ts AUDIT_ROLES (viewing the log is itself audited)
   audit: ['principal', 'tenant_admin'],
   // connectors.controller.ts: the principal reads, the administrator configures
@@ -215,7 +217,7 @@ export function sectionOf(pathname: string): Section | null {
     case 'exams':
       return 'exams';
     case 'evaluation':
-      return 'evaluation';
+      return pathname.startsWith('/evaluation/desk') ? 'evaluationDesk' : 'evaluation';
     case 'obe':
       return 'obe';
     case 'hr':

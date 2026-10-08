@@ -14,7 +14,7 @@ import { percent, type SurveyResults, type SurveyRow } from '@/lib/work';
 type Dialog = 'new' | { results: SurveyResults } | null;
 
 /** The survey list with a builder, open/close buttons, per-question results and CSV export. */
-export function SurveyDesk({ surveys, sections }: { surveys: SurveyRow[]; sections: { value: string; label: string }[] }) {
+export function SurveyDesk({ surveys, sections, outcomes }: { surveys: SurveyRow[]; sections: { value: string; label: string }[]; outcomes: { value: string; label: string }[] }) {
   const { t, fmt } = useI18n();
   const [dlg, setDlg] = useState<Dialog>(null);
   const [toast, toastNode] = useToast();
@@ -78,6 +78,7 @@ export function SurveyDesk({ surveys, sections }: { surveys: SurveyRow[]; sectio
             { name: 'anonymous', label: t('wk.sv.col.mode'), kind: 'select', init: 'no', options: [{ value: 'no', label: t('wk.sv.named') }, { value: 'yes', label: t('wk.sv.anonymous') }] },
             { name: 'opensAt', label: t('wk.sv.opensAt'), kind: 'datetime' },
             { name: 'closesAt', label: t('wk.sv.closesAt'), kind: 'datetime' },
+            ...(outcomes.length ? [{ name: 'coId', label: t('wk.sv.outcome'), kind: 'select' as const, options: [{ value: '', label: t('wk.sv.outcomeNone') }, ...outcomes] }] : []),
             { name: 'questions', label: t('wk.sv.questions'), kind: 'multiline', required: true },
           ]}
         />

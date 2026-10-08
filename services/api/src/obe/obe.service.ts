@@ -1,11 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
-import { assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, marks, obeConfigs, obeSurveyRatings, obeSurveys, programOutcomes, programs, schemeComponents, sections, subjects } from '../db/schema.js';
+import { assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, marks, obeConfigs, obeSurveyRatings, obeSurveys, programOutcomes, programs, schemeComponents, sections, subjects, surveyAnswers, surveyQuestions, surveys as feedbackSurveys } from '../db/schema.js';
 import { combinedAttainment, DEFAULT_ATTAINMENT_CONFIG, directAttainment, gapFor, indirectAttainment, programOutcomeAttainment, type AttainmentConfig, type EvidenceItem, type SurveyEvidence } from './attainment.js';
+
+/** Feedback-survey ratings run 1 to 5; a survey needs this many answers on a CO before it counts. */
+export const FEEDBACK_SCALE = 5;
+export const FEEDBACK_MIN_RESPONSES = 5;
 
 @Injectable()
 export class ObeService {
+  /**
+   * Indirect evidence from the surveys module: the rating questions tagged with a course outcome,
+   * one entry per survey and CO (mean rating, answer count). Draft surveys are left out.
+   */
+  async feedbackEvidence(tx: Tx, coIds: string[]): Promise<Map<string, SurveyEvidence[]>> {
+    const out = new Map<string, SurveyEvidence[]>();
+    if (!coIds.length) return out;
+    const rows = await tx
+      .select({ coId: surveyQuestions.coId, surveyId: surveyQuestions.surveyId, title: feedbackSurveys.title, mean: sql<number>`avg(${surveyAnswers.rating})::float`, n: sql<number>`count(${surveyAnswers.rating})::int` })
+      .from(surveyQuestions)
+      .innerJoin(feedbackSurveys, eq(feedbackSurveys.id, surveyQuestions.surveyId))
+      .innerJoin(surveyAnswers, eq(surveyAnswers.questionId, surveyQuestions.id))
+      .where(and(inArray(surveyQuestions.coId, coIds), eq(surveyQuestions.kind, 'rating'), sql`${feedbackSurveys.status} <> 'draft'`, sql`${surveyAnswers.rating} is not null`))
+      .groupBy(surveyQuestions.coId, surveyQuestions.surveyId, feedbackSurveys.title);
+    for (const r of rows) {
+      const list = out.get(r.coId!) ?? [];
+      list.push({ surveyId: r.surveyId, title: r.title, meanRating: r.mean, scaleMax: FEEDBACK_SCALE, responses: r.n, minResponses: FEEDBACK_MIN_RESPONSES, weight: 1 });
+      out.set(r.coId!, list);
+    }
+    return out;
+  }
+
   async config(tx: Tx, programId: string): Promise<AttainmentConfig> {
     const [c] = await tx.select().from(obeConfigs).where(eq(obeConfigs.programId, programId));
     return c ? (c.config as AttainmentConfig) : DEFAULT_ATTAINMENT_CONFIG;
@@ -37,6 +63,7 @@ export class ObeService {
     const rows = asmts.length ? await tx.select({ assessmentId: marks.assessmentId, studentId: marks.studentId, v: sql<number | null>`coalesce(${marks.moderatedMarks}, ${marks.marks})::float`, absent: marks.absent }).from(marks).where(inArray(marks.assessmentId, asmts.map((a) => a.id))) : [];
     const surveys = await tx.select().from(obeSurveys).where(and(eq(obeSurveys.programId, programId), eq(obeSurveys.academicYearId, academicYearId)));
     const ratings = surveys.length ? await tx.select().from(obeSurveyRatings).where(inArray(obeSurveyRatings.surveyId, surveys.map((s) => s.id))) : [];
+    const feedback = await this.feedbackEvidence(tx, cos.map((c) => c.id));
     const previous = await this.latestBatch(tx, programId);
     const computedAt = new Date();
     const out: (typeof attainmentSnapshots.$inferInsert)[] = [];
@@ -59,7 +86,7 @@ export class ObeService {
           return [{ sourceId: a.id, label: a.title, kind: a.componentKind ?? (a.kind === 'exam' ? 'external' : 'internal'), scores }];
         });
       const direct = directAttainment(items, config);
-      const indirect = indirectAttainment(surveyEvidence((r) => r.coId === co.id), config);
+      const indirect = indirectAttainment([...surveyEvidence((r) => r.coId === co.id), ...(feedback.get(co.id) ?? [])], config);
       const combined = combinedAttainment(direct.level, indirect.level, config);
       coLevel.set(co.id, combined);
       const g = gapFor(combined, config.targetLevel, config.decimals);

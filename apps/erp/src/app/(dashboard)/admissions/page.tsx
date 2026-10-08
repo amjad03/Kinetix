@@ -2,6 +2,7 @@ import HowToRegOutlined from '@mui/icons-material/HowToRegOutlined';
 import type { Metadata } from 'next';
 import { AdmissionsTabs } from '@/components/admissions/AdmissionsTabs';
 import { EnquiryBoard } from '@/components/admissions/EnquiryBoard';
+import { InsightCard } from '@/components/ai/InsightCard';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/ui';
 import { ErrorState } from '@/components/States';
@@ -32,6 +33,7 @@ export default async function AdmissionsPage({ searchParams }: { searchParams: P
     <>
       <PageHeader title={t('nav.admissions')} subtitle={t('adm.subtitle')} />
       <AdmissionsTabs current="pipeline" />
+      <InsightCard kind="admissions" />
       {error !== undefined ? (
         <ErrorState message={error} />
       ) : (

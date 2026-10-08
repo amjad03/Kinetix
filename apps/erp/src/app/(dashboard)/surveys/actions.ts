@@ -2,7 +2,7 @@
 
 import { getI18n } from '@/i18n/server';
 import { optStr as opt, read, send } from '@/lib/ops-server';
-import { parseQuestions, type SurveyResults } from '@/lib/work';
+import { parseQuestions, resolveOutcomes, type SurveyOutcome, type SurveyResults } from '@/lib/work';
 
 const PAGE = '/surveys';
 type V = Record<string, string>;
@@ -12,6 +12,15 @@ export async function createSurvey(v: V) {
   const parsed = parseQuestions(v.questions ?? '');
   if (!parsed.ok) return { ok: false as const, error: t('wk.sv.err.line', { line: parsed.line }) };
   if (v.audience === 'section' && !opt(v.sectionId)) return { ok: false as const, error: t('wk.sv.err.section') };
+  // Rating questions may measure a course outcome (OBE indirect attainment): tagged on the line or picked for the survey.
+  let questions: unknown[] = parsed.questions;
+  if (parsed.questions.some((q) => q.kind === 'rating' && (q.coTag || opt(v.coId)))) {
+    const outcomes = await read<SurveyOutcome[]>('/v1/surveys/outcomes');
+    if (!outcomes.ok) return { ok: false as const, error: outcomes.error };
+    const resolved = resolveOutcomes(parsed.questions, outcomes.data, opt(v.coId));
+    if (!resolved.ok) return { ok: false as const, error: t('wk.sv.err.outcome', { tag: resolved.tag }) };
+    questions = resolved.questions;
+  }
   return send(
     '/v1/surveys',
     {
@@ -22,7 +31,7 @@ export async function createSurvey(v: V) {
       anonymous: v.anonymous === 'yes',
       opensAt: opt(v.opensAt),
       closesAt: opt(v.closesAt),
-      questions: parsed.questions,
+      questions,
     },
     PAGE,
   );

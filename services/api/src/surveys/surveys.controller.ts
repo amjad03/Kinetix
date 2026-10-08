@@ -8,7 +8,7 @@ import { auditUser } from '../common/audit.js';
 import { toCsv } from '../common/pdf.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { courseOutcomes, sections, surveyAnswers, surveyQuestions, surveyResponses, surveys, users } from '../db/schema.js';
+import { coSets, courseOutcomes, sections, subjects, surveyAnswers, surveyQuestions, surveyResponses, surveys, users } from '../db/schema.js';
 import { hasRole } from '../placements/placements.access.js';
 import { SurveysService } from './surveys.service.js';
 import { acceptsAnswers, checkAnswers, inAudience, questionProblem, summarize, type QuestionDef } from './survey-rules.js';
@@ -91,6 +91,21 @@ export class SurveysController {
       await auditUser(tx, p, 'survey.created', 'survey', s.id, { audience: b.audience, anonymous: b.anonymous });
       return { ...s, questions: qs.sort((a, c) => a.ord - c.ord) };
     });
+  }
+
+  /** The active course outcomes a rating question can be tied to, for the survey builder's picker. */
+  @Get('outcomes')
+  @Auth('user', SURVEY_ROLES)
+  outcomes(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({ id: courseOutcomes.id, code: courseOutcomes.code, statement: courseOutcomes.statement, subjectCode: subjects.code, subjectName: subjects.name })
+        .from(courseOutcomes)
+        .innerJoin(coSets, eq(coSets.id, courseOutcomes.coSetId))
+        .innerJoin(subjects, eq(subjects.id, coSets.subjectId))
+        .where(eq(coSets.status, 'active'))
+        .orderBy(asc(subjects.code), asc(courseOutcomes.ord)),
+    );
   }
 
   @Get()

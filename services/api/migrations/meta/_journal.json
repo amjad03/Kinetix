@@ -701,6 +701,13 @@
       "when": 1791410897229,
       "tag": "0106_audit_reports_connectors_alumni_giving",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1791410898229,
+      "tag": "0107_ai_domain_insights",
+      "breakpoints": true
     }
   ]
 }

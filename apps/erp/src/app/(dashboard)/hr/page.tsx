@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { HR_TABS, SectionTabs } from '@/components/hr/Common';
 import { StaffDirectory } from '@/components/hr/StaffDirectory';
+import { InsightCard } from '@/components/ai/InsightCard';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, ApiError, load, requireSection } from '@/lib/api';
@@ -24,6 +25,7 @@ export default async function HrPage() {
     <>
       <PageHeader title={t('nav.hr')} subtitle={t('hr.staff.subtitle')} />
       <SectionTabs tabs={HR_TABS} label="nav.hr" />
+      <InsightCard kind="hr" />
       {data.error !== undefined ? <ErrorState message={data.error} /> : <StaffDirectory staff={data.data[0]} designations={data.data[1]} departments={data.data[2].map((x) => ({ id: x.id, name: x.name }))} />}
     </>
   );

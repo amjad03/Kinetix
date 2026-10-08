@@ -55,30 +55,7 @@ export class FinanceController {
   @Get('budgets')
   @Auth('user', FEE_ROLES)
   budgetReport(@CurrentPrincipal() p: UserPrincipal, @Query('fiscalYear') fiscalYear?: string) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const fy = FY.parse(fiscalYear ?? currentFiscalYear());
-      const { from, to } = fiscalRange(fy);
-      const depts = await tx.select().from(departments).orderBy(asc(departments.name));
-      const set = new Map((await tx.select().from(budgets).where(eq(budgets.fiscalYear, fy))).map((b) => [b.departmentId, b]));
-      const po = new Map((await tx.select({ d: invPurchaseOrders.departmentId, t: sql<number>`sum(${invPurchaseOrders.totalPaise})::bigint` }).from(invPurchaseOrders).where(and(ne(invPurchaseOrders.status, 'cancelled'), gte(invPurchaseOrders.createdAt, new Date(`${from}T00:00:00+05:30`)), lte(invPurchaseOrders.createdAt, new Date(`${to}T23:59:59+05:30`)))).groupBy(invPurchaseOrders.departmentId)).map((r) => [r.d, Number(r.t)]));
-      const ex = new Map((await tx.select({ d: costExpenses.departmentId, t: sql<number>`sum(${costExpenses.amountPaise})::bigint` }).from(costExpenses).where(and(gte(costExpenses.spentOn, from), lte(costExpenses.spentOn, to))).groupBy(costExpenses.departmentId)).map((r) => [r.d, Number(r.t)]));
-      const pay = new Map((await tx
-        .select({ d: departmentStaff.departmentId, t: sql<number>`sum(${payslips.employerCostPaise})::bigint` })
-        .from(payslips)
-        .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
-        .innerJoin(departmentStaff, eq(departmentStaff.userId, payslips.userId))
-        .where(and(inArray(payrollRuns.status, ['approved', 'locked']), gte(payrollRuns.month, from.slice(0, 7)), lte(payrollRuns.month, to.slice(0, 7))))
-        .groupBy(departmentStaff.departmentId)).map((r) => [r.d, Number(r.t)]));
-      return {
-        fiscalYear: fy,
-        rows: depts.map((d) => {
-          const budgetPaise = set.get(d.id)?.amountPaise ?? 0;
-          const actuals = { purchaseOrdersPaise: po.get(d.id) ?? 0, payrollPaise: pay.get(d.id) ?? 0, expensesPaise: ex.get(d.id) ?? 0 };
-          const actualPaise = actuals.purchaseOrdersPaise + actuals.payrollPaise + actuals.expensesPaise;
-          return { departmentId: d.id, department: d.name, budgetPaise, ...actuals, actualPaise, ...variance(budgetPaise, actualPaise) };
-        }),
-      };
-    });
+    return this.db.withTenant(p.tenantId, (tx) => budgetReportRows(tx, FY.parse(fiscalYear ?? currentFiscalYear())));
   }
 
   /** Refunds part or all of a paid fee: the invoice's received amount goes down and it is open again if now short. */
@@ -167,4 +144,29 @@ export class FinanceController {
 export function currentFiscalYear(now = new Date()): string {
   const y = now.getUTCMonth() >= 3 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
   return `${y}-${String((y + 1) % 100).padStart(2, '0')}`;
+}
+
+/** Every department with its budget for the year, actuals by source and the variance. */
+export async function budgetReportRows(tx: Tx, fy: string) {
+  const { from, to } = fiscalRange(fy);
+  const depts = await tx.select().from(departments).orderBy(asc(departments.name));
+  const set = new Map((await tx.select().from(budgets).where(eq(budgets.fiscalYear, fy))).map((b) => [b.departmentId, b]));
+  const po = new Map((await tx.select({ d: invPurchaseOrders.departmentId, t: sql<number>`sum(${invPurchaseOrders.totalPaise})::bigint` }).from(invPurchaseOrders).where(and(ne(invPurchaseOrders.status, 'cancelled'), gte(invPurchaseOrders.createdAt, new Date(`${from}T00:00:00+05:30`)), lte(invPurchaseOrders.createdAt, new Date(`${to}T23:59:59+05:30`)))).groupBy(invPurchaseOrders.departmentId)).map((r) => [r.d, Number(r.t)]));
+  const ex = new Map((await tx.select({ d: costExpenses.departmentId, t: sql<number>`sum(${costExpenses.amountPaise})::bigint` }).from(costExpenses).where(and(gte(costExpenses.spentOn, from), lte(costExpenses.spentOn, to))).groupBy(costExpenses.departmentId)).map((r) => [r.d, Number(r.t)]));
+  const pay = new Map((await tx
+    .select({ d: departmentStaff.departmentId, t: sql<number>`sum(${payslips.employerCostPaise})::bigint` })
+    .from(payslips)
+    .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
+    .innerJoin(departmentStaff, eq(departmentStaff.userId, payslips.userId))
+    .where(and(inArray(payrollRuns.status, ['approved', 'locked']), gte(payrollRuns.month, from.slice(0, 7)), lte(payrollRuns.month, to.slice(0, 7))))
+    .groupBy(departmentStaff.departmentId)).map((r) => [r.d, Number(r.t)]));
+  return {
+    fiscalYear: fy,
+    rows: depts.map((d) => {
+      const budgetPaise = set.get(d.id)?.amountPaise ?? 0;
+      const actuals = { purchaseOrdersPaise: po.get(d.id) ?? 0, payrollPaise: pay.get(d.id) ?? 0, expensesPaise: ex.get(d.id) ?? 0 };
+      const actualPaise = actuals.purchaseOrdersPaise + actuals.payrollPaise + actuals.expensesPaise;
+      return { departmentId: d.id, department: d.name, budgetPaise, ...actuals, actualPaise, ...variance(budgetPaise, actualPaise) };
+    }),
+  };
 }

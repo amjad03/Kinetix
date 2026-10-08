@@ -117,35 +117,7 @@ export class FeesController {
   @Get('summary')
   @Auth('user', FEE_ROLES)
   summary(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [tenant] = await tx.select({ timezone: tenants.timezone }).from(tenants);
-      const today = localParts(new Date(), tenant?.timezone ?? 'Asia/Kolkata').date;
-      const rows = await tx
-        .select({
-          sectionId: sections.id,
-          className: sections.displayName,
-          billedPaise: sql<number>`sum(${feeInvoices.amountPaise})::bigint`.mapWith(Number),
-          collectedPaise: sql<number>`sum(${feeInvoices.paidPaise})::bigint`.mapWith(Number),
-          overdue: sql<number>`count(*) filter (where ${feeInvoices.status} = 'due' and ${feeInvoices.dueOn} < ${today})::int`,
-          overduePaise: sql<number>`coalesce(sum(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise}) filter (where ${feeInvoices.status} = 'due' and ${feeInvoices.dueOn} < ${today}), 0)::bigint`.mapWith(Number),
-          open: sql<number>`count(*) filter (where ${feeInvoices.status} = 'due')::int`,
-        })
-        .from(feeInvoices)
-        .innerJoin(sections, eq(sections.id, feeInvoices.sectionId))
-        .where(ne(feeInvoices.status, 'cancelled'))
-        .groupBy(sections.id, sections.displayName)
-        .orderBy(asc(sections.displayName));
-      const total = (k: 'billedPaise' | 'collectedPaise' | 'overdue' | 'overduePaise' | 'open') => rows.reduce((s, r) => s + Number(r[k]), 0);
-      return {
-        billedPaise: total('billedPaise'),
-        collectedPaise: total('collectedPaise'),
-        outstandingPaise: Math.max(0, total('billedPaise') - total('collectedPaise')),
-        overdueInvoices: total('overdue'),
-        overduePaise: total('overduePaise'),
-        openInvoices: total('open'),
-        classes: rows.map((r) => ({ ...r, outstandingPaise: Math.max(0, r.billedPaise - r.collectedPaise) })),
-      };
-    });
+    return this.db.withTenant(p.tenantId, (tx) => feeSummary(tx));
   }
 
   @Post('invoices/:id/cancel')
@@ -345,3 +317,34 @@ export class FeesController {
   }
 }
 
+
+/** Billed, collected and overdue totals per class. */
+export async function feeSummary(tx: Tx) {
+  const [tenant] = await tx.select({ timezone: tenants.timezone }).from(tenants);
+  const today = localParts(new Date(), tenant?.timezone ?? 'Asia/Kolkata').date;
+  const rows = await tx
+    .select({
+      sectionId: sections.id,
+      className: sections.displayName,
+      billedPaise: sql<number>`sum(${feeInvoices.amountPaise})::bigint`.mapWith(Number),
+      collectedPaise: sql<number>`sum(${feeInvoices.paidPaise})::bigint`.mapWith(Number),
+      overdue: sql<number>`count(*) filter (where ${feeInvoices.status} = 'due' and ${feeInvoices.dueOn} < ${today})::int`,
+      overduePaise: sql<number>`coalesce(sum(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise}) filter (where ${feeInvoices.status} = 'due' and ${feeInvoices.dueOn} < ${today}), 0)::bigint`.mapWith(Number),
+      open: sql<number>`count(*) filter (where ${feeInvoices.status} = 'due')::int`,
+    })
+    .from(feeInvoices)
+    .innerJoin(sections, eq(sections.id, feeInvoices.sectionId))
+    .where(ne(feeInvoices.status, 'cancelled'))
+    .groupBy(sections.id, sections.displayName)
+    .orderBy(asc(sections.displayName));
+  const total = (k: 'billedPaise' | 'collectedPaise' | 'overdue' | 'overduePaise' | 'open') => rows.reduce((s, r) => s + Number(r[k]), 0);
+  return {
+    billedPaise: total('billedPaise'),
+    collectedPaise: total('collectedPaise'),
+    outstandingPaise: Math.max(0, total('billedPaise') - total('collectedPaise')),
+    overdueInvoices: total('overdue'),
+    overduePaise: total('overduePaise'),
+    openInvoices: total('open'),
+    classes: rows.map((r) => ({ ...r, outstandingPaise: Math.max(0, r.billedPaise - r.collectedPaise) })),
+  };
+}
