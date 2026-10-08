@@ -117,6 +117,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'placements',
     items: [
       { href: '/placements', label: 'nav.placements', section: 'placements', icon: 'placements' },
+      { href: '/alumni', label: 'nav.alumni', section: 'alumni', icon: 'placements' },
       { href: '/research', label: 'nav.research', section: 'research', icon: 'research' },
       { href: '/grievances', label: 'nav.grievances', section: 'grievances', icon: 'grievances' },
     ],
@@ -178,6 +179,8 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'settings',
     items: [
       { href: '/settings', label: 'nav.settings', section: 'settings', icon: 'settings' },
+      { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
+      { href: '/connectors', label: 'nav.connectors', section: 'connectors', icon: 'import' },
       { href: '/import', label: 'nav.import', section: 'import', icon: 'import' },
       // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.
       { href: '/platform/concept-videos', label: 'nav.conceptVideos', section: 'platform', icon: 'platform' },

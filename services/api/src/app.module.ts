@@ -36,6 +36,7 @@ import { LmsModule } from './lms/lms.module.js';
 import { FinanceModule } from './finance/finance.module.js';
 import { PlacementsModule } from './placements/placements.module.js';
 import { ResearchModule } from './research/research.module.js';
+import { ConnectorsModule } from './connectors/connectors.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
 import { SurveysModule } from './surveys/surveys.module.js';
 import { CourseRegistrationModule } from './course-registration/course-registration.module.js';
@@ -132,6 +133,7 @@ import { SearchModule } from './search/search.controller.js';
     PlacementsModule,
     ResearchModule,
     WelfareModule,
+    ConnectorsModule,
     SurveysModule,
     CourseRegistrationModule,
     TasksModule,

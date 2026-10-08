@@ -2883,6 +2883,14 @@ export const TENANT_TABLES = [
   'workflow_definitions',
   'workflow_requests',
   'workflow_actions',
+  'custom_reports',
+  'connectors',
+  'connector_deliveries',
+  'alumni_campaigns',
+  'alumni_pledges',
+  'alumni_donations',
+  'alumni_volunteer_opportunities',
+  'alumni_volunteer_signups',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -5038,4 +5046,149 @@ export const workflowActions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('workflow_actions_request_idx').on(t.requestId, t.createdAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Saved custom reports, connectors and alumni giving (migration 0106)
+// ---------------------------------------------------------------------------------------------
+
+/** A saved report definition over one whitelisted dataset (see analytics/custom-reports.ts). */
+export const customReports = pgTable(
+  'custom_reports',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    dataset: text('dataset').notNull(),
+    definition: jsonb('definition').$type<Record<string, unknown>>().notNull().default({}),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('custom_reports_tenant_idx').on(t.tenantId, t.createdBy)],
+);
+
+/** One configured connector. The settings (keys, URLs, secrets) are one encrypted blob; `configPublic` holds only what the ERP may show back. */
+export const connectors = pgTable(
+  'connectors',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    type: text('type').notNull(),
+    name: text('name').notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    configEnc: text('config_enc').notNull(),
+    configPublic: jsonb('config_public').$type<Record<string, unknown>>().notNull().default({}),
+    lastTestAt: timestamp('last_test_at', { withTimezone: true }),
+    lastTestStatus: text('last_test_status'),
+    lastTestMessage: text('last_test_message'),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('connectors_name_uq').on(t.tenantId, t.name)],
+);
+
+/** The retry log of outbound webhooks: one row per connector and domain event. */
+export const connectorDeliveries = pgTable(
+  'connector_deliveries',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    connectorId: uuid('connector_id').notNull().references(() => connectors.id, { onDelete: 'cascade' }),
+    eventId: uuid('event_id').notNull(),
+    eventType: text('event_type').notNull(),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}),
+    status: text('status').$type<'pending' | 'delivered' | 'retrying' | 'dead'>().notNull().default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    responseStatus: integer('response_status'),
+    lastError: text('last_error'),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('connector_deliveries_event_uq').on(t.connectorId, t.eventId), index('connector_deliveries_due_idx').on(t.status, t.nextAttemptAt)],
+);
+
+export const alumniCampaigns = pgTable('alumni_campaigns', {
+  id: id(),
+  tenantId: tenantId(),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  goalPaise: bigint('goal_paise', { mode: 'number' }).notNull().default(0),
+  startsOn: date('starts_on'),
+  endsOn: date('ends_on'),
+  status: text('status').$type<'active' | 'closed'>().notNull().default('active'),
+  /** Printed on receipts, e.g. the Section 80G registration of the institution. */
+  receiptNote: text('receipt_note').notNull().default(''),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: createdAt(),
+});
+
+export const alumniPledges = pgTable(
+  'alumni_pledges',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    campaignId: uuid('campaign_id').notNull().references(() => alumniCampaigns.id, { onDelete: 'cascade' }),
+    alumniId: uuid('alumni_id').references(() => alumniProfiles.id, { onDelete: 'set null' }),
+    donorName: text('donor_name').notNull(),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    pledgedOn: date('pledged_on').notNull(),
+    dueOn: date('due_on'),
+    status: text('status').$type<'open' | 'fulfilled' | 'cancelled'>().notNull().default('open'),
+    note: text('note').notNull().default(''),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('alumni_pledges_campaign_idx').on(t.campaignId)],
+);
+
+export const alumniDonations = pgTable(
+  'alumni_donations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    campaignId: uuid('campaign_id').notNull().references(() => alumniCampaigns.id, { onDelete: 'cascade' }),
+    alumniId: uuid('alumni_id').references(() => alumniProfiles.id, { onDelete: 'set null' }),
+    pledgeId: uuid('pledge_id').references(() => alumniPledges.id, { onDelete: 'set null' }),
+    donorName: text('donor_name').notNull(),
+    donorPan: text('donor_pan'),
+    donorAddress: text('donor_address').notNull().default(''),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    mode: text('mode').$type<'cash' | 'cheque' | 'upi' | 'bank_transfer' | 'card' | 'other'>().notNull(),
+    reference: text('reference'),
+    receivedOn: date('received_on').notNull(),
+    /** ALR/<financial year>/<number>, unique per institution. */
+    receiptSerial: text('receipt_serial').notNull(),
+    note: text('note').notNull().default(''),
+    recordedBy: uuid('recorded_by').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('alumni_donations_serial_uq').on(t.tenantId, t.receiptSerial), index('alumni_donations_campaign_idx').on(t.campaignId)],
+);
+
+export const alumniVolunteerOpportunities = pgTable('alumni_volunteer_opportunities', {
+  id: id(),
+  tenantId: tenantId(),
+  title: text('title').notNull(),
+  description: text('description').notNull().default(''),
+  startsOn: date('starts_on'),
+  slots: integer('slots'),
+  status: text('status').$type<'open' | 'closed'>().notNull().default('open'),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: createdAt(),
+});
+
+export const alumniVolunteerSignups = pgTable(
+  'alumni_volunteer_signups',
+  {
+    opportunityId: uuid('opportunity_id').notNull().references(() => alumniVolunteerOpportunities.id, { onDelete: 'cascade' }),
+    alumniId: uuid('alumni_id').notNull().references(() => alumniProfiles.id, { onDelete: 'cascade' }),
+    tenantId: tenantId(),
+    note: text('note').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.opportunityId, t.alumniId] })],
 );
