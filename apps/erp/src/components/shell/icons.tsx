@@ -1,5 +1,6 @@
 import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
 import AppRegistrationOutlined from '@mui/icons-material/AppRegistrationOutlined';
+import AltRouteOutlined from '@mui/icons-material/AltRouteOutlined';
 import AssignmentOutlined from '@mui/icons-material/AssignmentOutlined';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
@@ -94,6 +95,7 @@ export const NAV_ICONS: Record<NavIcon, SvgIconComponent> = {
   import: UploadFileOutlined,
   surveys: PollOutlined,
   tasks: TaskAltOutlined,
+  workflows: AltRouteOutlined,
   work: WorkOutlineOutlined,
   courseRegistration: AppRegistrationOutlined,
   platform: OndemandVideoOutlined,

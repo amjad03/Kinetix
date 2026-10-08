@@ -652,6 +652,13 @@
       "when": 1791410890229,
       "tag": "0099_course_registration",
       "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1791410891229,
+      "tag": "0102_workflows",
+      "breakpoints": true
     }
   ]
 }
