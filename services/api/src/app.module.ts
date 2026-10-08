@@ -37,6 +37,7 @@ import { WelfareModule } from './welfare/welfare.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { HomeworkModule } from './homework/homework.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
+import { CastModule } from './cast/cast.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
@@ -86,6 +87,7 @@ import { SearchModule } from './search/search.controller.js';
     PollsModule,
     BadgesModule,
     RemoteModule,
+    CastModule,
     BoardProfilesModule,
     BroadcastsModule,
     SyncModule,

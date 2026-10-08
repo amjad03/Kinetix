@@ -1,7 +1,7 @@
 // Phase 00 foundation and analytics tables (migrations 0076-0085). Kept apart from schema.ts, which they reference.
 import { sql } from 'drizzle-orm';
 import { bigint, boolean, date, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
-import { students, tenants, users } from './schema.js';
+import { boardSessions, devices, students, tenants, users } from './schema.js';
 
 const id = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
 const tenantId = () => uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' });
@@ -192,4 +192,43 @@ export const researchOutputs = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('research_outputs_tenant_idx').on(t.tenantId, t.publishedOn)],
+);
+
+/** A remote action IT sent to a board (lock, restart…). The audit trail of the device console. */
+export const deviceActions = pgTable(
+  'device_actions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    deviceId: uuid('device_id').notNull().references(() => devices.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(),
+    params: jsonb('params').$type<Record<string, unknown>>().notNull().default({}),
+    status: text('status').notNull().default('queued'), // queued | sent | done | failed
+    requestedBy: uuid('requested_by').references(() => users.id, { onDelete: 'set null' }),
+    error: text('error'),
+    createdAt: createdAt(),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    doneAt: timestamp('done_at', { withTimezone: true }),
+  },
+  (t) => [index('device_actions_device_idx').on(t.deviceId, t.createdAt)],
+);
+
+/** A phone or laptop casting its screen to a board during a class. */
+export const castSessions = pgTable(
+  'cast_sessions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    deviceId: uuid('device_id').notNull().references(() => devices.id, { onDelete: 'cascade' }),
+    boardSessionId: uuid('board_session_id').notNull().references(() => boardSessions.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    senderName: text('sender_name').notNull(),
+    senderRole: text('sender_role').notNull(), // teacher | student
+    state: text('state').notNull().default('pending'), // pending | active | ended
+    endReason: text('end_reason'),
+    createdAt: createdAt(),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+  },
+  (t) => [index('cast_sessions_device_idx').on(t.deviceId, t.state)],
 );

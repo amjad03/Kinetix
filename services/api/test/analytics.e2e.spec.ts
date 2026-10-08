@@ -143,7 +143,13 @@ describe('analytics and reporting', () => {
       expect(cov.covered).toBe(1);
       expect(cov.topics).toBeGreaterThan(1);
       expect(cov.percent).toBeGreaterThan(0);
-      expect(c.bySection.find((r: { label: string }) => r.label === 'BCom Sem 3 A').sessions).toBe(1);
+      const sec = c.bySection.find((r: { label: string }) => r.label === 'BCom Sem 3 A');
+      expect(sec.sessions).toBe(1);
+      // Engagement per class: what the class did with the board.
+      expect(sec).toMatchObject({ polls: 1, answers: 1, whiteboards: expect.any(Number), recordings: expect.any(Number) });
+      expect(sec.activity).toBeGreaterThanOrEqual(2);
+      expect(sec.perSession).toBe(sec.activity);
+      expect(c.tools.find((x: { tool: string }) => x.tool === 'screen_shares').uses).toBe(0);
     });
   });
 

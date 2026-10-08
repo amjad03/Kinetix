@@ -46,6 +46,28 @@ export const RealtimeEvents = {
   BadgeAwarded: 'badge.awarded',
   /** Server → guardians, staff and the driver: the school bus moved ({@link TransportPositionEvent}). */
   TransportPosition: 'transport.position',
+  /** Phone or laptop → server: cast the screen to a board ({@link CastRequestAck}). */
+  CastRequest: 'cast.request',
+  /** Server → board: someone wants to cast; the teacher approves or declines ({@link CastPendingEvent}). */
+  CastPending: 'cast.pending',
+  /** Board → server: the teacher's decision ({@link CastDecision}). */
+  CastDecide: 'cast.decide',
+  /** Server → sender: approved, with ICE servers; the sender now sends its WebRTC offer ({@link CastApprovedEvent}). */
+  CastApproved: 'cast.approved',
+  /** Server → board: a cast was approved; ICE servers for receiving ({@link CastIceEvent}). */
+  CastIce: 'cast.ice',
+  /** WebRTC signalling both ways, relayed by the server ({@link CastSignal}). */
+  CastSignal: 'cast.signal',
+  /** Sender, board or the class teacher → server: end a cast. */
+  CastStop: 'cast.stop',
+  /** Server → board and sender: the cast is over ({@link CastEndedEvent}). */
+  CastEnded: 'cast.ended',
+  /** Server → board: an IT action to carry out ({@link DeviceActionEvent}). */
+  DeviceAction: 'device.action',
+  /** Board → server: the action was carried out or failed ({@link DeviceActionAck}). */
+  DeviceActionAck: 'device.action.ack',
+  /** Board → server: asks for actions sent while it was offline (ack: {@link DeviceActionEvent}[]). */
+  DeviceActionsPull: 'device.actions.pull',
 } as const;
 
 // --- Class questions (polls) and answer cards ------------------------------------------------
@@ -543,3 +565,5 @@ export interface TransportPositionEvent {
 }
 export * from './admissions.js';
 export * from './hr.js';
+export * from './cast.js';
+export * from './fleet.js';

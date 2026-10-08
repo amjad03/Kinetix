@@ -210,7 +210,7 @@ export async function classroomAnalytics(tx: Tx, scope: Scope, range: Range, tim
         where ${inRange('bs.started_at')} ${sc} group by 1 order by 1`,
   );
   const count = async (q: SQL) => (await rows<{ n: number }>(tx, q))[0].n;
-  const [polls, mcq, participation, boards, shared, recs, transcribed, summarised] = await sequence([
+  const [polls, mcq, participation, boards, shared, recs, transcribed, summarised, casts] = await sequence([
     () => count(sql`select count(*)::int n from polls p join sections sec on sec.id = p.section_id join programs pr on pr.id = sec.program_id where ${inRange('p.opened_at')} ${sc}`),
     () => count(sql`select count(*)::int n from polls p join sections sec on sec.id = p.section_id join programs pr on pr.id = sec.program_id where p.kind = 'mcq' and ${inRange('p.opened_at')} ${sc}`),
     () => count(sql`select count(*)::int n from participation_events e join board_sessions bs on bs.id = e.board_session_id join sections sec on sec.id = bs.section_id join programs pr on pr.id = sec.program_id where ${inRange('e.occurred_at')} ${sc}`),
@@ -219,17 +219,29 @@ export async function classroomAnalytics(tx: Tx, scope: Scope, range: Range, tim
     () => count(sql`select count(*)::int n from recordings r left join sections sec on sec.id = r.section_id left join programs pr on pr.id = sec.program_id where r.finished_at is not null and ${inRange('r.started_at')} ${sc}`),
     () => count(sql`select count(*)::int n from recordings r left join sections sec on sec.id = r.section_id left join programs pr on pr.id = sec.program_id where r.transcript_state = 'done' and ${inRange('r.started_at')} ${sc}`),
     () => count(sql`select count(*)::int n from recordings r left join sections sec on sec.id = r.section_id left join programs pr on pr.id = sec.program_id where r.summary_state = 'done' and ${inRange('r.started_at')} ${sc}`),
+    () => count(sql`select count(*)::int n from cast_sessions c join board_sessions bs on bs.id = c.board_session_id join sections sec on sec.id = bs.section_id join programs pr on pr.id = sec.program_id where c.started_at is not null and ${inRange('c.started_at')} ${sc}`),
   ]);
   const aiTasks = await rows<{ task: string; uses: number }>(tx, sql`select task::text task, count(*)::int uses from ai_usage u where ${inRange('u.created_at')} group by 1 order by 2 desc`);
   const bySection = await rows(
     tx,
     sql`select sec.id as id, sec.display_name as label, pr.name as parent, count(bs.id)::int sessions,
           coalesce(round(sum(extract(epoch from (coalesce(bs.ended_at, least(bs.expires_at, bs.started_at + interval '2 hours')) - bs.started_at))) / 3600, 1), 0)::float8 hours,
-          count(distinct bs.teacher_id)::int teachers
+          count(distinct bs.teacher_id)::int teachers,
+          (select count(*)::int from polls p where p.section_id = sec.id and ${inRange('p.opened_at')}) polls,
+          (select count(*)::int from participation_events e join board_sessions b2 on b2.id = e.board_session_id where b2.section_id = sec.id and ${inRange('e.occurred_at')}) answers,
+          (select count(*)::int from whiteboards w where w.section_id = sec.id and ${inRange('w.created_at')}) whiteboards,
+          (select count(*)::int from recordings r where r.section_id = sec.id and r.finished_at is not null and ${inRange('r.started_at')}) recordings
         from sections sec join programs pr on pr.id = sec.program_id
         left join board_sessions bs on bs.section_id = sec.id and ${inRange('bs.started_at')}
         where true ${sc} group by sec.id, sec.display_name, pr.name order by pr.name, sec.display_name`,
   );
+  // Engagement: what the class did with the board per session (polls asked + answers + boards saved + lessons recorded).
+  for (const r of bySection) {
+    const sessions = Number(r.sessions) || 0;
+    const activity = ['polls', 'answers', 'whiteboards', 'recordings'].reduce((n, k) => n + (Number(r[k]) || 0), 0);
+    r.activity = activity;
+    r.perSession = sessions ? Math.round((activity / sessions) * 10) / 10 : null;
+  }
   const coverage = await drilldown(tx, 'coverage', 'section', scope, range, timezone, today);
   const tools = [
     { tool: 'polls', label: 'Class questions (polls)', uses: polls },
@@ -240,6 +252,7 @@ export async function classroomAnalytics(tx: Tx, scope: Scope, range: Range, tim
     { tool: 'recordings', label: 'Lessons recorded', uses: recs },
     { tool: 'transcripts', label: 'Lessons transcribed', uses: transcribed },
     { tool: 'summaries', label: 'Lesson summaries', uses: summarised },
+    { tool: 'screen_shares', label: 'Screens cast to the board', uses: casts },
   ];
   return { range, sessions: { total: s.total, hours: Math.round(s.hours * 10) / 10, teachers: s.teachers, boards: s.boards, liveForClass: s.live }, byDay, tools, aiTasks, bySection, coverage };
 }

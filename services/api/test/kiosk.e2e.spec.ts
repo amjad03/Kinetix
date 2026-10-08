@@ -37,7 +37,7 @@ describe('board kiosk setting', () => {
   it('is on by default with no PIN, for the ERP and for boards', async () => {
     const res = await http().get('/v1/admin/settings').set('authorization', `Bearer ${principal}`).expect(200);
     expect(res.body.boardKiosk).toEqual({ enabled: true, pinSet: false, pinSetAt: null });
-    expect(await config()).toEqual({ kiosk: { enabled: true, algo: null, iterations: null, pinSalt: null, pinHash: null } });
+    expect(await config()).toEqual({ kiosk: { enabled: true, algo: null, iterations: null, pinSalt: null, pinHash: null }, locked: false });
   });
 
   it('stores only a salted hash of the PIN, returns neither, and audits without it', async () => {

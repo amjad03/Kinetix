@@ -315,6 +315,13 @@ export const devices = pgTable('devices', {
   /** Incremented to revoke every device token issued so far. */
   tokenVersion: integer('token_version').notNull().default(0),
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+  /** The board's own periodic report (os, storage, battery, kiosk…; shared DeviceHealth). */
+  health: jsonb('health').$type<Record<string, unknown>>(),
+  healthAt: timestamp('health_at', { withTimezone: true }),
+  /** IT locked the board: it shows a lock screen until unlocked. */
+  locked: boolean('locked').notNull().default(false),
+  /** IT turned kiosk mode on or off for this board only; null follows the institution setting. */
+  kioskOverride: boolean('kiosk_override'),
   createdAt: createdAt(),
 });
 
@@ -2514,6 +2521,8 @@ export const TENANT_TABLES = [
   'report_runs',
   'placement_records',
   'research_outputs',
+  'device_actions',
+  'cast_sessions',
   'designations',
   'staff_profiles',
   'staff_attendance',

@@ -194,7 +194,10 @@ export class DevicesController {
   config(@CurrentPrincipal() p: DevicePrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [t] = await tx.select({ settings: tenants.settings }).from(tenants).where(eq(tenants.id, p.tenantId));
-      return { kiosk: boardKioskConfig(t?.settings ?? {}) };
+      const [d] = await tx.select({ locked: devices.locked, kioskOverride: devices.kioskOverride }).from(devices).where(eq(devices.id, p.deviceId));
+      const kiosk = boardKioskConfig(t?.settings ?? {});
+      // IT can lock one board or switch its kiosk mode (device console); both survive a restart.
+      return { kiosk: { ...kiosk, enabled: d?.kioskOverride ?? kiosk.enabled }, locked: d?.locked ?? false };
     });
   }
 
