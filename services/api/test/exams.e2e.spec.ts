@@ -126,6 +126,14 @@ describe('assessment schemes, exams and results', () => {
     expect((pdf.body as Buffer).toString('latin1')).toContain('Corporate Accounting');
     await http().get(`/v1/exam-sessions/${sessionId}/hall-tickets/${t.students[A].id}/pdf`).set(as('parentB')).expect(404); // not their child
     await http().get(`/v1/exam-sessions/${sessionId}/hall-tickets/${t.students[C].id}/pdf`).set(as('student')).expect(403); // withheld
+    // The student's own view: the timetable, the hall ticket and whether it is withheld.
+    const view = (await http().get(`/v1/results/students/${t.students[A].id}/exams`).set(as('parentA')).expect(200)).body.sessions;
+    expect(view).toHaveLength(1);
+    expect(view[0]).toMatchObject({ id: sessionId, hallTicket: { blocked: false }, revaluations: [] });
+    expect(view[0].papers.length).toBeGreaterThan(0);
+    expect(view[0].papers[0]).toMatchObject({ subject: 'Corporate Accounting' });
+    expect((await http().get(`/v1/results/students/${t.students[C].id}/exams`).set(as('student')).expect(200)).body.sessions[0].hallTicket).toMatchObject({ blocked: true, blockedReason: 'Fee dues' });
+    await http().get(`/v1/results/students/${t.students[A].id}/exams`).set(as('parentB')).expect(404);
   });
 
   it('refuses to process until marks are verified, then grades with SGPA/CGPA to the known values', async () => {

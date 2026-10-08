@@ -554,6 +554,13 @@
       "when": 1791410464229,
       "tag": "0085_analytics_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1791410465229,
+      "tag": "0086_student_leave",
+      "breakpoints": true
     }
   ]
 }

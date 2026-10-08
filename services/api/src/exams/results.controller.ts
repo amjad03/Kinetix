@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
@@ -8,7 +8,7 @@ import { audit } from '../common/audit.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { examPapers, examResultLines, examResults, examSessions, marks, programs, revaluationRequests, sections, students, subjects, tenants } from '../db/schema.js';
+import { examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, marks, programs, revaluationRequests, rooms, sections, students, subjects, tenants } from '../db/schema.js';
 import { marksCardPdf, transcriptPdf, type ResultData, type StudentHeader } from './documents.js';
 import { ExamsService } from './exams.service.js';
 import { ADMIN } from './schemes.controller.js';
@@ -47,6 +47,55 @@ export class ResultsController {
       await assertCanSeeStudent(tx, p, studentId, STAFF);
       const terms = await this.published(tx, studentId);
       return { cgpa: terms.length ? terms[terms.length - 1].cgpa : null, terms };
+    });
+  }
+
+  /**
+   * What a student sits and when (student, family, staff): every scheduled session for their class
+   * with the timetable, seat, hall ticket status and any revaluation requests they have made.
+   */
+  @Get('results/students/:studentId/exams')
+  @Auth('user')
+  examsForStudent(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await assertCanSeeStudent(tx, p, studentId, STAFF);
+      const [st] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, studentId));
+      if (!st) throw new NotFoundException('Student not found');
+      const papers = await tx
+        .select({ sessionId: examPapers.sessionId, subjectId: examPapers.subjectId, subject: subjects.name, examDate: examPapers.examDate, startsAt: examPapers.startsAt, endsAt: examPapers.endsAt, maxMarks: examPapers.maxMarks, room: rooms.name, seat: examSeats.seatNo })
+        .from(examPapers)
+        .innerJoin(examSessions, eq(examSessions.id, examPapers.sessionId))
+        .innerJoin(subjects, eq(subjects.id, examPapers.subjectId))
+        .leftJoin(examSeats, and(eq(examSeats.paperId, examPapers.id), eq(examSeats.studentId, studentId)))
+        .leftJoin(rooms, eq(rooms.id, examSeats.roomId))
+        .where(and(eq(examPapers.sectionId, st.sectionId), ne(examSessions.status, 'draft')))
+        .orderBy(asc(examPapers.examDate), asc(examPapers.startsAt));
+      const sessionIds = [...new Set(papers.map((x) => x.sessionId))];
+      if (sessionIds.length === 0) return { sessions: [] };
+      const sessions = await tx.select().from(examSessions).where(inArray(examSessions.id, sessionIds)).orderBy(desc(examSessions.startsOn));
+      const tickets = await tx.select().from(hallTickets).where(and(eq(hallTickets.studentId, studentId), inArray(hallTickets.sessionId, sessionIds)));
+      const revals = await tx
+        .select({ id: revaluationRequests.id, sessionId: revaluationRequests.sessionId, subjectId: revaluationRequests.subjectId, subject: subjects.name, status: revaluationRequests.status, previousPercent: revaluationRequests.previousPercent, newPercent: revaluationRequests.newPercent, createdAt: revaluationRequests.createdAt })
+        .from(revaluationRequests)
+        .innerJoin(subjects, eq(subjects.id, revaluationRequests.subjectId))
+        .where(and(eq(revaluationRequests.studentId, studentId), inArray(revaluationRequests.sessionId, sessionIds)))
+        .orderBy(desc(revaluationRequests.createdAt));
+      return {
+        sessions: sessions.map((s) => {
+          const t = tickets.find((x) => x.sessionId === s.id);
+          return {
+            id: s.id,
+            name: s.name,
+            kind: s.kind,
+            startsOn: s.startsOn,
+            endsOn: s.endsOn,
+            status: s.status,
+            hallTicket: t ? { ticketNo: t.ticketNo, blocked: t.blocked, blockedReason: t.blockedReason } : null,
+            papers: papers.filter((x) => x.sessionId === s.id).map(({ sessionId: _s, ...x }) => x),
+            revaluations: revals.filter((x) => x.sessionId === s.id).map(({ sessionId: _s, ...x }) => x),
+          };
+        }),
+      };
     });
   }
 

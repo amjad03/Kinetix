@@ -206,6 +206,26 @@ describe('transport, hostel, canteen, inventory and assets', () => {
       await http().get(`/v1/hostel/students/${t.students[0].id}`).set(as('parent2')).expect(404);
     });
 
+    it('gate pass request: a guardian asks, the warden approves or rejects, and only a requested pass can be decided', async () => {
+      const exp = new Date(Date.now() + 6 * 3600_000).toISOString();
+      const body = { studentId: t.students[0].id, reason: 'Cousin wedding', destination: 'Mysuru', expectedBackAt: exp };
+      await http().post('/v1/hostel/gate-passes/requests').set(as('parent2')).send(body).expect(404); // not their child
+      await http().post('/v1/hostel/gate-passes/requests').set(as('hostel_warden')).send(body).expect(403); // staff issue passes instead
+      await http().post('/v1/hostel/gate-passes/requests').set(as('parent')).send({ ...body, studentId: t.students[1].id }).expect(404);
+      await http().post('/v1/hostel/gate-passes/requests').set(as('parent')).send({ ...body, expectedBackAt: new Date(Date.now() - 3600_000).toISOString() }).expect(400);
+      const asked = (await http().post('/v1/hostel/gate-passes/requests').set(as('parent')).send(body).expect(201)).body;
+      expect(asked.status).toBe('requested');
+      await http().post(`/v1/hostel/gate-passes/${asked.id}/out`).set(as('hostel_warden')).expect(409); // not approved yet
+      await http().post(`/v1/hostel/gate-passes/${asked.id}/approve`).set(as('parent')).expect(403);
+      expect((await http().post(`/v1/hostel/gate-passes/${asked.id}/approve`).set(as('hostel_warden')).expect(200)).body.status).toBe('issued');
+      await http().post(`/v1/hostel/gate-passes/${asked.id}/reject`).set(as('hostel_warden')).expect(409);
+      const second = (await http().post('/v1/hostel/gate-passes/requests').set(as('parent')).send(body).expect(201)).body;
+      expect((await http().post(`/v1/hostel/gate-passes/${second.id}/reject`).set(as('hostel_warden')).expect(200)).body.status).toBe('rejected');
+      const view = (await http().get(`/v1/hostel/students/${t.students[0].id}`).set(as('parent')).expect(200)).body;
+      expect(view.passes.map((x: { status: string }) => x.status)).toEqual(expect.arrayContaining(['issued', 'rejected']));
+      await http().post(`/v1/hostel/gate-passes/${asked.id}/cancel`).set(as('hostel_warden')).expect(200); // leave the pass list as it was
+    });
+
     it('logs visitors, handles complaints and vacates', async () => {
       const v = (await http().post('/v1/hostel/visitors').set(as('hostel_warden')).send({ studentId: t.students[0].id, visitorName: 'Uncle', relation: 'uncle' }).expect(201)).body;
       expect((await http().get('/v1/hostel/visitors?inside=true').set(as('hostel_warden')).expect(200)).body).toHaveLength(1);

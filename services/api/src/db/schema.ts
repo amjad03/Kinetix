@@ -2514,6 +2514,7 @@ export const TENANT_TABLES = [
   'report_runs',
   'placement_records',
   'research_outputs',
+  'student_leave_requests',
   'designations',
   'staff_profiles',
   'staff_attendance',
@@ -2750,6 +2751,26 @@ export const hostelGatePasses = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('hostel_gate_passes_student_idx').on(t.studentId, t.createdAt)],
+);
+
+/** A leave application for a school or college day (or days), made by a student or their guardian and decided by the class teacher. */
+export const studentLeaveRequests = pgTable(
+  'student_leave_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    fromDate: date('from_date').notNull(),
+    toDate: date('to_date').notNull(),
+    reason: text('reason').notNull(),
+    status: text('status').notNull().default('pending'), // pending | approved | rejected | cancelled
+    requestedBy: uuid('requested_by').notNull().references(() => users.id),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decisionNote: text('decision_note'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('student_leave_student_idx').on(t.studentId, t.createdAt), index('student_leave_status_idx').on(t.tenantId, t.status)],
 );
 
 export const hostelVisitors = pgTable(

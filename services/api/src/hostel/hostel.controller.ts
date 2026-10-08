@@ -21,6 +21,7 @@ const RoomBody = z.object({ number: z.string().trim().min(1).max(20), floor: z.n
 const AllotBody = z.object({ studentId: z.uuid(), bedId: z.uuid(), startsOn: Day.optional() });
 const FeeBody = z.object({ title: z.string().trim().min(1).max(120), dueOn: Day });
 const PassBody = z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200), destination: z.string().trim().max(200).default(''), expectedBackAt: z.iso.datetime() });
+const PassRequestBody = z.object({ studentId: z.uuid(), reason: z.string().trim().min(1).max(200), destination: z.string().trim().max(200).default(''), expectedBackAt: z.iso.datetime() });
 const VisitorBody = z.object({ studentId: z.uuid(), visitorName: z.string().trim().min(1).max(120), relation: z.string().trim().max(60).default(''), phone: z.string().trim().max(20).default(''), idProof: z.string().trim().max(60).default('') });
 const PlanBody = z.object({ name: z.string().trim().min(1).max(60), monthlyFeePaise: Paise, meals: z.array(z.enum(MEALS)).min(1) });
 const MenuBody = z.object({ dayOfWeek: z.number().int().min(0).max(6), meal: z.enum(MEALS), items: z.string().trim().min(1).max(300) });
@@ -210,6 +211,34 @@ export class HostelController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.pass_cancelled', subjectType: 'hostel_gate_pass', subjectId: id });
       return pass;
     });
+  }
+
+  /** A resident (or their guardian) asks for a gate pass; the warden then approves or rejects it. */
+  @Post('gate-passes/requests')
+  @Auth('user', ['student', 'guardian'])
+  requestPass(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(PassRequestBody)) b: z.infer<typeof PassRequestBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await assertCanSeeStudent(tx, p, b.studentId, []);
+      await this.assertResident(tx, b.studentId);
+      if (new Date(b.expectedBackAt) <= this.clock.now()) throw new BadRequestException('The expected return time has passed');
+      const [pass] = await tx.insert(hostelGatePasses).values({ tenantId: p.tenantId, ...b, expectedBackAt: new Date(b.expectedBackAt), status: 'requested', issuedBy: p.userId }).returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.pass_requested', subjectType: 'hostel_gate_pass', subjectId: pass.id, data: { studentId: b.studentId } });
+      return pass;
+    });
+  }
+
+  @Post('gate-passes/:id/approve')
+  @HttpCode(200)
+  @Auth('user', HOSTEL_ROLES)
+  approvePass(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.decidePass(p, id, 'issued');
+  }
+
+  @Post('gate-passes/:id/reject')
+  @HttpCode(200)
+  @Auth('user', HOSTEL_ROLES)
+  rejectPass(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.decidePass(p, id, 'rejected');
   }
 
   /** Passes, newest first; `?status=out` for students outside now. Out and overdue are flagged. */
@@ -425,6 +454,15 @@ export class HostelController {
       await this.notifications.hostelGate(tx, { passId: id, studentId: pass.studentId, studentName: st?.fullName ?? 'Your child', event: to });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `hostel.gate_${to}`, subjectType: 'hostel_gate_pass', subjectId: id });
       return done;
+    });
+  }
+
+  private decidePass(p: UserPrincipal, id: string, to: 'issued' | 'rejected') {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [pass] = await tx.update(hostelGatePasses).set({ status: to, issuedBy: p.userId }).where(and(eq(hostelGatePasses.id, id), eq(hostelGatePasses.status, 'requested'))).returning();
+      if (!pass) throw new ConflictException('Only a requested pass can be approved or rejected');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `hostel.pass_${to === 'issued' ? 'approved' : 'rejected'}`, subjectType: 'hostel_gate_pass', subjectId: id });
+      return pass;
     });
   }
 
