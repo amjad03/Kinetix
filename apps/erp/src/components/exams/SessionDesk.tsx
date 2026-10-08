@@ -5,17 +5,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { addPaper, completeRevaluation, decideRevaluation, generateSeating, issueHallTickets, removePaper, sessionStep } from '@/app/(dashboard)/exams/actions';
-import { TableFrame } from '@/components/DataTable';
-import { StatGrid, StatTile, StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { exportHref, nextStep, type ExamSessionDetail, type ResultRow, type Revaluation } from '@/lib/exams';
 import type { Structure } from '@/lib/types';
@@ -81,39 +74,26 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
       {s.papers.length === 0 ? (
         <Typography color="text.secondary">{t('exm.noPapers')}</Typography>
       ) : (
-        <TableFrame testId="exam-papers">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('exm.f.date')}</TableCell>
-                <TableCell>{t('exm.f.time')}</TableCell>
-                <TableCell>{t('exm.f.subject')}</TableCell>
-                <TableCell>{t('exm.f.class')}</TableCell>
-                <TableCell align="right">{t('exm.f.max')}</TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {s.papers.map((x) => (
-                <TableRow key={x.id}>
-                  <TableCell>{fmt.date(x.examDate)}</TableCell>
-                  <TableCell>{x.startsAt.slice(0, 5)}–{x.endsAt.slice(0, 5)}</TableCell>
-                  <TableCell>{x.subject}</TableCell>
-                  <TableCell>{x.section}</TableCell>
-                  <TableCell align="right">{x.maxMarks}</TableCell>
-                  <TableCell align="right">
-                    {x.assessmentId && <Button size="small" href={`/results/${x.assessmentId}`}>{t('exm.marks')}</Button>}
-                    {canManage && s.status === 'draft' && (
-                      <Button size="small" color="error" disabled={pending} onClick={() => run(() => removePaper(s.id, x.id), t('exm.paperRemoved'))}>
-                        {t('exm.remove')}
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableFrame>
+        <DataTable
+          testId="exam-papers"
+          label={t('exm.timetable')}
+          rows={s.papers}
+          rowId={(x) => String(x.id)}
+          exportName="exam-papers"
+          columns={[
+            { id: 'c0', header: t('exm.f.date'), rowHeader: true, sort: (x) => fmt.date(x.examDate), cell: (x) => fmt.date(x.examDate) },
+            { id: 'c1', header: t('exm.f.time'), sort: (x) => `${x.startsAt.slice(0, 5)}–${x.endsAt.slice(0, 5)}`, cell: (x) => `${x.startsAt.slice(0, 5)}–${x.endsAt.slice(0, 5)}` },
+            { id: 'c2', header: t('exm.f.subject'), sort: (x) => x.subject, cell: (x) => x.subject },
+            { id: 'c3', header: t('exm.f.class'), sort: (x) => x.section, cell: (x) => x.section },
+            { id: 'c4', header: t('exm.f.max'), align: 'right', sort: (x) => x.maxMarks, cell: (x) => x.maxMarks },
+            { id: 'c5', header: '', align: 'right', csv: false, cell: (x) => (<>{x.assessmentId && <Button size="small" href={`/results/${x.assessmentId}`}>{t('exm.marks')}</Button>}
+                              {canManage && s.status === 'draft' && (
+                                <Button size="small" color="error" disabled={pending} onClick={() => run(() => removePaper(s.id, x.id), t('exm.paperRemoved'))}>
+                                  {t('exm.remove')}
+                                </Button>
+                              )}</>) },
+          ]}
+        />
       )}
 
       {canManage && open && (
@@ -128,24 +108,36 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
             }}
             style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
           >
-            <TextField select size="small" label={t('exm.f.subject')} value={p.subjectId} onChange={(e) => setP({ ...p, subjectId: e.target.value })}>
-              {subjects.map((x) => (
-                <MenuItem key={x.id} value={x.id}>
-                  {x.code} {x.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField select size="small" label={t('exm.f.class')} value={p.sectionId} onChange={(e) => setP({ ...p, sectionId: e.target.value })}>
-              {sections.map((x) => (
-                <MenuItem key={x.id} value={x.id}>
-                  {x.displayName}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField size="small" type="date" label={t('exm.f.date')} value={p.examDate} onChange={(e) => setP({ ...p, examDate: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField size="small" type="time" label={t('exm.f.from')} value={p.startsAt} onChange={(e) => setP({ ...p, startsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField size="small" type="time" label={t('exm.f.to')} value={p.endsAt} onChange={(e) => setP({ ...p, endsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField size="small" type="number" label={t('exm.f.max')} value={p.maxMarks} onChange={(e) => setP({ ...p, maxMarks: e.target.value })} />
+            <FormField label={t('exm.f.subject')}>
+              <TextInput select value={p.subjectId} onChange={(e) => setP({ ...p, subjectId: e.target.value })}>
+                {subjects.map((x) => (
+                  <MenuItem key={x.id} value={x.id}>
+                    {x.code} {x.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('exm.f.class')}>
+              <TextInput select value={p.sectionId} onChange={(e) => setP({ ...p, sectionId: e.target.value })}>
+                {sections.map((x) => (
+                  <MenuItem key={x.id} value={x.id}>
+                    {x.displayName}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('exm.f.date')}>
+              <TextInput type="date" value={p.examDate} onChange={(e) => setP({ ...p, examDate: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('exm.f.from')}>
+              <TextInput type="time" value={p.startsAt} onChange={(e) => setP({ ...p, startsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('exm.f.to')}>
+              <TextInput type="time" value={p.endsAt} onChange={(e) => setP({ ...p, endsAt: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('exm.f.max')}>
+              <TextInput type="number" value={p.maxMarks} onChange={(e) => setP({ ...p, maxMarks: e.target.value })} />
+            </FormField>
             <Button type="submit" variant="outlined" disabled={pending}>
               {t('exm.addPaper')}
             </Button>
@@ -163,14 +155,18 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
           </Typography>
           {halls.map((h, i) => (
             <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-              <TextField select size="small" label={t('exm.f.hall')} value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))} sx={{ minWidth: 180 }}>
-                {structure.rooms.map((r) => (
-                  <MenuItem key={r.id} value={r.id}>
-                    {r.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField size="small" type="number" label={t('exm.f.capacity')} value={h.capacity} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, capacity: e.target.value } : x)))} sx={{ width: 120 }} />
+              <FormField label={t('exm.f.hall')}>
+                <TextInput select value={h.roomId} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, roomId: e.target.value } : x)))} sx={{ minWidth: 180 }}>
+                  {structure.rooms.map((r) => (
+                    <MenuItem key={r.id} value={r.id}>
+                      {r.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('exm.f.capacity')}>
+                <TextInput type="number" value={h.capacity} onChange={(e) => setHalls(halls.map((x, j) => (j === i ? { ...x, capacity: e.target.value } : x)))} sx={{ width: 120 }} />
+              </FormField>
               <Button size="small" onClick={() => setHalls(halls.filter((_, j) => j !== i))} disabled={halls.length === 1}>
                 {t('exm.remove')}
               </Button>
@@ -187,16 +183,16 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
           <Typography variant="subtitle1" component="h3" sx={{ mt: 3, mb: 0.5 }}>
             {t('exm.ticketsTitle')}
           </Typography>
-          <TextField
-            size="small"
-            fullWidth
-            multiline
-            minRows={2}
-            label={t('exm.blocks')}
-            helperText={t('exm.blocksHelp')}
-            value={blocks}
-            onChange={(e) => setBlocks(e.target.value)}
-          />
+          <FormField label={t('exm.blocks')}>
+            <TextInput
+              fullWidth
+              multiline
+              minRows={2}
+              helperText={t('exm.blocksHelp')}
+              value={blocks}
+              onChange={(e) => setBlocks(e.target.value)}
+            />
+          </FormField>
           <Button
             sx={{ mt: 1 }}
             variant="outlined"
@@ -224,34 +220,21 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
           <Typography variant="h6" component="h2" sx={{ mt: 3, mb: 1 }}>
             {t('exm.resultsTitle')}
           </Typography>
-          <TableFrame testId="exam-results">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('exm.f.roll')}</TableCell>
-                  <TableCell>{t('exm.f.student')}</TableCell>
-                  <TableCell>{t('exm.f.subjects')}</TableCell>
-                  <TableCell align="right">SGPA</TableCell>
-                  <TableCell align="right">CGPA</TableCell>
-                  <TableCell>{t('exm.f.result')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {results.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>{r.rollNo}</TableCell>
-                    <TableCell>{r.fullName}</TableCell>
-                    <TableCell>{r.lines.map((l) => `${l.code} ${l.grade}`).join(', ')}</TableCell>
-                    <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{r.sgpa.toFixed(2)}</TableCell>
-                    <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{r.cgpa.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <StatusPill tone={r.outcome === 'pass' ? 'success' : 'danger'}>{t(r.outcome === 'pass' ? 'exm.pass' : 'exm.fail')}</StatusPill>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableFrame>
+          <DataTable
+            testId="exam-results"
+            label={t('exm.resultsTitle')}
+            rows={results}
+            rowId={(r) => String(r.id)}
+            exportName="exam-results"
+            columns={[
+              { id: 'c0', header: t('exm.f.roll'), rowHeader: true, sort: (r) => r.rollNo, cell: (r) => r.rollNo },
+              { id: 'c1', header: t('exm.f.student'), sort: (r) => r.fullName, cell: (r) => r.fullName },
+              { id: 'c2', header: t('exm.f.subjects'), sort: (r) => r.lines.map((l) => `${l.code} ${l.grade}`).join(', '), cell: (r) => r.lines.map((l) => `${l.code} ${l.grade}`).join(', ') },
+              { id: 'c3', header: `SGPA`, align: 'right', sort: (r) => r.sgpa.toFixed(2), cell: (r) => r.sgpa.toFixed(2) },
+              { id: 'c4', header: `CGPA`, align: 'right', sort: (r) => r.cgpa.toFixed(2), cell: (r) => r.cgpa.toFixed(2) },
+              { id: 'c5', header: t('exm.f.result'), sort: (r) => r.outcome, cell: (r) => (<><StatusPill tone={r.outcome === 'pass' ? 'success' : 'danger'}>{t(r.outcome === 'pass' ? 'exm.pass' : 'exm.fail')}</StatusPill></>) },
+            ]}
+          />
         </>
       )}
 
@@ -261,43 +244,40 @@ export function SessionDesk({ session: s, structure, results, revaluations, canM
             {t('exm.revalTitle')}
           </Typography>
           {s.status === 'locked' && <Alert severity="info" sx={{ mb: 1 }}>{t('exm.revalClosed')}</Alert>}
-          <TableFrame testId="exam-revaluations">
-            <Table size="small">
-              <TableBody>
-                {revaluations.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>{r.rollNo} {r.student}</TableCell>
-                    <TableCell>{r.subject}</TableCell>
-                    <TableCell>{r.reason}</TableCell>
-                    <TableCell>{r.previousPercent ?? '—'}% → {r.newPercent ?? '—'}%</TableCell>
-                    <TableCell>
-                      <StatusPill tone={r.status === 'requested' ? 'warning' : r.status === 'rejected' ? 'danger' : 'neutral'}>{t(`exm.rv.${r.status}`)}</StatusPill>
-                    </TableCell>
-                    <TableCell align="right">
-                      {canManage && r.status === 'requested' && (
-                        <>
-                          <Button size="small" disabled={pending} onClick={() => run(() => decideRevaluation(s.id, r.id, true, ''), t('exm.rv.accepted'))}>
-                            {t('exm.accept')}
-                          </Button>
-                          <Button size="small" color="error" disabled={pending} onClick={() => run(() => decideRevaluation(s.id, r.id, false, ''), t('exm.rv.rejected'))}>
-                            {t('exm.reject')}
-                          </Button>
-                        </>
-                      )}
-                      {canManage && r.status === 'accepted' && s.status === 'published' && (
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                          <TextField size="small" type="number" label={t('exm.newMarks')} value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} sx={{ width: 120 }} />
-                          <Button size="small" disabled={pending || (newMarks[r.id] ?? '') === ''} onClick={() => run(() => completeRevaluation(s.id, r.id, Number(newMarks[r.id])), t('exm.rv.completed'))}>
-                            {t('exm.regrade')}
-                          </Button>
-                        </Box>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableFrame>
+          <DataTable
+            testId="exam-revaluations"
+            label={t('exm.revalTitle')}
+            rows={revaluations}
+            rowId={(r) => String(r.id)}
+            exportName="exam-revaluations"
+            columns={[
+              { id: 'c0', header: t('exm.f.student'), rowHeader: true, sort: (r) => `${r.rollNo} ${r.student}`, cell: (r) => `${r.rollNo} ${r.student}` },
+              { id: 'c1', header: t('exm.f.subject'), sort: (r) => r.subject, cell: (r) => r.subject },
+              { id: 'c2', header: t('exm.f.reason'), sort: (r) => r.reason, cell: (r) => r.reason },
+              { id: 'c3', header: t('exm.marks'), sort: (r) => `${r.previousPercent ?? '—'}% → ${r.newPercent ?? '—'}%`, cell: (r) => `${r.previousPercent ?? '—'}% → ${r.newPercent ?? '—'}%` },
+              { id: 'c4', header: t('exm.status'), sort: (r) => r.status, cell: (r) => (<><StatusPill tone={r.status === 'requested' ? 'warning' : r.status === 'rejected' ? 'danger' : 'neutral'}>{t(`exm.rv.${r.status}`)}</StatusPill></>) },
+              { id: 'c5', header: '', align: 'right', csv: false, cell: (r) => (<>{canManage && r.status === 'requested' && (
+                                    <>
+                                      <Button size="small" disabled={pending} onClick={() => run(() => decideRevaluation(s.id, r.id, true, ''), t('exm.rv.accepted'))}>
+                                        {t('exm.accept')}
+                                      </Button>
+                                      <Button size="small" color="error" disabled={pending} onClick={() => run(() => decideRevaluation(s.id, r.id, false, ''), t('exm.rv.rejected'))}>
+                                        {t('exm.reject')}
+                                      </Button>
+                                    </>
+                                  )}
+                                  {canManage && r.status === 'accepted' && s.status === 'published' && (
+                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                      <FormField label={t('exm.newMarks')}>
+                                        <TextInput type="number" value={newMarks[r.id] ?? ''} onChange={(e) => setNewMarks({ ...newMarks, [r.id]: e.target.value })} sx={{ width: 120 }} />
+                                      </FormField>
+                                      <Button size="small" disabled={pending || (newMarks[r.id] ?? '') === ''} onClick={() => run(() => completeRevaluation(s.id, r.id, Number(newMarks[r.id])), t('exm.rv.completed'))}>
+                                        {t('exm.regrade')}
+                                      </Button>
+                                    </Box>
+                                  )}</>) },
+            ]}
+          />
         </>
       )}
     </>

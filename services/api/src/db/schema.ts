@@ -2512,8 +2512,6 @@ export const TENANT_TABLES = [
   'upload_scans',
   'report_schedules',
   'report_runs',
-  'placement_records',
-  'research_outputs',
   'student_leave_requests',
   'designations',
   'staff_profiles',

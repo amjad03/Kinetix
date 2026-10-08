@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
 import type { Column, ReportData } from './catalogue.js';
 import { rows, type Range } from './queries.js';
+import { LIVE_OFFER, placementOffersSql, researchOutputsSql } from './sources.js';
 
 /**
  * Data packs for accreditation and statutory returns (NAAC, NIRF, AISHE). Each pack aggregates the
@@ -72,12 +73,12 @@ const resultsByProgram = table('results', 'Examination results (published sessio
 
 const placementTable = table('placement', 'Placement offers by program', [text('program', 'Program'), int('offers', 'Offers'), int('students', 'Students placed'), money('average_paise', 'Average package'), money('highest_paise', 'Highest package')], ({ tx, period }) =>
   rows(tx, sql`select pr.name as program, count(*)::int as offers, count(distinct p.student_id)::int as students, coalesce(avg(p.package_paise), 0)::float8 as average_paise, coalesce(max(p.package_paise), 0)::float8 as highest_paise
-    from placement_records p join students s on s.id = p.student_id join sections sec on sec.id = s.section_id join programs pr on pr.id = sec.program_id
-    where p.status <> 'declined' and p.offered_on between ${period.from}::date and ${period.to}::date group by pr.name order by pr.name`),
+    from ${placementOffersSql} join students s on s.id = p.student_id join sections sec on sec.id = s.section_id join programs pr on pr.id = sec.program_id
+    where ${LIVE_OFFER} and p.offered_on between ${period.from}::date and ${period.to}::date group by pr.name order by pr.name`),
 );
 
 const researchTable = table('research', 'Research outputs and grants', [text('kind', 'Kind'), int('outputs', 'Outputs'), money('grants_paise', 'Grants')], ({ tx, period }) =>
-  rows(tx, sql`select kind, count(*)::int as outputs, coalesce(sum(grant_paise), 0)::float8 as grants_paise from research_outputs where published_on between ${period.from}::date and ${period.to}::date group by kind order by kind`),
+  rows(tx, sql`select r.kind, count(*)::int as outputs, coalesce(sum(r.grant_paise), 0)::float8 as grants_paise from ${researchOutputsSql} where r.published_on between ${period.from}::date and ${period.to}::date group by r.kind order by r.kind`),
 );
 
 const feesTable = table('fees', 'Fee income', [text('program', 'Program'), money('billed_paise', 'Billed'), money('collected_paise', 'Collected'), money('outstanding_paise', 'Outstanding')], ({ tx }) =>

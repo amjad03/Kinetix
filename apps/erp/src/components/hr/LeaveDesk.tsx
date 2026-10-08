@@ -4,7 +4,7 @@ import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import { StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,17 +13,10 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
 import { addLeaveType, decideLeave, getBalances } from '@/app/(dashboard)/hr/actions';
-import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -61,85 +54,59 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
         (requests.length === 0 ? (
           <EmptyState icon={<Add />} title={t('hr.leave.none')} />
         ) : (
-          <TableFrame testId="leave-requests">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('hr.leave.applicant')}</TableCell>
-                  <TableCell>{t('hr.leave.type')}</TableCell>
-                  <TableCell>{t('hr.leave.dates')}</TableCell>
-                  <TableCell align="right">{t('hr.leave.days')}</TableCell>
-                  <TableCell>{t('hr.leave.reason')}</TableCell>
-                  <TableCell>{t('hr.f.status')}</TableCell>
-                  <TableCell align="right" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {requests.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>{r.user.fullName}</TableCell>
-                    <TableCell>{r.leaveType.name}</TableCell>
-                    <TableCell>{range(r)}</TableCell>
-                    <TableCell align="right">{r.days}</TableCell>
-                    <TableCell sx={{ maxWidth: 240 }}>{r.reason || '–'}</TableCell>
-                    <TableCell>
-                      <StatusPill tone={pillTone(LEAVE_TONE[r.status])}>{t(`hr.leave.status.${r.status}` as MessageKey)}</StatusPill>
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {r.status === 'pending' && (
-                        <>
-                          <Button size="small" onClick={() => { setNote(''); setDeciding({ r, decision: 'reject' }); }}>
-                            {t('hr.leave.reject')}
-                          </Button>
-                          <Button size="small" variant="contained" onClick={() => { setNote(''); setDeciding({ r, decision: 'approve' }); }}>
-                            {t('hr.leave.approve')}
-                          </Button>
-                        </>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableFrame>
+          <DataTable
+            testId="leave-requests"
+            label={t('hr.leave.applicant')}
+            rows={requests}
+            rowId={(r) => String(r.id)}
+            exportName="leave-requests"
+            columns={[
+              { id: 'c0', header: t('hr.leave.applicant'), rowHeader: true, sort: (r) => r.user.fullName, cell: (r) => r.user.fullName },
+              { id: 'c1', header: t('hr.leave.type'), sort: (r) => r.leaveType.name, cell: (r) => r.leaveType.name },
+              { id: 'c2', header: t('hr.leave.dates'), sort: (r) => range(r), cell: (r) => range(r) },
+              { id: 'c3', header: t('hr.leave.days'), align: 'right', sort: (r) => r.days, cell: (r) => r.days },
+              { id: 'c4', header: t('hr.leave.reason'), sort: (r) => r.reason || '–', cell: (r) => r.reason || '–' },
+              { id: 'c5', header: t('hr.f.status'), sort: (r) => r.status, cell: (r) => (<><StatusPill tone={pillTone(LEAVE_TONE[r.status])}>{t(`hr.leave.status.${r.status}` as MessageKey)}</StatusPill></>) },
+              { id: 'c6', header: '', align: 'right', csv: false, cell: (r) => (<>{r.status === 'pending' && (
+                                    <>
+                                      <Button size="small" onClick={() => { setNote(''); setDeciding({ r, decision: 'reject' }); }}>
+                                        {t('hr.leave.reject')}
+                                      </Button>
+                                      <Button size="small" variant="contained" onClick={() => { setNote(''); setDeciding({ r, decision: 'approve' }); }}>
+                                        {t('hr.leave.approve')}
+                                      </Button>
+                                    </>
+                                  )}</>) },
+            ]}
+          />
         ))}
 
       {tab === 'balances' && (
         <>
-          <TextField select size="small" label={t('hr.leave.pickStaff')} value={who} onChange={(e) => { setWho(e.target.value); setBalances(null); start(async () => { const r = await run(() => getBalances(e.target.value)); if (r.ok) setBalances(r.data); }); }} sx={{ minWidth: 260, mb: 2 }}>
-            {staff.map((s) => (
-              <MenuItem key={s.userId} value={s.userId}>
-                {s.fullName}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormField label={t('hr.leave.pickStaff')}>
+            <TextInput select value={who} onChange={(e) => { setWho(e.target.value); setBalances(null); start(async () => { const r = await run(() => getBalances(e.target.value)); if (r.ok) setBalances(r.data); }); }} sx={{ minWidth: 260, mb: 2 }}>
+              {staff.map((s) => (
+                <MenuItem key={s.userId} value={s.userId}>
+                  {s.fullName}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
           {balances && (
-            <TableFrame testId="leave-balances">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('hr.leave.type')}</TableCell>
-                    {(['opening', 'accrued', 'used', 'pending', 'available'] as const).map((k) => (
-                      <TableCell key={k} align="right">
-                        {t(`hr.leave.${k}` as MessageKey)}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {balances.map((b) => (
-                    <TableRow key={b.leaveType.id}>
-                      <TableCell>{b.leaveType.name}</TableCell>
-                      <TableCell align="right">{b.opening}</TableCell>
-                      <TableCell align="right">{b.accrued}</TableCell>
-                      <TableCell align="right">{b.used}</TableCell>
-                      <TableCell align="right">{b.pending}</TableCell>
-                      <TableCell align="right">{b.leaveType.paid ? b.available : t('hr.leave.unlimited')}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableFrame>
+            <DataTable
+              testId="leave-balances"
+              label={t('hr.leave.type')}
+              rows={balances}
+              rowId={(b) => String(b.leaveType.id)}
+              columns={[
+                { id: 'c0', header: t('hr.leave.type'), rowHeader: true, sort: (b) => b.leaveType.name, cell: (b) => b.leaveType.name },
+                { id: 'c1', header: t('hr.leave.opening'), align: 'right', sort: (b) => b.opening, cell: (b) => b.opening },
+                { id: 'c2', header: t('hr.leave.accrued'), align: 'right', sort: (b) => b.accrued, cell: (b) => b.accrued },
+                { id: 'c3', header: t('hr.leave.used'), align: 'right', sort: (b) => b.used, cell: (b) => b.used },
+                { id: 'c4', header: t('hr.leave.pending'), align: 'right', sort: (b) => b.pending, cell: (b) => b.pending },
+                { id: 'c5', header: t('hr.leave.available'), align: 'right', sort: (b) => b.leaveType.paid ? b.available : t('hr.leave.unlimited'), cell: (b) => b.leaveType.paid ? b.available : t('hr.leave.unlimited') },
+              ]}
+            />
           )}
           {pending && !balances && <Typography variant="body2">{t('hr.loading')}</Typography>}
         </>
@@ -152,32 +119,21 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
               {t('hr.leave.addType')}
             </Button>
           </Box>
-          <TableFrame testId="leave-types">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('hr.leave.code')}</TableCell>
-                  <TableCell>{t('hr.leave.name')}</TableCell>
-                  <TableCell>{t('hr.leave.paid')}</TableCell>
-                  <TableCell align="right">{t('hr.leave.annual')}</TableCell>
-                  <TableCell>{t('hr.leave.accrual')}</TableCell>
-                  <TableCell align="right">{t('hr.leave.carry')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {types.map((x) => (
-                  <TableRow key={x.id}>
-                    <TableCell>{x.code}</TableCell>
-                    <TableCell>{x.name}</TableCell>
-                    <TableCell>{x.paid ? t('hr.yes') : t('hr.no')}</TableCell>
-                    <TableCell align="right">{x.annualDays}</TableCell>
-                    <TableCell>{t(`hr.leave.${x.accrual}` as MessageKey)}</TableCell>
-                    <TableCell align="right">{x.carryForwardMax}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableFrame>
+          <DataTable
+            testId="leave-types"
+            label={t('hr.leave.name')}
+            rows={types}
+            rowId={(x) => String(x.id)}
+            exportName="leave-types"
+            columns={[
+              { id: 'c0', header: t('hr.leave.code'), rowHeader: true, sort: (x) => x.code, cell: (x) => x.code },
+              { id: 'c1', header: t('hr.leave.name'), sort: (x) => x.name, cell: (x) => x.name },
+              { id: 'c2', header: t('hr.leave.paid'), sort: (x) => x.paid ? t('hr.yes') : t('hr.no'), cell: (x) => x.paid ? t('hr.yes') : t('hr.no') },
+              { id: 'c3', header: t('hr.leave.annual'), align: 'right', sort: (x) => x.annualDays, cell: (x) => x.annualDays },
+              { id: 'c4', header: t('hr.leave.accrual'), sort: (x) => t(`hr.leave.${x.accrual}` as MessageKey), cell: (x) => t(`hr.leave.${x.accrual}` as MessageKey) },
+              { id: 'c5', header: t('hr.leave.carry'), align: 'right', sort: (x) => x.carryForwardMax, cell: (x) => x.carryForwardMax },
+            ]}
+          />
         </>
       )}
 
@@ -187,18 +143,16 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
             {t('hr.leave.holidaysHelp')}
           </EmptyState>
         ) : (
-          <TableFrame testId="holidays">
-            <Table size="small">
-              <TableBody>
-                {holidays.map((h) => (
-                  <TableRow key={h.date}>
-                    <TableCell sx={{ width: 200 }}>{formatDate(h.date, 'short', locale)}</TableCell>
-                    <TableCell>{h.title}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableFrame>
+          <DataTable
+            testId="holidays"
+            label={t('hr.leave.dates')}
+            rows={holidays}
+            rowId={(h) => String(h.date)}
+            columns={[
+              { id: 'c0', header: t('hr.leave.dates'), rowHeader: true, sort: (h) => formatDate(h.date, 'short', locale), cell: (h) => formatDate(h.date, 'short', locale) },
+              { id: 'c1', header: t('hr.leave.name'), sort: (h) => h.title, cell: (h) => h.title },
+            ]}
+          />
         ))}
 
       {deciding && (
@@ -208,7 +162,9 @@ export function LeaveDesk({ requests, types, holidays, staff }: { requests: Leav
             <Typography variant="body2" sx={{ mb: 2 }}>
               {deciding.r.leaveType.name} · {range(deciding.r)} · {deciding.r.days}
             </Typography>
-            <TextField label={t('hr.leave.note')} value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
+            <FormField label={t('hr.leave.note')}>
+              <TextInput value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
+            </FormField>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeciding(null)}>{t('hr.cancel')}</Button>
@@ -244,15 +200,25 @@ function TypeDialog({ onClose, run }: { onClose: () => void; run: ReturnType<typ
       <DialogTitle>{t('hr.leave.addType')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField size="small" label={t('hr.leave.code')} value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
-          <TextField size="small" label={t('hr.leave.name')} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          <FormField label={t('hr.leave.code')}>
+            <TextInput value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
+          </FormField>
+          <FormField label={t('hr.leave.name')}>
+            <TextInput value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          </FormField>
           <FormControlLabel control={<Checkbox checked={f.paid} onChange={(e) => setF({ ...f, paid: e.target.checked })} />} label={t('hr.leave.paid')} />
-          <TextField size="small" label={t('hr.leave.annual')} value={f.annualDays} onChange={(e) => setF({ ...f, annualDays: e.target.value })} />
-          <TextField select size="small" label={t('hr.leave.accrual')} value={f.accrual} onChange={(e) => setF({ ...f, accrual: e.target.value as 'yearly' | 'monthly' })}>
-            <MenuItem value="yearly">{t('hr.leave.yearly')}</MenuItem>
-            <MenuItem value="monthly">{t('hr.leave.monthly')}</MenuItem>
-          </TextField>
-          <TextField size="small" label={t('hr.leave.carry')} value={f.carryForwardMax} onChange={(e) => setF({ ...f, carryForwardMax: e.target.value })} />
+          <FormField label={t('hr.leave.annual')}>
+            <TextInput value={f.annualDays} onChange={(e) => setF({ ...f, annualDays: e.target.value })} />
+          </FormField>
+          <FormField label={t('hr.leave.accrual')}>
+            <TextInput select value={f.accrual} onChange={(e) => setF({ ...f, accrual: e.target.value as 'yearly' | 'monthly' })}>
+              <MenuItem value="yearly">{t('hr.leave.yearly')}</MenuItem>
+              <MenuItem value="monthly">{t('hr.leave.monthly')}</MenuItem>
+            </TextInput>
+          </FormField>
+          <FormField label={t('hr.leave.carry')}>
+            <TextInput value={f.carryForwardMax} onChange={(e) => setF({ ...f, carryForwardMax: e.target.value })} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>

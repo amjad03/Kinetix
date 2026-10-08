@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import Card from '@mui/material/Card';
-import { StatusPill } from '@/components/ui';
+import { FormField, StatusPill, TextInput } from '@/components/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -17,7 +17,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { addTopic, deleteTopic, editTopic, getTopic, type TopicInput } from '@/app/(dashboard)/syllabus/actions';
@@ -282,16 +281,19 @@ function TopicForm({
         <DialogContent dividers>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label={t('syl.form.title')} value={value.title} onChange={(e) => set('title', e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 200 } }} />
-            <TextField
-              label={t('syl.form.summary')}
-              value={value.summary}
-              onChange={(e) => set('summary', e.target.value)}
-              multiline
-              minRows={2}
-              helperText={t('syl.form.summaryHelp')}
-              slotProps={{ htmlInput: { maxLength: 2000 } }}
-            />
+            <FormField label={t('syl.form.title')} required>
+              <TextInput value={value.title} onChange={(e) => set('title', e.target.value)} required autoFocus slotProps={{ htmlInput: { maxLength: 200 } }} />
+            </FormField>
+            <FormField label={t('syl.form.summary')}>
+              <TextInput
+                value={value.summary}
+                onChange={(e) => set('summary', e.target.value)}
+                multiline
+                minRows={2}
+                helperText={t('syl.form.summaryHelp')}
+                slotProps={{ htmlInput: { maxLength: 2000 } }}
+              />
+            </FormField>
             <ListEditor
               label={t('syl.notes')}
               itemLabel={t('syl.form.note')}

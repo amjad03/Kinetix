@@ -3,15 +3,10 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { MiniBar } from '@/components/Bars';
-import { TableFrame } from '@/components/DataTable';
+import { FeeClassesTable } from '@/components/fees/FeeClassesTable';
 import { IssueFeeButton } from '@/components/fees/IssueFeeDialog';
 import { LinkButton } from '@/components/LinkButton';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
@@ -95,69 +90,7 @@ export default async function FeesPage() {
             {t('fees.byClass')}
           </SectionTitle>
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <TableFrame testId="fee-classes">
-              <Table sx={{ minWidth: 760 }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('fees.col.class')}</TableCell>
-                    <TableCell align="right">{t('fees.col.billed')}</TableCell>
-                    <TableCell align="right">{t('fees.col.collected')}</TableCell>
-                    <TableCell align="right">{t('fees.col.outstanding')}</TableCell>
-                    <TableCell align="right">{t('fees.col.open')}</TableCell>
-                    <TableCell align="right">{t('fees.col.overdue')}</TableCell>
-                    <TableCell aria-label={t('fees.invoices')} />
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {s!.classes.map((c) => {
-                    const share = pct(c.collectedPaise, c.billedPaise);
-                    return (
-                      <TableRow key={c.sectionId} hover data-testid="fee-class-row">
-                        <TableCell>
-                          <Typography variant="subtitle2">{c.className}</Typography>
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                          {formatRupees(c.billedPaise)}
-                        </TableCell>
-                        <TableCell align="right">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
-                            <Box sx={{ width: 64 }}>
-                              <MiniBar value={share} color="kx.success" label={t('fees.pctCollected', { p: share.toFixed(0) })} />
-                            </Box>
-                            <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', minWidth: 96 }}>
-                              {formatRupees(c.collectedPaise)}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                          {formatRupees(c.outstandingPaise)}
-                        </TableCell>
-                        <TableCell align="right">{c.open}</TableCell>
-                        <TableCell align="right" sx={{ color: c.overdue ? 'error.main' : 'text.secondary', whiteSpace: 'nowrap' }}>
-                          {c.overdue ? (
-                            <>
-                              <Box component="span" sx={{ fontWeight: 500 }}>
-                                {formatRupees(c.overduePaise)}
-                              </Box>
-                              <Typography component="span" variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                                {t('fees.nInvoices', { n: c.overdue })}
-                              </Typography>
-                            </>
-                          ) : (
-                            '—'
-                          )}
-                        </TableCell>
-                        <TableCell align="right" padding="checkbox" sx={{ pr: 1 }}>
-                          <LinkButton href={`/fees/invoices?class=${c.sectionId}`} size="small" endIcon={<ChevronRight />} aria-label={t('fees.invoicesFor', { name: c.className })}>
-                            {t('fees.invoices')}
-                          </LinkButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableFrame>
+            <FeeClassesTable rows={s!.classes} />
           </Box>
           {/* Phones: one card per class instead of a wide table. */}
           <Box sx={{ display: { xs: 'grid', md: 'none' }, gap: 1.5 }} data-testid="fee-classes-list">

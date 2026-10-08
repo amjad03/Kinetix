@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { runPromotion } from '@/app/(dashboard)/students/actions';
 import { useI18n } from '@/i18n/client';
 import type { PromotionResult } from '@/lib/admissions';
@@ -69,7 +70,9 @@ export function PromotionTool({ classes }: { classes: PromotionClass[] }) {
           {t('stu.promo.done', { promoted: done.promoted, detained: done.detained, graduated: done.graduated, skipped: done.skipped })}
         </Alert>
       )}
-      <TextField label={t('stu.promo.label')} helperText={t('stu.promo.labelHelp')} value={label} onChange={(e) => { setLabel(e.target.value); setPreview(null); }} sx={{ maxWidth: 420 }} />
+      <FormField label={t('stu.promo.label')}>
+        <TextInput helperText={t('stu.promo.labelHelp')} value={label} onChange={(e) => { setLabel(e.target.value); setPreview(null); }} sx={{ maxWidth: 420 }} />
+      </FormField>
       <Paper variant="outlined" sx={{ p: 2.5 }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, alignItems: 'center' }}>
           {classes.map((c) => (

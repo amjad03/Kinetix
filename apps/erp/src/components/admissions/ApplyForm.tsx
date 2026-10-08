@@ -6,13 +6,13 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { submitApplication, submitEnquiry } from '@/app/apply/actions';
 import { useI18n } from '@/i18n/client';
-import type { FormField, PublicCycles } from '@/lib/admissions';
+import type { FormField as QuestionDef, PublicCycles } from '@/lib/admissions';
 import { formatDate } from '@/lib/dates';
 import { formatRupees } from '@/lib/money';
 
@@ -66,13 +66,15 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
     >
       <Stack spacing={3}>
         {error && <Alert severity="error">{error}</Alert>}
-        <TextField select label={t('apply.program')} value={cycleId} onChange={(e) => { setCycleId(e.target.value); setAnswers({}); }} required>
-          {data.cycles.map((c) => (
-            <MenuItem key={c.id} value={c.id}>
-              {c.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <FormField label={t('apply.program')} required>
+          <TextInput select value={cycleId} onChange={(e) => { setCycleId(e.target.value); setAnswers({}); }} required>
+            {data.cycles.map((c) => (
+              <MenuItem key={c.id} value={c.id}>
+                {c.name}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
         {cycle && (
           <Typography variant="body2" color="text.secondary">
             {t('apply.closesOn', { date: formatDate(cycle.closesOn, 'long', locale) })} · {cycle.applicationFeePaise > 0 ? t('apply.fee', { amount: formatRupees(cycle.applicationFeePaise) }) : t('apply.noFee')}
@@ -83,16 +85,26 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
             {t('apply.applicant')}
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField label={t('apply.fullName')} value={f.applicantName} onChange={set('applicantName')} required />
-            <TextField label={t('adm.field.dob')} type="date" value={f.dateOfBirth} onChange={set('dateOfBirth')} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField select label={t('apply.gender')} value={f.gender} onChange={set('gender')}>
-              <MenuItem value="">{t('apply.preferNot')}</MenuItem>
-              <MenuItem value="female">{t('apply.female')}</MenuItem>
-              <MenuItem value="male">{t('apply.male')}</MenuItem>
-              <MenuItem value="other">{t('apply.other')}</MenuItem>
-            </TextField>
-            <TextField label={t('adm.field.phone')} value={f.phone} onChange={set('phone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
-            <TextField label={t('adm.field.email')} type="email" value={f.email} onChange={set('email')} />
+            <FormField label={t('apply.fullName')} required>
+              <TextInput value={f.applicantName} onChange={set('applicantName')} required />
+            </FormField>
+            <FormField label={t('adm.field.dob')}>
+              <TextInput type="date" value={f.dateOfBirth} onChange={set('dateOfBirth')} slotProps={{ inputLabel: { shrink: true } }} />
+            </FormField>
+            <FormField label={t('apply.gender')}>
+              <TextInput select value={f.gender} onChange={set('gender')}>
+                <MenuItem value="">{t('apply.preferNot')}</MenuItem>
+                <MenuItem value="female">{t('apply.female')}</MenuItem>
+                <MenuItem value="male">{t('apply.male')}</MenuItem>
+                <MenuItem value="other">{t('apply.other')}</MenuItem>
+              </TextInput>
+            </FormField>
+            <FormField label={t('adm.field.phone')} required>
+              <TextInput value={f.phone} onChange={set('phone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
+            </FormField>
+            <FormField label={t('adm.field.email')}>
+              <TextInput type="email" value={f.email} onChange={set('email')} />
+            </FormField>
           </Box>
         </Paper>
         <Paper variant="outlined" sx={{ p: 2.5 }}>
@@ -100,10 +112,18 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
             {t('apply.guardian')}
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField label={t('apply.fullName')} value={f.guardianName} onChange={set('guardianName')} required />
-            <TextField label={t('stu.relation')} value={f.guardianRelation} onChange={set('guardianRelation')} required />
-            <TextField label={t('adm.field.phone')} value={f.guardianPhone} onChange={set('guardianPhone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
-            <TextField label={t('adm.field.email')} type="email" value={f.guardianEmail} onChange={set('guardianEmail')} />
+            <FormField label={t('apply.fullName')} required>
+              <TextInput value={f.guardianName} onChange={set('guardianName')} required />
+            </FormField>
+            <FormField label={t('stu.relation')} required>
+              <TextInput value={f.guardianRelation} onChange={set('guardianRelation')} required />
+            </FormField>
+            <FormField label={t('adm.field.phone')} required>
+              <TextInput value={f.guardianPhone} onChange={set('guardianPhone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
+            </FormField>
+            <FormField label={t('adm.field.email')}>
+              <TextInput type="email" value={f.guardianEmail} onChange={set('guardianEmail')} />
+            </FormField>
           </Box>
         </Paper>
         {cycle && cycle.formFields.length > 0 && (
@@ -132,20 +152,26 @@ export function ApplyForm({ slug, data }: { slug: string; data: PublicCycles }) 
   );
 }
 
-function Question({ q, value, error, onChange }: { q: FormField; value: string; error?: string; onChange: (v: string) => void }) {
-  const common = { label: q.label, value, required: q.required, error: !!error, helperText: error ?? ' ', onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value) };
+function Question({ q, value, error, onChange }: { q: QuestionDef; value: string; error?: string; onChange: (v: string) => void }) {
+  const common = { value, required: q.required, error: !!error, helperText: error ?? ' ', onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value) };
   if (q.type === 'select')
     return (
-      <TextField select {...common}>
-        {(q.options ?? []).map((o) => (
-          <MenuItem key={o} value={o}>
-            {o}
-          </MenuItem>
-        ))}
-      </TextField>
+      <FormField label={q.label} required={q.required}>
+        <TextInput select {...common}>
+          {(q.options ?? []).map((o) => (
+            <MenuItem key={o} value={o}>
+              {o}
+            </MenuItem>
+          ))}
+        </TextInput>
+      </FormField>
     );
   const type = q.type === 'number' ? 'number' : q.type === 'date' ? 'date' : q.type === 'email' ? 'email' : 'text';
-  return <TextField {...common} type={type} slotProps={{ inputLabel: type === 'date' ? { shrink: true } : undefined, htmlInput: { min: q.min, max: q.max, inputMode: q.type === 'phone' ? 'tel' : undefined } }} />;
+  return (
+    <FormField label={q.label} required={q.required}>
+      <TextInput {...common} type={type} slotProps={{ inputLabel: type === 'date' ? { shrink: true } : undefined, htmlInput: { min: q.min, max: q.max, inputMode: q.type === 'phone' ? 'tel' : undefined } }} />
+    </FormField>
+  );
 }
 
 /** A shorter form for families who only want to ask a question first. */
@@ -172,18 +198,28 @@ export function EnquiryForm({ slug, programs }: { slug: string; programs: { id: 
     >
       <Stack spacing={2}>
         {error && <Alert severity="error">{error}</Alert>}
-        <TextField label={t('adm.field.name')} value={f.name} onChange={set('name')} required />
-        <TextField label={t('adm.field.phone')} value={f.phone} onChange={set('phone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
-        <TextField label={t('adm.field.email')} type="email" value={f.email} onChange={set('email')} />
-        <TextField select label={t('adm.field.program')} value={f.programId} onChange={set('programId')}>
-          <MenuItem value="">{t('adm.enquiry.anyProgram')}</MenuItem>
-          {programs.map((p) => (
-            <MenuItem key={p.id} value={p.id}>
-              {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField label={t('adm.field.message')} value={f.message} onChange={set('message')} multiline minRows={2} />
+        <FormField label={t('adm.field.name')} required>
+          <TextInput value={f.name} onChange={set('name')} required />
+        </FormField>
+        <FormField label={t('adm.field.phone')} required>
+          <TextInput value={f.phone} onChange={set('phone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
+        </FormField>
+        <FormField label={t('adm.field.email')}>
+          <TextInput type="email" value={f.email} onChange={set('email')} />
+        </FormField>
+        <FormField label={t('adm.field.program')}>
+          <TextInput select value={f.programId} onChange={set('programId')}>
+            <MenuItem value="">{t('adm.enquiry.anyProgram')}</MenuItem>
+            {programs.map((p) => (
+              <MenuItem key={p.id} value={p.id}>
+                {p.name}
+              </MenuItem>
+            ))}
+          </TextInput>
+        </FormField>
+        <FormField label={t('adm.field.message')}>
+          <TextInput value={f.message} onChange={set('message')} multiline minRows={2} />
+        </FormField>
         <Box aria-hidden sx={{ position: 'absolute', left: -9999, height: 0, overflow: 'hidden' }}>
           <input tabIndex={-1} autoComplete="off" name="website" value={f.website} onChange={set('website')} />
         </Box>

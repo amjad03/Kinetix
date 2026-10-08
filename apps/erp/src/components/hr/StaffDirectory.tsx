@@ -4,7 +4,7 @@ import Add from '@mui/icons-material/Add';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { StatusPill } from '@/components/ui';
+import { DataTable, FormField, StatusPill, TextInput } from '@/components/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -15,16 +15,9 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
 import { addDesignation, getProfile, saveBank, saveProfile, type ProfileInput } from '@/app/(dashboard)/hr/actions';
-import { TableFrame } from '@/components/DataTable';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -51,43 +44,28 @@ export function StaffDirectory({ staff, designations, departments }: { staff: St
           {t('hr.staff.newDesignation')}
         </Button>
       </Box>
-      <TableFrame testId="staff-table">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('hr.staff.name')}</TableCell>
-              <TableCell>{t('hr.staff.code')}</TableCell>
-              <TableCell>{t('hr.f.department')}</TableCell>
-              <TableCell>{t('hr.f.designation')}</TableCell>
-              <TableCell>{t('hr.f.status')}</TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {staff.map((s) => (
-              <TableRow key={s.userId} hover>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {s.fullName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {s.email ?? s.phone ?? ''}
-                  </Typography>
-                </TableCell>
-                <TableCell>{s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill>}</TableCell>
-                <TableCell>{s.department?.name ?? '–'}</TableCell>
-                <TableCell>{s.designation?.name ?? '–'}</TableCell>
-                <TableCell>{s.status ? t(`hr.status.${s.status}` as MessageKey) : '–'}</TableCell>
-                <TableCell align="right">
-                  <IconButton aria-label={t('hr.staff.edit')} onClick={() => setEditing(s)}>
-                    <EditOutlined />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <DataTable
+        testId="staff-table"
+        label={t('nav.hr')}
+        rows={staff}
+        rowId={(s) => s.userId}
+        exportName="staff"
+        columns={[
+          { id: 'c0', header: t('hr.staff.name'), rowHeader: true, sort: (s) => s.fullName, cell: (s) => (<><Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {s.fullName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {s.email ?? s.phone ?? ''}
+                          </Typography></>) },
+          { id: 'c1', header: t('hr.staff.code'), sort: (s) => s.employeeCode ?? '', cell: (s) => s.employeeCode ?? <StatusPill tone="warning">{t('hr.staff.noRecord')}</StatusPill> },
+          { id: 'c2', header: t('hr.f.department'), sort: (s) => s.department?.name ?? '–', cell: (s) => s.department?.name ?? '–' },
+          { id: 'c3', header: t('hr.f.designation'), sort: (s) => s.designation?.name ?? '–', cell: (s) => s.designation?.name ?? '–' },
+          { id: 'c4', header: t('hr.f.status'), sort: (s) => s.status ? t(`hr.status.${s.status}` as MessageKey) : '', cell: (s) => s.status ? t(`hr.status.${s.status}` as MessageKey) : '–' },
+          { id: 'c5', header: '', align: 'right', csv: false, cell: (s) => (<><IconButton aria-label={t('hr.staff.edit')} onClick={() => setEditing(s)}>
+                            <EditOutlined />
+                          </IconButton></>) },
+        ]}
+      />
       {staff.length === 0 && <EmptyState icon={<EditOutlined />} title={t('hr.staff.empty')} />}
       {editing && <ProfileDialog person={editing} designations={designations} departments={departments} onClose={() => setEditing(null)} />}
       {adding && <DesignationDialog onClose={() => setAdding(false)} run={run} />}
@@ -105,8 +83,12 @@ function DesignationDialog({ onClose, run }: { onClose: () => void; run: ReturnT
       <DialogTitle>{t('hr.staff.newDesignation')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField label={t('hr.staff.designationName')} value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-          <TextField label={t('hr.staff.grade')} value={grade} onChange={(e) => setGrade(e.target.value)} />
+          <FormField label={t('hr.staff.designationName')}>
+            <TextInput value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          </FormField>
+          <FormField label={t('hr.staff.grade')}>
+            <TextInput value={grade} onChange={(e) => setGrade(e.target.value)} />
+          </FormField>
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -175,7 +157,9 @@ function ProfileDialog({ person, designations, departments, onClose }: { person:
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => (x ? { ...x, [k]: v } : x));
   const text = (k: 'employeeCode' | 'dateOfJoining' | 'dateOfLeaving' | 'dateOfBirth' | 'pan' | 'uan' | 'esiNumber', label: MessageKey, type = 'text') => (
-    <TextField label={t(label)} type={type} value={d?.[k] ?? ''} onChange={(e) => set(k, e.target.value)} slotProps={type === 'date' ? { inputLabel: { shrink: true } } : undefined} size="small" />
+    <FormField label={t(label)}>
+      <TextInput type={type} value={d?.[k] ?? ''} onChange={(e) => set(k, e.target.value)} slotProps={type === 'date' ? { inputLabel: { shrink: true } } : undefined} />
+    </FormField>
   );
 
   const save = () =>
@@ -208,56 +192,72 @@ function ProfileDialog({ person, designations, departments, onClose }: { person:
           <Stack spacing={3} sx={{ pt: 1 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
               {text('employeeCode', 'hr.f.employeeCode')}
-              <TextField select size="small" label={t('hr.f.department')} value={d.departmentId ?? ''} onChange={(e) => set('departmentId', e.target.value || null)}>
-                <MenuItem value="">–</MenuItem>
-                {departments.map((x) => (
-                  <MenuItem key={x.id} value={x.id}>
-                    {x.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select size="small" label={t('hr.f.designation')} value={d.designationId ?? ''} onChange={(e) => set('designationId', e.target.value || null)}>
-                <MenuItem value="">–</MenuItem>
-                {designations.map((x) => (
-                  <MenuItem key={x.id} value={x.id}>
-                    {x.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select size="small" label={t('hr.f.employmentType')} value={d.employmentType} onChange={(e) => set('employmentType', e.target.value as EmploymentType)}>
-                {TYPES.map((x) => (
-                  <MenuItem key={x} value={x}>
-                    {t(`hr.type.${x}` as MessageKey)}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select size="small" label={t('hr.f.status')} value={d.status} onChange={(e) => set('status', e.target.value as StaffStatus)}>
-                {STATUSES.map((x) => (
-                  <MenuItem key={x} value={x}>
-                    {t(`hr.status.${x}` as MessageKey)}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select size="small" label={t('hr.f.gender')} value={d.gender ?? ''} onChange={(e) => set('gender', (e.target.value || null) as Draft['gender'])}>
-                <MenuItem value="">–</MenuItem>
-                {(['female', 'male', 'other'] as const).map((x) => (
-                  <MenuItem key={x} value={x}>
-                    {t(`hr.gender.${x}` as MessageKey)}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <FormField label={t('hr.f.department')}>
+                <TextInput select value={d.departmentId ?? ''} onChange={(e) => set('departmentId', e.target.value || null)}>
+                  <MenuItem value="">–</MenuItem>
+                  {departments.map((x) => (
+                    <MenuItem key={x.id} value={x.id}>
+                      {x.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('hr.f.designation')}>
+                <TextInput select value={d.designationId ?? ''} onChange={(e) => set('designationId', e.target.value || null)}>
+                  <MenuItem value="">–</MenuItem>
+                  {designations.map((x) => (
+                    <MenuItem key={x.id} value={x.id}>
+                      {x.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('hr.f.employmentType')}>
+                <TextInput select value={d.employmentType} onChange={(e) => set('employmentType', e.target.value as EmploymentType)}>
+                  {TYPES.map((x) => (
+                    <MenuItem key={x} value={x}>
+                      {t(`hr.type.${x}` as MessageKey)}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('hr.f.status')}>
+                <TextInput select value={d.status} onChange={(e) => set('status', e.target.value as StaffStatus)}>
+                  {STATUSES.map((x) => (
+                    <MenuItem key={x} value={x}>
+                      {t(`hr.status.${x}` as MessageKey)}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('hr.f.gender')}>
+                <TextInput select value={d.gender ?? ''} onChange={(e) => set('gender', (e.target.value || null) as Draft['gender'])}>
+                  <MenuItem value="">–</MenuItem>
+                  {(['female', 'male', 'other'] as const).map((x) => (
+                    <MenuItem key={x} value={x}>
+                      {t(`hr.gender.${x}` as MessageKey)}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
               {text('dateOfJoining', 'hr.f.joining', 'date')}
               {text('dateOfLeaving', 'hr.f.leaving', 'date')}
               {text('dateOfBirth', 'hr.f.dob', 'date')}
               {text('pan', 'hr.f.pan')}
               {text('uan', 'hr.f.uan')}
               {text('esiNumber', 'hr.f.esiNumber')}
-              <TextField select size="small" label={t('hr.f.taxRegime')} value={d.taxRegime} onChange={(e) => set('taxRegime', e.target.value as Draft['taxRegime'])}>
-                <MenuItem value="new">{t('hr.regime.new')}</MenuItem>
-                <MenuItem value="old">{t('hr.regime.old')}</MenuItem>
-              </TextField>
-              <TextField size="small" label={t('hr.f.tax80c')} value={d.tax80c} onChange={(e) => set('tax80c', e.target.value)} />
-              <TextField size="small" label={t('hr.f.taxOther')} value={d.taxOther} onChange={(e) => set('taxOther', e.target.value)} />
+              <FormField label={t('hr.f.taxRegime')}>
+                <TextInput select value={d.taxRegime} onChange={(e) => set('taxRegime', e.target.value as Draft['taxRegime'])}>
+                  <MenuItem value="new">{t('hr.regime.new')}</MenuItem>
+                  <MenuItem value="old">{t('hr.regime.old')}</MenuItem>
+                </TextInput>
+              </FormField>
+              <FormField label={t('hr.f.tax80c')}>
+                <TextInput value={d.tax80c} onChange={(e) => set('tax80c', e.target.value)} />
+              </FormField>
+              <FormField label={t('hr.f.taxOther')}>
+                <TextInput value={d.taxOther} onChange={(e) => set('taxOther', e.target.value)} />
+              </FormField>
             </Box>
             <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
               <FormControlLabel control={<Switch checked={d.pfEnabled} onChange={(e) => set('pfEnabled', e.target.checked)} />} label={t('hr.f.pf')} />
@@ -286,10 +286,18 @@ function ProfileDialog({ person, designations, departments, onClose }: { person:
                     </Typography>
                   )}
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                    <TextField size="small" label={t('hr.bank.holder')} value={bank.accountHolder} onChange={(e) => setBank({ ...bank, accountHolder: e.target.value })} />
-                    <TextField size="small" label={t('hr.bank.name')} value={bank.bankName} onChange={(e) => setBank({ ...bank, bankName: e.target.value })} />
-                    <TextField size="small" label={t('hr.bank.ifsc')} value={bank.ifsc} onChange={(e) => setBank({ ...bank, ifsc: e.target.value.toUpperCase() })} />
-                    <TextField size="small" label={t('hr.bank.account')} value={bank.accountNumber} onChange={(e) => setBank({ ...bank, accountNumber: e.target.value })} autoComplete="off" slotProps={{ htmlInput: { inputMode: 'numeric' } }} />
+                    <FormField label={t('hr.bank.holder')}>
+                      <TextInput value={bank.accountHolder} onChange={(e) => setBank({ ...bank, accountHolder: e.target.value })} />
+                    </FormField>
+                    <FormField label={t('hr.bank.name')}>
+                      <TextInput value={bank.bankName} onChange={(e) => setBank({ ...bank, bankName: e.target.value })} />
+                    </FormField>
+                    <FormField label={t('hr.bank.ifsc')}>
+                      <TextInput value={bank.ifsc} onChange={(e) => setBank({ ...bank, ifsc: e.target.value.toUpperCase() })} />
+                    </FormField>
+                    <FormField label={t('hr.bank.account')}>
+                      <TextInput value={bank.accountNumber} onChange={(e) => setBank({ ...bank, accountNumber: e.target.value })} autoComplete="off" slotProps={{ htmlInput: { inputMode: 'numeric' } }} />
+                    </FormField>
                   </Box>
                   <Button sx={{ mt: 1.5 }} variant="outlined" onClick={saveBankDetails} disabled={pending || !bank.accountNumber || !bank.ifsc || !bank.bankName || !bank.accountHolder}>
                     {t('hr.bank.save')}

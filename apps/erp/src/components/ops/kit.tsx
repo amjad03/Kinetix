@@ -8,18 +8,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
 import { usePathname } from 'next/navigation';
-import { useState, useTransition, type ReactNode } from 'react';
-import { TableFrame } from '@/components/DataTable';
-import { Dialog, EmptyState, FormField, StatusPill, TextInput } from '@/components/ui';
+import { useMemo, useState, useTransition, type ReactNode } from 'react';
+import { DataTable, Dialog, EmptyState, FormField, StatusPill, TextInput, type Column, type TableFilter } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import { rupeesToPaise } from '@/lib/money';
+import type { Cell } from '@/lib/table';
 import { UUID_RE } from '@/lib/ops';
 import type { ActionResult } from '@/lib/types';
 
@@ -140,37 +135,31 @@ export interface Col<T> {
   label: string;
   cell: (row: T) => ReactNode;
   num?: boolean;
+  /** The value to sort and search by; defaults to the cell itself when it is text or a number. */
+  sort?: (row: T) => Cell;
 }
 
-/** A plain table in the ERP's frame, or an empty state. */
-export function Grid<T>({ cols, rows, empty, testId, tint }: { cols: Col<T>[]; rows: T[]; empty: string; testId?: string; tint?: (row: T) => boolean }) {
+/** A list in the shared DataTable (sortable columns, search and paging once it is long), or an empty state. */
+export function Grid<T>({ cols, rows, empty, testId, tint, exportName, filters }: { cols: Col<T>[]; rows: T[]; empty: string; testId?: string; tint?: (row: T) => boolean; exportName?: string; filters?: TableFilter<T>[] }) {
+  const ids = useMemo(() => new Map(rows.map((r, i) => [r, String(i)])), [rows]);
   if (rows.length === 0) return <EmptyState icon={<Box component="span">·</Box>} title={empty} dense testId={testId ? `${testId}-empty` : undefined} />;
-  return (
-    <TableFrame testId={testId}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {cols.map((c) => (
-              <TableCell key={c.label} align={c.num ? 'right' : 'left'} sx={{ whiteSpace: 'nowrap' }}>
-                {c.label}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((r, i) => (
-            <TableRow key={i} sx={tint?.(r) ? { bgcolor: 'm3.errorContainer' } : undefined}>
-              {cols.map((c) => (
-                <TableCell key={c.label} align={c.num ? 'right' : 'left'} sx={c.num ? { fontVariantNumeric: 'tabular-nums' } : undefined}>
-                  {c.cell(r)}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableFrame>
-  );
+  const columns: Column<T>[] = cols.map((c, i) => ({
+    id: `c${i}`,
+    header: c.label,
+    align: c.num ? 'right' : 'left',
+    cell: c.num ? (r) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{c.cell(r)}</span> : c.cell,
+    ...(c.label
+      ? {
+          sort:
+            c.sort ??
+            ((r: T) => {
+              const v = c.cell(r);
+              return typeof v === 'string' || typeof v === 'number' ? v : null;
+            }),
+        }
+      : { csv: false as const }),
+  }));
+  return <DataTable testId={testId} label={testId ?? 'list'} columns={columns} rows={rows} rowId={(r) => ids.get(r) ?? ''} rowTone={tint ? (r) => (tint(r) ? 'danger' : undefined) : undefined} exportName={exportName} filters={filters} bare={rows.length <= 10 && !filters && !exportName} />;
 }
 
 /** A button that runs one server action and reports it in the toast. */

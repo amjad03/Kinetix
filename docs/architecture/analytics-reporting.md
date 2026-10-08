@@ -1,7 +1,7 @@
 # Analytics and reporting
 
 Code: `services/api/src/analytics/`. ERP: Reports and analytics page and the global search box
-(`apps/erp/src/lib/insights.ts`). Migrations 0082, 0083, 0085.
+(`apps/erp/src/lib/insights.ts`). Migrations 0082, 0083 (report tables), 0085 and 0086.
 
 ## Catalogue (`catalogue.ts`)
 
@@ -27,7 +27,24 @@ dates use the institution's time zone.
 | `GET runs` | History of runs (`report_runs`: rows, status, delivery) |
 | `GET/POST/PATCH/DELETE schedules` | Scheduled reports (`report_schedules`): daily, weekly or monthly, CSV or PDF, recipients |
 | `GET accreditation/:framework` | NAAC / NIRF / AISHE data pack as a ZIP of CSVs (flag `analytics.accreditation`) |
-| `GET/POST/DELETE placements`, `research` | Placement offers and research outputs entry |
+
+## Placement and research figures
+
+Analytics keeps no copy of placement or research data. `sources.ts` defines two derived tables over
+the domain tables, and the KPIs, the `placement.offers` and `research.outputs` reports and the
+NAAC / NIRF / AISHE packs all read them:
+
+- **Placement offers**: `placement_offers` joined to `placement_drives` and `placement_companies`.
+  The package is the offer's `ctc_lpa` converted to paise (1 LPA = 10,000,000 paise). `accepted`
+  reads as `joined`; offers still standing are `offered` and `joined`.
+- **Research outputs**: `publications` (journal = paper, conference, book and chapter = book),
+  `patents` (by granted or filed date), presented or organised `conferences` not already a
+  publication, and non-cancelled `research_projects` carrying the grants sanctioned to them.
+  Publications are dated 1 January of their year.
+
+Data entry happens in the placements and research modules. The `placement_records` and
+`research_outputs` tables from migration 0083, and the analytics `placements` / `research`
+endpoints that wrote to them, were dropped in migration 0086.
 
 ## Scheduling and delivery
 

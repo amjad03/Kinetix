@@ -14,10 +14,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition, type ChangeEvent, type FormEvent } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { assignEnquiry, createEnquiry, loadEnquiry, logActivity, moveEnquiry } from '@/app/(dashboard)/admissions/actions';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
@@ -112,25 +112,37 @@ function NewEnquiry({ programs, onClose }: { programs: Props['programs']; onClos
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 0.5 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField label={t('adm.field.name')} value={f.name} onChange={set('name')} required autoFocus />
-            <TextField label={t('adm.field.phone')} value={f.phone} onChange={set('phone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
-            <TextField label={t('adm.field.email')} value={f.email} onChange={set('email')} type="email" />
-            <TextField select label={t('adm.field.program')} value={f.programId} onChange={set('programId')}>
-              <MenuItem value="">{t('adm.enquiry.anyProgram')}</MenuItem>
-              {programs.map((p) => (
-                <MenuItem key={p.id} value={p.id}>
-                  {p.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField select label={t('adm.field.source')} value={f.source} onChange={set('source')}>
-              {ENQUIRY_SOURCES.filter((s) => s !== 'web').map((s) => (
-                <MenuItem key={s} value={s}>
-                  {t(`adm.source.${s}` as MessageKey)}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField label={t('adm.field.message')} value={f.message} onChange={set('message')} multiline minRows={2} />
+            <FormField label={t('adm.field.name')} required>
+              <TextInput value={f.name} onChange={set('name')} required autoFocus />
+            </FormField>
+            <FormField label={t('adm.field.phone')} required>
+              <TextInput value={f.phone} onChange={set('phone')} required slotProps={{ htmlInput: { inputMode: 'tel' } }} />
+            </FormField>
+            <FormField label={t('adm.field.email')}>
+              <TextInput value={f.email} onChange={set('email')} type="email" />
+            </FormField>
+            <FormField label={t('adm.field.program')}>
+              <TextInput select value={f.programId} onChange={set('programId')}>
+                <MenuItem value="">{t('adm.enquiry.anyProgram')}</MenuItem>
+                {programs.map((p) => (
+                  <MenuItem key={p.id} value={p.id}>
+                    {p.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('adm.field.source')}>
+              <TextInput select value={f.source} onChange={set('source')}>
+                {ENQUIRY_SOURCES.filter((s) => s !== 'web').map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {t(`adm.source.${s}` as MessageKey)}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('adm.field.message')}>
+              <TextInput value={f.message} onChange={set('message')} multiline minRows={2} />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -208,14 +220,16 @@ function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsell
                 </Alert>
               )}
             </Box>
-            <TextField select size="small" label={t('adm.enquiry.counsellor')} value={e.counsellorId ?? ''} disabled={pending} onChange={(ev) => run(() => assignEnquiry(id, ev.target.value || null))}>
-              <MenuItem value="">{t('adm.enquiry.unassigned')}</MenuItem>
-              {counsellors.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.fullName}
-                </MenuItem>
-              ))}
-            </TextField>
+            <FormField label={t('adm.enquiry.counsellor')}>
+              <TextInput select value={e.counsellorId ?? ''} disabled={pending} onChange={(ev) => run(() => assignEnquiry(id, ev.target.value || null))}>
+                <MenuItem value="">{t('adm.enquiry.unassigned')}</MenuItem>
+                {counsellors.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.fullName}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 {t('adm.enquiry.moveTo')} ({t(`adm.stage.${e.stage}` as MessageKey)})
@@ -250,23 +264,27 @@ function EnquiryDesk({ id, counsellors, today, onClose }: { id: string; counsell
                 </Typography>
                 <Stack spacing={1.5}>
                   <Stack direction="row" spacing={1}>
-                    <TextField select size="small" label={t('adm.field.kind')} value={note.kind} onChange={(ev) => setNote({ ...note, kind: ev.target.value })} sx={{ minWidth: 130 }}>
-                      {ACTIVITY_KINDS.map((k) => (
-                        <MenuItem key={k} value={k}>
-                          {t(`adm.kind.${k}` as MessageKey)}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                    <TextField
-                      size="small"
-                      type="date"
-                      label={t('adm.enquiry.nextFollowUp')}
-                      value={note.nextFollowUpOn}
-                      onChange={(ev) => setNote({ ...note, nextFollowUpOn: ev.target.value })}
-                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
-                    />
+                    <FormField label={t('adm.field.kind')}>
+                      <TextInput select value={note.kind} onChange={(ev) => setNote({ ...note, kind: ev.target.value })} sx={{ minWidth: 130 }}>
+                        {ACTIVITY_KINDS.map((k) => (
+                          <MenuItem key={k} value={k}>
+                            {t(`adm.kind.${k}` as MessageKey)}
+                          </MenuItem>
+                        ))}
+                      </TextInput>
+                    </FormField>
+                    <FormField label={t('adm.enquiry.nextFollowUp')}>
+                      <TextInput
+                        type="date"
+                        value={note.nextFollowUpOn}
+                        onChange={(ev) => setNote({ ...note, nextFollowUpOn: ev.target.value })}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
+                      />
+                    </FormField>
                   </Stack>
-                  <TextField size="small" label={t('adm.field.note')} value={note.note} onChange={(ev) => setNote({ ...note, note: ev.target.value })} multiline minRows={2} />
+                  <FormField label={t('adm.field.note')}>
+                    <TextInput value={note.note} onChange={(ev) => setNote({ ...note, note: ev.target.value })} multiline minRows={2} />
+                  </FormField>
                   <Box>
                     <Button type="submit" variant="contained" size="small" disabled={pending || !note.note.trim()}>
                       {t('adm.enquiry.log')}

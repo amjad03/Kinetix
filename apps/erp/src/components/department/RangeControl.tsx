@@ -8,12 +8,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { deptQuery, MAX_RANGE_DAYS, RANGE_LABEL, type DeptRange, type RangeKey } from '@/lib/department';
 import { addDays, daysBetween } from '@/lib/dates';
 import { useI18n } from '@/i18n/client';
@@ -85,15 +85,18 @@ function CustomDialog({ range, today, onClose, onApply }: { range: DeptRange; to
         <DialogTitle>{t('dept.range.title')}</DialogTitle>
         <DialogContent>
           <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label={t('dept.range.from')}
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today, min: addDays(today, -730) } }}
-              fullWidth
-            />
-            <TextField label={t('dept.range.to')} type="date" value={to} onChange={(e) => setTo(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} fullWidth />
+            <FormField label={t('dept.range.from')}>
+              <TextInput
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today, min: addDays(today, -730) } }}
+                fullWidth
+              />
+            </FormField>
+            <FormField label={t('dept.range.to')}>
+              <TextInput type="date" value={to} onChange={(e) => setTo(e.target.value)} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: today } }} fullWidth />
+            </FormField>
           </Stack>
           <Typography variant="caption" color={error && from && to ? 'error' : 'text.secondary'} component="p" sx={{ mt: 1.5 }}>
             {error && from && to ? error : t('dept.range.help', { n: MAX_RANGE_DAYS })}

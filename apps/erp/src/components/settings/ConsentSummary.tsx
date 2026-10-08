@@ -7,15 +7,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { SegmentBar } from '@/components/Bars';
-import { TableFrame } from '@/components/DataTable';
+import { DataTable } from '@/components/ui';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
 import { consentShares, type ConsentSummary } from '@/lib/settings';
@@ -24,7 +19,6 @@ import { consentShares, type ConsentSummary } from '@/lib/settings';
 export function ConsentSummaryView({ summary }: { summary: ConsentSummary }) {
   const { t } = useI18n();
   const [notice, setNotice] = useState(false);
-  const num = { fontVariantNumeric: 'tabular-nums', textAlign: 'right' } as const;
   return (
     <Box component="section" aria-labelledby="consent-title" id="consent" data-testid="consent-summary">
       <SectionTitle id="consent-title">
@@ -39,41 +33,44 @@ export function ConsentSummaryView({ summary }: { summary: ConsentSummary }) {
         <Chip size="small" variant="outlined" label={t('consent.notice', { version: summary.noticeVersion })} data-testid="consent-version" />
         <Chip size="small" variant="outlined" label={t('consent.students', { n: summary.students })} data-testid="consent-students" />
       </Box>
-      <TableFrame testId="consent-table">
-        <Table sx={{ minWidth: 720 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('consent.col.purpose')}</TableCell>
-              <TableCell sx={num}>{t('consent.col.granted')}</TableCell>
-              <TableCell sx={num}>{t('consent.col.withdrawn')}</TableCell>
-              <TableCell sx={num}>{t('consent.col.notAsked')}</TableCell>
-              <TableCell sx={{ width: 200 }} />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {summary.purposes.map((p) => {
-              const share = consentShares(p);
-              return (
-                <TableRow key={p.purpose} data-testid="consent-row" data-purpose={p.purpose}>
-                  <TableCell>
-                    <Typography variant="subtitle2">{t(`consent.purpose.${p.purpose}`)}</Typography>
-                    <Typography variant="caption" color="text.secondary" component="p" sx={{ maxWidth: 440 }}>
-                      {t(`consent.purpose.${p.purpose}.help`)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" component="p" sx={{ maxWidth: 440, fontStyle: 'italic' }}>
-                      {t(`consent.purpose.${p.purpose}.no`)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={num} data-testid="consent-granted">
-                    {p.granted}
-                  </TableCell>
-                  <TableCell sx={{ ...num, color: p.withdrawn ? 'error.main' : undefined }} data-testid="consent-withdrawn">
-                    {p.withdrawn}
-                  </TableCell>
-                  <TableCell sx={num} data-testid="consent-not-asked">
-                    {p.notAsked}
-                  </TableCell>
-                  <TableCell>
+      <DataTable
+          testId="consent-table"
+          label={t('consent.col.purpose')}
+          rows={summary.purposes}
+          rowId={(p) => p.purpose}
+          exportName="consent-summary"
+          bare
+          rowAttrs={(p) => ({ 'data-testid': 'consent-row', 'data-purpose': p.purpose })}
+          columns={[
+            {
+              id: 'purpose',
+              header: t('consent.col.purpose'),
+              rowHeader: true,
+              sort: (p) => t(`consent.purpose.${p.purpose}`),
+              cell: (p) => (
+                <>
+                  <Typography variant="subtitle2">{t(`consent.purpose.${p.purpose}`)}</Typography>
+                  <Typography variant="caption" color="text.secondary" component="p" sx={{ maxWidth: 440 }}>
+                    {t(`consent.purpose.${p.purpose}.help`)}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" component="p" sx={{ maxWidth: 440, fontStyle: 'italic' }}>
+                    {t(`consent.purpose.${p.purpose}.no`)}
+                  </Typography>
+                </>
+              ),
+            },
+            { id: 'granted', header: t('consent.col.granted'), align: 'right', sort: (p) => p.granted, cell: (p) => <span data-testid="consent-granted">{p.granted}</span> },
+            { id: 'withdrawn', header: t('consent.col.withdrawn'), align: 'right', sort: (p) => p.withdrawn, cell: (p) => <Box component="span" sx={{ color: p.withdrawn ? 'error.main' : undefined }} data-testid="consent-withdrawn">{p.withdrawn}</Box> },
+            { id: 'notAsked', header: t('consent.col.notAsked'), align: 'right', sort: (p) => p.notAsked, cell: (p) => <span data-testid="consent-not-asked">{p.notAsked}</span> },
+            {
+              id: 'share',
+              header: '',
+              csv: false,
+              width: 200,
+              cell: (p) => {
+                const share = consentShares(p);
+                return (
+                  <>
                     <SegmentBar
                       label={t('consent.bar', { granted: p.granted, withdrawn: p.withdrawn, notAsked: p.notAsked })}
                       parts={[
@@ -87,13 +84,12 @@ export function ConsentSummaryView({ summary }: { summary: ConsentSummary }) {
                         {t('consent.of', { pct: share.granted, n: summary.students })}
                       </Typography>
                     )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableFrame>
+                  </>
+                );
+              },
+            },
+          ]}
+        />
       <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5, maxWidth: 820 }}>
         {t('consent.notAskedNote')}
       </Typography>

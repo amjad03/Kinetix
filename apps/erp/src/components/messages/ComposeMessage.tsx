@@ -19,11 +19,11 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Switch from '@mui/material/Switch';
-import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { useMemo, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { sendBroadcast } from '@/app/(dashboard)/messages/actions';
 import type { Priority, Structure } from '@/lib/types';
 import { useI18n } from '@/i18n/client';
@@ -133,29 +133,31 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
           </Alert>
         )}
 
-        <TextField
-          label={t('msg.title')}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          error={!!titleError}
-          helperText={titleError || `${title.length}/120`}
-          slotProps={{ htmlInput: { maxLength: 120 }, formHelperText: { sx: { textAlign: titleError ? 'left' : 'right' } } }}
-          sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
-          required
-        />
-        <TextField
-          label={t('msg.body')}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          error={!!bodyError}
-          helperText={bodyError || `${body.length}/2000`}
-          multiline
-          minRows={4}
-          maxRows={10}
-          slotProps={{ htmlInput: { maxLength: 2000 }, formHelperText: { sx: { textAlign: bodyError ? 'left' : 'right' } } }}
-          sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
-          required
-        />
+        <FormField label={t('msg.title')} required>
+          <TextInput
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            error={!!titleError}
+            helperText={titleError || `${title.length}/120`}
+            slotProps={{ htmlInput: { maxLength: 120 }, formHelperText: { sx: { textAlign: titleError ? 'left' : 'right' } } }}
+            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
+            required
+          />
+        </FormField>
+        <FormField label={t('msg.body')} required>
+          <TextInput
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            error={!!bodyError}
+            helperText={bodyError || `${body.length}/2000`}
+            multiline
+            minRows={4}
+            maxRows={10}
+            slotProps={{ htmlInput: { maxLength: 2000 }, formHelperText: { sx: { textAlign: bodyError ? 'left' : 'right' } } }}
+            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
+            required
+          />
+        </FormField>
 
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0 }}>
           <Typography component="legend" variant="subtitle2" sx={{ mb: 1 }}>
@@ -235,13 +237,14 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
                 })
               }
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={mode === 'programs' ? t('msg.mode.programs') : t('msg.mode.classes')}
-                  placeholder={(mode === 'programs' ? programs : classes).length ? undefined : mode === 'programs' ? 'BCom, BCA…' : 'BCom Sem 3 A…'}
-                  error={!!audienceError}
-                  helperText={audienceError || undefined}
-                />
+                <FormField label={mode === 'programs' ? t('msg.mode.programs') : t('msg.mode.classes')}>
+                  <TextInput
+                    {...params}
+                    placeholder={(mode === 'programs' ? programs : classes).length ? undefined : mode === 'programs' ? 'BCom, BCA…' : 'BCom Sem 3 A…'}
+                    error={!!audienceError}
+                    helperText={audienceError || undefined}
+                  />
+                </FormField>
               )}
               data-testid="audience-picker"
             />
@@ -252,20 +255,21 @@ export function ComposeMessage({ structure }: { structure: Structure }) {
         </Box>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, alignItems: 'start' }}>
-          <TextField
-            select
-            label={t('msg.expires')}
-            value={ttl}
-            onChange={(e) => setTtl(Number(e.target.value))}
-            helperText={t('msg.expiresHelp')}
-            sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
-          >
-            {EXPIRY_OPTIONS.map((o) => (
-              <MenuItem key={o.minutes} value={o.minutes}>
-                {t(o.label)}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormField label={t('msg.expires')}>
+            <TextInput
+              select
+              value={ttl}
+              onChange={(e) => setTtl(Number(e.target.value))}
+              helperText={t('msg.expiresHelp')}
+              sx={{ bgcolor: 'kx.pane', '& .MuiFormHelperText-root': { bgcolor: 'kx.tonal', m: 0, px: 1.75, pt: 0.5 } }}
+            >
+              {EXPIRY_OPTIONS.map((o) => (
+                <MenuItem key={o.minutes} value={o.minutes}>
+                  {t(o.label)}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </FormField>
           <Box>
             <FormControlLabel
               sx={{ ml: -1 }}

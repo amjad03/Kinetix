@@ -34,6 +34,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { addVideo, deleteVideo, editVideo, getTopicVideos, importPlaylist, previewPlaylist, reorderVideos } from '@/app/(dashboard)/platform/concept-videos/actions';
 import { useI18n } from '@/i18n/client';
 import { filterChapters, formatDuration, importItems, initialChoices, isPlaylistLink, move, thumbnail, watchUrl, youtubeId, type ImportChoice } from '@/lib/concept-videos';
@@ -57,16 +58,18 @@ function Thumb({ id, title, width = 120 }: { id: string; title: string; width?: 
   );
 }
 
-function LanguageSelect({ value, onChange, size = 'small', testId }: { value: VideoLanguage; onChange: (l: VideoLanguage) => void; size?: 'small' | 'medium'; testId?: string }) {
+function LanguageSelect({ value, onChange, testId }: { value: VideoLanguage; onChange: (l: VideoLanguage) => void; testId?: string }) {
   const { t } = useI18n();
   return (
-    <TextField select size={size} label={t('pv.language')} value={value} onChange={(e) => onChange(e.target.value as VideoLanguage)} sx={{ minWidth: 140 }} slotProps={{ htmlInput: { 'data-testid': testId } }}>
-      {LANGS.map((l) => (
-        <MenuItem key={l} value={l}>
-          {t(LANG_LABEL[l])}
-        </MenuItem>
-      ))}
-    </TextField>
+    <FormField label={t('pv.language')}>
+      <TextInput select value={value} onChange={(e) => onChange(e.target.value as VideoLanguage)} sx={{ minWidth: 140 }} slotProps={{ htmlInput: { 'data-testid': testId } }}>
+        {LANGS.map((l) => (
+          <MenuItem key={l} value={l}>
+            {t(LANG_LABEL[l])}
+          </MenuItem>
+        ))}
+      </TextInput>
+    </FormField>
   );
 }
 
@@ -392,17 +395,19 @@ function AddVideoForm({ courseId, topicId, defaultLanguage, onAdded }: { courseI
       sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-start', mt: 1.5 }}
     >
       {id && <Thumb id={id} title={title || url} width={96} />}
-      <TextField
-        size="small"
-        label={t('pv.link')}
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        error={!!hint}
-        helperText={hint ?? t('pv.linkHelp')}
-        sx={{ flex: '2 1 260px' }}
-        slotProps={{ htmlInput: { 'data-testid': 'video-link' } }}
-      />
-      <TextField size="small" label={t('pv.titleOptional')} value={title} onChange={(e) => setTitle(e.target.value)} sx={{ flex: '2 1 220px' }} slotProps={{ htmlInput: { maxLength: 200 } }} />
+      <FormField label={t('pv.link')}>
+        <TextInput
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          error={!!hint}
+          helperText={hint ?? t('pv.linkHelp')}
+          sx={{ flex: '2 1 260px' }}
+          slotProps={{ htmlInput: { 'data-testid': 'video-link' } }}
+        />
+      </FormField>
+      <FormField label={t('pv.titleOptional')}>
+        <TextInput value={title} onChange={(e) => setTitle(e.target.value)} sx={{ flex: '2 1 220px' }} slotProps={{ htmlInput: { maxLength: 200 } }} />
+      </FormField>
       <LanguageSelect value={language} onChange={setLanguage} />
       <Button type="submit" variant="contained" startIcon={pending ? <CircularProgress size={16} color="inherit" /> : <Add />} disabled={!id || pending} sx={{ mt: 0.25 }}>
         {t('pv.addVideo')}
@@ -428,8 +433,10 @@ function EditVideoDialog({ video, onClose }: { video: ConceptVideo; onClose: (sa
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Thumb id={video.youtubeVideoId} title={video.title} width={240} />
-          <TextField label={t('pv.title')} value={title} onChange={(e) => setTitle(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
-          <LanguageSelect value={language} onChange={setLanguage} size="medium" />
+          <FormField label={t('pv.title')}>
+            <TextInput value={title} onChange={(e) => setTitle(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} />
+          </FormField>
+          <LanguageSelect value={language} onChange={setLanguage} />
           {error && <Alert severity="error">{error}</Alert>}
         </Stack>
       </DialogContent>
@@ -491,7 +498,9 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
               }}
               sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-start' }}
             >
-              <TextField size="small" label={t('pv.import.link')} value={url} onChange={(e) => setUrl(e.target.value)} sx={{ flex: '1 1 320px' }} />
+              <FormField label={t('pv.import.link')}>
+                <TextInput value={url} onChange={(e) => setUrl(e.target.value)} sx={{ flex: '1 1 320px' }} />
+              </FormField>
               <Button type="submit" variant="outlined" disabled={!url.trim() || pending} sx={{ mt: 0.25 }}>
                 {t('pv.import.find')}
               </Button>
@@ -519,23 +528,23 @@ function ImportDialog({ chapter, courseId, defaultLanguage, available, onClose }
                             {already ? `${v.durationSeconds ? ' · ' : ''}${t('pv.import.already')}` : ''}
                           </Typography>
                         </Box>
-                        <TextField
-                          select
-                          size="small"
-                          label={t('pv.import.topic')}
-                          value={c?.topicId ?? ''}
-                          onChange={(e) => set(v.youtubeVideoId, { topicId: e.target.value, include: !!e.target.value })}
-                          sx={{ width: 260 }}
-                        >
-                          <MenuItem value="">
-                            <em>{t('pv.import.noTopic')}</em>
-                          </MenuItem>
-                          {preview.topics.map((tp) => (
-                            <MenuItem key={tp.id} value={tp.id}>
-                              {tp.title}
+                        <FormField label={t('pv.import.topic')}>
+                          <TextInput
+                            select
+                            value={c?.topicId ?? ''}
+                            onChange={(e) => set(v.youtubeVideoId, { topicId: e.target.value, include: !!e.target.value })}
+                            sx={{ width: 260 }}
+                          >
+                            <MenuItem value="">
+                              <em>{t('pv.import.noTopic')}</em>
                             </MenuItem>
-                          ))}
-                        </TextField>
+                            {preview.topics.map((tp) => (
+                              <MenuItem key={tp.id} value={tp.id}>
+                                {tp.title}
+                              </MenuItem>
+                            ))}
+                          </TextInput>
+                        </FormField>
                       </Box>
                     );
                   })}

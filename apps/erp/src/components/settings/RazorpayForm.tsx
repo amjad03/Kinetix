@@ -10,10 +10,10 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Snackbar from '@mui/material/Snackbar';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition, type FocusEvent } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { saveRazorpay, testRazorpay } from '@/app/(dashboard)/settings/actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { useI18n } from '@/i18n/client';
@@ -132,51 +132,55 @@ export function RazorpayForm({ initial, webhookUrl }: { initial: RazorpayAccount
           }}
           sx={{ mt: 2, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1.2fr 1fr 1fr' }, alignItems: 'start' }}
         >
-          <TextField
-            label={t('payments.keyId')}
-            value={keyId}
-            onChange={(e) => setKeyId(e.target.value)}
-            required
-            error={!!show(['keyId'])}
-            helperText={show(['keyId']) ?? t('payments.keyIdHelp', { live: 'rzp_live_', test: 'rzp_test_' })}
-            slotProps={{ htmlInput: { spellCheck: false, 'data-testid': 'razorpay-key-id' } }}
-          />
-          <TextField
-            label={t('payments.keySecret')}
-            type="password"
-            value={keySecret}
-            onChange={(e) => setKeySecret(e.target.value)}
-            required={!saved.configured}
-            error={!!show(['secretsRequired', 'keySecretRequired', 'secretShort'])}
-            helperText={show(['secretsRequired', 'keySecretRequired', 'secretShort']) ?? secretHelp}
-            slotProps={{ htmlInput: { autoComplete: 'new-password', 'data-testid': 'razorpay-key-secret' } }}
-          />
-          <TextField
-            label={t('payments.webhookSecret')}
-            type="password"
-            value={webhookSecret}
-            onChange={(e) => setWebhookSecret(e.target.value)}
-            required={!saved.configured}
-            helperText={saved.configured ? t('payments.secretSavedNoHint') : t('payments.secretNew')}
-            slotProps={{ htmlInput: { autoComplete: 'new-password', 'data-testid': 'razorpay-webhook-secret' } }}
-          />
-          <TextField
-            label={t('payments.webhookUrl')}
-            value={webhookUrl}
-            sx={{ gridColumn: '1 / -1' }}
-            slotProps={{
-              htmlInput: { readOnly: true, 'data-testid': 'razorpay-webhook-url', onFocus: (e: FocusEvent<HTMLInputElement>) => e.target.select() },
-              input: {
-                endAdornment: (
-                  <Tooltip title={t('payments.copy')}>
-                    <IconButton aria-label={t('payments.copy')} onClick={copy} edge="end">
-                      <ContentCopyOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                ),
-              },
-            }}
-          />
+          <FormField label={t('payments.keyId')} required>
+            <TextInput
+              value={keyId}
+              onChange={(e) => setKeyId(e.target.value)}
+              required
+              error={!!show(['keyId'])}
+              helperText={show(['keyId']) ?? t('payments.keyIdHelp', { live: 'rzp_live_', test: 'rzp_test_' })}
+              slotProps={{ htmlInput: { spellCheck: false, 'data-testid': 'razorpay-key-id' } }}
+            />
+          </FormField>
+          <FormField label={t('payments.keySecret')} required={!saved.configured}>
+            <TextInput
+              type="password"
+              value={keySecret}
+              onChange={(e) => setKeySecret(e.target.value)}
+              required={!saved.configured}
+              error={!!show(['secretsRequired', 'keySecretRequired', 'secretShort'])}
+              helperText={show(['secretsRequired', 'keySecretRequired', 'secretShort']) ?? secretHelp}
+              slotProps={{ htmlInput: { autoComplete: 'new-password', 'data-testid': 'razorpay-key-secret' } }}
+            />
+          </FormField>
+          <FormField label={t('payments.webhookSecret')} required={!saved.configured}>
+            <TextInput
+              type="password"
+              value={webhookSecret}
+              onChange={(e) => setWebhookSecret(e.target.value)}
+              required={!saved.configured}
+              helperText={saved.configured ? t('payments.secretSavedNoHint') : t('payments.secretNew')}
+              slotProps={{ htmlInput: { autoComplete: 'new-password', 'data-testid': 'razorpay-webhook-secret' } }}
+            />
+          </FormField>
+          <FormField label={t('payments.webhookUrl')}>
+            <TextInput
+              value={webhookUrl}
+              sx={{ gridColumn: '1 / -1' }}
+              slotProps={{
+                htmlInput: { readOnly: true, 'data-testid': 'razorpay-webhook-url', onFocus: (e: FocusEvent<HTMLInputElement>) => e.target.select() },
+                input: {
+                  endAdornment: (
+                    <Tooltip title={t('payments.copy')}>
+                      <IconButton aria-label={t('payments.copy')} onClick={copy} edge="end">
+                        <ContentCopyOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  ),
+                },
+              }}
+            />
+          </FormField>
           {result && (
             <Alert severity={result.ok ? 'success' : 'error'} sx={{ gridColumn: '1 / -1' }} data-testid="razorpay-test-result">
               {result.text}

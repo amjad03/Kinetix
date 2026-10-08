@@ -78,8 +78,13 @@ describe('analytics and reporting', () => {
 
   describe('KPIs and drill-downs', () => {
     it('computes institution KPIs across domains', async () => {
-      await http().post('/v1/analytics/placements').set(as('principal')).send({ studentId: t.students[0].id, company: 'Acme', role: 'Analyst', packagePaise: 6_00_000_00, offeredOn: today, status: 'joined' }).expect(201);
-      await http().post('/v1/analytics/research').set(as('hr_manager')).send({ staffUserId: t.teacher.id, kind: 'paper', title: 'On fees', publishedOn: today, grantPaise: 50_000_00 }).expect(201);
+      // The figures come from the placements and research domains: an accepted 6 LPA offer, and a project with a 50,000 grant.
+      const [company] = await db.insert(s.placementCompanies).values({ tenantId: t.tenantId, name: 'Acme' }).returning();
+      const [drive] = await db.insert(s.placementDrives).values({ tenantId: t.tenantId, companyId: company.id, title: 'Campus drive', roleTitle: 'Analyst', ctcLpa: 6, status: 'completed' }).returning();
+      const [reg] = await db.insert(s.driveRegistrations).values({ tenantId: t.tenantId, driveId: drive.id, studentId: t.students[0].id, status: 'selected', cgpaAt: 8, backlogsAt: 0 }).returning();
+      await db.insert(s.placementOffers).values({ tenantId: t.tenantId, driveId: drive.id, registrationId: reg.id, studentId: t.students[0].id, roleTitle: 'Analyst', ctcLpa: 6, status: 'accepted', offeredOn: today });
+      const [project] = await db.insert(s.researchProjects).values({ tenantId: t.tenantId, code: 'RP-1', title: 'On fees', piUserId: t.teacher.id, startsOn: today }).returning();
+      await db.insert(s.researchGrants).values({ tenantId: t.tenantId, projectId: project.id, agency: 'UGC', sanctionedPaise: 50_000_00, startsOn: today, endsOn: today });
       const k = (await http().get('/v1/analytics/kpis').set(as('principal')).expect(200)).body;
       expect(k.enrolment).toMatchObject({ active: 3, total: 3 });
       expect(k.attendance).toEqual({ percent: 75, marks: 4 });
@@ -121,8 +126,6 @@ describe('analytics and reporting', () => {
       await http().get('/v1/analytics/drilldown?metric=enrolment&by=section').set(as('accountant')).expect(403);
       await http().get('/v1/analytics/drilldown?metric=fees&by=section').set(as('hod')).expect(403);
       await http().get('/v1/analytics/classroom').set(as('accountant')).expect(403);
-      await http().post('/v1/analytics/placements').set(as('hr_manager')).send({ studentId: t.students[0].id, company: 'X', packagePaise: 1, offeredOn: today }).expect(403);
-      await http().post('/v1/analytics/placements').set(as('principal')).send({ studentId: other.students[0].id, company: 'X', packagePaise: 1, offeredOn: today }).expect(404);
       // Another institution sees none of it.
       const o = (await http().get('/v1/analytics/kpis').set(as('outsider')).expect(200)).body;
       expect(o.fees.billedPaise).toBe(0);
@@ -263,7 +266,7 @@ describe('analytics and reporting', () => {
       expect(get('enrolment_by_program')).toEqual([{ program: 'BCom', gender: 'Not recorded', students: 3 }]);
       expect(get('results')).toMatchObject([{ program: 'BCom', students: 3, passed: 2, pass_percent: 66.7 }]);
       expect(get('placement')).toMatchObject([{ program: 'BCom', offers: 1, students: 1 }]);
-      expect(get('research')).toMatchObject([{ kind: 'paper', outputs: 1 }]);
+      expect(get('research')).toMatchObject([{ kind: 'project', outputs: 1, grants_paise: 50_000_00 }]);
       expect(get('student_teacher_ratio')[0]).toMatchObject({ students: 3, teaching_staff: 3 });
       expect(get('infrastructure').find((r: { resource: string }) => r.resource === 'Rooms').count).toBe(1);
       expect(get('syllabus_coverage').find((r: { class: string }) => r.class === 'BCom Sem 3 A').covered).toBe(1);

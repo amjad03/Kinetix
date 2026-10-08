@@ -11,9 +11,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { reviewVideo } from '@/app/(dashboard)/topic-videos/actions';
 import { useI18n } from '@/i18n/client';
 import { thumbnail } from '@/lib/concept-videos';
@@ -77,7 +77,9 @@ export function ApprovalQueue({ items }: { items: ManagedVideo[] }) {
       <Dialog open={!!rejecting} onClose={() => setRejecting(null)} fullWidth maxWidth="xs">
         <DialogTitle>{t('tv.reasonTitle', { title: rejecting?.title ?? '' })}</DialogTitle>
         <DialogContent>
-          <TextField autoFocus fullWidth multiline minRows={2} margin="dense" label={t('tv.reason')} value={reason} onChange={(e) => setReason(e.target.value)} error={!!error} helperText={error ?? undefined} slotProps={{ htmlInput: { maxLength: 500 } }} />
+          <FormField label={t('tv.reason')}>
+            <TextInput autoFocus fullWidth multiline minRows={2} margin="dense" value={reason} onChange={(e) => setReason(e.target.value)} error={!!error} helperText={error ?? undefined} slotProps={{ htmlInput: { maxLength: 500 } }} />
+          </FormField>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRejecting(null)}>{t('tv.cancel')}</Button>

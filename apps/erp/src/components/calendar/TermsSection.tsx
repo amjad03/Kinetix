@@ -27,10 +27,10 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Select from '@mui/material/Select';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { createTerm, deleteTerm, updateTerm } from '@/app/(dashboard)/calendar/actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { EmptyState } from '@/components/States';
@@ -159,37 +159,40 @@ function TermDialog({ term, terms, programs, onClose }: { term?: Term; terms: Te
               {error}
             </Alert>
           )}
-          <TextField
-            label={t('term.dialog.name')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            autoFocus
-            error={!!show(['name', 'nameLong'])}
-            helperText={show(['name', 'nameLong']) ?? t('term.dialog.nameHelp')}
-            slotProps={{ htmlInput: { maxLength: 150, 'data-testid': 'term-name' } }}
-          />
+          <FormField label={t('term.dialog.name')} required>
+            <TextInput
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+              error={!!show(['name', 'nameLong'])}
+              helperText={show(['name', 'nameLong']) ?? t('term.dialog.nameHelp')}
+              slotProps={{ htmlInput: { maxLength: 150, 'data-testid': 'term-name' } }}
+            />
+          </FormField>
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <TextField
-              type="date"
-              label={t('term.dialog.startsOn')}
-              value={startsOn}
-              onChange={(e) => setStartsOn(e.target.value)}
-              required
-              error={!!show(['startsOn'])}
-              helperText={show(['startsOn']) ?? ' '}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { 'data-testid': 'term-starts' } }}
-            />
-            <TextField
-              type="date"
-              label={t('term.dialog.endsOn')}
-              value={endsOn}
-              onChange={(e) => setEndsOn(e.target.value)}
-              required
-              error={!!show(['endsOn', 'range', 'overlap'])}
-              helperText={show(['endsOn', 'range', 'overlap']) ?? ' '}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startsOn || undefined, 'data-testid': 'term-ends' } }}
-            />
+            <FormField label={t('term.dialog.startsOn')} required>
+              <TextInput
+                type="date"
+                value={startsOn}
+                onChange={(e) => setStartsOn(e.target.value)}
+                required
+                error={!!show(['startsOn'])}
+                helperText={show(['startsOn']) ?? ' '}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { 'data-testid': 'term-starts' } }}
+              />
+            </FormField>
+            <FormField label={t('term.dialog.endsOn')} required>
+              <TextInput
+                type="date"
+                value={endsOn}
+                onChange={(e) => setEndsOn(e.target.value)}
+                required
+                error={!!show(['endsOn', 'range', 'overlap'])}
+                helperText={show(['endsOn', 'range', 'overlap']) ?? ' '}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startsOn || undefined, 'data-testid': 'term-ends' } }}
+              />
+            </FormField>
           </Box>
           <FormControl>
             <Typography variant="body2" color="text.secondary" id="term-who">

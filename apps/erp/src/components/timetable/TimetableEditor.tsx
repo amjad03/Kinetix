@@ -16,9 +16,9 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useMemo, useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { addSlot, changeSlot, removeSlot } from '@/app/(dashboard)/timetable/actions';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -314,93 +314,103 @@ function PeriodDialog({
                 {error}
               </Alert>
             )}
-            <TextField
-              select
-              label={t('tt.class')}
-              value={sectionId}
-              onChange={(e) => {
-                setSectionId(e.target.value);
-                const next = subjectsFor({ sections, subjects }, e.target.value);
-                setSubjectId(next.length === 1 ? next[0].id : '');
-              }}
-              required
-              disabled={view.kind === 'class' && !existing}
-            >
-              {sections.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.displayName}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label={t('tt.subject')}
-              value={classSubjects.some((s) => s.id === subjectId) ? subjectId : ''}
-              onChange={(e) => setSubjectId(e.target.value)}
-              required
-              disabled={!sectionId}
-              helperText={sectionId && classSubjects.length === 0 ? t('tt.noSubjects') : ' '}
-            >
-              {classSubjects.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.name}
-                  <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                    {s.code}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </TextField>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-              <TextField select label={t('tt.teacher')} value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required>
-                {staff.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.fullName}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField select label={t('tt.room')} value={roomId} onChange={(e) => setRoomId(e.target.value)} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
-                <MenuItem value="">
-                  <Typography component="span" color="text.secondary">
-                    {t('tt.noRoom')}
-                  </Typography>
-                </MenuItem>
-                {rooms.map((r) => (
-                  <MenuItem key={r.id} value={r.id}>
-                    {r.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1.4fr 1fr 1fr' }, gap: 2 }}>
-              <TextField select label={t('tt.day')} value={day} onChange={(e) => setDay(Number(e.target.value))} required sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}>
-                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                  <MenuItem key={n} value={n}>
-                    {weekdayName(n, locale)}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label={t('tt.starts')}
-                type="time"
-                value={startsAt}
+            <FormField label={t('tt.class')} required>
+              <TextInput
+                select
+                value={sectionId}
                 onChange={(e) => {
-                  const v = e.target.value;
-                  // Keep the period's length when the start moves.
-                  if (/^\d{2}:\d{2}$/.test(v) && /^\d{2}:\d{2}$/.test(startsAt) && /^\d{2}:\d{2}$/.test(endsAt) && endsAt > startsAt) setEndsAt(addMinutes(v, minutes(endsAt) - minutes(startsAt)));
-                  setStartsAt(v);
+                  setSectionId(e.target.value);
+                  const next = subjectsFor({ sections, subjects }, e.target.value);
+                  setSubjectId(next.length === 1 ? next[0].id : '');
                 }}
                 required
-                slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
-              />
-              <TextField
-                label={t('tt.ends')}
-                type="time"
-                value={endsAt}
-                onChange={(e) => setEndsAt(e.target.value)}
+                disabled={view.kind === 'class' && !existing}
+              >
+                {sections.map((s) => (
+                  <MenuItem key={s.id} value={s.id}>
+                    {s.displayName}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('tt.subject')} required>
+              <TextInput
+                select
+                value={classSubjects.some((s) => s.id === subjectId) ? subjectId : ''}
+                onChange={(e) => setSubjectId(e.target.value)}
                 required
-                error={!!startsAt && !!endsAt && endsAt <= startsAt}
-                slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
-              />
+                disabled={!sectionId}
+                helperText={sectionId && classSubjects.length === 0 ? t('tt.noSubjects') : ' '}
+              >
+                {classSubjects.map((s) => (
+                  <MenuItem key={s.id} value={s.id}>
+                    {s.name}
+                    <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                      {s.code}
+                    </Typography>
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <FormField label={t('tt.teacher')} required>
+                <TextInput select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required>
+                  {staff.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>
+                      {p.fullName}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('tt.room')}>
+                <TextInput select value={roomId} onChange={(e) => setRoomId(e.target.value)} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
+                  <MenuItem value="">
+                    <Typography component="span" color="text.secondary">
+                      {t('tt.noRoom')}
+                    </Typography>
+                  </MenuItem>
+                  {rooms.map((r) => (
+                    <MenuItem key={r.id} value={r.id}>
+                      {r.name}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+            </Box>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1.4fr 1fr 1fr' }, gap: 2 }}>
+              <FormField label={t('tt.day')} required>
+                <TextInput select value={day} onChange={(e) => setDay(Number(e.target.value))} required sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}>
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <MenuItem key={n} value={n}>
+                      {weekdayName(n, locale)}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              </FormField>
+              <FormField label={t('tt.starts')} required>
+                <TextInput
+                  type="time"
+                  value={startsAt}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    // Keep the period's length when the start moves.
+                    if (/^\d{2}:\d{2}$/.test(v) && /^\d{2}:\d{2}$/.test(startsAt) && /^\d{2}:\d{2}$/.test(endsAt) && endsAt > startsAt) setEndsAt(addMinutes(v, minutes(endsAt) - minutes(startsAt)));
+                    setStartsAt(v);
+                  }}
+                  required
+                  slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
+                />
+              </FormField>
+              <FormField label={t('tt.ends')} required>
+                <TextInput
+                  type="time"
+                  value={endsAt}
+                  onChange={(e) => setEndsAt(e.target.value)}
+                  required
+                  error={!!startsAt && !!endsAt && endsAt <= startsAt}
+                  slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 300 } }}
+                />
+              </FormField>
             </Box>
             {existing && (
               <Typography variant="caption" color="text.secondary">

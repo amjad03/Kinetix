@@ -8,9 +8,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition, type ReactNode } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { ActionResult } from '@/lib/types';
 
@@ -66,7 +66,9 @@ export function ReasonDialog({
             )}
             {error && <Alert severity="error">{error}</Alert>}
             {extra}
-            <TextField label={label} value={reason} onChange={(e) => setReason(e.target.value)} required={required} multiline minRows={2} autoFocus slotProps={{ htmlInput: { maxLength: 500 } }} />
+            <FormField label={label} required={required}>
+              <TextInput value={reason} onChange={(e) => setReason(e.target.value)} required={required} multiline minRows={2} autoFocus slotProps={{ htmlInput: { maxLength: 500 } }} />
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>

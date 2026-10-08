@@ -159,37 +159,3 @@ export const reportRuns = pgTable(
   },
   (t) => [index('report_runs_tenant_idx').on(t.tenantId, t.createdAt)],
 );
-
-export const placementRecords = pgTable(
-  'placement_records',
-  {
-    id: id(),
-    tenantId: tenantId(),
-    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
-    company: text('company').notNull(),
-    role: text('role').notNull().default(''),
-    packagePaise: bigint('package_paise', { mode: 'number' }).notNull().default(0),
-    offeredOn: date('offered_on').notNull(),
-    status: text('status').notNull().default('offered'), // offered | joined | declined
-    createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    createdAt: createdAt(),
-  },
-  (t) => [index('placement_records_tenant_idx').on(t.tenantId, t.offeredOn)],
-);
-
-export const researchOutputs = pgTable(
-  'research_outputs',
-  {
-    id: id(),
-    tenantId: tenantId(),
-    staffUserId: uuid('staff_user_id').references(() => users.id, { onDelete: 'set null' }),
-    kind: text('kind').notNull(), // paper | book | patent | project | conference
-    title: text('title').notNull(),
-    venue: text('venue').notNull().default(''),
-    publishedOn: date('published_on').notNull(),
-    grantPaise: bigint('grant_paise', { mode: 'number' }).notNull().default(0),
-    createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    createdAt: createdAt(),
-  },
-  (t) => [index('research_outputs_tenant_idx').on(t.tenantId, t.publishedOn)],
-);

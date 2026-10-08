@@ -13,10 +13,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
+import { FormField, TextInput } from '@/components/ui';
 import { addBoard } from '@/app/(dashboard)/boards/actions';
 import { useI18n } from '@/i18n/client';
 import type { CreatedDevice, Structure } from '@/lib/types';
@@ -81,41 +81,45 @@ function AddBoardDialog({ structure, timeZone, onClose }: { structure: Structure
           </Typography>
           <Stack spacing={2.5}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              label={t('boards.add.name')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Room 105 Board"
-              autoFocus
-              required
-              slotProps={{ htmlInput: { maxLength: 80 } }}
-            />
-            <TextField select label={t('boards.add.campus')} value={campusId} onChange={(e) => (setCampusId(e.target.value), setRoomId(''))} required>
-              {structure.campuses.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.name}
+            <FormField label={t('boards.add.name')} required>
+              <TextInput
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Room 105 Board"
+                autoFocus
+                required
+                slotProps={{ htmlInput: { maxLength: 80 } }}
+              />
+            </FormField>
+            <FormField label={t('boards.add.campus')} required>
+              <TextInput select value={campusId} onChange={(e) => (setCampusId(e.target.value), setRoomId(''))} required>
+                {structure.campuses.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
+            <FormField label={t('boards.add.room')}>
+              <TextInput
+                select
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                helperText={t('boards.add.roomHelp')}
+                slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+              >
+                <MenuItem value="">
+                  <Box component="em" sx={{ color: 'text.secondary', fontStyle: 'normal' }}>
+                    {t('boards.add.noRoom')}
+                  </Box>
                 </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label={t('boards.add.room')}
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-              helperText={t('boards.add.roomHelp')}
-              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-            >
-              <MenuItem value="">
-                <Box component="em" sx={{ color: 'text.secondary', fontStyle: 'normal' }}>
-                  {t('boards.add.noRoom')}
-                </Box>
-              </MenuItem>
-              {rooms.map((r) => (
-                <MenuItem key={r.id} value={r.id}>
-                  {r.name}
-                </MenuItem>
-              ))}
-            </TextField>
+                {rooms.map((r) => (
+                  <MenuItem key={r.id} value={r.id}>
+                    {r.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </FormField>
           </Stack>
         </DialogContent>
         <DialogActions>
