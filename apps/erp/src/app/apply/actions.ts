@@ -10,9 +10,9 @@ const SLUG = /^[a-z0-9-]{1,64}$/;
 const base = (slug: string) => `/v1/public/admissions/${slug}`;
 const bad = async (): Promise<ActionResult<never>> => ({ ok: false, error: (await getI18n()).t('adm.err.invalid') });
 
-export async function submitEnquiry(slug: string, input: { name: string; phone: string; email?: string; programId?: string; message?: string; website?: string }): Promise<ActionResult<unknown>> {
+export async function submitEnquiry(slug: string, input: { name: string; phone: string; email?: string; programId?: string; message?: string; website?: string; referralCode?: string }): Promise<ActionResult<unknown>> {
   if (!SLUG.test(slug) || (input.programId && !UUID.test(input.programId))) return bad();
-  const body = { name: input.name.trim(), phone: input.phone.trim(), website: input.website, ...(input.email?.trim() ? { email: input.email.trim() } : {}), ...(input.programId ? { programId: input.programId } : {}), ...(input.message?.trim() ? { message: input.message.trim() } : {}) };
+  const body = { name: input.name.trim(), phone: input.phone.trim(), website: input.website, ...(input.referralCode?.trim() ? { referralCode: input.referralCode.trim() } : {}), ...(input.email?.trim() ? { email: input.email.trim() } : {}), ...(input.programId ? { programId: input.programId } : {}), ...(input.message?.trim() ? { message: input.message.trim() } : {}) };
   return act(() => api(`${base(slug)}/enquiries`, { method: 'POST', body, anonymous: true }));
 }
 
@@ -75,4 +75,49 @@ export async function startFee(slug: string, id: string, token: string): Promise
 export async function confirmFee(slug: string, id: string, token: string, input: { paymentId: string; providerPaymentId: string; signature: string }): Promise<ActionResult<PublicApplication>> {
   if (!guard(slug, id, token) || !UUID.test(input.paymentId)) return bad();
   return act(() => api<PublicApplication>(`${base(slug)}/applications/${id}/fee/confirm`, { method: 'POST', body: input, headers: { 'x-application-token': token }, anonymous: true }));
+}
+
+// ---- online entrance test: the application number and access token are the applicant's login -------
+
+export interface OnlineTestInfo {
+  testId: string;
+  name: string;
+  testDate: string;
+  durationMinutes: number;
+  questionCount: number;
+  status: 'not_started' | 'in_progress' | 'submitted' | 'expired';
+}
+export interface OnlineRun {
+  attemptId: string;
+  startedAt: string;
+  deadlineAt: string;
+  submittedAt: string | null;
+  answers: Record<string, number>;
+  score: number | null;
+  questions: { id: string; question: string; options: string[]; marks: number }[];
+}
+
+export async function onlineLogin(slug: string, applicationNo: string, token: string): Promise<ActionResult<{ applicationId: string; applicantName: string; applicationNo: string }>> {
+  if (!SLUG.test(slug) || applicationNo.trim().length < 3 || token.trim().length < 10) return bad();
+  return act(() => api(`${base(slug)}/applicant-login`, { method: 'POST', body: { applicationNo: applicationNo.trim(), token: token.trim() }, anonymous: true }));
+}
+
+export async function onlineTests(slug: string, id: string, token: string): Promise<ActionResult<OnlineTestInfo[]>> {
+  if (!guard(slug, id, token)) return bad();
+  return act(() => api<OnlineTestInfo[]>(`${base(slug)}/applications/${id}/online-tests`, { headers: { 'x-application-token': token }, anonymous: true }));
+}
+
+export async function onlineStart(slug: string, id: string, token: string, testId: string): Promise<ActionResult<OnlineRun>> {
+  if (!guard(slug, id, token) || !UUID.test(testId)) return bad();
+  return act(() => api<OnlineRun>(`${base(slug)}/applications/${id}/online-tests/${testId}/start`, { method: 'POST', body: {}, headers: { 'x-application-token': token }, anonymous: true }));
+}
+
+export async function onlineSave(slug: string, id: string, token: string, testId: string, answers: Record<string, number>): Promise<ActionResult<OnlineRun>> {
+  if (!guard(slug, id, token) || !UUID.test(testId)) return bad();
+  return act(() => api<OnlineRun>(`${base(slug)}/applications/${id}/online-tests/${testId}/answers`, { method: 'PUT', body: { answers }, headers: { 'x-application-token': token }, anonymous: true }));
+}
+
+export async function onlineSubmit(slug: string, id: string, token: string, testId: string, answers: Record<string, number>): Promise<ActionResult<OnlineRun>> {
+  if (!guard(slug, id, token) || !UUID.test(testId)) return bad();
+  return act(() => api<OnlineRun>(`${base(slug)}/applications/${id}/online-tests/${testId}/submit`, { method: 'POST', body: { answers }, headers: { 'x-application-token': token }, anonymous: true }));
 }

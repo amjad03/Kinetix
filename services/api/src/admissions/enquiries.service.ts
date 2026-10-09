@@ -4,7 +4,8 @@ import { and, asc, eq, gte, inArray, lte, notInArray, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
-import { admissionCampaigns, enquiries, enquiryActivities, programs, userRoles, users } from '../db/schema.js';
+import { admissionAgents, admissionCampaigns, enquiries, enquiryActivities, programs, userRoles, users } from '../db/schema.js';
+import { leadScore } from './lead-score.js';
 
 export const COUNSELLOR_ROLES = ['admissions_officer', 'principal', 'tenant_admin'] as const;
 const CLOSED_STAGES: EnquiryStage[] = ['converted', 'lost'];
@@ -19,7 +20,8 @@ export const auditActor = (a: Actor) => ({ tenantId: a.tenantId, actorType: (a.u
 /** The admissions pipeline: enquiries from the public form, walk-ins and calls, owned by counsellors. */
 @Injectable()
 export class EnquiriesService {
-  async create(tx: Tx, actor: Actor, input: { name: string; phone: string; email?: string | null; programId?: string | null; source: EnquirySource; message?: string | null; counsellorId?: string | null; nextFollowUpOn?: string | null; campaignId?: string | null; utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null }, today: string) {
+  async create(tx: Tx, actor: Actor, input: { name: string; phone: string; email?: string | null; programId?: string | null; source: EnquirySource; message?: string | null; counsellorId?: string | null; nextFollowUpOn?: string | null; campaignId?: string | null; utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null; referralCode?: string | null }, today: string) {
+    const agentId = await this.resolveAgent(tx, input.referralCode ?? null);
     const campaignId = await this.resolveCampaign(tx, input.campaignId ?? null, input.utmCampaign ?? null);
     if (input.programId) {
       const [p] = await tx.select({ id: programs.id }).from(programs).where(eq(programs.id, input.programId));
@@ -46,7 +48,8 @@ export class EnquiriesService {
         phone: input.phone,
         email: input.email ?? null,
         programId: input.programId ?? null,
-        source: input.source,
+        source: agentId ? 'referral' : input.source,
+        agentId,
         campaignId,
         utmSource: input.utmSource?.trim().slice(0, 80) || null,
         utmMedium: input.utmMedium?.trim().slice(0, 80) || null,
@@ -57,8 +60,27 @@ export class EnquiriesService {
         nextFollowUpOn: input.nextFollowUpOn ?? addDays(today, 1),
       })
       .returning();
-    await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.EnquiryCreated, subjectType: 'enquiry', subjectId: row.id, data: { source: input.source, counsellorId } });
-    return { enquiry: row, duplicate: false };
+    await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.EnquiryCreated, subjectType: 'enquiry', subjectId: row.id, data: { source: row.source, counsellorId, agentId } });
+    return { enquiry: await this.rescore(tx, row.id), duplicate: false };
+  }
+
+  /** The active agent or partner a referral code belongs to; a code nobody holds is refused so the family can fix a typo. */
+  async resolveAgent(tx: Tx, code: string | null): Promise<string | null> {
+    const c = code?.trim().toUpperCase();
+    if (!c) return null;
+    const [a] = await tx.select({ id: admissionAgents.id }).from(admissionAgents).where(and(eq(admissionAgents.referralCode, c), eq(admissionAgents.active, true)));
+    if (!a) throw new BadRequestException('That referral code is not valid');
+    return a.id;
+  }
+
+  /** Recomputes and stores the lead score (admissions/lead-score.ts) from the enquiry's current facts. */
+  async rescore(tx: Tx, id: string) {
+    const e = await this.get(tx, id);
+    const [acts] = await tx.select({ n: sql<number>`count(*)::int` }).from(enquiryActivities).where(eq(enquiryActivities.enquiryId, id));
+    const total = leadScore({ source: e.source, stage: e.stage, hasProgram: !!e.programId, hasEmail: !!e.email, activities: acts.n }).total;
+    if (total === e.leadScore) return e;
+    const [row] = await tx.update(enquiries).set({ leadScore: total }).where(eq(enquiries.id, id)).returning();
+    return row;
   }
 
   /** The campaign an enquiry belongs to: named by id, or found by its UTM campaign tag. Unknown tags are ignored. */
@@ -157,7 +179,7 @@ export class EnquiriesService {
       .where(eq(enquiries.id, id))
       .returning();
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.EnquiryStageChanged, subjectType: 'enquiry', subjectId: id, data: { from: e.stage, to, reason: reason ?? null } });
-    return row;
+    return this.rescore(tx, row.id);
   }
 
   async logActivity(tx: Tx, actor: Actor, id: string, a: { kind: EnquiryActivityKind; note: string; nextFollowUpOn?: string | null }) {
@@ -170,6 +192,7 @@ export class EnquiriesService {
       .set({ stage: e.stage === 'new' && a.kind !== 'note' ? 'contacted' : e.stage, nextFollowUpOn: a.nextFollowUpOn ?? null, updatedAt: new Date() })
       .where(eq(enquiries.id, id));
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.EnquiryFollowUpLogged, subjectType: 'enquiry', subjectId: id, data: { kind: a.kind, nextFollowUpOn: a.nextFollowUpOn ?? null } });
+    await this.rescore(tx, id);
     return act;
   }
 

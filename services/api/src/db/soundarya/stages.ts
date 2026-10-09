@@ -3,6 +3,7 @@ import { assessmentsAndHomework, attendance, lessonPlans, lms } from './academic
 import { assets, hostelAndCanteen, inventory, library, transport } from './campus.js';
 import { attendanceGovernance } from './attendance-gov.js';
 import { admissions } from './admissions.js';
+import { admissionsGrowth, hrLifecycle } from './growth.js';
 import { alumni, campusLife, mentoring, placements, skills } from './engagement.js';
 import { communication, documents, governance, health, integrations, lifecycle, reportsAndSystem, research, smartboards, tasksAndWorkflows, welfareAndDiscipline } from './operations.js';
 import { smallTables, syllabus } from './finish.js';
@@ -33,6 +34,8 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['salary structures and payroll runs', payroll],
   ['recruitment', recruitment],
   ['admissions: enquiries, campaigns, cycles, merit list', admissions],
+  ['admissions growth: agents, commissions, interviews, online entrance test', admissionsGrowth],
+  ['HR lifecycle: appraisal, training, offers, onboarding, exit', hrLifecycle],
   ['student accounts', studentAccounts],
   ['outcome-based education and attainment', obe],
   ['feedback surveys', surveys],

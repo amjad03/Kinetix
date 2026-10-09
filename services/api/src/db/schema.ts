@@ -1675,6 +1675,10 @@ export const enquiries = pgTable(
     campaignId: uuid('campaign_id').references((): AnyPgColumn => admissionCampaigns.id, { onDelete: 'set null' }),
     utmSource: text('utm_source'),
     utmMedium: text('utm_medium'),
+    /** Rule-based lead score (admissions/lead-score.ts), recomputed whenever the enquiry changes. */
+    leadScore: integer('lead_score').notNull().default(0),
+    /** The agent or partner whose referral code the family used. */
+    agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -1788,6 +1792,7 @@ export const applications = pgTable(
     /** SHA-256 of the token in the applicant's link; the token itself is shown once. */
     accessTokenHash: text('access_token_hash').notNull(),
     offerExpiresOn: date('offer_expires_on'),
+    agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
     studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: updatedAt(),
@@ -3207,6 +3212,20 @@ export const TENANT_TABLES = [
   'eval_annotations',
   'approval_delegations',
   'dpdp_requests',
+  'admission_agents',
+  'agent_commissions',
+  'admission_interviews',
+  'interview_scores',
+  'entrance_questions',
+  'entrance_online_configs',
+  'entrance_attempts',
+  'appraisal_cycles',
+  'appraisals',
+  'training_records',
+  'offer_letters',
+  'onboarding_items',
+  'separations',
+  'exit_clearances',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -5916,4 +5935,263 @@ export const dpdpRequests = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('dpdp_requests_status_idx').on(t.tenantId, t.status, t.createdAt), index('dpdp_requests_user_idx').on(t.tenantId, t.userId)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// Admissions growth (agents, interviews, online entrance test) and HR lifecycle (migration 0113)
+// ---------------------------------------------------------------------------------------------
+
+/** A channel partner or agent who refers students, with the referral code families type on the enquiry form. */
+export const admissionAgents = pgTable(
+  'admission_agents',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    name: text('name').notNull(),
+    kind: text('kind').notNull().default('agent'), // agent | partner
+    phone: text('phone'),
+    email: text('email'),
+    referralCode: text('referral_code').notNull(),
+    /** Paid once per enrolled student. */
+    commissionPaise: bigint('commission_paise', { mode: 'number' }).notNull().default(0),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('admission_agents_code_uq').on(t.tenantId, t.referralCode)],
+);
+
+export const agentCommissions = pgTable(
+  'agent_commissions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    agentId: uuid('agent_id').notNull().references(() => admissionAgents.id),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    amountPaise: bigint('amount_paise', { mode: 'number' }).notNull(),
+    status: text('status').notNull().default('accrued'), // accrued | paid
+    paidOn: date('paid_on'),
+    note: text('note'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('agent_commissions_app_uq').on(t.applicationId), index('agent_commissions_agent_idx').on(t.agentId)],
+);
+
+export const admissionInterviews = pgTable(
+  'admission_interviews',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    slotAt: timestamp('slot_at', { withTimezone: true }).notNull(),
+    venue: text('venue'),
+    panel: jsonb('panel').$type<{ userId: string | null; name: string }[]>().notNull().default([]),
+    status: text('status').notNull().default('scheduled'), // scheduled | done | cancelled | no_show
+    outcome: text('outcome'), // selected | waitlisted | rejected
+    score: numeric('score', { precision: 7, scale: 2, mode: 'number' }),
+    maxScore: numeric('max_score', { precision: 7, scale: 2, mode: 'number' }).notNull().default(100),
+    remarks: text('remarks'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('admission_interviews_app_idx').on(t.applicationId), index('admission_interviews_slot_idx').on(t.tenantId, t.slotAt)],
+);
+
+/** One panelist's score sheet for an interview; the interview's score is the average of its sheets. */
+export const interviewScores = pgTable(
+  'interview_scores',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    interviewId: uuid('interview_id').notNull().references(() => admissionInterviews.id, { onDelete: 'cascade' }),
+    panelistId: uuid('panelist_id').references(() => users.id, { onDelete: 'set null' }),
+    panelistName: text('panelist_name').notNull(),
+    criteria: jsonb('criteria').$type<{ criterion: string; score: number; max: number }[]>().notNull().default([]),
+    score: numeric('score', { precision: 7, scale: 2, mode: 'number' }).notNull(),
+    remarks: text('remarks'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('interview_scores_panelist_uq').on(t.interviewId, t.panelistName)],
+);
+
+/** Multiple-choice questions for the online entrance test. */
+export const entranceQuestions = pgTable(
+  'entrance_questions',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    programId: uuid('program_id').references(() => programs.id, { onDelete: 'set null' }),
+    topic: text('topic').notNull().default('General'),
+    question: text('question').notNull(),
+    options: jsonb('options').$type<string[]>().notNull(),
+    correctIndex: integer('correct_index').notNull(),
+    marks: numeric('marks', { precision: 5, scale: 2, mode: 'number' }).notNull().default(1),
+    active: boolean('active').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [index('entrance_questions_topic_idx').on(t.tenantId, t.topic)],
+);
+
+export const entranceOnlineConfigs = pgTable(
+  'entrance_online_configs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    testId: uuid('test_id').notNull().references(() => entranceTests.id, { onDelete: 'cascade' }),
+    questionCount: integer('question_count').notNull(),
+    negativeMarks: numeric('negative_marks', { precision: 4, scale: 2, mode: 'number' }).notNull().default(0),
+    topic: text('topic'),
+    open: boolean('open').notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('entrance_online_configs_test_uq').on(t.testId)],
+);
+
+export const entranceAttempts = pgTable(
+  'entrance_attempts',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    testId: uuid('test_id').notNull().references(() => entranceTests.id, { onDelete: 'cascade' }),
+    applicationId: uuid('application_id').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+    questionIds: jsonb('question_ids').$type<string[]>().notNull(),
+    answers: jsonb('answers').$type<Record<string, number>>().notNull().default({}),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }).notNull(),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    score: numeric('score', { precision: 7, scale: 2, mode: 'number' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('entrance_attempts_uq').on(t.testId, t.applicationId)],
+);
+
+export const appraisalCycles = pgTable(
+  'appraisal_cycles',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    period: text('period').notNull(),
+    opensOn: date('opens_on').notNull(),
+    closesOn: date('closes_on').notNull(),
+    status: text('status').notNull().default('open'), // open | closed
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('appraisal_cycles_period_uq').on(t.tenantId, t.period)],
+);
+
+export type AppraisalEntry = { score: number; evidence?: string };
+
+/** A teacher's appraisal: self scores by category, the HoD's review, then the principal's final score. */
+export const appraisals = pgTable(
+  'appraisals',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    cycleId: uuid('cycle_id').notNull().references(() => appraisalCycles.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    status: text('status').notNull().default('draft'), // draft | self_submitted | hod_reviewed | finalised
+    selfScores: jsonb('self_scores').$type<Record<string, AppraisalEntry>>().notNull().default({}),
+    hodScores: jsonb('hod_scores').$type<Record<string, AppraisalEntry>>().notNull().default({}),
+    hodRemarks: text('hod_remarks'),
+    hodId: uuid('hod_id').references(() => users.id, { onDelete: 'set null' }),
+    finalScore: numeric('final_score', { precision: 5, scale: 2, mode: 'number' }),
+    grade: text('grade'),
+    principalRemarks: text('principal_remarks'),
+    principalId: uuid('principal_id').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('appraisals_user_uq').on(t.cycleId, t.userId)],
+);
+
+export const trainingRecords = pgTable(
+  'training_records',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    kind: text('kind').notNull().default('fdp'), // fdp | workshop | conference | course
+    organiser: text('organiser'),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    hours: numeric('hours', { precision: 6, scale: 1, mode: 'number' }).notNull().default(0),
+    certificateRef: text('certificate_ref'),
+    verified: boolean('verified').notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [index('training_records_user_idx').on(t.userId, t.startsOn)],
+);
+
+export const offerLetters = pgTable(
+  'offer_letters',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    applicantId: uuid('applicant_id').notNull().references(() => jobApplicants.id, { onDelete: 'cascade' }),
+    offerNo: text('offer_no').notNull(),
+    position: text('position').notNull(),
+    annualCtcPaise: bigint('annual_ctc_paise', { mode: 'number' }).notNull(),
+    joiningOn: date('joining_on').notNull(),
+    validUntil: date('valid_until').notNull(),
+    terms: text('terms').notNull().default(''),
+    status: text('status').notNull().default('issued'), // issued | accepted | declined | withdrawn
+    issuedBy: uuid('issued_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('offer_letters_no_uq').on(t.tenantId, t.offerNo), index('offer_letters_applicant_idx').on(t.applicantId)],
+);
+
+export const onboardingItems = pgTable(
+  'onboarding_items',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    owner: text('owner').notNull().default('HR'),
+    dueOn: date('due_on'),
+    done: boolean('done').notNull().default(false),
+    doneAt: timestamp('done_at', { withTimezone: true }),
+    doneBy: uuid('done_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('onboarding_items_user_idx').on(t.userId)],
+);
+
+export const separations = pgTable(
+  'separations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    resignedOn: date('resigned_on').notNull(),
+    noticeDays: integer('notice_days').notNull().default(30),
+    lastWorkingDay: date('last_working_day').notNull(),
+    reason: text('reason').notNull(),
+    status: text('status').notNull().default('submitted'), // submitted | accepted | clearance | settled | relieved | withdrawn
+    noticeShortfallDays: integer('notice_shortfall_days').notNull().default(0),
+    settlementPaise: bigint('settlement_paise', { mode: 'number' }),
+    settlementNote: text('settlement_note'),
+    relievedOn: date('relieved_on'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('separations_user_idx').on(t.userId)],
+);
+
+export const exitClearances = pgTable(
+  'exit_clearances',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    separationId: uuid('separation_id').notNull().references(() => separations.id, { onDelete: 'cascade' }),
+    department: text('department').notNull(),
+    status: text('status').notNull().default('pending'), // pending | cleared
+    duesPaise: bigint('dues_paise', { mode: 'number' }).notNull().default(0),
+    remarks: text('remarks'),
+    clearedBy: uuid('cleared_by').references(() => users.id, { onDelete: 'set null' }),
+    clearedAt: timestamp('cleared_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('exit_clearances_uq').on(t.separationId, t.department)],
 );

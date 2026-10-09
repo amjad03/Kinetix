@@ -22,6 +22,7 @@ import type { MessageKey } from '@/i18n/messages';
 import { STAGES, TERMINAL_STAGES } from '@/lib/hr';
 import type { ApplicantStage, JobApplicant, JobOpening } from '@/lib/hr-types';
 import { useNotice } from './Common';
+import { OfferDialog } from './OfferDialog';
 
 export function RecruitmentDesk({ openings, applicants, selected, departments }: { openings: JobOpening[]; applicants: JobApplicant[]; selected: string | null; departments: { id: string; name: string }[] }) {
   const { t } = useI18n();
@@ -29,6 +30,7 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
   const [pending, start] = useTransition();
   const [editing, setEditing] = useState<JobOpening | 'new' | null>(null);
   const [adding, setAdding] = useState(false);
+  const [offerFor, setOfferFor] = useState<JobApplicant | null>(null);
   const current = openings.find((o) => o.id === selected) ?? null;
 
   return (
@@ -113,12 +115,14 @@ export function RecruitmentDesk({ openings, applicants, selected, departments }:
                                           </MenuItem>
                                         ))}
                                       </TextField></>) },
+                { id: 'c3', header: '', align: 'right', csv: false, cell: (a) => (['rejected', 'withdrawn'].includes(a.stage) ? null : <Button size="small" onClick={() => setOfferFor(a)}>{t('hl.offer.issue')}</Button>) },
               ]}
             />
           )}
         </Box>
       )}
       {editing && <OpeningDialog opening={editing === 'new' ? null : editing} departments={departments} onClose={() => setEditing(null)} run={run} />}
+      {offerFor && <OfferDialog applicant={offerFor} onClose={() => setOfferFor(null)} />}
       {adding && current && <ApplicantDialog openingId={current.id} onClose={() => setAdding(false)} run={run} />}
     </>
   );

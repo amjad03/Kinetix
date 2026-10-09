@@ -69,6 +69,7 @@ const EnquiryCreate = z.object({
   utmSource: z.string().trim().max(80).optional(),
   utmMedium: z.string().trim().max(80).optional(),
   utmCampaign: z.string().trim().max(80).optional(),
+  referralCode: z.string().trim().max(30).optional(),
 });
 const EnquiryPatch = z.object({ name: z.string().trim().min(2).max(120).optional(), phone: Phone.optional(), email: z.email().max(200).nullable().optional(), programId: Id.nullable().optional(), message: z.string().trim().max(1000).nullable().optional(), nextFollowUpOn: Day.nullable().optional() });
 const StageBody = z.object({ stage: z.enum(ENQUIRY_STAGES), reason: z.string().trim().max(500).optional() });
@@ -106,7 +107,7 @@ export class AdmissionsController {
 
   @Get('enquiries')
   @Auth('user', ADMISSIONS_ROLES)
-  listEnquiries(@CurrentPrincipal() p: UserPrincipal, @Query('stage') stage?: string, @Query('counsellorId') counsellorId?: string, @Query('q') q?: string, @Query('due') due?: string, @Query('mine') mine?: string) {
+  listEnquiries(@CurrentPrincipal() p: UserPrincipal, @Query('stage') stage?: string, @Query('counsellorId') counsellorId?: string, @Query('q') q?: string, @Query('due') due?: string, @Query('mine') mine?: string, @Query('sort') sort?: string) {
     const s = q?.trim().replace(/[%_]/g, '');
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await this.svc.today(tx);
@@ -123,7 +124,7 @@ export class AdmissionsController {
             due === '1' ? and(lte(enquiries.nextFollowUpOn, today), notInArray(enquiries.stage, ['converted', 'lost'])) : undefined,
           ),
         )
-        .orderBy(desc(enquiries.createdAt))
+        .orderBy(...(sort === 'score' ? [desc(enquiries.leadScore), desc(enquiries.createdAt)] : [desc(enquiries.createdAt)]))
         .limit(300);
       return rows.map((r) => ({ ...r.e, counsellorName: r.counsellorName, programName: r.programName }));
     });
@@ -157,7 +158,7 @@ export class AdmissionsController {
       await this.enquiriesSvc.get(tx, id);
       const [row] = await tx.update(enquiries).set({ ...body, updatedAt: new Date() }).where(eq(enquiries.id, id)).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'admissions.enquiry.updated.v1', subjectType: 'enquiry', subjectId: id, data: { fields: Object.keys(body) } });
-      return row;
+      return this.enquiriesSvc.rescore(tx, row.id);
     });
   }
 

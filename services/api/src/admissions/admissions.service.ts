@@ -24,6 +24,8 @@ import type { Tx } from '../db/db.service.js';
 import { academicYears, admissionCycles, admissionQuotas, applicationDocuments, applications, enquiries, entranceSeats, entranceTests, meritLists, programs, sections, students, userRoles, users } from '../db/schema.js';
 import { LifecycleService } from '../students/lifecycle.service.js';
 import { addDays, auditActor, type Actor } from './enquiries.service.js';
+import { accrueCommission } from './agents.service.js';
+import { INTERVIEW_SCORE_FIELD, interviewResults } from './interviews.service.js';
 
 export type Cycle = typeof admissionCycles.$inferSelect;
 export type Application = typeof applications.$inferSelect;
@@ -59,7 +61,7 @@ export function configProblems(cfg: CycleConfig): string[] {
   if (new Set(docKeys).size !== docKeys.length) out.push('Two documents share a key');
   for (const m of cfg.eligibility.minimums ?? []) if (byKey.get(m.field)?.type !== 'number') out.push(`Eligibility: ${m.field} is not a number question`);
   for (const a of cfg.eligibility.allowed ?? []) if (byKey.get(a.field)?.type !== 'select') out.push(`Eligibility: ${a.field} is not a choice question`);
-  for (const r of cfg.meritRules) if (r.field !== ENTRANCE_SCORE_FIELD && byKey.get(r.field)?.type !== 'number') out.push(`Merit: ${r.field} is not a number question`);
+  for (const r of cfg.meritRules) if (r.field !== ENTRANCE_SCORE_FIELD && r.field !== INTERVIEW_SCORE_FIELD && byKey.get(r.field)?.type !== 'number') out.push(`Merit: ${r.field} is not a number question`);
   return out;
 }
 
@@ -305,11 +307,12 @@ export class AdmissionsService {
     const today = await this.lifecycle.today(tx);
     const apps = await tx.select().from(applications).where(and(eq(applications.cycleId, cycleId), eq(applications.status, 'under_review')));
     const entrance = await this.entranceResults(tx, cycleId);
+    const interviews = await interviewResults(tx, cycleId);
     const out = { eligible: 0, ineligible: 0, waiting: 0 };
     for (const a of apps) {
       const failures = eligibilityFailures(rules, { dateOfBirth: a.dateOfBirth, answers: a.answers }, today);
       const gaps = await this.documentGaps(tx, a, cycle);
-      const score = meritScore(cfg.meritRules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0 });
+      const score = meritScore(cfg.meritRules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0, [INTERVIEW_SCORE_FIELD]: interviews.get(a.id)?.score ?? 0 });
       await tx.update(applications).set({ meritScore: score, eligibilityNotes: [...failures, ...gaps], updatedAt: new Date() }).where(eq(applications.id, a.id));
       if (failures.length) {
         await this.setStatus(tx, actor, a.id, 'ineligible', failures.join('; '), { by: 'eligibility_rules' });
@@ -335,16 +338,17 @@ export class AdmissionsService {
     if (pool.length === 0) throw new BadRequestException('No eligible applications to rank');
     const seats = Math.max(0, await this.seatsLeft(tx, cycle));
     const entrance = await this.entranceResults(tx, cycleId);
+    const interviews = await interviewResults(tx, cycleId);
     // Candidates who missed the entrance test or fell below its pass mark are not ranked; scores must be in first.
     const pending = pool.filter((a) => entrance.get(a.id)?.pending);
     if (pending.length) throw new ConflictException(`Enter the entrance test scores first: ${pending.length} candidate${pending.length === 1 ? ' has' : 's have'} no score`);
     const sat = pool.filter((a) => {
       const e = entrance.get(a.id);
-      return !e?.absent && !e?.failed;
+      return !e?.absent && !e?.failed && !interviews.get(a.id)?.rejected;
     });
     if (sat.length === 0) throw new BadRequestException('No candidates cleared the entrance test');
     const byId = new Map(sat.map((a) => [a.id, a]));
-    const order = rankMerit(sat.map((a) => ({ id: a.id, score: meritScore(rules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0 }), submittedAt: a.submittedAt })), sat.length);
+    const order = rankMerit(sat.map((a) => ({ id: a.id, score: meritScore(rules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0, [INTERVIEW_SCORE_FIELD]: interviews.get(a.id)?.score ?? 0 }), submittedAt: a.submittedAt })), sat.length);
     const decisions = allocateSeats(order.map((o) => ({ category: categoryOf(byId.get(o.id)!) })), cycle.seats, await this.seatQuotas(tx, cycleId), await this.heldByCategory(tx, cycleId));
     const ranked = order.map((o, i) => ({ ...o, decision: decisions[i] }));
     const [last] = await tx.select({ v: meritLists.version }).from(meritLists).where(eq(meritLists.cycleId, cycleId)).orderBy(desc(meritLists.version)).limit(1);
@@ -433,6 +437,7 @@ export class AdmissionsService {
 
     await tx.update(applications).set({ status: 'enrolled', studentId: st.id, statusReason: null, updatedAt: new Date() }).where(eq(applications.id, id));
     if (a.enquiryId) await tx.update(enquiries).set({ stage: 'converted', applicationId: a.id, updatedAt: new Date() }).where(eq(enquiries.id, a.enquiryId));
+    await accrueCommission(tx, actor.tenantId, a);
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.ApplicationEnrolled, subjectType: 'application', subjectId: id, data: { studentId: st.id, sectionId: section.id, rollNo } });
     await this.events.emit(tx, actor.tenantId, { type: DomainEvents.StudentEnrolled, aggregateType: 'student', aggregateId: st.id, actorId: actor.userId, payload: { applicationId: id, sectionId: section.id, rollNo } });
     return { studentId: st.id, sectionId: section.id, className: section.displayName, rollNo, status: input.activate ? 'active' : 'enrolled' };

@@ -37,17 +37,21 @@ export function EnquiryBoard({ enquiries, counsellors, programs, today }: Props)
   const { t, locale } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [byScore, setByScore] = useState(false);
   const stages = ENQUIRY_STAGES.filter((s) => s !== 'converted' || enquiries.some((e) => e.stage === 'converted'));
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
+        <Button variant={byScore ? 'contained' : 'outlined'} color="inherit" onClick={() => setByScore(!byScore)} data-testid="sort-by-score">
+          {byScore ? t('ag.lead.sortScore') : t('ag.lead.sortNewest')}
+        </Button>
         <Button variant="contained" startIcon={<Add />} onClick={() => setAdding(true)}>
           {t('adm.enquiry.new')}
         </Button>
       </Box>
       <Box sx={{ display: 'grid', gridAutoFlow: 'column', gridAutoColumns: 'minmax(250px, 1fr)', gap: 2, overflowX: 'auto', pb: 1 }} data-testid="enquiry-board">
         {stages.map((stage) => {
-          const items = enquiries.filter((e) => e.stage === stage);
+          const items = enquiries.filter((e) => e.stage === stage).sort((a, b) => (byScore ? b.leadScore - a.leadScore : 0));
           return (
             <Box key={stage} component="section" aria-label={t(`adm.stage.${stage}` as MessageKey)} sx={{ bgcolor: 'kx.frame', border: 1, borderColor: 'm3.outlineVariant', borderRadius: 2, p: 1.5, minHeight: 160 }}>
               <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
@@ -64,6 +68,7 @@ export function EnquiryBoard({ enquiries, counsellors, programs, today }: Props)
                         {e.programName ?? t('adm.enquiry.anyProgram')} · {t(`adm.source.${e.source}` as MessageKey)}
                       </Typography>
                       <Stack direction="row" spacing={0.5} sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 0.5 }}>
+                        <Chip size="small" color={e.leadScore >= 50 ? 'success' : e.leadScore >= 25 ? 'info' : 'default'} label={t('ag.lead.score', { n: e.leadScore })} title={t('ag.lead.scoreHelp')} data-testid="lead-score" />
                         {e.nextFollowUpOn && e.nextFollowUpOn <= today && stage !== 'lost' && stage !== 'converted' && <Chip size="small" color="warning" label={t('adm.enquiry.followUpDue')} />}
                         <Chip size="small" variant="outlined" label={e.counsellorName ?? t('adm.enquiry.unassigned')} />
                       </Stack>

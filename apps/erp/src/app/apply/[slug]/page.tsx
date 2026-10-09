@@ -17,8 +17,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** The institution's public admissions page: no sign-in. Apply, or ask a question first. */
-export default async function ApplyPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ApplyPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string }> }) {
   const { slug } = await params;
+  const { ref } = await searchParams;
   if (!/^[a-z0-9-]{1,64}$/.test(slug)) notFound();
   const { t } = await getI18n();
   const data = await load(async () => {
@@ -52,7 +53,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ slug: st
             <Typography color="text.secondary" sx={{ mb: 2 }}>
               {t('apply.questionsBody')}
             </Typography>
-            <EnquiryForm slug={slug} programs={data.data.programs} />
+            <EnquiryForm slug={slug} programs={data.data.programs} referral={/^[A-Za-z0-9-]{4,20}$/.test(ref ?? '') ? ref!.toUpperCase() : ''} />
           </>
         )}
       </Container>

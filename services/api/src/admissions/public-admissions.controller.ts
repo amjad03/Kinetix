@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Res, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@kinetix/shared';
@@ -19,6 +19,7 @@ import { ObjectStorage } from '../storage/storage.service.js';
 import { AdmissionsService, cycleConfig, hashToken, newToken, type Application } from './admissions.service.js';
 import { EnquiriesService } from './enquiries.service.js';
 import { EntranceService, hallTicketPdf } from './entrance.service.js';
+import { OnlineTestService } from './online-test.service.js';
 
 const MAX_DOC_BYTES = 5 * 1024 * 1024;
 
@@ -41,6 +42,8 @@ const EnquiryBody = z.object({
   utmSource: z.string().trim().max(80).optional(),
   utmMedium: z.string().trim().max(80).optional(),
   utmCampaign: z.string().trim().max(80).optional(),
+  /** The code of the agent or partner who sent the family. */
+  referralCode: z.string().trim().max(30).optional(),
   /** A hidden field real visitors never fill: bots do. */
   website: z.string().max(200).optional(),
 });
@@ -58,6 +61,8 @@ const ApplyBody = z.object({
   website: z.string().max(200).optional(),
 });
 const ConfirmBody = z.object({ paymentId: z.uuid(), providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200) });
+const LoginBody = z.object({ applicationNo: z.string().trim().min(3).max(40), token: z.string().min(10).max(200) });
+const AnswersBody = z.object({ answers: z.record(z.string(), z.number().int().min(0).max(9)).default({}) });
 const DeclineBody = z.object({ reason: z.string().trim().max(300).optional() });
 
 /**
@@ -73,6 +78,7 @@ export class PublicAdmissionsController {
     private readonly svc: AdmissionsService,
     private readonly enquiriesSvc: EnquiriesService,
     private readonly entrance: EntranceService,
+    private readonly online: OnlineTestService,
     private readonly fees: ApplicationFeesService,
     private readonly storage: ObjectStorage,
     private readonly scans: UploadScanService,
@@ -164,6 +170,48 @@ export class PublicAdmissionsController {
       // With no fee due the application goes straight to review; otherwise when the fee is paid it waits for staff.
       return { id: a.id, applicationNo, token, feeDuePaise: cycle.applicationFeePaise, status: a.status, feeStatus: a.feeStatus };
     });
+  }
+
+  // ---- online entrance test (the applicant's token is their login) --------------------------------
+
+  /** Trades application number plus token for the application id the other calls need. 404 for any mismatch. */
+  @Post('applicant-login')
+  @HttpCode(200)
+  async applicantLogin(@Param('slug') slug: string, @Ip() ip: string, @Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>) {
+    await this.limiter.hit(`applicant-login:${slug}:${ip}`, 20, 15 * 60_000);
+    const t = await this.tenant(slug);
+    return this.db.withTenant(t.id, async (tx) => {
+      const [a] = await tx.select().from(applications).where(eq(applications.applicationNo, body.applicationNo));
+      if (!a) throw new NotFoundException('Application not found');
+      const m = await this.mine(tx, a.id, body.token);
+      return { applicationId: m.id, applicantName: m.applicantName, applicationNo: m.applicationNo };
+    });
+  }
+
+  @Get('applications/:id/online-tests')
+  async onlineTests(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Headers('x-application-token') token?: string) {
+    const t = await this.tenant(slug);
+    return this.db.withTenant(t.id, async (tx) => this.online.forApplicant(tx, await this.mine(tx, id, token)));
+  }
+
+  @Post('applications/:id/online-tests/:testId/start')
+  @HttpCode(200)
+  async startOnline(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Param('testId', ParseUUIDPipe) testId: string, @Headers('x-application-token') token?: string) {
+    const t = await this.tenant(slug);
+    return this.db.withTenant(t.id, async (tx) => this.online.start(tx, await this.mine(tx, id, token), testId));
+  }
+
+  @Put('applications/:id/online-tests/:testId/answers')
+  async saveOnline(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Param('testId', ParseUUIDPipe) testId: string, @Body(new ZodBody(AnswersBody)) body: z.infer<typeof AnswersBody>, @Headers('x-application-token') token?: string) {
+    const t = await this.tenant(slug);
+    return this.db.withTenant(t.id, async (tx) => this.online.save(tx, await this.mine(tx, id, token), testId, body.answers));
+  }
+
+  @Post('applications/:id/online-tests/:testId/submit')
+  @HttpCode(200)
+  async submitOnline(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Param('testId', ParseUUIDPipe) testId: string, @Body(new ZodBody(AnswersBody)) body: z.infer<typeof AnswersBody>, @Headers('x-application-token') token?: string) {
+    const t = await this.tenant(slug);
+    return this.db.withTenant(t.id, async (tx) => this.online.submit(tx, await this.mine(tx, id, token), testId, body.answers));
   }
 
   /** The applicant's hall ticket PDF, once seats are allocated. */

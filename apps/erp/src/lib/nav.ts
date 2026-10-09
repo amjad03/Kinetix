@@ -120,6 +120,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'hr',
     items: [
       { href: '/hr', label: 'nav.hr', section: 'hr', icon: 'hr' },
+      { href: '/hr/appraisal', label: 'nav.appraisal', section: 'appraisal', icon: 'hr' },
       { href: '/payroll', label: 'nav.payroll', section: 'payroll', icon: 'payroll' },
       { href: '/payroll/payslips', label: 'nav.payslips', section: 'payslips', icon: 'payslips' },
     ],
