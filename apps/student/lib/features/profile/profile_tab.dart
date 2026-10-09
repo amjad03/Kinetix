@@ -18,6 +18,7 @@ import '../campus/course_registration_screen.dart';
 import '../campus/passport_screen.dart';
 import '../campus/surveys_screen.dart';
 import '../recordings/class_notes_screen.dart';
+import '../campus/campus_extras_screens.dart';
 import '../campus/gate_pass_screen.dart';
 import '../wallet/wallet_screen.dart';
 import '../campus/leave_screen.dart';
@@ -417,6 +418,22 @@ class ProfileTabState extends State<ProfileTab> {
                   title: Text(l.gatePassTitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => GatePassScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openRateMeal'),
+                  leading: const Icon(Icons.star_outline_rounded),
+                  title: Text(l.mealRateTitle),
+                  subtitle: Text(l.mealRateSub),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => RateMealScreen.open(context, widget.study.api),
+                ),
+                ListTile(
+                  key: const Key('openRepairs'),
+                  leading: const Icon(Icons.build_outlined),
+                  title: Text(l.repairTitle),
+                  subtitle: Text(l.repairSub),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => RepairRequestsScreen.open(context, widget.study.api),
                 ),
                 ListTile(
                   key: const Key('openWallet'),

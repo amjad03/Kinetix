@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -7424,9 +7431,202 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This is a sample answer: no AI server is connected yet.'**
   String get tutorPreview;
+
+  /// No description provided for @mealRateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate a meal'**
+  String get mealRateTitle;
+
+  /// No description provided for @mealRateSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell the canteen how today\'s meal was'**
+  String get mealRateSub;
+
+  /// No description provided for @mealBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get mealBreakfast;
+
+  /// No description provided for @mealLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get mealLunch;
+
+  /// No description provided for @mealSnacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Snacks'**
+  String get mealSnacks;
+
+  /// No description provided for @mealDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get mealDinner;
+
+  /// No description provided for @mealRateComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything to add? (optional)'**
+  String get mealRateComment;
+
+  /// No description provided for @mealRateSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send rating'**
+  String get mealRateSend;
+
+  /// No description provided for @mealRateThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you. Your rating was sent.'**
+  String get mealRateThanks;
+
+  /// No description provided for @mealRatePick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a star rating first.'**
+  String get mealRatePick;
+
+  /// No description provided for @repairTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair requests'**
+  String get repairTitle;
+
+  /// No description provided for @repairSub.
+  ///
+  /// In en, this message translates to:
+  /// **'See where each repair stands'**
+  String get repairSub;
+
+  /// No description provided for @repairEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No repair requests.'**
+  String get repairEmpty;
+
+  /// No description provided for @repairWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get repairWaiting;
+
+  /// No description provided for @repairAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get repairAssigned;
+
+  /// No description provided for @repairInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Being fixed'**
+  String get repairInProgress;
+
+  /// No description provided for @repairDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed'**
+  String get repairDone;
+
+  /// No description provided for @repairClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked and closed'**
+  String get repairClosed;
+
+  /// No description provided for @repairDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String repairDueOn(Object date);
+
+  /// No description provided for @repairFixedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed {date}'**
+  String repairFixedOn(Object date);
+
+  /// No description provided for @instalmentsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Instalments'**
+  String get instalmentsButton;
+
+  /// No description provided for @instalmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee instalments'**
+  String get instalmentsTitle;
+
+  /// No description provided for @instalmentsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'This fee is not split into instalments.'**
+  String get instalmentsNone;
+
+  /// No description provided for @instalmentN.
+  ///
+  /// In en, this message translates to:
+  /// **'Instalment {n}'**
+  String instalmentN(Object n);
+
+  /// No description provided for @instalmentDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String instalmentDueOn(Object date);
+
+  /// No description provided for @instalmentPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get instalmentPaid;
+
+  /// No description provided for @instalmentPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Part paid'**
+  String get instalmentPartial;
+
+  /// No description provided for @instalmentDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due'**
+  String get instalmentDue;
+
+  /// No description provided for @instalmentOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get instalmentOverdue;
+
+  /// No description provided for @instalmentsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{paid} paid of {total}'**
+  String instalmentsSummary(Object paid, Object total);
+
+  /// No description provided for @libraryRenew.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew'**
+  String get libraryRenew;
+
+  /// No description provided for @libraryRenewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewed. The new due date is shown.'**
+  String get libraryRenewed;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7435,7 +7635,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

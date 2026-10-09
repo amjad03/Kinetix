@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' show MediaType;
@@ -14,6 +15,7 @@ import 'conduct.dart';
 import 'exam_models.dart';
 import 'growth.dart';
 import 'lms.dart';
+import 'campus_extras.dart';
 import 'models.dart';
 import 'school_life.dart';
 
@@ -61,6 +63,22 @@ class OtpChallenge {
 abstract class ParentApi {
   String get baseUrl;
   set baseUrl(String value);
+
+  /// Whether this phone is one I have trusted (`trusted`, `new`, or `none` when the app has no install id), and trusting it (`/v1/me/devices`).
+  Future<String> deviceState();
+  Future<void> trustDevice(String label);
+
+  /// Extends a book I (or my child) have out by another loan period (`POST /v1/library/loans/:id/renew`).
+  Future<void> renewLoan(String loanId);
+
+  /// Rates a canteen meal 1 to 5; rating the same meal again replaces the earlier rating (`POST /v1/canteen/ops/feedback`).
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''});
+
+  /// Repairs raised from my own hostel complaints and where each stands (`GET /v1/hostel/work-orders/mine`).
+  Future<List<RepairRequest>> repairRequests();
+
+  /// A fee's instalment schedule with due dates and status (`GET /v1/fees/invoices/:id/instalments`).
+  Future<InstalmentSchedule> instalments(String invoiceId);
 
   /// User access token after sign-in.
   String? get token;
@@ -356,6 +374,9 @@ class HttpParentApi implements ParentApi {
 
   /// Called when the server rejects the token (expired or revoked), so the app can sign out.
   void Function()? onUnauthorized;
+
+  /// A random id made once per install; the server keeps only a hash of it (device trust).
+  String? deviceId;
 
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
@@ -805,11 +826,42 @@ class HttpParentApi implements ParentApi {
     return [for (final b in j['badges'] as List) BadgeAward.fromJson(b as Map<String, dynamic>)];
   }
 
+  @override
+  Future<void> renewLoan(String loanId) async => _send('POST', '/v1/library/loans/$loanId/renew');
+
+  @override
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''}) async =>
+      _send('POST', '/v1/canteen/ops/feedback', body: {'mealDate': mealDate, 'meal': meal, 'rating': rating, 'comment': comment});
+
+  @override
+  Future<List<RepairRequest>> repairRequests() async =>
+      [for (final r in await _send('GET', '/v1/hostel/work-orders/mine') as List) RepairRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<InstalmentSchedule> instalments(String invoiceId) async =>
+      InstalmentSchedule.fromJson(await _send('GET', '/v1/fees/invoices/$invoiceId/instalments') as Map<String, dynamic>);
+
+  @override
+  Future<String> deviceState() async {
+    final id = deviceId;
+    if (id == null) return 'none';
+    final j = await _send('GET', '/v1/me/devices/status?deviceId=${Uri.encodeQueryComponent(id)}') as Map<String, dynamic>;
+    return '${j['state']}';
+  }
+
+  @override
+  Future<void> trustDevice(String label) async {
+    final id = deviceId;
+    if (id == null) return;
+    await _send('POST', '/v1/me/devices/trust', body: {'deviceId': id, 'label': label, 'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'});
+  }
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true}) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
+    if (deviceId != null) req.headers['x-device-id'] = deviceId!;
     if (body != null) req.body = jsonEncode(body);
     return _receive(req, auth: auth, timeout: const Duration(seconds: 20));
   }

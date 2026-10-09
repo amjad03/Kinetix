@@ -15,10 +15,12 @@ const result = (rows: ImportRow[], dryRun = true): ImportResult => {
 
 describe('bulk import', () => {
   it('goes programs → staff → students → timetable', () => {
-    expect(IMPORT_KINDS).toEqual(['programs', 'staff', 'students', 'timetable']);
+    expect(IMPORT_KINDS.slice(0, 4)).toEqual(['programs', 'staff', 'students', 'timetable']);
+    expect(IMPORT_KINDS.slice(4)).toEqual(['outcomes', 'exams', 'fees', 'library', 'placement', 'research', 'quality']);
     expect(nextKind('programs')).toBe('staff');
     expect(nextKind('students')).toBe('timetable');
-    expect(nextKind('timetable')).toBeNull();
+    expect(nextKind('timetable')).toBe('outcomes');
+    expect(nextKind('quality')).toBeNull();
   });
 
   it('finds missing columns the way the API reads headers, skipping comments and a byte-order mark', () => {

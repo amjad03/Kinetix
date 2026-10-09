@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
@@ -53,6 +54,10 @@ class ApiException implements Exception {
 abstract class TeacherApi {
   String get baseUrl;
   set baseUrl(String value);
+
+  /// Whether this phone is one I have trusted (`trusted`, `new`, or `none` when the app has no install id), and trusting it (`/v1/me/devices`).
+  Future<String> deviceState();
+  Future<void> trustDevice(String label);
 
   /// User access token after sign-in.
   String? get token;
@@ -436,6 +441,9 @@ class HttpTeacherApi implements TeacherApi {
 
   /// Called when the server rejects the token (expired or revoked), so the app can sign out.
   void Function()? onUnauthorized;
+
+  /// A random id made once per install; the server keeps only a hash of it (device trust).
+  String? deviceId;
 
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
@@ -1183,6 +1191,21 @@ class HttpTeacherApi implements TeacherApi {
   Future<void> awardBadge({required String studentId, required String sectionId, required String badge, String? subjectId}) async =>
       _send('POST', '/v1/badges', body: {'studentId': studentId, 'sectionId': sectionId, 'badge': badge, 'subjectId': ?subjectId});
 
+  @override
+  Future<String> deviceState() async {
+    final id = deviceId;
+    if (id == null) return 'none';
+    final j = await _send('GET', '/v1/me/devices/status?deviceId=${Uri.encodeQueryComponent(id)}') as Map<String, dynamic>;
+    return '${j['state']}';
+  }
+
+  @override
+  Future<void> trustDevice(String label) async {
+    final id = deviceId;
+    if (id == null) return;
+    await _send('POST', '/v1/me/devices/trust', body: {'deviceId': id, 'label': label, 'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'});
+  }
+
   Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, Duration timeout = const Duration(seconds: 20)}) async {
     final res = await _request(method, path, body: body, auth: auth, timeout: timeout);
     return res.body.isEmpty ? null : jsonDecode(res.body);
@@ -1200,6 +1223,7 @@ class HttpTeacherApi implements TeacherApi {
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
+    if (deviceId != null) req.headers['x-device-id'] = deviceId!;
     if (body != null) req.body = jsonEncode(body);
 
     final http.Response res;

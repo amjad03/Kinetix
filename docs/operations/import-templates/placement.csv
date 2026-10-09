@@ -1,0 +1,7 @@
+# KINETIX import: recruiting companies. One row per company.
+# company         Company name (required; used to match on re-import)
+# sector          Industry, e.g. IT services
+# website, contact_name, contact_email, contact_phone   Placement contact
+company,sector,website,contact_name,contact_email,contact_phone
+Infosys,IT services,https://www.infosys.com,Meera Rao,campus@infosys.example,+919845000301
+Bosch,Engineering,https://www.bosch.in,Anil Kumar,hr@bosch.example,+919845000302

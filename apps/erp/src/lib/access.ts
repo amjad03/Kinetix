@@ -255,6 +255,8 @@ export function sectionOf(pathname: string): Section | null {
     case 'inventory':
     case 'assets':
       return first;
+    case 'scan':
+      return 'assets';
     case 'admissions':
       return 'admissions';
     case 'students':

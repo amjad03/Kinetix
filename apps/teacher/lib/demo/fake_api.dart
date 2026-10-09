@@ -84,6 +84,17 @@ final onePixelPng = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAA
 
 /// In-memory [TeacherApi] for widget tests.
 class FakeTeacherApi implements TeacherApi {
+  String deviceStateValue = 'new';
+
+  @override
+  Future<String> deviceState() async => deviceStateValue;
+
+  @override
+  Future<void> trustDevice(String label) async {
+    calls.add('trustDevice $label');
+    deviceStateValue = 'trusted';
+  }
+
   @override
   String baseUrl = 'http://test';
   @override

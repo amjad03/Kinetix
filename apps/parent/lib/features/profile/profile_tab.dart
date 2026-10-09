@@ -18,6 +18,7 @@ import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
 import '../exams/report_card_screen.dart';
 import '../privacy/dpdp_screen.dart';
+import 'device_trust_tile.dart';
 import '../privacy/privacy.dart';
 import '../school_life/school_life_screen.dart';
 import '../syllabus/syllabus_screen.dart';
@@ -282,6 +283,7 @@ class ProfileTab extends StatelessWidget {
               KxSectionHeader(l.account),
               ListTile(leading: const Icon(Icons.apartment_outlined), title: Text(l.college), subtitle: Text(me.institution)),
               ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
+              DeviceTrustTile(api: family.api),
               Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s32),
                 child: OutlinedButton.icon(

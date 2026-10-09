@@ -1,3 +1,4 @@
+import { governedParams, quotaSeatsFromRule } from '../governance/rule-params.js';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   AdmissionsEvents,
@@ -210,7 +211,10 @@ export class AdmissionsService {
     return rows;
   }
 
+  /** Reserved seats per category: the approved `quota/admission-seats` rule in the registry when one is in force, else the cycle's own quotas. */
   async seatQuotas(tx: Tx, cycleId: string): Promise<SeatQuota[]> {
+    const governed = quotaSeatsFromRule(await governedParams(tx, 'quota', 'admission-seats'), (await this.cycle(tx, cycleId)).seats);
+    if (governed) return governed.map((q) => ({ category: normCategory(q.category), reservedSeats: q.reservedSeats }));
     return (await this.quotas(tx, cycleId)).map((q) => ({ category: normCategory(q.category), reservedSeats: q.reservedSeats }));
   }
 

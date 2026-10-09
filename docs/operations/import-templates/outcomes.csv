@@ -1,0 +1,13 @@
+# KINETIX import: program outcomes and course outcomes with their mapping. One row per outcome; list the PO and PSO rows before the CO rows that map to them.
+# type           po, pso or co (required)
+# program        Program name (required; import programs first)
+# code           Outcome code, e.g. PO1, PSO1, CO1 (required)
+# statement      The outcome in a sentence (required)
+# subject_code   For co rows: the subject the outcome belongs to (required for co)
+# bloom_level    Optional, for co rows: remember, understand, apply, analyse, evaluate or create
+# maps_to        Optional, for co rows: program outcomes with strength 1 (low) to 3 (high), e.g. PO1:3;PO2:2
+# Course outcomes go into the subject's draft outcome set; importing again updates them.
+type,program,code,statement,subject_code,bloom_level,maps_to
+po,BSc,PO1,Apply scientific knowledge to solve problems,,,
+po,BSc,PO2,Communicate findings clearly,,,
+co,BSc,CO1,Explain the laws of motion,BSC-1.1,understand,PO1:3;PO2:1

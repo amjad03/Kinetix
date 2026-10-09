@@ -70,7 +70,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | 6.1 Identity types | Built | `mig/0117` (role_name), `api/auth/principal.ts`, `api/evaluation/evaluation.controller.ts`, `api/curriculum/university.controller.ts` | external_examiner (marks scripts), mentor, accreditation_reviewer (reads curriculum) and university_admin (faculties and affiliated institutions) added |
 | 6.2 Password, email, mobile OTP, MFA, sessions, refresh tokens | Built | `api/auth/auth.controller.ts`, `api/auth/mfa.controller.ts` | |
-| 6.2 Device trust | Built | `api/trust/trust.controller.ts`, `mig/0117` (`trusted_devices`), `erp/institution-setup`, `S/core/device_id.dart`, `S/features/profile/device_trust_tile.dart` | a person trusts and revokes devices (a hash of the install id is kept), a sign-in from an unknown device is audited, administrators revoke; the Student App sends an install id and offers "Trust this phone" (Teacher and Parent apps do not yet) |
+| 6.2 Device trust | Built | `api/trust/trust.controller.ts`, `mig/0117` (`trusted_devices`), `erp/institution-setup`, `S/core/device_id.dart`, `S/features/profile/device_trust_tile.dart` | a person trusts and revokes devices (a hash of the install id is kept), a sign-in from an unknown device is audited, administrators revoke; the Student App sends an install id and offers "Trust this phone" (Teacher and Parent Apps now do the same via `T|P/features/profile/device_trust_tile.dart`; apps do not yet) |
 | 6.2 Enterprise SSO/OIDC | Partial | none | external: an identity-provider client registration (Google, Microsoft or Okta) and a customer IdP to test the OIDC flow against |
 | 6.3 RBAC, institution/campus/section scope, data ownership | Built | `api/auth/auth.guard.ts`, `mig/0001_rls.sql` (RLS) | |
 | 6.3 Department/program-scoped permissions, delegated access | Built | `api/auth/principal.ts`, `api/delegation/*`, `erp/delegations` | HOD scope; dated, audited, revocable delegation of workflow and leave approvals |
@@ -182,7 +182,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Early years: observations, milestones, learning stories, parent updates | Built | `api/school-life/early-years.controller.ts` | |
 | Primary/secondary: classwork, homework, worksheets | Built | `api/school-learning/school-learning.controller.ts` (worksheets), `erp/learning-support` | worksheet, reading, remedial, phonics, numeracy, activity and board-practice tasks |
-| School report card (grades, competency, remarks, attendance, co-curricular, promotion status) | Built | `api/curriculum/school-academics.controller.ts` (`report-cards/:id/pdf`) | marks by subject, teacher remarks, conduct, co-curricular grades, attendance %, promotion status (principal only); Parent and Student app screens absent |
+| School report card (grades, competency, remarks, attendance, co-curricular, promotion status) | Built | `api/curriculum/school-academics.controller.ts` (`report-cards/:id/pdf`) | marks by subject, teacher remarks, conduct, co-curricular grades, attendance %, promotion status (principal only); the Parent App has `ReportCardsScreen` |
 | Promotion rules, supplementary/compartment, subject-failure policy, approvals, parent communication | Built | `api/school-learning/school-rules.ts` (`decidePromotion`), `promotion` endpoints, `erp/learning-support`, `S/features/learning` | rules for attendance, pass mark, grace marks and supplementary exams; decisions are approved by the principal and the family is told |
 | PTM (schedule, slots, parent booking, reschedule, reminders) | Built | `api/school-life/ptm.controller.ts` | PTM notes/action items absent |
 | School diary (homework, classwork, announcements, acknowledgements) | Built | `api/school-life/diary.controller.ts` | |
@@ -427,7 +427,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Catalogue, issue, return, fines, members | Built | `api/library/library.controller.ts` | |
 | Renew, reservation, damaged/lost | Built | `api/library/library-depth.controller.ts` (`renew`, `reservations`, `lost`, `damaged`), `erp/library/circulation` | renewals limited, queue with a three-day hold, lost and damaged books charged |
-| Barcode / RFID | Partial | `api/library/library-depth.controller.ts` (`books/barcodes/assign`, `labels.pdf`, `scan/:code`), `erp/library/circulation` | external: RFID readers and tags; accession codes with QR labels and scan lookup are built |
+| Barcode / RFID | Partial | `api/library/library-depth.controller.ts` (`books/barcodes/assign`, `labels.pdf`, `scan/:code`), `erp/library/circulation` | external: RFID readers and tags; accession codes with QR labels and scan lookup are built; the ERP Scan a label page (`erp/scan`) reads codes by camera where the browser has BarcodeDetector, else typing or a hand scanner |
 | E-books, digital resources, access log | Built | `api/library/library-depth.controller.ts` (`eresources`), `erp/library/e-resources` | register with licence and seats, and an access log |
 | Koha / external system | Built | `api/connectors/integrations.controller.ts` (`library/search`) | tested against local stub only |
 | Link resources to curriculum topics | Built | `api/library/library-depth.controller.ts` (`topic-links`, `topics/:id/resources`), `erp/library/e-resources` | books and e-resources recommended per topic |
@@ -773,7 +773,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| Core domains in 72 | Partial | `api/db/schema.ts`, `schema-curriculum.ts` | built: Building, Stream, Combination, Regulation, CurriculumVersion/Node, Appraisal, AI conversation and action tables; absent: Rubric, Thesis, Dataset, Discussion tables |
+| Core domains in 72 | Built | `api/db/schema-g1.ts` (`rubrics`, `forum_threads`), `schema-pathways.ts` (`thesis_records`, `research_datasets`), `api/research/thesis.controller.ts`, `datasets.controller.ts`, `api/assessment-tools`, `erp/research`, `erp/learning-support` | Building, Stream, Combination, Regulation, CurriculumVersion/Node, Appraisal, AI tables, Rubric, Thesis (supervisor, stages, vivas), Dataset (licence, DOI) and Discussion (course threads) all have tables, API and ERP pages |
 | Versioned, idempotent, retryable events | Built | `mig/0078_event_outbox.sql` | |
 | Named events (STUDENT_ADMITTED ... PLACEMENT_OFFERED) | Built | `api/events/events.ts` (`DomainEvents`) | adds PLACEMENT_OFFERED and ACCEPTED, INTERVENTION_CREATED and REMEASURED, QUIZ_STARTED, incident, rule and invoice events to the class, attendance, result, fee and alumni events already emitted |
 
@@ -790,7 +790,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| Configurable rules (grading, credits, eligibility, quotas, OBE) | Partial | `api/exams/exams.controller.ts` (`result-rules`), `api/governance` (rule registry) | the registry holds versioned, approved rules and `GET /v1/governance/rules/resolve`; the attendance threshold (`attendance/exam-eligibility`) now comes from the registry (`api/attendance-governance/eligibility.ts`); exam pass rules, credits and quotas still read their own per-domain configuration |
+| Configurable rules (grading, credits, eligibility, quotas, OBE) | Built | `api/governance/rule-params.ts`, `api/exams/exams.service.ts` (`grading/pass-mark`), `api/course-registration` (`credits/minimum-per-semester`), `api/admissions` (`quota/admission-seats`), `api/attendance-governance/eligibility.ts`, `test/onboarding-gov.e2e.spec.ts`, `governance/rule-params.spec.ts` | an approved, dated rule in the registry now sets exam pass marks, registration credit limits and admission category seats, and falls back to the scheme, window or cycle quota when none is in force; OBE targets still read their own configuration |
 | Effective date, version, status, author, approver, audit as a generic engine | Built | `api/governance/governance.controller.ts` (`rules/*`), table `business_rules`, `erp/governance/rules` | versions per domain and key, draft, review, approved, retired, effective dates, four-eyes approval (the author cannot approve), the previous version ends the day before, every step audited with before and after |
 
 ## 76. Workflow states and approvals
@@ -867,7 +867,7 @@ onboarding, school pilot, differentiators, final principle). Status of the gates
 | 93 Definition of done: tests, audit, docs per module | Built | `docs/product/definition-of-done.md`, `test/definition-of-done.spec.ts` | every route family must be called by a test and every writing module must audit, with a short documented allowlist |
 | 94 Offline-supported workflows recover | Built | `api/sync/sync.controller.ts` | board and teacher app |
 | 94 Mobile critical daily ops | Built | `apps/teacher`, `apps/student`, `apps/parent` | real-device checks outstanding |
-| 95 Soundarya onboarding data (outcome mapping, exams, fees, library, placement, research, quality) | Partial | `docs/operations/import-templates` | import templates exist only for students, staff, programs and timetable; the Soundarya seed itself carries all seven families |
+| 95 Soundarya onboarding data (outcome mapping, exams, fees, library, placement, research, quality) | Built | `api/import/onboarding.ts`, `api/import/templates.ts`, `docs/operations/import-templates`, `erp/import` (`ImportWizard`), `test/onboarding-gov.e2e.spec.ts` | CSV templates, row validation, dry run and idempotent re-import for all seven families, after the four core files, in the ERP Import wizard |
 | 96 School pilot (Nursery to Class 10, report cards, PTM, diary) | Built | `api/curriculum/school-academics.controller.ts` (`report-cards`), `api/curriculum/houses.controller.ts`, `api/school-life` | report cards with PDF, house system with points, PTM and diary |
 | Appendix C P0 list (identity ... results) | Built | see sections 6-25 | |
 

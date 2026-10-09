@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'core/api.dart';
 import 'core/app_state.dart';
+import 'core/device_id.dart';
 import 'core/firebase_push.dart';
 import 'core/server_config.dart';
 import 'core/token_store.dart';
@@ -24,7 +25,7 @@ Future<void> main() async {
     await state.restore();
     return;
   }
-  final api = HttpParentApi(baseUrl: defaultServerUrl);
+  final api = HttpParentApi(baseUrl: defaultServerUrl)..deviceId = installId(prefs);
   // Push only when this build was given Firebase options (docs/product/push-setup.md).
   final messaging = await initPushMessaging();
   final state = AppState(api, prefs, messaging: messaging);

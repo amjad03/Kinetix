@@ -18,11 +18,59 @@ import '../core/exam_models.dart';
 import '../core/growth.dart';
 import '../core/realtime.dart';
 import '../core/lms.dart';
+import '../core/campus_extras.dart';
 import '../core/models.dart';
 import '../core/school_life.dart';
 
 /// In-memory [ParentApi] for widget tests.
 class FakeParentApi implements ParentApi {
+  List<RepairRequest> repairList = [
+    RepairRequest(id: 'w1', title: 'Fix the leaking tap', status: 'in_progress', complaint: 'The tap in room 12 drips all night', dueOn: DateTime(2026, 10, 14)),
+    RepairRequest(id: 'w2', title: 'Replace the tube light', status: 'verified', complaint: 'Light in the corridor is out', completedAt: DateTime(2026, 10, 6)),
+  ];
+  InstalmentSchedule? instalmentData;
+
+  @override
+  Future<void> renewLoan(String loanId) async => calls.add('renewLoan $loanId');
+
+  @override
+  Future<void> rateMeal({required String mealDate, required String meal, required int rating, String comment = ''}) async =>
+      calls.add('rateMeal $mealDate $meal $rating $comment');
+
+  @override
+  Future<List<RepairRequest>> repairRequests() async {
+    calls.add('repairRequests');
+    return repairList;
+  }
+
+  @override
+  Future<InstalmentSchedule> instalments(String invoiceId) async {
+    calls.add('instalments $invoiceId');
+    return instalmentData ??
+        InstalmentSchedule(
+          invoiceId: invoiceId,
+          title: 'Term 2 fee',
+          amountPaise: 3000000,
+          paidPaise: 1500000,
+          instalments: [
+            Instalment(seq: 1, dueOn: DateTime(2026, 9, 10), amountPaise: 1000000, paidPaise: 1000000, status: 'paid'),
+            Instalment(seq: 2, dueOn: DateTime(2026, 10, 5), amountPaise: 1000000, paidPaise: 500000, status: 'overdue'),
+            Instalment(seq: 3, dueOn: DateTime(2026, 11, 10), amountPaise: 1000000, paidPaise: 0, status: 'due'),
+          ],
+        );
+  }
+
+  String deviceStateValue = 'new';
+
+  @override
+  Future<String> deviceState() async => deviceStateValue;
+
+  @override
+  Future<void> trustDevice(String label) async {
+    calls.add('trustDevice $label');
+    deviceStateValue = 'trusted';
+  }
+
   /// LMS courses by student; the demo school publishes one with a grade.
   List<LmsCourseSummary> lmsCourseList = const [LmsCourseSummary(courseId: 'c1', title: 'Mathematics 7 B', subject: 'Mathematics', moduleCount: 2, overall: 82, letter: 'A')];
   ApiException? lmsError;

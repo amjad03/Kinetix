@@ -1,0 +1,10 @@
+# KINETIX import: fee structures. One row per fee head; rows with the same structure (and program) form one structure.
+# structure     Name of the fee structure, e.g. BSc Sem 1 fees (required)
+# program       Optional: the program it applies to (import programs first)
+# head          Fee head, e.g. Tuition (required)
+# amount        Amount in rupees, e.g. 25000 or 1250.50 (required)
+# due_in_days   Days after issue that the fee is due (default 30)
+structure,program,head,amount,due_in_days
+BSc Sem 1 fees,BSc,Tuition,25000,30
+BSc Sem 1 fees,BSc,Library,1500,30
+BSc Sem 1 fees,BSc,Laboratory,3000,30

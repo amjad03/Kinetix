@@ -14,6 +14,7 @@ import 'health_screen.dart';
 import 'passport_screen.dart';
 import 'ptm_screen.dart';
 import 'surveys_screen.dart';
+import 'campus_extras_screens.dart';
 
 /// One place for a child's school life: diary, meetings, early years, health, outcome passport,
 /// surveys and campus events.
@@ -56,6 +57,8 @@ class SchoolLifeScreen extends StatelessWidget {
           tile('lifePassport', Icons.workspace_premium_outlined, l.lifePassport, l.lifePassportSub, () => PassportScreen(api: api, child: child, openFile: openFile)),
           tile('lifeSurveys', Icons.poll_outlined, l.lifeSurveys, l.lifeSurveysSub, () => SurveysScreen(api: api)),
           tile('lifePasses', Icons.qr_code_2_outlined, l.lifePasses, l.lifePassesSub, () => EventPassesScreen(api: api, child: child)),
+          tile('lifeRateMeal', Icons.star_outline_rounded, l.mealRateTitle, l.mealRateSub, () => RateMealScreen(api: api)),
+          tile('lifeRepairs', Icons.build_outlined, l.repairTitle, l.repairSub, () => RepairRequestsScreen(api: api)),
           tile('lifeEvents', Icons.celebration_outlined, l.lifeEvents, l.lifeEventsSub, () => EventsScreen(api: api, child: child)),
         ],
       ),

@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'instalments_screen.dart';
 
 /// "Fees are paid by your parent…": students see their fees but do not pay in this app.
 String feesNote(AppLocalizations l) => l.feesNote;
@@ -87,7 +88,7 @@ class _FeesScreenState extends State<FeesScreen> {
                     SectionTitle(context.l10n.fees),
                     if (a.invoices.isEmpty)
                       Text(context.l10n.noFeesIssued, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
-                    for (final inv in a.invoices) _InvoiceTile(invoice: inv, today: widget.today),
+                    for (final inv in a.invoices) _InvoiceTile(invoice: inv, today: widget.today, onInstalments: () => InstalmentsScreen.open(context, widget.api, inv.id, inv.title)),
                     SectionTitle(context.l10n.payments),
                     if (a.payments.isEmpty)
                       Text(
@@ -197,10 +198,11 @@ class FeesTotalCard extends StatelessWidget {
 }
 
 class _InvoiceTile extends StatelessWidget {
-  const _InvoiceTile({required this.invoice, required this.today});
+  const _InvoiceTile({required this.invoice, required this.today, this.onInstalments});
 
   final FeeInvoice invoice;
   final DateTime today;
+  final VoidCallback? onInstalments;
 
   @override
   Widget build(BuildContext context) {
@@ -230,6 +232,11 @@ class _InvoiceTile extends StatelessWidget {
               ].join(' · '),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
+            if (onInstalments != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(key: Key('instalments-${invoice.id}'), onPressed: onInstalments, child: Text(context.l10n.instalmentsButton)),
+              ),
           ],
         ),
       ),

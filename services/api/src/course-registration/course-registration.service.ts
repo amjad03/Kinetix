@@ -1,3 +1,4 @@
+import { governedParams, overlayCreditLimits } from '../governance/rule-params.js';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -85,7 +86,8 @@ export class CourseRegistrationService {
   /** The window that governs a program in a term: its own, else the all-programs one. */
   async windowFor(tx: Tx, termId: string, programId: string): Promise<Window | null> {
     const rows = await tx.select().from(registrationWindows).where(eq(registrationWindows.termId, termId));
-    return rows.find((w) => w.programId === programId) ?? rows.find((w) => w.programId === null) ?? null;
+    const w = rows.find((x) => x.programId === programId) ?? rows.find((x) => x.programId === null) ?? null;
+    return w ? overlayCreditLimits(w, await governedParams(tx, 'credits', 'minimum-per-semester')) : null;
   }
 
   async seatsTaken(tx: Tx, offeringId: string): Promise<number> {

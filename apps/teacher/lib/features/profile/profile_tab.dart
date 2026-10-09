@@ -28,6 +28,7 @@ import '../work/requests_screen.dart';
 import '../work/research_screens.dart';
 import '../work/roster_surveys_clubs.dart';
 import '../work/tasks_screen.dart';
+import 'device_trust_tile.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, this.teachingTiles = const [], this.title});
@@ -179,6 +180,7 @@ class ProfileTab extends StatelessWidget {
               onTap: () => _chooseLanguage(context),
             ),
             ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
+            DeviceTrustTile(api: state.api),
             KxSectionHeader(l.teaching),
             ...teachingTiles,
             ListTile(

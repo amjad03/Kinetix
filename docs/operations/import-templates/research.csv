@@ -1,0 +1,10 @@
+# KINETIX import: publications. One row per publication.
+# owner_email   Email of the staff member who owns it (required; import staff first)
+# title         Title (required)
+# kind          journal, conference, book or book_chapter (default journal)
+# venue         Journal, conference or publisher (required)
+# year          Year of publication (required)
+# doi, issn     Optional identifiers. A publication is matched by DOI, else owner and title.
+owner_email,title,kind,venue,year,doi,issn
+priya.nair@example.in,Thermal conductivity of thin films,journal,Journal of Applied Physics,2025,10.1063/5.0100001,0021-8979
+suresh.hegde@example.in,Teaching mathematics with local examples,conference,National Education Conference,2024,,

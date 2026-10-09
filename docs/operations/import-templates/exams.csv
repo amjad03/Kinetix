@@ -1,0 +1,10 @@
+# KINETIX import: exam sessions of the current academic year. One row per session.
+# program     Program name (required; import programs first)
+# term        Semester or grade (required)
+# name        Name of the session, e.g. Semester 1 Examination (required)
+# kind        regular or supplementary (default regular)
+# starts_on, ends_on   Dates as YYYY-MM-DD (required)
+# A session is matched by program, term and name; only sessions still in draft can be changed by import.
+program,term,name,kind,starts_on,ends_on
+BSc,1,Semester 1 Examination,regular,2026-12-01,2026-12-15
+BSc,1,Semester 1 Supplementary,supplementary,2027-02-01,2027-02-10

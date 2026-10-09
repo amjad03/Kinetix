@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/family.dart';
+import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
@@ -92,10 +93,13 @@ class LibraryCard extends StatelessWidget {
 
 /// A book: title, author, and a due chip ("Due Fri 9 Oct", "Overdue by 4 days") or when it came back.
 class LoanRow extends StatelessWidget {
-  const LoanRow({super.key, required this.loan, required this.today});
+  const LoanRow({super.key, required this.loan, required this.today, this.onRenew});
 
   final LibraryLoan loan;
   final DateTime today;
+
+  /// Shown as a Renew button on a book that is out and not yet overdue.
+  final Future<void> Function()? onRenew;
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +164,7 @@ class LoanRow extends StatelessWidget {
                       Text(t.borrowedOn(f.shortDay(l.issuedAt)), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
                     ],
                   ),
+              if (!l.returned && !l.overdue && onRenew != null) RenewButton(loanId: l.id, onRenew: onRenew!),
               ],
             ),
           ),
@@ -245,7 +250,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 if (account.current.isEmpty)
                   Text(context.l10n.noBooksOut, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant))
                 else ...[
-                  for (final l in account.currentByDue) LoanRow(loan: l, today: today),
+                  for (final l in account.currentByDue)
+                    LoanRow(
+                      loan: l,
+                      today: today,
+                      onRenew: () async {
+                        await family.api.renewLoan(l.id);
+                        await family.loadLibrary(child.id);
+                      },
+                    ),
                   const SizedBox(height: Kx.s8),
                   Text(
                     context.l10n.fineRule,
@@ -276,4 +289,37 @@ class _Heading extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(0, Kx.s24, 0, Kx.s4),
     child: Text(title, style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
   );
+}
+
+/// Renews one book: a button that asks the server for another loan period, says why when it cannot, and refreshes the list.
+class RenewButton extends StatefulWidget {
+  const RenewButton({super.key, required this.loanId, required this.onRenew});
+
+  final String loanId;
+  final Future<void> Function() onRenew;
+
+  @override
+  State<RenewButton> createState() => _RenewButtonState();
+}
+
+class _RenewButtonState extends State<RenewButton> {
+  bool _busy = false;
+
+  Future<void> _renew() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final done = context.l10n.libraryRenewed;
+    setState(() => _busy = true);
+    try {
+      await widget.onRenew();
+      messenger.showSnackBar(SnackBar(content: Text(done)));
+    } on ApiException catch (e) {
+      if (mounted) messenger.showSnackBar(SnackBar(content: Text(context.errorText(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      TextButton.icon(key: Key('renew-${widget.loanId}'), onPressed: _busy ? null : _renew, icon: const Icon(Icons.autorenew, size: 18), label: Text(context.l10n.libraryRenew));
 }

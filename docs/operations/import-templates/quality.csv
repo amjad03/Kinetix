@@ -1,0 +1,9 @@
+# KINETIX import: accreditation and quality criteria. One row per criterion.
+# framework   Name of the framework, e.g. NAAC 2026 (created on first use; required)
+# body        naac, nba, nirf, iqac or custom (default custom)
+# code        Criterion code, e.g. 1.1.1 (required)
+# title       What the criterion asks (required)
+# metric, unit, target   Optional measure, its unit and the target figure
+framework,body,code,title,metric,unit,target
+NAAC 2026,naac,1.1.1,Curriculum design and review,Programs revised in the year,count,5
+NAAC 2026,naac,2.4.1,Full-time teachers with a doctorate,Share of teachers,percent,60

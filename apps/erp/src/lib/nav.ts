@@ -165,6 +165,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/inventory', label: 'nav.inventory', section: 'inventory', icon: 'inventory' },
       { href: '/assets', label: 'nav.assets', section: 'assets', icon: 'assets' },
+      { href: '/scan', label: 'nav.scan', section: 'assets', icon: 'assets' },
     ],
   },
   {

@@ -8,6 +8,8 @@ import { ERROR_CODES, errorCode } from '../common/error-codes.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { academicYears, campuses, departmentStaff, departments, guardians, programs, rooms, sections, students, subjects, timetableSlots, userRoles, users } from '../db/schema.js';
 import { readTable } from './csv.js';
+import { examsRow, feesRow, libraryRow, outcomesRow, placementRow, qualityRow, researchRow } from './onboarding.js';
+import { fail, int, lc, outcome, required, RowError, type Outcome, type Row } from './row-helpers.js';
 import type { ImportKind } from './templates.js';
 
 export type RowStatus = 'created' | 'updated' | 'skipped' | 'error';
@@ -46,6 +48,13 @@ const REQUIRED: Record<ImportKind, string[]> = {
   staff: ['full_name', 'roles'],
   students: ['roll_no', 'full_name', 'section'],
   timetable: ['section', 'subject_code', 'teacher', 'day', 'start', 'end'],
+  outcomes: ['type', 'program', 'code', 'statement'],
+  exams: ['program', 'term', 'name', 'starts_on', 'ends_on'],
+  fees: ['structure', 'head', 'amount'],
+  library: ['title'],
+  placement: ['company'],
+  research: ['owner_email', 'title', 'venue', 'year'],
+  quality: ['framework', 'code', 'title'],
 };
 
 /** Roles the staff file may give. Students and guardians come from the students file. */
@@ -56,25 +65,13 @@ const DAYS: Record<string, number> = { mon: 1, monday: 1, tue: 2, tues: 2, tuesd
 const LANGUAGES: Record<string, 'en' | 'hi' | 'kn'> = { en: 'en', english: 'en', hi: 'hi', hindi: 'hi', 'हिन्दी': 'hi', 'हिंदी': 'hi', kn: 'kn', kannada: 'kn', 'ಕನ್ನಡ': 'kn' };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** A problem with one row: its message is a key of ERROR_CODES, the detail names the value. */
-class RowError extends Error {
-  constructor(
-    message: string,
-    readonly detail?: string,
-  ) {
-    super(message);
-  }
-}
-
-const fail = (message: string, detail?: string): never => {
-  throw new RowError(message, detail);
-};
 
 /** Thrown to roll back the transaction (dry run, or a file with errors) after the results are built. */
 const ROLLBACK = Symbol('rollback');
 
 interface Ctx {
   tenantId: string;
+  userId: string;
   campusId: string;
   yearId: string;
   replace: boolean;
@@ -85,14 +82,8 @@ interface Ctx {
   archived: (typeof timetableSlots.$inferSelect)[];
 }
 
-interface Outcome {
-  status: Exclude<RowStatus, 'error'>;
-  message: string;
-}
 
-type Row = { line: number; get: (key: string) => string };
 
-const lc = (s: string) => s.trim().toLowerCase();
 
 /**
  * Bulk import from CSV (ERP → Import): programs and classes, staff, students with their families,
@@ -114,7 +105,7 @@ export class ImportService {
     let result: ImportResult | undefined;
     try {
       await this.db.withTenant(p.tenantId, async (tx) => {
-        const ctx = await this.context(tx, p.tenantId, opts.replace && kind === 'timetable');
+        const ctx = await this.context(tx, p.tenantId, p.userId, opts.replace && kind === 'timetable');
         if (ctx.replace) await this.archiveForReplace(tx, ctx, table.rows);
         const rows: RowResult[] = [];
         for (const r of table.rows) {
@@ -143,14 +134,21 @@ export class ImportService {
     staff: (tx, ctx, r) => this.staff(tx, ctx, r),
     students: (tx, ctx, r) => this.student(tx, ctx, r),
     timetable: (tx, ctx, r) => this.period(tx, ctx, r),
+    outcomes: (tx, ctx, r) => outcomesRow(tx, ctx, r),
+    exams: (tx, ctx, r) => examsRow(tx, ctx, r),
+    fees: (tx, ctx, r) => feesRow(tx, ctx, r),
+    library: (tx, ctx, r) => libraryRow(tx, ctx, r),
+    placement: (tx, ctx, r) => placementRow(tx, ctx, r),
+    research: (tx, ctx, r) => researchRow(tx, ctx, r),
+    quality: (tx, ctx, r) => qualityRow(tx, ctx, r),
   };
 
-  private async context(tx: Tx, tenantId: string, replace: boolean): Promise<Ctx> {
+  private async context(tx: Tx, tenantId: string, userId: string, replace: boolean): Promise<Ctx> {
     const [year] = await tx.select({ id: academicYears.id }).from(academicYears).where(eq(academicYears.isCurrent, true));
     if (!year) throw new BadRequestException('There is no current academic year');
     const [campus] = await tx.select({ id: campuses.id }).from(campuses).orderBy(asc(campuses.createdAt)).limit(1);
     if (!campus) throw new BadRequestException('The institution has no campus');
-    return { tenantId, campusId: campus.id, yearId: year.id, replace, programsSeen: new Map(), seen: new Set(), archived: [] };
+    return { tenantId, userId, campusId: campus.id, yearId: year.id, replace, programsSeen: new Map(), seen: new Set(), archived: [] };
   }
 
   // ---- programs, classes and subjects ------------------------------------------------------
@@ -484,9 +482,6 @@ export class ImportService {
 
 // ---- helpers ---------------------------------------------------------------------------------
 
-function outcome(created: boolean, changed: boolean, parts: string[]): Outcome {
-  return { status: created ? 'created' : changed ? 'updated' : 'skipped', message: parts.filter(Boolean).join(' · ') };
-}
 
 function errorRow(line: number, e: unknown): RowResult {
   if (e instanceof RowError) return { row: line, status: 'error', message: e.message, code: ERROR_CODES[e.message] ?? 'IMPORT_INVALID_VALUE', ...(e.detail !== undefined && { detail: e.detail }) };
@@ -500,16 +495,7 @@ function errorRow(line: number, e: unknown): RowResult {
   return { row: line, status: 'error', message: 'This row could not be saved', code: 'IMPORT_ROW_FAILED', detail: pg.cause?.detail ?? pg.detail ?? (e instanceof Error ? e.message : undefined) };
 }
 
-function required(r: Row, key: string): string {
-  return r.get(key) || fail('This value is required', key);
-}
 
-function int(text: string, min: number, max: number, outside = 'This value is not valid'): number {
-  if (!/^\d+$/.test(text)) fail('This value is not valid', text || '(empty)');
-  const n = Number(text);
-  if (n < min || n > max) fail(outside, text);
-  return n;
-}
 
 function emailOf(text: string): string | null {
   if (!text) return null;

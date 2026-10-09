@@ -8,6 +8,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'instalments_screen.dart';
 import 'payment_gateway.dart';
 import 'receipt_screen.dart';
 
@@ -229,7 +230,12 @@ class _FeesScreenState extends State<FeesScreen> {
           for (final inv in open)
             Padding(
               padding: const EdgeInsets.fromLTRB(Kx.s16, 0, Kx.s16, Kx.s12),
-              child: InvoiceCard(invoice: inv, today: today, onPay: canPay ? () => _pay(inv, fees) : null),
+              child: InvoiceCard(
+                invoice: inv,
+                today: today,
+                onPay: canPay ? () => _pay(inv, fees) : null,
+                onInstalments: () => InstalmentsScreen.open(context, api, inv.id, inv.title),
+              ),
             ),
         ],
         if (paid.isNotEmpty) ...[
@@ -289,11 +295,12 @@ class CounterNotice extends StatelessWidget {
 
 /// A fee still to pay: amount, due date (overdue in red), part payments as progress, "Pay now".
 class InvoiceCard extends StatelessWidget {
-  const InvoiceCard({super.key, required this.invoice, required this.today, this.onPay});
+  const InvoiceCard({super.key, required this.invoice, required this.today, this.onPay, this.onInstalments});
 
   final FeeInvoice invoice;
   final DateTime today;
   final VoidCallback? onPay;
+  final VoidCallback? onInstalments;
 
   /// (label, background, foreground) for the due-date chip.
   static (String, Color, Color) dueChip(BuildContext context, FeeInvoice inv, DateTime today) {
@@ -364,6 +371,11 @@ class InvoiceCard extends StatelessWidget {
                 ),
               ),
             ],
+            if (onInstalments != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(key: Key('instalments-${inv.id}'), onPressed: onInstalments, child: Text(context.l10n.instalmentsButton)),
+              ),
           ],
         ),
       ),
