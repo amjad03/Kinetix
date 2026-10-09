@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { DelegationModule } from '../delegation/delegation.module.js';
 import { HrController } from './hr.controller.js';
 import { HrService } from './hr.service.js';
 import { LeaveController } from './leave.controller.js';
@@ -9,6 +10,7 @@ import { RecruitmentController } from './recruitment.controller.js';
 
 /** HR records, staff attendance, leave, recruitment and payroll (docs/architecture/hr-payroll.md). */
 @Module({
+  imports: [DelegationModule],
   controllers: [HrController, LeaveController, RecruitmentController, PayrollController],
   providers: [HrService, LeaveService, PayrollService],
   exports: [HrService, PayrollService],

@@ -3,12 +3,13 @@ import type { LeaveBalance, LeaveRequest, LeaveType } from '@kinetix/shared';
 import { and, asc, desc, eq, gte, inArray, lte, ne, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
+import { DelegationService } from '../delegation/delegation.service.js';
 import type { Tx } from '../db/db.service.js';
 import { leaveBalances, leaveRequests, leaveTypes, staffProfiles, users } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { texts } from '../notifications/texts.js';
 import { HrService } from './hr.service.js';
-import { isHr } from './hr.access.js';
+import { HR_ROLES, isHr } from './hr.access.js';
 import { accruedDays, availableDays } from './leave-math.js';
 import { workingDays } from './lop.js';
 
@@ -26,6 +27,7 @@ const typeView = (t: TypeRow): LeaveType => ({ id: t.id, code: t.code, name: t.n
 export class LeaveService {
   constructor(
     private readonly hr: HrService,
+    private readonly delegation: DelegationService,
     private readonly notifications: NotificationsService,
   ) {}
 
@@ -172,14 +174,28 @@ export class LeaveService {
     const [req] = await tx.select().from(leaveRequests).where(eq(leaveRequests.id, id)).for('update');
     if (!req) throw new NotFoundException('Leave request not found');
     if (req.userId === p.userId) throw new ForbiddenException('You cannot decide your own leave');
-    if (!isHr(p) && !(await this.headedStaff(tx, p.userId)).includes(req.userId)) throw new NotFoundException('Leave request not found');
+    let onBehalfOf: string | null = null;
+    if (!isHr(p) && !(await this.headedStaff(tx, p.userId)).includes(req.userId)) {
+      // Not mine to decide, unless a colleague who can has delegated their approvals to me for these dates.
+      for (const d of await this.delegation.activeDelegators(tx, p.userId, 'leave')) {
+        if (d.id === req.userId) continue;
+        if (d.roles.some((r) => HR_ROLES.includes(r)) || (await this.headedStaff(tx, d.id)).includes(req.userId)) {
+          onBehalfOf = d.id;
+          break;
+        }
+      }
+      if (!onBehalfOf) {
+        if (!p.roles.includes('hod')) throw new ForbiddenException('Only HR, a head of department or a delegate can decide leave');
+        throw new NotFoundException('Leave request not found');
+      }
+    }
     if (req.status !== 'pending') throw new ConflictException(`This request is already ${req.status}`);
     if (status === 'approved') {
       await this.hr.assertMonthOpen(tx, req.fromDate);
       await this.hr.assertMonthOpen(tx, req.toDate);
     }
     await tx.update(leaveRequests).set({ status, decidedBy: p.userId, decidedAt: new Date(), decisionNote: note }).where(eq(leaveRequests.id, id));
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `leave.${status}`, subjectType: 'leave_request', subjectId: id, data: { applicant: req.userId, from: req.fromDate, to: req.toDate, days: req.days } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `leave.${status}`, subjectType: 'leave_request', subjectId: id, data: { applicant: req.userId, from: req.fromDate, to: req.toDate, days: req.days, ...(onBehalfOf ? { onBehalfOf } : {}) } });
     await this.notifications.notifyUsers(tx, [req.userId], { kind: 'leave', text: texts.leaveDecided({ status, from: req.fromDate, to: req.toDate, note }), data: { leaveRequestId: id }, dedupeKey: `leave-dec:${id}` }, { replace: true });
     return this.get(tx, id);
   }

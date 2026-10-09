@@ -5,6 +5,7 @@ import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { departments, staffProfiles, tasks, userRoles, users, workflowActions, workflowDefinitions, workflowRequests, workflowStepApprovals, type WorkflowStepSnapshot } from '../db/schema.js';
+import { DelegationService } from '../delegation/delegation.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -46,6 +47,7 @@ export class WorkflowsService implements OnModuleInit {
     private readonly db: DbService,
     private readonly jobs: JobsService,
     private readonly tasksSvc: TasksService,
+    private readonly delegation: DelegationService,
     private readonly events: EventBus,
     private readonly notifications: NotificationsService,
     private readonly clock: Clock,
@@ -112,14 +114,15 @@ export class WorkflowsService implements OnModuleInit {
     if (expectedVersion !== undefined && expectedVersion !== req.version) throw new ConflictException('This request changed since you opened it. Reload and try again.');
     if (req.status !== 'pending') throw new ConflictException('This request is not waiting for a decision');
     const rows = await this.stepRows(tx, req);
-    const mine = this.myRow(p, req, rows);
-    if (!mine) throw new ForbiddenException('This request is not waiting for you');
+    const decider = await this.decider(tx, p, req, rows);
+    if (!decider) throw new ForbiddenException('This request is not waiting for you');
+    const { mine, onBehalfOf } = decider;
     if (decision !== 'approve' && !comment.trim()) throw new UnprocessableEntityException('Say why in a comment');
     const step = req.steps[req.currentStep];
     const now = this.clock.now();
     const action: ActionKind = decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'returned';
     await this.log(tx, req, action, p.userId, req.currentStep, comment.trim(), step?.name);
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `workflow.${action}`, subjectType: 'workflow_request', subjectId: req.id, data: { step: step?.name ?? null } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `workflow.${action}`, subjectType: 'workflow_request', subjectId: req.id, data: { step: step?.name ?? null, ...(onBehalfOf !== p.userId ? { onBehalfOf } : {}) } });
     if (mine.row) await tx.update(workflowStepApprovals).set({ decidedBy: p.userId, decidedAt: now }).where(eq(workflowStepApprovals.id, mine.row.id));
     if (decision === 'approve') {
       const after = rows.map((r) => (r.id === mine.row?.id ? { ...r, decidedAt: now } : r));
@@ -155,10 +158,33 @@ export class WorkflowsService implements OnModuleInit {
     return this.finish(tx, req, 'cancelled', p.userId, comment.trim());
   }
 
-  /** Whether this person may decide the request's current step. Nobody decides their own request. */
+  /**
+   * Whose approval right the caller uses on this request: their own (their id), a delegator's (that person's id),
+   * or null when the request is not waiting for them. Nobody decides their own request or, as a delegate, the delegator's.
+   */
+  async decidingFor(tx: Tx, p: UserPrincipal, req: WorkflowRequest): Promise<string | null> {
+    return (await this.decider(tx, p, req, await this.stepRows(tx, req)))?.onBehalfOf ?? null;
+  }
+
+  /**
+   * The caller's place on the current step: their own approver row, else one of an active delegator's
+   * (deciding on that person's behalf). Nobody decides their own request or, as a delegate, the delegator's.
+   */
+  private async decider(tx: Tx, p: UserPrincipal, req: WorkflowRequest, rows: Awaited<ReturnType<WorkflowsService['stepRows']>>) {
+    if (req.status !== 'pending' || req.requesterId === p.userId) return null;
+    const own = this.myRow(p, req, rows);
+    if (own) return { mine: own, onBehalfOf: p.userId };
+    for (const d of await this.delegation.activeDelegators(tx, p.userId, 'workflows')) {
+      if (d.id === req.requesterId) continue;
+      const theirs = this.myRow({ ...p, userId: d.id, roles: d.roles as RoleName[] }, req, rows);
+      if (theirs) return { mine: theirs, onBehalfOf: d.id };
+    }
+    return null;
+  }
+
+  /** Whether this person may decide the request's current step (themselves or as a delegate). */
   async canDecide(tx: Tx, p: UserPrincipal, req: WorkflowRequest): Promise<boolean> {
-    if (req.status !== 'pending' || req.requesterId === p.userId) return false;
-    return this.myRow(p, req, await this.stepRows(tx, req)) !== null;
+    return (await this.decidingFor(tx, p, req)) !== null;
   }
 
   // ---- SLA: reminders and escalation ---------------------------------------------------------

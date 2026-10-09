@@ -11,7 +11,7 @@ import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
 import { GRADE_SCALE_PRESETS, SCHEME_PRESETS, validateBands, validateWeights } from './grading.js';
 
-export const ADMIN: RoleName[] = ['tenant_admin', 'principal'];
+export const ADMIN: RoleName[] = ['tenant_admin', 'principal', 'exam_controller'];
 const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
 
 const Band = z.object({ grade: z.string().trim().min(1).max(4), minPercent: z.number().min(0).max(100), gradePoint: z.number().min(0).max(10), pass: z.boolean() });

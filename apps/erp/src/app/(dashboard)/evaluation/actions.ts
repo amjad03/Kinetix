@@ -17,8 +17,9 @@ async function bad(key: Parameters<Awaited<ReturnType<typeof getI18n>>['t']>[0])
 
 export async function saveConfig(paperId: string, v: Record<string, string>) {
   const body = { perExaminerCap: Number(v.perExaminerCap), secondSharePercent: Number(v.secondSharePercent), thresholdMarks: Number(v.thresholdMarks) };
-  if (!UUID.test(paperId) || Object.values(body).some((n) => !Number.isFinite(n) || n < 0)) return bad('ev.err.numbers');
-  return send(`${base(paperId)}/config`, body, PAGE, 'PUT');
+  const mask = v.maskHeaderPercent ? Number(v.maskHeaderPercent) : 0;
+  if (!UUID.test(paperId) || Object.values(body).some((n) => !Number.isFinite(n) || n < 0) || !Number.isInteger(mask) || mask < 0 || mask > 40) return bad('ev.err.numbers');
+  return send(`${base(paperId)}/config`, { ...body, maskHeaderPercent: mask }, PAGE, 'PUT');
 }
 
 export async function saveQuestions(paperId: string, v: Record<string, string>) {

@@ -1,14 +1,14 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
-import { evalAllocations, evalConfigs, evalMarks, evalQuestions, evalScripts, examPapers, userRoles } from '../db/schema.js';
+import { evalAllocations, evalAnnotations, evalConfigs, evalMarks, evalQuestions, evalScripts, examPapers, userRoles, users } from '../db/schema.js';
 import { allocateRoundRobin, finalMarks } from './evaluation.logic.js';
 
 export type PaperRow = typeof examPapers.$inferSelect;
 export type ConfigRow = typeof evalConfigs.$inferSelect;
 export type ScriptRow = typeof evalScripts.$inferSelect;
 
-const EXAMINER_ROLES = ['teacher', 'hod', 'principal'] as const;
+const EXAMINER_ROLES = ['teacher', 'hod', 'principal', 'examiner'] as const;
 
 /** Loads papers and settings and runs examiner allocation and final-mark calculation. The rules are in evaluation.logic.ts. */
 @Injectable()
@@ -35,7 +35,7 @@ export class EvaluationService {
   async assertExaminers(tx: Tx, ids: string[]): Promise<void> {
     const rows = await tx.select({ userId: userRoles.userId }).from(userRoles).where(and(inArray(userRoles.userId, ids), inArray(userRoles.role, [...EXAMINER_ROLES])));
     const ok = new Set(rows.map((r) => r.userId));
-    if (ids.some((i) => !ok.has(i))) throw new ConflictException('Every examiner must be a teacher, head of department or principal');
+    if (ids.some((i) => !ok.has(i))) throw new ConflictException('Every examiner must be a teacher, head of department, principal or examiner');
   }
 
   /**
@@ -74,6 +74,18 @@ export class EvaluationService {
   /** The final marks of one script from its submitted valuations, or null while one is missing. */
   finalFor(s: ScriptRow, t: Partial<Record<1 | 2 | 3, number>> | undefined): number | null {
     return finalMarks({ first: t?.[1] ?? null, second: t?.[2] ?? null, third: t?.[3] ?? null, secondRequired: s.secondRequired, thirdRequired: s.thirdRequired });
+  }
+
+  /** Every annotation of a script with the round of the valuation it belongs to, oldest first. */
+  async annotationsOf(tx: Tx, scriptId: string) {
+    const rows = await tx
+      .select({ id: evalAnnotations.id, allocationId: evalAnnotations.allocationId, round: evalAllocations.round, examinerName: users.fullName, pageIndex: evalAnnotations.pageIndex, kind: evalAnnotations.kind, x: evalAnnotations.x, y: evalAnnotations.y, w: evalAnnotations.w, h: evalAnnotations.h, text: evalAnnotations.text })
+      .from(evalAnnotations)
+      .innerJoin(evalAllocations, eq(evalAllocations.id, evalAnnotations.allocationId))
+      .innerJoin(users, eq(users.id, evalAnnotations.createdBy))
+      .where(eq(evalAnnotations.scriptId, scriptId))
+      .orderBy(asc(evalAllocations.round), asc(evalAnnotations.pageIndex), asc(evalAnnotations.createdAt));
+    return rows.map((r) => ({ ...r, round: r.round as 1 | 2 | 3 }));
   }
 
   async markEntries(tx: Tx, allocationId: string) {

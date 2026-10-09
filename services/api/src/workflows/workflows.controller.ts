@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
+import { DelegationService } from '../delegation/delegation.service.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { roleName, tasks, users, workflowActions, workflowDefinitions, workflowRequests } from '../db/schema.js';
@@ -85,6 +86,7 @@ export class WorkflowsController {
   constructor(
     private readonly db: DbService,
     private readonly svc: WorkflowsService,
+    private readonly delegation: DelegationService,
   ) {}
 
   // ---- definitions --------------------------------------------------------------------------
@@ -154,20 +156,24 @@ export class WorkflowsController {
   @Get('requests/inbox')
   @Auth('user', WORKFLOW_ROLES)
   inbox(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) =>
-      this.rows(
+    const waitingFor = (userId: string, roles: readonly string[]) =>
+      or(
+        eq(workflowRequests.approverUserId, userId),
+        ...(roles.length ? [inArray(workflowRequests.approverRole, [...roles])] : []),
+        sql`exists (select 1 from workflow_step_approvals a where a.request_id = ${workflowRequests.id} and a.step_index = ${workflowRequests.currentStep} and a.decided_at is null and (a.user_id = ${userId}${roles.length ? sql` or a.role in (${sql.join(roles.map((r) => sql`${r}`), sql`, `)})` : sql``}))`,
+      );
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      // Approvals handed to me for these dates (delegation) show up beside my own.
+      const delegators = await this.delegation.activeDelegators(tx, p.userId, 'workflows');
+      return this.rows(
         tx,
         and(
           eq(workflowRequests.status, 'pending'),
           ne(workflowRequests.requesterId, p.userId),
-          or(
-            eq(workflowRequests.approverUserId, p.userId),
-            inArray(workflowRequests.approverRole, p.roles),
-            sql`exists (select 1 from workflow_step_approvals a where a.request_id = ${workflowRequests.id} and a.step_index = ${workflowRequests.currentStep} and a.decided_at is null and (a.user_id = ${p.userId} or a.role in (${sql.join(p.roles.map((r) => sql`${r}`), sql`, `)})))`,
-          ),
+          or(waitingFor(p.userId, p.roles), ...delegators.map((d) => and(ne(workflowRequests.requesterId, d.id), waitingFor(d.id, d.roles)))),
         ),
-      ),
-    );
+      );
+    });
   }
 
   @Get('requests')
@@ -191,7 +197,7 @@ export class WorkflowsController {
         .orderBy(asc(workflowActions.seq));
       const steps = req.steps;
       const involved = req.requesterId === p.userId || isAdmin(p) || timeline.some((a) => a.actorId === p.userId) || steps.some((s) => s.userId === p.userId || (s.role !== null && p.roles.includes(s.role as RoleName)));
-      if (!involved) throw new ForbiddenException('You are not part of this request');
+      if (!involved && (await this.svc.decidingFor(tx, p, req)) === null) throw new ForbiddenException('You are not part of this request');
       const [def] = await tx.select({ name: workflowDefinitions.name, fields: workflowDefinitions.fields }).from(workflowDefinitions).where(eq(workflowDefinitions.id, req.definitionId));
       const [requester] = await tx.select({ fullName: users.fullName }).from(users).where(eq(users.id, req.requesterId));
       const [task] = req.taskId ? await tx.select({ id: tasks.id, status: tasks.status, dueAt: tasks.dueAt, assigneeId: tasks.assigneeId }).from(tasks).where(eq(tasks.id, req.taskId)) : [];
@@ -201,7 +207,7 @@ export class WorkflowsController {
         requesterName: requester?.fullName ?? '',
         timeline,
         task: task ?? null,
-        canDecide: await this.svc.canDecide(tx, p, req),
+        canDecide: (await this.svc.decidingFor(tx, p, req)) !== null,
         canResubmit: req.status === 'returned' && req.requesterId === p.userId,
         canCancel: (req.status === 'pending' || req.status === 'returned') && (req.requesterId === p.userId || isAdmin(p)),
       };

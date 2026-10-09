@@ -14,10 +14,10 @@ import { SurveysService } from './surveys.service.js';
 import { acceptsAnswers, checkAnswers, inAudience, questionProblem, summarize, type QuestionDef } from './survey-rules.js';
 
 /** Builds and reads surveys. Teachers see only their own; the rest see every survey. */
-export const SURVEY_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher'];
-const SEE_ALL: RoleName[] = ['tenant_admin', 'principal', 'hod'];
+export const SURVEY_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher', 'quality_officer'];
+const SEE_ALL: RoleName[] = ['tenant_admin', 'principal', 'hod', 'quality_officer'];
 /** Anyone in an audience can answer. */
-const ANYONE: RoleName[] = [...SURVEY_ROLES, 'student', 'guardian', 'librarian', 'accountant', 'transport_manager', 'driver', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member'];
+const ANYONE: RoleName[] = [...SURVEY_ROLES, 'student', 'guardian', 'librarian', 'accountant', 'transport_manager', 'driver', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'alumni'];
 
 const QuestionBody = z.object({
   kind: z.enum(['single', 'multiple', 'rating', 'text']),

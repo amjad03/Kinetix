@@ -14,7 +14,7 @@ import { bufferStream, ObjectStorage } from '../storage/storage.service.js';
 import { courseFilePdf } from './course-file-pdf.js';
 import { CourseFilesService } from './course-files.service.js';
 
-const ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher'];
+const ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher', 'quality_officer'];
 const MAX_BYTES = 20 * 1024 * 1024;
 
 /** Course files: one PDF per class and subject, assembled from existing records, kept as dated versions. */

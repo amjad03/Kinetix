@@ -1,6 +1,7 @@
 'use server';
 
 import { getI18n } from '@/i18n/server';
+import type { Annotation, NewAnnotation } from '@/lib/annotations';
 import { send } from '@/lib/ops-server';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,4 +18,15 @@ export async function saveMarks(allocationId: string, entries: { questionId: str
 export async function submitValuation(allocationId: string) {
   if (!UUID.test(allocationId)) return { ok: false as const, error: (await getI18n()).t('ev.desk.err.entries') };
   return send<{ total: number; needsThird: boolean }>(`${base(allocationId)}/submit`, undefined, PAGE);
+}
+
+/** Places one mark (tick, cross, comment or highlight) on a page of the examiner's script. */
+export async function addAnnotation(allocationId: string, body: NewAnnotation) {
+  if (!UUID.test(allocationId)) return { ok: false as const, error: (await getI18n()).t('ev.ann.err') };
+  return send<Annotation>(`${base(allocationId)}/annotations`, body, PAGE);
+}
+
+export async function removeAnnotation(allocationId: string, id: string) {
+  if (!UUID.test(allocationId) || !UUID.test(id)) return { ok: false as const, error: (await getI18n()).t('ev.ann.err') };
+  return send(`${base(allocationId)}/annotations/${encodeURIComponent(id)}`, undefined, PAGE, 'DELETE');
 }

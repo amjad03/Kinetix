@@ -120,14 +120,14 @@ export class LeaveController {
 
   @Post('leave/requests/:id/approve')
   @HttpCode(200)
-  @Auth('user', [...HR_ROLES, 'hod'])
+  @Auth('user', STAFF_ROLES)
   approve(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DecideBody)) b: z.infer<typeof DecideBody>) {
     return this.db.withTenant(p.tenantId, (tx) => this.leave.decide(tx, p, id, 'approved', b.note ?? null));
   }
 
   @Post('leave/requests/:id/reject')
   @HttpCode(200)
-  @Auth('user', [...HR_ROLES, 'hod'])
+  @Auth('user', STAFF_ROLES)
   reject(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(DecideBody)) b: z.infer<typeof DecideBody>) {
     return this.db.withTenant(p.tenantId, (tx) => this.leave.decide(tx, p, id, 'rejected', b.note ?? null));
   }

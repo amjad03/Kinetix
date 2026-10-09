@@ -183,6 +183,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/tasks', label: 'nav.tasks', section: 'tasks', icon: 'tasks' },
       { href: '/workflows', label: 'nav.workflows', section: 'workflows', icon: 'workflows' },
+      { href: '/delegations', label: 'nav.delegations', section: 'delegations', icon: 'workflows' },
       { href: '/surveys', label: 'nav.surveys', section: 'surveys', icon: 'surveys' },
     ],
   },
@@ -195,6 +196,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/settings/institution', label: 'nav.institution', section: 'settings', icon: 'departments' },
       { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },
       { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
+      { href: '/dpdp', label: 'nav.dpdp', section: 'dpdp', icon: 'grievances' },
       { href: '/connectors', label: 'nav.connectors', section: 'connectors', icon: 'import' },
       { href: '/import', label: 'nav.import', section: 'import', icon: 'import' },
       // The KINETIX platform team only (GET /v1/me platformAdmin), not an institution's role.

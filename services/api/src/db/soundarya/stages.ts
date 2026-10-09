@@ -10,6 +10,7 @@ import { exams } from './exams.js';
 import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
 import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
+import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 
 /** The seed stages in order; each fills one family of modules. */
@@ -47,6 +48,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['mentoring and intervention plans', mentoring],
   ['skills passport and SDG tags', skills],
   ['tasks and approval workflows', tasksAndWorkflows],
+  ['alumni login, delegations, data-privacy requests and script annotations', rolesAndRights],
   ['health records', health],
   ['notices, messages and parent-teacher meeting', communication],
   ['counselling, grievances and discipline', welfareAndDiscipline],

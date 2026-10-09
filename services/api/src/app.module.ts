@@ -7,6 +7,8 @@ import { HostelModule } from './hostel/hostel.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { TransportModule } from './transport/transport.module.js';
 import { LibraryModule } from './library/library.module.js';
+import { DelegationModule } from './delegation/delegation.module.js';
+import { DpdpModule } from './dpdp/dpdp.module.js';
 import { EvaluationModule } from './evaluation/evaluation.module.js';
 import { ExamsModule } from './exams/exams.module.js';
 import { ObeModule } from './obe/obe.module.js';
@@ -127,6 +129,8 @@ import { SearchModule } from './search/search.controller.js';
     MarksModule,
     ExamsModule,
     EvaluationModule,
+    DelegationModule,
+    DpdpModule,
     ObeModule,
     MessagesModule,
     CodeModule,

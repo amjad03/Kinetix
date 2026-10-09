@@ -9,8 +9,10 @@ import { useState, useTransition } from 'react';
 import { saveMarks, submitValuation } from '@/app/(dashboard)/evaluation/desk/actions';
 import { Bar, Grid, useToast } from '@/components/ops/kit';
 import { LinkButton } from '@/components/LinkButton';
+import { PageAnnotator } from '@/components/evaluation/PageAnnotator';
 import { StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
+import { annotationCounts, type AnnotationSet } from '@/lib/annotations';
 import { draftFrom, draftTotal, entriesFrom, missingMarks, type AllocationDetail, type MarkDraft, type MyAllocation } from '@/lib/evaluation-desk';
 
 /** The examiner's scripts: pending first, each opening its own marking screen. */
@@ -43,11 +45,12 @@ export function MyScripts({ rows }: { rows: MyAllocation[] }) {
 }
 
 /** One script: its pages beside a per-question marks form. Save keeps a draft; Submit locks the valuation. */
-export function ScriptMarking({ detail }: { detail: AllocationDetail }) {
+export function ScriptMarking({ detail, annotations }: { detail: AllocationDetail; annotations: AnnotationSet }) {
   const { t } = useI18n();
   const [toast, toastNode] = useToast();
   const [draft, setDraft] = useState<MarkDraft>(() => draftFrom(detail));
   const [page, setPage] = useState(0);
+  const [marksOn, setMarksOn] = useState(annotations.mine);
   const [bad, setBad] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(detail.status === 'submitted');
@@ -110,9 +113,19 @@ export function ScriptMarking({ detail }: { detail: AllocationDetail }) {
                   </Button>
                 ))}
               </Stack>
-              {/* The page is streamed through the download route so the session token stays in its cookie. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/download?kind=eval-page&id=${detail.id}&index=${page}`} alt={t('ev.desk.pageOf', { n: page + 1, total: pages.length })} style={{ maxWidth: '100%', border: '1px solid var(--mui-palette-divider, #ccc)' }} data-testid="evd-page" />
+              <PageAnnotator
+                allocationId={detail.id}
+                pageIndex={page}
+                src={`/api/download?kind=eval-page&id=${detail.id}&index=${page}`}
+                alt={t('ev.desk.pageOf', { n: page + 1, total: pages.length })}
+                marks={marksOn}
+                earlier={annotations.earlier}
+                locked={submitted}
+                onChange={setMarksOn}
+              />
+              <Typography variant="caption" color="text.secondary" data-testid="ann-count">
+                {t('ev.ann.count', { n: Object.values(annotationCounts(marksOn)).reduce((a, b) => a + b, 0) })}
+              </Typography>
             </>
           )}
         </Box>

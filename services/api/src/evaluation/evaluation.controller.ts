@@ -1,19 +1,20 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, TEACHING_ROLES } from '../auth/auth.decorators.js';
-import type { UserPrincipal } from '../auth/principal.js';
+import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { assessments, evalAllocations, evalConfigs, evalMarks, evalQuestions, evalScripts, examPapers, examSessions, marks, students, subjects, users, type SubmissionFile } from '../db/schema.js';
+import { assessments, evalAllocations, evalAnnotations, evalConfigs, evalMarks, evalQuestions, evalScripts, examPapers, examSessions, marks, students, subjects, users, type SubmissionFile } from '../db/schema.js';
 import { ADMIN } from '../exams/schemes.controller.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
-import { differsBeyond, newDummyNo, pickSecondValuation } from './evaluation.logic.js';
+import { annotationProblem, differsBeyond, newDummyNo, pickSecondValuation } from './evaluation.logic.js';
+import { nameRevealsStudent, sanitisePage } from './scan-sanitise.js';
 import { EvaluationService } from './evaluation.service.js';
 
 const MAX_FILES = 40;
@@ -31,7 +32,21 @@ const ConfigBody = z.object({
   perExaminerCap: z.number().int().min(1).max(5000),
   secondSharePercent: z.number().int().min(0).max(100),
   thresholdMarks: z.number().min(0).max(1000),
+  /** Percent of the first page (from the top) blacked out at upload; 0 turns masking off. */
+  maskHeaderPercent: z.number().int().min(0).max(40).optional(),
 });
+const AnnotationBody = z.object({
+  pageIndex: z.number().int().min(0).max(200),
+  kind: z.enum(['tick', 'cross', 'comment', 'highlight']),
+  x: z.number().min(0).max(1),
+  y: z.number().min(0).max(1),
+  w: z.number().min(0).max(1).optional(),
+  h: z.number().min(0).max(1).optional(),
+  text: z.string().trim().max(500).optional(),
+});
+const MAX_ANNOTATIONS = 400;
+/** Examiners (and the exam cell, who moderate) may read the annotations of a script. */
+const EXAMINER: RoleName[] = [...TEACHING_ROLES, 'examiner'];
 const QuestionsBody = z.object({ questions: z.array(z.object({ no: z.string().trim().min(1).max(20), maxMarks: z.number().positive().max(1000) })).min(1).max(100) });
 const ExaminersBody = z.object({ examinerIds: z.array(z.uuid()).min(1).max(100) });
 const MarksBody = z.object({ entries: z.array(z.object({ questionId: z.uuid(), marks: z.number().min(0), comment: z.string().trim().max(500).optional() })).min(1).max(100) });
@@ -117,28 +132,65 @@ export class EvaluationAdminController {
 
     const ctx = await this.db.withTenant(p.tenantId, async (tx) => {
       const paper = await this.svc.paper(tx, paperId);
-      const [st] = await tx.select({ id: students.id }).from(students).where(and(eq(students.sectionId, paper.sectionId), eq(students.rollNo, rollNo)));
+      const [st] = await tx.select({ id: students.id, fullName: students.fullName }).from(students).where(and(eq(students.sectionId, paper.sectionId), eq(students.rollNo, rollNo)));
       if (!st) throw new NotFoundException('No student with that roll number sits this paper');
       const [dup] = await tx.select({ id: evalScripts.id }).from(evalScripts).where(and(eq(evalScripts.paperId, paperId), eq(evalScripts.studentId, st.id)));
       if (dup) throw new ConflictException('A script for this student is already uploaded');
       const taken = new Set((await tx.select({ d: evalScripts.dummyNo }).from(evalScripts).where(eq(evalScripts.paperId, paperId))).map((r) => r.d));
-      return { studentId: st.id, dummyNo: newDummyNo(taken) };
+      const cfg = await this.svc.config(tx, p.tenantId, paperId);
+      return { studentId: st.id, fullName: st.fullName, maskPercent: cfg.maskHeaderPercent, dummyNo: newDummyNo(taken) };
     });
 
+    // Anonymity: a file name must not name the student, metadata is stripped, and the first page's header band can be blacked out.
+    for (const f of uploads) {
+      const why = nameRevealsStudent(f.originalname, { rollNo, fullName: ctx.fullName });
+      if (why) throw new BadRequestException(`"${f.originalname}" gives away ${why}; rename the file before uploading`);
+    }
+    const clean = uploads.map((f, i) => ({ f, ...sanitisePage(f.buffer, f.mimetype, i === 0, ctx.maskPercent) }));
     for (const f of uploads) await this.scans.assertClean(f.buffer, `"${f.originalname}"`);
     const files: SubmissionFile[] = [];
-    for (const [i, f] of uploads.entries()) {
+    for (const [i, { f, buffer }] of clean.entries()) {
       // The key and the name carry no student detail.
       const key = `tenants/${p.tenantId}/evaluation/${paperId}/${ctx.dummyNo}/${i}`;
-      await this.storage.put(key, Readable.from(f.buffer), MAX_FILE_BYTES, f.mimetype);
-      files.push({ key, name: `page-${i + 1}`, mime: f.mimetype, bytes: f.size });
+      await this.storage.put(key, Readable.from(buffer), MAX_FILE_BYTES, f.mimetype);
+      files.push({ key, name: `page-${i + 1}`, mime: f.mimetype, bytes: buffer.length });
     }
 
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [s] = await tx.insert(evalScripts).values({ tenantId: p.tenantId, paperId, studentId: ctx.studentId, dummyNo: ctx.dummyNo, files, uploadedBy: p.userId }).returning();
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'evaluation.script_uploaded', subjectType: 'eval_script', subjectId: s.id, data: { paperId, dummyNo: s.dummyNo, pages: files.length } });
-      return { id: s.id, dummyNo: s.dummyNo, pages: files.length };
+      const [s] = await tx.insert(evalScripts).values({ tenantId: p.tenantId, paperId, studentId: ctx.studentId, dummyNo: ctx.dummyNo, files, headerMasked: clean[0]?.masked ?? false, uploadedBy: p.userId }).returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'evaluation.script_uploaded', subjectType: 'eval_script', subjectId: s.id, data: { paperId, dummyNo: s.dummyNo, pages: files.length, headerMasked: s.headerMasked } });
+      return { id: s.id, dummyNo: s.dummyNo, pages: files.length, headerMasked: s.headerMasked };
     });
+  }
+
+  /** The annotations of every valuation of a script, by round, for the exam cell and moderators (read only; examiners are not named). */
+  @Get('scripts/:scriptId/annotations')
+  @Auth('user', ADMIN)
+  scriptAnnotations(@CurrentPrincipal() p: UserPrincipal, @Param('paperId', ParseUUIDPipe) paperId: string, @Param('scriptId', ParseUUIDPipe) scriptId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [s] = await tx.select().from(evalScripts).where(and(eq(evalScripts.id, scriptId), eq(evalScripts.paperId, paperId)));
+      if (!s) throw new NotFoundException('Script not found');
+      return { dummyNo: s.dummyNo, pages: s.files.length, annotations: await this.svc.annotationsOf(tx, scriptId) };
+    });
+  }
+
+  /** One page of a script, streamed inline for moderation. Viewing is audited. */
+  @Get('scripts/:scriptId/pages/:index')
+  @Auth('user', ADMIN)
+  async scriptPage(@CurrentPrincipal() p: UserPrincipal, @Param('paperId', ParseUUIDPipe) paperId: string, @Param('scriptId', ParseUUIDPipe) scriptId: string, @Param('index', ParseIntPipe) index: number, @Res() res: Response) {
+    const f = await this.db.withTenant(p.tenantId, async (tx) => {
+      const [s] = await tx.select().from(evalScripts).where(and(eq(evalScripts.id, scriptId), eq(evalScripts.paperId, paperId)));
+      const f = s?.files[index];
+      if (!f) throw new NotFoundException('Page not found');
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'evaluation.page_viewed', subjectType: 'eval_script', subjectId: scriptId, data: { index } });
+      return f;
+    });
+    const { stream, size } = await this.storage.get(f.key);
+    res.setHeader('content-type', f.mime);
+    res.setHeader('content-length', size);
+    res.setHeader('cache-control', 'private, no-store');
+    res.setHeader('content-disposition', 'inline');
+    stream.pipe(res);
   }
 
   /** First valuation for scripts not yet allocated, and third valuation (moderation) for scripts that need it. */
@@ -227,7 +279,7 @@ export class EvaluationExaminerController {
   ) {}
 
   @Get('mine')
-  @Auth('user', TEACHING_ROLES)
+  @Auth('user', EXAMINER)
   mine(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) =>
       tx
@@ -244,7 +296,7 @@ export class EvaluationExaminerController {
 
   /** The script (dummy number and page list), the questions with maximum marks, and the examiner's own entries. */
   @Get(':id')
-  @Auth('user', TEACHING_ROLES)
+  @Auth('user', EXAMINER)
   one(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { a, s } = await this.own(tx, p, id);
@@ -263,7 +315,7 @@ export class EvaluationExaminerController {
 
   /** One scanned page, streamed inline for on-screen reading. */
   @Get(':id/pages/:index')
-  @Auth('user', TEACHING_ROLES)
+  @Auth('user', EXAMINER)
   async page(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('index', ParseIntPipe) index: number, @Res() res: Response) {
     const f = await this.db.withTenant(p.tenantId, async (tx) => {
       const { s } = await this.own(tx, p, id);
@@ -281,7 +333,7 @@ export class EvaluationExaminerController {
 
   /** Saves marks and comments per question (can be resumed); marks cannot exceed the question's maximum. */
   @Put(':id/marks')
-  @Auth('user', TEACHING_ROLES)
+  @Auth('user', EXAMINER)
   save(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(MarksBody)) body: z.infer<typeof MarksBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { a } = await this.own(tx, p, id);
@@ -304,7 +356,7 @@ export class EvaluationExaminerController {
   /** Locks the valuation. A second valuation far from the first sends the script to a third valuation. */
   @Post(':id/submit')
   @HttpCode(200)
-  @Auth('user', TEACHING_ROLES)
+  @Auth('user', EXAMINER)
   submit(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { a, s } = await this.own(tx, p, id);
@@ -324,6 +376,55 @@ export class EvaluationExaminerController {
       if (!needsThird) await tx.update(evalScripts).set({ status: 'valued' }).where(eq(evalScripts.id, s.id));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'evaluation.submitted', subjectType: 'eval_allocation', subjectId: id, data: { scriptId: s.id, round: a.round, total, needsThird } });
       return { total, needsThird };
+    });
+  }
+
+  /**
+   * The caller's annotations on this valuation. A third valuer (moderator) also gets those of the earlier
+   * rounds, read only and without the examiners' names; earlier valuers see nothing of each other.
+   */
+  @Get(':id/annotations')
+  @Auth('user', EXAMINER)
+  annotations(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { a, s } = await this.own(tx, p, id);
+      const all = await this.svc.annotationsOf(tx, s.id);
+      return {
+        mine: all.filter((x) => x.allocationId === id),
+        earlier: a.round === 3 ? all.filter((x) => x.round < 3).map(({ examinerName: _n, allocationId: _a, ...rest }) => rest) : [],
+      };
+    });
+  }
+
+  @Post(':id/annotations')
+  @Auth('user', EXAMINER)
+  addAnnotation(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(AnnotationBody)) b: z.infer<typeof AnnotationBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { a, s } = await this.own(tx, p, id);
+      if (a.status === 'submitted') throw new ConflictException('This valuation is already submitted');
+      if (b.pageIndex >= s.files.length) throw new BadRequestException('There is no such page');
+      const problem = annotationProblem(b);
+      if (problem) throw new BadRequestException(problem);
+      const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(evalAnnotations).where(eq(evalAnnotations.allocationId, id));
+      if (n.n >= MAX_ANNOTATIONS) throw new ConflictException('Too many marks on this script');
+      const flat = b.kind === 'highlight';
+      const [row] = await tx
+        .insert(evalAnnotations)
+        .values({ tenantId: p.tenantId, scriptId: s.id, allocationId: id, pageIndex: b.pageIndex, kind: b.kind, x: b.x, y: b.y, w: flat ? (b.w ?? 0) : 0, h: flat ? (b.h ?? 0) : 0, text: b.kind === 'comment' ? (b.text ?? null) : null, createdBy: p.userId })
+        .returning();
+      return row;
+    });
+  }
+
+  @Delete(':id/annotations/:annId')
+  @Auth('user', EXAMINER)
+  removeAnnotation(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('annId', ParseUUIDPipe) annId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { a } = await this.own(tx, p, id);
+      if (a.status === 'submitted') throw new ConflictException('This valuation is already submitted');
+      const gone = await tx.delete(evalAnnotations).where(and(eq(evalAnnotations.id, annId), eq(evalAnnotations.allocationId, id))).returning({ id: evalAnnotations.id });
+      if (gone.length === 0) throw new NotFoundException('Mark not found');
+      return { removed: 1 };
     });
   }
 

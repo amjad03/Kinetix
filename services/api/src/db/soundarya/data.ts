@@ -110,6 +110,8 @@ export const STAFF: StaffDef[] = [
   { name: 'Shivanna Biradar', email: 'transport', roles: ['transport_manager'], designation: 'Transport Manager', gender: 'male', basic: 34000 },
   { name: 'Lakshmamma Setty', email: 'stores', roles: ['store_keeper'], designation: 'Store Keeper', gender: 'female', basic: 26000 },
   { name: 'Dr. Ibrahim Khan', email: 'grievance', roles: ['grievance_officer', 'icc_member'], designation: 'Grievance Officer', gender: 'male', basic: 58000 },
+  { name: 'Prof. Ramakrishna Bhat', email: 'controller', roles: ['exam_controller'], designation: 'Controller of Examinations', gender: 'male', basic: 76000 },
+  { name: 'Dr. Usha Kulkarni', email: 'iqac', roles: ['quality_officer'], designation: 'IQAC Coordinator', gender: 'female', basic: 74000 },
   { name: 'Dr. Shobha Pai', email: 'research', roles: ['research_coordinator'], designation: 'Research Coordinator', gender: 'female', basic: 72000, dept: 'Commerce' },
   { name: 'Manjunath Urs', email: 'driver1', roles: ['driver'], designation: 'Bus Driver', gender: 'male', basic: 22000 },
   { name: 'Thimmappa Nayak', email: 'driver2', roles: ['driver'], designation: 'Bus Driver', gender: 'male', basic: 22000 },
@@ -153,4 +155,4 @@ export const STAFF: StaffDef[] = [
 ];
 
 /** Which logins are shown in the logins document (email prefixes). */
-export const LOGIN_STAFF = ['principal', 'admin', 'accounts', 'library', 'hr', 'counsellor', 'hod.commerce', 'hod.computers', 'deepa.nair', 'sudhir.kamath', 'sowmya.reddy'];
+export const LOGIN_STAFF = ['principal', 'admin', 'accounts', 'library', 'hr', 'counsellor', 'controller', 'iqac', 'hod.commerce', 'hod.computers', 'deepa.nair', 'sudhir.kamath', 'sowmya.reddy'];

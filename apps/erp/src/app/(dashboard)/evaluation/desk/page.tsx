@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
 import { getI18n } from '@/i18n/server';
+import type { AnnotationSet } from '@/lib/annotations';
 import type { AllocationDetail, MyAllocation } from '@/lib/evaluation-desk';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,11 +21,11 @@ export default async function ExaminerDeskPage({ searchParams }: { searchParams:
   const header = <PageHeader title={t('nav.evaluationDesk')} subtitle={t('ev.desk.subtitle')} />;
 
   if (allocation && UUID.test(allocation)) {
-    const detail = await load(() => api<AllocationDetail>(`/v1/evaluation/allocations/${allocation}`));
+    const [detail, marks] = await Promise.all([load(() => api<AllocationDetail>(`/v1/evaluation/allocations/${allocation}`)), load(() => api<AnnotationSet>(`/v1/evaluation/allocations/${allocation}/annotations`))]);
     return (
       <>
         {header}
-        {detail.error !== undefined ? <ErrorState message={detail.error} /> : <ScriptMarking detail={detail.data!} />}
+        {detail.error !== undefined ? <ErrorState message={detail.error} /> : <ScriptMarking detail={detail.data!} annotations={marks.data ?? { mine: [], earlier: [] }} />}
       </>
     );
   }

@@ -68,12 +68,12 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
-| 6.1 Identity types | Partial | `api/db/schema.ts` (`role_name`, 21 roles) | no exam controller, examiner/external examiner, mentor (assignment only), quality officer, accreditation reviewer, alumni, university admin roles |
+| 6.1 Identity types | Partial | `api/db/schema.ts` (`role_name`, 25 roles; mig 0111 adds `exam_controller`, `examiner`, `quality_officer`, `alumni`) | no external examiner (use `examiner`), mentor (assignment only), accreditation reviewer, university admin roles |
 | 6.2 Password, email, mobile OTP, MFA, sessions, refresh tokens | Built | `api/auth/auth.controller.ts`, `api/auth/mfa.controller.ts` | |
 | 6.2 Device trust | Missing | none | |
 | 6.2 Enterprise SSO/OIDC | Missing | none | deliberately deferred |
 | 6.3 RBAC, institution/campus/section scope, data ownership | Built | `api/auth/auth.guard.ts`, `mig/0001_rls.sql` (RLS) | |
-| 6.3 Department/program-scoped permissions, delegated access | Partial | `api/auth/principal.ts` | HOD scope exists; no delegation |
+| 6.3 Department/program-scoped permissions, delegated access | Built | `api/auth/principal.ts`, `api/delegation/*`, `erp/delegations` | HOD scope; dated, audited, revocable delegation of workflow and leave approvals |
 | 6.4 Privacy rules (linked children, restricted counselling/health, finance) | Built | `api/documents/documents.access.ts`, `api/welfare/counselling.controller.ts` | |
 
 ## 7. Student master and lifecycle
@@ -291,10 +291,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Script import and pages | Built | `api/evaluation/evaluation.controller.ts` (`scripts`, `pages/:index`) | |
 | Scanning hardware, bulk scanner ingest | Missing | none | needs scanner + intake process |
-| Anonymisation | Partial | `api/evaluation/evaluation.logic.ts` | masks identity in examiner view; barcode/dummy-number mapping not found |
+| Anonymisation | Built | `api/evaluation/evaluation.logic.ts`, `scan-sanitise.ts` | dummy numbers; file names naming the student refused; EXIF/PNG text stripped; first-page header band blacked out at upload (PNG only; PDF/JPEG refused when masking is on) |
 | Examiner allocation and workload | Built | `api/evaluation/evaluation.controller.ts` (`allocate`) | |
 | Question-wise marks, save/resume | Built | `api/evaluation/evaluation.controller.ts` (`marks`) | |
-| Annotation on script | Missing | none | no ink/tick overlay |
+| Annotation on script | Built | `api/evaluation/evaluation.controller.ts` (`annotations`), `erp/evaluation/desk` | tick, cross, comment, highlight as page-relative coordinates per valuation; third valuer and exam cell see earlier rounds read only; freehand ink not built |
 | Second valuation, comparison, finalise, lock | Built | `api/evaluation/evaluation.controller.ts` (`second-valuation`, `finalise`) | |
 | No-download secure access, audit | Built | `api/evaluation/evaluation.service.ts` | |
 | Connect to CO/PO | Partial | `api/obe/attainment.ts` | exam marks feed attainment via assessment map; per-question CO tagging limited |
@@ -551,7 +551,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Mentoring requests | Built | `api/placements/careers.controller.ts` | |
 | Fundraising: campaigns, pledges, donations, receipt | Built | `api/placements/alumni-giving.controller.ts` | tax-exemption (80G) receipt format not confirmed |
 | Volunteering, success stories | Partial | `api/placements/alumni-giving.controller.ts` (`volunteering`) | success stories absent |
-| Alumni login/portal | Missing | none | no alumni role or app |
+| Alumni login/portal | Partial | `api/placements/alumni-portal.controller.ts` | `alumni` role and own profile, giving, receipts, volunteering API; no alumni app screens yet |
 
 ## 50. Clubs and student life
 
@@ -755,7 +755,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Before/after values | Partial | `api/admin/audit.controller.ts` | action + detail; structured before/after not uniform |
 | Audit viewer + export | Built | `erp/audit` | |
 | AI action audit | Partial | `api/ai/ai.service.ts` | usage log, not full action audit |
-| DPDP data-subject export / erasure | Missing | none | |
+| DPDP data-subject export / erasure | Built | `api/dpdp/*`, `erp/dpdp` | JSON+PDF export, correction, erasure with retention rules (blocked or anonymised), grievance officer contact, admin queue; Parent/Student App screens not built |
 | Legal sign-off (privacy notice) | Partial | `docs/product/privacy-notice.md` | draft; needs counsel review |
 
 ## 71. Multi-tenancy
