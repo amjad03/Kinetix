@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, UnprocessableEntityException, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { aliasedTable, and, asc, desc, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -7,7 +7,7 @@ import { auditUser } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { tasks, userRoles, users } from '../db/schema.js';
+import { roleName, tasks, userRoles, users } from '../db/schema.js';
 import { checkVersion } from '../placements/placements.access.js';
 import { canMoveTask } from './task-rules.js';
 import { TasksService } from './tasks.service.js';
@@ -25,6 +25,10 @@ const CreateBody = z.object({
   dueAt: z.coerce.date().optional(),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
   slaHours: z.number().int().min(1).max(24 * 90).optional(),
+  /** Where an overdue task goes: a named person, or anyone holding a role. */
+  escalateUserId: z.uuid().optional(),
+  escalateRole: z.enum(roleName.enumValues).optional(),
+  reminderHours: z.number().int().min(1).max(24 * 90).optional(),
   sourceModule: z.string().trim().max(60).optional(),
   sourceId: z.string().trim().max(120).optional(),
 });
@@ -55,6 +59,11 @@ export class TasksController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [assignee] = await tx.select({ id: users.id }).from(users).where(eq(users.id, b.assigneeId));
       if (!assignee) throw new NotFoundException('Assignee not found');
+      if (b.escalateUserId) {
+        const [target] = await tx.select({ id: users.id }).from(users).where(eq(users.id, b.escalateUserId));
+        if (!target) throw new NotFoundException('Escalation person not found');
+      }
+      if ((b.escalateUserId || b.escalateRole) && !b.dueAt && !b.slaHours) throw new UnprocessableEntityException('Escalation needs a due date or an SLA in hours');
       return this.svc.create(tx, { tenantId: p.tenantId, ownerId: p.userId, ...b });
     });
   }

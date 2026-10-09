@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canMoveTask, dueFor, needsEscalation } from './task-rules.js';
+import { canMoveTask, dueFor, needsEscalation, needsReminder } from './task-rules.js';
 
 const now = new Date('2026-10-20T04:30:00Z');
 
@@ -28,5 +28,16 @@ describe('deadlines', () => {
     expect(needsEscalation({ status: 'open', dueAt: late, escalatedAt: now }, now)).toBe(false);
     expect(needsEscalation({ status: 'open', dueAt: new Date('2026-10-21T00:00:00Z'), escalatedAt: null }, now)).toBe(false);
     expect(needsEscalation({ status: 'open', dueAt: null, escalatedAt: null }, now)).toBe(false);
+  });
+});
+
+describe('needsReminder', () => {
+  const created = new Date('2026-10-01T00:00:00Z');
+  const t = { status: 'open', createdAt: created, reminderHours: 24, remindedAt: null as Date | null, dueAt: null as Date | null };
+  it('fires once after the hours have passed, while the task is not overdue', () => {
+    expect(needsReminder(t, new Date('2026-10-01T12:00:00Z'))).toBe(false);
+    expect(needsReminder(t, new Date('2026-10-02T01:00:00Z'))).toBe(true);
+    expect(needsReminder({ ...t, remindedAt: created }, new Date('2026-10-03T00:00:00Z'))).toBe(false);
+    expect(needsReminder({ ...t, dueAt: new Date('2026-10-01T20:00:00Z') }, new Date('2026-10-02T01:00:00Z'))).toBe(false);
   });
 });

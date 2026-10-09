@@ -4,6 +4,8 @@
  * Only Latin-1 text is drawn; other scripts are shown as '?' (names are also on the screen).
  */
 
+import { qrMatrix } from './qr.js';
+
 const W = 595;
 const H = 842;
 const M = 40;
@@ -48,6 +50,21 @@ export class PdfWriter {
     this.ensure(size + 4);
     cells.forEach((c, i) => this.text(c.slice(0, Math.max(4, Math.floor(((xs[i + 1] ?? W - 2 * M) - xs[i] - 4) / (size * 0.52)))), { x: xs[i], size, bold: o.bold, stay: true }));
     this.y -= size + 4;
+  }
+
+  /** A QR code of `text`, `size` points square, with its top-right corner at the right margin and its top at the cursor; the cursor does not move. */
+  qr(text: string, size = 80): void {
+    const m = qrMatrix(text);
+    const quiet = 2;
+    const n = m.length + 2 * quiet;
+    const unit = size / n;
+    const left = W - M - size;
+    const bottom = this.y - size;
+    this.page.push(`q 1 g ${left.toFixed(2)} ${bottom.toFixed(2)} ${size} ${size} re f 0 g`);
+    m.forEach((row, r) => row.forEach((dark, c) => {
+      if (dark) this.page.push(`${(left + (c + quiet) * unit).toFixed(2)} ${(bottom + size - (r + quiet + 1) * unit).toFixed(2)} ${unit.toFixed(2)} ${unit.toFixed(2)} re f`);
+    }));
+    this.page.push('Q');
   }
 
   rule(): void {

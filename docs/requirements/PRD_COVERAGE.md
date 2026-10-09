@@ -271,9 +271,9 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Exam sessions, calendar/schedule, publication, lock | Built | `api/exams/exams.controller.ts` | |
-| Exam declaration / student exam registration, eligibility | Partial | `api/exams/exams.service.ts` | attendance-based eligibility rule not found; registration implicit |
-| Hall tickets (photo, QR/barcode) | Partial | `api/exams/documents.ts` | PDF built; barcode/QR on hall ticket not found |
-| Hall allocation and seating (batch, roll number, anti-collusion) | Partial | `api/exams/seating.ts` | rule set is basic; anti-collusion pattern not found |
+| Exam declaration / student exam registration, eligibility | Built | `api/exams/exam-registration.controller.ts`, `erp/exams/[id]` | window, attendance / fee dues / backlog rules, controller override with reason |
+| Hall tickets (photo, QR/barcode) | Partial | `api/exams/documents.ts`, `api/documents/public-verify.controller.ts` | signed QR and public verify built; photo not on the ticket |
+| Hall allocation and seating (batch, roll number, anti-collusion) | Built | `api/exams/anti-collusion.ts`, `erp/exams/[id]` | benches and rows, no same-subject neighbours, programmes mixed, chart PDF per hall |
 | Invigilation (duty, substitution, reporting) | Built | `api/exams/exam-depth.controller.ts` | duty attendance not recorded |
 | Answer script, evaluation, moderation, scrutiny | Built | `api/evaluation/evaluation.controller.ts` | |
 | Revaluation | Built | `api/exams/exams.controller.ts` (`revaluations`) | |

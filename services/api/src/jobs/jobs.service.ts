@@ -41,10 +41,19 @@ export class JobsService implements OnApplicationBootstrap, BeforeApplicationShu
    * one a day later; {@link ensureDaily} queues the first, and replaces a run that gave up.
    */
   registerDaily(kind: string, handler: JobHandler): void {
+    this.registerRecurring(kind, '1 day', handler);
+  }
+
+  /** Like {@link registerDaily} but every hour, for work with hour-sized deadlines (SLA escalation, reminders). */
+  registerHourly(kind: string, handler: JobHandler): void {
+    this.registerRecurring(kind, '1 hour', handler);
+  }
+
+  private registerRecurring(kind: string, every: '1 day' | '1 hour', handler: JobHandler): void {
     this.daily.add(kind);
     this.register(kind, async (job) => {
       await handler(job);
-      await this.db.system.insert(jobs).values({ tenantId: job.tenantId, kind, runAfter: sql`now() + interval '1 day'` });
+      await this.db.system.insert(jobs).values({ tenantId: job.tenantId, kind, runAfter: sql`now() + ${every}::interval` });
     });
   }
 

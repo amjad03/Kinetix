@@ -22,6 +22,8 @@ const header = (pdf: PdfWriter, h: StudentHeader, title: string, sub?: string) =
 export interface HallTicketData extends StudentHeader {
   sessionName: string;
   ticketNo: string;
+  /** Signed link for the QR code; the page it opens shows only name, session and validity. */
+  verifyUrl?: string;
   papers: { date: string; time: string; subject: string; room: string | null; seat: number | null }[];
 }
 
@@ -36,8 +38,53 @@ export function hallTicketPdf(d: HallTicketData): Buffer {
   for (const p of d.papers) pdf.row([p.date, p.time, p.subject, p.room ?? '-', p.seat === null ? '-' : String(p.seat)], xs);
   pdf.gap(20);
   pdf.paragraph('Bring this hall ticket and your institution ID card to every paper. Mobile phones and smart watches are not allowed in the examination hall.', { size: 9 });
-  pdf.gap(24);
+  if (d.verifyUrl) {
+    pdf.gap(8);
+    pdf.qr(d.verifyUrl, 80);
+    pdf.text('Scan the code to check that this hall ticket is genuine.', { size: 9, stay: true });
+    pdf.gap(88);
+  } else pdf.gap(24);
   pdf.text('Controller of Examinations', { align: 'right' });
+  return pdf.build();
+}
+
+/** The seating chart of one hall for one sitting: row by row, bench by bench, who sits where. */
+export interface SeatingChartData {
+  institution: string;
+  sessionName: string;
+  room: string;
+  sitting: string;
+  rows: number;
+  benchesPerRow: number;
+  seatsPerBench: number;
+  /** Placed candidates; the chart fills the other seats with "-". */
+  seats: { seatNo: number; rollNo: string; name: string; subject: string }[];
+}
+
+export function seatingChartPdf(d: SeatingChartData): Buffer {
+  const pdf = new PdfWriter();
+  pdf.text(d.institution, { size: 16, bold: true, align: 'center' });
+  pdf.text(`Seating chart: ${d.room}`, { size: 12, bold: true, align: 'center' });
+  pdf.text(`${d.sessionName}  |  ${d.sitting}`, { size: 10, align: 'center' });
+  pdf.rule();
+  const perRow = d.benchesPerRow * d.seatsPerBench;
+  const bySeat = new Map(d.seats.map((s) => [s.seatNo, s]));
+  const colW = Math.floor(515 / (d.seatsPerBench + 1));
+  const xs = Array.from({ length: d.seatsPerBench + 1 }, (_, i) => i * colW);
+  for (let r = 0; r < d.rows; r++) {
+    pdf.text(`Row ${r + 1}  (front is row 1)`, { bold: true });
+    for (let b = 0; b < d.benchesPerRow; b++) {
+      const cells = [`Bench ${b + 1}`];
+      for (let k = 0; k < d.seatsPerBench; k++) {
+        const s = bySeat.get(r * perRow + b * d.seatsPerBench + k + 1);
+        cells.push(s ? `${s.rollNo} ${s.subject}` : '-');
+      }
+      pdf.row(cells, xs, { size: 8 });
+    }
+    pdf.gap(2);
+  }
+  pdf.rule();
+  pdf.text(`Seated: ${d.seats.length}    Seats: ${d.rows * perRow}`);
   return pdf.build();
 }
 

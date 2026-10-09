@@ -1,12 +1,13 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { and, eq, inArray, isNull, lt } from 'drizzle-orm';
+import { and, eq, inArray, isNull, lt, ne, or } from 'drizzle-orm';
+import type { RoleName } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { departments, staffProfiles, tasks } from '../db/schema.js';
+import { departments, staffProfiles, tasks, userRoles, users } from '../db/schema.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { dueFor } from './task-rules.js';
+import { dueFor, needsReminder } from './task-rules.js';
 
 export const TASK_ESCALATION = 'tasks.escalate';
 
@@ -22,6 +23,11 @@ export interface NewTask {
   sourceModule?: string;
   sourceId?: string;
   slaHours?: number | null;
+  /** Who an overdue task goes to: a named user, else anyone holding the role, else the assignee's department head. */
+  escalateUserId?: string | null;
+  escalateRole?: string | null;
+  /** Remind the assignee once, this many hours after creation. */
+  reminderHours?: number | null;
 }
 
 /**
@@ -40,7 +46,7 @@ export class TasksService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    this.jobs.registerDaily(TASK_ESCALATION, (job: Job) => this.escalateOverdue(job.tenantId).then(() => undefined));
+    this.jobs.registerHourly(TASK_ESCALATION, (job: Job) => this.sweep(job.tenantId).then(() => undefined));
   }
 
   /** Creates a task, tells the assignee (unless they gave it to themselves) and records the audit entry. */
@@ -59,6 +65,9 @@ export class TasksService implements OnModuleInit {
         sourceModule: t.sourceModule ?? null,
         sourceId: t.sourceId ?? null,
         slaHours: t.slaHours ?? null,
+        escalateUserId: t.escalateUserId ?? null,
+        escalateRole: t.escalateRole ?? null,
+        reminderHours: t.reminderHours ?? null,
       })
       .returning();
     await audit(tx, { tenantId: t.tenantId, actorType: 'user', actorId: t.ownerId, action: 'task.created', subjectType: 'task', subjectId: row.id, data: { assigneeId: t.assigneeId, sourceModule: row.sourceModule, sourceId: row.sourceId } });
@@ -68,9 +77,33 @@ export class TasksService implements OnModuleInit {
     return row;
   }
 
+  /** The hourly job: reminders first, then escalation of what is overdue. */
+  async sweep(tenantId: string): Promise<{ reminded: string[]; escalated: string[] }> {
+    const reminded = await this.remindDue(tenantId);
+    const escalated = await this.escalateOverdue(tenantId);
+    return { reminded, escalated };
+  }
+
+  /** Tells the assignee once that a task with a reminder is still open. Returns the ids reminded. */
+  async remindDue(tenantId: string): Promise<string[]> {
+    return this.db.withTenant(tenantId, async (tx) => {
+      const now = this.clock.now();
+      const open = await tx.select().from(tasks).where(and(inArray(tasks.status, ['open', 'in_progress']), isNull(tasks.remindedAt), or(isNull(tasks.sourceModule), ne(tasks.sourceModule, 'workflows'))));
+      const done: string[] = [];
+      for (const t of open.filter((x) => needsReminder(x, now))) {
+        await this.notifications.notifyUsers(tx, [t.assigneeId], { kind: 'task', text: { title: 'Task reminder', body: t.title }, data: { taskId: t.id }, dedupeKey: `task:remind:${t.id}` });
+        await tx.update(tasks).set({ remindedAt: now, updatedAt: now }).where(eq(tasks.id, t.id));
+        await audit(tx, { tenantId, actorType: 'system', action: 'task.reminded', subjectType: 'task', subjectId: t.id, data: { assigneeId: t.assigneeId } });
+        done.push(t.id);
+      }
+      return done;
+    });
+  }
+
   /**
-   * Overdue tasks that are still open are escalated once: the head of the assignee's department is
-   * told, or the task's owner when the assignee has no department head (or is the head).
+   * Overdue tasks that are still open are escalated once: to the named user, or everyone holding the named
+   * role, or else the head of the assignee's department, or the task's owner when there is no head (or the
+   * assignee is the head). Tasks raised by the workflow engine are escalated by it instead.
    * Returns the ids escalated.
    */
   async escalateOverdue(tenantId: string): Promise<string[]> {
@@ -81,13 +114,19 @@ export class TasksService implements OnModuleInit {
         .from(tasks)
         .leftJoin(staffProfiles, eq(staffProfiles.userId, tasks.assigneeId))
         .leftJoin(departments, eq(departments.id, staffProfiles.departmentId))
-        .where(and(inArray(tasks.status, ['open', 'in_progress']), lt(tasks.dueAt, now), isNull(tasks.escalatedAt)));
+        .where(and(inArray(tasks.status, ['open', 'in_progress']), lt(tasks.dueAt, now), isNull(tasks.escalatedAt), or(isNull(tasks.sourceModule), ne(tasks.sourceModule, 'workflows'))));
       const done: string[] = [];
       for (const { t, headId } of due) {
-        const to = headId && headId !== t.assigneeId ? headId : t.ownerId;
-        await this.notifications.notifyUsers(tx, [to], { kind: 'task', text: { title: 'Task overdue', body: t.title }, data: { taskId: t.id, assigneeId: t.assigneeId }, dedupeKey: `task:overdue:${t.id}` });
+        let to: string[] = [];
+        if (t.escalateUserId) to = [t.escalateUserId];
+        else if (t.escalateRole) {
+          const holders = await tx.select({ id: userRoles.userId }).from(userRoles).innerJoin(users, eq(users.id, userRoles.userId)).where(and(eq(userRoles.role, t.escalateRole as RoleName), eq(users.status, 'active')));
+          to = holders.map((h) => h.id);
+        }
+        if (to.length === 0) to = [headId && headId !== t.assigneeId ? headId : t.ownerId];
+        await this.notifications.notifyUsers(tx, to, { kind: 'task', text: { title: 'Task overdue', body: t.title }, data: { taskId: t.id, assigneeId: t.assigneeId }, dedupeKey: `task:overdue:${t.id}` });
         await tx.update(tasks).set({ escalatedAt: now, updatedAt: now }).where(eq(tasks.id, t.id));
-        await audit(tx, { tenantId, actorType: 'system', action: 'task.escalated', subjectType: 'task', subjectId: t.id, data: { notified: to } });
+        await audit(tx, { tenantId, actorType: 'system', action: 'task.escalated', subjectType: 'task', subjectId: t.id, data: { notified: to.length === 1 ? to[0] : to } });
         done.push(t.id);
       }
       if (done.length) this.log.log(`Escalated ${done.length} overdue task(s) for ${tenantId}`);

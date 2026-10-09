@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useState, useTransition } from 'react';
-import { cancelRequest, decideRequest, loadRequest, resubmitRequest, saveDefinition, startRequest } from '@/app/(dashboard)/workflows/actions';
+import { cancelRequest, decideRequest, loadRequest, resubmitRequest, runSla, saveDefinition, startRequest } from '@/app/(dashboard)/workflows/actions';
 import { FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
 import { FormField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
@@ -113,9 +113,24 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
             label: t('wf.tab.defs'),
             node: (
               <>
-                <Button variant="contained" startIcon={<Add />} sx={{ mb: 2 }} onClick={() => setEditing('new')} data-testid="wf-new-def">
-                  {t('wf.def.new')}
-                </Button>
+                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                  <Button variant="contained" startIcon={<Add />} onClick={() => setEditing('new')} data-testid="wf-new-def">
+                    {t('wf.def.new')}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    disabled={pending}
+                    onClick={() =>
+                      start(async () => {
+                        const res = await runSla();
+                        toast(res.ok ? t('wf.sla.done', { reminded: res.data.reminded.length, escalated: res.data.escalated.length }) : res.error);
+                      })
+                    }
+                    data-testid="wf-run-sla"
+                  >
+                    {t('wf.sla.run')}
+                  </Button>
+                </Stack>
                 <Grid testId="wf-defs" empty={t('wf.empty.defs')} rows={definitions} cols={defCols} />
               </>
             ),
@@ -206,7 +221,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
             <>
               <Typography variant="body2">{t('wf.def.help')}</Typography>
               <Typography variant="caption" component="pre" sx={{ m: 0, whiteSpace: 'pre-wrap' }}>
-                {'days | Days | number | required\nkind | Kind | select | required | casual, sick\n\nHead | head | | | 24\nAccounts | role:accountant | 5000\nDesk | user:<id>'}
+                {'days | Days | number | required\nkind | Kind | select | required | casual, sick\n\nHead | head | | | 24\nBudget | all(role:accountant, role:hr_manager) | | | 48 | | role:principal | 24\nDean | role:principal | | | | amount>100000; kind==capex\nDesk | user:<id>'}
               </Typography>
             </>
           }

@@ -19,6 +19,19 @@ export async function tasksAndWorkflows(c: Ctx): Promise<void> {
     { requestType: 'purchase_approval', name: 'Purchase approval', description: 'For any purchase above the store limit.', fields: J([textField('item', 'Item or service'), { key: 'vendor', label: 'Preferred vendor', type: 'text', required: false }]), steps: J([{ name: 'HoD approval', approver: { kind: 'department_head' }, slaHours: 48 }, { name: 'Principal approval', approver: { kind: 'role', role: 'principal' }, minAmount: 25000, slaHours: 72 }, { name: 'Accounts verification', approver: { kind: 'role', role: 'accountant' }, slaHours: 48 }]), active: true, createdBy: principal.id },
     { requestType: 'event_permission', name: 'Event permission', description: 'Permission to hold a department event or industry visit.', fields: J([textField('event', 'Event'), { key: 'date', label: 'Proposed date', type: 'date', required: true }, { key: 'participants', label: 'Expected participants', type: 'number', required: true }]), steps: J([{ name: 'HoD approval', approver: { kind: 'department_head' }, slaHours: 48 }, { name: 'Principal approval', approver: { kind: 'role', role: 'principal' }, slaHours: 72 }]), active: true, createdBy: principal.id },
     { requestType: 'on_duty', name: 'On-duty request', description: 'Faculty attending a seminar, valuation or training on a working day.', fields: J([textField('purpose', 'Purpose'), { key: 'date', label: 'Date', type: 'date', required: true }]), steps: J([{ name: 'HoD approval', approver: { kind: 'department_head' }, slaHours: 24 }]), active: true, createdBy: principal.id },
+    {
+      requestType: 'capex_approval',
+      name: 'Capital purchase (parallel sign-off)',
+      description: 'Equipment and furniture above Rs 1 lakh: accounts and HR check the budget together, the principal signs very large amounts, and the HoD checks lab items.',
+      fields: J([textField('item', 'Item or service'), { key: 'category', label: 'Category', type: 'select', required: true, options: ['lab', 'furniture', 'software'] }]),
+      steps: J([
+        { name: 'Accounts and HR budget check', approvers: [{ kind: 'role', role: 'accountant' }, { kind: 'role', role: 'hr_manager' }], mode: 'all', slaHours: 48, reminderHours: 24, escalateTo: { kind: 'role', role: 'principal' } },
+        { name: 'Principal approval', approver: { kind: 'role', role: 'principal' }, conditions: [{ field: 'amount', op: '>', value: 200000 }], slaHours: 72 },
+        { name: 'Lab in-charge check', approver: { kind: 'department_head' }, conditions: [{ field: 'category', op: '==', value: 'lab' }] },
+      ]),
+      active: true,
+      createdBy: principal.id,
+    },
   ]);
   void defs;
   const asUser = (u: { id: string }, roles: UserPrincipal['roles']): UserPrincipal => ({ kind: 'user', tenantId: c.tenantId, userId: u.id, roles });
@@ -49,12 +62,34 @@ export async function tasksAndWorkflows(c: Ctx): Promise<void> {
       }
     });
   }
+  // Capital purchases through the parallel route: one waiting on HR, one reminded, one escalated to the principal after its SLA.
+  const accountsUser = asUser(c.byEmail.accounts, ['accountant']);
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000);
+  const capex = [
+    { who: comp[0], title: 'Interactive display panels for two classrooms', amount: 340000, payload: { item: 'Interactive flat panels', category: 'lab' }, approvedByAccounts: true, waitedHours: 6 },
+    { who: mgmt[0], title: 'Case-lab licence bundle', amount: 90000, payload: { item: 'Case-method teaching licences', category: 'software' }, approvedByAccounts: false, waitedHours: 30 },
+    { who: commerce[0], title: 'Smart podium for the seminar hall', amount: 150000, payload: { item: 'Smart podium with document camera', category: 'furniture' }, approvedByAccounts: false, waitedHours: 60 },
+  ];
+  for (const q of capex) {
+    const id = await withTenant(c.tenantId, async (tx) => {
+      const req = await wf.start(tx, { tenantId: c.tenantId, requesterId: q.who.id, requestType: 'capex_approval', title: q.title, payload: q.payload, amount: q.amount });
+      if (q.approvedByAccounts) await wf.decide(tx, accountsUser, req.id, 'approve', 'Within the equipment budget');
+      return req.id;
+    });
+    await k.q('update workflow_requests set step_entered_at = $2 where id = $1', [id, hoursAgo(q.waitedHours)]);
+  }
+  await wf.sweepSla(c.tenantId);
   // Plain tasks.
   const taskRows = [
     ['Prepare NAAC SSR criterion 2 data', 'principal', 'high', 'open', 20], ['Collect IA 1 marks from all departments', 'hod.commerce', 'urgent', 'in_progress', 2], ['Update CO-PO mapping for BCA Sem 5', 'hod.computers', 'normal', 'open', 12], ['Reconcile hostel mess advance with the register', 'accounts', 'normal', 'in_progress', 6],
     ['Renew bus insurance KA-51-AD-1290', 'transport', 'urgent', 'open', 12], ['Order cricket kits for the sports day', 'stores', 'low', 'open', 35], ['Call parents of students below 75 percent attendance', 'counsellor', 'high', 'in_progress', 4], ['Send alumni meet invitations', 'principal', 'normal', 'done', -3], ['Verify pending bank transfer fee submissions', 'accounts', 'high', 'open', 1], ['Upload December exam timetable to the notice board', 'hod.languages', 'normal', 'done', -1], ['Finalise internship placements for BBA Sem 3', 'placements', 'normal', 'open', 16], ['Cancel duplicate library subscription', 'library', 'low', 'cancelled', 9],
   ];
   await k.ins('tasks', taskRows.map(([title, who, priority, status, due], i) => ({ title, description: 'Created from the weekly staff meeting.', ownerId: principal.id, assigneeId: c.byEmail[who as string].id, dueAt: at(addDays(c.today, due as number), '17:00'), priority, status, sourceModule: i === 6 ? 'mentoring' : null, slaHours: 72, completedAt: status === 'done' ? at(addDays(c.today, -1)) : null, version: 1 })), { returning: false });
+  // A task that went overdue and was escalated to the principal's role, and one with a reminder.
+  await k.ins('tasks', [
+    { title: 'Submit the AISHE data return', description: 'Escalated to the principal after the deadline passed.', ownerId: c.byEmail.admin.id, assigneeId: c.byEmail['hod.commerce'].id, dueAt: at(addDays(c.today, -4), '17:00'), priority: 'urgent', status: 'open', slaHours: 48, escalateRole: 'principal', escalatedAt: at(addDays(c.today, -3), '09:00'), version: 1 },
+    { title: 'Confirm invigilation duties for December', description: 'A reminder goes out after 24 hours if it is still open.', ownerId: c.byEmail.admin.id, assigneeId: c.byEmail['hod.computers'].id, dueAt: at(addDays(c.today, 6), '17:00'), priority: 'normal', status: 'open', slaHours: 168, escalateRole: 'principal', reminderHours: 24, remindedAt: at(addDays(c.today, -1), '10:00'), version: 1 },
+  ], { returning: false });
   void r;
 }
 

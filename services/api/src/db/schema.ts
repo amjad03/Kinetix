@@ -1993,6 +1993,56 @@ export const hallTickets = pgTable(
   (t) => [primaryKey({ columns: [t.sessionId, t.studentId] }), uniqueIndex('hall_tickets_no_uq').on(t.tenantId, t.ticketNo)],
 );
 
+/** The period in which students register for a session, and the rules that make them eligible. */
+export const examRegistrationWindows = pgTable(
+  'exam_registration_windows',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    opensOn: date('opens_on').notNull(),
+    closesOn: date('closes_on').notNull(),
+    /** Attendance below this percent (over the session's programme term) makes a student ineligible; null = not checked. */
+    minAttendancePercent: numeric('min_attendance_percent', { precision: 5, scale: 2, mode: 'number' }),
+    blockOnFeeDues: boolean('block_on_fee_dues').notNull().default(true),
+    /** More failed subjects than this makes a student ineligible; null = not checked. */
+    maxBacklogs: integer('max_backlogs'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('exam_registration_windows_uq').on(t.sessionId)],
+);
+
+/** A student's registration for a session: registered, or held back with the reasons (until the controller overrides). */
+export const examRegistrations = pgTable(
+  'exam_registrations',
+  {
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id),
+    status: text('status').$type<'registered' | 'ineligible'>().notNull(),
+    reasons: jsonb('reasons').$type<string[]>().notNull().default([]),
+    overriddenBy: uuid('overridden_by').references(() => users.id),
+    overrideReason: text('override_reason'),
+    registeredAt: timestamp('registered_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.studentId] })],
+);
+
+/** The bench layout of a hall for one session's seating plan. */
+export const examRoomLayouts = pgTable(
+  'exam_room_layouts',
+  {
+    tenantId: tenantId(),
+    sessionId: uuid('session_id').notNull().references(() => examSessions.id, { onDelete: 'cascade' }),
+    roomId: uuid('room_id').notNull().references(() => rooms.id),
+    rows: smallint('rows').notNull(),
+    benchesPerRow: smallint('benches_per_row').notNull(),
+    seatsPerBench: smallint('seats_per_bench').notNull().default(2),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.roomId] })],
+);
+
 /** A student's processed result for a session. */
 export const examResults = pgTable(
   'exam_results',
@@ -3012,6 +3062,10 @@ export const TENANT_TABLES = [
   'workflow_definitions',
   'workflow_requests',
   'workflow_actions',
+  'workflow_step_approvals',
+  'exam_registration_windows',
+  'exam_registrations',
+  'exam_room_layouts',
   'diary_entries',
   'diary_acks',
   'ptm_events',
@@ -4470,6 +4524,12 @@ export const tasks = pgTable(
     sourceId: text('source_id'),
     slaHours: integer('sla_hours'),
     escalatedAt: timestamp('escalated_at', { withTimezone: true }),
+    /** Where an overdue task is escalated: a named user, else anyone holding the role, else the assignee's department head. */
+    escalateRole: text('escalate_role'),
+    escalateUserId: uuid('escalate_user_id').references(() => users.id),
+    /** Remind the assignee once this many hours after creation, if still open. */
+    reminderHours: integer('reminder_hours'),
+    remindedAt: timestamp('reminded_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     version: integer('version').notNull().default(0),
     createdAt: createdAt(),
@@ -5119,6 +5179,29 @@ export interface WorkflowStepSnapshot {
   role: string | null;
   userId: string | null;
   slaHours: number | null;
+  /** Parallel step: every approver listed here is asked at once; `all` needs each of them, `any` the first. */
+  mode?: 'single' | 'all' | 'any';
+  approvers?: { kind: 'role' | 'user'; role: string | null; userId: string | null }[];
+  /** Who takes over when the SLA runs out. */
+  escalateTo?: { kind: 'role'; role: string } | { kind: 'user'; userId: string } | null;
+  /** Remind the pending approvers once this many hours after the step opened. */
+  reminderHours?: number | null;
+}
+
+/** The shape of one step in a workflow definition (see workflow-rules.ts for the pure rules). */
+export interface WorkflowStepDefinition {
+  name: string;
+  approver?: { kind: 'role'; role: string } | { kind: 'department_head' } | { kind: 'user'; userId: string };
+  /** Two or more approvers asked at the same time; `mode` says whether all or any one must approve. */
+  approvers?: ({ kind: 'role'; role: string } | { kind: 'department_head' } | { kind: 'user'; userId: string })[];
+  mode?: 'all' | 'any';
+  minAmount?: number | null;
+  maxAmount?: number | null;
+  /** The step applies only when the request satisfies every condition (amount or a form field). */
+  conditions?: { field: string; op: '>' | '>=' | '<' | '<=' | '==' | '!=' | 'in'; value: number | string | (number | string)[] }[];
+  slaHours?: number | null;
+  escalateTo?: { kind: 'role'; role: string } | { kind: 'user'; userId: string } | null;
+  reminderHours?: number | null;
 }
 
 
@@ -5132,7 +5215,7 @@ export const workflowDefinitions = pgTable(
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     fields: jsonb('fields').$type<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'select'; required: boolean; options?: string[] }[]>().notNull().default([]),
-    steps: jsonb('steps').$type<{ name: string; approver: { kind: 'role'; role: string } | { kind: 'department_head' } | { kind: 'user'; userId: string }; minAmount?: number | null; maxAmount?: number | null; slaHours?: number | null }[]>().notNull().default([]),
+    steps: jsonb('steps').$type<WorkflowStepDefinition[]>().notNull().default([]),
     active: boolean('active').notNull().default(true),
     version: integer('version').notNull().default(0),
     createdBy: uuid('created_by').references(() => users.id),
@@ -5163,6 +5246,10 @@ export const workflowRequests = pgTable(
     approverUserId: uuid('approver_user_id').references(() => users.id),
     approverRole: text('approver_role'),
     taskId: uuid('task_id').references(() => tasks.id),
+    /** When the current step opened, and whether its reminder / SLA escalation has fired. */
+    stepEnteredAt: timestamp('step_entered_at', { withTimezone: true }),
+    remindedAt: timestamp('reminded_at', { withTimezone: true }),
+    escalatedAt: timestamp('escalated_at', { withTimezone: true }),
     sourceModule: text('source_module'),
     sourceId: text('source_id'),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
@@ -5171,6 +5258,28 @@ export const workflowRequests = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index('workflow_requests_requester_idx').on(t.tenantId, t.requesterId), index('workflow_requests_inbox_idx').on(t.tenantId, t.status, t.approverUserId)],
+);
+
+
+/** Who is asked to decide a step: one row per approver (a single step has one), plus a row for an escalation target. */
+export const workflowStepApprovals = pgTable(
+  'workflow_step_approvals',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    requestId: uuid('request_id').notNull().references(() => workflowRequests.id, { onDelete: 'cascade' }),
+    stepIndex: integer('step_index').notNull(),
+    kind: text('kind').$type<'role' | 'user'>().notNull(),
+    role: text('role'),
+    userId: uuid('user_id').references(() => users.id),
+    taskId: uuid('task_id').references(() => tasks.id),
+    /** An escalation target: its approval decides the step on its own. */
+    escalation: boolean('escalation').notNull().default(false),
+    decidedBy: uuid('decided_by').references(() => users.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('workflow_step_approvals_req_idx').on(t.requestId, t.stepIndex), index('workflow_step_approvals_user_idx').on(t.tenantId, t.userId)],
 );
 
 
@@ -5186,7 +5295,7 @@ export const workflowActions = pgTable(
     stepIndex: integer('step_index'),
     stepName: text('step_name'),
     actorId: uuid('actor_id').references(() => users.id),
-    action: text('action').$type<'submitted' | 'approved' | 'rejected' | 'returned' | 'resubmitted' | 'cancelled' | 'skipped'>().notNull(),
+    action: text('action').$type<'submitted' | 'approved' | 'rejected' | 'returned' | 'resubmitted' | 'cancelled' | 'skipped' | 'reminded' | 'escalated'>().notNull(),
     comment: text('comment').notNull().default(''),
     createdAt: createdAt(),
   },

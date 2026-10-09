@@ -1,5 +1,5 @@
 import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, ne, or, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, or, sql, type SQL } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
@@ -9,7 +9,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { roleName, tasks, users, workflowActions, workflowDefinitions, workflowRequests } from '../db/schema.js';
 import { checkVersion, found } from '../placements/placements.access.js';
 import { TASK_ROLES } from '../tasks/tasks.controller.js';
-import { FIELD_TYPES } from './workflow-rules.js';
+import { CONDITION_OPS, FIELD_TYPES, stepApprovers } from './workflow-rules.js';
 import { WorkflowsService } from './workflows.service.js';
 
 /** Every staff role can start a request and decide the steps it is given. */
@@ -26,17 +26,35 @@ const Field = z
     options: z.array(z.string().trim().min(1).max(80)).max(30).optional(),
   })
   .refine((f) => f.type !== 'select' || (f.options?.length ?? 0) > 0, { message: 'A select field needs its options' });
-const Step = z.object({
-  name: z.string().trim().min(1).max(80),
-  approver: z.discriminatedUnion('kind', [
-    z.object({ kind: z.literal('role'), role: z.enum(roleName.enumValues) }),
-    z.object({ kind: z.literal('department_head') }),
-    z.object({ kind: z.literal('user'), userId: z.uuid() }),
-  ]),
-  minAmount: z.number().min(0).nullable().optional(),
-  maxAmount: z.number().min(0).nullable().optional(),
-  slaHours: z.number().int().min(1).max(24 * 90).nullable().optional(),
+const ApproverShape = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('role'), role: z.enum(roleName.enumValues) }),
+  z.object({ kind: z.literal('department_head') }),
+  z.object({ kind: z.literal('user'), userId: z.uuid() }),
+]);
+const EscalateShape = z.discriminatedUnion('kind', [z.object({ kind: z.literal('role'), role: z.enum(roleName.enumValues) }), z.object({ kind: z.literal('user'), userId: z.uuid() })]);
+const ConditionShape = z.object({
+  field: z.string().trim().min(1).max(40),
+  op: z.enum(CONDITION_OPS),
+  value: z.union([z.number(), z.string().max(120), z.array(z.union([z.number(), z.string().max(120)])).min(1).max(30)]),
 });
+const Step = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    approver: ApproverShape.optional(),
+    /** Two or more approvers asked at once; `mode` says whether all or any one must approve. */
+    approvers: z.array(ApproverShape).min(2).max(8).optional(),
+    mode: z.enum(['all', 'any']).optional(),
+    minAmount: z.number().min(0).nullable().optional(),
+    maxAmount: z.number().min(0).nullable().optional(),
+    conditions: z.array(ConditionShape).max(6).optional(),
+    slaHours: z.number().int().min(1).max(24 * 90).nullable().optional(),
+    escalateTo: EscalateShape.nullable().optional(),
+    reminderHours: z.number().int().min(1).max(24 * 90).nullable().optional(),
+  })
+  .refine((s) => (s.approver ? 1 : 0) + (s.approvers ? 1 : 0) === 1, { message: 'A step needs either one approver or a list of approvers' })
+  .refine((s) => !s.approvers || s.mode !== undefined, { message: 'A parallel step needs a mode (all or any)' })
+  .refine((s) => !s.escalateTo || !!s.slaHours, { message: 'Escalation needs an SLA in hours' })
+  .refine((s) => !s.reminderHours || !s.slaHours || s.reminderHours < s.slaHours, { message: 'The reminder must come before the SLA runs out' });
 const DefinitionShape = z.object({
   name: z.string().trim().min(3).max(120),
   description: z.string().trim().max(1000).default(''),
@@ -111,7 +129,8 @@ export class WorkflowsController {
   }
 
   private async checkNamedUsers(tx: Tx, steps: z.infer<typeof Step>[]) {
-    const ids = [...new Set(steps.flatMap((s) => (s.approver.kind === 'user' ? [s.approver.userId] : [])))];
+    const named = steps.flatMap((s) => [...stepApprovers(s), ...(s.escalateTo ? [s.escalateTo] : [])]);
+    const ids = [...new Set(named.flatMap((a) => (a.kind === 'user' ? [a.userId] : [])))];
     if (!ids.length) return;
     const rows = await tx.select({ id: users.id }).from(users).where(inArray(users.id, ids));
     if (rows.length !== ids.length) throw new NotFoundException('A named approver was not found');
@@ -136,7 +155,18 @@ export class WorkflowsController {
   @Auth('user', WORKFLOW_ROLES)
   inbox(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) =>
-      this.rows(tx, and(eq(workflowRequests.status, 'pending'), ne(workflowRequests.requesterId, p.userId), or(eq(workflowRequests.approverUserId, p.userId), inArray(workflowRequests.approverRole, p.roles)))),
+      this.rows(
+        tx,
+        and(
+          eq(workflowRequests.status, 'pending'),
+          ne(workflowRequests.requesterId, p.userId),
+          or(
+            eq(workflowRequests.approverUserId, p.userId),
+            inArray(workflowRequests.approverRole, p.roles),
+            sql`exists (select 1 from workflow_step_approvals a where a.request_id = ${workflowRequests.id} and a.step_index = ${workflowRequests.currentStep} and a.decided_at is null and (a.user_id = ${p.userId} or a.role in (${sql.join(p.roles.map((r) => sql`${r}`), sql`, `)})))`,
+          ),
+        ),
+      ),
     );
   }
 
@@ -171,7 +201,7 @@ export class WorkflowsController {
         requesterName: requester?.fullName ?? '',
         timeline,
         task: task ?? null,
-        canDecide: this.svc.canDecide(p, req),
+        canDecide: await this.svc.canDecide(tx, p, req),
         canResubmit: req.status === 'returned' && req.requesterId === p.userId,
         canCancel: (req.status === 'pending' || req.status === 'returned') && (req.requesterId === p.userId || isAdmin(p)),
       };
@@ -190,6 +220,14 @@ export class WorkflowsController {
   @Auth('user', WORKFLOW_ROLES)
   resubmit(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ResubmitBody)) b: z.infer<typeof ResubmitBody>) {
     return this.db.withTenant(p.tenantId, (tx) => this.svc.resubmit(tx, p, id, b));
+  }
+
+  /** Runs the SLA check now (the hourly job does it anyway): reminds waiting approvers and escalates overdue steps. */
+  @Post('sla/run')
+  @HttpCode(200)
+  @Auth('user', WORKFLOW_ADMIN)
+  runSla(@CurrentPrincipal() p: UserPrincipal) {
+    return this.svc.sweepSla(p.tenantId);
   }
 
   @Post('requests/:id/cancel')

@@ -50,6 +50,11 @@ export async function cancelRequest(id: string, comment: string) {
   return send(`${BASE}/requests/${encodeURIComponent(id)}/cancel`, { comment: opt(comment) ?? '' }, PAGE);
 }
 
+/** Runs the reminder and escalation check now; the hourly job does the same. */
+export async function runSla() {
+  return send<{ reminded: string[]; escalated: string[] }>(`${BASE}/sla/run`, {}, PAGE);
+}
+
 export async function loadRequest(id: string) {
   return read<RequestDetail>(`${BASE}/requests/${encodeURIComponent(id)}`);
 }
