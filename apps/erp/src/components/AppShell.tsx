@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useI18n } from '@/i18n/client';
 import { crumbsFor, visibleGroups } from '@/lib/nav';
+import type { Workspace } from '@/lib/workspaces';
 import { homeFor } from '@/lib/access';
 import { Logo, LogoMark } from './Logo';
 import { Breadcrumbs } from './shell/Breadcrumbs';
@@ -55,6 +56,7 @@ export function AppShell({
   notices = [],
   unread = 0,
   disabledModules = [],
+  workspace = 'all',
   children,
 }: {
   user: ShellUser;
@@ -65,6 +67,8 @@ export function AppShell({
   unread?: number;
   /** Sections the institution switched off; hidden from the menu. */
   disabledModules?: string[];
+  /** The console chosen in the top bar; the menu lists only its pages. */
+  workspace?: Workspace;
   children: ReactNode;
 }) {
   const { t } = useI18n();
@@ -72,7 +76,7 @@ export function AppShell({
   const [mobile, setMobile] = useState(false);
   // null: follow the screen (rail on tablets, full on desktops); otherwise the person's choice, remembered.
   const pref = useSyncExternalStore(subscribeRail, readRail, () => null);
-  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules), [user.roles, user.platformAdmin, disabledModules]);
+  const groups = useMemo(() => visibleGroups(user.roles as never, !!user.platformAdmin, disabledModules, workspace), [user.roles, user.platformAdmin, disabledModules, workspace]);
   const crumbs = useMemo(() => crumbsFor(groups, pathname), [groups, pathname]);
   const home = homeFor(user.roles as never);
 
@@ -139,7 +143,7 @@ export function AppShell({
         </Drawer>
 
         <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <TopBar user={user} school={school} groups={groups} years={years} yearId={yearId} notices={notices} unread={unread} onMenu={() => setMobile(true)} />
+          <TopBar user={user} school={school} groups={groups} workspace={workspace} years={years} yearId={yearId} notices={notices} unread={unread} onMenu={() => setMobile(true)} />
           <Box component="main" id="main" tabIndex={-1} className="kx-main" sx={{ flex: 1, minWidth: 0, width: '100%', maxWidth: 1600, mx: 'auto', px: { xs: 2, md: 3, xl: 4 }, py: { xs: 2, md: 3 }, outline: 'none' }}>
             <Breadcrumbs crumbs={crumbs} />
             {children}

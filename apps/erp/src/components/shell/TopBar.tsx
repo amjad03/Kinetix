@@ -1,5 +1,7 @@
 'use client';
 
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
+import type { Workspace } from '@/lib/workspaces';
 import Check from '@mui/icons-material/Check';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import SecurityOutlined from '@mui/icons-material/SecurityOutlined';
@@ -71,12 +73,17 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   examiner: 'role.examiner',
   quality_officer: 'role.quality_officer',
   alumni: 'role.alumni',
+  external_examiner: 'role.external_examiner',
+  mentor: 'role.mentor',
+  accreditation_reviewer: 'role.accreditation_reviewer',
+  university_admin: 'role.university_admin',
 };
 
 export function TopBar({
   user,
   school,
   groups,
+  workspace,
   years,
   yearId,
   notices,
@@ -86,6 +93,7 @@ export function TopBar({
   user: { fullName: string; email: string | null; roles: RoleName[] };
   school: string;
   groups: NavGroup[];
+  workspace: Workspace;
   years: ShellYear[];
   yearId: string;
   notices: ShellNotice[];
@@ -122,6 +130,7 @@ export function TopBar({
         <CommandSearch groups={groups} />
       </Box>
 
+      <WorkspaceSwitcher value={workspace} />
       {current && (
         <>
           <Button

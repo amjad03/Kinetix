@@ -10,7 +10,7 @@
  *   (`band`: the band's point; `percentOver10`: percentage ÷ 10, as BU NEP marks cards print it).
  */
 
-export type ComponentKind = 'internal' | 'external' | 'practical' | 'project' | 'viva';
+export type ComponentKind = 'internal' | 'external' | 'practical' | 'project' | 'viva' | 'observation' | 'diagnostic' | 'skill';
 
 export interface GradeBand {
   grade: string;

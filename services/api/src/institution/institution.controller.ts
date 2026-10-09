@@ -6,6 +6,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
+import { invalidateModuleGate } from './module-gate.interceptor.js';
 import { buildingFloors, buildings, campuses, institutionProfiles, rooms } from '../db/schema.js';
 
 /** ERP sections an institution may switch off (they disappear from the navigation). */
@@ -51,7 +52,19 @@ export class InstitutionController {
   capabilities(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const r = await readProfile(tx);
-      return { academicModel: r?.academicModel ?? 'school', boardOrUniversity: r?.boardOrUniversity ?? null, disabledModules: r?.disabledModules ?? [], toggleableModules: [...TOGGLE_MODULES] };
+      return {
+        academicModel: r?.academicModel ?? 'school',
+        boardOrUniversity: r?.boardOrUniversity ?? null,
+        disabledModules: r?.disabledModules ?? [],
+        toggleableModules: [...TOGGLE_MODULES],
+        institutionType: r?.institutionType ?? null,
+        structureModel: r?.structureModel ?? null,
+        governanceModel: r?.governanceModel ?? null,
+        languages: r?.languages ?? ['en'],
+        terminology: r?.terminology ?? {},
+        aiPolicy: r?.aiPolicy ?? {},
+        commsChannels: r?.commsChannels ?? {},
+      };
     });
   }
 
@@ -70,6 +83,7 @@ export class InstitutionController {
       const [row] = await tx.insert(institutionProfiles).values({ tenantId: p.tenantId, ...values }).onConflictDoUpdate({ target: institutionProfiles.tenantId, set: values }).returning();
       const changed = Object.keys(b).filter((k) => JSON.stringify((before as Record<string, unknown> | null)?.[k] ?? null) !== JSON.stringify((row as Record<string, unknown>)[k] ?? null));
       if (changed.length) await auditUser(tx, p, 'institution.profile.updated', 'tenant', p.tenantId, { changed });
+      invalidateModuleGate(p.tenantId);
       return { ...row, toggleableModules: [...TOGGLE_MODULES] };
     });
   }

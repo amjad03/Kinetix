@@ -13,6 +13,7 @@ import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
 import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
+import { gapClose } from './gap-close.js';
 import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 import { depthSamples } from './depth.js';
@@ -70,4 +71,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['curriculum versions (NEP 2024), affiliated institutions and convocations', curriculumAndConvocation],
   ['probation, transfers, marking drafts, script ink and CO-tagged polls', assistSamples],
   ['exam, quality, HR, fee, asset, library, hostel, canteen and mentoring depth', depthSamples],
+  ['setup, rules, learning support, rubrics, forums, reattempts and integrity (requirements gap close)', gapClose],
 ];

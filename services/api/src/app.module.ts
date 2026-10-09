@@ -44,6 +44,10 @@ import { ConnectorsModule } from './connectors/connectors.module.js';
 import { WelfareModule } from './welfare/welfare.module.js';
 import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
 import { InstitutionModule } from './institution/institution.module.js';
+import { TrustModule } from './trust/trust.module.js';
+import { SchedulingModule } from './scheduling/scheduling.module.js';
+import { SchoolLearningModule } from './school-learning/school-learning.module.js';
+import { AssessmentToolsModule } from './assessment-tools/assessment-tools.module.js';
 import { SurveysModule } from './surveys/surveys.module.js';
 import { CourseRegistrationModule } from './course-registration/course-registration.module.js';
 import { WorkflowsModule } from './workflows/workflows.module.js';
@@ -146,6 +150,10 @@ import { SearchModule } from './search/search.controller.js';
     WelfareModule,
     AttendanceGovernanceModule,
     InstitutionModule,
+    TrustModule,
+    SchedulingModule,
+    SchoolLearningModule,
+    AssessmentToolsModule,
     ConnectorsModule,
     SurveysModule,
     CourseRegistrationModule,

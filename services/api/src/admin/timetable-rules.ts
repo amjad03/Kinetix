@@ -1,3 +1,5 @@
+import { subjectFrequency } from '../db/schema-g1.js';
+import { frequencyProblem } from '../scheduling/scheduling-logic.js';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { and, eq, gt, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -84,6 +86,16 @@ export async function validateSlot(tx: Tx, b: SlotInput, replacing: string | nul
   }
   const clash = await findClash(tx, b, replacing);
   if (clash) throw new ConflictException({ statusCode: 409, message: clash.message, error: 'Conflict', code: clash.code });
+  // Subject frequency: a subject may appear only so often in a week and in a day.
+  const [rule] = await tx.select().from(subjectFrequency).where(eq(subjectFrequency.subjectId, b.subjectId));
+  if (rule) {
+    const mine = await tx
+      .select({ day: timetableSlots.dayOfWeek })
+      .from(timetableSlots)
+      .where(and(isNull(timetableSlots.archivedAt), eq(timetableSlots.sectionId, b.sectionId), eq(timetableSlots.subjectId, b.subjectId), replacing ? ne(timetableSlots.id, replacing) : undefined));
+    const problem = frequencyProblem(rule, mine.length, mine.filter((x) => x.day === b.dayOfWeek).length);
+    if (problem) throw new ConflictException({ statusCode: 409, message: problem, error: 'Conflict', code: 'TIMETABLE_FREQUENCY' });
+  }
   const [year] = await tx.select({ id: academicYears.id }).from(academicYears).where(eq(academicYears.isCurrent, true));
   if (!year) throw new BadRequestException('Set the current academic year first');
   return { academicYearId: year.id, sectionId: section.id, subjectId: subject.id, teacherId: teacher.id, roomId: b.roomId ?? null, dayOfWeek: b.dayOfWeek, startsAt: b.startsAt, endsAt: b.endsAt };

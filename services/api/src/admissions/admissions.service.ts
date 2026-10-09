@@ -22,6 +22,9 @@ import { audit } from '../common/audit.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import type { Tx } from '../db/db.service.js';
 import { academicYears, admissionCycles, admissionQuotas, applicationDocuments, applications, enquiries, entranceSeats, entranceTests, meritLists, programs, sections, students, userRoles, users } from '../db/schema.js';
+import { studentPriorEducation } from '../db/schema-g1.js';
+import { feedCalendar } from '../scheduling/calendar-feed.js';
+import { findDuplicates } from './dedupe.js';
 import { LifecycleService } from '../students/lifecycle.service.js';
 import { addDays, auditActor, type Actor } from './enquiries.service.js';
 import { accrueCommission } from './agents.service.js';
@@ -135,6 +138,7 @@ export class AdmissionsService {
       if (!prog) throw new BadRequestException('Create a class for this program, year and term first: admitted students need one to join');
     }
     const [row] = await tx.update(admissionCycles).set({ status, updatedAt: new Date() }).where(eq(admissionCycles.id, id)).returning();
+    if (actor.userId) await feedCalendar(tx, actor.tenantId, actor.userId);
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.CycleUpdated, subjectType: 'admission_cycle', subjectId: id, data: { status } });
     return row;
   }
@@ -184,7 +188,14 @@ export class AdmissionsService {
     if (to === 'accepted' && a.offerExpiresOn && a.offerExpiresOn < (await this.lifecycle.today(tx))) throw new BadRequestException('This offer has expired');
     const [row] = await tx
       .update(applications)
-      .set({ status: to, statusReason: reason?.trim() || null, updatedAt: new Date(), ...(offerExpiresOn !== undefined ? { offerExpiresOn } : {}) })
+      .set({
+        status: to,
+        statusReason: reason?.trim() || null,
+        updatedAt: new Date(),
+        ...(offerExpiresOn !== undefined ? { offerExpiresOn } : {}),
+        // Each correction round keeps what was asked (the items and due date are added by the correction endpoint).
+        ...(to === 'correction_requested' ? { correctionNotes: [...a.correctionNotes, { at: new Date().toISOString(), by: actor.userId ?? null, notes: reason?.trim() ?? '', items: [] }] } : {}),
+      })
       .where(eq(applications.id, id))
       .returning();
     const event = to === 'offered' ? AdmissionsEvents.ApplicationStatusChanged : to === 'accepted' ? AdmissionsEvents.OfferAccepted : to === 'declined' ? AdmissionsEvents.OfferDeclined : AdmissionsEvents.ApplicationStatusChanged;
@@ -383,6 +394,7 @@ export class AdmissionsService {
       }
     }
     const [row] = await tx.update(meritLists).set({ publishedAt: new Date() }).where(eq(meritLists.id, listId)).returning();
+    if (actor.userId) await feedCalendar(tx, actor.tenantId, actor.userId);
     await audit(tx, { ...auditActor(actor), action: AdmissionsEvents.MeritListPublished, subjectType: 'merit_list', subjectId: listId, data: { cycleId: list.cycleId, offered, waitlisted } });
     return { ...row, offered, waitlisted };
   }
@@ -398,13 +410,19 @@ export class AdmissionsService {
   // ---- enrolment ------------------------------------------------------------------------------------
 
   /** Turns an accepted application into an enrolled student: user, student, guardian and class. */
-  async enroll(tx: Tx, actor: Actor & { userId: string }, id: string, input: { sectionId?: string; rollNo?: string; activate: boolean }) {
+  async enroll(tx: Tx, actor: Actor & { userId: string }, id: string, input: { sectionId?: string; rollNo?: string; activate: boolean; duplicateOverride?: string }) {
     const a = await this.application(tx, id, true);
     if (a.status !== 'accepted') throw new BadRequestException(a.status === 'enrolled' ? 'This applicant is already enrolled' : 'Only an accepted offer can be enrolled');
     const cycle = await this.cycle(tx, a.cycleId);
     if (!['none', 'paid', 'waived'].includes(a.feeStatus)) throw new BadRequestException('The application fee has not been paid');
     const gaps = await this.documentGaps(tx, a, cycle);
     if (gaps.length) throw new BadRequestException(`Documents outstanding: ${gaps.join(', ')}`);
+    // One person, one record: a likely duplicate stops enrolment until the office says why it is not.
+    const duplicates = await findDuplicates(tx, a);
+    if (duplicates.length) {
+      if (!input.duplicateOverride) throw new ConflictException({ code: 'DUPLICATE_PERSON', message: `This applicant looks like someone already on record: ${duplicates.map((d) => `${d.label} (${d.reasons.join(', ').toLowerCase()})`).join('; ')}. Check them, then enrol again with a reason.`, duplicates });
+      await audit(tx, { ...auditActor(actor), action: 'admissions.duplicate.overridden', subjectType: 'application', subjectId: id, data: { reason: input.duplicateOverride, duplicates } });
+    }
 
     const candidates = await tx
       .select()
@@ -431,6 +449,7 @@ export class AdmissionsService {
       .insert(students)
       .values({ tenantId: actor.tenantId, userId: studentUserId, sectionId: section.id, rollNo, fullName: a.applicantName, status: 'enrolled', statusChangedAt: new Date(), enrolledOn: today, applicationId: a.id })
       .returning();
+    await tx.update(studentPriorEducation).set({ studentId: st.id }).where(eq(studentPriorEducation.applicationId, a.id));
     await this.lifecycle.addEvent(tx, actor, { studentId: st.id, kind: 'status', fromStatus: 'applicant', toStatus: 'enrolled', toSectionId: section.id, reason: `Admitted: ${a.applicationNo}`, effectiveOn: today, data: { applicationId: a.id, rollNo } });
     await this.lifecycle.linkGuardian(tx, actor, st.id, { fullName: a.guardianName, phone: a.guardianPhone, email: a.guardianEmail, relation: a.guardianRelation, isPrimary: true, isEmergencyContact: true });
     if (input.activate) await this.lifecycle.changeStatus(tx, actor, st.id, 'active', { reason: 'Joined the class', effectiveOn: today });

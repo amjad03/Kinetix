@@ -69,7 +69,7 @@ export class LifecycleService {
     const problem = transitionProblem(from, to, { reason: opts.reason, finalTerm: ctx.finalTerm });
     if (problem) throw new BadRequestException(problem);
     const effectiveOn = opts.effectiveOn ?? (await this.today(tx));
-    if (to === 'on_leave' && !opts.returnOn) throw new BadRequestException('Give the date the student returns from leave');
+    if ((to === 'on_leave' || to === 'deferred') && !opts.returnOn) throw new BadRequestException(to === 'deferred' ? 'Give the date the student joins after the deferral' : 'Give the date the student returns from leave');
     if (opts.returnOn && opts.returnOn < effectiveOn) throw new BadRequestException('The return date cannot be before the leave starts');
     const approverId = STUDENT_APPROVER_STATUSES.includes(to) ? await this.approver(tx, opts.approverId ?? actor.userId) : null;
     const certificateId = to === 'transferred' ? await this.transferCertificate(tx, studentId, opts.certificateId ?? null) : null;

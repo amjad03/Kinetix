@@ -25,6 +25,8 @@ export interface ImportRow {
   preview: boolean;
   versionId: string | null;
   proposal: { subjects: unknown[] };
+  /** What a person should look at before drafting: duplicate codes, missing credits or units... */
+  flags?: { where: string; code: string; message: string }[];
   createdAt: string;
 }
 

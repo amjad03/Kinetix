@@ -5,6 +5,7 @@ import '../../core/api.dart';
 import '../../core/lms.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'forum_screen.dart';
 
 /// "Courses" in My Learning: the published course for each subject with its modules and the
 /// student's running grade.
@@ -153,6 +154,12 @@ class _CourseScreenState extends State<CourseScreen> {
                       ),
                   ],
                 ),
+              ),
+              const SizedBox(height: Kx.s12),
+              KxCard(
+                key: const Key('openForum'),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ForumScreen(api: widget.api, courseId: widget.summary.courseId, title: widget.summary.title))),
+                child: Row(children: [const Icon(Icons.forum_outlined), const SizedBox(width: Kx.s12), Expanded(child: Text(l.forumTitle, style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w600))), const Icon(Icons.chevron_right)]),
               ),
               const SizedBox(height: Kx.s12),
               if (c.announcements.isNotEmpty)

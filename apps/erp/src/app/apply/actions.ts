@@ -55,6 +55,14 @@ export async function respondToOffer(slug: string, id: string, token: string, to
   return act(() => api<PublicApplication>(`${base(slug)}/applications/${id}/${path}`, { method: 'POST', body: {}, headers: { 'x-application-token': token }, anonymous: true }));
 }
 
+/** The applicant fixes what the office asked about and sends the application back for review. */
+export async function resubmitApplication(slug: string, id: string, token: string, input: { applicantName?: string; dateOfBirth?: string; note?: string }): Promise<ActionResult<{ id: string; status: string }>> {
+  if (!guard(slug, id, token)) return bad();
+  const clean = (v?: string) => (v?.trim() ? v.trim() : undefined);
+  const body = { applicantName: clean(input.applicantName), dateOfBirth: clean(input.dateOfBirth), note: clean(input.note) };
+  return act(() => api<{ id: string; status: string }>(`${base(slug)}/applications/${id}/resubmit`, { method: 'POST', body, headers: { 'x-application-token': token }, anonymous: true }));
+}
+
 export interface FeeCheckout {
   paymentId: string;
   provider: string;

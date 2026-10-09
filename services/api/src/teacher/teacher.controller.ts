@@ -14,6 +14,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { attendanceRecords, boardSessions, devices, guardians, homework, sections, students, subjects, tenants, timetableSlots, userRoles, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { attendanceLocked } from '../attendance-governance/attendance-rules.js';
+import { attendanceSettings } from '../attendance-governance/eligibility.js';
 import { isoWeekday, isSchoolAdmin, parseDate, TeacherService } from './teacher.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 
@@ -252,7 +253,8 @@ export class AttendanceController {
       const now = await this.teacher.localNow(tx);
       if (day > now.date) throw new BadRequestException('Attendance cannot be taken for a future date');
       const [cfg] = await tx.select({ settings: tenants.settings, tz: tenants.timezone }).from(tenants);
-      if (attendanceLocked(day, this.clock.now(), cfg?.tz ?? 'Asia/Kolkata', cfg?.settings?.attendanceLockHours)) {
+      const lockHours = (await attendanceSettings(tx, slot.sectionId)).lockHours;
+      if (attendanceLocked(day, this.clock.now(), cfg?.tz ?? 'Asia/Kolkata', lockHours)) {
         throw new ConflictException('Attendance for this day is locked. Ask for a correction and your head of department will review it.');
       }
 

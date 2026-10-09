@@ -82,7 +82,7 @@ const CycleStatusBody = z.object({ status: z.enum(['draft', 'open', 'closed']) }
 const CounterBody = z.object({ method: z.enum(['cash', 'cheque', 'bank_transfer', 'upi']), reference: z.string().trim().max(100).optional() });
 const WaiveBody = z.object({ reason: z.string().trim().min(3).max(300) });
 const DocReviewBody = z.object({ status: z.enum(['verified', 'rejected']), note: z.string().trim().max(300).optional() });
-const EnrollBody = z.object({ sectionId: Id.optional(), rollNo: z.string().trim().min(1).max(20).optional(), activate: z.boolean().default(true) });
+const EnrollBody = z.object({ sectionId: Id.optional(), rollNo: z.string().trim().min(1).max(20).optional(), activate: z.boolean().default(true), duplicateOverride: z.string().trim().min(3).max(300).optional() });
 
 /** Admissions for staff: the enquiry pipeline, cycles, application review, merit lists and enrolment. */
 @Controller('v1/admissions')

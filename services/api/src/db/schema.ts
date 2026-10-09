@@ -145,6 +145,11 @@ export const roleName = pgEnum('role_name', [
   'examiner',
   'quality_officer',
   'alumni',
+  // External examiner, mentor, accreditation reviewer and university admin (migration 0117).
+  'external_examiner',
+  'mentor',
+  'accreditation_reviewer',
+  'university_admin',
 ]);
 
 export const userRoles = pgTable(
@@ -218,6 +223,8 @@ export const sections = pgTable('sections', {
   term: smallint('term').notNull(), // grade number or semester number
   name: text('name').notNull(), // "A"
   displayName: text('display_name').notNull(), // "BCom Sem 3 A"
+  /** PUC: the stream combination this class is for (null = a mixed class). */
+  combinationId: uuid('combination_id'),
 });
 
 export const subjects = pgTable('subjects', {
@@ -242,6 +249,8 @@ export const departments = pgTable('departments', {
   tenantId: tenantId(),
   name: text('name').notNull(),
   headUserId: uuid('head_user_id').references(() => users.id, { onDelete: 'set null' }),
+  /** The faculty or school above it (university model); the table is in schema-g1.ts. */
+  facultyId: uuid('faculty_id'),
   createdAt: createdAt(),
 });
 
@@ -571,6 +580,21 @@ export const institutionProfiles = pgTable('institution_profiles', {
   boardOrUniversity: text('board_or_university'),
   /** Module key -> off. A module not listed is on. */
   disabledModules: jsonb('disabled_modules').$type<string[]>().notNull().default([]),
+  /** Finer than tenants.kind: school | puc_college | degree_college | autonomous_college | university | deemed_university | custom. */
+  institutionType: text('institution_type'),
+  /** GRADE_SECTION | PROGRAM_SEMESTER_COURSE | EARLY_YEARS | STREAM_COMBINATION. */
+  structureModel: text('structure_model'),
+  /** affiliated | autonomous | constituent | deemed (drives university behaviour rules). */
+  governanceModel: text('governance_model'),
+  feeModel: text('fee_model'),
+  qualityFramework: text('quality_framework'),
+  languages: jsonb('languages').$type<string[]>().notNull().default(['en']),
+  aiPolicy: jsonb('ai_policy').$type<Record<string, unknown>>().notNull().default({}),
+  privacySettings: jsonb('privacy_settings').$type<Record<string, unknown>>().notNull().default({}),
+  commsChannels: jsonb('comms_channels').$type<Record<string, boolean>>().notNull().default({}),
+  /** Institution wording for generic terms: { class: "Section", subject: "Course" }. */
+  terminology: jsonb('terminology').$type<Record<string, string>>().notNull().default({}),
+  presetKey: text('preset_key'),
   updatedAt: updatedAt(),
 });
 
@@ -1509,6 +1533,13 @@ export const calendarEvents = pgTable(
     endsOn: date('ends_on').notNull(),
     /** Null = the whole institution. */
     programIds: uuid('program_ids').array(),
+    /** Further audiences (null = not narrowed by it): campus, class, department calendars. */
+    campusIds: uuid('campus_ids').array(),
+    sectionIds: uuid('section_ids').array(),
+    departmentIds: uuid('department_ids').array(),
+    /** Set when the event is fed from another module (admissions, exams); source + ref are unique. */
+    source: text('source'),
+    sourceRef: text('source_ref'),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -1787,7 +1818,7 @@ export const admissionCycles = pgTable(
   (t) => [index('admission_cycles_program_idx').on(t.tenantId, t.programId, t.status)],
 );
 
-export const applicationStatus = pgEnum('application_status', ['submitted', 'under_review', 'eligible', 'ineligible', 'waitlisted', 'offered', 'accepted', 'declined', 'rejected', 'enrolled', 'withdrawn']);
+export const applicationStatus = pgEnum('application_status', ['submitted', 'under_review', 'eligible', 'ineligible', 'waitlisted', 'offered', 'accepted', 'declined', 'rejected', 'enrolled', 'withdrawn', 'correction_requested']);
 export const applicationFeeStatus = pgEnum('application_fee_status', ['none', 'pending', 'paid', 'waived']);
 
 /** An applicant's submitted application to a cycle. The applicant has no login: a secret link token. */
@@ -1822,6 +1853,9 @@ export const applications = pgTable(
     /** SHA-256 of the token in the applicant's link; the token itself is shown once. */
     accessTokenHash: text('access_token_hash').notNull(),
     offerExpiresOn: date('offer_expires_on'),
+    /** What the applicant is asked to correct, one entry per round: { at, by, notes, items }. */
+    correctionNotes: jsonb('correction_notes').$type<{ at: string; by: string | null; notes: string; items: string[] }[]>().notNull().default([]),
+    correctionDueOn: date('correction_due_on'),
     agentId: uuid('agent_id').references((): AnyPgColumn => admissionAgents.id, { onDelete: 'set null' }),
     studentId: uuid('student_id').references(() => students.id, { onDelete: 'set null' }),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
@@ -2017,7 +2051,7 @@ export const studentLifecycleEvents = pgTable(
 // Assessment schemes, exams and results
 // ---------------------------------------------------------------------------------------------
 
-export const componentKind = pgEnum('component_kind', ['internal', 'external', 'practical', 'project', 'viva']);
+export const componentKind = pgEnum('component_kind', ['internal', 'external', 'practical', 'project', 'viva', 'observation', 'diagnostic', 'skill']);
 
 /** A grade scale: bands, how grade points are derived and how many decimals SGPA/CGPA print. */
 export const gradeScales = pgTable('grade_scales', {
@@ -2042,6 +2076,8 @@ export const assessmentSchemes = pgTable(
     credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
     /** PassRules (exams/grading.ts). */
     passRules: jsonb('pass_rules').notNull(),
+    /** How many times a student may sit this assessment (1 = no reattempt without a request). */
+    maxAttempts: smallint('max_attempts').notNull().default(1),
     gradeScaleId: uuid('grade_scale_id').notNull().references(() => gradeScales.id),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
@@ -3329,6 +3365,33 @@ export const TENANT_TABLES = [
   'onboarding_items',
   'separations',
   'exit_clearances',
+  // Requirements gap close, PRD sections 1-21 (migration 0117, schema-g1.ts)
+  'faculties',
+  'curriculum_frameworks',
+  'school_boards',
+  'attendance_overrides',
+  'campus_settings',
+  'fee_structures',
+  'trusted_devices',
+  'student_prior_education',
+  'admission_landing_pages',
+  'subject_frequency',
+  'student_biometric_ids',
+  'worksheets',
+  'worksheet_scores',
+  'outcome_topics',
+  'remedial_plans',
+  'readiness_targets',
+  'readiness_mocks',
+  'promotion_rules',
+  'promotion_decisions',
+  'lesson_plan_outcomes',
+  'forum_threads',
+  'forum_posts',
+  'rubrics',
+  'rubric_scores',
+  'reattempt_requests',
+  'integrity_flags',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -4314,6 +4377,8 @@ export const lmsCourses = pgTable(
     subjectId: uuid('subject_id').notNull().references(() => subjects.id),
     title: text('title').notNull(),
     description: text('description').notNull().default(''),
+    /** The course this one was copied from (clone for a new year). */
+    clonedFrom: uuid('cloned_from'),
     /** draft (staff only) or published (students and families see it). */
     status: text('status').$type<'draft' | 'published'>().notNull().default('draft'),
     createdBy: uuid('created_by').notNull().references(() => users.id),
@@ -4330,7 +4395,7 @@ export const lmsModules = pgTable('lms_modules', {
   position: integer('position').notNull(),
 });
 
-export type LmsItemKind = 'topic' | 'video' | 'homework' | 'assessment' | 'file' | 'link';
+export type LmsItemKind = 'topic' | 'video' | 'homework' | 'assessment' | 'file' | 'link' | 'worksheet' | 'case_study' | 'simulation' | 'virtual_lab' | 'ppt' | 'pdf';
 
 /** A content item in a module: a link to an existing topic, video, homework or assessment, or a file or web link. */
 export const lmsItems = pgTable('lms_items', {
@@ -5133,7 +5198,7 @@ export const auditNonConformities = pgTable(
 
 // Merged from worktree-agent-a73ed73eefed14506
 
-export const OFFERING_CATEGORIES = ['core', 'elective', 'open_elective', 'skill', 'ability'] as const;
+export const OFFERING_CATEGORIES = ['core', 'elective', 'open_elective', 'skill', 'ability', 'minor', 'major', 'audit', 'additional', 'multidisciplinary', 'vac'] as const;
 
 export type OfferingCategory = (typeof OFFERING_CATEGORIES)[number];
 
@@ -5149,6 +5214,8 @@ export const courseOfferings = pgTable(
     category: text('category').$type<OfferingCategory>().notNull(),
     credits: numeric('credits', { precision: 4, scale: 1, mode: 'number' }).notNull(),
     seatCap: integer('seat_cap').notNull(),
+    /** Charged to the student's fees when the registration is confirmed (0 = none). */
+    feePaise: bigint('fee_paise', { mode: 'number' }).notNull().default(0),
     facultyId: uuid('faculty_id').references(() => users.id),
     /** Timetable slots the course meets in; two courses clash when their slots overlap in time. */
     slotIds: uuid('slot_ids').array().notNull().default(sql`'{}'::uuid[]`),
@@ -5175,7 +5242,9 @@ export const registrationWindows = pgTable('registration_windows', {
   addDropUntil: timestamp('add_drop_until', { withTimezone: true }).notNull(),
   minCredits: numeric('min_credits', { precision: 5, scale: 1, mode: 'number' }).notNull().default(0),
   maxCredits: numeric('max_credits', { precision: 5, scale: 1, mode: 'number' }).notNull(),
-  allocationRule: text('allocation_rule').$type<'cgpa' | 'time'>().notNull().default('cgpa'),
+  allocationRule: text('allocation_rule').$type<'cgpa' | 'time' | 'custom'>().notNull().default('cgpa'),
+  /** Weights for the custom rule: { cgpa, attendance, priority } (see registration-rules.ts). */
+  ruleConfig: jsonb('rule_config').$type<{ cgpa?: number; attendance?: number; priority?: number }>(),
   createdAt: createdAt(),
 });
 
@@ -5197,6 +5266,7 @@ export const courseRegistrations = pgTable(
     waitlistPos: integer('waitlist_pos'),
     /** Added automatically because the course is mandatory core. */
     autoCore: boolean('auto_core').notNull().default(false),
+    feeInvoiceId: uuid('fee_invoice_id').references(() => feeInvoices.id, { onDelete: 'set null' }),
     approval: text('approval').$type<'pending' | 'approved' | 'rejected'>().notNull().default('pending'),
     decidedBy: uuid('decided_by').references(() => users.id),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
@@ -5329,6 +5399,12 @@ export const qbQuestions = pgTable(
     text: text('text').notNull(),
     options: jsonb('options').$type<{ text: string; correct: boolean }[]>().notNull().default([]),
     answer: text('answer').notNull().default(''),
+    /** Knowledge level K1-K6 (OBE), alongside Bloom. */
+    kLevel: text('k_level'),
+    competencyTags: jsonb('competency_tags').$type<string[]>().notNull().default([]),
+    skillTags: jsonb('skill_tags').$type<string[]>().notNull().default([]),
+    /** Extra shape per type: matching pairs, diagram labels, case-study sub-questions, rubric id. */
+    typeConfig: jsonb('type_config').$type<Record<string, unknown>>(),
     status: text('status').notNull().default('draft'),
     version: integer('version').notNull().default(1),
     authorId: uuid('author_id').notNull().references(() => users.id),

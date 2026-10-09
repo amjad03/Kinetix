@@ -8,7 +8,7 @@ export type PaperRow = typeof examPapers.$inferSelect;
 export type ConfigRow = typeof evalConfigs.$inferSelect;
 export type ScriptRow = typeof evalScripts.$inferSelect;
 
-const EXAMINER_ROLES = ['teacher', 'hod', 'principal', 'examiner'] as const;
+const EXAMINER_ROLES = ['teacher', 'hod', 'principal', 'examiner', 'external_examiner'] as const;
 
 /** Loads papers and settings and runs examiner allocation and final-mark calculation. The rules are in evaluation.logic.ts. */
 @Injectable()

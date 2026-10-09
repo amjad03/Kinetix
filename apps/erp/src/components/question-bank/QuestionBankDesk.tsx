@@ -15,7 +15,8 @@ type Dialog = 'question' | 'blueprint' | 'paper' | { submit: QbPaper } | { decid
 
 const BLOOM = ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create'];
 const DIFFICULTY = ['easy', 'medium', 'hard'];
-const TYPES = ['mcq', 'short', 'long', 'numerical', 'diagram'];
+const TYPES = ['mcq', 'short', 'long', 'numerical', 'diagram', 'matching', 'case_study', 'practical_rubric'];
+const K_LEVELS = ['K1', 'K2', 'K3', 'K4', 'K5', 'K6'];
 
 export function QuestionBankDesk({ options, questions, blueprints, papers, initialTab }: { options: QbOptions; questions: QbQuestion[]; blueprints: QbBlueprint[]; papers: QbPaper[]; initialTab: string }) {
   const { t, fmt } = useI18n();
@@ -147,7 +148,14 @@ export function QuestionBankDesk({ options, questions, blueprints, papers, initi
       {dlg === 'question' && (
         <FormDialog
           title={t('qb.addQuestion')}
-          intro={<Typography variant="body2">{t('qb.questionIntro')}</Typography>}
+          intro={
+            <>
+              <Typography variant="body2">{t('qb.questionIntro')}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {t('g1.qb.detailsHint')}
+              </Typography>
+            </>
+          }
           fields={[
             { name: 'subject', label: t('qb.f.subjectCo'), kind: 'select', required: true, options: options.subjects.flatMap((s) => [{ value: `${s.id}|`, label: `${s.name} (${t('qb.noCo')})` }, ...s.outcomes.map((o) => ({ value: `${s.id}|${o.id}`, label: `${s.name} - ${o.code}` }))]) },
             { name: 'topic', label: t('qb.f.topic'), required: true },
@@ -159,6 +167,10 @@ export function QuestionBankDesk({ options, questions, blueprints, papers, initi
             { name: 'text', label: t('qb.f.text'), kind: 'multiline', required: true },
             { name: 'options', label: t('qb.f.options'), kind: 'multiline' },
             { name: 'answer', label: t('qb.f.answer'), kind: 'multiline' },
+            { name: 'details', label: t('g1.qb.details'), kind: 'multiline' },
+            { name: 'kLevel', label: t('g1.qb.kLevel'), kind: 'select', init: '', options: [{ value: '', label: t('ops.none') }, ...K_LEVELS.map((k) => ({ value: k, label: k }))] },
+            { name: 'competencyTags', label: t('g1.qb.competency') },
+            { name: 'skillTags', label: t('g1.qb.skills') },
             { name: 'force', label: t('qb.f.force'), kind: 'select', init: 'no', options: [{ value: 'no', label: t('qb.no') }, { value: 'yes', label: t('qb.yes') }] },
           ]}
           onSubmit={addQuestion}

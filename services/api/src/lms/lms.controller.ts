@@ -9,6 +9,7 @@ import { orConflict } from '../common/ops.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, conceptVideos, homework, lmsAnnouncements, lmsCourses, lmsGradeCategories, lmsGradeOverrides, lmsItems, lmsModules, sections, students, subjects, topics } from '../db/schema.js';
+import { worksheets } from '../db/schema-g1.js';
 import { csv } from '../hr/exports.js';
 import { LMS_STAFF, LmsService } from './lms.service.js';
 
@@ -16,7 +17,7 @@ const CourseBody = z.object({ sectionId: z.uuid(), subjectId: z.uuid(), title: z
 const CoursePatch = z.object({ title: z.string().trim().min(1).max(120).optional(), description: z.string().trim().max(1000).optional(), status: z.enum(['draft', 'published']).optional() });
 const ModuleBody = z.object({ title: z.string().trim().min(1).max(120) });
 const ItemBody = z.object({
-  kind: z.enum(['topic', 'video', 'homework', 'assessment', 'file', 'link']),
+  kind: z.enum(['topic', 'video', 'homework', 'assessment', 'file', 'link', 'worksheet', 'case_study', 'simulation', 'virtual_lab', 'ppt', 'pdf']),
   title: z.string().trim().min(1).max(160),
   refId: z.uuid().optional(),
   url: z.url().max(500).optional(),
@@ -249,13 +250,24 @@ export class LmsController {
 
   /** Content items must point at something that exists (and, for homework and assessments, in this class); files and links need a URL. */
   private async checkRef(tx: Tx, c: { sectionId: string; subjectId: string }, b: z.infer<typeof ItemBody>) {
-    if (b.kind === 'file' || b.kind === 'link') {
+    if (['file', 'link', 'simulation', 'virtual_lab', 'ppt', 'pdf'].includes(b.kind)) {
       if (!b.url) throw new BadRequestException('Add the address of the file or link');
       return;
     }
+    if (b.kind === 'case_study') {
+      if (!b.url && !b.refId) throw new BadRequestException('Add the address of the case study');
+      return;
+    }
+    if (b.kind === 'worksheet') {
+      if (!b.refId) throw new BadRequestException('Choose the worksheet to link');
+      const [w] = await tx.select({ id: worksheets.id }).from(worksheets).where(and(eq(worksheets.id, b.refId), eq(worksheets.sectionId, c.sectionId)));
+      if (!w) throw new BadRequestException('That worksheet was not found for this class');
+      return;
+    }
     if (!b.refId) throw new BadRequestException('Choose the content to link');
-    const t = { topic: topics, video: conceptVideos, homework, assessment: assessments }[b.kind];
-    const [row] = await tx.select({ id: t.id }).from(t).where(b.kind === 'homework' || b.kind === 'assessment' ? and(eq(t.id, b.refId), eq((t as typeof homework).sectionId, c.sectionId), eq((t as typeof homework).subjectId, c.subjectId)) : eq(t.id, b.refId));
+    const kind = b.kind as 'topic' | 'video' | 'homework' | 'assessment';
+    const t = { topic: topics, video: conceptVideos, homework, assessment: assessments }[kind];
+    const [row] = await tx.select({ id: t.id }).from(t).where(kind === 'homework' || kind === 'assessment' ? and(eq(t.id, b.refId), eq((t as typeof homework).sectionId, c.sectionId), eq((t as typeof homework).subjectId, c.subjectId)) : eq(t.id, b.refId));
     if (!row) throw new BadRequestException('That content was not found for this class');
   }
 }

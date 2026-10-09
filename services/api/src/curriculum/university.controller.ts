@@ -12,12 +12,13 @@ import { ZodBody } from '../common/zod-body.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
-import { examResults, examSessions, programs, sections, students, tenants } from '../db/schema.js';
+import { examResults, examSessions, institutionProfiles, programs, sections, students, tenants } from '../db/schema.js';
+import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
 import { AFFILIATION_MODELS, affiliatedInstitutions, convocationCandidates, convocations } from '../db/schema-curriculum.js';
 import { found } from '../placements/placements.access.js';
 import { degreeCertificatePdf } from './documents.js';
 
-const ADMINS: RoleName[] = ['tenant_admin', 'principal'];
+const ADMINS: RoleName[] = ['tenant_admin', 'principal', 'university_admin'];
 const REGISTRAR: RoleName[] = [...ADMINS, 'exam_controller'];
 const VIEW: RoleName[] = [...REGISTRAR, 'hod'];
 
@@ -253,6 +254,8 @@ export class UniversityController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const c = found((await tx.select().from(convocations).where(eq(convocations.id, id)))[0], 'Convocation');
       if (c.status === 'held') throw new ConflictException('Degrees were already issued for this convocation');
+      const [prof] = await tx.select({ g: institutionProfiles.governanceModel }).from(institutionProfiles);
+      if (prof?.g && !GOVERNANCE_RULES[prof.g as GovernanceModel].ownDegree) throw new ForbiddenException('This institution is affiliated: degrees are awarded by the affiliating university');
       const todo = await tx
         .select({ id: convocationCandidates.id })
         .from(convocationCandidates)

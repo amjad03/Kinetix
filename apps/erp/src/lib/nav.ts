@@ -2,6 +2,7 @@
 import type { MessageKey } from '@/i18n/messages';
 import { canSee, type Section } from './access';
 import type { RoleName } from './types';
+import { inWorkspace, type Workspace } from './workspaces';
 
 export type NavIcon =
   | 'dashboard' | 'admissions' | 'students' | 'academics' | 'timetable' | 'attendance' | 'exams' | 'obe' | 'lms' | 'finance' | 'hr' | 'library'
@@ -31,7 +32,7 @@ export interface NavGroup {
  */
 export const NAV_GROUPS: NavGroup[] = [
   { id: 'dashboard', label: 'grp.dashboard', icon: 'dashboard', items: [{ href: '/', label: 'nav.dashboard', section: 'dashboard', icon: 'dashboard' }] },
-  { id: 'admissions', label: 'grp.admissions', icon: 'admissions', items: [{ href: '/admissions', label: 'nav.admissions', section: 'admissions', icon: 'admissions' }] },
+  { id: 'admissions', label: 'grp.admissions', icon: 'admissions', items: [{ href: '/admissions', label: 'nav.admissions', section: 'admissions', icon: 'admissions' }, { href: '/admissions-tools', label: 'nav.admissionsTools', section: 'admissionsTools', icon: 'admissions' }] },
   {
     id: 'students',
     label: 'grp.students',
@@ -61,6 +62,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/academic-audit', label: 'nav.academicAudit', section: 'academicAudit', icon: 'academicAudit' },
       { href: '/course-registration', label: 'nav.courseRegistration', section: 'courseRegistration', icon: 'courseRegistration' },
       { href: '/question-bank', label: 'nav.questionBank', section: 'questionBank', icon: 'questionBank' },
+      { href: '/learning-support', label: 'nav.learningSupport', section: 'learningSupport', icon: 'classes' },
+      { href: '/assessment-tools', label: 'nav.assessmentTools', section: 'assessmentTools', icon: 'questionBank' },
     ],
   },
   {
@@ -70,6 +73,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/timetable', label: 'nav.timetable', section: 'timetable', icon: 'timetable' },
       { href: '/calendar', label: 'nav.calendar', section: 'calendar', icon: 'calendar' },
+      { href: '/scheduling', label: 'nav.scheduling', section: 'scheduling', icon: 'timetable' },
     ],
   },
   {
@@ -198,6 +202,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/settings', label: 'nav.settings', section: 'settings', icon: 'settings' },
       { href: '/settings/institution', label: 'nav.institution', section: 'settings', icon: 'departments' },
+      { href: '/institution-setup', label: 'nav.institutionSetup', section: 'institutionSetup', icon: 'settings' },
       { href: '/settings/buildings', label: 'nav.buildings', section: 'settings', icon: 'campus' },
       { href: '/audit', label: 'nav.audit', section: 'audit', icon: 'academicAudit' },
       { href: '/dpdp', label: 'nav.dpdp', section: 'dpdp', icon: 'grievances' },
@@ -210,9 +215,9 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 /** The groups (and the pages in them) this person may open; empty groups are dropped. */
-export function visibleGroups(roles: readonly RoleName[], platformAdmin = false, disabledModules: readonly string[] = []): NavGroup[] {
-  // Modules the institution switched off (Settings > Institution profile) are hidden from the menu.
-  const on = (i: NavItem) => !disabledModules.includes(i.section);
+export function visibleGroups(roles: readonly RoleName[], platformAdmin = false, disabledModules: readonly string[] = [], workspace: Workspace = 'all'): NavGroup[] {
+  // Modules the institution switched off (Settings > Institution profile) are hidden from the menu, and so are pages outside the chosen workspace.
+  const on = (i: NavItem) => !disabledModules.includes(i.section) && (i.section === 'platform' || inWorkspace(i.section, workspace));
   return NAV_GROUPS.map((g) => ({ ...g, solo: g.items.length === 1, items: g.items.filter((i) => on(i) && (i.section === 'platform' ? platformAdmin : canSee(roles, i.section))) })).filter((g) => g.items.length > 0);
 }
 

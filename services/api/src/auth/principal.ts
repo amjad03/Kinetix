@@ -24,7 +24,11 @@ export type RoleName =
   | 'exam_controller'
   | 'examiner'
   | 'quality_officer'
-  | 'alumni';
+  | 'alumni'
+  | 'external_examiner'
+  | 'mentor'
+  | 'accreditation_reviewer'
+  | 'university_admin';
 
 export interface UserPrincipal {
   kind: 'user';

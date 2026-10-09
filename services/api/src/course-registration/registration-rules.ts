@@ -65,21 +65,42 @@ export function refusal(offering: OfferingFacts, student: StudentFacts, held: Of
   if (!isEligible(offering, student)) return 'not_eligible';
   if (offering.prerequisiteSubjectId && !student.passedSubjectIds.has(offering.prerequisiteSubjectId)) return 'prerequisite';
   if (held.some((h) => h.id !== offering.id && slotsClash(h.slots, offering.slots))) return 'clash';
-  if (!opts.ignoreCredits && round1(held.filter((h) => h.id !== offering.id).reduce((n, h) => n + h.credits, 0) + offering.credits) > maxCredits) return 'credit_limit';
+  // An audit course carries no credit toward the term's limit.
+  if (!opts.ignoreCredits && round1(held.filter((h) => h.id !== offering.id && h.category !== 'audit').reduce((n, h) => n + h.credits, 0) + (offering.category === 'audit' ? 0 : offering.credits)) > maxCredits) return 'credit_limit';
   if (!opts.ignoreSeats && seatsTaken >= offering.seatCap) return 'seats_full';
   return null;
 }
 
-export const totalCredits = (os: { credits: number }[]) => round1(os.reduce((n, o) => n + o.credits, 0));
+export const totalCredits = (os: { credits: number; category?: string }[]) => round1(os.filter((o) => o.category !== 'audit').reduce((n, o) => n + o.credits, 0));
 
 export interface Applicant {
   studentId: string;
   cgpa: number;
   /** When they first ranked or registered (ms). */
   at: number;
+  /** Overall attendance, 0-100 (the custom rule). */
+  attendance?: number;
+  /** Semester number: senior students first under the custom rule. */
+  semester?: number;
+  /** The window's custom weights. */
+  weights?: CustomWeights;
+}
+
+/** Weights of the institution's own allocation rule: each part is scaled to 0-1, multiplied by its weight and added up. */
+export interface CustomWeights {
+  cgpa?: number;
+  attendance?: number;
+  priority?: number;
+}
+
+/** The custom rule's score for one student; higher is served first. */
+export function customScore(a: Pick<Applicant, 'cgpa' | 'attendance' | 'semester' | 'weights'>): number {
+  const w = a.weights ?? {};
+  return (w.cgpa ?? 0) * Math.min(1, a.cgpa / 10) + (w.attendance ?? 0) * Math.min(1, (a.attendance ?? 0) / 100) + (w.priority ?? 0) * Math.min(1, (a.semester ?? 0) / 12);
 }
 
 /** The order students are served in: highest CGPA first (ties by earliest request) or simply earliest request. */
-export function allocationOrder(rule: 'cgpa' | 'time', applicants: Applicant[]): Applicant[] {
+export function allocationOrder(rule: 'cgpa' | 'time' | 'custom', applicants: Applicant[]): Applicant[] {
+  if (rule === 'custom') return [...applicants].sort((a, b) => customScore(b) - customScore(a) || a.at - b.at || a.studentId.localeCompare(b.studentId));
   return [...applicants].sort((a, b) => (rule === 'cgpa' && b.cgpa !== a.cgpa ? b.cgpa - a.cgpa : a.at - b.at || a.studentId.localeCompare(b.studentId)));
 }

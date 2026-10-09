@@ -1,7 +1,7 @@
 // Shapes from the course-registration endpoints (services/api) and the small parsers the offering form uses.
 
-export type OfferingCategory = 'core' | 'elective' | 'open_elective' | 'skill' | 'ability';
-export const CATEGORIES: OfferingCategory[] = ['core', 'elective', 'open_elective', 'skill', 'ability'];
+export type OfferingCategory = 'core' | 'elective' | 'open_elective' | 'skill' | 'ability' | 'minor' | 'major' | 'audit' | 'additional' | 'multidisciplinary' | 'vac';
+export const CATEGORIES: OfferingCategory[] = ['core', 'elective', 'open_elective', 'skill', 'ability', 'minor', 'major', 'audit', 'additional', 'multidisciplinary', 'vac'];
 
 export interface TermRow {
   id: string;
@@ -36,7 +36,8 @@ export interface WindowRow {
   addDropUntil: string;
   minCredits: number;
   maxCredits: number;
-  allocationRule: 'cgpa' | 'time';
+  allocationRule: 'cgpa' | 'time' | 'custom';
+  ruleConfig?: { cgpa?: number; attendance?: number; priority?: number } | null;
 }
 
 export interface ApprovalRow {

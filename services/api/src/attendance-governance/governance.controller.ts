@@ -121,7 +121,7 @@ export class AttendanceGovernanceController {
   shortage(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId', ParseUUIDPipe) sectionId: string, @Query('subjectId') subjectId?: string, @Query('threshold') threshold?: string, @Query('all') all?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.teacher.assertCanSeeSection(tx, p, sectionId);
-      const cfg = await attendanceSettings(tx);
+      const cfg = await attendanceSettings(tx, sectionId);
       const limit = threshold ? Math.min(100, Math.max(1, Number(threshold) || cfg.thresholdPct)) : cfg.thresholdPct;
       const roster = await tx.select({ id: students.id, fullName: students.fullName, rollNo: students.rollNo }).from(students).where(and(eq(students.sectionId, sectionId), eq(students.status, 'active')));
       const stats = await subjectAttendance(tx, roster.map((r) => r.id), limit, subjectId ? z.uuid().parse(subjectId) : undefined);
@@ -138,7 +138,7 @@ export class AttendanceGovernanceController {
   eligibility(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId', ParseUUIDPipe) sectionId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.teacher.assertCanSeeSection(tx, p, sectionId);
-      const cfg = await attendanceSettings(tx);
+      const cfg = await attendanceSettings(tx, sectionId);
       const roster = await tx.select({ id: students.id, fullName: students.fullName, rollNo: students.rollNo }).from(students).where(and(eq(students.sectionId, sectionId), eq(students.status, 'active')));
       const all = await overallAttendance(tx, roster.map((r) => r.id), cfg.thresholdPct);
       return { thresholdPct: cfg.thresholdPct, students: roster.map((r) => ({ studentId: r.id, fullName: r.fullName, rollNo: r.rollNo, ...all.get(r.id)! })) };
@@ -263,7 +263,7 @@ export class StudentQrController {
       const check = checkQrCode(this.env.JWT_SECRET, p.tenantId, b.code, slots.map((x) => ({ slotId: x.id, date: today.date })), now);
       if (!check.ok) throw new BadRequestException(check.reason === 'malformed' ? 'Enter the 8 digits shown on the screen' : 'That code is not valid or has expired. Use the one on the screen now.');
       const slot = slots.find((x) => x.id === check.slotId)!;
-      const cfg = await attendanceSettings(tx);
+      const cfg = await attendanceSettings(tx, stu.sectionId);
       const date = today.date;
       if (attendanceLocked(date, now, tz, cfg.lockHours)) throw new ConflictException('Attendance for this day is locked');
       const [cur] = await tx.select({ status: attendanceRecords.status }).from(attendanceRecords).where(and(eq(attendanceRecords.studentId, stu.id), eq(attendanceRecords.date, date), eq(attendanceRecords.timetableSlotId, slot.id)));
