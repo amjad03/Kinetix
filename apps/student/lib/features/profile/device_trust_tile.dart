@@ -50,8 +50,15 @@ class _DeviceTrustTileState extends State<DeviceTrustTile> {
       key: const Key('deviceTrust'),
       leading: Icon(trusted ? Icons.verified_user_outlined : Icons.phonelink_lock_outlined),
       title: Text(l.deviceTrustTitle),
-      subtitle: Text(trusted ? l.deviceTrustTrusted : l.deviceTrustNew),
-      trailing: trusted ? null : TextButton(key: const Key('deviceTrustButton'), onPressed: _busy ? null : _trust, child: Text(l.deviceTrustButton)),
+      // The button sits under the text: a trailing button overflows the tile in Kannada on a 360dp phone.
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(trusted ? l.deviceTrustTrusted : l.deviceTrustNew),
+          if (!trusted)
+            TextButton(key: const Key('deviceTrustButton'), onPressed: _busy ? null : _trust, child: Text(l.deviceTrustButton)),
+        ],
+      ),
     );
   }
 }
