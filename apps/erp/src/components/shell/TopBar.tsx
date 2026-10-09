@@ -67,6 +67,10 @@ const ROLE_LABEL: Record<string, MessageKey> = {
   grievance_officer: 'role.grievance_officer',
   counsellor: 'role.counsellor',
   icc_member: 'role.icc_member',
+  exam_controller: 'role.exam_controller',
+  examiner: 'role.examiner',
+  quality_officer: 'role.quality_officer',
+  alumni: 'role.alumni',
 };
 
 export function TopBar({

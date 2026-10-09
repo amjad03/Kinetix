@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -57,11 +57,13 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // students.controller.ts PROFILE_ROLES (status changes and promotion are principal and admin only: LIFECYCLE_ROLES)
   students: ['principal', 'tenant_admin', 'admissions_officer', 'hod', 'accountant'],
   // exams.controller.ts / schemes.controller.ts / results.controller.ts: principal and administrator manage, heads of department read and verify
-  exams: ['principal', 'tenant_admin', 'hod'],
+  // schemes.controller.ts ADMIN now includes the exam controller
+  exams: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
   // evaluation.controller.ts: the exam office (ADMIN roles) sets up papers, allocates examiners and pushes marks
-  evaluation: ['principal', 'tenant_admin'],
+  evaluation: ['principal', 'tenant_admin', 'exam_controller'],
   // evaluation.controller.ts EvaluationExaminerController (TEACHING_ROLES): the examiner's own scripts; teachers value in the Teacher App
-  evaluationDesk: ['hod', 'principal'],
+  // examiners value scripts here (the examiner role is for external and internal evaluators who do not use the rest of the ERP)
+  evaluationDesk: ['hod', 'principal', 'examiner'],
   // audit.controller.ts AUDIT_ROLES (viewing the log is itself audited)
   audit: ['principal', 'tenant_admin'],
   // connectors.controller.ts: the principal reads, the administrator configures
@@ -69,7 +71,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // alumni-giving.controller.ts GIVING_ROLES (volunteering tab: alumni relations only)
   alumni: ['principal', 'tenant_admin', 'placement_officer', 'accountant'],
   // obe.controller.ts MANAGE: principal, administrator and heads of department
-  obe: ['principal', 'tenant_admin', 'hod'],
+  // the quality officer (IQAC) manages OBE
+  obe: ['principal', 'tenant_admin', 'hod', 'quality_officer'],
   // hr.controller.ts, leave.controller.ts, recruitment.controller.ts: HR_ROLES (the head of department decides leave in the API)
   hr: ['principal', 'tenant_admin', 'hr_manager'],
   // payroll.controller.ts PAYROLL_ROLES; approving and locking is for the principal and administrator (canApprovePayroll)
@@ -88,21 +91,25 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
   grievances: ['principal', 'tenant_admin', 'grievance_officer', 'icc_member'],
   // surveys.controller.ts SURVEY_ROLES (teachers build surveys in the Teacher App; the ERP is for leaders and heads of department)
-  surveys: ['principal', 'tenant_admin', 'hod'],
+  surveys: ['principal', 'tenant_admin', 'hod', 'quality_officer'],
   // course-registration.controller.ts REGISTRATION_ADMIN (the principal sets the window; heads approve their department's courses)
   courseRegistration: ['principal', 'tenant_admin', 'hod'],
   // workflows.controller.ts WORKFLOW_ROLES (= TASK_ROLES): every staff role starts requests and decides its own steps; the route editor is for the principal
-  workflows: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member'],
+  workflows: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // tasks.controller.ts TASK_ROLES: every staff role that signs in to the ERP
-  tasks: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member'],
+  tasks: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
+  // delegation.controller.ts: any staff role hands their own approvals to a colleague
+  delegations: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
+  // dpdp.controller.ts: the administrator works the data-principal request queue (people file requests in the apps)
+  dpdp: ['principal', 'tenant_admin'],
   // campus-life: committees are COMMITTEE_STAFF (campus-life.access.ts); teachers run clubs and events in the Teacher App
   campusLife: ['principal', 'tenant_admin', 'hod'],
   // mentoring.controller.ts MENTORING_ADMIN (teachers and counsellors log sessions in the Teacher App)
   mentoring: ['principal', 'tenant_admin', 'hod'],
   // course-files.controller.ts: leaders and the head of department build and review course files here; teachers use the Teacher App
-  courseFiles: ['principal', 'tenant_admin', 'hod'],
+  courseFiles: ['principal', 'tenant_admin', 'hod', 'quality_officer'],
   // academic-audit.controller.ts AUDITORS: leaders write templates, a head of department audits their own department
-  academicAudit: ['principal', 'tenant_admin', 'hod'],
+  academicAudit: ['principal', 'tenant_admin', 'hod', 'quality_officer'],
   // skills.access.ts SKILL_ADMIN (teachers record evidence and tag SDGs in the Teacher App)
   skills: ['principal', 'tenant_admin', 'hod'],
   // question-bank.controller.ts EXAM_STAFF: leaders and heads of department run the bank and papers here; teachers write and moderate in the Teacher App

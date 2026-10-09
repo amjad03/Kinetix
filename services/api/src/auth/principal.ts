@@ -20,7 +20,11 @@ export type RoleName =
   | 'research_coordinator'
   | 'grievance_officer'
   | 'counsellor'
-  | 'icc_member';
+  | 'icc_member'
+  | 'exam_controller'
+  | 'examiner'
+  | 'quality_officer'
+  | 'alumni';
 
 export interface UserPrincipal {
   kind: 'user';

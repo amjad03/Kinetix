@@ -136,6 +136,11 @@ export const roleName = pgEnum('role_name', [
   'grievance_officer',
   'counsellor',
   'icc_member',
+  // Exam controller, evaluators, IQAC and alumni portal users (migration 0111).
+  'exam_controller',
+  'examiner',
+  'quality_officer',
+  'alumni',
 ]);
 
 export const userRoles = pgTable(
@@ -2062,6 +2067,8 @@ export const evalConfigs = pgTable('eval_configs', {
   secondPickedAt: timestamp('second_picked_at', { withTimezone: true }),
   /** Set when final marks were pushed into the exam marks. */
   finalisedAt: timestamp('finalised_at', { withTimezone: true }),
+  /** Percent of the first page (from the top) blacked out at upload so the student's name block is never stored. */
+  maskHeaderPercent: integer('mask_header_percent').notNull().default(0),
 });
 
 /** A question of the paper with its maximum marks. */
@@ -2093,6 +2100,7 @@ export const evalScripts = pgTable(
     secondRequired: boolean('second_required').notNull().default(false),
     thirdRequired: boolean('third_required').notNull().default(false),
     finalMarks: numeric('final_marks', { precision: 6, scale: 2, mode: 'number' }),
+    headerMasked: boolean('header_masked').notNull().default(false),
     uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -3036,6 +3044,9 @@ export const TENANT_TABLES = [
   'sponsor_invoice_lines',
   'sponsor_payments',
   'class_meetings',
+  'eval_annotations',
+  'approval_delegations',
+  'dpdp_requests',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -3679,6 +3690,8 @@ export const alumniProfiles = pgTable('alumni_profiles', {
   id: id(),
   tenantId: tenantId(),
   studentId: ref('student_id', () => students.id),
+  /** The alumni portal login, when the graduate has one. */
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
   fullName: text('full_name').notNull(),
   graduationYear: smallint('graduation_year').notNull(),
   program: text('program').notNull().default(''),
@@ -5623,4 +5636,69 @@ export const classMeetings = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('class_meetings_slot_idx').on(t.slotId, t.startsAt)],
+);
+
+// ---------------------------------------------------------------------------------------------
+// On-screen annotations, delegated approvals and DPDP requests (migration 0111)
+// ---------------------------------------------------------------------------------------------
+
+/** A mark an examiner draws on a script page: tick, cross, comment pin or highlight box, in page-relative coordinates (0 to 1). */
+export const evalAnnotations = pgTable(
+  'eval_annotations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    scriptId: uuid('script_id').notNull().references(() => evalScripts.id, { onDelete: 'cascade' }),
+    allocationId: uuid('allocation_id').notNull().references(() => evalAllocations.id, { onDelete: 'cascade' }),
+    pageIndex: smallint('page_index').notNull(),
+    kind: text('kind').$type<'tick' | 'cross' | 'comment' | 'highlight'>().notNull(),
+    x: numeric('x', { precision: 7, scale: 6, mode: 'number' }).notNull(),
+    y: numeric('y', { precision: 7, scale: 6, mode: 'number' }).notNull(),
+    w: numeric('w', { precision: 7, scale: 6, mode: 'number' }).notNull().default(0),
+    h: numeric('h', { precision: 7, scale: 6, mode: 'number' }).notNull().default(0),
+    text: text('text'),
+    createdBy: uuid('created_by').notNull().references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('eval_annotations_alloc_idx').on(t.allocationId, t.pageIndex), index('eval_annotations_script_idx').on(t.scriptId)],
+);
+
+/** A staff member lets another decide their workflow and leave approvals between two dates. */
+export const approvalDelegations = pgTable(
+  'approval_delegations',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    delegatorId: uuid('delegator_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    delegateId: uuid('delegate_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    scope: text('scope').$type<'all' | 'workflows' | 'leave'>().notNull().default('all'),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    reason: text('reason').notNull().default(''),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    revokedBy: uuid('revoked_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('approval_delegations_delegate_idx').on(t.tenantId, t.delegateId), index('approval_delegations_delegator_idx').on(t.tenantId, t.delegatorId)],
+);
+
+/** A data principal's request under the DPDP Act: a copy of their data, a correction, or erasure. */
+export const dpdpRequests = pgTable(
+  'dpdp_requests',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    kind: text('kind').$type<'export' | 'correction' | 'erasure'>().notNull(),
+    status: text('status').$type<'pending' | 'completed' | 'rejected' | 'blocked'>().notNull().default('pending'),
+    details: text('details').notNull().default(''),
+    correction: jsonb('correction').$type<{ field: string; value: string }>(),
+    resolutionNote: text('resolution_note'),
+    /** Why erasure could not go ahead (legal retention), one line each. */
+    retentionReasons: jsonb('retention_reasons').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    processedBy: uuid('processed_by').references(() => users.id, { onDelete: 'set null' }),
+    processedAt: timestamp('processed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('dpdp_requests_status_idx').on(t.tenantId, t.status, t.createdAt), index('dpdp_requests_user_idx').on(t.tenantId, t.userId)],
 );

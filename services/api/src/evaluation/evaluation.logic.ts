@@ -69,3 +69,30 @@ export function finalMarks(v: { first: number | null; second: number | null; thi
   if (v.secondRequired) return v.second === null ? null : r2((v.first + v.second) / 2);
   return r2(v.first);
 }
+
+export type AnnotationKind = 'tick' | 'cross' | 'comment' | 'highlight';
+export interface AnnotationInput {
+  kind: AnnotationKind;
+  x: number;
+  y: number;
+  w?: number;
+  h?: number;
+  text?: string;
+}
+
+/**
+ * Checks an annotation's geometry. Coordinates are fractions of the page (0 to 1) so they hold at any zoom.
+ * Returns the problem in plain words, or null when the annotation is fine.
+ */
+export function annotationProblem(a: AnnotationInput): string | null {
+  const inside = (n: number) => Number.isFinite(n) && n >= 0 && n <= 1;
+  if (!inside(a.x) || !inside(a.y)) return 'Place the mark inside the page';
+  if (a.kind === 'highlight') {
+    const w = a.w ?? 0;
+    const h = a.h ?? 0;
+    if (!(w > 0) || !(h > 0)) return 'A highlight needs a width and a height';
+    if (a.x + w > 1.0001 || a.y + h > 1.0001) return 'The highlight runs off the page';
+  }
+  if (a.kind === 'comment' && !(a.text ?? '').trim()) return 'Write the comment';
+  return null;
+}

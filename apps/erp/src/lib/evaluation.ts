@@ -4,6 +4,7 @@ export interface EvalConfig {
   perExaminerCap: number;
   secondSharePercent: number;
   thresholdMarks: number;
+  maskHeaderPercent: number;
   secondPickedAt: string | null;
   finalisedAt: string | null;
 }

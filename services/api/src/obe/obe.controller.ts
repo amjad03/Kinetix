@@ -10,13 +10,14 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { academicYears, assessmentCoMap, assessments, coOutcomeMap, coSets, courseOutcomes, improvementActions, obeConfigs, obeEvidence, obeSurveyRatings, obeSurveys, programOutcomes, subjects, tenants, users } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
-import { ADMIN } from '../exams/schemes.controller.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 import { trend, validateConfig, type AttainmentConfig } from './attainment.js';
 import { ObeService } from './obe.service.js';
 
-const MANAGE: RoleName[] = [...ADMIN, 'hod'];
-const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin'];
+/** OBE belongs to leadership and the quality officer (IQAC), not the exam cell. */
+const OBE_ADMIN: RoleName[] = ['tenant_admin', 'principal', 'quality_officer'];
+const MANAGE: RoleName[] = [...OBE_ADMIN, 'hod'];
+const STAFF: RoleName[] = [...TEACHING_ROLES, 'tenant_admin', 'quality_officer'];
 
 const OutcomeBody = z.object({ kind: z.enum(['mission', 'vision', 'peo', 'po', 'pso']), code: z.string().trim().min(1).max(16), statement: z.string().trim().min(3).max(1000), ord: z.number().int().min(0).max(200).default(0) });
 const ConfigBody = z.object({
@@ -57,7 +58,7 @@ export class ObeController {
   }
 
   @Post('programs/:programId/outcomes')
-  @Auth('user', ADMIN)
+  @Auth('user', OBE_ADMIN)
   addOutcome(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string, @Body(new ZodBody(OutcomeBody)) body: z.infer<typeof OutcomeBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.obe.program(tx, programId);
@@ -70,7 +71,7 @@ export class ObeController {
   }
 
   @Put('outcomes/:id')
-  @Auth('user', ADMIN)
+  @Auth('user', OBE_ADMIN)
   updateOutcome(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ statement: z.string().trim().min(3).max(1000), ord: z.number().int().min(0).max(200).optional() }))) body: { statement: string; ord?: number }) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [row] = await tx.update(programOutcomes).set(body).where(eq(programOutcomes.id, id)).returning();
@@ -82,7 +83,7 @@ export class ObeController {
 
   @Delete('outcomes/:id')
   @HttpCode(200)
-  @Auth('user', ADMIN)
+  @Auth('user', OBE_ADMIN)
   deleteOutcome(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const res = await tx.delete(programOutcomes).where(eq(programOutcomes.id, id)).returning({ id: programOutcomes.id });
@@ -99,7 +100,7 @@ export class ObeController {
   }
 
   @Put('programs/:programId/config')
-  @Auth('user', ADMIN)
+  @Auth('user', OBE_ADMIN)
   setConfig(@CurrentPrincipal() p: UserPrincipal, @Param('programId', ParseUUIDPipe) programId: string, @Body(new ZodBody(ConfigBody)) body: AttainmentConfig) {
     const err = validateConfig(body);
     if (err) throw new BadRequestException(err);

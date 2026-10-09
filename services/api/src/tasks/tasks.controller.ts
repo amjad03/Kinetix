@@ -15,7 +15,7 @@ import { TasksService } from './tasks.service.js';
 /** Everyone who works at the institution: tasks are between staff, not students or parents. */
 export const TASK_ROLES: RoleName[] = [
   'tenant_admin', 'principal', 'hod', 'teacher', 'librarian', 'accountant', 'transport_manager', 'driver', 'hostel_warden', 'canteen_manager', 'store_keeper',
-  'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member',
+  'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer',
 ];
 
 const CreateBody = z.object({

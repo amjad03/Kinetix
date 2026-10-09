@@ -83,12 +83,14 @@ export function EvaluationDesk({ paperId, overview, staff }: { paperId: string; 
       {dlg === 'config' && (
         <FormDialog
           title={t('ev.settings')}
+          intro={<Typography variant="body2">{t('ev.mask.hint')}</Typography>}
           onSubmit={(v) => saveConfig(paperId, v)}
           onClose={done}
           fields={[
             { name: 'perExaminerCap', label: t('ev.f.cap'), kind: 'number', required: true, init: String(config.perExaminerCap) },
             { name: 'secondSharePercent', label: t('ev.f.share'), kind: 'number', required: true, init: String(config.secondSharePercent) },
             { name: 'thresholdMarks', label: t('ev.f.threshold'), required: true, init: String(config.thresholdMarks) },
+            { name: 'maskHeaderPercent', label: t('ev.f.mask'), kind: 'number', init: String(config.maskHeaderPercent ?? 0) },
           ]}
         />
       )}

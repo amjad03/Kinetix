@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
+import { DelegationService } from '../delegation/delegation.service.js';
 import type { Tx } from '../db/db.service.js';
 import { departments, staffProfiles, tasks, userRoles, users, workflowActions, workflowDefinitions, workflowRequests, type WorkflowStepSnapshot } from '../db/schema.js';
 import { DomainEvents, EventBus } from '../events/events.js';
@@ -36,6 +37,7 @@ export interface StartInput {
 export class WorkflowsService {
   constructor(
     private readonly tasksSvc: TasksService,
+    private readonly delegation: DelegationService,
     private readonly events: EventBus,
     private readonly notifications: NotificationsService,
     private readonly clock: Clock,
@@ -93,13 +95,14 @@ export class WorkflowsService {
     const req = await this.lock(tx, id);
     if (expectedVersion !== undefined && expectedVersion !== req.version) throw new ConflictException('This request changed since you opened it. Reload and try again.');
     if (req.status !== 'pending') throw new ConflictException('This request is not waiting for a decision');
-    if (!this.canDecide(p, req)) throw new ForbiddenException('This request is not waiting for you');
+    const onBehalfOf = await this.decidingFor(tx, p, req);
+    if (!onBehalfOf) throw new ForbiddenException('This request is not waiting for you');
     if (decision !== 'approve' && !comment.trim()) throw new UnprocessableEntityException('Say why in a comment');
     const step = req.steps[req.currentStep];
     await this.closeTask(tx, req, 'done');
     const action: ActionKind = decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'returned';
     await this.log(tx, req, action, p.userId, req.currentStep, comment.trim(), step?.name);
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `workflow.${action}`, subjectType: 'workflow_request', subjectId: req.id, data: { step: step?.name ?? null } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `workflow.${action}`, subjectType: 'workflow_request', subjectId: req.id, data: { step: step?.name ?? null, ...(onBehalfOf !== p.userId ? { onBehalfOf } : {}) } });
     if (decision === 'approve') return this.enter(tx, req, req.currentStep + 1, p.userId);
     if (decision === 'reject') return this.finish(tx, req, 'rejected', p.userId, comment.trim());
     const [back] = await tx
@@ -121,6 +124,20 @@ export class WorkflowsService {
     await this.log(tx, req, 'cancelled', p.userId, req.currentStep, comment.trim());
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'workflow.cancelled', subjectType: 'workflow_request', subjectId: req.id });
     return this.finish(tx, req, 'cancelled', p.userId, comment.trim());
+  }
+
+  /**
+   * Whose approval right the caller uses on this request: their own (their id), a delegator's (that person's id),
+   * or null when the request is not waiting for them. Nobody decides their own request or, as a delegate, the delegator's.
+   */
+  async decidingFor(tx: Tx, p: UserPrincipal, req: WorkflowRequest): Promise<string | null> {
+    if (this.canDecide(p, req)) return p.userId;
+    if (req.status !== 'pending' || req.requesterId === p.userId) return null;
+    for (const d of await this.delegation.activeDelegators(tx, p.userId, 'workflows')) {
+      if (d.id === req.requesterId) continue;
+      if (req.approverUserId === d.id || (req.approverRole !== null && d.roles.includes(req.approverRole as RoleName))) return d.id;
+    }
+    return null;
   }
 
   /** Whether this person may decide the request's current step. Nobody decides their own request. */

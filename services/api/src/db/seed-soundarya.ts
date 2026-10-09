@@ -85,6 +85,7 @@ function loginsDoc(studentRows: { name: string; roll: string; sec: string }[]): 
       return `| ${role} | ${s.name} | ${p}@${DOMAIN} |`;
     }),
     ...studentRows.map((s) => `| student | ${s.name} (${s.roll}, ${s.sec}) | ${s.name === 'Sahana Gowda' ? 'student.bcom' : 'student.bca'}@${DOMAIN} |`),
+    `| alumnus (alumni portal) | the first alumni profile | alumnus@${DOMAIN} |`,
     `| guardian | Basavaraj Gowda (father of Sahana Gowda) | parent.bcom@${DOMAIN} |`,
     `| guardian | Revathi Naik (mother of Vignesh Naik, BCA Sem 3, and Chaitra Naik, BBA Sem 1) | parent.bca@${DOMAIN} |`,
     '',

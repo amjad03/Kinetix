@@ -13,7 +13,7 @@ import { academicAudits, academicAuditResults, auditNonConformities, auditTempla
 import { found, hasRole } from '../placements/placements.access.js';
 
 /** Quality-cell leaders write the templates and see every department. */
-const LEADERS: RoleName[] = ['tenant_admin', 'principal'];
+const LEADERS: RoleName[] = ['tenant_admin', 'principal', 'quality_officer'];
 /** A head of department audits (and sees) their own departments. */
 const AUDITORS: RoleName[] = [...LEADERS, 'hod'];
 const day = z.iso.date();
