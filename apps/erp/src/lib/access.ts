@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -63,7 +63,7 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   evaluation: ['principal', 'tenant_admin', 'exam_controller'],
   // evaluation.controller.ts EvaluationExaminerController (TEACHING_ROLES): the examiner's own scripts; teachers value in the Teacher App
   // examiners value scripts here (the examiner role is for external and internal evaluators who do not use the rest of the ERP)
-  evaluationDesk: ['hod', 'principal', 'examiner'],
+  evaluationDesk: ['hod', 'principal', 'examiner', 'external_examiner'],
   // audit.controller.ts AUDIT_ROLES (viewing the log is itself audited)
   audit: ['principal', 'tenant_admin'],
   // connectors.controller.ts: the principal reads, the administrator configures
@@ -105,11 +105,21 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // dpdp.controller.ts: the administrator works the data-principal request queue (people file requests in the apps)
   dpdp: ['principal', 'tenant_admin'],
   // curriculum.controller.ts: editors are EDITORS (admin, principal, HOD); quality officers and the exam controller read
-  curriculum: ['principal', 'tenant_admin', 'hod', 'quality_officer', 'exam_controller'],
+  curriculum: ['principal', 'tenant_admin', 'hod', 'quality_officer', 'exam_controller', 'university_admin', 'accreditation_reviewer'],
   // school-academics.controller.ts and houses.controller.ts: leaders set up houses, PUC combinations and outcomes here; teachers mark and award points in the Teacher App
   schoolMode: ['principal', 'tenant_admin', 'hod'],
   // university.controller.ts: the registrar side (admin, principal, exam controller) and HODs read
-  university: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
+  university: ['principal', 'tenant_admin', 'hod', 'exam_controller', 'university_admin'],
+  // institution/setup.controller.ts, trust.controller.ts and faculties.controller.ts: leaders (the university admin also keeps faculties and frameworks)
+  institutionSetup: ['principal', 'tenant_admin', 'university_admin'],
+  // scheduling.controller.ts: leaders write; heads of department read
+  scheduling: ['principal', 'tenant_admin', 'hod'],
+  // admissions-ext.controller.ts ADMISSIONS_ROLES
+  admissionsTools: ['principal', 'tenant_admin', 'admissions_officer'],
+  // school-learning.controller.ts: leaders and heads of department here; teachers score and plan in the Teacher App
+  learningSupport: ['principal', 'tenant_admin', 'hod'],
+  // assessment-tools.controller.ts LEADS (the exam controller decides reattempts and integrity flags)
+  assessmentTools: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
   // campus-life: committees are COMMITTEE_STAFF (campus-life.access.ts); teachers run clubs and events in the Teacher App
   campusLife: ['principal', 'tenant_admin', 'hod'],
   // mentoring.controller.ts MENTORING_ADMIN (teachers and counsellors log sessions in the Teacher App)
@@ -277,6 +287,16 @@ export function sectionOf(pathname: string): Section | null {
       return 'health';
     case 'academic-audit':
       return 'academicAudit';
+    case 'institution-setup':
+      return 'institutionSetup';
+    case 'scheduling':
+      return 'scheduling';
+    case 'admissions-tools':
+      return 'admissionsTools';
+    case 'learning-support':
+      return 'learningSupport';
+    case 'assessment-tools':
+      return 'assessmentTools';
     case 'payroll':
       return pathname.startsWith('/payroll/payslips') ? 'payslips' : 'payroll';
     default:

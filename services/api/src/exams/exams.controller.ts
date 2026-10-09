@@ -1,3 +1,4 @@
+import { feedCalendar } from '../scheduling/calendar-feed.js';
 import { ENV, type Env } from '../config/env.js';
 import { hallTicketCode } from './hall-ticket-code.js';
 import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
@@ -160,6 +161,7 @@ export class ExamSessionsController {
       const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(examPapers).where(eq(examPapers.sessionId, id));
       if (n === 0) throw new BadRequestException('Add at least one paper first');
       await tx.update(examSessions).set({ status: 'scheduled' }).where(eq(examSessions.id, id));
+      await feedCalendar(tx, p.tenantId, p.userId);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'exam.session.scheduled', subjectType: 'exam_session', subjectId: id, data: { papers: n } });
       return { status: 'scheduled' };
     });
@@ -319,6 +321,7 @@ export class ExamSessionsController {
       if (s.status !== 'processed') throw new ConflictException(s.status === 'published' || s.status === 'locked' ? 'Results are already published' : 'Process the results first');
       const now = new Date();
       await tx.update(examSessions).set({ status: 'published', publishedAt: now }).where(eq(examSessions.id, id));
+      await feedCalendar(tx, p.tenantId, p.userId);
       const papers = await tx.select().from(examPapers).where(eq(examPapers.sessionId, id));
       const aIds = papers.map((x) => x.assessmentId).filter((x): x is string => !!x);
       if (aIds.length) await tx.update(assessments).set({ publishedAt: now }).where(and(inArray(assessments.id, aIds), sql`${assessments.publishedAt} is null`));

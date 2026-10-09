@@ -12,7 +12,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { type BlueprintSection, coSets, courseOutcomes, qbBlueprints, qbPaperItems, qbPapers, qbQuestions, qbQuestionVersions, subjects, tenants, userRoles, users } from '../db/schema.js';
 import { examFrequency } from '../ai/past-exams.js';
 import { checkVersion, found, hasRole } from '../placements/placements.access.js';
-import { BLOOM, blueprintProblems, type Candidate, DIFFICULTY, pickSection, QUESTION_TYPES, seeded } from './blueprint.js';
+import { BLOOM, blueprintProblems, type Candidate, DIFFICULTY, K_LEVELS, pickSection, QUESTION_TYPES, seeded, typeConfigProblem } from './blueprint.js';
 import { paperPdf } from './paper-pdf.js';
 
 /** Anyone who writes or reviews questions. */
@@ -35,6 +35,19 @@ const QuestionFields = {
   text: z.string().trim().min(5).max(4000),
   options: OptionList.default([]),
   answer: z.string().trim().max(4000).default(''),
+  kLevel: z.enum(K_LEVELS).nullish(),
+  competencyTags: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
+  skillTags: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
+  typeConfig: z
+    .object({
+      pairs: z.array(z.object({ left: z.string().trim().max(200), right: z.string().trim().max(200) })).max(10).optional(),
+      passage: z.string().trim().max(6000).optional(),
+      subQuestions: z.array(z.object({ text: z.string().trim().min(1).max(1000), marks: z.number().int().min(1).max(100) })).max(10).optional(),
+      labels: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
+      imageUrl: z.url().max(500).optional(),
+      rubricId: z.uuid().optional(),
+    })
+    .nullish(),
 };
 const QuestionBody = z.object({ subjectId: uuid, ...QuestionFields, force: z.boolean().optional() });
 const QuestionPatch = z.object({ ...QuestionFields, version: z.number().int().optional(), force: z.boolean().optional() });
@@ -79,7 +92,9 @@ export class QuestionBankController {
     if (!r) throw new BadRequestException('That outcome does not belong to this subject');
   }
 
-  private checkOptions(f: { type: string; options: { correct: boolean }[] }) {
+  private checkOptions(f: { type: string; marks: number; typeConfig?: Parameters<typeof typeConfigProblem>[1]; options: { correct: boolean }[] }) {
+    const problem = typeConfigProblem(f.type, f.typeConfig, f.marks);
+    if (problem) throw new BadRequestException(problem);
     if (f.type !== 'mcq') return;
     if (f.options.length < 2) throw new BadRequestException('A multiple choice question needs at least two options');
     if (f.options.filter((o) => o.correct).length !== 1) throw new BadRequestException('Mark exactly one option as correct');

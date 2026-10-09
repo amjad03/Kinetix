@@ -47,7 +47,7 @@ const AnnotationBody = z.object({
 });
 const MAX_ANNOTATIONS = 400;
 /** Examiners (and the exam cell, who moderate) may read the annotations of a script. */
-const EXAMINER: RoleName[] = [...TEACHING_ROLES, 'examiner'];
+const EXAMINER: RoleName[] = [...TEACHING_ROLES, 'examiner', 'external_examiner'];
 const QuestionsBody = z.object({ questions: z.array(z.object({ no: z.string().trim().min(1).max(20), maxMarks: z.number().positive().max(1000) })).min(1).max(100) });
 const ExaminersBody = z.object({ examinerIds: z.array(z.uuid()).min(1).max(100) });
 const MarksBody = z.object({ entries: z.array(z.object({ questionId: z.uuid(), marks: z.number().min(0), comment: z.string().trim().max(500).optional() })).min(1).max(100) });

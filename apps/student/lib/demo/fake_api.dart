@@ -14,7 +14,9 @@ import '../core/attachments.dart';
 import '../core/campus.dart';
 import '../core/campus_life.dart';
 import '../core/campus_services.dart';
+import '../core/forum.dart';
 import '../core/growth.dart';
+import '../core/learning.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
 import '../core/scholarships.dart';
@@ -145,6 +147,71 @@ class FakeStudentApi implements StudentApi {
   Future<Uint8List> passportPdf(String studentId) async {
     calls.add('passportPdf $studentId');
     return Uint8List.fromList('%PDF-1.4 passport'.codeUnits);
+  }
+
+  List<ForumThreadRow> forum = [const ForumThreadRow(id: 'f1', title: 'Doubt about the second unit', author: 'Latha Rao', replies: 1, pinned: false, locked: false)];
+  final Map<String, List<ForumPost>> forumPosts = {'f1': [const ForumPost(id: 'p1', body: 'Start from the definition, then follow the three steps.', author: 'Latha Rao', createdAt: '2026-10-09T10:00:00Z')]};
+
+  @override
+  Future<List<ForumThreadRow>> forumThreads(String courseId) async {
+    calls.add('forumThreads $courseId');
+    return forum;
+  }
+
+  @override
+  Future<ForumThread> forumThread(String threadId) async {
+    final row = forum.firstWhere((t) => t.id == threadId);
+    return ForumThread(id: row.id, title: row.title, body: 'Can someone explain the worked example?', author: row.author, locked: row.locked, posts: forumPosts[threadId] ?? const []);
+  }
+
+  @override
+  Future<void> startThread(String courseId, String title, String body) async {
+    calls.add('startThread $title');
+    forum = [...forum, ForumThreadRow(id: 'f${forum.length + 1}', title: title, author: 'Me', replies: 0, pinned: false, locked: false)];
+  }
+
+  @override
+  Future<void> replyToThread(String threadId, String body) async {
+    calls.add('reply $threadId $body');
+    forumPosts[threadId] = [...(forumPosts[threadId] ?? const []), ForumPost(id: 'p${(forumPosts[threadId]?.length ?? 0) + 1}', body: body, author: 'Me', createdAt: '2026-10-10T10:00:00Z')];
+  }
+
+  String deviceStateValue = 'new';
+
+  @override
+  Future<String> deviceState() async => deviceStateValue;
+
+  @override
+  Future<void> trustDevice(String label) async {
+    calls.add('trustDevice $label');
+    deviceStateValue = 'trusted';
+  }
+
+  LearningSummary learning = const LearningSummary(
+    worksheets: [
+      LearningWorksheet(id: 'w1', kind: 'worksheet', title: 'Fractions practice sheet', subjectName: 'Maths', dueOn: '2026-10-25', maxScore: 20, score: 16, remarks: 'Careful working'),
+      LearningWorksheet(id: 'w2', kind: 'activity', title: 'Market role play', subjectName: 'Economics', maxScore: 4, level: 'Secure'),
+      LearningWorksheet(id: 'w3', kind: 'reading', title: 'Reading: an annual report extract', subjectName: 'Accounting', dueOn: '2026-10-30', maxScore: 10),
+    ],
+    help: [ExtraHelp(id: 'r1', subjectName: 'Maths', plan: 'Re-teach ratios with two short exercises a week', dueOn: '2026-11-02', status: 'open')],
+    readiness: [ReadinessRow(exam: 'KMAT', targetPct: 65, latestPct: 58, averagePct: 55.5, band: 'close', trend: 'up', weakSubjects: ['Quantitative aptitude'], tests: 3)],
+    promotion: PromotionNote(decision: 'promoted_with_grace', reasons: ['Grace marks used in: Hindi']),
+  );
+  LearningAdvice advice = const LearningAdvice(
+    mastery: [MasterySubject(subject: 'Maths', assessed: 4, percent: 50), MasterySubject(subject: 'Economics', assessed: 3, percent: 100)],
+    practice: [PracticeItem(kind: 'practice', title: 'Ratios and proportion', reason: 'Builds M6.2 (beginning)'), PracticeItem(kind: 'overdue', title: 'Homework 4', reason: 'Was due 2026-10-01')],
+  );
+
+  @override
+  Future<LearningSummary> learningSummary(String studentId) async {
+    calls.add('learningSummary $studentId');
+    return learning;
+  }
+
+  @override
+  Future<LearningAdvice> learningAdvice(String studentId) async {
+    calls.add('learningAdvice $studentId');
+    return advice;
   }
 
   DpdpOfficer officer = const DpdpOfficer(name: 'Gita Rao', email: 'gita@school.in', phone: '+91 98450 00000', response: 'The officer replies within 30 days.');

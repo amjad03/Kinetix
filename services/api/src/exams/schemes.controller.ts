@@ -28,9 +28,11 @@ const SchemeBody = z.object({
   name: z.string().trim().min(1).max(160),
   credits: z.number().positive().max(30),
   gradeScaleId: z.uuid(),
+  /** How many times a student may sit it (default 1); more needs an approved reattempt request. */
+  maxAttempts: z.number().int().min(1).max(5).optional(),
   passRules: z.object({ minInternalPercent: z.number().min(0).max(100).nullable(), minExternalPercent: z.number().min(0).max(100).nullable(), minTotalPercent: z.number().min(0).max(100) }),
   components: z
-    .array(z.object({ code: z.string().trim().min(1).max(12), name: z.string().trim().min(1).max(80), kind: z.enum(['internal', 'external', 'practical', 'project', 'viva']), weight: z.number().positive().max(100) }))
+    .array(z.object({ code: z.string().trim().min(1).max(12), name: z.string().trim().min(1).max(80), kind: z.enum(['internal', 'external', 'practical', 'project', 'viva', 'observation', 'diagnostic', 'skill']), weight: z.number().positive().max(100) }))
     .min(1)
     .max(12),
 });
@@ -87,7 +89,7 @@ export class SchemesController {
       if (!isSchoolAdmin(p) && !(await headsSubject(tx, p, body.subjectId))) throw new ForbiddenException('Only the head of department or the principal can set the scheme');
       const [scale] = await tx.select({ id: gradeScales.id }).from(gradeScales).where(eq(gradeScales.id, body.gradeScaleId));
       if (!scale) throw new BadRequestException('Unknown grade scale');
-      const values = { name: body.name, credits: body.credits, passRules: body.passRules, gradeScaleId: body.gradeScaleId };
+      const values = { name: body.name, credits: body.credits, passRules: body.passRules, gradeScaleId: body.gradeScaleId, ...(body.maxAttempts ? { maxAttempts: body.maxAttempts } : {}) };
       const [existing] = await tx.select().from(assessmentSchemes).where(and(eq(assessmentSchemes.subjectId, body.subjectId), eq(assessmentSchemes.academicYearId, body.academicYearId)));
       let id = existing?.id;
       if (existing) await tx.update(assessmentSchemes).set(values).where(eq(assessmentSchemes.id, existing.id));

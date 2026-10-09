@@ -5552,6 +5552,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No classmate has reviewed your work yet.'**
   String get peerNoFeedback;
+
+  /// No description provided for @myLearningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My learning'**
+  String get myLearningTitle;
+
+  /// No description provided for @myLearningSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice, worksheets, extra help and exam readiness'**
+  String get myLearningSubtitle;
+
+  /// No description provided for @myLearningNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet. Your teachers will add worksheets and practice.'**
+  String get myLearningNothing;
+
+  /// No description provided for @myLearningPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'What to do next'**
+  String get myLearningPractice;
+
+  /// No description provided for @myLearningMastery.
+  ///
+  /// In en, this message translates to:
+  /// **'How well you know each subject'**
+  String get myLearningMastery;
+
+  /// No description provided for @myLearningWorksheets.
+  ///
+  /// In en, this message translates to:
+  /// **'Worksheets and activities'**
+  String get myLearningWorksheets;
+
+  /// No description provided for @myLearningHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra help from your teacher'**
+  String get myLearningHelp;
+
+  /// No description provided for @myLearningReadiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Entrance exam readiness'**
+  String get myLearningReadiness;
+
+  /// No description provided for @myLearningScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} of {max}'**
+  String myLearningScore(Object score, Object max);
+
+  /// No description provided for @myLearningNotScored.
+  ///
+  /// In en, this message translates to:
+  /// **'Not scored yet'**
+  String get myLearningNotScored;
+
+  /// No description provided for @myLearningTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target {pct}%'**
+  String myLearningTarget(Object pct);
+
+  /// No description provided for @myLearningAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average {pct}% after {n} tests'**
+  String myLearningAverage(Object pct, int n);
+
+  /// No description provided for @myLearningWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Weak: {subjects}'**
+  String myLearningWeak(Object subjects);
+
+  /// No description provided for @myLearningPromoted.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted to the next class'**
+  String get myLearningPromoted;
+
+  /// No description provided for @myLearningPromotedGrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted with grace marks'**
+  String get myLearningPromotedGrace;
+
+  /// No description provided for @myLearningCompartment.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplementary exam to clear'**
+  String get myLearningCompartment;
+
+  /// No description provided for @myLearningDetained.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeats the class'**
+  String get myLearningDetained;
+
+  /// No description provided for @myLearningOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'On track'**
+  String get myLearningOnTrack;
+
+  /// No description provided for @myLearningClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close to your target'**
+  String get myLearningClose;
+
+  /// No description provided for @myLearningBehind.
+  ///
+  /// In en, this message translates to:
+  /// **'Behind your target'**
+  String get myLearningBehind;
+
+  /// No description provided for @myLearningNoTests.
+  ///
+  /// In en, this message translates to:
+  /// **'No mock tests yet'**
+  String get myLearningNoTests;
+
+  /// No description provided for @myLearningRising.
+  ///
+  /// In en, this message translates to:
+  /// **'rising'**
+  String get myLearningRising;
+
+  /// No description provided for @myLearningSteady.
+  ///
+  /// In en, this message translates to:
+  /// **'steady'**
+  String get myLearningSteady;
+
+  /// No description provided for @myLearningFalling.
+  ///
+  /// In en, this message translates to:
+  /// **'falling'**
+  String get myLearningFalling;
+
+  /// No description provided for @deviceTrustTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone'**
+  String get deviceTrustTitle;
+
+  /// No description provided for @deviceTrustNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Not trusted yet. Trust it so a sign-in from this phone is not flagged as new.'**
+  String get deviceTrustNew;
+
+  /// No description provided for @deviceTrustTrusted.
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted'**
+  String get deviceTrustTrusted;
+
+  /// No description provided for @deviceTrustButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this phone'**
+  String get deviceTrustButton;
+
+  /// No description provided for @forumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussion'**
+  String get forumTitle;
+
+  /// No description provided for @forumAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get forumAsk;
+
+  /// No description provided for @forumTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get forumTitleLabel;
+
+  /// No description provided for @forumBodyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question'**
+  String get forumBodyLabel;
+
+  /// No description provided for @forumPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get forumPost;
+
+  /// No description provided for @forumNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet. Be the first to ask.'**
+  String get forumNone;
+
+  /// No description provided for @forumReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{No replies} =1{1 reply} other{{n} replies}}'**
+  String forumReplies(int n);
+
+  /// No description provided for @forumLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This discussion is locked.'**
+  String get forumLocked;
+
+  /// No description provided for @forumReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply'**
+  String get forumReplyHint;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

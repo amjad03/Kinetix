@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/States';
 import { api, getMe, load } from '@/lib/api';
 import { canSee, canUseErp } from '@/lib/access';
 import { YEAR_COOKIE } from '@/lib/config';
+import { isWorkspace, WORKSPACE_COOKIE } from '@/lib/workspaces';
 import { CHANGE_PASSWORD_PATH } from '@/lib/password';
 import { getI18n } from '@/i18n/server';
 
@@ -46,6 +47,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   ]);
   const years = structure?.data?.academicYears ?? [];
   const picked = (await cookies()).get(YEAR_COOKIE)?.value ?? '';
+  const wsCookie = (await cookies()).get(WORKSPACE_COOKIE)?.value;
   const yearId = years.find((y) => y.id === picked)?.id ?? years.find((y) => y.isCurrent)?.id ?? years[0]?.id ?? '';
   return (
     <AppShell
@@ -56,6 +58,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       notices={notes.data?.items ?? []}
       unread={notes.data?.unread ?? 0}
       disabledModules={caps.data?.disabledModules ?? []}
+      workspace={isWorkspace(wsCookie) ? wsCookie : 'all'}
     >
       {children}
     </AppShell>

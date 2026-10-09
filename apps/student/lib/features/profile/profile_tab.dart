@@ -25,6 +25,8 @@ import '../fees/scholarship_screen.dart';
 import '../fees/fees_screen.dart';
 import '../library/library.dart';
 import '../careers/careers.dart';
+import '../learning/learning_screen.dart';
+import 'device_trust_tile.dart';
 import '../grievances/grievances.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
@@ -262,6 +264,15 @@ class ProfileTabState extends State<ProfileTab> {
                   subtitle: Text(_libraryLine(l, widget.study.library)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => LibraryScreen.open(context, widget.study),
+                ),
+                DeviceTrustTile(api: widget.study.api),
+                ListTile(
+                  key: const Key('openLearning'),
+                  leading: const Icon(Icons.school_outlined),
+                  title: Text(l.myLearningTitle),
+                  subtitle: Text(l.myLearningSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => LearningScreen.open(context, widget.study.api, st.id),
                 ),
                 ListTile(
                   key: const Key('openCareers'),

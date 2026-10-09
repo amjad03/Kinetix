@@ -32,6 +32,7 @@ export function ApplicationReview({ app, classes, canWaive }: { app: Application
   const [method, setMethod] = useState<CounterMethod>('cash');
   const [reference, setReference] = useState('');
   const [sectionId, setSectionId] = useState('');
+  const [override, setOverride] = useState('');
   const [pending, start] = useTransition();
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>) =>
     start(async () => {
@@ -74,7 +75,10 @@ export function ApplicationReview({ app, classes, canWaive }: { app: Application
                   ))}
                 </TextInput>
               </FormField>
-              <Button variant="contained" disabled={pending} onClick={() => run(() => enrollApplicant(app.id, sectionId || undefined))}>
+              <FormField label={t('g1.dup.reason')}>
+                <TextInput value={override} onChange={(e) => setOverride(e.target.value)} sx={{ minWidth: 260 }} />
+              </FormField>
+              <Button variant="contained" disabled={pending} onClick={() => run(() => enrollApplicant(app.id, sectionId || undefined, override))}>
                 {t('adm.review.enrolNow')}
               </Button>
             </Stack>

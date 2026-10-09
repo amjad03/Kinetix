@@ -20,6 +20,32 @@ export const ContentSchema = z.object({
     .max(120),
 });
 export type CurriculumContent = z.infer<typeof ContentSchema>;
+
+export interface ProposalFlag {
+  /** "Subject CODE" or "Proposal". */
+  where: string;
+  code: 'duplicate_code' | 'credits_missing' | 'credits_unusual' | 'no_units' | 'unit_without_topics' | 'hours_mismatch' | 'no_outcomes';
+  message: string;
+}
+
+/** Things in an imported syllabus that a person should look at before it becomes a draft: the importer is guessing, so it says where. */
+export function proposalFlags(c: CurriculumContent): ProposalFlag[] {
+  const flags: ProposalFlag[] = [];
+  const seen = new Map<string, number>();
+  for (const s of c.subjects) seen.set(s.code.toLowerCase(), (seen.get(s.code.toLowerCase()) ?? 0) + 1);
+  for (const s of c.subjects) {
+    const where = `Subject ${s.code}`;
+    if ((seen.get(s.code.toLowerCase()) ?? 0) > 1) flags.push({ where, code: 'duplicate_code', message: 'The code appears more than once' });
+    if (!s.credits) flags.push({ where, code: 'credits_missing', message: 'No credits were found' });
+    else if (s.credits > 10 || Math.round(s.credits * 2) / 2 !== s.credits) flags.push({ where, code: 'credits_unusual', message: `${s.credits} credits looks unusual` });
+    if (s.units.length === 0) flags.push({ where, code: 'no_units', message: 'No units were found' });
+    for (const u of s.units) if (u.topics.length === 0) flags.push({ where, code: 'unit_without_topics', message: `Unit "${u.title}" has no topics` });
+    const unitHours = s.units.reduce((n, u) => n + u.hours, 0);
+    if (s.hours > 0 && unitHours > 0 && unitHours !== s.hours) flags.push({ where, code: 'hours_mismatch', message: `Units add up to ${unitHours} hours but the subject says ${s.hours}` });
+    if (s.cos.length === 0) flags.push({ where, code: 'no_outcomes', message: 'No course outcomes were found' });
+  }
+  return flags;
+}
 type Subject = CurriculumContent['subjects'][number];
 
 const ROMAN: Record<string, number> = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10 };

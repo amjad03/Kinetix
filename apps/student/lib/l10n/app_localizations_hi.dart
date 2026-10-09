@@ -3070,4 +3070,126 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get peerNoFeedback => 'किसी सहपाठी ने अभी आपके काम की समीक्षा नहीं की है।';
+
+  @override
+  String get myLearningTitle => 'मेरी पढ़ाई';
+
+  @override
+  String get myLearningSubtitle => 'अभ्यास, कार्यपत्रक, अतिरिक्त सहायता और परीक्षा की तैयारी';
+
+  @override
+  String get myLearningNothing => 'यहां अभी कुछ नहीं है। आपके शिक्षक कार्यपत्रक और अभ्यास जोड़ेंगे।';
+
+  @override
+  String get myLearningPractice => 'आगे क्या करें';
+
+  @override
+  String get myLearningMastery => 'आप हर विषय कितना जानते हैं';
+
+  @override
+  String get myLearningWorksheets => 'कार्यपत्रक और गतिविधियां';
+
+  @override
+  String get myLearningHelp => 'शिक्षक से अतिरिक्त सहायता';
+
+  @override
+  String get myLearningReadiness => 'प्रवेश परीक्षा की तैयारी';
+
+  @override
+  String myLearningScore(Object score, Object max) {
+    return '$max में से $score';
+  }
+
+  @override
+  String get myLearningNotScored => 'अभी अंक नहीं मिले';
+
+  @override
+  String myLearningTarget(Object pct) {
+    return 'लक्ष्य $pct%';
+  }
+
+  @override
+  String myLearningAverage(Object pct, int n) {
+    return '$n परीक्षाओं के बाद औसत $pct%';
+  }
+
+  @override
+  String myLearningWeak(Object subjects) {
+    return 'कमजोर: $subjects';
+  }
+
+  @override
+  String get myLearningPromoted => 'अगली कक्षा में पदोन्नत';
+
+  @override
+  String get myLearningPromotedGrace => 'कृपांक के साथ पदोन्नत';
+
+  @override
+  String get myLearningCompartment => 'पूरक परीक्षा देनी है';
+
+  @override
+  String get myLearningDetained => 'कक्षा दोहराएंगे';
+
+  @override
+  String get myLearningOnTrack => 'सही राह पर';
+
+  @override
+  String get myLearningClose => 'लक्ष्य के करीब';
+
+  @override
+  String get myLearningBehind => 'लक्ष्य से पीछे';
+
+  @override
+  String get myLearningNoTests => 'अभी कोई मॉक परीक्षा नहीं';
+
+  @override
+  String get myLearningRising => 'बढ़ रहा';
+
+  @override
+  String get myLearningSteady => 'स्थिर';
+
+  @override
+  String get myLearningFalling => 'गिर रहा';
+
+  @override
+  String get deviceTrustTitle => 'यह फ़ोन';
+
+  @override
+  String get deviceTrustNew => 'अभी विश्वसनीय नहीं। इसे विश्वसनीय बनाएं ताकि इस फ़ोन से साइन-इन नया न माना जाए।';
+
+  @override
+  String get deviceTrustTrusted => 'विश्वसनीय';
+
+  @override
+  String get deviceTrustButton => 'इस फ़ोन पर भरोसा करें';
+
+  @override
+  String get forumTitle => 'चर्चा';
+
+  @override
+  String get forumAsk => 'प्रश्न पूछें';
+
+  @override
+  String get forumTitleLabel => 'शीर्षक';
+
+  @override
+  String get forumBodyLabel => 'आपका प्रश्न';
+
+  @override
+  String get forumPost => 'पोस्ट करें';
+
+  @override
+  String get forumNone => 'अभी कोई प्रश्न नहीं। सबसे पहले आप पूछें।';
+
+  @override
+  String forumReplies(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n उत्तर', one: '1 उत्तर', zero: 'कोई उत्तर नहीं');
+    return '$_temp0';
+  }
+
+  @override
+  String get forumLocked => 'यह चर्चा बंद है।';
+
+  @override
+  String get forumReplyHint => 'उत्तर लिखें';
 }

@@ -87,12 +87,13 @@ export type ApplicationStatus =
   | 'declined'
   | 'rejected'
   | 'enrolled'
-  | 'withdrawn';
+  | 'withdrawn'
+  | 'correction_requested';
 
 /** Moves staff may make by hand (POST /v1/admissions/applications/:id/status). */
 export const APPLICATION_MOVES: Record<ApplicationStatus, readonly ApplicationStatus[]> = {
   submitted: ['under_review', 'rejected', 'withdrawn'],
-  under_review: ['eligible', 'ineligible', 'rejected', 'withdrawn'],
+  under_review: ['eligible', 'ineligible', 'rejected', 'withdrawn', 'correction_requested'],
   eligible: ['offered', 'waitlisted', 'rejected', 'withdrawn'],
   ineligible: ['under_review', 'rejected'],
   waitlisted: ['offered', 'rejected', 'withdrawn'],
@@ -102,10 +103,12 @@ export const APPLICATION_MOVES: Record<ApplicationStatus, readonly ApplicationSt
   rejected: ['under_review'],
   enrolled: [],
   withdrawn: [],
+  /** Sent back to the applicant to fix something; they resubmit and review resumes. */
+  correction_requested: ['under_review', 'rejected', 'withdrawn'],
 };
 
 /** Moves that need a written reason. */
-export const APPLICATION_REASON_REQUIRED: readonly ApplicationStatus[] = ['rejected', 'ineligible', 'withdrawn', 'eligible'];
+export const APPLICATION_REASON_REQUIRED: readonly ApplicationStatus[] = ['rejected', 'ineligible', 'withdrawn', 'eligible', 'correction_requested'];
 
 export function canMoveApplication(from: ApplicationStatus, to: ApplicationStatus): boolean {
   return APPLICATION_MOVES[from].includes(to);
@@ -203,7 +206,7 @@ export function rankMerit<T extends { id: string; score: number; submittedAt: Da
 // Student lifecycle
 // ---------------------------------------------------------------------------------------------
 
-export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased'] as const;
+export const STUDENT_STATUSES = ['applicant', 'enrolled', 'active', 'on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred'] as const;
 export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 
 /**
@@ -212,8 +215,8 @@ export type StudentStatus = (typeof STUDENT_STATUSES)[number];
  * Transferred, alumni and dropped are final: a returning student applies again.
  */
 export const STUDENT_TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]> = {
-  applicant: ['enrolled', 'dropped'],
-  enrolled: ['active', 'transferred', 'dropped'],
+  applicant: ['enrolled', 'dropped', 'deferred'],
+  enrolled: ['active', 'transferred', 'dropped', 'deferred'],
   active: ['on_leave', 'detained', 'promoted', 'transferred', 'alumni', 'dropped', 'suspended', 'expelled', 'deceased'],
   on_leave: ['active', 'transferred', 'dropped', 'deceased'],
   detained: ['active', 'transferred', 'dropped', 'deceased'],
@@ -224,19 +227,21 @@ export const STUDENT_TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]
   dropped: [],
   expelled: [],
   deceased: [],
+  /** Admission held over to a later intake: the student returns to enrolled or active on the date given. */
+  deferred: ['enrolled', 'active', 'dropped', 'transferred'],
 };
 
 /** Changes that need a written reason (they are on the student's permanent record). */
-export const STUDENT_REASON_REQUIRED: readonly StudentStatus[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased'];
+export const STUDENT_REASON_REQUIRED: readonly StudentStatus[] = ['on_leave', 'detained', 'transferred', 'dropped', 'suspended', 'expelled', 'deceased', 'deferred'];
 
 /** Changes that record who approved them (the approver defaults to the person making the change). */
-export const STUDENT_APPROVER_STATUSES: readonly StudentStatus[] = ['on_leave', 'suspended', 'expelled', 'dropped', 'transferred', 'deceased'];
+export const STUDENT_APPROVER_STATUSES: readonly StudentStatus[] = ['deferred', 'on_leave', 'suspended', 'expelled', 'dropped', 'transferred', 'deceased'];
 
 /** Statuses a student can be readmitted from: the student returns to `active` through a readmission. */
 export const READMIT_FROM: readonly StudentStatus[] = ['dropped', 'transferred', 'expelled'];
 
 /** Statuses that take the student off every roster (attendance, marks, fees runs): anything but `active`. */
-export const OFF_ROLL_STATUSES: readonly StudentStatus[] = ['on_leave', 'suspended', 'detained', 'transferred', 'dropped', 'expelled', 'deceased', 'alumni'];
+export const OFF_ROLL_STATUSES: readonly StudentStatus[] = ['deferred', 'on_leave', 'suspended', 'detained', 'transferred', 'dropped', 'expelled', 'deceased', 'alumni'];
 
 /** Statuses that also switch off the student's own login. */
 export const LOGIN_DISABLED_STATUSES: readonly StudentStatus[] = ['transferred', 'dropped', 'expelled', 'deceased'];

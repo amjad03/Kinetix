@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FeesModule } from '../fees/fees.module.js';
 import { StudentsModule } from '../students/students.module.js';
+import { AdmissionsExtController, PublicAdmissionsExtController } from './admissions-ext.controller.js';
 import { AdmissionsController } from './admissions.controller.js';
 import { AdmissionsService } from './admissions.service.js';
 import { AgentsService } from './agents.service.js';
@@ -15,7 +16,7 @@ import { PublicAdmissionsController } from './public-admissions.controller.js';
 /** Admissions CRM: enquiries, cycles and applications, merit lists, offers and enrolment. */
 @Module({
   imports: [FeesModule, StudentsModule],
-  controllers: [AdmissionsController, EntranceController, GrowthController, PublicAdmissionsController],
+  controllers: [AdmissionsController, AdmissionsExtController, EntranceController, GrowthController, PublicAdmissionsController, PublicAdmissionsExtController],
   providers: [AdmissionsService, EnquiriesService, EntranceService, AgentsService, InterviewsService, OnlineTestService],
 })
 export class AdmissionsModule {}

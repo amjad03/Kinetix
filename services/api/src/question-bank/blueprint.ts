@@ -2,7 +2,36 @@ import type { BlueprintSection } from '../db/schema.js';
 
 export const BLOOM = ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create'] as const;
 export const DIFFICULTY = ['easy', 'medium', 'hard'] as const;
-export const QUESTION_TYPES = ['mcq', 'short', 'long', 'numerical', 'diagram'] as const;
+export const QUESTION_TYPES = ['mcq', 'short', 'long', 'numerical', 'diagram', 'matching', 'case_study', 'practical_rubric'] as const;
+/** Knowledge levels used in outcome-based education, alongside Bloom. */
+export const K_LEVELS = ['K1', 'K2', 'K3', 'K4', 'K5', 'K6'] as const;
+
+export interface TypeConfig {
+  pairs?: { left: string; right: string }[];
+  passage?: string;
+  subQuestions?: { text: string; marks: number }[];
+  labels?: string[];
+  imageUrl?: string;
+  rubricId?: string;
+}
+
+/** What is wrong with a question's type-specific shape, or null. */
+export function typeConfigProblem(type: string, cfg: TypeConfig | null | undefined, marks: number): string | null {
+  if (type === 'matching') {
+    if (!cfg?.pairs || cfg.pairs.length < 2) return 'A matching question needs at least two pairs';
+    if (cfg.pairs.some((p) => !p.left.trim() || !p.right.trim())) return 'Fill in both sides of every pair';
+    if (new Set(cfg.pairs.map((p) => p.left.trim().toLowerCase())).size !== cfg.pairs.length) return 'Each item on the left must be different';
+  }
+  if (type === 'case_study') {
+    if (!cfg?.passage || cfg.passage.trim().length < 20) return 'Add the case study passage';
+    if (!cfg.subQuestions?.length) return 'Add at least one question on the case';
+    const total = cfg.subQuestions.reduce((n, q) => n + q.marks, 0);
+    if (total !== marks) return `The parts add up to ${total} marks but the question is worth ${marks}`;
+  }
+  if (type === 'diagram' && cfg && (!cfg.labels || cfg.labels.length < 1)) return 'List the parts to be labelled';
+  if (type === 'practical_rubric' && !cfg?.rubricId) return 'Choose the rubric that marks this practical';
+  return null;
+}
 
 /** A question that may go on a paper. */
 export interface Candidate {

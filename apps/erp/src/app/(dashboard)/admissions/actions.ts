@@ -72,9 +72,9 @@ export async function recordApplicationFee(id: string, input: { kind: 'counter';
   return res;
 }
 
-export async function enrollApplicant(id: string, sectionId?: string): Promise<ActionResult<{ studentId: string; className: string; rollNo: string }>> {
+export async function enrollApplicant(id: string, sectionId?: string, duplicateOverride?: string): Promise<ActionResult<{ studentId: string; className: string; rollNo: string }>> {
   if (!UUID.test(id) || (sectionId && !UUID.test(sectionId))) return bad('adm.err.invalid');
-  const res = await act(() => api<{ studentId: string; className: string; rollNo: string }>(`/v1/admissions/applications/${id}/enroll`, { method: 'POST', body: sectionId ? { sectionId } : {} }));
+  const res = await act(() => api<{ studentId: string; className: string; rollNo: string }>(`/v1/admissions/applications/${id}/enroll`, { method: 'POST', body: { ...(sectionId ? { sectionId } : {}), ...(duplicateOverride?.trim() ? { duplicateOverride: duplicateOverride.trim() } : {}) } }));
   if (res.ok) {
     refresh();
     revalidatePath('/students', 'layout');

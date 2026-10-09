@@ -1,3 +1,4 @@
+import { noteSignInDevice } from '../trust/trust.controller.js';
 import { Body, Controller, Headers, HttpCode, Ip, Post, UnauthorizedException } from '@nestjs/common';
 import argon2 from 'argon2';
 import { eq, or } from 'drizzle-orm';
@@ -48,7 +49,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async login(@Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string) {
+  async login(@Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string, @Headers('x-device-id') deviceId?: string) {
     await this.limiter.hit(`login:${body.tenant}:${body.login}`, 10, 60_000);
     const fail = new UnauthorizedException('Wrong institution, login or password');
 
@@ -62,6 +63,7 @@ export class AuthController {
         .where(or(eq(users.email, body.login.trim().toLowerCase()), eq(users.phone, normalizePhone(body.login))));
       if (!user?.passwordHash || user.status !== 'active') throw fail;
       if (!(await argon2.verify(user.passwordHash, body.password))) throw fail;
+      await noteSignInDevice(tx, tenant.id, user.id, deviceId);
       return signInResponse(tx, this.mfa, tenant.id, user, 'password', { ip, userAgent, deviceName });
     });
   }

@@ -21,6 +21,7 @@ export async function createOffering(termId: string, v: V) {
       category: v.category,
       credits,
       seatCap: Number(v.seatCap),
+      ...(v.fee?.trim() ? { feePaise: Math.round(Number(v.fee) * 100) } : {}),
       facultyId: opt(v.facultyId) ?? null,
       slotIds: parseIdList(v.slotIds ?? ''),
       eligibleSemesters: semesters.length ? semesters : null,
@@ -37,7 +38,7 @@ export async function setOfferingStatus(id: string, status: 'open' | 'closed', v
 export async function saveWindow(termId: string, v: V) {
   return send(
     `${BASE}/windows`,
-    { termId, programId: opt(v.programId) ?? null, opensAt: v.opensAt, closesAt: v.closesAt, addDropUntil: v.addDropUntil, minCredits: Number(v.minCredits || 0), maxCredits: Number(v.maxCredits), allocationRule: v.allocationRule || 'cgpa' },
+    { termId, programId: opt(v.programId) ?? null, opensAt: v.opensAt, closesAt: v.closesAt, addDropUntil: v.addDropUntil, minCredits: Number(v.minCredits || 0), maxCredits: Number(v.maxCredits), allocationRule: v.allocationRule || 'cgpa', ...(v.allocationRule === 'custom' ? { ruleConfig: { cgpa: Number(v.wCgpa || 0), attendance: Number(v.wAttendance || 0), priority: Number(v.wPriority || 0) } } : {}) },
     PAGE,
     'PUT',
   );

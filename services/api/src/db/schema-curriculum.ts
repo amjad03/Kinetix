@@ -18,6 +18,8 @@ export const regulations = pgTable(
     name: text('name').notNull(),
     year: smallint('year').notNull(),
     programId: uuid('program_id').references(() => programs.id, { onDelete: 'set null' }),
+    /** The curriculum framework it follows (NEP 2020, CBCS, NCF); the table is in schema-g1.ts. */
+    frameworkId: uuid('framework_id'),
     authority: text('authority').notNull().default('Board of Studies'),
     effectiveFrom: date('effective_from').notNull(),
     notes: text('notes').notNull().default(''),
@@ -44,6 +46,8 @@ export const curriculumVersions = pgTable(
     supersedesId: uuid('supersedes_id').references((): AnyPgColumn => curriculumVersions.id, { onDelete: 'set null' }),
     source: text('source').notNull().default('manual'),
     bosRef: text('bos_ref'),
+    /** The affiliating university's adoption reference (affiliated colleges). */
+    universityRef: text('university_ref'),
     approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
     approvedAt: timestamp('approved_at', { withTimezone: true }),
     activatedAt: timestamp('activated_at', { withTimezone: true }),

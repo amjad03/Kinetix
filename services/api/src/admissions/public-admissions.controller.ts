@@ -247,6 +247,7 @@ export class PublicAdmissionsController {
         institution: inst?.name ?? '',
         applicationNo: a.applicationNo,
         applicantName: a.applicantName,
+        dateOfBirth: a.dateOfBirth,
         cycleName: cycle.name,
         status: a.status,
         statusReason: ['rejected', 'ineligible', 'withdrawn'].includes(a.status) ? a.statusReason : null,

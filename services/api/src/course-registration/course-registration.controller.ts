@@ -23,6 +23,8 @@ const OfferingBody = z.object({
   category: z.enum(OFFERING_CATEGORIES),
   credits: z.number().min(0).max(30),
   seatCap: z.number().int().min(0).max(5000),
+  /** Charged to the student when the registration is approved (paise; 0 = none). */
+  feePaise: z.number().int().min(0).max(100_000_000).optional(),
   facultyId: z.uuid().nullable().optional(),
   slotIds: Uuids.default([]),
   eligibleProgramIds: Uuids.nullable().optional(),
@@ -39,10 +41,13 @@ const WindowBody = z
     addDropUntil: z.coerce.date(),
     minCredits: z.number().min(0).max(100).default(0),
     maxCredits: z.number().min(0).max(100),
-    allocationRule: z.enum(['cgpa', 'time']).default('cgpa'),
+    allocationRule: z.enum(['cgpa', 'time', 'custom']).default('cgpa'),
+    /** Weights of the custom rule (each 0-100). */
+    ruleConfig: z.object({ cgpa: z.number().min(0).max(100).optional(), attendance: z.number().min(0).max(100).optional(), priority: z.number().min(0).max(100).optional() }).nullable().optional(),
   })
   .refine((w) => w.opensAt < w.closesAt && w.closesAt <= w.addDropUntil, { message: 'Dates must run opens, closes, add/drop deadline' })
-  .refine((w) => w.minCredits <= w.maxCredits, { message: 'The minimum credits cannot exceed the maximum' });
+  .refine((w) => w.minCredits <= w.maxCredits, { message: 'The minimum credits cannot exceed the maximum' })
+  .refine((w) => w.allocationRule !== 'custom' || (w.ruleConfig && Object.values(w.ruleConfig).some((x) => (x ?? 0) > 0)), { message: 'Give at least one weight for the custom rule', path: ['ruleConfig'] });
 const AllocateBody = z.object({ termId: z.uuid(), programId: z.uuid().optional(), coursesPerStudent: z.number().int().min(1).max(10).default(1) });
 const DecideBody = z.object({ registrationIds: z.array(z.uuid()).min(1).max(200), decision: z.enum(['approved', 'rejected']), note: z.string().trim().max(500).optional() });
 const PreferencesBody = z.object({ termId: z.uuid(), offeringIds: z.array(z.uuid()).max(10) });

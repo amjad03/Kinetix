@@ -1,3 +1,5 @@
+import { institutionProfiles } from '../db/schema.js';
+import { GOVERNANCE_RULES, type GovernanceModel } from '../institution/presets.js';
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { and, asc, desc, eq, gte, inArray, max, sql } from 'drizzle-orm';
@@ -14,19 +16,19 @@ import { academicYears, programs, sections, students } from '../db/schema.js';
 import { curriculumCos, curriculumSubjects, curriculumUnits, curriculumVersions, regulations, studentCurriculumPins, syllabusImports } from '../db/schema-curriculum.js';
 import { found } from '../placements/placements.access.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
-import { ContentSchema, type CurriculumContent, diffContent } from './curriculum-logic.js';
+import { ContentSchema, type CurriculumContent, diffContent, proposalFlags } from './curriculum-logic.js';
 import { extractSyllabusText, UnsupportedSyllabusFile } from './syllabus-text.js';
 
 const EDITORS: RoleName[] = ['tenant_admin', 'principal', 'hod'];
 /** The Board of Studies sign-off and activation. */
 const APPROVERS: RoleName[] = ['tenant_admin', 'principal'];
-const READERS: RoleName[] = [...EDITORS, 'teacher', 'quality_officer', 'exam_controller'];
+const READERS: RoleName[] = [...EDITORS, 'teacher', 'quality_officer', 'exam_controller', 'university_admin', 'accreditation_reviewer'];
 const MAX_FILE = 15 * 1024 * 1024;
 
 const Year = z.number().int().min(1990).max(2100);
 const RegulationBody = z.object({ name: z.string().trim().min(2).max(80), year: Year, programId: z.uuid().optional(), authority: z.string().trim().max(120).optional(), effectiveFrom: Day, notes: z.string().trim().max(1000).optional() });
 const VersionBody = z.object({ programId: z.uuid(), regulationYear: Year, label: z.string().trim().min(2).max(120), regulationId: z.uuid().optional(), cloneFromId: z.uuid().optional() });
-const ApproveBody = z.object({ bosRef: z.string().trim().min(2).max(120) });
+const ApproveBody = z.object({ bosRef: z.string().trim().min(2).max(120), universityRef: z.string().trim().min(2).max(120).optional() });
 const ActivateBody = z.object({ effectiveFrom: Day.optional() });
 const PinBody = z.object({ sectionIds: z.array(z.uuid()).min(1).max(100), replace: z.boolean().default(false) });
 const ApplyBody = z.object({ label: z.string().trim().min(2).max(120).optional(), content: ContentSchema.optional() });
@@ -83,6 +85,12 @@ async function createVersion(tx: Tx, p: UserPrincipal, b: { programId: string; r
 }
 
 /** Curriculum versions per programme and regulation year: draft, Board of Studies approval, activation, pinning and diffs. */
+/** What to look at in an imported proposal; empty when it does not parse (the review screen shows the raw text then). */
+const flagsOf = (proposal: unknown) => {
+  const c = ContentSchema.safeParse(proposal);
+  return c.success ? proposalFlags(c.data) : [];
+};
+
 @Controller('v1/curriculum')
 export class CurriculumController {
   constructor(
@@ -159,7 +167,11 @@ export class CurriculumController {
       if (v.status !== 'draft') throw new ConflictException('Only a draft can be approved');
       const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(curriculumSubjects).where(eq(curriculumSubjects.versionId, id));
       if (!n) throw new BadRequestException('Add at least one subject before approval');
-      const [row] = await tx.update(curriculumVersions).set({ status: 'approved', bosRef: b.bosRef, approvedBy: p.userId, approvedAt: new Date() }).where(eq(curriculumVersions.id, id)).returning();
+      // An affiliated college follows the university's syllabus: it must cite the university's adoption.
+      const [prof] = await tx.select({ g: institutionProfiles.governanceModel }).from(institutionProfiles);
+      const rules = prof?.g ? GOVERNANCE_RULES[prof.g as GovernanceModel] : null;
+      if (rules?.requiresUniversityBosRef && !b.universityRef) throw new BadRequestException("Give the affiliating university's Board of Studies reference");
+      const [row] = await tx.update(curriculumVersions).set({ status: 'approved', bosRef: b.bosRef, universityRef: b.universityRef ?? null, approvedBy: p.userId, approvedAt: new Date() }).where(eq(curriculumVersions.id, id)).returning();
       await auditUser(tx, p, 'curriculum.version_approved', 'curriculum_version', id, { bosRef: b.bosRef });
       return row;
     });
@@ -258,20 +270,23 @@ export class CurriculumController {
         .values({ tenantId: p.tenantId, programId: parsed.data.programId, regulationYear: parsed.data.regulationYear, fileName: file.originalname.slice(0, 200), extractedChars: text.length, preview: out.meta.preview, proposal: out.result, createdBy: p.userId })
         .returning();
       await auditUser(tx, p, 'curriculum.syllabus_uploaded', 'syllabus_import', row.id, { fileName: row.fileName, chars: text.length, preview: out.meta.preview });
-      return row;
+      return { ...row, flags: flagsOf(row.proposal) };
     });
   }
 
   @Get('imports')
   @Auth('user', EDITORS)
   imports(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(syllabusImports).orderBy(desc(syllabusImports.createdAt)).limit(50));
+    return this.db.withTenant(p.tenantId, async (tx) => (await tx.select().from(syllabusImports).orderBy(desc(syllabusImports.createdAt)).limit(50)).map((r) => ({ ...r, flags: flagsOf(r.proposal) })));
   }
 
   @Get('imports/:id')
   @Auth('user', EDITORS)
   oneImport(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    return this.db.withTenant(p.tenantId, async (tx) => found((await tx.select().from(syllabusImports).where(eq(syllabusImports.id, id)))[0], 'Import'));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const row = found((await tx.select().from(syllabusImports).where(eq(syllabusImports.id, id)))[0], 'Import');
+      return { ...row, flags: flagsOf(row.proposal) };
+    });
   }
 
   /** Turns a reviewed proposal (optionally edited) into a draft version. */

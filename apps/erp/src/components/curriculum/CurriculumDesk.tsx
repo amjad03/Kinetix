@@ -30,6 +30,7 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
   const [dlg, setDlg] = useState<Dlg | null>(null);
   const [diff, setDiff] = useState<CurriculumDiff | null>(null);
   const [upload, setUpload] = useState(false);
+  const [flags, setFlags] = useState<{ where: string; code: string; message: string }[] | null>(null);
   const progOptions = programs.map((p) => ({ value: p.id, label: p.name }));
   const done = (m?: string) => {
     setDlg(null);
@@ -132,6 +133,11 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
               { label: t('cu.col.subjects'), cell: (i) => i.proposal.subjects.length, num: true },
               { label: t('cu.col.status'), cell: (i) => (i.preview ? t('cu.imp.preview') : t('cu.imp.ai')) },
               {
+                label: t('g1.imp.flags'),
+                cell: (i) => ((i.flags ?? []).length === 0 ? '-' : <Button size="small" color="warning" onClick={() => setFlags(i.flags ?? [])}>{t('g1.imp.flagCount', { n: (i.flags ?? []).length })}</Button>),
+                sort: (i) => (i.flags ?? []).length,
+              },
+              {
                 label: '',
                 cell: (i) =>
                   i.versionId ? (
@@ -147,6 +153,18 @@ export function CurriculumDesk({ versions, imports, programs, canEdit, canApprov
         </>
       )}
       {dlg && <FormDialog title={dlg.title} fields={dlg.fields} onSubmit={dlg.run} onClose={done} />}
+      {flags && (
+        <InfoDialog title={t('g1.imp.flags')} onClose={() => setFlags(null)}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {t('g1.imp.flagHint')}
+          </Typography>
+          {flags.map((f, n) => (
+            <Typography key={n} variant="body2" sx={{ mb: 0.5 }}>
+              {f.where}: {f.message}
+            </Typography>
+          ))}
+        </InfoDialog>
+      )}
       {upload && <UploadDialog programs={programs} onClose={(m) => { setUpload(false); if (m) toast(m); }} />}
       {diff && (
         <InfoDialog title={t('cu.diff.title')} onClose={() => setDiff(null)}>

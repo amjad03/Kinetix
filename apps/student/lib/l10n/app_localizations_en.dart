@@ -3065,4 +3065,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get peerNoFeedback => 'No classmate has reviewed your work yet.';
+
+  @override
+  String get myLearningTitle => 'My learning';
+
+  @override
+  String get myLearningSubtitle => 'Practice, worksheets, extra help and exam readiness';
+
+  @override
+  String get myLearningNothing => 'Nothing here yet. Your teachers will add worksheets and practice.';
+
+  @override
+  String get myLearningPractice => 'What to do next';
+
+  @override
+  String get myLearningMastery => 'How well you know each subject';
+
+  @override
+  String get myLearningWorksheets => 'Worksheets and activities';
+
+  @override
+  String get myLearningHelp => 'Extra help from your teacher';
+
+  @override
+  String get myLearningReadiness => 'Entrance exam readiness';
+
+  @override
+  String myLearningScore(Object score, Object max) {
+    return '$score of $max';
+  }
+
+  @override
+  String get myLearningNotScored => 'Not scored yet';
+
+  @override
+  String myLearningTarget(Object pct) {
+    return 'Target $pct%';
+  }
+
+  @override
+  String myLearningAverage(Object pct, int n) {
+    return 'Average $pct% after $n tests';
+  }
+
+  @override
+  String myLearningWeak(Object subjects) {
+    return 'Weak: $subjects';
+  }
+
+  @override
+  String get myLearningPromoted => 'Promoted to the next class';
+
+  @override
+  String get myLearningPromotedGrace => 'Promoted with grace marks';
+
+  @override
+  String get myLearningCompartment => 'A supplementary exam to clear';
+
+  @override
+  String get myLearningDetained => 'Repeats the class';
+
+  @override
+  String get myLearningOnTrack => 'On track';
+
+  @override
+  String get myLearningClose => 'Close to your target';
+
+  @override
+  String get myLearningBehind => 'Behind your target';
+
+  @override
+  String get myLearningNoTests => 'No mock tests yet';
+
+  @override
+  String get myLearningRising => 'rising';
+
+  @override
+  String get myLearningSteady => 'steady';
+
+  @override
+  String get myLearningFalling => 'falling';
+
+  @override
+  String get deviceTrustTitle => 'This phone';
+
+  @override
+  String get deviceTrustNew => 'Not trusted yet. Trust it so a sign-in from this phone is not flagged as new.';
+
+  @override
+  String get deviceTrustTrusted => 'Trusted';
+
+  @override
+  String get deviceTrustButton => 'Trust this phone';
+
+  @override
+  String get forumTitle => 'Discussion';
+
+  @override
+  String get forumAsk => 'Ask a question';
+
+  @override
+  String get forumTitleLabel => 'Title';
+
+  @override
+  String get forumBodyLabel => 'Your question';
+
+  @override
+  String get forumPost => 'Post';
+
+  @override
+  String get forumNone => 'No questions yet. Be the first to ask.';
+
+  @override
+  String forumReplies(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n replies', one: '1 reply', zero: 'No replies');
+    return '$_temp0';
+  }
+
+  @override
+  String get forumLocked => 'This discussion is locked.';
+
+  @override
+  String get forumReplyHint => 'Write a reply';
 }

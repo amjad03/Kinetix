@@ -27,11 +27,44 @@ function optionList(s: string | undefined) {
     .map((l) => ({ text: l.replace(/^\*\s*/, ''), correct: l.startsWith('*') }));
 }
 
+/** The type-specific part of a question from the details box: matching pairs ("left = right"), a case study (passage, then "marks | question"), diagram labels, or a rubric id. */
+function typeConfigOf(type: string, details: string | undefined): Record<string, unknown> | null {
+  const lines = (details ?? '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0) return null;
+  if (type === 'matching') return { pairs: lines.map((l) => { const [left, ...r] = l.split('='); return { left: left.trim(), right: r.join('=').trim() }; }) };
+  if (type === 'case_study') {
+    const subQuestions = lines.slice(1).map((l) => { const [m, ...q] = l.split('|'); return { marks: Number(m), text: q.join('|').trim() }; });
+    return { passage: lines[0], subQuestions };
+  }
+  if (type === 'diagram') return { labels: lines };
+  if (type === 'practical_rubric') return { rubricId: lines[0] };
+  return null;
+}
+
+const tags = (s?: string) => (s ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+
 export async function addQuestion(v: Record<string, string>) {
   const [subjectId, coId] = (v.subject ?? '').split('|');
   return send(
     `${Q}/questions`,
-    { subjectId, coId: coId || null, unit: optStr(v.unit), topic: v.topic, bloom: v.bloom, difficulty: v.difficulty, marks: Number(v.marks), type: v.type, text: v.text, options: optionList(v.options), answer: v.answer ?? '', force: v.force === 'yes' },
+    {
+      subjectId,
+      coId: coId || null,
+      unit: optStr(v.unit),
+      topic: v.topic,
+      bloom: v.bloom,
+      difficulty: v.difficulty,
+      marks: Number(v.marks),
+      type: v.type,
+      text: v.text,
+      options: optionList(v.options),
+      answer: v.answer ?? '',
+      kLevel: v.kLevel || null,
+      competencyTags: tags(v.competencyTags),
+      skillTags: tags(v.skillTags),
+      typeConfig: typeConfigOf(v.type, v.details),
+      force: v.force === 'yes',
+    },
     PAGE,
   );
 }

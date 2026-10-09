@@ -1,13 +1,18 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
-import { attendanceCondonations, attendanceRecords, subjects, tenants, timetableSlots } from '../db/schema.js';
+import { attendanceOverrides } from '../db/schema-g1.js';
+import { attendanceCondonations, attendanceRecords, sections, subjects, tenants, timetableSlots } from '../db/schema.js';
 import { attendancePct, effectivePct } from './attendance-rules.js';
 
 export const DEFAULT_THRESHOLD_PCT = 75;
 
-export async function attendanceSettings(tx: Tx): Promise<{ lockHours: number | null; thresholdPct: number }> {
+/** The institution's attendance threshold and lock window; a class's programme may override either (attendance_overrides). */
+export async function attendanceSettings(tx: Tx, sectionId?: string): Promise<{ lockHours: number | null; thresholdPct: number; overridden: boolean }> {
   const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
-  return { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT };
+  const base = { lockHours: t?.settings?.attendanceLockHours ?? null, thresholdPct: t?.settings?.attendanceThresholdPct ?? DEFAULT_THRESHOLD_PCT, overridden: false };
+  if (!sectionId) return base;
+  const [o] = await tx.select({ thresholdPct: attendanceOverrides.thresholdPct, lockHours: attendanceOverrides.lockHours }).from(attendanceOverrides).innerJoin(sections, eq(sections.programId, attendanceOverrides.programId)).where(eq(sections.id, sectionId));
+  return o ? { thresholdPct: o.thresholdPct, lockHours: o.lockHours ?? base.lockHours, overridden: true } : base;
 }
 
 export interface SubjectAttendance {

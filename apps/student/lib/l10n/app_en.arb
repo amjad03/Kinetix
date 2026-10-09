@@ -2197,5 +2197,73 @@
   "peerNeedAll": "Give a score for each and write a comment.",
   "peerAverage": "Average score (out of 15)",
   "peerPending": "Reviews still to come",
-  "peerNoFeedback": "No classmate has reviewed your work yet."
+  "peerNoFeedback": "No classmate has reviewed your work yet.",
+  "myLearningTitle": "My learning",
+  "myLearningSubtitle": "Practice, worksheets, extra help and exam readiness",
+  "myLearningNothing": "Nothing here yet. Your teachers will add worksheets and practice.",
+  "myLearningPractice": "What to do next",
+  "myLearningMastery": "How well you know each subject",
+  "myLearningWorksheets": "Worksheets and activities",
+  "myLearningHelp": "Extra help from your teacher",
+  "myLearningReadiness": "Entrance exam readiness",
+  "myLearningScore": "{score} of {max}",
+  "@myLearningScore": {
+    "placeholders": {
+      "score": {},
+      "max": {}
+    }
+  },
+  "myLearningNotScored": "Not scored yet",
+  "myLearningTarget": "Target {pct}%",
+  "@myLearningTarget": {
+    "placeholders": {
+      "pct": {}
+    }
+  },
+  "myLearningAverage": "Average {pct}% after {n} tests",
+  "@myLearningAverage": {
+    "placeholders": {
+      "pct": {},
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "myLearningWeak": "Weak: {subjects}",
+  "@myLearningWeak": {
+    "placeholders": {
+      "subjects": {}
+    }
+  },
+  "myLearningPromoted": "Promoted to the next class",
+  "myLearningPromotedGrace": "Promoted with grace marks",
+  "myLearningCompartment": "A supplementary exam to clear",
+  "myLearningDetained": "Repeats the class",
+  "myLearningOnTrack": "On track",
+  "myLearningClose": "Close to your target",
+  "myLearningBehind": "Behind your target",
+  "myLearningNoTests": "No mock tests yet",
+  "myLearningRising": "rising",
+  "myLearningSteady": "steady",
+  "myLearningFalling": "falling",
+  "deviceTrustTitle": "This phone",
+  "deviceTrustNew": "Not trusted yet. Trust it so a sign-in from this phone is not flagged as new.",
+  "deviceTrustTrusted": "Trusted",
+  "deviceTrustButton": "Trust this phone",
+  "forumTitle": "Discussion",
+  "forumAsk": "Ask a question",
+  "forumTitleLabel": "Title",
+  "forumBodyLabel": "Your question",
+  "forumPost": "Post",
+  "forumNone": "No questions yet. Be the first to ask.",
+  "forumReplies": "{n, plural, =0{No replies} =1{1 reply} other{{n} replies}}",
+  "@forumReplies": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "forumLocked": "This discussion is locked.",
+  "forumReplyHint": "Write a reply"
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allocationOrder, refusal, slotsClash, totalCredits, type OfferingFacts, type StudentFacts } from './registration-rules.js';
+import { allocationOrder, customScore, refusal, slotsClash, totalCredits, type OfferingFacts, type StudentFacts } from './registration-rules.js';
 
 const off = (id: string, over: Partial<OfferingFacts> = {}): OfferingFacts => ({ id, subjectId: `s-${id}`, category: 'elective', credits: 3, seatCap: 2, status: 'open', eligibleProgramIds: null, eligibleSemesters: null, prerequisiteSubjectId: null, slots: [], ...over });
 const stu: StudentFacts = { programId: 'p1', semester: 3, passedSubjectIds: new Set(['math']) };
@@ -37,5 +37,26 @@ describe('registration rules', () => {
     ];
     expect(allocationOrder('cgpa', xs).map((x) => x.studentId)).toEqual(['c', 'b', 'a']);
     expect(allocationOrder('time', xs).map((x) => x.studentId)).toEqual(['a', 'c', 'b']);
+  });
+
+  it('orders by the institution\'s own weights under the custom rule, then by request time', () => {
+    const w = { cgpa: 10, attendance: 90 };
+    const xs = [
+      { studentId: 'topper', cgpa: 9, attendance: 70, at: 1, weights: w },
+      { studentId: 'regular', cgpa: 6, attendance: 90, at: 2, weights: w },
+      { studentId: 'regular2', cgpa: 6, attendance: 90, at: 1, weights: w },
+    ];
+    expect(allocationOrder('custom', xs).map((x) => x.studentId)).toEqual(['regular2', 'regular', 'topper']);
+    expect(allocationOrder('cgpa', xs).map((x) => x.studentId)).toEqual(['topper', 'regular2', 'regular']);
+    expect(customScore({ cgpa: 10, attendance: 100, semester: 12, weights: { cgpa: 1, attendance: 1, priority: 1 } })).toBe(3);
+  });
+
+  it('does not count an audit course toward the credit limit', () => {
+    const base = { subjectId: 's', seatCap: 9, status: 'open', eligibleProgramIds: null, eligibleSemesters: null, prerequisiteSubjectId: null, slots: [] };
+    const student = { programId: 'p', semester: 3, passedSubjectIds: new Set<string>() };
+    const held = [{ ...base, id: 'a', category: 'core', credits: 9 }];
+    expect(refusal({ ...base, id: 'b', category: 'elective', credits: 3 }, student, held, 0, 10)).toBe('credit_limit');
+    expect(refusal({ ...base, id: 'b', category: 'audit', credits: 3 }, student, held, 0, 10)).toBeNull();
+    expect(totalCredits([{ credits: 9, category: 'core' }, { credits: 3, category: 'audit' }])).toBe(9);
   });
 });

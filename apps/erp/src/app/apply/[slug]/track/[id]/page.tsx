@@ -1,3 +1,4 @@
+import { CorrectionPanel, type Correction } from '@/components/admissions/CorrectionPanel';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -37,6 +38,7 @@ export default async function TrackPage({ params, searchParams }: { params: Prom
       throw e;
     }
   });
+  const fix = res.data?.status === 'correction_requested' ? await load(() => api<Correction>(`/v1/public/admissions/${slug}/applications/${id}/corrections`, { anonymous: true, headers: { 'x-application-token': token } })) : null;
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'kx.frame', py: 4 }}>
       <Container maxWidth="sm">
@@ -70,6 +72,7 @@ export default async function TrackPage({ params, searchParams }: { params: Prom
                 </Typography>
               )}
             </Box>
+            {res.data.status === 'correction_requested' && fix?.data && <CorrectionPanel slug={slug} id={id} token={token} fix={fix.data} name={res.data.applicantName} dob={res.data.dateOfBirth ?? ''} />}
             <TrackActions slug={slug} app={res.data} token={token} />
             <Alert severity="warning" sx={{ mt: 3 }}>
               {t('apply.keepLink')}

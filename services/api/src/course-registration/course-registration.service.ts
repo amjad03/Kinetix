@@ -4,7 +4,9 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { academicTerms, courseOfferings, courseRegistrations, departments, examResultLines, examResults, registrationWindows, sections, students, subjects, timetableSlots } from '../db/schema.js';
+import { randomUUID } from 'node:crypto';
+import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
+import { academicTerms, courseOfferings, courseRegistrations, departments, examResultLines, feeInvoices, examResults, registrationWindows, sections, students, subjects, timetableSlots } from '../db/schema.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { allocationOrder, type Applicant, type OfferingFacts, REFUSAL_TEXT, refusal, type Refusal, type StudentFacts, totalCredits } from './registration-rules.js';
 
@@ -249,11 +251,20 @@ export class CourseRegistrationService {
       profiles.set(sid, me);
       windows.set(sid, await this.windowFor(tx, termId, me.programId));
     }
-    const applicants = (rule: 'cgpa' | 'time'): Applicant[] =>
+    const customIds = [...profiles.keys()].filter((sid) => windows.get(sid)?.allocationRule === 'custom');
+    const attendance = customIds.length ? await overallAttendance(tx, customIds, (await attendanceSettings(tx)).thresholdPct) : new Map<string, { pct: number | null }>();
+    const applicants = (rule: 'cgpa' | 'time' | 'custom'): Applicant[] =>
       [...profiles.keys()]
         .filter((sid) => windows.get(sid)?.allocationRule === rule)
-        .map((sid) => ({ studentId: sid, cgpa: profiles.get(sid)!.cgpa, at: Math.min(...byStudent.get(sid)!.map((r) => r.createdAt.getTime())) }));
-    const order = [...allocationOrder('cgpa', applicants('cgpa')), ...allocationOrder('time', applicants('time'))];
+        .map((sid) => ({
+          studentId: sid,
+          cgpa: profiles.get(sid)!.cgpa,
+          at: Math.min(...byStudent.get(sid)!.map((r) => r.createdAt.getTime())),
+          attendance: attendance.get(sid)?.pct ?? 0,
+          semester: profiles.get(sid)!.semester,
+          weights: windows.get(sid)?.ruleConfig ?? undefined,
+        }));
+    const order = [...allocationOrder('custom', applicants('custom')), ...allocationOrder('cgpa', applicants('cgpa')), ...allocationOrder('time', applicants('time'))];
     const waitPos = new Map<string, number>();
     for (const o of offs) {
       const [m] = await tx.select({ n: sql<number>`coalesce(max(${courseRegistrations.waitlistPos}), 0)::int` }).from(courseRegistrations).where(and(eq(courseRegistrations.offeringId, o.id), eq(courseRegistrations.status, 'waitlisted')));
@@ -319,6 +330,22 @@ export class CourseRegistrationService {
     if (rows.some((r) => r.head && r.head !== p.userId)) throw new ForbiddenException('This course belongs to another department');
   }
 
+  /** A course with a fee puts an invoice on the student's account when the registration is approved (once). */
+  private async chargeFee(tx: Tx, p: UserPrincipal, reg: Registration, o: Offering) {
+    if (!o.feePaise || o.feePaise <= 0 || reg.feeInvoiceId) return;
+    const [stu] = await tx.select({ sectionId: students.sectionId }).from(students).where(eq(students.id, reg.studentId));
+    const [sub] = await tx.select({ name: subjects.name, code: subjects.code }).from(subjects).where(eq(subjects.id, o.subjectId));
+    if (!stu) return;
+    const dueOn = new Date(this.now().getTime() + 14 * 86_400_000).toISOString().slice(0, 10);
+    const [inv] = await tx
+      .insert(feeInvoices)
+      .values({ tenantId: p.tenantId, studentId: reg.studentId, sectionId: stu.sectionId, batchId: randomUUID(), title: `Course fee: ${sub?.code ?? ''} ${sub?.name ?? ''}`.trim(), amountPaise: o.feePaise, dueOn, createdBy: p.userId })
+      .returning({ id: feeInvoices.id });
+    await tx.update(courseRegistrations).set({ feeInvoiceId: inv.id }).where(eq(courseRegistrations.id, reg.id));
+    reg.feeInvoiceId = inv.id;
+    await auditUser(tx, p, 'course_registration.fee_charged', 'course_registration', reg.id, { invoiceId: inv.id, amountPaise: o.feePaise });
+  }
+
   private emitApproved(tx: Tx, tenantId: string, reg: Registration, o: Offering, actorId: string | null) {
     return this.events.emit(tx, tenantId, {
       type: DomainEvents.CourseRegistrationApproved,
@@ -358,6 +385,7 @@ export class CourseRegistrationService {
         .returning();
       out.push(row);
       await auditUser(tx, p, `course_registration.${decision}`, 'course_registration', r.id, { studentId: r.studentId, offeringId: r.offeringId });
+      if (decision === 'approved') await this.chargeFee(tx, p, row, o);
       if (decision === 'approved') await this.emitApproved(tx, p.tenantId, row, o, p.userId);
       else await this.promote(tx, o);
     }

@@ -23,6 +23,10 @@ const EventBody = z
     endsOn: DATE,
     /** Omit or null for the whole institution. */
     programIds: z.array(z.uuid()).min(1).max(100).nullable().optional(),
+    /** Narrower audiences: a campus, classes or departments (omit for no narrowing). */
+    campusIds: z.array(z.uuid()).min(1).max(50).nullable().optional(),
+    sectionIds: z.array(z.uuid()).min(1).max(200).nullable().optional(),
+    departmentIds: z.array(z.uuid()).min(1).max(50).nullable().optional(),
     /** Tell families and students (default: yes). */
     notify: z.boolean().optional(),
   })
@@ -46,7 +50,7 @@ export class CalendarController {
 
   @Get()
   @Auth('user')
-  list(@CurrentPrincipal() p: UserPrincipal, @Query('from') fromQ?: string, @Query('to') toQ?: string) {
+  list(@CurrentPrincipal() p: UserPrincipal, @Query('from') fromQ?: string, @Query('to') toQ?: string, @Query('campusId') campusId?: string, @Query('sectionId') sectionId?: string, @Query('departmentId') departmentId?: string, @Query('programId') programId?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx)).date;
       const from = fromQ ? parseDate(fromQ, 'from') : today;
@@ -55,12 +59,14 @@ export class CalendarController {
       if (addDays(from, MAX_DAYS) < to) throw new BadRequestException(`Choose at most ${MAX_DAYS} days`);
       const rows = await listBetween(tx, from, to);
       const mine = await familyPrograms(tx, p);
-      return {
-        from,
-        to,
-        today,
-        events: mine === null ? rows : rows.filter((e) => e.programIds === null || e.programIds.some((id) => mine.includes(id))),
-      };
+      const mySections = mine === null ? null : await familySections(tx, p);
+      // Calendars by audience: institution-wide entries always show; a narrowed entry shows when the asked-for campus, class, department or programme is one of its audiences.
+      const hit = (ids: string[] | null, want?: string) => !want || ids === null || ids.includes(want);
+      const visible = rows
+        .filter((e) => (mine === null ? true : e.programIds === null || e.programIds.some((id) => mine.includes(id))))
+        .filter((e) => (mySections === null || e.sectionIds === null ? true : e.sectionIds.some((id) => mySections.includes(id))))
+        .filter((e) => hit(e.campusIds, campusId) && hit(e.sectionIds, sectionId) && hit(e.departmentIds, departmentId) && hit(e.programIds, programId));
+      return { from, to, today, events: visible };
     });
   }
 }
@@ -75,6 +81,10 @@ async function listBetween(tx: Tx, from: string, to: string) {
       startsOn: calendarEvents.startsOn,
       endsOn: calendarEvents.endsOn,
       programIds: calendarEvents.programIds,
+      campusIds: calendarEvents.campusIds,
+      sectionIds: calendarEvents.sectionIds,
+      departmentIds: calendarEvents.departmentIds,
+      source: calendarEvents.source,
     })
     .from(calendarEvents)
     .where(and(lte(calendarEvents.startsOn, to), gte(calendarEvents.endsOn, from)))
@@ -82,6 +92,16 @@ async function listBetween(tx: Tx, from: string, to: string) {
   const ids = [...new Set(rows.flatMap((r) => r.programIds ?? []))];
   const names = ids.length ? new Map((await tx.select({ id: programs.id, name: programs.name }).from(programs).where(inArray(programs.id, ids))).map((r) => [r.id, r.name])) : new Map<string, string>();
   return rows.map((r) => ({ ...r, programs: r.programIds?.map((id) => names.get(id) ?? '') ?? null }));
+}
+
+/** Classes of a family's children or a student's own class. */
+async function familySections(tx: Tx, p: UserPrincipal): Promise<string[]> {
+  const rows = await tx
+    .selectDistinct({ sectionId: students.sectionId })
+    .from(students)
+    .leftJoin(guardians, eq(guardians.studentId, students.id))
+    .where(and(eq(students.status, 'active'), p.roles.includes('student') ? eq(students.userId, p.userId) : eq(guardians.userId, p.userId)));
+  return rows.map((r) => r.sectionId);
 }
 
 /** Programs of a family's children or a student's own class; null for staff (they see everything). */
@@ -111,7 +131,7 @@ export class CalendarAdminController {
       await assertPrograms(tx, b.programIds);
       const [e] = await tx
         .insert(calendarEvents)
-        .values({ tenantId: p.tenantId, kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null, createdBy: p.userId })
         .returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.created', subjectType: 'calendar_event', subjectId: e.id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn } });
       if (b.notify !== false) await this.notifications.calendarEvent(tx, e);
@@ -126,7 +146,7 @@ export class CalendarAdminController {
       await assertPrograms(tx, b.programIds);
       const [e] = await tx
         .update(calendarEvents)
-        .set({ kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null })
+        .set({ kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null })
         .where(eq(calendarEvents.id, id))
         .returning();
       if (!e) throw new NotFoundException('Calendar entry not found');

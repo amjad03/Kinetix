@@ -73,7 +73,7 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
     { label: t('cr.win.addDrop'), cell: (w) => fmt.dateTime(w.addDropUntil), sort: (w) => w.addDropUntil },
     { label: t('cr.win.min'), cell: (w) => w.minCredits, num: true },
     { label: t('cr.win.max'), cell: (w) => w.maxCredits, num: true },
-    { label: t('cr.win.rule'), cell: (w) => t(`cr.win.rule.${w.allocationRule}` as MessageKey) },
+    { label: t('cr.win.rule'), cell: (w) => (w.allocationRule === 'custom' ? t('g1.cr.ruleCustom') : t(`cr.win.rule.${w.allocationRule}` as MessageKey)) },
   ];
 
   const rosterCols: Col<RosterRow>[] = [
@@ -134,6 +134,7 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
             { name: 'category', label: t('cr.f.category'), kind: 'select', init: 'elective', options: CATEGORIES.map((c) => ({ value: c, label: t(`cr.cat.${c}` as MessageKey) })) },
             { name: 'credits', label: t('cr.f.credits'), required: true, init: '3' },
             { name: 'seatCap', label: t('cr.f.seatCap'), kind: 'number', required: true },
+            { name: 'fee', label: t('g1.cr.fee') },
             { name: 'facultyId', label: t('cr.f.faculty'), kind: 'uuid' },
             { name: 'slotIds', label: t('cr.f.slots') },
             { name: 'semesters', label: t('cr.f.semesters') },
@@ -156,7 +157,10 @@ export function RegistrationDesk({ termId, offerings, windows, approvals, progra
             { name: 'addDropUntil', label: t('cr.win.addDrop'), kind: 'datetime', required: true },
             { name: 'minCredits', label: t('cr.win.min'), kind: 'number', init: '0' },
             { name: 'maxCredits', label: t('cr.win.max'), kind: 'number', required: true },
-            { name: 'allocationRule', label: t('cr.win.rule'), kind: 'select', init: 'cgpa', options: (['cgpa', 'time'] as const).map((r) => ({ value: r, label: t(`cr.win.rule.${r}` as MessageKey) })) },
+            { name: 'allocationRule', label: t('cr.win.rule'), kind: 'select', init: 'cgpa', options: (['cgpa', 'time', 'custom'] as const).map((r) => ({ value: r, label: t(r === 'custom' ? 'g1.cr.ruleCustom' : (`cr.win.rule.${r}` as MessageKey)) })) },
+            { name: 'wCgpa', label: t('g1.cr.wCgpa'), kind: 'number' },
+            { name: 'wAttendance', label: t('g1.cr.wAttendance'), kind: 'number' },
+            { name: 'wPriority', label: t('g1.cr.wPriority'), kind: 'number' },
           ]}
         />
       )}

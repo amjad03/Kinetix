@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' show MediaType;
@@ -11,7 +12,9 @@ import '../l10n/l10n.dart';
 import 'campus.dart';
 import 'campus_life.dart';
 import 'campus_services.dart';
+import 'forum.dart';
 import 'growth.dart';
+import 'learning.dart';
 import 'lms.dart';
 import 'models.dart';
 import 'scholarships.dart';
@@ -300,6 +303,21 @@ abstract class StudentApi {
   /// The passport as a PDF (`GET /v1/passport/students/:id/pdf`).
   Future<Uint8List> passportPdf(String studentId);
 
+  /// A course's discussion: threads, one thread with its replies, asking and replying (`/v1/lms/courses/:id/forum`, `/v1/lms/forum/:id`).
+  Future<List<ForumThreadRow>> forumThreads(String courseId);
+  Future<ForumThread> forumThread(String threadId);
+  Future<void> startThread(String courseId, String title, String body);
+  Future<void> replyToThread(String threadId, String body);
+
+  /// Whether this phone is one I have trusted (`trusted`, `new`, or `none` when the app has no install id), and trusting it (`/v1/me/devices`).
+  Future<String> deviceState();
+  Future<void> trustDevice(String label);
+
+  /// My learning: worksheets and scores, extra help, entrance readiness and the promotion decision (`GET /v1/school-learning/students/:id/summary`),
+  /// and mastery by subject with what to practise next (`GET /v1/lms/students/:id/recommendations`).
+  Future<LearningSummary> learningSummary(String studentId);
+  Future<LearningAdvice> learningAdvice(String studentId);
+
   /// Data rights under the DPDP Act: the grievance officer, my data as a summary and as a PDF,
   /// my requests, and a new correction or erasure request (`/v1/dpdp`).
   Future<DpdpOfficer> dpdpOfficer();
@@ -382,6 +400,9 @@ class HttpStudentApi implements StudentApi {
 
   /// Called when the server rejects the token (expired or revoked), so the app can sign out.
   void Function()? onUnauthorized;
+
+  /// A random id made once per install; the server keeps only a hash of it (device trust).
+  String? deviceId;
 
   @override
   Future<void> login({required String tenant, required String login, required String password}) async {
@@ -786,6 +807,7 @@ class HttpStudentApi implements StudentApi {
       ..headers['content-type'] = 'application/json'
       ..headers['accept'] = 'application/json';
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
+    if (deviceId != null) req.headers['x-device-id'] = deviceId!;
     if (body != null) req.body = jsonEncode(body);
     return _receive(req, auth: auth, timeout: timeout);
   }
@@ -882,6 +904,43 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<Uint8List> passportPdf(String studentId) => _download('/v1/passport/students/$studentId/pdf');
+
+  @override
+  Future<List<ForumThreadRow>> forumThreads(String courseId) async => [for (final t in await _send('GET', '/v1/lms/courses/$courseId/forum') as List) ForumThreadRow.fromJson((t as Map).cast<String, dynamic>())];
+
+  @override
+  Future<ForumThread> forumThread(String threadId) async => ForumThread.fromJson(await _send('GET', '/v1/lms/forum/$threadId') as Map<String, dynamic>);
+
+  @override
+  Future<void> startThread(String courseId, String title, String body) async {
+    await _send('POST', '/v1/lms/courses/$courseId/forum', body: {'title': title, 'body': body});
+  }
+
+  @override
+  Future<void> replyToThread(String threadId, String body) async {
+    await _send('POST', '/v1/lms/forum/$threadId/posts', body: {'body': body});
+  }
+
+  @override
+  Future<String> deviceState() async {
+    final id = deviceId;
+    if (id == null) return 'none';
+    final j = await _send('GET', '/v1/me/devices/status?deviceId=${Uri.encodeQueryComponent(id)}') as Map<String, dynamic>;
+    return '${j['state']}';
+  }
+
+  @override
+  Future<void> trustDevice(String label) async {
+    final id = deviceId;
+    if (id == null) return;
+    await _send('POST', '/v1/me/devices/trust', body: {'deviceId': id, 'label': label, 'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'});
+  }
+
+  @override
+  Future<LearningSummary> learningSummary(String studentId) async => LearningSummary.fromJson(await _send('GET', '/v1/school-learning/students/$studentId/summary') as Map<String, dynamic>);
+
+  @override
+  Future<LearningAdvice> learningAdvice(String studentId) async => LearningAdvice.fromJson(await _send('GET', '/v1/lms/students/$studentId/recommendations') as Map<String, dynamic>);
 
   @override
   Future<DpdpOfficer> dpdpOfficer() async => DpdpOfficer.fromJson(await _send('GET', '/v1/dpdp/grievance-officer') as Map<String, dynamic>);
