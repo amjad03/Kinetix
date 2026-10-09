@@ -62,6 +62,13 @@ export async function GET(req: NextRequest) {
     if (!UUID.test(id) || !UUID.test(termId)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/early-years/students/${id}/learning-story.pdf?termId=${termId}`;
   }
+  // The seating chart of one hall for one sitting: ?kind=seating-chart&id=<session>&slot=<n>&room=<hall>
+  if (kind === 'seating-chart') {
+    const slot = req.nextUrl.searchParams.get('slot') ?? '';
+    const room = req.nextUrl.searchParams.get('room') ?? '';
+    if (!UUID.test(id) || !/^\d{1,3}$/.test(slot) || !UUID.test(room)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/exam-sessions/${id}/seating-plan/sittings/${slot}/rooms/${room}/pdf`;
+  }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.
   const validId = kind === 'asset-tags' ? id.split(',').every((x) => UUID.test(x)) : UUID.test(id);

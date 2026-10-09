@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import { isIsoDate } from '@/lib/dates';
+import { parseWhole } from '@/lib/exam-registration';
 import { schemeProblem, type PassRules, type SchemeComponent } from '@/lib/exams';
 import type { ActionResult } from '@/lib/types';
 
@@ -60,6 +61,33 @@ export async function sessionStep(sessionId: string, step: 'schedule' | 'process
 export async function generateSeating(sessionId: string, halls: { roomId: string; capacity: number }[]) {
   if (!UUID.test(sessionId) || halls.length === 0 || halls.some((h) => !UUID.test(h.roomId) || !Number.isInteger(h.capacity) || h.capacity < 1)) return bad('exm.err.seating');
   return post<{ seated: number }>(`/v1/exam-sessions/${sessionId}/seating`, { halls }, [`/exams/${sessionId}`]);
+}
+
+/** Sets the registration window and its eligibility rules for a session. */
+export async function saveRegistrationWindow(sessionId: string, v: Record<string, string>) {
+  if (!UUID.test(sessionId)) return bad('exm.err.session.pick');
+  if (!isIsoDate(v.opensOn ?? '') || !isIsoDate(v.closesOn ?? '') || v.closesOn < v.opensOn) return bad('er.err.dates');
+  const attendance = v.minAttendancePercent?.trim() ? Number(v.minAttendancePercent) : null;
+  if (attendance !== null && !(attendance >= 0 && attendance <= 100)) return bad('er.err.attendance');
+  const backlogs = parseWhole(v.maxBacklogs, 0, 50);
+  if (backlogs === undefined) return bad('er.err.backlogs');
+  return post(`/v1/exam-sessions/${sessionId}/registration-window`, { opensOn: v.opensOn, closesOn: v.closesOn, minAttendancePercent: attendance, blockOnFeeDues: v.blockOnFeeDues !== 'no', maxBacklogs: backlogs }, [`/exams/${sessionId}`], 'PUT');
+}
+
+/** The controller registers an ineligible student anyway, with a reason that is kept on the record. */
+export async function overrideRegistration(sessionId: string, studentId: string, v: Record<string, string>) {
+  if (!UUID.test(sessionId) || !UUID.test(studentId)) return bad('exm.err.session.pick');
+  if ((v.reason ?? '').trim().length < 5) return bad('er.err.reason');
+  return post(`/v1/exam-sessions/${sessionId}/registrations/${studentId}/override`, { reason: v.reason.trim() }, [`/exams/${sessionId}`]);
+}
+
+/** Builds the anti-collusion seating plan for one hall layout. */
+export async function generateAntiCollusionPlan(sessionId: string, v: Record<string, string>) {
+  const rows = parseWhole(v.rows, 1, 40);
+  const benches = parseWhole(v.benchesPerRow, 1, 20);
+  const seats = parseWhole(v.seatsPerBench, 1, 4);
+  if (!UUID.test(sessionId) || !UUID.test(v.roomId ?? '') || !rows || !benches || !seats) return bad('er.err.layout');
+  return post<{ seated: number; vacant: number }>(`/v1/exam-sessions/${sessionId}/seating-plan`, { rooms: [{ roomId: v.roomId, rows, benchesPerRow: benches, seatsPerBench: seats }] }, [`/exams/${sessionId}`]);
 }
 
 export async function issueHallTickets(sessionId: string, blocks: { studentId: string; reason: string }[]) {

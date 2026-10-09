@@ -722,6 +722,13 @@
       "when": 1791410900229,
       "tag": "0109_attendance_governance_institution",
       "breakpoints": true
+    },
+    {
+      "idx": 103,
+      "version": "7",
+      "when": 1791410901229,
+      "tag": "0110_workflow_parallel_exam_registration_seating",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,6 @@
-import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
+import { ENV, type Env } from '../config/env.js';
+import { hallTicketCode } from './hall-ticket-code.js';
+import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -10,7 +12,7 @@ import { toCsv } from '../common/pdf.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes } from '../db/schema.js';
+import { assessments, examPapers, examResultLines, examResults, examSeats, examSessions, hallTickets, programs, revaluationRequests, rooms, schemeComponents, sections, students, subjects, assessmentSchemes, tenants, examRegistrationWindows, examRegistrations } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { parseDate } from '../teacher/teacher.service.js';
 import { attendanceSettings, overallAttendance } from '../attendance-governance/eligibility.js';
@@ -52,6 +54,7 @@ export class ExamSessionsController {
     private readonly exams: ExamsService,
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   @Post()
@@ -231,6 +234,12 @@ export class ExamSessionsController {
         for (const r of roster) {
           const a = att.get(r.id);
           if (a && !a.eligible && !blocks.has(r.id)) blocks.set(r.id, `Attendance ${a.effectivePct}% is below ${cfg.thresholdPct}%`);
+      // With a registration window, only registered students (eligible, or overridden by the controller) get a ticket.
+      const [win] = await tx.select({ id: examRegistrationWindows.id }).from(examRegistrationWindows).where(eq(examRegistrationWindows.sessionId, id));
+      if (win) {
+        const regs = new Map((await tx.select({ studentId: examRegistrations.studentId, status: examRegistrations.status, reasons: examRegistrations.reasons }).from(examRegistrations).where(eq(examRegistrations.sessionId, id))).map((x) => [x.studentId, x]));
+          const reg = regs.get(r.id);
+          if (!blocks.has(r.id) && reg?.status !== 'registered') blocks.set(r.id, reg ? `Not eligible: ${reg.reasons.join('; ')}` : 'Not registered for this examination');
         }
       }
       for (const r of roster) {
@@ -269,7 +278,9 @@ export class ExamSessionsController {
         .leftJoin(rooms, eq(rooms.id, examSeats.roomId))
         .where(and(eq(examPapers.sessionId, id), eq(examPapers.sectionId, st.sectionId)))
         .orderBy(asc(examPapers.examDate), asc(examPapers.startsAt));
-      return hallTicketPdf({ ...(await studentHeader(tx, p.tenantId, studentId)), sessionName: s.name, ticketNo: t.ticketNo, papers: papers.map((x) => ({ date: x.examDate, time: `${x.startsAt}-${x.endsAt}`, subject: x.subject, room: x.room, seat: x.seat })) });
+      const [tenant] = await tx.select({ slug: tenants.slug }).from(tenants).where(eq(tenants.id, p.tenantId));
+      const verifyUrl = `${this.env.VERIFY_BASE_URL.replace(/\/$/, '')}/hallticket/${tenant.slug}/${encodeURIComponent(hallTicketCode(this.env.JWT_SECRET, p.tenantId, t.ticketNo))}`;
+      return hallTicketPdf({ ...(await studentHeader(tx, p.tenantId, studentId)), sessionName: s.name, ticketNo: t.ticketNo, verifyUrl, papers: papers.map((x) => ({ date: x.examDate, time: `${x.startsAt}-${x.endsAt}`, subject: x.subject, room: x.room, seat: x.seat })) });
     });
     res.setHeader('content-type', 'application/pdf');
     res.setHeader('content-disposition', 'inline; filename="hall-ticket.pdf"');

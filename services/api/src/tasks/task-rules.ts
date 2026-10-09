@@ -19,5 +19,9 @@ export function dueFor(given: Date | null | undefined, slaHours: number | null |
   return slaHours ? new Date(now.getTime() + slaHours * 3_600_000) : null;
 }
 
+/** Due for its one reminder: still active, a reminder time is set and has passed, and the task is not yet overdue (that is escalated instead). */
+export const needsReminder = (t: { status: string; createdAt: Date; reminderHours: number | null; remindedAt: Date | null; dueAt: Date | null }, now: Date) =>
+  isActive(t.status) && !!t.reminderHours && !t.remindedAt && t.createdAt.getTime() + t.reminderHours * 3_600_000 <= now.getTime() && !(t.dueAt && t.dueAt < now);
+
 /** Overdue and not yet escalated: the escalation job picks these up. */
 export const needsEscalation = (t: { status: string; dueAt: Date | null; escalatedAt: Date | null }, now: Date) => isActive(t.status) && !!t.dueAt && t.dueAt < now && !t.escalatedAt;

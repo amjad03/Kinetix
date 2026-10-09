@@ -1,6 +1,7 @@
 /** Semester-end exam logistics (seating, invigilation, malpractice), on-screen evaluation, course files, academic audit and CBCS registration. */
 import { CourseFilesService } from '../../course-files/course-files.service.js';
 import { courseFilePdf } from '../../course-files/course-file-pdf.js';
+import { antiCollusionSeats, type RoomLayout } from '../../exams/anti-collusion.js';
 import { bufferStream, ObjectStorage } from '../../storage/storage.service.js';
 import type { Ctx } from './ctx.js';
 import { addDays, at, J } from './kit.js';
@@ -15,8 +16,27 @@ export async function semesterEndSession(c: Ctx): Promise<void> {
   const hall = c.rooms.find((x) => x.name === 'Examination Hall')!;
   const seminar = c.rooms.find((x) => x.name === 'Seminar Hall')!;
   const papers = await k.ins<{ id: string }>('exam_papers', sec.subjects.map((sub, i) => ({ sessionId: session.id, subjectId: sub.id, sectionId: sec.id, examDate: addDays('2026-12-21', i + (i > 2 ? 1 : 0)), startsAt: '10:00', endsAt: '13:00', maxMarks: 60 })));
-  await k.ins('exam_seats', papers.flatMap((p) => sec.students.map((st, i) => ({ paperId: p.id, studentId: st.id, roomId: i < 20 ? hall.id : seminar.id, seatNo: (i % 20) + 1 }))), { returning: false });
-  await k.ins('hall_tickets', sec.students.map((st, i) => ({ sessionId: session.id, studentId: st.id, ticketNo: `SIMS/BCM5/${String(i + 1).padStart(3, '0')}`, blocked: st.presence < 0.72, blockedReason: st.presence < 0.72 ? 'Attendance below the 75 percent required by BCU' : null })), { returning: false });
+  // Registration for the session: attendance below 75 percent is held back, except one student the principal cleared on medical grounds.
+  const principalId = c.byEmail.principal.id;
+  await k.one('exam_registration_windows', { sessionId: session.id, opensOn: addDays(c.today, -10), closesOn: addDays(c.today, 15), minAttendancePercent: 75, blockOnFeeDues: true, maxBacklogs: 2, createdBy: hod });
+  const cleared = sec.students.find((st) => st.presence < 0.75);
+  const held = (st: (typeof sec.students)[number]) => st.presence < 0.75 && st.id !== cleared?.id;
+  const shortage = (st: (typeof sec.students)[number]) => `Attendance shortage: ${(Math.round(st.presence * 1000) / 10).toFixed(1)}% against the required 75%`;
+  await k.ins('exam_registrations', sec.students.map((st) => ({ sessionId: session.id, studentId: st.id, status: held(st) ? 'ineligible' : 'registered', reasons: J(st.presence < 0.75 ? [shortage(st)] : []), overriddenBy: st.id === cleared?.id ? principalId : null, overrideReason: st.id === cleared?.id ? 'Medical leave certificate accepted by the principal' : null })), { returning: false });
+  // Anti-collusion seating: halls are rows of benches, and neighbours never write the same subject. Halls grow until everyone fits.
+  const layouts: RoomLayout[] = [
+    { roomId: hall.id, name: 'Examination Hall', rows: 10, benchesPerRow: 4, seatsPerBench: 2 },
+    { roomId: seminar.id, name: 'Seminar Hall', rows: 8, benchesPerRow: 3, seatsPerBench: 2 },
+  ];
+  const sittings = papers.map((p, pi) => antiCollusionSeats(sec.students.map((st) => ({ paperId: p.id, studentId: st.id, rollNo: st.rollNo, subjectKey: sec.subjects[pi].id, programKey: sec.programId })), layouts));
+  for (let grow = 0; grow < 12 && sittings.some((s) => s.unplaced.length); grow++) {
+    layouts[0].rows += 2;
+    sittings.splice(0, sittings.length, ...papers.map((p, pi) => antiCollusionSeats(sec.students.map((st) => ({ paperId: p.id, studentId: st.id, rollNo: st.rollNo, subjectKey: sec.subjects[pi].id, programKey: sec.programId })), layouts)));
+  }
+  if (sittings.some((s) => s.unplaced.length)) throw new Error('The seating plan does not fit the halls');
+  await k.ins('exam_room_layouts', layouts.map((l) => ({ sessionId: session.id, roomId: l.roomId, rows: l.rows, benchesPerRow: l.benchesPerRow, seatsPerBench: l.seatsPerBench })), { returning: false });
+  await k.ins('exam_seats', sittings.flatMap((s) => s.seats.map((x) => ({ paperId: x.paperId, studentId: x.studentId, roomId: x.roomId, seatNo: x.seatNo }))), { returning: false });
+  await k.ins('hall_tickets', sec.students.map((st, i) => ({ sessionId: session.id, studentId: st.id, ticketNo: `HT-${session.id.slice(0, 6).toUpperCase()}-${st.rollNo}`, blocked: held(st), blockedReason: held(st) ? 'Not eligible: ' + shortage(st) : null })), { returning: false });
   // Invigilation duty roster across the exam days.
   const teachers = c.teachers.filter((t) => !t.email.startsWith('hod.'));
   const duties: Record<string, unknown>[] = [];

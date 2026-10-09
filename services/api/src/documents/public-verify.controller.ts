@@ -6,7 +6,8 @@ import { RateLimiter } from '../common/rate-limiter.js';
 import { ENV, type Env } from '../config/env.js';
 import { DbService } from '../db/db.service.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
-import { certificates, departments, designations, sections, staffProfiles, students, tenants, users } from '../db/schema.js';
+import { parseHallTicketCode } from '../exams/hall-ticket-code.js';
+import { certificates, departments, designations, examSessions, hallTickets, sections, staffProfiles, students, tenants, users } from '../db/schema.js';
 import { longDate, parseIdCardCode } from './render.js';
 
 /**
@@ -42,6 +43,29 @@ export class PublicVerifyController {
         issuedOn: c.issuedAt ? longDate(localParts(c.issuedAt, tenant.timezone).date) : undefined,
         ...(c.revokedAt ? { revokedOn: longDate(localParts(c.revokedAt, tenant.timezone).date) } : {}),
       };
+    });
+  }
+
+  /**
+   * The QR on a hall ticket. Shows only the institution, the session, the candidate's name and whether the
+   * ticket is valid or withheld; the code is signed, so ticket numbers cannot be probed.
+   */
+  @Get('verify-hallticket/:slug/:code')
+  async verifyHallTicket(@Param('slug') slug: string, @Param('code') code: string, @Ip() ip: string): Promise<{ status: 'valid' | 'withheld' | 'not_found'; institution?: string; session?: string; name?: string }> {
+    await this.limiter.hit(`verify:${ip}`, 30, 60_000);
+    const tenant = /^[a-z0-9-]{1,60}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    const ticketNo = tenant ? parseHallTicketCode(this.env.JWT_SECRET, tenant.id, code) : null;
+    if (!tenant || !ticketNo) return { status: 'not_found' };
+    return this.db.withTenant(tenant.id, async (tx) => {
+      const [h] = await tx
+        .select({ blocked: hallTickets.blocked, session: examSessions.name, name: students.fullName })
+        .from(hallTickets)
+        .innerJoin(examSessions, eq(examSessions.id, hallTickets.sessionId))
+        .innerJoin(students, eq(students.id, hallTickets.studentId))
+        .where(eq(hallTickets.ticketNo, ticketNo));
+      if (!h) return { status: 'not_found' as const };
+      const [t] = await tx.select({ name: tenants.name }).from(tenants);
+      return { status: h.blocked ? ('withheld' as const) : ('valid' as const), institution: t.name, session: h.session, name: h.name };
     });
   }
 

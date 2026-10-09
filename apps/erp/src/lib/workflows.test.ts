@@ -29,6 +29,33 @@ describe('workflow definition editor formats', () => {
     expect(parseSteps('X | head | x')).toEqual({ ok: false, line: 1 });
   });
 
+  it('reads parallel approvers, conditions, escalation and reminder, and writes them back', () => {
+    const text = 'Budget | all(role:accountant, role:hr_manager) | | | 48 | amount>100000; kind in capex/grant | role:principal | 24\nSign | any(head, user:abc) | 1000';
+    const r = parseSteps(text);
+    expect(r.ok && r.value[0]).toEqual({
+      name: 'Budget',
+      approvers: [{ kind: 'role', role: 'accountant' }, { kind: 'role', role: 'hr_manager' }],
+      mode: 'all',
+      minAmount: null,
+      maxAmount: null,
+      slaHours: 48,
+      conditions: [{ field: 'amount', op: '>', value: 100000 }, { field: 'kind', op: 'in', value: ['capex', 'grant'] }],
+      escalateTo: { kind: 'role', role: 'principal' },
+      reminderHours: 24,
+    });
+    expect(r.ok && r.value[1].mode).toBe('any');
+    expect(r.ok && formatSteps(r.value)).toBe(text);
+  });
+
+  it('refuses malformed parallel steps, conditions and escalation', () => {
+    expect(parseSteps('S | all(role:a) ')).toEqual({ ok: false, line: 1 }); // one approver is not parallel
+    expect(parseSteps('S | all(role:a, nobody)')).toEqual({ ok: false, line: 1 });
+    expect(parseSteps('S | head | | | | amount ~ 5')).toEqual({ ok: false, line: 1 });
+    expect(parseSteps('S | head | | | | | role:principal')).toEqual({ ok: false, line: 1 }); // escalation needs an SLA
+    expect(parseSteps('S | head | | | 10 | | role:principal | 10')).toEqual({ ok: false, line: 1 }); // reminder not before the SLA
+    expect(parseSteps('S | head | | | 10 | | head')).toEqual({ ok: false, line: 1 });
+  });
+
   it('parses amounts', () => {
     expect(parseAmount('')).toBeNull();
     expect(parseAmount('1250.50')).toBe(1250.5);
