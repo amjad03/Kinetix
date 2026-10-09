@@ -1,10 +1,11 @@
 /**
  * A tiny dependency-free PDF writer (A4, Helvetica / Helvetica-Bold, text and rules) for the
  * documents the ERP prints: hall tickets, marks cards, transcripts and accreditation reports.
- * Only Latin-1 text is drawn; other scripts are shown as '?' (names are also on the screen).
+ * Latin text uses Helvetica; Hindi and Kannada use embedded Noto fonts (see pdf-fonts.ts); other scripts show as '?'.
  */
 
 import { qrMatrix } from './qr.js';
+import { hasIndic, IndicFonts } from './pdf-fonts.js';
 
 const W = 595;
 const H = 842;
@@ -13,11 +14,12 @@ const M = 40;
 const latin = (s: string) =>
   [...s.normalize('NFKD').replace(/[̀-ͯ]/g, '')].map((c) => (c.charCodeAt(0) < 256 ? c : '?')).join('').replace(/[\\()]/g, (m) => `\\${m}`);
 
-/** Approximate Helvetica width in points (average glyph 0.52 em), enough for aligning columns. */
-export const textWidth = (s: string, size: number) => s.length * size * 0.52;
+/** Approximate Helvetica width in points (average glyph 0.52 em), enough for aligning columns; exact for Hindi and Kannada. */
+export const textWidth = (s: string, size: number) => (hasIndic(s) ? IndicFonts.width(s, size, false, (t) => t.length * size * 0.52) : s.length * size * 0.52);
 
 export class PdfWriter {
   private pages: string[][] = [[]];
+  private readonly fonts = new IndicFonts();
   y = H - M;
 
   private get page() {
@@ -40,7 +42,10 @@ export class PdfWriter {
     let x = M + (o.x ?? 0);
     if (o.align === 'center') x = W / 2 - textWidth(s, size) / 2;
     if (o.align === 'right') x = W - M - textWidth(s, size);
-    this.page.push(`BT /${o.bold ? 'F2' : 'F1'} ${size} Tf ${x.toFixed(1)} ${this.y.toFixed(1)} Td (${latin(s)}) Tj ET`);
+    if (hasIndic(s)) {
+      const raw = (t: string) => [...t.normalize('NFKD').replace(/[̀-ͯ]/g, '')].map((c) => (c.charCodeAt(0) < 256 ? c : '?')).join('');
+      this.page.push(this.fonts.draw(s, x, this.y, size, o.bold ?? false, o.bold ? 'F2' : 'F1', { clean: raw, width: (t) => t.length * size * 0.52, escape: (t) => t.replace(/[\\()]/g, (m) => `\\${m}`) }));
+    } else this.page.push(`BT /${o.bold ? 'F2' : 'F1'} ${size} Tf ${x.toFixed(1)} ${this.y.toFixed(1)} Td (${latin(s)}) Tj ET`);
     if (!o.stay) this.y -= size + 4;
   }
 
@@ -92,27 +97,31 @@ export class PdfWriter {
   }
 
   build(): Buffer {
-    const objs: string[] = [];
-    const add = (body: string) => objs.push(body) && objs.length;
+    const objs: Buffer[] = [];
+    const add = (body: string) => objs.push(Buffer.from(body, 'latin1'));
     add('<< /Type /Catalog /Pages 2 0 R >>');
     add(`<< /Type /Pages /Kids [${this.pages.map((_, i) => `${5 + i * 2} 0 R`).join(' ')}] /Count ${this.pages.length} >>`);
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+    const indic = this.fonts.objects(5 + this.pages.length * 2);
+    const fontRes = Object.entries(indic.refs).map(([k, v]) => ` /${k} ${v} 0 R`).join('');
     this.pages.forEach((p, i) => {
-      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${6 + i * 2} 0 R >>`);
+      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R${fontRes} >> >> /Contents ${6 + i * 2} 0 R >>`);
       const stream = p.join('\n');
       add(`<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`);
     });
-    let out = '%PDF-1.4\n';
+    objs.push(...indic.objs);
+    const parts: Buffer[] = [Buffer.from('%PDF-1.4\n', 'latin1')];
     const offsets: number[] = [];
+    let pos = parts[0].length;
     objs.forEach((o, i) => {
-      offsets.push(Buffer.byteLength(out, 'latin1'));
-      out += `${i + 1} 0 obj\n${o}\nendobj\n`;
+      offsets.push(pos);
+      const b = Buffer.concat([Buffer.from(`${i + 1} 0 obj\n`, 'latin1'), o, Buffer.from('\nendobj\n', 'latin1')]);
+      parts.push(b);
+      pos += b.length;
     });
-    const xref = Buffer.byteLength(out, 'latin1');
-    out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}`;
-    out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
-    return Buffer.from(out, 'latin1');
+    parts.push(Buffer.from(`xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${pos}\n%%EOF\n`, 'latin1'));
+    return Buffer.concat(parts);
   }
 }
 

@@ -1,9 +1,10 @@
 import { qrMatrix } from './qr.js';
+import { hasIndic, IndicFonts, splitRuns } from './pdf-fonts.js';
 
 /**
  * A small PDF writer for payslips, certificates, ID cards and receipts: Helvetica (regular and
- * bold, English only), rectangles, lines and QR codes. Coordinates are in points from the top-left
- * of the page, as a designer would think of them. No dependencies.
+ * bold) for Latin text, embedded Noto fonts for Hindi and Kannada, rectangles, lines and QR codes. Coordinates are in points from the top-left
+ * of the page, as a designer would think of them. Hindi and Kannada shaping lives in pdf-fonts.ts.
  */
 
 export const A4 = { w: 595.28, h: 841.89 };
@@ -14,19 +15,26 @@ const W = [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333,
 /** Text as the PDF will show it: Latin-1 only (the rupee sign becomes "Rs."). */
 export const latin1 = (s: string) => s.replace(/₹/g, 'Rs.').replace(/[–—]/g, '-').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[^\x09\x0a\x20-\x7e\xa0-\xff]/g, '?');
 
-export function textWidth(s: string, size: number, bold = false): number {
+/** Like latin1, but Hindi and Kannada text is kept (the PDF embeds fonts for it). */
+export const pdfText = (s: string) => (hasIndic(s) ? splitRuns(s).map((r) => (r.script ? r.text : latin1(r.text))).join('') : latin1(s));
+
+const latinWidth = (s: string, size: number, bold: boolean): number => {
   let w = 0;
   for (const ch of latin1(s)) {
     const c = ch.charCodeAt(0);
     w += c >= 32 && c <= 126 ? W[c - 32] : 556;
   }
   return (w * size * (bold ? 1.06 : 1)) / 1000;
+};
+
+export function textWidth(s: string, size: number, bold = false): number {
+  return hasIndic(s) ? IndicFonts.width(s, size, bold, (t) => latinWidth(t, size, bold)) : latinWidth(s, size, bold);
 }
 
 /** Breaks text into lines no wider than `width` points (explicit newlines kept). */
 export function wrap(text: string, width: number, size: number, bold = false): string[] {
   const lines: string[] = [];
-  for (const para of latin1(text).split('\n')) {
+  for (const para of pdfText(text).split('\n')) {
     let line = '';
     for (const word of para.split(/\s+/).filter(Boolean)) {
       const next = line ? `${line} ${word}` : word;
@@ -69,6 +77,7 @@ export function jpegSize(b: Buffer): { w: number; h: number } | undefined {
 
 export class Pdf {
   private readonly pages: Page[] = [];
+  private readonly fonts = new IndicFonts();
   private readonly images: { data: Buffer; w: number; h: number; gray: boolean }[] = [];
 
   constructor(private readonly title = 'Document') {}
@@ -88,6 +97,11 @@ export class Pdf {
     const w = textWidth(s, size, o.bold);
     const left = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x;
     const esc = latin1(s).replace(/[\\()]/g, '\\$&');
+    if (hasIndic(s)) {
+      const latin = { clean: latin1, width: (t: string) => latinWidth(t, size, o.bold ?? false), escape: (t: string) => t.replace(/[\\()]/g, '\\$&') };
+      this.page.ops.push(`${hex(o.color ?? '#000000')} rg ${this.fonts.draw(s, left, this.page.h - y, size, o.bold ?? false, o.bold ? 'F2' : 'F1', latin)}`);
+      return this;
+    }
     this.page.ops.push(`BT /${o.bold ? 'F2' : 'F1'} ${num(size)} Tf ${hex(o.color ?? '#000000')} rg ${num(left)} ${num(this.page.h - y)} Td (${esc}) Tj ET`);
     return this;
   }
@@ -161,8 +175,10 @@ export class Pdf {
     add(`<< /Title (${latin1(this.title).replace(/[\\()]/g, '\\$&')}) /Producer (KINETIX) >>`);
     const firstImage = 6 + this.pages.length * 2;
     const xobjects = this.images.length ? ` /XObject << ${this.images.map((_, k) => `/Im${k} ${firstImage + k} 0 R`).join(' ')} >>` : '';
+    const indic = this.fonts.objects(firstImage + this.images.length);
+    const fontRes = Object.entries(indic.refs).map(([k, v]) => ` /${k} ${v} 0 R`).join('');
     this.pages.forEach((p, i) => {
-      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(p.w)} ${num(p.h)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>${xobjects} >> /Contents ${7 + i * 2} 0 R >>`);
+      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(p.w)} ${num(p.h)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R${fontRes} >>${xobjects} >> /Contents ${7 + i * 2} 0 R >>`);
       const content = Buffer.from(p.ops.join('\n'), 'latin1');
       add(Buffer.concat([Buffer.from(`<< /Length ${content.length} >>\nstream\n`, 'latin1'), content, Buffer.from('\nendstream', 'latin1')]));
     });
@@ -170,6 +186,7 @@ export class Pdf {
       const head = `<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /${im.gray ? 'DeviceGray' : 'DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.data.length} >>\nstream\n`;
       add(Buffer.concat([Buffer.from(head, 'latin1'), im.data, Buffer.from('\nendstream', 'latin1')]));
     }
+    objs.push(...indic.objs);
     const parts: Buffer[] = [Buffer.from('%PDF-1.4\n', 'latin1')];
     const offsets: number[] = [];
     let pos = parts[0].length;
