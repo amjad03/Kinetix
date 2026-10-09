@@ -2527,4 +2527,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get curriculumOutcomes => 'Course outcomes';
+
+  @override
+  String get courseFilesTitle => 'Course files';
+
+  @override
+  String get courseFilesBody => 'Build and download the course file for your classes';
+
+  @override
+  String get courseFilesEmpty => 'You have no classes to build a course file for.';
+
+  @override
+  String get courseFilesBuild => 'Build new version';
+
+  @override
+  String get courseFilesBuilt => 'Course file built';
+
+  @override
+  String courseFilesVersion(int n) {
+    return 'Version $n';
+  }
+
+  @override
+  String get courseFilesReviewed => 'Reviewed';
+
+  @override
+  String get courseFilesAwaiting => 'Awaiting review';
+
+  @override
+  String get courseFilesOpenFailed => 'Could not open the file';
+
+  @override
+  String get courseFilesNone => 'No version built yet';
 }

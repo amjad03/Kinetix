@@ -13,7 +13,9 @@ import { type BlueprintSection, coSets, courseOutcomes, qbBlueprints, qbPaperIte
 import { examFrequency } from '../ai/past-exams.js';
 import { checkVersion, found, hasRole } from '../placements/placements.access.js';
 import { BLOOM, blueprintProblems, type Candidate, DIFFICULTY, pickSection, QUESTION_TYPES, seeded } from './blueprint.js';
+import { qbPaperReleases } from '../db/schema-depth.js';
 import { paperPdf } from './paper-pdf.js';
+import { releaseState } from './paper-release.controller.js';
 
 /** Anyone who writes or reviews questions. */
 const QB_ROLES: RoleName[] = ['tenant_admin', 'principal', 'hod', 'teacher'];
@@ -451,6 +453,8 @@ export class QuestionBankController {
     const out = await this.db.withTenant(p.tenantId, async (tx) => {
       const paper = await this.load(tx, p, id);
       if (paper.status !== 'locked') throw new ConflictException('The paper can be printed once it has been locked');
+      const [rel] = await tx.select().from(qbPaperReleases).where(eq(qbPaperReleases.paperId, id));
+      if (rel && releaseState(rel.status, rel.releaseAt, this.clock.now()) === 'sealed') throw new ForbiddenException(`This paper is sealed until ${rel.releaseAt.toISOString()}`);
       const [bp] = await tx.select().from(qbBlueprints).where(eq(qbBlueprints.id, paper.blueprintId));
       const [sub] = await tx.select({ name: subjects.name, code: subjects.code }).from(subjects).where(eq(subjects.id, paper.subjectId));
       const [tenant] = await tx.select({ name: tenants.name }).from(tenants).where(eq(tenants.id, p.tenantId));

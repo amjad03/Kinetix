@@ -15,6 +15,7 @@ import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
 import { assistSamples } from './assist.js';
 import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
+import { depthSamples } from './depth.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -68,4 +69,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['substitutions, AI usage and remaining records', smallTables],
   ['curriculum versions (NEP 2024), affiliated institutions and convocations', curriculumAndConvocation],
   ['probation, transfers, marking drafts, script ink and CO-tagged polls', assistSamples],
+  ['exam, quality, HR, fee, asset, library, hostel, canteen and mentoring depth', depthSamples],
 ];

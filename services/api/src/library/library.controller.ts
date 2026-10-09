@@ -11,6 +11,8 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { libraryBooks, libraryLoans, sections, students, tenants } from '../db/schema.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { addDays } from '../teacher/teacher.service.js';
+import { libraryReservations } from '../db/schema-depth.js';
+import { copiesHeld, promoteNext } from './reservations.js';
 
 export const LIBRARY_ROLES: RoleName[] = ['librarian', 'tenant_admin', 'principal'];
 /** Default loan period and late fine; per-institution settings later. */
@@ -83,11 +85,14 @@ export class LibraryController {
       const [student] = await tx.select({ id: students.id, fullName: students.fullName }).from(students).where(eq(students.id, body.studentId));
       if (!student) throw new NotFoundException('Student not found');
       const [{ out }] = await tx.select({ out: sql<number>`count(*)::int` }).from(libraryLoans).where(and(eq(libraryLoans.bookId, book.id), isNull(libraryLoans.returnedAt)));
+      const held = await copiesHeld(tx, book.id, student.id);
       if (out >= book.copies) throw new BadRequestException('Every copy of this book is out on loan');
+      if (out + held >= book.copies) throw new BadRequestException('The remaining copies are held for students who reserved this book');
       const today = await this.today(tx);
       const dueOn = body.dueOn ?? addDays(today, LOAN_DAYS);
       if (dueOn < today) throw new BadRequestException('The due date has already passed');
       const [loan] = await tx.insert(libraryLoans).values({ tenantId: p.tenantId, bookId: book.id, studentId: student.id, dueOn, issuedBy: p.userId }).returning();
+      await tx.update(libraryReservations).set({ status: 'fulfilled', loanId: loan.id }).where(and(eq(libraryReservations.bookId, book.id), eq(libraryReservations.studentId, student.id), sql`${libraryReservations.status} in ('waiting', 'ready')`));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.issued', subjectType: 'library_loan', subjectId: loan.id });
       await this.notifications.libraryIssued(tx, { loanId: loan.id, studentId: student.id, studentName: student.fullName, title: book.title, dueOn });
       return loan;
@@ -110,6 +115,7 @@ export class LibraryController {
         .where(eq(libraryLoans.id, id))
         .returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.returned', subjectType: 'library_loan', subjectId: id, data: { daysLate: late } });
+      await promoteNext(tx, loan.bookId, this.clock.now());
       return done;
     });
   }

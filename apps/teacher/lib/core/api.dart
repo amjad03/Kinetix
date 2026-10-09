@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
+import 'course_file_models.dart';
 import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
@@ -92,6 +93,10 @@ abstract class TeacherApi {
   Future<AttendanceDayInfo> checkOut();
   Future<List<PayslipInfo>> myPayslips();
   Future<Uint8List> payslipPdf(String id);
+  Future<List<CourseFileOption>> courseFileOptions();
+  Future<List<CourseFileVersion>> courseFiles();
+  Future<CourseFileVersion> buildCourseFile(String sectionId, String subjectId);
+  Future<Uint8List> courseFilePdf(String id);
 
   // --- Work: tasks, requests, duties, evaluation, mentoring, rosters, surveys, clubs -------------
 
@@ -462,6 +467,21 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<Uint8List> payslipPdf(String id) async => (await _request('GET', '/v1/payroll/payslips/$id/pdf', timeout: const Duration(seconds: 60))).bodyBytes;
+
+  @override
+  Future<List<CourseFileOption>> courseFileOptions() async =>
+      [for (final e in await _send('GET', '/v1/course-files/options') as List) CourseFileOption.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<CourseFileVersion>> courseFiles() async =>
+      [for (final e in await _send('GET', '/v1/course-files') as List) CourseFileVersion.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<CourseFileVersion> buildCourseFile(String sectionId, String subjectId) async =>
+      CourseFileVersion.fromJson(await _send('POST', '/v1/course-files', body: {'sectionId': sectionId, 'subjectId': subjectId}, timeout: const Duration(seconds: 60)) as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> courseFilePdf(String id) async => (await _request('GET', '/v1/course-files/$id/download', timeout: const Duration(seconds: 60))).bodyBytes;
 
   // --- Work ---------------------------------------------------------------------------------
 

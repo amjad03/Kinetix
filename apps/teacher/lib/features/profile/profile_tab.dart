@@ -16,6 +16,7 @@ import '../ai/ai_copilot_screen.dart';
 import '../insights/section_insights_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
+import '../work/course_files_screen.dart';
 import '../work/duties_screens.dart';
 import '../work/evaluation_screens.dart';
 import '../work/houses_curriculum_screens.dart';
@@ -278,6 +279,7 @@ class ProfileTab extends StatelessWidget {
               ('openAppraisal', Icons.assignment_ind_outlined, l.appraisalTitle, l.appraisalBody, () => AppraisalScreen(api: state.api)),
               ('openHouses', Icons.emoji_events_outlined, l.housesTitle, l.housesBody, () => HousesScreen(api: state.api)),
               ('openCurriculum', Icons.menu_book_outlined, l.curriculumTitle, l.curriculumBody, () => CurriculumScreen(api: state.api)),
+              ('openCourseFiles', Icons.folder_copy_outlined, l.courseFilesTitle, l.courseFilesBody, () => CourseFilesScreen(api: state.api)),
             ])
               ListTile(
                 key: Key(key),

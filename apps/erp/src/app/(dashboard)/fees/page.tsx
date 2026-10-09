@@ -47,6 +47,9 @@ export default async function FeesPage() {
             <LinkButton href="/fees/bank-transfers" variant="outlined">
               {t('pd.link.transfers')}
             </LinkButton>
+            <LinkButton href="/fees/plans" variant="outlined">
+              {t('dx.link.fees')}
+            </LinkButton>
             <LinkButton href="/fees/sponsors" variant="outlined">
               {t('pd.link.sponsors')}
             </LinkButton>

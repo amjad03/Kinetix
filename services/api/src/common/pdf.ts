@@ -17,8 +17,23 @@ const latin = (s: string) =>
 /** Approximate Helvetica width in points (average glyph 0.52 em), enough for aligning columns; exact for Hindi and Kannada. */
 export const textWidth = (s: string, size: number) => (hasIndic(s) ? IndicFonts.width(s, size, false, (t) => t.length * size * 0.52) : s.length * size * 0.52);
 
+/** Width, height and colour components of a JPEG, or null when the bytes are not one. */
+export function jpegInfo(b: Buffer): { w: number; h: number; comps: number } | null {
+  if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8) return null;
+  let i = 2;
+  while (i + 9 < b.length) {
+    if (b[i] !== 0xff) return null;
+    const m = b[i + 1];
+    if (m >= 0xc0 && m <= 0xc2) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7), comps: b[i + 9] };
+    if (m === 0xd8 || m === 0x01 || (m >= 0xd0 && m <= 0xd7)) i += 2;
+    else i += 2 + b.readUInt16BE(i + 2);
+  }
+  return null;
+}
+
 export class PdfWriter {
   private pages: string[][] = [[]];
+  private readonly images: { data: Buffer; w: number; h: number; comps: number }[] = [];
   private readonly fonts = new IndicFonts();
   y = H - M;
 
@@ -72,6 +87,16 @@ export class PdfWriter {
     this.page.push('Q');
   }
 
+  /** A JPEG photo `width` x `height` points with its top-left at the cursor (`x` from the left margin); the cursor does not move. False when the bytes are not a JPEG. */
+  image(jpeg: Buffer, o: { x?: number; width: number; height: number }): boolean {
+    const info = jpegInfo(jpeg);
+    if (!info || (info.comps !== 1 && info.comps !== 3)) return false;
+    this.ensure(o.height);
+    const n = this.images.push({ data: jpeg, ...info });
+    this.page.push(`q ${o.width} 0 0 ${o.height} ${(M + (o.x ?? 0)).toFixed(1)} ${(this.y - o.height).toFixed(1)} cm /Im${n} Do Q`);
+    return true;
+  }
+
   rule(): void {
     this.ensure(8);
     this.page.push(`0.5 w ${M} ${(this.y + 2).toFixed(1)} m ${W - M} ${(this.y + 2).toFixed(1)} l S`);
@@ -105,12 +130,17 @@ export class PdfWriter {
     add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
     const indic = this.fonts.objects(5 + this.pages.length * 2);
     const fontRes = Object.entries(indic.refs).map(([k, v]) => ` /${k} ${v} 0 R`).join('');
+    const imgBase = 5 + this.pages.length * 2 + indic.objs.length;
+    const xobjects = this.images.length ? ` /XObject << ${this.images.map((_, k) => `/Im${k + 1} ${imgBase + k} 0 R`).join(' ')} >>` : '';
     this.pages.forEach((p, i) => {
-      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R${fontRes} >> >> /Contents ${6 + i * 2} 0 R >>`);
+      add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R${fontRes} >>${xobjects} >> /Contents ${6 + i * 2} 0 R >>`);
       const stream = p.join('\n');
       add(`<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`);
     });
     objs.push(...indic.objs);
+    for (const im of this.images) {
+      objs.push(Buffer.concat([Buffer.from(`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /${im.comps === 1 ? 'DeviceGray' : 'DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.data.length} >>\nstream\n`, 'latin1'), im.data, Buffer.from('\nendstream', 'latin1')]));
+    }
     const parts: Buffer[] = [Buffer.from('%PDF-1.4\n', 'latin1')];
     const offsets: number[] = [];
     let pos = parts[0].length;

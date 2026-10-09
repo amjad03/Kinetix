@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { HealthDesk } from '@/components/school-life/HealthDesk';
@@ -24,7 +25,7 @@ export default async function HealthPage({ searchParams }: { searchParams: Promi
   if (data.error !== undefined) return <ErrorState message={data.error} />;
   return (
     <>
-      <PageHeader title={t('nav.health')} subtitle={t('hl.subtitle')} />
+      <PageHeader title={t('nav.health')} subtitle={t('hl.subtitle')} actions={<><LinkButton href="/health/retention" variant="outlined">{t('dx.link.health')}</LinkButton></>} />
       <HealthDesk {...data.data} />
     </>
   );

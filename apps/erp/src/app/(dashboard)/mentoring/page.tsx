@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { MentoringDesk } from '@/components/quality/MentoringDesk';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -31,7 +32,7 @@ export default async function MentoringPage({ searchParams }: { searchParams: Pr
   const attention = risk.filter((r) => r.level === 'medium' || r.level === 'high');
   return (
     <>
-      <PageHeader title={t('nav.mentoring')} subtitle={t('mn.subtitle')} />
+      <PageHeader title={t('nav.mentoring')} subtitle={t('mn.subtitle')} actions={<><LinkButton href="/mentoring/interventions" variant="outlined">{t('dx.link.mentoring')}</LinkButton></>} />
       <StatGrid min={140}>
         <StatTile label={t('mn.stat.mentees')} value={mentees.length} testId="mn-mentees" />
         <StatTile label={t('mn.stat.atRisk')} value={attention.length} tone={attention.length ? 'warning' : 'default'} caption={t('mn.stat.atRiskCaption', { high: risk.filter((r) => r.level === 'high').length })} testId="mn-at-risk" />

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LinkButton } from '@/components/LinkButton';
 import { CanteenDesk } from '@/components/canteen/CanteenDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -19,7 +20,7 @@ export default async function CanteenPage() {
   const list = items.data ?? [];
   return (
     <>
-      <PageHeader title={t('nav.canteen')} subtitle={t('ca.subtitle')} />
+      <PageHeader title={t('nav.canteen')} subtitle={t('ca.subtitle')} actions={<><LinkButton href="/canteen/operations" variant="outlined">{t('dx.link.canteen')}</LinkButton></>} />
       {items.error !== undefined || meals.error !== undefined ? (
         <ErrorState message={items.error ?? meals.error ?? ''} />
       ) : (

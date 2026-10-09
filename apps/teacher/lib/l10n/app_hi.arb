@@ -1003,5 +1003,15 @@
   "curriculumEmpty": "अभी कोई सक्रिय पाठ्यक्रम नहीं है।",
   "curriculumNoSubjects": "इस संस्करण में कोई विषय नहीं है।",
   "curriculumUnits": "इकाइयाँ",
-  "curriculumOutcomes": "पाठ्यक्रम परिणाम"
+  "curriculumOutcomes": "पाठ्यक्रम परिणाम",
+  "courseFilesTitle": "पाठ्यक्रम फ़ाइलें",
+  "courseFilesBody": "अपनी कक्षाओं की पाठ्यक्रम फ़ाइल बनाएँ और डाउनलोड करें",
+  "courseFilesEmpty": "आपके पास पाठ्यक्रम फ़ाइल बनाने के लिए कोई कक्षा नहीं है।",
+  "courseFilesBuild": "नया संस्करण बनाएँ",
+  "courseFilesBuilt": "पाठ्यक्रम फ़ाइल बन गई",
+  "courseFilesVersion": "संस्करण {n}",
+  "courseFilesReviewed": "समीक्षा हो चुकी",
+  "courseFilesAwaiting": "समीक्षा की प्रतीक्षा",
+  "courseFilesOpenFailed": "फ़ाइल नहीं खुल सकी",
+  "courseFilesNone": "अभी कोई संस्करण नहीं बना"
 }

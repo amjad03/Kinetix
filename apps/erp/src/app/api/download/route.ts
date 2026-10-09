@@ -30,6 +30,10 @@ const TARGETS: Record<string, (id: string) => string> = {
   payslip: (id) => `/v1/payroll/payslips/${id}/pdf`,
   'survey-csv': (id) => `/v1/surveys/${id}/export.csv`,
   passport: (id) => `/v1/passport/students/${id}/pdf`,
+  'consolidated-result': (id) => `/v1/exam-sessions/${id}/consolidated.pdf`,
+  'progress-report': (id) => `/v1/results/students/${id}/progress-report.pdf`,
+  'qb-sealed': (id) => `/v1/question-bank/releases/${id}/paper.pdf`,
+  'evidence-file': (id) => `/v1/quality/evidence/${id}/file`,
 };
 
 /**
@@ -40,7 +44,7 @@ export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get('kind') ?? '';
   const id = req.nextUrl.searchParams.get('id') ?? '';
   // The staff and own-card PDFs need no id.
-  const FIXED: Record<string, string> = { 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
+  const FIXED: Record<string, string> = { 'library-labels': '/v1/library/books/labels.pdf', 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf' };
   // GL journals for a date range: gl-csv / gl-tally with ?from=&to=
   const range = ['from', 'to'].map((k) => req.nextUrl.searchParams.get(k) ?? '');
   const GL: Record<string, string> = { 'gl-csv': 'csv', 'gl-tally': 'xml' };
@@ -72,6 +76,12 @@ export async function GET(req: NextRequest) {
     const room = req.nextUrl.searchParams.get('room') ?? '';
     if (!UUID.test(id) || !/^\d{1,3}$/.test(slot) || !UUID.test(room)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/exam-sessions/${id}/seating-plan/sittings/${slot}/rooms/${room}/pdf`;
+  }
+  // Form 16 for one employee and financial year: ?kind=form16&id=<staff user>&fy=2026-27
+  if (kind === 'form16') {
+    const fy = req.nextUrl.searchParams.get('fy') ?? '';
+    if (!UUID.test(id) || !/^\d{4}-\d{2}$/.test(fy)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/hr/payroll/form16/${id}?fy=${fy}`;
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

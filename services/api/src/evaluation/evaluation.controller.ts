@@ -164,6 +164,48 @@ export class EvaluationAdminController {
     });
   }
 
+  /**
+   * Bulk intake from a scanner or feeder: many files at once plus a map saying which file belongs to which roll number
+   * (`map` is JSON [{ "file": "scan-0001.pdf", "rollNo": "R1" }], several files for one roll number become that script's pages in order).
+   * Each student is handled on its own, so one bad file does not stop the batch.
+   */
+  @Post('scripts/bulk')
+  @Auth('user', ADMIN)
+  @UseInterceptors(FilesInterceptor('files', 400, { limits: { fileSize: MAX_FILE_BYTES, files: 400 } }))
+  async bulkUpload(@CurrentPrincipal() p: UserPrincipal, @Param('paperId', ParseUUIDPipe) paperId: string, @Body() body: { map?: unknown }, @UploadedFiles() uploads: Upload[] = []) {
+    let raw: unknown = body?.map;
+    if (typeof raw === 'string') {
+      try {
+        raw = JSON.parse(raw);
+      } catch {
+        throw new BadRequestException('The map must be JSON like [{"file":"scan-0001.pdf","rollNo":"R1"}]');
+      }
+    }
+    const parsed = z.array(z.object({ file: z.string().trim().min(1), rollNo: z.string().trim().min(1) })).min(1).max(400).safeParse(raw);
+    if (!parsed.success) throw new BadRequestException('Give a map of file names to roll numbers');
+    if (uploads.length === 0) throw new BadRequestException('Add the scanned files');
+    const byName = new Map(uploads.map((u) => [u.originalname, u]));
+    const groups = new Map<string, Upload[]>();
+    const missing: string[] = [];
+    for (const m of parsed.data) {
+      const f = byName.get(m.file);
+      if (!f) missing.push(m.file);
+      else groups.set(m.rollNo, [...(groups.get(m.rollNo) ?? []), f]);
+    }
+    const mapped = new Set(parsed.data.map((m) => m.file));
+    const uploaded: { rollNo: string; dummyNo: string; pages: number }[] = [];
+    const failed: { rollNo: string; error: string }[] = [];
+    for (const [rollNo, files] of groups) {
+      try {
+        const r = (await this.upload(p, paperId, { rollNo }, files)) as { dummyNo: string; pages: number };
+        uploaded.push({ rollNo, dummyNo: r.dummyNo, pages: r.pages });
+      } catch (e) {
+        failed.push({ rollNo, error: e instanceof Error ? e.message : 'Could not upload' });
+      }
+    }
+    return { uploaded, failed, missing, unmapped: uploads.filter((u) => !mapped.has(u.originalname)).map((u) => u.originalname) };
+  }
+
   /** The annotations of every valuation of a script, by round, for the exam cell and moderators (read only; examiners are not named). */
   @Get('scripts/:scriptId/annotations')
   @Auth('user', ADMIN)

@@ -28,6 +28,7 @@ export default async function ObePage({ searchParams }: { searchParams: Promise<
           <LinkButton href="/obe/setup" variant="outlined">{t('obe.setup')}</LinkButton>
           <LinkButton href="/obe/matrix" variant="outlined">{t('obe.matrix')}</LinkButton>
           <LinkButton href="/obe/classroom" variant="outlined">{t('as.cls.title')}</LinkButton>
+          <LinkButton href="/obe/quality" variant="outlined">{t('dx.link.quality')}</LinkButton>
         </>
       }
     />

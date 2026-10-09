@@ -258,12 +258,12 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Question bank with tags, difficulty, versions | Built | `api/question-bank/question-bank.controller.ts` | |
-| Usage history | Partial | `mig/0101_question_bank.sql` (`qb_paper_items`) | stored, no usage report |
+| Usage history | Built | `api/question-bank/paper-release.controller.ts` (`usage`), `erp/question-bank/usage`, `mig/0118_depth_exams_quality_hr_finance_campus.sql` | questions ranked by papers used and last use; never-used listed last |
 | Blueprint (marks, difficulty, outcome distribution) | Built | `api/question-bank/blueprint.ts` | taxonomy/Bloom distribution partly |
 | Paper generation, regenerate, PDF, answer key | Built | `api/question-bank/question-bank.controller.ts` | |
-| Duplicate detection | Missing | none | |
+| Duplicate detection | Built | `api/question-bank/question-bank.controller.ts` (`duplicates`, trigram similarity, QB_DUPLICATE) | author must insist to save a near-copy |
 | Scrutiny workflow, approval, lock | Built | `api/question-bank/question-bank.controller.ts` (`scrutiny`, `lock`) | |
-| Secure release to exam controller at set time | Missing | none | lock only, no timed release |
+| Secure release to exam controller at set time | Built | `api/question-bank/paper-release.controller.ts` (`papers/:id/release`, `releases/:paperId/paper.pdf`), `erp/exams/operations` | sealed for everyone until the set time, then only the named exam controller; audited |
 | Past-exam question import | Built | `api/ai/past-exams.ts` | ERP import screen not built (API only) |
 
 ## 23. Exam controller
@@ -271,33 +271,33 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Exam sessions, calendar/schedule, publication, lock | Built | `api/exams/exams.controller.ts` | |
-| Exam declaration / student exam registration, eligibility | Partial | `api/exams/exams.controller.ts` | hall tickets can withhold on attendance shortage (blockByAttendance); registration implicit |
-| Hall tickets (photo, QR/barcode) | Partial | `api/exams/documents.ts` | PDF built; barcode/QR on hall ticket not found |
-| Hall allocation and seating (batch, roll number, anti-collusion) | Partial | `api/exams/seating.ts` | rule set is basic; anti-collusion pattern not found |
+| Exam declaration / student exam registration, eligibility | Built | `api/exams/exam-registration.controller.ts`, `api/exams/registration-rules.ts` | registration window, eligibility rules, override with reason |
+| Hall tickets (photo, QR/barcode) | Built | `api/exams/documents.ts` (QR and photo), `api/exams/exams.controller.ts` (`ticketPdf`), `api/common/pdf.ts` (`image`) | signed QR and the profile photo (JPEG) printed on the ticket |
+| Hall allocation and seating (batch, roll number, anti-collusion) | Built | `api/exams/anti-collusion.ts`, `api/exams/exam-registration.controller.ts` (`seating-plan`) | anti-collusion seating by class and roll number |
 | Exam declaration / student exam registration, eligibility | Built | `api/exams/exam-registration.controller.ts`, `erp/exams/[id]` | window, attendance / fee dues / backlog rules, controller override with reason |
-| Hall tickets (photo, QR/barcode) | Partial | `api/exams/documents.ts`, `api/documents/public-verify.controller.ts` | signed QR and public verify built; photo not on the ticket |
+| Hall tickets (photo, QR/barcode) | Built | `api/exams/documents.ts`, `api/exams/exams.controller.ts` (`ticketPdf`), `api/documents/public-verify.controller.ts` | signed QR with public verify, and the photo on the ticket |
 | Hall allocation and seating (batch, roll number, anti-collusion) | Built | `api/exams/anti-collusion.ts`, `erp/exams/[id]` | benches and rows, no same-subject neighbours, programmes mixed, chart PDF per hall |
 | Invigilation (duty, substitution, reporting) | Built | `api/exams/exam-depth.controller.ts` | duty attendance not recorded |
 | Answer script, evaluation, moderation, scrutiny | Built | `api/evaluation/evaluation.controller.ts` | |
 | Revaluation | Built | `api/exams/exams.controller.ts` (`revaluations`) | |
 | Supplementary / arrears / backlog | Built | `api/exams/exam-depth.controller.ts` | |
 | Malpractice | Built | `api/exams/exam-depth.controller.ts` | |
-| Lab / viva / practical exam types | Partial | `api/exams/schemes.controller.ts` | components exist; no practical-exam scheduling with examiners |
-| Result approval workflow | Partial | `api/workflows/workflows.controller.ts` | generic engine exists; result publish not bound to it |
+| Lab / viva / practical exam types | Built | `api/exams/exam-ops.controller.ts` (`practicals`), `erp/exams/operations` | batch, room, time, internal and external examiners; clash checks; marks by roll number |
+| Result approval workflow | Built | `api/exams/exams.controller.ts` (`request-publish`, publish gate), `api/workflows/workflows.service.ts`, `erp/exams/operations` | with a "result_publish" route set up, results publish only once approved |
 
 ## 24. Digital / on-screen evaluation
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Script import and pages | Built | `api/evaluation/evaluation.controller.ts` (`scripts`, `pages/:index`) | |
-| Scanning hardware, bulk scanner ingest | Missing | none | needs scanner + intake process |
+| Scanning hardware, bulk scanner ingest | Partial | `api/evaluation/evaluation.controller.ts` (`scripts/bulk`) | external: scanner hardware; bulk intake of many scans by a file-to-roll-number map is built |
 | Anonymisation | Built | `api/evaluation/evaluation.logic.ts`, `scan-sanitise.ts` | dummy numbers; file names naming the student refused; EXIF/PNG text stripped; first-page header band blacked out at upload (PNG only; PDF/JPEG refused when masking is on) |
 | Examiner allocation and workload | Built | `api/evaluation/evaluation.controller.ts` (`allocate`) | |
 | Question-wise marks, save/resume | Built | `api/evaluation/evaluation.controller.ts` (`marks`) | |
 | Annotation on script | Built | `api/evaluation/evaluation.controller.ts` (`annotations`), `erp/evaluation/desk` | tick, cross, comment, highlight as page-relative coordinates per valuation; third valuer and exam cell see earlier rounds read only; freehand ink not built |
 | Second valuation, comparison, finalise, lock | Built | `api/evaluation/evaluation.controller.ts` (`second-valuation`, `finalise`) | |
 | No-download secure access, audit | Built | `api/evaluation/evaluation.service.ts` | |
-| Connect to CO/PO | Partial | `api/obe/attainment.ts` | exam marks feed attainment via assessment map; per-question CO tagging limited |
+| Connect to CO/PO | Built | `api/obe/quality.controller.ts` (`eval-questions/:id/co`, `question-outcomes`, `apply-outcome-map`), `api/obe/attainment.ts`, `erp/obe/quality` | each question tagged with a course outcome; the tags write the assessment outcome map |
 | ERP examiner desk | Built | `erp/evaluation/desk` | |
 
 ## 25. Results, grading, rank, transcripts
@@ -308,10 +308,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Grade scales and rules configurable per regulation | Built | `api/exams/exams.controller.ts` (`grade-scales`, `result-rules`) | |
 | Moderation, grace marks | Built | `api/exams/exam-depth.controller.ts` (`grace`) | |
 | Rank, progression, backlog | Built | `api/exams/ranks.ts` | subject ranking absent |
-| Normalised marks, distinction class | Partial | `api/exams/grading.ts` | normalisation not found |
+| Normalised marks, distinction class | Built | `api/exams/exam-ops.controller.ts` (`normalise`, `class-bands`, `classification`), `api/exams/exam-ops.logic.ts` | preview, apply and undo; original marks kept; configurable class bands and subject distinctions |
 | Marksheet, transcript PDFs | Built | `api/exams/results.controller.ts` | |
-| Consolidated marks, rank list, subject ranking, progress report PDFs | Partial | `api/exams/exams.controller.ts` (`results.csv`) | CSV only |
-| Indic text in PDFs | Partial | `api/exams/documents.ts` | Latin-1 font; Kannada/Hindi names will not render |
+| Consolidated marks, rank list, subject ranking, progress report PDFs | Built | `api/exams/exam-ops.controller.ts` (`consolidated.pdf`, `progress-report.pdf`), `api/exams/exam-depth.controller.ts` (`ranks`) | class, programme and subject ranks; PDFs |
+| Indic text in PDFs | Built | `api/common/pdf-fonts.ts`, `api/common/pdf.ts` | Hindi and Kannada shaped with HarfBuzz and embedded |
 
 ## 26. Certificates and credentials
 
@@ -322,7 +322,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | QR, unique serial, revoke, public verification | Built | `api/documents/public-verify.controller.ts` | |
 | Marks card, transcript, passport | Built | `api/skills/passport.controller.ts` | |
 | Graduation / convocation | Built | `api/curriculum/university.controller.ts`, `erp/university` | eligible graduates from final-semester pass results, registration, withhold, degree numbers, certificate PDF with signed QR and public check |
-| Blockchain / wallet-style digital credentials (DigiLocker) | Missing | none | no DigiLocker/NAD push |
+| Blockchain / wallet-style digital credentials (DigiLocker) | Partial | `api/documents/public-verify.controller.ts`, `api/pairing/offline-pairing.controller.ts` (signing keys) | external: DigiLocker/NAD issuer registration and API credentials; signed QR verification of certificates is built |
 
 ## 27. OBE / outcome engine
 
@@ -340,9 +340,9 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | NAAC / NBA / NIRF / AISHE packs (CSV, PDF) | Built | `api/analytics/accreditation.ts` | |
-| Configurable framework packs (criteria, metrics, owner, target, score) | Partial | `api/analytics/accreditation.ts` | packs are coded, not admin-configurable criteria trees |
-| CQI loop (metric, gap, root cause, action, owner, re-measure) | Partial | `api/obe/obe.controller.ts` (`actions`) | root cause and re-measure fields absent |
-| Evidence engine (auto from ERP/LMS/exams/placements/surveys/committees) | Partial | `api/obe/obe.controller.ts` (`evidence`) | manual evidence rows; no file upload (noted in GAP); no auto-harvest across modules |
+| Configurable framework packs (criteria, metrics, owner, target, score) | Built | `api/obe/quality.controller.ts` (`frameworks`, `criteria`), `api/obe/quality.logic.ts`, `erp/obe/quality` | criteria trees with metric, target, owner and weighted score; NAAC, NBA and NIRF starters |
+| CQI loop (metric, gap, root cause, action, owner, re-measure) | Built | `api/obe/quality.controller.ts` (`actions/:id/root-cause`, `remeasure`, `cqi`), `erp/obe/quality` | root cause, baseline, target, re-measure date and result; effective or another cycle |
+| Evidence engine (auto from ERP/LMS/exams/placements/surveys/committees) | Built | `api/obe/quality.controller.ts` (`harvest`, `criteria/:id/evidence`, `evidence/:id/file`) | figures collected from students, staff, exams, placements, surveys, publications, LMS, course files, grievances and committees; file upload |
 
 ## 29. Course file
 
@@ -350,7 +350,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | One-click course file with syllabus, CO, plan, coverage, attendance, results, attainment | Built | `api/course-files/course-files.controller.ts` | |
 | PDF / audit package, versioning, review | Built | `api/course-files/course-files.controller.ts` (`download`, `review`) | |
-| Teacher-app access | Missing | `T/` (0 hits) | web only |
+| Teacher-app access | Built | `T/lib/features/work/course_files_screen.dart`, `T/lib/core/course_file_models.dart` | build a version and open the PDF from Profile |
 
 ## 30. Academic audit
 
@@ -365,11 +365,11 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Profile, employment, designation, department | Built | `api/hr/hr.controller.ts` | |
-| Qualifications, skills | Partial | `api/db/schema.ts` (`staff_profiles`) | qualification/skill detail limited |
-| Course allocation, workload | Partial | `api/course-registration/course-registration.controller.ts` (`me/teaching`) | no workload (hours) report |
+| Qualifications, skills | Built | `api/hr/hr-depth.controller.ts` (`qualifications`), `erp/hr/faculty` | degrees, certifications, skills and experience; HR verifies; search by word |
+| Course allocation, workload | Built | `api/hr/hr-depth.controller.ts` (`workload`), `erp/hr/faculty` | weekly hours against a norm, classes, subjects and exam duties; a head of department sees their own department |
 | Training, certifications, professional development | Built | `api/hr/talent.controller.ts` (`training-records`), `erp/hr/training` | FDP, workshop, conference and course records with HR verification; certificate file upload absent |
 | Appraisal | Built | `api/hr/talent.controller.ts`, `api/hr/appraisal-math.ts`, `erp/hr/appraisal` | API/PBAS-style categories: self-appraisal, HoD review of own department, principal final score and grade |
-| Faculty teaching evaluation (student, HOD, peer, self) | Partial | `api/surveys/surveys.controller.ts` | student survey possible; HOD/peer/self forms and scoring absent |
+| Faculty teaching evaluation (student, HOD, peer, self) | Built | `api/hr/hr-depth.controller.ts` (`evaluations`), `erp/hr/faculty` | student, head of department, peer and self ratings, weighted into one score; raters never named |
 
 ## 32. HR and employee management
 
@@ -380,9 +380,9 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Leave | Built | `api/hr/leave.controller.ts` | |
 | Recruitment: openings, applicants, stages | Built | `api/hr/recruitment.controller.ts` | interviews as stage only |
 | Offer letter, onboarding checklist | Built | `api/hr/talent.controller.ts`, `api/hr/letters-pdf.ts`, `erp/hr/onboarding` | offer PDF from the recruitment applicant; dated joining checklist |
-| Confirmation after probation | Missing | none | |
+| Confirmation after probation | Built | `api/hr/staff-changes.controller.ts` (`probation`), `erp/hr/probation` | HoD recommends, principal confirms or extends, with a letter |
 | Exit: resignation, notice, clearance, full-and-final note, relieving letter | Built | `api/hr/exit.controller.ts`, `erp/hr/exit` | clearance across six departments; staff record closed and login disabled on relieving |
-| Transfer | Missing | none | |
+| Transfer | Built | `api/hr/staff-changes.controller.ts` (`transfers`), `erp/hr/transfers` | applies on the effective date; history kept |
 
 ## 33. Payroll
 
@@ -392,8 +392,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Statutory (PF, ESI, PT, TDS), LOP | Built | `api/hr/payroll.controller.ts` (`statutory.csv`) | |
 | Approvals, lock, reopen | Built | `api/hr/payroll.controller.ts` | |
 | Bank file, Tally export | Built | `api/hr/payroll.controller.ts` (`bank-transfer.csv`, `tally.xml`) | |
-| Overtime, arrears/revisions | Missing | none | |
-| Form 16 / challans | Missing | none | |
+| Overtime, arrears/revisions | Built | `api/hr/hr-depth.controller.ts` (`payroll/adjustments`), `api/hr/payroll.service.ts`, `erp/payroll/adjustments` | overtime, arrears (including salary revisions), bonuses and recoveries, approved by the principal, then on the payslip |
+| Form 16 / challans | Built | `api/hr/hr-depth.controller.ts` (`payroll/form16`, `challans`, `tds-summary`), `api/hr/form16-pdf.ts`, `erp/payroll/adjustments` | year statement and challans per employee; the numbered certificate itself comes from the tax portal (external) |
 
 ## 34. Finance and fee management
 
@@ -401,10 +401,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Fee heads, structures, invoices, receipts | Built | `api/fees/fees.controller.ts` | |
 | Online gateway (Razorpay) with webhook; offline/counter | Built | `api/fees/fees.controller.ts` (`webhooks/razorpay`), `api/fees/bank-transfers.controller.ts` | |
-| Instalments | Partial | `api/fees/fees.controller.ts` | invoices per head; configurable instalment schedule not found |
+| Instalments | Built | `api/fees/fees-depth.controller.ts` (`instalment-plans`, `invoices/:id/instalments`), `erp/fees/plans` | plans by percentage and days; payments allocated in order |
 | Scholarship, concession, refund | Built | `api/finance/scholarships.controller.ts`, `api/finance/finance.controller.ts` (`refunds`) | |
-| Fine (late fee) | Partial | `api/library/library.controller.ts` (library fines) | automatic late-fee rule on fee invoices not found |
-| Wallet / advance / credit | Partial | `api/hostel/canteen.controller.ts` (canteen wallet) | no general student advance-credit ledger |
+| Fine (late fee) | Built | `api/fees/fees-depth.controller.ts` (`late-fee-rule`, `late-fees`), `erp/fees/plans` | daily job adds the fine once and then only new days; waiver by the principal |
+| Wallet / advance / credit | Built | `api/fees/fees-depth.controller.ts` (`credits`, `apply-credit`), `erp/fees/plans` | ledger of advances, adjustments and refunds; settles an invoice with a receipt |
 | Reconciliation support, finance reports | Built | `api/finance/finance.controller.ts` (`gl`), `erp/gl-export` | gateway settlement reconciliation file import absent |
 | Accounting connector (Tally, GL export) | Built | `api/finance/finance.controller.ts` (`gl.xml`) | |
 | Budgets, expenses | Built | `api/finance/finance.controller.ts` | |
@@ -417,20 +417,20 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Requisition, approval, RFQ, quote comparison/award, PO, receipt, invoice, payment status | Built | `api/inventory/inventory.controller.ts` | |
 | Inventory: items, stock, issue, return, transfer, reorder | Built | `api/inventory/inventory.controller.ts` | serial/batch tracking absent |
 | Asset register, location, allocation, maintenance, disposal | Built | `api/inventory/assets.controller.ts` | |
-| Warranty / AMC fields | Partial | `api/inventory/assets.controller.ts` | maintenance-due built; AMC contract tracking minimal |
+| Warranty / AMC fields | Built | `api/inventory/assets-depth.controller.ts` (`amc`, `coverage`, `warranty`), `erp/assets/amc` | contracts, service visits, warranty end and what is running out |
 | Depreciation | Built | `api/inventory/assets.controller.ts` (`gl/depreciation`) | |
-| Smartboards as assets linked to rooms | Partial | `api/devices/fleet.controller.ts` | device fleet separate from asset register |
+| Smartboards as assets linked to rooms | Built | `api/inventory/assets-depth.controller.ts` (`smartboards`), `erp/assets/amc` | each board registered in the asset register against its room |
 
 ## 36. Library and digital library
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Catalogue, issue, return, fines, members | Built | `api/library/library.controller.ts` | |
-| Renew, reservation, damaged/lost | Missing | none | |
-| Barcode / RFID | Missing | none | external hardware |
-| E-books, digital resources, access log | Partial | `api/content/content.controller.ts` | content library exists; library-specific e-resource register and access log absent |
+| Renew, reservation, damaged/lost | Built | `api/library/library-depth.controller.ts` (`renew`, `reservations`, `lost`, `damaged`), `erp/library/circulation` | renewals limited, queue with a three-day hold, lost and damaged books charged |
+| Barcode / RFID | Partial | `api/library/library-depth.controller.ts` (`books/barcodes/assign`, `labels.pdf`, `scan/:code`), `erp/library/circulation` | external: RFID readers and tags; accession codes with QR labels and scan lookup are built |
+| E-books, digital resources, access log | Built | `api/library/library-depth.controller.ts` (`eresources`), `erp/library/e-resources` | register with licence and seats, and an access log |
 | Koha / external system | Built | `api/connectors/integrations.controller.ts` (`library/search`) | tested against local stub only |
-| Link resources to curriculum topics | Partial | `api/content/content.controller.ts` | |
+| Link resources to curriculum topics | Built | `api/library/library-depth.controller.ts` (`topic-links`, `topics/:id/resources`), `erp/library/e-resources` | books and e-resources recommended per topic |
 
 ## 37. Hostel
 
@@ -440,7 +440,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Waitlist, application, eligibility | Built | `api/hostel/hostel.controller.ts` (`waitlist`) | |
 | Warden, visitors, complaints, gate pass, night attendance | Built | `api/hostel/hostel.controller.ts` | |
 | Hostel fee, mess linkage | Built | `api/hostel/hostel.controller.ts` (`fees`, `mess`) | |
-| Maintenance requests | Partial | `api/hostel/hostel.controller.ts` (`complaints`) | complaints only, no work-order flow |
+| Maintenance requests | Built | `api/hostel/campus-ops.controller.ts` (`hostel/work-orders`), `erp/hostel/work-orders` | complaint to work order, assigned, done, checked by the warden; the resident sees progress |
 
 ## 38. Transport
 
@@ -449,7 +449,7 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Vehicles, drivers, routes, stops, assignments, fees | Built | `api/transport/transport.controller.ts` | |
 | Documents / compliance expiry, expenses, incidents | Built | `api/transport/transport.controller.ts` | |
 | GPS tracking, live bus + ETA, parent notices | Built | `api/transport/transport.controller.ts` (`gps`), `P/features/transport` | needs real GPS source in the field |
-| RFID boarding | Missing | none | hardware |
+| RFID boarding | Missing | none | external: RFID readers and student cards |
 | Student boarding record (manual scan) | Built | `T/features/driver` | |
 
 ## 39. Canteen / mess
@@ -458,8 +458,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 |---|---|---|---|
 | Menu, plans, eligibility, subscriptions | Built | `api/hostel/hostel.controller.ts` (`mess`) | |
 | Meal attendance, prepaid wallet | Built | `api/hostel/canteen.controller.ts` | postpaid billing absent |
-| Vendor, purchase, inventory link | Partial | `api/inventory/inventory.controller.ts` | not linked to canteen consumption |
-| Feedback, wastage | Missing | none | |
+| Vendor, purchase, inventory link | Built | `api/hostel/campus-ops.controller.ts` (`canteen/ops/stock`, `summary`), `erp/canteen/operations` | purchases tied to vendors and orders; use can draw from the store |
+| Feedback, wastage | Built | `api/hostel/campus-ops.controller.ts` (`canteen/ops/feedback`, wastage in `stock`), `erp/canteen/operations` | meal ratings (one per person per meal) and wastage share by item and meal |
 
 ## 40. Health, wellness, counselling
 
@@ -469,15 +469,15 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Consent | Built | `api/consent/consent.controller.ts` | |
 | Counselling sessions, confidential notes, restricted access | Built | `api/welfare/counselling.controller.ts` | |
 | Mentor vs counsellor separation | Built | `api/mentoring`, `api/welfare` | |
-| Retention rules for sensitive data | Partial | `erp/settings/retention-actions.ts` | recordings retention built; health/counselling retention not found |
+| Retention rules for sensitive data | Built | `api/welfare/retention.controller.ts`, `erp/health/retention`, `erp/settings/retention-actions.ts` | health visits and counselling: delete or strip after the period; daily job; audited |
 
 ## 41. Mentoring and early intervention
 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | Mentor assignment (bulk), sessions, notes, action plans, follow-up | Built | `api/mentoring/mentoring.controller.ts` | |
-| Combined risk signals (attendance, assessment, assignments, engagement) | Partial | `api/mentoring/mentoring.controller.ts` (`risk`) | skills and outcome attainment not in the signal |
-| Intervention flow to reassessment and outcome | Partial | `api/mentoring/mentoring.controller.ts` (`plans/:id/close`) | support-content assignment and auto reassessment absent |
+| Combined risk signals (attendance, assessment, assignments, engagement) | Built | `api/mentoring/mentoring-rules.ts`, `api/mentoring/mentoring.service.ts` (`extraSignals`) | adds outcome attainment, skills, missed assignments and class engagement to the signal |
+| Intervention flow to reassessment and outcome | Built | `api/mentoring/mentoring-depth.controller.ts` (`support`, `reassess`), `api/mentoring/mentoring.service.ts`, `erp/mentoring/interventions` | support items per plan, the student sees them; risk measured again at review and on close |
 | No permanent labelling | Built | `api/mentoring/mentoring.controller.ts` | |
 
 ## 42. Skills and outcome passport

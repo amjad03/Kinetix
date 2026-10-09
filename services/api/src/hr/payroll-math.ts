@@ -194,6 +194,8 @@ export interface PayslipInput {
   ptSlabs: PtSlab[];
   staff: { regime: TaxRegime; pfEnabled: boolean; esiEnabled: boolean; ptEnabled: boolean; tax80cPaise: number; taxOtherDeductionsPaise: number };
   ytd: { grossTaxablePaise: number; ptPaise: number; employeePfPaise: number; tdsPaise: number };
+  /** Approved overtime, arrears and bonuses (added in full, not prorated) and recoveries (taken as deductions). */
+  extras?: { code: string; name: string; amountPaise: number; taxable: boolean; recovery?: boolean }[];
 }
 
 export interface ComputedLine {
@@ -225,10 +227,11 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
   const paidDays = i.daysInMonth - lop;
   const prorate = (paise: number) => roundRupee((paise * paidDays) / i.daysInMonth);
   const earnLines = i.lines.filter((l) => l.kind === 'earning');
-  const earnings = earnLines.map((l) => ({ code: l.code, name: l.name, amountPaise: prorate(l.monthlyPaise) }));
+  const extraEarn = (i.extras ?? []).filter((x) => !x.recovery && x.amountPaise > 0);
+  const earnings = [...earnLines.map((l) => ({ code: l.code, name: l.name, amountPaise: prorate(l.monthlyPaise) })), ...extraEarn.map((x) => ({ code: x.code, name: x.name, amountPaise: x.amountPaise }))];
   const gross = earnings.reduce((s, e) => s + e.amountPaise, 0);
-  const taxableGross = earnings.filter((_, k) => earnLines[k].taxable).reduce((s, e) => s + e.amountPaise, 0);
-  const pfWage = earnings.filter((_, k) => earnLines[k].pfWage).reduce((s, e) => s + e.amountPaise, 0);
+  const taxableGross = earnings.filter((_, k) => (k < earnLines.length ? earnLines[k].taxable : extraEarn[k - earnLines.length].taxable)).reduce((s, e) => s + e.amountPaise, 0);
+  const pfWage = earnings.filter((_, k) => k < earnLines.length && earnLines[k].pfWage).reduce((s, e) => s + e.amountPaise, 0);
 
   const pf = i.staff.pfEnabled ? providentFund(pfWage, i.pf) : { employee: 0, eps: 0, epf: 0 };
   const e = i.staff.esiEnabled ? esi(gross, i.esiLimitPaise) : { employee: 0, employer: 0 };
@@ -254,7 +257,8 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
   if (tds.tdsPaise) deductions.push({ code: 'TDS', name: 'Income Tax (TDS)', amountPaise: tds.tdsPaise });
   // Fixed deductions (loan recovery, canteen…) are not prorated, and never take net pay below zero.
   let room = gross - deductions.reduce((s, d) => s + d.amountPaise, 0);
-  for (const l of i.lines.filter((x) => x.kind === 'deduction')) {
+  const fixed = [...i.lines.filter((x) => x.kind === 'deduction'), ...(i.extras ?? []).filter((x) => x.recovery).map((x) => ({ code: x.code, name: x.name, monthlyPaise: x.amountPaise }))];
+  for (const l of fixed) {
     const amount = Math.max(0, Math.min(l.monthlyPaise, room));
     if (amount > 0) deductions.push({ code: l.code, name: l.name, amountPaise: amount });
     room -= amount;

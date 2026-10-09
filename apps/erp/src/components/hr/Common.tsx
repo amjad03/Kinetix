@@ -34,6 +34,7 @@ export const HR_TABS: { href: string; label: MessageKey }[] = [
   { href: '/hr/training', label: 'hl.tab.training' },
   { href: '/hr/onboarding', label: 'hl.tab.onboarding' },
   { href: '/hr/probation', label: 'as.tab.probation' },
+  { href: '/hr/faculty', label: 'dx.link.faculty' },
   { href: '/hr/transfers', label: 'as.tab.transfers' },
   { href: '/hr/exit', label: 'hl.tab.exit' },
 ];
