@@ -1684,9 +1684,17 @@
   "schoolLife": "School life",
   "schoolLifeSubtitle": "Diary, meetings, health, events and more",
   "schoolLifeTitle": "{name}'s school life",
-  "@schoolLifeTitle": {"placeholders": {"name": {}}},
+  "@schoolLifeTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "childSchoolLife": "{name}'s school life",
-  "@childSchoolLife": {"placeholders": {"name": {}}},
+  "@childSchoolLife": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "lifeDiary": "School diary",
   "lifeDiarySub": "Classwork, homework and notices",
   "lifePtm": "Parent-teacher meetings",
@@ -1702,25 +1710,43 @@
   "lifeEvents": "Campus events",
   "lifeEventsSub": "Register your child for events",
   "diaryTitle": "{name}'s diary",
-  "@diaryTitle": {"placeholders": {"name": {}}},
+  "@diaryTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "diaryEmpty": "No diary entries yet.",
   "diaryClasswork": "Classwork",
   "diaryHomework": "Homework",
   "diaryNotice": "Notice",
   "diaryBy": "by {author}",
-  "@diaryBy": {"placeholders": {"author": {}}},
+  "@diaryBy": {
+    "placeholders": {
+      "author": {}
+    }
+  },
   "diaryAcknowledge": "I have read this",
   "diaryAcknowledged": "Read",
   "diaryAckDone": "Marked as read",
   "diaryToAcknowledge": "{count, plural, =1{1 entry to acknowledge} other{{count} entries to acknowledge}}",
-  "@diaryToAcknowledge": {"placeholders": {"count": {"type": "int"}}},
+  "@diaryToAcknowledge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ptmTitle": "Parent-teacher meetings",
   "ptmNone": "No meetings are planned.",
   "ptmMeetings": "Meetings",
   "ptmMyBookings": "Your bookings",
   "ptmClosed": "Closed",
   "ptmNoSlots": "No free times with {name}'s teachers.",
-  "@ptmNoSlots": {"placeholders": {"name": {}}},
+  "@ptmNoSlots": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "ptmBook": "Book",
   "ptmBooked": "Meeting booked",
   "ptmYourBooking": "Your booking",
@@ -1732,7 +1758,11 @@
   "ptmKeep": "Keep it",
   "ptmCancelled": "Booking cancelled",
   "earlyYearsTitle": "{name}'s early years",
-  "@earlyYearsTitle": {"placeholders": {"name": {}}},
+  "@earlyYearsTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "eyStory": "Learning story (PDF)",
   "eyChooseTerm": "Choose a term",
   "eyMilestones": "Milestones",
@@ -1747,7 +1777,11 @@
   "eyDeveloping": "Developing",
   "eyAchieved": "Achieved",
   "healthTitle": "{name}'s health",
-  "@healthTitle": {"placeholders": {"name": {}}},
+  "@healthTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "healthReadOnly": "The school keeps this record. You can read it here.",
   "healthNoProfile": "No health profile has been recorded.",
   "healthBlood": "Blood group",
@@ -1763,22 +1797,46 @@
   "healthVaccinations": "Vaccinations",
   "healthNoVaccinations": "No vaccinations recorded.",
   "healthNextDue": "Next due {date}",
-  "@healthNextDue": {"placeholders": {"date": {}}},
+  "@healthNextDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "passportTitle": "{name}'s passport",
-  "@passportTitle": {"placeholders": {"name": {}}},
+  "@passportTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "passportVerified": "Verified by the school",
   "passportNotVerified": "Not yet verified by the school",
   "passportDownload": "Download passport (PDF)",
   "passportSkills": "Skills",
   "passportNoSkills": "No skills yet.",
   "passportLevel": "Level {level}",
-  "@passportLevel": {"placeholders": {"level": {"type": "int"}}},
+  "@passportLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
   "passportNoLevel": "Not enough evidence yet",
   "passportEvidence": "{count, plural, =1{1 piece of evidence} other{{count} pieces of evidence}}",
-  "@passportEvidence": {"placeholders": {"count": {"type": "int"}}},
+  "@passportEvidence": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "passportCertificates": "Certificates",
   "passportIssued": "Issued {date}",
-  "@passportIssued": {"placeholders": {"date": {}}},
+  "@passportIssued": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "passportActivities": "Clubs and events",
   "surveysTitle": "Surveys",
   "surveysNone": "No surveys need your answer.",
@@ -1790,12 +1848,26 @@
   "surveyRequired": "Please answer every question marked with a star.",
   "surveyThanks": "Thank you for your answers",
   "eventsTitle": "{name}'s events",
-  "@eventsTitle": {"placeholders": {"name": {}}},
+  "@eventsTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "eventsNone": "No events are open right now.",
   "eventFee": "Fee {amount}",
-  "@eventFee": {"placeholders": {"amount": {}}},
+  "@eventFee": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
   "eventSeatsLeft": "{count, plural, =0{Full} =1{1 seat left} other{{count} seats left}}",
-  "@eventSeatsLeft": {"placeholders": {"count": {"type": "int"}}},
+  "@eventSeatsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "eventRegister": "Register",
   "eventJoinWaitlist": "Join the waitlist",
   "eventRegistered": "Registered",
@@ -1807,7 +1879,13 @@
   "lifePasses": "Event passes",
   "lifePassesSub": "QR codes and feedback",
   "passesTitle": "{name}'s event passes",
-  "@passesTitle": {"placeholders": {"name": {"type": "String"}}},
+  "@passesTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "passesNone": "No event registrations yet.",
   "passShowAtDoor": "Show this code at the door",
   "passCheckedIn": "Checked in",
@@ -1816,5 +1894,60 @@
   "passFeedbackTitle": "How was it?",
   "passFeedbackComment": "Comment (optional)",
   "passFeedbackSend": "Send",
-  "passFeedbackThanks": "Thank you for your feedback."
+  "passFeedbackThanks": "Thank you for your feedback.",
+  "dpdpTitle": "My data rights",
+  "dpdpSubtitle": "Download, correct or erase data about you and your children",
+  "dpdpOfficerTitle": "Grievance officer",
+  "dpdpOfficerNone": "No grievance officer is named yet. Write to the school office.",
+  "dpdpExportTitle": "Download my data",
+  "dpdpExportBody": "See everything the school holds about you and your children.",
+  "dpdpExportAction": "Show summary",
+  "dpdpExportPdf": "Open as PDF",
+  "dpdpRecords": "records",
+  "dpdpCorrectTitle": "Correct my details",
+  "dpdpField": "Detail to correct",
+  "dpdpFieldName": "Name",
+  "dpdpFieldEmail": "Email",
+  "dpdpFieldPhone": "Phone",
+  "dpdpNewValue": "Correct value",
+  "dpdpCorrectSend": "Send correction request",
+  "dpdpNeedValue": "Enter the correct value.",
+  "dpdpEraseTitle": "Ask for erasure",
+  "dpdpEraseBody": "The school must keep some records by law. We tell you what can and cannot be erased.",
+  "dpdpEraseDetails": "Why do you want this? (optional)",
+  "dpdpEraseSend": "Request erasure",
+  "dpdpEraseConfirm": "Ask the school to erase your data? Records it must keep by law will stay.",
+  "dpdpRequestSent": "Request sent. The grievance officer replies within 30 days.",
+  "dpdpRetentionNotice": "These records must be kept by law:",
+  "dpdpRequestsTitle": "My requests",
+  "dpdpRequestsNone": "No requests yet.",
+  "dpdpKindCorrection": "Correction",
+  "dpdpKindErasure": "Erasure",
+  "dpdpStatusPending": "Pending",
+  "dpdpStatusDone": "Done",
+  "dpdpStatusDeclined": "Declined",
+  "dpdpStatusBlocked": "Kept by law",
+  "dpdpAbout": "This request is about",
+  "dpdpAboutMe": "Me",
+  "dpdpAboutChild": "Child",
+  "reportCardsTitle": "Report cards",
+  "childReportCards": "Report cards: {name}",
+  "@childReportCards": {
+    "description": "Parent growth screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportCardsSubtitle": "Marks, remarks and promotion",
+  "reportCardsNone": "No report cards have been published yet.",
+  "promotionPending": "Promotion decision pending",
+  "promotionPromoted": "Promoted",
+  "promotionGrace": "Promoted with grace marks",
+  "promotionDetained": "Not promoted",
+  "promotedTo": "Next class",
+  "coCurricular": "Co-curricular",
+  "behaviour": "Behaviour",
+  "reportCardPdf": "Open as PDF"
 }

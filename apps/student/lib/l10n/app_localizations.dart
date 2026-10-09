@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -5157,10 +5150,411 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your attendance for this period was already recorded.'**
   String get attendanceAlreadyMarked;
+
+  /// No description provided for @dpdpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My data rights'**
+  String get dpdpTitle;
+
+  /// No description provided for @dpdpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download, correct or erase your data'**
+  String get dpdpSubtitle;
+
+  /// No description provided for @dpdpOfficerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grievance officer'**
+  String get dpdpOfficerTitle;
+
+  /// No description provided for @dpdpOfficerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No grievance officer is named yet. Write to the school office.'**
+  String get dpdpOfficerNone;
+
+  /// No description provided for @dpdpExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download my data'**
+  String get dpdpExportTitle;
+
+  /// No description provided for @dpdpExportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See everything the school holds about you.'**
+  String get dpdpExportBody;
+
+  /// No description provided for @dpdpExportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Show summary'**
+  String get dpdpExportAction;
+
+  /// No description provided for @dpdpExportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open as PDF'**
+  String get dpdpExportPdf;
+
+  /// No description provided for @dpdpRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'records'**
+  String get dpdpRecords;
+
+  /// No description provided for @dpdpCorrectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct my details'**
+  String get dpdpCorrectTitle;
+
+  /// No description provided for @dpdpField.
+  ///
+  /// In en, this message translates to:
+  /// **'Detail to correct'**
+  String get dpdpField;
+
+  /// No description provided for @dpdpFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get dpdpFieldName;
+
+  /// No description provided for @dpdpFieldEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get dpdpFieldEmail;
+
+  /// No description provided for @dpdpFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get dpdpFieldPhone;
+
+  /// No description provided for @dpdpNewValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct value'**
+  String get dpdpNewValue;
+
+  /// No description provided for @dpdpCorrectSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send correction request'**
+  String get dpdpCorrectSend;
+
+  /// No description provided for @dpdpNeedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the correct value.'**
+  String get dpdpNeedValue;
+
+  /// No description provided for @dpdpEraseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for erasure'**
+  String get dpdpEraseTitle;
+
+  /// No description provided for @dpdpEraseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The school must keep some records by law. We tell you what can and cannot be erased.'**
+  String get dpdpEraseBody;
+
+  /// No description provided for @dpdpEraseDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do you want this? (optional)'**
+  String get dpdpEraseDetails;
+
+  /// No description provided for @dpdpEraseSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Request erasure'**
+  String get dpdpEraseSend;
+
+  /// No description provided for @dpdpEraseConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the school to erase your data? Records it must keep by law will stay.'**
+  String get dpdpEraseConfirm;
+
+  /// No description provided for @dpdpRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. The grievance officer replies within 30 days.'**
+  String get dpdpRequestSent;
+
+  /// No description provided for @dpdpRetentionNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'These records must be kept by law:'**
+  String get dpdpRetentionNotice;
+
+  /// No description provided for @dpdpRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get dpdpRequestsTitle;
+
+  /// No description provided for @dpdpRequestsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet.'**
+  String get dpdpRequestsNone;
+
+  /// No description provided for @dpdpKindCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction'**
+  String get dpdpKindCorrection;
+
+  /// No description provided for @dpdpKindErasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Erasure'**
+  String get dpdpKindErasure;
+
+  /// No description provided for @dpdpStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get dpdpStatusPending;
+
+  /// No description provided for @dpdpStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get dpdpStatusDone;
+
+  /// No description provided for @dpdpStatusDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get dpdpStatusDeclined;
+
+  /// No description provided for @dpdpStatusBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept by law'**
+  String get dpdpStatusBlocked;
+
+  /// No description provided for @houseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My house'**
+  String get houseTitle;
+
+  /// No description provided for @houseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your house points and the leaderboard'**
+  String get houseSubtitle;
+
+  /// No description provided for @houseNone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not been placed in a house yet.'**
+  String get houseNone;
+
+  /// No description provided for @houseRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank'**
+  String get houseRank;
+
+  /// No description provided for @housePointsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'points'**
+  String get housePointsLabel;
+
+  /// No description provided for @houseMyPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'My points'**
+  String get houseMyPoints;
+
+  /// No description provided for @houseCaptain.
+  ///
+  /// In en, this message translates to:
+  /// **'Captain'**
+  String get houseCaptain;
+
+  /// No description provided for @houseRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent points'**
+  String get houseRecent;
+
+  /// No description provided for @houseLeaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get houseLeaderboard;
+
+  /// No description provided for @houseMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'members'**
+  String get houseMembers;
+
+  /// No description provided for @houseCatGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get houseCatGeneral;
+
+  /// No description provided for @houseCatAcademics.
+  ///
+  /// In en, this message translates to:
+  /// **'Academics'**
+  String get houseCatAcademics;
+
+  /// No description provided for @houseCatSports.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports'**
+  String get houseCatSports;
+
+  /// No description provided for @houseCatArts.
+  ///
+  /// In en, this message translates to:
+  /// **'Arts'**
+  String get houseCatArts;
+
+  /// No description provided for @houseCatDiscipline.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline'**
+  String get houseCatDiscipline;
+
+  /// No description provided for @houseCatService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get houseCatService;
+
+  /// No description provided for @peerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer review'**
+  String get peerTitle;
+
+  /// No description provided for @peerOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Review classmates\' work'**
+  String get peerOpen;
+
+  /// No description provided for @peerToReview.
+  ///
+  /// In en, this message translates to:
+  /// **'To review'**
+  String get peerToReview;
+
+  /// No description provided for @peerMyFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'My feedback'**
+  String get peerMyFeedback;
+
+  /// No description provided for @peerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No work has been given to you to review yet.'**
+  String get peerNone;
+
+  /// No description provided for @peerAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Names are hidden: you do not know who wrote the work, and they do not know who reviewed it.'**
+  String get peerAnonymous;
+
+  /// No description provided for @peerWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get peerWork;
+
+  /// No description provided for @peerNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'(a photo or file only)'**
+  String get peerNoText;
+
+  /// No description provided for @peerFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and files'**
+  String get peerFiles;
+
+  /// No description provided for @peerClarity.
+  ///
+  /// In en, this message translates to:
+  /// **'Clarity'**
+  String get peerClarity;
+
+  /// No description provided for @peerAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy'**
+  String get peerAccuracy;
+
+  /// No description provided for @peerEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'Effort'**
+  String get peerEffort;
+
+  /// No description provided for @peerComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Your comment'**
+  String get peerComment;
+
+  /// No description provided for @peerSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save review'**
+  String get peerSave;
+
+  /// No description provided for @peerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Review saved.'**
+  String get peerSaved;
+
+  /// No description provided for @peerNeedAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Give a score for each and write a comment.'**
+  String get peerNeedAll;
+
+  /// No description provided for @peerAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average score (out of 15)'**
+  String get peerAverage;
+
+  /// No description provided for @peerPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews still to come'**
+  String get peerPending;
+
+  /// No description provided for @peerNoFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'No classmate has reviewed your work yet.'**
+  String get peerNoFeedback;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5169,8 +5563,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

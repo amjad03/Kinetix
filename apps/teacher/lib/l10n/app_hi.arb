@@ -898,9 +898,21 @@
   "insightsMarks": "औसत अंक",
   "insightsFlagged": "ध्यान चाहिए",
   "insightsAttendanceValue": "उपस्थिति {value}",
-  "@insightsAttendanceValue": {"placeholders": {"value": {"type": "String"}}},
+  "@insightsAttendanceValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "insightsMarksValue": "अंक {value}",
-  "@insightsMarksValue": {"placeholders": {"value": {"type": "String"}}},
+  "@insightsMarksValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "copilotTitle": "एआई सहायक",
   "copilotBody": "व्याख्या, प्रश्नोत्तरी, गृहकार्य और पाठ योजना के मसौदे",
   "copilotExplain": "समझाएँ",
@@ -910,9 +922,21 @@
   "copilotQuestionLabel": "आप क्या समझाना चाहते हैं?",
   "copilotTopicLabel": "विषय",
   "copilotHowMany": "प्रश्न: {n}",
-  "@copilotHowMany": {"placeholders": {"n": {"type": "int"}}},
+  "@copilotHowMany": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "copilotMinutes": "मिनट: {n}",
-  "@copilotMinutes": {"placeholders": {"n": {"type": "int"}}},
+  "@copilotMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "copilotGenerate": "मसौदा बनाएँ",
   "copilotDraftNote": "एआई का मसौदा। उपयोग से पहले जाँच लें; यहाँ से विद्यार्थियों को कुछ नहीं भेजा जाता।",
   "copilotSampleDraft": "केवल नमूना: इस विद्यालय के सर्वर पर अभी कोई एआई मॉडल जुड़ा नहीं है। उपयोग से पहले सब कुछ जाँच लें।",
@@ -924,5 +948,60 @@
   "copilotMaterials": "सामग्री",
   "copilotAssessment": "मूल्यांकन",
   "copilotCopy": "मसौदा कॉपी करें",
-  "copilotCopied": "मसौदा कॉपी हो गया।"
+  "copilotCopied": "मसौदा कॉपी हो गया।",
+  "evalToolTick": "सही का निशान",
+  "evalToolCross": "गलत का निशान",
+  "evalToolComment": "टिप्पणी",
+  "evalMarksOnPage": "स्क्रिप्ट पर निशान",
+  "evalEarlierNote": "हल्के निशान पहले के मूल्यांकनों के हैं।",
+  "evalCommentPrompt": "इस जगह पर टिप्पणी",
+  "evalAddMark": "जोड़ें",
+  "appraisalTitle": "स्व-मूल्यांकन",
+  "appraisalBody": "अपना वार्षिक स्व-मूल्यांकन भरें और जमा करें",
+  "appraisalNoCycle": "अभी कोई मूल्यांकन चक्र खुला नहीं है।",
+  "appraisalCycle": "चक्र",
+  "appraisalMax": "अधिकतम",
+  "appraisalScore": "अंक",
+  "appraisalEvidence": "प्रमाण",
+  "appraisalOverMax": "अंक 0 और {max} के बीच होने चाहिए",
+  "@appraisalOverMax": {
+    "description": "Staff growth screens.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "appraisalNeedScore": "कम से कम एक अंक भरें।",
+  "appraisalSubmitted": "मूल्यांकन समीक्षा के लिए जमा हो गया।",
+  "appraisalSaved": "मसौदा सहेजा गया।",
+  "appraisalLocked": "आपका मूल्यांकन जमा हो चुका है और अब बदला नहीं जा सकता।",
+  "appraisalSelfPercent": "स्व-अंक",
+  "appraisalSaveDraft": "मसौदा सहेजें",
+  "appraisalSubmit": "मूल्यांकन जमा करें",
+  "housesTitle": "सदन",
+  "housesBody": "लीडरबोर्ड और सदन अंक",
+  "housesEmpty": "अभी कोई सदन नहीं बना है।",
+  "housesMembers": "सदस्य",
+  "houseStudent": "विद्यार्थी (वैकल्पिक)",
+  "houseWholeHouse": "पूरा सदन",
+  "housePoints": "अंक (काटने के लिए ऋण)",
+  "houseCategory": "श्रेणी",
+  "houseReason": "कारण",
+  "houseAward": "अंक दें",
+  "housePointsRange": "-100 से 100 के बीच अंक भरें, शून्य नहीं।",
+  "houseReasonNeeded": "कम से कम 3 अक्षरों का कारण लिखें।",
+  "housePointsSaved": "अंक दर्ज हो गए।",
+  "houseCatGeneral": "सामान्य",
+  "houseCatAcademics": "शिक्षा",
+  "houseCatSports": "खेल",
+  "houseCatArts": "कला",
+  "houseCatDiscipline": "अनुशासन",
+  "houseCatService": "सेवा",
+  "curriculumTitle": "पाठ्यक्रम",
+  "curriculumBody": "सक्रिय पाठ्यक्रम, इकाइयाँ और पाठ्यक्रम परिणाम",
+  "curriculumEmpty": "अभी कोई सक्रिय पाठ्यक्रम नहीं है।",
+  "curriculumNoSubjects": "इस संस्करण में कोई विषय नहीं है।",
+  "curriculumUnits": "इकाइयाँ",
+  "curriculumOutcomes": "पाठ्यक्रम परिणाम"
 }

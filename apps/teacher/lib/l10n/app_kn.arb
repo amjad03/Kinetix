@@ -898,9 +898,21 @@
   "insightsMarks": "ಸರಾಸರಿ ಅಂಕ",
   "insightsFlagged": "ಗಮನ ಬೇಕು",
   "insightsAttendanceValue": "ಹಾಜರಾತಿ {value}",
-  "@insightsAttendanceValue": {"placeholders": {"value": {"type": "String"}}},
+  "@insightsAttendanceValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "insightsMarksValue": "ಅಂಕ {value}",
-  "@insightsMarksValue": {"placeholders": {"value": {"type": "String"}}},
+  "@insightsMarksValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "copilotTitle": "ಎಐ ಸಹಾಯಕ",
   "copilotBody": "ವಿವರಣೆ, ರಸಪ್ರಶ್ನೆ, ಮನೆಕೆಲಸ ಮತ್ತು ಪಾಠ ಯೋಜನೆಯ ಕರಡುಗಳು",
   "copilotExplain": "ವಿವರಿಸಿ",
@@ -910,9 +922,21 @@
   "copilotQuestionLabel": "ಏನನ್ನು ವಿವರಿಸಬೇಕು?",
   "copilotTopicLabel": "ವಿಷಯ",
   "copilotHowMany": "ಪ್ರಶ್ನೆಗಳು: {n}",
-  "@copilotHowMany": {"placeholders": {"n": {"type": "int"}}},
+  "@copilotHowMany": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "copilotMinutes": "ನಿಮಿಷಗಳು: {n}",
-  "@copilotMinutes": {"placeholders": {"n": {"type": "int"}}},
+  "@copilotMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "copilotGenerate": "ಕರಡು ರಚಿಸಿ",
   "copilotDraftNote": "ಎಐ ಕರಡು. ಬಳಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ; ಇಲ್ಲಿಂದ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಏನನ್ನೂ ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.",
   "copilotSampleDraft": "ಮಾದರಿ ಮಾತ್ರ: ಈ ಶಾಲೆಯ ಸರ್ವರ್‌ಗೆ ಇನ್ನೂ ಎಐ ಮಾದರಿ ಜೋಡಿಸಿಲ್ಲ. ಬಳಸುವ ಮೊದಲು ಎಲ್ಲವನ್ನೂ ಪರಿಶೀಲಿಸಿ.",
@@ -924,5 +948,60 @@
   "copilotMaterials": "ಸಾಮಗ್ರಿ",
   "copilotAssessment": "ಮೌಲ್ಯಮಾಪನ",
   "copilotCopy": "ಕರಡು ನಕಲಿಸಿ",
-  "copilotCopied": "ಕರಡು ನಕಲಾಗಿದೆ."
+  "copilotCopied": "ಕರಡು ನಕಲಾಗಿದೆ.",
+  "evalToolTick": "ಸರಿ ಗುರುತು",
+  "evalToolCross": "ತಪ್ಪು ಗುರುತು",
+  "evalToolComment": "ಟಿಪ್ಪಣಿ",
+  "evalMarksOnPage": "ಸ್ಕ್ರಿಪ್ಟ್‌ನ ಗುರುತುಗಳು",
+  "evalEarlierNote": "ಮಸುಕಾದ ಗುರುತುಗಳು ಹಿಂದಿನ ಮೌಲ್ಯಮಾಪನಗಳದ್ದು.",
+  "evalCommentPrompt": "ಈ ಸ್ಥಳದ ಬಗ್ಗೆ ಟಿಪ್ಪಣಿ",
+  "evalAddMark": "ಸೇರಿಸಿ",
+  "appraisalTitle": "ಸ್ವಯಂ ಮೌಲ್ಯಮಾಪನ",
+  "appraisalBody": "ನಿಮ್ಮ ವಾರ್ಷಿಕ ಸ್ವಯಂ ಮೌಲ್ಯಮಾಪನವನ್ನು ತುಂಬಿ ಸಲ್ಲಿಸಿ",
+  "appraisalNoCycle": "ಈಗ ಯಾವುದೇ ಮೌಲ್ಯಮಾಪನ ಚಕ್ರ ತೆರೆದಿಲ್ಲ.",
+  "appraisalCycle": "ಚಕ್ರ",
+  "appraisalMax": "ಗರಿಷ್ಠ",
+  "appraisalScore": "ಅಂಕ",
+  "appraisalEvidence": "ಸಾಕ್ಷ್ಯ",
+  "appraisalOverMax": "ಅಂಕ 0 ಮತ್ತು {max} ನಡುವೆ ಇರಬೇಕು",
+  "@appraisalOverMax": {
+    "description": "Staff growth screens.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "appraisalNeedScore": "ಕನಿಷ್ಠ ಒಂದು ಅಂಕ ನಮೂದಿಸಿ.",
+  "appraisalSubmitted": "ಮೌಲ್ಯಮಾಪನವನ್ನು ಪರಿಶೀಲನೆಗೆ ಸಲ್ಲಿಸಲಾಗಿದೆ.",
+  "appraisalSaved": "ಕರಡನ್ನು ಉಳಿಸಲಾಗಿದೆ.",
+  "appraisalLocked": "ನಿಮ್ಮ ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಕೆಯಾಗಿದೆ, ಇನ್ನು ಬದಲಿಸಲಾಗುವುದಿಲ್ಲ.",
+  "appraisalSelfPercent": "ಸ್ವಯಂ ಅಂಕ",
+  "appraisalSaveDraft": "ಕರಡು ಉಳಿಸಿ",
+  "appraisalSubmit": "ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಸಿ",
+  "housesTitle": "ಹೌಸ್‌ಗಳು",
+  "housesBody": "ಲೀಡರ್‌ಬೋರ್ಡ್ ಮತ್ತು ಹೌಸ್ ಅಂಕಗಳು",
+  "housesEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಹೌಸ್ ರಚಿಸಿಲ್ಲ.",
+  "housesMembers": "ಸದಸ್ಯರು",
+  "houseStudent": "ವಿದ್ಯಾರ್ಥಿ (ಐಚ್ಛಿಕ)",
+  "houseWholeHouse": "ಇಡೀ ಹೌಸ್",
+  "housePoints": "ಅಂಕಗಳು (ಕಳೆಯಲು ಮೈನಸ್)",
+  "houseCategory": "ವರ್ಗ",
+  "houseReason": "ಕಾರಣ",
+  "houseAward": "ಅಂಕ ನೀಡಿ",
+  "housePointsRange": "-100 ರಿಂದ 100 ರ ನಡುವೆ ಅಂಕ ನಮೂದಿಸಿ, ಸೊನ್ನೆ ಅಲ್ಲ.",
+  "houseReasonNeeded": "ಕನಿಷ್ಠ 3 ಅಕ್ಷರಗಳ ಕಾರಣ ಬರೆಯಿರಿ.",
+  "housePointsSaved": "ಅಂಕಗಳನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ.",
+  "houseCatGeneral": "ಸಾಮಾನ್ಯ",
+  "houseCatAcademics": "ಶೈಕ್ಷಣಿಕ",
+  "houseCatSports": "ಕ್ರೀಡೆ",
+  "houseCatArts": "ಕಲೆ",
+  "houseCatDiscipline": "ಶಿಸ್ತು",
+  "houseCatService": "ಸೇವೆ",
+  "curriculumTitle": "ಪಠ್ಯಕ್ರಮ",
+  "curriculumBody": "ಸಕ್ರಿಯ ಪಠ್ಯಕ್ರಮ, ಘಟಕಗಳು ಮತ್ತು ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು",
+  "curriculumEmpty": "ಇನ್ನೂ ಯಾವುದೇ ಸಕ್ರಿಯ ಪಠ್ಯಕ್ರಮ ಇಲ್ಲ.",
+  "curriculumNoSubjects": "ಈ ಆವೃತ್ತಿಯಲ್ಲಿ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ.",
+  "curriculumUnits": "ಘಟಕಗಳು",
+  "curriculumOutcomes": "ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು"
 }

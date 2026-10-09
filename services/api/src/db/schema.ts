@@ -1550,6 +1550,28 @@ export const homeworkSubmissions = pgTable(
   (t) => [primaryKey({ columns: [t.homeworkId, t.studentId] })],
 );
 
+/**
+ * Peer review of homework: each student who handed in is given a few classmates to review the work
+ * anonymously with a three-point rubric and a comment. The reviewer's and the author's names stay hidden
+ * from each other; the teacher sees both.
+ */
+export const homeworkPeerReviews = pgTable(
+  'homework_peer_reviews',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    homeworkId: uuid('homework_id').notNull().references(() => homework.id, { onDelete: 'cascade' }),
+    authorStudentId: uuid('author_student_id').notNull().references(() => students.id),
+    reviewerStudentId: uuid('reviewer_student_id').notNull().references(() => students.id),
+    /** Clarity, accuracy and effort, each 1 to 5; null until the review is done. */
+    rubric: jsonb('rubric').$type<{ clarity: number; accuracy: number; effort: number }>(),
+    comment: text('comment'),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('homework_peer_reviews_uq').on(t.homeworkId, t.authorStudentId, t.reviewerStudentId), index('homework_peer_reviews_reviewer_idx').on(t.homeworkId, t.reviewerStudentId)],
+);
+
 export const consentPurpose = pgEnum('consent_purpose', ['data_processing', 'ai_features', 'class_recordings', 'photos']);
 
 /**
@@ -2955,6 +2977,7 @@ export const TENANT_TABLES = [
   'calendar_events',
   'topic_coverage',
   'homework_submissions',
+  'homework_peer_reviews',
   'consents',
   'year_plans',
   'year_plan_items',

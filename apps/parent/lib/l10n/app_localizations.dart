@@ -4424,6 +4424,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thank you for your feedback.'**
   String get passFeedbackThanks;
+
+  /// No description provided for @dpdpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My data rights'**
+  String get dpdpTitle;
+
+  /// No description provided for @dpdpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download, correct or erase data about you and your children'**
+  String get dpdpSubtitle;
+
+  /// No description provided for @dpdpOfficerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grievance officer'**
+  String get dpdpOfficerTitle;
+
+  /// No description provided for @dpdpOfficerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No grievance officer is named yet. Write to the school office.'**
+  String get dpdpOfficerNone;
+
+  /// No description provided for @dpdpExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download my data'**
+  String get dpdpExportTitle;
+
+  /// No description provided for @dpdpExportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See everything the school holds about you and your children.'**
+  String get dpdpExportBody;
+
+  /// No description provided for @dpdpExportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Show summary'**
+  String get dpdpExportAction;
+
+  /// No description provided for @dpdpExportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open as PDF'**
+  String get dpdpExportPdf;
+
+  /// No description provided for @dpdpRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'records'**
+  String get dpdpRecords;
+
+  /// No description provided for @dpdpCorrectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct my details'**
+  String get dpdpCorrectTitle;
+
+  /// No description provided for @dpdpField.
+  ///
+  /// In en, this message translates to:
+  /// **'Detail to correct'**
+  String get dpdpField;
+
+  /// No description provided for @dpdpFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get dpdpFieldName;
+
+  /// No description provided for @dpdpFieldEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get dpdpFieldEmail;
+
+  /// No description provided for @dpdpFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get dpdpFieldPhone;
+
+  /// No description provided for @dpdpNewValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct value'**
+  String get dpdpNewValue;
+
+  /// No description provided for @dpdpCorrectSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send correction request'**
+  String get dpdpCorrectSend;
+
+  /// No description provided for @dpdpNeedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the correct value.'**
+  String get dpdpNeedValue;
+
+  /// No description provided for @dpdpEraseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for erasure'**
+  String get dpdpEraseTitle;
+
+  /// No description provided for @dpdpEraseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The school must keep some records by law. We tell you what can and cannot be erased.'**
+  String get dpdpEraseBody;
+
+  /// No description provided for @dpdpEraseDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do you want this? (optional)'**
+  String get dpdpEraseDetails;
+
+  /// No description provided for @dpdpEraseSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Request erasure'**
+  String get dpdpEraseSend;
+
+  /// No description provided for @dpdpEraseConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the school to erase your data? Records it must keep by law will stay.'**
+  String get dpdpEraseConfirm;
+
+  /// No description provided for @dpdpRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. The grievance officer replies within 30 days.'**
+  String get dpdpRequestSent;
+
+  /// No description provided for @dpdpRetentionNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'These records must be kept by law:'**
+  String get dpdpRetentionNotice;
+
+  /// No description provided for @dpdpRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get dpdpRequestsTitle;
+
+  /// No description provided for @dpdpRequestsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet.'**
+  String get dpdpRequestsNone;
+
+  /// No description provided for @dpdpKindCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction'**
+  String get dpdpKindCorrection;
+
+  /// No description provided for @dpdpKindErasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Erasure'**
+  String get dpdpKindErasure;
+
+  /// No description provided for @dpdpStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get dpdpStatusPending;
+
+  /// No description provided for @dpdpStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get dpdpStatusDone;
+
+  /// No description provided for @dpdpStatusDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get dpdpStatusDeclined;
+
+  /// No description provided for @dpdpStatusBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept by law'**
+  String get dpdpStatusBlocked;
+
+  /// No description provided for @dpdpAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'This request is about'**
+  String get dpdpAbout;
+
+  /// No description provided for @dpdpAboutMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get dpdpAboutMe;
+
+  /// No description provided for @dpdpAboutChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Child'**
+  String get dpdpAboutChild;
+
+  /// No description provided for @reportCardsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report cards'**
+  String get reportCardsTitle;
+
+  /// Parent growth screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Report cards: {name}'**
+  String childReportCards(String name);
+
+  /// No description provided for @reportCardsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks, remarks and promotion'**
+  String get reportCardsSubtitle;
+
+  /// No description provided for @reportCardsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No report cards have been published yet.'**
+  String get reportCardsNone;
+
+  /// No description provided for @promotionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotion decision pending'**
+  String get promotionPending;
+
+  /// No description provided for @promotionPromoted.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted'**
+  String get promotionPromoted;
+
+  /// No description provided for @promotionGrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted with grace marks'**
+  String get promotionGrace;
+
+  /// No description provided for @promotionDetained.
+  ///
+  /// In en, this message translates to:
+  /// **'Not promoted'**
+  String get promotionDetained;
+
+  /// No description provided for @promotedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Next class'**
+  String get promotedTo;
+
+  /// No description provided for @coCurricular.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-curricular'**
+  String get coCurricular;
+
+  /// No description provided for @behaviour.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour'**
+  String get behaviour;
+
+  /// No description provided for @reportCardPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open as PDF'**
+  String get reportCardPdf;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

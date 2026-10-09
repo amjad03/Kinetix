@@ -4328,6 +4328,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Draft copied.'**
   String get copilotCopied;
+
+  /// No description provided for @evalToolTick.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick'**
+  String get evalToolTick;
+
+  /// No description provided for @evalToolCross.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross'**
+  String get evalToolCross;
+
+  /// No description provided for @evalToolComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get evalToolComment;
+
+  /// No description provided for @evalMarksOnPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks on script'**
+  String get evalMarksOnPage;
+
+  /// No description provided for @evalEarlierNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Faint marks are from earlier valuations.'**
+  String get evalEarlierNote;
+
+  /// No description provided for @evalCommentPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment on this spot'**
+  String get evalCommentPrompt;
+
+  /// No description provided for @evalAddMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get evalAddMark;
+
+  /// No description provided for @appraisalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-appraisal'**
+  String get appraisalTitle;
+
+  /// No description provided for @appraisalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in and submit your yearly self-appraisal'**
+  String get appraisalBody;
+
+  /// No description provided for @appraisalNoCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'No appraisal cycle is open right now.'**
+  String get appraisalNoCycle;
+
+  /// No description provided for @appraisalCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle'**
+  String get appraisalCycle;
+
+  /// No description provided for @appraisalMax.
+  ///
+  /// In en, this message translates to:
+  /// **'max'**
+  String get appraisalMax;
+
+  /// No description provided for @appraisalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get appraisalScore;
+
+  /// No description provided for @appraisalEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence'**
+  String get appraisalEvidence;
+
+  /// Staff growth screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Score must be between 0 and {max}'**
+  String appraisalOverMax(String max);
+
+  /// No description provided for @appraisalNeedScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at least one score.'**
+  String get appraisalNeedScore;
+
+  /// No description provided for @appraisalSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Appraisal submitted for review.'**
+  String get appraisalSubmitted;
+
+  /// No description provided for @appraisalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved.'**
+  String get appraisalSaved;
+
+  /// No description provided for @appraisalLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Your appraisal is submitted and can no longer be changed.'**
+  String get appraisalLocked;
+
+  /// No description provided for @appraisalSelfPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Self score'**
+  String get appraisalSelfPercent;
+
+  /// No description provided for @appraisalSaveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get appraisalSaveDraft;
+
+  /// No description provided for @appraisalSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit appraisal'**
+  String get appraisalSubmit;
+
+  /// No description provided for @housesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Houses'**
+  String get housesTitle;
+
+  /// No description provided for @housesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard and house points'**
+  String get housesBody;
+
+  /// No description provided for @housesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No houses are set up yet.'**
+  String get housesEmpty;
+
+  /// No description provided for @housesMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'members'**
+  String get housesMembers;
+
+  /// No description provided for @houseStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Student (optional)'**
+  String get houseStudent;
+
+  /// No description provided for @houseWholeHouse.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole house'**
+  String get houseWholeHouse;
+
+  /// No description provided for @housePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points (minus to deduct)'**
+  String get housePoints;
+
+  /// No description provided for @houseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get houseCategory;
+
+  /// No description provided for @houseReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get houseReason;
+
+  /// No description provided for @houseAward.
+  ///
+  /// In en, this message translates to:
+  /// **'Award points'**
+  String get houseAward;
+
+  /// No description provided for @housePointsRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter points from -100 to 100, not zero.'**
+  String get housePointsRange;
+
+  /// No description provided for @houseReasonNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Give a reason of at least 3 characters.'**
+  String get houseReasonNeeded;
+
+  /// No description provided for @housePointsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Points recorded.'**
+  String get housePointsSaved;
+
+  /// No description provided for @houseCatGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get houseCatGeneral;
+
+  /// No description provided for @houseCatAcademics.
+  ///
+  /// In en, this message translates to:
+  /// **'Academics'**
+  String get houseCatAcademics;
+
+  /// No description provided for @houseCatSports.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports'**
+  String get houseCatSports;
+
+  /// No description provided for @houseCatArts.
+  ///
+  /// In en, this message translates to:
+  /// **'Arts'**
+  String get houseCatArts;
+
+  /// No description provided for @houseCatDiscipline.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline'**
+  String get houseCatDiscipline;
+
+  /// No description provided for @houseCatService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get houseCatService;
+
+  /// No description provided for @curriculumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Curriculum'**
+  String get curriculumTitle;
+
+  /// No description provided for @curriculumBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Active syllabus, units and course outcomes'**
+  String get curriculumBody;
+
+  /// No description provided for @curriculumEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active curriculum yet.'**
+  String get curriculumEmpty;
+
+  /// No description provided for @curriculumNoSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'This version has no subjects.'**
+  String get curriculumNoSubjects;
+
+  /// No description provided for @curriculumUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get curriculumUnits;
+
+  /// No description provided for @curriculumOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Course outcomes'**
+  String get curriculumOutcomes;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

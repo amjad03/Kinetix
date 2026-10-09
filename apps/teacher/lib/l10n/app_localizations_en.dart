@@ -2384,4 +2384,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copilotCopied => 'Draft copied.';
+
+  @override
+  String get evalToolTick => 'Tick';
+
+  @override
+  String get evalToolCross => 'Cross';
+
+  @override
+  String get evalToolComment => 'Comment';
+
+  @override
+  String get evalMarksOnPage => 'Marks on script';
+
+  @override
+  String get evalEarlierNote => 'Faint marks are from earlier valuations.';
+
+  @override
+  String get evalCommentPrompt => 'Comment on this spot';
+
+  @override
+  String get evalAddMark => 'Add';
+
+  @override
+  String get appraisalTitle => 'Self-appraisal';
+
+  @override
+  String get appraisalBody => 'Fill in and submit your yearly self-appraisal';
+
+  @override
+  String get appraisalNoCycle => 'No appraisal cycle is open right now.';
+
+  @override
+  String get appraisalCycle => 'Cycle';
+
+  @override
+  String get appraisalMax => 'max';
+
+  @override
+  String get appraisalScore => 'Score';
+
+  @override
+  String get appraisalEvidence => 'Evidence';
+
+  @override
+  String appraisalOverMax(String max) {
+    return 'Score must be between 0 and $max';
+  }
+
+  @override
+  String get appraisalNeedScore => 'Enter at least one score.';
+
+  @override
+  String get appraisalSubmitted => 'Appraisal submitted for review.';
+
+  @override
+  String get appraisalSaved => 'Draft saved.';
+
+  @override
+  String get appraisalLocked => 'Your appraisal is submitted and can no longer be changed.';
+
+  @override
+  String get appraisalSelfPercent => 'Self score';
+
+  @override
+  String get appraisalSaveDraft => 'Save draft';
+
+  @override
+  String get appraisalSubmit => 'Submit appraisal';
+
+  @override
+  String get housesTitle => 'Houses';
+
+  @override
+  String get housesBody => 'Leaderboard and house points';
+
+  @override
+  String get housesEmpty => 'No houses are set up yet.';
+
+  @override
+  String get housesMembers => 'members';
+
+  @override
+  String get houseStudent => 'Student (optional)';
+
+  @override
+  String get houseWholeHouse => 'Whole house';
+
+  @override
+  String get housePoints => 'Points (minus to deduct)';
+
+  @override
+  String get houseCategory => 'Category';
+
+  @override
+  String get houseReason => 'Reason';
+
+  @override
+  String get houseAward => 'Award points';
+
+  @override
+  String get housePointsRange => 'Enter points from -100 to 100, not zero.';
+
+  @override
+  String get houseReasonNeeded => 'Give a reason of at least 3 characters.';
+
+  @override
+  String get housePointsSaved => 'Points recorded.';
+
+  @override
+  String get houseCatGeneral => 'General';
+
+  @override
+  String get houseCatAcademics => 'Academics';
+
+  @override
+  String get houseCatSports => 'Sports';
+
+  @override
+  String get houseCatArts => 'Arts';
+
+  @override
+  String get houseCatDiscipline => 'Discipline';
+
+  @override
+  String get houseCatService => 'Service';
+
+  @override
+  String get curriculumTitle => 'Curriculum';
+
+  @override
+  String get curriculumBody => 'Active syllabus, units and course outcomes';
+
+  @override
+  String get curriculumEmpty => 'No active curriculum yet.';
+
+  @override
+  String get curriculumNoSubjects => 'This version has no subjects.';
+
+  @override
+  String get curriculumUnits => 'Units';
+
+  @override
+  String get curriculumOutcomes => 'Course outcomes';
 }

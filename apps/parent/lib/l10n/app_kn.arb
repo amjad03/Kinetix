@@ -616,9 +616,17 @@
   "schoolLife": "ಶಾಲಾ ಜೀವನ",
   "schoolLifeSubtitle": "ಡೈರಿ, ಸಭೆಗಳು, ಆರೋಗ್ಯ, ಕಾರ್ಯಕ್ರಮಗಳು ಮತ್ತು ಇನ್ನಷ್ಟು",
   "schoolLifeTitle": "{name} ಅವರ ಶಾಲಾ ಜೀವನ",
-  "@schoolLifeTitle": {"placeholders": {"name": {}}},
+  "@schoolLifeTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "childSchoolLife": "{name} ಅವರ ಶಾಲಾ ಜೀವನ",
-  "@childSchoolLife": {"placeholders": {"name": {}}},
+  "@childSchoolLife": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "lifeDiary": "ಶಾಲಾ ಡೈರಿ",
   "lifeDiarySub": "ತರಗತಿ ಕೆಲಸ, ಮನೆಕೆಲಸ ಮತ್ತು ಸೂಚನೆಗಳು",
   "lifePtm": "ಪೋಷಕ-ಶಿಕ್ಷಕರ ಸಭೆಗಳು",
@@ -634,25 +642,43 @@
   "lifeEvents": "ಕ್ಯಾಂಪಸ್ ಕಾರ್ಯಕ್ರಮಗಳು",
   "lifeEventsSub": "ನಿಮ್ಮ ಮಗುವನ್ನು ಕಾರ್ಯಕ್ರಮಗಳಿಗೆ ನೋಂದಾಯಿಸಿ",
   "diaryTitle": "{name} ಅವರ ಡೈರಿ",
-  "@diaryTitle": {"placeholders": {"name": {}}},
+  "@diaryTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "diaryEmpty": "ಇನ್ನೂ ಡೈರಿ ಬರಹಗಳಿಲ್ಲ.",
   "diaryClasswork": "ತರಗತಿ ಕೆಲಸ",
   "diaryHomework": "ಮನೆಕೆಲಸ",
   "diaryNotice": "ಸೂಚನೆ",
   "diaryBy": "{author} ಅವರಿಂದ",
-  "@diaryBy": {"placeholders": {"author": {}}},
+  "@diaryBy": {
+    "placeholders": {
+      "author": {}
+    }
+  },
   "diaryAcknowledge": "ನಾನು ಇದನ್ನು ಓದಿದ್ದೇನೆ",
   "diaryAcknowledged": "ಓದಲಾಗಿದೆ",
   "diaryAckDone": "ಓದಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ",
   "diaryToAcknowledge": "{count, plural, =1{ದೃಢೀಕರಿಸಲು 1 ಬರಹ} other{ದೃಢೀಕರಿಸಲು {count} ಬರಹಗಳು}}",
-  "@diaryToAcknowledge": {"placeholders": {"count": {"type": "int"}}},
+  "@diaryToAcknowledge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ptmTitle": "ಪೋಷಕ-ಶಿಕ್ಷಕರ ಸಭೆಗಳು",
   "ptmNone": "ಯಾವುದೇ ಸಭೆ ನಿಗದಿಯಾಗಿಲ್ಲ.",
   "ptmMeetings": "ಸಭೆಗಳು",
   "ptmMyBookings": "ನಿಮ್ಮ ಕಾಯ್ದಿರಿಸುವಿಕೆಗಳು",
   "ptmClosed": "ಮುಚ್ಚಲಾಗಿದೆ",
   "ptmNoSlots": "{name} ಅವರ ಶಿಕ್ಷಕರ ಬಳಿ ಖಾಲಿ ಸಮಯವಿಲ್ಲ.",
-  "@ptmNoSlots": {"placeholders": {"name": {}}},
+  "@ptmNoSlots": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "ptmBook": "ಕಾಯ್ದಿರಿಸಿ",
   "ptmBooked": "ಸಭೆ ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ",
   "ptmYourBooking": "ನಿಮ್ಮ ಕಾಯ್ದಿರಿಸುವಿಕೆ",
@@ -664,7 +690,11 @@
   "ptmKeep": "ಹಾಗೇ ಇರಲಿ",
   "ptmCancelled": "ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ",
   "earlyYearsTitle": "{name} ಅವರ ಆರಂಭಿಕ ವರ್ಷಗಳು",
-  "@earlyYearsTitle": {"placeholders": {"name": {}}},
+  "@earlyYearsTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "eyStory": "ಕಲಿಕೆಯ ಕಥೆ (PDF)",
   "eyChooseTerm": "ಅವಧಿಯನ್ನು ಆರಿಸಿ",
   "eyMilestones": "ಬೆಳವಣಿಗೆಯ ಹಂತಗಳು",
@@ -679,7 +709,11 @@
   "eyDeveloping": "ಬೆಳೆಯುತ್ತಿದೆ",
   "eyAchieved": "ಸಾಧಿಸಲಾಗಿದೆ",
   "healthTitle": "{name} ಅವರ ಆರೋಗ್ಯ",
-  "@healthTitle": {"placeholders": {"name": {}}},
+  "@healthTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "healthReadOnly": "ಈ ದಾಖಲೆಯನ್ನು ಶಾಲೆ ಇಟ್ಟುಕೊಂಡಿದೆ. ನೀವು ಇಲ್ಲಿ ಓದಬಹುದು.",
   "healthNoProfile": "ಯಾವುದೇ ಆರೋಗ್ಯ ವಿವರ ದಾಖಲಾಗಿಲ್ಲ.",
   "healthBlood": "ರಕ್ತದ ಗುಂಪು",
@@ -695,22 +729,46 @@
   "healthVaccinations": "ಲಸಿಕೆಗಳು",
   "healthNoVaccinations": "ಯಾವುದೇ ಲಸಿಕೆ ದಾಖಲಾಗಿಲ್ಲ.",
   "healthNextDue": "ಮುಂದಿನ ಡೋಸ್ {date}",
-  "@healthNextDue": {"placeholders": {"date": {}}},
+  "@healthNextDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "passportTitle": "{name} ಅವರ ಪಾಸ್‌ಪೋರ್ಟ್",
-  "@passportTitle": {"placeholders": {"name": {}}},
+  "@passportTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "passportVerified": "ಶಾಲೆಯಿಂದ ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
   "passportNotVerified": "ಶಾಲೆಯಿಂದ ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ",
   "passportDownload": "ಪಾಸ್‌ಪೋರ್ಟ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)",
   "passportSkills": "ಕೌಶಲಗಳು",
   "passportNoSkills": "ಇನ್ನೂ ಕೌಶಲಗಳಿಲ್ಲ.",
   "passportLevel": "ಹಂತ {level}",
-  "@passportLevel": {"placeholders": {"level": {"type": "int"}}},
+  "@passportLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
   "passportNoLevel": "ಇನ್ನೂ ಸಾಕಷ್ಟು ಪುರಾವೆ ಇಲ್ಲ",
   "passportEvidence": "{count, plural, =1{1 ಪುರಾವೆ} other{{count} ಪುರಾವೆಗಳು}}",
-  "@passportEvidence": {"placeholders": {"count": {"type": "int"}}},
+  "@passportEvidence": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "passportCertificates": "ಪ್ರಮಾಣಪತ್ರಗಳು",
   "passportIssued": "{date} ರಂದು ನೀಡಲಾಗಿದೆ",
-  "@passportIssued": {"placeholders": {"date": {}}},
+  "@passportIssued": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "passportActivities": "ಕ್ಲಬ್‌ಗಳು ಮತ್ತು ಕಾರ್ಯಕ್ರಮಗಳು",
   "surveysTitle": "ಸಮೀಕ್ಷೆಗಳು",
   "surveysNone": "ಯಾವುದೇ ಸಮೀಕ್ಷೆಗೆ ನಿಮ್ಮ ಉತ್ತರ ಬೇಕಿಲ್ಲ.",
@@ -722,12 +780,26 @@
   "surveyRequired": "ನಕ್ಷತ್ರ ಗುರುತಿರುವ ಎಲ್ಲಾ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ.",
   "surveyThanks": "ನಿಮ್ಮ ಉತ್ತರಗಳಿಗೆ ಧನ್ಯವಾದಗಳು",
   "eventsTitle": "{name} ಅವರ ಕಾರ್ಯಕ್ರಮಗಳು",
-  "@eventsTitle": {"placeholders": {"name": {}}},
+  "@eventsTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "eventsNone": "ಈಗ ಯಾವುದೇ ಕಾರ್ಯಕ್ರಮ ತೆರೆದಿಲ್ಲ.",
   "eventFee": "ಶುಲ್ಕ {amount}",
-  "@eventFee": {"placeholders": {"amount": {}}},
+  "@eventFee": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
   "eventSeatsLeft": "{count, plural, =0{ತುಂಬಿದೆ} =1{1 ಸೀಟು ಉಳಿದಿದೆ} other{{count} ಸೀಟುಗಳು ಉಳಿದಿವೆ}}",
-  "@eventSeatsLeft": {"placeholders": {"count": {"type": "int"}}},
+  "@eventSeatsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "eventRegister": "ನೋಂದಾಯಿಸಿ",
   "eventJoinWaitlist": "ಕಾಯುವ ಪಟ್ಟಿಗೆ ಸೇರಿ",
   "eventRegistered": "ನೋಂದಾಯಿಸಲಾಗಿದೆ",
@@ -739,7 +811,13 @@
   "lifePasses": "ಕಾರ್ಯಕ್ರಮ ಪಾಸ್‌ಗಳು",
   "lifePassesSub": "ಕ್ಯೂಆರ್ ಕೋಡ್ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆ",
   "passesTitle": "{name} ಅವರ ಕಾರ್ಯಕ್ರಮ ಪಾಸ್‌ಗಳು",
-  "@passesTitle": {"placeholders": {"name": {"type": "String"}}},
+  "@passesTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "passesNone": "ಇನ್ನೂ ಯಾವುದೇ ಕಾರ್ಯಕ್ರಮ ನೋಂದಣಿ ಇಲ್ಲ.",
   "passShowAtDoor": "ಬಾಗಿಲಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ",
   "passCheckedIn": "ಪ್ರವೇಶ ದಾಖಲಾಗಿದೆ",
@@ -748,5 +826,60 @@
   "passFeedbackTitle": "ಹೇಗಿತ್ತು?",
   "passFeedbackComment": "ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)",
   "passFeedbackSend": "ಕಳುಹಿಸಿ",
-  "passFeedbackThanks": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದ."
+  "passFeedbackThanks": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದ.",
+  "dpdpTitle": "ನನ್ನ ಡೇಟಾ ಹಕ್ಕುಗಳು",
+  "dpdpSubtitle": "ನಿಮ್ಮ ಮತ್ತು ನಿಮ್ಮ ಮಕ್ಕಳ ಡೇಟಾ ಡೌನ್‌ಲೋಡ್, ತಿದ್ದುಪಡಿ ಅಥವಾ ಅಳಿಸಿ",
+  "dpdpOfficerTitle": "ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ",
+  "dpdpOfficerNone": "ಇನ್ನೂ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿಯನ್ನು ನೇಮಿಸಿಲ್ಲ. ಶಾಲಾ ಕಚೇರಿಗೆ ಬರೆಯಿರಿ.",
+  "dpdpExportTitle": "ನನ್ನ ಡೇಟಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+  "dpdpExportBody": "ಶಾಲೆಯ ಬಳಿ ನಿಮ್ಮ ಮತ್ತು ನಿಮ್ಮ ಮಕ್ಕಳ ಬಗ್ಗೆ ಏನೇನಿದೆ ಎಂದು ನೋಡಿ.",
+  "dpdpExportAction": "ಸಾರಾಂಶ ತೋರಿಸಿ",
+  "dpdpExportPdf": "ಪಿಡಿಎಫ್ ಆಗಿ ತೆರೆಯಿರಿ",
+  "dpdpRecords": "ದಾಖಲೆಗಳು",
+  "dpdpCorrectTitle": "ನನ್ನ ವಿವರಗಳನ್ನು ತಿದ್ದಿ",
+  "dpdpField": "ತಿದ್ದಬೇಕಾದ ವಿವರ",
+  "dpdpFieldName": "ಹೆಸರು",
+  "dpdpFieldEmail": "ಇಮೇಲ್",
+  "dpdpFieldPhone": "ಫೋನ್",
+  "dpdpNewValue": "ಸರಿಯಾದ ಮಾಹಿತಿ",
+  "dpdpCorrectSend": "ತಿದ್ದುಪಡಿ ಕೋರಿಕೆ ಕಳುಹಿಸಿ",
+  "dpdpNeedValue": "ಸರಿಯಾದ ಮಾಹಿತಿಯನ್ನು ನಮೂದಿಸಿ.",
+  "dpdpEraseTitle": "ಅಳಿಸಲು ಕೋರಿ",
+  "dpdpEraseBody": "ಶಾಲೆಯು ಕೆಲವು ದಾಖಲೆಗಳನ್ನು ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಟ್ಟುಕೊಳ್ಳಬೇಕು. ಯಾವುದನ್ನು ಅಳಿಸಬಹುದು, ಯಾವುದನ್ನು ಅಳಿಸಲಾಗದು ಎಂದು ತಿಳಿಸುತ್ತೇವೆ.",
+  "dpdpEraseDetails": "ನಿಮಗೆ ಇದು ಏಕೆ ಬೇಕು? (ಐಚ್ಛಿಕ)",
+  "dpdpEraseSend": "ಅಳಿಸಲು ಕೋರಿಕೆ ಸಲ್ಲಿಸಿ",
+  "dpdpEraseConfirm": "ಶಾಲೆಗೆ ನಿಮ್ಮ ಡೇಟಾ ಅಳಿಸಲು ಕೇಳಬೇಕೇ? ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕಾದ ದಾಖಲೆಗಳು ಉಳಿಯುತ್ತವೆ.",
+  "dpdpRequestSent": "ಕೋರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ. ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ 30 ದಿನಗಳಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ.",
+  "dpdpRetentionNotice": "ಈ ದಾಖಲೆಗಳನ್ನು ಕಾನೂನಿನ ಪ್ರಕಾರ ಇಡಬೇಕು:",
+  "dpdpRequestsTitle": "ನನ್ನ ಕೋರಿಕೆಗಳು",
+  "dpdpRequestsNone": "ಇನ್ನೂ ಯಾವುದೇ ಕೋರಿಕೆ ಇಲ್ಲ.",
+  "dpdpKindCorrection": "ತಿದ್ದುಪಡಿ",
+  "dpdpKindErasure": "ಅಳಿಸುವಿಕೆ",
+  "dpdpStatusPending": "ಬಾಕಿ",
+  "dpdpStatusDone": "ಪೂರ್ಣ",
+  "dpdpStatusDeclined": "ತಿರಸ್ಕೃತ",
+  "dpdpStatusBlocked": "ಕಾನೂನಿನಂತೆ ಉಳಿಸಲಾಗಿದೆ",
+  "dpdpAbout": "ಈ ಕೋರಿಕೆ ಯಾರ ಬಗ್ಗೆ",
+  "dpdpAboutMe": "ನಾನು",
+  "dpdpAboutChild": "ಮಗು",
+  "reportCardsTitle": "ವರದಿ ಕಾರ್ಡ್‌ಗಳು",
+  "childReportCards": "ವರದಿ ಕಾರ್ಡ್‌ಗಳು: {name}",
+  "@childReportCards": {
+    "description": "Parent growth screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportCardsSubtitle": "ಅಂಕಗಳು, ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಬಡ್ತಿ",
+  "reportCardsNone": "ಇನ್ನೂ ಯಾವುದೇ ವರದಿ ಕಾರ್ಡ್ ಪ್ರಕಟವಾಗಿಲ್ಲ.",
+  "promotionPending": "ಬಡ್ತಿ ನಿರ್ಧಾರ ಬಾಕಿ",
+  "promotionPromoted": "ಬಡ್ತಿ ಪಡೆದಿದ್ದಾರೆ",
+  "promotionGrace": "ಗ್ರೇಸ್ ಅಂಕಗಳೊಂದಿಗೆ ಬಡ್ತಿ",
+  "promotionDetained": "ಬಡ್ತಿ ಇಲ್ಲ",
+  "promotedTo": "ಮುಂದಿನ ತರಗತಿ",
+  "coCurricular": "ಸಹ-ಪಠ್ಯ ಚಟುವಟಿಕೆಗಳು",
+  "behaviour": "ವರ್ತನೆ",
+  "reportCardPdf": "ಪಿಡಿಎಫ್ ಆಗಿ ತೆರೆಯಿರಿ"
 }

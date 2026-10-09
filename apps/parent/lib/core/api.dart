@@ -11,6 +11,7 @@ import '../l10n/l10n.dart';
 import 'boarding.dart';
 import 'campus.dart';
 import 'exam_models.dart';
+import 'growth.dart';
 import 'lms.dart';
 import 'models.dart';
 import 'school_life.dart';
@@ -183,6 +184,20 @@ abstract class ParentApi {
   /// The child's outcome passport (`GET /v1/passport/me?studentId=`) and its PDF.
   Future<OutcomePassport> passport(String childId);
   Future<Uint8List> passportPdf(String childId);
+
+  /// Data rights under the DPDP Act: the grievance officer, my data (and my children's) as a summary and as a PDF,
+  /// my requests, and a new correction or erasure request (`/v1/dpdp`). [kind] is `correction` or `erasure`;
+  /// a correction to my own details may name `fullName`, `email` or `phone` and its new value.
+  Future<DpdpOfficer> dpdpOfficer();
+  Future<DataExport> dpdpExport();
+  Future<Uint8List> dpdpExportPdf();
+  Future<List<DpdpRequest>> dpdpRequests();
+  Future<DpdpRequest> dpdpRequest({required String kind, String details = '', String? field, String? value});
+
+  /// A child's report cards, one full card and its PDF (`/v1/school/report-cards`). School mode; empty elsewhere.
+  Future<List<ReportCardRow>> reportCards(String childId);
+  Future<ReportCardDetail> reportCard(String id);
+  Future<Uint8List> reportCardPdf(String id);
 
   /// Open surveys addressed to this guardian (`GET /v1/surveys/mine`) and the answers to one.
   Future<List<Survey>> surveys();
@@ -558,6 +573,33 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<Uint8List> passportPdf(String childId) => _download('/v1/passport/students/$childId/pdf');
+
+  @override
+  Future<DpdpOfficer> dpdpOfficer() async => DpdpOfficer.fromJson(await _send('GET', '/v1/dpdp/grievance-officer') as Map<String, dynamic>);
+
+  @override
+  Future<DataExport> dpdpExport() async => DataExport.fromJson(await _send('GET', '/v1/dpdp/me/export') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> dpdpExportPdf() => _download('/v1/dpdp/me/export.pdf');
+
+  @override
+  Future<List<DpdpRequest>> dpdpRequests() async => [for (final r in await _send('GET', '/v1/dpdp/me/requests') as List) DpdpRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<DpdpRequest> dpdpRequest({required String kind, String details = '', String? field, String? value}) async => DpdpRequest.fromJson(
+    await _send('POST', '/v1/dpdp/me/requests', body: {'kind': kind, 'details': details, if (field != null && value != null) 'correction': {'field': field, 'value': value}}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<List<ReportCardRow>> reportCards(String childId) async =>
+      [for (final r in await _send('GET', '/v1/school/report-cards?studentId=$childId') as List) ReportCardRow.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<ReportCardDetail> reportCard(String id) async => ReportCardDetail.fromJson(await _send('GET', '/v1/school/report-cards/$id') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> reportCardPdf(String id) => _download('/v1/school/report-cards/$id/pdf');
 
   @override
   Future<List<Survey>> surveys() async => [for (final s in await _send('GET', '/v1/surveys/mine') as List) Survey.fromJson((s as Map).cast<String, dynamic>())];

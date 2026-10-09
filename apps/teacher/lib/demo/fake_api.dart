@@ -10,6 +10,7 @@ import 'package:flutter/painting.dart';
 
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../core/api.dart';
+import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
 import '../core/models.dart';
@@ -953,6 +954,88 @@ class FakeTeacherApi implements TeacherApi {
     calls.add('submitEvaluation $id');
     return (total: evalSaved.fold<double>(0, (a, e) => a + e.marks), needsThird: evalNeedsThird);
   }
+
+  List<EvalAnnotation> evalMine = [];
+  List<EvalAnnotation> evalEarlier = [];
+
+  @override
+  Future<({List<EvalAnnotation> mine, List<EvalAnnotation> earlier})> evaluationAnnotations(String id) async => (mine: evalMine, earlier: evalEarlier);
+
+  @override
+  Future<EvalAnnotation> addEvaluationAnnotation(String id, {required int pageIndex, required String kind, required double x, required double y, String? text}) async {
+    calls.add('addAnnotation $id $pageIndex $kind ${x.toStringAsFixed(2)},${y.toStringAsFixed(2)}${text == null ? '' : ' "$text"'}');
+    final a = EvalAnnotation(id: 'an${evalMine.length + 1}', pageIndex: pageIndex, kind: kind, x: x, y: y, text: text);
+    evalMine = [...evalMine, a];
+    return a;
+  }
+
+  @override
+  Future<void> deleteEvaluationAnnotation(String id, String annotationId) async {
+    calls.add('deleteAnnotation $id $annotationId');
+    evalMine = [for (final a in evalMine) if (a.id != annotationId) a];
+  }
+
+  List<AppraisalCategory> appraisalCategoryList = const [
+    AppraisalCategory(key: 'teaching_learning', label: 'Teaching, learning and evaluation', max: 100),
+    AppraisalCategory(key: 'research', label: 'Research and publications', max: 50),
+  ];
+  List<AppraisalCycle> appraisalCycleList = const [AppraisalCycle(id: 'cy1', period: '2026-27', opensOn: '2026-04-01', closesOn: '2026-12-31', status: 'open')];
+  MyAppraisal? myAppraisalData;
+
+  @override
+  Future<List<AppraisalCategory>> appraisalCategories() async => appraisalCategoryList;
+
+  @override
+  Future<List<AppraisalCycle>> appraisalCycles() async => appraisalCycleList;
+
+  @override
+  Future<MyAppraisal?> myAppraisal(String cycleId) async => myAppraisalData;
+
+  @override
+  Future<MyAppraisal> saveSelfAppraisal(String cycleId, Map<String, ({double score, String evidence})> scores, {required bool submit}) async {
+    calls.add('saveAppraisal $cycleId ${submit ? 'submit' : 'draft'} ${scores.entries.map((e) => '${e.key}=${numText(e.value.score)}/${e.value.evidence}').join(',')}');
+    return myAppraisalData = MyAppraisal(status: submit ? 'self_submitted' : 'draft', scores: scores, selfPercent: 50);
+  }
+
+  List<HouseRow> houseList = const [
+    HouseRow(id: 'h1', name: 'Kaveri', colour: '#1d4ed8', motto: 'Flow on', members: 12, points: 140, rank: 1),
+    HouseRow(id: 'h2', name: 'Tunga', colour: '#b91c1c', motto: '', members: 10, points: 90, rank: 2),
+  ];
+  List<HouseMember> houseMemberList = const [
+    HouseMember(studentId: 's1', name: 'Asha Rao', className: 'BCom Sem 3 A', points: 20, isCaptain: true),
+    HouseMember(studentId: 's2', name: 'Vikram Shetty', className: 'BCom Sem 3 A', points: 5, isCaptain: false),
+  ];
+
+  @override
+  Future<List<HouseRow>> houses() async => houseList;
+
+  @override
+  Future<List<HouseMember>> houseMembers(String houseId) async => houseMemberList;
+
+  @override
+  Future<void> awardHousePoints(String houseId, {required int points, required String reason, required String category, String? studentId}) async {
+    calls.add('awardPoints $houseId $points $category "$reason"${studentId == null ? '' : ' $studentId'}');
+  }
+
+  List<CurriculumVersionRow> curriculumList = const [
+    CurriculumVersionRow(id: 'cv1', label: 'BCom 2024 v2', programName: 'BCom', regulationYear: 2024, status: 'active'),
+    CurriculumVersionRow(id: 'cv0', label: 'BCom 2024 v1', programName: 'BCom', regulationYear: 2024, status: 'archived'),
+  ];
+  CurriculumDetail curriculumDetailData = const CurriculumDetail(label: 'BCom 2024 v2', subjects: [
+    CurriculumSubject(
+      code: 'ACC301',
+      name: 'Financial Accounting',
+      term: 'Sem 3',
+      units: [CurriculumUnit(title: 'Goodwill', hours: 8, topics: ['Meaning', 'Valuation'])],
+      cos: [CurriculumCo(code: 'CO1', statement: 'Value goodwill by common methods')],
+    ),
+  ]);
+
+  @override
+  Future<List<CurriculumVersionRow>> curriculumVersions() async => curriculumList;
+
+  @override
+  Future<CurriculumDetail> curriculumVersion(String id) async => curriculumDetailData;
 
   List<MenteeInfo> menteeList = [];
   List<MentoringSession> mentoringSessionList = [];

@@ -6,6 +6,7 @@ import '../../core/models.dart';
 import '../../core/study.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'peer_review_screen.dart';
 import 'submission_panel.dart';
 
 /// One piece of homework: what to do, by when, who set it, and handing it in.
@@ -84,6 +85,13 @@ class HomeworkScreen extends StatelessWidget {
             ),
             const SizedBox(height: Kx.s16),
             SubmissionPanel(api: study.api, homework: hw, studentId: study.student.id),
+            const SizedBox(height: Kx.s8),
+            OutlinedButton.icon(
+              key: const Key('openPeerReview'),
+              onPressed: () => PeerReviewScreen.open(context, study.api, hw.id),
+              icon: const Icon(Icons.rate_review_outlined),
+              label: Text(context.l10n.peerOpen),
+            ),
             const SizedBox(height: Kx.s16),
             fact(Icons.event_outlined, context.l10n.factDue, context.fmt.longDay(hw.dueOn)),
             fact(Icons.person_outline, context.l10n.setBy, hw.teacher),

@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
+import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
 import 'models.dart';
@@ -126,6 +127,26 @@ abstract class TeacherApi {
 
   /// Locks the valuation; `needsThird` is true when a second valuation differs too much from the first.
   Future<({double total, bool needsThird})> submitEvaluation(String id);
+
+  /// Ticks, crosses and comments on a script's pages: mine, plus read-only marks of earlier rounds for a third valuer.
+  Future<({List<EvalAnnotation> mine, List<EvalAnnotation> earlier})> evaluationAnnotations(String id);
+  Future<EvalAnnotation> addEvaluationAnnotation(String id, {required int pageIndex, required String kind, required double x, required double y, String? text});
+  Future<void> deleteEvaluationAnnotation(String id, String annotationId);
+
+  /// Self-appraisal: the form's categories, the cycles, my form for a cycle (null until started) and saving or submitting it.
+  Future<List<AppraisalCategory>> appraisalCategories();
+  Future<List<AppraisalCycle>> appraisalCycles();
+  Future<MyAppraisal?> myAppraisal(String cycleId);
+  Future<MyAppraisal> saveSelfAppraisal(String cycleId, Map<String, ({double score, String evidence})> scores, {required bool submit});
+
+  /// Houses ranked by points, one house with its members, and awarding (or deducting) points.
+  Future<List<HouseRow>> houses();
+  Future<List<HouseMember>> houseMembers(String houseId);
+  Future<void> awardHousePoints(String houseId, {required int points, required String reason, required String category, String? studentId});
+
+  /// The curriculum versions and one version's subjects with units and course outcomes.
+  Future<List<CurriculumVersionRow>> curriculumVersions();
+  Future<CurriculumDetail> curriculumVersion(String id);
 
   /// Mentoring: my mentees with risk flags, a mentee's sessions and plans, logging a session, intervention plans.
   Future<List<MenteeInfo>> myMentees();
@@ -509,6 +530,59 @@ class HttpTeacherApi implements TeacherApi {
     final j = await _send('POST', '/v1/evaluation/allocations/$id/submit') as Map<String, dynamic>;
     return (total: (j['total'] as num).toDouble(), needsThird: j['needsThird'] == true);
   }
+
+  @override
+  Future<({List<EvalAnnotation> mine, List<EvalAnnotation> earlier})> evaluationAnnotations(String id) async {
+    final j = await _send('GET', '/v1/evaluation/allocations/$id/annotations') as Map<String, dynamic>;
+    return (
+      mine: _rows(j['mine'], EvalAnnotation.fromJson),
+      earlier: _rows(j['earlier'], (e) => EvalAnnotation.fromJson(e, earlier: true)),
+    );
+  }
+
+  @override
+  Future<EvalAnnotation> addEvaluationAnnotation(String id, {required int pageIndex, required String kind, required double x, required double y, String? text}) async =>
+      EvalAnnotation.fromJson(await _send('POST', '/v1/evaluation/allocations/$id/annotations', body: {'pageIndex': pageIndex, 'kind': kind, 'x': x, 'y': y, 'text': ?text}) as Map<String, dynamic>);
+
+  @override
+  Future<void> deleteEvaluationAnnotation(String id, String annotationId) async => _send('DELETE', '/v1/evaluation/allocations/$id/annotations/$annotationId');
+
+  @override
+  Future<List<AppraisalCategory>> appraisalCategories() async => _rows((await _send('GET', '/v1/hr/appraisal-categories') as Map)['categories'], AppraisalCategory.fromJson);
+
+  @override
+  Future<List<AppraisalCycle>> appraisalCycles() async => _rows(await _send('GET', '/v1/hr/appraisal-cycles'), AppraisalCycle.fromJson);
+
+  @override
+  Future<MyAppraisal?> myAppraisal(String cycleId) async {
+    final j = await _send('GET', '/v1/hr/appraisals/me?cycleId=$cycleId');
+    return j == null ? null : MyAppraisal.fromJson(j as Map<String, dynamic>);
+  }
+
+  @override
+  Future<MyAppraisal> saveSelfAppraisal(String cycleId, Map<String, ({double score, String evidence})> scores, {required bool submit}) async => MyAppraisal.fromJson(
+    await _send('PUT', '/v1/hr/appraisals/me', body: {
+      'cycleId': cycleId,
+      'submit': submit,
+      'scores': {for (final e in scores.entries) e.key: {'score': e.value.score, if (e.value.evidence.isNotEmpty) 'evidence': e.value.evidence}},
+    }) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<List<HouseRow>> houses() async => _rows(await _send('GET', '/v1/houses/leaderboard'), HouseRow.fromJson);
+
+  @override
+  Future<List<HouseMember>> houseMembers(String houseId) async => _rows((await _send('GET', '/v1/houses/$houseId') as Map)['members'], HouseMember.fromJson);
+
+  @override
+  Future<void> awardHousePoints(String houseId, {required int points, required String reason, required String category, String? studentId}) async =>
+      _send('POST', '/v1/houses/$houseId/points', body: {'points': points, 'reason': reason, 'category': category, 'studentId': ?studentId});
+
+  @override
+  Future<List<CurriculumVersionRow>> curriculumVersions() async => _rows(await _send('GET', '/v1/curriculum/versions'), CurriculumVersionRow.fromJson);
+
+  @override
+  Future<CurriculumDetail> curriculumVersion(String id) async => CurriculumDetail.fromJson(await _send('GET', '/v1/curriculum/versions/$id') as Map<String, dynamic>);
 
   @override
   Future<List<MenteeInfo>> myMentees() async => _rows(await _send('GET', '/v1/mentoring/risk?all=true'), MenteeInfo.fromJson);

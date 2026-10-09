@@ -16,6 +16,8 @@ import '../grievances/grievances.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_tab.dart';
+import '../exams/report_card_screen.dart';
+import '../privacy/dpdp_screen.dart';
 import '../privacy/privacy.dart';
 import '../school_life/school_life_screen.dart';
 import '../syllabus/syllabus_screen.dart';
@@ -247,6 +249,15 @@ class ProfileTab extends StatelessWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => CalendarScreen.open(context, family.api),
               ),
+              for (final child in family.children)
+                ListTile(
+                  key: Key('profile-reportcards-${child.id}'),
+                  leading: const Icon(Icons.workspace_premium_outlined),
+                  title: Text(family.children.length == 1 ? l.reportCardsTitle : l.childReportCards(child.firstName)),
+                  subtitle: Text(l.reportCardsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ReportCardsScreen.open(context, family.api, child),
+                ),
               if (family.children.isNotEmpty) KxSectionHeader(l.privacy),
               for (final child in family.children)
                 ListTile(
@@ -257,6 +268,14 @@ class ProfileTab extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => PrivacyScreen.open(context, family.api, child),
                 ),
+              ListTile(
+                key: const Key('profile-dpdp'),
+                leading: const Icon(Icons.verified_user_outlined),
+                title: Text(l.dpdpTitle),
+                subtitle: Text(l.dpdpSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => DpdpScreen.open(context, family.api, family.children),
+              ),
               KxSectionHeader(l.settings),
               LanguageTile(onChanged: state.setLanguage),
               KxSectionHeader(l.account),

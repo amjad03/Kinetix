@@ -8,6 +8,7 @@ import '../../core/files.dart';
 import '../../core/l10n.dart';
 import '../calendar/calendar_screen.dart';
 import '../driver/driver_screen.dart';
+import '../hr/appraisal_screen.dart';
 import '../hr/check_in_screen.dart';
 import '../hr/leave_screen.dart';
 import '../hr/payslips_screen.dart';
@@ -17,6 +18,7 @@ import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import '../work/duties_screens.dart';
 import '../work/evaluation_screens.dart';
+import '../work/houses_curriculum_screens.dart';
 import '../work/mentoring_screens.dart';
 import '../work/requests_screen.dart';
 import '../work/roster_surveys_clubs.dart';
@@ -273,6 +275,9 @@ class ProfileTab extends StatelessWidget {
               ('openCourseRoster', Icons.groups_outlined, l.courseRosterTitle, l.courseRosterBody, () => CourseRosterScreen(api: state.api, userId: me.id)),
               ('openSurveys', Icons.poll_outlined, l.surveysTitle, l.surveysBody, () => SurveysScreen(api: state.api)),
               ('openClubs', Icons.groups_2_outlined, l.clubsTitle, l.clubsBody, () => ClubsScreen(api: state.api, userId: me.id)),
+              ('openAppraisal', Icons.assignment_ind_outlined, l.appraisalTitle, l.appraisalBody, () => AppraisalScreen(api: state.api)),
+              ('openHouses', Icons.emoji_events_outlined, l.housesTitle, l.housesBody, () => HousesScreen(api: state.api)),
+              ('openCurriculum', Icons.menu_book_outlined, l.curriculumTitle, l.curriculumBody, () => CurriculumScreen(api: state.api)),
             ])
               ListTile(
                 key: Key(key),
