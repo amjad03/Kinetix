@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import type { CertificateKind, CertificateRequest, CertificateStatus, CertificateSubject, CertificateTemplate } from '@kinetix/shared';
 import { and, asc, desc, eq, inArray, or, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -167,12 +168,21 @@ export class CertificatesService {
   }
 
   async decide(tx: Tx, p: UserPrincipal, id: string, status: 'approved' | 'rejected', note: string | null): Promise<CertificateRequest> {
-    const [c] = await tx.select().from(certificates).where(eq(certificates.id, id)).for('update');
+    const [c] = await tx.select().from(certificates).where(eq(certificates.id, id));
     if (!c) throw new NotFoundException('Certificate not found');
     if (c.subjectType === 'staff' ? !hasRole(p, ['tenant_admin', 'principal', 'hr_manager']) : !hasRole(p, ['tenant_admin', 'principal'])) throw new ForbiddenException('Insufficient role');
+    // Rejecting grants nothing, so only approval has to go through the workflow when the institution has one.
+    if (status === 'approved') await assertNotRouted(tx, BOUND.certificate);
+    return this.applyDecision(tx, { tenantId: p.tenantId, userId: p.userId }, id, status, note);
+  }
+
+  /** Records the decision of whoever is entitled to make it (a role check in {@link decide}, or the approvers of a workflow). */
+  async applyDecision(tx: Tx, actor: { tenantId: string; userId: string }, id: string, status: 'approved' | 'rejected', note: string | null): Promise<CertificateRequest> {
+    const [c] = await tx.select().from(certificates).where(eq(certificates.id, id)).for('update');
+    if (!c) throw new NotFoundException('Certificate not found');
     if (c.status !== 'requested') throw new ConflictException(`This request is already ${c.status}`);
-    await tx.update(certificates).set({ status, decidedBy: p.userId, decidedAt: new Date(), decisionNote: note }).where(eq(certificates.id, id));
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `certificate.${status}`, subjectType: 'certificate', subjectId: id, data: { note } });
+    await tx.update(certificates).set({ status, decidedBy: actor.userId, decidedAt: new Date(), decisionNote: note }).where(eq(certificates.id, id));
+    await audit(tx, { tenantId: actor.tenantId, actorType: 'user', actorId: actor.userId, action: `certificate.${status}`, subjectType: 'certificate', subjectId: id, data: { note } });
     return (await this.views(tx, [await this.get(tx, id)]))[0];
   }
 

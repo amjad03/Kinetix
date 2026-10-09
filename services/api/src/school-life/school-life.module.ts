@@ -11,5 +11,6 @@ import { SchoolLifeService } from './school-life.service.js';
   imports: [NotificationsModule],
   controllers: [DiaryController, TeacherDiaryController, ParentDiaryController, PtmController, EarlyYearsController, ParentEarlyYearsController, HealthRecordsController, ParentHealthController],
   providers: [SchoolLifeService, DiaryService],
+  exports: [SchoolLifeService],
 })
 export class SchoolLifeModule {}

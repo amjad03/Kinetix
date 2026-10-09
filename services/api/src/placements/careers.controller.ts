@@ -10,6 +10,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { alumniEventRsvps, alumniEvents, alumniProfiles, internshipDiary, internships, mentoringRequests, userRoles, students } from '../db/schema.js';
 import { canMoveInternship } from './eligibility.js';
 import { MENTOR_ROLES, PLACEMENT_ROLES, PLACEMENT_VIEW_ROLES, checkVersion, found, hasRole } from './placements.access.js';
+import { InternshipExtrasService } from './internship-extras.service.js';
 import { PlacementsService } from './placements.service.js';
 
 const Opt = (n: number) => z.string().trim().max(n).optional();
@@ -47,6 +48,7 @@ export class CareersController {
   constructor(
     private readonly db: DbService,
     private readonly svc: PlacementsService,
+    private readonly extras: InternshipExtrasService,
   ) {}
 
   // ---- internships --------------------------------------------------------------------------
@@ -105,7 +107,9 @@ export class CareersController {
       const [row] = await tx.update(internships).set({ status: b.status, version: i.version + 1 }).where(eq(internships.id, id)).returning();
       await auditUser(tx, p, `internship.${b.status}`, 'internship', id, { from: i.status });
       await this.svc.notifyStudent(tx, i.studentId, i.title, `Internship ${b.status}`, `internship:${id}:${b.status}`);
-      return row;
+      // A finished internship with good attendance gets its certificate straight away.
+      const certificate = b.status === 'completed' ? await this.extras.issueCertificate(tx, p, row) : undefined;
+      return certificate ? { ...row, certificate } : row;
     });
   }
 

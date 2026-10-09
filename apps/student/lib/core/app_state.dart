@@ -56,7 +56,10 @@ class AppState extends ChangeNotifier {
   StudentProfile? student;
   bool restoring = true;
 
-  bool get signedIn => me != null && student != null;
+  bool get signedIn => me != null && (student != null || me!.isAlumni);
+
+  /// Signed in as a graduate only (no student record): the app shows the alumni home.
+  bool get alumniOnly => me != null && student == null && me!.isAlumni;
   String get serverUrl => prefs.getString(_kServer) ?? defaultServerUrl;
   String get rememberedTenant => prefs.getString(_kTenant) ?? '';
   String get rememberedLogin => prefs.getString(_kLogin) ?? '';
@@ -119,6 +122,8 @@ class AppState extends ChangeNotifier {
         if (profile.isStudent) {
           student = await api.student();
           me = profile;
+        } else if (profile.isAlumni) {
+          me = profile;
         } else {
           await tokens.delete();
           api.token = null;
@@ -167,6 +172,19 @@ class AppState extends ChangeNotifier {
   /// Only students get in; remembers the server, institution and login, and keeps the token.
   Future<void> _completeSignIn({required String server, required String tenant, required String login}) async {
     final profile = await api.me();
+    if (!profile.isStudent && profile.isAlumni) {
+      // A graduate: no student record, the alumni home instead.
+      await prefs.setString(_kServer, server);
+      await prefs.setString(_kTenant, tenant);
+      await prefs.setString(_kLogin, login);
+      await tokens.write(api.token!);
+      me = profile;
+      student = null;
+      notifyListeners();
+      unawaited(_syncLanguage());
+      unawaited(push.register());
+      return;
+    }
     if (!profile.isStudent) {
       api.token = null;
       final (hint, problem) = profile.roles.contains('guardian')

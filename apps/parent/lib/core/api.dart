@@ -10,6 +10,7 @@ import 'package:kinetix_lesson/kinetix_lesson.dart';
 import '../l10n/l10n.dart';
 import 'boarding.dart';
 import 'campus.dart';
+import 'conduct.dart';
 import 'exam_models.dart';
 import 'growth.dart';
 import 'lms.dart';
@@ -152,6 +153,20 @@ abstract class ParentApi {
 
   /// Records that a guardian has read the entry (`POST /v1/parent/children/:id/diary/:entryId/acknowledge`).
   Future<void> acknowledgeDiary(String childId, String entryId);
+
+  /// Which sections the school shows parents (`GET /v1/parent/visibility`); a hidden section answers 403 `PARENT_VISIBILITY_OFF`.
+  Future<ParentVisibility> visibility();
+
+  /// The child's clubs and posts, events, house, co-curricular grades and achievements (`GET /v1/parent/children/:id/activities`).
+  Future<ChildActivities> activities(String childId);
+
+  /// The child's behaviour grade, incidents with the actions taken, and house recognitions (`GET /v1/parent/children/:id/behaviour`).
+  Future<ChildBehaviour> behaviour(String childId);
+
+  /// Notes the school sent this parent about incidents (`GET /v1/discipline/my-notices`) and the acknowledgement of one
+  /// (`POST /v1/discipline/parent-contacts/:id/acknowledge`).
+  Future<List<SchoolNotice>> schoolNotices();
+  Future<void> acknowledgeNotice(String noticeId);
 
   /// Parent-teacher meetings, newest first (`GET /v1/ptm/events`).
   Future<List<PtmEvent>> ptmEvents();
@@ -534,6 +549,21 @@ class HttpParentApi implements ParentApi {
 
   @override
   Future<void> acknowledgeDiary(String childId, String entryId) async => _send('POST', '/v1/parent/children/$childId/diary/$entryId/acknowledge');
+
+  @override
+  Future<ParentVisibility> visibility() async => ParentVisibility.fromJson((await _send('GET', '/v1/parent/visibility') as Map).cast<String, dynamic>());
+
+  @override
+  Future<ChildActivities> activities(String childId) async => ChildActivities.fromJson((await _send('GET', '/v1/parent/children/$childId/activities') as Map).cast<String, dynamic>());
+
+  @override
+  Future<ChildBehaviour> behaviour(String childId) async => ChildBehaviour.fromJson((await _send('GET', '/v1/parent/children/$childId/behaviour') as Map).cast<String, dynamic>());
+
+  @override
+  Future<List<SchoolNotice>> schoolNotices() async => [for (final n in await _send('GET', '/v1/discipline/my-notices') as List) SchoolNotice.fromJson((n as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> acknowledgeNotice(String noticeId) async => _send('POST', '/v1/discipline/parent-contacts/$noticeId/acknowledge');
 
   @override
   Future<List<PtmEvent>> ptmEvents() async => [for (final e in await _send('GET', '/v1/ptm/events') as List) PtmEvent.fromJson((e as Map).cast<String, dynamic>())];

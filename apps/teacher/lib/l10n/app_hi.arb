@@ -1013,5 +1013,334 @@
   "courseFilesReviewed": "समीक्षा हो चुकी",
   "courseFilesAwaiting": "समीक्षा की प्रतीक्षा",
   "courseFilesOpenFailed": "फ़ाइल नहीं खुल सकी",
-  "courseFilesNone": "अभी कोई संस्करण नहीं बना"
+  "courseFilesNone": "अभी कोई संस्करण नहीं बना",
+  "accessEmbargoed": "रोक के अधीन",
+  "accessEmbargoedUntil": "{date} तक रोक",
+  "@accessEmbargoedUntil": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accessOpen": "खुला",
+  "accessRestricted": "सीमित पहुँच",
+  "cfAssessments": "मूल्यांकन",
+  "cfAttendance": "उपस्थिति सत्र",
+  "cfLessonPlans": "पाठ योजनाएँ",
+  "cfOutcomes": "पाठ्यक्रम परिणाम",
+  "cfPeriods": "पीरियड",
+  "cfRecordings": "रिकॉर्डिंग",
+  "cfTopics": "पढ़ाई गई विषय-वस्तु",
+  "cfWhiteboards": "व्हाइटबोर्ड",
+  "courseFileGenerate": "नया संस्करण बनाएँ",
+  "courseFileGenerated": "संस्करण {n} बन गया।",
+  "@courseFileGenerated": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileMeta": "{date} को {name} द्वारा बनाया गया · {size}",
+  "@courseFileMeta": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileNone": "अभी तक कोई संस्करण नहीं बना है।",
+  "courseFileNotReviewed": "अभी समीक्षा नहीं हुई",
+  "courseFileOpenPdf": "PDF खोलें",
+  "courseFileReviewed": "{name} द्वारा समीक्षा की गई",
+  "@courseFileReviewed": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseFileVersion": "संस्करण {n}",
+  "@courseFileVersion": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "datasetFiles": "{count, plural, =1{1 फ़ाइल} other{{count} फ़ाइलें}}",
+  "@datasetFiles": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "obeAttainmentDirect": "प्रत्यक्ष {n}",
+  "@obeAttainmentDirect": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAttainmentHeader": "प्रत्येक CO की उपलब्धि",
+  "obeAttainmentIndirect": "अप्रत्यक्ष {n}",
+  "@obeAttainmentIndirect": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeAttainmentNone": "इस वर्ष की उपलब्धि की गणना अभी नहीं हुई है।",
+  "obeAttainmentRestricted": "उपलब्धि के आँकड़े विभागाध्यक्ष और गुणवत्ता कार्यालय को दिखाए जाते हैं।",
+  "obeAttainmentTarget": "लक्ष्य {n}",
+  "@obeAttainmentTarget": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "obeBody": "पाठ्यक्रम परिणाम, CO–PO मैट्रिक्स और उपलब्धि",
+  "obeMatrixHeader": "CO–PO मैट्रिक्स",
+  "obeMatrixLegend": "संबंध की मज़बूती: 1 कम, 2 मध्यम, 3 अधिक",
+  "obeMatrixNoPos": "इस विषय के कार्यक्रम के लिए अभी कोई कार्यक्रम परिणाम (PO/PSO) तय नहीं हैं।",
+  "obeMet": "लक्ष्य पूरा",
+  "obeNoOutcomes": "इस विषय के लिए अभी कोई पाठ्यक्रम परिणाम तय नहीं हैं।",
+  "obeNotMet": "लक्ष्य से कम",
+  "obeStatusActive": "सक्रिय",
+  "obeStatusDraft": "ड्राफ़्ट",
+  "obeStatusRetired": "पुराना",
+  "obeSubjectsEmpty": "दिखाने के लिए कोई विषय नहीं है।",
+  "obeTitle": "पाठ्यक्रम परिणाम (CO/PO)",
+  "obeVersion": "संस्करण {n}",
+  "@obeVersion": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeMphil": "एम.फिल.",
+  "programmePhd": "पीएच.डी.",
+  "projAccept": "स्वीकार करें",
+  "projAccepted": "स्वीकृत",
+  "projAddLink": "लिंक जोड़ें",
+  "projCommentHint": "संदेश लिखें",
+  "projCritDocumentation": "दस्तावेज़ीकरण",
+  "projCritExecution": "कार्यान्वयन",
+  "projCritTeamwork": "टीमवर्क",
+  "projCritUnderstanding": "समझ",
+  "projDecline": "अस्वीकार करें",
+  "projDeclined": "अस्वीकृत",
+  "projDiscussionEmpty": "अभी कोई संदेश नहीं है। चर्चा शुरू करें।",
+  "projFiles": "फ़ाइलें और लिंक",
+  "projFilesNone": "अभी कोई फ़ाइल या लिंक नहीं है।",
+  "projHub": "शोकेस और भर्ती",
+  "projHubLookingFor": "चाहिए कौशल (अल्पविराम से अलग करें)",
+  "projHubOpenings": "खाली स्थान",
+  "projHubRecruiting": "विद्यार्थियों की तलाश है",
+  "projHubSaved": "सहेजा गया।",
+  "projHubShowcase": "शोकेस पर दिखाएँ",
+  "projHubSummary": "सारांश",
+  "projLinkInvalid": "शीर्षक और http से शुरू होने वाला वेब लिंक लिखें।",
+  "projLinkTitle": "शीर्षक",
+  "projLinkUrl": "वेब लिंक",
+  "projMatchFit": "{pct}% मेल",
+  "@projMatchFit": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "projMatches": "सुझाए गए विद्यार्थी",
+  "projMatchesNone": "मेल खाने वाले विद्यार्थी देखने के लिए चाहिए कौशल जोड़ें।",
+  "projMembers": "टीम",
+  "projMilestoneDone": "{date} को पूरा हुआ",
+  "@projMilestoneDone": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projMilestoneDue": "{date} तक",
+  "@projMilestoneDue": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projMilestones": "मील के पत्थर",
+  "projMilestonesNone": "अभी कोई मील का पत्थर नहीं है।",
+  "projMyRole": "आपकी भूमिका: {role}",
+  "@projMyRole": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "projPending": "लंबित",
+  "projPi": "{name} के नेतृत्व में",
+  "@projPi": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projRecordResult": "परिणाम दर्ज करें",
+  "projRecruiting": "भर्ती जारी",
+  "projReply": "उत्तर दें",
+  "projReplyingTo": "{name} को उत्तर",
+  "@projReplyingTo": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projRequests": "जुड़ने के अनुरोध",
+  "projRequestsNone": "जुड़ने का कोई अनुरोध नहीं है।",
+  "projReviewAverage": "{count} समीक्षाएँ, औसत {pct}%",
+  "@projReviewAverage": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "projReviewComment": "टिप्पणी",
+  "projReviewExternal": "बाहरी",
+  "projReviewMentor": "मार्गदर्शक",
+  "projReviewPeer": "सहपाठी",
+  "projReviewsEmpty": "अभी कोई समीक्षा नहीं है।",
+  "projRoleAdmin": "प्रशासक",
+  "projRoleMember": "सदस्य",
+  "projRolePi": "परियोजना प्रमुख",
+  "projRoleStudent": "विद्यार्थी",
+  "projRoleSupervisor": "पर्यवेक्षक",
+  "projScheduleViva": "वाइवा तय करें",
+  "projScoreOutOf": "हर मानदंड को {max} में से अंक दें",
+  "@projScoreOutOf": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "projShowcase": "शोकेस",
+  "projTabDiscussion": "चर्चा",
+  "projTabOverview": "अवलोकन",
+  "projTabReviews": "समीक्षाएँ",
+  "projTabTeam": "टीम और भर्ती",
+  "projVivaPanel": "पैनल सदस्य (अल्पविराम से अलग करें)",
+  "projVivaPanelNeeded": "कम से कम एक पैनल सदस्य जोड़ें।",
+  "projVivaRemarks": "टिप्पणियाँ",
+  "projVivaScore": "अंक (0–100, वैकल्पिक)",
+  "projVivaScoreInvalid": "0 से 100 के बीच अंक लिखें।",
+  "projVivaVenue": "स्थान",
+  "projVivas": "वाइवा",
+  "projVivasNone": "कोई वाइवा तय नहीं है।",
+  "projWriteReview": "मार्गदर्शक समीक्षा लिखें",
+  "projectsBody": "आपकी विद्यार्थी परियोजनाएँ: चर्चा, समीक्षा, वाइवा, भर्ती",
+  "projectsEmpty": "आप किसी परियोजना में शामिल नहीं हैं।",
+  "projectsTitle": "परियोजना मार्गदर्शन",
+  "pubAddByDoi": "DOI से जोड़ें",
+  "pubDoiBody": "प्रकाशन का DOI लिखें; KINETIX उसका विवरण DOI रजिस्ट्री से पढ़ लेगा।",
+  "pubImport": "आयात करें",
+  "pubKindBook": "पुस्तक",
+  "pubKindChapter": "पुस्तक अध्याय",
+  "pubKindConference": "सम्मेलन शोध-पत्र",
+  "pubKindJournal": "पत्रिका लेख",
+  "resKindCapstone": "कैपस्टोन",
+  "resKindIndustry": "उद्योग",
+  "resKindResearch": "शोध",
+  "resStatusActive": "सक्रिय",
+  "resStatusCancelled": "रद्द",
+  "resStatusCompleted": "पूर्ण",
+  "resStatusOnHold": "रोका गया",
+  "researchBody": "परियोजनाएँ, शोधार्थी, प्रकाशन और डेटासेट",
+  "researchDatasets": "डेटासेट",
+  "researchDatasetsEmpty": "अभी कोई डेटासेट नहीं है।",
+  "researchProjects": "परियोजनाएँ",
+  "researchProjectsEmpty": "आपकी कोई शोध परियोजना नहीं है।",
+  "researchPublications": "प्रकाशन",
+  "researchPublicationsEmpty": "अभी कोई प्रकाशन दर्ज नहीं है।",
+  "researchScholars": "शोधार्थी",
+  "researchScholarsEmpty": "आप किसी शोधार्थी का पर्यवेक्षण नहीं कर रहे हैं।",
+  "researchTitle": "शोध",
+  "scholarAwarded": "उपाधि प्रदान",
+  "scholarEnrolled": "नामांकित",
+  "scholarThesisSubmitted": "शोध-प्रबंध जमा",
+  "scholarWithdrawn": "वापस लिया",
+  "similarityNone": "समानता जाँच अभी नहीं हुई है।",
+  "similarityScore": "समानता {pct}% (सीमा {limit}%)",
+  "@similarityScore": {
+    "description": "Course files, outcomes, research and project mentoring.",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "thesisAbstract": "सार",
+  "thesisHistory": "इतिहास",
+  "thesisNeedsText": "जमा करने से पहले शोध-प्रबंध का पाठ जोड़ना होगा।",
+  "thesisNone": "अभी कोई शोध-प्रबंध रिकॉर्ड नहीं है। खोलने के लिए छुएँ।",
+  "thesisOpen": "शोध-प्रबंध रिकॉर्ड खोलें",
+  "thesisStageAwarded": "उपाधि प्रदान",
+  "thesisStageDraft": "ड्राफ़्ट",
+  "thesisStageExamination": "परीक्षण",
+  "thesisStageLabel": "चरण",
+  "thesisStageSubmitted": "जमा किया गया",
+  "thesisStageSynopsis": "सिनॉप्सिस",
+  "thesisStageViva": "वाइवा",
+  "thesisSubmit": "शोध-प्रबंध जमा करें",
+  "thesisSubmitBody": "शोध-प्रबंध ड्राफ़्ट से जमा की स्थिति में चला जाएगा। आगे की कार्यवाही शोध कार्यालय करेगा।",
+  "thesisTitleLabel": "शोध-प्रबंध का शीर्षक",
+  "thesisVivas": "वाइवा परीक्षाएँ",
+  "thesisVivasNone": "अभी कोई वाइवा तय नहीं है।",
+  "vivaCancelled": "रद्द",
+  "vivaFailed": "अनुत्तीर्ण",
+  "vivaHeld": "संपन्न",
+  "vivaPassed": "उत्तीर्ण",
+  "vivaRevise": "संशोधन कर पुनः जमा करें",
+  "vivaScheduled": "तय"
 }

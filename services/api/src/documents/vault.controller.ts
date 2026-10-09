@@ -127,6 +127,56 @@ export class VaultController {
     });
   }
 
+  /** Every version of a document, oldest first: the chain of uploads that replaced one another. */
+  @Get('files/:id/versions')
+  @Auth('user')
+  versions(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [r] = await tx.select().from(vaultDocuments).where(eq(vaultDocuments.id, id));
+      if (!r || !(await this.canRead(tx, p, r))) throw new NotFoundException('Document not found');
+      const chain = await tx.execute<{ id: string }>(sql`
+        with recursive back as (select id, replaces_id from vault_documents where id = ${id}::uuid
+                                union select d.id, d.replaces_id from vault_documents d join back b on d.id = b.replaces_id),
+        fwd as (select id, replaces_id from vault_documents where id = ${id}::uuid
+                union select d.id, d.replaces_id from vault_documents d join fwd f on d.replaces_id = f.id)
+        select id from back union select id from fwd`);
+      const ids = chain.rows.map((x) => x.id);
+      const rows = (await tx.select().from(vaultDocuments).where(sql`${vaultDocuments.id} in (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`).orderBy(asc(vaultDocuments.version))).filter((x) => this.isManager(p, x.ownerType as VaultOwner) || x.visibility === 'owner');
+      const latest = Math.max(...rows.map((x) => x.version));
+      return (await this.views(tx, rows)).map((v) => ({ ...v, current: v.version === latest }));
+    });
+  }
+
+  /** Brings an older version back as a new current version (the history keeps every upload). */
+  @Post('files/:id/restore')
+  @HttpCode(201)
+  @Auth('user')
+  restore(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [old] = await tx.select().from(vaultDocuments).where(eq(vaultDocuments.id, id));
+      if (!old || !this.isManager(p, old.ownerType as VaultOwner)) throw new NotFoundException('Document not found');
+      if (old.scanStatus !== 'clean') throw new HttpException({ message: 'That version did not pass the virus scan', code: 'UPLOAD_QUARANTINED' }, 423);
+      const chain = await tx.execute<{ id: string }>(sql`
+        with recursive fwd as (select id from vault_documents where id = ${id}::uuid
+                               union select d.id from vault_documents d join fwd f on d.replaces_id = f.id)
+        select id from fwd`);
+      const ids = chain.rows.map((x) => x.id);
+      const [current] = await tx.select().from(vaultDocuments).where(sql`${vaultDocuments.id} in (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`).orderBy(desc(vaultDocuments.version)).limit(1);
+      if (current.id === old.id && !current.archivedAt) throw new BadRequestException('That is already the current version');
+      const [row] = await tx
+        .insert(vaultDocuments)
+        .values({ tenantId: p.tenantId, ownerType: old.ownerType, studentId: old.studentId, staffUserId: old.staffUserId, title: old.title, category: old.category, contentType: old.contentType, sizeBytes: old.sizeBytes, storageKey: 'pending', version: current.version + 1, replacesId: current.id, visibility: old.visibility, expiresOn: old.expiresOn, uploadedBy: p.userId })
+        .returning();
+      const key = `tenants/${p.tenantId}/vault/${row.id}`;
+      const { stream } = await this.storage.get(old.storageKey);
+      await this.storage.put(key, stream, MAX_VAULT_BYTES, old.contentType);
+      await tx.update(vaultDocuments).set({ storageKey: key }).where(eq(vaultDocuments.id, row.id));
+      if (!current.archivedAt) await tx.update(vaultDocuments).set({ archivedAt: new Date() }).where(eq(vaultDocuments.id, current.id));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'vault.restored', subjectType: 'vault_document', subjectId: row.id, data: { fromVersion: old.version, newVersion: row.version } });
+      return (await this.views(tx, [{ ...row, storageKey: key }]))[0];
+    });
+  }
+
   @Get(':ownerType/:ownerId')
   @Auth('user')
   list(@CurrentPrincipal() p: UserPrincipal, @Param('ownerType') ownerType: string, @Param('ownerId', ParseUUIDPipe) ownerId: string, @Query('history') history?: string) {

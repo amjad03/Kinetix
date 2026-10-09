@@ -2559,4 +2559,538 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseFilesNone => 'No version built yet';
+
+  @override
+  String get accessEmbargoed => 'Under embargo';
+
+  @override
+  String accessEmbargoedUntil(String date) {
+    return 'Embargoed until $date';
+  }
+
+  @override
+  String get accessOpen => 'Open';
+
+  @override
+  String get accessRestricted => 'Restricted';
+
+  @override
+  String get cfAssessments => 'Assessments';
+
+  @override
+  String get cfAttendance => 'Attendance sessions';
+
+  @override
+  String get cfLessonPlans => 'Lesson plans';
+
+  @override
+  String get cfOutcomes => 'Course outcomes';
+
+  @override
+  String get cfPeriods => 'Periods';
+
+  @override
+  String get cfRecordings => 'Recordings';
+
+  @override
+  String get cfTopics => 'Topics taught';
+
+  @override
+  String get cfWhiteboards => 'Whiteboards';
+
+  @override
+  String get courseFileGenerate => 'Generate new version';
+
+  @override
+  String courseFileGenerated(String n) {
+    return 'Version $n generated.';
+  }
+
+  @override
+  String courseFileMeta(String date, String name, String size) {
+    return 'Generated $date by $name · $size';
+  }
+
+  @override
+  String get courseFileNone => 'No version has been generated yet.';
+
+  @override
+  String get courseFileNotReviewed => 'Not reviewed yet';
+
+  @override
+  String get courseFileOpenPdf => 'Open PDF';
+
+  @override
+  String courseFileReviewed(String name) {
+    return 'Reviewed by $name';
+  }
+
+  @override
+  String courseFileVersion(String n) {
+    return 'Version $n';
+  }
+
+  @override
+  String datasetFiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count files', one: '1 file');
+    return '$_temp0';
+  }
+
+  @override
+  String obeAttainmentDirect(String n) {
+    return 'Direct $n';
+  }
+
+  @override
+  String get obeAttainmentHeader => 'Attainment per CO';
+
+  @override
+  String obeAttainmentIndirect(String n) {
+    return 'Indirect $n';
+  }
+
+  @override
+  String get obeAttainmentNone => 'Attainment has not been calculated for this year yet.';
+
+  @override
+  String get obeAttainmentRestricted => 'Attainment figures are shown to heads of department and the quality office.';
+
+  @override
+  String obeAttainmentTarget(String n) {
+    return 'Target $n';
+  }
+
+  @override
+  String get obeBody => 'Course outcomes, the CO–PO matrix and attainment';
+
+  @override
+  String get obeMatrixHeader => 'CO–PO matrix';
+
+  @override
+  String get obeMatrixLegend => 'Strength of link: 1 low, 2 medium, 3 high';
+
+  @override
+  String get obeMatrixNoPos => 'No programme outcomes (PO/PSO) are defined for this subject\'s programme yet.';
+
+  @override
+  String get obeMet => 'Target met';
+
+  @override
+  String get obeNoOutcomes => 'No course outcomes have been set for this subject yet.';
+
+  @override
+  String get obeNotMet => 'Below target';
+
+  @override
+  String get obeStatusActive => 'Active';
+
+  @override
+  String get obeStatusDraft => 'Draft';
+
+  @override
+  String get obeStatusRetired => 'Retired';
+
+  @override
+  String get obeSubjectsEmpty => 'No subjects to show.';
+
+  @override
+  String get obeTitle => 'Course outcomes (CO/PO)';
+
+  @override
+  String obeVersion(String n) {
+    return 'Version $n';
+  }
+
+  @override
+  String get programmeMphil => 'M.Phil';
+
+  @override
+  String get programmePhd => 'PhD';
+
+  @override
+  String get projAccept => 'Accept';
+
+  @override
+  String get projAccepted => 'Accepted';
+
+  @override
+  String get projAddLink => 'Add link';
+
+  @override
+  String get projCommentHint => 'Write a message';
+
+  @override
+  String get projCritDocumentation => 'Documentation';
+
+  @override
+  String get projCritExecution => 'Execution';
+
+  @override
+  String get projCritTeamwork => 'Teamwork';
+
+  @override
+  String get projCritUnderstanding => 'Understanding';
+
+  @override
+  String get projDecline => 'Decline';
+
+  @override
+  String get projDeclined => 'Declined';
+
+  @override
+  String get projDiscussionEmpty => 'No messages yet. Start the discussion.';
+
+  @override
+  String get projFiles => 'Files and links';
+
+  @override
+  String get projFilesNone => 'No files or links yet.';
+
+  @override
+  String get projHub => 'Showcase and recruiting';
+
+  @override
+  String get projHubLookingFor => 'Skills wanted (comma separated)';
+
+  @override
+  String get projHubOpenings => 'Open places';
+
+  @override
+  String get projHubRecruiting => 'Looking for students to join';
+
+  @override
+  String get projHubSaved => 'Saved.';
+
+  @override
+  String get projHubShowcase => 'Show on the showcase';
+
+  @override
+  String get projHubSummary => 'Summary';
+
+  @override
+  String get projLinkInvalid => 'Enter a title and a web link starting with http.';
+
+  @override
+  String get projLinkTitle => 'Title';
+
+  @override
+  String get projLinkUrl => 'Web link';
+
+  @override
+  String projMatchFit(String pct) {
+    return '$pct% match';
+  }
+
+  @override
+  String get projMatches => 'Suggested students';
+
+  @override
+  String get projMatchesNone => 'Add the skills you are looking for to see matching students.';
+
+  @override
+  String get projMembers => 'Team';
+
+  @override
+  String projMilestoneDone(String date) {
+    return 'Done $date';
+  }
+
+  @override
+  String projMilestoneDue(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get projMilestones => 'Milestones';
+
+  @override
+  String get projMilestonesNone => 'No milestones yet.';
+
+  @override
+  String projMyRole(String role) {
+    return 'Your role: $role';
+  }
+
+  @override
+  String get projPending => 'Pending';
+
+  @override
+  String projPi(String name) {
+    return 'Led by $name';
+  }
+
+  @override
+  String get projRecordResult => 'Record result';
+
+  @override
+  String get projRecruiting => 'Recruiting';
+
+  @override
+  String get projReply => 'Reply';
+
+  @override
+  String projReplyingTo(String name) {
+    return 'Replying to $name';
+  }
+
+  @override
+  String get projRequests => 'Join requests';
+
+  @override
+  String get projRequestsNone => 'No join requests.';
+
+  @override
+  String projReviewAverage(String count, String pct) {
+    return '$count reviews, average $pct%';
+  }
+
+  @override
+  String get projReviewComment => 'Comment';
+
+  @override
+  String get projReviewExternal => 'External';
+
+  @override
+  String get projReviewMentor => 'Mentor';
+
+  @override
+  String get projReviewPeer => 'Peer';
+
+  @override
+  String get projReviewsEmpty => 'No reviews yet.';
+
+  @override
+  String get projRoleAdmin => 'Administrator';
+
+  @override
+  String get projRoleMember => 'Member';
+
+  @override
+  String get projRolePi => 'Project lead';
+
+  @override
+  String get projRoleStudent => 'Student';
+
+  @override
+  String get projRoleSupervisor => 'Supervisor';
+
+  @override
+  String get projScheduleViva => 'Schedule viva';
+
+  @override
+  String projScoreOutOf(String max) {
+    return 'Score each criterion out of $max';
+  }
+
+  @override
+  String get projShowcase => 'Showcase';
+
+  @override
+  String get projTabDiscussion => 'Discussion';
+
+  @override
+  String get projTabOverview => 'Overview';
+
+  @override
+  String get projTabReviews => 'Reviews';
+
+  @override
+  String get projTabTeam => 'Team and recruiting';
+
+  @override
+  String get projVivaPanel => 'Panel members (comma separated)';
+
+  @override
+  String get projVivaPanelNeeded => 'Add at least one panel member.';
+
+  @override
+  String get projVivaRemarks => 'Remarks';
+
+  @override
+  String get projVivaScore => 'Score (0–100, optional)';
+
+  @override
+  String get projVivaScoreInvalid => 'Enter a score from 0 to 100.';
+
+  @override
+  String get projVivaVenue => 'Venue';
+
+  @override
+  String get projVivas => 'Viva';
+
+  @override
+  String get projVivasNone => 'No viva scheduled.';
+
+  @override
+  String get projWriteReview => 'Write a mentor review';
+
+  @override
+  String get projectsBody => 'Your student projects: discussion, reviews, viva, recruiting';
+
+  @override
+  String get projectsEmpty => 'You are not on any projects.';
+
+  @override
+  String get projectsTitle => 'Project mentoring';
+
+  @override
+  String get pubAddByDoi => 'Add by DOI';
+
+  @override
+  String get pubDoiBody => 'Enter the publication\'s DOI; KINETIX reads its details from the DOI registry.';
+
+  @override
+  String get pubImport => 'Import';
+
+  @override
+  String get pubKindBook => 'Book';
+
+  @override
+  String get pubKindChapter => 'Book chapter';
+
+  @override
+  String get pubKindConference => 'Conference paper';
+
+  @override
+  String get pubKindJournal => 'Journal article';
+
+  @override
+  String get resKindCapstone => 'Capstone';
+
+  @override
+  String get resKindIndustry => 'Industry';
+
+  @override
+  String get resKindResearch => 'Research';
+
+  @override
+  String get resStatusActive => 'Active';
+
+  @override
+  String get resStatusCancelled => 'Cancelled';
+
+  @override
+  String get resStatusCompleted => 'Completed';
+
+  @override
+  String get resStatusOnHold => 'On hold';
+
+  @override
+  String get researchBody => 'Projects, scholars, publications and datasets';
+
+  @override
+  String get researchDatasets => 'Datasets';
+
+  @override
+  String get researchDatasetsEmpty => 'No datasets yet.';
+
+  @override
+  String get researchProjects => 'Projects';
+
+  @override
+  String get researchProjectsEmpty => 'You have no research projects.';
+
+  @override
+  String get researchPublications => 'Publications';
+
+  @override
+  String get researchPublicationsEmpty => 'No publications recorded yet.';
+
+  @override
+  String get researchScholars => 'Scholars';
+
+  @override
+  String get researchScholarsEmpty => 'You supervise no research scholars.';
+
+  @override
+  String get researchTitle => 'Research';
+
+  @override
+  String get scholarAwarded => 'Awarded';
+
+  @override
+  String get scholarEnrolled => 'Enrolled';
+
+  @override
+  String get scholarThesisSubmitted => 'Thesis submitted';
+
+  @override
+  String get scholarWithdrawn => 'Withdrawn';
+
+  @override
+  String get similarityNone => 'Similarity check not run yet.';
+
+  @override
+  String similarityScore(String pct, String limit) {
+    return 'Similarity $pct% (limit $limit%)';
+  }
+
+  @override
+  String get thesisAbstract => 'Abstract';
+
+  @override
+  String get thesisHistory => 'History';
+
+  @override
+  String get thesisNeedsText => 'The thesis text must be added before it can be submitted.';
+
+  @override
+  String get thesisNone => 'No thesis record yet. Tap to open one.';
+
+  @override
+  String get thesisOpen => 'Open thesis record';
+
+  @override
+  String get thesisStageAwarded => 'Awarded';
+
+  @override
+  String get thesisStageDraft => 'Draft';
+
+  @override
+  String get thesisStageExamination => 'Examination';
+
+  @override
+  String get thesisStageLabel => 'Stage';
+
+  @override
+  String get thesisStageSubmitted => 'Submitted';
+
+  @override
+  String get thesisStageSynopsis => 'Synopsis';
+
+  @override
+  String get thesisStageViva => 'Viva';
+
+  @override
+  String get thesisSubmit => 'Submit thesis';
+
+  @override
+  String get thesisSubmitBody => 'The thesis moves from draft to submitted. The research office takes it on from here.';
+
+  @override
+  String get thesisTitleLabel => 'Thesis title';
+
+  @override
+  String get thesisVivas => 'Viva examinations';
+
+  @override
+  String get thesisVivasNone => 'No viva scheduled yet.';
+
+  @override
+  String get vivaCancelled => 'Cancelled';
+
+  @override
+  String get vivaFailed => 'Failed';
+
+  @override
+  String get vivaHeld => 'Held';
+
+  @override
+  String get vivaPassed => 'Passed';
+
+  @override
+  String get vivaRevise => 'Revise and resubmit';
+
+  @override
+  String get vivaScheduled => 'Scheduled';
 }

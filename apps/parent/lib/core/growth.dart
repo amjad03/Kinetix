@@ -81,6 +81,8 @@ class ReportCardDetail {
     required this.lines,
     required this.coCurricular,
     required this.attendancePercent,
+    this.attendancePresent,
+    this.attendanceTotal,
   });
 
   factory ReportCardDetail.fromJson(Map<String, dynamic> j) => ReportCardDetail(
@@ -90,13 +92,18 @@ class ReportCardDetail {
     promotionStatus: _s(j['promotionStatus']),
     promotedTo: j['promotedTo'] as String?,
     lines: [for (final l in _list(j['lines'])) ReportLine(subject: _s(l['subjectName']), marks: _d(l['marks']), maxMarks: _d(l['maxMarks']), grade: _s(l['grade']), remark: _s(l['remark']))],
-    coCurricular: [for (final c in _list(j['coCurricular'])) (activity: _s(c['activity']), grade: _s(c['grade']))],
+    coCurricular: [for (final c in _list(j['coCurricular'])) (activity: _s(c['activity']), grade: _s(c['grade']), remark: _s(c['remark']))],
     attendancePercent: (j['attendance'] as Map?)?['percent'] == null ? null : _d((j['attendance'] as Map)['percent']),
+    attendancePresent: (j['attendance'] as Map?)?['present'] == null ? null : _d((j['attendance'] as Map)['present']).round(),
+    attendanceTotal: (j['attendance'] as Map?)?['total'] == null ? null : _d((j['attendance'] as Map)['total']).round(),
   );
 
   final String termLabel, remarks, promotionStatus;
   final String? behaviourGrade, promotedTo;
   final List<ReportLine> lines;
-  final List<({String activity, String grade})> coCurricular;
+  final List<({String activity, String grade, String remark})> coCurricular;
   final double? attendancePercent;
+
+  /// Days present and days marked in the school year so far (from `attendance.present` / `attendance.total`).
+  final int? attendancePresent, attendanceTotal;
 }

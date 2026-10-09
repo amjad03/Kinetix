@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../core/api.dart';
+import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 
 /// A screen scaffold that loads one value, shows a spinner, the error with Retry, or [builder]'s
@@ -49,6 +51,8 @@ class _LoadViewState<T> extends State<LoadView<T>> {
       body: data == null
           ? (_error == null
                 ? const Center(child: CircularProgressIndicator())
+                : _hiddenBySchool(_error!)
+                ? KxEmptyState(key: const Key('visibilityOff'), icon: Icons.visibility_off_outlined, message: context.l10n.errVisibilityOff)
                 : Padding(padding: const EdgeInsets.all(Kx.s16), child: ErrorBanner(_error!, onRetry: _reload)))
           : RefreshIndicator(
               onRefresh: _reload,
@@ -63,6 +67,9 @@ class _LoadViewState<T> extends State<LoadView<T>> {
     );
   }
 }
+
+/// Whether the school switched this section off for parents (403 `PARENT_VISIBILITY_OFF`).
+bool _hiddenBySchool(Object e) => e is ApiException && e.code == 'PARENT_VISIBILITY_OFF';
 
 /// A grey one-line message for an empty list.
 class EmptyNote extends StatelessWidget {

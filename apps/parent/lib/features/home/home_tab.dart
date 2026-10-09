@@ -103,7 +103,7 @@ class _HomeTabState extends State<HomeTab> {
     final error = family.summaryErrorOf(c.id);
     final cards = <Widget>[
       _ChildCard(child: c, family: family),
-      _SectionChips(selected: _section, onSelected: (s) => setState(() => _section = s)),
+      _SectionChips(selected: _section, onSelected: (s) => setState(() => _section = s), showAttendance: family.visibility.allows('attendance')),
       if (summary == null && error == null) const KxLoading(),
       if (error != null) ErrorBanner(error, onRetry: () => family.loadSummary(c.id)),
       if (summary != null) ...switch (_section) {
@@ -157,8 +157,9 @@ class _HomeTabState extends State<HomeTab> {
       if (holiday case (final h, final isToday)) HolidayBanner(holiday: h, isToday: isToday, onOpen: () => CalendarScreen.open(context, family.api, program: c.programName)),
       KxTileGrid(
         children: [
-          KxStatTile(
-            key: const Key('tileAttendance'),
+          if (family.visibility.allows('attendance'))
+            KxStatTile(
+              key: const Key('tileAttendance'),
             icon: Icons.fact_check_outlined,
             label: l.attendance,
             value: rate == null ? '–' : '${rate.round()}%',
@@ -235,7 +236,7 @@ class _HomeTabState extends State<HomeTab> {
         key: const Key('schoolLifeCard'),
         icon: Icons.menu_book_outlined,
         title: l.schoolLife,
-        onTap: () => SchoolLifeScreen.open(context, family.api, c),
+        onTap: () => SchoolLifeScreen.open(context, family.api, c, visibility: family.visibility),
         child: Text(l.schoolLifeSubtitle, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
       ),
     ];
@@ -276,10 +277,13 @@ class _HomeTabState extends State<HomeTab> {
 
 /// Overview / Academics / Fees / Attendance, as chips that wrap onto a second line when needed.
 class _SectionChips extends StatelessWidget {
-  const _SectionChips({required this.selected, required this.onSelected});
+  const _SectionChips({required this.selected, required this.onSelected, this.showAttendance = true});
 
   final _HomeSection selected;
   final ValueChanged<_HomeSection> onSelected;
+
+  /// False when the school hides attendance from parents.
+  final bool showAttendance;
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +292,7 @@ class _SectionChips extends StatelessWidget {
       _HomeSection.overview: l.homeTabOverview,
       _HomeSection.academics: l.homeTabAcademics,
       _HomeSection.fees: l.homeTabFees,
-      _HomeSection.attendance: l.homeTabAttendance,
+      if (showAttendance) _HomeSection.attendance: l.homeTabAttendance,
     };
     // A wrapping row, not a sideways scroll: every section is in view, in any language.
     return Wrap(

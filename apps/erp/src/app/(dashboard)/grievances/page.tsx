@@ -1,14 +1,15 @@
-import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
-import { DeskTable, Pill, Tiles } from '@/components/campus/Desk';
+import { Tiles } from '@/components/campus/Desk';
+import { GrievanceDesk } from '@/components/grievances/GrievanceDesk';
 import { PageHeader } from '@/components/PageHeader';
 import { StatTile } from '@/components/StatTile';
-import { EmptyState, ErrorState } from '@/components/States';
+import { ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
-import { slaState, type GrievanceStats, type GrievanceTicket } from '@/lib/campus-life';
+import type { GrievanceStats, GrievanceTicket } from '@/lib/campus-life';
+import type { IncidentRow } from '@/lib/pathways-b';
+import { loadFlows } from '@/lib/pathways-b-server';
 import { getI18n } from '@/i18n/server';
-import type { MessageKey } from '@/i18n/messages';
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.grievances') };
@@ -25,7 +26,9 @@ export default async function GrievancesPage() {
   });
   if (data.error !== undefined) return <ErrorState message={data.error} />;
   const { tickets, stats } = data.data;
-  const now = new Date();
+  // Discipline incidents are read by the principal, administrator, heads and teachers: the tab is left out for roles that cannot read them.
+  const incidents = await load(() => api<IncidentRow[]>('/v1/discipline/incidents'));
+  const flows = await loadFlows();
   return (
     <>
       <PageHeader title={t('nav.grievances')} subtitle={t('gv.subtitle')} />
@@ -40,31 +43,7 @@ export default async function GrievancesPage() {
           {t('gv.committee')}: {t('gv.committeeCaption', { open: stats.committee.open, total: stats.committee.total })}
         </Typography>
       )}
-      {tickets.length === 0 ? (
-        <EmptyState icon={<ReportProblemOutlined />} title={t('gv.empty')}>
-          {t('gv.emptyHint')}
-        </EmptyState>
-      ) : (
-        <DeskTable
-          title={t('gv.queue')}
-          testId="tickets-table"
-          head={[t('gv.col.no'), t('gv.col.subject'), t('gv.col.category'), t('gv.col.severity'), t('gv.col.status'), t('gv.col.due'), t('gv.col.level')]}
-          rows={tickets.map((x) => {
-            const sla = slaState(x, now);
-            return [
-              x.ticketNo,
-              <span key="s">
-                {x.subject} {x.anonymous && <Pill label={t('gv.anonymous')} />} {x.committee && <Pill label={t('gv.confidential')} tone="warning" />}
-              </span>,
-              t(`gv.cat.${x.category}` as MessageKey),
-              <Pill key="v" label={t(`gv.sev.${x.severity}` as MessageKey)} tone={x.severity === 'critical' ? 'error' : x.severity === 'high' ? 'warning' : 'default'} />,
-              t(`gv.status.${x.status}` as MessageKey),
-              <Pill key="d" label={fmt.dateTime(x.slaDueAt)} tone={sla === 'overdue' ? 'error' : sla === 'soon' ? 'warning' : 'default'} />,
-              String(x.escalationLevel),
-            ];
-          })}
-        />
-      )}
+      <GrievanceDesk tickets={tickets} incidents={incidents.error === undefined ? incidents.data : null} flows={flows} nowIso={new Date().toISOString()} />
     </>
   );
 }

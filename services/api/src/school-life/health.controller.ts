@@ -5,6 +5,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
+import { ParentVisibilityService } from '../parent/parent-visibility.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { healthProfiles, healthVaccinations, healthVisits, sections, students } from '../db/schema.js';
 import { HEALTH_STAFF, SchoolLifeService } from './school-life.service.js';
@@ -136,6 +137,7 @@ export class ParentHealthController {
   constructor(
     private readonly db: DbService,
     private readonly svc: SchoolLifeService,
+    private readonly vis: ParentVisibilityService,
   ) {}
 
   @Get()
@@ -143,6 +145,7 @@ export class ParentHealthController {
   get(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const c = await this.svc.guardianChild(tx, p, studentId);
+      await this.vis.assert(tx, p, 'health');
       await auditUser(tx, p, 'health.viewed', 'student', studentId, { as: 'guardian' });
       return { student: { id: c.id, fullName: c.fullName }, ...(await healthRecord(tx, studentId)) };
     });

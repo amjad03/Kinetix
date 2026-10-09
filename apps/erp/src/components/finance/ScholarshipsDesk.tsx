@@ -3,11 +3,14 @@
 import Button from '@mui/material/Button';
 import { useState } from 'react';
 import { createScheme, decideApplication, setSchemeActive } from '@/app/(dashboard)/scholarships/actions';
+import { sendScholarship } from '@/app/(dashboard)/workflows/bound-actions';
+import { SendForApproval } from '@/components/pathways-b/SendForApproval';
+import { BOUND_FLOWS } from '@/lib/pathways-b';
 import { ActionButton, Bar, FormDialog, Grid, Pill, Tabbed, useToast } from '@/components/ops/kit';
 import { useI18n } from '@/i18n/client';
 import type { Application, Scheme } from '@/lib/finance';
 
-export function ScholarshipsDesk({ schemes, applications, initialTab }: { schemes: Scheme[]; applications: Application[]; initialTab: string }) {
+export function ScholarshipsDesk({ schemes, applications, initialTab, flows }: { schemes: Scheme[]; applications: Application[]; initialTab: string; flows: Record<string, boolean> | null }) {
   const { t, fmt } = useI18n();
   const [dlg, setDlg] = useState<'scheme' | { reject: Application } | null>(null);
   const [toast, toastNode] = useToast();
@@ -43,6 +46,7 @@ export function ScholarshipsDesk({ schemes, applications, initialTab }: { scheme
                         <>
                           <ActionButton label={t('fin.sch.approve')} run={() => decideApplication(a.id, true)} onDone={toast} />
                           <Button size="small" color="error" onClick={() => setDlg({ reject: a })}>{t('fin.sch.reject')}</Button>
+                          <SendForApproval flow={BOUND_FLOWS[0]} flows={flows} sourceId={a.id} onSend={() => sendScholarship(a.id)} />
                         </>
                       ),
                   },

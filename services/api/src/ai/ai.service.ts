@@ -85,7 +85,7 @@ export interface AiResponse<T extends TaskName> {
   };
 }
 
-const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 2500, lessonPlan: 1500, summarize: 1200, readBoard: 1500, boardSummary: 1500, lecture: 2200, selectAsk: 1500, financeInsight: 1200, admissionsInsight: 1200, hrInsight: 1200, syllabusImport: 4000, gradeAssist: 1200 };
+const MAX_TOKENS: Record<TaskName, number> = { explain: 1200, quiz: 2500, homework: 2500, lessonPlan: 1500, summarize: 1200, readBoard: 1500, boardSummary: 1500, lecture: 2200, selectAsk: 1500, financeInsight: 1200, admissionsInsight: 1200, hrInsight: 1200, syllabusImport: 4000, careerCoach: 1200, gradeAssist: 1200 };
 const CACHE_DAYS = 30;
 const BLOCKED = "KINETIX AI can't help with that request. Try rephrasing it for the classroom.";
 

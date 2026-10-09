@@ -102,6 +102,8 @@ export const TaskInputs = {
   financeInsight: z.object({ facts: Facts, language: Language.default('en') }),
   admissionsInsight: z.object({ facts: Facts, language: Language.default('en') }),
   hrInsight: z.object({ facts: Facts, language: Language.default('en') }),
+  /** Career guidance for one student: the API computes the skills, interests and matching paths; the model advises. No names are sent. */
+  careerCoach: z.object({ question: z.string().trim().min(3).max(600), facts: Facts, language: Language.default('en') }),
   /** Curriculum importer: text read from an uploaded syllabus PDF or Word file; the model proposes subjects, units, topics and outcomes for a person to review. */
   syllabusImport: z.object({ text: z.string().trim().min(20).max(60_000), programName: z.string().trim().max(200).optional(), language: Language.default('en') }),
   readBoard: z.object({ image: z.string().min(100).max(6_000_000).regex(/^[A-Za-z0-9+/=]+$/, 'Send the PNG as base64'), language: Language.default('en') }),
@@ -121,6 +123,7 @@ export const TaskOutputs = {
   financeInsight: Insight,
   admissionsInsight: Insight,
   hrInsight: Insight,
+  careerCoach: z.object({ answer: Text(3000), suggestions: z.array(Text(300)).max(6).default([]), pathways: z.array(Text(120)).max(5).default([]) }),
   syllabusImport: ContentSchema,
   explain: z.object({
     answer: Text(6000),
@@ -273,6 +276,7 @@ const SHAPES: Record<TaskName, string> = {
   lecture: '{"outline": string[], "explanation": string, "examples": string[], "analogies": string[], "boardPlan": string[] (what to write on the board, in order), "activities": string[], "recap": string}',
   selectAsk: '{"title": string, "answer": string, "items": string[]}',
   financeInsight: INSIGHT_SHAPE,
+  careerCoach: '{"answer": string (practical advice in a few short paragraphs), "suggestions": string[] (3-5 concrete next steps), "pathways": string[] (up to 3 career path names taken from the facts)}',
   admissionsInsight: INSIGHT_SHAPE,
   hrInsight: INSIGHT_SHAPE,
   syllabusImport:
@@ -353,6 +357,8 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return insightAsk('Summarise the admissions funnel and how each campaign converts', i.facts);
       case 'hrInsight':
         return insightAsk('Summarise leave, attendance and payroll for the HR office', i.facts);
+      case 'careerCoach':
+        return `Answer this student's career question: "${i.question}". Ground the advice in these facts about their skills, interests and the career paths on offer; never invent employers, salaries or openings.\nFacts: ${JSON.stringify(i.facts)}`;
       case 'syllabusImport':
         return `Read this syllabus${i.programName ? ` for ${i.programName}` : ''} and list every subject with its code, semester, credits, units (with hours and topics) and course outcomes. Copy what the document says; leave a value empty or zero when it is not stated.\n"""\n${i.text}\n"""`;
       case 'readBoard':
@@ -525,6 +531,8 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
           suggestions: [],
         };
       }
+      case 'careerCoach':
+        return { answer: 'Preview only. Connect the KINETIX AI server for personal career advice.', suggestions: [], pathways: [] };
       case 'syllabusImport':
         return parseSyllabusText(String(i.text));
       case 'gradeAssist':

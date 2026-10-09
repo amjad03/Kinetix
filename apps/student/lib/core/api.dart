@@ -9,6 +9,7 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:kinetix_lesson/kinetix_lesson.dart';
 
 import '../l10n/l10n.dart';
+import 'alumni.dart';
 import 'campus.dart';
 import 'campus_life.dart';
 import 'campus_services.dart';
@@ -17,7 +18,9 @@ import 'growth.dart';
 import 'learning.dart';
 import 'lms.dart';
 import 'models.dart';
+import 'pathways.dart';
 import 'scholarships.dart';
+import 'school_life.dart';
 
 /// Problems the app words itself (in the app's language, see l10n/l10n.dart).
 enum ApiProblem { timeout, unreachable, wrongLogin, notStudent, guardianAccount, teacherAccount, notLinked }
@@ -357,6 +360,83 @@ abstract class StudentApi {
   /// My event registrations with the QR token to show at the door.
   Future<List<MyEventRegistration>> myEventRegistrations(String studentId);
   Future<void> giveEventFeedback(String studentId, String eventId, {required int rating, String comment = ''});
+
+  // ── Projects, portfolio and thesis ──────────────────────────────────────────────────────────
+
+  /// The projects the student takes part in (`GET /v1/projects/mine`), and one project's workspace.
+  Future<List<ProjectSummary>> myProjects();
+  Future<ProjectWorkspace> projectWorkspace(String id);
+
+  /// Adds a link to the project's files (`POST /v1/projects/:id/files`).
+  Future<void> addProjectLink(String id, {required String title, required String url});
+  Future<List<ProjectComment>> projectComments(String id);
+  Future<void> addProjectComment(String id, String body, {String? parentId});
+  Future<List<ProjectReview>> projectReviews(String id);
+
+  /// Projects that are recruiting, best skill fit first (`GET /v1/projects/discover`), and a request to join one.
+  Future<List<DiscoverProject>> discoverProjects({String? skill});
+  Future<void> joinProject(String id, String message);
+
+  /// Showcase projects (`GET /v1/projects/showcase`) and a peer review of one by a student who is not on it.
+  Future<List<ShowcaseProject>> showcaseProjects();
+  Future<void> peerReviewProject(String id, {required Map<String, int> rubric, String comment = ''});
+
+  Future<List<PortfolioItem>> portfolio();
+  Future<PortfolioItem> addPortfolioItem({required String title, String summary = '', String? url, String kind = 'project', String? projectId, bool published = false});
+  Future<void> publishPortfolioItem(String id, bool published);
+  Future<void> deletePortfolioItem(String id);
+
+  /// The research scholar's own thesis (`GET /v1/research/theses/mine`); null for a student without one.
+  Future<Thesis?> myThesis();
+
+  // ── Career preparation ──────────────────────────────────────────────────────────────────────
+
+  Future<Resume> resume();
+  Future<void> saveResume(Resume resume);
+
+  /// Aptitude tests, starting an attempt (questions without answers), and submitting it (`answers[i]` is the chosen option or null).
+  Future<List<AptitudeTest>> aptitudeTests();
+  Future<AptitudeAttempt> startAptitudeTest(String testId);
+  Future<AptitudeResult> submitAptitudeAttempt(String attemptId, List<int?> answers);
+
+  /// Career paths ranked for the student, with the steps of each path.
+  Future<CareerRecommendations> careerRecommendations();
+
+  /// A mock interview or communication practice: [kind] is `hr`, `technical` or `communication`.
+  Future<MockInterview> startMockInterview({required String kind, String role = '', int count = 3});
+  Future<MockResult> submitMockInterview(String id, List<({String answer, int? seconds})> answers);
+  Future<List<MockSummary>> myMockInterviews();
+
+  /// The AI career assistant (`language` is `en`, `hi` or `kn`) and the chat so far.
+  Future<AssistantReply> askCareerAssistant(String question, String language);
+  Future<List<AssistantMessage>> careerAssistantHistory();
+
+  // ── School life (school mode) ───────────────────────────────────────────────────────────────
+
+  Future<List<DiaryEntry>> classDiary({int days = 14});
+  Future<MyActivities> myActivities();
+  Future<List<ReportCardRow>> reportCards(String studentId);
+  Future<ReportCardDetail> reportCard(String id);
+  Future<Uint8List> reportCardPdf(String id);
+
+  // ── Alumni ──────────────────────────────────────────────────────────────────────────────────
+
+  Future<AlumniProfile> alumniProfile();
+  Future<AlumniProfile> saveAlumniProfile({String? phone, String? employer, String? designation, String? city, required String bio, required bool directoryVisible, required bool mentorAvailable});
+  Future<List<AlumniCampaign>> alumniCampaigns();
+  Future<Giving> alumniGiving();
+  Future<void> alumniPledge(String campaignId, int amountPaise, {String note = ''});
+  Future<Uint8List> alumniReceiptPdf(String donationId);
+  Future<List<VolunteerOpportunity>> alumniVolunteering();
+  Future<void> alumniVolunteerSignUp(String id, {String note = ''});
+  Future<void> alumniVolunteerWithdraw(String id);
+  Future<List<SuccessStory>> myStories();
+  Future<SuccessStory> writeStory(String title, String body);
+  Future<SuccessStory> editStory(String id, String title, String body);
+  Future<SuccessStory> submitStory(String id);
+
+  /// Published success stories, featured first (`GET /v1/alumni-stories`).
+  Future<List<SuccessStory>> publishedStories();
 }
 
 /// Lets the lesson player load recordings through a [StudentApi].
@@ -1007,4 +1087,168 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<void> giveEventFeedback(String studentId, String eventId, {required int rating, String comment = ''}) =>
       _send('POST', '/v1/campus-life/events/$eventId/feedback', body: {'studentId': studentId, 'rating': rating, 'comment': comment});
+
+  // ── Projects, portfolio and thesis ──────────────────────────────────────────────────────────
+
+  Map<String, dynamic> _map(Object? v) => (v as Map).cast<String, dynamic>();
+  List<T> _rows<T>(Object? v, T Function(Map<String, dynamic>) f) => [for (final x in v as List) f(_map(x))];
+
+  @override
+  Future<List<ProjectSummary>> myProjects() async => _rows(await _send('GET', '/v1/projects/mine'), ProjectSummary.fromJson);
+
+  @override
+  Future<ProjectWorkspace> projectWorkspace(String id) async => ProjectWorkspace.fromJson(_map(await _send('GET', '/v1/projects/$id/workspace')));
+
+  @override
+  Future<void> addProjectLink(String id, {required String title, required String url}) => _send('POST', '/v1/projects/$id/files', body: {'title': title, 'kind': 'link', 'url': url});
+
+  @override
+  Future<List<ProjectComment>> projectComments(String id) async => _rows(await _send('GET', '/v1/projects/$id/comments'), ProjectComment.fromJson);
+
+  @override
+  Future<void> addProjectComment(String id, String body, {String? parentId}) => _send('POST', '/v1/projects/$id/comments', body: {'body': body, 'parentId': ?parentId});
+
+  @override
+  Future<List<ProjectReview>> projectReviews(String id) async => _rows(await _send('GET', '/v1/projects/$id/reviews'), ProjectReview.fromJson);
+
+  @override
+  Future<List<DiscoverProject>> discoverProjects({String? skill}) async =>
+      _rows(await _send('GET', skill == null || skill.trim().isEmpty ? '/v1/projects/discover' : '/v1/projects/discover?skill=${Uri.encodeQueryComponent(skill.trim())}'), DiscoverProject.fromJson);
+
+  @override
+  Future<void> joinProject(String id, String message) => _send('POST', '/v1/projects/$id/join', body: {'message': message});
+
+  @override
+  Future<List<ShowcaseProject>> showcaseProjects() async => _rows(await _send('GET', '/v1/projects/showcase'), ShowcaseProject.fromJson);
+
+  @override
+  Future<void> peerReviewProject(String id, {required Map<String, int> rubric, String comment = ''}) =>
+      _send('POST', '/v1/projects/$id/reviews', body: {'kind': 'peer', 'rubric': rubric, 'maxPerCriterion': peerMaxScore, 'comment': comment});
+
+  @override
+  Future<List<PortfolioItem>> portfolio() async => _rows(await _send('GET', '/v1/projects/portfolio/mine'), PortfolioItem.fromJson);
+
+  @override
+  Future<PortfolioItem> addPortfolioItem({required String title, String summary = '', String? url, String kind = 'project', String? projectId, bool published = false}) async =>
+      PortfolioItem.fromJson(_map(await _send('POST', '/v1/projects/portfolio', body: {'title': title, 'summary': summary, 'url': ?url, 'kind': kind, 'projectId': ?projectId, 'published': published})));
+
+  @override
+  Future<void> publishPortfolioItem(String id, bool published) => _send('POST', '/v1/projects/portfolio/$id/publish', body: {'published': published});
+
+  @override
+  Future<void> deletePortfolioItem(String id) => _send('DELETE', '/v1/projects/portfolio/$id');
+
+  @override
+  Future<Thesis?> myThesis() async => Thesis.fromJson(_map(await _send('GET', '/v1/research/theses/mine')));
+
+  // ── Career preparation ──────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<Resume> resume() async => Resume.fromJson(_map(await _send('GET', '/v1/careers/resume')));
+
+  @override
+  Future<void> saveResume(Resume resume) => _send('PUT', '/v1/careers/resume', body: resume.toJson());
+
+  @override
+  Future<List<AptitudeTest>> aptitudeTests() async => _rows(await _send('GET', '/v1/careers/tests'), AptitudeTest.fromJson);
+
+  @override
+  Future<AptitudeAttempt> startAptitudeTest(String testId) async => AptitudeAttempt.fromJson(_map(await _send('POST', '/v1/careers/tests/$testId/start')));
+
+  @override
+  Future<AptitudeResult> submitAptitudeAttempt(String attemptId, List<int?> answers) async =>
+      AptitudeResult.fromJson(_map(await _send('POST', '/v1/careers/attempts/$attemptId/submit', body: {'answers': answers})));
+
+  @override
+  Future<CareerRecommendations> careerRecommendations() async {
+    final r = CareerRecommendations.fromJson(_map(await _send('GET', '/v1/careers/recommendations')));
+    try {
+      return r.withCatalog(_rows(await _send('GET', '/v1/careers/paths'), CareerPath.fromJson));
+    } on ApiException {
+      return r;
+    }
+  }
+
+  @override
+  Future<MockInterview> startMockInterview({required String kind, String role = '', int count = 3}) async =>
+      MockInterview.fromJson(_map(await _send('POST', '/v1/careers/mock-interviews', body: {'kind': kind, 'role': role, 'count': count})));
+
+  @override
+  Future<MockResult> submitMockInterview(String id, List<({String answer, int? seconds})> answers) async => MockResult.fromJson(
+    _map(await _send('POST', '/v1/careers/mock-interviews/$id/submit', body: {'answers': [for (final a in answers) {'answer': a.answer, 'seconds': ?a.seconds}]})),
+  );
+
+  @override
+  Future<List<MockSummary>> myMockInterviews() async => _rows(await _send('GET', '/v1/careers/mock-interviews/mine'), MockSummary.fromJson);
+
+  @override
+  Future<AssistantReply> askCareerAssistant(String question, String language) async =>
+      AssistantReply.fromJson(_map(await _send('POST', '/v1/careers/assistant/ask', body: {'question': question, 'language': language}, timeout: const Duration(seconds: 60))));
+
+  @override
+  Future<List<AssistantMessage>> careerAssistantHistory() async => _rows(await _send('GET', '/v1/careers/assistant/history'), AssistantMessage.fromJson);
+
+  // ── School life ─────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<DiaryEntry>> classDiary({int days = 14}) async => _rows(await _send('GET', '/v1/student/diary?days=$days'), DiaryEntry.fromJson);
+
+  @override
+  Future<MyActivities> myActivities() async => MyActivities.fromJson(_map(await _send('GET', '/v1/student/activities')));
+
+  @override
+  Future<List<ReportCardRow>> reportCards(String studentId) async => _rows(await _send('GET', '/v1/school/report-cards?studentId=$studentId'), ReportCardRow.fromJson);
+
+  @override
+  Future<ReportCardDetail> reportCard(String id) async => ReportCardDetail.fromJson(_map(await _send('GET', '/v1/school/report-cards/$id')));
+
+  @override
+  Future<Uint8List> reportCardPdf(String id) => _download('/v1/school/report-cards/$id/pdf');
+
+  // ── Alumni ──────────────────────────────────────────────────────────────────────────────────
+
+  @override
+  Future<AlumniProfile> alumniProfile() async => AlumniProfile.fromJson(_map(await _send('GET', '/v1/alumni-portal/me')));
+
+  @override
+  Future<AlumniProfile> saveAlumniProfile({String? phone, String? employer, String? designation, String? city, required String bio, required bool directoryVisible, required bool mentorAvailable}) async =>
+      AlumniProfile.fromJson(
+        _map(await _send('PUT', '/v1/alumni-portal/me', body: {'phone': phone, 'employer': employer, 'designation': designation, 'city': city, 'bio': bio, 'directoryVisible': directoryVisible, 'mentorAvailable': mentorAvailable})),
+      );
+
+  @override
+  Future<List<AlumniCampaign>> alumniCampaigns() async => _rows(await _send('GET', '/v1/alumni-portal/campaigns'), AlumniCampaign.fromJson);
+
+  @override
+  Future<Giving> alumniGiving() async => Giving.fromJson(_map(await _send('GET', '/v1/alumni-portal/giving')));
+
+  @override
+  Future<void> alumniPledge(String campaignId, int amountPaise, {String note = ''}) => _send('POST', '/v1/alumni-portal/campaigns/$campaignId/pledges', body: {'amountPaise': amountPaise, 'note': note});
+
+  @override
+  Future<Uint8List> alumniReceiptPdf(String donationId) => _download('/v1/alumni-portal/donations/$donationId/receipt');
+
+  @override
+  Future<List<VolunteerOpportunity>> alumniVolunteering() async => _rows(await _send('GET', '/v1/alumni-portal/volunteering'), VolunteerOpportunity.fromJson);
+
+  @override
+  Future<void> alumniVolunteerSignUp(String id, {String note = ''}) => _send('POST', '/v1/alumni-portal/volunteering/$id/signup', body: {'note': note});
+
+  @override
+  Future<void> alumniVolunteerWithdraw(String id) => _send('DELETE', '/v1/alumni-portal/volunteering/$id/signup');
+
+  @override
+  Future<List<SuccessStory>> myStories() async => _rows(await _send('GET', '/v1/alumni-portal/stories'), SuccessStory.fromJson);
+
+  @override
+  Future<SuccessStory> writeStory(String title, String body) async => SuccessStory.fromJson(_map(await _send('POST', '/v1/alumni-portal/stories', body: {'title': title, 'body': body})));
+
+  @override
+  Future<SuccessStory> editStory(String id, String title, String body) async => SuccessStory.fromJson(_map(await _send('PUT', '/v1/alumni-portal/stories/$id', body: {'title': title, 'body': body})));
+
+  @override
+  Future<SuccessStory> submitStory(String id) async => SuccessStory.fromJson(_map(await _send('POST', '/v1/alumni-portal/stories/$id/submit')));
+
+  @override
+  Future<List<SuccessStory>> publishedStories() async => _rows(await _send('GET', '/v1/alumni-stories'), SuccessStory.fromJson);
 }

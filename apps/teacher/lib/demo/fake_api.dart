@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:flutter/painting.dart';
 
 import 'package:kinetix_lesson/kinetix_lesson.dart';
+import '../core/academics_models.dart';
 import '../core/api.dart';
 import '../core/course_file_models.dart';
 import '../core/growth_models.dart';
@@ -1140,6 +1141,220 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<List<ClubMember>> clubMembers(String clubId) async => clubMemberList;
+
+  // --- Outcome-based education -----------------------------------------------------------------
+
+  List<CoSet> coSetList = const [
+    CoSet(id: 'cs2', version: 2, status: 'active', outcomes: [
+      CourseOutcome(id: 'co1', code: 'CO1', statement: 'Value goodwill by common methods', bloomLevel: 'apply'),
+      CourseOutcome(id: 'co2', code: 'CO2', statement: 'Prepare company final accounts', bloomLevel: 'create'),
+    ]),
+    CoSet(id: 'cs1', version: 1, status: 'retired', outcomes: [CourseOutcome(id: 'co0', code: 'CO1', statement: 'Old statement')]),
+  ];
+  CoMatrix coMatrixData = const CoMatrix(
+    cos: [CourseOutcome(id: 'co1', code: 'CO1', statement: 'Value goodwill by common methods'), CourseOutcome(id: 'co2', code: 'CO2', statement: 'Prepare company final accounts')],
+    outcomes: [
+      ProgramOutcome(id: 'po1', programId: 'prog1', kind: 'po', code: 'PO1', statement: 'Disciplinary knowledge'),
+      ProgramOutcome(id: 'po2', programId: 'prog1', kind: 'po', code: 'PO2', statement: 'Problem solving'),
+      ProgramOutcome(id: 'pso1', programId: 'prog1', kind: 'pso', code: 'PSO1', statement: 'Accounting practice'),
+    ],
+    cells: {'co1|po1': 3, 'co1|po2': 1, 'co2|po1': 2, 'co2|pso1': 3},
+  );
+  String? academicYearId = 'ay1';
+  ApiException? attainmentError;
+  List<CoAttainment> coAttainmentList = const [
+    CoAttainment(targetId: 'co1', code: 'CO1', direct: 2.4, indirect: 2.8, combined: 2.5, target: 2.0, gap: null, met: true, trend: 'up'),
+    CoAttainment(targetId: 'co2', code: 'CO2', direct: 1.4, indirect: 1.9, combined: 1.5, target: 2.0, gap: 0.5, met: false, trend: 'down'),
+  ];
+
+  @override
+  Future<List<CoSet>> coSets(String subjectId) async => coSetList;
+
+  @override
+  Future<CoMatrix> coMatrix(String coSetId) async => coMatrixData;
+
+  @override
+  Future<String?> currentAcademicYearId() async => academicYearId;
+
+  @override
+  Future<List<CoAttainment>> coAttainment({required String programId, required String academicYearId}) async {
+    calls.add('coAttainment $programId $academicYearId');
+    if (attainmentError != null) throw attainmentError!;
+    return coAttainmentList;
+  }
+
+  // --- Research --------------------------------------------------------------------------------
+
+  List<ResearchProject> researchProjectList = const [
+    ResearchProject(id: 'rp1', code: 'PRJ-2026-001', title: 'Water quality of the Tunga river', kind: 'research', status: 'active', startsOn: '2026-06-01', endsOn: '2027-05-31'),
+  ];
+  List<Scholar> scholarList = const [
+    Scholar(id: 'sc1', fullName: 'Meera Nair', programme: 'phd', status: 'enrolled', enrolledOn: '2025-08-01', thesisTitle: 'Groundwater recharge in the Malnad region'),
+    Scholar(id: 'sc2', fullName: 'Karthik Rao', programme: 'mphil', status: 'enrolled', enrolledOn: '2026-01-10'),
+  ];
+  late List<ThesisRow> thesisList = const [
+    ThesisRow(id: 'th1', title: 'Groundwater recharge in the Malnad region', stage: 'draft', scholar: 'Meera Nair', programme: 'phd'),
+  ];
+  late ThesisDetail thesisDetailData = ThesisDetail(
+    id: 'th1', title: 'Groundwater recharge in the Malnad region', abstract: 'A study of recharge rates across three watersheds.', stage: 'draft', hasText: true, scholarName: 'Meera Nair', programme: 'phd',
+    events: [ThesisEvent(stage: 'synopsis', note: 'Thesis record opened', at: DateTime.utc(2026, 3, 2, 5)), ThesisEvent(stage: 'draft', note: 'Synopsis approved', at: DateTime.utc(2026, 6, 15, 5))],
+    vivas: [ThesisViva(id: 'tv1', kind: 'pre_submission', venue: 'Seminar hall', panel: const ['Dr. Rao', 'Dr. Iyer'], status: 'held', scheduledAt: DateTime.utc(2026, 8, 10, 5), outcome: 'passed', remarks: 'Cleared to write up')],
+    similarityPercent: 12.5, similarityLimit: 25,
+  );
+  List<Publication> publicationList = const [
+    Publication(id: 'pb1', title: 'Recharge estimates from isotope data', kind: 'journal', venue: 'Journal of Hydrology', year: 2025, doi: '10.1000/jh.2025.114'),
+  ];
+  List<ResearchDataset> datasetList = const [
+    ResearchDataset(id: 'ds1', title: 'Tunga river water samples 2026', owner: 'Anita Sharma', license: 'CC-BY-4.0', access: 'open', files: 2, canOpen: true),
+    ResearchDataset(id: 'ds2', title: 'Borewell levels, Malnad', owner: 'Dr. Rao', license: 'CC-BY-NC-4.0', access: 'embargoed', embargoUntil: '2027-01-01', files: 1, canOpen: false),
+    ResearchDataset(id: 'ds3', title: 'Field interviews (anonymised)', owner: 'Dr. Iyer', license: 'CC-BY-4.0', access: 'restricted', files: 3, canOpen: false),
+  ];
+
+  @override
+  Future<List<ResearchProject>> researchProjects() async => researchProjectList;
+
+  @override
+  Future<List<Scholar>> researchScholars() async => scholarList;
+
+  @override
+  Future<List<ThesisRow>> researchTheses() async => thesisList;
+
+  @override
+  Future<ThesisDetail> researchThesis(String id) async => thesisDetailData;
+
+  @override
+  Future<void> moveThesisStage(String id, {required String to, String note = ''}) async {
+    calls.add('thesisStage $id $to $note');
+    thesisList = [for (final t in thesisList) t.id == id ? ThesisRow(id: t.id, title: t.title, stage: to, scholar: t.scholar, programme: t.programme) : t];
+    final d = thesisDetailData;
+    thesisDetailData = ThesisDetail(
+      id: d.id, title: d.title, abstract: d.abstract, stage: to, hasText: d.hasText, scholarName: d.scholarName, programme: d.programme,
+      events: [...d.events, ThesisEvent(stage: to, note: note, at: DateTime.utc(2026, 10, 4, 5))], vivas: d.vivas, similarityPercent: d.similarityPercent, similarityLimit: d.similarityLimit,
+    );
+  }
+
+  @override
+  Future<void> openThesis(String scholarId, {required String title, String abstract = ''}) async {
+    calls.add('openThesis $scholarId $title');
+    final sc = scholarList.firstWhere((x) => x.id == scholarId);
+    scholarList = [for (final x in scholarList) x.id == scholarId ? Scholar(id: x.id, fullName: x.fullName, programme: x.programme, status: x.status, enrolledOn: x.enrolledOn, thesisTitle: title) : x];
+    thesisList = [...thesisList, ThesisRow(id: 'th${thesisList.length + 1}', title: title, stage: 'synopsis', scholar: sc.fullName, programme: sc.programme)];
+  }
+
+  @override
+  Future<List<Publication>> researchPublications({String? ownerUserId}) async {
+    calls.add('publications ${ownerUserId ?? '-'}');
+    return publicationList;
+  }
+
+  @override
+  Future<Publication> importPublicationDoi(String doi) async {
+    calls.add('importDoi $doi');
+    if (doiError != null) throw doiError!;
+    final p = Publication(id: 'pb${publicationList.length + 1}', title: 'Imported paper', kind: 'journal', venue: 'Nature Water', year: 2026, doi: doi);
+    publicationList = [p, ...publicationList];
+    return p;
+  }
+
+  ApiException? doiError;
+
+  @override
+  Future<List<ResearchDataset>> researchDatasets() async => datasetList;
+
+  // --- Project mentoring -----------------------------------------------------------------------
+
+  List<MyProject> myProjectList = const [
+    MyProject(id: 'pj1', code: 'PRJ-2026-004', title: 'Smart attendance with face matching', kind: 'capstone', status: 'active', showcase: false, recruiting: true),
+  ];
+  String projectRole = 'supervisor';
+  late ProjectWorkspace projectWorkspaceData = ProjectWorkspace(
+    id: 'pj1', code: 'PRJ-2026-004', title: 'Smart attendance with face matching', status: 'active', pi: 'Anita Sharma', myRole: projectRole,
+    members: const [ProjectMember(id: 'pm1', role: 'supervisor', name: 'Anita Sharma'), ProjectMember(id: 'pm2', role: 'student', name: 'Aarav Patel')],
+    milestones: const [ProjectMilestone(title: 'Prototype demo', dueOn: '2026-11-15'), ProjectMilestone(title: 'Literature review', dueOn: '2026-09-30', completedOn: '2026-09-28')],
+    files: const [ProjectFile(id: 'pf1', title: 'Design document', kind: 'link', url: 'https://example.org/design')],
+    hub: const ProjectHub(showcase: false, summary: 'Face-matching attendance for classrooms', recruiting: true, lookingFor: ['python', 'flutter'], openings: 2),
+    vivas: [ProjectViva(id: 'pv1', venue: 'Room 204', panel: const ['Dr. Rao'], status: 'scheduled', scheduledAt: DateTime.utc(2026, 11, 20, 5))],
+    reviewCount: 1, reviewAverage: 72,
+  );
+  List<ProjectComment> projectCommentList = [ProjectComment(id: 'pc1', body: 'Please share the dataset plan.', author: 'Anita Sharma', at: DateTime.utc(2026, 10, 1, 5))];
+  List<ProjectReview> projectReviewList = const [
+    ProjectReview(id: 'pr1', kind: 'mentor', rubric: {'Understanding': 4, 'Execution': 3}, maxPerCriterion: 5, total: 7, percent: 70, comment: 'Good start', reviewer: 'Anita Sharma'),
+  ];
+  late List<JoinRequest> joinRequestList = const [JoinRequest(id: 'jr1', studentId: 's2', fullName: 'Ananya Gowda', message: 'I know Flutter.', status: 'pending')];
+  List<ProjectMatch> projectMatchList = const [ProjectMatch(studentId: 's3', fullName: 'Bhavya Reddy', rollNo: 'U03BC003', fit: 50, matched: ['python'])];
+
+  @override
+  Future<List<MyProject>> myProjects() async => myProjectList;
+
+  @override
+  Future<ProjectWorkspace> projectWorkspace(String id) async => projectWorkspaceData;
+
+  @override
+  Future<List<ProjectComment>> projectComments(String id) async => List.of(projectCommentList);
+
+  @override
+  Future<void> addProjectComment(String id, {required String body, String? parentId}) async {
+    calls.add('projectComment $id ${parentId ?? '-'} $body');
+    projectCommentList = [...projectCommentList, ProjectComment(id: 'pc${projectCommentList.length + 1}', body: body, author: profile.fullName, parentId: parentId, at: DateTime.utc(2026, 10, 4, 6))];
+  }
+
+  @override
+  Future<List<ProjectReview>> projectReviews(String id) async => List.of(projectReviewList);
+
+  @override
+  Future<void> addProjectReview(String id, {required Map<String, double> rubric, required int maxPerCriterion, String comment = ''}) async {
+    calls.add('projectReview $id ${rubric.entries.map((e) => '${e.key}=${numText(e.value)}').join(',')} /$maxPerCriterion $comment');
+    final total = rubric.values.fold<double>(0, (a, b) => a + b);
+    projectReviewList = [ProjectReview(id: 'pr${projectReviewList.length + 1}', kind: 'mentor', rubric: rubric, maxPerCriterion: maxPerCriterion, total: total, percent: total * 100 / (rubric.length * maxPerCriterion), comment: comment, reviewer: profile.fullName), ...projectReviewList];
+  }
+
+  @override
+  Future<void> scheduleProjectViva(String id, {required DateTime scheduledAt, required String venue, required List<String> panel}) async {
+    calls.add('projectViva $id ${scheduledAt.toUtc().toIso8601String()} $venue ${panel.join('|')}');
+  }
+
+  @override
+  Future<void> recordProjectViva(String vivaId, {required String outcome, double? score, String remarks = ''}) async {
+    calls.add('projectVivaResult $vivaId $outcome ${score == null ? '-' : numText(score)} $remarks');
+    final w = projectWorkspaceData;
+    projectWorkspaceData = ProjectWorkspace(
+      id: w.id, code: w.code, title: w.title, status: w.status, pi: w.pi, myRole: w.myRole, members: w.members, milestones: w.milestones, files: w.files, hub: w.hub,
+      vivas: [for (final v in w.vivas) v.id == vivaId ? ProjectViva(id: v.id, venue: v.venue, panel: v.panel, status: 'held', scheduledAt: v.scheduledAt, outcome: outcome, score: score, remarks: remarks) : v],
+      reviewCount: w.reviewCount, reviewAverage: w.reviewAverage,
+    );
+  }
+
+  @override
+  Future<void> setProjectHub(String id, ProjectHub hub) async {
+    calls.add('projectHub $id showcase=${hub.showcase} recruiting=${hub.recruiting} openings=${hub.openings} [${hub.lookingFor.join(',')}] ${hub.summary}');
+    final w = projectWorkspaceData;
+    projectWorkspaceData = ProjectWorkspace(
+      id: w.id, code: w.code, title: w.title, status: w.status, pi: w.pi, myRole: w.myRole, members: w.members, milestones: w.milestones, files: w.files, hub: hub,
+      vivas: w.vivas, reviewCount: w.reviewCount, reviewAverage: w.reviewAverage,
+    );
+  }
+
+  @override
+  Future<List<JoinRequest>> projectJoinRequests(String id) async => List.of(joinRequestList);
+
+  @override
+  Future<void> decideJoinRequest(String requestId, {required bool accept}) async {
+    calls.add('decideJoin $requestId ${accept ? 'accept' : 'decline'}');
+    joinRequestList = [for (final r in joinRequestList) r.id == requestId ? JoinRequest(id: r.id, studentId: r.studentId, fullName: r.fullName, message: r.message, status: accept ? 'accepted' : 'declined') : r];
+  }
+
+  @override
+  Future<List<ProjectMatch>> projectMatches(String id) async => projectMatchList;
+
+  @override
+  Future<void> addProjectLink(String id, {required String title, required String url}) async {
+    calls.add('projectLink $id $title $url');
+    final w = projectWorkspaceData;
+    projectWorkspaceData = ProjectWorkspace(
+      id: w.id, code: w.code, title: w.title, status: w.status, pi: w.pi, myRole: w.myRole, members: w.members, milestones: w.milestones,
+      files: [...w.files, ProjectFile(id: 'pf${w.files.length + 1}', title: title, kind: 'link', url: url)], hub: w.hub, vivas: w.vivas, reviewCount: w.reviewCount, reviewAverage: w.reviewAverage,
+    );
+  }
 
   // --- Syllabus coverage -----------------------------------------------------------------------
 

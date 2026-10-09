@@ -996,7 +996,7 @@ export const auditLog = pgTable('audit_log', {
 // AI (India-hosted; see docs/architecture/ai-platform.md)
 // ---------------------------------------------------------------------------------------------
 
-export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport', 'gradeAssist']);
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport', 'gradeAssist', 'careerCoach']);
 export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
@@ -3329,6 +3329,47 @@ export const TENANT_TABLES = [
   'retention_rules',
   'intervention_support',
   'intervention_reassessments',
+  'project_files',
+  'project_comments',
+  'project_reviews',
+  'project_vivas',
+  'portfolio_items',
+  'project_hub',
+  'project_join_requests',
+  'impact_frameworks',
+  'impact_records',
+  'student_resumes',
+  'aptitude_tests',
+  'aptitude_attempts',
+  'career_paths',
+  'mock_interviews',
+  'career_assistant_messages',
+  'internship_attendance',
+  'internship_links',
+  'internship_certificates',
+  'supervisor_capacity',
+  'supervisor_allocations',
+  'thesis_records',
+  'thesis_events',
+  'thesis_vivas',
+  'similarity_checks',
+  'research_datasets',
+  'alumni_success_stories',
+  'club_office_bearers',
+  'club_achievements',
+  'committee_evidence',
+  'event_media',
+  'event_certificates',
+  'grievance_evidence',
+  'discipline_witnesses',
+  'discipline_parent_contacts',
+  'retention_rules',
+  'message_templates',
+  'audience_rules',
+  'message_campaigns',
+  'message_deliveries',
+  'parent_visibility',
+  'refund_requests',
   'regulations',
   'curriculum_versions',
   'curriculum_subjects',
@@ -4773,6 +4814,12 @@ export const surveys = pgTable('surveys', {
   status: text('status').$type<'draft' | 'open' | 'closed'>().notNull().default('draft'),
   createdBy: uuid('created_by').notNull().references(() => users.id),
   closedAt: timestamp('closed_at', { withTimezone: true }),
+  /** Surveys of one recurring series share a key, so results can be compared across cycles. */
+  seriesKey: text('series_key'),
+  /** When set, closing this survey drafts the next cycle this many days later. */
+  repeatEveryDays: smallint('repeat_every_days'),
+  /** Opens by itself at `opensAt` instead of waiting for a person to publish. */
+  autoPublish: boolean('auto_publish').notNull().default(false),
   createdAt: createdAt(),
 });
 
@@ -4787,6 +4834,8 @@ export const surveyQuestions = pgTable('survey_questions', {
   required: boolean('required').notNull().default(true),
   /** The course outcome this question measures, for OBE indirect attainment. */
   coId: ref('co_id', () => courseOutcomes.id),
+  /** Shown only when an earlier question was answered a certain way. */
+  showIf: jsonb('show_if').$type<{ questionId: string; op: 'eq' | 'neq' | 'gte' | 'lte' | 'includes'; value: string | number }>(),
 });
 
 /** One row per respondent per survey: the "already answered" marker. */

@@ -4,6 +4,8 @@ import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { PrintButton, ReceiptPrintStyles } from '@/components/fees/PrintReceipt';
+import { RefundPanel } from '@/components/fees/RefundPanel';
+import { loadFlows } from '@/lib/pathways-b-server';
 import { ReceiptView } from '@/components/fees/ReceiptView';
 import { LinkButton } from '@/components/LinkButton';
 import { ErrorState } from '@/components/States';
@@ -24,6 +26,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const { t } = await getI18n();
   const receipt = UUID.test(id) ? await load(() => api<FeeReceipt>(`/v1/fees/payments/${id}/receipt`)) : { error: t('fees.receipt.notFound'), data: undefined };
 
+  const flows = receipt.data ? await loadFlows() : null;
+
   return (
     <>
       <ReceiptPrintStyles />
@@ -33,6 +37,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             {t('fees.invoices')}
           </LinkButton>
         </Box>
+        {receipt.data && <RefundPanel paymentId={receipt.data.paymentId} amountPaise={receipt.data.amountPaise} flows={flows} />}
         {receipt.data && <PrintButton />}
       </Box>
       {receipt.error !== undefined ? (

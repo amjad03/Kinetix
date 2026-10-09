@@ -9,6 +9,7 @@ import { useState, useTransition } from 'react';
 import { cancelRequest, decideRequest, loadRequest, resubmitRequest, runSla, saveDefinition, startRequest } from '@/app/(dashboard)/workflows/actions';
 import { FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col, type Field } from '@/components/ops/kit';
 import { FormField, TextInput } from '@/components/ui';
+import { ApprovalFlows } from '@/components/workflows/ApprovalFlows';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { formatFields, formatSteps, type DefField, type DefinitionRow, type RequestDetail, type RequestRow } from '@/lib/workflows';
@@ -105,6 +106,7 @@ export function WorkflowDesk({ inbox, mine, all, definitions, isAdmin }: { inbox
         </>
       ),
     },
+    { id: 'flows', label: t('pwb.wf.tab'), node: <ApprovalFlows definitions={definitions} isAdmin={isAdmin} /> },
     ...(all ? [{ id: 'all', label: t('wf.tab.all'), node: <Grid testId="wf-all" empty={t('wf.empty.all')} rows={all} cols={requestCols(true)} exportName="workflow-requests" /> }] : []),
     ...(isAdmin
       ? [

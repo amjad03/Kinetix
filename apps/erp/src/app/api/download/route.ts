@@ -34,6 +34,9 @@ const TARGETS: Record<string, (id: string) => string> = {
   'progress-report': (id) => `/v1/results/students/${id}/progress-report.pdf`,
   'qb-sealed': (id) => `/v1/question-bank/releases/${id}/paper.pdf`,
   'evidence-file': (id) => `/v1/quality/evidence/${id}/file`,
+  'committee-evidence': (id) => `/v1/campus-life/evidence/${id}/download`,
+  'event-media': (id) => `/v1/campus-life/media/${id}/file`,
+  'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
 };
 
 /**
@@ -51,6 +54,11 @@ export async function GET(req: NextRequest) {
   if (GL[kind]) {
     if (!range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/finance/gl.${GL[kind]}?from=${range[0]}&to=${range[1]}`;
+  }
+  // A committee's report pack for a date range: ?kind=report-pack&id=<committee>&from=&to=
+  if (kind === 'report-pack') {
+    if (!UUID.test(id) || !range.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/campus-life/committees/${id}/report-pack?from=${range[0]}&to=${range[1]}`;
   }
   if (kind === 'hall-ticket') {
     const test = req.nextUrl.searchParams.get('test') ?? '';

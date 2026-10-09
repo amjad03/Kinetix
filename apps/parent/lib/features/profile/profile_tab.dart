@@ -206,7 +206,7 @@ class ProfileTab extends StatelessWidget {
                   title: Text(family.children.length == 1 ? l.schoolLife : l.childSchoolLife(child.firstName)),
                   subtitle: Text(l.schoolLifeSubtitle),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => SchoolLifeScreen.open(context, family.api, child),
+                  onTap: () => SchoolLifeScreen.open(context, family.api, child, visibility: family.visibility),
                 ),
                 ListTile(
                   key: Key('profile-careers-${child.id}'),
@@ -250,6 +250,7 @@ class ProfileTab extends StatelessWidget {
                 onTap: () => CalendarScreen.open(context, family.api),
               ),
               for (final child in family.children)
+                if (family.visibility.allows('report_card'))
                 ListTile(
                   key: Key('profile-reportcards-${child.id}'),
                   leading: const Icon(Icons.workspace_premium_outlined),

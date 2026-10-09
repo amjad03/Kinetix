@@ -3202,4 +3202,896 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get forumReplyHint => 'ಉತ್ತರ ಬರೆಯಿರಿ';
+
+  @override
+  String get pjTitle => 'ಯೋಜನೆಗಳು ಮತ್ತು ಸಂಶೋಧನೆ';
+
+  @override
+  String get pjSubtitle => 'ನನ್ನ ಯೋಜನೆಗಳು, ತಂಡ ಹುಡುಕಿ, ಪ್ರದರ್ಶನ, ಪೋರ್ಟ್‌ಫೋಲಿಯೋ';
+
+  @override
+  String get pjTabMine => 'ನನ್ನ ಯೋಜನೆಗಳು';
+
+  @override
+  String get pjTabFind => 'ತಂಡ ಹುಡುಕಿ';
+
+  @override
+  String get pjTabShowcase => 'ಪ್ರದರ್ಶನ';
+
+  @override
+  String get pjTabPortfolio => 'ಪೋರ್ಟ್‌ಫೋಲಿಯೋ';
+
+  @override
+  String get pjNoneMine => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಯೋಜನೆಯಲ್ಲಿ ಇಲ್ಲ. ಸೇರಲು ತಂಡ ಹುಡುಕಿ.';
+
+  @override
+  String get pjOnShowcase => 'ಪ್ರದರ್ಶನದಲ್ಲಿದೆ';
+
+  @override
+  String get pjRecruiting => 'ಸದಸ್ಯರು ಬೇಕಿದ್ದಾರೆ';
+
+  @override
+  String get pjKind_capstone => 'ಕ್ಯಾಪ್‌ಸ್ಟೋನ್';
+
+  @override
+  String get pjKind_research => 'ಸಂಶೋಧನೆ';
+
+  @override
+  String get pjKind_minor => 'ಸಣ್ಣ ಯೋಜನೆ';
+
+  @override
+  String get pjKind_major => 'ಪ್ರಮುಖ ಯೋಜನೆ';
+
+  @override
+  String get pjKind_internship => 'ಇಂಟರ್ನ್‌ಶಿಪ್';
+
+  @override
+  String get pjKind_project => 'ಯೋಜನೆ';
+
+  @override
+  String get pjStatus_active => 'ಸಕ್ರಿಯ';
+
+  @override
+  String get pjStatus_completed => 'ಪೂರ್ಣಗೊಂಡಿದೆ';
+
+  @override
+  String get pjStatus_on_hold => 'ತಡೆಹಿಡಿಯಲಾಗಿದೆ';
+
+  @override
+  String get pjStatus_proposed => 'ಪ್ರಸ್ತಾಪಿತ';
+
+  @override
+  String get thesisTitle => 'ನನ್ನ ಪ್ರಬಂಧ';
+
+  @override
+  String get thesisStage_synopsis => 'ಸಿನಾಪ್ಸಿಸ್';
+
+  @override
+  String get thesisStage_draft => 'ಕರಡು';
+
+  @override
+  String get thesisStage_submitted => 'ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get thesisStage_examination => 'ಮೌಲ್ಯಮಾಪನದಲ್ಲಿದೆ';
+
+  @override
+  String get thesisStage_viva => 'ವೈವಾ';
+
+  @override
+  String get thesisStage_awarded => 'ಪದವಿ ನೀಡಲಾಗಿದೆ';
+
+  @override
+  String thesisSubmittedOn(Object date) {
+    return '$date ರಂದು ಸಲ್ಲಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String thesisNextViva(Object time, Object venue) {
+    return 'ಮುಂದಿನ ವೈವಾ: $time, $venue';
+  }
+
+  @override
+  String thesisSimilarity(int percent, int limit) {
+    return 'ಹೋಲಿಕೆ $percent% (ಮಿತಿ $limit%)';
+  }
+
+  @override
+  String get pjSkillSearch => 'ಕೌಶಲ್ಯದಿಂದ ಹುಡುಕಿ';
+
+  @override
+  String get pjNoneFind => 'ಈಗ ಯಾವ ಯೋಜನೆಗೂ ಸದಸ್ಯರು ಬೇಕಿಲ್ಲ.';
+
+  @override
+  String pjFit(int fit) {
+    return '$fit% ಹೊಂದಾಣಿಕೆ';
+  }
+
+  @override
+  String pjLookingFor(Object skills) {
+    return 'ಬೇಕಾಗಿರುವುದು: $skills';
+  }
+
+  @override
+  String pjOpenings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಸ್ಥಾನಗಳು ಖಾಲಿ', one: '1 ಸ್ಥಾನ ಖಾಲಿ');
+    return '$_temp0';
+  }
+
+  @override
+  String get pjAskToJoin => 'ಸೇರಲು ವಿನಂತಿಸಿ';
+
+  @override
+  String pjJoinTitle(Object title) {
+    return '$title ಗೆ ಸೇರಿ';
+  }
+
+  @override
+  String get pjJoinMessage => 'ಯೋಜನೆಯ ಮುಖ್ಯಸ್ಥರಿಗೆ ಚಿಕ್ಕ ಸಂದೇಶ';
+
+  @override
+  String get pjJoinSent => 'ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get pjNoneShowcase => 'ಪ್ರದರ್ಶನದಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ಯೋಜನೆ ಇಲ್ಲ.';
+
+  @override
+  String pjReviewAverage(int average) {
+    return 'ವಿಮರ್ಶೆಗಳು: $average%';
+  }
+
+  @override
+  String get pjReview => 'ವಿಮರ್ಶೆ ಮಾಡಿ';
+
+  @override
+  String pjReviewTitle(Object title) {
+    return 'ವಿಮರ್ಶೆ: $title';
+  }
+
+  @override
+  String get pjReviewComment => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get pjReviewThanks => 'ನಿಮ್ಮ ವಿಮರ್ಶೆಗೆ ಧನ್ಯವಾದ.';
+
+  @override
+  String get pjCriterion_idea => 'ಕಲ್ಪನೆ';
+
+  @override
+  String get pjCriterion_execution => 'ಅನುಷ್ಠಾನ';
+
+  @override
+  String get pjCriterion_presentation => 'ಪ್ರಸ್ತುತಿ';
+
+  @override
+  String get pjCriterion_impact => 'ಪರಿಣಾಮ';
+
+  @override
+  String get pjAddPortfolio => 'ಪೋರ್ಟ್‌ಫೋಲಿಯೋಗೆ ಸೇರಿಸಿ';
+
+  @override
+  String get pjPortfolioNote => 'ಪ್ರಕಟಿಸಿದ ಅಂಶಗಳನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಎಲ್ಲರೂ ನೋಡಬಹುದು.';
+
+  @override
+  String get pjNonePortfolio => 'ನಿಮ್ಮ ಪೋರ್ಟ್‌ಫೋಲಿಯೋದಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ.';
+
+  @override
+  String get pjDelete => 'ಅಳಿಸಿ';
+
+  @override
+  String get pjPublished => 'ಪ್ರಕಟಿತ';
+
+  @override
+  String get pjPublishedOn => 'ಇತರರಿಗೆ ಕಾಣುತ್ತದೆ';
+
+  @override
+  String get pjPublishedOff => 'ನಿಮಗೆ ಮಾತ್ರ ಕಾಣುತ್ತದೆ';
+
+  @override
+  String get pjPortfolio_project => 'ಯೋಜನೆ';
+
+  @override
+  String get pjPortfolio_research => 'ಸಂಶೋಧನೆ';
+
+  @override
+  String get pjPortfolio_certificate => 'ಪ್ರಮಾಣಪತ್ರ';
+
+  @override
+  String get pjPortfolio_work => 'ಕೆಲಸ';
+
+  @override
+  String get pjFieldTitle => 'ಶೀರ್ಷಿಕೆ';
+
+  @override
+  String get pjFieldSummary => 'ಸಾರಾಂಶ';
+
+  @override
+  String get pjFieldLink => 'ಲಿಂಕ್ (https://…)';
+
+  @override
+  String get pjFieldKind => 'ಪ್ರಕಾರ';
+
+  @override
+  String get pjNeedTitle => 'ಶೀರ್ಷಿಕೆ ನೀಡಿ.';
+
+  @override
+  String get pjNeedUrl => 'https:// ನಿಂದ ಆರಂಭವಾಗುವ ಪೂರ್ಣ ಲಿಂಕ್ ನಮೂದಿಸಿ';
+
+  @override
+  String get pjNeedTitleAndUrl => 'ಲಿಂಕ್‌ಗೆ ಶೀರ್ಷಿಕೆ ಮತ್ತು ಪೂರ್ಣ ವಿಳಾಸ ಬೇಕು.';
+
+  @override
+  String get pjWorkspace => 'ಯೋಜನೆಯ ಕಾರ್ಯಸ್ಥಳ';
+
+  @override
+  String get pjMembers => 'ತಂಡ';
+
+  @override
+  String pjMentor(Object name) {
+    return 'ಮುಖ್ಯಸ್ಥರು: $name';
+  }
+
+  @override
+  String get pjMilestones => 'ಮೈಲಿಗಲ್ಲುಗಳು';
+
+  @override
+  String get pjNoMilestones => 'ಯಾವುದೇ ಮೈಲಿಗಲ್ಲು ನಿಗದಿಯಾಗಿಲ್ಲ.';
+
+  @override
+  String pjDoneOn(Object date) {
+    return '$date ರಂದು ಪೂರ್ಣಗೊಂಡಿದೆ';
+  }
+
+  @override
+  String pjDueOn(Object date) {
+    return 'ಗಡುವು $date';
+  }
+
+  @override
+  String get pjFiles => 'ಫೈಲ್‌ಗಳು ಮತ್ತು ಲಿಂಕ್‌ಗಳು';
+
+  @override
+  String get pjAddLink => 'ಲಿಂಕ್ ಸೇರಿಸಿ';
+
+  @override
+  String get pjNoFiles => 'ಇನ್ನೂ ಯಾವುದೇ ಫೈಲ್ ಇಲ್ಲ.';
+
+  @override
+  String get pjCopyLink => 'ಲಿಂಕ್ ನಕಲಿಸಿ';
+
+  @override
+  String get pjLinkCopied => 'ಲಿಂಕ್ ನಕಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get pjLinkAdded => 'ಲಿಂಕ್ ಸೇರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get pjViva => 'ವೈವಾ';
+
+  @override
+  String pjPanel(Object names) {
+    return 'ಸಮಿತಿ: $names';
+  }
+
+  @override
+  String get pjVivaCancelled => 'ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get pjViva_pass => 'ಉತ್ತೀರ್ಣ';
+
+  @override
+  String get pjViva_revise => 'ತಿದ್ದಿ ಮರು ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get pjViva_fail => 'ಅನುತ್ತೀರ್ಣ';
+
+  @override
+  String get pjReviews => 'ವಿಮರ್ಶೆಗಳು';
+
+  @override
+  String get pjNoReviews => 'ಇನ್ನೂ ಯಾವುದೇ ವಿಮರ್ಶೆ ಇಲ್ಲ.';
+
+  @override
+  String pjReviewsSummary(int count, int average) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ವಿಮರ್ಶೆಗಳು', one: '1 ವಿಮರ್ಶೆ');
+    return '$_temp0, ಸರಾಸರಿ $average%';
+  }
+
+  @override
+  String get pjDiscussion => 'ಚರ್ಚೆ';
+
+  @override
+  String get pjNoComments => 'ಇನ್ನೂ ಸಂದೇಶಗಳಿಲ್ಲ. ಚರ್ಚೆ ಆರಂಭಿಸಿ.';
+
+  @override
+  String get pjWriteComment => 'ಸಂದೇಶ ಬರೆಯಿರಿ';
+
+  @override
+  String get prepTitle => 'ವೃತ್ತಿ ಸಿದ್ಧತೆ';
+
+  @override
+  String get prepSubtitle => 'ರೆಸ್ಯೂಮೆ, ಪರೀಕ್ಷೆಗಳು, ಮಾಕ್ ಸಂದರ್ಶನ, ಸಹಾಯಕ';
+
+  @override
+  String get prepResume => 'ರೆಸ್ಯೂಮೆ';
+
+  @override
+  String get prepResumeSub => 'ಪ್ಲೇಸ್‌ಮೆಂಟ್ ತಂಡ ಓದಬಹುದಾದ ರೆಸ್ಯೂಮೆ ಸಿದ್ಧಪಡಿಸಿ';
+
+  @override
+  String get prepTests => 'ಯೋಗ್ಯತಾ ಪರೀಕ್ಷೆಗಳು';
+
+  @override
+  String get prepTestsSub => 'ಸಮಯದ ಅಭ್ಯಾಸ, ವಿಷಯವಾರು ಅಂಕಗಳೊಂದಿಗೆ';
+
+  @override
+  String get prepMockHr => 'HR ಮಾಕ್ ಸಂದರ್ಶನ';
+
+  @override
+  String get prepMockHrSub => 'ಸಾಮಾನ್ಯ HR ಪ್ರಶ್ನೆಗಳು, ಪ್ರತಿಕ್ರಿಯೆಯೊಂದಿಗೆ';
+
+  @override
+  String get prepMockTechnical => 'ತಾಂತ್ರಿಕ ಮಾಕ್ ಸಂದರ್ಶನ';
+
+  @override
+  String get prepMockTechnicalSub => 'ಪಾತ್ರಕ್ಕೆ ತಕ್ಕ ತಾಂತ್ರಿಕ ಪ್ರಶ್ನೆಗಳು';
+
+  @override
+  String get prepCommunication => 'ಸಂವಹನ ಅಭ್ಯಾಸ';
+
+  @override
+  String get prepCommunicationSub => 'ಸ್ಪಷ್ಟವಾಗಿ, ಕ್ರಮಬದ್ಧವಾಗಿ ಮಾತನಾಡುವ ಅಭ್ಯಾಸ';
+
+  @override
+  String get prepRecs => 'ವೃತ್ತಿ ಶಿಫಾರಸುಗಳು';
+
+  @override
+  String get prepRecsSub => 'ನಿಮ್ಮ ಕೌಶಲ್ಯಕ್ಕೆ ಹೊಂದುವ ದಾರಿಗಳು ಮತ್ತು ತುಂಬಬೇಕಾದ ಕೊರತೆಗಳು';
+
+  @override
+  String get prepAssistant => 'ವೃತ್ತಿ ಸಹಾಯಕ';
+
+  @override
+  String get prepAssistantSub => 'ನಿಮ್ಮ ವೃತ್ತಿಯ ಬಗ್ಗೆ KINETIX AI ಯನ್ನು ಕೇಳಿ';
+
+  @override
+  String get rsHeadline => 'ಶೀರ್ಷಿಕೆ ವಾಕ್ಯ';
+
+  @override
+  String get rsSummary => 'ಸಾರಾಂಶ';
+
+  @override
+  String get rsSkills => 'ಕೌಶಲ್ಯಗಳು';
+
+  @override
+  String get rsInterests => 'ಆಸಕ್ತಿಗಳು';
+
+  @override
+  String get rsCommaHelp => 'ಕಾಮಾದಿಂದ ಬೇರ್ಪಡಿಸಿ';
+
+  @override
+  String get rsEducation => 'ಶಿಕ್ಷಣ';
+
+  @override
+  String get rsExperience => 'ಅನುಭವ';
+
+  @override
+  String get rsProjects => 'ಯೋಜನೆಗಳು';
+
+  @override
+  String get rsLinks => 'ಲಿಂಕ್‌ಗಳು';
+
+  @override
+  String get rsAdd => 'ಸೇರಿಸಿ';
+
+  @override
+  String get rsInstitution => 'ಸಂಸ್ಥೆ';
+
+  @override
+  String get rsDegree => 'ಪದವಿ ಅಥವಾ ಕೋರ್ಸ್';
+
+  @override
+  String get rsYears => 'ವರ್ಷಗಳು';
+
+  @override
+  String get rsScore => 'ಅಂಕ ಅಥವಾ ಗ್ರೇಡ್';
+
+  @override
+  String get rsOrg => 'ಸಂಸ್ಥೆ';
+
+  @override
+  String get rsRole => 'ಪಾತ್ರ';
+
+  @override
+  String get rsDetail => 'ವಿವರಗಳು';
+
+  @override
+  String get rsLabel => 'ಹೆಸರು';
+
+  @override
+  String get rsVisible => 'ಪ್ಲೇಸ್‌ಮೆಂಟ್ ತಂಡಕ್ಕೆ ನನ್ನ ರೆಸ್ಯೂಮೆ ತೋರಿಸಿ';
+
+  @override
+  String get rsVisibleHelp => 'ಇದು ಆನ್ ಆಗಿದ್ದರೆ ಮಾತ್ರ ನೇಮಕಾತಿದಾರರು ನೋಡಬಹುದು.';
+
+  @override
+  String get rsSaved => 'ರೆಸ್ಯೂಮೆ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get rsEntryIncomplete => 'ಅಗತ್ಯ ಕ್ಷೇತ್ರಗಳನ್ನು ತುಂಬಿ (ಲಿಂಕ್ https:// ನಿಂದ ಆರಂಭವಾಗಬೇಕು).';
+
+  @override
+  String get testsNone => 'ಈಗ ಯಾವುದೇ ಯೋಗ್ಯತಾ ಪರೀಕ್ಷೆ ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String get testCat_quant => 'ಪರಿಮಾಣಾತ್ಮಕ';
+
+  @override
+  String get testCat_logical => 'ತಾರ್ಕಿಕ';
+
+  @override
+  String get testCat_verbal => 'ಭಾಷಾ';
+
+  @override
+  String get testCat_technical => 'ತಾಂತ್ರಿಕ';
+
+  @override
+  String get testCat_mixed => 'ಮಿಶ್ರ';
+
+  @override
+  String testQuestions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಪ್ರಶ್ನೆಗಳು', one: '1 ಪ್ರಶ್ನೆ');
+    return '$_temp0';
+  }
+
+  @override
+  String testMinutes(int count) {
+    return '$count ನಿಮಿಷ';
+  }
+
+  @override
+  String get testNoAttempts => 'ಇನ್ನೂ ಪ್ರಯತ್ನಿಸಿಲ್ಲ';
+
+  @override
+  String testAttempts(int attempts, int best) {
+    String _temp0 = intl.Intl.pluralLogic(attempts, locale: localeName, other: '$attempts ಪ್ರಯತ್ನಗಳು', one: '1 ಪ್ರಯತ್ನ');
+    return '$_temp0, ಉತ್ತಮ $best%';
+  }
+
+  @override
+  String get testPassed => 'ಉತ್ತೀರ್ಣ';
+
+  @override
+  String testNotPassed(int pass) {
+    return 'ಇನ್ನೂ ಉತ್ತೀರ್ಣರಾಗಿಲ್ಲ (ಪಾಸ್ ಅಂಕ $pass%)';
+  }
+
+  @override
+  String get testTake => 'ಪರೀಕ್ಷೆ ಬರೆಯಿರಿ';
+
+  @override
+  String get testRetake => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
+
+  @override
+  String testIntro(int questions, int minutes, int pass) {
+    return '$minutes ನಿಮಿಷದಲ್ಲಿ $questions ಪ್ರಶ್ನೆಗಳು. ಉತ್ತೀರ್ಣರಾಗಲು $pass% ಬೇಕು. ಗರಿಷ್ಠ 3 ಪ್ರಯತ್ನಗಳು ಸಿಗುತ್ತವೆ. ಟೈಮರ್ ಈಗ ಆರಂಭವಾಗುತ್ತದೆ; ಹೊರಗೆ ಹೋದರೂ ನಡೆಯುತ್ತಲೇ ಇರುತ್ತದೆ.';
+  }
+
+  @override
+  String get testStart => 'ಆರಂಭಿಸಿ';
+
+  @override
+  String testAnswered(int done, int total) {
+    return '$total ರಲ್ಲಿ $done ಉತ್ತರಿಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get testSubmit => 'ಉತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get testLeave => 'ಪರೀಕ್ಷೆ ಬಿಡುವಿರಾ? ಟೈಮರ್ ನಡೆಯುತ್ತಲೇ ಇರುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.';
+
+  @override
+  String get testStay => 'ಇಲ್ಲೇ ಇರಿ';
+
+  @override
+  String get testLeaveAnyway => 'ಬಿಡಿ';
+
+  @override
+  String testScore(int score, int total) {
+    return '$total ರಲ್ಲಿ $score ಸರಿ';
+  }
+
+  @override
+  String get testByTopic => 'ವಿಷಯವಾರು ಅಂಕಗಳು';
+
+  @override
+  String get testBack => 'ಪರೀಕ್ಷೆಗಳ ಪಟ್ಟಿಗೆ ಹಿಂತಿರುಗಿ';
+
+  @override
+  String get mockIntro => 'ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ ಸಂದರ್ಶನದಲ್ಲಿ ಹೇಳುವಂತೆ ನಿಮ್ಮ ಮಾತುಗಳಲ್ಲಿ ಉತ್ತರಿಸಿ. ಪ್ರತಿ ಉತ್ತರಕ್ಕೆ ಅಂಕ ಮತ್ತು ಸಲಹೆಗಳು ಸಿಗುತ್ತವೆ.';
+
+  @override
+  String get mockIntroCommunication =>
+      'ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ ಕೆಲವು ಸ್ಪಷ್ಟ ವಾಕ್ಯಗಳಲ್ಲಿ ಉತ್ತರಿಸಿ. ಕ್ರಮ ಮತ್ತು ಸ್ಪಷ್ಟತೆಯ ಮೇಲೆ ಅಂಕ ಮತ್ತು ಸಲಹೆಗಳು ಸಿಗುತ್ತವೆ.';
+
+  @override
+  String get mockRole => 'ನೀವು ತಯಾರಾಗುತ್ತಿರುವ ಪಾತ್ರ';
+
+  @override
+  String get mockRoleHint => 'ಉದಾಹರಣೆಗೆ, ಡೇಟಾ ವಿಶ್ಲೇಷಕ';
+
+  @override
+  String get mockCount => 'ಪ್ರಶ್ನೆಗಳ ಸಂಖ್ಯೆ';
+
+  @override
+  String get mockStart => 'ಅಭ್ಯಾಸ ಆರಂಭಿಸಿ';
+
+  @override
+  String get mockPast => 'ಹಿಂದಿನ ಅಭ್ಯಾಸ';
+
+  @override
+  String get mockAnswerHint => 'ನಿಮ್ಮ ಉತ್ತರ ಬರೆಯಿರಿ';
+
+  @override
+  String get mockAnswerAll => 'ಮೊದಲು ಎಲ್ಲ ಪ್ರಶ್ನೆಗಳಿಗೂ ಉತ್ತರಿಸಿ.';
+
+  @override
+  String get mockSubmit => 'ನನ್ನ ಅಂಕ ನೋಡಿ';
+
+  @override
+  String mockScore(Object score) {
+    return 'ಅಂಕ: 10 ರಲ್ಲಿ $score';
+  }
+
+  @override
+  String mockQuestionScore(Object score) {
+    return '10 ರಲ್ಲಿ $score';
+  }
+
+  @override
+  String get mockOverall => 'ಒಟ್ಟಾರೆ';
+
+  @override
+  String get mockAgain => 'ಮತ್ತೆ ಅಭ್ಯಾಸ ಮಾಡಿ';
+
+  @override
+  String recSkills(Object skills) {
+    return 'ನಿಮ್ಮ ಕೌಶಲ್ಯಗಳು: $skills';
+  }
+
+  @override
+  String recInterests(Object interests) {
+    return 'ನಿಮ್ಮ ಆಸಕ್ತಿಗಳು: $interests';
+  }
+
+  @override
+  String get recNone => 'ಇನ್ನೂ ಯಾವುದೇ ವೃತ್ತಿ ದಾರಿ ಇಲ್ಲ. ರೆಸ್ಯೂಮೆಗೆ ಕೌಶಲ್ಯ ಮತ್ತು ಆಸಕ್ತಿಗಳನ್ನು ಸೇರಿಸಿ, ನಂತರ ಮತ್ತೆ ನೋಡಿ.';
+
+  @override
+  String recFit(int fit) {
+    return '$fit% ಹೊಂದಾಣಿಕೆ';
+  }
+
+  @override
+  String recMatched(Object skills) {
+    return 'ನಿಮ್ಮಲ್ಲಿದೆ: $skills';
+  }
+
+  @override
+  String recGaps(Object skills) {
+    return 'ಕೌಶಲ್ಯದ ಕೊರತೆ: $skills';
+  }
+
+  @override
+  String recRoles(Object roles) {
+    return 'ಪಾತ್ರಗಳು: $roles';
+  }
+
+  @override
+  String get assistantIntro => 'ವೃತ್ತಿ, ರೆಸ್ಯೂಮೆ ಅಥವಾ ಸಂದರ್ಶನಗಳ ಬಗ್ಗೆ ಕೇಳಿ.';
+
+  @override
+  String get assistantTry1 => 'ನನಗೆ ಯಾವ ವೃತ್ತಿ ಸೂಕ್ತ?';
+
+  @override
+  String get assistantTry2 => 'ನನ್ನ ರೆಸ್ಯೂಮೆಯನ್ನು ಹೇಗೆ ಉತ್ತಮಗೊಳಿಸಲಿ?';
+
+  @override
+  String get assistantHint => 'ಪ್ರಶ್ನೆ ಕೇಳಿ';
+
+  @override
+  String get assistantOffline => 'ಆಫ್‌ಲೈನ್ ಮಾರ್ಗದರ್ಶನ';
+
+  @override
+  String get slDiaryTitle => 'ತರಗತಿ ಡೈರಿ';
+
+  @override
+  String get slDiaryEmpty => 'ಇನ್ನೂ ಡೈರಿ ನಮೂದುಗಳಿಲ್ಲ.';
+
+  @override
+  String slDiaryBy(Object name) {
+    return '$name ಅವರಿಂದ';
+  }
+
+  @override
+  String get slDiaryClasswork => 'ತರಗತಿ ಕೆಲಸ';
+
+  @override
+  String get slDiaryHomework => 'ಹೋಂವರ್ಕ್';
+
+  @override
+  String get slDiaryNotice => 'ಸೂಚನೆ';
+
+  @override
+  String get slActivitiesTitle => 'ನನ್ನ ಚಟುವಟಿಕೆಗಳು';
+
+  @override
+  String get slActivitiesEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಚಟುವಟಿಕೆ ದಾಖಲಾಗಿಲ್ಲ.';
+
+  @override
+  String slHousePoints(int points) {
+    return '$points ಹೌಸ್ ಅಂಕಗಳು';
+  }
+
+  @override
+  String get slCaptain => 'ಹೌಸ್ ಕ್ಯಾಪ್ಟನ್';
+
+  @override
+  String get slClubs => 'ಕ್ಲಬ್‌ಗಳು';
+
+  @override
+  String get slMember => 'ಸದಸ್ಯ';
+
+  @override
+  String slClubStats(int points, int count) {
+    return '$points ಅಂಕಗಳು, $count ಚಟುವಟಿಕೆಗಳು';
+  }
+
+  @override
+  String get slEvents => 'ಭಾಗವಹಿಸಿದ ಕಾರ್ಯಕ್ರಮಗಳು';
+
+  @override
+  String slGrades(Object term) {
+    return 'ಸಹ-ಪಠ್ಯ ಗ್ರೇಡ್‌ಗಳು, $term';
+  }
+
+  @override
+  String get slCoCurricular => 'ಸಹ-ಪಠ್ಯ ಚಟುವಟಿಕೆಗಳು';
+
+  @override
+  String get slAchievements => 'ಸಾಧನೆಗಳು';
+
+  @override
+  String get slRecognitions => 'ಹೌಸ್ ಮೆಚ್ಚುಗೆ';
+
+  @override
+  String get slReportCards => 'ವರದಿ ಪತ್ರಗಳು';
+
+  @override
+  String get slReportCard => 'ವರದಿ ಪತ್ರ';
+
+  @override
+  String get slReportCardsNone => 'ಇನ್ನೂ ಯಾವುದೇ ವರದಿ ಪತ್ರ ಪ್ರಕಟವಾಗಿಲ್ಲ.';
+
+  @override
+  String get slPromoted => 'ಮುಂದಿನ ತರಗತಿಗೆ ಬಡ್ತಿ';
+
+  @override
+  String get slPromotedGrace => 'ಗ್ರೇಸ್ ಅಂಕಗಳೊಂದಿಗೆ ಬಡ್ತಿ';
+
+  @override
+  String get slDetained => 'ಬಡ್ತಿ ಇಲ್ಲ';
+
+  @override
+  String get slPromotionPending => 'ಬಡ್ತಿಯ ನಿರ್ಧಾರ ಬಾಕಿ ಇದೆ';
+
+  @override
+  String slPromotedTo(Object className) {
+    return 'ಮುಂದಿನ ತರಗತಿ: $className';
+  }
+
+  @override
+  String slAttendanceDays(int present, int total) {
+    return '$total ದಿನಗಳಲ್ಲಿ $present ದಿನ';
+  }
+
+  @override
+  String slBehaviourGrade(Object grade) {
+    return 'ವರ್ತನೆ ಗ್ರೇಡ್: $grade';
+  }
+
+  @override
+  String get slReportCardPdf => 'PDF ಆಗಿ ತೆರೆಯಿರಿ';
+
+  @override
+  String get alTitle => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಗಳು';
+
+  @override
+  String get alSubtitle => 'ನಿಮ್ಮ ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಪ್ರೊಫೈಲ್, ಕಥೆಗಳು ಮತ್ತು ದೇಣಿಗೆ';
+
+  @override
+  String get alTabProfile => 'ಪ್ರೊಫೈಲ್';
+
+  @override
+  String get alTabStories => 'ನನ್ನ ಕಥೆಗಳು';
+
+  @override
+  String get alTabGive => 'ಕೊಡುಗೆ ನೀಡಿ';
+
+  @override
+  String get alTabPublished => 'ಯಶಸ್ಸಿನ ಕಥೆಗಳು';
+
+  @override
+  String alGraduated(Object program, int year) {
+    return '$program, $year ಬ್ಯಾಚ್';
+  }
+
+  @override
+  String get alPhone => 'ಫೋನ್';
+
+  @override
+  String get alEmployer => 'ಉದ್ಯೋಗದಾತ';
+
+  @override
+  String get alDesignation => 'ಹುದ್ದೆ';
+
+  @override
+  String get alCity => 'ನಗರ';
+
+  @override
+  String get alBio => 'ನನ್ನ ಬಗ್ಗೆ';
+
+  @override
+  String get alDirectory => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಡೈರೆಕ್ಟರಿಯಲ್ಲಿ ನನ್ನನ್ನು ತೋರಿಸಿ';
+
+  @override
+  String get alDirectoryHelp => 'ಇದು ಆನ್ ಆಗಿದ್ದರೆ ಮಾತ್ರ ವಿದ್ಯಾರ್ಥಿಗಳು ನಿಮ್ಮನ್ನು ಹುಡುಕಬಹುದು.';
+
+  @override
+  String get alMentor => 'ನಾನು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡಬಲ್ಲೆ';
+
+  @override
+  String get alSaved => 'ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get storyIntro => 'ನಿಮ್ಮ ಪ್ರಯಾಣದ ಬಗ್ಗೆ ಬರೆಯಿರಿ. ಪ್ರಕಟಿಸುವ ಮೊದಲು ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿ ಓದುತ್ತದೆ.';
+
+  @override
+  String get storyNone => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಕಥೆ ಬರೆದಿಲ್ಲ.';
+
+  @override
+  String get storyWrite => 'ಕಥೆ ಬರೆಯಿರಿ';
+
+  @override
+  String get storyEdit => 'ಸಂಪಾದಿಸಿ';
+
+  @override
+  String get storyBody => 'ನಿಮ್ಮ ಕಥೆ';
+
+  @override
+  String get storySaveDraft => 'ಕರಡು ಉಳಿಸಿ';
+
+  @override
+  String get storySaved => 'ಕಥೆ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get storySubmit => 'ಪರಿಶೀಲನೆಗೆ ಕಳುಹಿಸಿ';
+
+  @override
+  String get storySubmitted => 'ಪರಿಶೀಲನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get storyUnderReview => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿ ಇದನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿದೆ.';
+
+  @override
+  String storyReviewNote(Object note) {
+    return 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ ಕಚೇರಿಯ ಟಿಪ್ಪಣಿ: $note';
+  }
+
+  @override
+  String get storyNeedTitle => 'ನಿಮ್ಮ ಕಥೆಗೆ ಶೀರ್ಷಿಕೆ ನೀಡಿ.';
+
+  @override
+  String get storyNeedBody => 'ಕನಿಷ್ಠ 40 ಅಕ್ಷರಗಳನ್ನು ಬರೆಯಿರಿ.';
+
+  @override
+  String get storyStatus_draft => 'ಕರಡು';
+
+  @override
+  String get storyStatus_submitted => 'ಪರಿಶೀಲನೆಯಲ್ಲಿದೆ';
+
+  @override
+  String get storyStatus_published => 'ಪ್ರಕಟಿತ';
+
+  @override
+  String get storyStatus_rejected => 'ಬದಲಾವಣೆ ಬೇಕು';
+
+  @override
+  String get storiesNone => 'ಇನ್ನೂ ಯಾವುದೇ ಯಶಸ್ಸಿನ ಕಥೆ ಪ್ರಕಟವಾಗಿಲ್ಲ.';
+
+  @override
+  String giveTotal(Object amount) {
+    return 'ನೀವು ಇದುವರೆಗೆ $amount ನೀಡಿದ್ದೀರಿ. ಧನ್ಯವಾದ.';
+  }
+
+  @override
+  String get giveCampaigns => 'ಅಭಿಯಾನಗಳು';
+
+  @override
+  String get giveNoCampaigns => 'ಈಗ ಯಾವುದೇ ಅಭಿಯಾನ ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String giveGoal(Object amount) {
+    return 'ಗುರಿ $amount';
+  }
+
+  @override
+  String giveEnds(Object date) {
+    return '$date ರಂದು ಮುಕ್ತಾಯ';
+  }
+
+  @override
+  String get givePledge => 'ವಾಗ್ದಾನ ಮಾಡಿ';
+
+  @override
+  String giveTitle(Object name) {
+    return '$name ಗೆ ವಾಗ್ದಾನ';
+  }
+
+  @override
+  String get giveAmount => 'ಮೊತ್ತ';
+
+  @override
+  String get giveNote => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get giveHelp => 'ಹಣ ಬಂದಾಗ ಲೆಕ್ಕಪತ್ರ ಕಚೇರಿ ಅದನ್ನು ದಾಖಲಿಸುತ್ತದೆ.';
+
+  @override
+  String get giveNeedAmount => 'ಮೊತ್ತವನ್ನು ರೂಪಾಯಿಗಳಲ್ಲಿ ನಮೂದಿಸಿ.';
+
+  @override
+  String get giveThanks => 'ನಿಮ್ಮ ವಾಗ್ದಾನಕ್ಕೆ ಧನ್ಯವಾದ.';
+
+  @override
+  String get givePledges => 'ನನ್ನ ವಾಗ್ದಾನಗಳು';
+
+  @override
+  String get pledgeStatus_open => 'ಬಾಕಿ';
+
+  @override
+  String get pledgeStatus_fulfilled => 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get pledgeStatus_cancelled => 'ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get giveDonations => 'ನನ್ನ ದೇಣಿಗೆಗಳು';
+
+  @override
+  String get giveReceipt => 'ರಸೀದಿ (PDF)';
+
+  @override
+  String get volTitle => 'ಸ್ವಯಂಸೇವೆ';
+
+  @override
+  String get volNone => 'ಸ್ವಯಂಸೇವೆಯ ಯಾವುದೇ ಅವಕಾಶಗಳು ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String volPlaces(int taken, int slots) {
+    return '$slots ಸ್ಥಾನಗಳಲ್ಲಿ $taken ತುಂಬಿವೆ';
+  }
+
+  @override
+  String get volSignUp => 'ಹೆಸರು ನೋಂದಾಯಿಸಿ';
+
+  @override
+  String get volWithdraw => 'ಹೆಸರು ಹಿಂಪಡೆಯಿರಿ';
+
+  @override
+  String get volFull => 'ತುಂಬಿದೆ';
+
+  @override
+  String get volThanks => 'ಸ್ವಯಂಸೇವೆಗೆ ಧನ್ಯವಾದ.';
 }

@@ -90,8 +90,10 @@ void main() {
     expect(find.text('Promoted'), findsOneWidget);
     expect(find.text('Next class: Class 8'), findsOneWidget);
     expect(find.text('88/100 · A'), findsOneWidget);
-    expect(find.text('Football: B'), findsOneWidget);
-    expect(find.text('Attendance: 94.5%'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('coGrade-Football')), matching: find.text('B')), findsOneWidget);
+    expect(find.text('Plays in the school team'), findsOneWidget);
+    expect(find.text('Attendance: 94.5% · 170 of 180 days'), findsOneWidget);
+    expect(find.text('Behaviour: A'), findsOneWidget);
     await tester.tap(find.byKey(const Key('reportCardPdf')));
     await tester.pumpAndSettle();
     expect(opened, ['report-card.pdf']);

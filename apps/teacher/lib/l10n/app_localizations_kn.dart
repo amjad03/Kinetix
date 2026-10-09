@@ -2565,4 +2565,538 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get courseFilesNone => 'ಇನ್ನೂ ಯಾವುದೇ ಆವೃತ್ತಿ ರಚಿಸಿಲ್ಲ';
+
+  @override
+  String get accessEmbargoed => 'ತಡೆಹಿಡಿಯಲಾಗಿದೆ';
+
+  @override
+  String accessEmbargoedUntil(String date) {
+    return '$date ವರೆಗೆ ತಡೆ';
+  }
+
+  @override
+  String get accessOpen => 'ಮುಕ್ತ';
+
+  @override
+  String get accessRestricted => 'ನಿರ್ಬಂಧಿತ ಪ್ರವೇಶ';
+
+  @override
+  String get cfAssessments => 'ಮೌಲ್ಯಮಾಪನಗಳು';
+
+  @override
+  String get cfAttendance => 'ಹಾಜರಾತಿ ಅವಧಿಗಳು';
+
+  @override
+  String get cfLessonPlans => 'ಪಾಠ ಯೋಜನೆಗಳು';
+
+  @override
+  String get cfOutcomes => 'ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು';
+
+  @override
+  String get cfPeriods => 'ಅವಧಿಗಳು';
+
+  @override
+  String get cfRecordings => 'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು';
+
+  @override
+  String get cfTopics => 'ಕಲಿಸಿದ ವಿಷಯಗಳು';
+
+  @override
+  String get cfWhiteboards => 'ವೈಟ್‌ಬೋರ್ಡ್‌ಗಳು';
+
+  @override
+  String get courseFileGenerate => 'ಹೊಸ ಆವೃತ್ತಿ ರಚಿಸಿ';
+
+  @override
+  String courseFileGenerated(String n) {
+    return 'ಆವೃತ್ತಿ $n ರಚಿಸಲಾಗಿದೆ.';
+  }
+
+  @override
+  String courseFileMeta(String date, String name, String size) {
+    return '$date ರಂದು $name ಅವರಿಂದ ರಚಿಸಲಾಗಿದೆ · $size';
+  }
+
+  @override
+  String get courseFileNone => 'ಇನ್ನೂ ಯಾವುದೇ ಆವೃತ್ತಿ ರಚಿಸಲಾಗಿಲ್ಲ.';
+
+  @override
+  String get courseFileNotReviewed => 'ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ';
+
+  @override
+  String get courseFileOpenPdf => 'PDF ತೆರೆಯಿರಿ';
+
+  @override
+  String courseFileReviewed(String name) {
+    return '$name ಅವರು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ';
+  }
+
+  @override
+  String courseFileVersion(String n) {
+    return 'ಆವೃತ್ತಿ $n';
+  }
+
+  @override
+  String datasetFiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ಫೈಲ್‌ಗಳು', one: '1 ಫೈಲ್');
+    return '$_temp0';
+  }
+
+  @override
+  String obeAttainmentDirect(String n) {
+    return 'ನೇರ $n';
+  }
+
+  @override
+  String get obeAttainmentHeader => 'ಪ್ರತಿ CO ಸಾಧನೆ';
+
+  @override
+  String obeAttainmentIndirect(String n) {
+    return 'ಪರೋಕ್ಷ $n';
+  }
+
+  @override
+  String get obeAttainmentNone => 'ಈ ವರ್ಷದ ಸಾಧನೆಯನ್ನು ಇನ್ನೂ ಲೆಕ್ಕಹಾಕಿಲ್ಲ.';
+
+  @override
+  String get obeAttainmentRestricted => 'ಸಾಧನೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಮತ್ತು ಗುಣಮಟ್ಟ ಕಚೇರಿಗೆ ತೋರಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String obeAttainmentTarget(String n) {
+    return 'ಗುರಿ $n';
+  }
+
+  @override
+  String get obeBody => 'ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು, CO–PO ಮ್ಯಾಟ್ರಿಕ್ಸ್ ಮತ್ತು ಸಾಧನೆ';
+
+  @override
+  String get obeMatrixHeader => 'CO–PO ಮ್ಯಾಟ್ರಿಕ್ಸ್';
+
+  @override
+  String get obeMatrixLegend => 'ಸಂಬಂಧದ ಬಲ: 1 ಕಡಿಮೆ, 2 ಮಧ್ಯಮ, 3 ಹೆಚ್ಚು';
+
+  @override
+  String get obeMatrixNoPos => 'ಈ ವಿಷಯದ ಕಾರ್ಯಕ್ರಮಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಕಾರ್ಯಕ್ರಮ ಫಲಿತಾಂಶಗಳನ್ನು (PO/PSO) ನಿಗದಿಪಡಿಸಿಲ್ಲ.';
+
+  @override
+  String get obeMet => 'ಗುರಿ ಸಾಧಿಸಲಾಗಿದೆ';
+
+  @override
+  String get obeNoOutcomes => 'ಈ ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳನ್ನು ನಿಗದಿಪಡಿಸಿಲ್ಲ.';
+
+  @override
+  String get obeNotMet => 'ಗುರಿಗಿಂತ ಕಡಿಮೆ';
+
+  @override
+  String get obeStatusActive => 'ಸಕ್ರಿಯ';
+
+  @override
+  String get obeStatusDraft => 'ಕರಡು';
+
+  @override
+  String get obeStatusRetired => 'ಹಳೆಯದು';
+
+  @override
+  String get obeSubjectsEmpty => 'ತೋರಿಸಲು ಯಾವುದೇ ವಿಷಯ ಇಲ್ಲ.';
+
+  @override
+  String get obeTitle => 'ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು (CO/PO)';
+
+  @override
+  String obeVersion(String n) {
+    return 'ಆವೃತ್ತಿ $n';
+  }
+
+  @override
+  String get programmeMphil => 'ಎಂ.ಫಿಲ್.';
+
+  @override
+  String get programmePhd => 'ಪಿಎಚ್.ಡಿ.';
+
+  @override
+  String get projAccept => 'ಒಪ್ಪಿಕೊಳ್ಳಿ';
+
+  @override
+  String get projAccepted => 'ಒಪ್ಪಲಾಗಿದೆ';
+
+  @override
+  String get projAddLink => 'ಲಿಂಕ್ ಸೇರಿಸಿ';
+
+  @override
+  String get projCommentHint => 'ಸಂದೇಶ ಬರೆಯಿರಿ';
+
+  @override
+  String get projCritDocumentation => 'ದಾಖಲೀಕರಣ';
+
+  @override
+  String get projCritExecution => 'ಅನುಷ್ಠಾನ';
+
+  @override
+  String get projCritTeamwork => 'ತಂಡ ಕಾರ್ಯ';
+
+  @override
+  String get projCritUnderstanding => 'ತಿಳುವಳಿಕೆ';
+
+  @override
+  String get projDecline => 'ತಿರಸ್ಕರಿಸಿ';
+
+  @override
+  String get projDeclined => 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get projDiscussionEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ. ಚರ್ಚೆ ಆರಂಭಿಸಿ.';
+
+  @override
+  String get projFiles => 'ಫೈಲ್‌ಗಳು ಮತ್ತು ಲಿಂಕ್‌ಗಳು';
+
+  @override
+  String get projFilesNone => 'ಇನ್ನೂ ಯಾವುದೇ ಫೈಲ್ ಅಥವಾ ಲಿಂಕ್ ಇಲ್ಲ.';
+
+  @override
+  String get projHub => 'ಶೋಕೇಸ್ ಮತ್ತು ನೇಮಕಾತಿ';
+
+  @override
+  String get projHubLookingFor => 'ಬೇಕಾದ ಕೌಶಲ್ಯಗಳು (ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿ)';
+
+  @override
+  String get projHubOpenings => 'ಖಾಲಿ ಸ್ಥಾನಗಳು';
+
+  @override
+  String get projHubRecruiting => 'ಸೇರಲು ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ';
+
+  @override
+  String get projHubSaved => 'ಉಳಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get projHubShowcase => 'ಶೋಕೇಸ್‌ನಲ್ಲಿ ತೋರಿಸಿ';
+
+  @override
+  String get projHubSummary => 'ಸಾರಾಂಶ';
+
+  @override
+  String get projLinkInvalid => 'ಶೀರ್ಷಿಕೆ ಮತ್ತು http ಯಿಂದ ಪ್ರಾರಂಭವಾಗುವ ವೆಬ್ ಲಿಂಕ್ ನಮೂದಿಸಿ.';
+
+  @override
+  String get projLinkTitle => 'ಶೀರ್ಷಿಕೆ';
+
+  @override
+  String get projLinkUrl => 'ವೆಬ್ ಲಿಂಕ್';
+
+  @override
+  String projMatchFit(String pct) {
+    return '$pct% ಹೊಂದಾಣಿಕೆ';
+  }
+
+  @override
+  String get projMatches => 'ಸೂಚಿತ ವಿದ್ಯಾರ್ಥಿಗಳು';
+
+  @override
+  String get projMatchesNone => 'ಹೊಂದುವ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ನೋಡಲು ಬೇಕಾದ ಕೌಶಲ್ಯಗಳನ್ನು ಸೇರಿಸಿ.';
+
+  @override
+  String get projMembers => 'ತಂಡ';
+
+  @override
+  String projMilestoneDone(String date) {
+    return '$date ರಂದು ಪೂರ್ಣಗೊಂಡಿದೆ';
+  }
+
+  @override
+  String projMilestoneDue(String date) {
+    return '$date ರೊಳಗೆ';
+  }
+
+  @override
+  String get projMilestones => 'ಮೈಲಿಗಲ್ಲುಗಳು';
+
+  @override
+  String get projMilestonesNone => 'ಇನ್ನೂ ಯಾವುದೇ ಮೈಲಿಗಲ್ಲು ಇಲ್ಲ.';
+
+  @override
+  String projMyRole(String role) {
+    return 'ನಿಮ್ಮ ಪಾತ್ರ: $role';
+  }
+
+  @override
+  String get projPending => 'ಬಾಕಿ';
+
+  @override
+  String projPi(String name) {
+    return '$name ಅವರ ನೇತೃತ್ವದಲ್ಲಿ';
+  }
+
+  @override
+  String get projRecordResult => 'ಫಲಿತಾಂಶ ದಾಖಲಿಸಿ';
+
+  @override
+  String get projRecruiting => 'ನೇಮಕಾತಿ ನಡೆಯುತ್ತಿದೆ';
+
+  @override
+  String get projReply => 'ಉತ್ತರಿಸಿ';
+
+  @override
+  String projReplyingTo(String name) {
+    return '$name ಅವರಿಗೆ ಉತ್ತರ';
+  }
+
+  @override
+  String get projRequests => 'ಸೇರುವ ವಿನಂತಿಗಳು';
+
+  @override
+  String get projRequestsNone => 'ಸೇರುವ ವಿನಂತಿಗಳಿಲ್ಲ.';
+
+  @override
+  String projReviewAverage(String count, String pct) {
+    return '$count ವಿಮರ್ಶೆಗಳು, ಸರಾಸರಿ $pct%';
+  }
+
+  @override
+  String get projReviewComment => 'ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get projReviewExternal => 'ಬಾಹ್ಯ';
+
+  @override
+  String get projReviewMentor => 'ಮಾರ್ಗದರ್ಶಕ';
+
+  @override
+  String get projReviewPeer => 'ಸಹಪಾಠಿ';
+
+  @override
+  String get projReviewsEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ವಿಮರ್ಶೆ ಇಲ್ಲ.';
+
+  @override
+  String get projRoleAdmin => 'ನಿರ್ವಾಹಕರು';
+
+  @override
+  String get projRoleMember => 'ಸದಸ್ಯ';
+
+  @override
+  String get projRolePi => 'ಯೋಜನಾ ಮುಖ್ಯಸ್ಥ';
+
+  @override
+  String get projRoleStudent => 'ವಿದ್ಯಾರ್ಥಿ';
+
+  @override
+  String get projRoleSupervisor => 'ಮೇಲ್ವಿಚಾರಕ';
+
+  @override
+  String get projScheduleViva => 'ವೈವಾ ನಿಗದಿಪಡಿಸಿ';
+
+  @override
+  String projScoreOutOf(String max) {
+    return 'ಪ್ರತಿ ಮಾನದಂಡಕ್ಕೆ $max ರಲ್ಲಿ ಅಂಕ ನೀಡಿ';
+  }
+
+  @override
+  String get projShowcase => 'ಶೋಕೇಸ್';
+
+  @override
+  String get projTabDiscussion => 'ಚರ್ಚೆ';
+
+  @override
+  String get projTabOverview => 'ಅವಲೋಕನ';
+
+  @override
+  String get projTabReviews => 'ವಿಮರ್ಶೆಗಳು';
+
+  @override
+  String get projTabTeam => 'ತಂಡ ಮತ್ತು ನೇಮಕಾತಿ';
+
+  @override
+  String get projVivaPanel => 'ಸಮಿತಿ ಸದಸ್ಯರು (ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿ)';
+
+  @override
+  String get projVivaPanelNeeded => 'ಕನಿಷ್ಠ ಒಬ್ಬ ಸಮಿತಿ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ.';
+
+  @override
+  String get projVivaRemarks => 'ಟಿಪ್ಪಣಿಗಳು';
+
+  @override
+  String get projVivaScore => 'ಅಂಕ (0–100, ಐಚ್ಛಿಕ)';
+
+  @override
+  String get projVivaScoreInvalid => '0 ರಿಂದ 100 ರ ನಡುವೆ ಅಂಕ ನಮೂದಿಸಿ.';
+
+  @override
+  String get projVivaVenue => 'ಸ್ಥಳ';
+
+  @override
+  String get projVivas => 'ವೈವಾ';
+
+  @override
+  String get projVivasNone => 'ಯಾವುದೇ ವೈವಾ ನಿಗದಿಯಾಗಿಲ್ಲ.';
+
+  @override
+  String get projWriteReview => 'ಮಾರ್ಗದರ್ಶಕ ವಿಮರ್ಶೆ ಬರೆಯಿರಿ';
+
+  @override
+  String get projectsBody => 'ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಯೋಜನೆಗಳು: ಚರ್ಚೆ, ವಿಮರ್ಶೆ, ವೈವಾ, ನೇಮಕಾತಿ';
+
+  @override
+  String get projectsEmpty => 'ನೀವು ಯಾವುದೇ ಯೋಜನೆಯಲ್ಲಿ ಇಲ್ಲ.';
+
+  @override
+  String get projectsTitle => 'ಯೋಜನಾ ಮಾರ್ಗದರ್ಶನ';
+
+  @override
+  String get pubAddByDoi => 'DOI ಮೂಲಕ ಸೇರಿಸಿ';
+
+  @override
+  String get pubDoiBody => 'ಪ್ರಕಟಣೆಯ DOI ನಮೂದಿಸಿ; KINETIX ಅದರ ವಿವರಗಳನ್ನು DOI ರಿಜಿಸ್ಟ್ರಿಯಿಂದ ಓದುತ್ತದೆ.';
+
+  @override
+  String get pubImport => 'ಆಮದು ಮಾಡಿ';
+
+  @override
+  String get pubKindBook => 'ಪುಸ್ತಕ';
+
+  @override
+  String get pubKindChapter => 'ಪುಸ್ತಕ ಅಧ್ಯಾಯ';
+
+  @override
+  String get pubKindConference => 'ಸಮ್ಮೇಳನ ಪ್ರಬಂಧ';
+
+  @override
+  String get pubKindJournal => 'ಜರ್ನಲ್ ಲೇಖನ';
+
+  @override
+  String get resKindCapstone => 'ಕ್ಯಾಪ್‌ಸ್ಟೋನ್';
+
+  @override
+  String get resKindIndustry => 'ಉದ್ಯಮ';
+
+  @override
+  String get resKindResearch => 'ಸಂಶೋಧನೆ';
+
+  @override
+  String get resStatusActive => 'ಸಕ್ರಿಯ';
+
+  @override
+  String get resStatusCancelled => 'ರದ್ದುಗೊಂಡಿದೆ';
+
+  @override
+  String get resStatusCompleted => 'ಪೂರ್ಣಗೊಂಡಿದೆ';
+
+  @override
+  String get resStatusOnHold => 'ತಡೆಹಿಡಿಯಲಾಗಿದೆ';
+
+  @override
+  String get researchBody => 'ಯೋಜನೆಗಳು, ಸಂಶೋಧನಾ ವಿದ್ಯಾರ್ಥಿಗಳು, ಪ್ರಕಟಣೆಗಳು ಮತ್ತು ಡೇಟಾಸೆಟ್‌ಗಳು';
+
+  @override
+  String get researchDatasets => 'ಡೇಟಾಸೆಟ್‌ಗಳು';
+
+  @override
+  String get researchDatasetsEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಡೇಟಾಸೆಟ್ ಇಲ್ಲ.';
+
+  @override
+  String get researchProjects => 'ಯೋಜನೆಗಳು';
+
+  @override
+  String get researchProjectsEmpty => 'ನಿಮಗೆ ಯಾವುದೇ ಸಂಶೋಧನಾ ಯೋಜನೆ ಇಲ್ಲ.';
+
+  @override
+  String get researchPublications => 'ಪ್ರಕಟಣೆಗಳು';
+
+  @override
+  String get researchPublicationsEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಪ್ರಕಟಣೆ ದಾಖಲಾಗಿಲ್ಲ.';
+
+  @override
+  String get researchScholars => 'ಸಂಶೋಧನಾ ವಿದ್ಯಾರ್ಥಿಗಳು';
+
+  @override
+  String get researchScholarsEmpty => 'ನೀವು ಯಾವುದೇ ಸಂಶೋಧನಾ ವಿದ್ಯಾರ್ಥಿಯನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡುತ್ತಿಲ್ಲ.';
+
+  @override
+  String get researchTitle => 'ಸಂಶೋಧನೆ';
+
+  @override
+  String get scholarAwarded => 'ಪದವಿ ಪ್ರದಾನ';
+
+  @override
+  String get scholarEnrolled => 'ದಾಖಲಾಗಿದ್ದಾರೆ';
+
+  @override
+  String get scholarThesisSubmitted => 'ಪ್ರಬಂಧ ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get scholarWithdrawn => 'ಹಿಂಪಡೆಯಲಾಗಿದೆ';
+
+  @override
+  String get similarityNone => 'ಸಾಮ್ಯತೆ ಪರಿಶೀಲನೆ ಇನ್ನೂ ನಡೆದಿಲ್ಲ.';
+
+  @override
+  String similarityScore(String pct, String limit) {
+    return 'ಸಾಮ್ಯತೆ $pct% (ಮಿತಿ $limit%)';
+  }
+
+  @override
+  String get thesisAbstract => 'ಸಾರಾಂಶ';
+
+  @override
+  String get thesisHistory => 'ಇತಿಹಾಸ';
+
+  @override
+  String get thesisNeedsText => 'ಸಲ್ಲಿಸುವ ಮೊದಲು ಪ್ರಬಂಧದ ಪಠ್ಯವನ್ನು ಸೇರಿಸಬೇಕು.';
+
+  @override
+  String get thesisNone => 'ಇನ್ನೂ ಪ್ರಬಂಧ ದಾಖಲೆ ಇಲ್ಲ. ತೆರೆಯಲು ಒತ್ತಿ.';
+
+  @override
+  String get thesisOpen => 'ಪ್ರಬಂಧ ದಾಖಲೆ ತೆರೆಯಿರಿ';
+
+  @override
+  String get thesisStageAwarded => 'ಪದವಿ ಪ್ರದಾನ';
+
+  @override
+  String get thesisStageDraft => 'ಕರಡು';
+
+  @override
+  String get thesisStageExamination => 'ಪರೀಕ್ಷಣೆ';
+
+  @override
+  String get thesisStageLabel => 'ಹಂತ';
+
+  @override
+  String get thesisStageSubmitted => 'ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get thesisStageSynopsis => 'ಸಿನಾಪ್ಸಿಸ್';
+
+  @override
+  String get thesisStageViva => 'ವೈವಾ';
+
+  @override
+  String get thesisSubmit => 'ಪ್ರಬಂಧ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get thesisSubmitBody => 'ಪ್ರಬಂಧವು ಕರಡಿನಿಂದ ಸಲ್ಲಿಕೆಯ ಹಂತಕ್ಕೆ ಹೋಗುತ್ತದೆ. ಮುಂದಿನ ಕ್ರಮವನ್ನು ಸಂಶೋಧನಾ ಕಚೇರಿ ನಿರ್ವಹಿಸುತ್ತದೆ.';
+
+  @override
+  String get thesisTitleLabel => 'ಪ್ರಬಂಧದ ಶೀರ್ಷಿಕೆ';
+
+  @override
+  String get thesisVivas => 'ವೈವಾ ಪರೀಕ್ಷೆಗಳು';
+
+  @override
+  String get thesisVivasNone => 'ಇನ್ನೂ ಯಾವುದೇ ವೈವಾ ನಿಗದಿಯಾಗಿಲ್ಲ.';
+
+  @override
+  String get vivaCancelled => 'ರದ್ದುಗೊಂಡಿದೆ';
+
+  @override
+  String get vivaFailed => 'ಅನುತ್ತೀರ್ಣ';
+
+  @override
+  String get vivaHeld => 'ನಡೆದಿದೆ';
+
+  @override
+  String get vivaPassed => 'ಉತ್ತೀರ್ಣ';
+
+  @override
+  String get vivaRevise => 'ಪರಿಷ್ಕರಿಸಿ ಮರುಸಲ್ಲಿಸಿ';
+
+  @override
+  String get vivaScheduled => 'ನಿಗದಿಯಾಗಿದೆ';
 }

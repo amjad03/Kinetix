@@ -2559,4 +2559,538 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get courseFilesNone => 'अभी कोई संस्करण नहीं बना';
+
+  @override
+  String get accessEmbargoed => 'रोक के अधीन';
+
+  @override
+  String accessEmbargoedUntil(String date) {
+    return '$date तक रोक';
+  }
+
+  @override
+  String get accessOpen => 'खुला';
+
+  @override
+  String get accessRestricted => 'सीमित पहुँच';
+
+  @override
+  String get cfAssessments => 'मूल्यांकन';
+
+  @override
+  String get cfAttendance => 'उपस्थिति सत्र';
+
+  @override
+  String get cfLessonPlans => 'पाठ योजनाएँ';
+
+  @override
+  String get cfOutcomes => 'पाठ्यक्रम परिणाम';
+
+  @override
+  String get cfPeriods => 'पीरियड';
+
+  @override
+  String get cfRecordings => 'रिकॉर्डिंग';
+
+  @override
+  String get cfTopics => 'पढ़ाई गई विषय-वस्तु';
+
+  @override
+  String get cfWhiteboards => 'व्हाइटबोर्ड';
+
+  @override
+  String get courseFileGenerate => 'नया संस्करण बनाएँ';
+
+  @override
+  String courseFileGenerated(String n) {
+    return 'संस्करण $n बन गया।';
+  }
+
+  @override
+  String courseFileMeta(String date, String name, String size) {
+    return '$date को $name द्वारा बनाया गया · $size';
+  }
+
+  @override
+  String get courseFileNone => 'अभी तक कोई संस्करण नहीं बना है।';
+
+  @override
+  String get courseFileNotReviewed => 'अभी समीक्षा नहीं हुई';
+
+  @override
+  String get courseFileOpenPdf => 'PDF खोलें';
+
+  @override
+  String courseFileReviewed(String name) {
+    return '$name द्वारा समीक्षा की गई';
+  }
+
+  @override
+  String courseFileVersion(String n) {
+    return 'संस्करण $n';
+  }
+
+  @override
+  String datasetFiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count फ़ाइलें', one: '1 फ़ाइल');
+    return '$_temp0';
+  }
+
+  @override
+  String obeAttainmentDirect(String n) {
+    return 'प्रत्यक्ष $n';
+  }
+
+  @override
+  String get obeAttainmentHeader => 'प्रत्येक CO की उपलब्धि';
+
+  @override
+  String obeAttainmentIndirect(String n) {
+    return 'अप्रत्यक्ष $n';
+  }
+
+  @override
+  String get obeAttainmentNone => 'इस वर्ष की उपलब्धि की गणना अभी नहीं हुई है।';
+
+  @override
+  String get obeAttainmentRestricted => 'उपलब्धि के आँकड़े विभागाध्यक्ष और गुणवत्ता कार्यालय को दिखाए जाते हैं।';
+
+  @override
+  String obeAttainmentTarget(String n) {
+    return 'लक्ष्य $n';
+  }
+
+  @override
+  String get obeBody => 'पाठ्यक्रम परिणाम, CO–PO मैट्रिक्स और उपलब्धि';
+
+  @override
+  String get obeMatrixHeader => 'CO–PO मैट्रिक्स';
+
+  @override
+  String get obeMatrixLegend => 'संबंध की मज़बूती: 1 कम, 2 मध्यम, 3 अधिक';
+
+  @override
+  String get obeMatrixNoPos => 'इस विषय के कार्यक्रम के लिए अभी कोई कार्यक्रम परिणाम (PO/PSO) तय नहीं हैं।';
+
+  @override
+  String get obeMet => 'लक्ष्य पूरा';
+
+  @override
+  String get obeNoOutcomes => 'इस विषय के लिए अभी कोई पाठ्यक्रम परिणाम तय नहीं हैं।';
+
+  @override
+  String get obeNotMet => 'लक्ष्य से कम';
+
+  @override
+  String get obeStatusActive => 'सक्रिय';
+
+  @override
+  String get obeStatusDraft => 'ड्राफ़्ट';
+
+  @override
+  String get obeStatusRetired => 'पुराना';
+
+  @override
+  String get obeSubjectsEmpty => 'दिखाने के लिए कोई विषय नहीं है।';
+
+  @override
+  String get obeTitle => 'पाठ्यक्रम परिणाम (CO/PO)';
+
+  @override
+  String obeVersion(String n) {
+    return 'संस्करण $n';
+  }
+
+  @override
+  String get programmeMphil => 'एम.फिल.';
+
+  @override
+  String get programmePhd => 'पीएच.डी.';
+
+  @override
+  String get projAccept => 'स्वीकार करें';
+
+  @override
+  String get projAccepted => 'स्वीकृत';
+
+  @override
+  String get projAddLink => 'लिंक जोड़ें';
+
+  @override
+  String get projCommentHint => 'संदेश लिखें';
+
+  @override
+  String get projCritDocumentation => 'दस्तावेज़ीकरण';
+
+  @override
+  String get projCritExecution => 'कार्यान्वयन';
+
+  @override
+  String get projCritTeamwork => 'टीमवर्क';
+
+  @override
+  String get projCritUnderstanding => 'समझ';
+
+  @override
+  String get projDecline => 'अस्वीकार करें';
+
+  @override
+  String get projDeclined => 'अस्वीकृत';
+
+  @override
+  String get projDiscussionEmpty => 'अभी कोई संदेश नहीं है। चर्चा शुरू करें।';
+
+  @override
+  String get projFiles => 'फ़ाइलें और लिंक';
+
+  @override
+  String get projFilesNone => 'अभी कोई फ़ाइल या लिंक नहीं है।';
+
+  @override
+  String get projHub => 'शोकेस और भर्ती';
+
+  @override
+  String get projHubLookingFor => 'चाहिए कौशल (अल्पविराम से अलग करें)';
+
+  @override
+  String get projHubOpenings => 'खाली स्थान';
+
+  @override
+  String get projHubRecruiting => 'विद्यार्थियों की तलाश है';
+
+  @override
+  String get projHubSaved => 'सहेजा गया।';
+
+  @override
+  String get projHubShowcase => 'शोकेस पर दिखाएँ';
+
+  @override
+  String get projHubSummary => 'सारांश';
+
+  @override
+  String get projLinkInvalid => 'शीर्षक और http से शुरू होने वाला वेब लिंक लिखें।';
+
+  @override
+  String get projLinkTitle => 'शीर्षक';
+
+  @override
+  String get projLinkUrl => 'वेब लिंक';
+
+  @override
+  String projMatchFit(String pct) {
+    return '$pct% मेल';
+  }
+
+  @override
+  String get projMatches => 'सुझाए गए विद्यार्थी';
+
+  @override
+  String get projMatchesNone => 'मेल खाने वाले विद्यार्थी देखने के लिए चाहिए कौशल जोड़ें।';
+
+  @override
+  String get projMembers => 'टीम';
+
+  @override
+  String projMilestoneDone(String date) {
+    return '$date को पूरा हुआ';
+  }
+
+  @override
+  String projMilestoneDue(String date) {
+    return '$date तक';
+  }
+
+  @override
+  String get projMilestones => 'मील के पत्थर';
+
+  @override
+  String get projMilestonesNone => 'अभी कोई मील का पत्थर नहीं है।';
+
+  @override
+  String projMyRole(String role) {
+    return 'आपकी भूमिका: $role';
+  }
+
+  @override
+  String get projPending => 'लंबित';
+
+  @override
+  String projPi(String name) {
+    return '$name के नेतृत्व में';
+  }
+
+  @override
+  String get projRecordResult => 'परिणाम दर्ज करें';
+
+  @override
+  String get projRecruiting => 'भर्ती जारी';
+
+  @override
+  String get projReply => 'उत्तर दें';
+
+  @override
+  String projReplyingTo(String name) {
+    return '$name को उत्तर';
+  }
+
+  @override
+  String get projRequests => 'जुड़ने के अनुरोध';
+
+  @override
+  String get projRequestsNone => 'जुड़ने का कोई अनुरोध नहीं है।';
+
+  @override
+  String projReviewAverage(String count, String pct) {
+    return '$count समीक्षाएँ, औसत $pct%';
+  }
+
+  @override
+  String get projReviewComment => 'टिप्पणी';
+
+  @override
+  String get projReviewExternal => 'बाहरी';
+
+  @override
+  String get projReviewMentor => 'मार्गदर्शक';
+
+  @override
+  String get projReviewPeer => 'सहपाठी';
+
+  @override
+  String get projReviewsEmpty => 'अभी कोई समीक्षा नहीं है।';
+
+  @override
+  String get projRoleAdmin => 'प्रशासक';
+
+  @override
+  String get projRoleMember => 'सदस्य';
+
+  @override
+  String get projRolePi => 'परियोजना प्रमुख';
+
+  @override
+  String get projRoleStudent => 'विद्यार्थी';
+
+  @override
+  String get projRoleSupervisor => 'पर्यवेक्षक';
+
+  @override
+  String get projScheduleViva => 'वाइवा तय करें';
+
+  @override
+  String projScoreOutOf(String max) {
+    return 'हर मानदंड को $max में से अंक दें';
+  }
+
+  @override
+  String get projShowcase => 'शोकेस';
+
+  @override
+  String get projTabDiscussion => 'चर्चा';
+
+  @override
+  String get projTabOverview => 'अवलोकन';
+
+  @override
+  String get projTabReviews => 'समीक्षाएँ';
+
+  @override
+  String get projTabTeam => 'टीम और भर्ती';
+
+  @override
+  String get projVivaPanel => 'पैनल सदस्य (अल्पविराम से अलग करें)';
+
+  @override
+  String get projVivaPanelNeeded => 'कम से कम एक पैनल सदस्य जोड़ें।';
+
+  @override
+  String get projVivaRemarks => 'टिप्पणियाँ';
+
+  @override
+  String get projVivaScore => 'अंक (0–100, वैकल्पिक)';
+
+  @override
+  String get projVivaScoreInvalid => '0 से 100 के बीच अंक लिखें।';
+
+  @override
+  String get projVivaVenue => 'स्थान';
+
+  @override
+  String get projVivas => 'वाइवा';
+
+  @override
+  String get projVivasNone => 'कोई वाइवा तय नहीं है।';
+
+  @override
+  String get projWriteReview => 'मार्गदर्शक समीक्षा लिखें';
+
+  @override
+  String get projectsBody => 'आपकी विद्यार्थी परियोजनाएँ: चर्चा, समीक्षा, वाइवा, भर्ती';
+
+  @override
+  String get projectsEmpty => 'आप किसी परियोजना में शामिल नहीं हैं।';
+
+  @override
+  String get projectsTitle => 'परियोजना मार्गदर्शन';
+
+  @override
+  String get pubAddByDoi => 'DOI से जोड़ें';
+
+  @override
+  String get pubDoiBody => 'प्रकाशन का DOI लिखें; KINETIX उसका विवरण DOI रजिस्ट्री से पढ़ लेगा।';
+
+  @override
+  String get pubImport => 'आयात करें';
+
+  @override
+  String get pubKindBook => 'पुस्तक';
+
+  @override
+  String get pubKindChapter => 'पुस्तक अध्याय';
+
+  @override
+  String get pubKindConference => 'सम्मेलन शोध-पत्र';
+
+  @override
+  String get pubKindJournal => 'पत्रिका लेख';
+
+  @override
+  String get resKindCapstone => 'कैपस्टोन';
+
+  @override
+  String get resKindIndustry => 'उद्योग';
+
+  @override
+  String get resKindResearch => 'शोध';
+
+  @override
+  String get resStatusActive => 'सक्रिय';
+
+  @override
+  String get resStatusCancelled => 'रद्द';
+
+  @override
+  String get resStatusCompleted => 'पूर्ण';
+
+  @override
+  String get resStatusOnHold => 'रोका गया';
+
+  @override
+  String get researchBody => 'परियोजनाएँ, शोधार्थी, प्रकाशन और डेटासेट';
+
+  @override
+  String get researchDatasets => 'डेटासेट';
+
+  @override
+  String get researchDatasetsEmpty => 'अभी कोई डेटासेट नहीं है।';
+
+  @override
+  String get researchProjects => 'परियोजनाएँ';
+
+  @override
+  String get researchProjectsEmpty => 'आपकी कोई शोध परियोजना नहीं है।';
+
+  @override
+  String get researchPublications => 'प्रकाशन';
+
+  @override
+  String get researchPublicationsEmpty => 'अभी कोई प्रकाशन दर्ज नहीं है।';
+
+  @override
+  String get researchScholars => 'शोधार्थी';
+
+  @override
+  String get researchScholarsEmpty => 'आप किसी शोधार्थी का पर्यवेक्षण नहीं कर रहे हैं।';
+
+  @override
+  String get researchTitle => 'शोध';
+
+  @override
+  String get scholarAwarded => 'उपाधि प्रदान';
+
+  @override
+  String get scholarEnrolled => 'नामांकित';
+
+  @override
+  String get scholarThesisSubmitted => 'शोध-प्रबंध जमा';
+
+  @override
+  String get scholarWithdrawn => 'वापस लिया';
+
+  @override
+  String get similarityNone => 'समानता जाँच अभी नहीं हुई है।';
+
+  @override
+  String similarityScore(String pct, String limit) {
+    return 'समानता $pct% (सीमा $limit%)';
+  }
+
+  @override
+  String get thesisAbstract => 'सार';
+
+  @override
+  String get thesisHistory => 'इतिहास';
+
+  @override
+  String get thesisNeedsText => 'जमा करने से पहले शोध-प्रबंध का पाठ जोड़ना होगा।';
+
+  @override
+  String get thesisNone => 'अभी कोई शोध-प्रबंध रिकॉर्ड नहीं है। खोलने के लिए छुएँ।';
+
+  @override
+  String get thesisOpen => 'शोध-प्रबंध रिकॉर्ड खोलें';
+
+  @override
+  String get thesisStageAwarded => 'उपाधि प्रदान';
+
+  @override
+  String get thesisStageDraft => 'ड्राफ़्ट';
+
+  @override
+  String get thesisStageExamination => 'परीक्षण';
+
+  @override
+  String get thesisStageLabel => 'चरण';
+
+  @override
+  String get thesisStageSubmitted => 'जमा किया गया';
+
+  @override
+  String get thesisStageSynopsis => 'सिनॉप्सिस';
+
+  @override
+  String get thesisStageViva => 'वाइवा';
+
+  @override
+  String get thesisSubmit => 'शोध-प्रबंध जमा करें';
+
+  @override
+  String get thesisSubmitBody => 'शोध-प्रबंध ड्राफ़्ट से जमा की स्थिति में चला जाएगा। आगे की कार्यवाही शोध कार्यालय करेगा।';
+
+  @override
+  String get thesisTitleLabel => 'शोध-प्रबंध का शीर्षक';
+
+  @override
+  String get thesisVivas => 'वाइवा परीक्षाएँ';
+
+  @override
+  String get thesisVivasNone => 'अभी कोई वाइवा तय नहीं है।';
+
+  @override
+  String get vivaCancelled => 'रद्द';
+
+  @override
+  String get vivaFailed => 'अनुत्तीर्ण';
+
+  @override
+  String get vivaHeld => 'संपन्न';
+
+  @override
+  String get vivaPassed => 'उत्तीर्ण';
+
+  @override
+  String get vivaRevise => 'संशोधन कर पुनः जमा करें';
+
+  @override
+  String get vivaScheduled => 'तय';
 }

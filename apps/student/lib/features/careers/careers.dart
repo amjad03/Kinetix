@@ -9,12 +9,15 @@ import '../../widgets/common.dart';
 /// The Student App passes [onRegister], [onWithdraw] and [onRespond]; the Parent App leaves them out
 /// and the screen is read-only.
 class CareersScreen extends StatefulWidget {
-  const CareersScreen({super.key, required this.load, this.onRegister, this.onWithdraw, this.onRespond});
+  const CareersScreen({super.key, required this.load, this.onRegister, this.onWithdraw, this.onRespond, this.onPrepare});
 
   final Future<CareerOverview> Function() load;
   final Future<void> Function(String driveId)? onRegister;
   final Future<void> Function(String driveId)? onWithdraw;
   final Future<void> Function(String offerId, bool accept)? onRespond;
+
+  /// Opens career preparation (resume, tests, mock interviews, recommendations, assistant); the Student App only.
+  final VoidCallback? onPrepare;
 
   static Future<void> open(
     BuildContext context, {
@@ -22,8 +25,9 @@ class CareersScreen extends StatefulWidget {
     Future<void> Function(String driveId)? onRegister,
     Future<void> Function(String driveId)? onWithdraw,
     Future<void> Function(String offerId, bool accept)? onRespond,
+    VoidCallback? onPrepare,
   }) => Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => CareersScreen(load: load, onRegister: onRegister, onWithdraw: onWithdraw, onRespond: onRespond)),
+    MaterialPageRoute(builder: (_) => CareersScreen(load: load, onRegister: onRegister, onWithdraw: onWithdraw, onRespond: onRespond, onPrepare: onPrepare)),
   );
 
   @override
@@ -91,6 +95,17 @@ class _CareersScreenState extends State<CareersScreen> {
                       key: const Key('careersAcademics'),
                       style: context.text.titleMedium,
                     ),
+                    if (widget.onPrepare != null)
+                      Card(
+                        child: ListTile(
+                          key: const Key('openCareerPrep'),
+                          leading: const Icon(Icons.rocket_launch_outlined),
+                          title: Text(l.prepTitle),
+                          subtitle: Text(l.prepSubtitle),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: widget.onPrepare,
+                        ),
+                      ),
                     if (!_canAct) Padding(padding: const EdgeInsets.only(top: Kx.s4), child: Text(l.careersViewOnly, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant))),
                     if (d.placed) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(l.careersPlaced, key: const Key('careersPlaced'), style: context.text.bodyLarge)),
                     if (d.offers.isNotEmpty) ...[_Title(l.careersOffers), for (final o in d.offers) _offer(context, o)],

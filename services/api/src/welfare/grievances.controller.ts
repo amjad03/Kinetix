@@ -1,3 +1,4 @@
+import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -233,6 +234,7 @@ export class GrievancesController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { t, viewer } = await this.access(tx, p, id, true);
       this.staffOnly(viewer);
+      if (!t.committee) await assertNotRouted(tx, BOUND.grievance);
       if (!canMoveTicket(t.status, 'resolved')) throw new ConflictException(`A ${t.status} ticket cannot be resolved`);
       if (t.committee && t.committeeStage !== 'action' && t.committeeStage !== 'closed') throw new ConflictException('Take the committee through its stages (inquiry, report, action) before resolving');
       const [row] = await tx.update(grievanceTickets).set({ status: 'resolved', resolution: b.resolution, resolvedAt: this.svc.now(), version: t.version + 1 }).where(eq(grievanceTickets.id, id)).returning();

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FeesModule } from '../fees/fees.module.js';
 import { HrModule } from '../hr/hr.module.js';
+import { AutoCertificatesService } from './auto-certificates.service.js';
 import { CertificatesController } from './certificates.controller.js';
 import { CertificatesService } from './certificates.service.js';
 import { IdCardsController } from './id-cards.controller.js';
@@ -11,6 +12,7 @@ import { VaultController } from './vault.controller.js';
 @Module({
   imports: [FeesModule, HrModule],
   controllers: [CertificatesController, IdCardsController, VaultController, PublicVerifyController],
-  providers: [CertificatesService],
+  providers: [CertificatesService, AutoCertificatesService],
+  exports: [AutoCertificatesService, CertificatesService],
 })
 export class DocumentsModule {}

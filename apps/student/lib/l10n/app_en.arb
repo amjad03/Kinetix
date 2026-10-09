@@ -2265,5 +2265,555 @@
     }
   },
   "forumLocked": "This discussion is locked.",
-  "forumReplyHint": "Write a reply"
+  "forumReplyHint": "Write a reply",
+  "pjTitle": "Projects and research",
+  "pjSubtitle": "My projects, find a team, showcase, portfolio",
+  "pjTabMine": "My projects",
+  "pjTabFind": "Find a team",
+  "pjTabShowcase": "Showcase",
+  "pjTabPortfolio": "Portfolio",
+  "pjNoneMine": "You are not on any project yet. Find a team to join.",
+  "pjOnShowcase": "On the showcase",
+  "pjRecruiting": "Looking for members",
+  "pjKind_capstone": "Capstone",
+  "pjKind_research": "Research",
+  "pjKind_minor": "Minor project",
+  "pjKind_major": "Major project",
+  "pjKind_internship": "Internship",
+  "pjKind_project": "Project",
+  "pjStatus_active": "Active",
+  "pjStatus_completed": "Completed",
+  "pjStatus_on_hold": "On hold",
+  "pjStatus_proposed": "Proposed",
+  "thesisTitle": "My thesis",
+  "thesisStage_synopsis": "Synopsis",
+  "thesisStage_draft": "Draft",
+  "thesisStage_submitted": "Submitted",
+  "thesisStage_examination": "Under examination",
+  "thesisStage_viva": "Viva",
+  "thesisStage_awarded": "Awarded",
+  "thesisSubmittedOn": "Submitted on {date}",
+  "@thesisSubmittedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "thesisNextViva": "Next viva: {time}, {venue}",
+  "@thesisNextViva": {
+    "placeholders": {
+      "time": {},
+      "venue": {}
+    }
+  },
+  "thesisSimilarity": "Similarity {percent}% (limit {limit}%)",
+  "@thesisSimilarity": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "pjSkillSearch": "Search by skill",
+  "pjNoneFind": "No projects are looking for members right now.",
+  "pjFit": "{fit}% match",
+  "@pjFit": {
+    "placeholders": {
+      "fit": {
+        "type": "int"
+      }
+    }
+  },
+  "pjLookingFor": "Looking for: {skills}",
+  "@pjLookingFor": {
+    "placeholders": {
+      "skills": {}
+    }
+  },
+  "pjOpenings": "{count, plural, =1{1 place open} other{{count} places open}}",
+  "@pjOpenings": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pjAskToJoin": "Ask to join",
+  "pjJoinTitle": "Join {title}",
+  "@pjJoinTitle": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "pjJoinMessage": "A short note to the project lead",
+  "pjJoinSent": "Your request was sent.",
+  "pjNoneShowcase": "No projects on the showcase yet.",
+  "pjReviewAverage": "Reviews: {average}%",
+  "@pjReviewAverage": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      }
+    }
+  },
+  "pjReview": "Review",
+  "pjReviewTitle": "Review: {title}",
+  "@pjReviewTitle": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "pjReviewComment": "Comment (optional)",
+  "pjReviewThanks": "Thank you for your review.",
+  "pjCriterion_idea": "Idea",
+  "pjCriterion_execution": "Execution",
+  "pjCriterion_presentation": "Presentation",
+  "pjCriterion_impact": "Impact",
+  "pjAddPortfolio": "Add to portfolio",
+  "pjPortfolioNote": "Published items can be seen by everyone at your institution.",
+  "pjNonePortfolio": "Nothing in your portfolio yet.",
+  "pjDelete": "Delete",
+  "pjPublished": "Published",
+  "pjPublishedOn": "Visible to others",
+  "pjPublishedOff": "Only you can see it",
+  "pjPortfolio_project": "Project",
+  "pjPortfolio_research": "Research",
+  "pjPortfolio_certificate": "Certificate",
+  "pjPortfolio_work": "Work",
+  "pjFieldTitle": "Title",
+  "pjFieldSummary": "Summary",
+  "pjFieldLink": "Link (https://…)",
+  "pjFieldKind": "Kind",
+  "pjNeedTitle": "Give it a title.",
+  "pjNeedUrl": "Enter a full link starting with https://",
+  "pjNeedTitleAndUrl": "A link needs a title and a full address.",
+  "pjWorkspace": "Project workspace",
+  "pjMembers": "Team",
+  "pjMentor": "Lead: {name}",
+  "@pjMentor": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "pjMilestones": "Milestones",
+  "pjNoMilestones": "No milestones set.",
+  "pjDoneOn": "Done on {date}",
+  "@pjDoneOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "pjDueOn": "Due {date}",
+  "@pjDueOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "pjFiles": "Files and links",
+  "pjAddLink": "Add link",
+  "pjNoFiles": "No files yet.",
+  "pjCopyLink": "Copy link",
+  "pjLinkCopied": "Link copied",
+  "pjLinkAdded": "Link added",
+  "pjViva": "Viva",
+  "pjPanel": "Panel: {names}",
+  "@pjPanel": {
+    "placeholders": {
+      "names": {}
+    }
+  },
+  "pjVivaCancelled": "Cancelled",
+  "pjViva_pass": "Passed",
+  "pjViva_revise": "Revise and resubmit",
+  "pjViva_fail": "Not passed",
+  "pjReviews": "Reviews",
+  "pjNoReviews": "No reviews yet.",
+  "pjReviewsSummary": "{count, plural, =1{1 review} other{{count} reviews}}, average {average}%",
+  "@pjReviewsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "average": {
+        "type": "int"
+      }
+    }
+  },
+  "pjDiscussion": "Discussion",
+  "pjNoComments": "No messages yet. Start the discussion.",
+  "pjWriteComment": "Write a message",
+  "prepTitle": "Career preparation",
+  "prepSubtitle": "Resume, tests, mock interviews, assistant",
+  "prepResume": "Resume",
+  "prepResumeSub": "Build the resume placement staff can read",
+  "prepTests": "Aptitude tests",
+  "prepTestsSub": "Timed practice with scores by topic",
+  "prepMockHr": "HR mock interview",
+  "prepMockHrSub": "Common HR questions with feedback",
+  "prepMockTechnical": "Technical mock interview",
+  "prepMockTechnicalSub": "Role-based technical questions",
+  "prepCommunication": "Communication practice",
+  "prepCommunicationSub": "Practise speaking clearly and with structure",
+  "prepRecs": "Career recommendations",
+  "prepRecsSub": "Paths that fit your skills, and the gaps to close",
+  "prepAssistant": "Career assistant",
+  "prepAssistantSub": "Ask KINETIX AI about your career",
+  "rsHeadline": "Headline",
+  "rsSummary": "Summary",
+  "rsSkills": "Skills",
+  "rsInterests": "Interests",
+  "rsCommaHelp": "Separate with commas",
+  "rsEducation": "Education",
+  "rsExperience": "Experience",
+  "rsProjects": "Projects",
+  "rsLinks": "Links",
+  "rsAdd": "Add",
+  "rsInstitution": "Institution",
+  "rsDegree": "Degree or course",
+  "rsYears": "Years",
+  "rsScore": "Score or grade",
+  "rsOrg": "Organisation",
+  "rsRole": "Role",
+  "rsDetail": "Details",
+  "rsLabel": "Label",
+  "rsVisible": "Show my resume to placement staff",
+  "rsVisibleHelp": "Recruiters can only see it if this is on.",
+  "rsSaved": "Resume saved",
+  "rsEntryIncomplete": "Fill in the required fields (a link must start with https://).",
+  "testsNone": "No aptitude tests are open right now.",
+  "testCat_quant": "Quantitative",
+  "testCat_logical": "Logical",
+  "testCat_verbal": "Verbal",
+  "testCat_technical": "Technical",
+  "testCat_mixed": "Mixed",
+  "testQuestions": "{count, plural, =1{1 question} other{{count} questions}}",
+  "@testQuestions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "testMinutes": "{count} min",
+  "@testMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "testNoAttempts": "Not attempted yet",
+  "testAttempts": "{attempts, plural, =1{1 attempt} other{{attempts} attempts}}, best {best}%",
+  "@testAttempts": {
+    "placeholders": {
+      "attempts": {
+        "type": "int"
+      },
+      "best": {
+        "type": "int"
+      }
+    }
+  },
+  "testPassed": "Passed",
+  "testNotPassed": "Not passed yet (pass mark {pass}%)",
+  "@testNotPassed": {
+    "placeholders": {
+      "pass": {
+        "type": "int"
+      }
+    }
+  },
+  "testTake": "Take the test",
+  "testRetake": "Try again",
+  "testIntro": "{questions} questions in {minutes} minutes. Pass mark {pass}%. You get up to 3 attempts. The timer starts now and keeps running even if you leave.",
+  "@testIntro": {
+    "placeholders": {
+      "questions": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      },
+      "pass": {
+        "type": "int"
+      }
+    }
+  },
+  "testStart": "Start",
+  "testAnswered": "{done} of {total} answered",
+  "@testAnswered": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "testSubmit": "Submit answers",
+  "testLeave": "Leave the test? The timer keeps running and your answers will not be sent.",
+  "testStay": "Stay",
+  "testLeaveAnyway": "Leave",
+  "testScore": "{score} of {total} correct",
+  "@testScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "testByTopic": "Score by topic",
+  "testBack": "Back to tests",
+  "mockIntro": "Answer each question in your own words, as you would in the interview. You get a score and notes for every answer.",
+  "mockIntroCommunication": "Answer each prompt in a few clear sentences. You get a score and notes on structure and clarity.",
+  "mockRole": "Role you are preparing for",
+  "mockRoleHint": "For example, Data analyst",
+  "mockCount": "Number of questions",
+  "mockStart": "Start practice",
+  "mockPast": "Earlier practice",
+  "mockAnswerHint": "Type your answer",
+  "mockAnswerAll": "Answer every question first.",
+  "mockSubmit": "Get my score",
+  "mockScore": "Score: {score} out of 10",
+  "@mockScore": {
+    "placeholders": {
+      "score": {}
+    }
+  },
+  "mockQuestionScore": "{score} out of 10",
+  "@mockQuestionScore": {
+    "placeholders": {
+      "score": {}
+    }
+  },
+  "mockOverall": "Overall",
+  "mockAgain": "Practise again",
+  "recSkills": "Your skills: {skills}",
+  "@recSkills": {
+    "placeholders": {
+      "skills": {}
+    }
+  },
+  "recInterests": "Your interests: {interests}",
+  "@recInterests": {
+    "placeholders": {
+      "interests": {}
+    }
+  },
+  "recNone": "No career paths yet. Add skills and interests to your resume, then check again.",
+  "recFit": "{fit}% fit",
+  "@recFit": {
+    "placeholders": {
+      "fit": {
+        "type": "int"
+      }
+    }
+  },
+  "recMatched": "You have: {skills}",
+  "@recMatched": {
+    "placeholders": {
+      "skills": {}
+    }
+  },
+  "recGaps": "Skill gaps: {skills}",
+  "@recGaps": {
+    "placeholders": {
+      "skills": {}
+    }
+  },
+  "recRoles": "Roles: {roles}",
+  "@recRoles": {
+    "placeholders": {
+      "roles": {}
+    }
+  },
+  "assistantIntro": "Ask about careers, your resume or interviews.",
+  "assistantTry1": "Which career suits me?",
+  "assistantTry2": "How can I improve my resume?",
+  "assistantHint": "Ask a question",
+  "assistantOffline": "Offline guidance",
+  "slDiaryTitle": "Class diary",
+  "slDiaryEmpty": "No diary entries yet.",
+  "slDiaryBy": "by {name}",
+  "@slDiaryBy": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "slDiaryClasswork": "Classwork",
+  "slDiaryHomework": "Homework",
+  "slDiaryNotice": "Notice",
+  "slActivitiesTitle": "My activities",
+  "slActivitiesEmpty": "No activities recorded yet.",
+  "slHousePoints": "{points} house points",
+  "@slHousePoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "slCaptain": "House captain",
+  "slClubs": "Clubs",
+  "slMember": "Member",
+  "slClubStats": "{points} points, {count} activities",
+  "@slClubStats": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "slEvents": "Events attended",
+  "slGrades": "Co-curricular grades, {term}",
+  "@slGrades": {
+    "placeholders": {
+      "term": {}
+    }
+  },
+  "slCoCurricular": "Co-curricular",
+  "slAchievements": "Achievements",
+  "slRecognitions": "House recognitions",
+  "slReportCards": "Report cards",
+  "slReportCard": "Report card",
+  "slReportCardsNone": "No report cards have been published yet.",
+  "slPromoted": "Promoted",
+  "slPromotedGrace": "Promoted with grace marks",
+  "slDetained": "Not promoted",
+  "slPromotionPending": "Promotion decision pending",
+  "slPromotedTo": "Next class: {className}",
+  "@slPromotedTo": {
+    "placeholders": {
+      "className": {}
+    }
+  },
+  "slAttendanceDays": "{present} of {total} days",
+  "@slAttendanceDays": {
+    "placeholders": {
+      "present": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "slBehaviourGrade": "Behaviour grade: {grade}",
+  "@slBehaviourGrade": {
+    "placeholders": {
+      "grade": {}
+    }
+  },
+  "slReportCardPdf": "Open as PDF",
+  "alTitle": "Alumni",
+  "alSubtitle": "Your alumni profile, stories and giving",
+  "alTabProfile": "Profile",
+  "alTabStories": "My stories",
+  "alTabGive": "Give back",
+  "alTabPublished": "Success stories",
+  "alGraduated": "{program}, class of {year}",
+  "@alGraduated": {
+    "placeholders": {
+      "program": {},
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "alPhone": "Phone",
+  "alEmployer": "Employer",
+  "alDesignation": "Designation",
+  "alCity": "City",
+  "alBio": "About me",
+  "alDirectory": "Show me in the alumni directory",
+  "alDirectoryHelp": "Students can find you only if this is on.",
+  "alMentor": "I can mentor students",
+  "alSaved": "Profile saved",
+  "storyIntro": "Write about your journey. The alumni office reads it before it is published.",
+  "storyNone": "You have not written a story yet.",
+  "storyWrite": "Write a story",
+  "storyEdit": "Edit",
+  "storyBody": "Your story",
+  "storySaveDraft": "Save draft",
+  "storySaved": "Story saved",
+  "storySubmit": "Send for review",
+  "storySubmitted": "Sent for review",
+  "storyUnderReview": "The alumni office is reviewing this.",
+  "storyReviewNote": "Note from the alumni office: {note}",
+  "@storyReviewNote": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "storyNeedTitle": "Give your story a title.",
+  "storyNeedBody": "Write at least 40 characters.",
+  "storyStatus_draft": "Draft",
+  "storyStatus_submitted": "In review",
+  "storyStatus_published": "Published",
+  "storyStatus_rejected": "Needs changes",
+  "storiesNone": "No success stories have been published yet.",
+  "giveTotal": "You have given {amount} so far. Thank you.",
+  "@giveTotal": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "giveCampaigns": "Campaigns",
+  "giveNoCampaigns": "No campaigns are open right now.",
+  "giveGoal": "Goal {amount}",
+  "@giveGoal": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "giveEnds": "ends {date}",
+  "@giveEnds": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "givePledge": "Pledge",
+  "giveTitle": "Pledge to {name}",
+  "@giveTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "giveAmount": "Amount",
+  "giveNote": "Note (optional)",
+  "giveHelp": "The accounts office records the money when it arrives.",
+  "giveNeedAmount": "Enter an amount in rupees.",
+  "giveThanks": "Thank you for your pledge.",
+  "givePledges": "My pledges",
+  "pledgeStatus_open": "Open",
+  "pledgeStatus_fulfilled": "Received",
+  "pledgeStatus_cancelled": "Cancelled",
+  "giveDonations": "My donations",
+  "giveReceipt": "Receipt (PDF)",
+  "volTitle": "Volunteering",
+  "volNone": "No volunteering opportunities are open.",
+  "volPlaces": "{taken} of {slots} places taken",
+  "@volPlaces": {
+    "placeholders": {
+      "taken": {
+        "type": "int"
+      },
+      "slots": {
+        "type": "int"
+      }
+    }
+  },
+  "volSignUp": "Sign up",
+  "volWithdraw": "Withdraw",
+  "volFull": "Full",
+  "volThanks": "Thank you for volunteering."
 }

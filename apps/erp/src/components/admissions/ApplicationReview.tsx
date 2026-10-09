@@ -14,7 +14,10 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { FormField, TextInput } from '@/components/ui';
 import { enrollApplicant, recordApplicationFee, reviewDocument, setApplicationStatus } from '@/app/(dashboard)/admissions/actions';
+import { sendWaiver } from '@/app/(dashboard)/workflows/bound-actions';
+import { SendForApproval } from '@/components/pathways-b/SendForApproval';
 import { SectionTitle } from '@/components/PageHeader';
+import { BOUND_FLOWS } from '@/lib/pathways-b';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
 import { APPLICATION_REASON_REQUIRED, type ApplicationDetail } from '@/lib/admissions';
@@ -24,7 +27,7 @@ import { ReasonDialog } from './ReasonDialog';
 type Dialog = { kind: 'status'; status: string } | { kind: 'reject-doc'; docId: string } | { kind: 'waive' } | null;
 
 /** The reviewer's side of an application: move it along, check documents, take the fee, enrol. */
-export function ApplicationReview({ app, classes, canWaive }: { app: ApplicationDetail; classes: { id: string; name: string; term: number }[]; canWaive: boolean }) {
+export function ApplicationReview({ app, classes, canWaive, flows }: { app: ApplicationDetail; classes: { id: string; name: string; term: number }[]; canWaive: boolean; flows: Record<string, boolean> | null }) {
   const { t } = useI18n();
   const router = useRouter();
   const [dialog, setDialog] = useState<Dialog>(null);
@@ -177,6 +180,7 @@ export function ApplicationReview({ app, classes, canWaive }: { app: Application
                 {t('adm.fee.waive')}
               </Button>
             )}
+            <SendForApproval flow={BOUND_FLOWS[3]} flows={flows} sourceId={app.id} fields={[{ name: 'reason', label: t('adm.field.reason'), required: true }]} onSend={(v) => sendWaiver(app.id, v)} />
           </Stack>
         )}
       </Paper>

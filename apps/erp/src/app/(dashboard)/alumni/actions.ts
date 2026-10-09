@@ -45,6 +45,11 @@ export async function signUp(opportunityId: string, v: V) {
   return send(`${BASE}/volunteering/${encodeURIComponent(opportunityId)}/signups`, { alumniId: v.alumniId, note: v.note ?? '' }, PAGE);
 }
 
+/** The alumni office publishes (optionally featuring) or rejects a submitted success story. */
+export async function reviewStory(storyId: string, v: V) {
+  return send(`/v1/placements/success-stories/${encodeURIComponent(storyId)}/review`, { decision: v.decision, ...(optStr(v.note) ? { note: v.note.trim() } : {}), featured: v.featured === 'yes' }, PAGE);
+}
+
 export async function withdraw(opportunityId: string, alumniId: string) {
   return send(`${BASE}/volunteering/${encodeURIComponent(opportunityId)}/signups/${encodeURIComponent(alumniId)}`, undefined, PAGE, 'DELETE');
 }

@@ -3,12 +3,20 @@
 export type Audience = 'students' | 'section' | 'staff' | 'guardians';
 export type QuestionKind = 'single' | 'multiple' | 'rating' | 'text';
 
+/** A question shown only when an earlier question was answered a certain way. */
+export interface ShowIf {
+  questionId: string;
+  op: 'eq' | 'neq' | 'gte' | 'lte' | 'includes';
+  value: string | number;
+}
+
 export interface QuestionDef {
   id: string;
   kind: QuestionKind;
   prompt: string;
   options: string[];
   required: boolean;
+  showIf?: ShowIf | null;
 }
 
 /** What one respondent sent for one question. */
@@ -73,6 +81,43 @@ export interface CleanAnswer {
   text: string | null;
 }
 
+/** Whether an answer meets a condition. An unanswered question meets only "is not". */
+export function conditionMet(c: ShowIf, a: AnswerInput | undefined): boolean {
+  if (!a) return c.op === 'neq';
+  const v = c.value;
+  switch (c.op) {
+    case 'eq':
+      return a.rating !== undefined ? a.rating === Number(v) : a.choices?.length ? a.choices.includes(String(v)) : a.text?.trim() === String(v);
+    case 'neq':
+      return !conditionMet({ ...c, op: 'eq' }, a);
+    case 'gte':
+      return a.rating !== undefined && a.rating >= Number(v);
+    case 'lte':
+      return a.rating !== undefined && a.rating <= Number(v);
+    case 'includes':
+      return !!a.choices?.includes(String(v)) || !!a.text?.toLowerCase().includes(String(v).toLowerCase());
+  }
+}
+
+/** The ids of the questions this respondent sees, in order: a question hidden by its condition hides what depends on it. */
+export function shownQuestions(questions: QuestionDef[], byQ: Map<string, AnswerInput>): Set<string> {
+  const shown = new Set<string>();
+  for (const q of questions) {
+    if (!q.showIf || (shown.has(q.showIf.questionId) && conditionMet(q.showIf, byQ.get(q.showIf.questionId)))) shown.add(q.id);
+  }
+  return shown;
+}
+
+/** A condition points at an earlier question of the same survey, and the value suits that question. */
+export function showIfProblem(q: { showIf?: { questionId: string; op: string; value: string | number } | null }, earlier: QuestionDef[]): string | null {
+  if (!q.showIf) return null;
+  const ref = earlier.find((e) => e.id === q.showIf!.questionId);
+  if (!ref) return 'A condition must refer to an earlier question';
+  if ((q.showIf.op === 'gte' || q.showIf.op === 'lte') && ref.kind !== 'rating') return 'Greater-than and less-than conditions work on rating questions';
+  if ((ref.kind === 'single' || ref.kind === 'multiple') && (q.showIf.op === 'eq' || q.showIf.op === 'neq' || q.showIf.op === 'includes') && !ref.options.includes(String(q.showIf.value))) return 'The condition value is not one of that question\'s options';
+  return null;
+}
+
 /** Checks a submission against the questions. Returns the cleaned answers or the first problem found. */
 export function checkAnswers(questions: QuestionDef[], given: AnswerInput[]): { ok: true; answers: CleanAnswer[] } | { ok: false; error: string } {
   const byQ = new Map<string, AnswerInput>();
@@ -83,7 +128,9 @@ export function checkAnswers(questions: QuestionDef[], given: AnswerInput[]): { 
   const known = new Set(questions.map((q) => q.id));
   if ([...byQ.keys()].some((id) => !known.has(id))) return { ok: false, error: 'An answer is for a question that is not in this survey' };
   const out: CleanAnswer[] = [];
+  const shown = shownQuestions(questions, byQ);
   for (const q of questions) {
+    if (!shown.has(q.id)) continue;
     const a = byQ.get(q.id);
     const blank = !a || (q.kind === 'text' ? !a.text?.trim() : q.kind === 'rating' ? a.rating === undefined : !a.choices || a.choices.length === 0);
     if (blank) {

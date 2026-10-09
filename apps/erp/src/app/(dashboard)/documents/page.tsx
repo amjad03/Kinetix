@@ -7,6 +7,7 @@ import { api, ApiError, load, requireSection } from '@/lib/api';
 import { CERT_STATUSES } from '@/lib/documents';
 import { getI18n } from '@/i18n/server';
 import type { CertificateRequest, StaffSummary } from '@/lib/hr-types';
+import { loadFlows } from '@/lib/pathways-b-server';
 import type { Structure } from '@/lib/types';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +34,7 @@ export default async function DocumentsPage({ searchParams }: { searchParams: Pr
     ]);
     return { requests, templates, structure, staff };
   });
+  const flows = await loadFlows();
   const roles = me?.roles ?? [];
   const principalish = roles.some((r) => r === 'principal' || r === 'tenant_admin');
   return (
@@ -50,6 +52,7 @@ export default async function DocumentsPage({ searchParams }: { searchParams: Pr
           staff={data.data.staff.map((s) => ({ id: s.userId, name: s.fullName }))}
           approver={principalish || roles.includes('hr_manager')}
           canBulk={principalish}
+          flows={flows}
         />
       )}
     </>

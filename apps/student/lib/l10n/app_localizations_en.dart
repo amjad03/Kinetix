@@ -3187,4 +3187,896 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forumReplyHint => 'Write a reply';
+
+  @override
+  String get pjTitle => 'Projects and research';
+
+  @override
+  String get pjSubtitle => 'My projects, find a team, showcase, portfolio';
+
+  @override
+  String get pjTabMine => 'My projects';
+
+  @override
+  String get pjTabFind => 'Find a team';
+
+  @override
+  String get pjTabShowcase => 'Showcase';
+
+  @override
+  String get pjTabPortfolio => 'Portfolio';
+
+  @override
+  String get pjNoneMine => 'You are not on any project yet. Find a team to join.';
+
+  @override
+  String get pjOnShowcase => 'On the showcase';
+
+  @override
+  String get pjRecruiting => 'Looking for members';
+
+  @override
+  String get pjKind_capstone => 'Capstone';
+
+  @override
+  String get pjKind_research => 'Research';
+
+  @override
+  String get pjKind_minor => 'Minor project';
+
+  @override
+  String get pjKind_major => 'Major project';
+
+  @override
+  String get pjKind_internship => 'Internship';
+
+  @override
+  String get pjKind_project => 'Project';
+
+  @override
+  String get pjStatus_active => 'Active';
+
+  @override
+  String get pjStatus_completed => 'Completed';
+
+  @override
+  String get pjStatus_on_hold => 'On hold';
+
+  @override
+  String get pjStatus_proposed => 'Proposed';
+
+  @override
+  String get thesisTitle => 'My thesis';
+
+  @override
+  String get thesisStage_synopsis => 'Synopsis';
+
+  @override
+  String get thesisStage_draft => 'Draft';
+
+  @override
+  String get thesisStage_submitted => 'Submitted';
+
+  @override
+  String get thesisStage_examination => 'Under examination';
+
+  @override
+  String get thesisStage_viva => 'Viva';
+
+  @override
+  String get thesisStage_awarded => 'Awarded';
+
+  @override
+  String thesisSubmittedOn(Object date) {
+    return 'Submitted on $date';
+  }
+
+  @override
+  String thesisNextViva(Object time, Object venue) {
+    return 'Next viva: $time, $venue';
+  }
+
+  @override
+  String thesisSimilarity(int percent, int limit) {
+    return 'Similarity $percent% (limit $limit%)';
+  }
+
+  @override
+  String get pjSkillSearch => 'Search by skill';
+
+  @override
+  String get pjNoneFind => 'No projects are looking for members right now.';
+
+  @override
+  String pjFit(int fit) {
+    return '$fit% match';
+  }
+
+  @override
+  String pjLookingFor(Object skills) {
+    return 'Looking for: $skills';
+  }
+
+  @override
+  String pjOpenings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count places open', one: '1 place open');
+    return '$_temp0';
+  }
+
+  @override
+  String get pjAskToJoin => 'Ask to join';
+
+  @override
+  String pjJoinTitle(Object title) {
+    return 'Join $title';
+  }
+
+  @override
+  String get pjJoinMessage => 'A short note to the project lead';
+
+  @override
+  String get pjJoinSent => 'Your request was sent.';
+
+  @override
+  String get pjNoneShowcase => 'No projects on the showcase yet.';
+
+  @override
+  String pjReviewAverage(int average) {
+    return 'Reviews: $average%';
+  }
+
+  @override
+  String get pjReview => 'Review';
+
+  @override
+  String pjReviewTitle(Object title) {
+    return 'Review: $title';
+  }
+
+  @override
+  String get pjReviewComment => 'Comment (optional)';
+
+  @override
+  String get pjReviewThanks => 'Thank you for your review.';
+
+  @override
+  String get pjCriterion_idea => 'Idea';
+
+  @override
+  String get pjCriterion_execution => 'Execution';
+
+  @override
+  String get pjCriterion_presentation => 'Presentation';
+
+  @override
+  String get pjCriterion_impact => 'Impact';
+
+  @override
+  String get pjAddPortfolio => 'Add to portfolio';
+
+  @override
+  String get pjPortfolioNote => 'Published items can be seen by everyone at your institution.';
+
+  @override
+  String get pjNonePortfolio => 'Nothing in your portfolio yet.';
+
+  @override
+  String get pjDelete => 'Delete';
+
+  @override
+  String get pjPublished => 'Published';
+
+  @override
+  String get pjPublishedOn => 'Visible to others';
+
+  @override
+  String get pjPublishedOff => 'Only you can see it';
+
+  @override
+  String get pjPortfolio_project => 'Project';
+
+  @override
+  String get pjPortfolio_research => 'Research';
+
+  @override
+  String get pjPortfolio_certificate => 'Certificate';
+
+  @override
+  String get pjPortfolio_work => 'Work';
+
+  @override
+  String get pjFieldTitle => 'Title';
+
+  @override
+  String get pjFieldSummary => 'Summary';
+
+  @override
+  String get pjFieldLink => 'Link (https://…)';
+
+  @override
+  String get pjFieldKind => 'Kind';
+
+  @override
+  String get pjNeedTitle => 'Give it a title.';
+
+  @override
+  String get pjNeedUrl => 'Enter a full link starting with https://';
+
+  @override
+  String get pjNeedTitleAndUrl => 'A link needs a title and a full address.';
+
+  @override
+  String get pjWorkspace => 'Project workspace';
+
+  @override
+  String get pjMembers => 'Team';
+
+  @override
+  String pjMentor(Object name) {
+    return 'Lead: $name';
+  }
+
+  @override
+  String get pjMilestones => 'Milestones';
+
+  @override
+  String get pjNoMilestones => 'No milestones set.';
+
+  @override
+  String pjDoneOn(Object date) {
+    return 'Done on $date';
+  }
+
+  @override
+  String pjDueOn(Object date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get pjFiles => 'Files and links';
+
+  @override
+  String get pjAddLink => 'Add link';
+
+  @override
+  String get pjNoFiles => 'No files yet.';
+
+  @override
+  String get pjCopyLink => 'Copy link';
+
+  @override
+  String get pjLinkCopied => 'Link copied';
+
+  @override
+  String get pjLinkAdded => 'Link added';
+
+  @override
+  String get pjViva => 'Viva';
+
+  @override
+  String pjPanel(Object names) {
+    return 'Panel: $names';
+  }
+
+  @override
+  String get pjVivaCancelled => 'Cancelled';
+
+  @override
+  String get pjViva_pass => 'Passed';
+
+  @override
+  String get pjViva_revise => 'Revise and resubmit';
+
+  @override
+  String get pjViva_fail => 'Not passed';
+
+  @override
+  String get pjReviews => 'Reviews';
+
+  @override
+  String get pjNoReviews => 'No reviews yet.';
+
+  @override
+  String pjReviewsSummary(int count, int average) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count reviews', one: '1 review');
+    return '$_temp0, average $average%';
+  }
+
+  @override
+  String get pjDiscussion => 'Discussion';
+
+  @override
+  String get pjNoComments => 'No messages yet. Start the discussion.';
+
+  @override
+  String get pjWriteComment => 'Write a message';
+
+  @override
+  String get prepTitle => 'Career preparation';
+
+  @override
+  String get prepSubtitle => 'Resume, tests, mock interviews, assistant';
+
+  @override
+  String get prepResume => 'Resume';
+
+  @override
+  String get prepResumeSub => 'Build the resume placement staff can read';
+
+  @override
+  String get prepTests => 'Aptitude tests';
+
+  @override
+  String get prepTestsSub => 'Timed practice with scores by topic';
+
+  @override
+  String get prepMockHr => 'HR mock interview';
+
+  @override
+  String get prepMockHrSub => 'Common HR questions with feedback';
+
+  @override
+  String get prepMockTechnical => 'Technical mock interview';
+
+  @override
+  String get prepMockTechnicalSub => 'Role-based technical questions';
+
+  @override
+  String get prepCommunication => 'Communication practice';
+
+  @override
+  String get prepCommunicationSub => 'Practise speaking clearly and with structure';
+
+  @override
+  String get prepRecs => 'Career recommendations';
+
+  @override
+  String get prepRecsSub => 'Paths that fit your skills, and the gaps to close';
+
+  @override
+  String get prepAssistant => 'Career assistant';
+
+  @override
+  String get prepAssistantSub => 'Ask KINETIX AI about your career';
+
+  @override
+  String get rsHeadline => 'Headline';
+
+  @override
+  String get rsSummary => 'Summary';
+
+  @override
+  String get rsSkills => 'Skills';
+
+  @override
+  String get rsInterests => 'Interests';
+
+  @override
+  String get rsCommaHelp => 'Separate with commas';
+
+  @override
+  String get rsEducation => 'Education';
+
+  @override
+  String get rsExperience => 'Experience';
+
+  @override
+  String get rsProjects => 'Projects';
+
+  @override
+  String get rsLinks => 'Links';
+
+  @override
+  String get rsAdd => 'Add';
+
+  @override
+  String get rsInstitution => 'Institution';
+
+  @override
+  String get rsDegree => 'Degree or course';
+
+  @override
+  String get rsYears => 'Years';
+
+  @override
+  String get rsScore => 'Score or grade';
+
+  @override
+  String get rsOrg => 'Organisation';
+
+  @override
+  String get rsRole => 'Role';
+
+  @override
+  String get rsDetail => 'Details';
+
+  @override
+  String get rsLabel => 'Label';
+
+  @override
+  String get rsVisible => 'Show my resume to placement staff';
+
+  @override
+  String get rsVisibleHelp => 'Recruiters can only see it if this is on.';
+
+  @override
+  String get rsSaved => 'Resume saved';
+
+  @override
+  String get rsEntryIncomplete => 'Fill in the required fields (a link must start with https://).';
+
+  @override
+  String get testsNone => 'No aptitude tests are open right now.';
+
+  @override
+  String get testCat_quant => 'Quantitative';
+
+  @override
+  String get testCat_logical => 'Logical';
+
+  @override
+  String get testCat_verbal => 'Verbal';
+
+  @override
+  String get testCat_technical => 'Technical';
+
+  @override
+  String get testCat_mixed => 'Mixed';
+
+  @override
+  String testQuestions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count questions', one: '1 question');
+    return '$_temp0';
+  }
+
+  @override
+  String testMinutes(int count) {
+    return '$count min';
+  }
+
+  @override
+  String get testNoAttempts => 'Not attempted yet';
+
+  @override
+  String testAttempts(int attempts, int best) {
+    String _temp0 = intl.Intl.pluralLogic(attempts, locale: localeName, other: '$attempts attempts', one: '1 attempt');
+    return '$_temp0, best $best%';
+  }
+
+  @override
+  String get testPassed => 'Passed';
+
+  @override
+  String testNotPassed(int pass) {
+    return 'Not passed yet (pass mark $pass%)';
+  }
+
+  @override
+  String get testTake => 'Take the test';
+
+  @override
+  String get testRetake => 'Try again';
+
+  @override
+  String testIntro(int questions, int minutes, int pass) {
+    return '$questions questions in $minutes minutes. Pass mark $pass%. You get up to 3 attempts. The timer starts now and keeps running even if you leave.';
+  }
+
+  @override
+  String get testStart => 'Start';
+
+  @override
+  String testAnswered(int done, int total) {
+    return '$done of $total answered';
+  }
+
+  @override
+  String get testSubmit => 'Submit answers';
+
+  @override
+  String get testLeave => 'Leave the test? The timer keeps running and your answers will not be sent.';
+
+  @override
+  String get testStay => 'Stay';
+
+  @override
+  String get testLeaveAnyway => 'Leave';
+
+  @override
+  String testScore(int score, int total) {
+    return '$score of $total correct';
+  }
+
+  @override
+  String get testByTopic => 'Score by topic';
+
+  @override
+  String get testBack => 'Back to tests';
+
+  @override
+  String get mockIntro =>
+      'Answer each question in your own words, as you would in the interview. You get a score and notes for every answer.';
+
+  @override
+  String get mockIntroCommunication => 'Answer each prompt in a few clear sentences. You get a score and notes on structure and clarity.';
+
+  @override
+  String get mockRole => 'Role you are preparing for';
+
+  @override
+  String get mockRoleHint => 'For example, Data analyst';
+
+  @override
+  String get mockCount => 'Number of questions';
+
+  @override
+  String get mockStart => 'Start practice';
+
+  @override
+  String get mockPast => 'Earlier practice';
+
+  @override
+  String get mockAnswerHint => 'Type your answer';
+
+  @override
+  String get mockAnswerAll => 'Answer every question first.';
+
+  @override
+  String get mockSubmit => 'Get my score';
+
+  @override
+  String mockScore(Object score) {
+    return 'Score: $score out of 10';
+  }
+
+  @override
+  String mockQuestionScore(Object score) {
+    return '$score out of 10';
+  }
+
+  @override
+  String get mockOverall => 'Overall';
+
+  @override
+  String get mockAgain => 'Practise again';
+
+  @override
+  String recSkills(Object skills) {
+    return 'Your skills: $skills';
+  }
+
+  @override
+  String recInterests(Object interests) {
+    return 'Your interests: $interests';
+  }
+
+  @override
+  String get recNone => 'No career paths yet. Add skills and interests to your resume, then check again.';
+
+  @override
+  String recFit(int fit) {
+    return '$fit% fit';
+  }
+
+  @override
+  String recMatched(Object skills) {
+    return 'You have: $skills';
+  }
+
+  @override
+  String recGaps(Object skills) {
+    return 'Skill gaps: $skills';
+  }
+
+  @override
+  String recRoles(Object roles) {
+    return 'Roles: $roles';
+  }
+
+  @override
+  String get assistantIntro => 'Ask about careers, your resume or interviews.';
+
+  @override
+  String get assistantTry1 => 'Which career suits me?';
+
+  @override
+  String get assistantTry2 => 'How can I improve my resume?';
+
+  @override
+  String get assistantHint => 'Ask a question';
+
+  @override
+  String get assistantOffline => 'Offline guidance';
+
+  @override
+  String get slDiaryTitle => 'Class diary';
+
+  @override
+  String get slDiaryEmpty => 'No diary entries yet.';
+
+  @override
+  String slDiaryBy(Object name) {
+    return 'by $name';
+  }
+
+  @override
+  String get slDiaryClasswork => 'Classwork';
+
+  @override
+  String get slDiaryHomework => 'Homework';
+
+  @override
+  String get slDiaryNotice => 'Notice';
+
+  @override
+  String get slActivitiesTitle => 'My activities';
+
+  @override
+  String get slActivitiesEmpty => 'No activities recorded yet.';
+
+  @override
+  String slHousePoints(int points) {
+    return '$points house points';
+  }
+
+  @override
+  String get slCaptain => 'House captain';
+
+  @override
+  String get slClubs => 'Clubs';
+
+  @override
+  String get slMember => 'Member';
+
+  @override
+  String slClubStats(int points, int count) {
+    return '$points points, $count activities';
+  }
+
+  @override
+  String get slEvents => 'Events attended';
+
+  @override
+  String slGrades(Object term) {
+    return 'Co-curricular grades, $term';
+  }
+
+  @override
+  String get slCoCurricular => 'Co-curricular';
+
+  @override
+  String get slAchievements => 'Achievements';
+
+  @override
+  String get slRecognitions => 'House recognitions';
+
+  @override
+  String get slReportCards => 'Report cards';
+
+  @override
+  String get slReportCard => 'Report card';
+
+  @override
+  String get slReportCardsNone => 'No report cards have been published yet.';
+
+  @override
+  String get slPromoted => 'Promoted';
+
+  @override
+  String get slPromotedGrace => 'Promoted with grace marks';
+
+  @override
+  String get slDetained => 'Not promoted';
+
+  @override
+  String get slPromotionPending => 'Promotion decision pending';
+
+  @override
+  String slPromotedTo(Object className) {
+    return 'Next class: $className';
+  }
+
+  @override
+  String slAttendanceDays(int present, int total) {
+    return '$present of $total days';
+  }
+
+  @override
+  String slBehaviourGrade(Object grade) {
+    return 'Behaviour grade: $grade';
+  }
+
+  @override
+  String get slReportCardPdf => 'Open as PDF';
+
+  @override
+  String get alTitle => 'Alumni';
+
+  @override
+  String get alSubtitle => 'Your alumni profile, stories and giving';
+
+  @override
+  String get alTabProfile => 'Profile';
+
+  @override
+  String get alTabStories => 'My stories';
+
+  @override
+  String get alTabGive => 'Give back';
+
+  @override
+  String get alTabPublished => 'Success stories';
+
+  @override
+  String alGraduated(Object program, int year) {
+    return '$program, class of $year';
+  }
+
+  @override
+  String get alPhone => 'Phone';
+
+  @override
+  String get alEmployer => 'Employer';
+
+  @override
+  String get alDesignation => 'Designation';
+
+  @override
+  String get alCity => 'City';
+
+  @override
+  String get alBio => 'About me';
+
+  @override
+  String get alDirectory => 'Show me in the alumni directory';
+
+  @override
+  String get alDirectoryHelp => 'Students can find you only if this is on.';
+
+  @override
+  String get alMentor => 'I can mentor students';
+
+  @override
+  String get alSaved => 'Profile saved';
+
+  @override
+  String get storyIntro => 'Write about your journey. The alumni office reads it before it is published.';
+
+  @override
+  String get storyNone => 'You have not written a story yet.';
+
+  @override
+  String get storyWrite => 'Write a story';
+
+  @override
+  String get storyEdit => 'Edit';
+
+  @override
+  String get storyBody => 'Your story';
+
+  @override
+  String get storySaveDraft => 'Save draft';
+
+  @override
+  String get storySaved => 'Story saved';
+
+  @override
+  String get storySubmit => 'Send for review';
+
+  @override
+  String get storySubmitted => 'Sent for review';
+
+  @override
+  String get storyUnderReview => 'The alumni office is reviewing this.';
+
+  @override
+  String storyReviewNote(Object note) {
+    return 'Note from the alumni office: $note';
+  }
+
+  @override
+  String get storyNeedTitle => 'Give your story a title.';
+
+  @override
+  String get storyNeedBody => 'Write at least 40 characters.';
+
+  @override
+  String get storyStatus_draft => 'Draft';
+
+  @override
+  String get storyStatus_submitted => 'In review';
+
+  @override
+  String get storyStatus_published => 'Published';
+
+  @override
+  String get storyStatus_rejected => 'Needs changes';
+
+  @override
+  String get storiesNone => 'No success stories have been published yet.';
+
+  @override
+  String giveTotal(Object amount) {
+    return 'You have given $amount so far. Thank you.';
+  }
+
+  @override
+  String get giveCampaigns => 'Campaigns';
+
+  @override
+  String get giveNoCampaigns => 'No campaigns are open right now.';
+
+  @override
+  String giveGoal(Object amount) {
+    return 'Goal $amount';
+  }
+
+  @override
+  String giveEnds(Object date) {
+    return 'ends $date';
+  }
+
+  @override
+  String get givePledge => 'Pledge';
+
+  @override
+  String giveTitle(Object name) {
+    return 'Pledge to $name';
+  }
+
+  @override
+  String get giveAmount => 'Amount';
+
+  @override
+  String get giveNote => 'Note (optional)';
+
+  @override
+  String get giveHelp => 'The accounts office records the money when it arrives.';
+
+  @override
+  String get giveNeedAmount => 'Enter an amount in rupees.';
+
+  @override
+  String get giveThanks => 'Thank you for your pledge.';
+
+  @override
+  String get givePledges => 'My pledges';
+
+  @override
+  String get pledgeStatus_open => 'Open';
+
+  @override
+  String get pledgeStatus_fulfilled => 'Received';
+
+  @override
+  String get pledgeStatus_cancelled => 'Cancelled';
+
+  @override
+  String get giveDonations => 'My donations';
+
+  @override
+  String get giveReceipt => 'Receipt (PDF)';
+
+  @override
+  String get volTitle => 'Volunteering';
+
+  @override
+  String get volNone => 'No volunteering opportunities are open.';
+
+  @override
+  String volPlaces(int taken, int slots) {
+    return '$taken of $slots places taken';
+  }
+
+  @override
+  String get volSignUp => 'Sign up';
+
+  @override
+  String get volWithdraw => 'Withdraw';
+
+  @override
+  String get volFull => 'Full';
+
+  @override
+  String get volThanks => 'Thank you for volunteering.';
 }

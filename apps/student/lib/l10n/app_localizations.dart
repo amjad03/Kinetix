@@ -5774,6 +5774,1608 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Write a reply'**
   String get forumReplyHint;
+
+  /// No description provided for @pjTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects and research'**
+  String get pjTitle;
+
+  /// No description provided for @pjSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My projects, find a team, showcase, portfolio'**
+  String get pjSubtitle;
+
+  /// No description provided for @pjTabMine.
+  ///
+  /// In en, this message translates to:
+  /// **'My projects'**
+  String get pjTabMine;
+
+  /// No description provided for @pjTabFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a team'**
+  String get pjTabFind;
+
+  /// No description provided for @pjTabShowcase.
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase'**
+  String get pjTabShowcase;
+
+  /// No description provided for @pjTabPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio'**
+  String get pjTabPortfolio;
+
+  /// No description provided for @pjNoneMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not on any project yet. Find a team to join.'**
+  String get pjNoneMine;
+
+  /// No description provided for @pjOnShowcase.
+  ///
+  /// In en, this message translates to:
+  /// **'On the showcase'**
+  String get pjOnShowcase;
+
+  /// No description provided for @pjRecruiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for members'**
+  String get pjRecruiting;
+
+  /// No description provided for @pjKind_capstone.
+  ///
+  /// In en, this message translates to:
+  /// **'Capstone'**
+  String get pjKind_capstone;
+
+  /// No description provided for @pjKind_research.
+  ///
+  /// In en, this message translates to:
+  /// **'Research'**
+  String get pjKind_research;
+
+  /// No description provided for @pjKind_minor.
+  ///
+  /// In en, this message translates to:
+  /// **'Minor project'**
+  String get pjKind_minor;
+
+  /// No description provided for @pjKind_major.
+  ///
+  /// In en, this message translates to:
+  /// **'Major project'**
+  String get pjKind_major;
+
+  /// No description provided for @pjKind_internship.
+  ///
+  /// In en, this message translates to:
+  /// **'Internship'**
+  String get pjKind_internship;
+
+  /// No description provided for @pjKind_project.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get pjKind_project;
+
+  /// No description provided for @pjStatus_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get pjStatus_active;
+
+  /// No description provided for @pjStatus_completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get pjStatus_completed;
+
+  /// No description provided for @pjStatus_on_hold.
+  ///
+  /// In en, this message translates to:
+  /// **'On hold'**
+  String get pjStatus_on_hold;
+
+  /// No description provided for @pjStatus_proposed.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed'**
+  String get pjStatus_proposed;
+
+  /// No description provided for @thesisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My thesis'**
+  String get thesisTitle;
+
+  /// No description provided for @thesisStage_synopsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Synopsis'**
+  String get thesisStage_synopsis;
+
+  /// No description provided for @thesisStage_draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get thesisStage_draft;
+
+  /// No description provided for @thesisStage_submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get thesisStage_submitted;
+
+  /// No description provided for @thesisStage_examination.
+  ///
+  /// In en, this message translates to:
+  /// **'Under examination'**
+  String get thesisStage_examination;
+
+  /// No description provided for @thesisStage_viva.
+  ///
+  /// In en, this message translates to:
+  /// **'Viva'**
+  String get thesisStage_viva;
+
+  /// No description provided for @thesisStage_awarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Awarded'**
+  String get thesisStage_awarded;
+
+  /// No description provided for @thesisSubmittedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted on {date}'**
+  String thesisSubmittedOn(Object date);
+
+  /// No description provided for @thesisNextViva.
+  ///
+  /// In en, this message translates to:
+  /// **'Next viva: {time}, {venue}'**
+  String thesisNextViva(Object time, Object venue);
+
+  /// No description provided for @thesisSimilarity.
+  ///
+  /// In en, this message translates to:
+  /// **'Similarity {percent}% (limit {limit}%)'**
+  String thesisSimilarity(int percent, int limit);
+
+  /// No description provided for @pjSkillSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by skill'**
+  String get pjSkillSearch;
+
+  /// No description provided for @pjNoneFind.
+  ///
+  /// In en, this message translates to:
+  /// **'No projects are looking for members right now.'**
+  String get pjNoneFind;
+
+  /// No description provided for @pjFit.
+  ///
+  /// In en, this message translates to:
+  /// **'{fit}% match'**
+  String pjFit(int fit);
+
+  /// No description provided for @pjLookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for: {skills}'**
+  String pjLookingFor(Object skills);
+
+  /// No description provided for @pjOpenings.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 place open} other{{count} places open}}'**
+  String pjOpenings(int count);
+
+  /// No description provided for @pjAskToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask to join'**
+  String get pjAskToJoin;
+
+  /// No description provided for @pjJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {title}'**
+  String pjJoinTitle(Object title);
+
+  /// No description provided for @pjJoinMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A short note to the project lead'**
+  String get pjJoinMessage;
+
+  /// No description provided for @pjJoinSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request was sent.'**
+  String get pjJoinSent;
+
+  /// No description provided for @pjNoneShowcase.
+  ///
+  /// In en, this message translates to:
+  /// **'No projects on the showcase yet.'**
+  String get pjNoneShowcase;
+
+  /// No description provided for @pjReviewAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews: {average}%'**
+  String pjReviewAverage(int average);
+
+  /// No description provided for @pjReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get pjReview;
+
+  /// No description provided for @pjReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review: {title}'**
+  String pjReviewTitle(Object title);
+
+  /// No description provided for @pjReviewComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment (optional)'**
+  String get pjReviewComment;
+
+  /// No description provided for @pjReviewThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your review.'**
+  String get pjReviewThanks;
+
+  /// No description provided for @pjCriterion_idea.
+  ///
+  /// In en, this message translates to:
+  /// **'Idea'**
+  String get pjCriterion_idea;
+
+  /// No description provided for @pjCriterion_execution.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution'**
+  String get pjCriterion_execution;
+
+  /// No description provided for @pjCriterion_presentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Presentation'**
+  String get pjCriterion_presentation;
+
+  /// No description provided for @pjCriterion_impact.
+  ///
+  /// In en, this message translates to:
+  /// **'Impact'**
+  String get pjCriterion_impact;
+
+  /// No description provided for @pjAddPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to portfolio'**
+  String get pjAddPortfolio;
+
+  /// No description provided for @pjPortfolioNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Published items can be seen by everyone at your institution.'**
+  String get pjPortfolioNote;
+
+  /// No description provided for @pjNonePortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in your portfolio yet.'**
+  String get pjNonePortfolio;
+
+  /// No description provided for @pjDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get pjDelete;
+
+  /// No description provided for @pjPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get pjPublished;
+
+  /// No description provided for @pjPublishedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible to others'**
+  String get pjPublishedOn;
+
+  /// No description provided for @pjPublishedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you can see it'**
+  String get pjPublishedOff;
+
+  /// No description provided for @pjPortfolio_project.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get pjPortfolio_project;
+
+  /// No description provided for @pjPortfolio_research.
+  ///
+  /// In en, this message translates to:
+  /// **'Research'**
+  String get pjPortfolio_research;
+
+  /// No description provided for @pjPortfolio_certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get pjPortfolio_certificate;
+
+  /// No description provided for @pjPortfolio_work.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get pjPortfolio_work;
+
+  /// No description provided for @pjFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get pjFieldTitle;
+
+  /// No description provided for @pjFieldSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get pjFieldSummary;
+
+  /// No description provided for @pjFieldLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link (https://…)'**
+  String get pjFieldLink;
+
+  /// No description provided for @pjFieldKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind'**
+  String get pjFieldKind;
+
+  /// No description provided for @pjNeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Give it a title.'**
+  String get pjNeedTitle;
+
+  /// No description provided for @pjNeedUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a full link starting with https://'**
+  String get pjNeedUrl;
+
+  /// No description provided for @pjNeedTitleAndUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'A link needs a title and a full address.'**
+  String get pjNeedTitleAndUrl;
+
+  /// No description provided for @pjWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Project workspace'**
+  String get pjWorkspace;
+
+  /// No description provided for @pjMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Team'**
+  String get pjMembers;
+
+  /// No description provided for @pjMentor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lead: {name}'**
+  String pjMentor(Object name);
+
+  /// No description provided for @pjMilestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get pjMilestones;
+
+  /// No description provided for @pjNoMilestones.
+  ///
+  /// In en, this message translates to:
+  /// **'No milestones set.'**
+  String get pjNoMilestones;
+
+  /// No description provided for @pjDoneOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Done on {date}'**
+  String pjDoneOn(Object date);
+
+  /// No description provided for @pjDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String pjDueOn(Object date);
+
+  /// No description provided for @pjFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files and links'**
+  String get pjFiles;
+
+  /// No description provided for @pjAddLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Add link'**
+  String get pjAddLink;
+
+  /// No description provided for @pjNoFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No files yet.'**
+  String get pjNoFiles;
+
+  /// No description provided for @pjCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get pjCopyLink;
+
+  /// No description provided for @pjLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get pjLinkCopied;
+
+  /// No description provided for @pjLinkAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Link added'**
+  String get pjLinkAdded;
+
+  /// No description provided for @pjViva.
+  ///
+  /// In en, this message translates to:
+  /// **'Viva'**
+  String get pjViva;
+
+  /// No description provided for @pjPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel: {names}'**
+  String pjPanel(Object names);
+
+  /// No description provided for @pjVivaCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get pjVivaCancelled;
+
+  /// No description provided for @pjViva_pass.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get pjViva_pass;
+
+  /// No description provided for @pjViva_revise.
+  ///
+  /// In en, this message translates to:
+  /// **'Revise and resubmit'**
+  String get pjViva_revise;
+
+  /// No description provided for @pjViva_fail.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed'**
+  String get pjViva_fail;
+
+  /// No description provided for @pjReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get pjReviews;
+
+  /// No description provided for @pjNoReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet.'**
+  String get pjNoReviews;
+
+  /// No description provided for @pjReviewsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 review} other{{count} reviews}}, average {average}%'**
+  String pjReviewsSummary(int count, int average);
+
+  /// No description provided for @pjDiscussion.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussion'**
+  String get pjDiscussion;
+
+  /// No description provided for @pjNoComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Start the discussion.'**
+  String get pjNoComments;
+
+  /// No description provided for @pjWriteComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message'**
+  String get pjWriteComment;
+
+  /// No description provided for @prepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Career preparation'**
+  String get prepTitle;
+
+  /// No description provided for @prepSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume, tests, mock interviews, assistant'**
+  String get prepSubtitle;
+
+  /// No description provided for @prepResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get prepResume;
+
+  /// No description provided for @prepResumeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Build the resume placement staff can read'**
+  String get prepResumeSub;
+
+  /// No description provided for @prepTests.
+  ///
+  /// In en, this message translates to:
+  /// **'Aptitude tests'**
+  String get prepTests;
+
+  /// No description provided for @prepTestsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed practice with scores by topic'**
+  String get prepTestsSub;
+
+  /// No description provided for @prepMockHr.
+  ///
+  /// In en, this message translates to:
+  /// **'HR mock interview'**
+  String get prepMockHr;
+
+  /// No description provided for @prepMockHrSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Common HR questions with feedback'**
+  String get prepMockHrSub;
+
+  /// No description provided for @prepMockTechnical.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical mock interview'**
+  String get prepMockTechnical;
+
+  /// No description provided for @prepMockTechnicalSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Role-based technical questions'**
+  String get prepMockTechnicalSub;
+
+  /// No description provided for @prepCommunication.
+  ///
+  /// In en, this message translates to:
+  /// **'Communication practice'**
+  String get prepCommunication;
+
+  /// No description provided for @prepCommunicationSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise speaking clearly and with structure'**
+  String get prepCommunicationSub;
+
+  /// No description provided for @prepRecs.
+  ///
+  /// In en, this message translates to:
+  /// **'Career recommendations'**
+  String get prepRecs;
+
+  /// No description provided for @prepRecsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Paths that fit your skills, and the gaps to close'**
+  String get prepRecsSub;
+
+  /// No description provided for @prepAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Career assistant'**
+  String get prepAssistant;
+
+  /// No description provided for @prepAssistantSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask KINETIX AI about your career'**
+  String get prepAssistantSub;
+
+  /// No description provided for @rsHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Headline'**
+  String get rsHeadline;
+
+  /// No description provided for @rsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get rsSummary;
+
+  /// No description provided for @rsSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get rsSkills;
+
+  /// No description provided for @rsInterests.
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get rsInterests;
+
+  /// No description provided for @rsCommaHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate with commas'**
+  String get rsCommaHelp;
+
+  /// No description provided for @rsEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get rsEducation;
+
+  /// No description provided for @rsExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get rsExperience;
+
+  /// No description provided for @rsProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get rsProjects;
+
+  /// No description provided for @rsLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Links'**
+  String get rsLinks;
+
+  /// No description provided for @rsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get rsAdd;
+
+  /// No description provided for @rsInstitution.
+  ///
+  /// In en, this message translates to:
+  /// **'Institution'**
+  String get rsInstitution;
+
+  /// No description provided for @rsDegree.
+  ///
+  /// In en, this message translates to:
+  /// **'Degree or course'**
+  String get rsDegree;
+
+  /// No description provided for @rsYears.
+  ///
+  /// In en, this message translates to:
+  /// **'Years'**
+  String get rsYears;
+
+  /// No description provided for @rsScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score or grade'**
+  String get rsScore;
+
+  /// No description provided for @rsOrg.
+  ///
+  /// In en, this message translates to:
+  /// **'Organisation'**
+  String get rsOrg;
+
+  /// No description provided for @rsRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get rsRole;
+
+  /// No description provided for @rsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get rsDetail;
+
+  /// No description provided for @rsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get rsLabel;
+
+  /// No description provided for @rsVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my resume to placement staff'**
+  String get rsVisible;
+
+  /// No description provided for @rsVisibleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruiters can only see it if this is on.'**
+  String get rsVisibleHelp;
+
+  /// No description provided for @rsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume saved'**
+  String get rsSaved;
+
+  /// No description provided for @rsEntryIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the required fields (a link must start with https://).'**
+  String get rsEntryIncomplete;
+
+  /// No description provided for @testsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No aptitude tests are open right now.'**
+  String get testsNone;
+
+  /// No description provided for @testCat_quant.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantitative'**
+  String get testCat_quant;
+
+  /// No description provided for @testCat_logical.
+  ///
+  /// In en, this message translates to:
+  /// **'Logical'**
+  String get testCat_logical;
+
+  /// No description provided for @testCat_verbal.
+  ///
+  /// In en, this message translates to:
+  /// **'Verbal'**
+  String get testCat_verbal;
+
+  /// No description provided for @testCat_technical.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical'**
+  String get testCat_technical;
+
+  /// No description provided for @testCat_mixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed'**
+  String get testCat_mixed;
+
+  /// No description provided for @testQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 question} other{{count} questions}}'**
+  String testQuestions(int count);
+
+  /// No description provided for @testMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String testMinutes(int count);
+
+  /// No description provided for @testNoAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Not attempted yet'**
+  String get testNoAttempts;
+
+  /// No description provided for @testAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'{attempts, plural, =1{1 attempt} other{{attempts} attempts}}, best {best}%'**
+  String testAttempts(int attempts, int best);
+
+  /// No description provided for @testPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get testPassed;
+
+  /// No description provided for @testNotPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed yet (pass mark {pass}%)'**
+  String testNotPassed(int pass);
+
+  /// No description provided for @testTake.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the test'**
+  String get testTake;
+
+  /// No description provided for @testRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get testRetake;
+
+  /// No description provided for @testIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'{questions} questions in {minutes} minutes. Pass mark {pass}%. You get up to 3 attempts. The timer starts now and keeps running even if you leave.'**
+  String testIntro(int questions, int minutes, int pass);
+
+  /// No description provided for @testStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get testStart;
+
+  /// No description provided for @testAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} answered'**
+  String testAnswered(int done, int total);
+
+  /// No description provided for @testSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit answers'**
+  String get testSubmit;
+
+  /// No description provided for @testLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the test? The timer keeps running and your answers will not be sent.'**
+  String get testLeave;
+
+  /// No description provided for @testStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get testStay;
+
+  /// No description provided for @testLeaveAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get testLeaveAnyway;
+
+  /// No description provided for @testScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} of {total} correct'**
+  String testScore(int score, int total);
+
+  /// No description provided for @testByTopic.
+  ///
+  /// In en, this message translates to:
+  /// **'Score by topic'**
+  String get testByTopic;
+
+  /// No description provided for @testBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to tests'**
+  String get testBack;
+
+  /// No description provided for @mockIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer each question in your own words, as you would in the interview. You get a score and notes for every answer.'**
+  String get mockIntro;
+
+  /// No description provided for @mockIntroCommunication.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer each prompt in a few clear sentences. You get a score and notes on structure and clarity.'**
+  String get mockIntroCommunication;
+
+  /// No description provided for @mockRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role you are preparing for'**
+  String get mockRole;
+
+  /// No description provided for @mockRoleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example, Data analyst'**
+  String get mockRoleHint;
+
+  /// No description provided for @mockCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of questions'**
+  String get mockCount;
+
+  /// No description provided for @mockStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start practice'**
+  String get mockStart;
+
+  /// No description provided for @mockPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier practice'**
+  String get mockPast;
+
+  /// No description provided for @mockAnswerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer'**
+  String get mockAnswerHint;
+
+  /// No description provided for @mockAnswerAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer every question first.'**
+  String get mockAnswerAll;
+
+  /// No description provided for @mockSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Get my score'**
+  String get mockSubmit;
+
+  /// No description provided for @mockScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score: {score} out of 10'**
+  String mockScore(Object score);
+
+  /// No description provided for @mockQuestionScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} out of 10'**
+  String mockQuestionScore(Object score);
+
+  /// No description provided for @mockOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall'**
+  String get mockOverall;
+
+  /// No description provided for @mockAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise again'**
+  String get mockAgain;
+
+  /// No description provided for @recSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Your skills: {skills}'**
+  String recSkills(Object skills);
+
+  /// No description provided for @recInterests.
+  ///
+  /// In en, this message translates to:
+  /// **'Your interests: {interests}'**
+  String recInterests(Object interests);
+
+  /// No description provided for @recNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No career paths yet. Add skills and interests to your resume, then check again.'**
+  String get recNone;
+
+  /// No description provided for @recFit.
+  ///
+  /// In en, this message translates to:
+  /// **'{fit}% fit'**
+  String recFit(int fit);
+
+  /// No description provided for @recMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'You have: {skills}'**
+  String recMatched(Object skills);
+
+  /// No description provided for @recGaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill gaps: {skills}'**
+  String recGaps(Object skills);
+
+  /// No description provided for @recRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'Roles: {roles}'**
+  String recRoles(Object roles);
+
+  /// No description provided for @assistantIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about careers, your resume or interviews.'**
+  String get assistantIntro;
+
+  /// No description provided for @assistantTry1.
+  ///
+  /// In en, this message translates to:
+  /// **'Which career suits me?'**
+  String get assistantTry1;
+
+  /// No description provided for @assistantTry2.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I improve my resume?'**
+  String get assistantTry2;
+
+  /// No description provided for @assistantHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get assistantHint;
+
+  /// No description provided for @assistantOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline guidance'**
+  String get assistantOffline;
+
+  /// No description provided for @slDiaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Class diary'**
+  String get slDiaryTitle;
+
+  /// No description provided for @slDiaryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No diary entries yet.'**
+  String get slDiaryEmpty;
+
+  /// No description provided for @slDiaryBy.
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String slDiaryBy(Object name);
+
+  /// No description provided for @slDiaryClasswork.
+  ///
+  /// In en, this message translates to:
+  /// **'Classwork'**
+  String get slDiaryClasswork;
+
+  /// No description provided for @slDiaryHomework.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get slDiaryHomework;
+
+  /// No description provided for @slDiaryNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get slDiaryNotice;
+
+  /// No description provided for @slActivitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My activities'**
+  String get slActivitiesTitle;
+
+  /// No description provided for @slActivitiesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities recorded yet.'**
+  String get slActivitiesEmpty;
+
+  /// No description provided for @slHousePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} house points'**
+  String slHousePoints(int points);
+
+  /// No description provided for @slCaptain.
+  ///
+  /// In en, this message translates to:
+  /// **'House captain'**
+  String get slCaptain;
+
+  /// No description provided for @slClubs.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs'**
+  String get slClubs;
+
+  /// No description provided for @slMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get slMember;
+
+  /// No description provided for @slClubStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} points, {count} activities'**
+  String slClubStats(int points, int count);
+
+  /// No description provided for @slEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Events attended'**
+  String get slEvents;
+
+  /// No description provided for @slGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-curricular grades, {term}'**
+  String slGrades(Object term);
+
+  /// No description provided for @slCoCurricular.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-curricular'**
+  String get slCoCurricular;
+
+  /// No description provided for @slAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get slAchievements;
+
+  /// No description provided for @slRecognitions.
+  ///
+  /// In en, this message translates to:
+  /// **'House recognitions'**
+  String get slRecognitions;
+
+  /// No description provided for @slReportCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Report cards'**
+  String get slReportCards;
+
+  /// No description provided for @slReportCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Report card'**
+  String get slReportCard;
+
+  /// No description provided for @slReportCardsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No report cards have been published yet.'**
+  String get slReportCardsNone;
+
+  /// No description provided for @slPromoted.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted'**
+  String get slPromoted;
+
+  /// No description provided for @slPromotedGrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted with grace marks'**
+  String get slPromotedGrace;
+
+  /// No description provided for @slDetained.
+  ///
+  /// In en, this message translates to:
+  /// **'Not promoted'**
+  String get slDetained;
+
+  /// No description provided for @slPromotionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotion decision pending'**
+  String get slPromotionPending;
+
+  /// No description provided for @slPromotedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Next class: {className}'**
+  String slPromotedTo(Object className);
+
+  /// No description provided for @slAttendanceDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{present} of {total} days'**
+  String slAttendanceDays(int present, int total);
+
+  /// No description provided for @slBehaviourGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour grade: {grade}'**
+  String slBehaviourGrade(Object grade);
+
+  /// No description provided for @slReportCardPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open as PDF'**
+  String get slReportCardPdf;
+
+  /// No description provided for @alTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alumni'**
+  String get alTitle;
+
+  /// No description provided for @alSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your alumni profile, stories and giving'**
+  String get alSubtitle;
+
+  /// No description provided for @alTabProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get alTabProfile;
+
+  /// No description provided for @alTabStories.
+  ///
+  /// In en, this message translates to:
+  /// **'My stories'**
+  String get alTabStories;
+
+  /// No description provided for @alTabGive.
+  ///
+  /// In en, this message translates to:
+  /// **'Give back'**
+  String get alTabGive;
+
+  /// No description provided for @alTabPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Success stories'**
+  String get alTabPublished;
+
+  /// No description provided for @alGraduated.
+  ///
+  /// In en, this message translates to:
+  /// **'{program}, class of {year}'**
+  String alGraduated(Object program, int year);
+
+  /// No description provided for @alPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get alPhone;
+
+  /// No description provided for @alEmployer.
+  ///
+  /// In en, this message translates to:
+  /// **'Employer'**
+  String get alEmployer;
+
+  /// No description provided for @alDesignation.
+  ///
+  /// In en, this message translates to:
+  /// **'Designation'**
+  String get alDesignation;
+
+  /// No description provided for @alCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get alCity;
+
+  /// No description provided for @alBio.
+  ///
+  /// In en, this message translates to:
+  /// **'About me'**
+  String get alBio;
+
+  /// No description provided for @alDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Show me in the alumni directory'**
+  String get alDirectory;
+
+  /// No description provided for @alDirectoryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Students can find you only if this is on.'**
+  String get alDirectoryHelp;
+
+  /// No description provided for @alMentor.
+  ///
+  /// In en, this message translates to:
+  /// **'I can mentor students'**
+  String get alMentor;
+
+  /// No description provided for @alSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved'**
+  String get alSaved;
+
+  /// No description provided for @storyIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Write about your journey. The alumni office reads it before it is published.'**
+  String get storyIntro;
+
+  /// No description provided for @storyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not written a story yet.'**
+  String get storyNone;
+
+  /// No description provided for @storyWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a story'**
+  String get storyWrite;
+
+  /// No description provided for @storyEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get storyEdit;
+
+  /// No description provided for @storyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your story'**
+  String get storyBody;
+
+  /// No description provided for @storySaveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get storySaveDraft;
+
+  /// No description provided for @storySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Story saved'**
+  String get storySaved;
+
+  /// No description provided for @storySubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for review'**
+  String get storySubmit;
+
+  /// No description provided for @storySubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent for review'**
+  String get storySubmitted;
+
+  /// No description provided for @storyUnderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'The alumni office is reviewing this.'**
+  String get storyUnderReview;
+
+  /// No description provided for @storyReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note from the alumni office: {note}'**
+  String storyReviewNote(Object note);
+
+  /// No description provided for @storyNeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Give your story a title.'**
+  String get storyNeedTitle;
+
+  /// No description provided for @storyNeedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 40 characters.'**
+  String get storyNeedBody;
+
+  /// No description provided for @storyStatus_draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get storyStatus_draft;
+
+  /// No description provided for @storyStatus_submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get storyStatus_submitted;
+
+  /// No description provided for @storyStatus_published.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get storyStatus_published;
+
+  /// No description provided for @storyStatus_rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs changes'**
+  String get storyStatus_rejected;
+
+  /// No description provided for @storiesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No success stories have been published yet.'**
+  String get storiesNone;
+
+  /// No description provided for @giveTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'You have given {amount} so far. Thank you.'**
+  String giveTotal(Object amount);
+
+  /// No description provided for @giveCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get giveCampaigns;
+
+  /// No description provided for @giveNoCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'No campaigns are open right now.'**
+  String get giveNoCampaigns;
+
+  /// No description provided for @giveGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {amount}'**
+  String giveGoal(Object amount);
+
+  /// No description provided for @giveEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'ends {date}'**
+  String giveEnds(Object date);
+
+  /// No description provided for @givePledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Pledge'**
+  String get givePledge;
+
+  /// No description provided for @giveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pledge to {name}'**
+  String giveTitle(Object name);
+
+  /// No description provided for @giveAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get giveAmount;
+
+  /// No description provided for @giveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get giveNote;
+
+  /// No description provided for @giveHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The accounts office records the money when it arrives.'**
+  String get giveHelp;
+
+  /// No description provided for @giveNeedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount in rupees.'**
+  String get giveNeedAmount;
+
+  /// No description provided for @giveThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your pledge.'**
+  String get giveThanks;
+
+  /// No description provided for @givePledges.
+  ///
+  /// In en, this message translates to:
+  /// **'My pledges'**
+  String get givePledges;
+
+  /// No description provided for @pledgeStatus_open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get pledgeStatus_open;
+
+  /// No description provided for @pledgeStatus_fulfilled.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get pledgeStatus_fulfilled;
+
+  /// No description provided for @pledgeStatus_cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get pledgeStatus_cancelled;
+
+  /// No description provided for @giveDonations.
+  ///
+  /// In en, this message translates to:
+  /// **'My donations'**
+  String get giveDonations;
+
+  /// No description provided for @giveReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt (PDF)'**
+  String get giveReceipt;
+
+  /// No description provided for @volTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Volunteering'**
+  String get volTitle;
+
+  /// No description provided for @volNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No volunteering opportunities are open.'**
+  String get volNone;
+
+  /// No description provided for @volPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'{taken} of {slots} places taken'**
+  String volPlaces(int taken, int slots);
+
+  /// No description provided for @volSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get volSignUp;
+
+  /// No description provided for @volWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get volWithdraw;
+
+  /// No description provided for @volFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get volFull;
+
+  /// No description provided for @volThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for volunteering.'**
+  String get volThanks;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
