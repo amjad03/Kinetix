@@ -89,6 +89,14 @@ export const TaskInputs = {
     language: Language.default('en'),
   }),
   summarize: z.object({ transcript: z.string().trim().min(20).max(60_000), language: Language.default('en') }),
+  /** Marking help for one descriptive answer against a rubric. The reply is only a draft for the examiner. */
+  gradeAssist: z.object({
+    question: z.string().trim().min(3).max(2000),
+    answerText: z.string().trim().min(1).max(8000),
+    rubric: z.array(z.object({ criterion: z.string().trim().min(2).max(300), marks: z.number().positive().max(100) })).min(1).max(10),
+    maxMarks: z.number().positive().max(100),
+    language: Language.default('en'),
+  }),
   /** A board page as a PNG (base64, no data: prefix), for reading handwriting. Needs a vision model. */
   /** Domain assistants (PRD §64): the API computes the figures; the model only explains them. No names are ever sent. */
   financeInsight: z.object({ facts: Facts, language: Language.default('en') }),
@@ -197,6 +205,11 @@ export const TaskOutputs = {
     assessment: Text(800),
   }),
   summarize: z.object({ summary: Text(3000), keyPoints: z.array(Text(400)).min(1).max(10) }),
+  gradeAssist: z.object({
+    criteria: z.array(z.object({ criterion: Text(300), awarded: z.number().min(0).max(100), comment: z.string().trim().max(500).default('') })).min(1).max(10),
+    total: z.number().min(0).max(100),
+    rationale: Text(1200),
+  }),
   readBoard: z.object({
     /** The writing on the board as plain text, line by line. */
     text: z.string().max(6000),
@@ -252,6 +265,7 @@ const SHAPES: Record<TaskName, string> = {
   quiz: '{"questions": [{"question": string, "options": [4 distinct strings], "answer": index 0-3 of the correct option, "explanation": string}]}',
   homework: '{"title": string, "instructions": string, "questions": [{"question": string, "marks": integer}]}',
   lessonPlan: '{"objectives": string[], "steps": [{"minutes": integer, "activity": string}], "materials": string[], "assessment": string}',
+  gradeAssist: '{"criteria": [{"criterion": string (copied from the rubric, in order), "awarded": number (0 up to that criterion\'s marks), "comment": string (one sentence quoting what the answer did or missed)}], "total": number (sum of awarded), "rationale": string (two sentences for the examiner)}',
   summarize: '{"summary": string (one paragraph for a student who missed class), "keyPoints": string[]}',
   readBoard: '{"text": string (the handwriting, line by line, as written), "math": string[] (each mathematical expression in LaTeX)}',
   boardSummary:
@@ -327,6 +341,10 @@ function userPrompt<T extends TaskName>(task: T, input: TaskInput<T>): string {
         return `${SELECT_ASK[i.action as keyof typeof SELECT_ASK]}${i.action === 'translate' ? ` into ${LANGUAGE_NAMES[(i.targetLanguage as Language) ?? 'hi']}` : ''}${i.level ? ` (${i.level})` : ''}. The teacher selected on the board:\n\"\"\"\n${i.content}\n\"\"\"`;
       case 'lessonPlan':
         return `Plan a ${i.minutes}-minute lesson on: ${i.topic}. Step minutes must add up to ${i.minutes}.`;
+      case 'gradeAssist': {
+        const rubric = (i.rubric as { criterion: string; marks: number }[]).map((r, n) => `${n + 1}. ${r.criterion} (${r.marks} marks)`).join('\n');
+        return `Suggest marks out of ${i.maxMarks} for a student's answer, strictly by this rubric. Award marks only for what the answer actually says; do not give credit for what it might have meant. You are drafting for an examiner who will decide.\nQuestion: ${i.question}\nRubric:\n${rubric}\nStudent answer:\n"""\n${i.answerText}\n"""`;
+      }
       case 'summarize':
         return `Summarise this classroom lesson transcript for students who were absent:\n"""\n${i.transcript}\n"""`;
       case 'financeInsight':
@@ -400,8 +418,23 @@ export function fitMinutes(minutes: number[], total: number): number[] {
   return out;
 }
 
+/**
+ * Keeps a marking draft inside the rubric: one line per criterion in rubric order, each between 0 and that criterion's marks
+ * (in half marks), and a total that is their sum, never above the question's marks.
+ */
+export function fitGrade(input: TaskInput<'gradeAssist'>, out: TaskOutput<'gradeAssist'>): TaskOutput<'gradeAssist'> {
+  const half = (n: number) => Math.round(n * 2) / 2;
+  const criteria = input.rubric.map((r, n) => {
+    const got = out.criteria.find((c) => c.criterion.trim().toLowerCase() === r.criterion.trim().toLowerCase()) ?? out.criteria[n];
+    return { criterion: r.criterion, awarded: Math.min(r.marks, Math.max(0, half(got?.awarded ?? 0))), comment: got?.comment ?? '' };
+  });
+  const total = Math.min(input.maxMarks, criteria.reduce((a, c) => a + c.awarded, 0));
+  return { criteria, total, rationale: out.rationale };
+}
+
 /** Fixes what a model reliably gets slightly wrong: lesson-plan steps always add up to the chosen length. */
 export function postProcess<T extends TaskName>(task: T, input: TaskInput<T>, out: TaskOutput<T>): TaskOutput<T> {
+  if (task === 'gradeAssist') return fitGrade(input as TaskInput<'gradeAssist'>, out as TaskOutput<'gradeAssist'>) as TaskOutput<T>;
   if (task !== 'lessonPlan') return out;
   const plan = out as TaskOutput<'lessonPlan'>;
   const fitted = fitMinutes(plan.steps.map((s) => s.minutes), (input as TaskInput<'lessonPlan'>).minutes);
@@ -494,6 +527,12 @@ export function previewOutput<T extends TaskName>(task: T, input: TaskInput<T>):
       }
       case 'syllabusImport':
         return parseSyllabusText(String(i.text));
+      case 'gradeAssist':
+        return {
+          criteria: (i.rubric as { criterion: string }[]).map((r) => ({ criterion: r.criterion, awarded: 0, comment: 'Preview only: nothing was read.' })),
+          total: 0,
+          rationale: 'Preview only. Connect the KINETIX AI server to get a marking draft. Mark this answer yourself.',
+        };
       case 'selectAsk':
         return { title: `Preview: ${i.action}`, answer: 'Preview only. Connect the KINETIX AI server to act on the selection.', items: [] };
       case 'summarize':

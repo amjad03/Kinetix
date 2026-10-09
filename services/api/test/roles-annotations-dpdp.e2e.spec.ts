@@ -202,6 +202,39 @@ describe('new roles, annotations, delegation, DPDP and the alumni portal', () =>
       await post('exr', base, { pageIndex: 0, kind: 'comment', x: 0.2, y: 0.6, text: 'Good working' }).expect(201);
       await del('exr', `${base}/${tick.id}`).expect(200);
       expect(Number(tick.x)).toBeCloseTo(0.4);
+      // Freehand ink: strokes of page-fraction points, bounded and checked.
+      const pen = [[[0.1, 0.1], [0.2, 0.15], [0.30001234, 0.1]]];
+      const ink = (await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: pen }).expect(201)).body;
+      expect(ink.strokes[0][2]).toEqual([0.3, 0.1]);
+      expect(Number(ink.x)).toBeCloseTo(0.1);
+      expect(Number(ink.w)).toBeCloseTo(0.2);
+      await post('exr', base, { pageIndex: 0, kind: 'ink' }).expect(400);
+      await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: [[[0.1, 0.1]]] }).expect(400);
+      await post('exr', base, { pageIndex: 0, kind: 'ink', strokes: [[[0.1, 0.1], [1.4, 0.2]]] }).expect(400);
+      expect((await get('exr', base).expect(200)).body.mine.find((m: { kind: string }) => m.kind === 'ink').strokes).toHaveLength(1);
+      await del('exr', `${base}/${ink.id}`).expect(200);
+
+      // AI marking help: a draft only. Nothing enters the valuation until the examiner accepts or edits it.
+      const q1 = ((await get('exr', `/v1/evaluation/allocations/${alloc.r1}`).expect(200)).body.questions as { id: string }[])[0];
+      const ask = (who: string, body: object) => post(who, `/v1/grading-assist/evaluation/${alloc.r1}/suggest`, body);
+      const asked = { questionId: q1.id, question: 'Define depreciation.', answerText: 'Depreciation is the fall in the value of an asset over its life.' };
+      await ask('teacher', asked).expect(404);
+      await ask('exr', { ...asked, rubric: [{ criterion: 'Definition', marks: 15 }, { criterion: 'Example', marks: 10 }] }).expect(400);
+      const draft = (await ask('exr', asked).expect(200)).body;
+      expect(draft).toMatchObject({ preview: true, status: 'draft', finalMarks: null });
+      const entered = async () => (await owner.query('select marks::float as m from eval_marks where allocation_id = $1 and question_id = $2', [alloc.r1, q1.id])).rows;
+      expect(await entered()).toEqual([]);
+      await put('teacher', `/v1/grading-assist/suggestions/${draft.id}/decision`, { action: 'accept' }).expect(404);
+      await put('exr', `/v1/grading-assist/suggestions/${draft.id}/decision`, { action: 'edit' }).expect(400);
+      await put('exr', `/v1/grading-assist/suggestions/${draft.id}/decision`, { action: 'edit', marks: 99 }).expect(400);
+      expect((await put('exr', `/v1/grading-assist/suggestions/${draft.id}/decision`, { action: 'edit', marks: 7.5 }).expect(200)).body).toMatchObject({ status: 'edited', finalMarks: 7.5 });
+      expect(await entered()).toEqual([{ m: 7.5 }]);
+      await put('exr', `/v1/grading-assist/suggestions/${draft.id}/decision`, { action: 'accept' }).expect(409);
+      const again = (await ask('exr', asked).expect(200)).body;
+      await put('exr', `/v1/grading-assist/suggestions/${again.id}/decision`, { action: 'reject' }).expect(200);
+      expect(await entered()).toEqual([{ m: 7.5 }]);
+      expect((await get('exr', `/v1/grading-assist/suggestions?allocationId=${alloc.r1}`).expect(200)).body).toHaveLength(2);
+
       await value('exr', alloc.r1, 50);
       await post('exr', base, { pageIndex: 0, kind: 'cross', x: 0.4, y: 0.9 }).expect(409);
 

@@ -8,7 +8,8 @@ import { audit } from '../common/audit.js';
 import { PdfWriter, toCsv } from '../common/pdf.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { academicYears, assessmentCoMap, assessments, coOutcomeMap, coSets, courseOutcomes, improvementActions, obeConfigs, obeEvidence, obeSurveyRatings, obeSurveys, programOutcomes, subjects, tenants, users } from '../db/schema.js';
+import { academicYears, assessmentCoMap, assessments, coOutcomeMap, coSets, courseOutcomes, improvementActions, obeConfigs, pollResponses, polls, sections, obeEvidence, obeSurveyRatings, obeSurveys, programOutcomes, subjects, tenants, users } from '../db/schema.js';
+import { pollCoMap } from '../db/schema-assist.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 import { trend, validateConfig, type AttainmentConfig } from './attainment.js';
@@ -35,6 +36,7 @@ const MatrixBody = z.object({ cells: z.array(z.object({ coId: z.uuid(), outcomeI
 const AssessmentMapBody = z.object({ maps: z.array(z.object({ coId: z.uuid(), share: z.number().gt(0).max(1) })).max(30) });
 const SurveyBody = z.object({ programId: z.uuid(), subjectId: z.uuid().optional(), academicYearId: z.uuid(), kind: z.enum(['course_exit', 'graduate_exit', 'alumni', 'employer']), title: z.string().trim().min(1).max(160), scaleMax: z.number().int().min(2).max(10).default(5), minResponses: z.number().int().min(1).max(1000).default(5), weight: z.number().gt(0).max(100).default(1) });
 const RatingsBody = z.object({ ratings: z.array(z.object({ coId: z.uuid().optional(), outcomeId: z.uuid().optional(), rating: z.number().min(0) })).min(1).max(3000) });
+const PollCosBody = z.object({ coIds: z.array(z.uuid()).max(10) });
 const ComputeBody = z.object({ academicYearId: z.uuid() });
 const ActionBody = z.object({ scope: z.enum(['co', 'po']), targetId: z.uuid(), title: z.string().trim().min(3).max(200), detail: z.string().trim().max(2000).optional(), ownerId: z.uuid().optional(), dueOn: z.string().optional() });
 const ActionUpdate = z.object({ status: z.enum(['open', 'in_progress', 'done']).optional(), detail: z.string().trim().max(2000).optional(), ownerId: z.uuid().nullable().optional(), dueOn: z.string().nullable().optional() });
@@ -260,6 +262,47 @@ export class ObeController {
       if (body.maps.length) await tx.insert(assessmentCoMap).values(body.maps.map((m) => ({ tenantId: p.tenantId, assessmentId: id, ...m })));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.assessment.mapped', subjectType: 'assessment', subjectId: id, data: { cos: body.maps.length } });
       return { mapped: body.maps.length };
+    });
+  }
+
+  // --- Classroom activities (board polls, quizzes, class checks) → CO -----------------------------
+
+  /** Closed board polls of a subject with the course outcomes they are tagged with and how the class did. */
+  @Get('classroom-activities')
+  @Auth('user', STAFF)
+  classroomActivities(@CurrentPrincipal() p: UserPrincipal, @Query('subjectId') subjectId?: string) {
+    if (!subjectId || !z.uuid().safeParse(subjectId).success) throw new BadRequestException('Choose a subject');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx
+        .select({ id: polls.id, question: polls.question, kind: polls.kind, openedAt: polls.openedAt, closedAt: polls.closedAt, hasAnswer: sql<boolean>`${polls.correct} is not null`, section: sections.name, responses: sql<number>`(select count(*)::int from ${pollResponses} r where r.poll_id = ${polls.id})` })
+        .from(polls)
+        .innerJoin(sections, eq(sections.id, polls.sectionId))
+        .where(and(eq(polls.subjectId, subjectId), sql`${polls.closedAt} is not null`, isSchoolAdmin(p) ? sql`true` : eq(polls.teacherId, p.userId)))
+        .orderBy(sql`${polls.openedAt} desc`)
+        .limit(100);
+      const tags = rows.length ? await tx.select({ pollId: pollCoMap.pollId, coId: pollCoMap.coId, code: courseOutcomes.code }).from(pollCoMap).innerJoin(courseOutcomes, eq(courseOutcomes.id, pollCoMap.coId)).where(inArray(pollCoMap.pollId, rows.map((r) => r.id))) : [];
+      return rows.map((r) => ({ ...r, cos: tags.filter((t) => t.pollId === r.id).map((t) => ({ coId: t.coId, code: t.code })) }));
+    });
+  }
+
+  /** Tags a poll with the course outcomes it measures (replacing earlier tags). Its results then count towards direct attainment when the programme gives classroom evidence a weight. */
+  @Put('polls/:id/cos')
+  @Auth('user', STAFF)
+  tagPoll(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(PollCosBody)) body: z.infer<typeof PollCosBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [poll] = await tx.select().from(polls).where(eq(polls.id, id));
+      if (!poll) throw new NotFoundException('Poll not found');
+      if (!poll.subjectId) throw new BadRequestException('This poll has no subject, so it cannot be tied to a course outcome');
+      if (poll.teacherId !== p.userId && !isSchoolAdmin(p) && !(await headsSubject(tx, p, poll.subjectId))) throw new ForbiddenException('Only the teacher who asked this question can tag it');
+      const coIds = [...new Set(body.coIds)];
+      if (coIds.length) {
+        const ok = await tx.select({ id: courseOutcomes.id }).from(courseOutcomes).innerJoin(coSets, eq(coSets.id, courseOutcomes.coSetId)).where(and(inArray(courseOutcomes.id, coIds), eq(coSets.subjectId, poll.subjectId)));
+        if (ok.length !== coIds.length) throw new BadRequestException('Some course outcomes belong to another subject');
+      }
+      await tx.delete(pollCoMap).where(eq(pollCoMap.pollId, id));
+      if (coIds.length) await tx.insert(pollCoMap).values(coIds.map((coId) => ({ tenantId: p.tenantId, pollId: id, coId, createdBy: p.userId })));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.poll.tagged', subjectType: 'poll', subjectId: id, data: { cos: coIds.length } });
+      return { tagged: coIds.length };
     });
   }
 

@@ -9,6 +9,7 @@ import { useState, useTransition } from 'react';
 import { saveMarks, submitValuation } from '@/app/(dashboard)/evaluation/desk/actions';
 import { Bar, Grid, useToast } from '@/components/ops/kit';
 import { LinkButton } from '@/components/LinkButton';
+import { GradeAssist } from '@/components/evaluation/GradeAssist';
 import { PageAnnotator } from '@/components/evaluation/PageAnnotator';
 import { StatGrid, StatTile, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
@@ -137,7 +138,8 @@ export function ScriptMarking({ detail, annotations }: { detail: AllocationDetai
           {submitted && <Alert severity="success">{t('ev.desk.locked')}</Alert>}
           {error && <Alert severity="error">{error}</Alert>}
           {questions.map((q) => (
-            <Stack key={q.id} direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+            <Stack key={q.id} spacing={0.5}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
               <TextInput
                 label={t('ev.desk.question', { no: q.no, max: q.maxMarks })}
                 value={draft[q.id]?.marks ?? ''}
@@ -148,6 +150,8 @@ export function ScriptMarking({ detail, annotations }: { detail: AllocationDetai
                 sx={{ width: 150 }}
               />
               <TextInput label={t('ev.desk.comment')} value={draft[q.id]?.comment ?? ''} onChange={(e) => set(q.id, { comment: e.target.value })} disabled={submitted} fullWidth />
+            </Stack>
+            {!submitted && <GradeAssist allocationId={detail.id} questionId={q.id} questionNo={q.no} maxMarks={q.maxMarks} onMarks={(m) => set(q.id, { marks: String(m) })} />}
             </Stack>
           ))}
           {!submitted && (

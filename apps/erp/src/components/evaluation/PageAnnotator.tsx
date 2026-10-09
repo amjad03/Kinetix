@@ -11,10 +11,10 @@ import { addAnnotation, removeAnnotation } from '@/app/(dashboard)/evaluation/de
 import { TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { ANNOTATION_TOOLS, newAnnotation, onPage, pointOnPage, type Annotation, type AnnotationKind, type Point } from '@/lib/annotations';
+import { ANNOTATION_TOOLS, extendStroke, inkAnnotation, newAnnotation, onPage, pointOnPage, strokePath, type Annotation, type AnnotationKind, type Point, type Stroke } from '@/lib/annotations';
 
-const COLOUR = { tick: '#1b873f', cross: '#c62828', comment: '#1565c0', highlight: '#f9a825' } as const;
-const GLYPH = { tick: '✓', cross: '✗', comment: '\u{1F4AC}' } as const;
+const COLOUR = { tick: '#1b873f', cross: '#c62828', comment: '#1565c0', highlight: '#f9a825', ink: '#d81b60' } as const;
+const GLYPH = { tick: '✓', cross: '✗', comment: '\u{1F4AC}', ink: '✎' } as const;
 
 /**
  * A script page with its marks over it. Marks are placed as fractions of the page, so they sit in the same
@@ -28,6 +28,8 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
   const [cursor, setCursor] = useState<Point | null>(null);
   const [pendingComment, setPendingComment] = useState<Point | null>(null);
   const [text, setText] = useState('');
+  const [pen, setPen] = useState<Stroke | null>(null);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [error, setError] = useState<string | null>(null);
   const here = onPage(marks, pageIndex);
   const before = onPage(earlier, pageIndex);
@@ -51,10 +53,33 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
     const p = at(e);
     if (!p) return;
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    if (tool === 'ink') return setPen([[p.x, p.y]]);
     setStart(p);
     setCursor(p);
   };
+  const move = (e: PointerEvent) => {
+    if (pen) {
+      const p = at(e);
+      if (p) setPen(extendStroke(pen, p));
+      return;
+    }
+    if (start) setCursor(at(e));
+  };
+  const saveInk = async () => {
+    const body = inkAnnotation(pageIndex, strokes);
+    if (!body) return;
+    const res = await addAnnotation(allocationId, body);
+    if (!res.ok) return setError(res.error || t('ev.ann.err'));
+    setError(null);
+    setStrokes([]);
+    onChange([...marks, res.data]);
+  };
   const up = (e: PointerEvent) => {
+    if (pen) {
+      if (pen.length >= 2) setStrokes((all) => [...all, pen]);
+      setPen(null);
+      return;
+    }
     const p = at(e);
     const s = start;
     setStart(null);
@@ -94,7 +119,7 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
       <Box
         ref={box}
         onPointerDown={down}
-        onPointerMove={(e) => start && setCursor(at(e))}
+        onPointerMove={move}
         onPointerUp={up}
         sx={{ position: 'relative', display: 'inline-block', maxWidth: '100%', touchAction: locked ? 'auto' : 'none', cursor: locked ? 'default' : 'crosshair', lineHeight: 0 }}
         data-testid="ann-surface"
@@ -102,14 +127,43 @@ export function PageAnnotator({ allocationId, pageIndex, src, alt, marks, earlie
         {/* The page is streamed through the download route so the session token stays in its cookie. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} draggable={false} style={{ maxWidth: '100%', border: '1px solid var(--mui-palette-divider, #ccc)', userSelect: 'none' }} data-testid="evd-page" />
-        {before.map((a) => (
+        {before.filter((a) => a.kind !== 'ink').map((a) => (
           <Mark key={a.id} a={a} dim label={t('ev.ann.round', { n: a.round ?? 0 })} />
         ))}
-        {here.map((a) => (
+        {here.filter((a) => a.kind !== 'ink').map((a) => (
           <Mark key={a.id} a={a} label={a.text ?? t(`ev.ann.${a.kind}` as MessageKey)} onRemove={locked ? undefined : () => void remove(a)} removeLabel={t('ev.ann.remove')} />
         ))}
+        {(here.some((a) => a.kind === 'ink') || before.some((a) => a.kind === 'ink') || strokes.length > 0 || pen) && (
+          <svg viewBox="0 0 1 1" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden data-testid="ann-ink">
+            {before.filter((a) => a.kind === 'ink').flatMap((a) => (a.strokes ?? []).map((st, i) => <path key={`${a.id}-${i}`} d={strokePath(st)} fill="none" stroke="#757575" strokeOpacity={0.6} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />))}
+            {here.filter((a) => a.kind === 'ink').flatMap((a) => (a.strokes ?? []).map((st, i) => <path key={`${a.id}-${i}`} d={strokePath(st)} fill="none" stroke={COLOUR.ink} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />))}
+            {[...strokes, ...(pen ? [pen] : [])].map((st, i) => <path key={`draft-${i}`} d={strokePath(st)} fill="none" stroke={COLOUR.ink} strokeDasharray="4 3" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />)}
+          </svg>
+        )}
         {draft && <Box sx={{ position: 'absolute', left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draft.w * 100}%`, height: `${draft.h * 100}%`, border: `2px dashed ${COLOUR.highlight}`, pointerEvents: 'none' }} />}
       </Box>
+      {!locked && tool === 'ink' && (
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          <Button size="small" variant="contained" disabled={strokes.length === 0} onClick={() => void saveInk()} data-testid="ink-save">
+            {t('ev.ann.inkSave', { n: strokes.length })}
+          </Button>
+          <Button size="small" disabled={strokes.length === 0} onClick={() => setStrokes((all) => all.slice(0, -1))}>
+            {t('ev.ann.inkUndo')}
+          </Button>
+          <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
+            {t('ev.ann.inkClear')}
+          </Button>
+        </Stack>
+      )}
+      {here.filter((a) => a.kind === 'ink').length > 0 && (
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          {here.filter((a) => a.kind === 'ink').map((a, i) => (
+            <Button key={a.id} size="small" color="inherit" disabled={locked} onClick={() => void remove(a)} aria-label={`${t('ev.ann.ink')} ${i + 1}: ${t('ev.ann.remove')}`}>
+              {t('ev.ann.ink')} {i + 1} ✕
+            </Button>
+          ))}
+        </Stack>
+      )}
       {before.length > 0 && (
         <Typography variant="caption" color="text.secondary">
           {t('ev.ann.earlier')}

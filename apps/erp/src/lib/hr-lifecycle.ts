@@ -41,6 +41,8 @@ export interface TrainingRecord {
   endsOn: string;
   hours: number;
   certificateRef: string | null;
+  hasCertificate?: boolean;
+  certificateName?: string | null;
   verified: boolean;
 }
 export interface TrainingSummary {

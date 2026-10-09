@@ -1,11 +1,11 @@
 import { A4, Pdf } from '../common/pdf-doc.js';
 
 const money = (paise: number) => (paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-const longDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-const L = 60;
-const W = A4.w - 120;
+export const longDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+export const L = 60;
+export const W = A4.w - 120;
 
-function letterhead(pdf: Pdf, institution: string, title: string, refNo: string, date: string) {
+export function letterhead(pdf: Pdf, institution: string, title: string, refNo: string, date: string) {
   pdf.text(institution, A4.w / 2, 70, { size: 17, bold: true, align: 'center' });
   pdf.line(L, 84, A4.w - L, 84, { width: 1 });
   pdf.text(title, A4.w / 2, 112, { size: 13, bold: true, align: 'center' });

@@ -196,7 +196,10 @@ export class TalentController {
     const who = isHr(p) && userId && z.uuid().safeParse(userId).success ? userId : isHr(p) ? undefined : p.userId;
     return this.db.withTenant(p.tenantId, async (tx) => {
       const rows = await tx.select({ r: trainingRecords, name: users.fullName }).from(trainingRecords).innerJoin(users, eq(users.id, trainingRecords.userId)).where(who ? eq(trainingRecords.userId, who) : undefined).orderBy(desc(trainingRecords.startsOn)).limit(500);
-      return rows.map((x) => ({ ...x.r, fullName: x.name }));
+      return rows.map(({ r, name }) => {
+        const { certificateKey, ...rest } = r;
+        return { ...rest, hasCertificate: !!certificateKey, fullName: name };
+      });
     });
   }
 

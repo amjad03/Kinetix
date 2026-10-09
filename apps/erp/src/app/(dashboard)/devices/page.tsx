@@ -11,6 +11,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { DeviceMenu } from '@/components/devices/DeviceMenu';
+import { OfflineKeyCard } from '@/components/devices/OfflineKeyCard';
+import type { SigningKeyInfo } from '@/lib/staff-changes';
 import { TableFrame } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -32,13 +34,14 @@ const LOW_STORAGE_MB = 1024;
 const gb = (mb: number) => (mb >= 1024 ? `${Math.round((mb / 1024) * 10) / 10} GB` : `${mb} MB`);
 
 export default async function DevicesPage({ searchParams }: { searchParams: Promise<{ hours?: string }> }) {
-  await requireSection('devices');
+  const me = await requireSection('devices');
   const sp = await searchParams;
   const hours = THRESHOLDS.includes(Number(sp.hours)) ? Number(sp.hours) : 4;
-  const [fleet, history, structure] = await Promise.all([
+  const [fleet, history, structure, offlineKey] = await Promise.all([
     load(() => api<Fleet>(`/v1/devices/fleet?hours=${hours}`)),
     load(() => api<DeviceActionRow[]>('/v1/devices/fleet/actions')),
     load(() => api<Structure>('/v1/admin/structure')),
+    load(() => api<SigningKeyInfo>('/v1/pairing/signing-key')),
   ]);
   const { t, fmt } = await getI18n();
   const list: FleetBoard[] = fleet.data?.boards ?? [];
@@ -55,6 +58,7 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
         subtitle={t('devices.subtitle')}
         actions={<UrlSelect label={t('devices.threshold')} param="hours" value={String(hours)} minWidth={170} testId="devices-threshold" options={THRESHOLDS.map((n) => ({ value: String(n), label: t('devices.threshold.hours', { n }) }))} />}
       />
+      {offlineKey.error === undefined && <OfflineKeyCard info={offlineKey.data} canRotate={(me?.roles ?? []).includes('tenant_admin')} />}
       {fleet.error !== undefined ? (
         <ErrorState message={fleet.error} />
       ) : list.length === 0 ? (

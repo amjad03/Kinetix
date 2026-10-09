@@ -11,6 +11,7 @@ import { DelegationModule } from './delegation/delegation.module.js';
 import { DpdpModule } from './dpdp/dpdp.module.js';
 import { EvaluationModule } from './evaluation/evaluation.module.js';
 import { ExamsModule } from './exams/exams.module.js';
+import { GradingAssistModule } from './grading-assist/grading-assist.module.js';
 import { ObeModule } from './obe/obe.module.js';
 import { MarksModule } from './marks/marks.module.js';
 import { MessagesModule } from './messages/messages.module.js';
@@ -133,6 +134,7 @@ import { SearchModule } from './search/search.controller.js';
     DelegationModule,
     DpdpModule,
     ObeModule,
+    GradingAssistModule,
     MessagesModule,
     CodeModule,
     HrModule,

@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
-import { assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, marks, obeConfigs, obeSurveyRatings, obeSurveys, programOutcomes, programs, schemeComponents, sections, subjects, surveyAnswers, surveyQuestions, surveys as feedbackSurveys } from '../db/schema.js';
+import { isCorrect } from '../polls/polls.service.js';
+import { pollCoMap } from '../db/schema-assist.js';
+import { assessmentCoMap, assessments, attainmentSnapshots, coOutcomeMap, coSets, courseOutcomes, marks, obeConfigs, pollResponses, polls, obeSurveyRatings, obeSurveys, programOutcomes, programs, schemeComponents, sections, subjects, surveyAnswers, surveyQuestions, surveys as feedbackSurveys } from '../db/schema.js';
 import { combinedAttainment, DEFAULT_ATTAINMENT_CONFIG, directAttainment, gapFor, indirectAttainment, programOutcomeAttainment, type AttainmentConfig, type EvidenceItem, type SurveyEvidence } from './attainment.js';
 
 /** Feedback-survey ratings run 1 to 5; a survey needs this many answers on a CO before it counts. */
 export const FEEDBACK_SCALE = 5;
 export const FEEDBACK_MIN_RESPONSES = 5;
+/** The evidence kind of classroom polls and quizzes; it counts only when the programme's config gives it a weight. */
+export const CLASSROOM_KIND = 'classroom';
 
 @Injectable()
 export class ObeService {
@@ -28,6 +32,32 @@ export class ObeService {
       const list = out.get(r.coId!) ?? [];
       list.push({ surveyId: r.surveyId, title: r.title, meanRating: r.mean, scaleMax: FEEDBACK_SCALE, responses: r.n, minResponses: FEEDBACK_MIN_RESPONSES, weight: 1 });
       out.set(r.coId!, list);
+    }
+    return out;
+  }
+
+  /**
+   * Direct evidence from board polls, quizzes and class checks tagged with a course outcome: one item per closed poll with a right
+   * answer, scored 1 for a correct answer and 0 for a wrong one, for the students who answered. It counts only when the
+   * framework gives the "classroom" evidence kind a weight (see AttainmentConfig.evidenceWeights), so it is optional.
+   */
+  async classroomEvidence(tx: Tx, coIds: string[], academicYearId: string): Promise<Map<string, EvidenceItem[]>> {
+    const out = new Map<string, EvidenceItem[]>();
+    if (!coIds.length) return out;
+    const tagged = await tx
+      .select({ coId: pollCoMap.coId, pollId: polls.id, question: polls.question, kind: polls.kind, correct: polls.correct })
+      .from(pollCoMap)
+      .innerJoin(polls, eq(polls.id, pollCoMap.pollId))
+      .innerJoin(sections, eq(sections.id, polls.sectionId))
+      .where(and(inArray(pollCoMap.coId, coIds), sql`${polls.closedAt} is not null`, sql`${polls.correct} is not null`, eq(sections.academicYearId, academicYearId)));
+    if (!tagged.length) return out;
+    const answers = await tx.select({ pollId: pollResponses.pollId, studentId: pollResponses.studentId, answer: pollResponses.answer }).from(pollResponses).where(inArray(pollResponses.pollId, [...new Set(tagged.map((t) => t.pollId))]));
+    for (const t of tagged) {
+      const scores = answers.filter((a) => a.pollId === t.pollId).map((a) => ({ studentId: a.studentId, scored: isCorrect({ kind: t.kind, correct: t.correct }, a.answer) ? 1 : 0, max: 1 }));
+      if (!scores.length) continue;
+      const list = out.get(t.coId) ?? [];
+      list.push({ sourceId: t.pollId, label: t.question.slice(0, 80) || 'Class check', kind: CLASSROOM_KIND, scores });
+      out.set(t.coId, list);
     }
     return out;
   }
@@ -64,6 +94,7 @@ export class ObeService {
     const surveys = await tx.select().from(obeSurveys).where(and(eq(obeSurveys.programId, programId), eq(obeSurveys.academicYearId, academicYearId)));
     const ratings = surveys.length ? await tx.select().from(obeSurveyRatings).where(inArray(obeSurveyRatings.surveyId, surveys.map((s) => s.id))) : [];
     const feedback = await this.feedbackEvidence(tx, cos.map((c) => c.id));
+    const classroom = await this.classroomEvidence(tx, cos.map((c) => c.id), academicYearId);
     const previous = await this.latestBatch(tx, programId);
     const computedAt = new Date();
     const out: (typeof attainmentSnapshots.$inferInsert)[] = [];
@@ -85,7 +116,7 @@ export class ObeService {
           const scores = rows.filter((r) => r.assessmentId === a.id).map((r) => ({ studentId: r.studentId, scored: r.absent || r.v === null ? 0 : r.v * m.share, max: a.max * m.share }));
           return [{ sourceId: a.id, label: a.title, kind: a.componentKind ?? (a.kind === 'exam' ? 'external' : 'internal'), scores }];
         });
-      const direct = directAttainment(items, config);
+      const direct = directAttainment([...items, ...(classroom.get(co.id) ?? [])], config);
       const indirect = indirectAttainment([...surveyEvidence((r) => r.coId === co.id), ...(feedback.get(co.id) ?? [])], config);
       const combined = combinedAttainment(direct.level, indirect.level, config);
       coLevel.set(co.id, combined);

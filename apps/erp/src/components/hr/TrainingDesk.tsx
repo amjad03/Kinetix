@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { addTraining, removeTraining, verifyTraining } from '@/app/(dashboard)/hr/talent-actions';
+import { uploadCertificate } from '@/app/(dashboard)/hr/staff-actions';
 import { SectionTitle } from '@/components/PageHeader';
 import { FormField, StatusPill, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
@@ -145,6 +146,30 @@ export function TrainingDesk({ records, summary, staff, isHr, meId }: { records:
                   <TableCell align="right">{r.hours}</TableCell>
                   <TableCell>{r.verified ? <StatusPill tone="success">{t('hl.train.verified')}</StatusPill> : <StatusPill tone="warning">{t('hl.train.unverified')}</StatusPill>}</TableCell>
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    {r.hasCertificate && (
+                      <Button size="small" component="a" href={`/api/download?kind=training-cert&id=${r.id}`} target="_blank" rel="noopener">
+                        {t('as.cert.view')}
+                      </Button>
+                    )}
+                    {(isHr || r.userId === meId) && (
+                      <Button size="small" component="label" disabled={pending}>
+                        {r.hasCertificate ? t('as.cert.replace') : t('as.cert.upload')}
+                        <input
+                          hidden
+                          type="file"
+                          accept="application/pdf,image/jpeg,image/png"
+                          data-testid={`cert-${r.id}`}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = '';
+                            if (!file) return;
+                            const form = new FormData();
+                            form.set('file', file);
+                            run(() => uploadCertificate(r.id, form));
+                          }}
+                        />
+                      </Button>
+                    )}
                     {isHr && !r.verified && (
                       <Button size="small" disabled={pending} onClick={() => run(() => verifyTraining(r.id))}>
                         {t('hl.train.verify')}
