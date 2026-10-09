@@ -29,6 +29,8 @@ import '../grievances/grievances.dart';
 import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
+import '../campus/house_screen.dart';
+import '../privacy/dpdp_screen.dart';
 import '../privacy/privacy.dart';
 
 /// The student's details, attendance history, fees (read-only, with receipts), the language
@@ -409,6 +411,14 @@ class ProfileTabState extends State<ProfileTab> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => CampusLifeScreen.open(context, widget.study.api, st.id),
                 ),
+                ListTile(
+                  key: const Key('openHouse'),
+                  leading: const Icon(Icons.emoji_events_outlined),
+                  title: Text(l.houseTitle),
+                  subtitle: Text(l.houseSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => HouseScreen.open(context, widget.study.api, st.id),
+                ),
                 KxSectionHeader(l.settings),
                 LanguageTile(onChanged: state.setLanguage),
                 ListTile(
@@ -418,6 +428,14 @@ class ProfileTabState extends State<ProfileTab> {
                   subtitle: Text(l.privacySubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => PrivacyScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openDpdp'),
+                  leading: const Icon(Icons.verified_user_outlined),
+                  title: Text(l.dpdpTitle),
+                  subtitle: Text(l.dpdpSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => DpdpScreen.open(context, widget.study.api),
                 ),
                 ListTile(
                   key: const Key('openCalendar'),

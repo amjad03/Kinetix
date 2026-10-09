@@ -2384,4 +2384,147 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get copilotCopied => 'मसौदा कॉपी हो गया।';
+
+  @override
+  String get evalToolTick => 'सही का निशान';
+
+  @override
+  String get evalToolCross => 'गलत का निशान';
+
+  @override
+  String get evalToolComment => 'टिप्पणी';
+
+  @override
+  String get evalMarksOnPage => 'स्क्रिप्ट पर निशान';
+
+  @override
+  String get evalEarlierNote => 'हल्के निशान पहले के मूल्यांकनों के हैं।';
+
+  @override
+  String get evalCommentPrompt => 'इस जगह पर टिप्पणी';
+
+  @override
+  String get evalAddMark => 'जोड़ें';
+
+  @override
+  String get appraisalTitle => 'स्व-मूल्यांकन';
+
+  @override
+  String get appraisalBody => 'अपना वार्षिक स्व-मूल्यांकन भरें और जमा करें';
+
+  @override
+  String get appraisalNoCycle => 'अभी कोई मूल्यांकन चक्र खुला नहीं है।';
+
+  @override
+  String get appraisalCycle => 'चक्र';
+
+  @override
+  String get appraisalMax => 'अधिकतम';
+
+  @override
+  String get appraisalScore => 'अंक';
+
+  @override
+  String get appraisalEvidence => 'प्रमाण';
+
+  @override
+  String appraisalOverMax(String max) {
+    return 'अंक 0 और $max के बीच होने चाहिए';
+  }
+
+  @override
+  String get appraisalNeedScore => 'कम से कम एक अंक भरें।';
+
+  @override
+  String get appraisalSubmitted => 'मूल्यांकन समीक्षा के लिए जमा हो गया।';
+
+  @override
+  String get appraisalSaved => 'मसौदा सहेजा गया।';
+
+  @override
+  String get appraisalLocked => 'आपका मूल्यांकन जमा हो चुका है और अब बदला नहीं जा सकता।';
+
+  @override
+  String get appraisalSelfPercent => 'स्व-अंक';
+
+  @override
+  String get appraisalSaveDraft => 'मसौदा सहेजें';
+
+  @override
+  String get appraisalSubmit => 'मूल्यांकन जमा करें';
+
+  @override
+  String get housesTitle => 'सदन';
+
+  @override
+  String get housesBody => 'लीडरबोर्ड और सदन अंक';
+
+  @override
+  String get housesEmpty => 'अभी कोई सदन नहीं बना है।';
+
+  @override
+  String get housesMembers => 'सदस्य';
+
+  @override
+  String get houseStudent => 'विद्यार्थी (वैकल्पिक)';
+
+  @override
+  String get houseWholeHouse => 'पूरा सदन';
+
+  @override
+  String get housePoints => 'अंक (काटने के लिए ऋण)';
+
+  @override
+  String get houseCategory => 'श्रेणी';
+
+  @override
+  String get houseReason => 'कारण';
+
+  @override
+  String get houseAward => 'अंक दें';
+
+  @override
+  String get housePointsRange => '-100 से 100 के बीच अंक भरें, शून्य नहीं।';
+
+  @override
+  String get houseReasonNeeded => 'कम से कम 3 अक्षरों का कारण लिखें।';
+
+  @override
+  String get housePointsSaved => 'अंक दर्ज हो गए।';
+
+  @override
+  String get houseCatGeneral => 'सामान्य';
+
+  @override
+  String get houseCatAcademics => 'शिक्षा';
+
+  @override
+  String get houseCatSports => 'खेल';
+
+  @override
+  String get houseCatArts => 'कला';
+
+  @override
+  String get houseCatDiscipline => 'अनुशासन';
+
+  @override
+  String get houseCatService => 'सेवा';
+
+  @override
+  String get curriculumTitle => 'पाठ्यक्रम';
+
+  @override
+  String get curriculumBody => 'सक्रिय पाठ्यक्रम, इकाइयाँ और पाठ्यक्रम परिणाम';
+
+  @override
+  String get curriculumEmpty => 'अभी कोई सक्रिय पाठ्यक्रम नहीं है।';
+
+  @override
+  String get curriculumNoSubjects => 'इस संस्करण में कोई विषय नहीं है।';
+
+  @override
+  String get curriculumUnits => 'इकाइयाँ';
+
+  @override
+  String get curriculumOutcomes => 'पाठ्यक्रम परिणाम';
 }

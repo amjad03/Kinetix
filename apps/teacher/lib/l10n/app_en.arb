@@ -2854,9 +2854,21 @@
   "insightsMarks": "Marks average",
   "insightsFlagged": "Need attention",
   "insightsAttendanceValue": "Attendance {value}",
-  "@insightsAttendanceValue": {"placeholders": {"value": {"type": "String"}}},
+  "@insightsAttendanceValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "insightsMarksValue": "Marks {value}",
-  "@insightsMarksValue": {"placeholders": {"value": {"type": "String"}}},
+  "@insightsMarksValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "copilotTitle": "AI copilot",
   "copilotBody": "Draft explanations, quizzes, homework and lesson plans",
   "copilotExplain": "Explain",
@@ -2866,9 +2878,21 @@
   "copilotQuestionLabel": "What do you want explained?",
   "copilotTopicLabel": "Topic",
   "copilotHowMany": "Questions: {n}",
-  "@copilotHowMany": {"placeholders": {"n": {"type": "int"}}},
+  "@copilotHowMany": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "copilotMinutes": "Minutes: {n}",
-  "@copilotMinutes": {"placeholders": {"n": {"type": "int"}}},
+  "@copilotMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "copilotGenerate": "Generate draft",
   "copilotDraftNote": "AI draft. Check it before you use it; nothing is sent to students from here.",
   "copilotSampleDraft": "Sample only: no AI model is connected to this school's server yet. Check everything before use.",
@@ -2880,5 +2904,60 @@
   "copilotMaterials": "Materials",
   "copilotAssessment": "Assessment",
   "copilotCopy": "Copy draft",
-  "copilotCopied": "Draft copied."
+  "copilotCopied": "Draft copied.",
+  "evalToolTick": "Tick",
+  "evalToolCross": "Cross",
+  "evalToolComment": "Comment",
+  "evalMarksOnPage": "Marks on script",
+  "evalEarlierNote": "Faint marks are from earlier valuations.",
+  "evalCommentPrompt": "Comment on this spot",
+  "evalAddMark": "Add",
+  "appraisalTitle": "Self-appraisal",
+  "appraisalBody": "Fill in and submit your yearly self-appraisal",
+  "appraisalNoCycle": "No appraisal cycle is open right now.",
+  "appraisalCycle": "Cycle",
+  "appraisalMax": "max",
+  "appraisalScore": "Score",
+  "appraisalEvidence": "Evidence",
+  "appraisalOverMax": "Score must be between 0 and {max}",
+  "@appraisalOverMax": {
+    "description": "Staff growth screens.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "appraisalNeedScore": "Enter at least one score.",
+  "appraisalSubmitted": "Appraisal submitted for review.",
+  "appraisalSaved": "Draft saved.",
+  "appraisalLocked": "Your appraisal is submitted and can no longer be changed.",
+  "appraisalSelfPercent": "Self score",
+  "appraisalSaveDraft": "Save draft",
+  "appraisalSubmit": "Submit appraisal",
+  "housesTitle": "Houses",
+  "housesBody": "Leaderboard and house points",
+  "housesEmpty": "No houses are set up yet.",
+  "housesMembers": "members",
+  "houseStudent": "Student (optional)",
+  "houseWholeHouse": "Whole house",
+  "housePoints": "Points (minus to deduct)",
+  "houseCategory": "Category",
+  "houseReason": "Reason",
+  "houseAward": "Award points",
+  "housePointsRange": "Enter points from -100 to 100, not zero.",
+  "houseReasonNeeded": "Give a reason of at least 3 characters.",
+  "housePointsSaved": "Points recorded.",
+  "houseCatGeneral": "General",
+  "houseCatAcademics": "Academics",
+  "houseCatSports": "Sports",
+  "houseCatArts": "Arts",
+  "houseCatDiscipline": "Discipline",
+  "houseCatService": "Service",
+  "curriculumTitle": "Curriculum",
+  "curriculumBody": "Active syllabus, units and course outcomes",
+  "curriculumEmpty": "No active curriculum yet.",
+  "curriculumNoSubjects": "This version has no subjects.",
+  "curriculumUnits": "Units",
+  "curriculumOutcomes": "Course outcomes"
 }

@@ -14,6 +14,7 @@ import '../core/attachments.dart';
 import '../core/boarding.dart';
 import '../core/campus.dart';
 import '../core/exam_models.dart';
+import '../core/growth.dart';
 import '../core/realtime.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
@@ -1323,6 +1324,66 @@ class FakeParentApi implements ParentApi {
   Future<Uint8List> passportPdf(String childId) async {
     calls.add('passportPdf $childId');
     return Uint8List.fromList('%PDF-1.4 passport'.codeUnits);
+  }
+
+  DpdpOfficer officer = const DpdpOfficer(name: 'Gita Rao', email: 'gita@school.in', phone: '+91 98450 00000', response: 'The officer replies within 30 days.');
+  List<DpdpRequest> dpdpList = const [DpdpRequest(id: 'r0', kind: 'correction', status: 'completed', details: 'Fix my name', resolutionNote: 'Done')];
+  List<String> erasureBlocks = const ['Fee records are kept for 8 years'];
+
+  @override
+  Future<DpdpOfficer> dpdpOfficer() async => officer;
+
+  @override
+  Future<DataExport> dpdpExport() async {
+    calls.add('dpdpExport');
+    return const DataExport({'profile': 1, 'children': 2, 'payments': 6});
+  }
+
+  @override
+  Future<Uint8List> dpdpExportPdf() async {
+    calls.add('dpdpExportPdf');
+    return Uint8List.fromList('%PDF-1.4 my data'.codeUnits);
+  }
+
+  @override
+  Future<List<DpdpRequest>> dpdpRequests() async => dpdpList;
+
+  @override
+  Future<DpdpRequest> dpdpRequest({required String kind, String details = '', String? field, String? value}) async {
+    calls.add('dpdpRequest $kind ${field ?? '-'}=${value ?? '-'} "$details"');
+    final r = DpdpRequest(id: 'r${dpdpList.length + 1}', kind: kind, status: 'pending', details: details, retentionReasons: kind == 'erasure' ? erasureBlocks : const []);
+    dpdpList = [r, ...dpdpList];
+    return r;
+  }
+
+  List<ReportCardRow> reportCardList = const [
+    ReportCardRow(id: 'rc1', termLabel: 'Term 1', promotionStatus: 'pending'),
+    ReportCardRow(id: 'rc2', termLabel: 'Annual', promotionStatus: 'promoted'),
+  ];
+  ReportCardDetail reportCardData = const ReportCardDetail(
+    termLabel: 'Annual',
+    remarks: 'Works steadily.',
+    behaviourGrade: 'A',
+    promotionStatus: 'promoted',
+    promotedTo: 'Class 8',
+    lines: [ReportLine(subject: 'Mathematics', marks: 88, maxMarks: 100, grade: 'A', remark: 'Very good')],
+    coCurricular: [(activity: 'Football', grade: 'B')],
+    attendancePercent: 94.5,
+  );
+
+  @override
+  Future<List<ReportCardRow>> reportCards(String childId) async {
+    calls.add('reportCards $childId');
+    return reportCardList;
+  }
+
+  @override
+  Future<ReportCardDetail> reportCard(String id) async => reportCardData;
+
+  @override
+  Future<Uint8List> reportCardPdf(String id) async {
+    calls.add('reportCardPdf $id');
+    return Uint8List.fromList('%PDF-1.4 report card'.codeUnits);
   }
 
   final List<Map<String, dynamic>> surveyJson = [

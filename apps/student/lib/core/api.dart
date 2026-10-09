@@ -11,6 +11,7 @@ import '../l10n/l10n.dart';
 import 'campus.dart';
 import 'campus_life.dart';
 import 'campus_services.dart';
+import 'growth.dart';
 import 'lms.dart';
 import 'models.dart';
 import 'scholarships.dart';
@@ -298,6 +299,26 @@ abstract class StudentApi {
 
   /// The passport as a PDF (`GET /v1/passport/students/:id/pdf`).
   Future<Uint8List> passportPdf(String studentId);
+
+  /// Data rights under the DPDP Act: the grievance officer, my data as a summary and as a PDF,
+  /// my requests, and a new correction or erasure request (`/v1/dpdp`).
+  Future<DpdpOfficer> dpdpOfficer();
+  Future<DataExport> dpdpExport();
+  Future<Uint8List> dpdpExportPdf();
+  Future<List<DpdpRequest>> dpdpRequests();
+
+  /// [kind] is `correction` or `erasure`; a correction may name one of `fullName`, `email`, `phone` and its new value.
+  /// The answer for an erasure lists why it may be refused.
+  Future<DpdpRequest> dpdpRequest({required String kind, String details = '', String? field, String? value});
+
+  /// Houses ranked by points (`GET /v1/houses/leaderboard`) and one house with its members and points (`GET /v1/houses/:id`).
+  Future<List<HouseRow>> houses();
+  Future<HouseDetail> houseDetail(String id);
+
+  /// Homework peer review: work I must review, feedback on mine, and saving a review (`/v1/homework/:id/peer-review`).
+  Future<List<PeerReviewTask>> peerReviewTasks(String homeworkId);
+  Future<PeerFeedback> peerFeedback(String homeworkId);
+  Future<void> submitPeerReview(String homeworkId, String reviewId, {required int clarity, required int accuracy, required int effort, required String comment});
 
   /// Open surveys addressed to me (`GET /v1/surveys/mine`).
   Future<List<MySurvey>> mySurveys();
@@ -861,6 +882,40 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<Uint8List> passportPdf(String studentId) => _download('/v1/passport/students/$studentId/pdf');
+
+  @override
+  Future<DpdpOfficer> dpdpOfficer() async => DpdpOfficer.fromJson(await _send('GET', '/v1/dpdp/grievance-officer') as Map<String, dynamic>);
+
+  @override
+  Future<DataExport> dpdpExport() async => DataExport.fromJson(await _send('GET', '/v1/dpdp/me/export') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> dpdpExportPdf() => _download('/v1/dpdp/me/export.pdf');
+
+  @override
+  Future<List<DpdpRequest>> dpdpRequests() async => [for (final r in await _send('GET', '/v1/dpdp/me/requests') as List) DpdpRequest.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<DpdpRequest> dpdpRequest({required String kind, String details = '', String? field, String? value}) async => DpdpRequest.fromJson(
+    await _send('POST', '/v1/dpdp/me/requests', body: {'kind': kind, 'details': details, if (field != null && value != null) 'correction': {'field': field, 'value': value}}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<List<HouseRow>> houses() async => [for (final h in await _send('GET', '/v1/houses/leaderboard') as List) HouseRow.fromJson((h as Map).cast<String, dynamic>())];
+
+  @override
+  Future<HouseDetail> houseDetail(String id) async => HouseDetail.fromJson(await _send('GET', '/v1/houses/$id') as Map<String, dynamic>);
+
+  @override
+  Future<List<PeerReviewTask>> peerReviewTasks(String homeworkId) async =>
+      [for (final r in await _send('GET', '/v1/homework/$homeworkId/peer-review/mine') as List) PeerReviewTask.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<PeerFeedback> peerFeedback(String homeworkId) async => PeerFeedback.fromJson(await _send('GET', '/v1/homework/$homeworkId/peer-review/received') as Map<String, dynamic>);
+
+  @override
+  Future<void> submitPeerReview(String homeworkId, String reviewId, {required int clarity, required int accuracy, required int effort, required String comment}) =>
+      _send('PUT', '/v1/homework/$homeworkId/peer-review/$reviewId', body: {'clarity': clarity, 'accuracy': accuracy, 'effort': effort, 'comment': comment});
 
   @override
   Future<List<MySurvey>> mySurveys() async => [for (final s in await _send('GET', '/v1/surveys/mine') as List) MySurvey.fromJson((s as Map).cast<String, dynamic>())];

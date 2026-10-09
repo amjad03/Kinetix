@@ -2546,4 +2546,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passFeedbackThanks => 'Thank you for your feedback.';
+
+  @override
+  String get dpdpTitle => 'My data rights';
+
+  @override
+  String get dpdpSubtitle => 'Download, correct or erase data about you and your children';
+
+  @override
+  String get dpdpOfficerTitle => 'Grievance officer';
+
+  @override
+  String get dpdpOfficerNone => 'No grievance officer is named yet. Write to the school office.';
+
+  @override
+  String get dpdpExportTitle => 'Download my data';
+
+  @override
+  String get dpdpExportBody => 'See everything the school holds about you and your children.';
+
+  @override
+  String get dpdpExportAction => 'Show summary';
+
+  @override
+  String get dpdpExportPdf => 'Open as PDF';
+
+  @override
+  String get dpdpRecords => 'records';
+
+  @override
+  String get dpdpCorrectTitle => 'Correct my details';
+
+  @override
+  String get dpdpField => 'Detail to correct';
+
+  @override
+  String get dpdpFieldName => 'Name';
+
+  @override
+  String get dpdpFieldEmail => 'Email';
+
+  @override
+  String get dpdpFieldPhone => 'Phone';
+
+  @override
+  String get dpdpNewValue => 'Correct value';
+
+  @override
+  String get dpdpCorrectSend => 'Send correction request';
+
+  @override
+  String get dpdpNeedValue => 'Enter the correct value.';
+
+  @override
+  String get dpdpEraseTitle => 'Ask for erasure';
+
+  @override
+  String get dpdpEraseBody => 'The school must keep some records by law. We tell you what can and cannot be erased.';
+
+  @override
+  String get dpdpEraseDetails => 'Why do you want this? (optional)';
+
+  @override
+  String get dpdpEraseSend => 'Request erasure';
+
+  @override
+  String get dpdpEraseConfirm => 'Ask the school to erase your data? Records it must keep by law will stay.';
+
+  @override
+  String get dpdpRequestSent => 'Request sent. The grievance officer replies within 30 days.';
+
+  @override
+  String get dpdpRetentionNotice => 'These records must be kept by law:';
+
+  @override
+  String get dpdpRequestsTitle => 'My requests';
+
+  @override
+  String get dpdpRequestsNone => 'No requests yet.';
+
+  @override
+  String get dpdpKindCorrection => 'Correction';
+
+  @override
+  String get dpdpKindErasure => 'Erasure';
+
+  @override
+  String get dpdpStatusPending => 'Pending';
+
+  @override
+  String get dpdpStatusDone => 'Done';
+
+  @override
+  String get dpdpStatusDeclined => 'Declined';
+
+  @override
+  String get dpdpStatusBlocked => 'Kept by law';
+
+  @override
+  String get dpdpAbout => 'This request is about';
+
+  @override
+  String get dpdpAboutMe => 'Me';
+
+  @override
+  String get dpdpAboutChild => 'Child';
+
+  @override
+  String get reportCardsTitle => 'Report cards';
+
+  @override
+  String childReportCards(String name) {
+    return 'Report cards: $name';
+  }
+
+  @override
+  String get reportCardsSubtitle => 'Marks, remarks and promotion';
+
+  @override
+  String get reportCardsNone => 'No report cards have been published yet.';
+
+  @override
+  String get promotionPending => 'Promotion decision pending';
+
+  @override
+  String get promotionPromoted => 'Promoted';
+
+  @override
+  String get promotionGrace => 'Promoted with grace marks';
+
+  @override
+  String get promotionDetained => 'Not promoted';
+
+  @override
+  String get promotedTo => 'Next class';
+
+  @override
+  String get coCurricular => 'Co-curricular';
+
+  @override
+  String get behaviour => 'Behaviour';
+
+  @override
+  String get reportCardPdf => 'Open as PDF';
 }

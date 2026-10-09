@@ -14,6 +14,7 @@ import '../core/attachments.dart';
 import '../core/campus.dart';
 import '../core/campus_life.dart';
 import '../core/campus_services.dart';
+import '../core/growth.dart';
 import '../core/lms.dart';
 import '../core/models.dart';
 import '../core/scholarships.dart';
@@ -144,6 +145,78 @@ class FakeStudentApi implements StudentApi {
   Future<Uint8List> passportPdf(String studentId) async {
     calls.add('passportPdf $studentId');
     return Uint8List.fromList('%PDF-1.4 passport'.codeUnits);
+  }
+
+  DpdpOfficer officer = const DpdpOfficer(name: 'Gita Rao', email: 'gita@school.in', phone: '+91 98450 00000', response: 'The officer replies within 30 days.');
+  List<DpdpRequest> dpdpList = const [DpdpRequest(id: 'r0', kind: 'correction', status: 'completed', details: 'Fix my name', resolutionNote: 'Done')];
+  List<String> erasureBlocks = const ['Fee records are kept for 8 years'];
+
+  @override
+  Future<DpdpOfficer> dpdpOfficer() async => officer;
+
+  @override
+  Future<DataExport> dpdpExport() async {
+    calls.add('dpdpExport');
+    return const DataExport({'profile': 1, 'attendance': 40, 'marks': 12});
+  }
+
+  @override
+  Future<Uint8List> dpdpExportPdf() async {
+    calls.add('dpdpExportPdf');
+    return Uint8List.fromList('%PDF-1.4 my data'.codeUnits);
+  }
+
+  @override
+  Future<List<DpdpRequest>> dpdpRequests() async => dpdpList;
+
+  @override
+  Future<DpdpRequest> dpdpRequest({required String kind, String details = '', String? field, String? value}) async {
+    calls.add('dpdpRequest $kind ${field ?? '-'}=${value ?? '-'} "$details"');
+    final r = DpdpRequest(id: 'r${dpdpList.length + 1}', kind: kind, status: 'pending', details: details, retentionReasons: kind == 'erasure' ? erasureBlocks : const []);
+    dpdpList = [r, ...dpdpList];
+    return r;
+  }
+
+  List<HouseRow> houseList = const [
+    HouseRow(id: 'h1', name: 'Kaveri', colour: '#1d4ed8', motto: 'Flow on', members: 12, points: 90, rank: 2),
+    HouseRow(id: 'h2', name: 'Tunga', colour: '#b91c1c', motto: '', members: 10, points: 140, rank: 1),
+  ];
+  Map<String, HouseDetail> houseDetails = const {
+    'h1': HouseDetail(
+      name: 'Kaveri',
+      motto: 'Flow on',
+      members: [HouseMember(studentId: 's1', name: 'Asha Rao', points: 20, isCaptain: false), HouseMember(studentId: 's9', name: 'Dev Kumar', points: 30, isCaptain: true)],
+      ledger: [HousePointEntry(points: 10, reason: 'Won the quiz', category: 'academics', awardedOn: '2026-10-02')],
+      total: 90,
+    ),
+    'h2': HouseDetail(name: 'Tunga', motto: '', members: [], ledger: [], total: 140),
+  };
+
+  @override
+  Future<List<HouseRow>> houses() async => houseList;
+
+  @override
+  Future<HouseDetail> houseDetail(String id) async => houseDetails[id]!;
+
+  List<PeerReviewTask> peerTasks = const [
+    PeerReviewTask(id: 'pr1', label: 'A', text: 'Goodwill is the extra value of a business.', fileCount: 0, done: false),
+    PeerReviewTask(id: 'pr2', label: 'B', text: 'See the photo.', fileCount: 1, done: true, clarity: 4, accuracy: 3, effort: 5, comment: 'Neat'),
+  ];
+  PeerFeedback peerReceived = const PeerFeedback(pending: 1, average: 12, reviews: [(clarity: 5, accuracy: 4, effort: 3, total: 12, comment: 'Clear and tidy')]);
+
+  @override
+  Future<List<PeerReviewTask>> peerReviewTasks(String homeworkId) async => peerTasks;
+
+  @override
+  Future<PeerFeedback> peerFeedback(String homeworkId) async => peerReceived;
+
+  @override
+  Future<void> submitPeerReview(String homeworkId, String reviewId, {required int clarity, required int accuracy, required int effort, required String comment}) async {
+    calls.add('peerReview $homeworkId $reviewId $clarity/$accuracy/$effort "$comment"');
+    peerTasks = [
+      for (final t in peerTasks)
+        if (t.id == reviewId) PeerReviewTask(id: t.id, label: t.label, text: t.text, fileCount: t.fileCount, done: true, clarity: clarity, accuracy: accuracy, effort: effort, comment: comment) else t,
+    ];
   }
 
   List<MySurvey> surveyList = const [

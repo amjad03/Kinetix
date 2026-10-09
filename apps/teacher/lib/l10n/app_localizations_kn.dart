@@ -2390,4 +2390,147 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get copilotCopied => 'ಕರಡು ನಕಲಾಗಿದೆ.';
+
+  @override
+  String get evalToolTick => 'ಸರಿ ಗುರುತು';
+
+  @override
+  String get evalToolCross => 'ತಪ್ಪು ಗುರುತು';
+
+  @override
+  String get evalToolComment => 'ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get evalMarksOnPage => 'ಸ್ಕ್ರಿಪ್ಟ್‌ನ ಗುರುತುಗಳು';
+
+  @override
+  String get evalEarlierNote => 'ಮಸುಕಾದ ಗುರುತುಗಳು ಹಿಂದಿನ ಮೌಲ್ಯಮಾಪನಗಳದ್ದು.';
+
+  @override
+  String get evalCommentPrompt => 'ಈ ಸ್ಥಳದ ಬಗ್ಗೆ ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get evalAddMark => 'ಸೇರಿಸಿ';
+
+  @override
+  String get appraisalTitle => 'ಸ್ವಯಂ ಮೌಲ್ಯಮಾಪನ';
+
+  @override
+  String get appraisalBody => 'ನಿಮ್ಮ ವಾರ್ಷಿಕ ಸ್ವಯಂ ಮೌಲ್ಯಮಾಪನವನ್ನು ತುಂಬಿ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get appraisalNoCycle => 'ಈಗ ಯಾವುದೇ ಮೌಲ್ಯಮಾಪನ ಚಕ್ರ ತೆರೆದಿಲ್ಲ.';
+
+  @override
+  String get appraisalCycle => 'ಚಕ್ರ';
+
+  @override
+  String get appraisalMax => 'ಗರಿಷ್ಠ';
+
+  @override
+  String get appraisalScore => 'ಅಂಕ';
+
+  @override
+  String get appraisalEvidence => 'ಸಾಕ್ಷ್ಯ';
+
+  @override
+  String appraisalOverMax(String max) {
+    return 'ಅಂಕ 0 ಮತ್ತು $max ನಡುವೆ ಇರಬೇಕು';
+  }
+
+  @override
+  String get appraisalNeedScore => 'ಕನಿಷ್ಠ ಒಂದು ಅಂಕ ನಮೂದಿಸಿ.';
+
+  @override
+  String get appraisalSubmitted => 'ಮೌಲ್ಯಮಾಪನವನ್ನು ಪರಿಶೀಲನೆಗೆ ಸಲ್ಲಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get appraisalSaved => 'ಕರಡನ್ನು ಉಳಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get appraisalLocked => 'ನಿಮ್ಮ ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಕೆಯಾಗಿದೆ, ಇನ್ನು ಬದಲಿಸಲಾಗುವುದಿಲ್ಲ.';
+
+  @override
+  String get appraisalSelfPercent => 'ಸ್ವಯಂ ಅಂಕ';
+
+  @override
+  String get appraisalSaveDraft => 'ಕರಡು ಉಳಿಸಿ';
+
+  @override
+  String get appraisalSubmit => 'ಮೌಲ್ಯಮಾಪನ ಸಲ್ಲಿಸಿ';
+
+  @override
+  String get housesTitle => 'ಹೌಸ್‌ಗಳು';
+
+  @override
+  String get housesBody => 'ಲೀಡರ್‌ಬೋರ್ಡ್ ಮತ್ತು ಹೌಸ್ ಅಂಕಗಳು';
+
+  @override
+  String get housesEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಹೌಸ್ ರಚಿಸಿಲ್ಲ.';
+
+  @override
+  String get housesMembers => 'ಸದಸ್ಯರು';
+
+  @override
+  String get houseStudent => 'ವಿದ್ಯಾರ್ಥಿ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get houseWholeHouse => 'ಇಡೀ ಹೌಸ್';
+
+  @override
+  String get housePoints => 'ಅಂಕಗಳು (ಕಳೆಯಲು ಮೈನಸ್)';
+
+  @override
+  String get houseCategory => 'ವರ್ಗ';
+
+  @override
+  String get houseReason => 'ಕಾರಣ';
+
+  @override
+  String get houseAward => 'ಅಂಕ ನೀಡಿ';
+
+  @override
+  String get housePointsRange => '-100 ರಿಂದ 100 ರ ನಡುವೆ ಅಂಕ ನಮೂದಿಸಿ, ಸೊನ್ನೆ ಅಲ್ಲ.';
+
+  @override
+  String get houseReasonNeeded => 'ಕನಿಷ್ಠ 3 ಅಕ್ಷರಗಳ ಕಾರಣ ಬರೆಯಿರಿ.';
+
+  @override
+  String get housePointsSaved => 'ಅಂಕಗಳನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get houseCatGeneral => 'ಸಾಮಾನ್ಯ';
+
+  @override
+  String get houseCatAcademics => 'ಶೈಕ್ಷಣಿಕ';
+
+  @override
+  String get houseCatSports => 'ಕ್ರೀಡೆ';
+
+  @override
+  String get houseCatArts => 'ಕಲೆ';
+
+  @override
+  String get houseCatDiscipline => 'ಶಿಸ್ತು';
+
+  @override
+  String get houseCatService => 'ಸೇವೆ';
+
+  @override
+  String get curriculumTitle => 'ಪಠ್ಯಕ್ರಮ';
+
+  @override
+  String get curriculumBody => 'ಸಕ್ರಿಯ ಪಠ್ಯಕ್ರಮ, ಘಟಕಗಳು ಮತ್ತು ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು';
+
+  @override
+  String get curriculumEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಸಕ್ರಿಯ ಪಠ್ಯಕ್ರಮ ಇಲ್ಲ.';
+
+  @override
+  String get curriculumNoSubjects => 'ಈ ಆವೃತ್ತಿಯಲ್ಲಿ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ.';
+
+  @override
+  String get curriculumUnits => 'ಘಟಕಗಳು';
+
+  @override
+  String get curriculumOutcomes => 'ಕೋರ್ಸ್ ಫಲಿತಾಂಶಗಳು';
 }

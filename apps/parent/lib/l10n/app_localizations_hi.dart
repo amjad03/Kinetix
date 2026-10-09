@@ -2557,4 +2557,147 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get passFeedbackThanks => 'आपकी प्रतिक्रिया के लिए धन्यवाद।';
+
+  @override
+  String get dpdpTitle => 'मेरे डेटा के अधिकार';
+
+  @override
+  String get dpdpSubtitle => 'अपने और अपने बच्चों का डेटा डाउनलोड, सुधार या मिटाएँ';
+
+  @override
+  String get dpdpOfficerTitle => 'शिकायत अधिकारी';
+
+  @override
+  String get dpdpOfficerNone => 'अभी कोई शिकायत अधिकारी नामित नहीं है। स्कूल कार्यालय को लिखें।';
+
+  @override
+  String get dpdpExportTitle => 'मेरा डेटा डाउनलोड करें';
+
+  @override
+  String get dpdpExportBody => 'देखें कि स्कूल के पास आपके और आपके बच्चों के बारे में क्या-क्या है।';
+
+  @override
+  String get dpdpExportAction => 'सार दिखाएँ';
+
+  @override
+  String get dpdpExportPdf => 'पीडीएफ़ में खोलें';
+
+  @override
+  String get dpdpRecords => 'रिकॉर्ड';
+
+  @override
+  String get dpdpCorrectTitle => 'मेरे विवरण सुधारें';
+
+  @override
+  String get dpdpField => 'सुधारने का विवरण';
+
+  @override
+  String get dpdpFieldName => 'नाम';
+
+  @override
+  String get dpdpFieldEmail => 'ईमेल';
+
+  @override
+  String get dpdpFieldPhone => 'फ़ोन';
+
+  @override
+  String get dpdpNewValue => 'सही जानकारी';
+
+  @override
+  String get dpdpCorrectSend => 'सुधार का अनुरोध भेजें';
+
+  @override
+  String get dpdpNeedValue => 'सही जानकारी भरें।';
+
+  @override
+  String get dpdpEraseTitle => 'मिटाने का अनुरोध करें';
+
+  @override
+  String get dpdpEraseBody => 'स्कूल को कुछ रिकॉर्ड क़ानूनन रखने होते हैं। हम बताएँगे कि क्या मिटाया जा सकता है और क्या नहीं।';
+
+  @override
+  String get dpdpEraseDetails => 'आप यह क्यों चाहते हैं? (वैकल्पिक)';
+
+  @override
+  String get dpdpEraseSend => 'मिटाने का अनुरोध करें';
+
+  @override
+  String get dpdpEraseConfirm => 'स्कूल से आपका डेटा मिटाने को कहें? जो रिकॉर्ड क़ानूनन रखने हैं, वे रहेंगे।';
+
+  @override
+  String get dpdpRequestSent => 'अनुरोध भेज दिया गया। शिकायत अधिकारी 30 दिन में उत्तर देंगे।';
+
+  @override
+  String get dpdpRetentionNotice => 'ये रिकॉर्ड क़ानूनन रखने होंगे:';
+
+  @override
+  String get dpdpRequestsTitle => 'मेरे अनुरोध';
+
+  @override
+  String get dpdpRequestsNone => 'अभी कोई अनुरोध नहीं।';
+
+  @override
+  String get dpdpKindCorrection => 'सुधार';
+
+  @override
+  String get dpdpKindErasure => 'मिटाना';
+
+  @override
+  String get dpdpStatusPending => 'लंबित';
+
+  @override
+  String get dpdpStatusDone => 'पूर्ण';
+
+  @override
+  String get dpdpStatusDeclined => 'अस्वीकृत';
+
+  @override
+  String get dpdpStatusBlocked => 'क़ानूनन रखा गया';
+
+  @override
+  String get dpdpAbout => 'यह अनुरोध किसके बारे में है';
+
+  @override
+  String get dpdpAboutMe => 'मैं';
+
+  @override
+  String get dpdpAboutChild => 'बच्चा';
+
+  @override
+  String get reportCardsTitle => 'रिपोर्ट कार्ड';
+
+  @override
+  String childReportCards(String name) {
+    return 'रिपोर्ट कार्ड: $name';
+  }
+
+  @override
+  String get reportCardsSubtitle => 'अंक, टिप्पणियाँ और अगली कक्षा';
+
+  @override
+  String get reportCardsNone => 'अभी कोई रिपोर्ट कार्ड प्रकाशित नहीं हुआ है।';
+
+  @override
+  String get promotionPending => 'अगली कक्षा का निर्णय लंबित';
+
+  @override
+  String get promotionPromoted => 'अगली कक्षा में प्रोन्नत';
+
+  @override
+  String get promotionGrace => 'ग्रेस अंकों के साथ प्रोन्नत';
+
+  @override
+  String get promotionDetained => 'प्रोन्नत नहीं';
+
+  @override
+  String get promotedTo => 'अगली कक्षा';
+
+  @override
+  String get coCurricular => 'सह-पाठ्यचर्या';
+
+  @override
+  String get behaviour => 'व्यवहार';
+
+  @override
+  String get reportCardPdf => 'पीडीएफ़ में खोलें';
 }

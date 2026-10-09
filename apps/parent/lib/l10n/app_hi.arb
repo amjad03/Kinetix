@@ -616,9 +616,17 @@
   "schoolLife": "स्कूल जीवन",
   "schoolLifeSubtitle": "डायरी, बैठकें, स्वास्थ्य, कार्यक्रम और बहुत कुछ",
   "schoolLifeTitle": "{name} का स्कूल जीवन",
-  "@schoolLifeTitle": {"placeholders": {"name": {}}},
+  "@schoolLifeTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "childSchoolLife": "{name} का स्कूल जीवन",
-  "@childSchoolLife": {"placeholders": {"name": {}}},
+  "@childSchoolLife": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "lifeDiary": "स्कूल डायरी",
   "lifeDiarySub": "कक्षा कार्य, गृहकार्य और सूचनाएँ",
   "lifePtm": "अभिभावक-शिक्षक बैठकें",
@@ -634,25 +642,43 @@
   "lifeEvents": "कैंपस कार्यक्रम",
   "lifeEventsSub": "अपने बच्चे को कार्यक्रमों के लिए पंजीकृत करें",
   "diaryTitle": "{name} की डायरी",
-  "@diaryTitle": {"placeholders": {"name": {}}},
+  "@diaryTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "diaryEmpty": "अभी कोई डायरी प्रविष्टि नहीं है।",
   "diaryClasswork": "कक्षा कार्य",
   "diaryHomework": "गृहकार्य",
   "diaryNotice": "सूचना",
   "diaryBy": "{author} द्वारा",
-  "@diaryBy": {"placeholders": {"author": {}}},
+  "@diaryBy": {
+    "placeholders": {
+      "author": {}
+    }
+  },
   "diaryAcknowledge": "मैंने इसे पढ़ लिया है",
   "diaryAcknowledged": "पढ़ लिया",
   "diaryAckDone": "पढ़ा हुआ चिह्नित किया गया",
   "diaryToAcknowledge": "{count, plural, =1{पुष्टि के लिए 1 प्रविष्टि} other{पुष्टि के लिए {count} प्रविष्टियाँ}}",
-  "@diaryToAcknowledge": {"placeholders": {"count": {"type": "int"}}},
+  "@diaryToAcknowledge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ptmTitle": "अभिभावक-शिक्षक बैठकें",
   "ptmNone": "कोई बैठक तय नहीं है।",
   "ptmMeetings": "बैठकें",
   "ptmMyBookings": "आपकी बुकिंग",
   "ptmClosed": "बंद",
   "ptmNoSlots": "{name} के शिक्षकों के साथ कोई खाली समय नहीं है।",
-  "@ptmNoSlots": {"placeholders": {"name": {}}},
+  "@ptmNoSlots": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "ptmBook": "बुक करें",
   "ptmBooked": "बैठक बुक हो गई",
   "ptmYourBooking": "आपकी बुकिंग",
@@ -664,7 +690,11 @@
   "ptmKeep": "रहने दें",
   "ptmCancelled": "बुकिंग रद्द हो गई",
   "earlyYearsTitle": "{name} के प्रारंभिक वर्ष",
-  "@earlyYearsTitle": {"placeholders": {"name": {}}},
+  "@earlyYearsTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "eyStory": "सीखने की कहानी (PDF)",
   "eyChooseTerm": "सत्र चुनें",
   "eyMilestones": "विकास के पड़ाव",
@@ -679,7 +709,11 @@
   "eyDeveloping": "विकसित हो रहा",
   "eyAchieved": "हासिल किया",
   "healthTitle": "{name} का स्वास्थ्य",
-  "@healthTitle": {"placeholders": {"name": {}}},
+  "@healthTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "healthReadOnly": "यह रिकॉर्ड स्कूल रखता है। आप इसे यहाँ पढ़ सकते हैं।",
   "healthNoProfile": "कोई स्वास्थ्य प्रोफ़ाइल दर्ज नहीं है।",
   "healthBlood": "रक्त समूह",
@@ -695,22 +729,46 @@
   "healthVaccinations": "टीकाकरण",
   "healthNoVaccinations": "कोई टीकाकरण दर्ज नहीं है।",
   "healthNextDue": "अगली खुराक {date}",
-  "@healthNextDue": {"placeholders": {"date": {}}},
+  "@healthNextDue": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "passportTitle": "{name} का पासपोर्ट",
-  "@passportTitle": {"placeholders": {"name": {}}},
+  "@passportTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "passportVerified": "स्कूल द्वारा सत्यापित",
   "passportNotVerified": "स्कूल द्वारा अभी सत्यापित नहीं",
   "passportDownload": "पासपोर्ट डाउनलोड करें (PDF)",
   "passportSkills": "कौशल",
   "passportNoSkills": "अभी कोई कौशल नहीं।",
   "passportLevel": "स्तर {level}",
-  "@passportLevel": {"placeholders": {"level": {"type": "int"}}},
+  "@passportLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
   "passportNoLevel": "अभी पर्याप्त प्रमाण नहीं",
   "passportEvidence": "{count, plural, =1{1 प्रमाण} other{{count} प्रमाण}}",
-  "@passportEvidence": {"placeholders": {"count": {"type": "int"}}},
+  "@passportEvidence": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "passportCertificates": "प्रमाणपत्र",
   "passportIssued": "{date} को जारी",
-  "@passportIssued": {"placeholders": {"date": {}}},
+  "@passportIssued": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "passportActivities": "क्लब और कार्यक्रम",
   "surveysTitle": "सर्वेक्षण",
   "surveysNone": "किसी सर्वेक्षण में आपके उत्तर की ज़रूरत नहीं है।",
@@ -722,12 +780,26 @@
   "surveyRequired": "कृपया तारे वाले हर प्रश्न का उत्तर दें।",
   "surveyThanks": "आपके उत्तरों के लिए धन्यवाद",
   "eventsTitle": "{name} के कार्यक्रम",
-  "@eventsTitle": {"placeholders": {"name": {}}},
+  "@eventsTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "eventsNone": "अभी कोई कार्यक्रम खुला नहीं है।",
   "eventFee": "शुल्क {amount}",
-  "@eventFee": {"placeholders": {"amount": {}}},
+  "@eventFee": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
   "eventSeatsLeft": "{count, plural, =0{भरा हुआ} =1{1 सीट बाकी} other{{count} सीटें बाकी}}",
-  "@eventSeatsLeft": {"placeholders": {"count": {"type": "int"}}},
+  "@eventSeatsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "eventRegister": "पंजीकरण करें",
   "eventJoinWaitlist": "प्रतीक्षा सूची में जुड़ें",
   "eventRegistered": "पंजीकृत",
@@ -739,7 +811,13 @@
   "lifePasses": "कार्यक्रम पास",
   "lifePassesSub": "क्यूआर कोड और प्रतिक्रिया",
   "passesTitle": "{name} के कार्यक्रम पास",
-  "@passesTitle": {"placeholders": {"name": {"type": "String"}}},
+  "@passesTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "passesNone": "अभी कोई कार्यक्रम पंजीकरण नहीं है।",
   "passShowAtDoor": "दरवाज़े पर यह कोड दिखाएँ",
   "passCheckedIn": "प्रवेश दर्ज",
@@ -748,5 +826,60 @@
   "passFeedbackTitle": "कैसा रहा?",
   "passFeedbackComment": "टिप्पणी (वैकल्पिक)",
   "passFeedbackSend": "भेजें",
-  "passFeedbackThanks": "आपकी प्रतिक्रिया के लिए धन्यवाद।"
+  "passFeedbackThanks": "आपकी प्रतिक्रिया के लिए धन्यवाद।",
+  "dpdpTitle": "मेरे डेटा के अधिकार",
+  "dpdpSubtitle": "अपने और अपने बच्चों का डेटा डाउनलोड, सुधार या मिटाएँ",
+  "dpdpOfficerTitle": "शिकायत अधिकारी",
+  "dpdpOfficerNone": "अभी कोई शिकायत अधिकारी नामित नहीं है। स्कूल कार्यालय को लिखें।",
+  "dpdpExportTitle": "मेरा डेटा डाउनलोड करें",
+  "dpdpExportBody": "देखें कि स्कूल के पास आपके और आपके बच्चों के बारे में क्या-क्या है।",
+  "dpdpExportAction": "सार दिखाएँ",
+  "dpdpExportPdf": "पीडीएफ़ में खोलें",
+  "dpdpRecords": "रिकॉर्ड",
+  "dpdpCorrectTitle": "मेरे विवरण सुधारें",
+  "dpdpField": "सुधारने का विवरण",
+  "dpdpFieldName": "नाम",
+  "dpdpFieldEmail": "ईमेल",
+  "dpdpFieldPhone": "फ़ोन",
+  "dpdpNewValue": "सही जानकारी",
+  "dpdpCorrectSend": "सुधार का अनुरोध भेजें",
+  "dpdpNeedValue": "सही जानकारी भरें।",
+  "dpdpEraseTitle": "मिटाने का अनुरोध करें",
+  "dpdpEraseBody": "स्कूल को कुछ रिकॉर्ड क़ानूनन रखने होते हैं। हम बताएँगे कि क्या मिटाया जा सकता है और क्या नहीं।",
+  "dpdpEraseDetails": "आप यह क्यों चाहते हैं? (वैकल्पिक)",
+  "dpdpEraseSend": "मिटाने का अनुरोध करें",
+  "dpdpEraseConfirm": "स्कूल से आपका डेटा मिटाने को कहें? जो रिकॉर्ड क़ानूनन रखने हैं, वे रहेंगे।",
+  "dpdpRequestSent": "अनुरोध भेज दिया गया। शिकायत अधिकारी 30 दिन में उत्तर देंगे।",
+  "dpdpRetentionNotice": "ये रिकॉर्ड क़ानूनन रखने होंगे:",
+  "dpdpRequestsTitle": "मेरे अनुरोध",
+  "dpdpRequestsNone": "अभी कोई अनुरोध नहीं।",
+  "dpdpKindCorrection": "सुधार",
+  "dpdpKindErasure": "मिटाना",
+  "dpdpStatusPending": "लंबित",
+  "dpdpStatusDone": "पूर्ण",
+  "dpdpStatusDeclined": "अस्वीकृत",
+  "dpdpStatusBlocked": "क़ानूनन रखा गया",
+  "dpdpAbout": "यह अनुरोध किसके बारे में है",
+  "dpdpAboutMe": "मैं",
+  "dpdpAboutChild": "बच्चा",
+  "reportCardsTitle": "रिपोर्ट कार्ड",
+  "childReportCards": "रिपोर्ट कार्ड: {name}",
+  "@childReportCards": {
+    "description": "Parent growth screens.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportCardsSubtitle": "अंक, टिप्पणियाँ और अगली कक्षा",
+  "reportCardsNone": "अभी कोई रिपोर्ट कार्ड प्रकाशित नहीं हुआ है।",
+  "promotionPending": "अगली कक्षा का निर्णय लंबित",
+  "promotionPromoted": "अगली कक्षा में प्रोन्नत",
+  "promotionGrace": "ग्रेस अंकों के साथ प्रोन्नत",
+  "promotionDetained": "प्रोन्नत नहीं",
+  "promotedTo": "अगली कक्षा",
+  "coCurricular": "सह-पाठ्यचर्या",
+  "behaviour": "व्यवहार",
+  "reportCardPdf": "पीडीएफ़ में खोलें"
 }
