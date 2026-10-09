@@ -57,7 +57,7 @@ async function main() {
     await run(ctx);
     console.log(`  ${name} (${Math.round((Date.now() - t) / 100) / 10}s)`);
   }
-  const doc = loginsDoc(ctx.students.filter((s) => s.userId).map((s) => ({ name: s.name, roll: s.rollNo, sec: ctx.sections.find((x) => x.id === s.sectionId)!.label })));
+  const doc = loginsDoc(ctx.students.filter((s) => s.name === 'Sahana Gowda' || s.name === 'Vignesh Naik').map((s) => ({ name: s.name, roll: s.rollNo, sec: ctx.sections.find((x) => x.id === s.sectionId)!.label })));
   const out = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../docs/demo/SOUNDARYA_DEMO_LOGINS.md');
   try {
     mkdirSync(dirname(out), { recursive: true });
@@ -84,7 +84,7 @@ function loginsDoc(studentRows: { name: string; roll: string; sec: string }[]): 
       const role = s.roles.includes('hod') ? `HoD, ${s.dept}` : s.roles[0].replace(/_/g, ' ');
       return `| ${role} | ${s.name} | ${p}@${DOMAIN} |`;
     }),
-    ...studentRows.map((s) => `| student | ${s.name} (${s.roll}, ${s.sec}) | ${s.roll.includes('BCM') ? 'student.bcom' : 'student.bca'}@${DOMAIN} |`),
+    ...studentRows.map((s) => `| student | ${s.name} (${s.roll}, ${s.sec}) | ${s.name === 'Sahana Gowda' ? 'student.bcom' : 'student.bca'}@${DOMAIN} |`),
     `| guardian | Basavaraj Gowda (father of Sahana Gowda) | parent.bcom@${DOMAIN} |`,
     `| guardian | Revathi Naik (mother of Vignesh Naik, BCA Sem 3, and Chaitra Naik, BBA Sem 1) | parent.bca@${DOMAIN} |`,
     '',
