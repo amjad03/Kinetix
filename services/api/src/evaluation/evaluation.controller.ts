@@ -13,7 +13,7 @@ import { assessments, evalAllocations, evalAnnotations, evalConfigs, evalMarks, 
 import { ADMIN } from '../exams/schemes.controller.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
-import { annotationProblem, differsBeyond, newDummyNo, pickSecondValuation } from './evaluation.logic.js';
+import { annotationProblem, differsBeyond, inkShape, MAX_STROKE_POINTS, MAX_STROKES, newDummyNo, pickSecondValuation } from './evaluation.logic.js';
 import { nameRevealsStudent, sanitisePage } from './scan-sanitise.js';
 import { EvaluationService } from './evaluation.service.js';
 
@@ -37,9 +37,10 @@ const ConfigBody = z.object({
 });
 const AnnotationBody = z.object({
   pageIndex: z.number().int().min(0).max(200),
-  kind: z.enum(['tick', 'cross', 'comment', 'highlight']),
-  x: z.number().min(0).max(1),
-  y: z.number().min(0).max(1),
+  kind: z.enum(['tick', 'cross', 'comment', 'highlight', 'ink']),
+  x: z.number().min(0).max(1).default(0),
+  y: z.number().min(0).max(1).default(0),
+  strokes: z.array(z.array(z.tuple([z.number(), z.number()])).max(MAX_STROKE_POINTS)).max(MAX_STROKES).optional(),
   w: z.number().min(0).max(1).optional(),
   h: z.number().min(0).max(1).optional(),
   text: z.string().trim().max(500).optional(),
@@ -408,9 +409,10 @@ export class EvaluationExaminerController {
       const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(evalAnnotations).where(eq(evalAnnotations.allocationId, id));
       if (n.n >= MAX_ANNOTATIONS) throw new ConflictException('Too many marks on this script');
       const flat = b.kind === 'highlight';
+      const ink = b.kind === 'ink' ? inkShape(b.strokes!) : null;
       const [row] = await tx
         .insert(evalAnnotations)
-        .values({ tenantId: p.tenantId, scriptId: s.id, allocationId: id, pageIndex: b.pageIndex, kind: b.kind, x: b.x, y: b.y, w: flat ? (b.w ?? 0) : 0, h: flat ? (b.h ?? 0) : 0, text: b.kind === 'comment' ? (b.text ?? null) : null, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, scriptId: s.id, allocationId: id, pageIndex: b.pageIndex, kind: b.kind, x: ink ? ink.x : b.x, y: ink ? ink.y : b.y, w: ink ? ink.w : flat ? (b.w ?? 0) : 0, h: ink ? ink.h : flat ? (b.h ?? 0) : 0, text: b.kind === 'comment' ? (b.text ?? null) : null, strokes: ink ? ink.strokes : null, createdBy: p.userId })
         .returning();
       return row;
     });

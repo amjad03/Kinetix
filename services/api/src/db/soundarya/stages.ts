@@ -12,6 +12,7 @@ import { exams } from './exams.js';
 import { obe, questionBank, studentAccounts, surveys } from './outcomes.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
 import { payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
+import { assistSamples } from './assist.js';
 import { rolesAndRights } from './access.js';
 import { fees, scholarships, sponsorsAndBudgets } from './finance.js';
 
@@ -66,4 +67,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['syllabus coverage and year plans', syllabus],
   ['substitutions, AI usage and remaining records', smallTables],
   ['curriculum versions (NEP 2024), affiliated institutions and convocations', curriculumAndConvocation],
+  ['probation, transfers, marking drafts, script ink and CO-tagged polls', assistSamples],
 ];

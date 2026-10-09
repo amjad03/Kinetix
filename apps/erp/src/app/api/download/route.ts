@@ -25,6 +25,8 @@ const TARGETS: Record<string, (id: string) => string> = {
   'qb-key': (id) => `/v1/question-bank/papers/${id}/answer-key.pdf`,
   'offer-letter': (id) => `/v1/hr/offers/${id}/pdf`,
   'relieving-letter': (id) => `/v1/hr/separations/${id}/relieving-letter`,
+  'probation-letter': (id) => `/v1/hr/probation/reviews/${id}/letter`,
+  'training-cert': (id) => `/v1/hr/training-records/${id}/certificate`,
   payslip: (id) => `/v1/payroll/payslips/${id}/pdf`,
   'survey-csv': (id) => `/v1/surveys/${id}/export.csv`,
   passport: (id) => `/v1/passport/students/${id}/pdf`,

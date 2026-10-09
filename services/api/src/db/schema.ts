@@ -972,7 +972,7 @@ export const auditLog = pgTable('audit_log', {
 // AI (India-hosted; see docs/architecture/ai-platform.md)
 // ---------------------------------------------------------------------------------------------
 
-export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport']);
+export const aiTask = pgEnum('ai_task', ['explain', 'quiz', 'homework', 'lessonPlan', 'summarize', 'readBoard', 'transcribe', 'boardSummary', 'lecture', 'selectAsk', 'financeInsight', 'admissionsInsight', 'hrInsight', 'syllabusImport', 'gradeAssist']);
 export const aiOutcome = pgEnum('ai_outcome', ['ok', 'cached', 'blocked', 'invalid', 'unavailable', 'quota']);
 
 /** One row per AI request: metering per tenant, plus the model and template behind each answer. */
@@ -3235,6 +3235,11 @@ export const TENANT_TABLES = [
   'eval_annotations',
   'approval_delegations',
   'dpdp_requests',
+  'probation_reviews',
+  'staff_transfers',
+  'grade_suggestions',
+  'poll_co_map',
+  'tenant_signing_keys',
   'regulations',
   'curriculum_versions',
   'curriculum_subjects',
@@ -5930,12 +5935,14 @@ export const evalAnnotations = pgTable(
     scriptId: uuid('script_id').notNull().references(() => evalScripts.id, { onDelete: 'cascade' }),
     allocationId: uuid('allocation_id').notNull().references(() => evalAllocations.id, { onDelete: 'cascade' }),
     pageIndex: smallint('page_index').notNull(),
-    kind: text('kind').$type<'tick' | 'cross' | 'comment' | 'highlight'>().notNull(),
+    kind: text('kind').$type<'tick' | 'cross' | 'comment' | 'highlight' | 'ink'>().notNull(),
     x: numeric('x', { precision: 7, scale: 6, mode: 'number' }).notNull(),
     y: numeric('y', { precision: 7, scale: 6, mode: 'number' }).notNull(),
     w: numeric('w', { precision: 7, scale: 6, mode: 'number' }).notNull().default(0),
     h: numeric('h', { precision: 7, scale: 6, mode: 'number' }).notNull().default(0),
     text: text('text'),
+    /** Freehand ink: strokes of [x, y] points, each a fraction of the page (0 to 1). */
+    strokes: jsonb('strokes').$type<[number, number][][]>(),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -6169,6 +6176,9 @@ export const trainingRecords = pgTable(
     endsOn: date('ends_on').notNull(),
     hours: numeric('hours', { precision: 6, scale: 1, mode: 'number' }).notNull().default(0),
     certificateRef: text('certificate_ref'),
+    certificateKey: text('certificate_key'),
+    certificateType: text('certificate_type'),
+    certificateName: text('certificate_name'),
     verified: boolean('verified').notNull().default(false),
     createdAt: createdAt(),
   },

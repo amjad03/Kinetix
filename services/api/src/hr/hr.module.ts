@@ -8,12 +8,13 @@ import { LeaveService } from './leave.service.js';
 import { PayrollController } from './payroll.controller.js';
 import { PayrollService } from './payroll.service.js';
 import { RecruitmentController } from './recruitment.controller.js';
+import { StaffChangesController } from './staff-changes.controller.js';
 import { TalentController } from './talent.controller.js';
 
 /** HR records, staff attendance, leave, recruitment, appraisal, onboarding, exit and payroll (docs/architecture/hr-payroll.md). */
 @Module({
   imports: [DelegationModule],
-  controllers: [HrController, LeaveController, RecruitmentController, TalentController, ExitController, PayrollController],
+  controllers: [HrController, LeaveController, RecruitmentController, TalentController, ExitController, PayrollController, StaffChangesController],
   providers: [HrService, LeaveService, PayrollService],
   exports: [HrService, PayrollService],
 })

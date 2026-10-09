@@ -70,7 +70,11 @@ export function finalMarks(v: { first: number | null; second: number | null; thi
   return r2(v.first);
 }
 
-export type AnnotationKind = 'tick' | 'cross' | 'comment' | 'highlight';
+export type AnnotationKind = 'tick' | 'cross' | 'comment' | 'highlight' | 'ink';
+/** One freehand stroke: points as fractions of the page. */
+export type Stroke = [number, number][];
+export const MAX_STROKES = 60;
+export const MAX_STROKE_POINTS = 400;
 export interface AnnotationInput {
   kind: AnnotationKind;
   x: number;
@@ -78,6 +82,7 @@ export interface AnnotationInput {
   w?: number;
   h?: number;
   text?: string;
+  strokes?: Stroke[];
 }
 
 /**
@@ -86,6 +91,15 @@ export interface AnnotationInput {
  */
 export function annotationProblem(a: AnnotationInput): string | null {
   const inside = (n: number) => Number.isFinite(n) && n >= 0 && n <= 1;
+  if (a.kind === 'ink') {
+    const strokes = a.strokes ?? [];
+    if (strokes.length === 0 || strokes.length > MAX_STROKES) return 'Draw something first';
+    for (const st of strokes) {
+      if (st.length < 2 || st.length > MAX_STROKE_POINTS) return 'A pen stroke needs at least two points';
+      if (st.some((q) => !inside(q[0]) || !inside(q[1]))) return 'Keep the pen inside the page';
+    }
+    return null;
+  }
   if (!inside(a.x) || !inside(a.y)) return 'Place the mark inside the page';
   if (a.kind === 'highlight') {
     const w = a.w ?? 0;
@@ -95,4 +109,15 @@ export function annotationProblem(a: AnnotationInput): string | null {
   }
   if (a.kind === 'comment' && !(a.text ?? '').trim()) return 'Write the comment';
   return null;
+}
+
+/** The page rectangle that holds every stroke, with points rounded to 4 decimals so a stored drawing stays small. */
+export function inkShape(strokes: Stroke[]): { strokes: Stroke[]; x: number; y: number; w: number; h: number } {
+  const r4 = (n: number) => Math.round(n * 1e4) / 1e4;
+  const clean = strokes.map((st) => st.map((q): [number, number] => [r4(q[0]), r4(q[1])]));
+  const xs = clean.flat().map((q) => q[0]);
+  const ys = clean.flat().map((q) => q[1]);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return { strokes: clean, x, y, w: r4(Math.max(...xs) - x), h: r4(Math.max(...ys) - y) };
 }

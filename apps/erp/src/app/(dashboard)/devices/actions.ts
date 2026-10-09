@@ -23,3 +23,10 @@ export async function sendAction(id: string, action: RemoteAction): Promise<Acti
   if (res.ok) revalidatePath('/devices');
   return res;
 }
+
+/** Replaces the institution's offline pairing key (for the institution administrator). */
+export async function rotateSigningKey(): Promise<ActionResult<{ keyId: string }>> {
+  const res = await act(() => api<{ keyId: string }>('/v1/pairing/signing-key/rotate', { method: 'POST', body: {} }));
+  if (res.ok) revalidatePath('/devices');
+  return res;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { annotationCounts, boxBetween, newAnnotation, onPage, pointOnPage, type Annotation } from './annotations';
+import { annotationCounts, boxBetween, extendStroke, inkAnnotation, MAX_STROKE_POINTS, newAnnotation, onPage, pointOnPage, strokePath, thinStroke, type Annotation, type Stroke } from './annotations';
 
 const rect = { left: 100, top: 50, width: 400, height: 800 };
 
@@ -29,6 +29,30 @@ describe('annotation geometry', () => {
     const mk = (id: string, pageIndex: number, kind: Annotation['kind']): Annotation => ({ id, pageIndex, kind, x: 0, y: 0, w: 0, h: 0, text: null });
     const list = [mk('a', 0, 'tick'), mk('b', 0, 'cross'), mk('c', 1, 'tick')];
     expect(onPage(list, 0).map((x) => x.id)).toEqual(['a', 'b']);
-    expect(annotationCounts(list)).toEqual({ tick: 2, cross: 1, comment: 0, highlight: 0 });
+    expect(annotationCounts(list)).toEqual({ tick: 2, cross: 1, comment: 0, highlight: 0, ink: 0 });
+  });
+});
+
+describe('freehand ink', () => {
+  it('skips tiny moves, keeps the rest, and bounds a stroke', () => {
+    let st: Stroke = [[0.1, 0.1]];
+    st = extendStroke(st, { x: 0.1005, y: 0.1 });
+    expect(st).toHaveLength(1);
+    st = extendStroke(st, { x: 0.2, y: 0.15 });
+    expect(st).toEqual([[0.1, 0.1], [0.2, 0.15]]);
+    const long: Stroke = Array.from({ length: 1000 }, (_, i) => [i / 1000, 0.5]);
+    const thin = thinStroke(long);
+    expect(thin).toHaveLength(MAX_STROKE_POINTS);
+    expect(thin[0]).toEqual(long[0]);
+    expect(thin[thin.length - 1]).toEqual(long[999]);
+  });
+
+  it('builds one request from the strokes and drops lone dots', () => {
+    expect(inkAnnotation(2, [])).toBeNull();
+    expect(inkAnnotation(2, [[[0.3, 0.3]]])).toBeNull();
+    const body = inkAnnotation(2, [[[0.3, 0.3]], [[0.1, 0.1], [0.2, 0.2]]]);
+    expect(body).toEqual({ pageIndex: 2, kind: 'ink', x: 0, y: 0, strokes: [[[0.1, 0.1], [0.2, 0.2]]] });
+    expect(newAnnotation(0, 'ink', { x: 0.1, y: 0.1 }, { x: 0.2, y: 0.2 })).toBeNull();
+    expect(strokePath([[0.1, 0.2], [0.3, 0.4]])).toBe('M0.1 0.2 L0.3 0.4');
   });
 });

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -188,5 +189,35 @@ describe('OBE: outcomes, CO-PO matrix, attainment and accreditation exports', ()
     a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
     expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO2'))).toMatchObject({ direct: 2, indirect: 3, combined: 2.2 });
     expect(a.cos.find((c: { code: string }) => c.code.endsWith('CO1'))).toMatchObject({ indirect: 2.4 });
+  });
+
+  it('counts board polls tagged with a CO as optional classroom evidence', async () => {
+    const [sess] = (await owner.query(`insert into board_sessions (tenant_id, device_id, teacher_id, section_id, subject_id, expires_at) values ($1, $2, $3, $4, $5, now() + interval '1 hour') returning id`, [t.tenantId, t.device.id, t.teacher.id, t.section.id, t.subject.id])).rows;
+    const [poll] = (await owner.query(`insert into polls (tenant_id, board_session_id, section_id, subject_id, teacher_id, kind, question, options, correct, opened_at, closed_at) values ($1, $2, $3, $4, $5, 'mcq', 'Which entry is a debit?', '["A","B"]', '1', now(), now()) returning id`, [t.tenantId, sess.id, t.section.id, t.subject.id, t.teacher.id])).rows;
+    // Two of three students answer right: 66.7% of students attain, level 2.
+    for (const [i, a] of ['1', '1', '0'].entries()) await owner.query(`insert into poll_responses (tenant_id, poll_id, student_id, answer, source, answered_at) values ($1, $2, $3, $4, 'app', now())`, [t.tenantId, poll.id, t.students[i].id, a]);
+
+    const list = (await http().get(`/v1/obe/classroom-activities?subjectId=${t.subject.id}`).set(as('teacher')).expect(200)).body;
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ responses: 3, hasAnswer: true, cos: [] });
+    await http().put(`/v1/obe/polls/${poll.id}/cos`).set(as('teacher2')).send({ coIds: [co2] }).expect(403);
+    await http().put(`/v1/obe/polls/${poll.id}/cos`).set(as('teacher')).send({ coIds: [randomUUID()] }).expect(400);
+    await http().put(`/v1/obe/polls/${poll.id}/cos`).set(as('teacher')).send({ coIds: [co2] }).expect(200);
+
+    // With no weight for the classroom kind it is shown but does not move the level.
+    await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
+    let a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
+    let co2row = a.cos.find((c: { code: string }) => c.code.endsWith('CO2'));
+    expect(co2row.detail.byKind.map((k: { kind: string; weight: number }) => [k.kind, k.weight])).toEqual([['classroom', 0], ['internal', 30]]);
+    expect(co2row.direct).toBe(2);
+
+    // Giving it a weight makes it count: (30 * 2 + 40 * 2) / 70 stays 2 here, so check the level of the kind itself.
+    const cfg = (await http().get(`${base()}/config`).set(as('teacher')).expect(200)).body;
+    await http().put(`${base()}/config`).set(as('principal')).send({ ...cfg, evidenceWeights: { ...cfg.evidenceWeights, classroom: 20 } }).expect(200);
+    await http().post(`${base()}/attainment/compute`).set(as('principal')).send({ academicYearId: year() }).expect(200);
+    a = (await http().get(`${base()}/attainment?academicYearId=${year()}`).set(as('principal')).expect(200)).body;
+    co2row = a.cos.find((c: { code: string }) => c.code.endsWith('CO2'));
+    expect(co2row.detail.byKind.find((k: { kind: string }) => k.kind === 'classroom')).toMatchObject({ students: 3, attained: 2, level: 2, weight: 20 });
+    await http().put(`/v1/obe/polls/${poll.id}/cos`).set(as('teacher')).send({ coIds: [] }).expect(200);
   });
 });

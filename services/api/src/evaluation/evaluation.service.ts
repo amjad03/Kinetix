@@ -79,7 +79,7 @@ export class EvaluationService {
   /** Every annotation of a script with the round of the valuation it belongs to, oldest first. */
   async annotationsOf(tx: Tx, scriptId: string) {
     const rows = await tx
-      .select({ id: evalAnnotations.id, allocationId: evalAnnotations.allocationId, round: evalAllocations.round, examinerName: users.fullName, pageIndex: evalAnnotations.pageIndex, kind: evalAnnotations.kind, x: evalAnnotations.x, y: evalAnnotations.y, w: evalAnnotations.w, h: evalAnnotations.h, text: evalAnnotations.text })
+      .select({ id: evalAnnotations.id, allocationId: evalAnnotations.allocationId, round: evalAllocations.round, examinerName: users.fullName, pageIndex: evalAnnotations.pageIndex, kind: evalAnnotations.kind, x: evalAnnotations.x, y: evalAnnotations.y, w: evalAnnotations.w, h: evalAnnotations.h, text: evalAnnotations.text, strokes: evalAnnotations.strokes })
       .from(evalAnnotations)
       .innerJoin(evalAllocations, eq(evalAllocations.id, evalAnnotations.allocationId))
       .innerJoin(users, eq(users.id, evalAnnotations.createdBy))
