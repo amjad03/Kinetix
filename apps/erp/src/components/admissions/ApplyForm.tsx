@@ -175,9 +175,9 @@ function Question({ q, value, error, onChange }: { q: QuestionDef; value: string
 }
 
 /** A shorter form for families who only want to ask a question first. */
-export function EnquiryForm({ slug, programs }: { slug: string; programs: { id: string; name: string }[] }) {
+export function EnquiryForm({ slug, programs, referral = '' }: { slug: string; programs: { id: string; name: string }[]; referral?: string }) {
   const { t } = useI18n();
-  const [f, setF] = useState({ name: '', phone: '', email: '', programId: '', message: '', website: '' });
+  const [f, setF] = useState({ name: '', phone: '', email: '', programId: '', message: '', website: '', referralCode: referral });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -219,6 +219,9 @@ export function EnquiryForm({ slug, programs }: { slug: string; programs: { id: 
         </FormField>
         <FormField label={t('adm.field.message')}>
           <TextInput value={f.message} onChange={set('message')} multiline minRows={2} />
+        </FormField>
+        <FormField label={t('ag.referral.code')} helper={t('ag.referral.help')}>
+          <TextInput value={f.referralCode} onChange={set('referralCode')} slotProps={{ htmlInput: { maxLength: 30, autoCapitalize: 'characters' } }} />
         </FormField>
         <Box aria-hidden sx={{ position: 'absolute', left: -9999, height: 0, overflow: 'hidden' }}>
           <input tabIndex={-1} autoComplete="off" name="website" value={f.website} onChange={set('website')} />

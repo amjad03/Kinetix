@@ -94,19 +94,19 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Feature | Status | Evidence | Note |
 |---|---|---|---|
 | 8.1 Lead source, campaign, counsellor, follow-up, notes, status, next action | Built | `api/admissions/enquiries.service.ts` | |
-| 8.1 Lead score | Missing | none | |
+| 8.1 Lead score | Built | `api/admissions/lead-score.ts`, `erp/admissions` (score chip, sort by score) | rule-based points for source, programme interest, follow-ups and stage; recomputed on every change |
 | 8.2 Campaigns, UTM, funnel | Built | `erp/admissions/campaigns`, `apps/erp/src/components/dashboard/AdmissionsDashboard.tsx` | |
 | 8.2 Landing pages / forms | Partial | `apps/erp/src/app/apply/[slug]` (public form) | form per cycle only; no landing-page builder |
-| 8.2 Referral, source ROI | Missing | none | no referral code, no campaign spend/ROI |
+| 8.2 Referral, source ROI | Built | `api/admissions/enquiries.service.ts` (`resolveAgent`), `apps/erp/src/app/apply/[slug]` (`?ref=`), campaign report | referral code on the public enquiry form; cost per enrolment in the campaign report |
 | 8.3 Online application, documents, eligibility, application fee, verification, submission | Built | `api/admissions/public-admissions.controller.ts` | |
 | 8.3 Correction round | Missing | none | no "send back for correction" state |
 | 8.4 Entrance test, schedule, halls, candidate list, hall ticket, score entry, cutoff | Built | `api/admissions/entrance.controller.ts` | |
-| 8.4 Online question paper, candidate answering, auto evaluation | Missing | none | scores are keyed in manually |
+| 8.4 Online question paper, candidate answering, auto evaluation | Built | `api/admissions/online-test.service.ts`, `erp/admissions/online-test`, `erp/apply/[slug]/test` | applicant token login, timed MCQ drawn from a question bank, negative marking, auto-score into the entrance results |
 | 8.5 Merit lists, offers, category quotas | Built | `api/admissions/admissions.controller.ts` (`merit-lists`, `quotas`) | |
-| 8.5 Interviews | Missing | none | |
+| 8.5 Interviews | Built | `api/admissions/interviews.service.ts`, `erp/admissions/interviews` | panel, slot, per-panelist score sheets, outcome; `interview_score` merit rule and rejected candidates left out of the ranking |
 | 8.5 Waitlist | Partial | `api/admissions/admissions.service.ts` | offer expiry exists; ranked waitlist promotion not a separate flow |
 | 8.6 Acceptance, student ID, fee assignment, section, enrolment status | Built | `api/admissions/admissions.controller.ts` (`enroll`) | |
-| 8.7 Agent/partner channel (profile, leads, commission) | Missing | none | |
+| 8.7 Agent/partner channel (profile, leads, commission) | Built | `api/admissions/agents.service.ts`, `erp/admissions/partners` | fixed commission per enrolment, accrued at enrolment, paid from the ledger |
 | 8.8 Event registration (capacity, fee, QR check-in, feedback, certificate) | Partial | `api/campus-life/events.controller.ts` | public event landing page absent |
 
 ## 9. Academic calendar and year
@@ -367,8 +367,8 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Profile, employment, designation, department | Built | `api/hr/hr.controller.ts` | |
 | Qualifications, skills | Partial | `api/db/schema.ts` (`staff_profiles`) | qualification/skill detail limited |
 | Course allocation, workload | Partial | `api/course-registration/course-registration.controller.ts` (`me/teaching`) | no workload (hours) report |
-| Training, certifications, professional development | Missing | none | |
-| Appraisal | Missing | none | |
+| Training, certifications, professional development | Built | `api/hr/talent.controller.ts` (`training-records`), `erp/hr/training` | FDP, workshop, conference and course records with HR verification; certificate file upload absent |
+| Appraisal | Built | `api/hr/talent.controller.ts`, `api/hr/appraisal-math.ts`, `erp/hr/appraisal` | API/PBAS-style categories: self-appraisal, HoD review of own department, principal final score and grade |
 | Faculty teaching evaluation (student, HOD, peer, self) | Partial | `api/surveys/surveys.controller.ts` | student survey possible; HOD/peer/self forms and scoring absent |
 
 ## 32. HR and employee management
@@ -379,8 +379,10 @@ themes, ...) is covered in `GAP_ANALYSIS.md` (all acceptance items built; open: 
 | Attendance (app, manual, biometric CSV) | Built | `api/hr/hr.controller.ts` | live device integration absent |
 | Leave | Built | `api/hr/leave.controller.ts` | |
 | Recruitment: openings, applicants, stages | Built | `api/hr/recruitment.controller.ts` | interviews as stage only |
-| Offer letter, onboarding checklist, confirmation | Missing | none | |
-| Appraisal, training, transfer, exit | Missing | none | |
+| Offer letter, onboarding checklist | Built | `api/hr/talent.controller.ts`, `api/hr/letters-pdf.ts`, `erp/hr/onboarding` | offer PDF from the recruitment applicant; dated joining checklist |
+| Confirmation after probation | Missing | none | |
+| Exit: resignation, notice, clearance, full-and-final note, relieving letter | Built | `api/hr/exit.controller.ts`, `erp/hr/exit` | clearance across six departments; staff record closed and login disabled on relieving |
+| Transfer | Missing | none | |
 
 ## 33. Payroll
 
@@ -897,13 +899,13 @@ Sizes: S = under 2 days, M = 3-10 days, L = more than 2 weeks. Items cite PRD se
 | # | Item | PRD | Size | What is absent |
 |---|---|---|---|---|
 | 11 | Answer-script annotation, dummy-number anonymisation, scanner intake | 24 | L | |
-| 12 | Faculty: appraisal, training/PD, teaching evaluation (student/HOD/peer/self), workload report | 31 | M | |
-| 13 | HR: offer letter, onboarding checklist, confirmation, transfer, exit; payroll overtime/arrears, Form 16 | 32, 33 | M | |
+| 12 | Faculty: teaching evaluation (student/HOD/peer/self), workload report | 31 | M | appraisal and training/PD are built |
+| 13 | HR: confirmation, transfer; payroll overtime/arrears, Form 16 | 32, 33 | M | offer letter, onboarding and exit are built |
 | 14 | Accreditation: configurable criteria/metric tree, evidence auto-harvest and file upload, CQI root-cause/re-measure | 28 | L | |
 | 15 | Research: supervisor allocation, thesis and viva workflow, datasets, DOI import, document upload | 48 | M | |
 | 16 | Mobile gaps: Teacher (course file, CO/PO, research), Student (diary, report card, research, projects) | 60, 61 | M | |
 | 17 | House system (houses, allocation, points, leaderboard) | 12, 15 | S | |
-| 18 | Admissions: lead score, referral codes, agents and commission, source ROI, correction round, interviews, online entrance test, ranked waitlist | 8 | L | |
+| 18 | Admissions: correction round, ranked waitlist | 8 | L | lead score, referral, agents and commission, interviews and the online entrance test are built |
 | 19 | Library: renew, reservation, damaged/lost, e-resource register and access log | 36 | M | |
 | 20 | Documents: versioning, generic retention rules; storage versions | 56, 77 | M | |
 | 21 | Business rule engine registry (effective date, version, approver) | 75 | L | |

@@ -50,6 +50,8 @@ export interface Enquiry {
   message: string | null;
   lostReason: string | null;
   nextFollowUpOn: string | null;
+  /** Rule-based lead score, 0 to 100. */
+  leadScore: number;
   createdAt: string;
 }
 export interface EnquiryDetail extends Enquiry {

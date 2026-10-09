@@ -30,6 +30,10 @@ export const HR_TABS: { href: string; label: MessageKey }[] = [
   { href: '/hr/attendance', label: 'hr.tab.attendance' },
   { href: '/hr/leave', label: 'hr.tab.leave' },
   { href: '/hr/recruitment', label: 'hr.tab.recruitment' },
+  { href: '/hr/appraisal', label: 'hl.tab.appraisal' },
+  { href: '/hr/training', label: 'hl.tab.training' },
+  { href: '/hr/onboarding', label: 'hl.tab.onboarding' },
+  { href: '/hr/exit', label: 'hl.tab.exit' },
 ];
 
 /** Runs a server action and shows its outcome: a toast on success, an inline error on failure. */

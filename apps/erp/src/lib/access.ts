@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -75,6 +75,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   obe: ['principal', 'tenant_admin', 'hod', 'quality_officer'],
   // hr.controller.ts, leave.controller.ts, recruitment.controller.ts: HR_ROLES (the head of department decides leave in the API)
   hr: ['principal', 'tenant_admin', 'hr_manager'],
+  // talent.controller.ts: appraisal and training (a head of department reviews their own department; HR and the principal see all)
+  appraisal: ['principal', 'tenant_admin', 'hod', 'hr_manager'],
   // payroll.controller.ts PAYROLL_ROLES; approving and locking is for the principal and administrator (canApprovePayroll)
   payroll: ['principal', 'tenant_admin', 'hr_manager', 'accountant'],
   // GET /v1/payroll/payslips/me: a staff member's own payslips (teachers read theirs in the Teacher App)
@@ -234,7 +236,7 @@ export function sectionOf(pathname: string): Section | null {
     case 'obe':
       return 'obe';
     case 'hr':
-      return 'hr';
+      return pathname.startsWith('/hr/appraisal') || pathname.startsWith('/hr/training') ? 'appraisal' : 'hr';
     case 'reports':
       return 'reports';
     case 'surveys':
